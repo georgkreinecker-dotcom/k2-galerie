@@ -21,12 +21,31 @@ function loadArtworks(): any[] {
   }
 }
 
+// localStorage-Funktionen für Events
+function saveEvents(events: any[]): void {
+  try {
+    localStorage.setItem('k2-events', JSON.stringify(events))
+  } catch (error) {
+    console.error('Fehler beim Speichern der Events:', error)
+  }
+}
+
+function loadEvents(): any[] {
+  try {
+    const stored = localStorage.getItem('k2-events')
+    return stored ? JSON.parse(stored) : []
+  } catch (error) {
+    console.error('Fehler beim Laden der Events:', error)
+    return []
+  }
+}
+
 /**
  * Admin-Seite für K2 Galerie Verwaltung
  * Wird angezeigt bei: ?screenshot=admin oder /admin
  */
 function ScreenshotExportAdmin() {
-  const [activeTab, setActiveTab] = useState<'werke' | 'dokumente' | 'stammdaten' | 'einstellungen' | 'statistiken'>('werke')
+  const [activeTab, setActiveTab] = useState<'werke' | 'dokumente' | 'stammdaten' | 'einstellungen' | 'statistiken' | 'eventplan'>('werke')
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -53,6 +72,17 @@ function ScreenshotExportAdmin() {
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  
+  // Eventplan
+  const [events, setEvents] = useState<any[]>([])
+  const [showEventModal, setShowEventModal] = useState(false)
+  const [editingEvent, setEditingEvent] = useState<any>(null)
+  const [eventTitle, setEventTitle] = useState('')
+  const [eventType, setEventType] = useState<'galerieeröffnung' | 'vernissage' | 'finissage' | 'sonstiges'>('galerieeröffnung')
+  const [eventDate, setEventDate] = useState('')
+  const [eventTime, setEventTime] = useState('')
+  const [eventDescription, setEventDescription] = useState('')
+  const [eventLocation, setEventLocation] = useState('')
   
   // Stammdaten
   const [martinaData, setMartinaData] = useState({
@@ -182,6 +212,91 @@ function ScreenshotExportAdmin() {
     const docs = loadDocuments()
     setDocuments(docs)
   }, [])
+
+  // Events aus localStorage laden
+  useEffect(() => {
+    const loadedEvents = loadEvents()
+    setEvents(loadedEvents)
+  }, [])
+
+  // Event hinzufügen/bearbeiten
+  const handleSaveEvent = () => {
+    if (!eventTitle || !eventDate) {
+      alert('Bitte Titel und Datum eingeben')
+      return
+    }
+
+    const eventData = {
+      id: editingEvent?.id || `event-${Date.now()}`,
+      title: eventTitle,
+      type: eventType,
+      date: eventDate,
+      time: eventTime || '',
+      description: eventDescription,
+      location: eventLocation,
+      createdAt: editingEvent?.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+
+    let updatedEvents
+    if (editingEvent) {
+      updatedEvents = events.map(e => e.id === editingEvent.id ? eventData : e)
+    } else {
+      updatedEvents = [...events, eventData]
+    }
+
+    // Nach Datum sortieren
+    updatedEvents.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
+    setEvents(updatedEvents)
+    saveEvents(updatedEvents)
+    
+    // Zurücksetzen
+    setShowEventModal(false)
+    setEditingEvent(null)
+    setEventTitle('')
+    setEventType('galerieeröffnung')
+    setEventDate('')
+    setEventTime('')
+    setEventDescription('')
+    setEventLocation('')
+    
+    alert(editingEvent ? '✅ Event aktualisiert!' : '✅ Event hinzugefügt!')
+  }
+
+  // Event bearbeiten
+  const handleEditEvent = (event: any) => {
+    setEditingEvent(event)
+    setEventTitle(event.title)
+    setEventType(event.type)
+    setEventDate(event.date)
+    setEventTime(event.time || '')
+    setEventDescription(event.description || '')
+    setEventLocation(event.location || '')
+    setShowEventModal(true)
+  }
+
+  // Event löschen
+  const handleDeleteEvent = (eventId: string) => {
+    if (confirm('Möchtest du dieses Event wirklich löschen?')) {
+      const updatedEvents = events.filter(e => e.id !== eventId)
+      setEvents(updatedEvents)
+      saveEvents(updatedEvents)
+      alert('✅ Event gelöscht!')
+    }
+  }
+
+  // Event-Modal öffnen
+  const openEventModal = () => {
+    setEditingEvent(null)
+    setEventTitle('')
+    setEventType('galerieeröffnung')
+    setEventDate('')
+    setEventTime('')
+    setEventDescription('')
+    setEventLocation('')
+    setShowEventModal(true)
+  }
 
   // Dokumente speichern
   const saveDocuments = (docs: any[]) => {
@@ -1626,6 +1741,35 @@ function ScreenshotExportAdmin() {
             >
               📊 Statistiken
             </button>
+            <button 
+              onClick={() => setActiveTab('eventplan')}
+              style={{
+                padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                fontWeight: activeTab === 'eventplan' ? '600' : '500',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                background: activeTab === 'eventplan' 
+                  ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                  : 'rgba(255, 255, 255, 0.05)',
+                color: '#ffffff',
+                boxShadow: activeTab === 'eventplan' ? '0 10px 30px rgba(102, 126, 234, 0.3)' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== 'eventplan') {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== 'eventplan') {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                }
+              }}
+            >
+              📅 Eventplan
+            </button>
           </div>
 
           {/* Werke verwalten */}
@@ -2950,6 +3094,472 @@ function ScreenshotExportAdmin() {
             </section>
           )
         })()}
+
+        {/* Eventplan */}
+        {activeTab === 'eventplan' && (
+          <section style={{
+            background: 'rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '24px',
+            padding: 'clamp(2rem, 5vw, 3rem)',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+            marginBottom: 'clamp(2rem, 5vw, 3rem)'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
+              flexWrap: 'wrap',
+              gap: '1rem'
+            }}>
+              <h2 style={{
+                fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
+                fontWeight: '700',
+                color: '#ffffff',
+                margin: 0,
+                letterSpacing: '-0.01em'
+              }}>
+                📅 Eventplan
+              </h2>
+              <button
+                onClick={openEventModal}
+                style={{
+                  padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                }}
+              >
+                + Event hinzufügen
+              </button>
+            </div>
+
+            {/* Events Liste */}
+            {events.length === 0 ? (
+              <div style={{
+                textAlign: 'center',
+                padding: 'clamp(3rem, 8vw, 5rem)',
+                color: '#8fa0c9'
+              }}>
+                <div style={{ fontSize: 'clamp(3rem, 8vw, 5rem)', marginBottom: '1rem' }}>📅</div>
+                <p style={{ fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', margin: 0 }}>
+                  Noch keine Events vorhanden
+                </p>
+                <p style={{ fontSize: 'clamp(0.85rem, 2vw, 1rem)', marginTop: '0.5rem', opacity: 0.7 }}>
+                  Klicke auf "Event hinzufügen" um zu beginnen
+                </p>
+              </div>
+            ) : (
+              <div style={{
+                display: 'grid',
+                gap: 'clamp(1rem, 3vw, 1.5rem)',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'
+              }}>
+                {events.map((event) => {
+                  const eventIcons: Record<string, string> = {
+                    galerieeröffnung: '🎉',
+                    vernissage: '🍷',
+                    finissage: '👋',
+                    sonstiges: '📌'
+                  }
+                  const eventLabels: Record<string, string> = {
+                    galerieeröffnung: 'Galerieeröffnung',
+                    vernissage: 'Vernissage',
+                    finissage: 'Finissage',
+                    sonstiges: 'Sonstiges'
+                  }
+                  
+                  return (
+                    <div
+                      key={event.id}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '16px',
+                        padding: 'clamp(1rem, 3vw, 1.5rem)',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        marginBottom: '1rem'
+                      }}>
+                        <div>
+                          <div style={{
+                            fontSize: 'clamp(1.5rem, 4vw, 2rem)',
+                            marginBottom: '0.5rem'
+                          }}>
+                            {eventIcons[event.type] || '📌'}
+                          </div>
+                          <h3 style={{
+                            fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                            fontWeight: '600',
+                            color: '#ffffff',
+                            margin: '0 0 0.5rem 0'
+                          }}>
+                            {event.title}
+                          </h3>
+                          <div style={{
+                            fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                            color: '#8fa0c9',
+                            background: 'rgba(102, 126, 234, 0.2)',
+                            padding: '0.25rem 0.75rem',
+                            borderRadius: '6px',
+                            display: 'inline-block',
+                            marginBottom: '0.5rem'
+                          }}>
+                            {eventLabels[event.type] || event.type}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div style={{
+                        fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                        color: '#b8c5e0',
+                        marginBottom: '0.75rem'
+                      }}>
+                        <div style={{ marginBottom: '0.25rem' }}>
+                          <strong>📅 Datum:</strong> {new Date(event.date).toLocaleDateString('de-DE', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </div>
+                        {event.time && (
+                          <div style={{ marginBottom: '0.25rem' }}>
+                            <strong>🕐 Uhrzeit:</strong> {event.time}
+                          </div>
+                        )}
+                        {event.location && (
+                          <div style={{ marginBottom: '0.25rem' }}>
+                            <strong>📍 Ort:</strong> {event.location}
+                          </div>
+                        )}
+                        {event.description && (
+                          <div style={{ marginTop: '0.75rem', fontSize: 'clamp(0.85rem, 2vw, 0.95rem)' }}>
+                            {event.description}
+                          </div>
+                        )}
+                      </div>
+
+                      <div style={{
+                        display: 'flex',
+                        gap: '0.5rem',
+                        marginTop: '1rem'
+                      }}>
+                        <button
+                          onClick={() => handleEditEvent(event)}
+                          style={{
+                            flex: 1,
+                            padding: '0.75rem',
+                            background: 'rgba(102, 126, 234, 0.2)',
+                            border: '1px solid rgba(102, 126, 234, 0.3)',
+                            borderRadius: '8px',
+                            color: '#ffffff',
+                            cursor: 'pointer',
+                            fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                            fontWeight: '500'
+                          }}
+                        >
+                          ✏️ Bearbeiten
+                        </button>
+                        <button
+                          onClick={() => handleDeleteEvent(event.id)}
+                          style={{
+                            flex: 1,
+                            padding: '0.75rem',
+                            background: 'rgba(255, 100, 100, 0.2)',
+                            border: '1px solid rgba(255, 100, 100, 0.3)',
+                            borderRadius: '8px',
+                            color: '#ff6464',
+                            cursor: 'pointer',
+                            fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                            fontWeight: '500'
+                          }}
+                        >
+                          🗑️ Löschen
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Event Modal */}
+        {showEventModal && (
+          <div
+            onClick={() => setShowEventModal(false)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.8)',
+              backdropFilter: 'blur(10px)',
+              zIndex: 10000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1rem'
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+                borderRadius: '24px',
+                padding: 'clamp(2rem, 5vw, 3rem)',
+                maxWidth: '600px',
+                width: '100%',
+                maxHeight: '90vh',
+                overflowY: 'auto',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)'
+              }}
+            >
+              <h2 style={{
+                fontSize: 'clamp(1.5rem, 4vw, 2rem)',
+                fontWeight: '700',
+                color: '#ffffff',
+                marginTop: 0,
+                marginBottom: 'clamp(1.5rem, 4vw, 2rem)'
+              }}>
+                {editingEvent ? 'Event bearbeiten' : 'Neues Event hinzufügen'}
+              </h2>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#8fa0c9',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                    fontWeight: '500'
+                  }}>
+                    Titel *
+                  </label>
+                  <input
+                    type="text"
+                    value={eventTitle}
+                    onChange={(e) => setEventTitle(e.target.value)}
+                    placeholder="z.B. Eröffnung der K2 Galerie"
+                    style={{
+                      width: '100%',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      color: '#ffffff',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#8fa0c9',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                    fontWeight: '500'
+                  }}>
+                    Event-Typ
+                  </label>
+                  <select
+                    value={eventType}
+                    onChange={(e) => setEventType(e.target.value as any)}
+                    style={{
+                      width: '100%',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      color: '#ffffff',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                    }}
+                  >
+                    <option value="galerieeröffnung">🎉 Galerieeröffnung</option>
+                    <option value="vernissage">🍷 Vernissage</option>
+                    <option value="finissage">👋 Finissage</option>
+                    <option value="sonstiges">📌 Sonstiges</option>
+                  </select>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem' }}>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.5rem',
+                      color: '#8fa0c9',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '500'
+                    }}>
+                      Datum *
+                    </label>
+                    <input
+                      type="date"
+                      value={eventDate}
+                      onChange={(e) => setEventDate(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: 'clamp(0.75rem, 2vw, 1rem)',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '12px',
+                        color: '#ffffff',
+                        fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.5rem',
+                      color: '#8fa0c9',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '500'
+                    }}>
+                      Uhrzeit
+                    </label>
+                    <input
+                      type="time"
+                      value={eventTime}
+                      onChange={(e) => setEventTime(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: 'clamp(0.75rem, 2vw, 1rem)',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '12px',
+                        color: '#ffffff',
+                        fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#8fa0c9',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                    fontWeight: '500'
+                  }}>
+                    Ort
+                  </label>
+                  <input
+                    type="text"
+                    value={eventLocation}
+                    onChange={(e) => setEventLocation(e.target.value)}
+                    placeholder="z.B. K2 Galerie, Hauptstraße 1"
+                    style={{
+                      width: '100%',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      color: '#ffffff',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#8fa0c9',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                    fontWeight: '500'
+                  }}>
+                    Beschreibung
+                  </label>
+                  <textarea
+                    value={eventDescription}
+                    onChange={(e) => setEventDescription(e.target.value)}
+                    placeholder="Weitere Details zum Event..."
+                    rows={4}
+                    style={{
+                      width: '100%',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      color: '#ffffff',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                      fontFamily: 'inherit',
+                      resize: 'vertical'
+                    }}
+                  />
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  gap: '1rem',
+                  marginTop: '1rem'
+                }}>
+                  <button
+                    onClick={handleSaveEvent}
+                    style={{
+                      flex: 1,
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                    }}
+                  >
+                    {editingEvent ? '✅ Aktualisieren' : '✅ Hinzufügen'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowEventModal(false)
+                      setEditingEvent(null)
+                      setEventTitle('')
+                      setEventType('galerieeröffnung')
+                      setEventDate('')
+                      setEventTime('')
+                      setEventDescription('')
+                      setEventLocation('')
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      color: '#ffffff',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                      fontWeight: '500',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         </main>
       </div>
 
