@@ -2,8 +2,9 @@ import { usePersistentBoolean, usePersistentString } from '../hooks/usePersisten
 import { ProjectNavButton } from '../components/Navigation'
 import { Link } from 'react-router-dom'
 import DomainManager from '../components/DomainManager'
+import LicenseManager from '../components/LicenseManager'
 
-type PhaseId = 'phase1' | 'phase2' | 'phase3' | 'phase4'
+type PhaseId = 'phase1' | 'phase2' | 'phase3' | 'phase4' | 'phase5'
 
 const phaseDefinitions: Array<{
   id: PhaseId
@@ -57,6 +58,21 @@ const phaseDefinitions: Array<{
       { key: 'k2-mission-phase4-4', label: 'Supportkontakt definiert.' },
     ],
   },
+  {
+    id: 'phase5',
+    title: 'Phase 5 · Lizenzierung & Vermarktung',
+    noteKey: 'k2-mission-notes-phase5',
+    tasks: [
+      { key: 'k2-mission-phase5-1', label: 'Lizenz-Modell definiert (SaaS, Einmalzahlung, Abo).' },
+      { key: 'k2-mission-phase5-2', label: 'Pricing-Pläne erstellt (Basic, Pro, Enterprise).' },
+      { key: 'k2-mission-phase5-3', label: 'Feature-Vergleichstabelle erstellt.' },
+      { key: 'k2-mission-phase5-4', label: 'Lizenz-Verwaltungssystem implementiert.' },
+      { key: 'k2-mission-phase5-5', label: 'Multi-Tenant-Funktionalität getestet.' },
+      { key: 'k2-mission-phase5-6', label: 'Vermarktungsmaterialien erstellt (Landingpage, Demo-Video).' },
+      { key: 'k2-mission-phase5-7', label: 'Beta-Tester-Programm gestartet.' },
+      { key: 'k2-mission-phase5-8', label: 'Partner-Programm & Empfehlungs-System aktiv.' },
+    ],
+  },
 ]
 
 const milestoneMap: Record<PhaseId, string> = {
@@ -64,6 +80,7 @@ const milestoneMap: Record<PhaseId, string> = {
   phase2: 'Woche 2 – Technik Freeze',
   phase3: 'Woche 3 – Marketing Blast',
   phase4: 'Launch Woche – Hybrid Event',
+  phase5: 'Post-Launch – SaaS-Vermarktung',
 }
 
 const MissionControlPage = () => {
@@ -166,6 +183,19 @@ const MissionControlPage = () => {
                     <li>SOCIAL_MEDIA_ANLEITUNG.md</li>
                   </ul>
                 </div>
+              )}
+              {phase.id === 'phase5' && (
+                <>
+                  <LicenseManager />
+                  <div className="links" style={{ marginTop: '1.5rem' }}>
+                    <strong>Lizenzierung:</strong>
+                    <ul>
+                      <li>Multi-Tenant-System bereits implementiert</li>
+                      <li>Stripe/Payment-Integration geplant</li>
+                      <li>Beta-Tester-Programm starten</li>
+                    </ul>
+                  </div>
+                </>
               )}
               {phase.id === 'phase4' && (
                 <div className="links">
