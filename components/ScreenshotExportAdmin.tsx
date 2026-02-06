@@ -509,6 +509,211 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
     }
   }
 
+  // Bearbeitbare PR-Vorschläge als PDF generieren
+  const generateEditablePRSuggestionsPDF = (suggestions: any, event: any) => {
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>PR-Vorschläge - ${suggestions.eventTitle || 'Event'}</title>
+  <style>
+    @media print {
+      body { margin: 0; }
+      .no-print { display: none; }
+      .page-break { page-break-after: always; }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+      background: #ffffff;
+      color: #1a1f3a;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+    .page {
+      max-width: 210mm;
+      margin: 0 auto 2rem;
+      padding: 2rem;
+      background: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e0e0e0;
+    }
+    h1 {
+      font-size: 2rem;
+      color: #667eea;
+      margin-bottom: 0.5rem;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 0.5rem;
+    }
+    h2 {
+      font-size: 1.5rem;
+      color: #764ba2;
+      margin: 2rem 0 1rem;
+      border-bottom: 2px solid #764ba2;
+      padding-bottom: 0.5rem;
+    }
+    .field-group {
+      margin-bottom: 1.5rem;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      line-height: 1.6;
+      resize: vertical;
+      background: #fafafa;
+    }
+    textarea:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+    }
+    textarea {
+      min-height: 150px;
+    }
+    .info-box {
+      background: #f5f5f5;
+      border-left: 4px solid #667eea;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 4px;
+    }
+    .info-box strong {
+      color: #667eea;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 1rem 0.5rem;
+      box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="text-align: center; margin-bottom: 2rem; padding: 1rem; background: #f5f5f5; border-radius: 8px;">
+    <button onclick="window.print()">🖨️ Als PDF drucken</button>
+    <button onclick="saveAllChanges()">💾 Alle Änderungen speichern</button>
+    <p style="margin-top: 1rem; color: #666; font-size: 0.9rem;">
+      Bearbeite die Felder direkt im PDF. Nach dem Drucken kannst du die Änderungen speichern.
+    </p>
+  </div>
+
+  <!-- Seite 1: Presseaussendung -->
+  <div class="page">
+    <h1>📰 Presseaussendung</h1>
+    <div class="info-box">
+      <strong>Event:</strong> ${suggestions.eventTitle || 'Nicht angegeben'}<br>
+      <strong>Datum:</strong> ${event ? new Date(event.date).toLocaleDateString('de-DE') : 'Nicht angegeben'}
+    </div>
+    
+    <div class="field-group">
+      <label>Titel der Presseaussendung</label>
+      <input type="text" id="presse-title" value="${(suggestions.presseaussendung?.title || '').replace(/"/g, '&quot;')}" style="font-size: 1.2rem; font-weight: 600;" />
+    </div>
+    
+    <div class="field-group">
+      <label>Inhalt der Presseaussendung</label>
+      <textarea id="presse-content" rows="20">${(suggestions.presseaussendung?.content || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+    </div>
+  </div>
+
+  <!-- Seite 2: Social Media -->
+  <div class="page page-break">
+    <h1>📱 Social Media Posts</h1>
+    <div class="info-box">
+      <strong>Event:</strong> ${suggestions.eventTitle || 'Nicht angegeben'}
+    </div>
+    
+    <h2>Instagram Post</h2>
+    <div class="field-group">
+      <label>Instagram Text</label>
+      <textarea id="instagram-post" rows="12">${((suggestions.socialMedia?.instagram || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+    </div>
+    
+    <h2>Facebook Post</h2>
+    <div class="field-group">
+      <label>Facebook Text</label>
+      <textarea id="facebook-post" rows="12">${((suggestions.socialMedia?.facebook || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+    </div>
+  </div>
+
+  <!-- Seite 3: Newsletter -->
+  <div class="page page-break">
+    <h1>📧 E-Mail Newsletter</h1>
+    <div class="info-box">
+      <strong>Event:</strong> ${suggestions.eventTitle || 'Nicht angegeben'}
+    </div>
+    
+    <div class="field-group">
+      <label>E-Mail Betreff</label>
+      <input type="text" id="newsletter-subject" value="${(suggestions.newsletter?.subject || '').replace(/"/g, '&quot;')}" />
+    </div>
+    
+    <div class="field-group">
+      <label>Newsletter Inhalt</label>
+      <textarea id="newsletter-body" rows="20">${((suggestions.newsletter?.body || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+    </div>
+  </div>
+
+  <script>
+    function saveAllChanges() {
+      const changes = {
+        presseaussendung: {
+          title: document.getElementById('presse-title').value,
+          content: document.getElementById('presse-content').value
+        },
+        socialMedia: {
+          instagram: document.getElementById('instagram-post').value,
+          facebook: document.getElementById('facebook-post').value
+        },
+        newsletter: {
+          subject: document.getElementById('newsletter-subject').value,
+          body: document.getElementById('newsletter-body').value
+        }
+      }
+      
+      // Kopiere die Änderungen in die Zwischenablage
+      navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(() => {
+        alert('✅ Alle Änderungen wurden in die Zwischenablage kopiert!\\n\\nFüge sie in die App ein, um sie zu speichern.')
+      }).catch(() => {
+        // Fallback: Zeige die Daten in einem Alert
+        alert('Änderungen:\\n\\n' + JSON.stringify(changes, null, 2))
+      })
+    }
+  </script>
+</body>
+</html>
+    `
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank')
+    alert('✅ Bearbeitbare PR-Vorschläge PDF generiert! Bearbeite die Felder und drucke dann als PDF.')
+  }
+
   // Presseaussendung mit Content generieren (Hilfsfunktion)
   const generatePresseaussendungWithContent = (event: any, content: string) => {
     
@@ -5333,6 +5538,28 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
                   </div>
                 )}
 
+                {/* PR-Vorschläge als PDF exportieren */}
+                {eventPRSuggestions && (
+                  <button
+                    onClick={() => generateEditablePRSuggestionsPDF(eventPRSuggestions, editingEvent)}
+                    style={{
+                      width: '100%',
+                      marginTop: '1rem',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                    }}
+                  >
+                    📄 PR-Vorschläge als bearbeitbare PDF-Seiten
+                  </button>
+                )}
+
                 {/* Vorschläge neu generieren Button */}
                 {editingEvent && !eventPRSuggestions && (
                   <button
@@ -5749,6 +5976,41 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
                               }}
                             >
                               ✏️ Event bearbeiten
+                            </button>
+                          </div>
+
+                          {/* PR-Vorschläge als PDF Button */}
+                          <div style={{
+                            marginBottom: '1.5rem',
+                            padding: '1rem',
+                            background: 'rgba(102, 126, 234, 0.1)',
+                            border: '1px solid rgba(102, 126, 234, 0.3)',
+                            borderRadius: '12px'
+                          }}>
+                            <button
+                              onClick={() => {
+                                const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+                                const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+                                if (eventSuggestion) {
+                                  generateEditablePRSuggestionsPDF(eventSuggestion, event)
+                                } else {
+                                  alert('Keine PR-Vorschläge für dieses Event gefunden.')
+                                }
+                              }}
+                              style={{
+                                width: '100%',
+                                padding: '0.75rem 1rem',
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                color: '#ffffff',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
+                              }}
+                            >
+                              📄 Alle PR-Vorschläge als bearbeitbare PDF-Seiten
                             </button>
                           </div>
 
