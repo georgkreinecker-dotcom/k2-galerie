@@ -509,6 +509,393 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
     }
   }
 
+  // Einzelne bearbeitbare PDFs generieren
+  const generateEditablePresseaussendungPDF = (presseaussendung: any, event: any) => {
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Presseaussendung - ${event?.title || 'Event'}</title>
+  <style>
+    @media print {
+      body { margin: 0; }
+      .no-print { display: none; }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+      background: #ffffff;
+      color: #1a1f3a;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+    .page {
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 2rem;
+      background: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      font-size: 2rem;
+      color: #667eea;
+      margin-bottom: 0.5rem;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 0.5rem;
+    }
+    .field-group {
+      margin-bottom: 1.5rem;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      line-height: 1.6;
+      resize: vertical;
+      background: #fafafa;
+    }
+    textarea:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+    }
+    textarea {
+      min-height: 200px;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 1rem 0.5rem;
+      box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="text-align: center; margin-bottom: 2rem; padding: 1rem; background: #f5f5f5; border-radius: 8px;">
+    <button onclick="window.print()">🖨️ Als PDF drucken</button>
+    <button onclick="saveChanges()">💾 Änderungen speichern</button>
+  </div>
+
+  <div class="page">
+    <h1>📰 Presseaussendung</h1>
+    
+    <div class="field-group">
+      <label>Titel der Presseaussendung</label>
+      <input type="text" id="presse-title" value="${(presseaussendung?.title || '').replace(/"/g, '&quot;')}" style="font-size: 1.2rem; font-weight: 600;" />
+    </div>
+    
+    <div class="field-group">
+      <label>Inhalt der Presseaussendung</label>
+      <textarea id="presse-content" rows="25">${(presseaussendung?.content || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+    </div>
+  </div>
+
+  <script>
+    function saveChanges() {
+      const changes = {
+        presseaussendung: {
+          title: document.getElementById('presse-title').value,
+          content: document.getElementById('presse-content').value
+        }
+      }
+      navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(() => {
+        alert('✅ Änderungen wurden in die Zwischenablage kopiert!')
+      }).catch(() => {
+        alert('Änderungen:\\n\\n' + JSON.stringify(changes, null, 2))
+      })
+    }
+  </script>
+</body>
+</html>
+    `
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank')
+  }
+
+  const generateEditableSocialMediaPDF = (socialMedia: any, event: any) => {
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Social Media - ${event?.title || 'Event'}</title>
+  <style>
+    @media print {
+      body { margin: 0; }
+      .no-print { display: none; }
+      .page-break { page-break-after: always; }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+      background: #ffffff;
+      color: #1a1f3a;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+    .page {
+      max-width: 210mm;
+      margin: 0 auto 2rem;
+      padding: 2rem;
+      background: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      font-size: 2rem;
+      color: #667eea;
+      margin-bottom: 0.5rem;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 0.5rem;
+    }
+    h2 {
+      font-size: 1.5rem;
+      color: #764ba2;
+      margin: 2rem 0 1rem;
+      border-bottom: 2px solid #764ba2;
+      padding-bottom: 0.5rem;
+    }
+    .field-group {
+      margin-bottom: 1.5rem;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      line-height: 1.6;
+      resize: vertical;
+      background: #fafafa;
+      min-height: 150px;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 1rem 0.5rem;
+      box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="text-align: center; margin-bottom: 2rem; padding: 1rem; background: #f5f5f5; border-radius: 8px;">
+    <button onclick="window.print()">🖨️ Als PDF drucken</button>
+    <button onclick="saveChanges()">💾 Änderungen speichern</button>
+  </div>
+
+  <div class="page">
+    <h1>📱 Social Media Posts</h1>
+    
+    <h2>Instagram Post</h2>
+    <div class="field-group">
+      <label>Instagram Text</label>
+      <textarea id="instagram-post" rows="15">${((socialMedia?.instagram || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+    </div>
+    
+    <h2>Facebook Post</h2>
+    <div class="field-group">
+      <label>Facebook Text</label>
+      <textarea id="facebook-post" rows="15">${((socialMedia?.facebook || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+    </div>
+  </div>
+
+  <script>
+    function saveChanges() {
+      const changes = {
+        socialMedia: {
+          instagram: document.getElementById('instagram-post').value,
+          facebook: document.getElementById('facebook-post').value
+        }
+      }
+      navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(() => {
+        alert('✅ Änderungen wurden in die Zwischenablage kopiert!')
+      }).catch(() => {
+        alert('Änderungen:\\n\\n' + JSON.stringify(changes, null, 2))
+      })
+    }
+  </script>
+</body>
+</html>
+    `
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank')
+  }
+
+  const generateEditableNewsletterPDF = (newsletter: any, event: any) => {
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Newsletter - ${event?.title || 'Event'}</title>
+  <style>
+    @media print {
+      body { margin: 0; }
+      .no-print { display: none; }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+      background: #ffffff;
+      color: #1a1f3a;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+    .page {
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 2rem;
+      background: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      font-size: 2rem;
+      color: #667eea;
+      margin-bottom: 0.5rem;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 0.5rem;
+    }
+    .field-group {
+      margin-bottom: 1.5rem;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      line-height: 1.6;
+      resize: vertical;
+      background: #fafafa;
+    }
+    textarea:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+    }
+    textarea {
+      min-height: 200px;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 1rem 0.5rem;
+      box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="text-align: center; margin-bottom: 2rem; padding: 1rem; background: #f5f5f5; border-radius: 8px;">
+    <button onclick="window.print()">🖨️ Als PDF drucken</button>
+    <button onclick="saveChanges()">💾 Änderungen speichern</button>
+  </div>
+
+  <div class="page">
+    <h1>📧 E-Mail Newsletter</h1>
+    
+    <div class="field-group">
+      <label>E-Mail Betreff</label>
+      <input type="text" id="newsletter-subject" value="${(newsletter?.subject || '').replace(/"/g, '&quot;')}" />
+    </div>
+    
+    <div class="field-group">
+      <label>Newsletter Inhalt</label>
+      <textarea id="newsletter-body" rows="25">${((newsletter?.body || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+    </div>
+  </div>
+
+  <script>
+    function saveChanges() {
+      const changes = {
+        newsletter: {
+          subject: document.getElementById('newsletter-subject').value,
+          body: document.getElementById('newsletter-body').value
+        }
+      }
+      navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(() => {
+        alert('✅ Änderungen wurden in die Zwischenablage kopiert!')
+      }).catch(() => {
+        alert('Änderungen:\\n\\n' + JSON.stringify(changes, null, 2))
+      })
+    }
+  </script>
+</body>
+</html>
+    `
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank')
+  }
+
   // Bearbeitbare PR-Vorschläge als PDF generieren
   const generateEditablePRSuggestionsPDF = (suggestions: any, event: any) => {
     const html = `
@@ -5380,18 +5767,43 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
                           borderRadius: '12px',
                           padding: '1rem'
                         }}>
-                          <div style={{
-                            fontSize: 'clamp(0.9rem, 2vw, 1rem)',
-                            fontWeight: '600',
-                            color: '#5ffbf1',
-                            marginBottom: '0.75rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem'
-                          }}>
+                          <button
+                            onClick={() => {
+                              const event = editingEvent || {
+                                id: eventPRSuggestions.eventId,
+                                title: eventPRSuggestions.eventTitle,
+                                date: eventDate,
+                                location: eventLocation
+                              }
+                              generateEditablePresseaussendungPDF(eventPRSuggestions.presseaussendung, event)
+                            }}
+                            style={{
+                              width: '100%',
+                              fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                              fontWeight: '600',
+                              color: '#5ffbf1',
+                              marginBottom: '0.75rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.5rem',
+                              background: 'transparent',
+                              border: 'none',
+                              cursor: 'pointer',
+                              padding: '0.5rem',
+                              borderRadius: '8px',
+                              transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'rgba(95, 251, 241, 0.1)'
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'transparent'
+                            }}
+                          >
                             <span>📰</span>
                             <span>Presseaussendung</span>
-                          </div>
+                            <span style={{ marginLeft: 'auto', fontSize: '0.85rem', opacity: 0.7 }}>→ PDF öffnen</span>
+                          </button>
                           <div style={{
                             fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
                             color: '#b8c5e0',
@@ -5417,18 +5829,43 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
                           borderRadius: '12px',
                           padding: '1rem'
                         }}>
-                          <div style={{
-                            fontSize: 'clamp(0.9rem, 2vw, 1rem)',
-                            fontWeight: '600',
-                            color: '#5ffbf1',
-                            marginBottom: '0.75rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem'
-                          }}>
+                          <button
+                            onClick={() => {
+                              const event = editingEvent || {
+                                id: eventPRSuggestions.eventId,
+                                title: eventPRSuggestions.eventTitle,
+                                date: eventDate,
+                                location: eventLocation
+                              }
+                              generateEditableSocialMediaPDF(eventPRSuggestions.socialMedia, event)
+                            }}
+                            style={{
+                              width: '100%',
+                              fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                              fontWeight: '600',
+                              color: '#5ffbf1',
+                              marginBottom: '0.75rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.5rem',
+                              background: 'transparent',
+                              border: 'none',
+                              cursor: 'pointer',
+                              padding: '0.5rem',
+                              borderRadius: '8px',
+                              transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'rgba(95, 251, 241, 0.1)'
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'transparent'
+                            }}
+                          >
                             <span>📱</span>
                             <span>Social Media</span>
-                          </div>
+                            <span style={{ marginLeft: 'auto', fontSize: '0.85rem', opacity: 0.7 }}>→ PDF öffnen</span>
+                          </button>
                           {eventPRSuggestions.socialMedia.instagram && (
                             <div style={{ marginBottom: '1rem' }}>
                               <div style={{
@@ -5492,18 +5929,43 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
                           borderRadius: '12px',
                           padding: '1rem'
                         }}>
-                          <div style={{
-                            fontSize: 'clamp(0.9rem, 2vw, 1rem)',
-                            fontWeight: '600',
-                            color: '#5ffbf1',
-                            marginBottom: '0.75rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem'
-                          }}>
+                          <button
+                            onClick={() => {
+                              const event = editingEvent || {
+                                id: eventPRSuggestions.eventId,
+                                title: eventPRSuggestions.eventTitle,
+                                date: eventDate,
+                                location: eventLocation
+                              }
+                              generateEditableNewsletterPDF(eventPRSuggestions.newsletter, event)
+                            }}
+                            style={{
+                              width: '100%',
+                              fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                              fontWeight: '600',
+                              color: '#5ffbf1',
+                              marginBottom: '0.75rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.5rem',
+                              background: 'transparent',
+                              border: 'none',
+                              cursor: 'pointer',
+                              padding: '0.5rem',
+                              borderRadius: '8px',
+                              transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'rgba(95, 251, 241, 0.1)'
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'transparent'
+                            }}
+                          >
                             <span>📧</span>
                             <span>Newsletter</span>
-                          </div>
+                            <span style={{ marginLeft: 'auto', fontSize: '0.85rem', opacity: 0.7 }}>→ PDF öffnen</span>
+                          </button>
                           {eventPRSuggestions.newsletter.subject && (
                             <div style={{
                               fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
