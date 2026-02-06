@@ -21,6 +21,9 @@ function App() {
   return (
     <>
     <Routes>
+      {/* Root-Route: Galerie als Homepage */}
+      <Route path="/" element={<GaleriePage />} />
+      
       {/* Plattform-Routen */}
       <Route path={PLATFORM_ROUTES.home} element={<DevViewPage defaultPage="mission" />} />
       <Route path={PLATFORM_ROUTES.key} element={<KeyPage />} />
@@ -52,7 +55,7 @@ function App() {
       {/* Dev-Tool für parallele Ansichten */}
       <Route path="/dev-view" element={<DevViewPage />} />
       
-      <Route path="*" element={<Navigate to={PLATFORM_ROUTES.home} replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
     </>
   )
