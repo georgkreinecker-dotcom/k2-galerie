@@ -78,7 +78,7 @@ function ScreenshotExportAdmin() {
   const [showEventModal, setShowEventModal] = useState(false)
   const [editingEvent, setEditingEvent] = useState<any>(null)
   const [eventTitle, setEventTitle] = useState('')
-  const [eventType, setEventType] = useState<'galerieeröffnung' | 'vernissage' | 'finissage' | 'sonstiges'>('galerieeröffnung')
+  const [eventType, setEventType] = useState<'galerieeröffnung' | 'vernissage' | 'finissage' | 'öffentlichkeitsarbeit' | 'sonstiges'>('galerieeröffnung')
   const [eventDate, setEventDate] = useState('')
   const [eventEndDate, setEventEndDate] = useState('')
   const [eventStartTime, setEventStartTime] = useState('')
@@ -3332,12 +3332,14 @@ function ScreenshotExportAdmin() {
                     galerieeröffnung: '🎉',
                     vernissage: '🍷',
                     finissage: '👋',
+                    öffentlichkeitsarbeit: '📢',
                     sonstiges: '📌'
                   }
                   const eventLabels: Record<string, string> = {
                     galerieeröffnung: 'Galerieeröffnung',
                     vernissage: 'Vernissage',
                     finissage: 'Finissage',
+                    öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
                     sonstiges: 'Sonstiges'
                   }
                   
@@ -3710,6 +3712,7 @@ function ScreenshotExportAdmin() {
                     <option value="galerieeröffnung">🎉 Galerieeröffnung</option>
                     <option value="vernissage">🍷 Vernissage</option>
                     <option value="finissage">👋 Finissage</option>
+                    <option value="öffentlichkeitsarbeit">📢 Öffentlichkeitsarbeit</option>
                     <option value="sonstiges">📌 Sonstiges</option>
                   </select>
                 </div>
