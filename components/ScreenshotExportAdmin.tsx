@@ -5335,9 +5335,20 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
                                           day: 'numeric',
                                           month: 'short'
                                         })
+                                        let timeDisplay = ''
+                                        if (typeof dayTime === 'string') {
+                                          // Altes Format (nur Startzeit)
+                                          timeDisplay = `${dayTime} Uhr`
+                                        } else if (dayTime.start || dayTime.end) {
+                                          // Neues Format (Start- und Endzeit)
+                                          timeDisplay = dayTime.start 
+                                            ? (dayTime.end ? `${dayTime.start} - ${dayTime.end} Uhr` : `${dayTime.start} Uhr`)
+                                            : (dayTime.end ? `bis ${dayTime.end} Uhr` : '')
+                                        }
+                                        if (!timeDisplay) return null
                                         return (
                                           <div key={day} style={{ fontSize: 'clamp(0.85rem, 2vw, 0.95rem)' }}>
-                                            {dayLabel}: {dayTime} Uhr
+                                            {dayLabel}: {timeDisplay}
                                           </div>
                                         )
                                       })}
@@ -5789,7 +5800,7 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
                       fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
                       fontWeight: '600'
                     }}>
-                      🕐 Startzeiten für jeden Tag (optional)
+                      🕐 Start- und Endzeiten für jeden Tag (optional)
                     </label>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                       {getEventDays(eventDate, eventEndDate).map((day) => {
