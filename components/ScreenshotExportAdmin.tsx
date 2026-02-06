@@ -264,6 +264,11 @@ function ScreenshotExportAdmin() {
     setEvents(updatedEvents)
     saveEvents(updatedEvents)
     
+    // Automatisch Vorschläge für Öffentlichkeitsarbeit generieren
+    if (!editingEvent) {
+      generateAutomaticSuggestions(eventData)
+    }
+    
     // Zurücksetzen
     setShowEventModal(false)
     setEditingEvent(null)
@@ -310,21 +315,33 @@ function ScreenshotExportAdmin() {
     return days
   }
 
-  // Presseaussendung generieren
-  const generatePresseaussendung = () => {
-    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
-    if (!selectedEvent && events.length === 0) {
-      alert('Bitte zuerst ein Event erstellen')
-      return
+  // Automatische Vorschläge für neues Event generieren
+  const generateAutomaticSuggestions = (event: any) => {
+    // Speichere Vorschläge in localStorage
+    const suggestions = {
+      eventId: event.id,
+      eventTitle: event.title,
+      generatedAt: new Date().toISOString(),
+      presseaussendung: generatePresseaussendungContent(event),
+      socialMedia: generateSocialMediaContent(event),
+      flyer: generateFlyerContent(event),
+      newsletter: generateNewsletterContent(event),
+      plakat: generatePlakatContent(event)
     }
-    const event = selectedEvent || events[0]
     
-    const presseText = `
-PRESSEAUSSENDUNG
+    const existingSuggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+    existingSuggestions.push(suggestions)
+    localStorage.setItem('k2-pr-suggestions', JSON.stringify(existingSuggestions))
+  }
 
+  // Content-Generatoren im App-Design-Stil
+  const generatePresseaussendungContent = (event: any) => {
+    return {
+      title: `PRESSEAUSSENDUNG: ${event.title}`,
+      content: `
 ${event.title.toUpperCase()}
 
-${galleryData.name}
+${galleryData.name || 'K2 Galerie'}
 ${galleryData.address || ''}
 ${galleryData.phone ? `Tel: ${galleryData.phone}` : ''}
 ${galleryData.email ? `E-Mail: ${galleryData.email}` : ''}
@@ -342,7 +359,7 @@ ${new Date(event.date).toLocaleDateString('de-DE', {
 
 ${event.location || galleryData.address || ''}
 
-${event.description || ''}
+${event.description || 'Wir laden Sie herzlich zu unserer Veranstaltung ein.'}
 
 KÜNSTLER:
 ${martinaData.name}: ${martinaData.bio}
@@ -351,28 +368,21 @@ ${georgData.name}: ${georgData.bio}
 Für weitere Informationen kontaktieren Sie bitte:
 ${galleryData.email || ''}
 ${galleryData.phone || ''}
-    `.trim()
-
-    const blob = new Blob([presseText], { type: 'text/plain;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `Presseaussendung_${event.title.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.txt`
-    a.click()
-    URL.revokeObjectURL(url)
-    alert('✅ Presseaussendung generiert!')
+      `.trim()
+    }
   }
 
-  // Social Media Posts generieren
-  const generateSocialMediaPosts = () => {
-    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
-    if (!selectedEvent && events.length === 0) {
-      alert('Bitte zuerst ein Event erstellen')
-      return
+  const generateSocialMediaContent = (event: any) => {
+    const eventTypeLabels: Record<string, string> = {
+      galerieeröffnung: '#Galerieeröffnung #Kunst',
+      vernissage: '#Vernissage #Kunstausstellung',
+      finissage: '#Finissage #Kunst',
+      öffentlichkeitsarbeit: '#Kunst #Galerie',
+      sonstiges: '#Kunst #Event'
     }
-    const event = selectedEvent || events[0]
     
-    const instagramPost = `
+    return {
+      instagram: `
 🎨 ${event.title}
 
 📅 ${new Date(event.date).toLocaleDateString('de-DE', {
@@ -383,12 +393,11 @@ ${galleryData.phone || ''}
 
 📍 ${event.location || galleryData.address || ''}
 
-${event.description || ''}
+${event.description || 'Wir freuen uns auf Ihren Besuch!'}
 
-#K2Galerie #Kunst #Keramik #${event.type === 'galerieeröffnung' ? 'Galerieeröffnung' : event.type === 'vernissage' ? 'Vernissage' : event.type === 'finissage' ? 'Finissage' : 'Kunstausstellung'}
-    `.trim()
-
-    const facebookPost = `
+${eventTypeLabels[event.type] || '#Kunst #Galerie'} #K2Galerie #KunstUndKeramik
+      `.trim(),
+      facebook: `
 ${event.title}
 
 Wir laden Sie herzlich ein zu unserer ${event.type === 'galerieeröffnung' ? 'Galerieeröffnung' : event.type === 'vernissage' ? 'Vernissage' : event.type === 'finissage' ? 'Finissage' : 'Veranstaltung'}!
@@ -402,12 +411,185 @@ Wir laden Sie herzlich ein zu unserer ${event.type === 'galerieeröffnung' ? 'Ga
 
 📍 Ort: ${event.location || galleryData.address || ''}
 
-${event.description || ''}
-
-Besuchen Sie uns auch online: ${galleryData.website || window.location.origin}
+${event.description || 'Besuchen Sie uns auch online!'}
 
 Wir freuen uns auf Ihren Besuch!
-    `.trim()
+      `.trim()
+    }
+  }
+
+  const generateFlyerContent = (event: any) => {
+    return {
+      headline: event.title,
+      date: new Date(event.date).toLocaleDateString('de-DE', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      }),
+      time: event.startTime ? `${event.startTime}${event.endTime ? ` - ${event.endTime}` : ''} Uhr` : '',
+      location: event.location || galleryData.address || '',
+      description: event.description || '',
+      qrCode: galleryData.website || window.location.origin
+    }
+  }
+
+  const generateNewsletterContent = (event: any) => {
+    return {
+      subject: `Einladung: ${event.title}`,
+      greeting: 'Liebe Kunstfreunde,',
+      body: `
+wir laden Sie herzlich ein zu unserer ${event.type === 'galerieeröffnung' ? 'Galerieeröffnung' : event.type === 'vernissage' ? 'Vernissage' : event.type === 'finissage' ? 'Finissage' : 'Veranstaltung'}!
+
+📅 ${new Date(event.date).toLocaleDateString('de-DE', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric'
+})}${event.startTime ? `\n🕐 ${event.startTime}${event.endTime ? ` - ${event.endTime}` : ''} Uhr` : ''}
+
+📍 ${event.location || galleryData.address || ''}
+
+${event.description || 'Wir freuen uns auf Ihren Besuch!'}
+      `.trim()
+    }
+  }
+
+  const generatePlakatContent = (event: any) => {
+    return {
+      title: event.title,
+      date: new Date(event.date).toLocaleDateString('de-DE', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      }),
+      time: event.startTime ? `${event.startTime}${event.endTime ? ` - ${event.endTime}` : ''} Uhr` : '',
+      location: event.location || galleryData.address || '',
+      qrCode: galleryData.website || window.location.origin
+    }
+  }
+
+  // Presseaussendung generieren (mit App-Design)
+  const generatePresseaussendung = () => {
+    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
+    if (!selectedEvent && events.length === 0) {
+      alert('Bitte zuerst ein Event erstellen')
+      return
+    }
+    const event = selectedEvent || events[0]
+    
+    // Prüfe ob Vorschläge vorhanden sind
+    const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+    const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+    
+    const content = eventSuggestion?.presseaussendung?.content || generatePresseaussendungContent(event).content
+    
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Presseaussendung - ${event.title}</title>
+  <style>
+    @media print {
+      body { margin: 0; }
+      .no-print { display: none; }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
+      color: #f4f7ff;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: linear-gradient(145deg, rgba(18, 22, 35, 0.95), rgba(12, 16, 28, 0.92));
+      border-radius: 24px;
+      padding: 3rem;
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(95, 251, 241, 0.12);
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: #5ffbf1;
+      margin-bottom: 1rem;
+      letter-spacing: 0.05em;
+    }
+    .header {
+      border-bottom: 2px solid rgba(95, 251, 241, 0.2);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .content {
+      line-height: 1.8;
+      font-size: 1.1rem;
+      white-space: pre-wrap;
+      color: #b8c5e0;
+    }
+    .highlight {
+      color: #5ffbf1;
+      font-weight: 600;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 1rem 0;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="text-align: center; margin-bottom: 2rem;">
+    <button onclick="window.print()">🖨️ Als PDF speichern</button>
+    <button onclick="navigator.clipboard.writeText(document.querySelector('.content').textContent)">📋 Text kopieren</button>
+  </div>
+  
+  <div class="container">
+    <div class="header">
+      <h1>PRESSEAUSSENDUNG</h1>
+    </div>
+    <div class="content">${content.replace(/\n/g, '<br>')}</div>
+  </div>
+</body>
+</html>
+    `
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank')
+    alert('✅ Presseaussendung generiert!')
+  }
+
+  // Social Media Posts generieren (mit App-Design)
+  const generateSocialMediaPosts = () => {
+    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
+    if (!selectedEvent && events.length === 0) {
+      alert('Bitte zuerst ein Event erstellen')
+      return
+    }
+    const event = selectedEvent || events[0]
+    
+    // Prüfe ob Vorschläge vorhanden sind
+    const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+    const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+    
+    const socialContent = eventSuggestion?.socialMedia || generateSocialMediaContent(event)
+    const instagramPost = socialContent.instagram
+    const facebookPost = socialContent.facebook
 
     const html = `
 <!DOCTYPE html>
@@ -416,26 +598,86 @@ Wir freuen uns auf Ihren Besuch!
   <meta charset="UTF-8">
   <title>Social Media Posts - ${event.title}</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 2rem; max-width: 800px; margin: 0 auto; }
-    .post { background: #f5f5f5; padding: 1.5rem; margin-bottom: 2rem; border-radius: 8px; }
-    .platform { font-weight: bold; color: #667eea; margin-bottom: 0.5rem; }
-    pre { white-space: pre-wrap; font-family: inherit; }
-    button { background: #667eea; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; margin-top: 1rem; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
+      color: #f4f7ff;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 2rem;
+      color: #5ffbf1;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .post {
+      background: linear-gradient(145deg, rgba(18, 22, 35, 0.95), rgba(12, 16, 28, 0.92));
+      border: 1px solid rgba(95, 251, 241, 0.12);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+    }
+    .platform {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #5ffbf1;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .post-content {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      white-space: pre-wrap;
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: #b8c5e0;
+      font-family: inherit;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 1rem;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
   </style>
 </head>
 <body>
-  <h1>Social Media Posts für: ${event.title}</h1>
-  
-  <div class="post">
-    <div class="platform">📱 Instagram Post</div>
-    <pre>${instagramPost}</pre>
-    <button onclick="navigator.clipboard.writeText(\`${instagramPost.replace(/`/g, '\\`')}\`)">Kopieren</button>
-  </div>
-  
-  <div class="post">
-    <div class="platform">📘 Facebook Post</div>
-    <pre>${facebookPost}</pre>
-    <button onclick="navigator.clipboard.writeText(\`${facebookPost.replace(/`/g, '\\`')}\`)">Kopieren</button>
+  <div class="container">
+    <h1>Social Media Posts</h1>
+    
+    <div class="post">
+      <div class="platform">📱 Instagram</div>
+      <div class="post-content">${instagramPost.replace(/\n/g, '<br>')}</div>
+      <button onclick="navigator.clipboard.writeText(\`${instagramPost.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">📋 Kopieren</button>
+    </div>
+    
+    <div class="post">
+      <div class="platform">📘 Facebook</div>
+      <div class="post-content">${facebookPost.replace(/\n/g, '<br>')}</div>
+      <button onclick="navigator.clipboard.writeText(\`${facebookPost.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">📋 Kopieren</button>
+    </div>
   </div>
 </body>
 </html>
@@ -447,7 +689,7 @@ Wir freuen uns auf Ihren Besuch!
     alert('✅ Social Media Posts generiert!')
   }
 
-  // Event-Flyer generieren
+  // Event-Flyer generieren (mit App-Design)
   const generateEventFlyer = () => {
     const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
     if (!selectedEvent && events.length === 0) {
@@ -456,60 +698,136 @@ Wir freuen uns auf Ihren Besuch!
     }
     const event = selectedEvent || events[0]
     
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(galleryData.website || window.location.origin)}`
+    // Prüfe ob Vorschläge vorhanden sind
+    const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+    const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+    
+    const flyerContent = eventSuggestion?.flyer || generateFlyerContent(event)
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(flyerContent.qrCode)}`
     
     const html = `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Flyer - ${event.title}</title>
+  <title>Flyer - ${flyerContent.headline}</title>
   <style>
     @media print {
-      body { margin: 0; }
+      body { margin: 0; background: white; }
       .no-print { display: none; }
+      .flyer { background: white !important; color: #1a1f3a !important; }
     }
-    body { font-family: 'Arial', sans-serif; padding: 2rem; background: #f5f5f5; }
-    .flyer { background: white; width: 210mm; min-height: 297mm; margin: 0 auto; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    h1 { font-size: 2.5rem; margin: 0 0 1rem 0; color: #1a1f3a; }
-    .event-info { font-size: 1.2rem; margin: 1.5rem 0; line-height: 1.8; }
-    .qr-code { text-align: center; margin: 2rem 0; }
-    .qr-code img { width: 150px; height: 150px; }
-    .contact { margin-top: 2rem; font-size: 0.9rem; color: #666; }
-    button { background: #667eea; color: white; border: none; padding: 1rem 2rem; border-radius: 8px; cursor: pointer; margin: 1rem 0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
+      color: #f4f7ff;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    .flyer {
+      background: linear-gradient(145deg, rgba(18, 22, 35, 0.98), rgba(12, 16, 28, 0.98));
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      padding: 3rem;
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(95, 251, 241, 0.12);
+      border-radius: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    h1 {
+      font-size: 3rem;
+      margin: 0 0 2rem 0;
+      color: #5ffbf1;
+      letter-spacing: 0.02em;
+      background: linear-gradient(135deg, #5ffbf1 0%, #33a1ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .event-info {
+      font-size: 1.3rem;
+      margin: 2rem 0;
+      line-height: 2;
+      color: #b8c5e0;
+    }
+    .event-info strong {
+      color: #5ffbf1;
+    }
+    .description {
+      margin: 2rem 0;
+      line-height: 1.8;
+      font-size: 1.1rem;
+      color: #b8c5e0;
+    }
+    .qr-code {
+      text-align: center;
+      margin: 2rem 0;
+      padding: 1.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+    }
+    .qr-code img {
+      width: 150px;
+      height: 150px;
+      border-radius: 8px;
+    }
+    .contact {
+      margin-top: auto;
+      font-size: 1rem;
+      color: #8fa0c9;
+      border-top: 1px solid rgba(95, 251, 241, 0.2);
+      padding-top: 1.5rem;
+    }
+    .contact strong {
+      color: #5ffbf1;
+      font-size: 1.2rem;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 1rem;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
   </style>
 </head>
 <body>
   <div class="no-print" style="text-align: center; margin-bottom: 2rem;">
-    <button onclick="window.print()">🖨️ Drucken</button>
+    <button onclick="window.print()">🖨️ Drucken (A4)</button>
   </div>
   
   <div class="flyer">
-    <h1>${event.title}</h1>
-    
-    <div class="event-info">
-      <p><strong>📅 Datum:</strong> ${new Date(event.date).toLocaleDateString('de-DE', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      })}${event.endDate && event.endDate !== event.date ? ` - ${new Date(event.endDate).toLocaleDateString('de-DE', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      })}` : ''}</p>
+    <div>
+      <h1>${flyerContent.headline}</h1>
       
-      ${event.startTime ? `<p><strong>🕐 Uhrzeit:</strong> ${event.startTime}${event.endTime ? ` - ${event.endTime}` : ''} Uhr</p>` : ''}
+      <div class="event-info">
+        <p><strong>📅 Datum:</strong> ${flyerContent.date}${event.endDate && event.endDate !== event.date ? ` - ${new Date(event.endDate).toLocaleDateString('de-DE', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        })}` : ''}</p>
+        
+        ${flyerContent.time ? `<p><strong>🕐 Uhrzeit:</strong> ${flyerContent.time}</p>` : ''}
+        
+        ${flyerContent.location ? `<p><strong>📍 Ort:</strong> ${flyerContent.location}</p>` : ''}
+      </div>
       
-      ${event.location ? `<p><strong>📍 Ort:</strong> ${event.location}</p>` : ''}
+      ${flyerContent.description ? `<div class="description">${flyerContent.description.replace(/\n/g, '<br>')}</div>` : ''}
     </div>
     
-    ${event.description ? `<div style="margin: 2rem 0; line-height: 1.8;">${event.description.replace(/\n/g, '<br>')}</div>` : ''}
-    
     <div class="qr-code">
-      <p>Besuchen Sie uns online:</p>
+      <p style="color: #5ffbf1; font-weight: 600; margin-bottom: 1rem;">Besuchen Sie uns online:</p>
       <img src="${qrCodeUrl}" alt="QR Code" />
-      <p style="font-size: 0.9rem; margin-top: 0.5rem;">${galleryData.website || window.location.origin}</p>
+      <p style="font-size: 0.9rem; margin-top: 0.5rem; color: #8fa0c9;">${flyerContent.qrCode}</p>
     </div>
     
     <div class="contact">
@@ -529,7 +847,7 @@ Wir freuen uns auf Ihren Besuch!
     alert('✅ Flyer generiert! Bitte im Browser drucken.')
   }
 
-  // E-Mail-Newsletter generieren
+  // E-Mail-Newsletter generieren (mit App-Design)
   const generateEmailNewsletter = () => {
     const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
     if (!selectedEvent && events.length === 0) {
@@ -538,6 +856,12 @@ Wir freuen uns auf Ihren Besuch!
     }
     const event = selectedEvent || events[0]
     
+    // Prüfe ob Vorschläge vorhanden sind
+    const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+    const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+    
+    const newsletterContent = eventSuggestion?.newsletter || generateNewsletterContent(event)
+    
     const html = `
 <!DOCTYPE html>
 <html>
@@ -545,47 +869,121 @@ Wir freuen uns auf Ihren Besuch!
   <meta charset="UTF-8">
   <title>Newsletter - ${event.title}</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 2rem; }
-    .email { background: white; padding: 2rem; border: 1px solid #ddd; }
-    h1 { color: #1a1f3a; }
-    .button { display: inline-block; background: #667eea; color: white; padding: 1rem 2rem; text-decoration: none; border-radius: 8px; margin: 1rem 0; }
-    .footer { margin-top: 2rem; font-size: 0.9rem; color: #666; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
+      color: #f4f7ff;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .email {
+      background: linear-gradient(145deg, rgba(18, 22, 35, 0.95), rgba(12, 16, 28, 0.92));
+      border: 1px solid rgba(95, 251, 241, 0.12);
+      border-radius: 24px;
+      padding: 3rem;
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: #5ffbf1;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.02em;
+    }
+    .greeting {
+      font-size: 1.2rem;
+      color: #b8c5e0;
+      margin-bottom: 1.5rem;
+    }
+    .event-box {
+      background: rgba(95, 251, 241, 0.1);
+      border: 1px solid rgba(95, 251, 241, 0.2);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .event-box p {
+      margin: 0.75rem 0;
+      color: #b8c5e0;
+      font-size: 1.1rem;
+    }
+    .event-box strong {
+      color: #5ffbf1;
+    }
+    .button {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1rem 2rem;
+      text-decoration: none;
+      border-radius: 12px;
+      margin: 1.5rem 0;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+    }
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
+    .footer {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(95, 251, 241, 0.2);
+      font-size: 0.95rem;
+      color: #8fa0c9;
+    }
+    .footer strong {
+      color: #5ffbf1;
+      font-size: 1.1rem;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 1rem 0.5rem;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
   </style>
 </head>
 <body>
-  <div class="email">
-    <h1>${event.title}</h1>
-    
-    <p>Liebe Kunstfreunde,</p>
-    
-    <p>wir laden Sie herzlich ein zu unserer ${event.type === 'galerieeröffnung' ? 'Galerieeröffnung' : event.type === 'vernissage' ? 'Vernissage' : event.type === 'finissage' ? 'Finissage' : 'Veranstaltung'}!</p>
-    
-    <div style="background: #f5f5f5; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0;">
-      <p><strong>📅 Datum:</strong> ${new Date(event.date).toLocaleDateString('de-DE', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      })}${event.endDate && event.endDate !== event.date ? ` - ${new Date(event.endDate).toLocaleDateString('de-DE', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      })}` : ''}</p>
+  <div style="text-align: center; margin-bottom: 2rem;">
+    <button onclick="navigator.clipboard.writeText(document.querySelector('.email').outerHTML)">📋 HTML kopieren</button>
+  </div>
+  
+  <div class="container">
+    <div class="email">
+      <h1>${event.title}</h1>
       
-      ${event.startTime ? `<p><strong>🕐 Uhrzeit:</strong> ${event.startTime}${event.endTime ? ` - ${event.endTime}` : ''} Uhr</p>` : ''}
+      <p class="greeting">${newsletterContent.greeting}</p>
       
-      ${event.location ? `<p><strong>📍 Ort:</strong> ${event.location}</p>` : ''}
-    </div>
-    
-    ${event.description ? `<p>${event.description.replace(/\n/g, '<br>')}</p>` : ''}
-    
-    <a href="${galleryData.website || window.location.origin}" class="button">Mehr erfahren →</a>
-    
-    <div class="footer">
-      <p><strong>${galleryData.name || 'K2 Galerie'}</strong></p>
-      ${galleryData.address ? `<p>${galleryData.address}</p>` : ''}
-      ${galleryData.phone ? `<p>Tel: ${galleryData.phone}</p>` : ''}
-      ${galleryData.email ? `<p>E-Mail: ${galleryData.email}</p>` : ''}
+      <p style="color: #b8c5e0; font-size: 1.1rem; line-height: 1.8; margin-bottom: 1.5rem;">
+        wir laden Sie herzlich ein zu unserer ${event.type === 'galerieeröffnung' ? 'Galerieeröffnung' : event.type === 'vernissage' ? 'Vernissage' : event.type === 'finissage' ? 'Finissage' : 'Veranstaltung'}!
+      </p>
+      
+      <div class="event-box">
+        ${newsletterContent.body.split('\n').map(line => `<p>${line}</p>`).join('')}
+      </div>
+      
+      ${event.description ? `<p style="color: #b8c5e0; font-size: 1.1rem; line-height: 1.8; margin: 1.5rem 0;">${event.description.replace(/\n/g, '<br>')}</p>` : ''}
+      
+      <a href="${galleryData.website || window.location.origin}" class="button">Mehr erfahren →</a>
+      
+      <div class="footer">
+        <p><strong>${galleryData.name || 'K2 Galerie'}</strong></p>
+        ${galleryData.address ? `<p>${galleryData.address}</p>` : ''}
+        ${galleryData.phone ? `<p>Tel: ${galleryData.phone}</p>` : ''}
+        ${galleryData.email ? `<p>E-Mail: ${galleryData.email}</p>` : ''}
+      </div>
     </div>
   </div>
 </body>
@@ -598,7 +996,7 @@ Wir freuen uns auf Ihren Besuch!
     alert('✅ Newsletter generiert! HTML-Code kann kopiert werden.')
   }
 
-  // Plakat generieren
+  // Plakat generieren (mit App-Design)
   const generatePlakat = () => {
     const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
     if (!selectedEvent && events.length === 0) {
@@ -607,28 +1005,117 @@ Wir freuen uns auf Ihren Besuch!
     }
     const event = selectedEvent || events[0]
     
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(galleryData.website || window.location.origin)}`
+    // Prüfe ob Vorschläge vorhanden sind
+    const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+    const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+    
+    const plakatContent = eventSuggestion?.plakat || generatePlakatContent(event)
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(plakatContent.qrCode)}`
     
     const html = `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Plakat - ${event.title}</title>
+  <title>Plakat - ${plakatContent.title}</title>
   <style>
     @media print {
-      body { margin: 0; }
+      body { margin: 0; background: white !important; }
       .no-print { display: none; }
-      .plakat { width: 297mm; height: 420mm; }
+      .plakat { width: 297mm; height: 420mm; background: white !important; color: #1a1f3a !important; }
+      .plakat h1 { color: #1a1f3a !important; }
+      .plakat .event-info { color: #333 !important; }
+      .plakat .contact { color: #666 !important; }
     }
-    body { font-family: 'Arial', sans-serif; padding: 2rem; background: #f5f5f5; }
-    .plakat { background: white; width: 297mm; min-height: 420mm; margin: 0 auto; padding: 3rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: space-between; }
-    h1 { font-size: 4rem; margin: 0; color: #1a1f3a; text-align: center; }
-    .event-info { font-size: 1.8rem; text-align: center; margin: 2rem 0; line-height: 2; }
-    .qr-code { text-align: center; margin: 2rem 0; }
-    .qr-code img { width: 200px; height: 200px; }
-    .contact { text-align: center; font-size: 1.2rem; color: #666; margin-top: auto; }
-    button { background: #667eea; color: white; border: none; padding: 1rem 2rem; border-radius: 8px; cursor: pointer; margin: 1rem 0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
+      color: #f4f7ff;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    .plakat {
+      background: linear-gradient(145deg, rgba(18, 22, 35, 0.98), rgba(12, 16, 28, 0.98));
+      width: 297mm;
+      min-height: 420mm;
+      margin: 0 auto;
+      padding: 4rem;
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(95, 251, 241, 0.12);
+      border-radius: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+    }
+    h1 {
+      font-size: 5rem;
+      margin: 0 0 3rem 0;
+      color: #5ffbf1;
+      text-align: center;
+      letter-spacing: 0.02em;
+      background: linear-gradient(135deg, #5ffbf1 0%, #33a1ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 700;
+    }
+    .event-info {
+      font-size: 2rem;
+      text-align: center;
+      margin: 2rem 0;
+      line-height: 2.5;
+      color: #b8c5e0;
+    }
+    .event-info strong {
+      color: #5ffbf1;
+      font-size: 2.2rem;
+    }
+    .qr-code {
+      text-align: center;
+      margin: 3rem 0;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+    }
+    .qr-code img {
+      width: 250px;
+      height: 250px;
+      border-radius: 12px;
+    }
+    .qr-code p {
+      font-size: 1.2rem;
+      margin-top: 1rem;
+      color: #8fa0c9;
+    }
+    .contact {
+      text-align: center;
+      font-size: 1.5rem;
+      color: #8fa0c9;
+      margin-top: auto;
+      width: 100%;
+      padding-top: 2rem;
+      border-top: 2px solid rgba(95, 251, 241, 0.2);
+    }
+    .contact strong {
+      color: #5ffbf1;
+      font-size: 1.8rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 1rem;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
   </style>
 </head>
 <body>
@@ -637,28 +1124,23 @@ Wir freuen uns auf Ihren Besuch!
   </div>
   
   <div class="plakat">
-    <h1>${event.title}</h1>
+    <h1>${plakatContent.title}</h1>
     
     <div class="event-info">
-      <p><strong>${new Date(event.date).toLocaleDateString('de-DE', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      })}${event.endDate && event.endDate !== event.date ? ` - ${new Date(event.endDate).toLocaleDateString('de-DE', {
+      <p><strong>${plakatContent.date}${event.endDate && event.endDate !== event.date ? ` - ${new Date(event.endDate).toLocaleDateString('de-DE', {
         day: 'numeric',
         month: 'long',
         year: 'numeric'
       })}` : ''}</strong></p>
       
-      ${event.startTime ? `<p>${event.startTime}${event.endTime ? ` - ${event.endTime}` : ''} Uhr</p>` : ''}
+      ${plakatContent.time ? `<p>${plakatContent.time}</p>` : ''}
       
-      ${event.location ? `<p>${event.location}</p>` : ''}
+      ${plakatContent.location ? `<p>${plakatContent.location}</p>` : ''}
     </div>
     
     <div class="qr-code">
       <img src="${qrCodeUrl}" alt="QR Code" />
-      <p>${galleryData.website || window.location.origin}</p>
+      <p>${plakatContent.qrCode}</p>
     </div>
     
     <div class="contact">
@@ -4875,6 +5357,99 @@ Wir freuen uns auf Ihren Besuch!
             }}>
               📢 Öffentlichkeitsarbeit
             </h2>
+
+            {/* Automatische Vorschläge für Events */}
+            {(() => {
+              const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+              const latestSuggestions = suggestions.slice(-3).reverse() // Letzte 3 Events
+              
+              if (latestSuggestions.length > 0) {
+                return (
+                  <div style={{
+                    marginBottom: 'clamp(2rem, 5vw, 3rem)',
+                    padding: 'clamp(1.5rem, 4vw, 2rem)',
+                    background: 'linear-gradient(135deg, rgba(95, 251, 241, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%)',
+                    border: '1px solid rgba(95, 251, 241, 0.2)',
+                    borderRadius: '16px'
+                  }}>
+                    <h3 style={{
+                      fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
+                      fontWeight: '600',
+                      color: '#5ffbf1',
+                      margin: '0 0 1rem 0'
+                    }}>
+                      ✨ Automatische Vorschläge für neue Events
+                    </h3>
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '1rem'
+                    }}>
+                      {latestSuggestions.map((suggestion: any, idx: number) => (
+                        <div
+                          key={idx}
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            borderRadius: '12px',
+                            padding: '1rem',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+                            e.currentTarget.style.transform = 'translateX(4px)'
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                            e.currentTarget.style.transform = 'translateX(0)'
+                          }}
+                          onClick={() => {
+                            // Event auswählen und Vorschläge anzeigen
+                            const event = events.find(e => e.id === suggestion.eventId)
+                            if (event) {
+                              handleEditEvent(event)
+                              setActiveTab('öffentlichkeitsarbeit')
+                            }
+                          }}
+                        >
+                          <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: '0.5rem'
+                          }}>
+                            <strong style={{ color: '#ffffff', fontSize: 'clamp(1rem, 2.5vw, 1.1rem)' }}>
+                              {suggestion.eventTitle}
+                            </strong>
+                            <span style={{
+                              fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
+                              color: '#8fa0c9'
+                            }}>
+                              {new Date(suggestion.generatedAt).toLocaleDateString('de-DE')}
+                            </span>
+                          </div>
+                          <div style={{
+                            display: 'flex',
+                            gap: '0.5rem',
+                            flexWrap: 'wrap',
+                            fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
+                            color: '#b8c5e0'
+                          }}>
+                            <span>📰 Presse</span>
+                            <span>📱 Social</span>
+                            <span>📄 Flyer</span>
+                            <span>📧 Newsletter</span>
+                            <span>🖼️ Plakat</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              }
+              return null
+            })()}
 
             <div style={{
               display: 'grid',
