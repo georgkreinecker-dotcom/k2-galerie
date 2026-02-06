@@ -25,7 +25,7 @@ function App() {
       <Route path="/" element={<GaleriePage />} />
       
       {/* Plattform-Routen */}
-      <Route path={PLATFORM_ROUTES.home} element={<DevViewPage defaultPage="mission" />} />
+      <Route path="/platform" element={<DevViewPage defaultPage="mission" />} />
       <Route path={PLATFORM_ROUTES.key} element={<KeyPage />} />
       <Route path={PLATFORM_ROUTES.kosten} element={<KostenPage />} />
       <Route path={PLATFORM_ROUTES.dialog} element={<DialogStandalonePage />} />
