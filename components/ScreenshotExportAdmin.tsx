@@ -6422,6 +6422,53 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
                         )
                       })}
                     </div>
+                    <button
+                      onClick={() => {
+                        if (editingEvent) {
+                          // Aktualisiere das Event direkt mit den neuen täglichen Zeiten
+                          const updatedEvents = events.map(e => 
+                            e.id === editingEvent.id 
+                              ? { ...e, dailyTimes: eventDailyTimes }
+                              : e
+                          )
+                          setEvents(updatedEvents)
+                          saveEvents(updatedEvents)
+                          alert('✅ Tägliche Zeiten gespeichert!')
+                        }
+                      }}
+                      disabled={!editingEvent}
+                      style={{
+                        marginTop: '1rem',
+                        padding: 'clamp(0.75rem, 2vw, 1rem)',
+                        background: editingEvent 
+                          ? 'linear-gradient(135deg, rgba(95, 251, 241, 0.2) 0%, rgba(102, 126, 234, 0.2) 100%)'
+                          : 'rgba(255, 255, 255, 0.05)',
+                        border: editingEvent
+                          ? '1px solid rgba(95, 251, 241, 0.3)'
+                          : '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '12px',
+                        color: editingEvent ? '#5ffbf1' : '#8fa0c9',
+                        fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                        fontWeight: '600',
+                        cursor: editingEvent ? 'pointer' : 'not-allowed',
+                        transition: 'all 0.3s ease',
+                        width: '100%'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (editingEvent) {
+                          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(95, 251, 241, 0.3) 0%, rgba(102, 126, 234, 0.3) 100%)'
+                          e.currentTarget.style.transform = 'translateY(-2px)'
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (editingEvent) {
+                          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(95, 251, 241, 0.2) 0%, rgba(102, 126, 234, 0.2) 100%)'
+                          e.currentTarget.style.transform = 'translateY(0)'
+                        }
+                      }}
+                    >
+                      💾 Tägliche Zeiten speichern
+                    </button>
                   </div>
                 )}
 
