@@ -21,6 +21,19 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
+
+  // Auto-Admin für localhost
+  useEffect(() => {
+    const isLocalhost = window.location.hostname === 'localhost' || 
+                       window.location.hostname === '127.0.0.1' ||
+                       window.location.hostname === '192.168.0.31' ||
+                       window.location.hostname === '192.168.0.27'
+    
+    if (isLocalhost && window.location.pathname === '/') {
+      // Automatisch zu Admin navigieren auf localhost
+      navigate('/admin')
+    }
+  }, [navigate])
   
   // Stammdaten laden
   const [martinaData, setMartinaData] = React.useState({
