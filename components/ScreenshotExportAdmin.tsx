@@ -80,7 +80,9 @@ function ScreenshotExportAdmin() {
   const [eventTitle, setEventTitle] = useState('')
   const [eventType, setEventType] = useState<'galerieeröffnung' | 'vernissage' | 'finissage' | 'sonstiges'>('galerieeröffnung')
   const [eventDate, setEventDate] = useState('')
-  const [eventTime, setEventTime] = useState('')
+  const [eventEndDate, setEventEndDate] = useState('')
+  const [eventStartTime, setEventStartTime] = useState('')
+  const [eventEndTime, setEventEndTime] = useState('')
   const [eventDescription, setEventDescription] = useState('')
   const [eventLocation, setEventLocation] = useState('')
   const [showDocumentModal, setShowDocumentModal] = useState(false)
@@ -115,6 +117,7 @@ function ScreenshotExportAdmin() {
     email: '',
     website: '',
     openingHours: '',
+    bankverbindung: '',
     adminPassword: 'k2Galerie2026'
   })
 
@@ -236,7 +239,9 @@ function ScreenshotExportAdmin() {
       title: eventTitle,
       type: eventType,
       date: eventDate,
-      time: eventTime || '',
+      endDate: eventEndDate || eventDate, // Falls kein Enddatum, dann Startdatum verwenden
+      startTime: eventStartTime || '',
+      endTime: eventEndTime || '',
       description: eventDescription,
       location: eventLocation,
       documents: editingEvent?.documents || [],
@@ -251,7 +256,7 @@ function ScreenshotExportAdmin() {
       updatedEvents = [...events, eventData]
     }
 
-    // Nach Datum sortieren
+    // Nach Startdatum sortieren
     updatedEvents.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
     setEvents(updatedEvents)
@@ -263,7 +268,9 @@ function ScreenshotExportAdmin() {
     setEventTitle('')
     setEventType('galerieeröffnung')
     setEventDate('')
-    setEventTime('')
+    setEventEndDate('')
+    setEventStartTime('')
+    setEventEndTime('')
     setEventDescription('')
     setEventLocation('')
     
@@ -276,7 +283,9 @@ function ScreenshotExportAdmin() {
     setEventTitle(event.title)
     setEventType(event.type)
     setEventDate(event.date)
-    setEventTime(event.time || '')
+    setEventEndDate(event.endDate || event.date)
+    setEventStartTime(event.startTime || event.time || '')
+    setEventEndTime(event.endTime || '')
     setEventDescription(event.description || '')
     setEventLocation(event.location || '')
     setShowEventModal(true)
@@ -387,7 +396,9 @@ function ScreenshotExportAdmin() {
     setEventTitle('')
     setEventType('galerieeröffnung')
     setEventDate('')
-    setEventTime('')
+    setEventEndDate('')
+    setEventStartTime('')
+    setEventEndTime('')
     setEventDescription('')
     setEventLocation('')
     setShowEventModal(true)
@@ -2905,6 +2916,22 @@ function ScreenshotExportAdmin() {
                       />
                     </div>
                     <div className="field">
+                      <label style={{ fontSize: '0.85rem' }}>Bankverbindung</label>
+                      <textarea
+                        value={galleryData.bankverbindung || ''}
+                        onChange={(e) => setGalleryData({ ...galleryData, bankverbindung: e.target.value })}
+                        placeholder="IBAN: AT...&#10;BIC: ...&#10;Bank: ..."
+                        rows={4}
+                        style={{ 
+                          padding: '0.6rem', 
+                          fontSize: '0.9rem',
+                          fontFamily: 'inherit',
+                          resize: 'vertical',
+                          minHeight: '80px'
+                        }}
+                      />
+                    </div>
+                    <div className="field">
                       <label style={{ fontSize: '0.85rem' }}>Admin-Passwort</label>
                       <input
                         type="password"
@@ -3324,16 +3351,50 @@ function ScreenshotExportAdmin() {
                         marginBottom: '0.75rem'
                       }}>
                         <div style={{ marginBottom: '0.25rem' }}>
-                          <strong>📅 Datum:</strong> {new Date(event.date).toLocaleDateString('de-DE', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
+                          <strong>📅 Datum:</strong> {
+                            event.endDate && event.endDate !== event.date
+                              ? `${new Date(event.date).toLocaleDateString('de-DE', {
+                                  day: 'numeric',
+                                  month: 'long',
+                                  year: 'numeric'
+                                })} - ${new Date(event.endDate).toLocaleDateString('de-DE', {
+                                  day: 'numeric',
+                                  month: 'long',
+                                  year: 'numeric'
+                                })}`
+                              : new Date(event.date).toLocaleDateString('de-DE', {
+                                  weekday: 'long',
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric'
+                                })
+                          }
                         </div>
-                        {event.time && (
+                        {(event.startTime || event.endTime || event.time) && (
                           <div style={{ marginBottom: '0.25rem' }}>
-                            <strong>🕐 Uhrzeit:</strong> {event.time}
+                            <strong>🕐 Uhrzeit:</strong> {
+                              (() => {
+                                const startTime = event.startTime || event.time || ''
+                                const endTime = event.endTime || ''
+                                const isMultiDay = event.endDate && event.endDate !== event.date
+                                
+                                if (isMultiDay) {
+                                  // Mehrere Tage: Zeige Startzeit für ersten Tag und Endzeit für letzten Tag
+                                  return startTime && endTime 
+                                    ? `${startTime} Uhr (${new Date(event.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })}) - ${endTime} Uhr (${new Date(event.endDate).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })})`
+                                    : startTime 
+                                    ? `${startTime} Uhr (${new Date(event.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })})`
+                                    : ''
+                                } else {
+                                  // Ein Tag: Zeige Start- und Endzeit
+                                  return startTime && endTime 
+                                    ? `${startTime} - ${endTime} Uhr`
+                                    : startTime 
+                                    ? `${startTime} Uhr`
+                                    : ''
+                                }
+                              })()
+                            }
                           </div>
                         )}
                         {event.location && (
@@ -3589,7 +3650,7 @@ function ScreenshotExportAdmin() {
                   </select>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
                     <label style={{
                       display: 'block',
@@ -3598,7 +3659,7 @@ function ScreenshotExportAdmin() {
                       fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
                       fontWeight: '500'
                     }}>
-                      Datum *
+                      Startdatum *
                     </label>
                     <input
                       type="date"
@@ -3623,12 +3684,13 @@ function ScreenshotExportAdmin() {
                       fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
                       fontWeight: '500'
                     }}>
-                      Uhrzeit
+                      Enddatum
                     </label>
                     <input
-                      type="time"
-                      value={eventTime}
-                      onChange={(e) => setEventTime(e.target.value)}
+                      type="date"
+                      value={eventEndDate}
+                      onChange={(e) => setEventEndDate(e.target.value)}
+                      min={eventDate}
                       style={{
                         width: '100%',
                         padding: 'clamp(0.75rem, 2vw, 1rem)',
@@ -3640,6 +3702,32 @@ function ScreenshotExportAdmin() {
                       }}
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#8fa0c9',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                    fontWeight: '500'
+                  }}>
+                    Uhrzeit
+                  </label>
+                  <input
+                    type="time"
+                    value={eventTime}
+                    onChange={(e) => setEventTime(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      color: '#ffffff',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                    }}
+                  />
                 </div>
 
                 <div>
@@ -3727,6 +3815,7 @@ function ScreenshotExportAdmin() {
                       setEventTitle('')
                       setEventType('galerieeröffnung')
                       setEventDate('')
+                      setEventEndDate('')
                       setEventTime('')
                       setEventDescription('')
                       setEventLocation('')
