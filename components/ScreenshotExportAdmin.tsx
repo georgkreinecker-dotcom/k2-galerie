@@ -622,9 +622,21 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
         }
       }
       navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(() => {
-        alert('✅ Gespeichert')
+        const btn = event.target
+        btn.textContent = '✅ Gespeichert'
+        btn.style.background = '#10b981'
+        setTimeout(() => {
+          btn.textContent = '💾 Änderungen speichern'
+          btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        }, 2000)
       }).catch(() => {
-        alert('✅ Gespeichert')
+        const btn = event.target
+        btn.textContent = '✅ Gespeichert'
+        btn.style.background = '#10b981'
+        setTimeout(() => {
+          btn.textContent = '💾 Änderungen speichern'
+          btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        }, 2000)
       })
     }
   </script>
@@ -756,9 +768,21 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
         }
       }
       navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(() => {
-        alert('✅ Gespeichert')
+        const btn = event.target
+        btn.textContent = '✅ Gespeichert'
+        btn.style.background = '#10b981'
+        setTimeout(() => {
+          btn.textContent = '💾 Änderungen speichern'
+          btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        }, 2000)
       }).catch(() => {
-        alert('✅ Gespeichert')
+        const btn = event.target
+        btn.textContent = '✅ Gespeichert'
+        btn.style.background = '#10b981'
+        setTimeout(() => {
+          btn.textContent = '💾 Änderungen speichern'
+          btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        }, 2000)
       })
     }
   </script>
@@ -882,9 +906,21 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
         }
       }
       navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(() => {
-        alert('✅ Gespeichert')
+        const btn = event.target
+        btn.textContent = '✅ Gespeichert'
+        btn.style.background = '#10b981'
+        setTimeout(() => {
+          btn.textContent = '💾 Änderungen speichern'
+          btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        }, 2000)
       }).catch(() => {
-        alert('✅ Gespeichert')
+        const btn = event.target
+        btn.textContent = '✅ Gespeichert'
+        btn.style.background = '#10b981'
+        setTimeout(() => {
+          btn.textContent = '💾 Änderungen speichern'
+          btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        }, 2000)
       })
     }
   </script>
@@ -1084,9 +1120,21 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
       
       // Kopiere die Änderungen in die Zwischenablage
       navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(() => {
-        alert('✅ Gespeichert')
+        const btn = event.target
+        btn.textContent = '✅ Gespeichert'
+        btn.style.background = '#10b981'
+        setTimeout(() => {
+          btn.textContent = '💾 Alle Änderungen speichern'
+          btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        }, 2000)
       }).catch(() => {
-        alert('✅ Gespeichert')
+        const btn = event.target
+        btn.textContent = '✅ Gespeichert'
+        btn.style.background = '#10b981'
+        setTimeout(() => {
+          btn.textContent = '💾 Alle Änderungen speichern'
+          btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        }, 2000)
       })
     }
   </script>
@@ -1097,7 +1145,6 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     window.open(url, '_blank')
-    alert('✅ Bearbeitbare PR-Vorschläge PDF generiert! Bearbeite die Felder und drucke dann als PDF.')
   }
 
   // Presseaussendung mit Content generieren (Hilfsfunktion)
