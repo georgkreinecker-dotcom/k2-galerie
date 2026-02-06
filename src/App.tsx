@@ -21,8 +21,11 @@ function App() {
   return (
     <>
     <Routes>
-      {/* Root-Route: Galerie als Homepage */}
-      <Route path="/" element={<GaleriePage />} />
+      {/* Root-Route: Arbeitsplattform (auf localhost automatisch Galerie in Desktop-Ansicht) */}
+      <Route path="/" element={<DevViewPage defaultPage="galerie" />} />
+      
+      {/* Galerie als separate Route */}
+      <Route path="/galerie-home" element={<GaleriePage />} />
       
       {/* Plattform-Routen */}
       <Route path="/platform" element={<DevViewPage defaultPage="mission" />} />

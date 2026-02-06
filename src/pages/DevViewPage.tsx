@@ -21,8 +21,17 @@ type PageSection =
 const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   const [searchParams] = useSearchParams()
   const pageFromUrl = searchParams.get('page')
-  const [viewMode, setViewMode] = useState<ViewMode>('split')
-  const [currentPage, setCurrentPage] = useState(pageFromUrl || defaultPage || 'mission')
+  
+  // Auto-Desktop für localhost
+  const isLocalhost = typeof window !== 'undefined' && (
+    window.location.hostname === 'localhost' || 
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname === '192.168.0.31' ||
+    window.location.hostname === '192.168.0.27'
+  )
+  
+  const [viewMode, setViewMode] = useState<ViewMode>(isLocalhost ? 'desktop' : 'mobile')
+  const [currentPage, setCurrentPage] = useState(pageFromUrl || (isLocalhost ? 'galerie' : defaultPage) || 'mission')
   const [mobileZoom, setMobileZoom] = useState(1)
   const [desktopZoom, setDesktopZoom] = useState(1)
   
@@ -30,8 +39,11 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   useEffect(() => {
     if (pageFromUrl) {
       setCurrentPage(pageFromUrl)
+    } else if (isLocalhost && !pageFromUrl) {
+      // Auf localhost automatisch Galerie-Seite zeigen
+      setCurrentPage('galerie')
     }
-  }, [pageFromUrl])
+  }, [pageFromUrl, isLocalhost])
 
   // Bereiche der aktuellen Seite für untere Navigationsleiste
   const getPageSections = (): PageSection[] => {
