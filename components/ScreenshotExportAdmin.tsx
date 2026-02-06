@@ -5148,6 +5148,206 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
                   />
                 </div>
 
+                {/* PR-Vorschläge als Text anzeigen */}
+                {eventPRSuggestions && (
+                  <div style={{
+                    marginTop: '2rem',
+                    padding: '1.5rem',
+                    background: 'linear-gradient(135deg, rgba(95, 251, 241, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%)',
+                    border: '1px solid rgba(95, 251, 241, 0.2)',
+                    borderRadius: '16px'
+                  }}>
+                    <h3 style={{
+                      fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                      fontWeight: '600',
+                      color: '#5ffbf1',
+                      margin: '0 0 1rem 0'
+                    }}>
+                      ✨ PR-Vorschläge
+                    </h3>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      {/* Presseaussendung */}
+                      {eventPRSuggestions.presseaussendung?.content && (
+                        <div style={{
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                          borderRadius: '12px',
+                          padding: '1rem'
+                        }}>
+                          <div style={{
+                            fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                            fontWeight: '600',
+                            color: '#5ffbf1',
+                            marginBottom: '0.75rem'
+                          }}>
+                            📰 Presseaussendung
+                          </div>
+                          <pre style={{
+                            whiteSpace: 'pre-wrap',
+                            wordWrap: 'break-word',
+                            fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                            color: '#b8c5e0',
+                            margin: 0,
+                            fontFamily: 'inherit',
+                            lineHeight: '1.6'
+                          }}>
+                            {eventPRSuggestions.presseaussendung.content}
+                          </pre>
+                        </div>
+                      )}
+
+                      {/* Social Media */}
+                      {eventPRSuggestions.socialMedia && (
+                        <div style={{
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                          borderRadius: '12px',
+                          padding: '1rem'
+                        }}>
+                          <div style={{
+                            fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                            fontWeight: '600',
+                            color: '#5ffbf1',
+                            marginBottom: '0.75rem'
+                          }}>
+                            📱 Social Media
+                          </div>
+                          {eventPRSuggestions.socialMedia.instagram && (
+                            <div style={{ marginBottom: '1rem' }}>
+                              <div style={{
+                                fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
+                                color: '#8fa0c9',
+                                marginBottom: '0.5rem'
+                              }}>
+                                Instagram:
+                              </div>
+                              <pre style={{
+                                whiteSpace: 'pre-wrap',
+                                wordWrap: 'break-word',
+                                fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                                color: '#b8c5e0',
+                                margin: 0,
+                                fontFamily: 'inherit',
+                                lineHeight: '1.6'
+                              }}>
+                                {eventPRSuggestions.socialMedia.instagram}
+                              </pre>
+                            </div>
+                          )}
+                          {eventPRSuggestions.socialMedia.facebook && (
+                            <div>
+                              <div style={{
+                                fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
+                                color: '#8fa0c9',
+                                marginBottom: '0.5rem'
+                              }}>
+                                Facebook:
+                              </div>
+                              <pre style={{
+                                whiteSpace: 'pre-wrap',
+                                wordWrap: 'break-word',
+                                fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                                color: '#b8c5e0',
+                                margin: 0,
+                                fontFamily: 'inherit',
+                                lineHeight: '1.6'
+                              }}>
+                                {eventPRSuggestions.socialMedia.facebook}
+                              </pre>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Newsletter */}
+                      {eventPRSuggestions.newsletter && (
+                        <div style={{
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                          borderRadius: '12px',
+                          padding: '1rem'
+                        }}>
+                          <div style={{
+                            fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                            fontWeight: '600',
+                            color: '#5ffbf1',
+                            marginBottom: '0.75rem'
+                          }}>
+                            📧 Newsletter
+                          </div>
+                          {eventPRSuggestions.newsletter.subject && (
+                            <div style={{
+                              fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                              color: '#b8c5e0',
+                              marginBottom: '0.5rem'
+                            }}>
+                              <strong style={{ color: '#8fa0c9' }}>Betreff:</strong> {eventPRSuggestions.newsletter.subject}
+                            </div>
+                          )}
+                          {eventPRSuggestions.newsletter.body && (
+                            <pre style={{
+                              whiteSpace: 'pre-wrap',
+                              wordWrap: 'break-word',
+                              fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                              color: '#b8c5e0',
+                              margin: 0,
+                              fontFamily: 'inherit',
+                              lineHeight: '1.6'
+                            }}>
+                              {eventPRSuggestions.newsletter.body}
+                            </pre>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Vorschläge neu generieren Button */}
+                {editingEvent && !eventPRSuggestions && (
+                  <button
+                    onClick={() => {
+                      const event = {
+                        id: editingEvent.id,
+                        title: eventTitle,
+                        type: eventType,
+                        date: eventDate,
+                        endDate: eventEndDate,
+                        startTime: eventStartTime,
+                        endTime: eventEndTime,
+                        description: eventDescription,
+                        location: eventLocation
+                      }
+                      const newSuggestions = {
+                        eventId: event.id,
+                        eventTitle: event.title,
+                        generatedAt: new Date().toISOString(),
+                        presseaussendung: generatePresseaussendungContent(event),
+                        socialMedia: generateSocialMediaContent(event),
+                        flyer: generateFlyerContent(event),
+                        newsletter: generateNewsletterContent(event),
+                        plakat: generatePlakatContent(event)
+                      }
+                      setEventPRSuggestions(newSuggestions)
+                    }}
+                    style={{
+                      width: '100%',
+                      marginTop: '1rem',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'linear-gradient(135deg, rgba(95, 251, 241, 0.2) 0%, rgba(102, 126, 234, 0.2) 100%)',
+                      color: '#5ffbf1',
+                      border: '1px solid rgba(95, 251, 241, 0.3)',
+                      borderRadius: '12px',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '500',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ✨ PR-Vorschläge generieren
+                  </button>
+                )}
+
                 <div style={{
                   display: 'flex',
                   gap: '1rem',
