@@ -45,7 +45,19 @@ function loadEvents(): any[] {
  * Wird angezeigt bei: ?screenshot=admin oder /admin
  */
 function ScreenshotExportAdmin() {
-  const [activeTab, setActiveTab] = useState<'werke' | 'dokumente' | 'stammdaten' | 'einstellungen' | 'statistiken' | 'eventplan' | 'öffentlichkeitsarbeit'>('werke')
+  const [activeTab, setActiveTab] = useState<'werke' | 'dokumente' | 'stammdaten' | 'einstellungen' | 'statistiken' | 'eventplan' | 'öffentlichkeitsarbeit' | 'design'>('werke')
+  
+  // Design-Einstellungen
+  const [designSettings, setDesignSettings] = useState({
+    accentColor: '#5ffbf1',
+    backgroundColor1: '#03040a',
+    backgroundColor2: '#0d1426',
+    backgroundColor3: '#111c33',
+    textColor: '#f4f7ff',
+    mutedColor: '#8fa0c9',
+    cardBg1: 'rgba(18, 22, 35, 0.95)',
+    cardBg2: 'rgba(12, 16, 28, 0.92)'
+  })
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -113,6 +125,88 @@ function ScreenshotExportAdmin() {
     window.addEventListener('keydown', handleEsc)
     return () => window.removeEventListener('keydown', handleEsc)
   }, [showEventModal])
+
+  // Design-Einstellungen laden und CSS-Variablen setzen
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('k2-design-settings')
+      if (stored) {
+        const saved = JSON.parse(stored)
+        setDesignSettings(saved)
+      }
+    } catch (error) {
+      console.error('Fehler beim Laden der Design-Einstellungen:', error)
+    }
+  }, [])
+
+  // CSS-Variablen aktualisieren wenn Design-Einstellungen sich ändern
+  useEffect(() => {
+    const root = document.documentElement
+    root.style.setProperty('--k2-accent', designSettings.accentColor)
+    root.style.setProperty('--k2-bg-1', designSettings.backgroundColor1)
+    root.style.setProperty('--k2-bg-2', designSettings.backgroundColor2)
+    root.style.setProperty('--k2-bg-3', designSettings.backgroundColor3)
+    root.style.setProperty('--k2-text', designSettings.textColor)
+    root.style.setProperty('--k2-muted', designSettings.mutedColor)
+    root.style.setProperty('--k2-card-bg-1', designSettings.cardBg1)
+    root.style.setProperty('--k2-card-bg-2', designSettings.cardBg2)
+    
+    // Speichere in localStorage
+    localStorage.setItem('k2-design-settings', JSON.stringify(designSettings))
+  }, [designSettings])
+
+  // Design-Einstellungen speichern
+  const handleDesignChange = (key: string, value: string) => {
+    setDesignSettings(prev => ({ ...prev, [key]: value }))
+  }
+
+  // Vordefinierte Themes
+  const themes = {
+    default: {
+      accentColor: '#5ffbf1',
+      backgroundColor1: '#03040a',
+      backgroundColor2: '#0d1426',
+      backgroundColor3: '#111c33',
+      textColor: '#f4f7ff',
+      mutedColor: '#8fa0c9',
+      cardBg1: 'rgba(18, 22, 35, 0.95)',
+      cardBg2: 'rgba(12, 16, 28, 0.92)'
+    },
+    warm: {
+      accentColor: '#ff8c42',
+      backgroundColor1: '#1a0f0a',
+      backgroundColor2: '#2d1a14',
+      backgroundColor3: '#3d2419',
+      textColor: '#fff5f0',
+      mutedColor: '#d4a574',
+      cardBg1: 'rgba(45, 26, 20, 0.95)',
+      cardBg2: 'rgba(26, 15, 10, 0.92)'
+    },
+    elegant: {
+      accentColor: '#c9a961',
+      backgroundColor1: '#0f0e0a',
+      backgroundColor2: '#1a1814',
+      backgroundColor3: '#25221e',
+      textColor: '#f5f3f0',
+      mutedColor: '#b8a68a',
+      cardBg1: 'rgba(26, 24, 20, 0.95)',
+      cardBg2: 'rgba(15, 14, 10, 0.92)'
+    },
+    modern: {
+      accentColor: '#33a1ff',
+      backgroundColor1: '#0a0e27',
+      backgroundColor2: '#1a1f3a',
+      backgroundColor3: '#2a2f4a',
+      textColor: '#f4f7ff',
+      mutedColor: '#8fa0c9',
+      cardBg1: 'rgba(26, 31, 58, 0.95)',
+      cardBg2: 'rgba(10, 14, 39, 0.92)'
+    }
+  }
+
+  const applyTheme = (themeName: keyof typeof themes) => {
+    setDesignSettings(themes[themeName])
+  }
   const [showDocumentModal, setShowDocumentModal] = useState(false)
   const [selectedEventForDocument, setSelectedEventForDocument] = useState<string | null>(null)
   const [eventDocumentFile, setEventDocumentFile] = useState<File | null>(null)
@@ -707,7 +801,7 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
   </style>
 </head>
 <body>
-  <div class="no-print" style="text-align: center; margin-bottom: 2rem; padding: 1rem; background: #f5f5f5; border-radius: 8px;">
+  <div class="no-print" style="text-align: center; margin-bottom: 2rem; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 12px; border: 1px solid rgba(95, 251, 241, 0.2);">
     <button onclick="window.print()">🖨️ Als PDF drucken</button>
     <button onclick="saveChanges()">💾 Änderungen speichern</button>
   </div>
@@ -777,31 +871,61 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
-      background: #ffffff;
-      color: #1a1f3a;
+      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
+      color: #f4f7ff;
       padding: 2rem;
+      min-height: 100vh;
       line-height: 1.6;
+    }
+    @media print {
+      body {
+        background: white;
+        color: #1a1f3a;
+      }
     }
     .page {
       max-width: 210mm;
       margin: 0 auto 2rem;
       padding: 2rem;
-      background: white;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      background: linear-gradient(145deg, rgba(18, 22, 35, 0.95), rgba(12, 16, 28, 0.92));
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(95, 251, 241, 0.12);
+      border-radius: 24px;
+    }
+    @media print {
+      .page {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 0;
+        box-shadow: none;
+      }
     }
     h1 {
       font-size: 2rem;
-      color: #667eea;
+      color: #5ffbf1;
       margin-bottom: 0.5rem;
-      border-bottom: 3px solid #667eea;
+      border-bottom: 2px solid rgba(95, 251, 241, 0.3);
       padding-bottom: 0.5rem;
+      letter-spacing: 0.02em;
+    }
+    @media print {
+      h1 {
+        color: #1a1f3a;
+        border-bottom-color: #667eea;
+      }
     }
     h2 {
       font-size: 1.5rem;
-      color: #764ba2;
+      color: #5ffbf1;
       margin: 2rem 0 1rem;
-      border-bottom: 2px solid #764ba2;
+      border-bottom: 2px solid rgba(95, 251, 241, 0.2);
       padding-bottom: 0.5rem;
+    }
+    @media print {
+      h2 {
+        color: #764ba2;
+        border-bottom-color: #764ba2;
+      }
     }
     .field-group {
       margin-bottom: 1.5rem;
@@ -851,7 +975,7 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
   </style>
 </head>
 <body>
-  <div class="no-print" style="text-align: center; margin-bottom: 2rem; padding: 1rem; background: #f5f5f5; border-radius: 8px;">
+  <div class="no-print" style="text-align: center; margin-bottom: 2rem; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 12px; border: 1px solid rgba(95, 251, 241, 0.2);">
     <button onclick="window.print()">🖨️ Als PDF drucken</button>
     <button onclick="saveChanges()">💾 Änderungen speichern</button>
   </div>
@@ -991,7 +1115,7 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
   </style>
 </head>
 <body>
-  <div class="no-print" style="text-align: center; margin-bottom: 2rem; padding: 1rem; background: #f5f5f5; border-radius: 8px;">
+  <div class="no-print" style="text-align: center; margin-bottom: 2rem; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 12px; border: 1px solid rgba(95, 251, 241, 0.2);">
     <button onclick="window.print()">🖨️ Als PDF drucken</button>
     <button onclick="saveChanges()">💾 Änderungen speichern</button>
   </div>
@@ -1974,11 +2098,118 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
       body { margin: 0; }
       .no-print { display: none; }
     }
-    body { font-family: Arial, sans-serif; padding: 2rem; max-width: 800px; margin: 0 auto; }
-    h1 { color: #1a1f3a; }
-    h2 { color: #667eea; margin-top: 2rem; }
-    .section { margin: 2rem 0; }
-    button { background: #667eea; color: white; border: none; padding: 1rem 2rem; border-radius: 8px; cursor: pointer; }
+    body {
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
+      color: #f4f7ff;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    @media print {
+      body {
+        background: white;
+        color: #1a1f3a;
+      }
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: linear-gradient(145deg, rgba(18, 22, 35, 0.95), rgba(12, 16, 28, 0.92));
+      border: 1px solid rgba(95, 251, 241, 0.12);
+      border-radius: 24px;
+      padding: 3rem;
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+    }
+    @media print {
+      .container {
+        background: white;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 2rem;
+      }
+    }
+    h1 {
+      color: #5ffbf1;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      letter-spacing: 0.02em;
+    }
+    @media print {
+      h1 {
+        color: #1a1f3a;
+      }
+    }
+    h2 {
+      color: #5ffbf1;
+      margin-top: 2rem;
+      font-size: 1.5rem;
+      border-bottom: 2px solid rgba(95, 251, 241, 0.2);
+      padding-bottom: 0.5rem;
+    }
+    @media print {
+      h2 {
+        color: #667eea;
+        border-bottom-color: #667eea;
+      }
+    }
+    h3 {
+      color: #b8c5e0;
+      margin-top: 1.5rem;
+      font-size: 1.2rem;
+    }
+    @media print {
+      h3 {
+        color: #333;
+      }
+    }
+    .section {
+      margin: 2rem 0;
+      padding: 1.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      border: 1px solid rgba(95, 251, 241, 0.1);
+    }
+    @media print {
+      .section {
+        background: #f5f5f5;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+      }
+    }
+    p {
+      color: #b8c5e0;
+      line-height: 1.8;
+      margin: 0.75rem 0;
+    }
+    @media print {
+      p {
+        color: #333;
+      }
+    }
+    strong {
+      color: #5ffbf1;
+    }
+    @media print {
+      strong {
+        color: #1a1f3a;
+      }
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
   </style>
 </head>
 <body>
@@ -1986,10 +2217,11 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
     <button onclick="window.print()">🖨️ Als PDF speichern</button>
   </div>
   
-  <h1>PRESSEMAPPE</h1>
-  <h2>${galleryData.name || 'K2 Galerie'}</h2>
-  
-  <div class="section">
+  <div class="container">
+    <h1>PRESSEMAPPE</h1>
+    <h2>${galleryData.name || 'K2 Galerie'}</h2>
+    
+    <div class="section">
     <h2>Galerie-Informationen</h2>
     <p><strong>Name:</strong> ${galleryData.name || 'K2 Galerie'}</p>
     ${galleryData.address ? `<p><strong>Adresse:</strong> ${galleryData.address}</p>` : ''}
@@ -2015,7 +2247,7 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
   <div class="section">
     <h2>Aktuelle Events</h2>
     ${events.slice(0, 5).map(event => `
-      <div style="margin: 1.5rem 0; padding: 1rem; background: #f5f5f5; border-radius: 8px;">
+      <div style="margin: 1.5rem 0; padding: 1rem; background: rgba(95, 251, 241, 0.1); border-radius: 12px; border: 1px solid rgba(95, 251, 241, 0.2);">
         <h3>${event.title}</h3>
         <p><strong>Datum:</strong> ${new Date(event.date).toLocaleDateString('de-DE', {
           weekday: 'long',
@@ -2037,6 +2269,7 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
     <h2>Kontakt für Presseanfragen</h2>
     <p>${galleryData.email || ''}</p>
     <p>${galleryData.phone || ''}</p>
+  </div>
   </div>
 </body>
 </html>
@@ -2064,16 +2297,101 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
   <meta charset="UTF-8">
   <title>Website Content - ${event.title}</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 2rem; max-width: 800px; margin: 0 auto; }
-    .content { background: #f5f5f5; padding: 2rem; border-radius: 8px; margin: 1rem 0; }
-    pre { background: white; padding: 1rem; border-radius: 4px; overflow-x: auto; }
-    button { background: #667eea; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; margin: 0.5rem 0.5rem 0.5rem 0; }
+    body {
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
+      color: #f4f7ff;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    @media print {
+      body {
+        background: white;
+        color: #1a1f3a;
+      }
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #5ffbf1;
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      letter-spacing: 0.02em;
+    }
+    @media print {
+      h1 {
+        color: #1a1f3a;
+      }
+    }
+    .content {
+      background: linear-gradient(145deg, rgba(18, 22, 35, 0.95), rgba(12, 16, 28, 0.92));
+      border: 1px solid rgba(95, 251, 241, 0.12);
+      border-radius: 20px;
+      padding: 2rem;
+      margin: 1.5rem 0;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+    }
+    @media print {
+      .content {
+        background: #f5f5f5;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: none;
+      }
+    }
+    h2 {
+      color: #5ffbf1;
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+    }
+    @media print {
+      h2 {
+        color: #667eea;
+      }
+    }
+    pre {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(95, 251, 241, 0.2);
+      padding: 1.5rem;
+      border-radius: 12px;
+      overflow-x: auto;
+      color: #b8c5e0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    @media print {
+      pre {
+        background: white;
+        border: 1px solid #ddd;
+        color: #1a1f3a;
+      }
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 10px;
+      cursor: pointer;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
   </style>
 </head>
 <body>
-  <h1>Website Content für: ${event.title}</h1>
-  
-  <div class="content">
+  <div class="container">
+    <h1>Website Content für: ${event.title}</h1>
+    
+    <div class="content">
     <h2>HTML Content</h2>
     <pre id="htmlContent"><section class="event-detail">
   <h2>${event.title}</h2>
@@ -2100,6 +2418,7 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
     <h2>Meta Description (SEO)</h2>
     <pre id="metaContent">${event.title} - ${new Date(event.date).toLocaleDateString('de-DE')} bei ${galleryData.name || 'K2 Galerie'}. ${event.description ? event.description.substring(0, 120) : ''}...</pre>
     <button onclick="navigator.clipboard.writeText(document.getElementById('metaContent').textContent)">Meta kopieren</button>
+  </div>
   </div>
 </body>
 </html>
@@ -2131,24 +2450,161 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
       .no-print { display: none; }
       .artwork { page-break-inside: avoid; }
     }
-    body { font-family: Arial, sans-serif; padding: 2rem; }
-    h1 { color: #1a1f3a; text-align: center; }
-    .artwork { margin: 2rem 0; padding: 1.5rem; border: 1px solid #ddd; border-radius: 8px; display: flex; gap: 2rem; }
-    .artwork-image { width: 200px; height: 200px; object-fit: cover; border-radius: 4px; }
-    .artwork-info { flex: 1; }
-    .artwork-title { font-size: 1.5rem; font-weight: bold; margin: 0 0 0.5rem 0; }
-    button { background: #667eea; color: white; border: none; padding: 1rem 2rem; border-radius: 8px; cursor: pointer; }
+    body {
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
+      color: #f4f7ff;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    @media print {
+      body {
+        background: white;
+        color: #1a1f3a;
+      }
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: linear-gradient(145deg, rgba(18, 22, 35, 0.95), rgba(12, 16, 28, 0.92));
+      border: 1px solid rgba(95, 251, 241, 0.12);
+      border-radius: 24px;
+      padding: 3rem;
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+    }
+    @media print {
+      .container {
+        background: white;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 2rem;
+      }
+    }
+    h1 {
+      color: #5ffbf1;
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      letter-spacing: 0.02em;
+    }
+    @media print {
+      h1 {
+        color: #1a1f3a;
+      }
+    }
+    h2 {
+      color: #5ffbf1;
+      text-align: center;
+      font-size: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    @media print {
+      h2 {
+        color: #667eea;
+      }
+    }
+    .artwork {
+      margin: 2rem 0;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(95, 251, 241, 0.2);
+      border-radius: 18px;
+      display: flex;
+      gap: 2rem;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+    }
+    @media print {
+      .artwork {
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: none;
+      }
+    }
+    .artwork-image {
+      width: 200px;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 1px solid rgba(95, 251, 241, 0.2);
+    }
+    @media print {
+      .artwork-image {
+        border-color: #ddd;
+      }
+    }
+    .artwork-info {
+      flex: 1;
+    }
+    .artwork-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin: 0 0 0.5rem 0;
+      color: #5ffbf1;
+    }
+    @media print {
+      .artwork-title {
+        color: #1a1f3a;
+      }
+    }
+    .artwork-info p {
+      color: #b8c5e0;
+      margin: 0.5rem 0;
+    }
+    @media print {
+      .artwork-info p {
+        color: #333;
+      }
+    }
+    .artwork-info strong {
+      color: #5ffbf1;
+    }
+    @media print {
+      .artwork-info strong {
+        color: #1a1f3a;
+      }
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
+    .footer {
+      margin-top: 3rem;
+      text-align: center;
+      color: #8fa0c9;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(95, 251, 241, 0.2);
+    }
+    @media print {
+      .footer {
+        color: #666;
+        border-top-color: #ddd;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="no-print" style="text-align: center; margin-bottom: 2rem;">
-    <button onclick="window.print()">🖨️ Als PDF speichern</button>
-  </div>
-  
-  <h1>KATALOG</h1>
-  <h2 style="text-align: center; color: #667eea;">${galleryData.name || 'K2 Galerie'}</h2>
-  
-  ${artworks.map((artwork: any) => `
+  <div class="container">
+    <div class="no-print" style="text-align: center; margin-bottom: 2rem;">
+      <button onclick="window.print()">🖨️ Als PDF speichern</button>
+    </div>
+    
+    <h1>KATALOG</h1>
+    <h2>${galleryData.name || 'K2 Galerie'}</h2>
+    
+    ${artworks.map((artwork: any) => `
     <div class="artwork">
       ${artwork.imageUrl ? `<img src="${artwork.imageUrl}" alt="${artwork.title}" class="artwork-image" />` : ''}
       <div class="artwork-info">
@@ -2161,12 +2617,13 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
       </div>
     </div>
   `).join('')}
-  
-  <div style="margin-top: 3rem; text-align: center; color: #666;">
-    <p>${galleryData.name || 'K2 Galerie'}</p>
-    ${galleryData.address ? `<p>${galleryData.address}</p>` : ''}
-    ${galleryData.email ? `<p>${galleryData.email}</p>` : ''}
-    ${galleryData.phone ? `<p>${galleryData.phone}</p>` : ''}
+    
+    <div class="footer">
+      <p><strong>${galleryData.name || 'K2 Galerie'}</strong></p>
+      ${galleryData.address ? `<p>${galleryData.address}</p>` : ''}
+      ${galleryData.email ? `<p>${galleryData.email}</p>` : ''}
+      ${galleryData.phone ? `<p>${galleryData.phone}</p>` : ''}
+    </div>
   </div>
 </body>
 </html>
@@ -3817,6 +4274,35 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
             >
               📢 Öffentlichkeitsarbeit
             </button>
+            <button 
+              onClick={() => setActiveTab('design')}
+              style={{
+                padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                fontWeight: activeTab === 'design' ? '600' : '500',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                background: activeTab === 'design' 
+                  ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                  : 'rgba(255, 255, 255, 0.05)',
+                color: '#ffffff',
+                boxShadow: activeTab === 'design' ? '0 10px 30px rgba(102, 126, 234, 0.3)' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== 'design') {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== 'design') {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                }
+              }}
+            >
+              🎨 Design
+            </button>
           </div>
 
           {/* Werke verwalten */}
@@ -3944,31 +4430,6 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
                   }}
                 >
                   📄 PDF: Verkaufte Werke
-                </button>
-                <button 
-                  onClick={() => printQRCodePlakat()}
-                  style={{
-                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '12px',
-                    fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 15px 40px rgba(102, 126, 234, 0.4)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.3)'
-                  }}
-                >
-                  🏛️ QR-Code Plakat drucken
                 </button>
               <button 
                 className="btn-secondary" 
@@ -6932,6 +7393,58 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
               )
             })()}
 
+            {/* QR-Code Plakat (allgemein, nicht Event-spezifisch) */}
+            <div style={{
+              marginTop: '3rem',
+              padding: '2rem',
+              background: 'rgba(95, 251, 241, 0.1)',
+              border: '1px solid rgba(95, 251, 241, 0.2)',
+              borderRadius: '16px'
+            }}>
+              <h3 style={{
+                fontSize: 'clamp(1.2rem, 3vw, 1.4rem)',
+                fontWeight: '600',
+                color: '#5ffbf1',
+                marginTop: 0,
+                marginBottom: '1rem'
+              }}>
+                🏛️ QR-Code Plakat (Galerie)
+              </h3>
+              <p style={{
+                color: '#b8c5e0',
+                fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                marginBottom: '1.5rem',
+                lineHeight: 1.6
+              }}>
+                Erstelle ein Plakat mit QR-Codes für die Homepage und den virtuellen Rundgang. Perfekt zum Aufhängen in der Galerie oder für Veranstaltungen.
+              </p>
+              <button
+                onClick={() => printQRCodePlakat()}
+                style={{
+                  padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 15px 40px rgba(102, 126, 234, 0.4)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.3)'
+                }}
+              >
+                🏛️ QR-Code Plakat erstellen
+              </button>
+            </div>
+
             {/* Fallback: Generische Medien-Generatoren (wenn keine Events vorhanden) */}
             {events.length === 0 && (
               <div style={{
@@ -6943,6 +7456,423 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
                 Erstelle zuerst ein Event in der Eventplanung, um PR-Vorschläge zu generieren.
               </div>
             )}
+          </section>
+        )}
+
+        {/* Design-Einstellungen */}
+        {activeTab === 'design' && (
+          <section style={{
+            background: 'rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '24px',
+            padding: 'clamp(2rem, 5vw, 3rem)',
+            marginTop: '2rem'
+          }}>
+            <h2 style={{
+              fontSize: 'clamp(1.5rem, 4vw, 2rem)',
+              fontWeight: '700',
+              color: '#ffffff',
+              marginTop: 0,
+              marginBottom: 'clamp(1.5rem, 4vw, 2rem)'
+            }}>
+              🎨 Design-Einstellungen
+            </h2>
+
+            {/* Vordefinierte Themes */}
+            <div style={{ marginBottom: '2rem' }}>
+              <h3 style={{
+                fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                fontWeight: '600',
+                color: '#5ffbf1',
+                marginBottom: '1rem'
+              }}>
+                Vordefinierte Themes
+              </h3>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '1rem'
+              }}>
+                {Object.entries(themes).map(([name, theme]) => (
+                  <button
+                    key={name}
+                    onClick={() => applyTheme(name as keyof typeof themes)}
+                    style={{
+                      padding: '1.5rem',
+                      background: `linear-gradient(135deg, ${theme.backgroundColor2}, ${theme.backgroundColor3})`,
+                      border: `2px solid ${theme.accentColor}`,
+                      borderRadius: '12px',
+                      color: theme.textColor,
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-4px)'
+                      e.currentTarget.style.boxShadow = `0 10px 30px ${theme.accentColor}40`
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = 'none'
+                    }}
+                  >
+                    <div style={{
+                      fontSize: '1.2rem',
+                      fontWeight: '600',
+                      marginBottom: '0.5rem',
+                      textTransform: 'capitalize'
+                    }}>
+                      {name === 'default' ? 'Standard' : name === 'warm' ? 'Warm' : name === 'elegant' ? 'Elegant' : 'Modern'}
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      gap: '0.5rem',
+                      marginTop: '0.75rem'
+                    }}>
+                      <div style={{
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '4px',
+                        background: theme.accentColor
+                      }} />
+                      <div style={{
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '4px',
+                        background: theme.backgroundColor2
+                      }} />
+                      <div style={{
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '4px',
+                        background: theme.backgroundColor3
+                      }} />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Individuelle Farben */}
+            <div>
+              <h3 style={{
+                fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                fontWeight: '600',
+                color: '#5ffbf1',
+                marginBottom: '1rem'
+              }}>
+                Individuelle Farben
+              </h3>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                gap: '1.5rem'
+              }}>
+                {/* Akzentfarbe */}
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#8fa0c9',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                    fontWeight: '500'
+                  }}>
+                    Akzentfarbe
+                  </label>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input
+                      type="color"
+                      value={designSettings.accentColor}
+                      onChange={(e) => handleDesignChange('accentColor', e.target.value)}
+                      style={{
+                        width: '60px',
+                        height: '40px',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer'
+                      }}
+                    />
+                    <input
+                      type="text"
+                      value={designSettings.accentColor}
+                      onChange={(e) => handleDesignChange('accentColor', e.target.value)}
+                      style={{
+                        flex: 1,
+                        padding: '0.75rem',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: '0.9rem'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Hintergrundfarbe 1 */}
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#8fa0c9',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                    fontWeight: '500'
+                  }}>
+                    Hintergrund Start
+                  </label>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input
+                      type="color"
+                      value={designSettings.backgroundColor1}
+                      onChange={(e) => handleDesignChange('backgroundColor1', e.target.value)}
+                      style={{
+                        width: '60px',
+                        height: '40px',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer'
+                      }}
+                    />
+                    <input
+                      type="text"
+                      value={designSettings.backgroundColor1}
+                      onChange={(e) => handleDesignChange('backgroundColor1', e.target.value)}
+                      style={{
+                        flex: 1,
+                        padding: '0.75rem',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: '0.9rem'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Hintergrundfarbe 2 */}
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#8fa0c9',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                    fontWeight: '500'
+                  }}>
+                    Hintergrund Mitte
+                  </label>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input
+                      type="color"
+                      value={designSettings.backgroundColor2}
+                      onChange={(e) => handleDesignChange('backgroundColor2', e.target.value)}
+                      style={{
+                        width: '60px',
+                        height: '40px',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer'
+                      }}
+                    />
+                    <input
+                      type="text"
+                      value={designSettings.backgroundColor2}
+                      onChange={(e) => handleDesignChange('backgroundColor2', e.target.value)}
+                      style={{
+                        flex: 1,
+                        padding: '0.75rem',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: '0.9rem'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Hintergrundfarbe 3 */}
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#8fa0c9',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                    fontWeight: '500'
+                  }}>
+                    Hintergrund Ende
+                  </label>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input
+                      type="color"
+                      value={designSettings.backgroundColor3}
+                      onChange={(e) => handleDesignChange('backgroundColor3', e.target.value)}
+                      style={{
+                        width: '60px',
+                        height: '40px',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer'
+                      }}
+                    />
+                    <input
+                      type="text"
+                      value={designSettings.backgroundColor3}
+                      onChange={(e) => handleDesignChange('backgroundColor3', e.target.value)}
+                      style={{
+                        flex: 1,
+                        padding: '0.75rem',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: '0.9rem'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Textfarbe */}
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#8fa0c9',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                    fontWeight: '500'
+                  }}>
+                    Textfarbe
+                  </label>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input
+                      type="color"
+                      value={designSettings.textColor}
+                      onChange={(e) => handleDesignChange('textColor', e.target.value)}
+                      style={{
+                        width: '60px',
+                        height: '40px',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer'
+                      }}
+                    />
+                    <input
+                      type="text"
+                      value={designSettings.textColor}
+                      onChange={(e) => handleDesignChange('textColor', e.target.value)}
+                      style={{
+                        flex: 1,
+                        padding: '0.75rem',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: '0.9rem'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Muted Farbe */}
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#8fa0c9',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                    fontWeight: '500'
+                  }}>
+                    Sekundärtext
+                  </label>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input
+                      type="color"
+                      value={designSettings.mutedColor}
+                      onChange={(e) => handleDesignChange('mutedColor', e.target.value)}
+                      style={{
+                        width: '60px',
+                        height: '40px',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer'
+                      }}
+                    />
+                    <input
+                      type="text"
+                      value={designSettings.mutedColor}
+                      onChange={(e) => handleDesignChange('mutedColor', e.target.value)}
+                      style={{
+                        flex: 1,
+                        padding: '0.75rem',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: '0.9rem'
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Live-Vorschau */}
+            <div style={{
+              marginTop: '2rem',
+              padding: '1.5rem',
+              background: `linear-gradient(135deg, ${designSettings.backgroundColor1} 0%, ${designSettings.backgroundColor2} 55%, ${designSettings.backgroundColor3} 100%)`,
+              borderRadius: '16px',
+              border: `1px solid ${designSettings.accentColor}40`
+            }}>
+              <h3 style={{
+                fontSize: 'clamp(1rem, 2.5vw, 1.2rem)',
+                fontWeight: '600',
+                color: designSettings.accentColor,
+                marginBottom: '1rem'
+              }}>
+                Live-Vorschau
+              </h3>
+              <div style={{
+                background: `linear-gradient(145deg, ${designSettings.cardBg1}, ${designSettings.cardBg2})`,
+                padding: '1.5rem',
+                borderRadius: '12px',
+                border: `1px solid ${designSettings.accentColor}30`
+              }}>
+                <h4 style={{
+                  color: designSettings.accentColor,
+                  marginTop: 0,
+                  marginBottom: '0.5rem'
+                }}>
+                  Beispiel-Karte
+                </h4>
+                <p style={{
+                  color: designSettings.textColor,
+                  marginBottom: '0.5rem'
+                }}>
+                  Haupttext mit der gewählten Textfarbe
+                </p>
+                <p style={{
+                  color: designSettings.mutedColor,
+                  fontSize: '0.9rem',
+                  margin: 0
+                }}>
+                  Sekundärtext mit der gewählten Muted-Farbe
+                </p>
+              </div>
+            </div>
+
+            <div style={{
+              marginTop: '1.5rem',
+              padding: '1rem',
+              background: 'rgba(95, 251, 241, 0.1)',
+              border: '1px solid rgba(95, 251, 241, 0.2)',
+              borderRadius: '12px',
+              fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+              color: '#8fa0c9'
+            }}>
+              💡 <strong>Tipp:</strong> Die Design-Änderungen werden automatisch gespeichert und auf der gesamten Galerie-Seite angewendet. Aktualisiere die Seite, um die Änderungen zu sehen.
+            </div>
           </section>
         )}
         </main>
