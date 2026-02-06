@@ -726,30 +726,38 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
   <title>Presseaussendung - ${event?.title || 'Event'}</title>
   <style>
     @media print {
-      body { margin: 0; }
+      body { margin: 0; background: white !important; }
       .no-print { display: none; }
+      .page { background: white !important; color: #1a1f3a !important; border: none !important; box-shadow: none !important; }
+      h1 { color: #667eea !important; border-bottom-color: #667eea !important; }
+      label { color: #333 !important; }
+      textarea, input[type="text"] { background: white !important; color: #1a1f3a !important; border-color: #e0e0e0 !important; }
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
-      background: #ffffff;
-      color: #1a1f3a;
+      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
+      color: #f4f7ff;
       padding: 2rem;
+      min-height: 100vh;
       line-height: 1.6;
     }
     .page {
       max-width: 210mm;
       margin: 0 auto;
       padding: 2rem;
-      background: white;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      background: linear-gradient(145deg, rgba(18, 22, 35, 0.95), rgba(12, 16, 28, 0.92));
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(95, 251, 241, 0.12);
+      border-radius: 24px;
     }
     h1 {
       font-size: 2rem;
-      color: #667eea;
+      color: #5ffbf1;
       margin-bottom: 0.5rem;
-      border-bottom: 3px solid #667eea;
+      border-bottom: 2px solid rgba(95, 251, 241, 0.3);
       padding-bottom: 0.5rem;
+      letter-spacing: 0.02em;
     }
     .field-group {
       margin-bottom: 1.5rem;
@@ -757,7 +765,7 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
     label {
       display: block;
       font-weight: 600;
-      color: #333;
+      color: #8fa0c9;
       margin-bottom: 0.5rem;
       font-size: 0.9rem;
       text-transform: uppercase;
@@ -766,18 +774,19 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
     textarea, input[type="text"] {
       width: 100%;
       padding: 0.75rem;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
+      border: 2px solid rgba(95, 251, 241, 0.2);
+      border-radius: 12px;
       font-family: inherit;
       font-size: 1rem;
       line-height: 1.6;
       resize: vertical;
-      background: #fafafa;
+      background: rgba(255, 255, 255, 0.1);
+      color: #f4f7ff;
     }
     textarea:focus, input[type="text"]:focus {
       outline: none;
-      border-color: #667eea;
-      background: white;
+      border-color: rgba(95, 251, 241, 0.5);
+      background: rgba(255, 255, 255, 0.15);
     }
     textarea {
       min-height: 200px;
@@ -787,21 +796,28 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
       color: white;
       border: none;
       padding: 1rem 2rem;
-      border-radius: 8px;
+      border-radius: 12px;
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
       margin: 1rem 0.5rem;
-      box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
     }
     button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
+    .no-print {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(95, 251, 241, 0.2) !important;
+      border-radius: 12px !important;
+      padding: 1rem !important;
     }
   </style>
 </head>
 <body>
-  <div class="no-print" style="text-align: center; margin-bottom: 2rem; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 12px; border: 1px solid rgba(95, 251, 241, 0.2);">
+  <div class="no-print" style="text-align: center; margin-bottom: 2rem;">
     <button onclick="window.print()">🖨️ Als PDF drucken</button>
     <button onclick="saveChanges()">💾 Änderungen speichern</button>
   </div>
@@ -878,10 +894,13 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
       line-height: 1.6;
     }
     @media print {
-      body {
-        background: white;
-        color: #1a1f3a;
-      }
+      body { margin: 0; background: white !important; }
+      .no-print { display: none; }
+      .page { background: white !important; color: #1a1f3a !important; border: none !important; box-shadow: none !important; }
+      h1 { color: #667eea !important; border-bottom-color: #667eea !important; }
+      h2 { color: #764ba2 !important; border-bottom-color: #764ba2 !important; }
+      label { color: #333 !important; }
+      textarea { background: white !important; color: #1a1f3a !important; border-color: #e0e0e0 !important; }
     }
     .page {
       max-width: 210mm;
@@ -892,14 +911,6 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
       border: 1px solid rgba(95, 251, 241, 0.12);
       border-radius: 24px;
     }
-    @media print {
-      .page {
-        background: white;
-        border: 1px solid #e0e0e0;
-        border-radius: 0;
-        box-shadow: none;
-      }
-    }
     h1 {
       font-size: 2rem;
       color: #5ffbf1;
@@ -908,12 +919,6 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
       padding-bottom: 0.5rem;
       letter-spacing: 0.02em;
     }
-    @media print {
-      h1 {
-        color: #1a1f3a;
-        border-bottom-color: #667eea;
-      }
-    }
     h2 {
       font-size: 1.5rem;
       color: #5ffbf1;
@@ -921,19 +926,13 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
       border-bottom: 2px solid rgba(95, 251, 241, 0.2);
       padding-bottom: 0.5rem;
     }
-    @media print {
-      h2 {
-        color: #764ba2;
-        border-bottom-color: #764ba2;
-      }
-    }
     .field-group {
       margin-bottom: 1.5rem;
     }
     label {
       display: block;
       font-weight: 600;
-      color: #333;
+      color: #8fa0c9;
       margin-bottom: 0.5rem;
       font-size: 0.9rem;
       text-transform: uppercase;
@@ -942,19 +941,20 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
     textarea {
       width: 100%;
       padding: 0.75rem;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
+      border: 2px solid rgba(95, 251, 241, 0.2);
+      border-radius: 12px;
       font-family: inherit;
       font-size: 1rem;
       line-height: 1.6;
       resize: vertical;
-      background: #fafafa;
+      background: rgba(255, 255, 255, 0.1);
+      color: #f4f7ff;
       min-height: 150px;
     }
     textarea:focus {
       outline: none;
-      border-color: #667eea;
-      background: white;
+      border-color: rgba(95, 251, 241, 0.5);
+      background: rgba(255, 255, 255, 0.15);
     }
     button {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -1040,30 +1040,38 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
   <title>Newsletter - ${event?.title || 'Event'}</title>
   <style>
     @media print {
-      body { margin: 0; }
+      body { margin: 0; background: white !important; }
       .no-print { display: none; }
+      .page { background: white !important; color: #1a1f3a !important; border: none !important; box-shadow: none !important; }
+      h1 { color: #667eea !important; border-bottom-color: #667eea !important; }
+      label { color: #333 !important; }
+      textarea, input[type="text"] { background: white !important; color: #1a1f3a !important; border-color: #e0e0e0 !important; }
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
-      background: #ffffff;
-      color: #1a1f3a;
+      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
+      color: #f4f7ff;
       padding: 2rem;
+      min-height: 100vh;
       line-height: 1.6;
     }
     .page {
       max-width: 210mm;
       margin: 0 auto;
       padding: 2rem;
-      background: white;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      background: linear-gradient(145deg, rgba(18, 22, 35, 0.95), rgba(12, 16, 28, 0.92));
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(95, 251, 241, 0.12);
+      border-radius: 24px;
     }
     h1 {
       font-size: 2rem;
-      color: #667eea;
+      color: #5ffbf1;
       margin-bottom: 0.5rem;
-      border-bottom: 3px solid #667eea;
+      border-bottom: 2px solid rgba(95, 251, 241, 0.3);
       padding-bottom: 0.5rem;
+      letter-spacing: 0.02em;
     }
     .field-group {
       margin-bottom: 1.5rem;
@@ -1071,7 +1079,7 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
     label {
       display: block;
       font-weight: 600;
-      color: #333;
+      color: #8fa0c9;
       margin-bottom: 0.5rem;
       font-size: 0.9rem;
       text-transform: uppercase;
@@ -1080,18 +1088,19 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
     textarea, input[type="text"] {
       width: 100%;
       padding: 0.75rem;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
+      border: 2px solid rgba(95, 251, 241, 0.2);
+      border-radius: 12px;
       font-family: inherit;
       font-size: 1rem;
       line-height: 1.6;
       resize: vertical;
-      background: #fafafa;
+      background: rgba(255, 255, 255, 0.1);
+      color: #f4f7ff;
     }
     textarea:focus, input[type="text"]:focus {
       outline: none;
-      border-color: #667eea;
-      background: white;
+      border-color: rgba(95, 251, 241, 0.5);
+      background: rgba(255, 255, 255, 0.15);
     }
     textarea {
       min-height: 200px;
@@ -1101,21 +1110,28 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
       color: white;
       border: none;
       padding: 1rem 2rem;
-      border-radius: 8px;
+      border-radius: 12px;
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
       margin: 1rem 0.5rem;
-      box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
     }
     button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
+    .no-print {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(95, 251, 241, 0.2) !important;
+      border-radius: 12px !important;
+      padding: 1rem !important;
     }
   </style>
 </head>
 <body>
-  <div class="no-print" style="text-align: center; margin-bottom: 2rem; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 12px; border: 1px solid rgba(95, 251, 241, 0.2);">
+  <div class="no-print" style="text-align: center; margin-bottom: 2rem;">
     <button onclick="window.print()">🖨️ Als PDF drucken</button>
     <button onclick="saveChanges()">💾 Änderungen speichern</button>
   </div>
@@ -1179,38 +1195,48 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
   <title>PR-Vorschläge - ${suggestions.eventTitle || 'Event'}</title>
   <style>
     @media print {
-      body { margin: 0; }
+      body { margin: 0; background: white !important; }
       .no-print { display: none; }
       .page-break { page-break-after: always; }
+      .page { background: white !important; color: #1a1f3a !important; border: none !important; box-shadow: none !important; }
+      h1 { color: #667eea !important; border-bottom-color: #667eea !important; }
+      h2 { color: #764ba2 !important; border-bottom-color: #764ba2 !important; }
+      label { color: #333 !important; }
+      textarea, input[type="text"] { background: white !important; color: #1a1f3a !important; border-color: #e0e0e0 !important; }
+      .info-box { background: #f5f5f5 !important; border-left-color: #667eea !important; }
+      .info-box strong { color: #667eea !important; }
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
-      background: #ffffff;
-      color: #1a1f3a;
+      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
+      color: #f4f7ff;
       padding: 2rem;
+      min-height: 100vh;
       line-height: 1.6;
     }
     .page {
       max-width: 210mm;
       margin: 0 auto 2rem;
       padding: 2rem;
-      background: white;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      border: 1px solid #e0e0e0;
+      background: linear-gradient(145deg, rgba(18, 22, 35, 0.95), rgba(12, 16, 28, 0.92));
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(95, 251, 241, 0.12);
+      border-radius: 24px;
     }
     h1 {
       font-size: 2rem;
-      color: #667eea;
+      color: #5ffbf1;
       margin-bottom: 0.5rem;
-      border-bottom: 3px solid #667eea;
+      border-bottom: 2px solid rgba(95, 251, 241, 0.3);
       padding-bottom: 0.5rem;
+      letter-spacing: 0.02em;
     }
     h2 {
       font-size: 1.5rem;
-      color: #764ba2;
+      color: #5ffbf1;
       margin: 2rem 0 1rem;
-      border-bottom: 2px solid #764ba2;
+      border-bottom: 2px solid rgba(95, 251, 241, 0.2);
       padding-bottom: 0.5rem;
     }
     .field-group {
@@ -1219,7 +1245,7 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
     label {
       display: block;
       font-weight: 600;
-      color: #333;
+      color: #8fa0c9;
       margin-bottom: 0.5rem;
       font-size: 0.9rem;
       text-transform: uppercase;
@@ -1228,55 +1254,66 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
     textarea, input[type="text"] {
       width: 100%;
       padding: 0.75rem;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
+      border: 2px solid rgba(95, 251, 241, 0.2);
+      border-radius: 12px;
       font-family: inherit;
       font-size: 1rem;
       line-height: 1.6;
       resize: vertical;
-      background: #fafafa;
+      background: rgba(255, 255, 255, 0.1);
+      color: #f4f7ff;
     }
     textarea:focus, input[type="text"]:focus {
       outline: none;
-      border-color: #667eea;
-      background: white;
+      border-color: rgba(95, 251, 241, 0.5);
+      background: rgba(255, 255, 255, 0.15);
     }
     textarea {
       min-height: 150px;
     }
     .info-box {
-      background: #f5f5f5;
-      border-left: 4px solid #667eea;
+      background: rgba(95, 251, 241, 0.1);
+      border-left: 4px solid rgba(95, 251, 241, 0.5);
       padding: 1rem;
       margin-bottom: 1rem;
-      border-radius: 4px;
+      border-radius: 8px;
     }
     .info-box strong {
-      color: #667eea;
+      color: #5ffbf1;
     }
     button {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       border: none;
       padding: 1rem 2rem;
-      border-radius: 8px;
+      border-radius: 12px;
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
       margin: 1rem 0.5rem;
-      box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
     }
     button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
+    .no-print {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(95, 251, 241, 0.2) !important;
+      border-radius: 12px !important;
+      padding: 1rem !important;
+    }
+    .no-print p {
+      color: #8fa0c9 !important;
     }
   </style>
 </head>
 <body>
-  <div class="no-print" style="text-align: center; margin-bottom: 2rem; padding: 1rem; background: #f5f5f5; border-radius: 8px;">
+  <div class="no-print" style="text-align: center; margin-bottom: 2rem;">
     <button onclick="window.print()">🖨️ Als PDF drucken</button>
     <button onclick="saveAllChanges()">💾 Alle Änderungen speichern</button>
-    <p style="margin-top: 1rem; color: #666; font-size: 0.9rem;">
+    <p style="margin-top: 1rem; font-size: 0.9rem;">
       Bearbeite die Felder direkt im PDF. Nach dem Drucken kannst du die Änderungen speichern.
     </p>
   </div>
@@ -6271,52 +6308,116 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
                           month: 'short'
                         })
                         return (
-                          <div key={day} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <span style={{
-                              minWidth: '100px',
-                              fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                              color: '#b8c5e0'
-                            }}>
-                              {dayLabel}:
-                            </span>
-                            <input
-                              type="time"
-                              value={eventDailyTimes[day] || ''}
-                              onChange={(e) => setEventDailyTimes({
-                                ...eventDailyTimes,
-                                [day]: e.target.value
-                              })}
-                              placeholder="Optional"
-                              style={{
-                                flex: 1,
-                                padding: 'clamp(0.6rem, 1.5vw, 0.75rem)',
-                                background: 'rgba(255, 255, 255, 0.1)',
-                                border: '1px solid rgba(255, 255, 255, 0.2)',
-                                borderRadius: '8px',
-                                color: '#ffffff',
-                                fontSize: 'clamp(0.9rem, 2.5vw, 1rem)'
-                              }}
-                            />
-                            {eventDailyTimes[day] && (
-                              <button
-                                onClick={() => {
-                                  const newDailyTimes = { ...eventDailyTimes }
-                                  delete newDailyTimes[day]
-                                  setEventDailyTimes(newDailyTimes)
-                                }}
-                                style={{
-                                  padding: '0.4rem 0.6rem',
-                                  background: 'rgba(255, 100, 100, 0.2)',
-                                  border: '1px solid rgba(255, 100, 100, 0.3)',
-                                  borderRadius: '6px',
-                                  color: '#ff6464',
-                                  cursor: 'pointer',
-                                  fontSize: 'clamp(0.75rem, 2vw, 0.85rem)'
-                                }}
-                              >
-                                ×
-                              </button>
-                            )}
+                          <div key={day} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                              <span style={{
+                                minWidth: '100px',
+                                fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                                color: '#b8c5e0',
+                                fontWeight: '500'
+                              }}>
+                                {dayLabel}:
+                              </span>
+                              <div style={{ display: 'flex', gap: '0.5rem', flex: 1, alignItems: 'center' }}>
+                                <div style={{ flex: 1 }}>
+                                  <label style={{
+                                    display: 'block',
+                                    fontSize: 'clamp(0.75rem, 1.8vw, 0.85rem)',
+                                    color: '#8fa0c9',
+                                    marginBottom: '0.25rem'
+                                  }}>
+                                    Start
+                                  </label>
+                                  <input
+                                    type="time"
+                                    value={typeof eventDailyTimes[day] === 'string' ? eventDailyTimes[day] : (eventDailyTimes[day]?.start || '')}
+                                    onChange={(e) => {
+                                      const current = eventDailyTimes[day]
+                                      const newValue = typeof current === 'string' 
+                                        ? { start: e.target.value, end: '' }
+                                        : { ...current, start: e.target.value }
+                                      setEventDailyTimes({
+                                        ...eventDailyTimes,
+                                        [day]: newValue
+                                      })
+                                    }}
+                                    placeholder="Start"
+                                    style={{
+                                      width: '100%',
+                                      padding: 'clamp(0.6rem, 2vw, 0.75rem)',
+                                      background: 'rgba(255, 255, 255, 0.1)',
+                                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                                      borderRadius: '8px',
+                                      color: '#ffffff',
+                                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)'
+                                    }}
+                                  />
+                                </div>
+                                <span style={{ 
+                                  color: '#8fa0c9', 
+                                  fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                                  marginTop: '1.5rem'
+                                }}>
+                                  bis
+                                </span>
+                                <div style={{ flex: 1 }}>
+                                  <label style={{
+                                    display: 'block',
+                                    fontSize: 'clamp(0.75rem, 1.8vw, 0.85rem)',
+                                    color: '#8fa0c9',
+                                    marginBottom: '0.25rem'
+                                  }}>
+                                    Ende
+                                  </label>
+                                  <input
+                                    type="time"
+                                    value={typeof eventDailyTimes[day] === 'string' ? '' : (eventDailyTimes[day]?.end || '')}
+                                    onChange={(e) => {
+                                      const current = eventDailyTimes[day]
+                                      const newValue = typeof current === 'string'
+                                        ? { start: current, end: e.target.value }
+                                        : { ...current, end: e.target.value }
+                                      setEventDailyTimes({
+                                        ...eventDailyTimes,
+                                        [day]: newValue
+                                      })
+                                    }}
+                                    placeholder="Ende"
+                                    style={{
+                                      width: '100%',
+                                      padding: 'clamp(0.6rem, 2vw, 0.75rem)',
+                                      background: 'rgba(255, 255, 255, 0.1)',
+                                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                                      borderRadius: '8px',
+                                      color: '#ffffff',
+                                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)'
+                                    }}
+                                  />
+                                </div>
+                                {(eventDailyTimes[day] && (typeof eventDailyTimes[day] === 'string' || eventDailyTimes[day].start || eventDailyTimes[day].end)) && (
+                                  <button
+                                    onClick={() => {
+                                      const newDailyTimes = { ...eventDailyTimes }
+                                      delete newDailyTimes[day]
+                                      setEventDailyTimes(newDailyTimes)
+                                    }}
+                                    style={{
+                                      padding: '0.4rem 0.6rem',
+                                      background: 'rgba(255, 100, 100, 0.2)',
+                                      border: '1px solid rgba(255, 100, 100, 0.3)',
+                                      borderRadius: '6px',
+                                      color: '#ff6464',
+                                      cursor: 'pointer',
+                                      fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
+                                      marginTop: '1.5rem',
+                                      height: 'fit-content'
+                                    }}
+                                  >
+                                    ×
+                                  </button>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         )
                       })}
