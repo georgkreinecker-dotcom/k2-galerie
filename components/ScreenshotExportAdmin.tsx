@@ -5179,21 +5179,28 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
                             fontSize: 'clamp(0.9rem, 2vw, 1rem)',
                             fontWeight: '600',
                             color: '#5ffbf1',
-                            marginBottom: '0.75rem'
+                            marginBottom: '0.75rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem'
                           }}>
-                            📰 Presseaussendung
+                            <span>📰</span>
+                            <span>Presseaussendung</span>
                           </div>
-                          <pre style={{
-                            whiteSpace: 'pre-wrap',
-                            wordWrap: 'break-word',
+                          <div style={{
                             fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
                             color: '#b8c5e0',
-                            margin: 0,
-                            fontFamily: 'inherit',
-                            lineHeight: '1.6'
+                            lineHeight: '1.8',
+                            whiteSpace: 'pre-wrap',
+                            wordWrap: 'break-word',
+                            fontFamily: 'inherit'
                           }}>
-                            {eventPRSuggestions.presseaussendung.content}
-                          </pre>
+                            {eventPRSuggestions.presseaussendung.content.split('\n').map((line: string, idx: number) => (
+                              <div key={idx} style={{ marginBottom: line.trim() ? '0.5rem' : '0.25rem' }}>
+                                {line.trim() || '\u00A0'}
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
 
@@ -5209,30 +5216,38 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
                             fontSize: 'clamp(0.9rem, 2vw, 1rem)',
                             fontWeight: '600',
                             color: '#5ffbf1',
-                            marginBottom: '0.75rem'
+                            marginBottom: '0.75rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem'
                           }}>
-                            📱 Social Media
+                            <span>📱</span>
+                            <span>Social Media</span>
                           </div>
                           {eventPRSuggestions.socialMedia.instagram && (
                             <div style={{ marginBottom: '1rem' }}>
                               <div style={{
                                 fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
                                 color: '#8fa0c9',
-                                marginBottom: '0.5rem'
+                                marginBottom: '0.5rem',
+                                fontWeight: '500'
                               }}>
                                 Instagram:
                               </div>
-                              <pre style={{
-                                whiteSpace: 'pre-wrap',
-                                wordWrap: 'break-word',
+                              <div style={{
                                 fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
                                 color: '#b8c5e0',
-                                margin: 0,
-                                fontFamily: 'inherit',
-                                lineHeight: '1.6'
+                                lineHeight: '1.8',
+                                whiteSpace: 'pre-wrap',
+                                wordWrap: 'break-word',
+                                fontFamily: 'inherit'
                               }}>
-                                {eventPRSuggestions.socialMedia.instagram}
-                              </pre>
+                                {eventPRSuggestions.socialMedia.instagram.split('\n').map((line: string, idx: number) => (
+                                  <div key={idx} style={{ marginBottom: line.trim() ? '0.5rem' : '0.25rem' }}>
+                                    {line.trim() || '\u00A0'}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           )}
                           {eventPRSuggestions.socialMedia.facebook && (
@@ -5240,21 +5255,25 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
                               <div style={{
                                 fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
                                 color: '#8fa0c9',
-                                marginBottom: '0.5rem'
+                                marginBottom: '0.5rem',
+                                fontWeight: '500'
                               }}>
                                 Facebook:
                               </div>
-                              <pre style={{
-                                whiteSpace: 'pre-wrap',
-                                wordWrap: 'break-word',
+                              <div style={{
                                 fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
                                 color: '#b8c5e0',
-                                margin: 0,
-                                fontFamily: 'inherit',
-                                lineHeight: '1.6'
+                                lineHeight: '1.8',
+                                whiteSpace: 'pre-wrap',
+                                wordWrap: 'break-word',
+                                fontFamily: 'inherit'
                               }}>
-                                {eventPRSuggestions.socialMedia.facebook}
-                              </pre>
+                                {eventPRSuggestions.socialMedia.facebook.split('\n').map((line: string, idx: number) => (
+                                  <div key={idx} style={{ marginBottom: line.trim() ? '0.5rem' : '0.25rem' }}>
+                                    {line.trim() || '\u00A0'}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           )}
                         </div>
@@ -5272,31 +5291,41 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
                             fontSize: 'clamp(0.9rem, 2vw, 1rem)',
                             fontWeight: '600',
                             color: '#5ffbf1',
-                            marginBottom: '0.75rem'
+                            marginBottom: '0.75rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem'
                           }}>
-                            📧 Newsletter
+                            <span>📧</span>
+                            <span>Newsletter</span>
                           </div>
                           {eventPRSuggestions.newsletter.subject && (
                             <div style={{
                               fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
                               color: '#b8c5e0',
-                              marginBottom: '0.5rem'
+                              marginBottom: '0.75rem',
+                              padding: '0.75rem',
+                              background: 'rgba(0, 0, 0, 0.2)',
+                              borderRadius: '8px'
                             }}>
                               <strong style={{ color: '#8fa0c9' }}>Betreff:</strong> {eventPRSuggestions.newsletter.subject}
                             </div>
                           )}
                           {eventPRSuggestions.newsletter.body && (
-                            <pre style={{
-                              whiteSpace: 'pre-wrap',
-                              wordWrap: 'break-word',
+                            <div style={{
                               fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
                               color: '#b8c5e0',
-                              margin: 0,
-                              fontFamily: 'inherit',
-                              lineHeight: '1.6'
+                              lineHeight: '1.8',
+                              whiteSpace: 'pre-wrap',
+                              wordWrap: 'break-word',
+                              fontFamily: 'inherit'
                             }}>
-                              {eventPRSuggestions.newsletter.body}
-                            </pre>
+                              {eventPRSuggestions.newsletter.body.split('\n').map((line: string, idx: number) => (
+                                <div key={idx} style={{ marginBottom: line.trim() ? '0.5rem' : '0.25rem' }}>
+                                  {line.trim() || '\u00A0'}
+                                </div>
+                              ))}
+                            </div>
                           )}
                         </div>
                       )}
