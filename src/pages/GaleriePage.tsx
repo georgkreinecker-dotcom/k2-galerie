@@ -167,6 +167,17 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
 
   // Admin-Login Funktion
   const handleAdminLogin = () => {
+    // Auf localhost automatisch ohne Passwort
+    const isLocalhost = window.location.hostname === 'localhost' || 
+                       window.location.hostname === '127.0.0.1' ||
+                       window.location.hostname === '192.168.0.31' ||
+                       window.location.hostname === '192.168.0.27'
+    
+    if (isLocalhost) {
+      navigate('/admin')
+      return
+    }
+    
     // Lade Passwort direkt aus localStorage für aktuelle Validierung
     let currentPassword = 'k2Galerie2026' // Standard
     try {
@@ -186,6 +197,22 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
     } else {
       alert('❌ Falsches Passwort')
       setAdminPasswordInput('')
+    }
+  }
+
+  // Admin-Button Klick Handler
+  const handleAdminButtonClick = () => {
+    const isLocalhost = window.location.hostname === 'localhost' || 
+                       window.location.hostname === '127.0.0.1' ||
+                       window.location.hostname === '192.168.0.31' ||
+                       window.location.hostname === '192.168.0.27'
+    
+    if (isLocalhost) {
+      // Auf localhost direkt zum Admin navigieren
+      navigate('/admin')
+    } else {
+      // Auf Produktion Modal öffnen
+      setShowAdminModal(true)
     }
   }
 
@@ -213,7 +240,7 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
       <div style={{ position: 'relative', zIndex: 1 }}>
         {/* Admin Button - unauffällig oben rechts */}
         <button
-          onClick={() => setShowAdminModal(true)}
+          onClick={handleAdminButtonClick}
           style={{
             position: 'fixed',
             top: 'clamp(1rem, 2vw, 1.5rem)',
