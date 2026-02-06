@@ -86,6 +86,10 @@ function ScreenshotExportAdmin() {
   const [eventDailyTimes, setEventDailyTimes] = useState<Record<string, string>>({})
   const [eventDescription, setEventDescription] = useState('')
   const [eventLocation, setEventLocation] = useState('')
+  
+  // PR-Vorschläge State
+  const [eventPRSuggestions, setEventPRSuggestions] = useState<any>(null)
+  const [editingPRType, setEditingPRType] = useState<string | null>(null)
   const [showDocumentModal, setShowDocumentModal] = useState(false)
   const [selectedEventForDocument, setSelectedEventForDocument] = useState<string | null>(null)
   const [eventDocumentFile, setEventDocumentFile] = useState<File | null>(null)
@@ -264,8 +268,20 @@ function ScreenshotExportAdmin() {
     setEvents(updatedEvents)
     saveEvents(updatedEvents)
     
-    // Automatisch Vorschläge für Öffentlichkeitsarbeit generieren
-    if (!editingEvent) {
+    // PR-Vorschläge speichern falls vorhanden
+    if (eventPRSuggestions) {
+      eventPRSuggestions.eventId = eventData.id
+      eventPRSuggestions.eventTitle = eventData.title
+      const existingSuggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+      const index = existingSuggestions.findIndex((s: any) => s.eventId === eventData.id)
+      if (index >= 0) {
+        existingSuggestions[index] = eventPRSuggestions
+      } else {
+        existingSuggestions.push(eventPRSuggestions)
+      }
+      localStorage.setItem('k2-pr-suggestions', JSON.stringify(existingSuggestions))
+    } else if (!editingEvent) {
+      // Automatisch Vorschläge für neues Event generieren
       generateAutomaticSuggestions(eventData)
     }
     
@@ -281,6 +297,8 @@ function ScreenshotExportAdmin() {
     setEventDailyTimes({})
     setEventDescription('')
     setEventLocation('')
+    setEventPRSuggestions(null)
+    setEditingPRType(null)
     
     alert(editingEvent ? '✅ Event aktualisiert!' : '✅ Event hinzugefügt!')
   }
@@ -297,6 +315,27 @@ function ScreenshotExportAdmin() {
     setEventDailyTimes(event.dailyTimes || {})
     setEventDescription(event.description || '')
     setEventLocation(event.location || '')
+    
+    // PR-Vorschläge laden falls vorhanden
+    const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+    const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+    if (eventSuggestion) {
+      setEventPRSuggestions(eventSuggestion)
+    } else {
+      // Neue Vorschläge generieren falls noch nicht vorhanden
+      const newSuggestions = {
+        eventId: event.id,
+        eventTitle: event.title,
+        generatedAt: new Date().toISOString(),
+        presseaussendung: generatePresseaussendungContent(event),
+        socialMedia: generateSocialMediaContent(event),
+        flyer: generateFlyerContent(event),
+        newsletter: generateNewsletterContent(event),
+        plakat: generatePlakatContent(event)
+      }
+      setEventPRSuggestions(newSuggestions)
+    }
+    
     setShowEventModal(true)
   }
 
@@ -470,20 +509,8 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
     }
   }
 
-  // Presseaussendung generieren (mit App-Design)
-  const generatePresseaussendung = () => {
-    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
-    if (!selectedEvent && events.length === 0) {
-      alert('Bitte zuerst ein Event erstellen')
-      return
-    }
-    const event = selectedEvent || events[0]
-    
-    // Prüfe ob Vorschläge vorhanden sind
-    const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
-    const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
-    
-    const content = eventSuggestion?.presseaussendung?.content || generatePresseaussendungContent(event).content
+  // Presseaussendung mit Content generieren (Hilfsfunktion)
+  const generatePresseaussendungWithContent = (event: any, content: string) => {
     
     const html = `
 <!DOCTYPE html>
@@ -574,14 +601,26 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
     alert('✅ Presseaussendung generiert!')
   }
 
-  // Social Media Posts generieren (mit App-Design)
-  const generateSocialMediaPosts = () => {
+  // Presseaussendung generieren (mit App-Design)
+  const generatePresseaussendung = () => {
     const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
     if (!selectedEvent && events.length === 0) {
       alert('Bitte zuerst ein Event erstellen')
       return
     }
     const event = selectedEvent || events[0]
+    
+    // Prüfe ob Vorschläge vorhanden sind
+    const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+    const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+    
+    const content = eventSuggestion?.presseaussendung?.content || generatePresseaussendungContent(event).content
+    
+    generatePresseaussendungWithContent(event, content)
+  }
+
+  // Social Media Posts für spezifisches Event generieren
+  const generateSocialMediaPostsForEvent = (event: any) => {
     
     // Prüfe ob Vorschläge vorhanden sind
     const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
@@ -689,14 +728,18 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
     alert('✅ Social Media Posts generiert!')
   }
 
-  // Event-Flyer generieren (mit App-Design)
-  const generateEventFlyer = () => {
+  // Social Media Posts generieren (mit App-Design) - Fallback
+  const generateSocialMediaPosts = () => {
     const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
     if (!selectedEvent && events.length === 0) {
       alert('Bitte zuerst ein Event erstellen')
       return
     }
-    const event = selectedEvent || events[0]
+    generateSocialMediaPostsForEvent(selectedEvent || events[0])
+  }
+
+  // Event-Flyer für spezifisches Event generieren
+  const generateEventFlyerForEvent = (event: any) => {
     
     // Prüfe ob Vorschläge vorhanden sind
     const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
@@ -847,14 +890,18 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
     alert('✅ Flyer generiert! Bitte im Browser drucken.')
   }
 
-  // E-Mail-Newsletter generieren (mit App-Design)
-  const generateEmailNewsletter = () => {
+  // Event-Flyer generieren (mit App-Design) - Fallback
+  const generateEventFlyer = () => {
     const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
     if (!selectedEvent && events.length === 0) {
       alert('Bitte zuerst ein Event erstellen')
       return
     }
-    const event = selectedEvent || events[0]
+    generateEventFlyerForEvent(selectedEvent || events[0])
+  }
+
+  // E-Mail-Newsletter für spezifisches Event generieren
+  const generateEmailNewsletterForEvent = (event: any) => {
     
     // Prüfe ob Vorschläge vorhanden sind
     const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
@@ -996,14 +1043,18 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
     alert('✅ Newsletter generiert! HTML-Code kann kopiert werden.')
   }
 
-  // Plakat generieren (mit App-Design)
-  const generatePlakat = () => {
+  // E-Mail-Newsletter generieren (mit App-Design) - Fallback
+  const generateEmailNewsletter = () => {
     const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
     if (!selectedEvent && events.length === 0) {
       alert('Bitte zuerst ein Event erstellen')
       return
     }
-    const event = selectedEvent || events[0]
+    generateEmailNewsletterForEvent(selectedEvent || events[0])
+  }
+
+  // Plakat für spezifisches Event generieren
+  const generatePlakatForEvent = (event: any) => {
     
     // Prüfe ob Vorschläge vorhanden sind
     const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
@@ -1157,6 +1208,16 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
     const url = URL.createObjectURL(blob)
     window.open(url, '_blank')
     alert('✅ Plakat generiert! Bitte im Browser drucken (A3 Format).')
+  }
+
+  // Plakat generieren (mit App-Design) - Fallback
+  const generatePlakat = () => {
+    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
+    if (!selectedEvent && events.length === 0) {
+      alert('Bitte zuerst ein Event erstellen')
+      return
+    }
+    generatePlakatForEvent(selectedEvent || events[0])
   }
 
   // Pressemappe generieren
@@ -1488,6 +1549,8 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
     setEventDescription('')
     // Automatisch Ort aus Stammdaten übernehmen
     setEventLocation(galleryData.address || '')
+    setEventPRSuggestions(null)
+    setEditingPRType(null)
     setShowEventModal(true)
   }
 
@@ -5115,9 +5178,13 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
                       setEventType('galerieeröffnung')
                       setEventDate('')
                       setEventEndDate('')
-                      setEventTime('')
+                      setEventStartTime('')
+                      setEventEndTime('')
+                      setEventDailyTimes({})
                       setEventDescription('')
                       setEventLocation('')
+                      setEventPRSuggestions(null)
+                      setEditingPRType(null)
                     }}
                     style={{
                       flex: 1,
@@ -5358,89 +5425,331 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
               📢 Öffentlichkeitsarbeit
             </h2>
 
-            {/* Automatische Vorschläge für Events */}
+            {/* PR-Vorschläge nach Events gruppiert */}
             {(() => {
               const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
-              const latestSuggestions = suggestions.slice(-3).reverse() // Letzte 3 Events
               
-              if (latestSuggestions.length > 0) {
+              // Events mit Vorschlägen zusammenführen
+              const eventsWithSuggestions = events
+                .map(event => {
+                  const suggestion = suggestions.find((s: any) => s.eventId === event.id)
+                  return { event, suggestion }
+                })
+                .filter(item => item.suggestion) // Nur Events mit Vorschlägen
+                .sort((a, b) => new Date(b.event.date).getTime() - new Date(a.event.date).getTime()) // Neueste zuerst
+              
+              if (eventsWithSuggestions.length > 0) {
                 return (
                   <div style={{
-                    marginBottom: 'clamp(2rem, 5vw, 3rem)',
-                    padding: 'clamp(1.5rem, 4vw, 2rem)',
-                    background: 'linear-gradient(135deg, rgba(95, 251, 241, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%)',
-                    border: '1px solid rgba(95, 251, 241, 0.2)',
-                    borderRadius: '16px'
+                    marginBottom: 'clamp(2rem, 5vw, 3rem)'
                   }}>
                     <h3 style={{
                       fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
                       fontWeight: '600',
                       color: '#5ffbf1',
-                      margin: '0 0 1rem 0'
+                      margin: '0 0 1.5rem 0'
                     }}>
-                      ✨ Automatische Vorschläge für neue Events
+                      📅 PR-Vorschläge nach Events
                     </h3>
+                    
                     <div style={{
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '1rem'
+                      gap: '1.5rem'
                     }}>
-                      {latestSuggestions.map((suggestion: any, idx: number) => (
+                      {eventsWithSuggestions.map(({ event, suggestion }: any, idx: number) => (
                         <div
-                          key={idx}
+                          key={event.id}
                           style={{
-                            background: 'rgba(255, 255, 255, 0.05)',
-                            border: '1px solid rgba(255, 255, 255, 0.1)',
-                            borderRadius: '12px',
-                            padding: '1rem',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
-                            e.currentTarget.style.transform = 'translateX(4px)'
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-                            e.currentTarget.style.transform = 'translateX(0)'
-                          }}
-                          onClick={() => {
-                            // Event auswählen und Vorschläge anzeigen
-                            const event = events.find(e => e.id === suggestion.eventId)
-                            if (event) {
-                              handleEditEvent(event)
-                              setActiveTab('öffentlichkeitsarbeit')
-                            }
+                            background: 'linear-gradient(135deg, rgba(95, 251, 241, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%)',
+                            border: '1px solid rgba(95, 251, 241, 0.2)',
+                            borderRadius: '16px',
+                            padding: 'clamp(1.5rem, 4vw, 2rem)',
+                            overflow: 'hidden'
                           }}
                         >
+                          {/* Event Header */}
                           <div style={{
                             display: 'flex',
                             justifyContent: 'space-between',
-                            alignItems: 'center',
-                            marginBottom: '0.5rem'
-                          }}>
-                            <strong style={{ color: '#ffffff', fontSize: 'clamp(1rem, 2.5vw, 1.1rem)' }}>
-                              {suggestion.eventTitle}
-                            </strong>
-                            <span style={{
-                              fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
-                              color: '#8fa0c9'
-                            }}>
-                              {new Date(suggestion.generatedAt).toLocaleDateString('de-DE')}
-                            </span>
-                          </div>
-                          <div style={{
-                            display: 'flex',
-                            gap: '0.5rem',
+                            alignItems: 'flex-start',
+                            marginBottom: '1.5rem',
                             flexWrap: 'wrap',
-                            fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
-                            color: '#b8c5e0'
+                            gap: '1rem'
                           }}>
-                            <span>📰 Presse</span>
-                            <span>📱 Social</span>
-                            <span>📄 Flyer</span>
-                            <span>📧 Newsletter</span>
-                            <span>🖼️ Plakat</span>
+                            <div style={{ flex: 1 }}>
+                              <h4 style={{
+                                fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                                fontWeight: '600',
+                                color: '#ffffff',
+                                margin: '0 0 0.5rem 0'
+                              }}>
+                                {event.title}
+                              </h4>
+                              <div style={{
+                                fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                                color: '#8fa0c9',
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: '1rem'
+                              }}>
+                                <span>📅 {new Date(event.date).toLocaleDateString('de-DE', {
+                                  day: 'numeric',
+                                  month: 'long',
+                                  year: 'numeric'
+                                })}</span>
+                                {event.location && <span>📍 {event.location}</span>}
+                                {event.type && <span>🏷️ {event.type === 'galerieeröffnung' ? 'Galerieeröffnung' : event.type === 'vernissage' ? 'Vernissage' : event.type === 'finissage' ? 'Finissage' : event.type === 'öffentlichkeitsarbeit' ? 'Öffentlichkeitsarbeit' : 'Sonstiges'}</span>}
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => {
+                                handleEditEvent(event)
+                                setActiveTab('eventplan')
+                              }}
+                              style={{
+                                padding: '0.5rem 1rem',
+                                background: 'rgba(102, 126, 234, 0.3)',
+                                border: '1px solid rgba(102, 126, 234, 0.5)',
+                                borderRadius: '8px',
+                                color: '#ffffff',
+                                cursor: 'pointer',
+                                fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                                fontWeight: '500',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              ✏️ Event bearbeiten
+                            </button>
+                          </div>
+
+                          {/* PR-Medien Grid */}
+                          <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                            gap: '1rem'
+                          }}>
+                            {/* Presseaussendung */}
+                            <div
+                              onClick={() => {
+                                const selectedEvent = events.find(e => e.id === event.id)
+                                if (selectedEvent) {
+                                  const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+                                  const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+                                  if (eventSuggestion) {
+                                    const content = eventSuggestion.presseaussendung?.content || generatePresseaussendungContent(selectedEvent).content
+                                    generatePresseaussendungWithContent(selectedEvent, content)
+                                  } else {
+                                    generatePresseaussendung()
+                                  }
+                                }
+                              }}
+                              style={{
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                borderRadius: '12px',
+                                padding: '1rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                textAlign: 'center'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                                e.currentTarget.style.transform = 'translateY(-2px)'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                                e.currentTarget.style.transform = 'translateY(0)'
+                              }}
+                            >
+                              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📰</div>
+                              <div style={{
+                                fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                                fontWeight: '500',
+                                color: '#ffffff',
+                                marginBottom: '0.25rem'
+                              }}>
+                                Presseaussendung
+                              </div>
+                              <div style={{
+                                fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
+                                color: '#8fa0c9'
+                              }}>
+                                Generieren
+                              </div>
+                            </div>
+
+                            {/* Social Media */}
+                            <div
+                              onClick={() => {
+                                const selectedEvent = events.find(e => e.id === event.id)
+                                if (selectedEvent) {
+                                  generateSocialMediaPostsForEvent(selectedEvent)
+                                }
+                              }}
+                              style={{
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                borderRadius: '12px',
+                                padding: '1rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                textAlign: 'center'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                                e.currentTarget.style.transform = 'translateY(-2px)'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                                e.currentTarget.style.transform = 'translateY(0)'
+                              }}
+                            >
+                              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📱</div>
+                              <div style={{
+                                fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                                fontWeight: '500',
+                                color: '#ffffff',
+                                marginBottom: '0.25rem'
+                              }}>
+                                Social Media
+                              </div>
+                              <div style={{
+                                fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
+                                color: '#8fa0c9'
+                              }}>
+                                Instagram & Facebook
+                              </div>
+                            </div>
+
+                            {/* Flyer */}
+                            <div
+                              onClick={() => {
+                                const selectedEvent = events.find(e => e.id === event.id)
+                                if (selectedEvent) {
+                                  generateEventFlyerForEvent(selectedEvent)
+                                }
+                              }}
+                              style={{
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                borderRadius: '12px',
+                                padding: '1rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                textAlign: 'center'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                                e.currentTarget.style.transform = 'translateY(-2px)'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                                e.currentTarget.style.transform = 'translateY(0)'
+                              }}
+                            >
+                              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📄</div>
+                              <div style={{
+                                fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                                fontWeight: '500',
+                                color: '#ffffff',
+                                marginBottom: '0.25rem'
+                              }}>
+                                Flyer
+                              </div>
+                              <div style={{
+                                fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
+                                color: '#8fa0c9'
+                              }}>
+                                A4 Format
+                              </div>
+                            </div>
+
+                            {/* Newsletter */}
+                            <div
+                              onClick={() => {
+                                const selectedEvent = events.find(e => e.id === event.id)
+                                if (selectedEvent) {
+                                  generateEmailNewsletterForEvent(selectedEvent)
+                                }
+                              }}
+                              style={{
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                borderRadius: '12px',
+                                padding: '1rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                textAlign: 'center'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                                e.currentTarget.style.transform = 'translateY(-2px)'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                                e.currentTarget.style.transform = 'translateY(0)'
+                              }}
+                            >
+                              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📧</div>
+                              <div style={{
+                                fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                                fontWeight: '500',
+                                color: '#ffffff',
+                                marginBottom: '0.25rem'
+                              }}>
+                                Newsletter
+                              </div>
+                              <div style={{
+                                fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
+                                color: '#8fa0c9'
+                              }}>
+                                E-Mail HTML
+                              </div>
+                            </div>
+
+                            {/* Plakat */}
+                            <div
+                              onClick={() => {
+                                const selectedEvent = events.find(e => e.id === event.id)
+                                if (selectedEvent) {
+                                  generatePlakatForEvent(selectedEvent)
+                                }
+                              }}
+                              style={{
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                borderRadius: '12px',
+                                padding: '1rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                textAlign: 'center'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                                e.currentTarget.style.transform = 'translateY(-2px)'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                                e.currentTarget.style.transform = 'translateY(0)'
+                              }}
+                            >
+                              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🖼️</div>
+                              <div style={{
+                                fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                                fontWeight: '500',
+                                color: '#ffffff',
+                                marginBottom: '0.25rem'
+                              }}>
+                                Plakat
+                              </div>
+                              <div style={{
+                                fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
+                                color: '#8fa0c9'
+                              }}>
+                                A3 Format
+                              </div>
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -5448,90 +5757,29 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
                   </div>
                 )
               }
-              return null
+              return (
+                <div style={{
+                  padding: '2rem',
+                  textAlign: 'center',
+                  color: '#8fa0c9',
+                  fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                }}>
+                  Noch keine PR-Vorschläge vorhanden. Erstelle ein Event, um automatisch Vorschläge zu generieren.
+                </div>
+              )
             })()}
 
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: 'clamp(1rem, 3vw, 1.5rem)',
-              marginBottom: 'clamp(2rem, 5vw, 3rem)'
-            }}>
-              {/* Presseaussendung */}
+            {/* Fallback: Generische Medien-Generatoren (wenn keine Events vorhanden) */}
+            {events.length === 0 && (
               <div style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '16px',
-                padding: 'clamp(1.5rem, 4vw, 2rem)',
-                transition: 'all 0.3s ease',
-                cursor: 'pointer'
-              }}
-              onClick={() => generatePresseaussendung()}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
-                e.currentTarget.style.transform = 'translateY(-4px)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-                e.currentTarget.style.transform = 'translateY(0)'
-              }}
-              >
-                <div style={{ fontSize: 'clamp(2.5rem, 6vw, 3.5rem)', marginBottom: '1rem' }}>📰</div>
-                <h3 style={{
-                  fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
-                  fontWeight: '600',
-                  color: '#ffffff',
-                  margin: '0 0 0.5rem 0'
-                }}>
-                  Presseaussendung
-                </h3>
-                <p style={{
-                  fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                  color: '#8fa0c9',
-                  margin: 0,
-                  lineHeight: '1.6'
-                }}>
-                  Professionelle Presseaussendung aus Event-Daten generieren
-                </p>
+                padding: '2rem',
+                textAlign: 'center',
+                color: '#8fa0c9',
+                fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+              }}>
+                Erstelle zuerst ein Event in der Eventplanung, um PR-Vorschläge zu generieren.
               </div>
-
-              {/* Social Media Posts */}
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '16px',
-                padding: 'clamp(1.5rem, 4vw, 2rem)',
-                transition: 'all 0.3s ease',
-                cursor: 'pointer'
-              }}
-              onClick={() => generateSocialMediaPosts()}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
-                e.currentTarget.style.transform = 'translateY(-4px)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-                e.currentTarget.style.transform = 'translateY(0)'
-              }}
-              >
-                <div style={{ fontSize: 'clamp(2.5rem, 6vw, 3.5rem)', marginBottom: '1rem' }}>📱</div>
-                <h3 style={{
-                  fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
-                  fontWeight: '600',
-                  color: '#ffffff',
-                  margin: '0 0 0.5rem 0'
-                }}>
-                  Social Media Posts
-                </h3>
-                <p style={{
-                  fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                  color: '#8fa0c9',
-                  margin: 0,
-                  lineHeight: '1.6'
-                }}>
-                  Instagram & Facebook Posts mit Bildern generieren
-                </p>
-              </div>
+            )}
 
               {/* Event-Flyer */}
               <div style={{
