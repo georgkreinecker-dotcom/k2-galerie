@@ -5195,7 +5195,7 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
                             wordWrap: 'break-word',
                             fontFamily: 'inherit'
                           }}>
-                            {eventPRSuggestions.presseaussendung.content.split('\n').map((line: string, idx: number) => (
+                            {(eventPRSuggestions.presseaussendung.content || '').split('\n').map((line: string, idx: number) => (
                               <div key={idx} style={{ marginBottom: line.trim() ? '0.5rem' : '0.25rem' }}>
                                 {line.trim() || '\u00A0'}
                               </div>
@@ -5268,7 +5268,7 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
                                 wordWrap: 'break-word',
                                 fontFamily: 'inherit'
                               }}>
-                                {eventPRSuggestions.socialMedia.facebook.split('\n').map((line: string, idx: number) => (
+                                {((eventPRSuggestions.socialMedia.facebook || '')).split('\n').map((line: string, idx: number) => (
                                   <div key={idx} style={{ marginBottom: line.trim() ? '0.5rem' : '0.25rem' }}>
                                     {line.trim() || '\u00A0'}
                                   </div>
@@ -5320,7 +5320,7 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
                               wordWrap: 'break-word',
                               fontFamily: 'inherit'
                             }}>
-                              {eventPRSuggestions.newsletter.body.split('\n').map((line: string, idx: number) => (
+                              {((eventPRSuggestions.newsletter.body || '')).split('\n').map((line: string, idx: number) => (
                                 <div key={idx} style={{ marginBottom: line.trim() ? '0.5rem' : '0.25rem' }}>
                                   {line.trim() || '\u00A0'}
                                 </div>
