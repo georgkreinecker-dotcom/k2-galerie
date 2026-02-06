@@ -6423,7 +6423,7 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
                       })}
                     </div>
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         if (editingEvent) {
                           // Aktualisiere das Event direkt mit den neuen täglichen Zeiten
                           const updatedEvents = events.map(e => 
@@ -6433,7 +6433,168 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
                           )
                           setEvents(updatedEvents)
                           saveEvents(updatedEvents)
-                          alert('✅ Tägliche Zeiten gespeichert!')
+                          
+                          // Erstelle ein Dokument mit den täglichen Zeiten
+                          const days = getEventDays(eventDate, eventEndDate || eventDate)
+                          const timesContent = days
+                            .filter(day => eventDailyTimes[day] && (typeof eventDailyTimes[day] === 'string' || eventDailyTimes[day].start || eventDailyTimes[day].end))
+                            .map(day => {
+                              const dayLabel = new Date(day).toLocaleDateString('de-DE', {
+                                weekday: 'long',
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric'
+                              })
+                              const dayTime = eventDailyTimes[day]
+                              let timeDisplay = ''
+                              if (typeof dayTime === 'string') {
+                                timeDisplay = `${dayTime} Uhr`
+                              } else if (dayTime.start || dayTime.end) {
+                                timeDisplay = dayTime.start 
+                                  ? (dayTime.end ? `${dayTime.start} - ${dayTime.end} Uhr` : `${dayTime.start} Uhr`)
+                                  : (dayTime.end ? `bis ${dayTime.end} Uhr` : '')
+                              }
+                              return `<p><strong>${dayLabel}:</strong> ${timeDisplay}</p>`
+                            })
+                            .join('')
+                          
+                          if (timesContent) {
+                            const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Tägliche Zeiten - ${editingEvent.title}</title>
+  <style>
+    @media print {
+      body { margin: 0; background: white !important; }
+      .no-print { display: none; }
+      .page { background: white !important; color: #1a1f3a !important; border: none !important; box-shadow: none !important; }
+      h1 { color: #667eea !important; border-bottom-color: #667eea !important; }
+      p { color: #333 !important; }
+      strong { color: #667eea !important; }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
+      color: #f4f7ff;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    .page {
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 2rem;
+      background: linear-gradient(145deg, rgba(18, 22, 35, 0.95), rgba(12, 16, 28, 0.92));
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(95, 251, 241, 0.12);
+      border-radius: 24px;
+    }
+    h1 {
+      font-size: 2rem;
+      color: #5ffbf1;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid rgba(95, 251, 241, 0.3);
+      padding-bottom: 0.5rem;
+      letter-spacing: 0.02em;
+    }
+    h2 {
+      font-size: 1.3rem;
+      color: #5ffbf1;
+      margin: 1.5rem 0 1rem;
+    }
+    p {
+      color: #b8c5e0;
+      line-height: 1.8;
+      margin: 0.75rem 0;
+      font-size: 1.1rem;
+    }
+    strong {
+      color: #5ffbf1;
+    }
+    .no-print {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(95, 251, 241, 0.2);
+      border-radius: 12px;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 0 0.5rem;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button onclick="window.print()">🖨️ Als PDF drucken</button>
+  </div>
+  <div class="page">
+    <h1>🕐 Tägliche Zeiten</h1>
+    <h2>${editingEvent.title}</h2>
+    <p style="color: #8fa0c9; margin-bottom: 1.5rem;">
+      ${new Date(editingEvent.date).toLocaleDateString('de-DE', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })}${editingEvent.endDate && editingEvent.endDate !== editingEvent.date ? ` - ${new Date(editingEvent.endDate).toLocaleDateString('de-DE', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })}` : ''}
+    </p>
+    ${timesContent}
+  </div>
+</body>
+</html>
+                            `
+                            
+                            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' })
+                            const reader = new FileReader()
+                            reader.onloadend = () => {
+                              const documentData = {
+                                id: `daily-times-${editingEvent.id}-${Date.now()}`,
+                                name: `Tägliche Zeiten - ${editingEvent.title}`,
+                                type: 'sonstiges' as const,
+                                fileData: reader.result as string,
+                                fileName: `tägliche-zeiten-${editingEvent.title.replace(/\s+/g, '-').toLowerCase()}.html`,
+                                fileType: 'text/html',
+                                addedAt: new Date().toISOString()
+                              }
+                              
+                              const finalEvents = updatedEvents.map(event => {
+                                if (event.id === editingEvent.id) {
+                                  // Entferne alte "Tägliche Zeiten" Dokumente und füge neues hinzu
+                                  const filteredDocs = (event.documents || []).filter((doc: any) => 
+                                    !doc.name || !doc.name.includes('Tägliche Zeiten')
+                                  )
+                                  return {
+                                    ...event,
+                                    documents: [...filteredDocs, documentData]
+                                  }
+                                }
+                                return event
+                              })
+                              
+                              setEvents(finalEvents)
+                              saveEvents(finalEvents)
+                              alert('✅ Tägliche Zeiten gespeichert und als Dokument hinzugefügt!')
+                            }
+                            reader.readAsDataURL(blob)
+                          } else {
+                            alert('✅ Tägliche Zeiten gespeichert!')
+                          }
                         }
                       }}
                       disabled={!editingEvent}
