@@ -1863,7 +1863,7 @@ function ScreenshotExportAdmin() {
                 }
               }}
             >
-              📅 Eventplan
+              📅 Eventplanung
             </button>
           </div>
 
@@ -3216,7 +3216,7 @@ function ScreenshotExportAdmin() {
                 margin: 0,
                 letterSpacing: '-0.01em'
               }}>
-                📅 Eventplan
+                📅 Eventplanung
               </h2>
               <button
                 onClick={openEventModal}
