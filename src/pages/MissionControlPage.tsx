@@ -1,6 +1,7 @@
 import { usePersistentBoolean, usePersistentString } from '../hooks/usePersistentState'
 import { ProjectNavButton } from '../components/Navigation'
 import { Link } from 'react-router-dom'
+import DomainManager from '../components/DomainManager'
 
 type PhaseId = 'phase1' | 'phase2' | 'phase3' | 'phase4'
 
@@ -148,12 +149,15 @@ const MissionControlPage = () => {
                 placeholder="Notizen …"
               />
               {phase.id === 'phase2' && (
-                <div className="links">
-                  <strong>Anleitungen:</strong>
-                  <ul>
-                    <li>EINFACHES_DEPLOYMENT.md, VERCEL_ANLEITUNG_DEUTSCH.md, GITHUB_SETUP_ANLEITUNG.md</li>
-                  </ul>
-                </div>
+                <>
+                  <DomainManager />
+                  <div className="links" style={{ marginTop: '1.5rem' }}>
+                    <strong>Anleitungen:</strong>
+                    <ul>
+                      <li>EINFACHES_DEPLOYMENT.md, VERCEL_ANLEITUNG_DEUTSCH.md, GITHUB_SETUP_ANLEITUNG.md</li>
+                    </ul>
+                  </div>
+                </>
               )}
               {phase.id === 'phase3' && (
                 <div className="links">
