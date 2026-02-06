@@ -83,6 +83,11 @@ function ScreenshotExportAdmin() {
   const [eventTime, setEventTime] = useState('')
   const [eventDescription, setEventDescription] = useState('')
   const [eventLocation, setEventLocation] = useState('')
+  const [showDocumentModal, setShowDocumentModal] = useState(false)
+  const [selectedEventForDocument, setSelectedEventForDocument] = useState<string | null>(null)
+  const [eventDocumentFile, setEventDocumentFile] = useState<File | null>(null)
+  const [eventDocumentName, setEventDocumentName] = useState('')
+  const [eventDocumentType, setEventDocumentType] = useState<'flyer' | 'plakat' | 'presseaussendung' | 'sonstiges'>('flyer')
   
   // Stammdaten
   const [martinaData, setMartinaData] = useState({
@@ -234,6 +239,7 @@ function ScreenshotExportAdmin() {
       time: eventTime || '',
       description: eventDescription,
       location: eventLocation,
+      documents: editingEvent?.documents || [],
       createdAt: editingEvent?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }
@@ -274,6 +280,95 @@ function ScreenshotExportAdmin() {
     setEventDescription(event.description || '')
     setEventLocation(event.location || '')
     setShowEventModal(true)
+  }
+
+  // Dokument zu Event hinzufügen
+  const handleAddEventDocument = async () => {
+    if (!eventDocumentFile || !eventDocumentName || !selectedEventForDocument) {
+      alert('Bitte Datei und Name auswählen')
+      return
+    }
+
+    try {
+      // Datei zu Data URL konvertieren
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        const documentData = {
+          id: `doc-${Date.now()}`,
+          name: eventDocumentName,
+          type: eventDocumentType,
+          fileData: reader.result as string,
+          fileName: eventDocumentFile.name,
+          fileType: eventDocumentFile.type,
+          addedAt: new Date().toISOString()
+        }
+
+        const updatedEvents = events.map(event => {
+          if (event.id === selectedEventForDocument) {
+            return {
+              ...event,
+              documents: [...(event.documents || []), documentData]
+            }
+          }
+          return event
+        })
+
+        setEvents(updatedEvents)
+        saveEvents(updatedEvents)
+        
+        // Zurücksetzen
+        setShowDocumentModal(false)
+        setSelectedEventForDocument(null)
+        setEventDocumentFile(null)
+        setEventDocumentName('')
+        setEventDocumentType('flyer')
+        
+        alert('✅ Dokument hinzugefügt!')
+      }
+      reader.readAsDataURL(eventDocumentFile)
+    } catch (error) {
+      console.error('Fehler beim Hinzufügen des Dokuments:', error)
+      alert('Fehler beim Hinzufügen des Dokuments')
+    }
+  }
+
+  // Dokument von Event löschen
+  const handleDeleteEventDocument = (eventId: string, documentId: string) => {
+    if (confirm('Möchtest du dieses Dokument wirklich löschen?')) {
+      const updatedEvents = events.map(event => {
+        if (event.id === eventId) {
+          return {
+            ...event,
+            documents: (event.documents || []).filter((doc: any) => doc.id !== documentId)
+          }
+        }
+        return event
+      })
+
+      setEvents(updatedEvents)
+      saveEvents(updatedEvents)
+      alert('✅ Dokument gelöscht!')
+    }
+  }
+
+  // Dokument öffnen/anschauen
+  const handleViewEventDocument = (document: any) => {
+    const newWindow = window.open()
+    if (newWindow && document.fileData) {
+      newWindow.document.write(`
+        <html>
+          <head><title>${document.name}</title></head>
+          <body style="margin:0; padding:20px; background:#f5f5f5;">
+            ${document.fileType?.includes('pdf') 
+              ? `<iframe src="${document.fileData}" style="width:100%; height:100vh; border:none;"></iframe>`
+              : document.fileType?.includes('image')
+              ? `<img src="${document.fileData}" style="max-width:100%; height:auto;" />`
+              : `<a href="${document.fileData}" download="${document.fileName}">Download: ${document.name}</a>`
+            }
+          </body>
+        </html>
+      `)
+    }
   }
 
   // Event löschen
@@ -3253,15 +3348,89 @@ function ScreenshotExportAdmin() {
                         )}
                       </div>
 
+                      {/* Dokumente */}
+                      {(event.documents && event.documents.length > 0) && (
+                        <div style={{
+                          marginTop: '1rem',
+                          padding: '0.75rem',
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(255, 255, 255, 0.1)'
+                        }}>
+                          <div style={{
+                            fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                            fontWeight: '600',
+                            color: '#ffffff',
+                            marginBottom: '0.5rem'
+                          }}>
+                            📎 Dokumente ({event.documents.length})
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            {event.documents.map((doc: any) => {
+                              const docIcons: Record<string, string> = {
+                                flyer: '📄',
+                                plakat: '🖼️',
+                                presseaussendung: '📰',
+                                sonstiges: '📎'
+                              }
+                              return (
+                                <div
+                                  key={doc.id}
+                                  style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    padding: '0.5rem',
+                                    background: 'rgba(255, 255, 255, 0.03)',
+                                    borderRadius: '6px'
+                                  }}
+                                >
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
+                                    <span>{docIcons[doc.type] || '📎'}</span>
+                                    <span
+                                      onClick={() => handleViewEventDocument(doc)}
+                                      style={{
+                                        fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
+                                        color: '#5ffbf1',
+                                        cursor: 'pointer',
+                                        textDecoration: 'underline'
+                                      }}
+                                    >
+                                      {doc.name}
+                                    </span>
+                                  </div>
+                                  <button
+                                    onClick={() => handleDeleteEventDocument(event.id, doc.id)}
+                                    style={{
+                                      padding: '0.25rem 0.5rem',
+                                      background: 'rgba(255, 100, 100, 0.2)',
+                                      border: '1px solid rgba(255, 100, 100, 0.3)',
+                                      borderRadius: '4px',
+                                      color: '#ff6464',
+                                      cursor: 'pointer',
+                                      fontSize: 'clamp(0.75rem, 2vw, 0.85rem)'
+                                    }}
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
+
                       <div style={{
                         display: 'flex',
                         gap: '0.5rem',
-                        marginTop: '1rem'
+                        marginTop: '1rem',
+                        flexWrap: 'wrap'
                       }}>
                         <button
                           onClick={() => handleEditEvent(event)}
                           style={{
                             flex: 1,
+                            minWidth: '120px',
                             padding: '0.75rem',
                             background: 'rgba(102, 126, 234, 0.2)',
                             border: '1px solid rgba(102, 126, 234, 0.3)',
@@ -3275,9 +3444,30 @@ function ScreenshotExportAdmin() {
                           ✏️ Bearbeiten
                         </button>
                         <button
+                          onClick={() => {
+                            setSelectedEventForDocument(event.id)
+                            setShowDocumentModal(true)
+                          }}
+                          style={{
+                            flex: 1,
+                            minWidth: '120px',
+                            padding: '0.75rem',
+                            background: 'rgba(95, 251, 241, 0.2)',
+                            border: '1px solid rgba(95, 251, 241, 0.3)',
+                            borderRadius: '8px',
+                            color: '#5ffbf1',
+                            cursor: 'pointer',
+                            fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                            fontWeight: '500'
+                          }}
+                        >
+                          📎 Dokument
+                        </button>
+                        <button
                           onClick={() => handleDeleteEvent(event.id)}
                           style={{
                             flex: 1,
+                            minWidth: '120px',
                             padding: '0.75rem',
                             background: 'rgba(255, 100, 100, 0.2)',
                             border: '1px solid rgba(255, 100, 100, 0.3)',
@@ -3540,6 +3730,203 @@ function ScreenshotExportAdmin() {
                       setEventTime('')
                       setEventDescription('')
                       setEventLocation('')
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      color: '#ffffff',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                      fontWeight: '500',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Dokumente Modal */}
+        {showDocumentModal && selectedEventForDocument && (
+          <div
+            onClick={() => {
+              setShowDocumentModal(false)
+              setSelectedEventForDocument(null)
+              setEventDocumentFile(null)
+              setEventDocumentName('')
+              setEventDocumentType('flyer')
+            }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.8)',
+              backdropFilter: 'blur(10px)',
+              zIndex: 10001,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1rem'
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+                borderRadius: '24px',
+                padding: 'clamp(2rem, 5vw, 3rem)',
+                maxWidth: '500px',
+                width: '100%',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)'
+              }}
+            >
+              <h2 style={{
+                fontSize: 'clamp(1.5rem, 4vw, 2rem)',
+                fontWeight: '700',
+                color: '#ffffff',
+                marginTop: 0,
+                marginBottom: 'clamp(1.5rem, 4vw, 2rem)'
+              }}>
+                📎 Dokument hinzufügen
+              </h2>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#8fa0c9',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                    fontWeight: '500'
+                  }}>
+                    Dokument-Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={eventDocumentName}
+                    onChange={(e) => setEventDocumentName(e.target.value)}
+                    placeholder="z.B. Flyer Eröffnung"
+                    style={{
+                      width: '100%',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      color: '#ffffff',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#8fa0c9',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                    fontWeight: '500'
+                  }}>
+                    Dokument-Typ
+                  </label>
+                  <select
+                    value={eventDocumentType}
+                    onChange={(e) => setEventDocumentType(e.target.value as any)}
+                    style={{
+                      width: '100%',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      color: '#ffffff',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                    }}
+                  >
+                    <option value="flyer">📄 Flyer</option>
+                    <option value="plakat">🖼️ Plakat</option>
+                    <option value="presseaussendung">📰 Presseaussendung</option>
+                    <option value="sonstiges">📎 Sonstiges</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#8fa0c9',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                    fontWeight: '500'
+                  }}>
+                    Datei auswählen *
+                  </label>
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        setEventDocumentFile(file)
+                        if (!eventDocumentName) {
+                          setEventDocumentName(file.name.replace(/\.[^/.]+$/, ''))
+                        }
+                      }
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      color: '#ffffff',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                    }}
+                  />
+                  {eventDocumentFile && (
+                    <div style={{
+                      marginTop: '0.5rem',
+                      fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                      color: '#5ffbf1'
+                    }}>
+                      ✓ {eventDocumentFile.name} ({(eventDocumentFile.size / 1024 / 1024).toFixed(2)} MB)
+                    </div>
+                  )}
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  gap: '1rem',
+                  marginTop: '1rem'
+                }}>
+                  <button
+                    onClick={handleAddEventDocument}
+                    style={{
+                      flex: 1,
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                    }}
+                  >
+                    ✅ Hinzufügen
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowDocumentModal(false)
+                      setSelectedEventForDocument(null)
+                      setEventDocumentFile(null)
+                      setEventDocumentName('')
+                      setEventDocumentType('flyer')
                     }}
                     style={{
                       flex: 1,
