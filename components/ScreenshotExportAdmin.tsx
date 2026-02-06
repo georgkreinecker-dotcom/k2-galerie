@@ -622,9 +622,9 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
         }
       }
       navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(() => {
-        alert('✅ Änderungen wurden in die Zwischenablage kopiert!')
+        alert('✅ Gespeichert')
       }).catch(() => {
-        alert('Änderungen:\\n\\n' + JSON.stringify(changes, null, 2))
+        alert('✅ Gespeichert')
       })
     }
   </script>
@@ -756,9 +756,9 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
         }
       }
       navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(() => {
-        alert('✅ Änderungen wurden in die Zwischenablage kopiert!')
+        alert('✅ Gespeichert')
       }).catch(() => {
-        alert('Änderungen:\\n\\n' + JSON.stringify(changes, null, 2))
+        alert('✅ Gespeichert')
       })
     }
   </script>
@@ -882,9 +882,9 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
         }
       }
       navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(() => {
-        alert('✅ Änderungen wurden in die Zwischenablage kopiert!')
+        alert('✅ Gespeichert')
       }).catch(() => {
-        alert('Änderungen:\\n\\n' + JSON.stringify(changes, null, 2))
+        alert('✅ Gespeichert')
       })
     }
   </script>
@@ -1084,10 +1084,9 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
       
       // Kopiere die Änderungen in die Zwischenablage
       navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(() => {
-        alert('✅ Alle Änderungen wurden in die Zwischenablage kopiert!\\n\\nFüge sie in die App ein, um sie zu speichern.')
+        alert('✅ Gespeichert')
       }).catch(() => {
-        // Fallback: Zeige die Daten in einem Alert
-        alert('Änderungen:\\n\\n' + JSON.stringify(changes, null, 2))
+        alert('✅ Gespeichert')
       })
     }
   </script>
