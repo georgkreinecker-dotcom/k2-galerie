@@ -45,7 +45,7 @@ function loadEvents(): any[] {
  * Wird angezeigt bei: ?screenshot=admin oder /admin
  */
 function ScreenshotExportAdmin() {
-  const [activeTab, setActiveTab] = useState<'werke' | 'dokumente' | 'stammdaten' | 'einstellungen' | 'statistiken' | 'eventplan'>('werke')
+  const [activeTab, setActiveTab] = useState<'werke' | 'dokumente' | 'stammdaten' | 'einstellungen' | 'statistiken' | 'eventplan' | 'öffentlichkeitsarbeit'>('werke')
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -308,6 +308,590 @@ function ScreenshotExportAdmin() {
     }
     
     return days
+  }
+
+  // Presseaussendung generieren
+  const generatePresseaussendung = () => {
+    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
+    if (!selectedEvent && events.length === 0) {
+      alert('Bitte zuerst ein Event erstellen')
+      return
+    }
+    const event = selectedEvent || events[0]
+    
+    const presseText = `
+PRESSEAUSSENDUNG
+
+${event.title.toUpperCase()}
+
+${galleryData.name}
+${galleryData.address || ''}
+${galleryData.phone ? `Tel: ${galleryData.phone}` : ''}
+${galleryData.email ? `E-Mail: ${galleryData.email}` : ''}
+
+${new Date(event.date).toLocaleDateString('de-DE', {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+})}${event.endDate && event.endDate !== event.date ? ` - ${new Date(event.endDate).toLocaleDateString('de-DE', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric'
+})}` : ''}
+
+${event.location || galleryData.address || ''}
+
+${event.description || ''}
+
+KÜNSTLER:
+${martinaData.name}: ${martinaData.bio}
+${georgData.name}: ${georgData.bio}
+
+Für weitere Informationen kontaktieren Sie bitte:
+${galleryData.email || ''}
+${galleryData.phone || ''}
+    `.trim()
+
+    const blob = new Blob([presseText], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `Presseaussendung_${event.title.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.txt`
+    a.click()
+    URL.revokeObjectURL(url)
+    alert('✅ Presseaussendung generiert!')
+  }
+
+  // Social Media Posts generieren
+  const generateSocialMediaPosts = () => {
+    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
+    if (!selectedEvent && events.length === 0) {
+      alert('Bitte zuerst ein Event erstellen')
+      return
+    }
+    const event = selectedEvent || events[0]
+    
+    const instagramPost = `
+🎨 ${event.title}
+
+📅 ${new Date(event.date).toLocaleDateString('de-DE', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric'
+})}${event.startTime ? ` um ${event.startTime} Uhr` : ''}
+
+📍 ${event.location || galleryData.address || ''}
+
+${event.description || ''}
+
+#K2Galerie #Kunst #Keramik #${event.type === 'galerieeröffnung' ? 'Galerieeröffnung' : event.type === 'vernissage' ? 'Vernissage' : event.type === 'finissage' ? 'Finissage' : 'Kunstausstellung'}
+    `.trim()
+
+    const facebookPost = `
+${event.title}
+
+Wir laden Sie herzlich ein zu unserer ${event.type === 'galerieeröffnung' ? 'Galerieeröffnung' : event.type === 'vernissage' ? 'Vernissage' : event.type === 'finissage' ? 'Finissage' : 'Veranstaltung'}!
+
+📅 Datum: ${new Date(event.date).toLocaleDateString('de-DE', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric'
+})}${event.startTime ? `\n🕐 Uhrzeit: ${event.startTime}${event.endTime ? ` - ${event.endTime}` : ''} Uhr` : ''}
+
+📍 Ort: ${event.location || galleryData.address || ''}
+
+${event.description || ''}
+
+Besuchen Sie uns auch online: ${galleryData.website || window.location.origin}
+
+Wir freuen uns auf Ihren Besuch!
+    `.trim()
+
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Social Media Posts - ${event.title}</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 2rem; max-width: 800px; margin: 0 auto; }
+    .post { background: #f5f5f5; padding: 1.5rem; margin-bottom: 2rem; border-radius: 8px; }
+    .platform { font-weight: bold; color: #667eea; margin-bottom: 0.5rem; }
+    pre { white-space: pre-wrap; font-family: inherit; }
+    button { background: #667eea; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Social Media Posts für: ${event.title}</h1>
+  
+  <div class="post">
+    <div class="platform">📱 Instagram Post</div>
+    <pre>${instagramPost}</pre>
+    <button onclick="navigator.clipboard.writeText(\`${instagramPost.replace(/`/g, '\\`')}\`)">Kopieren</button>
+  </div>
+  
+  <div class="post">
+    <div class="platform">📘 Facebook Post</div>
+    <pre>${facebookPost}</pre>
+    <button onclick="navigator.clipboard.writeText(\`${facebookPost.replace(/`/g, '\\`')}\`)">Kopieren</button>
+  </div>
+</body>
+</html>
+    `
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank')
+    alert('✅ Social Media Posts generiert!')
+  }
+
+  // Event-Flyer generieren
+  const generateEventFlyer = () => {
+    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
+    if (!selectedEvent && events.length === 0) {
+      alert('Bitte zuerst ein Event erstellen')
+      return
+    }
+    const event = selectedEvent || events[0]
+    
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(galleryData.website || window.location.origin)}`
+    
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Flyer - ${event.title}</title>
+  <style>
+    @media print {
+      body { margin: 0; }
+      .no-print { display: none; }
+    }
+    body { font-family: 'Arial', sans-serif; padding: 2rem; background: #f5f5f5; }
+    .flyer { background: white; width: 210mm; min-height: 297mm; margin: 0 auto; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    h1 { font-size: 2.5rem; margin: 0 0 1rem 0; color: #1a1f3a; }
+    .event-info { font-size: 1.2rem; margin: 1.5rem 0; line-height: 1.8; }
+    .qr-code { text-align: center; margin: 2rem 0; }
+    .qr-code img { width: 150px; height: 150px; }
+    .contact { margin-top: 2rem; font-size: 0.9rem; color: #666; }
+    button { background: #667eea; color: white; border: none; padding: 1rem 2rem; border-radius: 8px; cursor: pointer; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="text-align: center; margin-bottom: 2rem;">
+    <button onclick="window.print()">🖨️ Drucken</button>
+  </div>
+  
+  <div class="flyer">
+    <h1>${event.title}</h1>
+    
+    <div class="event-info">
+      <p><strong>📅 Datum:</strong> ${new Date(event.date).toLocaleDateString('de-DE', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })}${event.endDate && event.endDate !== event.date ? ` - ${new Date(event.endDate).toLocaleDateString('de-DE', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })}` : ''}</p>
+      
+      ${event.startTime ? `<p><strong>🕐 Uhrzeit:</strong> ${event.startTime}${event.endTime ? ` - ${event.endTime}` : ''} Uhr</p>` : ''}
+      
+      ${event.location ? `<p><strong>📍 Ort:</strong> ${event.location}</p>` : ''}
+    </div>
+    
+    ${event.description ? `<div style="margin: 2rem 0; line-height: 1.8;">${event.description.replace(/\n/g, '<br>')}</div>` : ''}
+    
+    <div class="qr-code">
+      <p>Besuchen Sie uns online:</p>
+      <img src="${qrCodeUrl}" alt="QR Code" />
+      <p style="font-size: 0.9rem; margin-top: 0.5rem;">${galleryData.website || window.location.origin}</p>
+    </div>
+    
+    <div class="contact">
+      <p><strong>${galleryData.name || 'K2 Galerie'}</strong></p>
+      ${galleryData.address ? `<p>${galleryData.address}</p>` : ''}
+      ${galleryData.phone ? `<p>Tel: ${galleryData.phone}</p>` : ''}
+      ${galleryData.email ? `<p>E-Mail: ${galleryData.email}</p>` : ''}
+    </div>
+  </div>
+</body>
+</html>
+    `
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank')
+    alert('✅ Flyer generiert! Bitte im Browser drucken.')
+  }
+
+  // E-Mail-Newsletter generieren
+  const generateEmailNewsletter = () => {
+    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
+    if (!selectedEvent && events.length === 0) {
+      alert('Bitte zuerst ein Event erstellen')
+      return
+    }
+    const event = selectedEvent || events[0]
+    
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Newsletter - ${event.title}</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 2rem; }
+    .email { background: white; padding: 2rem; border: 1px solid #ddd; }
+    h1 { color: #1a1f3a; }
+    .button { display: inline-block; background: #667eea; color: white; padding: 1rem 2rem; text-decoration: none; border-radius: 8px; margin: 1rem 0; }
+    .footer { margin-top: 2rem; font-size: 0.9rem; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="email">
+    <h1>${event.title}</h1>
+    
+    <p>Liebe Kunstfreunde,</p>
+    
+    <p>wir laden Sie herzlich ein zu unserer ${event.type === 'galerieeröffnung' ? 'Galerieeröffnung' : event.type === 'vernissage' ? 'Vernissage' : event.type === 'finissage' ? 'Finissage' : 'Veranstaltung'}!</p>
+    
+    <div style="background: #f5f5f5; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0;">
+      <p><strong>📅 Datum:</strong> ${new Date(event.date).toLocaleDateString('de-DE', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })}${event.endDate && event.endDate !== event.date ? ` - ${new Date(event.endDate).toLocaleDateString('de-DE', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })}` : ''}</p>
+      
+      ${event.startTime ? `<p><strong>🕐 Uhrzeit:</strong> ${event.startTime}${event.endTime ? ` - ${event.endTime}` : ''} Uhr</p>` : ''}
+      
+      ${event.location ? `<p><strong>📍 Ort:</strong> ${event.location}</p>` : ''}
+    </div>
+    
+    ${event.description ? `<p>${event.description.replace(/\n/g, '<br>')}</p>` : ''}
+    
+    <a href="${galleryData.website || window.location.origin}" class="button">Mehr erfahren →</a>
+    
+    <div class="footer">
+      <p><strong>${galleryData.name || 'K2 Galerie'}</strong></p>
+      ${galleryData.address ? `<p>${galleryData.address}</p>` : ''}
+      ${galleryData.phone ? `<p>Tel: ${galleryData.phone}</p>` : ''}
+      ${galleryData.email ? `<p>E-Mail: ${galleryData.email}</p>` : ''}
+    </div>
+  </div>
+</body>
+</html>
+    `
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank')
+    alert('✅ Newsletter generiert! HTML-Code kann kopiert werden.')
+  }
+
+  // Plakat generieren
+  const generatePlakat = () => {
+    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
+    if (!selectedEvent && events.length === 0) {
+      alert('Bitte zuerst ein Event erstellen')
+      return
+    }
+    const event = selectedEvent || events[0]
+    
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(galleryData.website || window.location.origin)}`
+    
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Plakat - ${event.title}</title>
+  <style>
+    @media print {
+      body { margin: 0; }
+      .no-print { display: none; }
+      .plakat { width: 297mm; height: 420mm; }
+    }
+    body { font-family: 'Arial', sans-serif; padding: 2rem; background: #f5f5f5; }
+    .plakat { background: white; width: 297mm; min-height: 420mm; margin: 0 auto; padding: 3rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: space-between; }
+    h1 { font-size: 4rem; margin: 0; color: #1a1f3a; text-align: center; }
+    .event-info { font-size: 1.8rem; text-align: center; margin: 2rem 0; line-height: 2; }
+    .qr-code { text-align: center; margin: 2rem 0; }
+    .qr-code img { width: 200px; height: 200px; }
+    .contact { text-align: center; font-size: 1.2rem; color: #666; margin-top: auto; }
+    button { background: #667eea; color: white; border: none; padding: 1rem 2rem; border-radius: 8px; cursor: pointer; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="text-align: center; margin-bottom: 2rem;">
+    <button onclick="window.print()">🖨️ Drucken (A3)</button>
+  </div>
+  
+  <div class="plakat">
+    <h1>${event.title}</h1>
+    
+    <div class="event-info">
+      <p><strong>${new Date(event.date).toLocaleDateString('de-DE', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })}${event.endDate && event.endDate !== event.date ? ` - ${new Date(event.endDate).toLocaleDateString('de-DE', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })}` : ''}</strong></p>
+      
+      ${event.startTime ? `<p>${event.startTime}${event.endTime ? ` - ${event.endTime}` : ''} Uhr</p>` : ''}
+      
+      ${event.location ? `<p>${event.location}</p>` : ''}
+    </div>
+    
+    <div class="qr-code">
+      <img src="${qrCodeUrl}" alt="QR Code" />
+      <p>${galleryData.website || window.location.origin}</p>
+    </div>
+    
+    <div class="contact">
+      <p><strong>${galleryData.name || 'K2 Galerie'}</strong></p>
+      ${galleryData.address ? `<p>${galleryData.address}</p>` : ''}
+      ${galleryData.phone ? `<p>${galleryData.phone}</p>` : ''}
+    </div>
+  </div>
+</body>
+</html>
+    `
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank')
+    alert('✅ Plakat generiert! Bitte im Browser drucken (A3 Format).')
+  }
+
+  // Pressemappe generieren
+  const generatePressemappe = () => {
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Pressemappe - ${galleryData.name || 'K2 Galerie'}</title>
+  <style>
+    @media print {
+      body { margin: 0; }
+      .no-print { display: none; }
+    }
+    body { font-family: Arial, sans-serif; padding: 2rem; max-width: 800px; margin: 0 auto; }
+    h1 { color: #1a1f3a; }
+    h2 { color: #667eea; margin-top: 2rem; }
+    .section { margin: 2rem 0; }
+    button { background: #667eea; color: white; border: none; padding: 1rem 2rem; border-radius: 8px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="text-align: center; margin-bottom: 2rem;">
+    <button onclick="window.print()">🖨️ Als PDF speichern</button>
+  </div>
+  
+  <h1>PRESSEMAPPE</h1>
+  <h2>${galleryData.name || 'K2 Galerie'}</h2>
+  
+  <div class="section">
+    <h2>Galerie-Informationen</h2>
+    <p><strong>Name:</strong> ${galleryData.name || 'K2 Galerie'}</p>
+    ${galleryData.address ? `<p><strong>Adresse:</strong> ${galleryData.address}</p>` : ''}
+    ${galleryData.phone ? `<p><strong>Telefon:</strong> ${galleryData.phone}</p>` : ''}
+    ${galleryData.email ? `<p><strong>E-Mail:</strong> ${galleryData.email}</p>` : ''}
+    ${galleryData.website ? `<p><strong>Website:</strong> ${galleryData.website}</p>` : ''}
+    ${galleryData.openingHours ? `<p><strong>Öffnungszeiten:</strong> ${galleryData.openingHours}</p>` : ''}
+  </div>
+  
+  <div class="section">
+    <h2>Künstler</h2>
+    <h3>${martinaData.name}</h3>
+    <p>${martinaData.bio}</p>
+    ${martinaData.email ? `<p>E-Mail: ${martinaData.email}</p>` : ''}
+    ${martinaData.phone ? `<p>Telefon: ${martinaData.phone}</p>` : ''}
+    
+    <h3>${georgData.name}</h3>
+    <p>${georgData.bio}</p>
+    ${georgData.email ? `<p>E-Mail: ${georgData.email}</p>` : ''}
+    ${georgData.phone ? `<p>Telefon: ${georgData.phone}</p>` : ''}
+  </div>
+  
+  <div class="section">
+    <h2>Aktuelle Events</h2>
+    ${events.slice(0, 5).map(event => `
+      <div style="margin: 1.5rem 0; padding: 1rem; background: #f5f5f5; border-radius: 8px;">
+        <h3>${event.title}</h3>
+        <p><strong>Datum:</strong> ${new Date(event.date).toLocaleDateString('de-DE', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        })}${event.endDate && event.endDate !== event.date ? ` - ${new Date(event.endDate).toLocaleDateString('de-DE', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        })}` : ''}</p>
+        ${event.location ? `<p><strong>Ort:</strong> ${event.location}</p>` : ''}
+        ${event.description ? `<p>${event.description}</p>` : ''}
+      </div>
+    `).join('')}
+  </div>
+  
+  <div class="section">
+    <h2>Kontakt für Presseanfragen</h2>
+    <p>${galleryData.email || ''}</p>
+    <p>${galleryData.phone || ''}</p>
+  </div>
+</body>
+</html>
+    `
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank')
+    alert('✅ Pressemappe generiert!')
+  }
+
+  // Website-Content generieren
+  const generateWebsiteContent = () => {
+    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
+    if (!selectedEvent && events.length === 0) {
+      alert('Bitte zuerst ein Event erstellen')
+      return
+    }
+    const event = selectedEvent || events[0]
+    
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Website Content - ${event.title}</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 2rem; max-width: 800px; margin: 0 auto; }
+    .content { background: #f5f5f5; padding: 2rem; border-radius: 8px; margin: 1rem 0; }
+    pre { background: white; padding: 1rem; border-radius: 4px; overflow-x: auto; }
+    button { background: #667eea; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; margin: 0.5rem 0.5rem 0.5rem 0; }
+  </style>
+</head>
+<body>
+  <h1>Website Content für: ${event.title}</h1>
+  
+  <div class="content">
+    <h2>HTML Content</h2>
+    <pre id="htmlContent"><section class="event-detail">
+  <h2>${event.title}</h2>
+  <div class="event-meta">
+    <p><strong>Datum:</strong> ${new Date(event.date).toLocaleDateString('de-DE', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })}${event.endDate && event.endDate !== event.date ? ` - ${new Date(event.endDate).toLocaleDateString('de-DE', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })}` : ''}</p>
+    ${event.startTime ? `<p><strong>Uhrzeit:</strong> ${event.startTime}${event.endTime ? ` - ${event.endTime}` : ''} Uhr</p>` : ''}
+    ${event.location ? `<p><strong>Ort:</strong> ${event.location}</p>` : ''}
+  </div>
+  ${event.description ? `<div class="event-description">${event.description.replace(/\n/g, '<br>')}</div>` : ''}
+</section></pre>
+    <button onclick="navigator.clipboard.writeText(document.getElementById('htmlContent').textContent)">HTML kopieren</button>
+  </div>
+  
+  <div class="content">
+    <h2>Meta Description (SEO)</h2>
+    <pre id="metaContent">${event.title} - ${new Date(event.date).toLocaleDateString('de-DE')} bei ${galleryData.name || 'K2 Galerie'}. ${event.description ? event.description.substring(0, 120) : ''}...</pre>
+    <button onclick="navigator.clipboard.writeText(document.getElementById('metaContent').textContent)">Meta kopieren</button>
+  </div>
+</body>
+</html>
+    `
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank')
+    alert('✅ Website-Content generiert!')
+  }
+
+  // Katalog generieren
+  const generateKatalog = () => {
+    const artworks = loadArtworks()
+    if (artworks.length === 0) {
+      alert('Bitte zuerst Werke hinzufügen')
+      return
+    }
+    
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Katalog - ${galleryData.name || 'K2 Galerie'}</title>
+  <style>
+    @media print {
+      body { margin: 0; }
+      .no-print { display: none; }
+      .artwork { page-break-inside: avoid; }
+    }
+    body { font-family: Arial, sans-serif; padding: 2rem; }
+    h1 { color: #1a1f3a; text-align: center; }
+    .artwork { margin: 2rem 0; padding: 1.5rem; border: 1px solid #ddd; border-radius: 8px; display: flex; gap: 2rem; }
+    .artwork-image { width: 200px; height: 200px; object-fit: cover; border-radius: 4px; }
+    .artwork-info { flex: 1; }
+    .artwork-title { font-size: 1.5rem; font-weight: bold; margin: 0 0 0.5rem 0; }
+    button { background: #667eea; color: white; border: none; padding: 1rem 2rem; border-radius: 8px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="text-align: center; margin-bottom: 2rem;">
+    <button onclick="window.print()">🖨️ Als PDF speichern</button>
+  </div>
+  
+  <h1>KATALOG</h1>
+  <h2 style="text-align: center; color: #667eea;">${galleryData.name || 'K2 Galerie'}</h2>
+  
+  ${artworks.map((artwork: any) => `
+    <div class="artwork">
+      ${artwork.imageUrl ? `<img src="${artwork.imageUrl}" alt="${artwork.title}" class="artwork-image" />` : ''}
+      <div class="artwork-info">
+        <div class="artwork-title">${artwork.title}</div>
+        <p><strong>Künstler:</strong> ${artwork.artist}</p>
+        <p><strong>Kategorie:</strong> ${artwork.category === 'malerei' ? 'Malerei' : 'Keramik'}</p>
+        ${artwork.description ? `<p>${artwork.description}</p>` : ''}
+        <p><strong>Preis:</strong> €${artwork.price?.toFixed(2) || '0.00'}</p>
+        <p><strong>Nummer:</strong> ${artwork.number || artwork.id}</p>
+      </div>
+    </div>
+  `).join('')}
+  
+  <div style="margin-top: 3rem; text-align: center; color: #666;">
+    <p>${galleryData.name || 'K2 Galerie'}</p>
+    ${galleryData.address ? `<p>${galleryData.address}</p>` : ''}
+    ${galleryData.email ? `<p>${galleryData.email}</p>` : ''}
+    ${galleryData.phone ? `<p>${galleryData.phone}</p>` : ''}
+  </div>
+</body>
+</html>
+    `
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank')
+    alert('✅ Katalog generiert!')
   }
 
   // Dokument zu Event hinzufügen
@@ -1917,6 +2501,35 @@ function ScreenshotExportAdmin() {
               }}
             >
               📅 Eventplanung
+            </button>
+            <button 
+              onClick={() => setActiveTab('öffentlichkeitsarbeit')}
+              style={{
+                padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                fontWeight: activeTab === 'öffentlichkeitsarbeit' ? '600' : '500',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                background: activeTab === 'öffentlichkeitsarbeit' 
+                  ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                  : 'rgba(255, 255, 255, 0.05)',
+                color: '#ffffff',
+                boxShadow: activeTab === 'öffentlichkeitsarbeit' ? '0 10px 30px rgba(102, 126, 234, 0.3)' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== 'öffentlichkeitsarbeit') {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== 'öffentlichkeitsarbeit') {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                }
+              }}
+            >
+              📢 Öffentlichkeitsarbeit
             </button>
           </div>
 
@@ -4239,6 +4852,341 @@ function ScreenshotExportAdmin() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Öffentlichkeitsarbeit */}
+        {activeTab === 'öffentlichkeitsarbeit' && (
+          <section style={{
+            background: 'rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '24px',
+            padding: 'clamp(2rem, 5vw, 3rem)',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+            marginBottom: 'clamp(2rem, 5vw, 3rem)'
+          }}>
+            <h2 style={{
+              fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
+              fontWeight: '700',
+              color: '#ffffff',
+              marginTop: 0,
+              marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
+              letterSpacing: '-0.01em'
+            }}>
+              📢 Öffentlichkeitsarbeit
+            </h2>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+              gap: 'clamp(1rem, 3vw, 1.5rem)',
+              marginBottom: 'clamp(2rem, 5vw, 3rem)'
+            }}>
+              {/* Presseaussendung */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '16px',
+                padding: 'clamp(1.5rem, 4vw, 2rem)',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
+              }}
+              onClick={() => generatePresseaussendung()}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+                e.currentTarget.style.transform = 'translateY(-4px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
+              >
+                <div style={{ fontSize: 'clamp(2.5rem, 6vw, 3.5rem)', marginBottom: '1rem' }}>📰</div>
+                <h3 style={{
+                  fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                  fontWeight: '600',
+                  color: '#ffffff',
+                  margin: '0 0 0.5rem 0'
+                }}>
+                  Presseaussendung
+                </h3>
+                <p style={{
+                  fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                  color: '#8fa0c9',
+                  margin: 0,
+                  lineHeight: '1.6'
+                }}>
+                  Professionelle Presseaussendung aus Event-Daten generieren
+                </p>
+              </div>
+
+              {/* Social Media Posts */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '16px',
+                padding: 'clamp(1.5rem, 4vw, 2rem)',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
+              }}
+              onClick={() => generateSocialMediaPosts()}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+                e.currentTarget.style.transform = 'translateY(-4px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
+              >
+                <div style={{ fontSize: 'clamp(2.5rem, 6vw, 3.5rem)', marginBottom: '1rem' }}>📱</div>
+                <h3 style={{
+                  fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                  fontWeight: '600',
+                  color: '#ffffff',
+                  margin: '0 0 0.5rem 0'
+                }}>
+                  Social Media Posts
+                </h3>
+                <p style={{
+                  fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                  color: '#8fa0c9',
+                  margin: 0,
+                  lineHeight: '1.6'
+                }}>
+                  Instagram & Facebook Posts mit Bildern generieren
+                </p>
+              </div>
+
+              {/* Event-Flyer */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '16px',
+                padding: 'clamp(1.5rem, 4vw, 2rem)',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
+              }}
+              onClick={() => generateEventFlyer()}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+                e.currentTarget.style.transform = 'translateY(-4px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
+              >
+                <div style={{ fontSize: 'clamp(2.5rem, 6vw, 3.5rem)', marginBottom: '1rem' }}>📄</div>
+                <h3 style={{
+                  fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                  fontWeight: '600',
+                  color: '#ffffff',
+                  margin: '0 0 0.5rem 0'
+                }}>
+                  Event-Flyer
+                </h3>
+                <p style={{
+                  fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                  color: '#8fa0c9',
+                  margin: 0,
+                  lineHeight: '1.6'
+                }}>
+                  Flyer mit QR-Code für Events erstellen
+                </p>
+              </div>
+
+              {/* E-Mail-Newsletter */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '16px',
+                padding: 'clamp(1.5rem, 4vw, 2rem)',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
+              }}
+              onClick={() => generateEmailNewsletter()}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+                e.currentTarget.style.transform = 'translateY(-4px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
+              >
+                <div style={{ fontSize: 'clamp(2.5rem, 6vw, 3.5rem)', marginBottom: '1rem' }}>📧</div>
+                <h3 style={{
+                  fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                  fontWeight: '600',
+                  color: '#ffffff',
+                  margin: '0 0 0.5rem 0'
+                }}>
+                  E-Mail-Newsletter
+                </h3>
+                <p style={{
+                  fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                  color: '#8fa0c9',
+                  margin: 0,
+                  lineHeight: '1.6'
+                }}>
+                  Event-Einladungen als HTML-Newsletter
+                </p>
+              </div>
+
+              {/* Plakate */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '16px',
+                padding: 'clamp(1.5rem, 4vw, 2rem)',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
+              }}
+              onClick={() => generatePlakat()}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+                e.currentTarget.style.transform = 'translateY(-4px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
+              >
+                <div style={{ fontSize: 'clamp(2.5rem, 6vw, 3.5rem)', marginBottom: '1rem' }}>🖼️</div>
+                <h3 style={{
+                  fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                  fontWeight: '600',
+                  color: '#ffffff',
+                  margin: '0 0 0.5rem 0'
+                }}>
+                  Plakate
+                </h3>
+                <p style={{
+                  fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                  color: '#8fa0c9',
+                  margin: 0,
+                  lineHeight: '1.6'
+                }}>
+                  Druckfertige Plakate für Events (A3/A4)
+                </p>
+              </div>
+
+              {/* Pressemappe */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '16px',
+                padding: 'clamp(1.5rem, 4vw, 2rem)',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
+              }}
+              onClick={() => generatePressemappe()}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+                e.currentTarget.style.transform = 'translateY(-4px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
+              >
+                <div style={{ fontSize: 'clamp(2.5rem, 6vw, 3.5rem)', marginBottom: '1rem' }}>📋</div>
+                <h3 style={{
+                  fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                  fontWeight: '600',
+                  color: '#ffffff',
+                  margin: '0 0 0.5rem 0'
+                }}>
+                  Pressemappe
+                </h3>
+                <p style={{
+                  fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                  color: '#8fa0c9',
+                  margin: 0,
+                  lineHeight: '1.6'
+                }}>
+                  Komplette Pressemappe als PDF
+                </p>
+              </div>
+
+              {/* Website-Content */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '16px',
+                padding: 'clamp(1.5rem, 4vw, 2rem)',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
+              }}
+              onClick={() => generateWebsiteContent()}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+                e.currentTarget.style.transform = 'translateY(-4px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
+              >
+                <div style={{ fontSize: 'clamp(2.5rem, 6vw, 3.5rem)', marginBottom: '1rem' }}>🌐</div>
+                <h3 style={{
+                  fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                  fontWeight: '600',
+                  color: '#ffffff',
+                  margin: '0 0 0.5rem 0'
+                }}>
+                  Website-Content
+                </h3>
+                <p style={{
+                  fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                  color: '#8fa0c9',
+                  margin: 0,
+                  lineHeight: '1.6'
+                }}>
+                  Event-Seiten & News-Content generieren
+                </p>
+              </div>
+
+              {/* Katalog */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '16px',
+                padding: 'clamp(1.5rem, 4vw, 2rem)',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
+              }}
+              onClick={() => generateKatalog()}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+                e.currentTarget.style.transform = 'translateY(-4px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
+              >
+                <div style={{ fontSize: 'clamp(2.5rem, 6vw, 3.5rem)', marginBottom: '1rem' }}>📚</div>
+                <h3 style={{
+                  fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                  fontWeight: '600',
+                  color: '#ffffff',
+                  margin: '0 0 0.5rem 0'
+                }}>
+                  Katalog
+                </h3>
+                <p style={{
+                  fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                  color: '#8fa0c9',
+                  margin: 0,
+                  lineHeight: '1.6'
+                }}>
+                  Werke-Katalog als PDF erstellen
+                </p>
+              </div>
+            </div>
+          </section>
         )}
         </main>
       </div>
