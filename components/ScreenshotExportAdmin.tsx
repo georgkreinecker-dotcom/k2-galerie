@@ -3821,7 +3821,7 @@ function ScreenshotExportAdmin() {
                   </div>
                 </div>
 
-                {/* Tägliche Zeiten für mehrjährige Events */}
+                {/* Tägliche Zeiten für mehrtägige Events */}
                 {eventDate && eventEndDate && eventEndDate !== eventDate && (
                   <div style={{
                     marginTop: '1rem',
