@@ -83,7 +83,7 @@ function ScreenshotExportAdmin() {
   const [eventEndDate, setEventEndDate] = useState('')
   const [eventStartTime, setEventStartTime] = useState('')
   const [eventEndTime, setEventEndTime] = useState('')
-  const [eventDailyTimes, setEventDailyTimes] = useState<Record<string, string>>({})
+  const [eventDailyTimes, setEventDailyTimes] = useState<Record<string, { start: string, end: string }>>({})
   const [eventDescription, setEventDescription] = useState('')
   const [eventLocation, setEventLocation] = useState('')
   
@@ -335,7 +335,18 @@ function ScreenshotExportAdmin() {
     setEventEndDate(event.endDate || event.date)
     setEventStartTime(event.startTime || event.time || '')
     setEventEndTime(event.endTime || '')
-    setEventDailyTimes(event.dailyTimes || {})
+    // Konvertiere alte Format (string) zu neuem Format (object mit start/end)
+    const dailyTimes = event.dailyTimes || {}
+    const convertedDailyTimes: Record<string, { start: string, end: string }> = {}
+    Object.keys(dailyTimes).forEach(day => {
+      const time = dailyTimes[day]
+      if (typeof time === 'string') {
+        convertedDailyTimes[day] = { start: time, end: '' }
+      } else {
+        convertedDailyTimes[day] = { start: time?.start || '', end: time?.end || '' }
+      }
+    })
+    setEventDailyTimes(convertedDailyTimes)
     setEventDescription(event.description || '')
     setEventLocation(event.location || '')
     
@@ -396,31 +407,88 @@ function ScreenshotExportAdmin() {
     localStorage.setItem('k2-pr-suggestions', JSON.stringify(existingSuggestions))
   }
 
+  // Hilfsfunktion: Alle Termindaten formatieren
+  const formatEventDates = (event: any): string => {
+    const startDate = new Date(event.date)
+    const endDate = event.endDate ? new Date(event.endDate) : null
+    
+    let dateStr = startDate.toLocaleDateString('de-DE', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })
+    
+    if (endDate && endDate.getTime() !== startDate.getTime()) {
+      dateStr += ` - ${endDate.toLocaleDateString('de-DE', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })}`
+    }
+    
+    // Zeiten hinzufügen
+    if (event.dailyTimes && Object.keys(event.dailyTimes).length > 0) {
+      // Mehrteiliges Event mit täglichen Zeiten
+      const times: string[] = []
+      const days = getEventDays(event.date, event.endDate || event.date)
+      days.forEach(day => {
+        const dayTime = event.dailyTimes[day]
+        if (dayTime) {
+          const dayDate = new Date(day)
+          if (typeof dayTime === 'string') {
+            // Altes Format (nur Startzeit)
+            times.push(`${dayDate.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })}: ${dayTime}`)
+          } else if (dayTime.start || dayTime.end) {
+            // Neues Format (Start- und Endzeit)
+            const timeStr = dayTime.start 
+              ? (dayTime.end ? `${dayTime.start} - ${dayTime.end} Uhr` : `${dayTime.start} Uhr`)
+              : (dayTime.end ? `bis ${dayTime.end} Uhr` : '')
+            if (timeStr) {
+              times.push(`${dayDate.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })}: ${timeStr}`)
+            }
+          }
+        }
+      })
+      if (times.length > 0) {
+        dateStr += '\n\nZeiten:\n' + times.join('\n')
+      }
+    } else if (event.startTime) {
+      dateStr += `\n🕐 ${event.startTime}${event.endTime ? ` - ${event.endTime}` : ''} Uhr`
+    }
+    
+    return dateStr
+  }
+
   // Content-Generatoren im App-Design-Stil
   const generatePresseaussendungContent = (event: any) => {
+    const eventTypeLabels: Record<string, string> = {
+      galerieeröffnung: 'Galerieeröffnung',
+      vernissage: 'Vernissage',
+      finissage: 'Finissage',
+      öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
+      sonstiges: 'Veranstaltung'
+    }
+    
     return {
       title: `PRESSEAUSSENDUNG: ${event.title}`,
       content: `
 ${event.title.toUpperCase()}
+
+EVENT-TYP: ${eventTypeLabels[event.type] || 'Veranstaltung'}
+
+TERMINDATEN:
+${formatEventDates(event)}
+
+ORT:
+${event.location || galleryData.address || ''}
 
 ${galleryData.name || 'K2 Galerie'}
 ${galleryData.address || ''}
 ${galleryData.phone ? `Tel: ${galleryData.phone}` : ''}
 ${galleryData.email ? `E-Mail: ${galleryData.email}` : ''}
 
-${new Date(event.date).toLocaleDateString('de-DE', {
-  weekday: 'long',
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric'
-})}${event.endDate && event.endDate !== event.date ? ` - ${new Date(event.endDate).toLocaleDateString('de-DE', {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric'
-})}` : ''}
-
-${event.location || galleryData.address || ''}
-
+BESCHREIBUNG:
 ${event.description || 'Wir laden Sie herzlich zu unserer Veranstaltung ein.'}
 
 KÜNSTLER:
@@ -443,15 +511,22 @@ ${galleryData.phone || ''}
       sonstiges: '#Kunst #Event'
     }
     
+    const eventTypeNames: Record<string, string> = {
+      galerieeröffnung: 'Galerieeröffnung',
+      vernissage: 'Vernissage',
+      finissage: 'Finissage',
+      öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
+      sonstiges: 'Veranstaltung'
+    }
+    
+    // Formatierte Termindaten für Social Media
+    const datesFormatted = formatEventDates(event)
+    
     return {
       instagram: `
 🎨 ${event.title}
 
-📅 ${new Date(event.date).toLocaleDateString('de-DE', {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric'
-})}${event.startTime ? ` um ${event.startTime} Uhr` : ''}
+📅 ${datesFormatted}
 
 📍 ${event.location || galleryData.address || ''}
 
@@ -462,16 +537,11 @@ ${eventTypeLabels[event.type] || '#Kunst #Galerie'} #K2Galerie #KunstUndKeramik
       facebook: `
 ${event.title}
 
-Wir laden Sie herzlich ein zu unserer ${event.type === 'galerieeröffnung' ? 'Galerieeröffnung' : event.type === 'vernissage' ? 'Vernissage' : event.type === 'finissage' ? 'Finissage' : 'Veranstaltung'}!
+Wir laden Sie herzlich ein zu unserer ${eventTypeNames[event.type] || 'Veranstaltung'}!
 
-📅 Datum: ${new Date(event.date).toLocaleDateString('de-DE', {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric'
-})}${event.startTime ? `\n🕐 Uhrzeit: ${event.startTime}${event.endTime ? ` - ${event.endTime}` : ''} Uhr` : ''}
+📅 ${datesFormatted}
 
-📍 Ort: ${event.location || galleryData.address || ''}
+📍 ${event.location || galleryData.address || ''}
 
 ${event.description || 'Besuchen Sie uns auch online!'}
 
@@ -483,52 +553,72 @@ Wir freuen uns auf Ihren Besuch!
   const generateFlyerContent = (event: any) => {
     return {
       headline: event.title,
-      date: new Date(event.date).toLocaleDateString('de-DE', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      }),
-      time: event.startTime ? `${event.startTime}${event.endTime ? ` - ${event.endTime}` : ''} Uhr` : '',
+      date: formatEventDates(event),
       location: event.location || galleryData.address || '',
       description: event.description || '',
-      qrCode: galleryData.website || window.location.origin
+      type: event.type,
+      qrCode: galleryData.website || window.location.origin,
+      contact: {
+        phone: galleryData.phone || '',
+        email: galleryData.email || '',
+        address: galleryData.address || ''
+      }
     }
   }
 
   const generateNewsletterContent = (event: any) => {
+    const eventTypeNames: Record<string, string> = {
+      galerieeröffnung: 'Galerieeröffnung',
+      vernissage: 'Vernissage',
+      finissage: 'Finissage',
+      öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
+      sonstiges: 'Veranstaltung'
+    }
+    
     return {
       subject: `Einladung: ${event.title}`,
       greeting: 'Liebe Kunstfreunde,',
       body: `
-wir laden Sie herzlich ein zu unserer ${event.type === 'galerieeröffnung' ? 'Galerieeröffnung' : event.type === 'vernissage' ? 'Vernissage' : event.type === 'finissage' ? 'Finissage' : 'Veranstaltung'}!
+wir laden Sie herzlich ein zu unserer ${eventTypeNames[event.type] || 'Veranstaltung'}!
 
-📅 ${new Date(event.date).toLocaleDateString('de-DE', {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric'
-})}${event.startTime ? `\n🕐 ${event.startTime}${event.endTime ? ` - ${event.endTime}` : ''} Uhr` : ''}
+TERMINDATEN:
+📅 ${formatEventDates(event)}
 
+ORT:
 📍 ${event.location || galleryData.address || ''}
 
+BESCHREIBUNG:
 ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
+
+KONTAKT:
+${galleryData.phone ? `Tel: ${galleryData.phone}` : ''}
+${galleryData.email ? `E-Mail: ${galleryData.email}` : ''}
+${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
       `.trim()
     }
   }
 
   const generatePlakatContent = (event: any) => {
+    const eventTypeNames: Record<string, string> = {
+      galerieeröffnung: 'Galerieeröffnung',
+      vernissage: 'Vernissage',
+      finissage: 'Finissage',
+      öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
+      sonstiges: 'Veranstaltung'
+    }
+    
     return {
       title: event.title,
-      date: new Date(event.date).toLocaleDateString('de-DE', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      }),
-      time: event.startTime ? `${event.startTime}${event.endTime ? ` - ${event.endTime}` : ''} Uhr` : '',
+      type: eventTypeNames[event.type] || 'Veranstaltung',
+      date: formatEventDates(event),
       location: event.location || galleryData.address || '',
-      qrCode: galleryData.website || window.location.origin
+      description: event.description || '',
+      qrCode: galleryData.website || window.location.origin,
+      contact: {
+        phone: galleryData.phone || '',
+        email: galleryData.email || '',
+        address: galleryData.address || ''
+      }
     }
   }
 
@@ -1513,16 +1603,13 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
     <div>
       <h1>${flyerContent.headline}</h1>
       
+      ${flyerContent.type ? `<p style="font-size: 1.2rem; color: #8fa0c9; margin-bottom: 1rem;">${flyerContent.type === 'galerieeröffnung' ? 'Galerieeröffnung' : flyerContent.type === 'vernissage' ? 'Vernissage' : flyerContent.type === 'finissage' ? 'Finissage' : flyerContent.type === 'öffentlichkeitsarbeit' ? 'Öffentlichkeitsarbeit' : 'Veranstaltung'}</p>` : ''}
+      
       <div class="event-info">
-        <p><strong>📅 Datum:</strong> ${flyerContent.date}${event.endDate && event.endDate !== event.date ? ` - ${new Date(event.endDate).toLocaleDateString('de-DE', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric'
-        })}` : ''}</p>
+        <p><strong>📅 Termindaten:</strong></p>
+        <p style="white-space: pre-wrap; margin-left: 1rem;">${flyerContent.date.replace(/\n/g, '<br>')}</p>
         
-        ${flyerContent.time ? `<p><strong>🕐 Uhrzeit:</strong> ${flyerContent.time}</p>` : ''}
-        
-        ${flyerContent.location ? `<p><strong>📍 Ort:</strong> ${flyerContent.location}</p>` : ''}
+        ${flyerContent.location ? `<p style="margin-top: 1rem;"><strong>📍 Ort:</strong> ${flyerContent.location}</p>` : ''}
       </div>
       
       ${flyerContent.description ? `<div class="description">${flyerContent.description.replace(/\n/g, '<br>')}</div>` : ''}
@@ -1535,10 +1622,10 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
     </div>
     
     <div class="contact">
-      <p><strong>${galleryData.name || 'K2 Galerie'}</strong></p>
-      ${galleryData.address ? `<p>${galleryData.address}</p>` : ''}
-      ${galleryData.phone ? `<p>Tel: ${galleryData.phone}</p>` : ''}
-      ${galleryData.email ? `<p>E-Mail: ${galleryData.email}</p>` : ''}
+      <p><strong>${flyerContent.contact?.address ? flyerContent.contact.address.split(',')[0] : (galleryData.name || 'K2 Galerie')}</strong></p>
+      ${flyerContent.contact?.address ? `<p>${flyerContent.contact.address}</p>` : (galleryData.address ? `<p>${galleryData.address}</p>` : '')}
+      ${flyerContent.contact?.phone ? `<p>Tel: ${flyerContent.contact.phone}</p>` : (galleryData.phone ? `<p>Tel: ${galleryData.phone}</p>` : '')}
+      ${flyerContent.contact?.email ? `<p>E-Mail: ${flyerContent.contact.email}</p>` : (galleryData.email ? `<p>E-Mail: ${galleryData.email}</p>` : '')}
     </div>
   </div>
 </body>
@@ -1674,15 +1761,9 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
       
       <p class="greeting">${newsletterContent.greeting}</p>
       
-      <p style="color: #b8c5e0; font-size: 1.1rem; line-height: 1.8; margin-bottom: 1.5rem;">
-        wir laden Sie herzlich ein zu unserer ${event.type === 'galerieeröffnung' ? 'Galerieeröffnung' : event.type === 'vernissage' ? 'Vernissage' : event.type === 'finissage' ? 'Finissage' : 'Veranstaltung'}!
-      </p>
-      
-      <div class="event-box">
-        ${newsletterContent.body.split('\n').map(line => `<p>${line}</p>`).join('')}
+      <div class="event-box" style="white-space: pre-wrap;">
+        ${newsletterContent.body.replace(/\n/g, '<br>')}
       </div>
-      
-      ${event.description ? `<p style="color: #b8c5e0; font-size: 1.1rem; line-height: 1.8; margin: 1.5rem 0;">${event.description.replace(/\n/g, '<br>')}</p>` : ''}
       
       <a href="${galleryData.website || window.location.origin}" class="button">Mehr erfahren →</a>
       
@@ -1838,16 +1919,15 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
   <div class="plakat">
     <h1>${plakatContent.title}</h1>
     
+    ${plakatContent.type ? `<p style="font-size: 2rem; color: #8fa0c9; margin-bottom: 2rem; text-align: center;">${plakatContent.type}</p>` : ''}
+    
     <div class="event-info">
-      <p><strong>${plakatContent.date}${event.endDate && event.endDate !== event.date ? ` - ${new Date(event.endDate).toLocaleDateString('de-DE', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      })}` : ''}</strong></p>
+      <p><strong>Termindaten:</strong></p>
+      <p style="white-space: pre-wrap; font-size: 1.8rem; line-height: 1.6; margin-top: 1rem;">${plakatContent.date.replace(/\n/g, '<br>')}</p>
       
-      ${plakatContent.time ? `<p>${plakatContent.time}</p>` : ''}
+      ${plakatContent.location ? `<p style="margin-top: 2rem; font-size: 1.6rem;">📍 ${plakatContent.location}</p>` : ''}
       
-      ${plakatContent.location ? `<p>${plakatContent.location}</p>` : ''}
+      ${plakatContent.description ? `<p style="margin-top: 2rem; font-size: 1.4rem; line-height: 1.6; color: #b8c5e0;">${plakatContent.description.replace(/\n/g, '<br>')}</p>` : ''}
     </div>
     
     <div class="qr-code">
