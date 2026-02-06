@@ -90,6 +90,29 @@ function ScreenshotExportAdmin() {
   // PR-Vorschläge State
   const [eventPRSuggestions, setEventPRSuggestions] = useState<any>(null)
   const [editingPRType, setEditingPRType] = useState<string | null>(null)
+
+  // ESC-Taste zum Schließen des Event-Modals
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showEventModal) {
+        setShowEventModal(false)
+        setEditingEvent(null)
+        setEventTitle('')
+        setEventType('galerieeröffnung')
+        setEventDate('')
+        setEventEndDate('')
+        setEventStartTime('')
+        setEventEndTime('')
+        setEventDailyTimes({})
+        setEventDescription('')
+        setEventLocation('')
+        setEventPRSuggestions(null)
+        setEditingPRType(null)
+      }
+    }
+    window.addEventListener('keydown', handleEsc)
+    return () => window.removeEventListener('keydown', handleEsc)
+  }, [showEventModal])
   const [showDocumentModal, setShowDocumentModal] = useState(false)
   const [selectedEventForDocument, setSelectedEventForDocument] = useState<string | null>(null)
   const [eventDocumentFile, setEventDocumentFile] = useState<File | null>(null)
@@ -5415,7 +5438,23 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
         {/* Event Modal */}
         {showEventModal && (
           <div
-            onClick={() => setShowEventModal(false)}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowEventModal(false)
+                setEditingEvent(null)
+                setEventTitle('')
+                setEventType('galerieeröffnung')
+                setEventDate('')
+                setEventEndDate('')
+                setEventStartTime('')
+                setEventEndTime('')
+                setEventDailyTimes({})
+                setEventDescription('')
+                setEventLocation('')
+                setEventPRSuggestions(null)
+                setEditingPRType(null)
+              }
+            }}
             style={{
               position: 'fixed',
               top: 0,
@@ -5444,15 +5483,49 @@ ${event.description || 'Wir freuen uns auf Ihren Besuch!'}
                 boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)'
               }}
             >
-              <h2 style={{
-                fontSize: 'clamp(1.5rem, 4vw, 2rem)',
-                fontWeight: '700',
-                color: '#ffffff',
-                marginTop: 0,
-                marginBottom: 'clamp(1.5rem, 4vw, 2rem)'
-              }}>
-                {editingEvent ? 'Event bearbeiten' : 'Neues Event hinzufügen'}
-              </h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
+                <h2 style={{
+                  fontSize: 'clamp(1.5rem, 4vw, 2rem)',
+                  fontWeight: '700',
+                  color: '#ffffff',
+                  marginTop: 0,
+                  marginBottom: 0
+                }}>
+                  {editingEvent ? 'Event bearbeiten' : 'Neues Event hinzufügen'}
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowEventModal(false)
+                    setEditingEvent(null)
+                    setEventTitle('')
+                    setEventType('galerieeröffnung')
+                    setEventDate('')
+                    setEventEndDate('')
+                    setEventStartTime('')
+                    setEventEndTime('')
+                    setEventDailyTimes({})
+                    setEventDescription('')
+                    setEventLocation('')
+                    setEventPRSuggestions(null)
+                    setEditingPRType(null)
+                  }}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#ffffff',
+                    fontSize: '2rem',
+                    cursor: 'pointer',
+                    padding: '0.5rem',
+                    lineHeight: 1,
+                    opacity: 0.7,
+                    transition: 'opacity 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '0.7'}
+                >
+                  ×
+                </button>
+              </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div>
