@@ -80,6 +80,7 @@ function ScreenshotExportAdmin() {
   const [categoryFilter, setCategoryFilter] = useState<string>('alle')
   const [showCameraView, setShowCameraView] = useState(false)
   const [documents, setDocuments] = useState<any[]>([])
+  const [documentFilter, setDocumentFilter] = useState<'alle' | 'pr-dokumente' | 'sonstige'>('alle')
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -1510,6 +1511,34 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     window.open(url, '_blank')
+    
+    // Speichere auch in Dokumente-Sektion
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const documentData = {
+        id: `pr-presseaussendung-${event.id}-${Date.now()}`,
+        name: `Presseaussendung - ${event.title}`,
+        type: 'text/html',
+        size: blob.size,
+        data: reader.result as string,
+        fileName: `presseaussendung-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente',
+        eventId: event.id,
+        eventTitle: event.title
+      }
+      const existingDocs = loadDocuments()
+      // Entferne alte Presseaussendung für dieses Event
+      const filteredDocs = existingDocs.filter((d: any) => 
+        !(d.category === 'pr-dokumente' && d.eventId === event.id && d.name.includes('Presseaussendung'))
+      )
+      const updated = [...filteredDocs, documentData]
+      saveDocuments(updated)
+    }
+    reader.readAsDataURL(blob)
+    
     alert('✅ Presseaussendung generiert!')
   }
 
@@ -1637,6 +1666,33 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     window.open(url, '_blank')
+    
+    // Speichere auch in Dokumente-Sektion
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const documentData = {
+        id: `pr-socialmedia-${event.id}-${Date.now()}`,
+        name: `Social Media Posts - ${event.title}`,
+        type: 'text/html',
+        size: blob.size,
+        data: reader.result as string,
+        fileName: `social-media-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente',
+        eventId: event.id,
+        eventTitle: event.title
+      }
+      const existingDocs = loadDocuments()
+      const filteredDocs = existingDocs.filter((d: any) => 
+        !(d.category === 'pr-dokumente' && d.eventId === event.id && d.name.includes('Social Media'))
+      )
+      const updated = [...filteredDocs, documentData]
+      saveDocuments(updated)
+    }
+    reader.readAsDataURL(blob)
+    
     alert('✅ Social Media Posts generiert!')
   }
 
@@ -1796,6 +1852,33 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     window.open(url, '_blank')
+    
+    // Speichere auch in Dokumente-Sektion
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const documentData = {
+        id: `pr-flyer-${event.id}-${Date.now()}`,
+        name: `Flyer - ${event.title}`,
+        type: 'text/html',
+        size: blob.size,
+        data: reader.result as string,
+        fileName: `flyer-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente',
+        eventId: event.id,
+        eventTitle: event.title
+      }
+      const existingDocs = loadDocuments()
+      const filteredDocs = existingDocs.filter((d: any) => 
+        !(d.category === 'pr-dokumente' && d.eventId === event.id && d.name.includes('Flyer'))
+      )
+      const updated = [...filteredDocs, documentData]
+      saveDocuments(updated)
+    }
+    reader.readAsDataURL(blob)
+    
     alert('✅ Flyer generiert! Bitte im Browser drucken.')
   }
 
@@ -1943,6 +2026,33 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     window.open(url, '_blank')
+    
+    // Speichere auch in Dokumente-Sektion
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const documentData = {
+        id: `pr-newsletter-${event.id}-${Date.now()}`,
+        name: `Newsletter - ${event.title}`,
+        type: 'text/html',
+        size: blob.size,
+        data: reader.result as string,
+        fileName: `newsletter-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente',
+        eventId: event.id,
+        eventTitle: event.title
+      }
+      const existingDocs = loadDocuments()
+      const filteredDocs = existingDocs.filter((d: any) => 
+        !(d.category === 'pr-dokumente' && d.eventId === event.id && d.name.includes('Newsletter'))
+      )
+      const updated = [...filteredDocs, documentData]
+      saveDocuments(updated)
+    }
+    reader.readAsDataURL(blob)
+    
     alert('✅ Newsletter generiert! HTML-Code kann kopiert werden.')
   }
 
@@ -2109,6 +2219,33 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     window.open(url, '_blank')
+    
+    // Speichere auch in Dokumente-Sektion
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const documentData = {
+        id: `pr-plakat-${event.id}-${Date.now()}`,
+        name: `Plakat - ${event.title}`,
+        type: 'text/html',
+        size: blob.size,
+        data: reader.result as string,
+        fileName: `plakat-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente',
+        eventId: event.id,
+        eventTitle: event.title
+      }
+      const existingDocs = loadDocuments()
+      const filteredDocs = existingDocs.filter((d: any) => 
+        !(d.category === 'pr-dokumente' && d.eventId === event.id && d.name.includes('Plakat'))
+      )
+      const updated = [...filteredDocs, documentData]
+      saveDocuments(updated)
+    }
+    reader.readAsDataURL(blob)
+    
     alert('✅ Plakat generiert! Bitte im Browser drucken (A3 Format).')
   }
 
@@ -5015,7 +5152,14 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
                   flexDirection: 'column',
                   gap: 'clamp(0.75rem, 2vw, 1rem)'
                 }}>
-                {documents.map((doc) => {
+                {documents
+                  .filter((doc: any) => {
+                    if (documentFilter === 'alle') return true
+                    if (documentFilter === 'pr-dokumente') return doc.category === 'pr-dokumente'
+                    if (documentFilter === 'sonstige') return !doc.category || doc.category !== 'pr-dokumente'
+                    return true
+                  })
+                  .map((doc) => {
                   const fileSizeMB = (doc.size / (1024 * 1024)).toFixed(2)
                   const uploadDate = new Date(doc.uploadedAt).toLocaleDateString('de-DE', {
                     day: '2-digit',
