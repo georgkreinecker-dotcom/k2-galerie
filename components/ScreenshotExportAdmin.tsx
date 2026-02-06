@@ -83,6 +83,7 @@ function ScreenshotExportAdmin() {
   const [eventEndDate, setEventEndDate] = useState('')
   const [eventStartTime, setEventStartTime] = useState('')
   const [eventEndTime, setEventEndTime] = useState('')
+  const [eventDailyTimes, setEventDailyTimes] = useState<Record<string, string>>({})
   const [eventDescription, setEventDescription] = useState('')
   const [eventLocation, setEventLocation] = useState('')
   const [showDocumentModal, setShowDocumentModal] = useState(false)
@@ -242,6 +243,7 @@ function ScreenshotExportAdmin() {
       endDate: eventEndDate || eventDate, // Falls kein Enddatum, dann Startdatum verwenden
       startTime: eventStartTime || '',
       endTime: eventEndTime || '',
+      dailyTimes: eventDailyTimes || {}, // Tägliche Zeiten für jeden Tag
       description: eventDescription,
       location: eventLocation,
       documents: editingEvent?.documents || [],
@@ -271,6 +273,7 @@ function ScreenshotExportAdmin() {
     setEventEndDate('')
     setEventStartTime('')
     setEventEndTime('')
+    setEventDailyTimes({})
     setEventDescription('')
     setEventLocation('')
     
@@ -286,9 +289,25 @@ function ScreenshotExportAdmin() {
     setEventEndDate(event.endDate || event.date)
     setEventStartTime(event.startTime || event.time || '')
     setEventEndTime(event.endTime || '')
+    setEventDailyTimes(event.dailyTimes || {})
     setEventDescription(event.description || '')
     setEventLocation(event.location || '')
     setShowEventModal(true)
+  }
+
+  // Alle Tage zwischen Start- und Enddatum generieren
+  const getEventDays = (startDate: string, endDate: string): string[] => {
+    if (!startDate) return []
+    const end = endDate || startDate
+    const days: string[] = []
+    const start = new Date(startDate)
+    const endDateObj = new Date(end)
+    
+    for (let d = new Date(start); d <= endDateObj; d.setDate(d.getDate() + 1)) {
+      days.push(d.toISOString().split('T')[0])
+    }
+    
+    return days
   }
 
   // Dokument zu Event hinzufügen
@@ -399,9 +418,32 @@ function ScreenshotExportAdmin() {
     setEventEndDate('')
     setEventStartTime('')
     setEventEndTime('')
+    setEventDailyTimes({})
     setEventDescription('')
-    setEventLocation('')
+    // Automatisch Ort aus Stammdaten übernehmen
+    setEventLocation(galleryData.address || '')
     setShowEventModal(true)
+  }
+
+  // Stammdaten in Event-Felder übernehmen
+  const applyStammdatenToEvent = () => {
+    // Ort aus Stammdaten übernehmen
+    setEventLocation(galleryData.address || '')
+    
+    // Kontaktdaten in Beschreibung einfügen (wenn noch keine Beschreibung vorhanden)
+    if (!eventDescription) {
+      const kontaktInfo: string[] = []
+      if (galleryData.phone) kontaktInfo.push(`Tel: ${galleryData.phone}`)
+      if (galleryData.email) kontaktInfo.push(`E-Mail: ${galleryData.email}`)
+      if (galleryData.address) kontaktInfo.push(`Adresse: ${galleryData.address}`)
+      if (galleryData.openingHours) kontaktInfo.push(`Öffnungszeiten: ${galleryData.openingHours}`)
+      
+      if (kontaktInfo.length > 0) {
+        setEventDescription(kontaktInfo.join('\n'))
+      }
+    }
+    
+    alert('✅ Stammdaten übernommen!')
   }
 
   // Dokumente speichern
@@ -3370,16 +3412,38 @@ function ScreenshotExportAdmin() {
                                 })
                           }
                         </div>
-                        {(event.startTime || event.endTime || event.time) && (
+                        {(event.startTime || event.endTime || event.time || (event.dailyTimes && Object.keys(event.dailyTimes).length > 0)) && (
                           <div style={{ marginBottom: '0.25rem' }}>
                             <strong>🕐 Uhrzeit:</strong> {
                               (() => {
                                 const startTime = event.startTime || event.time || ''
                                 const endTime = event.endTime || ''
                                 const isMultiDay = event.endDate && event.endDate !== event.date
+                                const hasDailyTimes = event.dailyTimes && Object.keys(event.dailyTimes).length > 0
                                 
-                                if (isMultiDay) {
-                                  // Mehrere Tage: Zeige Startzeit für ersten Tag und Endzeit für letzten Tag
+                                if (hasDailyTimes && isMultiDay) {
+                                  // Zeige tägliche Zeiten
+                                  const days = getEventDays(event.date, event.endDate)
+                                  return (
+                                    <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                      {days.map((day) => {
+                                        const dayTime = event.dailyTimes[day]
+                                        if (!dayTime) return null
+                                        const dayLabel = new Date(day).toLocaleDateString('de-DE', {
+                                          weekday: 'short',
+                                          day: 'numeric',
+                                          month: 'short'
+                                        })
+                                        return (
+                                          <div key={day} style={{ fontSize: 'clamp(0.85rem, 2vw, 0.95rem)' }}>
+                                            {dayLabel}: {dayTime} Uhr
+                                          </div>
+                                        )
+                                      })}
+                                    </div>
+                                  )
+                                } else if (isMultiDay) {
+                                  // Mehrere Tage ohne tägliche Zeiten: Zeige Startzeit für ersten Tag und Endzeit für letzten Tag
                                   return startTime && endTime 
                                     ? `${startTime} Uhr (${new Date(event.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })}) - ${endTime} Uhr (${new Date(event.endDate).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })})`
                                     : startTime 
@@ -3704,47 +3768,174 @@ function ScreenshotExportAdmin() {
                   </div>
                 </div>
 
-                <div>
-                  <label style={{
-                    display: 'block',
-                    marginBottom: '0.5rem',
-                    color: '#8fa0c9',
-                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
-                    fontWeight: '500'
-                  }}>
-                    Uhrzeit
-                  </label>
-                  <input
-                    type="time"
-                    value={eventTime}
-                    onChange={(e) => setEventTime(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: 'clamp(0.75rem, 2vw, 1rem)',
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      borderRadius: '12px',
-                      color: '#ffffff',
-                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
-                    }}
-                  />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.5rem',
+                      color: '#8fa0c9',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '500'
+                    }}>
+                      Startzeit
+                    </label>
+                    <input
+                      type="time"
+                      value={eventStartTime}
+                      onChange={(e) => setEventStartTime(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: 'clamp(0.75rem, 2vw, 1rem)',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '12px',
+                        color: '#ffffff',
+                        fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.5rem',
+                      color: '#8fa0c9',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '500'
+                    }}>
+                      Endzeit
+                    </label>
+                    <input
+                      type="time"
+                      value={eventEndTime}
+                      onChange={(e) => setEventEndTime(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: 'clamp(0.75rem, 2vw, 1rem)',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '12px',
+                        color: '#ffffff',
+                        fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                      }}
+                    />
+                  </div>
                 </div>
 
-                <div>
-                  <label style={{
-                    display: 'block',
-                    marginBottom: '0.5rem',
-                    color: '#8fa0c9',
-                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
-                    fontWeight: '500'
+                {/* Tägliche Zeiten für mehrjährige Events */}
+                {eventDate && eventEndDate && eventEndDate !== eventDate && (
+                  <div style={{
+                    marginTop: '1rem',
+                    padding: '1rem',
+                    background: 'rgba(95, 251, 241, 0.1)',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(95, 251, 241, 0.2)'
                   }}>
-                    Ort
-                  </label>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.75rem',
+                      color: '#5ffbf1',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '600'
+                    }}>
+                      🕐 Startzeiten für jeden Tag (optional)
+                    </label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      {getEventDays(eventDate, eventEndDate).map((day) => {
+                        const dayLabel = new Date(day).toLocaleDateString('de-DE', {
+                          weekday: 'short',
+                          day: 'numeric',
+                          month: 'short'
+                        })
+                        return (
+                          <div key={day} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <span style={{
+                              minWidth: '100px',
+                              fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                              color: '#b8c5e0'
+                            }}>
+                              {dayLabel}:
+                            </span>
+                            <input
+                              type="time"
+                              value={eventDailyTimes[day] || ''}
+                              onChange={(e) => setEventDailyTimes({
+                                ...eventDailyTimes,
+                                [day]: e.target.value
+                              })}
+                              placeholder="Optional"
+                              style={{
+                                flex: 1,
+                                padding: 'clamp(0.6rem, 1.5vw, 0.75rem)',
+                                background: 'rgba(255, 255, 255, 0.1)',
+                                border: '1px solid rgba(255, 255, 255, 0.2)',
+                                borderRadius: '8px',
+                                color: '#ffffff',
+                                fontSize: 'clamp(0.9rem, 2.5vw, 1rem)'
+                              }}
+                            />
+                            {eventDailyTimes[day] && (
+                              <button
+                                onClick={() => {
+                                  const newDailyTimes = { ...eventDailyTimes }
+                                  delete newDailyTimes[day]
+                                  setEventDailyTimes(newDailyTimes)
+                                }}
+                                style={{
+                                  padding: '0.4rem 0.6rem',
+                                  background: 'rgba(255, 100, 100, 0.2)',
+                                  border: '1px solid rgba(255, 100, 100, 0.3)',
+                                  borderRadius: '6px',
+                                  color: '#ff6464',
+                                  cursor: 'pointer',
+                                  fontSize: 'clamp(0.75rem, 2vw, 0.85rem)'
+                                }}
+                              >
+                                ×
+                              </button>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '0.5rem'
+                  }}>
+                    <label style={{
+                      color: '#8fa0c9',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '500'
+                    }}>
+                      Ort
+                    </label>
+                    <button
+                      type="button"
+                      onClick={applyStammdatenToEvent}
+                      style={{
+                        padding: '0.4rem 0.75rem',
+                        background: 'rgba(95, 251, 241, 0.2)',
+                        border: '1px solid rgba(95, 251, 241, 0.3)',
+                        borderRadius: '6px',
+                        color: '#5ffbf1',
+                        cursor: 'pointer',
+                        fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
+                        fontWeight: '500'
+                      }}
+                    >
+                      📋 Aus Stammdaten übernehmen
+                    </button>
+                  </div>
                   <input
                     type="text"
                     value={eventLocation}
                     onChange={(e) => setEventLocation(e.target.value)}
-                    placeholder="z.B. K2 Galerie, Hauptstraße 1"
+                    placeholder={galleryData.address || "z.B. K2 Galerie, Hauptstraße 1"}
                     style={{
                       width: '100%',
                       padding: 'clamp(0.75rem, 2vw, 1rem)',
@@ -3755,6 +3946,16 @@ function ScreenshotExportAdmin() {
                       fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
                     }}
                   />
+                  {galleryData.address && (
+                    <div style={{
+                      marginTop: '0.25rem',
+                      fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
+                      color: '#8fa0c9',
+                      fontStyle: 'italic'
+                    }}>
+                      Stammdaten: {galleryData.address}
+                    </div>
+                  )}
                 </div>
 
                 <div>
