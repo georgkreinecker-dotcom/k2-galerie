@@ -1,0 +1,11 @@
+# Dependencies
+node_modules/
+dist/
+
+# Screenshots (optional - falls nicht versioniert werden sollen)
+screenshots/*.png
+screenshots/*.jpg
+screenshots/*.jpeg
+
+# Aber behalte den Ordner
+!screenshots/.gitkeep
