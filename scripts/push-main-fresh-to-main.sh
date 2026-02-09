@@ -1,5 +1,5 @@
 #!/bin/bash
-# Push zu main Branch und stelle sicher dass Vercel deployed
+# Einfache Lösung: Push main-fresh zu main (für Vercel)
 
 cd /Users/georgkreinecker/k2Galerie || exit 1
 
@@ -14,93 +14,77 @@ NC='\033[0m'
 
 echo ""
 echo "${BLUE}═══════════════════════════════════════════════════════════${NC}"
-echo "${BOLD}${BLUE}  🚀 Push zu main Branch für Vercel Deployment${NC}${NC}"
+echo "${BOLD}${BLUE}  🚀 Push main-fresh zu main für Vercel${NC}${NC}"
 echo "${BLUE}═══════════════════════════════════════════════════════════${NC}"
 echo ""
 
-# Aktueller Branch
+# Schritt 1: Stelle sicher dass wir auf main-fresh sind
 CURRENT_BRANCH=$(git branch --show-current)
 echo "${CYAN}Aktueller Branch:${NC} ${CURRENT_BRANCH}"
+
+if [ "$CURRENT_BRANCH" != "main-fresh" ]; then
+    echo "${YELLOW}⚠️  Wechsle zu main-fresh...${NC}"
+    git checkout main-fresh
+    if [ $? -ne 0 ]; then
+        echo "${RED}❌ Branch-Wechsel fehlgeschlagen${NC}"
+        exit 1
+    fi
+fi
 echo ""
 
-# Schritt 1: Alle Änderungen adden
-echo "${CYAN}Schritt 1/5:${NC} 📦 git add..."
+# Schritt 2: Alle Änderungen adden und committen
+echo "${CYAN}Schritt 1/3:${NC} 📦 git add..."
 git add .
 if [ $? -eq 0 ]; then
-    echo "${GREEN}✅ Alle Änderungen zum Staging hinzugefügt${NC}"
+    echo "${GREEN}✅ Änderungen zum Staging hinzugefügt${NC}"
 else
     echo "${RED}❌ git add fehlgeschlagen${NC}"
     exit 1
 fi
 echo ""
 
-# Schritt 2: Commit erstellen
-echo "${CYAN}Schritt 2/5:${NC} 💾 git commit..."
-git commit -m "Update: Mobile Synchronisation & GitHub Token Button"
-if [ $? -eq 0 ]; then
+echo "${CYAN}Schritt 2/3:${NC} 💾 git commit..."
+git commit -m "Update: Mobile Synchronisation & GitHub Token Button" 2>&1
+COMMIT_STATUS=$?
+if [ $COMMIT_STATUS -eq 0 ]; then
     echo "${GREEN}✅ Commit erstellt${NC}"
-else
+elif [ $COMMIT_STATUS -eq 1 ]; then
     echo "${YELLOW}ℹ️  Keine Änderungen zu committen${NC}"
+else
+    echo "${RED}❌ git commit fehlgeschlagen${NC}"
+    exit 1
 fi
 echo ""
 
-# Schritt 3: Prüfe ob main Branch existiert
-echo "${CYAN}Schritt 3/5:${NC} 🔍 Prüfe Branches..."
+# Schritt 3: Push main-fresh zu main (force wenn nötig)
+echo "${CYAN}Schritt 3/3:${NC} 🚀 Push zu main..."
+echo "${YELLOW}💡 Hinweis: main-fresh wird zu main gepusht${NC}"
+echo ""
+
+# Prüfe ob main Branch lokal existiert
 if git show-ref --verify --quiet refs/heads/main; then
-    echo "${GREEN}✅ main Branch existiert${NC}"
-    MAIN_EXISTS=true
-else
-    echo "${YELLOW}⚠️  main Branch existiert nicht${NC}"
-    MAIN_EXISTS=false
+    echo "${CYAN}Lösche lokalen main Branch...${NC}"
+    git branch -D main 2>/dev/null
 fi
-echo ""
 
-# Schritt 4: Merge oder Push
-if [ "$CURRENT_BRANCH" != "main" ]; then
-    if [ "$MAIN_EXISTS" = true ]; then
-        echo "${CYAN}Schritt 4/5:${NC} 🔀 Merge zu main..."
-        git checkout main
-        if [ $? -eq 0 ]; then
-            # Versuche Merge mit --allow-unrelated-histories falls nötig
-            git merge $CURRENT_BRANCH --no-edit --allow-unrelated-histories 2>&1
-            MERGE_STATUS=$?
-            if [ $MERGE_STATUS -eq 0 ]; then
-                echo "${GREEN}✅ Merge erfolgreich${NC}"
-            else
-                echo "${YELLOW}⚠️  Merge mit Konflikten - versuche Force-Merge...${NC}"
-                # Falls Merge fehlschlägt, verwende main-fresh als Basis
-                git reset --hard $CURRENT_BRANCH
-                if [ $? -eq 0 ]; then
-                    echo "${GREEN}✅ main Branch auf $CURRENT_BRANCH gesetzt${NC}"
-                else
-                    echo "${RED}❌ Merge fehlgeschlagen${NC}"
-                    git checkout $CURRENT_BRANCH
-                    exit 1
-                fi
-            fi
-        else
-            echo "${RED}❌ Branch-Wechsel fehlgeschlagen${NC}"
-            exit 1
-        fi
-    else
-        echo "${CYAN}Schritt 4/5:${NC} 🔀 Erstelle main Branch von $CURRENT_BRANCH..."
-        git checkout -b main
-        if [ $? -eq 0 ]; then
-            echo "${GREEN}✅ main Branch erstellt${NC}"
-        else
-            echo "${RED}❌ Branch-Erstellung fehlgeschlagen${NC}"
-            exit 1
-        fi
-    fi
-else
-    echo "${CYAN}Schritt 4/5:${NC} ✅ Bereits auf main Branch"
-fi
-echo ""
-
-# Schritt 5: Push zu main
-echo "${CYAN}Schritt 5/5:${NC} 🚀 git push origin main..."
-git push origin main
+# Erstelle main Branch von main-fresh
+echo "${CYAN}Erstelle main Branch von main-fresh...${NC}"
+git checkout -b main 2>/dev/null || git checkout main
+git reset --hard main-fresh
 if [ $? -eq 0 ]; then
+    echo "${GREEN}✅ main Branch erstellt/aktualisiert${NC}"
+else
+    echo "${RED}❌ Branch-Erstellung fehlgeschlagen${NC}"
+    exit 1
+fi
+echo ""
+
+# Push zu origin/main
+echo "${CYAN}Push zu origin/main...${NC}"
+git push origin main --force-with-lease
+PUSH_STATUS=$?
+
+if [ $PUSH_STATUS -eq 0 ]; then
     echo ""
     echo "${BLUE}═══════════════════════════════════════════════════════════${NC}"
     echo "${GREEN}✅✅✅ Push zu main erfolgreich!${NC}"
@@ -112,6 +96,10 @@ if [ $? -eq 0 ]; then
     echo "${YELLOW}💡 Prüfe Deployment Status:${NC}"
     echo "   ${CYAN}https://vercel.com/dashboard${NC}"
     echo ""
+    
+    # Zurück zu main-fresh
+    git checkout main-fresh
+    echo "${CYAN}Zurück zu main-fresh Branch${NC}"
 else
     echo ""
     echo "${BLUE}═══════════════════════════════════════════════════════════${NC}"
@@ -126,5 +114,8 @@ else
     echo "${YELLOW}💡 Prüfe Token:${NC}"
     echo "   ${CYAN}https://github.com/settings/tokens${NC}"
     echo ""
+    
+    # Zurück zu main-fresh
+    git checkout main-fresh
     exit 1
 fi
