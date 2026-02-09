@@ -10,6 +10,7 @@ export const PLATFORM_ROUTES = {
   key: '/platform/key',
   kosten: '/platform/kosten',
   dialog: '/platform/dialog',
+  githubToken: '/platform/github-token',
 } as const
 
 export const PROJECT_ROUTES = {

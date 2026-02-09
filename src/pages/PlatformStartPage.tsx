@@ -19,6 +19,13 @@ const platformFeatures = [
     icon: '🔑',
   },
   {
+    title: 'GitHub Token',
+    description: 'GitHub Token generieren und speichern – für Git Push.',
+    to: PLATFORM_ROUTES.githubToken,
+    cta: 'Token generieren →',
+    icon: '🔐',
+  },
+  {
     title: 'Kosten-Überblick',
     description: 'OpenAI-Nutzung und geschätzte Kosten einsehen.',
     to: PLATFORM_ROUTES.kosten,

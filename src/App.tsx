@@ -14,6 +14,7 @@ import VirtuellerRundgangPage from './pages/VirtuellerRundgangPage'
 import DialogStandalonePage from './pages/DialogStandalonePage'
 import KeyPage from './pages/KeyPage'
 import KostenPage from './pages/KostenPage'
+import GitHubTokenPage from './pages/GitHubTokenPage'
 import SecondMacPage from './pages/SecondMacPage'
 import ScreenshotExportAdmin from '../components/ScreenshotExportAdmin'
 import DevViewPage from './pages/DevViewPage'
@@ -198,6 +199,7 @@ function App() {
       } />
       <Route path={PLATFORM_ROUTES.key} element={<KeyPage />} />
       <Route path={PLATFORM_ROUTES.kosten} element={<KostenPage />} />
+      <Route path="/platform/github-token" element={<GitHubTokenPage />} />
       <Route path={PLATFORM_ROUTES.dialog} element={<DialogStandalonePage />} />
       <Route path="/platform/second-mac" element={<SecondMacPage />} />
       
