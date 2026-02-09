@@ -137,6 +137,11 @@ try {
   const MAX_RENDER_ATTEMPTS = 3
   
   function attemptRender() {
+    if (!rootElement) {
+      console.error('❌ rootElement ist null')
+      return
+    }
+    
     try {
       const root = createRoot(rootElement)
       root.render(
@@ -156,7 +161,8 @@ try {
         }, 1000 * renderAttempts) // Exponentielle Backoff
       } else {
         // Zeige Fehlerseite nach allen Versuchen - MIT HINTERGRUND damit keine schwarze Seite
-        rootElement.innerHTML = `
+        if (rootElement) {
+          rootElement.innerHTML = `
           <div style="padding: 2rem; color: white; background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%); min-height: 100vh; font-family: system-ui; display: flex; flex-direction: column; align-items: center; justify-content: center;">
             <h1 style="color: #ff6b6b; margin-bottom: 1rem;">⚠️ App konnte nicht gestartet werden</h1>
             <p style="margin-bottom: 2rem; text-align: center; max-width: 600px;">
@@ -171,7 +177,8 @@ try {
               </button>
             </div>
           </div>
-        `
+          `
+        }
       }
     }
   }

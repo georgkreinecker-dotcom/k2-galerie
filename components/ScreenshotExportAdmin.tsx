@@ -87,7 +87,7 @@ function cleanupUnnecessaryData() {
 
 // Tracking für offene PDF-Fenster - verhindert zu viele gleichzeitige Fenster
 let openPDFWindows: Window[] = []
-let intervalIds: NodeJS.Timeout[] = [] // Tracking für alle Intervalle
+let intervalIds: ReturnType<typeof setInterval>[] = [] // Tracking für alle Intervalle
 const MAX_OPEN_WINDOWS = 3
 
 // PDF-Fenster sicher öffnen mit automatischem Cleanup - VERBESSERT gegen Memory Leaks
@@ -436,7 +436,7 @@ function ScreenshotExportAdmin() {
   // Änderungen werden erst nach Reload aktiv (verhindert Crashes)
   useEffect(() => {
     let isMounted = true
-    let timeoutId: NodeJS.Timeout | null = null
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
     
     // Warte bis designSettings geladen ist
     const setCSSVars = () => {
@@ -986,8 +986,8 @@ function ScreenshotExportAdmin() {
         }
         
         // Verwende requestIdleCallback wenn verfügbar, sonst setTimeout
-        if (window.requestIdleCallback) {
-          requestIdleCallback(stringifyData, { timeout: 5000 })
+        if (typeof window.requestIdleCallback !== 'undefined') {
+          window.requestIdleCallback(stringifyData, { timeout: 5000 })
         } else {
           setTimeout(stringifyData, 100)
         }
@@ -1657,6 +1657,8 @@ ${'='.repeat(60)}
   }
 
   const generateEditablePresseaussendungPDF = (presseaussendung: any, event: any) => {
+    let blob: Blob | null = null // WICHTIG: Außerhalb try-catch definieren
+    
     const galleryData = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
     const galleryName = galleryData.name || 'K2 Galerie'
     const galleryAddress = galleryData.address || ''
@@ -1979,33 +1981,37 @@ ${'='.repeat(60)}
     } catch (error) {
       console.error('Fehler beim Generieren des PDFs:', error)
       alert('Fehler beim Generieren des PDFs. Bitte versuche es erneut.')
+      return // WICHTIG: Return wenn Fehler, damit blob nicht verwendet wird
     }
     
-    // Speichere auch in Dokumente-Sektion
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      const documentData = {
-        id: `pr-editable-presseaussendung-${event?.id || 'unknown'}-${Date.now()}`,
-        name: `Presseaussendung (bearbeitbar) - ${event?.title || 'Event'}`,
-        type: 'text/html',
-        size: blob.size,
-        data: reader.result as string,
-        fileName: `presseaussendung-editable-${(event?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
-        uploadedAt: new Date().toISOString(),
-        isPDF: false,
-        isPlaceholder: false,
-        category: 'pr-dokumente',
-        eventId: event?.id,
-        eventTitle: event?.title
+    // Speichere auch in Dokumente-Sektion (nur wenn blob erfolgreich erstellt wurde)
+    if (blob) {
+      const reader = new FileReader()
+      const blobToSave: Blob = blob // Explizite Type-Assertion
+      reader.onloadend = () => {
+        const documentData = {
+          id: `pr-editable-presseaussendung-${event?.id || 'unknown'}-${Date.now()}`,
+          name: `Presseaussendung (bearbeitbar) - ${event?.title || 'Event'}`,
+          type: 'text/html',
+          size: blobToSave.size,
+          data: reader.result as string,
+          fileName: `presseaussendung-editable-${(event?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+          uploadedAt: new Date().toISOString(),
+          isPDF: false,
+          isPlaceholder: false,
+          category: 'pr-dokumente',
+          eventId: event?.id,
+          eventTitle: event?.title
+        }
+        const existingDocs = loadDocuments()
+        const filteredDocs = existingDocs.filter((d: any) => 
+          !(d.category === 'pr-dokumente' && d.eventId === event?.id && d.name.includes('Presseaussendung (bearbeitbar)'))
+        )
+        const updated = [...filteredDocs, documentData]
+        saveDocuments(updated)
       }
-      const existingDocs = loadDocuments()
-      const filteredDocs = existingDocs.filter((d: any) => 
-        !(d.category === 'pr-dokumente' && d.eventId === event?.id && d.name.includes('Presseaussendung (bearbeitbar)'))
-      )
-      const updated = [...filteredDocs, documentData]
-      saveDocuments(updated)
+      reader.readAsDataURL(blob)
     }
-    reader.readAsDataURL(blob)
   }
 
   const generateEditableSocialMediaPDF = (socialMedia: any, event: any) => {
@@ -2363,6 +2369,17 @@ ${'='.repeat(60)}
       console.error('Fehler beim Generieren des PDFs:', error)
       alert('Fehler beim Generieren des PDFs. Bitte versuche es erneut.')
     }
+  }
+
+  // Platzhalter-Funktionen für Event-Flyer und Newsletter-Content
+  const generateEventFlyerContent = (event: any): string => {
+    // TODO: Implementiere Flyer-Generierung
+    return ''
+  }
+
+  const generateEmailNewsletterContent = (event: any): string => {
+    // TODO: Implementiere Newsletter-Generierung
+    return ''
   }
 
   const generateEditableNewsletterPDF = (newsletter: any, event: any) => {
@@ -3824,6 +3841,8 @@ ${'='.repeat(60)}
 
   // Plakat für spezifisches Event generieren
   const generatePlakatForEvent = (event: any) => {
+    let blob: Blob | null = null // WICHTIG: Außerhalb try-catch definieren
+    
     try {
       console.log('generatePlakatForEvent aufgerufen mit Event:', event)
       
@@ -4045,7 +4064,7 @@ ${'='.repeat(60)}
       
       console.log('HTML generiert, Länge:', html.length)
 
-      const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+      blob = new Blob([html], { type: 'text/html;charset=utf-8' })
       const url = URL.createObjectURL(blob)
       
       console.log('Plakat HTML generiert, Größe:', blob.size, 'bytes')
@@ -4100,35 +4119,38 @@ ${'='.repeat(60)}
     } catch (error) {
       console.error('Fehler beim Generieren des Plakats:', error)
       alert('Fehler beim Generieren des Plakats: ' + (error instanceof Error ? error.message : String(error)))
+      return // WICHTIG: Return wenn Fehler, damit blob nicht verwendet wird
     }
     
-    // Speichere auch in Dokumente-Sektion
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      const documentData = {
-        id: `pr-plakat-${event.id}-${Date.now()}`,
-        name: `Plakat - ${event.title}`,
-        type: 'text/html',
-        size: blob.size,
-        data: reader.result as string,
-        fileName: `plakat-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
-        uploadedAt: new Date().toISOString(),
-        isPDF: false,
-        isPlaceholder: false,
-        category: 'pr-dokumente',
-        eventId: event.id,
-        eventTitle: event.title
+    // Speichere auch in Dokumente-Sektion (nur wenn blob erfolgreich erstellt wurde)
+    if (blob) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        const documentData = {
+          id: `pr-plakat-${event.id}-${Date.now()}`,
+          name: `Plakat - ${event.title}`,
+          type: 'text/html',
+          size: blob!.size,
+          data: reader.result as string,
+          fileName: `plakat-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
+          uploadedAt: new Date().toISOString(),
+          isPDF: false,
+          isPlaceholder: false,
+          category: 'pr-dokumente',
+          eventId: event.id,
+          eventTitle: event.title
+        }
+        const existingDocs = loadDocuments()
+        const filteredDocs = existingDocs.filter((d: any) => 
+          !(d.category === 'pr-dokumente' && d.eventId === event.id && d.name.includes('Plakat'))
+        )
+        const updated = [...filteredDocs, documentData]
+        saveDocuments(updated)
       }
-      const existingDocs = loadDocuments()
-      const filteredDocs = existingDocs.filter((d: any) => 
-        !(d.category === 'pr-dokumente' && d.eventId === event.id && d.name.includes('Plakat'))
-      )
-      const updated = [...filteredDocs, documentData]
-      saveDocuments(updated)
+      reader.readAsDataURL(blob)
+      
+      alert('✅ Plakat generiert! Bitte im Browser drucken (A3 Format).')
     }
-    reader.readAsDataURL(blob)
-    
-    alert('✅ Plakat generiert! Bitte im Browser drucken (A3 Format).')
   }
 
   // Plakat generieren (mit App-Design) - Fallback
@@ -6964,10 +6986,10 @@ ${'='.repeat(60)}
                     </button>
                     <button
                       onClick={() => {
-                        const result = cleanupUnnecessaryData()
-                        if (result) {
+                        try {
+                          cleanupUnnecessaryData()
                           alert('✅ Cleanup erfolgreich abgeschlossen!\n\nGelöscht:\n- Alte Blob URLs\n- Ungültige Dokumente\n- Alte PR-Vorschläge\n- Leere Events')
-                        } else {
+                        } catch (error) {
                           alert('⚠️ Cleanup mit Fehlern abgeschlossen')
                         }
                         setShowExportMenu(false)

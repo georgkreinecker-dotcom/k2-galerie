@@ -118,7 +118,7 @@ const VirtuellerRundgangPage = () => {
     // Stattdessen: Nur auf explizite Events reagieren
     
     // Event Listener mit Debouncing
-    let updateTimeout: NodeJS.Timeout | null = null
+    let updateTimeout: ReturnType<typeof setTimeout> | null = null
     const handleUpdate = () => {
       if (updateTimeout) {
         clearTimeout(updateTimeout)

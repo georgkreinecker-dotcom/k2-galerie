@@ -1059,7 +1059,7 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
                               }
                             }
                           }}
-                          onLoad={() => {
+                          onLoad={(e) => {
                             // Bei erfolgreichem Laden: Platzhalter entfernen
                             const parent = (e.target as HTMLImageElement).parentElement
                             if (parent) {

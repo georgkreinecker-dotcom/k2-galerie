@@ -19,7 +19,7 @@ import SecondMacPage from './pages/SecondMacPage'
 import ScreenshotExportAdmin from '../components/ScreenshotExportAdmin'
 import DevViewPage from './pages/DevViewPage'
 import { PLATFORM_ROUTES, PROJECT_ROUTES } from './config/navigation'
-import { Component, ErrorInfo, ReactNode } from 'react'
+import { Component, type ErrorInfo, type ReactNode } from 'react'
 
 // Error Boundary für gesamte App
 class AppErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error?: Error }> {

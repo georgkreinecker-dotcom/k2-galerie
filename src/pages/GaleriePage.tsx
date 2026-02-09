@@ -227,7 +227,7 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
   React.useEffect(() => {
     // Lade Daten: Zuerst aus JSON-Datei (für Mobile-Version auf Vercel), dann localStorage (für lokale Entwicklung)
     let isMounted = true
-    let timeoutId: NodeJS.Timeout | null = null
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
     let controller: AbortController | null = null
     
     const loadData = async () => {
@@ -962,6 +962,9 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
                 
                 // Debug-Log für Entwicklung
                 console.log('📱 QR-Code URL:', finalUrl)
+                
+                // URL für QR-Code encoden
+                const encodedUrl = encodeURIComponent(finalUrl)
                 
                 return (
                   <div 

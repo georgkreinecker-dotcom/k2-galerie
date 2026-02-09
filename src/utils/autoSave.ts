@@ -7,7 +7,7 @@
 const AUTO_SAVE_INTERVAL = 5000
 
 let autoSaveEnabled = true
-let autoSaveTimer: NodeJS.Timeout | null = null
+let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
 
 export interface AutoSaveData {
   martina?: any
