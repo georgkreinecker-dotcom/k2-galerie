@@ -347,7 +347,12 @@ end tell`
             </div>
             {publishStatus.success && publishStatus.artworksCount !== undefined && (
               <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>
-                📁 {publishStatus.size ? `${(publishStatus.size / 1024).toFixed(1)} KB` : ''} • 🎨 {publishStatus.artworksCount} Werke gespeichert
+                📁 {publishStatus.size ? `${(publishStatus.size / 1024).toFixed(1)} KB` : ''} • 🎨 {publishStatus.artworksCount} {publishStatus.artworksCount === 1 ? 'Werk' : 'Werke'} gespeichert
+                {publishStatus.artworksCount === 0 && (
+                  <span style={{ color: '#fca5a5', marginLeft: '0.5rem' }}>
+                    ⚠️ Keine Werke gefunden - prüfe localStorage
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -683,6 +688,25 @@ end tell`
                 // KRITISCH: Alle Werke mitnehmen, nicht nur die ersten 50
                 const allArtworks = Array.isArray(artworks) ? artworks : []
                 console.log('📦 Veröffentliche Werke:', allArtworks.length, 'Werke gefunden')
+                console.log('📦 localStorage k2-artworks:', {
+                  exists: !!localStorage.getItem('k2-artworks'),
+                  length: localStorage.getItem('k2-artworks')?.length || 0,
+                  parsedLength: allArtworks.length,
+                  firstArtwork: allArtworks[0] ? {
+                    id: allArtworks[0].id,
+                    number: allArtworks[0].number,
+                    title: allArtworks[0].title
+                  } : null
+                })
+                
+                // WICHTIG: Wenn keine Werke gefunden werden, zeige Warnung
+                if (allArtworks.length === 0) {
+                  console.warn('⚠️ KEINE WERKE GEFUNDEN in localStorage!')
+                  console.warn('⚠️ Prüfe localStorage direkt:', {
+                    raw: localStorage.getItem('k2-artworks')?.substring(0, 200),
+                    keys: Object.keys(localStorage).filter(k => k.includes('artwork'))
+                  })
+                }
                 
                 const data = {
                   martina: getItemSafe('k2-stammdaten-martina', {}),
@@ -761,6 +785,26 @@ end tell`
                         
                         // Synchronisierungs-Status: Veröffentlichung erfolgreich
                         setSyncStatus({ step: 'published', progress: 10 })
+                        
+                        // WICHTIG: Prüfe ob Datei wirklich geschrieben wurde
+                        console.log('✅ Datei geschrieben:', {
+                          path: result.path,
+                          size: result.size,
+                          artworksCount: artworksCount
+                        })
+                        
+                        // Prüfe ob Datei wirklich existiert
+                        fetch('/gallery-data.json?check=true&t=' + Date.now(), { method: 'HEAD' })
+                          .then(checkResponse => {
+                            if (checkResponse.ok) {
+                              console.log('✅ Datei ist lokal verfügbar')
+                            } else {
+                              console.warn('⚠️ Datei ist lokal NICHT verfügbar:', checkResponse.status)
+                            }
+                          })
+                          .catch(e => {
+                            console.warn('⚠️ Prüfung fehlgeschlagen:', e)
+                          })
                         
                         // Auto-Close nach 10 Sekunden
                         setTimeout(() => {

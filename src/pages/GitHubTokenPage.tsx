@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { PLATFORM_ROUTES } from '../config/navigation'
 
@@ -15,10 +15,10 @@ export default function GitHubTokenPage() {
   const [saved, setSaved] = useState(false)
 
   // Lade gespeicherten Token beim Start
-  useState(() => {
+  useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) setToken(stored)
-  })
+  }, [])
 
   const save = () => {
     const v = token.trim()

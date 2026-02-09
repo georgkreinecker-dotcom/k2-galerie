@@ -97,6 +97,13 @@ export default function SmartPanel({ currentPage, onGitPush }: SmartPanelProps) 
       hint: 'Git Push starten'
     },
     {
+      label: '🔑 GitHub Token',
+      action: () => {
+        window.location.href = PLATFORM_ROUTES.githubToken
+      },
+      hint: 'GitHub Token verwalten'
+    },
+    {
       label: '🚀 Vercel',
       action: () => {
         window.open('https://vercel.com/dashboard', '_blank')

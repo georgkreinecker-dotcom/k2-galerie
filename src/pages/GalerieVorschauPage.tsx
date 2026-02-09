@@ -68,92 +68,182 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
       setLoadStatus({ message: '🔄 Lade Werke...', success: false })
       
       try {
-        // Prüfe zuerst ob neue Version verfügbar ist
-        const lastVersion = localStorage.getItem('k2-last-loaded-version')
-        const lastBuildId = localStorage.getItem('k2-last-build-id')
+        // WICHTIG: Beim ersten Laden (QR-Code neu gescannt) IMMER von Server laden
+        // Prüfe ob dies ein "frischer" Besuch ist (keine localStorage-Daten oder sehr alt)
+        const lastLoadTime = localStorage.getItem('k2-last-load-time')
+        const timeSinceLastLoad = lastLoadTime ? Date.now() - parseInt(lastLoadTime, 10) : Infinity
+        const isFreshVisit = !lastLoadTime || timeSinceLastLoad > 300000 // 5 Minuten = frischer Besuch
         
-        // Lade Metadaten vom Server um Version zu prüfen
-        let needsReload = false
-        try {
-          const metaUrl = `/gallery-data.json?meta=true&v=${Date.now()}`
-          const metaResponse = await fetch(metaUrl, {
-            cache: 'no-store',
-            headers: { 'Cache-Control': 'no-cache' }
-          })
-          
-          if (metaResponse.ok) {
-            const metaData = await metaResponse.json()
-            const serverVersion = metaData.version || 0
-            const serverBuildId = metaData.buildId || ''
-            
-            // Prüfe ob neue Version verfügbar
-            if (serverVersion && serverVersion !== lastVersion) {
-              console.log('🔄 Neue Version verfügbar:', serverVersion, 'vs', lastVersion)
-              needsReload = true
-            } else if (serverBuildId && serverBuildId !== lastBuildId) {
-              console.log('🔄 Neue Build-ID verfügbar:', serverBuildId, 'vs', lastBuildId)
-              needsReload = true
-            }
-          }
-        } catch (e) {
-          console.warn('⚠️ Version-Check fehlgeschlagen, lade trotzdem:', e)
-        }
-        
-        // Zuerst aus localStorage laden
+        // Zuerst aus localStorage laden (für schnelle Anzeige)
         let stored = loadArtworks()
         
-        // Wenn localStorage leer ist ODER neue Version verfügbar, lade aus gallery-data.json
-        if (!stored || stored.length === 0 || needsReload) {
-          console.log('🔄 Lade aus gallery-data.json...', needsReload ? '(neue Version)' : '(localStorage leer)')
-          setLoadStatus({ message: '🔄 Synchronisiere mit Server...', success: false })
-          
+        // WICHTIG: IMMER von Server laden, besonders bei frischem Besuch
+        // Das stellt sicher, dass Mobile IMMER die neuesten Daten von Vercel bekommt
+        console.log('🔄 Lade aus gallery-data.json...', isFreshVisit ? '(frischer Besuch - lade von Vercel)' : '(Synchronisierung)')
+        setLoadStatus({ message: '🔄 Synchronisiere mit Vercel...', success: false })
+        
           try {
             const timestamp = Date.now()
-            const url = `/gallery-data.json?v=${timestamp}&t=${timestamp}&_=${Math.random()}`
+            
+            // WICHTIG: Prüfe ob wir auf Vercel sind oder localhost
+            const isVercel = window.location.hostname.includes('vercel.app') || window.location.hostname.includes('k2-galerie')
+            const baseUrl = isVercel 
+              ? window.location.origin 
+              : 'https://k2-galerie.vercel.app'
+            
+            const url = `${baseUrl}/gallery-data.json?v=${timestamp}&t=${timestamp}&_=${Math.random()}`
+            console.log('📡 Lade von:', url)
+            console.log('📡 Hostname:', window.location.hostname)
+            console.log('📡 Ist Vercel:', isVercel)
+            console.log('📡 Base URL:', baseUrl)
+            
+            // WICHTIG: Teste zuerst ob die Datei überhaupt existiert
+            try {
+              const testResponse = await fetch(`${baseUrl}/gallery-data.json?test=true&t=${Date.now()}`, {
+                method: 'HEAD',
+                cache: 'no-store'
+              })
+              console.log('🔍 Test-Request Status:', testResponse.status, testResponse.statusText)
+              if (!testResponse.ok && testResponse.status === 404) {
+                console.error('❌ Datei existiert NICHT auf Vercel!')
+                setLoadStatus({ 
+                  message: '❌ Datei nicht auf Vercel gefunden - bitte Git Push ausführen', 
+                  success: false 
+                })
+                setTimeout(() => setLoadStatus(null), 10000)
+                return
+              }
+            } catch (testError) {
+              console.warn('⚠️ Test-Request fehlgeschlagen:', testError)
+            }
+            
+            // Timeout für große Dateien: 30 Sekunden
+            const controller = new AbortController()
+            const timeoutId = setTimeout(() => controller.abort(), 30000)
+            
             const response = await fetch(url, {
               cache: 'no-store',
+              signal: controller.signal,
               headers: {
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
                 'Pragma': 'no-cache'
               }
             })
             
+            clearTimeout(timeoutId)
+            
             if (response.ok) {
+              console.log('✅ Response OK:', response.status, response.statusText)
+              console.log('📦 Content-Type:', response.headers.get('content-type'))
+              console.log('📦 Content-Length:', response.headers.get('content-length'))
+              
               const data = await response.json()
-              if (data.artworks && Array.isArray(data.artworks)) {
-                // Speichere Version-Info
+              console.log('📦 Server-Antwort:', {
+                hasArtworks: !!data.artworks,
+                artworksCount: data.artworks ? data.artworks.length : 0,
+                version: data.version,
+                buildId: data.buildId,
+                dataKeys: Object.keys(data),
+                firstArtwork: data.artworks && data.artworks.length > 0 ? {
+                  id: data.artworks[0].id,
+                  number: data.artworks[0].number,
+                  title: data.artworks[0].title
+                } : null
+              })
+              
+              // WICHTIG: Prüfe ob Werke wirklich vorhanden sind
+              if (!data.artworks || !Array.isArray(data.artworks) || data.artworks.length === 0) {
+                console.error('❌ KEINE WERKE in Server-Antwort gefunden!')
+                console.error('❌ Daten-Struktur:', {
+                  keys: Object.keys(data),
+                  artworksType: typeof data.artworks,
+                  artworksIsArray: Array.isArray(data.artworks),
+                  artworksLength: data.artworks ? data.artworks.length : 'null'
+                })
+              }
+            
+              if (data.artworks && Array.isArray(data.artworks) && data.artworks.length > 0) {
+                // Speichere Version-Info und Zeitstempel
                 if (data.version) localStorage.setItem('k2-last-loaded-version', String(data.version))
                 if (data.buildId) localStorage.setItem('k2-last-build-id', data.buildId)
+                localStorage.setItem('k2-last-load-time', String(Date.now()))
                 
                 // Speichere in localStorage
                 try {
                   localStorage.setItem('k2-artworks', JSON.stringify(data.artworks))
-                  console.log('✅ Werke aus gallery-data.json geladen und gespeichert:', data.artworks.length)
+                  console.log('✅ Werke aus Vercel geladen und gespeichert:', data.artworks.length)
                   stored = data.artworks
-                  setLoadStatus({ message: `✅ ${data.artworks.length} Werke synchronisiert`, success: true })
+                  setLoadStatus({ message: `✅ ${data.artworks.length} Werke von Vercel synchronisiert`, success: true })
                   setTimeout(() => setLoadStatus(null), 3000)
                 } catch (e) {
                   console.warn('⚠️ Werke zu groß für localStorage, verwende direkt')
                   stored = data.artworks
-                  setLoadStatus({ message: `✅ ${data.artworks.length} Werke geladen`, success: true })
+                  setLoadStatus({ message: `✅ ${data.artworks.length} Werke von Vercel geladen`, success: true })
                   setTimeout(() => setLoadStatus(null), 3000)
                 }
               } else {
-                setLoadStatus({ message: '⚠️ Keine Werke gefunden', success: false })
-                setTimeout(() => setLoadStatus(null), 3000)
+                console.error('❌ Keine Werke in Server-Antwort gefunden!')
+                console.error('❌ Daten-Struktur:', {
+                  hasArtworks: !!data.artworks,
+                  isArray: Array.isArray(data.artworks),
+                  length: data.artworks ? data.artworks.length : 'null',
+                  dataKeys: Object.keys(data)
+                })
+                
+                // Fallback: Verwende localStorage wenn vorhanden
+                if (stored && stored.length > 0) {
+                  console.log('📦 Verwende localStorage-Daten (Server hat keine Werke):', stored.length)
+                  setLoadStatus({ message: `⚠️ Server hat keine Werke - verwende Cache (${stored.length})`, success: false })
+                  setTimeout(() => setLoadStatus(null), 5000)
+                } else {
+                  setLoadStatus({ message: '❌ Keine Werke gefunden - weder Server noch Cache', success: false })
+                  setTimeout(() => setLoadStatus(null), 5000)
+                }
               }
             } else {
-              setLoadStatus({ message: '⚠️ Server nicht erreichbar', success: false })
-              setTimeout(() => setLoadStatus(null), 3000)
+              console.error('❌ Server-Fehler:', response.status, response.statusText)
+              console.error('❌ Response URL:', response.url)
+              console.error('❌ Response Headers:', Object.fromEntries(response.headers.entries()))
+              
+              // Versuche Response-Text zu lesen für mehr Details
+              response.text().then(text => {
+                console.error('❌ Response Body (erste 500 Zeichen):', text.substring(0, 500))
+              }).catch(e => {
+                console.error('❌ Konnte Response-Text nicht lesen:', e)
+              })
+              
+              // Fallback: Verwende localStorage wenn vorhanden
+              if (stored && stored.length > 0) {
+                console.log('📦 Verwende localStorage-Daten (Server-Fehler):', stored.length)
+                setLoadStatus({ message: `✅ ${stored.length} Werke aus Cache (Server-Fehler ${response.status})`, success: true })
+                setTimeout(() => setLoadStatus(null), 2000)
+              } else {
+                setLoadStatus({ message: `⚠️ Server-Fehler ${response.status}: ${response.statusText}`, success: false })
+                setTimeout(() => setLoadStatus(null), 5000)
+              }
             }
-          } catch (error) {
-            console.warn('⚠️ gallery-data.json konnte nicht geladen werden:', error)
-            setLoadStatus({ message: '⚠️ Fehler beim Laden', success: false })
-            setTimeout(() => setLoadStatus(null), 3000)
+        } catch (error: any) {
+          console.error('❌ gallery-data.json konnte nicht geladen werden:', error)
+          console.error('❌ Fehler-Details:', {
+            name: error?.name,
+            message: error?.message,
+            stack: error?.stack
+          })
+          
+          // Fallback: Verwende localStorage wenn vorhanden
+          if (stored && stored.length > 0) {
+            console.log('📦 Verwende localStorage-Daten (Fehler):', stored.length)
+            setLoadStatus({ message: `✅ ${stored.length} Werke aus Cache`, success: true })
+            setTimeout(() => setLoadStatus(null), 2000)
+          } else {
+            const errorMsg = error?.name === 'AbortError' 
+              ? '⚠️ Zeitüberschreitung beim Laden' 
+              : error?.message 
+              ? `⚠️ Fehler: ${error.message}` 
+              : '⚠️ Fehler beim Laden'
+            setLoadStatus({ message: errorMsg, success: false })
+            setTimeout(() => setLoadStatus(null), 5000)
           }
-        } else {
-          setLoadStatus({ message: `✅ ${stored.length} Werke geladen`, success: true })
-          setTimeout(() => setLoadStatus(null), 2000)
         }
         
         if (Array.isArray(stored) && stored.length > 0) {
@@ -219,13 +309,23 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
       localStorage.removeItem('k2-last-loaded-timestamp')
       localStorage.removeItem('k2-last-loaded-version')
       localStorage.removeItem('k2-last-build-id')
+      localStorage.removeItem('k2-last-load-time') // WICHTIG: Auch Load-Time entfernen
       
       // Maximale Cache-Busting URL
       const timestamp = Date.now()
       const random = Math.random()
-      const url = `/gallery-data.json?v=${timestamp}&t=${timestamp}&r=${random}&_=${Date.now()}&nocache=${Math.random()}&force=${Date.now()}&refresh=${Math.random()}`
       
-      console.log('🔄 Lade neue Daten vom Server...', url.substring(0, 100))
+      // WICHTIG: Prüfe ob wir auf Vercel sind oder localhost
+      const isVercel = window.location.hostname.includes('vercel.app') || window.location.hostname.includes('k2-galerie')
+      const baseUrl = isVercel 
+        ? window.location.origin 
+        : 'https://k2-galerie.vercel.app'
+      
+      const url = `${baseUrl}/gallery-data.json?v=${timestamp}&t=${timestamp}&r=${random}&_=${Date.now()}&nocache=${Math.random()}&force=${Date.now()}&refresh=${Math.random()}`
+      
+      console.log('🔄 Lade neue Daten vom Server...', url)
+      console.log('🔄 Hostname:', window.location.hostname)
+      console.log('🔄 Ist Vercel:', isVercel)
       
       const response = await fetch(url, {
         cache: 'no-store',
@@ -242,10 +342,11 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
       if (response.ok) {
         const data = await response.json()
         if (data.artworks && Array.isArray(data.artworks)) {
-          // Speichere Version-Info
+          // Speichere Version-Info und Zeitstempel
           if (data.version) localStorage.setItem('k2-last-loaded-version', String(data.version))
           if (data.buildId) localStorage.setItem('k2-last-build-id', data.buildId)
           if (data.exportedAt) localStorage.setItem('k2-last-loaded-timestamp', data.exportedAt)
+          localStorage.setItem('k2-last-load-time', String(Date.now())) // WICHTIG: Load-Time speichern
           
           // Speichere in localStorage
           try {
