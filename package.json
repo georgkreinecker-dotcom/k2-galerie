@@ -5,7 +5,6 @@
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node -e \"const fs=require('fs');const data=localStorage.getItem('k2-gallery-data-export')||'{}';try{fs.writeFileSync('gallery-data-export.json',data,'utf8');console.log('✅ Export-Datei erstellt')}catch(e){}\" || true",
     "check-exports": "node scripts/check-duplicate-exports.js",
     "build": "npm run check-exports && tsc -b && vite build",
     "lint": "eslint .",
