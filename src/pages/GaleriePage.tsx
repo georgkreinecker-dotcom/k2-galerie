@@ -941,10 +941,9 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
                     finalUrl = networkIP
                     console.log('📱 QR-Code: localhost erkannt → verwende Netzwerk-IP:', finalUrl)
                   } else {
-                    // Fallback: Vercel-URL (funktioniert nur wenn deployed)
+                    // Fallback: IMMER Vercel-URL verwenden (funktioniert auf Handy!)
                     finalUrl = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
                     console.log('📱 QR-Code: localhost erkannt → verwende Vercel-URL:', finalUrl)
-                    console.warn('⚠️ WICHTIG: Stelle sicher dass die App auf Vercel deployed ist!')
                   }
                 }
                 

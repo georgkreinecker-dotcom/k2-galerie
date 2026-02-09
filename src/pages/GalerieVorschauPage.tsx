@@ -393,6 +393,48 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
     }
   }
 
+  // WICHTIG: Stelle sicher dass die Komponente immer etwas rendert - verhindert schwarze Seite
+  if (!artworks || artworks.length === 0) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%)',
+        color: '#ffffff',
+        padding: '2rem',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        {isLoading ? (
+          <div style={{ textAlign: 'center' }}>
+            <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>🔄 Lade Werke...</h1>
+            <p>{loadStatus?.message || 'Bitte warten...'}</p>
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center' }}>
+            <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>📸 Keine Werke gefunden</h1>
+            <p style={{ marginBottom: '1rem' }}>Bitte aktualisiere die Seite.</p>
+            <button 
+              onClick={handleRefresh}
+              style={{
+                padding: '0.75rem 1.5rem',
+                background: '#667eea',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '1rem'
+              }}
+            >
+              🔄 Aktualisieren
+            </button>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <>
       {/* Synchronisierungs-Status-Balken für Mobile */}

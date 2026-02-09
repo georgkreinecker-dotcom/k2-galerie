@@ -155,23 +155,19 @@ try {
           attemptRender()
         }, 1000 * renderAttempts) // Exponentielle Backoff
       } else {
-        // Zeige Fehlerseite nach allen Versuchen
+        // Zeige Fehlerseite nach allen Versuchen - MIT HINTERGRUND damit keine schwarze Seite
         rootElement.innerHTML = `
-          <div style="padding: 2rem; color: white; background: #1a1a1a; min-height: 100vh; font-family: system-ui; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <div style="padding: 2rem; color: white; background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%); min-height: 100vh; font-family: system-ui; display: flex; flex-direction: column; align-items: center; justify-content: center;">
             <h1 style="color: #ff6b6b; margin-bottom: 1rem;">⚠️ App konnte nicht gestartet werden</h1>
             <p style="margin-bottom: 2rem; text-align: center; max-width: 600px;">
-              Dies könnte ein Cursor IDE Problem sein.<br />
               Bitte versuche:<br />
-              1. Cursor komplett neu zu starten<br />
-              2. Die Seite im Browser zu öffnen (nicht Cursor Preview)<br />
-              3. Browser-Cache zu leeren
+              1. Seite neu laden<br />
+              2. Browser-Cache leeren<br />
+              3. Anderen Browser verwenden
             </p>
-            <div style="display: flex; gap: 1rem;">
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
               <button onclick="window.location.reload()" style="padding: 0.75rem 1.5rem; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
                 🔃 Seite neu laden
-              </button>
-              <button onclick="window.open('http://localhost:5177', '_blank')" style="padding: 0.75rem 1.5rem; background: #48bb78; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
-                🌐 Im Browser öffnen
               </button>
             </div>
           </div>
@@ -186,10 +182,10 @@ try {
   const rootElement = document.getElementById('root')
   if (rootElement) {
     rootElement.innerHTML = `
-      <div style="padding: 2rem; color: white; background: #1a1a1a; min-height: 100vh; font-family: system-ui; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <div style="padding: 2rem; color: white; background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%); min-height: 100vh; font-family: system-ui; display: flex; flex-direction: column; align-items: center; justify-content: center;">
         <h1 style="color: #ff6b6b; margin-bottom: 1rem;">⚠️ App-Fehler</h1>
         <p style="margin-bottom: 1rem;">${error instanceof Error ? error.message : String(error)}</p>
-        <details style="background: #000; padding: 1rem; border-radius: 4px; margin-bottom: 2rem; max-width: 800px; width: 100%; overflow: auto;">
+        <details style="background: rgba(0, 0, 0, 0.3); padding: 1rem; border-radius: 4px; margin-bottom: 2rem; max-width: 800px; width: 100%; overflow: auto;">
           <summary style="cursor: pointer; margin-bottom: 0.5rem;">Fehler-Details</summary>
           <pre style="white-space: pre-wrap; word-break: break-word; font-size: 0.875rem; margin-top: 0.5rem;">
             ${error instanceof Error ? error.stack : String(error)}
