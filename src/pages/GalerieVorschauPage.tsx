@@ -157,26 +157,25 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
         }
         
         if (Array.isArray(stored) && stored.length > 0) {
-          // Filtere nur echte Werke und stelle sicher, dass imageUrl vorhanden ist
-          // WICHTIG: Zeige ALLE Werke, nicht nur die mit inExhibition === true
+          // WICHTIG: Zeige ALLE Werke - auch ohne Bild (für Debugging)
           const exhibitionArtworks = stored
-            .filter((a: any) => {
-              if (!a) return false
-              // Stelle sicher, dass mindestens ein Bild vorhanden ist
-              if (!a.imageUrl && !a.previewUrl) {
-                console.warn('Werk ohne Bild gefunden:', a.number || a.id)
-                return false // Kein Bild = nicht anzeigen
-              }
-              return true // Alle Werke mit Bild anzeigen
-            })
             .map((a: any) => {
               // Stelle sicher, dass imageUrl korrekt gesetzt ist
               if (!a.imageUrl && a.previewUrl) {
                 a.imageUrl = a.previewUrl
               }
+              // Fallback: Leeres Bild wenn keines vorhanden
+              if (!a.imageUrl && !a.previewUrl) {
+                a.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+              }
               return a
             })
-          console.log('✅ Geladene Werke:', exhibitionArtworks.length)
+          console.log('✅ Geladene Werke:', exhibitionArtworks.length, 'von', stored.length)
+          console.log('📊 Werke Details:', {
+            total: stored.length,
+            withImage: exhibitionArtworks.filter((a: any) => a.imageUrl && !a.imageUrl.includes('data:image/svg')).length,
+            withoutImage: exhibitionArtworks.filter((a: any) => !a.imageUrl || a.imageUrl.includes('data:image/svg')).length
+          })
           setArtworks(exhibitionArtworks)
         } else {
           console.warn('⚠️ Keine Werke gefunden')
@@ -253,20 +252,21 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
             localStorage.setItem('k2-artworks', JSON.stringify(data.artworks))
             console.log('✅ Neue Werke geladen:', data.artworks.length, 'Version:', data.version)
             
-            // Filtere nur echte Werke - Zeige ALLE Werke mit Bild
+            // WICHTIG: Zeige ALLE Werke - auch ohne Bild (für Debugging)
             const exhibitionArtworks = data.artworks
-              .filter((a: any) => {
-                if (!a) return false
-                // Stelle sicher, dass mindestens ein Bild vorhanden ist
-                if (!a.imageUrl && !a.previewUrl) return false
-                return true // Alle Werke mit Bild anzeigen
-              })
               .map((a: any) => {
+                if (!a) return null
+                // Stelle sicher, dass imageUrl korrekt gesetzt ist
                 if (!a.imageUrl && a.previewUrl) {
                   a.imageUrl = a.previewUrl
                 }
+                // Fallback: Leeres Bild wenn keines vorhanden
+                if (!a.imageUrl && !a.previewUrl) {
+                  a.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+                }
                 return a
               })
+              .filter((a: any) => a !== null) // Entferne null-Werte
             
             setArtworks(exhibitionArtworks)
             setLoadStatus({ message: `✅ ${exhibitionArtworks.length} Werke synchronisiert`, success: true })
