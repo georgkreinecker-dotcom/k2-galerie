@@ -1,0 +1,36 @@
+# 🚀 K2 Plattform starten - EINFACHSTE METHODE
+
+## ✅ So funktioniert es GARANTIERT:
+
+### Schritt 1: Terminal öffnen
+- Cmd + Leertaste
+- Tippe: Terminal
+- Enter
+
+### Schritt 2: Kopiere diesen Befehl und füge ihn ein:
+
+cd ~/k2Galerie && export PATH="$HOME/.local/node-v20.19.0-darwin-x64/bin:$PATH" && npm run dev
+
+### Schritt 3: Enter drücken
+
+### Schritt 4: Warte 5-10 Sekunden
+
+### Schritt 5: Browser öffnen
+- Öffne Safari/Chrome
+- Gehe zu: http://127.0.0.1:5177/
+
+## ✅ FERTIG!
+
+Terminal muss offen bleiben!
+
+## 🛑 Server stoppen:
+Ctrl + C im Terminal
+
+## 🔄 Server neu starten:
+Wieder Schritt 2-5
+
+---
+
+## 💡 Das ist die EINZIGE Methode die wirklich funktioniert!
+
+Alle anderen Lösungen haben Probleme mit macOS Berechtigungen.

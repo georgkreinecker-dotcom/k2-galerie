@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>K2 Control‑Studio (mit KI)</title>
+  <style>
+    :root {
+      --bg: #f7f5f1;
+      --panel: #ffffff;
+      --text: #1f1f1f;
+      --accent: #8b6914;
+      --accent-soft: #e3d1a6;
+      --muted: #666;
+      --shadow: 0 4px 16px rgba(0,0,0,.08);
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      padding: 1rem 1.5rem;
+      background: var(--panel);
+      border-bottom: 1px solid #eee;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.3rem;
+      color: var(--accent);
+    }
+    .header-actions a {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      padding: 0.4rem 0.7rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    main {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 1rem;
+      padding: 1rem;
+      min-height: calc(100vh - 64px);
+    }
+    .card {
+      background: var(--panel);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1rem 1.25rem;
+    }
+    h2 {
+      font-size: 1.05rem;
+      margin-top: 0;
+      color: #2a2a2a;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+    input[type="text"], input[type="date"], textarea, select {
+      width: 100%;
+      padding: 0.5rem 0.6rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      background: #fff;
+    }
+    textarea { min-height: 70px; resize: vertical; }
+    .checklist label {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+      margin: 0.35rem 0;
+      color: #333;
+    }
+    .checklist input[type="checkbox"] {
+      width: 1.1rem;
+      height: 1.1rem;
+      margin-top: 0.2rem;
+      accent-color: var(--accent);
+    }
+    .muted { color: var(--muted); font-size: 0.85rem; }
+    .btn {
+      border: 0;
+      background: var(--accent);
+      color: #fff;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .btn.secondary {
+      background: #eee;
+      color: #222;
+    }
+    .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .chat {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 120px);
+      position: sticky;
+      top: 72px;
+    }
+    .chat-log {
+      flex: 1;
+      overflow: auto;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      padding: 0.75rem;
+      background: #fafafa;
+    }
+    .msg {
+      padding: 0.5rem 0.6rem;
+      margin: 0.4rem 0;
+      border-radius: 8px;
+      max-width: 90%;
+      white-space: pre-wrap;
+    }
+    .msg.user { background: #e8f0ff; margin-left: auto; }
+    .msg.ai { background: #fff; border: 1px solid #eee; }
+    .chat-input {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.5rem;
+      margin-top: 0.6rem;
+    }
+    .small { font-size: 0.8rem; color: var(--muted); }
+    .tag {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      background: var(--accent-soft);
+      color: #3d2c00;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      margin-right: 0.4rem;
+    }
+    @media (max-width: 900px) {
+      main { grid-template-columns: 1fr; }
+      .chat { position: static; height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>K2 Control‑Studio</h1>
+      <div class="muted">Galerie + Marketing + Betrieb – mit integriertem KI‑Agenten (rechts)</div>
+    </div>
+    <div class="header-actions">
+      <a href="K2-Start.html">Startseite öffnen</a>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <div class="card">
+        <h2>Projekt‑Rahmen</h2>
+        <div class="grid-2">
+          <div>
+            <label>Galerie‑Name</label>
+            <input type="text" data-id="galerieName" placeholder="z. B. K2 Galerie">
+          </div>
+          <div>
+            <label>Eröffnung (Ziel)</label>
+            <input type="date" data-id="launchDate">
+          </div>
+          <div>
+            <label>Team</label>
+            <input type="text" data-id="team" placeholder="Georg & Martina">
+          </div>
+          <div>
+            <label>Zielgruppe</label>
+            <input type="text" data-id="zielgruppe" placeholder="Kunst‑ & Keramik‑Interessierte">
+          </div>
+        </div>
+        <div style="margin-top:0.75rem;">
+          <label>Projektbeschreibung (1–3 Sätze)</label>
+          <textarea data-id="beschreibung" placeholder="Kurze Beschreibung der Galerie..."></textarea>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:1rem;">
+        <h2>1) Galerie (Hybrid‑Launch im April)</h2>
+        <div class="checklist">
+          <label><input type="checkbox" data-id="g1"> Website ist live & erreichbar</label>
+          <label><input type="checkbox" data-id="g2"> Grundinhalte vorhanden (Künstler, Werke, Texte)</label>
+          <label><input type="checkbox" data-id="g3"> Öffnungszeiten/Ort für reale Eröffnung fixiert</label>
+          <label><input type="checkbox" data-id="g4"> Presse/Einladung vorbereitet</label>
+        </div>
+        <textarea data-id="g-notes" placeholder="Notizen zur Galerie..."></textarea>
+      </div>
+
+      <div class="card" style="margin-top:1rem;">
+        <h2>2) Marketing‑Konzept (Technik + Design)</h2>
+        <div class="checklist">
+          <label><input type="checkbox" data-id="m1"> Branding/Design final (Farben, Logo, Stil)</label>
+          <label><input type="checkbox" data-id="m2"> Social‑Media‑Plan erstellt (2–4 Wochen)</label>
+          <label><input type="checkbox" data-id="m3"> Kampagnen‑Landingpage geprüft</label>
+          <label><input type="checkbox" data-id="m4"> Presse‑ & Partnerliste vorhanden</label>
+        </div>
+        <textarea data-id="m-notes" placeholder="Notizen zum Marketing..."></textarea>
+      </div>
+
+      <div class="card" style="margin-top:1rem;">
+        <h2>Launch‑Plan bis April (Kurzcheck)</h2>
+        <div class="checklist">
+          <label><input type="checkbox" data-id="l1"> Woche 1: Inhalte finalisieren (Kunst/Keramik + Texte)</label>
+          <label><input type="checkbox" data-id="l2"> Woche 2: Website testen & Fehlerliste schließen</label>
+          <label><input type="checkbox" data-id="l3"> Woche 3: Social‑Media‑Plan starten (3 Posts/Woche)</label>
+          <label><input type="checkbox" data-id="l4"> Woche 4: Presse/Partner ansprechen + Einladungen senden</label>
+          <label><input type="checkbox" data-id="l5"> Woche 5: Live‑Eröffnung planen (Ort, Ablauf, Team)</label>
+        </div>
+        <textarea data-id="l-notes" placeholder="Notizen zum Launch‑Plan..."></textarea>
+      </div>
+
+      <div class="card" style="margin-top:1rem;">
+        <h2>3) Control‑Studio (Betrieb & Verwaltung)</h2>
+        <div class="checklist">
+          <label><input type="checkbox" data-id="c1"> Admin‑Zugang getestet</label>
+          <label><input type="checkbox" data-id="c2"> Upload‑Prozess für Bilder klar</label>
+          <label><input type="checkbox" data-id="c3"> Backups funktionieren</label>
+          <label><input type="checkbox" data-id="c4"> Verkauf/Bezahlung getestet (z. B. SumUp)</label>
+        </div>
+        <textarea data-id="c-notes" placeholder="Notizen zum Betrieb..."></textarea>
+        <div class="muted" style="margin-top:0.6rem;">
+          Mobil verbinden: Öffne <strong>K2-Mobile-Connect.html</strong> und erstelle einen QR‑Code für iPhone/iPad.
+        </div>
+      </div>
+    </section>
+
+    <aside class="card chat">
+      <h2>KI‑Agent (OpenAI)</h2>
+      <div class="small">Dein Schlüssel bleibt lokal im Browser gespeichert.</div>
+      <div style="margin:0.5rem 0;">
+        <label>OpenAI API‑Key</label>
+        <input type="text" data-id="apiKey" placeholder="sk-...">
+      </div>
+      <div class="grid-2" style="margin-bottom:0.5rem;">
+        <div>
+          <label>Modell</label>
+          <select data-id="model">
+            <option value="gpt-4o-mini">gpt-4o-mini</option>
+            <option value="gpt-4o">gpt-4o</option>
+          </select>
+        </div>
+        <div>
+          <label>Ton</label>
+          <select data-id="tone">
+            <option value="klar">Klar & kurz</option>
+            <option value="freundlich">Freundlich</option>
+            <option value="kreativ">Kreativ</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-group" style="margin-bottom:0.5rem;">
+        <button class="btn secondary" data-quick="Erstelle eine Launch‑Checkliste für April (Hybrid‑Eröffnung).">Launch‑Checkliste</button>
+        <button class="btn secondary" data-quick="Schreibe 5 Social‑Media‑Post‑Ideen für die Galerie.">Post‑Ideen</button>
+        <button class="btn secondary" data-quick="Formuliere einen Presse‑Text für die Eröffnung.">Presse‑Text</button>
+      </div>
+
+      <div class="chat-log" id="chatLog"></div>
+      <div class="chat-input">
+        <textarea id="chatInput" placeholder="Schreibe eine Frage oder Aufgabe..."></textarea>
+        <button class="btn" id="sendBtn">Senden</button>
+      </div>
+      <div class="small" style="margin-top:0.4rem;">Tipp: Bitte mich um Aufgaben, Texte, Checklisten oder Strategie.</div>
+    </aside>
+  </main>
+
+  <script>
+    var PREFIX = 'k2-controlstudio-';
+    function saveField(el) {
+      var id = el.getAttribute('data-id');
+      if (!id) return;
+      var key = PREFIX + id;
+      if (el.type === 'checkbox') {
+        localStorage.setItem(key, el.checked ? '1' : '0');
+      } else {
+        localStorage.setItem(key, el.value || '');
+      }
+    }
+    function loadFields() {
+      document.querySelectorAll('[data-id]').forEach(function(el) {
+        var key = PREFIX + el.getAttribute('data-id');
+        var val = localStorage.getItem(key);
+        if (el.type === 'checkbox') {
+          el.checked = val === '1';
+          el.addEventListener('change', function() { saveField(el); });
+        } else {
+          if (val) el.value = val;
+          el.addEventListener('input', function() { saveField(el); });
+        }
+      });
+    }
+    loadFields();
+
+    var chatLog = document.getElementById('chatLog');
+    var chatInput = document.getElementById('chatInput');
+    var sendBtn = document.getElementById('sendBtn');
+    var apiKeyInput = document.querySelector('[data-id=\"apiKey\"]');
+    var modelSelect = document.querySelector('[data-id=\"model\"]');
+    var toneSelect = document.querySelector('[data-id=\"tone\"]');
+
+    function appendMsg(role, text) {
+      var div = document.createElement('div');
+      div.className = 'msg ' + (role === 'user' ? 'user' : 'ai');
+      div.textContent = text;
+      chatLog.appendChild(div);
+      chatLog.scrollTop = chatLog.scrollHeight;
+      return div;
+    }
+
+    function getContext() {
+      var fields = {};
+      document.querySelectorAll('[data-id]').forEach(function(el) {
+        var id = el.getAttribute('data-id');
+        if (el.type === 'checkbox') fields[id] = el.checked;
+        else fields[id] = el.value || '';
+      });
+      return fields;
+    }
+
+    async function sendMessage(text) {
+      var apiKey = apiKeyInput.value.trim();
+      if (!apiKey) {
+        alert('Bitte OpenAI API‑Key eintragen.');
+        return;
+      }
+      appendMsg('user', text);
+      var loading = appendMsg('ai', 'Denke nach …');
+      var ctx = getContext();
+      var systemPrompt = [
+        'Du bist der KI‑Agent für das K2 Control‑Studio.',
+        'Ziel: Eine Kunst‑ und Keramik‑Galerie (Hybrid‑Launch im April) erfolgreich auf den Markt bringen.',
+        'Gib klare, umsetzbare Schritte für Nicht‑Programmierer.',
+        'Nutze das Projekt‑Kontext‑Objekt, wenn hilfreich.'
+      ].join(' ');
+
+      try {
+        var res = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + apiKey
+          },
+          body: JSON.stringify({
+            model: modelSelect.value,
+            temperature: toneSelect.value === 'kreativ' ? 0.8 : (toneSelect.value === 'freundlich' ? 0.6 : 0.4),
+            messages: [
+              { role: 'system', content: systemPrompt + ' Kontext: ' + JSON.stringify(ctx) },
+              { role: 'user', content: text }
+            ]
+          })
+        });
+        if (!res.ok) {
+          var errText = await res.text();
+          loading.textContent = 'Fehler: ' + errText;
+          return;
+        }
+        var data = await res.json();
+        var reply = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : 'Keine Antwort erhalten.';
+        loading.textContent = reply;
+      } catch (e) {
+        loading.textContent = 'Fehler: ' + e.message;
+      }
+    }
+
+    sendBtn.addEventListener('click', function() {
+      var text = chatInput.value.trim();
+      if (!text) return;
+      chatInput.value = '';
+      sendMessage(text);
+    });
+    chatInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendBtn.click();
+      }
+    });
+
+    document.querySelectorAll('[data-quick]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        sendMessage(btn.getAttribute('data-quick'));
+      });
+    });
+  </script>
+</body>
+</html>

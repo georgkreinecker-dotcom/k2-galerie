@@ -1,0 +1,61 @@
+═══════════════════════════════════════════════════════════
+  SCHNELL-VERBINDUNG: Zweiter Mac einbinden
+═══════════════════════════════════════════════════════════
+
+📡 DEINE IP-ADRESSE: 192.168.0.27
+🚀 K2 SERVER: http://192.168.0.27:5177/
+
+═══════════════════════════════════════════════════════════
+  OPTION 1: AIRPLAY DISPLAY (Zweiter Bildschirm)
+═══════════════════════════════════════════════════════════
+
+AUF DEM ZWEITEN MAC:
+1. Systemeinstellungen → Displays
+2. "AirPlay Display" aktivieren
+3. Optional: "Code erforderlich" für Sicherheit
+
+AUF DIESEM MAC:
+1. AirPlay-Menü oben rechts in der Menüleiste öffnen
+2. Zweiten Mac auswählen
+3. Fertig! Erscheint als zweiter Bildschirm
+
+═══════════════════════════════════════════════════════════
+  OPTION 2: SCREEN SHARING (Remote-Zugriff)
+═══════════════════════════════════════════════════════════
+
+AUF DEM ZWEITEN MAC:
+1. Systemeinstellungen → Freigaben
+2. "Bildschirmfreigabe" aktivieren
+3. IP-Adresse notieren (z.B. 192.168.0.28)
+
+AUF DIESEM MAC:
+1. Finder → "Gehe zu" → "Mit Server verbinden"
+2. Eingeben: vnc://192.168.0.28
+3. Verbinden → zweiter Mac erscheint als Fenster
+
+═══════════════════════════════════════════════════════════
+  OPTION 3: K2 PLATTFORM AUF ZWEITEM MAC
+═══════════════════════════════════════════════════════════
+
+1. Browser auf dem zweiten Mac öffnen
+2. URL eingeben: http://192.168.0.27:5177/
+3. K2 Plattform öffnet sich automatisch!
+
+═══════════════════════════════════════════════════════════
+  MOBILE-CONNECT FÜR ZWEITEN MAC
+═══════════════════════════════════════════════════════════
+
+1. Auf diesem Mac: Mobile-Connect Seite öffnen
+   → http://192.168.0.27:5177/#/projects/k2-galerie/mobile-connect
+
+2. URL ändern zu: http://192.168.0.27:5177/
+
+3. QR-Code scannen mit:
+   - Zweitem Mac (Kamera-App)
+   - iPhone/iPad
+   - Jedes Gerät im selben Netzwerk
+
+═══════════════════════════════════════════════════════════
+
+💡 TIPP: AirPlay Display + K2 Browser = Perfekte Kombination!
+   → Zweiter Mac als Bildschirm + K2 Plattform im Browser

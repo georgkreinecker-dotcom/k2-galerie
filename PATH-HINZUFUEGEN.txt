@@ -1,0 +1,13 @@
+# PATH hinzufügen - damit k2start funktioniert
+
+## 📋 Kopiere diesen Befehl und füge ihn im Terminal ein:
+
+echo 'export PATH="$HOME/k2Galerie/scripts:$PATH"' >> ~/.bash_profile && source ~/.bash_profile
+
+## ✅ Dann Terminal NEU öffnen
+
+## ✅ Ab dann funktioniert einfach:
+
+k2start
+
+## 🎯 Das war's!

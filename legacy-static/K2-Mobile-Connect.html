@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>K2 Mobile‑Connect (iPhone/iPad)</title>
+  <style>
+    :root {
+      --bg: #f7f5f1;
+      --card: #fff;
+      --text: #222;
+      --accent: #8b6914;
+      --shadow: 0 4px 16px rgba(0,0,0,.08);
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 1rem;
+      max-width: 760px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h1 { color: var(--accent); margin-top: 0; }
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+    label { font-size: 0.85rem; color: #555; }
+    input[type="text"] {
+      width: 100%;
+      padding: 0.5rem 0.6rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.95rem;
+    }
+    .btn {
+      margin-top: 0.5rem;
+      padding: 0.5rem 0.7rem;
+      border: 0;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .qr {
+      display: flex;
+      justify-content: center;
+      padding: 0.5rem 0;
+    }
+    .steps li { margin: 0.3rem 0; }
+  </style>
+</head>
+<body>
+  <h1>📱 K2 Mobile‑Connect</h1>
+  <p>Hier verbindest du iPhone/iPad mit deiner K2‑Galerie – per QR‑Code.</p>
+
+  <div class="card">
+    <label>Deine K2‑URL (Live‑Adresse)</label>
+    <input id="urlInput" type="text" placeholder="https://deine-galerie.vercel.app">
+    <button class="btn" id="genBtn">QR‑Code erzeugen</button>
+    <div class="qr">
+      <img id="qrImg" alt="QR-Code" width="240" height="240">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>So verbindest du iPhone/iPad</h2>
+    <ol class="steps">
+      <li>Öffne diese Seite am Computer und erzeuge den QR‑Code.</li>
+      <li>Öffne die Kamera am iPhone/iPad und scanne den QR‑Code.</li>
+      <li>Tippe auf den Link → die Galerie öffnet sich im Browser.</li>
+      <li>Tippe im Browser auf „Teilen“ → „Zum Home‑Bildschirm“.</li>
+    </ol>
+    <p>Damit hast du die K2‑Galerie wie eine App auf dem Gerät.</p>
+  </div>
+
+  <script>
+    function drawQR(text) {
+      var img = document.getElementById('qrImg');
+      if (!text) {
+        img.removeAttribute('src');
+        return;
+      }
+      var encoded = encodeURIComponent(text);
+      img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=' + encoded;
+    }
+
+    var urlInput = document.getElementById('urlInput');
+    var genBtn = document.getElementById('genBtn');
+    var saved = localStorage.getItem('k2-mobile-url') || '';
+    if (saved) { urlInput.value = saved; drawQR(saved); }
+
+    genBtn.addEventListener('click', function() {
+      var url = urlInput.value.trim();
+      if (!url) return;
+      localStorage.setItem('k2-mobile-url', url);
+      drawQR(url);
+    });
+  </script>
+</body>
+</html>

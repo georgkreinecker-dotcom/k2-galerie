@@ -1,0 +1,14 @@
+✅ BUTTON ERSTELLT!
+
+📌 Auf Desktop: "K2-Button.app"
+
+🚀 So verwenden:
+1. Doppelklick auf "K2-Button.app"
+2. Browser öffnet sich mit K2 Plattform
+
+💡 WICHTIG: Server muss laufen!
+   Falls Browser sagt "Verbindung nicht möglich":
+   → Terminal öffnen
+   → cd ~/k2Galerie
+   → npm run dev
+   → Dann Button nochmal klicken

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>K2 Start – Mission Deck</title>
+  <style>
+    :root{
+      --bg: radial-gradient(circle at 25% 15%, #1a1f32, #05070c 70%);
+      --panel: rgba(12, 16, 28, 0.92);
+      --accent:#5ffbf1;
+      --text:#f4f7ff;
+      --muted:#8fa0c9;
+      --shadow:0 40px 120px rgba(0,0,0,.65);
+      --radius:18px;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:linear-gradient(135deg,#03040a 0%,#0d1426 55%,#111c33 100%);
+      color:var(--text);
+      font-family:'Space Grotesk','Segoe UI',system-ui,sans-serif;
+      padding:2rem clamp(1.5rem,5vw,4rem);
+    }
+    .viewport{
+      max-width:1200px;
+      margin:0 auto;
+      background:var(--bg);
+      border-radius:32px;
+      padding:3rem clamp(1.5rem,4vw,4rem);
+      box-shadow:0 40px 120px rgba(0,0,0,.55);
+      border:1px solid rgba(255,255,255,.05);
+    }
+    .segment-content{
+      display:flex;
+      flex-direction:column;
+      gap:1.5rem;
+    }
+    header{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:1rem;
+      margin-bottom:2rem;
+    }
+    header h1{
+      margin:0;
+      font-size:clamp(2.2rem,4vw,3rem);
+      letter-spacing:.08em;
+    }
+    header .meta{color:var(--muted);}
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:1.2rem;
+    }
+    .card{
+      background:linear-gradient(145deg,rgba(18,22,35,0.95),rgba(12,16,28,0.9));
+      padding:1.5rem 1.7rem;
+      border-radius:var(--radius);
+      box-shadow:0 25px 60px rgba(0,0,0,.45);
+      border:1px solid rgba(95,251,241,.12);
+      position:relative;
+      overflow:hidden;
+    }
+    .card::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(135deg,rgba(95,251,241,.15),transparent 65%);
+      pointer-events:none;
+    }
+    h2{
+      margin:0;
+      font-size:1rem;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--accent);
+    }
+    p{margin:.6rem 0 1.1rem;color:var(--muted);}
+    a.btn{
+      display:inline-flex;
+      align-items:center;
+      gap:.4rem;
+      text-decoration:none;
+      background:linear-gradient(120deg,#5ffbf1,#33a1ff);
+      color:#04111f;
+      padding:.6rem 1.2rem;
+      border-radius:999px;
+      font-weight:600;
+      position:relative;
+      z-index:1;
+      box-shadow:0 10px 30px rgba(51,161,255,.35);
+    }
+    .quick{
+      margin-top:2rem;
+      display:flex;
+      flex-wrap:wrap;
+      gap:.6rem;
+    }
+    .quick a{
+      border:1px solid rgba(255,255,255,.15);
+      border-radius:999px;
+      padding:.35rem .9rem;
+      color:var(--muted);
+      text-decoration:none;
+      font-size:.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="viewport">
+    <div class="segment-content">
+      <header>
+        <div>
+          <h1>K2 Mission Deck</h1>
+          <div class="meta">Direkter Zugriff auf alle Systeme – Galerie · KI · Mobile</div>
+        </div>
+        <div class="meta">Desktop-Button „K2 Start“ öffnet genau diese Seite.</div>
+      </header>
+
+      <div class="grid">
+        <div class="card">
+          <h2>Control-Studio</h2>
+          <p>Komplettes Kommandozentrum inkl. KI-Agent, Launch-Plan und Aufgabenfeldern.</p>
+          <a class="btn" href="K2-ControlStudio.html">Starten →</a>
+        </div>
+        <div class="card">
+          <h2>Arbeitsplattform</h2>
+          <p>Mission-Control-Checklisten mit Fortschritt, Fokus & Timeline.</p>
+          <a class="btn" href="K2-Arbeitsplattform.html">Öffnen →</a>
+        </div>
+        <div class="card">
+          <h2>Mobile-Connect</h2>
+          <p>QR-Hub für iPhone/iPad, damit die Galerie wie eine App läuft.</p>
+          <a class="btn" href="K2-Mobile-Connect.html">Zu Mobile →</a>
+        </div>
+      </div>
+
+      <div class="quick">
+        <a href="K2-Arbeitsplattform.html#phase1">Phase 1</a>
+        <a href="K2-Arbeitsplattform.html#phase2">Phase 2</a>
+        <a href="K2-Arbeitsplattform.html#phase3">Phase 3</a>
+        <a href="K2-Arbeitsplattform.html#phase4">Phase 4</a>
+        <a href="K2-ControlStudio.html">KI-Agent</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

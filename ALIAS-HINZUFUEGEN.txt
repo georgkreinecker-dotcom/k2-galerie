@@ -1,0 +1,13 @@
+# K2 Alias hinzufügen - EINFACH
+
+## 📋 Kopiere diesen Befehl und füge ihn im Terminal ein:
+
+echo "alias k2start='cd ~/k2Galerie && export PATH=\"\$HOME/.local/node-v20.19.0-darwin-x64/bin:\$PATH\" && npm run dev'" >> ~/.bash_profile && source ~/.bash_profile
+
+## ✅ Dann funktioniert:
+
+k2start
+
+## 💡 Falls es nicht funktioniert:
+
+Terminal neu öffnen!

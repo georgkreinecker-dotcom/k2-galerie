@@ -1,0 +1,19 @@
+🛑 AUTOSTART DEAKTIVIEREN - EINFACH
+
+1. Apple-Menü (🍎 oben links) → "Systemeinstellungen"
+
+2. "Benutzer & Gruppen" klicken
+
+3. Tab "Login-Items" klicken (oben)
+
+4. Falls gesperrt: 🔒 unten links → Passwort eingeben
+
+5. Finde "k2-terminal-autostart.sh" in der Liste
+
+6. Markiere es (einmal klicken)
+
+7. Klicke "-" Button (Minus-Button unten links)
+
+8. FERTIG! ✅
+
+Mac sollte jetzt nicht mehr abstürzen!

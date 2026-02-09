@@ -1,0 +1,53 @@
+{
+  "name": "k2-galerie",
+  "private": true,
+  "version": "1.0.0",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "prebuild": "node -e \"const fs=require('fs');const data=localStorage.getItem('k2-gallery-data-export')||'{}';try{fs.writeFileSync('gallery-data-export.json',data,'utf8');console.log('✅ Export-Datei erstellt')}catch(e){}\" || true",
+    "check-exports": "node scripts/check-duplicate-exports.js",
+    "build": "npm run check-exports && tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "electron": "electron .",
+    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5175 && electron . --dev\"",
+    "electron:build": "npm run build && electron-builder --mac",
+    "electron:platform": "electron electron/platform-main.cjs",
+    "electron:platform:build": "npm run build && electron-builder --mac --config.build.productName='K2 Plattform' --config.main='electron/platform-main.cjs'"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^6.30.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.46.4",
+    "vite": "^7.2.4",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.0",
+    "concurrently": "^9.0.0",
+    "wait-on": "^8.0.0"
+  },
+  "build": {
+    "appId": "at.k2galerie.dialog",
+    "productName": "K2 Dialog",
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": "dir"
+    },
+    "directories": {
+      "output": "release"
+    }
+  }
+}

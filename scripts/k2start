@@ -1,0 +1,39 @@
+#!/bin/bash
+# K2 Plattform starten - einfach k2start eingeben
+
+cd "$HOME/k2Galerie" || exit 1
+export PATH="$HOME/.local/node-v20.19.0-darwin-x64/bin:$PATH"
+
+# Prüfe ob Server bereits läuft
+for port in 5177 5176 5175 5174 5173; do
+    if curl -s "http://127.0.0.1:$port" > /dev/null 2>&1; then
+        echo "✅ Server läuft bereits auf Port $port"
+        open "http://localhost:$port/"
+        exit 0
+    fi
+done
+
+# Starte Server im Hintergrund
+echo "🚀 Starte K2 Server..."
+nohup npm run dev > "$HOME/k2Galerie/server.log" 2>&1 &
+SERVER_PID=$!
+
+# Warte auf Server-Start (max 20 Sekunden)
+echo "⏳ Warte auf Server-Start..."
+for i in {1..20}; do
+    sleep 1
+    for port in 5177 5176 5175 5174 5173; do
+        if curl -s "http://127.0.0.1:$port" > /dev/null 2>&1; then
+            echo "✅ Server läuft jetzt auf Port $port"
+            open "http://localhost:$port/"
+            exit 0
+        fi
+    done
+    if [ $((i % 5)) -eq 0 ]; then
+        echo "   ... noch $((20-i)) Sekunden ..."
+    fi
+done
+
+# Falls Server nicht startet, öffne Browser trotzdem
+echo "⚠️  Server startet langsam, öffne Browser..."
+open "http://localhost:5177/"

@@ -1,0 +1,12192 @@
+import React, { useState, useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
+import '../src/App.css'
+import { checkLocalStorageSize, cleanupLargeImages, getLocalStorageReport } from './SafeMode'
+import { startAutoSave, stopAutoSave, setupBeforeUnloadSave } from '../src/utils/autoSave'
+
+// KRITISCH: Importiere Safe Mode Utilities für Crash-Schutz
+let safeModeUtils: any = null
+try {
+  import('../src/utils/safeMode').then(utils => {
+    safeModeUtils = utils
+  }).catch(() => {
+    // Fallback wenn Import fehlschlägt
+    safeModeUtils = {
+      safeSetState: (isMounted: boolean, setState: any, value: any) => {
+        if (isMounted) setState(value)
+      },
+      isSafeModeActive: () => false
+    }
+  })
+} catch (e) {
+  // Ignoriere Import-Fehler
+}
+
+// Einfache localStorage-Funktionen für Werke-Verwaltung
+function saveArtworks(artworks: any[]): void {
+  try {
+    localStorage.setItem('k2-artworks', JSON.stringify(artworks))
+  } catch (error) {
+    console.error('Fehler beim Speichern:', error)
+  }
+}
+
+function loadArtworks(): any[] {
+  try {
+    const stored = localStorage.getItem('k2-artworks')
+    if (!stored) return []
+    // SAFE MODE: Prüfe Größe bevor Parsen
+    if (stored.length > 10000000) { // Über 10MB = zu groß
+      console.warn('Werke-Daten zu groß, überspringe Laden')
+      return []
+    }
+    return JSON.parse(stored)
+  } catch (error) {
+    console.error('Fehler beim Laden:', error)
+    return []
+  }
+}
+
+// localStorage-Funktionen für Events
+function saveEvents(events: any[]): void {
+  try {
+    localStorage.setItem('k2-events', JSON.stringify(events))
+  } catch (error) {
+    console.error('Fehler beim Speichern der Events:', error)
+  }
+}
+
+function loadEvents(): any[] {
+  try {
+    const stored = localStorage.getItem('k2-events')
+    return stored ? JSON.parse(stored) : []
+  } catch (error) {
+    console.error('Fehler beim Laden der Events:', error)
+    return []
+  }
+}
+
+// Minimale Cleanup-Funktion - komplett vereinfacht um Abstürze zu vermeiden
+// Wird nur noch manuell aufgerufen, nicht automatisch
+function cleanupUnnecessaryData() {
+  // Keine komplexen Operationen mehr - nur minimale Bereinigung
+  // Wird nur noch bei Bedarf aufgerufen, nicht automatisch
+  try {
+    const events = loadEvents()
+    if (!Array.isArray(events) || events.length === 0) {
+      return // Nichts zu bereinigen
+    }
+    const cleanedEvents = events.filter((event: any) => event && event.id && event.title)
+    if (cleanedEvents.length !== events.length) {
+      saveEvents(cleanedEvents)
+    }
+  } catch (error) {
+    // Fehler komplett ignorieren um Abstürze zu vermeiden
+  }
+}
+
+// Tracking für offene PDF-Fenster - verhindert zu viele gleichzeitige Fenster
+let openPDFWindows: Window[] = []
+let intervalIds: NodeJS.Timeout[] = [] // Tracking für alle Intervalle
+const MAX_OPEN_WINDOWS = 3
+
+// PDF-Fenster sicher öffnen mit automatischem Cleanup - VERBESSERT gegen Memory Leaks
+function openPDFWindowSafely(blob: Blob, title?: string): Window | null {
+  // Schließe alte Fenster wenn zu viele offen sind
+  if (openPDFWindows.length >= MAX_OPEN_WINDOWS) {
+    const oldestWindow = openPDFWindows.shift()
+    if (oldestWindow && !oldestWindow.closed) {
+      try {
+        oldestWindow.close()
+      } catch (e) {
+        // Ignorieren
+      }
+    }
+  }
+  
+  // Bereinige geschlossene Fenster aus Array
+  openPDFWindows = openPDFWindows.filter(w => w && !w.closed)
+  
+  try {
+    const url = URL.createObjectURL(blob)
+    const pdfWindow = window.open(url, '_blank', 'noopener,noreferrer')
+    
+    if (!pdfWindow) {
+      URL.revokeObjectURL(url)
+      return null
+    }
+    
+    // Fenster zum Tracking hinzufügen
+    openPDFWindows.push(pdfWindow)
+    
+    // Cleanup: Revoke URL wenn Fenster geschlossen wird
+    const cleanup = () => {
+      try {
+        URL.revokeObjectURL(url)
+        const index = openPDFWindows.indexOf(pdfWindow)
+        if (index > -1) {
+          openPDFWindows.splice(index, 1)
+        }
+      } catch (e) {
+        // Ignorieren
+      }
+    }
+    
+    // KEIN Interval mehr - verursacht Crashes alle 3 Minuten!
+    // Stattdessen: Cleanup nur wenn Fenster geschlossen wird (via beforeunload)
+    const handleBeforeUnload = () => {
+      cleanup()
+    }
+    
+    // Cleanup wenn Fenster geschlossen wird
+    pdfWindow.addEventListener('beforeunload', handleBeforeUnload)
+    
+    // Fallback: Cleanup nach 30 Sekunden (nicht 3 Minuten!)
+    const timeoutId = setTimeout(() => {
+      pdfWindow.removeEventListener('beforeunload', handleBeforeUnload)
+      if (!pdfWindow.closed) {
+        cleanup()
+      }
+    }, 30000) // Nur 30 Sekunden - verhindert Memory-Leaks ohne Crashes
+    
+    return pdfWindow
+  } catch (error) {
+    console.error('Fehler beim Öffnen des PDF-Fensters:', error)
+    return null
+  }
+}
+
+// Alle Intervalle bereinigen - wird beim Unmount aufgerufen
+function cleanupAllIntervals() {
+  intervalIds.forEach(id => clearInterval(id))
+  intervalIds = []
+}
+
+// Alle PDF-Fenster schließen
+function closeAllPDFWindows() {
+  openPDFWindows.forEach(window => {
+    try {
+      if (!window.closed) {
+        window.close()
+      }
+    } catch (e) {
+      // Ignorieren
+    }
+  })
+  openPDFWindows = []
+}
+
+/**
+ * Admin-Seite für K2 Galerie Verwaltung
+ * Wird angezeigt bei: ?screenshot=admin oder /admin
+ */
+// Globaler Singleton-Check: Verhindere doppeltes Mounten
+let globalAdminInstance: any = null
+let globalMountCount = 0
+
+function ScreenshotExportAdmin() {
+  // Singleton-Check: Verhindere doppeltes Mounten - KRITISCH gegen Crashes
+  const mountId = React.useRef(`admin-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`)
+  const isMountedRef = React.useRef(true)
+  
+  React.useEffect(() => {
+    globalMountCount++
+    isMountedRef.current = true
+    
+    // Wenn bereits eine Instanz existiert, warnen und frühe Instanz bereinigen
+    if (globalAdminInstance && globalAdminInstance !== mountId.current) {
+      console.error('❌ KRITISCH: ScreenshotExportAdmin wird doppelt gemountet!', {
+        erste: globalAdminInstance,
+        zweite: mountId.current,
+        count: globalMountCount
+      })
+      // Bereinige alte Instanz
+      cleanupAllIntervals()
+      closeAllPDFWindows()
+    }
+    
+    globalAdminInstance = mountId.current
+    console.log(`🔧 ScreenshotExportAdmin #${globalMountCount} gemountet:`, mountId.current)
+    
+    return () => {
+      isMountedRef.current = false
+      globalMountCount--
+      if (globalAdminInstance === mountId.current) {
+        globalAdminInstance = null
+      }
+      console.log(`🔧 ScreenshotExportAdmin unmountet:`, mountId.current, `(Verbleibend: ${globalMountCount})`)
+      
+      // KRITISCH: Bereinige ALLES bevor Component unmountet
+      try {
+        // Bereinige alle PDF-Fenster Intervalle
+        cleanupAllIntervals()
+        // Schließe alle PDF-Fenster
+        closeAllPDFWindows()
+        
+        // Entferne ALLE Event Listener die möglicherweise noch aktiv sind
+        // (Sicherheitsmaßnahme gegen Memory Leaks und Crashes)
+        const events = ['beforeunload', 'unload', 'afterprint', 'keydown', 'mousedown', 'storage', 'stammdaten-updated']
+        events.forEach(eventType => {
+          try {
+            // Versuche alle möglichen Handler zu entfernen
+            window.removeEventListener(eventType as any, () => {})
+            document.removeEventListener(eventType as any, () => {})
+          } catch (e) {
+            // Ignoriere Fehler
+          }
+        })
+      } catch (e) {
+        console.error('Fehler beim Cleanup:', e)
+      }
+    }
+  }, [])
+  
+  const [activeTab, setActiveTab] = useState<'werke' | 'dokumente' | 'einstellungen' | 'statistiken' | 'eventplan' | 'öffentlichkeitsarbeit'>('werke')
+  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'design'>('stammdaten')
+  
+  // Cleanup beim Mount: Schließe alle Modals (falls durch StrictMode doppelt geöffnet)
+  useEffect(() => {
+    if (!isMountedRef.current) return
+    // Stelle sicher dass alle Modals geschlossen sind
+    setShowEventModal(false)
+    setShowExportMenu(false)
+    setShowDocumentModal(false)
+    setShowUploadModal(false)
+  }, [])
+  
+  // Safe Mode: Prüfe localStorage-Größe NUR beim Mount - KEIN Interval mehr!
+  useEffect(() => {
+    let isMounted = true
+    
+    // Prüfe nur einmal beim Mount, nicht regelmäßig
+    const checkStorage = () => {
+      if (!isMounted) return
+      
+      try {
+        const { size, limit, needsCleanup } = checkLocalStorageSize()
+        
+        if (needsCleanup) {
+          console.warn('⚠️ localStorage zu voll!', getLocalStorageReport())
+          
+          // Automatische Bereinigung (nur einmal)
+          const cleaned = cleanupLargeImages()
+          if (cleaned > 0) {
+            console.log(`✅ ${cleaned} große Bilder entfernt`)
+          }
+          
+          // Prüfe nochmal (nur einmal)
+          const afterCleanup = checkLocalStorageSize()
+          if (afterCleanup.needsCleanup) {
+            console.error('❌ localStorage immer noch zu voll! Bitte manuell bereinigen.')
+            alert(`⚠️ WARNUNG: localStorage ist zu voll (${(afterCleanup.size / 1024 / 1024).toFixed(2)}MB)!\n\nBitte entferne große Bilder oder lösche alte Daten.\n\nSonst kann die App crashen!`)
+          }
+        }
+      } catch (e) {
+        console.error('Fehler beim Safe Mode Check:', e)
+      }
+    }
+    
+    // Prüfe nur einmal beim Mount - KEIN Interval mehr (verursacht Crashes!)
+    // Verzögert ausführen um sicherzustellen dass Component vollständig geladen ist
+    const timeoutId = setTimeout(() => {
+      if (isMounted) {
+        checkStorage()
+      }
+    }, 1000) // 1 Sekunde Verzögerung
+    
+    return () => {
+      isMounted = false
+      clearTimeout(timeoutId)
+      // Bereinige alle PDF-Fenster Intervalle
+      cleanupAllIntervals()
+      // Schließe alle PDF-Fenster
+      closeAllPDFWindows()
+      // Stoppe Auto-Save beim Unmount
+      stopAutoSave()
+    }
+  }, [])
+  
+  // Design-Einstellungen
+  const [designSettings, setDesignSettings] = useState({
+    accentColor: '#5ffbf1',
+    backgroundColor1: '#03040a',
+    backgroundColor2: '#0d1426',
+    backgroundColor3: '#111c33',
+    textColor: '#f4f7ff',
+    mutedColor: '#8fa0c9',
+    cardBg1: 'rgba(18, 22, 35, 0.95)',
+    cardBg2: 'rgba(12, 16, 28, 0.92)'
+  })
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [artworkTitle, setArtworkTitle] = useState('')
+  const [artworkCategory, setArtworkCategory] = useState<'malerei' | 'keramik'>('malerei')
+  const [artworkCeramicSubcategory, setArtworkCeramicSubcategory] = useState<'vase' | 'teller' | 'skulptur' | 'sonstig'>('vase')
+  const [artworkCeramicHeight, setArtworkCeramicHeight] = useState<string>('10')
+  const [artworkCeramicDiameter, setArtworkCeramicDiameter] = useState<string>('10')
+  const [artworkCeramicDescription, setArtworkCeramicDescription] = useState<string>('')
+  const [artworkCeramicType, setArtworkCeramicType] = useState<'steingut' | 'steinzeug'>('steingut')
+  const [artworkCeramicSurface, setArtworkCeramicSurface] = useState<'engobe' | 'glasur' | 'mischtechnik'>('mischtechnik')
+  const [artworkPaintingWidth, setArtworkPaintingWidth] = useState<string>('')
+  const [artworkPaintingHeight, setArtworkPaintingHeight] = useState<string>('')
+  const [artworkArtist, setArtworkArtist] = useState<string>('')
+  const [artworkDescription, setArtworkDescription] = useState('')
+  const [artworkPrice, setArtworkPrice] = useState<string>('')
+  // Sichtbarkeit-Einstellungen:
+  // - inExhibition: Werke in der Galerie-Vorschau sichtbar (immer true)
+  // - inShop: Werke im Online-Shop verfügbar (kann geändert werden)
+  const [isInExhibition] = useState(true)
+  const [isInShop, setIsInShop] = useState(true)
+  const [artworkNumber, setArtworkNumber] = useState<string>('')
+  const [showPrintModal, setShowPrintModal] = useState(false)
+  const [savedArtwork, setSavedArtwork] = useState<any>(null)
+  const [showSaleModal, setShowSaleModal] = useState(false)
+  const [saleInput, setSaleInput] = useState('')
+  const [saleMethod, setSaleMethod] = useState<'scan' | 'manual'>('scan')
+  const [allArtworks, setAllArtworks] = useState<any[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState<string>('alle')
+  const [showCameraView, setShowCameraView] = useState(false)
+  const [documents, setDocuments] = useState<any[]>([])
+  const [documentFilter, setDocumentFilter] = useState<'alle' | 'pr-dokumente' | 'sonstige'>('alle')
+  const [showUploadModal, setShowUploadModal] = useState(false)
+  const [showExportMenu, setShowExportMenu] = useState(false)
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  
+  // Eventplan
+  const [events, setEvents] = useState<any[]>([])
+  const [showEventModal, setShowEventModal] = useState(false)
+  const [editingEvent, setEditingEvent] = useState<any>(null)
+  const [eventTitle, setEventTitle] = useState('')
+  const [eventType, setEventType] = useState<'galerieeröffnung' | 'vernissage' | 'finissage' | 'öffentlichkeitsarbeit' | 'sonstiges'>('galerieeröffnung')
+  const [eventDate, setEventDate] = useState('')
+  const [eventEndDate, setEventEndDate] = useState('')
+  const [eventStartTime, setEventStartTime] = useState('')
+  const [eventEndTime, setEventEndTime] = useState('')
+  const [eventDailyTimes, setEventDailyTimes] = useState<Record<string, { start: string, end: string }>>({})
+  const [eventDescription, setEventDescription] = useState('')
+  const [eventLocation, setEventLocation] = useState('')
+  
+  // PR-Vorschläge State
+  const [eventPRSuggestions, setEventPRSuggestions] = useState<any>(null)
+  const [editingPRType, setEditingPRType] = useState<string | null>(null)
+
+  // ESC-Taste zum Schließen des Event-Modals
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showEventModal) {
+        setShowEventModal(false)
+        setEditingEvent(null)
+        setEventTitle('')
+        setEventType('galerieeröffnung')
+        setEventDate('')
+        setEventEndDate('')
+        setEventStartTime('')
+        setEventEndTime('')
+        setEventDailyTimes({})
+        setEventDescription('')
+        setEventLocation('')
+        setEventPRSuggestions(null)
+        setEditingPRType(null)
+      }
+    }
+    window.addEventListener('keydown', handleEsc)
+    return () => window.removeEventListener('keydown', handleEsc)
+  }, [showEventModal])
+
+  // Schließe Export-Menü beim Klick außerhalb
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (showExportMenu && !(e.target as HTMLElement).closest('[data-export-menu]')) {
+        setShowExportMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showExportMenu])
+
+  // Design-Einstellungen laden - verzögert um Abstürze zu vermeiden - mit Cleanup
+  useEffect(() => {
+    let isMounted = true
+    
+    const timeoutId = setTimeout(() => {
+      if (!isMounted) return
+      
+      try {
+        const stored = localStorage.getItem('k2-design-settings')
+        if (stored && stored.length < 50000) { // Max 50KB
+          const saved = JSON.parse(stored)
+          if (isMounted) setDesignSettings(saved)
+        }
+      } catch (error) {
+        console.error('Fehler beim Laden der Design-Einstellungen:', error)
+      }
+    }, 100)
+    
+    return () => {
+      isMounted = false
+      clearTimeout(timeoutId) // Cleanup beim Unmount
+    }
+  }, [])
+
+  // CSS-Variablen setzen - NUR beim Mount um Render-Loops zu vermeiden
+  // Änderungen werden erst nach Reload aktiv (verhindert Crashes)
+  useEffect(() => {
+    let isMounted = true
+    let timeoutId: NodeJS.Timeout | null = null
+    
+    // Warte bis designSettings geladen ist
+    const setCSSVars = () => {
+      if (!isMounted) return
+      try {
+        const root = document.documentElement
+        // Nur setzen wenn Werte existieren und nicht leer sind
+        if (designSettings?.accentColor) root.style.setProperty('--k2-accent', designSettings.accentColor)
+        if (designSettings?.backgroundColor1) root.style.setProperty('--k2-bg-1', designSettings.backgroundColor1)
+        if (designSettings?.backgroundColor2) root.style.setProperty('--k2-bg-2', designSettings.backgroundColor2)
+        if (designSettings?.backgroundColor3) root.style.setProperty('--k2-bg-3', designSettings.backgroundColor3)
+        if (designSettings?.textColor) root.style.setProperty('--k2-text', designSettings.textColor)
+        if (designSettings?.mutedColor) root.style.setProperty('--k2-muted', designSettings.mutedColor)
+        if (designSettings?.cardBg1) root.style.setProperty('--k2-card-bg-1', designSettings.cardBg1)
+        if (designSettings?.cardBg2) root.style.setProperty('--k2-card-bg-2', designSettings.cardBg2)
+      } catch (error) {
+        console.error('Fehler beim Setzen der CSS-Variablen:', error)
+      }
+    }
+    
+    // Wenn designSettings bereits vorhanden, sofort setzen
+    if (designSettings && Object.keys(designSettings).length > 0) {
+      timeoutId = setTimeout(setCSSVars, 100)
+    } else {
+      // Sonst warte bis es geladen ist (max 2 Sekunden)
+      timeoutId = setTimeout(() => {
+        if (isMounted && designSettings && Object.keys(designSettings).length > 0) {
+          setCSSVars()
+        }
+      }, 500)
+    }
+    
+    return () => {
+      isMounted = false
+      if (timeoutId) clearTimeout(timeoutId)
+    }
+  }, []) // NUR beim Mount - verhindert Render-Loops // KEINE Dependency - verhindert Render-Loops, lädt nur beim Mount
+
+  // Design-Einstellungen speichern
+  const handleDesignChange = (key: string, value: string) => {
+    setDesignSettings(prev => ({ ...prev, [key]: value }))
+  }
+
+  // Vordefinierte Themes
+  const themes = {
+    default: {
+      accentColor: '#5ffbf1',
+      backgroundColor1: '#03040a',
+      backgroundColor2: '#0d1426',
+      backgroundColor3: '#111c33',
+      textColor: '#f4f7ff',
+      mutedColor: '#8fa0c9',
+      cardBg1: 'rgba(18, 22, 35, 0.95)',
+      cardBg2: 'rgba(12, 16, 28, 0.92)'
+    },
+    warm: {
+      accentColor: '#ff8c42',
+      backgroundColor1: '#1a0f0a',
+      backgroundColor2: '#2d1a14',
+      backgroundColor3: '#3d2419',
+      textColor: '#fff5f0',
+      mutedColor: '#d4a574',
+      cardBg1: 'rgba(45, 26, 20, 0.95)',
+      cardBg2: 'rgba(26, 15, 10, 0.92)'
+    },
+    elegant: {
+      accentColor: '#c9a961',
+      backgroundColor1: '#0f0e0a',
+      backgroundColor2: '#1a1814',
+      backgroundColor3: '#25221e',
+      textColor: '#f5f3f0',
+      mutedColor: '#b8a68a',
+      cardBg1: 'rgba(26, 24, 20, 0.95)',
+      cardBg2: 'rgba(15, 14, 10, 0.92)'
+    },
+    modern: {
+      accentColor: '#33a1ff',
+      backgroundColor1: '#0a0e27',
+      backgroundColor2: '#1a1f3a',
+      backgroundColor3: '#2a2f4a',
+      textColor: '#f4f7ff',
+      mutedColor: '#8fa0c9',
+      cardBg1: 'rgba(26, 31, 58, 0.95)',
+      cardBg2: 'rgba(10, 14, 39, 0.92)'
+    }
+  }
+
+  const applyTheme = (themeName: keyof typeof themes) => {
+    setDesignSettings(themes[themeName])
+  }
+  const [showDocumentModal, setShowDocumentModal] = useState(false)
+  const [selectedEventForDocument, setSelectedEventForDocument] = useState<string | null>(null)
+  const [eventDocumentFile, setEventDocumentFile] = useState<File | null>(null)
+  const [eventDocumentName, setEventDocumentName] = useState('')
+  const [eventDocumentType, setEventDocumentType] = useState<'flyer' | 'plakat' | 'presseaussendung' | 'sonstiges'>('flyer')
+  
+  // Stammdaten
+  const [martinaData, setMartinaData] = useState({
+    name: 'Martina Kreinecker',
+    category: 'malerei',
+    bio: 'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. Ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.',
+    email: '',
+    phone: '',
+    website: ''
+  })
+  const [georgData, setGeorgData] = useState({
+    name: 'Georg Kreinecker',
+    category: 'keramik',
+    bio: 'Georg verbindet in seiner Keramikarbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail, das Ergebnis von jahrzehntelanger Erfahrung.',
+    email: '',
+    phone: '',
+    website: ''
+  })
+  const [galleryData, setGalleryData] = useState<any>({
+    name: 'K2 Galerie',
+    subtitle: 'Kunst & Keramik',
+    description: 'Gemeinsam eröffnen Martina und Georg nach über 20 Jahren kreativer Tätigkeit die K2 Galerie – ein Raum, wo Malerei und Keramik verschmelzen und Kunst zum Leben erwacht.',
+    address: '',
+    phone: '',
+    email: '',
+    website: '',
+    internetadresse: '', // Für QR-Code
+    openingHours: '',
+    bankverbindung: '',
+    adminPassword: 'k2Galerie2026',
+    soldArtworksDisplayDays: 30, // Tage wie lange verkaufte Werke in der Galerie bleiben
+    welcomeImage: '',
+    virtualTourImage: ''
+  })
+
+  // Stammdaten aus localStorage laden - SAFE MODE: Überspringe große Daten - mit Cleanup
+  useEffect(() => {
+    let isMounted = true // Flag um Updates nach Unmount zu verhindern
+    
+    // Lade Daten verzögert um Abstürze zu vermeiden
+    const timeoutId = setTimeout(() => {
+      if (!isMounted) return // Verhindere Updates nach Unmount
+      
+      try {
+        const storedMartina = localStorage.getItem('k2-stammdaten-martina')
+        if (storedMartina && storedMartina.length < 100000) { // Max 100KB
+          const parsed = JSON.parse(storedMartina)
+          if (isMounted) setMartinaData(parsed)
+        }
+      } catch (error) {
+        console.error('Fehler beim Laden von Martina-Daten:', error)
+      }
+      
+      if (!isMounted) return
+      
+      try {
+        const storedGeorg = localStorage.getItem('k2-stammdaten-georg')
+        if (storedGeorg && storedGeorg.length < 100000) { // Max 100KB
+          const parsed = JSON.parse(storedGeorg)
+          if (isMounted) setGeorgData(parsed)
+        }
+      } catch (error) {
+        console.error('Fehler beim Laden von Georg-Daten:', error)
+      }
+      
+      if (!isMounted) return
+      
+      try {
+        const storedGallery = localStorage.getItem('k2-stammdaten-galerie')
+        if (storedGallery) {
+          // SAFE MODE: Wenn Daten zu groß sind, überspringe Bilder
+          if (storedGallery.length > 5000000) { // Über 5MB = zu groß
+            console.warn('Galerie-Daten zu groß, lade ohne Bilder')
+            const data = JSON.parse(storedGallery)
+            if (isMounted) {
+              setGalleryData({
+                name: data.name || '',
+                address: data.address || '',
+                phone: data.phone || '',
+                email: data.email || '',
+                website: data.website || '',
+                internetadresse: data.internetadresse || data.website || '', // Für QR-Code
+                bankverbindung: data.bankverbindung || '',
+                adminPassword: data.adminPassword || 'k2Galerie2026',
+                soldArtworksDisplayDays: data.soldArtworksDisplayDays || 30,
+                welcomeImage: '', // Überspringe große Bilder
+                virtualTourImage: '' // Überspringe große Bilder
+              })
+            }
+          } else {
+            const data = JSON.parse(storedGallery)
+            if (isMounted) {
+              setGalleryData({
+                name: data.name || '',
+                address: data.address || '',
+                phone: data.phone || '',
+                email: data.email || '',
+                website: data.website || '',
+                internetadresse: data.internetadresse || data.website || '', // Für QR-Code
+                bankverbindung: data.bankverbindung || '',
+                adminPassword: data.adminPassword || 'k2Galerie2026',
+                soldArtworksDisplayDays: data.soldArtworksDisplayDays || 30,
+                welcomeImage: data.welcomeImage || '',
+                virtualTourImage: data.virtualTourImage || ''
+              })
+            }
+          }
+        } else {
+          if (isMounted) {
+            setGalleryData({
+              adminPassword: 'k2Galerie2026',
+              welcomeImage: '',
+              virtualTourImage: ''
+            })
+          }
+        }
+      } catch (error) {
+        console.error('Fehler beim Laden der Galerie-Daten:', error)
+        // Fallback wenn localStorage voll ist oder Daten korrupt
+        if (isMounted) {
+          setGalleryData({
+            adminPassword: 'k2Galerie2026',
+            welcomeImage: '',
+            virtualTourImage: ''
+          })
+        }
+      }
+    }, 200) // Längere Verzögerung für Stabilität
+    
+    return () => {
+      isMounted = false // Verhindere Updates nach Unmount
+      clearTimeout(timeoutId) // Cleanup beim Unmount
+    }
+  }, [])
+
+  // Stammdaten speichern - explizit nur wenn Button geklickt wird - mit Timeout um Hänger zu vermeiden
+  const saveStammdaten = () => {
+    return new Promise<void>((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        reject(new Error('Speichern dauerte zu lange'))
+      }, 5000) // Max 5 Sekunden
+      
+      try {
+        // Prüfe Größe bevor speichern
+        const martinaStr = JSON.stringify(martinaData)
+        const georgStr = JSON.stringify(georgData)
+        const galleryStr = JSON.stringify(galleryData)
+        
+        if (martinaStr.length > 100000 || georgStr.length > 100000 || galleryStr.length > 5000000) {
+          clearTimeout(timeoutId)
+          reject(new Error('Daten zu groß zum Speichern'))
+          return
+        }
+        
+        localStorage.setItem('k2-stammdaten-martina', martinaStr)
+        localStorage.setItem('k2-stammdaten-georg', georgStr)
+        localStorage.setItem('k2-stammdaten-galerie', galleryStr)
+        
+        clearTimeout(timeoutId)
+        resolve()
+      } catch (error) {
+        clearTimeout(timeoutId)
+        reject(error)
+      }
+    })
+  }
+
+  // Mobile Version veröffentlichen - Daten speichern + JSON-Datei erstellen + Vercel öffnen
+  const [isDeploying, setIsDeploying] = React.useState(false)
+  
+  // SICHERHEIT: Stelle sicher dass isDeploying nach 60 Sekunden zurückgesetzt wird
+  React.useEffect(() => {
+    if (isDeploying) {
+      const safetyTimeout = setTimeout(() => {
+        if (isMountedRef.current) {
+          console.warn('⚠️ isDeploying wurde nach 60 Sekunden automatisch zurückgesetzt')
+          setIsDeploying(false)
+        }
+      }, 60000) // 60 Sekunden Safety-Timeout
+      
+      return () => {
+        clearTimeout(safetyTimeout)
+        // Stelle sicher dass isDeploying zurückgesetzt wird wenn Component unmountet
+        if (!isMountedRef.current && isDeploying) {
+          setIsDeploying(false)
+        }
+      }
+    }
+  }, [isDeploying])
+  
+  // KEINE automatische Prüfung mehr - verursacht Abstürze!
+  // Verwende nur den manuellen "🔍 Vercel-Status" Button
+  
+  // Manueller Vercel-Check-Button
+  const [checkingVercel, setCheckingVercel] = React.useState(false)
+  
+  // MINIMALE Vercel-Prüfung - MIT TIMEOUT UND CRASH-SCHUTZ
+  const manualCheckVercel = () => {
+    if (checkingVercel) return
+    
+    setCheckingVercel(true)
+    
+    // Timeout nach 10 Sekunden - verhindert Hänger
+    const timeoutId = setTimeout(() => {
+      setCheckingVercel(false)
+      alert('⚠️ Vercel-Check:\n\nTimeout nach 10 Sekunden\n\nPrüfe manuell: https://vercel.com/k2-galerie/k2-galerie')
+    }, 10000)
+    
+    try {
+      // Fetch mit Timeout
+      const controller = new AbortController()
+      const fetchTimeout = setTimeout(() => controller.abort(), 8000) // 8 Sekunden Timeout
+      
+      fetch('https://k2-galerie.vercel.app/gallery-data.json?t=' + Date.now(), {
+        signal: controller.signal
+      })
+        .then(response => {
+          clearTimeout(fetchTimeout)
+          clearTimeout(timeoutId)
+          if (response.ok) {
+            return response.json()
+          }
+          throw new Error('HTTP ' + response.status)
+        })
+        .then(data => {
+          const exportedAt = data?.exportedAt || 'nicht gefunden'
+          alert(`✅ Vercel-Status:\n\nDatei verfügbar\nExportedAt: ${exportedAt}\n\nPrüfe: https://vercel.com/k2-galerie/k2-galerie`)
+        })
+        .catch(err => {
+          clearTimeout(fetchTimeout)
+          clearTimeout(timeoutId)
+          if (err.name === 'AbortError') {
+            alert('⚠️ Vercel-Check:\n\nTimeout - Anfrage dauerte zu lange\n\nPrüfe: https://vercel.com/k2-galerie/k2-galerie')
+          } else {
+            alert('⚠️ Vercel-Check:\n\nDatei nicht verfügbar\n\nPrüfe: https://vercel.com/k2-galerie/k2-galerie')
+          }
+        })
+        .finally(() => {
+          clearTimeout(fetchTimeout)
+          clearTimeout(timeoutId)
+          setCheckingVercel(false)
+        })
+    } catch (error) {
+      clearTimeout(timeoutId)
+      setCheckingVercel(false)
+      alert('⚠️ Vercel-Check Fehler:\n\n' + (error instanceof Error ? error.message : String(error)))
+    }
+  }
+  
+  // KEINE automatische Prüfung mehr - verursacht Abstürze!
+  // Verwende nur den manuellen "🔍 Vercel-Status" Button
+  
+  const publishMobile = () => {
+    if (isDeploying) return
+    if (!isMountedRef.current) {
+      console.warn('⚠️ publishMobile: Component ist unmounted')
+      return
+    }
+    setIsDeploying(true)
+    
+    // KOMPLETT NEUE LÖSUNG: Web Worker für JSON.stringify um UI nicht zu blockieren
+    const executeExport = () => {
+      try {
+        // Minimale Datenmenge - nur das Nötigste
+        const getItemSafe = (key: string, defaultValue: any) => {
+          try {
+            const item = localStorage.getItem(key)
+            if (!item || item.length > 1000000) return defaultValue // Max 1MB pro Item
+            return JSON.parse(item)
+          } catch {
+            return defaultValue
+          }
+        }
+        
+        // SEHR aggressive Begrenzung um Hänger zu vermeiden
+        const artworks = getItemSafe('k2-artworks', [])
+        const events = getItemSafe('k2-events', [])
+        const documents = getItemSafe('k2-documents', [])
+        
+        const exportedAt = new Date().toISOString()
+        // KRITISCH: Erhöhe Versionsnummer für Cache-Busting
+        const currentVersion = parseInt(localStorage.getItem('k2-data-version') || '0')
+        const newVersion = currentVersion + 1
+        localStorage.setItem('k2-data-version', newVersion.toString())
+        
+        const data = {
+          martina: getItemSafe('k2-stammdaten-martina', {}),
+          georg: getItemSafe('k2-stammdaten-georg', {}),
+          gallery: getItemSafe('k2-stammdaten-galerie', {}),
+          artworks: Array.isArray(artworks) ? artworks.slice(0, 50) : [], // NUR 50 Werke
+          events: Array.isArray(events) ? events.slice(0, 20) : [], // NUR 20 Events
+          documents: Array.isArray(documents) ? documents.slice(0, 20) : [], // NUR 20 Dokumente
+          designSettings: getItemSafe('k2-design-settings', {}),
+          exportedAt: exportedAt,
+          version: newVersion, // Versionsnummer für Cache-Busting
+          buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}` // Eindeutige Build-ID
+        }
+        
+        // JSON.stringify in separatem Frame mit Progress-Check
+        const stringifyData = () => {
+          try {
+            const json = JSON.stringify(data)
+            if (json.length > 5000000) { // Max 5MB
+              if (isMountedRef.current) setIsDeploying(false)
+              alert('⚠️ Daten zu groß. Bitte reduzieren Sie die Anzahl der Werke.')
+              return
+            }
+            
+            // Versuche direkt in public Ordner zu schreiben über API
+            // WICHTIG: Nur EINMAL aufrufen, nicht mehrfach!
+            // MIT TIMEOUT-Schutz (30 Sekunden)
+            const controller = new AbortController()
+            const timeoutId = setTimeout(() => {
+              controller.abort()
+              if (isMountedRef.current) setIsDeploying(false)
+              alert('⚠️ API-Timeout:\n\nDie Anfrage dauerte zu lange (über 30 Sekunden).\n\n📋 Bitte manuell:\n1. Terminal öffnen\n2. cd /Users/georgkreinecker/k2Galerie\n3. Prüfe ob public/gallery-data.json existiert\n4. Falls ja: git add/commit/push manuell')
+            }, 30000)
+            
+            let timeoutCleared = false
+            fetch('/api/write-gallery-data', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: json,
+              signal: controller.signal
+            })
+            .then(response => {
+              if (!timeoutCleared) {
+                clearTimeout(timeoutId)
+                timeoutCleared = true
+              }
+              if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+              }
+              return response.json()
+            })
+            .then(result => {
+              // Timeout bereits gelöscht
+              
+              if (result.success) {
+                const gitOutput = result.git?.output || ''
+                const gitError = result.git?.error || ''
+                
+                if (isMountedRef.current) setIsDeploying(false)
+                
+                // Prüfe ob git push wirklich erfolgreich war - VERBESSERTE PRÜFUNG
+                // WICHTIG: Prüfe auf verschiedene Erfolgs-Indikatoren
+                const hasSuccessMessage = gitOutput.includes('git push erfolgreich') || 
+                                         gitOutput.includes('To https://') ||
+                                         gitOutput.includes('Enumerating objects') ||
+                                         gitOutput.includes('Counting objects') ||
+                                         gitOutput.includes('Writing objects') ||
+                                         gitOutput.includes('remote:') ||
+                                         (gitOutput.length > 50 && !gitOutput.toLowerCase().includes('error'))
+                
+                const hasError = gitError.includes('GIT PUSH FEHLER') ||
+                               gitError.includes('FEHLER') ||
+                               gitError.toLowerCase().includes('error') ||
+                               gitError.toLowerCase().includes('failed') ||
+                               gitError.toLowerCase().includes('authentication') ||
+                               gitError.toLowerCase().includes('credential') ||
+                               gitError.toLowerCase().includes('denied')
+                
+                // WICHTIG: finalPushSuccess ist true wenn Erfolg UND kein Fehler
+                // Prüfe nur auf gitOutput und gitError - keine externe Variable nötig
+                const gitErrorIsEmpty = gitError.trim().length === 0
+                const finalPushSuccess = hasSuccessMessage && !hasError && gitErrorIsEmpty
+                
+                console.log('🔍 Git Push Prüfung:', {
+                  hasSuccessMessage,
+                  hasError,
+                  gitErrorLength: gitError.length,
+                  finalPushSuccess,
+                  gitOutputPreview: gitOutput.substring(0, 200)
+                })
+                
+                if (finalPushSuccess) {
+                  // WICHTIG: Erhöhe Versionsnummer für Cache-Busting
+                  const currentVersion = parseInt(localStorage.getItem('k2-data-version') || '0')
+                  const newVersion = currentVersion + 1
+                  localStorage.setItem('k2-data-version', newVersion.toString())
+                  
+                  // Öffne Vercel Deployments-Seite in neuem Tab - VERBESSERT für Veröffentlichungsgeschichte
+                  const vercelDeploymentsUrl = 'https://vercel.com/k2-galerie/k2-galerie/deployments'
+                  const vercelWindow = window.open(vercelDeploymentsUrl, '_blank', 'noopener,noreferrer')
+                  
+                  // Warte kurz damit Tab geöffnet wird
+                  setTimeout(() => {
+                    if (vercelWindow && !vercelWindow.closed) {
+                      console.log('✅ Vercel Deployments-Seite geöffnet')
+                    }
+                  }, 500)
+                  
+                  alert(`✅✅✅ VERÖFFENTLICHUNG ERFOLGREICH! ✅✅✅\n\n📁 Datei geschrieben: public/gallery-data.json\n📊 Größe: ${(result.size / 1024).toFixed(1)} KB\n📦 Version: ${newVersion}\n\n📦 Git:\n${gitOutput}\n\n🚀 Vercel:\n⏳ Deployment startet automatisch (1-2 Minuten)\n📜 Veröffentlichungsgeschichte wurde geöffnet\n\n📱 MOBILE AKTUALISIEREN (WICHTIG!):\n\n1. ⏰ Warte 2-3 Minuten bis Deployment fertig ist\n2. 📱 QR-Code NEU scannen (sehr wichtig!)\n3. 🔄 Oder: Im Browser Cache leeren (Cmd+Shift+R)\n\n⚠️ WICHTIG:\n- QR-Code muss NEU gescannt werden!\n- Alter QR-Code zeigt alte Daten!\n- Warte bis Deployment fertig ist!\n\n💡 Prüfe Status mit "🔍 Vercel-Status" Button`)
+                } else {
+                  // Git push fehlgeschlagen - zeige klare Anweisungen
+                  const errorMsg = gitError || 'Unbekannter Git-Fehler'
+                  alert(`⚠️⚠️⚠️ GIT PUSH FEHLGESCHLAGEN ⚠️⚠️⚠️\n\n📁 Datei geschrieben: public/gallery-data.json ✅\n📊 Größe: ${(result.size / 1024).toFixed(1)} KB\n\n❌ Git Push: FEHLGESCHLAGEN\n\n📋 BITTE MANUELL PUSHEN:\n\n1. Terminal öffnen\n2. cd /Users/georgkreinecker/k2Galerie\n3. git add public/gallery-data.json\n4. git commit -m "Update gallery-data.json"\n5. git push origin main\n\n💡 FEHLER-DETAILS:\n${errorMsg}\n\n⚠️ WICHTIG: Ohne Git Push kommt die Datei NICHT bei Vercel an!`)
+                }
+              } else {
+                throw new Error(result.error || 'Unbekannter Fehler')
+              }
+            })
+            .catch(error => {
+              if (!timeoutCleared) {
+                clearTimeout(timeoutId)
+                timeoutCleared = true
+              }
+              
+              // Prüfe ob es ein Timeout war
+              if (error.name === 'AbortError') {
+                if (isMountedRef.current) setIsDeploying(false)
+                alert('⚠️ API-Timeout:\n\nDie Anfrage dauerte zu lange.\n\n📋 Bitte manuell:\n1. Terminal öffnen\n2. cd /Users/georgkreinecker/k2Galerie\n3. Prüfe ob public/gallery-data.json existiert\n4. Falls ja: git add/commit/push manuell')
+                return
+              }
+              
+              // Fallback: Download falls API nicht funktioniert (Server läuft nicht)
+              try {
+                const blob = new Blob([json], { type: 'application/json' })
+                const url = URL.createObjectURL(blob)
+                const link = document.createElement('a')
+                link.href = url
+                link.download = 'gallery-data.json'
+                link.style.display = 'none'
+                document.body.appendChild(link)
+                link.click()
+                
+                // WICHTIG: isDeploying SOFORT zurücksetzen, nicht erst nach Timeout! - NUR wenn gemountet
+                if (isMountedRef.current) setIsDeploying(false)
+                
+                setTimeout(() => {
+                  try {
+                    document.body.removeChild(link)
+                    URL.revokeObjectURL(url)
+                  } catch {}
+                  alert('✅ gallery-data.json wurde heruntergeladen!\n\n📁 Nächste Schritte:\n1. Datei in "public" Ordner kopieren (im Projektordner)\n2. Terminal öffnen und ausführen:\n   git add public/gallery-data.json\n   git commit -m "Update"\n   git push\n3. Auf Vercel warten bis Deployment fertig\n4. Mobile: Seite neu laden\n\n💡 Tipp: Falls Dev-Server läuft, wird die Datei automatisch geschrieben!')
+                }, 100)
+              } catch (downloadError) {
+                if (isMountedRef.current) setIsDeploying(false)
+                alert('❌ Fehler:\n\nAPI nicht verfügbar UND Download fehlgeschlagen\n\n' + (error instanceof Error ? error.message : String(error)))
+              }
+            })
+            .finally(() => {
+              // SICHERHEIT: Stelle sicher dass isDeploying IMMER zurückgesetzt wird - NUR wenn gemountet
+              setTimeout(() => {
+                if (isMountedRef.current) setIsDeploying(false)
+              }, 100)
+            })
+          } catch (e) {
+            if (isMountedRef.current) setIsDeploying(false)
+            alert('Fehler: ' + (e instanceof Error ? e.message : String(e)))
+          }
+        }
+        
+        // Verwende requestIdleCallback wenn verfügbar, sonst setTimeout
+        if (window.requestIdleCallback) {
+          requestIdleCallback(stringifyData, { timeout: 5000 })
+        } else {
+          setTimeout(stringifyData, 100)
+        }
+      } catch (error) {
+        if (isMountedRef.current) setIsDeploying(false)
+        alert('Fehler: ' + (error instanceof Error ? error.message : String(error)))
+      }
+    }
+    
+    // Starte Export nach kurzer Verzögerung - MIT Cleanup
+    const executeTimeout = setTimeout(() => {
+      if (isMountedRef.current) {
+        executeExport()
+      } else {
+        if (isMountedRef.current) setIsDeploying(false)
+      }
+    }, 50)
+    
+    // SICHERHEIT: Stelle sicher dass isDeploying nach max 60 Sekunden zurückgesetzt wird - MIT Cleanup
+    // WICHTIG: Dieser Timeout wird durch den useEffect oben bereits abgedeckt, daher nicht nochmal hier
+    
+    // Cleanup Timeouts beim Unmount - WICHTIG: publishMobile ist keine useEffect, daher kein return
+    // Die Timeouts werden durch isMountedRef.current geschützt
+  }
+
+  // Automatisch Künstler basierend auf Kategorie setzen - NUR wenn Kategorie sich ändert
+  useEffect(() => {
+    let isMounted = true
+    // Warte kurz damit Daten geladen sind
+    const timeoutId = setTimeout(() => {
+      if (!isMounted) return
+      try {
+        // Prüfe nur wenn Kategorie sich ändert, nicht wenn Artist sich ändert
+        if (artworkCategory === 'malerei' && martinaData?.name) {
+          setArtworkArtist(martinaData.name)
+        } else if (artworkCategory === 'keramik' && georgData?.name) {
+          setArtworkArtist(georgData.name)
+        }
+      } catch (error) {
+        // Ignoriere Fehler um Crashes zu vermeiden
+        console.warn('Fehler beim Setzen des Künstlers:', error)
+      }
+    }, 500) // Warte bis Daten geladen sind
+    
+    return () => {
+      isMounted = false
+      clearTimeout(timeoutId)
+    }
+  }, [artworkCategory]) // NUR Kategorie - verhindert Render-Loop!
+
+
+  // Alle Werke aus localStorage laden - SAFE MODE mit Größenprüfung - mit Cleanup
+  useEffect(() => {
+    let isMounted = true
+    
+    // Lade Werke verzögert nach anderen Daten
+    const timeoutId = setTimeout(() => {
+      if (!isMounted) return
+      
+      try {
+        const stored = localStorage.getItem('k2-artworks')
+        if (stored && stored.length > 10000000) { // Über 10MB = zu groß
+          console.warn('Werke-Daten zu groß, lade leer')
+          if (isMounted) setAllArtworks([])
+          return
+        }
+        const artworks = loadArtworks()
+        if (isMounted) {
+          if (Array.isArray(artworks)) {
+            setAllArtworks(artworks)
+          } else {
+            setAllArtworks([])
+          }
+        }
+      } catch (error) {
+        console.error('Fehler beim Laden der Werke:', error)
+        if (isMounted) setAllArtworks([])
+      }
+    }, 500) // Lade nach Stammdaten mit mehr Verzögerung
+    
+    return () => {
+      isMounted = false
+      clearTimeout(timeoutId) // Cleanup beim Unmount
+    }
+  }, [])
+
+  // Dokumente aus localStorage laden
+  const loadDocuments = () => {
+    try {
+      const stored = localStorage.getItem('k2-documents')
+      if (stored) {
+        return JSON.parse(stored)
+      }
+      return []
+    } catch (error) {
+      console.error('Fehler beim Laden der Dokumente:', error)
+      return []
+    }
+  }
+
+  // Dokumente aus localStorage laden - verzögert - mit Cleanup
+  useEffect(() => {
+    let isMounted = true
+    
+    const timeoutId = setTimeout(() => {
+      if (!isMounted) return
+      
+      try {
+        const docs = loadDocuments()
+        if (isMounted) setDocuments(docs)
+      } catch (error) {
+        console.error('Fehler beim Laden der Dokumente:', error)
+        if (isMounted) setDocuments([])
+      }
+    }, 300)
+    
+    return () => {
+      isMounted = false
+      clearTimeout(timeoutId) // Cleanup beim Unmount
+    }
+  }, [])
+
+  // Events aus localStorage laden - verzögert - mit Cleanup
+  useEffect(() => {
+    let isMounted = true
+    
+    const timeoutId = setTimeout(() => {
+      if (!isMounted) return
+      
+      try {
+        const loadedEvents = loadEvents()
+        if (isMounted) setEvents(loadedEvents)
+      } catch (error) {
+        console.error('Fehler beim Laden der Events:', error)
+        if (isMounted) setEvents([])
+      }
+    }, 400)
+    
+    return () => {
+      isMounted = false
+      clearTimeout(timeoutId) // Cleanup beim Unmount
+    }
+  }, [])
+  
+  // AUTO-SAVE: Speichere alle Daten automatisch alle 5 Sekunden - VERHINDERT DATENVERLUST BEI CRASHES
+  useEffect(() => {
+    let isMounted = true
+    
+    // Funktion die alle Daten sammelt
+    const getAllData = () => ({
+      martina: martinaData,
+      georg: georgData,
+      gallery: galleryData,
+      artworks: allArtworks,
+      events: events,
+      documents: documents,
+      designSettings: designSettings
+    })
+    
+    // Starte Auto-Save
+    startAutoSave(getAllData)
+    
+    // Setup beforeunload Save (bei Crash/Close)
+    setupBeforeUnloadSave(getAllData)
+    
+    return () => {
+      isMounted = false
+      stopAutoSave()
+    }
+  }, [martinaData, georgData, galleryData, allArtworks, events, documents, designSettings])
+
+  // Event hinzufügen/bearbeiten
+  const handleSaveEvent = () => {
+    if (!eventTitle || !eventDate) {
+      alert('Bitte Titel und Datum eingeben')
+      return
+    }
+
+    const eventData = {
+      id: editingEvent?.id || `event-${Date.now()}`,
+      title: eventTitle,
+      type: eventType,
+      date: eventDate,
+      endDate: eventEndDate || eventDate, // Falls kein Enddatum, dann Startdatum verwenden
+      startTime: eventStartTime || '',
+      endTime: eventEndTime || '',
+      dailyTimes: eventDailyTimes || {}, // Tägliche Zeiten für jeden Tag
+      description: eventDescription,
+      location: eventLocation,
+      documents: editingEvent?.documents || [],
+      createdAt: editingEvent?.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+
+    let updatedEvents
+    if (editingEvent) {
+      updatedEvents = events.map(e => e.id === editingEvent.id ? eventData : e)
+    } else {
+      updatedEvents = [...events, eventData]
+    }
+
+    // Nach Startdatum sortieren
+    updatedEvents.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
+    setEvents(updatedEvents)
+    saveEvents(updatedEvents)
+    
+    // PR-Vorschläge speichern falls vorhanden
+    if (eventPRSuggestions) {
+      eventPRSuggestions.eventId = eventData.id
+      eventPRSuggestions.eventTitle = eventData.title
+      const existingSuggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+      const index = existingSuggestions.findIndex((s: any) => s.eventId === eventData.id)
+      if (index >= 0) {
+        existingSuggestions[index] = eventPRSuggestions
+      } else {
+        existingSuggestions.push(eventPRSuggestions)
+      }
+      localStorage.setItem('k2-pr-suggestions', JSON.stringify(existingSuggestions))
+    } else if (!editingEvent) {
+      // Automatisch Vorschläge für neues Event generieren
+      generateAutomaticSuggestions(eventData)
+    }
+    
+    // Zurücksetzen
+    setShowEventModal(false)
+    setEditingEvent(null)
+    setEventTitle('')
+    setEventType('galerieeröffnung')
+    setEventDate('')
+    setEventEndDate('')
+    setEventStartTime('')
+    setEventEndTime('')
+    setEventDailyTimes({})
+    setEventDescription('')
+    setEventLocation('')
+    setEventPRSuggestions(null)
+    setEditingPRType(null)
+    
+    alert(editingEvent ? '✅ Event aktualisiert!' : '✅ Event hinzugefügt!')
+  }
+
+  // Event bearbeiten
+  const handleEditEvent = (event: any) => {
+    setEditingEvent(event)
+    setEventTitle(event.title)
+    setEventType(event.type)
+    setEventDate(event.date)
+    setEventEndDate(event.endDate || event.date)
+    setEventStartTime(event.startTime || event.time || '')
+    setEventEndTime(event.endTime || '')
+    // Konvertiere alte Format (string) zu neuem Format (object mit start/end)
+    const dailyTimes = event.dailyTimes || {}
+    const convertedDailyTimes: Record<string, { start: string, end: string }> = {}
+    Object.keys(dailyTimes).forEach(day => {
+      const time = dailyTimes[day]
+      if (typeof time === 'string') {
+        convertedDailyTimes[day] = { start: time, end: '' }
+      } else {
+        convertedDailyTimes[day] = { start: time?.start || '', end: time?.end || '' }
+      }
+    })
+    setEventDailyTimes(convertedDailyTimes)
+    setEventDescription(event.description || '')
+    setEventLocation(event.location || '')
+    
+    // PR-Vorschläge laden falls vorhanden
+    const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+    const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+    if (eventSuggestion) {
+      setEventPRSuggestions(eventSuggestion)
+    } else {
+      // Neue Vorschläge generieren falls noch nicht vorhanden
+      const newSuggestions = {
+        eventId: event.id,
+        eventTitle: event.title,
+        generatedAt: new Date().toISOString(),
+        presseaussendung: generatePresseaussendungContent(event),
+        socialMedia: generateSocialMediaContent(event),
+        flyer: generateFlyerContent(event),
+        newsletter: generateNewsletterContent(event),
+        plakat: generatePlakatContent(event)
+      }
+      setEventPRSuggestions(newSuggestions)
+    }
+    
+    setShowEventModal(true)
+  }
+
+  // Alle Tage zwischen Start- und Enddatum generieren
+  const getEventDays = (startDate: string, endDate: string): string[] => {
+    if (!startDate) return []
+    const end = endDate || startDate
+    const days: string[] = []
+    const start = new Date(startDate)
+    const endDateObj = new Date(end)
+    
+    for (let d = new Date(start); d <= endDateObj; d.setDate(d.getDate() + 1)) {
+      days.push(d.toISOString().split('T')[0])
+    }
+    
+    return days
+  }
+
+  // Automatische Vorschläge für neues Event generieren
+  const generateAutomaticSuggestions = (event: any) => {
+    // Speichere Vorschläge in localStorage
+    const suggestions = {
+      eventId: event.id,
+      eventTitle: event.title,
+      generatedAt: new Date().toISOString(),
+      presseaussendung: generatePresseaussendungContent(event),
+      socialMedia: generateSocialMediaContent(event),
+      flyer: generateFlyerContent(event),
+      newsletter: generateNewsletterContent(event),
+      plakat: generatePlakatContent(event)
+    }
+    
+    const existingSuggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+    existingSuggestions.push(suggestions)
+    localStorage.setItem('k2-pr-suggestions', JSON.stringify(existingSuggestions))
+  }
+
+  // Hilfsfunktion: Alle Termindaten formatieren
+  const formatEventDates = (event: any): string => {
+    if (!event || !event.date) {
+      return 'Datum folgt'
+    }
+    try {
+      const startDate = new Date(event.date)
+      if (isNaN(startDate.getTime())) {
+        return 'Datum folgt'
+      }
+      let endDate = event.endDate ? new Date(event.endDate) : null
+      if (endDate && isNaN(endDate.getTime())) {
+        // EndDate ist ungültig, ignoriere es
+        endDate = null
+      }
+    
+    let dateStr = startDate.toLocaleDateString('de-DE', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })
+    
+    if (endDate && endDate.getTime() !== startDate.getTime()) {
+      dateStr += ` - ${endDate.toLocaleDateString('de-DE', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })}`
+    }
+    
+    // Zeiten hinzufügen
+    if (event.dailyTimes && Object.keys(event.dailyTimes).length > 0) {
+      // Mehrteiliges Event mit täglichen Zeiten
+      const times: string[] = []
+      const days = getEventDays(event.date, event.endDate || event.date)
+      days.forEach(day => {
+        const dayTime = event.dailyTimes[day]
+        if (dayTime) {
+          const dayDate = new Date(day)
+          if (typeof dayTime === 'string') {
+            // Altes Format (nur Startzeit)
+            times.push(`${dayDate.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })}: ${dayTime}`)
+          } else if (dayTime.start || dayTime.end) {
+            // Neues Format (Start- und Endzeit)
+            const timeStr = dayTime.start 
+              ? (dayTime.end ? `${dayTime.start} - ${dayTime.end} Uhr` : `${dayTime.start} Uhr`)
+              : (dayTime.end ? `bis ${dayTime.end} Uhr` : '')
+            if (timeStr) {
+              times.push(`${dayDate.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })}: ${timeStr}`)
+            }
+          }
+        }
+      })
+      if (times.length > 0) {
+        dateStr += '\n\nZeiten:\n' + times.join('\n')
+      }
+    } else if (event.startTime) {
+      dateStr += `\n🕐 ${event.startTime}${event.endTime ? ` - ${event.endTime}` : ''} Uhr`
+    }
+    
+    return dateStr
+    } catch (error) {
+      console.error('Fehler beim Formatieren der Event-Daten:', error)
+      return 'Datum folgt'
+    }
+  }
+
+  // Content-Generatoren im App-Design-Stil
+  const generatePresseaussendungContent = (event: any) => {
+    const eventTypeLabels: Record<string, string> = {
+      galerieeröffnung: 'Galerieeröffnung',
+      vernissage: 'Vernissage',
+      finissage: 'Finissage',
+      öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
+      sonstiges: 'Veranstaltung'
+    }
+    
+    return {
+      title: `PRESSEAUSSENDUNG: ${event.title}`,
+      content: `
+${event.title.toUpperCase()}
+
+EVENT-TYP: ${eventTypeLabels[event.type] || 'Veranstaltung'}
+
+TERMINDATEN:
+${formatEventDates(event)}
+
+ORT:
+${event.location || galleryData.address || ''}
+
+${galleryData.name || 'K2 Galerie'}
+${galleryData.address || ''}
+${galleryData.phone ? `Tel: ${galleryData.phone}` : ''}
+${galleryData.email ? `E-Mail: ${galleryData.email}` : ''}
+
+BESCHREIBUNG:
+${event.description || 'Wir laden Sie herzlich zu unserer Veranstaltung ein.'}
+
+KÜNSTLER:
+${martinaData.name}: ${martinaData.bio}
+${georgData.name}: ${georgData.bio}
+
+Für weitere Informationen kontaktieren Sie bitte:
+${galleryData.email || ''}
+${galleryData.phone || ''}
+      `.trim()
+    }
+  }
+
+  const generateSocialMediaContent = (event: any) => {
+    const eventTypeLabels: Record<string, string> = {
+      galerieeröffnung: '#Galerieeröffnung #Kunst',
+      vernissage: '#Vernissage #Kunstausstellung',
+      finissage: '#Finissage #Kunst',
+      öffentlichkeitsarbeit: '#Kunst #Galerie',
+      sonstiges: '#Kunst #Event'
+    }
+    
+    const eventTypeNames: Record<string, string> = {
+      galerieeröffnung: 'Galerieeröffnung',
+      vernissage: 'Vernissage',
+      finissage: 'Finissage',
+      öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
+      sonstiges: 'Veranstaltung'
+    }
+    
+    // Formatierte Termindaten für Social Media
+    const datesFormatted = formatEventDates(event)
+    
+    return {
+      instagram: `
+🎨 ${event.title}
+
+📅 ${datesFormatted}
+
+📍 ${event.location || galleryData.address || ''}
+
+${event.description || 'Wir freuen uns auf Ihren Besuch!'}
+
+${eventTypeLabels[event.type] || '#Kunst #Galerie'} #K2Galerie #KunstUndKeramik
+      `.trim(),
+      facebook: `
+${event.title}
+
+Wir laden Sie herzlich ein zu unserer ${eventTypeNames[event.type] || 'Veranstaltung'}!
+
+📅 ${datesFormatted}
+
+📍 ${event.location || galleryData.address || ''}
+
+${event.description || 'Besuchen Sie uns auch online!'}
+
+Wir freuen uns auf Ihren Besuch!
+      `.trim()
+    }
+  }
+
+  const generateFlyerContent = (event: any) => {
+    return {
+      headline: event.title,
+      date: formatEventDates(event),
+      location: event.location || galleryData.address || '',
+      description: event.description || '',
+      type: event.type,
+      qrCode: galleryData.website || window.location.origin,
+      contact: {
+        phone: galleryData.phone || '',
+        email: galleryData.email || '',
+        address: galleryData.address || ''
+      }
+    }
+  }
+
+  const generateNewsletterContent = (event: any) => {
+    const eventTypeNames: Record<string, string> = {
+      galerieeröffnung: 'Galerieeröffnung',
+      vernissage: 'Vernissage',
+      finissage: 'Finissage',
+      öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
+      sonstiges: 'Veranstaltung'
+    }
+    
+    return {
+      subject: `Einladung: ${event.title}`,
+      greeting: 'Liebe Kunstfreunde,',
+      body: `
+wir laden Sie herzlich ein zu unserer ${eventTypeNames[event.type] || 'Veranstaltung'}!
+
+TERMINDATEN:
+📅 ${formatEventDates(event)}
+
+ORT:
+📍 ${event.location || galleryData.address || ''}
+
+BESCHREIBUNG:
+${event.description || 'Wir freuen uns auf Ihren Besuch!'}
+
+KONTAKT:
+${galleryData.phone ? `Tel: ${galleryData.phone}` : ''}
+${galleryData.email ? `E-Mail: ${galleryData.email}` : ''}
+${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
+      `.trim()
+    }
+  }
+
+  const generatePlakatContent = (event: any) => {
+    const galleryData = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
+    const eventTypeNames: Record<string, string> = {
+      galerieeröffnung: 'Galerieeröffnung',
+      vernissage: 'Vernissage',
+      finissage: 'Finissage',
+      öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
+      sonstiges: 'Veranstaltung'
+    }
+    
+    return {
+      title: event.title || 'Event',
+      type: eventTypeNames[event.type] || 'Veranstaltung',
+      date: formatEventDates(event) || 'Datum folgt',
+      location: event.location || galleryData.address || '',
+      description: event.description || '',
+      qrCode: galleryData.website || window.location.origin,
+      contact: {
+        phone: galleryData.phone || '',
+        email: galleryData.email || '',
+        address: galleryData.address || ''
+      }
+    }
+  }
+
+  // Einzelne bearbeitbare PDFs generieren
+  // Leichtgewichtige Text-Export Funktionen (statt PDF) - viel weniger Memory-Belastung
+  const exportPresseaussendungAsText = (presseaussendung: any, event: any) => {
+    const galleryData = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
+    const galleryName = galleryData.name || 'K2 Galerie'
+    
+    const text = `
+${'='.repeat(60)}
+${galleryName.toUpperCase()}
+${'='.repeat(60)}
+
+PRESSEAUSSENDUNG
+
+Event: ${event?.title || 'Nicht angegeben'}
+Datum: ${event?.date ? new Date(event.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Nicht angegeben'}
+
+${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
+${galleryData.phone ? `Telefon: ${galleryData.phone}` : ''}
+${galleryData.email ? `E-Mail: ${galleryData.email}` : ''}
+
+${'-'.repeat(60)}
+
+TITEL:
+${presseaussendung?.title || ''}
+
+${'-'.repeat(60)}
+
+INHALT:
+${presseaussendung?.content || ''}
+
+${'='.repeat(60)}
+Erstellt: ${new Date().toLocaleString('de-DE')}
+${'='.repeat(60)}
+    `.trim()
+    
+    // Kopiere in Zwischenablage (sehr leichtgewichtig)
+    navigator.clipboard.writeText(text).then(() => {
+      alert('✅ Presseaussendung wurde in die Zwischenablage kopiert!\n\nDu kannst sie jetzt in Word, Pages oder einem Texteditor einfügen.')
+    }).catch(() => {
+      // Fallback: Öffne in neuem Fenster (kleiner Blob, sofort freigegeben)
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const win = window.open(url, '_blank')
+      setTimeout(() => URL.revokeObjectURL(url), 500)
+      if (win) {
+        alert('✅ Text wurde geöffnet. Du kannst ihn kopieren und in Word/Pages einfügen.')
+      }
+    })
+  }
+
+  const exportSocialMediaAsText = (socialMedia: any, event: any) => {
+    const text = `
+${'='.repeat(60)}
+SOCIAL MEDIA POSTS
+${'='.repeat(60)}
+
+Event: ${event?.title || 'Nicht angegeben'}
+
+${'-'.repeat(60)}
+INSTAGRAM POST:
+${'-'.repeat(60)}
+${socialMedia?.instagram || ''}
+
+${'-'.repeat(60)}
+FACEBOOK POST:
+${'-'.repeat(60)}
+${socialMedia?.facebook || ''}
+
+${'='.repeat(60)}
+Erstellt: ${new Date().toLocaleString('de-DE')}
+${'='.repeat(60)}
+    `.trim()
+    
+    navigator.clipboard.writeText(text).then(() => {
+      alert('✅ Social Media Posts wurden in die Zwischenablage kopiert!')
+    }).catch(() => {
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const win = window.open(url, '_blank')
+      setTimeout(() => URL.revokeObjectURL(url), 500)
+    })
+  }
+
+  const exportNewsletterAsText = (newsletter: any, event: any) => {
+    const text = `
+${'='.repeat(60)}
+E-MAIL NEWSLETTER
+${'='.repeat(60)}
+
+Event: ${event?.title || 'Nicht angegeben'}
+
+${'-'.repeat(60)}
+BETREFF:
+${newsletter?.subject || ''}
+
+${'-'.repeat(60)}
+INHALT:
+${newsletter?.body || ''}
+
+${'='.repeat(60)}
+Erstellt: ${new Date().toLocaleString('de-DE')}
+${'='.repeat(60)}
+    `.trim()
+    
+    navigator.clipboard.writeText(text).then(() => {
+      alert('✅ Newsletter wurde in die Zwischenablage kopiert!')
+    }).catch(() => {
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const win = window.open(url, '_blank')
+      setTimeout(() => URL.revokeObjectURL(url), 500)
+    })
+  }
+
+  const generateEditablePresseaussendungPDF = (presseaussendung: any, event: any) => {
+    const galleryData = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
+    const galleryName = galleryData.name || 'K2 Galerie'
+    const galleryAddress = galleryData.address || ''
+    const galleryPhone = galleryData.phone || ''
+    const galleryEmail = galleryData.email || ''
+    
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Presseaussendung - ${event?.title || 'Event'}</title>
+  <style>
+    @media print {
+      @page {
+        size: A4;
+        margin: 20mm;
+      }
+      body { 
+        margin: 0; 
+        background: white !important; 
+        padding: 0 !important;
+      }
+      .no-print { display: none !important; }
+      .page { 
+        background: white !important; 
+        color: #1a1a1a !important; 
+        border: none !important; 
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+      }
+      .header { 
+        border-bottom: 3px solid #667eea !important;
+        padding-bottom: 15px !important;
+        margin-bottom: 25px !important;
+      }
+      .header h1 { 
+        color: #667eea !important; 
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+      }
+      .header-info { color: #666 !important; }
+      h1 { 
+        color: #1a1a1a !important; 
+        border-bottom: 2px solid #667eea !important;
+        padding-bottom: 10px !important;
+        margin-bottom: 20px !important;
+      }
+      label { 
+        color: #333 !important; 
+        font-weight: 700 !important;
+      }
+      textarea, input[type="text"] { 
+        background: white !important; 
+        color: #1a1a1a !important; 
+        border: 2px solid #ddd !important;
+        padding: 12px !important;
+      }
+      textarea:focus, input[type="text"]:focus {
+        border-color: #667eea !important;
+        outline: 2px solid rgba(102, 126, 234, 0.2) !important;
+      }
+      .field-group {
+        margin-bottom: 25px !important;
+      }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      padding: 2rem;
+      min-height: 100vh;
+      line-height: 1.7;
+    }
+    .page {
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 30mm 25mm;
+      background: white;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      font-size: 2.2rem;
+      color: #667eea;
+      margin-bottom: 10px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .header-info {
+      font-size: 0.9rem;
+      color: #666;
+      line-height: 1.8;
+    }
+    .header-info strong {
+      color: #333;
+      font-weight: 600;
+    }
+    h1 {
+      font-size: 1.8rem;
+      color: #1a1a1a;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+      font-weight: 700;
+    }
+    .field-group {
+      margin-bottom: 25px;
+    }
+    label {
+      display: block;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: 'Arial', sans-serif;
+    }
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 1rem;
+      line-height: 1.7;
+      resize: vertical;
+      background: white;
+      color: #1a1a1a;
+      transition: all 0.2s ease;
+    }
+    textarea:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    textarea {
+      min-height: 300px;
+      font-size: 1.05rem;
+    }
+    input[type="text"] {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 8px;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+      font-family: 'Arial', sans-serif;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    }
+    .no-print {
+      background: #f8f9fa;
+      border: 2px solid #667eea;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .no-print p {
+      color: #666;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button onclick="goBack(); return false;" style="background: #6b7280; margin-right: 8px; cursor: pointer;">← Zurück</button>
+    <button onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
+    <button onclick="saveChanges(); return false;">💾 Änderungen speichern</button>
+    <p>Bearbeite die Felder direkt. Nach dem Drucken kannst du die Änderungen speichern.</p>
+  </div>
+
+  <div class="page">
+    <div class="header">
+      <h1>${galleryName}</h1>
+      <div class="header-info">
+        ${galleryAddress ? `<strong>Adresse:</strong> ${galleryAddress}<br>` : ''}
+        ${galleryPhone ? `<strong>Telefon:</strong> ${galleryPhone}<br>` : ''}
+        ${galleryEmail ? `<strong>E-Mail:</strong> ${galleryEmail}<br>` : ''}
+        ${event?.date ? `<strong>Event-Datum:</strong> ${new Date(event.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}<br>` : ''}
+        ${event?.title ? `<strong>Event:</strong> ${event.title}` : ''}
+      </div>
+    </div>
+    
+    <h1>Presseaussendung</h1>
+    
+    <div class="field-group">
+      <label>Titel der Presseaussendung</label>
+      <input type="text" id="presse-title" value="${(presseaussendung?.title || '').replace(/"/g, '&quot;')}" />
+    </div>
+    
+    <div class="field-group">
+      <label>Inhalt der Presseaussendung</label>
+      <textarea id="presse-content" rows="30">${(presseaussendung?.content || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+    </div>
+  </div>
+
+  <script>
+    function goBack() {
+      var adminUrl = window.location.origin + '/admin'
+      
+      if (window.opener && !window.opener.closed) {
+        try {
+          window.opener.location.href = adminUrl
+          window.opener.focus()
+          setTimeout(function() {
+            try {
+              window.close()
+            } catch (e) {
+              // Ignorieren
+            }
+          }, 100)
+          return
+        } catch (e) {
+          // Falls Fehler, navigiere direkt
+        }
+      }
+      
+      window.location.href = adminUrl
+    }
+    
+    function saveChanges() {
+      var changes = {
+        presseaussendung: {
+          title: document.getElementById('presse-title').value,
+          content: document.getElementById('presse-content').value
+        }
+      }
+      navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(function() {
+        var btn = event.target
+        btn.textContent = '✅ Gespeichert'
+        btn.style.background = '#10b981'
+        setTimeout(function() {
+          goBack()
+        }, 1500)
+      }).catch(function() {
+        var btn = event.target
+        btn.textContent = '✅ Gespeichert'
+        btn.style.background = '#10b981'
+        setTimeout(function() {
+          goBack()
+        }, 1500)
+      })
+    }
+    
+    // Nach Drucken automatisch zurücknavigieren - mit Cleanup
+    var autoCloseTimeout = null
+    function handleAfterPrint() {
+      window.removeEventListener('afterprint', handleAfterPrint)
+      if (autoCloseTimeout) clearTimeout(autoCloseTimeout)
+      setTimeout(function() {
+        goBack()
+      }, 1000)
+    }
+    window.addEventListener('afterprint', handleAfterPrint)
+    
+    // Cleanup beim Schließen - KRITISCH für Crash-Prävention
+    function cleanup() {
+      window.removeEventListener('afterprint', handleAfterPrint)
+      if (autoCloseTimeout) clearTimeout(autoCloseTimeout)
+    }
+    window.addEventListener('beforeunload', cleanup)
+    window.addEventListener('unload', cleanup)
+  </script>
+</body>
+</html>
+    `
+    try {
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      
+      // Versuche Fenster zu öffnen - mit besserer Pop-up-Erkennung
+      const pdfWindow = window.open(url, '_blank', 'noopener,noreferrer')
+      
+      // Prüfe ob Fenster wirklich geöffnet wurde (mit kurzer Verzögerung)
+      setTimeout(() => {
+        if (!pdfWindow || pdfWindow.closed || typeof pdfWindow.closed === 'undefined') {
+          // Pop-up blockiert - öffne als Link ohne Download-Attribut
+          URL.revokeObjectURL(url)
+          const newUrl = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = newUrl
+          link.target = '_blank'
+          // KEIN download-Attribut - Browser öffnet Datei statt Download
+          document.body.appendChild(link)
+          link.click()
+          setTimeout(() => {
+            document.body.removeChild(link)
+            // URL nicht sofort revoken - Browser braucht Zeit zum Laden
+            setTimeout(() => URL.revokeObjectURL(newUrl), 2000)
+          }, 100)
+        } else {
+          // Fenster erfolgreich geöffnet - Cleanup später
+          pdfWindow.addEventListener('beforeunload', () => {
+            URL.revokeObjectURL(url)
+          })
+        }
+      }, 100)
+    } catch (error) {
+      console.error('Fehler beim Generieren des PDFs:', error)
+      alert('Fehler beim Generieren des PDFs. Bitte versuche es erneut.')
+    }
+    
+    // Speichere auch in Dokumente-Sektion
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const documentData = {
+        id: `pr-editable-presseaussendung-${event?.id || 'unknown'}-${Date.now()}`,
+        name: `Presseaussendung (bearbeitbar) - ${event?.title || 'Event'}`,
+        type: 'text/html',
+        size: blob.size,
+        data: reader.result as string,
+        fileName: `presseaussendung-editable-${(event?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente',
+        eventId: event?.id,
+        eventTitle: event?.title
+      }
+      const existingDocs = loadDocuments()
+      const filteredDocs = existingDocs.filter((d: any) => 
+        !(d.category === 'pr-dokumente' && d.eventId === event?.id && d.name.includes('Presseaussendung (bearbeitbar)'))
+      )
+      const updated = [...filteredDocs, documentData]
+      saveDocuments(updated)
+    }
+    reader.readAsDataURL(blob)
+  }
+
+  const generateEditableSocialMediaPDF = (socialMedia: any, event: any) => {
+    const galleryData = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
+    const galleryName = galleryData.name || 'K2 Galerie'
+    
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Social Media - ${event?.title || 'Event'}</title>
+  <style>
+    @media print {
+      @page {
+        size: A4;
+        margin: 20mm;
+      }
+      body { 
+        margin: 0; 
+        background: white !important; 
+        padding: 0 !important;
+      }
+      .no-print { display: none !important; }
+      .page { 
+        background: white !important; 
+        color: #1a1a1a !important; 
+        border: none !important; 
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 0 30mm 0 !important;
+        max-width: 100% !important;
+      }
+      .page-break { page-break-after: always; }
+      .header { 
+        border-bottom: 3px solid #667eea !important;
+        padding-bottom: 15px !important;
+        margin-bottom: 25px !important;
+      }
+      .header h1 { 
+        color: #667eea !important; 
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+      }
+      h1 { 
+        color: #1a1a1a !important; 
+        border-bottom: 2px solid #667eea !important;
+        padding-bottom: 10px !important;
+        margin-bottom: 20px !important;
+      }
+      h2 { 
+        color: #333 !important; 
+        border-bottom: 1px solid #ddd !important;
+        padding-bottom: 8px !important;
+        margin-top: 30px !important;
+      }
+      label { 
+        color: #333 !important; 
+        font-weight: 700 !important;
+      }
+      textarea { 
+        background: white !important; 
+        color: #1a1a1a !important; 
+        border: 2px solid #ddd !important;
+        padding: 12px !important;
+      }
+      textarea:focus {
+        border-color: #667eea !important;
+        outline: 2px solid rgba(102, 126, 234, 0.2) !important;
+      }
+      .field-group {
+        margin-bottom: 25px !important;
+      }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      padding: 2rem;
+      min-height: 100vh;
+      line-height: 1.7;
+    }
+    .page {
+      max-width: 210mm;
+      margin: 0 auto 2rem;
+      padding: 30mm 25mm;
+      background: white;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      font-size: 2.2rem;
+      color: #667eea;
+      margin-bottom: 10px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .header-info {
+      font-size: 0.9rem;
+      color: #666;
+      line-height: 1.8;
+    }
+    .header-info strong {
+      color: #333;
+      font-weight: 600;
+    }
+    h1 {
+      font-size: 1.8rem;
+      color: #1a1a1a;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+      font-weight: 700;
+    }
+    h2 {
+      font-size: 1.4rem;
+      color: #333;
+      margin: 30px 0 15px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 8px;
+      font-weight: 600;
+    }
+    .field-group {
+      margin-bottom: 25px;
+    }
+    label {
+      display: block;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 1rem;
+      line-height: 1.7;
+      resize: vertical;
+      background: white;
+      color: #1a1a1a;
+      min-height: 200px;
+      transition: all 0.2s ease;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 8px;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+      font-family: 'Arial', sans-serif;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    }
+    .no-print {
+      background: #f8f9fa;
+      border: 2px solid #667eea;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .no-print p {
+      color: #666;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button onclick="goBack(); return false;" style="background: #6b7280; margin-right: 8px; cursor: pointer;">← Zurück</button>
+    <button onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
+    <button onclick="saveChanges(); return false;">💾 Änderungen speichern</button>
+    <p>Bearbeite die Felder direkt. Nach dem Drucken kannst du die Änderungen speichern.</p>
+  </div>
+
+  <div class="page">
+    <div class="header">
+      <h1>${galleryName}</h1>
+      <div class="header-info">
+        ${event?.title ? `<strong>Event:</strong> ${event.title}<br>` : ''}
+        ${event?.date ? `<strong>Datum:</strong> ${new Date(event.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}` : ''}
+      </div>
+    </div>
+    
+    <h1>Social Media Posts</h1>
+    
+    <h2>Instagram Post</h2>
+    <div class="field-group">
+      <label>Instagram Text</label>
+      <textarea id="instagram-post" rows="18">${((socialMedia?.instagram || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+    </div>
+    
+    <h2>Facebook Post</h2>
+    <div class="field-group">
+      <label>Facebook Text</label>
+      <textarea id="facebook-post" rows="18">${((socialMedia?.facebook || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+    </div>
+  </div>
+
+  <script>
+    function goBack() {
+      var adminUrl = window.location.origin + '/admin'
+      
+      if (window.opener && !window.opener.closed) {
+        try {
+          window.opener.location.href = adminUrl
+          window.opener.focus()
+          setTimeout(function() {
+            try {
+              window.close()
+            } catch (e) {
+              // Ignorieren
+            }
+          }, 100)
+          return
+        } catch (e) {
+          // Falls Fehler, navigiere direkt
+        }
+      }
+      
+      window.location.href = adminUrl
+    }
+    
+    function saveChanges() {
+      var changes = {
+        socialMedia: {
+          instagram: document.getElementById('instagram-post').value,
+          facebook: document.getElementById('facebook-post').value
+        }
+      }
+      navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(function() {
+        var btn = event.target
+        btn.textContent = '✅ Gespeichert'
+        btn.style.background = '#10b981'
+        setTimeout(function() {
+          goBack()
+        }, 1500)
+      }).catch(function() {
+        var btn = event.target
+        btn.textContent = '✅ Gespeichert'
+        btn.style.background = '#10b981'
+        setTimeout(function() {
+          goBack()
+        }, 1500)
+      })
+    }
+    
+    // Nach Drucken automatisch zurücknavigieren - mit Cleanup
+    var autoCloseTimeout = null
+    function handleAfterPrint() {
+      window.removeEventListener('afterprint', handleAfterPrint)
+      if (autoCloseTimeout) clearTimeout(autoCloseTimeout)
+      setTimeout(function() {
+        goBack()
+      }, 1000)
+    }
+    window.addEventListener('afterprint', handleAfterPrint)
+    
+    // Cleanup beim Schließen - KRITISCH für Crash-Prävention
+    function cleanup() {
+      window.removeEventListener('afterprint', handleAfterPrint)
+      if (autoCloseTimeout) clearTimeout(autoCloseTimeout)
+    }
+    window.addEventListener('beforeunload', cleanup)
+    window.addEventListener('unload', cleanup)
+  </script>
+</body>
+</html>
+    `
+    try {
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      
+      // Versuche Fenster zu öffnen - mit besserer Pop-up-Erkennung
+      const pdfWindow = window.open(url, '_blank', 'noopener,noreferrer')
+      
+      // Prüfe ob Fenster wirklich geöffnet wurde (mit kurzer Verzögerung)
+      setTimeout(() => {
+        if (!pdfWindow || pdfWindow.closed || typeof pdfWindow.closed === 'undefined') {
+          // Pop-up blockiert - öffne als Link ohne Download-Attribut
+          URL.revokeObjectURL(url)
+          const newUrl = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = newUrl
+          link.target = '_blank'
+          // KEIN download-Attribut - Browser öffnet Datei statt Download
+          document.body.appendChild(link)
+          link.click()
+          setTimeout(() => {
+            document.body.removeChild(link)
+            // URL nicht sofort revoken - Browser braucht Zeit zum Laden
+            setTimeout(() => URL.revokeObjectURL(newUrl), 2000)
+          }, 100)
+        } else {
+          // Fenster erfolgreich geöffnet - Cleanup später
+          pdfWindow.addEventListener('beforeunload', () => {
+            URL.revokeObjectURL(url)
+          })
+        }
+      }, 100)
+      
+      // Speichere auch in Dokumente-Sektion
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        const documentData = {
+          id: `pr-editable-socialmedia-${event?.id || 'unknown'}-${Date.now()}`,
+          name: `Social Media Posts (bearbeitbar) - ${event?.title || 'Event'}`,
+          type: 'text/html',
+          size: blob.size,
+          data: reader.result as string,
+          fileName: `social-media-editable-${(event?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+          uploadedAt: new Date().toISOString(),
+          isPDF: false,
+          isPlaceholder: false,
+          category: 'pr-dokumente',
+          eventId: event?.id,
+          eventTitle: event?.title
+        }
+        const existingDocs = loadDocuments()
+        const filteredDocs = existingDocs.filter((d: any) => 
+          !(d.category === 'pr-dokumente' && d.eventId === event?.id && d.name.includes('Social Media Posts (bearbeitbar)'))
+        )
+        const updated = [...filteredDocs, documentData]
+        saveDocuments(updated)
+      }
+      reader.onerror = () => {
+        console.error('Fehler beim Lesen des Blobs')
+      }
+      reader.readAsDataURL(blob)
+    } catch (error) {
+      console.error('Fehler beim Generieren des PDFs:', error)
+      alert('Fehler beim Generieren des PDFs. Bitte versuche es erneut.')
+    }
+  }
+
+  const generateEditableNewsletterPDF = (newsletter: any, event: any) => {
+    const galleryData = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
+    const galleryName = galleryData.name || 'K2 Galerie'
+    
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Newsletter - ${event?.title || 'Event'}</title>
+  <style>
+    @media print {
+      @page {
+        size: A4;
+        margin: 20mm;
+      }
+      body { 
+        margin: 0; 
+        background: white !important; 
+        padding: 0 !important;
+      }
+      .no-print { display: none !important; }
+      .page { 
+        background: white !important; 
+        color: #1a1a1a !important; 
+        border: none !important; 
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+      }
+      .header { 
+        border-bottom: 3px solid #667eea !important;
+        padding-bottom: 15px !important;
+        margin-bottom: 25px !important;
+      }
+      .header h1 { 
+        color: #667eea !important; 
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+      }
+      .header-info { color: #666 !important; }
+      h1 { 
+        color: #1a1a1a !important; 
+        border-bottom: 2px solid #667eea !important;
+        padding-bottom: 10px !important;
+        margin-bottom: 20px !important;
+      }
+      label { 
+        color: #333 !important; 
+        font-weight: 700 !important;
+      }
+      textarea, input[type="text"] { 
+        background: white !important; 
+        color: #1a1a1a !important; 
+        border: 2px solid #ddd !important;
+        padding: 12px !important;
+      }
+      textarea:focus, input[type="text"]:focus {
+        border-color: #667eea !important;
+        outline: 2px solid rgba(102, 126, 234, 0.2) !important;
+      }
+      .field-group {
+        margin-bottom: 25px !important;
+      }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      padding: 2rem;
+      min-height: 100vh;
+      line-height: 1.7;
+    }
+    .page {
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 30mm 25mm;
+      background: white;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      font-size: 2.2rem;
+      color: #667eea;
+      margin-bottom: 10px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .header-info {
+      font-size: 0.9rem;
+      color: #666;
+      line-height: 1.8;
+    }
+    .header-info strong {
+      color: #333;
+      font-weight: 600;
+    }
+    h1 {
+      font-size: 1.8rem;
+      color: #1a1a1a;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+      font-weight: 700;
+    }
+    .field-group {
+      margin-bottom: 25px;
+    }
+    label {
+      display: block;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: 'Arial', sans-serif;
+    }
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 1rem;
+      line-height: 1.7;
+      resize: vertical;
+      background: white;
+      color: #1a1a1a;
+      transition: all 0.2s ease;
+    }
+    textarea:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    textarea {
+      min-height: 300px;
+      font-size: 1.05rem;
+    }
+    input[type="text"] {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 8px;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+      font-family: 'Arial', sans-serif;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    }
+    .no-print {
+      background: #f8f9fa;
+      border: 2px solid #667eea;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .no-print p {
+      color: #666;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button onclick="goBack(); return false;" style="background: #6b7280; margin-right: 8px; cursor: pointer;">← Zurück</button>
+    <button onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
+    <button onclick="saveChanges(); return false;">💾 Änderungen speichern</button>
+    <p>Bearbeite die Felder direkt. Nach dem Drucken kannst du die Änderungen speichern.</p>
+  </div>
+
+  <div class="page">
+    <div class="header">
+      <h1>${galleryName}</h1>
+      <div class="header-info">
+        ${event?.title ? `<strong>Event:</strong> ${event.title}<br>` : ''}
+        ${event?.date ? `<strong>Datum:</strong> ${new Date(event.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}` : ''}
+      </div>
+    </div>
+    
+    <h1>E-Mail Newsletter</h1>
+    
+    <div class="field-group">
+      <label>E-Mail Betreff</label>
+      <input type="text" id="newsletter-subject" value="${(newsletter?.subject || '').replace(/"/g, '&quot;')}" />
+    </div>
+    
+    <div class="field-group">
+      <label>Newsletter Inhalt</label>
+      <textarea id="newsletter-body" rows="30">${((newsletter?.body || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+    </div>
+  </div>
+
+  <script>
+    function goBack() {
+      var adminUrl = window.location.origin + '/admin'
+      
+      if (window.opener && !window.opener.closed) {
+        try {
+          window.opener.location.href = adminUrl
+          window.opener.focus()
+          setTimeout(function() {
+            try {
+              window.close()
+            } catch (e) {
+              // Ignorieren
+            }
+          }, 100)
+          return
+        } catch (e) {
+          // Falls Fehler, navigiere direkt
+        }
+      }
+      
+      window.location.href = adminUrl
+    }
+    
+    function saveChanges() {
+      var changes = {
+        newsletter: {
+          subject: document.getElementById('newsletter-subject').value,
+          body: document.getElementById('newsletter-body').value
+        }
+      }
+      navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(function() {
+        var btn = event.target
+        btn.textContent = '✅ Gespeichert'
+        btn.style.background = '#10b981'
+        setTimeout(function() {
+          goBack()
+        }, 1500)
+      }).catch(function() {
+        var btn = event.target
+        btn.textContent = '✅ Gespeichert'
+        btn.style.background = '#10b981'
+        setTimeout(function() {
+          goBack()
+        }, 1500)
+      })
+    }
+    
+    // Nach Drucken automatisch zurücknavigieren - mit Cleanup
+    var autoCloseTimeout = null
+    function handleAfterPrint() {
+      window.removeEventListener('afterprint', handleAfterPrint)
+      if (autoCloseTimeout) clearTimeout(autoCloseTimeout)
+      setTimeout(function() {
+        goBack()
+      }, 1000)
+    }
+    window.addEventListener('afterprint', handleAfterPrint)
+    
+    // Cleanup beim Schließen - KRITISCH für Crash-Prävention
+    function cleanup() {
+      window.removeEventListener('afterprint', handleAfterPrint)
+      if (autoCloseTimeout) clearTimeout(autoCloseTimeout)
+    }
+    window.addEventListener('beforeunload', cleanup)
+    window.addEventListener('unload', cleanup)
+  </script>
+</body>
+</html>
+    `
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    openPDFWindowSafely(blob, 'Presseaussendung')
+    
+    // Speichere auch in Dokumente-Sektion
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const documentData = {
+        id: `pr-editable-newsletter-${event?.id || 'unknown'}-${Date.now()}`,
+        name: `Newsletter (bearbeitbar) - ${event?.title || 'Event'}`,
+        type: 'text/html',
+        size: blob.size,
+        data: reader.result as string,
+        fileName: `newsletter-editable-${(event?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente',
+        eventId: event?.id,
+        eventTitle: event?.title
+      }
+      const existingDocs = loadDocuments()
+      const filteredDocs = existingDocs.filter((d: any) => 
+        !(d.category === 'pr-dokumente' && d.eventId === event?.id && d.name.includes('Newsletter (bearbeitbar)'))
+      )
+      const updated = [...filteredDocs, documentData]
+      saveDocuments(updated)
+    }
+    reader.readAsDataURL(blob)
+  }
+
+  // Bearbeitbare PR-Vorschläge als PDF generieren
+  const generateEditablePRSuggestionsPDF = (suggestions: any, event: any) => {
+    const galleryData = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
+    const galleryName = galleryData.name || 'K2 Galerie'
+    
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>PR-Vorschläge - ${suggestions.eventTitle || 'Event'}</title>
+  <style>
+    @media print {
+      @page {
+        size: A4;
+        margin: 20mm;
+      }
+      body { 
+        margin: 0; 
+        background: white !important; 
+        padding: 0 !important;
+      }
+      .no-print { display: none !important; }
+      .page-break { page-break-after: always; }
+      .page { 
+        background: white !important; 
+        color: #1a1a1a !important; 
+        border: none !important; 
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 0 30mm 0 !important;
+        max-width: 100% !important;
+      }
+      .header { 
+        border-bottom: 3px solid #667eea !important;
+        padding-bottom: 15px !important;
+        margin-bottom: 25px !important;
+      }
+      .header h1 { 
+        color: #667eea !important; 
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+      }
+      .header-info { color: #666 !important; }
+      h1 { 
+        color: #1a1a1a !important; 
+        border-bottom: 2px solid #667eea !important;
+        padding-bottom: 10px !important;
+        margin-bottom: 20px !important;
+      }
+      h2 { 
+        color: #333 !important; 
+        border-bottom: 1px solid #ddd !important;
+        padding-bottom: 8px !important;
+        margin-top: 30px !important;
+      }
+      label { 
+        color: #333 !important; 
+        font-weight: 700 !important;
+      }
+      textarea, input[type="text"] { 
+        background: white !important; 
+        color: #1a1a1a !important; 
+        border: 2px solid #ddd !important;
+        padding: 12px !important;
+      }
+      textarea:focus, input[type="text"]:focus {
+        border-color: #667eea !important;
+        outline: 2px solid rgba(102, 126, 234, 0.2) !important;
+      }
+      .info-box { 
+        background: #f5f5f5 !important; 
+        border-left: 4px solid #667eea !important;
+        color: #333 !important;
+      }
+      .info-box strong { 
+        color: #667eea !important; 
+      }
+      .field-group {
+        margin-bottom: 25px !important;
+      }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      padding: 2rem;
+      min-height: 100vh;
+      line-height: 1.7;
+    }
+    .page {
+      max-width: 210mm;
+      margin: 0 auto 2rem;
+      padding: 30mm 25mm;
+      background: white;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      font-size: 2.2rem;
+      color: #667eea;
+      margin-bottom: 10px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .header-info {
+      font-size: 0.9rem;
+      color: #666;
+      line-height: 1.8;
+    }
+    .header-info strong {
+      color: #333;
+      font-weight: 600;
+    }
+    h1 {
+      font-size: 1.8rem;
+      color: #1a1a1a;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+      font-weight: 700;
+    }
+    h2 {
+      font-size: 1.4rem;
+      color: #333;
+      margin: 30px 0 15px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 8px;
+      font-weight: 600;
+    }
+    .field-group {
+      margin-bottom: 25px;
+    }
+    label {
+      display: block;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: 'Arial', sans-serif;
+    }
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 1rem;
+      line-height: 1.7;
+      resize: vertical;
+      background: white;
+      color: #1a1a1a;
+      transition: all 0.2s ease;
+    }
+    textarea:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    textarea {
+      min-height: 200px;
+      font-size: 1.05rem;
+    }
+    input[type="text"] {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .info-box {
+      background: #f5f5f5;
+      border-left: 4px solid #667eea;
+      padding: 15px 20px;
+      margin-bottom: 25px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      line-height: 1.8;
+    }
+    .info-box strong {
+      color: #667eea;
+      font-weight: 600;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 8px;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+      font-family: 'Arial', sans-serif;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    }
+    .no-print {
+      background: #f8f9fa;
+      border: 2px solid #667eea;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .no-print p {
+      color: #666;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button onclick="goBack()" style="background: #6b7280; margin-right: 8px;">← Zurück</button>
+    <button onclick="window.print()">🖨️ Als PDF drucken</button>
+    <button onclick="saveAllChanges()">💾 Alle Änderungen speichern</button>
+    <p>Bearbeite die Felder direkt. Nach dem Drucken kannst du die Änderungen speichern.</p>
+  </div>
+
+  <!-- Seite 1: Presseaussendung -->
+  <div class="page">
+    <div class="header">
+      <h1>${galleryName}</h1>
+      <div class="header-info">
+        ${suggestions.eventTitle ? `<strong>Event:</strong> ${suggestions.eventTitle}<br>` : ''}
+        ${event?.date ? `<strong>Datum:</strong> ${new Date(event.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}` : ''}
+      </div>
+    </div>
+    
+    <h1>Presseaussendung</h1>
+    
+    <div class="field-group">
+      <label>Titel der Presseaussendung</label>
+      <input type="text" id="presse-title" value="${(suggestions.presseaussendung?.title || '').replace(/"/g, '&quot;')}" />
+    </div>
+    
+    <div class="field-group">
+      <label>Inhalt der Presseaussendung</label>
+      <textarea id="presse-content" rows="22">${(suggestions.presseaussendung?.content || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+    </div>
+  </div>
+
+  <!-- Seite 2: Social Media -->
+  <div class="page page-break">
+    <div class="header">
+      <h1>${galleryName}</h1>
+      <div class="header-info">
+        ${suggestions.eventTitle ? `<strong>Event:</strong> ${suggestions.eventTitle}` : ''}
+      </div>
+    </div>
+    
+    <h1>Social Media Posts</h1>
+    
+    <h2>Instagram Post</h2>
+    <div class="field-group">
+      <label>Instagram Text</label>
+      <textarea id="instagram-post" rows="15">${((suggestions.socialMedia?.instagram || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+    </div>
+    
+    <h2>Facebook Post</h2>
+    <div class="field-group">
+      <label>Facebook Text</label>
+      <textarea id="facebook-post" rows="15">${((suggestions.socialMedia?.facebook || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+    </div>
+  </div>
+
+  <!-- Seite 3: Newsletter -->
+  <div class="page page-break">
+    <div class="header">
+      <h1>${galleryName}</h1>
+      <div class="header-info">
+        ${suggestions.eventTitle ? `<strong>Event:</strong> ${suggestions.eventTitle}` : ''}
+      </div>
+    </div>
+    
+    <h1>E-Mail Newsletter</h1>
+    
+    <div class="field-group">
+      <label>E-Mail Betreff</label>
+      <input type="text" id="newsletter-subject" value="${(suggestions.newsletter?.subject || '').replace(/"/g, '&quot;')}" />
+    </div>
+    
+    <div class="field-group">
+      <label>Newsletter Inhalt</label>
+      <textarea id="newsletter-body" rows="22">${((suggestions.newsletter?.body || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+    </div>
+  </div>
+
+  <script>
+    function goBack() {
+      var adminUrl = window.location.origin + '/admin'
+      
+      if (window.opener && !window.opener.closed) {
+        try {
+          window.opener.location.href = adminUrl
+          window.opener.focus()
+          setTimeout(function() {
+            try {
+              window.close()
+            } catch (e) {
+              // Ignorieren
+            }
+          }, 100)
+          return
+        } catch (e) {
+          // Falls Fehler, navigiere direkt
+        }
+      }
+      
+      window.location.href = adminUrl
+    }
+    
+    function saveAllChanges() {
+      var changes = {
+        presseaussendung: {
+          title: document.getElementById('presse-title').value,
+          content: document.getElementById('presse-content').value
+        },
+        socialMedia: {
+          instagram: document.getElementById('instagram-post').value,
+          facebook: document.getElementById('facebook-post').value
+        },
+        newsletter: {
+          subject: document.getElementById('newsletter-subject').value,
+          body: document.getElementById('newsletter-body').value
+        }
+      }
+      
+      // Kopiere die Änderungen in die Zwischenablage
+      navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(function() {
+        var btn = event.target
+        btn.textContent = '✅ Gespeichert'
+        btn.style.background = '#10b981'
+        setTimeout(function() {
+          goBack()
+        }, 1500)
+      }).catch(function() {
+        var btn = event.target
+        btn.textContent = '✅ Gespeichert'
+        btn.style.background = '#10b981'
+        setTimeout(function() {
+          goBack()
+        }, 1500)
+      })
+    }
+    
+    // Nach Drucken automatisch zurücknavigieren - mit Cleanup
+    var autoCloseTimeout = null
+    function handleAfterPrint() {
+      window.removeEventListener('afterprint', handleAfterPrint)
+      if (autoCloseTimeout) clearTimeout(autoCloseTimeout)
+      setTimeout(function() {
+        goBack()
+      }, 1000)
+    }
+    window.addEventListener('afterprint', handleAfterPrint)
+    
+    // Cleanup beim Schließen - KRITISCH für Crash-Prävention
+    function cleanup() {
+      window.removeEventListener('afterprint', handleAfterPrint)
+      if (autoCloseTimeout) clearTimeout(autoCloseTimeout)
+    }
+    window.addEventListener('beforeunload', cleanup)
+    window.addEventListener('unload', cleanup)
+  </script>
+</body>
+</html>
+    `
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    openPDFWindowSafely(blob, 'Presseaussendung')
+    
+    // Speichere auch in Dokumente-Sektion
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const documentData = {
+        id: `pr-editable-all-${event?.id || 'unknown'}-${Date.now()}`,
+        name: `PR-Vorschläge (alle bearbeitbar) - ${event?.title || suggestions.eventTitle || 'Event'}`,
+        type: 'text/html',
+        size: blob.size,
+        data: reader.result as string,
+        fileName: `pr-suggestions-editable-${(event?.title || suggestions.eventTitle || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente',
+        eventId: event?.id,
+        eventTitle: event?.title || suggestions.eventTitle
+      }
+      const existingDocs = loadDocuments()
+      const filteredDocs = existingDocs.filter((d: any) => 
+        !(d.category === 'pr-dokumente' && d.eventId === event?.id && d.name.includes('PR-Vorschläge (alle bearbeitbar)'))
+      )
+      const updated = [...filteredDocs, documentData]
+      saveDocuments(updated)
+    }
+    reader.readAsDataURL(blob)
+  }
+
+  // Presseaussendung mit Content generieren (Hilfsfunktion)
+  const generatePresseaussendungWithContent = (event: any, content: string) => {
+    
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Presseaussendung - ${event.title}</title>
+  <style>
+    @media print {
+      body { margin: 0; }
+      .no-print { display: none; }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
+      color: #f4f7ff;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: linear-gradient(145deg, rgba(18, 22, 35, 0.95), rgba(12, 16, 28, 0.92));
+      border-radius: 24px;
+      padding: 3rem;
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(95, 251, 241, 0.12);
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: #5ffbf1;
+      margin-bottom: 1rem;
+      letter-spacing: 0.05em;
+    }
+    .header {
+      border-bottom: 2px solid rgba(95, 251, 241, 0.2);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .content {
+      line-height: 1.8;
+      font-size: 1.1rem;
+      white-space: pre-wrap;
+      color: #b8c5e0;
+    }
+    .highlight {
+      color: #5ffbf1;
+      font-weight: 600;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 1rem 0;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="text-align: center; margin-bottom: 2rem;">
+    <button onclick="window.print()">🖨️ Als PDF speichern</button>
+    <button onclick="navigator.clipboard.writeText(document.querySelector('.content').textContent)">📋 Text kopieren</button>
+  </div>
+  
+  <div class="container">
+    <div class="header">
+      <h1>PRESSEAUSSENDUNG</h1>
+    </div>
+    <div class="content">${content.replace(/\n/g, '<br>')}</div>
+  </div>
+  <script>
+    function goBack() {
+      // Einfacher Ansatz: Immer direkt zur Admin-Seite navigieren
+      // Prüfe ob Hash-Router verwendet wird
+      const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '')
+      const adminUrl = baseUrl + '/admin'
+      
+      console.log('goBack() - adminUrl:', adminUrl)
+      console.log('goBack() - window.location:', window.location.href)
+      
+      // Wenn es ein Pop-up ist, versuche zu schließen
+      if (window.opener && !window.opener.closed) {
+        try {
+          // Navigiere im Opener zur Admin-Seite
+          window.opener.location.href = adminUrl
+          window.opener.focus()
+          setTimeout(() => {
+            try {
+              window.close()
+            } catch (e) {
+              // Ignorieren
+            }
+          }, 100)
+          return
+        } catch (e) {
+          console.log('Fehler beim Schließen des Pop-ups:', e)
+          // Falls Fehler, navigiere direkt
+        }
+      }
+      
+      // Direkt zur Admin-Seite navigieren
+      console.log('Navigiere zu:', adminUrl)
+      window.location.href = adminUrl
+    }
+    // Nach Drucken automatisch zurücknavigieren - mit Cleanup
+    const handleAfterPrint = () => {
+      window.removeEventListener('afterprint', handleAfterPrint)
+      goBack()
+    }
+    window.addEventListener('afterprint', handleAfterPrint)
+    
+    // Cleanup beim Schließen - KRITISCH für Crash-Prävention
+    const cleanup = () => {
+      window.removeEventListener('afterprint', handleAfterPrint)
+    }
+    window.addEventListener('beforeunload', cleanup)
+    window.addEventListener('unload', cleanup)
+  </script>
+</body>
+</html>
+    `
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    openPDFWindowSafely(blob, 'Presseaussendung')
+    
+    // Speichere auch in Dokumente-Sektion
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const documentData = {
+        id: `pr-presseaussendung-${event.id}-${Date.now()}`,
+        name: `Presseaussendung - ${event.title}`,
+        type: 'text/html',
+        size: blob.size,
+        data: reader.result as string,
+        fileName: `presseaussendung-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente',
+        eventId: event.id,
+        eventTitle: event.title
+      }
+      const existingDocs = loadDocuments()
+      // Entferne alte Presseaussendung für dieses Event
+      const filteredDocs = existingDocs.filter((d: any) => 
+        !(d.category === 'pr-dokumente' && d.eventId === event.id && d.name.includes('Presseaussendung'))
+      )
+      const updated = [...filteredDocs, documentData]
+      saveDocuments(updated)
+    }
+    reader.readAsDataURL(blob)
+    
+    alert('✅ Presseaussendung generiert!')
+  }
+
+  // Presseaussendung generieren (mit App-Design)
+  const generatePresseaussendung = () => {
+    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
+    if (!selectedEvent && events.length === 0) {
+      alert('Bitte zuerst ein Event erstellen')
+      return
+    }
+    const event = selectedEvent || events[0]
+    
+    // Prüfe ob Vorschläge vorhanden sind
+    const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+    const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+    
+    const content = eventSuggestion?.presseaussendung?.content || generatePresseaussendungContent(event).content
+    
+    generatePresseaussendungWithContent(event, content)
+  }
+
+  // Social Media Posts für spezifisches Event generieren
+  const generateSocialMediaPostsForEvent = (event: any) => {
+    
+    // Prüfe ob Vorschläge vorhanden sind
+    const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+    const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+    
+    const socialContent = eventSuggestion?.socialMedia || generateSocialMediaContent(event)
+    const instagramPost = socialContent.instagram
+    const facebookPost = socialContent.facebook
+
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Social Media Posts - ${event.title}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
+      color: #f4f7ff;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 2rem;
+      color: #5ffbf1;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .post {
+      background: linear-gradient(145deg, rgba(18, 22, 35, 0.95), rgba(12, 16, 28, 0.92));
+      border: 1px solid rgba(95, 251, 241, 0.12);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+    }
+    .platform {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #5ffbf1;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .post-content {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      white-space: pre-wrap;
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: #b8c5e0;
+      font-family: inherit;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 1rem;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Social Media Posts</h1>
+    
+    <div class="post">
+      <div class="platform">📱 Instagram</div>
+      <div class="post-content">${instagramPost.replace(/\n/g, '<br>')}</div>
+      <button onclick="navigator.clipboard.writeText(\`${instagramPost.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">📋 Kopieren</button>
+    </div>
+    
+    <div class="post">
+      <div class="platform">📘 Facebook</div>
+      <div class="post-content">${facebookPost.replace(/\n/g, '<br>')}</div>
+      <button onclick="navigator.clipboard.writeText(\`${facebookPost.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">📋 Kopieren</button>
+    </div>
+  </div>
+</body>
+</html>
+    `
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    openPDFWindowSafely(blob, 'Presseaussendung')
+    
+    // Speichere auch in Dokumente-Sektion
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const documentData = {
+        id: `pr-socialmedia-${event.id}-${Date.now()}`,
+        name: `Social Media Posts - ${event.title}`,
+        type: 'text/html',
+        size: blob.size,
+        data: reader.result as string,
+        fileName: `social-media-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente',
+        eventId: event.id,
+        eventTitle: event.title
+      }
+      const existingDocs = loadDocuments()
+      const filteredDocs = existingDocs.filter((d: any) => 
+        !(d.category === 'pr-dokumente' && d.eventId === event.id && d.name.includes('Social Media'))
+      )
+      const updated = [...filteredDocs, documentData]
+      saveDocuments(updated)
+    }
+    reader.readAsDataURL(blob)
+    
+    alert('✅ Social Media Posts generiert!')
+  }
+
+  // Social Media Posts generieren (mit App-Design) - Fallback
+  const generateSocialMediaPosts = () => {
+    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
+    if (!selectedEvent && events.length === 0) {
+      alert('Bitte zuerst ein Event erstellen')
+      return
+    }
+    generateSocialMediaPostsForEvent(selectedEvent || events[0])
+  }
+
+  // Event-Flyer für spezifisches Event generieren
+  const generateEventFlyerForEvent = (event: any) => {
+    
+    // Prüfe ob Vorschläge vorhanden sind
+    const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+    const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+    
+    const flyerContent = eventSuggestion?.flyer || generateFlyerContent(event)
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(flyerContent.qrCode)}`
+    
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Flyer - ${flyerContent.headline}</title>
+  <style>
+    @media print {
+      body { margin: 0; background: white; }
+      .no-print { display: none; }
+      .flyer { background: white !important; color: #1a1f3a !important; }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
+      color: #f4f7ff;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    .flyer {
+      background: linear-gradient(145deg, rgba(18, 22, 35, 0.98), rgba(12, 16, 28, 0.98));
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      padding: 3rem;
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(95, 251, 241, 0.12);
+      border-radius: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    h1 {
+      font-size: 3rem;
+      margin: 0 0 2rem 0;
+      color: #5ffbf1;
+      letter-spacing: 0.02em;
+      background: linear-gradient(135deg, #5ffbf1 0%, #33a1ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .event-info {
+      font-size: 1.3rem;
+      margin: 2rem 0;
+      line-height: 2;
+      color: #b8c5e0;
+    }
+    .event-info strong {
+      color: #5ffbf1;
+    }
+    .description {
+      margin: 2rem 0;
+      line-height: 1.8;
+      font-size: 1.1rem;
+      color: #b8c5e0;
+    }
+    .qr-code {
+      text-align: center;
+      margin: 2rem 0;
+      padding: 1.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+    }
+    .qr-code img {
+      width: 150px;
+      height: 150px;
+      border-radius: 8px;
+    }
+    .contact {
+      margin-top: auto;
+      font-size: 1rem;
+      color: #8fa0c9;
+      border-top: 1px solid rgba(95, 251, 241, 0.2);
+      padding-top: 1.5rem;
+    }
+    .contact strong {
+      color: #5ffbf1;
+      font-size: 1.2rem;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 1rem;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="text-align: center; margin-bottom: 2rem;">
+    <button onclick="window.print()">🖨️ Drucken (A4)</button>
+  </div>
+  
+  <div class="flyer">
+    <div>
+      <h1>${flyerContent.headline}</h1>
+      
+      ${flyerContent.type ? `<p style="font-size: 1.2rem; color: #8fa0c9; margin-bottom: 1rem;">${flyerContent.type === 'galerieeröffnung' ? 'Galerieeröffnung' : flyerContent.type === 'vernissage' ? 'Vernissage' : flyerContent.type === 'finissage' ? 'Finissage' : flyerContent.type === 'öffentlichkeitsarbeit' ? 'Öffentlichkeitsarbeit' : 'Veranstaltung'}</p>` : ''}
+      
+      <div class="event-info">
+        <p><strong>📅 Termindaten:</strong></p>
+        <p style="white-space: pre-wrap; margin-left: 1rem;">${flyerContent.date.replace(/\n/g, '<br>')}</p>
+        
+        ${flyerContent.location ? `<p style="margin-top: 1rem;"><strong>📍 Ort:</strong> ${flyerContent.location}</p>` : ''}
+      </div>
+      
+      ${flyerContent.description ? `<div class="description">${flyerContent.description.replace(/\n/g, '<br>')}</div>` : ''}
+    </div>
+    
+    <div class="qr-code">
+      <p style="color: #5ffbf1; font-weight: 600; margin-bottom: 1rem;">Besuchen Sie uns online:</p>
+      <img src="${qrCodeUrl}" alt="QR Code" />
+      <p style="font-size: 0.9rem; margin-top: 0.5rem; color: #8fa0c9;">${flyerContent.qrCode}</p>
+    </div>
+    
+    <div class="contact">
+      <p><strong>${flyerContent.contact?.address ? flyerContent.contact.address.split(',')[0] : (galleryData.name || 'K2 Galerie')}</strong></p>
+      ${flyerContent.contact?.address ? `<p>${flyerContent.contact.address}</p>` : (galleryData.address ? `<p>${galleryData.address}</p>` : '')}
+      ${flyerContent.contact?.phone ? `<p>Tel: ${flyerContent.contact.phone}</p>` : (galleryData.phone ? `<p>Tel: ${galleryData.phone}</p>` : '')}
+      ${flyerContent.contact?.email ? `<p>E-Mail: ${flyerContent.contact.email}</p>` : (galleryData.email ? `<p>E-Mail: ${galleryData.email}</p>` : '')}
+    </div>
+  </div>
+  <script>
+    function goBack() {
+      // Einfacher Ansatz: Immer direkt zur Admin-Seite navigieren
+      // Prüfe ob Hash-Router verwendet wird
+      const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '')
+      const adminUrl = baseUrl + '/admin'
+      
+      console.log('goBack() - adminUrl:', adminUrl)
+      console.log('goBack() - window.location:', window.location.href)
+      
+      // Wenn es ein Pop-up ist, versuche zu schließen
+      if (window.opener && !window.opener.closed) {
+        try {
+          // Navigiere im Opener zur Admin-Seite
+          window.opener.location.href = adminUrl
+          window.opener.focus()
+          setTimeout(() => {
+            try {
+              window.close()
+            } catch (e) {
+              // Ignorieren
+            }
+          }, 100)
+          return
+        } catch (e) {
+          console.log('Fehler beim Schließen des Pop-ups:', e)
+          // Falls Fehler, navigiere direkt
+        }
+      }
+      
+      // Direkt zur Admin-Seite navigieren
+      console.log('Navigiere zu:', adminUrl)
+      window.location.href = adminUrl
+    }
+    // Nach Drucken automatisch zurücknavigieren - mit Cleanup
+    const handleAfterPrint = () => {
+      window.removeEventListener('afterprint', handleAfterPrint)
+      goBack()
+    }
+    window.addEventListener('afterprint', handleAfterPrint)
+    
+    // Cleanup beim Schließen - KRITISCH für Crash-Prävention
+    const cleanup = () => {
+      window.removeEventListener('afterprint', handleAfterPrint)
+    }
+    window.addEventListener('beforeunload', cleanup)
+    window.addEventListener('unload', cleanup)
+  </script>
+</body>
+</html>
+    `
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    openPDFWindowSafely(blob, 'Presseaussendung')
+    
+    // Speichere auch in Dokumente-Sektion
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const documentData = {
+        id: `pr-flyer-${event.id}-${Date.now()}`,
+        name: `Flyer - ${event.title}`,
+        type: 'text/html',
+        size: blob.size,
+        data: reader.result as string,
+        fileName: `flyer-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente',
+        eventId: event.id,
+        eventTitle: event.title
+      }
+      const existingDocs = loadDocuments()
+      const filteredDocs = existingDocs.filter((d: any) => 
+        !(d.category === 'pr-dokumente' && d.eventId === event.id && d.name.includes('Flyer'))
+      )
+      const updated = [...filteredDocs, documentData]
+      saveDocuments(updated)
+    }
+    reader.readAsDataURL(blob)
+    
+    alert('✅ Flyer generiert! Bitte im Browser drucken.')
+  }
+
+  // Event-Flyer generieren (mit App-Design) - Fallback
+  const generateEventFlyer = () => {
+    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
+    if (!selectedEvent && events.length === 0) {
+      alert('Bitte zuerst ein Event erstellen')
+      return
+    }
+    generateEventFlyerForEvent(selectedEvent || events[0])
+  }
+
+  // E-Mail-Newsletter für spezifisches Event generieren
+  const generateEmailNewsletterForEvent = (event: any) => {
+    
+    // Prüfe ob Vorschläge vorhanden sind
+    const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+    const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+    
+    const newsletterContent = eventSuggestion?.newsletter || generateNewsletterContent(event)
+    
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Newsletter - ${event.title}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
+      color: #f4f7ff;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .email {
+      background: linear-gradient(145deg, rgba(18, 22, 35, 0.95), rgba(12, 16, 28, 0.92));
+      border: 1px solid rgba(95, 251, 241, 0.12);
+      border-radius: 24px;
+      padding: 3rem;
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: #5ffbf1;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.02em;
+    }
+    .greeting {
+      font-size: 1.2rem;
+      color: #b8c5e0;
+      margin-bottom: 1.5rem;
+    }
+    .event-box {
+      background: rgba(95, 251, 241, 0.1);
+      border: 1px solid rgba(95, 251, 241, 0.2);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .event-box p {
+      margin: 0.75rem 0;
+      color: #b8c5e0;
+      font-size: 1.1rem;
+    }
+    .event-box strong {
+      color: #5ffbf1;
+    }
+    .button {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1rem 2rem;
+      text-decoration: none;
+      border-radius: 12px;
+      margin: 1.5rem 0;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+    }
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
+    .footer {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(95, 251, 241, 0.2);
+      font-size: 0.95rem;
+      color: #8fa0c9;
+    }
+    .footer strong {
+      color: #5ffbf1;
+      font-size: 1.1rem;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 1rem 0.5rem;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div style="text-align: center; margin-bottom: 2rem;">
+    <button onclick="navigator.clipboard.writeText(document.querySelector('.email').outerHTML)">📋 HTML kopieren</button>
+  </div>
+  
+  <div class="container">
+    <div class="email">
+      <h1>${event.title}</h1>
+      
+      <p class="greeting">${newsletterContent.greeting}</p>
+      
+      <div class="event-box" style="white-space: pre-wrap;">
+        ${newsletterContent.body.replace(/\n/g, '<br>')}
+      </div>
+      
+      <a href="${galleryData.website || window.location.origin}" class="button">Mehr erfahren →</a>
+      
+      <div class="footer">
+        <p><strong>${galleryData.name || 'K2 Galerie'}</strong></p>
+        ${galleryData.address ? `<p>${galleryData.address}</p>` : ''}
+        ${galleryData.phone ? `<p>Tel: ${galleryData.phone}</p>` : ''}
+        ${galleryData.email ? `<p>E-Mail: ${galleryData.email}</p>` : ''}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+    `
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    openPDFWindowSafely(blob, 'Presseaussendung')
+    
+    // Speichere auch in Dokumente-Sektion
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const documentData = {
+        id: `pr-newsletter-${event.id}-${Date.now()}`,
+        name: `Newsletter - ${event.title}`,
+        type: 'text/html',
+        size: blob.size,
+        data: reader.result as string,
+        fileName: `newsletter-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente',
+        eventId: event.id,
+        eventTitle: event.title
+      }
+      const existingDocs = loadDocuments()
+      const filteredDocs = existingDocs.filter((d: any) => 
+        !(d.category === 'pr-dokumente' && d.eventId === event.id && d.name.includes('Newsletter'))
+      )
+      const updated = [...filteredDocs, documentData]
+      saveDocuments(updated)
+    }
+    reader.readAsDataURL(blob)
+    
+    alert('✅ Newsletter generiert! HTML-Code kann kopiert werden.')
+  }
+
+  // E-Mail-Newsletter generieren (mit App-Design) - Fallback
+  const generateEmailNewsletter = () => {
+    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
+    if (!selectedEvent && events.length === 0) {
+      alert('Bitte zuerst ein Event erstellen')
+      return
+    }
+    generateEmailNewsletterForEvent(selectedEvent || events[0])
+  }
+
+  // Plakat für spezifisches Event generieren
+  const generatePlakatForEvent = (event: any) => {
+    try {
+      console.log('generatePlakatForEvent aufgerufen mit Event:', event)
+      
+      if (!event) {
+        console.error('Kein Event übergeben')
+        alert('Fehler: Kein Event ausgewählt')
+        return
+      }
+      
+      // IMMER frische Daten aus localStorage laden
+      const freshGalleryData = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
+      const freshSuggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+      const freshEventSuggestion = freshSuggestions.find((s: any) => s.eventId === event.id)
+      
+      // Generiere Plakat-Content mit aktuellen Daten
+      let plakatContent = freshEventSuggestion?.plakat || generatePlakatContent(event)
+      
+      // Sicherstellen dass alle Werte vorhanden sind und mit aktuellen Daten aktualisieren
+      if (!plakatContent || typeof plakatContent !== 'object') {
+        plakatContent = generatePlakatContent(event)
+      }
+      
+      // Aktualisiere mit neuesten Event-Daten
+      plakatContent.title = event.title || plakatContent.title || 'Event'
+      plakatContent.date = formatEventDates(event) || plakatContent.date || 'Datum folgt'
+      plakatContent.location = event.location || plakatContent.location || freshGalleryData.address || ''
+      plakatContent.description = event.description || plakatContent.description || ''
+      
+      // QR-Code: Verwende Website-URL oder Homepage-URL
+      const websiteUrl = freshGalleryData.website || window.location.origin
+      plakatContent.qrCode = websiteUrl
+      
+      // Event-Typ aktualisieren
+      const eventTypeNames: Record<string, string> = {
+        galerieeröffnung: 'Galerieeröffnung',
+        vernissage: 'Vernissage',
+        finissage: 'Finissage',
+        öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
+        sonstiges: 'Veranstaltung'
+      }
+      plakatContent.type = eventTypeNames[event.type] || plakatContent.type || 'Veranstaltung'
+      
+      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(plakatContent.qrCode)}`
+      
+      // Verwende die bereits geladenen frischen Galerie-Daten
+      const currentGalleryData = freshGalleryData
+      
+      console.log('Plakat Content:', plakatContent)
+      console.log('Event:', event)
+      console.log('QR Code URL:', qrCodeUrl)
+      console.log('Aktuelle Galerie-Daten:', currentGalleryData)
+    
+      const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Plakat - ${plakatContent.title}</title>
+  <style>
+    @media print {
+      body { margin: 0; background: white !important; }
+      .no-print { display: none; }
+      .plakat { width: 297mm; height: 420mm; background: white !important; color: #1a1f3a !important; }
+      .plakat h1 { color: #1a1f3a !important; }
+      .plakat .event-info { color: #333 !important; }
+      .plakat .contact { color: #666 !important; }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
+      color: #f4f7ff;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    .plakat {
+      background: linear-gradient(145deg, rgba(18, 22, 35, 0.98), rgba(12, 16, 28, 0.98));
+      width: 297mm;
+      min-height: 420mm;
+      margin: 0 auto;
+      padding: 4rem;
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(95, 251, 241, 0.12);
+      border-radius: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+    }
+    h1 {
+      font-size: 5rem;
+      margin: 0 0 3rem 0;
+      color: #5ffbf1;
+      text-align: center;
+      letter-spacing: 0.02em;
+      background: linear-gradient(135deg, #5ffbf1 0%, #33a1ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 700;
+    }
+    .event-info {
+      font-size: 2rem;
+      text-align: center;
+      margin: 2rem 0;
+      line-height: 2.5;
+      color: #b8c5e0;
+    }
+    .event-info strong {
+      color: #5ffbf1;
+      font-size: 2.2rem;
+    }
+    .qr-code {
+      text-align: center;
+      margin: 3rem 0;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+    }
+    .qr-code img {
+      width: 250px;
+      height: 250px;
+      border-radius: 12px;
+    }
+    .qr-code p {
+      font-size: 1.2rem;
+      margin-top: 1rem;
+      color: #8fa0c9;
+    }
+    .contact {
+      text-align: center;
+      font-size: 1.5rem;
+      color: #8fa0c9;
+      margin-top: auto;
+      width: 100%;
+      padding-top: 2rem;
+      border-top: 2px solid rgba(95, 251, 241, 0.2);
+    }
+    .contact strong {
+      color: #5ffbf1;
+      font-size: 1.8rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 1rem;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="text-align: center; margin-bottom: 2rem;">
+    <button onclick="goBack(); return false;" style="background: #6b7280; margin-right: 8px; cursor: pointer;">← Zurück</button>
+    <button onclick="window.print(); return false;">🖨️ Drucken (A3)</button>
+  </div>
+  
+  <div class="plakat">
+    <h1>${String(plakatContent.title || 'Event').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</h1>
+    
+    ${plakatContent.type ? `<p style="font-size: 2rem; color: #8fa0c9; margin-bottom: 2rem; text-align: center;">${String(plakatContent.type).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
+    
+    <div class="event-info">
+      <p><strong>Termindaten:</strong></p>
+      <p style="white-space: pre-wrap; font-size: 1.8rem; line-height: 1.6; margin-top: 1rem;">${String(plakatContent.date || 'Datum folgt').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')}</p>
+      
+      ${plakatContent.location ? `<p style="margin-top: 2rem; font-size: 1.6rem;">📍 ${String(plakatContent.location).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
+      
+      ${plakatContent.description ? `<p style="margin-top: 2rem; font-size: 1.4rem; line-height: 1.6; color: #b8c5e0;">${String(plakatContent.description || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')}</p>` : ''}
+    </div>
+    
+    <div class="qr-code">
+      <img src="${qrCodeUrl}" alt="QR Code" />
+      <p>${String(plakatContent.qrCode || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+    </div>
+    
+    <div class="contact">
+      <p><strong>${String(currentGalleryData.name || 'K2 Galerie').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</strong></p>
+      ${currentGalleryData.address ? `<p>${String(currentGalleryData.address).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
+      ${currentGalleryData.phone ? `<p>${String(currentGalleryData.phone).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
+      ${currentGalleryData.email ? `<p>${String(currentGalleryData.email).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
+    </div>
+  </div>
+  
+  <script>
+    function goBack() {
+      var adminUrl = window.location.origin + '/admin'
+      
+      if (window.opener && !window.opener.closed) {
+        try {
+          window.opener.location.href = adminUrl
+          window.opener.focus()
+          setTimeout(function() {
+            try {
+              window.close()
+            } catch (e) {
+              // Ignorieren
+            }
+          }, 100)
+          return
+        } catch (e) {
+          // Falls Fehler, navigiere direkt
+        }
+      }
+      
+      window.location.href = adminUrl
+    }
+  </script>
+</body>
+</html>
+    `
+      
+      console.log('HTML generiert, Länge:', html.length)
+
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      
+      console.log('Plakat HTML generiert, Größe:', blob.size, 'bytes')
+      console.log('Plakat URL erstellt:', url.substring(0, 50) + '...')
+      
+      // Versuche Fenster zu öffnen
+      const pdfWindow = window.open(url, '_blank', 'noopener,noreferrer')
+      
+      if (!pdfWindow || pdfWindow.closed || typeof pdfWindow.closed === 'undefined') {
+        // Pop-up blockiert - öffne als Link ohne Download-Attribut
+        console.log('Popup blockiert, verwende Fallback-Link')
+        URL.revokeObjectURL(url)
+        const newUrl = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = newUrl
+        link.target = '_blank'
+        document.body.appendChild(link)
+        link.click()
+        setTimeout(() => {
+          document.body.removeChild(link)
+          // URL nicht sofort revoken - Browser braucht Zeit zum Laden
+          setTimeout(() => {
+            console.log('Revoking fallback URL nach 15 Sekunden')
+            URL.revokeObjectURL(newUrl)
+          }, 15000)
+        }, 100)
+      } else {
+        // Fenster erfolgreich geöffnet - Cleanup NUR wenn Fenster geschlossen wird
+        // WICHTIG: URL nicht sofort revoken, sonst wird Seite weiß!
+        console.log('Fenster erfolgreich geöffnet')
+        
+        // Warte bis Seite geladen ist bevor wir URL revoken
+        pdfWindow.addEventListener('load', function() {
+          console.log('Plakat-Seite geladen')
+        })
+        
+        pdfWindow.addEventListener('beforeunload', function() {
+          console.log('Fenster wird geschlossen, revoke URL')
+          URL.revokeObjectURL(url)
+        })
+        
+        // Fallback: Cleanup nach 60 Sekunden (falls beforeunload nicht funktioniert)
+        setTimeout(function() {
+          if (pdfWindow.closed) {
+            console.log('Fenster geschlossen (Timeout), revoke URL')
+            URL.revokeObjectURL(url)
+          } else {
+            console.log('Fenster noch offen nach 60 Sekunden, URL bleibt aktiv')
+          }
+        }, 60000)
+      }
+    } catch (error) {
+      console.error('Fehler beim Generieren des Plakats:', error)
+      alert('Fehler beim Generieren des Plakats: ' + (error instanceof Error ? error.message : String(error)))
+    }
+    
+    // Speichere auch in Dokumente-Sektion
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const documentData = {
+        id: `pr-plakat-${event.id}-${Date.now()}`,
+        name: `Plakat - ${event.title}`,
+        type: 'text/html',
+        size: blob.size,
+        data: reader.result as string,
+        fileName: `plakat-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente',
+        eventId: event.id,
+        eventTitle: event.title
+      }
+      const existingDocs = loadDocuments()
+      const filteredDocs = existingDocs.filter((d: any) => 
+        !(d.category === 'pr-dokumente' && d.eventId === event.id && d.name.includes('Plakat'))
+      )
+      const updated = [...filteredDocs, documentData]
+      saveDocuments(updated)
+    }
+    reader.readAsDataURL(blob)
+    
+    alert('✅ Plakat generiert! Bitte im Browser drucken (A3 Format).')
+  }
+
+  // Plakat generieren (mit App-Design) - Fallback
+  const generatePlakat = () => {
+    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
+    if (!selectedEvent && events.length === 0) {
+      alert('Bitte zuerst ein Event erstellen')
+      return
+    }
+    generatePlakatForEvent(selectedEvent || events[0])
+  }
+
+  // Pressemappe generieren
+  const generatePressemappe = () => {
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Pressemappe - ${galleryData.name || 'K2 Galerie'}</title>
+  <style>
+    @media print {
+      @page {
+        size: A4;
+        margin: 20mm;
+      }
+      body { 
+        margin: 0; 
+        background: white !important;
+        padding: 0 !important;
+      }
+      .no-print { display: none !important; }
+      .container {
+        background: white !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+      h1 {
+        color: #1a1a1a !important;
+        border-bottom: 3px solid #667eea !important;
+        padding-bottom: 15px !important;
+      }
+      h2 {
+        color: #333 !important;
+        border-bottom: 2px solid #667eea !important;
+        padding-bottom: 10px !important;
+      }
+      h3 {
+        color: #555 !important;
+      }
+      .section {
+        background: #f8f9fa !important;
+        border: 1px solid #e0e0e0 !important;
+        border-radius: 8px !important;
+        border-left: 4px solid #667eea !important;
+      }
+      p {
+        color: #333 !important;
+      }
+      strong {
+        color: #1a1a1a !important;
+      }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      padding: 2rem;
+      min-height: 100vh;
+      line-height: 1.7;
+    }
+    .container {
+      max-width: 210mm;
+      margin: 0 auto;
+      background: white;
+      padding: 30mm 25mm;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #667eea;
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 15px;
+      font-weight: 700;
+    }
+    h2 {
+      color: #333;
+      margin-top: 35px;
+      margin-bottom: 20px;
+      font-size: 1.6rem;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+      font-weight: 600;
+    }
+    h3 {
+      color: #555;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+    .section {
+      margin: 25px 0;
+      padding: 20px 25px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      border-left: 4px solid #667eea;
+    }
+    p {
+      color: #333;
+      line-height: 1.8;
+      margin: 10px 0;
+      font-size: 1.05rem;
+    }
+    strong {
+      color: #1a1a1a;
+      font-weight: 600;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+      font-family: 'Arial', sans-serif;
+      margin: 8px;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    }
+    .no-print {
+      background: #f8f9fa;
+      border: 2px solid #667eea;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button onclick="window.print()">🖨️ Als PDF speichern</button>
+  </div>
+  
+  <div class="container">
+    <h1>PRESSEMAPPE</h1>
+    <h2>${galleryData.name || 'K2 Galerie'}</h2>
+    
+    <div class="section">
+      <h2>Galerie-Informationen</h2>
+      <p><strong>Name:</strong> ${galleryData.name || 'K2 Galerie'}</p>
+      ${galleryData.address ? `<p><strong>Adresse:</strong> ${galleryData.address}</p>` : ''}
+      ${galleryData.phone ? `<p><strong>Telefon:</strong> ${galleryData.phone}</p>` : ''}
+      ${galleryData.email ? `<p><strong>E-Mail:</strong> ${galleryData.email}</p>` : ''}
+      ${galleryData.website ? `<p><strong>Website:</strong> ${galleryData.website}</p>` : ''}
+      ${galleryData.openingHours ? `<p><strong>Öffnungszeiten:</strong> ${galleryData.openingHours}</p>` : ''}
+    </div>
+    
+    <div class="section">
+      <h2>Künstler</h2>
+      <h3>${martinaData.name}</h3>
+      <p>${martinaData.bio}</p>
+      ${martinaData.email ? `<p>E-Mail: ${martinaData.email}</p>` : ''}
+      ${martinaData.phone ? `<p>Telefon: ${martinaData.phone}</p>` : ''}
+      
+      <h3>${georgData.name}</h3>
+      <p>${georgData.bio}</p>
+      ${georgData.email ? `<p>E-Mail: ${georgData.email}</p>` : ''}
+      ${georgData.phone ? `<p>Telefon: ${georgData.phone}</p>` : ''}
+    </div>
+    
+    <div class="section">
+      <h2>Aktuelle Events</h2>
+      ${events.slice(0, 5).map(event => `
+        <div style="margin: 20px 0; padding: 15px; background: white; border-radius: 8px; border: 1px solid #e0e0e0; border-left: 3px solid #667eea;">
+          <h3>${event.title}</h3>
+          <p><strong>Datum:</strong> ${new Date(event.date).toLocaleDateString('de-DE', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          })}${event.endDate && event.endDate !== event.date ? ` - ${new Date(event.endDate).toLocaleDateString('de-DE', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          })}` : ''}</p>
+          ${event.location ? `<p><strong>Ort:</strong> ${event.location}</p>` : ''}
+          ${event.description ? `<p>${event.description}</p>` : ''}
+        </div>
+      `).join('')}
+    </div>
+    
+    <div class="section">
+      <h2>Kontakt für Presseanfragen</h2>
+      <p>${galleryData.email || ''}</p>
+      <p>${galleryData.phone || ''}</p>
+    </div>
+  </div>
+  <script>
+    function goBack() {
+      // Einfacher Ansatz: Immer direkt zur Admin-Seite navigieren
+      // Prüfe ob Hash-Router verwendet wird
+      const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '')
+      const adminUrl = baseUrl + '/admin'
+      
+      console.log('goBack() - adminUrl:', adminUrl)
+      console.log('goBack() - window.location:', window.location.href)
+      
+      // Wenn es ein Pop-up ist, versuche zu schließen
+      if (window.opener && !window.opener.closed) {
+        try {
+          // Navigiere im Opener zur Admin-Seite
+          window.opener.location.href = adminUrl
+          window.opener.focus()
+          setTimeout(() => {
+            try {
+              window.close()
+            } catch (e) {
+              // Ignorieren
+            }
+          }, 100)
+          return
+        } catch (e) {
+          console.log('Fehler beim Schließen des Pop-ups:', e)
+          // Falls Fehler, navigiere direkt
+        }
+      }
+      
+      // Direkt zur Admin-Seite navigieren
+      console.log('Navigiere zu:', adminUrl)
+      window.location.href = adminUrl
+    }
+    // Nach Drucken automatisch zurücknavigieren - mit Cleanup
+    const handleAfterPrint = () => {
+      window.removeEventListener('afterprint', handleAfterPrint)
+      goBack()
+    }
+    window.addEventListener('afterprint', handleAfterPrint)
+    
+    // Cleanup beim Schließen - KRITISCH für Crash-Prävention
+    const cleanup = () => {
+      window.removeEventListener('afterprint', handleAfterPrint)
+    }
+    window.addEventListener('beforeunload', cleanup)
+    window.addEventListener('unload', cleanup)
+  </script>
+</body>
+</html>
+    `
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    openPDFWindowSafely(blob, 'Presseaussendung')
+    alert('✅ Pressemappe generiert!')
+  }
+
+  // Website-Content generieren
+  const generateWebsiteContent = () => {
+    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
+    if (!selectedEvent && events.length === 0) {
+      alert('Bitte zuerst ein Event erstellen')
+      return
+    }
+    const event = selectedEvent || events[0]
+    
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Website Content - ${event.title}</title>
+  <style>
+    @media print {
+      @page {
+        size: A4;
+        margin: 20mm;
+      }
+      body { 
+        margin: 0; 
+        background: white !important;
+        padding: 0 !important;
+      }
+      .no-print { display: none !important; }
+      .container {
+        max-width: 100% !important;
+      }
+      h1 {
+        color: #1a1a1a !important;
+        border-bottom: 3px solid #667eea !important;
+        padding-bottom: 15px !important;
+      }
+      h2 {
+        color: #333 !important;
+        border-bottom: 2px solid #667eea !important;
+        padding-bottom: 10px !important;
+      }
+      .content {
+        background: #f8f9fa !important;
+        border: 1px solid #e0e0e0 !important;
+        border-radius: 8px !important;
+        border-left: 4px solid #667eea !important;
+        box-shadow: none !important;
+      }
+      pre {
+        background: white !important;
+        border: 1px solid #ddd !important;
+        color: #1a1a1a !important;
+      }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      padding: 2rem;
+      min-height: 100vh;
+      line-height: 1.7;
+    }
+    .container {
+      max-width: 210mm;
+      margin: 0 auto;
+      background: white;
+      padding: 30mm 25mm;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #667eea;
+      font-size: 2.2rem;
+      margin-bottom: 30px;
+      letter-spacing: -0.02em;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 15px;
+      font-weight: 700;
+    }
+    .content {
+      background: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+      padding: 25px;
+      margin: 25px 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    h2 {
+      color: #333;
+      font-size: 1.4rem;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+      font-weight: 600;
+    }
+    pre {
+      background: white;
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 6px;
+      overflow-x: auto;
+      color: #1a1a1a;
+      font-family: 'Courier New', 'Monaco', monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin: 15px 0;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 10px 10px 10px 0;
+      font-weight: 600;
+      font-size: 1rem;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+      font-family: 'Arial', sans-serif;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    }
+    .no-print {
+      background: #f8f9fa;
+      border: 2px solid #667eea;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button onclick="window.print()">🖨️ Als PDF speichern</button>
+  </div>
+  
+  <div class="container">
+    <h1>Website Content für: ${event.title}</h1>
+    
+    <div class="content">
+      <h2>HTML Content</h2>
+      <pre id="htmlContent"><section class="event-detail">
+  <h2>${event.title}</h2>
+  <div class="event-meta">
+    <p><strong>Datum:</strong> ${new Date(event.date).toLocaleDateString('de-DE', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })}${event.endDate && event.endDate !== event.date ? ` - ${new Date(event.endDate).toLocaleDateString('de-DE', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })}` : ''}</p>
+    ${event.startTime ? `<p><strong>Uhrzeit:</strong> ${event.startTime}${event.endTime ? ` - ${event.endTime}` : ''} Uhr</p>` : ''}
+    ${event.location ? `<p><strong>Ort:</strong> ${event.location}</p>` : ''}
+  </div>
+  ${event.description ? `<div class="event-description">${event.description.replace(/\n/g, '<br>')}</div>` : ''}
+</section></pre>
+      <button onclick="navigator.clipboard.writeText(document.getElementById('htmlContent').textContent)">📋 HTML kopieren</button>
+    </div>
+    
+    <div class="content">
+      <h2>Meta Description (SEO)</h2>
+      <pre id="metaContent">${event.title} - ${new Date(event.date).toLocaleDateString('de-DE')} bei ${galleryData.name || 'K2 Galerie'}. ${event.description ? event.description.substring(0, 120) : ''}...</pre>
+      <button onclick="navigator.clipboard.writeText(document.getElementById('metaContent').textContent)">📋 Meta kopieren</button>
+    </div>
+  </div>
+  <script>
+    function goBack() {
+      // Einfacher Ansatz: Immer direkt zur Admin-Seite navigieren
+      // Prüfe ob Hash-Router verwendet wird
+      const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '')
+      const adminUrl = baseUrl + '/admin'
+      
+      console.log('goBack() - adminUrl:', adminUrl)
+      console.log('goBack() - window.location:', window.location.href)
+      
+      // Wenn es ein Pop-up ist, versuche zu schließen
+      if (window.opener && !window.opener.closed) {
+        try {
+          // Navigiere im Opener zur Admin-Seite
+          window.opener.location.href = adminUrl
+          window.opener.focus()
+          setTimeout(() => {
+            try {
+              window.close()
+            } catch (e) {
+              // Ignorieren
+            }
+          }, 100)
+          return
+        } catch (e) {
+          console.log('Fehler beim Schließen des Pop-ups:', e)
+          // Falls Fehler, navigiere direkt
+        }
+      }
+      
+      // Direkt zur Admin-Seite navigieren
+      console.log('Navigiere zu:', adminUrl)
+      window.location.href = adminUrl
+    }
+    // Nach Drucken automatisch zurücknavigieren - mit Cleanup
+    const handleAfterPrint = () => {
+      window.removeEventListener('afterprint', handleAfterPrint)
+      goBack()
+    }
+    window.addEventListener('afterprint', handleAfterPrint)
+    
+    // Cleanup beim Schließen - KRITISCH für Crash-Prävention
+    const cleanup = () => {
+      window.removeEventListener('afterprint', handleAfterPrint)
+    }
+    window.addEventListener('beforeunload', cleanup)
+    window.addEventListener('unload', cleanup)
+  </script>
+</body>
+</html>
+    `
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    openPDFWindowSafely(blob, 'Presseaussendung')
+    
+    // Speichere auch in Dokumente-Sektion
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const documentData = {
+        id: `pr-website-content-${event.id}-${Date.now()}`,
+        name: `Website-Content - ${event.title}`,
+        type: 'text/html',
+        size: blob.size,
+        data: reader.result as string,
+        fileName: `website-content-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente',
+        eventId: event.id,
+        eventTitle: event.title
+      }
+      const existingDocs = loadDocuments()
+      const filteredDocs = existingDocs.filter((d: any) => 
+        !(d.category === 'pr-dokumente' && d.eventId === event.id && d.name.includes('Website-Content'))
+      )
+      const updated = [...filteredDocs, documentData]
+      saveDocuments(updated)
+    }
+    reader.readAsDataURL(blob)
+    
+    alert('✅ Website-Content generiert!')
+  }
+
+  // Katalog generieren
+  const generateKatalog = () => {
+    const artworks = loadArtworks()
+    if (artworks.length === 0) {
+      alert('Bitte zuerst Werke hinzufügen')
+      return
+    }
+    
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Katalog - ${galleryData.name || 'K2 Galerie'}</title>
+  <style>
+    @media print {
+      @page {
+        size: A4;
+        margin: 20mm;
+      }
+      body { 
+        margin: 0; 
+        background: white !important;
+        padding: 0 !important;
+      }
+      .no-print { display: none !important; }
+      .container {
+        background: white !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+      h1 {
+        color: #1a1a1a !important;
+        border-bottom: 3px solid #667eea !important;
+        padding-bottom: 15px !important;
+      }
+      h2 {
+        color: #333 !important;
+      }
+      .artwork {
+        background: #f8f9fa !important;
+        border: 1px solid #e0e0e0 !important;
+        border-radius: 8px !important;
+        border-left: 4px solid #667eea !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+      .artwork-title {
+        color: #1a1a1a !important;
+      }
+      .artwork-info p {
+        color: #333 !important;
+      }
+      .artwork-info strong {
+        color: #1a1a1a !important;
+      }
+      .artwork-image {
+        border-color: #ddd !important;
+      }
+      .footer {
+        color: #666 !important;
+        border-top-color: #ddd !important;
+      }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      padding: 2rem;
+      min-height: 100vh;
+      line-height: 1.7;
+    }
+    .container {
+      max-width: 210mm;
+      margin: 0 auto;
+      background: white;
+      padding: 30mm 25mm;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #667eea;
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 15px;
+      font-weight: 700;
+    }
+    h2 {
+      color: #333;
+      text-align: center;
+      font-size: 1.6rem;
+      margin-bottom: 30px;
+      font-weight: 600;
+    }
+    .artwork {
+      margin: 25px 0;
+      padding: 20px;
+      background: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+      display: flex;
+      gap: 25px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    .artwork-image {
+      width: 180px;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 2px solid #ddd;
+      flex-shrink: 0;
+    }
+    .artwork-info {
+      flex: 1;
+    }
+    .artwork-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0 0 15px 0;
+      color: #1a1a1a;
+    }
+    .artwork-info p {
+      color: #333;
+      margin: 8px 0;
+      font-size: 1.05rem;
+    }
+    .artwork-info strong {
+      color: #1a1a1a;
+      font-weight: 600;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+      font-family: 'Arial', sans-serif;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    }
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      color: #666;
+      padding-top: 25px;
+      border-top: 2px solid #ddd;
+      font-size: 1rem;
+    }
+    .no-print {
+      background: #f8f9fa;
+      border: 2px solid #667eea;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="no-print" style="text-align: center; margin-bottom: 2rem;">
+      <button onclick="window.print()">🖨️ Als PDF speichern</button>
+    </div>
+    
+    <h1>KATALOG</h1>
+    <h2>${galleryData.name || 'K2 Galerie'}</h2>
+    
+    ${artworks.map((artwork: any) => `
+    <div class="artwork">
+      ${artwork.imageUrl ? `<img src="${artwork.imageUrl}" alt="${artwork.title}" class="artwork-image" />` : ''}
+      <div class="artwork-info">
+        <div class="artwork-title">${artwork.title}</div>
+        <p><strong>Künstler:</strong> ${artwork.artist}</p>
+        <p><strong>Kategorie:</strong> ${artwork.category === 'malerei' ? 'Malerei' : 'Keramik'}</p>
+        ${artwork.description ? `<p>${artwork.description}</p>` : ''}
+        <p><strong>Preis:</strong> €${artwork.price?.toFixed(2) || '0.00'}</p>
+        <p><strong>Nummer:</strong> ${artwork.number || artwork.id}</p>
+      </div>
+    </div>
+  `).join('')}
+    
+    <div class="footer">
+      <p><strong>${galleryData.name || 'K2 Galerie'}</strong></p>
+      ${galleryData.address ? `<p>${galleryData.address}</p>` : ''}
+      ${galleryData.email ? `<p>${galleryData.email}</p>` : ''}
+      ${galleryData.phone ? `<p>${galleryData.phone}</p>` : ''}
+    </div>
+  </div>
+</body>
+</html>
+    `
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    openPDFWindowSafely(blob, 'Presseaussendung')
+    
+    // Speichere auch in Dokumente-Sektion
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const documentData = {
+        id: `pr-katalog-${Date.now()}`,
+        name: `Katalog - ${galleryData.name || 'K2 Galerie'}`,
+        type: 'text/html',
+        size: blob.size,
+        data: reader.result as string,
+        fileName: `katalog-${(galleryData.name || 'k2-galerie').replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente'
+      }
+      const existingDocs = loadDocuments()
+      const filteredDocs = existingDocs.filter((d: any) => 
+        !(d.category === 'pr-dokumente' && d.name.includes('Katalog'))
+      )
+      const updated = [...filteredDocs, documentData]
+      saveDocuments(updated)
+    }
+    reader.readAsDataURL(blob)
+    
+    alert('✅ Katalog generiert!')
+  }
+
+  // Dokument zu Event hinzufügen
+  const handleAddEventDocument = async () => {
+    if (!eventDocumentFile || !eventDocumentName || !selectedEventForDocument) {
+      alert('Bitte Datei und Name auswählen')
+      return
+    }
+
+    try {
+      // Datei zu Data URL konvertieren
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        const documentData = {
+          id: `doc-${Date.now()}`,
+          name: eventDocumentName,
+          type: eventDocumentType,
+          fileData: reader.result as string,
+          fileName: eventDocumentFile.name,
+          fileType: eventDocumentFile.type,
+          addedAt: new Date().toISOString()
+        }
+
+        const updatedEvents = events.map(event => {
+          if (event.id === selectedEventForDocument) {
+            return {
+              ...event,
+              documents: [...(event.documents || []), documentData]
+            }
+          }
+          return event
+        })
+
+        setEvents(updatedEvents)
+        saveEvents(updatedEvents)
+        
+        // Zurücksetzen
+        setShowDocumentModal(false)
+        setSelectedEventForDocument(null)
+        setEventDocumentFile(null)
+        setEventDocumentName('')
+        setEventDocumentType('flyer')
+        
+        alert('✅ Dokument hinzugefügt!')
+      }
+      reader.readAsDataURL(eventDocumentFile)
+    } catch (error) {
+      console.error('Fehler beim Hinzufügen des Dokuments:', error)
+      alert('Fehler beim Hinzufügen des Dokuments')
+    }
+  }
+
+  // Dokument von Event löschen
+  const handleDeleteEventDocument = (eventId: string, documentId: string) => {
+    if (confirm('Möchtest du dieses Dokument wirklich löschen?')) {
+      const updatedEvents = events.map(event => {
+        if (event.id === eventId) {
+          return {
+            ...event,
+            documents: (event.documents || []).filter((doc: any) => doc.id !== documentId)
+          }
+        }
+        return event
+      })
+
+      setEvents(updatedEvents)
+      saveEvents(updatedEvents)
+      alert('✅ Dokument gelöscht!')
+    }
+  }
+
+  // Dokument öffnen/anschauen
+  const handleViewEventDocument = (document: any) => {
+    const newWindow = window.open()
+    if (newWindow && document.fileData) {
+      newWindow.document.write(`
+        <html>
+          <head><title>${document.name}</title></head>
+          <body style="margin:0; padding:20px; background:#f5f5f5;">
+            ${document.fileType?.includes('pdf') 
+              ? `<iframe src="${document.fileData}" style="width:100%; height:100vh; border:none;"></iframe>`
+              : document.fileType?.includes('image')
+              ? `<img src="${document.fileData}" style="max-width:100%; height:auto;" />`
+              : `<a href="${document.fileData}" download="${document.fileName}">Download: ${document.name}</a>`
+            }
+          </body>
+        </html>
+      `)
+    }
+  }
+
+  // Event löschen
+  const handleDeleteEvent = (eventId: string) => {
+    if (confirm('Möchtest du dieses Event wirklich löschen?')) {
+      const updatedEvents = events.filter(e => e.id !== eventId)
+      setEvents(updatedEvents)
+      saveEvents(updatedEvents)
+      alert('✅ Event gelöscht!')
+    }
+  }
+
+  // Event-Modal öffnen
+  const openEventModal = () => {
+    setEditingEvent(null)
+    setEventTitle('')
+    setEventType('galerieeröffnung')
+    setEventDate('')
+    setEventEndDate('')
+    setEventStartTime('')
+    setEventEndTime('')
+    setEventDailyTimes({})
+    setEventDescription('')
+    // Automatisch Ort aus Stammdaten übernehmen
+    setEventLocation(galleryData.address || '')
+    setEventPRSuggestions(null)
+    setEditingPRType(null)
+    setShowEventModal(true)
+  }
+
+  // Stammdaten in Event-Felder übernehmen
+  const applyStammdatenToEvent = () => {
+    // Ort aus Stammdaten übernehmen
+    setEventLocation(galleryData.address || '')
+    
+    // Kontaktdaten in Beschreibung einfügen (wenn noch keine Beschreibung vorhanden)
+    if (!eventDescription) {
+      const kontaktInfo: string[] = []
+      if (galleryData.phone) kontaktInfo.push(`Tel: ${galleryData.phone}`)
+      if (galleryData.email) kontaktInfo.push(`E-Mail: ${galleryData.email}`)
+      if (galleryData.address) kontaktInfo.push(`Adresse: ${galleryData.address}`)
+      if (galleryData.openingHours) kontaktInfo.push(`Öffnungszeiten: ${galleryData.openingHours}`)
+      
+      if (kontaktInfo.length > 0) {
+        setEventDescription(kontaktInfo.join('\n'))
+      }
+    }
+    
+    alert('✅ Stammdaten übernommen!')
+  }
+
+  // Dokumente speichern
+  const saveDocuments = (docs: any[]) => {
+    try {
+      localStorage.setItem('k2-documents', JSON.stringify(docs))
+      setDocuments(docs)
+    } catch (error) {
+      console.error('Fehler beim Speichern:', error)
+      alert('Fehler beim Speichern. Möglicherweise ist der Speicher voll.')
+    }
+  }
+
+  // Dokument hochladen
+  const handleDocumentUpload = async (file: File) => {
+    return new Promise<void>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        try {
+          const base64 = e.target?.result as string
+          const newDoc = {
+            id: Date.now().toString(),
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            data: base64,
+            uploadedAt: new Date().toISOString(),
+            isPDF: file.type === 'application/pdf'
+          }
+          const updated = [...documents, newDoc]
+          saveDocuments(updated)
+          resolve()
+        } catch (error) {
+          reject(error)
+        }
+      }
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+  }
+
+  // Dokument zu PDF konvertieren
+  const convertToPDF = async (doc: any) => {
+    if (doc.isPDF) {
+      // Bereits PDF - direkt öffnen
+      const printWindow = window.open('', '_blank')
+      if (!printWindow) {
+        // Fallback: Download-Link erstellen wenn Pop-up blockiert wird
+        if (doc.data) {
+          const link = document.createElement('a')
+          link.href = doc.data
+          link.download = doc.name || `document-${Date.now()}.pdf`
+          document.body.appendChild(link)
+          link.click()
+          setTimeout(() => {
+            document.body.removeChild(link)
+          }, 100)
+          alert('✅ Dokument wurde heruntergeladen!\n\nÖffne die Datei, um sie anzuzeigen.')
+        } else {
+          alert('⚠️ Pop-up-Blocker verhindert PDF-Öffnung.\n\nBitte erlaube Pop-ups für diese Seite oder öffne das Dokument manuell.')
+        }
+        return
+      }
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>${doc.name}</title>
+            <style>
+              body { margin: 0; padding: 0; }
+              iframe { width: 100%; height: 100vh; border: none; }
+            </style>
+          </head>
+          <body>
+            <iframe src="${doc.data}"></iframe>
+            <script>
+              window.onload = () => {
+                setTimeout(() => window.print(), 500);
+              }
+            </script>
+          </body>
+        </html>
+      `)
+      printWindow.document.close()
+      return
+    }
+
+    // Bild zu PDF konvertieren
+    if (doc.type.startsWith('image/')) {
+      const printWindow = window.open('', '_blank')
+      if (!printWindow) {
+        alert('Pop-up-Blocker verhindert PDF-Erstellung.')
+        return
+      }
+
+      const date = new Date(doc.uploadedAt).toLocaleDateString('de-DE', { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric'
+      })
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>${doc.name} - PDF</title>
+            <style>
+              @media print {
+                @page {
+                  size: A4;
+                  margin: 10mm;
+                }
+              }
+              body {
+                font-family: Arial, sans-serif;
+                padding: 20px;
+                text-align: center;
+              }
+              .header {
+                margin-bottom: 20px;
+                border-bottom: 2px solid #8b6914;
+                padding-bottom: 10px;
+              }
+              .header h1 {
+                margin: 0;
+                font-size: 18px;
+                color: #8b6914;
+              }
+              .header p {
+                margin: 5px 0 0;
+                font-size: 12px;
+                color: #666;
+              }
+              img {
+                max-width: 100%;
+                max-height: 80vh;
+                object-fit: contain;
+                margin: 20px 0;
+              }
+              .footer {
+                margin-top: 20px;
+                font-size: 10px;
+                color: #999;
+                border-top: 1px solid #ddd;
+                padding-top: 10px;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>K2 GALERIE</h1>
+              <p>${doc.name}</p>
+              <p>Erstellt am: ${date}</p>
+            </div>
+            <img src="${doc.data}" alt="${doc.name}" />
+            <div class="footer">
+              <div>K2 Galerie - Kunst & Keramik</div>
+            </div>
+            <script>
+              window.onload = () => {
+                setTimeout(() => {
+                  window.print();
+                  setTimeout(() => window.close(), 500);
+                }, 500);
+              }
+            </script>
+          </body>
+        </html>
+      `)
+      printWindow.document.close()
+      return
+    }
+
+    // Andere Formate - versuche als HTML zu rendern
+    alert(`Dateiformat "${doc.type}" kann nicht direkt zu PDF konvertiert werden. Bitte konvertiere die Datei manuell zu PDF oder verwende ein Bildformat.`)
+  }
+
+  // Dokument löschen
+  const deleteDocument = (id: string) => {
+    if (confirm('Möchtest du dieses Dokument wirklich löschen?')) {
+      const updated = documents.filter(d => d.id !== id)
+      saveDocuments(updated)
+    }
+  }
+
+  // Laufende Nummer generieren
+  const generateArtworkNumber = () => {
+    const lastNumber = localStorage.getItem('k2-last-artwork-number') || '0'
+    const nextNumber = parseInt(lastNumber, 10) + 1
+    const formattedNumber = `K2-${String(nextNumber).padStart(4, '0')}`
+    localStorage.setItem('k2-last-artwork-number', String(nextNumber))
+    return formattedNumber
+  }
+
+  // QR-Code URL generieren
+  const getQRCodeUrl = (artworkId: string) => {
+    const artworkUrl = `${window.location.origin}/galerie?werk=${artworkId}`
+    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(artworkUrl)}`
+  }
+
+  // QR-Code aus Bild lesen (vereinfacht - würde normalerweise eine Library verwenden)
+  const readQRCodeFromImage = async (file: File): Promise<string | null> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const img = new Image()
+        img.onload = () => {
+          // Hier würde normalerweise eine QR-Code-Library verwendet werden
+          // Für jetzt: URL aus Bild-URL extrahieren (falls QR-Code eine URL enthält)
+          // Oder manuelle Eingabe verwenden
+          resolve(null) // Würde QR-Code-Text zurückgeben
+        }
+        img.src = e.target?.result as string
+      }
+      reader.readAsDataURL(file)
+    })
+  }
+
+  // Werk als verkauft markieren
+  const handleMarkAsSold = (artworkNumber: string) => {
+    // Hier würde normalerweise die Datenbank aktualisiert werden
+    const soldArtworks = JSON.parse(localStorage.getItem('k2-sold-artworks') || '[]')
+    if (!soldArtworks.find((a: any) => a.number === artworkNumber)) {
+      soldArtworks.push({
+        number: artworkNumber,
+        soldAt: new Date().toISOString()
+      })
+      localStorage.setItem('k2-sold-artworks', JSON.stringify(soldArtworks))
+      alert(`✅ Werk ${artworkNumber} wurde als verkauft markiert!`)
+    } else {
+      alert(`⚠️ Werk ${artworkNumber} ist bereits als verkauft markiert.`)
+    }
+    
+    // Modal schließen
+    setShowSaleModal(false)
+    setSaleInput('')
+    setSaleMethod('scan')
+  }
+
+
+  // Datei auswählen (funktioniert für Datei-Upload und Kamera)
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file && file.type.startsWith('image/')) {
+      setSelectedFile(file)
+      // Sofort als Data URL konvertieren für Preview (nicht Blob URL!)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string
+        setPreviewUrl(dataUrl) // Data URL statt Blob URL
+      }
+      reader.readAsDataURL(file)
+    }
+    // Reset für erneute Nutzung
+    e.target.value = ''
+  }
+
+  // Kamera öffnen - auf Desktop mit MediaDevices API, auf Mobile mit capture
+  const handleCameraClick = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    // Prüfe ob wir auf einem mobilen Gerät sind
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+    
+    if (isMobile) {
+      // Auf Mobile: Verwende capture Attribut
+      const input = document.getElementById('camera-input-direct') as HTMLInputElement
+      if (input) {
+        input.value = ''
+        input.click()
+      }
+      return
+    }
+
+    // Auf Desktop: Verwende MediaDevices API
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('Kamera wird auf diesem Browser nicht unterstützt. Bitte verwende "Datei auswählen".')
+      return
+    }
+
+    try {
+      // Öffne Kamera
+      let stream: MediaStream
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' },
+          audio: false
+        })
+      } catch (envError) {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false
+        })
+      }
+      
+      setCameraStream(stream)
+      setShowCameraView(true)
+      
+      // Video-Element verbinden
+      setTimeout(() => {
+        if (videoRef.current && stream) {
+          videoRef.current.srcObject = stream
+          videoRef.current.play().catch(err => {
+            console.error('Video play error:', err)
+          })
+        }
+      }, 300)
+    } catch (error: any) {
+      console.error('Kamera-Fehler:', error)
+      let errorMessage = 'Kamera konnte nicht geöffnet werden.'
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        errorMessage = 'Kamera-Zugriff wurde verweigert. Bitte erlaube den Zugriff in den Browser-Einstellungen.'
+      } else if (error.name === 'NotFoundError') {
+        errorMessage = 'Keine Kamera gefunden.'
+      }
+      alert(errorMessage)
+    }
+  }
+
+  // Kamera schließen
+  const closeCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop())
+      setCameraStream(null)
+    }
+    setShowCameraView(false)
+  }
+
+  // Foto aufnehmen
+  const takePicture = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current
+      const canvas = canvasRef.current
+      const context = canvas.getContext('2d')
+      
+      if (context && video.videoWidth > 0) {
+        canvas.width = video.videoWidth
+        canvas.height = video.videoHeight
+        context.drawImage(video, 0, 0)
+        
+        // Canvas zu Blob konvertieren
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], `kamera-${Date.now()}.jpg`, { type: 'image/jpeg' })
+            setSelectedFile(file)
+            
+            // Preview erstellen
+            const reader = new FileReader()
+            reader.onloadend = () => {
+              setPreviewUrl(reader.result as string)
+            }
+            reader.readAsDataURL(file)
+            
+            // Kamera schließen
+            closeCamera()
+          }
+        }, 'image/jpeg', 0.9)
+      }
+    }
+  }
+
+  // Cleanup beim Unmount
+  useEffect(() => {
+    return () => {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop())
+      }
+    }
+  }, [cameraStream])
+
+
+
+  // Bild komprimieren - AGRESSIV komprimiert für viele Bilder (wenig Speicher)
+  const compressImage = (file: File, maxWidth: number = 600, quality: number = 0.5): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const img = new Image()
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          let width = img.width
+          let height = img.height
+          
+          // Für mobile: kleinere Größe (800px statt 1200px)
+          // Größe reduzieren falls zu groß
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width
+            width = maxWidth
+          }
+          
+          canvas.width = width
+          canvas.height = height
+          const ctx = canvas.getContext('2d')
+          if (!ctx) {
+            reject(new Error('Canvas context nicht verfügbar'))
+            return
+          }
+          
+          // Bild zeichnen
+          ctx.drawImage(img, 0, 0, width, height)
+          
+          // Für mobile: niedrigere Qualität (0.65 statt 0.8) = weniger Speicher
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality)
+          resolve(compressedDataUrl)
+        }
+        img.onerror = reject
+        img.src = e.target?.result as string
+      }
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+  }
+
+  // Werk speichern
+  const handleSaveArtwork = async () => {
+    if (!selectedFile) {
+      alert('Bitte ein Bild auswählen')
+      return
+    }
+    
+    // Bei Keramik: Titel automatisch aus Unterkategorie setzen
+    if (artworkCategory === 'keramik') {
+      const subcategoryLabels: Record<string, string> = {
+        'vase': 'Vase',
+        'teller': 'Teller',
+        'skulptur': 'Skulptur',
+        'sonstig': 'Sonstig'
+      }
+      setArtworkTitle(subcategoryLabels[artworkCeramicSubcategory] || 'Keramik')
+    }
+    
+    // Validierung: Titel nur bei Malerei erforderlich
+    if (artworkCategory === 'malerei' && !artworkTitle) {
+      alert('Bitte einen Titel eingeben')
+      return
+    }
+    
+    if (!artworkPrice || parseFloat(artworkPrice) <= 0) {
+      alert('Bitte einen gültigen Preis eingeben')
+      return
+    }
+    
+    // Validierung für Keramik-Unterkategorien
+    if (artworkCategory === 'keramik') {
+      if (artworkCeramicSubcategory === 'vase' || artworkCeramicSubcategory === 'skulptur') {
+        const height = parseFloat(artworkCeramicHeight)
+        if (!artworkCeramicHeight || height < 10 || height % 5 !== 0) {
+          alert('Bitte die Höhe in cm eingeben (mindestens 10cm, nur 5cm Schritte: 10, 15, 20, 25, ...)')
+          return
+        }
+      }
+      if (artworkCeramicSubcategory === 'teller') {
+        const diameter = parseFloat(artworkCeramicDiameter)
+        if (!artworkCeramicDiameter || diameter < 10 || diameter % 5 !== 0) {
+          alert('Bitte den Durchmesser in cm eingeben (mindestens 10cm, nur 5cm Schritte: 10, 15, 20, 25, ...)')
+          return
+        }
+      }
+      if (artworkCeramicSubcategory === 'sonstig') {
+        if (!artworkCeramicDescription || artworkCeramicDescription.trim() === '') {
+          alert('Bitte eine Beschreibung eingeben')
+          return
+        }
+      }
+    }
+    
+    // Laufende Nummer generieren
+    const newArtworkNumber = generateArtworkNumber()
+    setArtworkNumber(newArtworkNumber)
+    
+    // Bild komprimieren bevor es gespeichert wird - optimiert für mobile (wenig Speicher)
+    try {
+      // Für mobile: kleinere Größe (800px) und niedrigere Qualität (0.65)
+      const compressedDataUrl = await compressImage(selectedFile, 800, 0.65)
+      
+      // Prüfe ob Data URL zu groß ist (localStorage Limit ~5-10MB)
+      // Für mobile: strengeres Limit (1.5MB statt 2MB)
+      if (compressedDataUrl.length > 1500000) {
+        // Versuche noch stärkere Kompression
+        const moreCompressed = await compressImage(selectedFile, 600, 0.5)
+        if (moreCompressed.length > 1500000) {
+          alert('Bild ist auch nach Kompression zu groß. Bitte verwende ein kleineres Bild (max. ~1.5MB nach Kompression).')
+          return
+        }
+        await saveArtworkData(moreCompressed, newArtworkNumber)
+      } else {
+        await saveArtworkData(compressedDataUrl, newArtworkNumber)
+      }
+    } catch (error) {
+      console.error('Fehler beim Komprimieren:', error)
+      alert('Fehler beim Verarbeiten des Bildes. Bitte versuche es erneut.')
+    }
+  }
+
+  // Werk-Daten speichern
+  const saveArtworkData = async (imageDataUrl: string, newArtworkNumber: string) => {
+      
+    // Titel bestimmen: Bei Keramik aus Unterkategorie, sonst aus Eingabe
+    let finalTitle = artworkTitle
+    if (artworkCategory === 'keramik') {
+      const subcategoryLabels: Record<string, string> = {
+        'vase': 'Vase',
+        'teller': 'Teller',
+        'skulptur': 'Skulptur',
+        'sonstig': 'Sonstig'
+      }
+      finalTitle = subcategoryLabels[artworkCeramicSubcategory] || 'Keramik'
+    }
+    
+    // Werk-Daten speichern
+    const artworkData: any = {
+      id: newArtworkNumber,
+      number: newArtworkNumber,
+      title: finalTitle,
+      category: artworkCategory,
+      artist: artworkArtist,
+      description: artworkDescription,
+      price: parseFloat(artworkPrice),
+      inExhibition: isInExhibition,
+      inShop: isInShop,
+      imageUrl: imageDataUrl, // Komprimierte Data URL
+      createdAt: new Date().toISOString()
+    }
+    
+    // Malerei-spezifische Daten hinzufügen
+    if (artworkCategory === 'malerei') {
+      if (artworkPaintingWidth) {
+        artworkData.paintingWidth = parseFloat(artworkPaintingWidth)
+      }
+      if (artworkPaintingHeight) {
+        artworkData.paintingHeight = parseFloat(artworkPaintingHeight)
+      }
+    }
+    
+    // Keramik-spezifische Daten hinzufügen
+    if (artworkCategory === 'keramik') {
+      artworkData.ceramicSubcategory = artworkCeramicSubcategory
+      artworkData.ceramicType = artworkCeramicType
+      artworkData.ceramicSurface = artworkCeramicSurface
+      if (artworkCeramicSubcategory === 'vase' || artworkCeramicSubcategory === 'skulptur') {
+        artworkData.ceramicHeight = artworkCeramicHeight ? parseFloat(artworkCeramicHeight) : undefined
+      }
+      if (artworkCeramicSubcategory === 'teller') {
+        artworkData.ceramicDiameter = artworkCeramicDiameter ? parseFloat(artworkCeramicDiameter) : undefined
+      }
+      if (artworkCeramicSubcategory === 'sonstig') {
+        artworkData.ceramicDescription = artworkCeramicDescription || undefined
+      }
+    }
+    
+    // Werk in localStorage speichern
+    const artworks = loadArtworks()
+    artworks.push(artworkData)
+    
+    try {
+      const dataToStore = JSON.stringify(artworks)
+      
+      // Prüfe localStorage-Größe
+      // Für mobile: kleineres Limit (3MB statt 5MB)
+      const currentSize = new Blob([dataToStore]).size
+      const maxSize = 3 * 1024 * 1024 // 3MB für mobile Optimierung
+      
+      if (currentSize > maxSize) {
+        // Versuche alte Werke zu löschen
+        const sortedArtworks = artworks.sort((a: any, b: any) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
+        
+        // Behalte nur die 15 neuesten Werke (für mobile: weniger Werke = weniger Speicher)
+        const keptArtworks = sortedArtworks.slice(0, 15)
+        const keptData = JSON.stringify(keptArtworks)
+        
+        if (new Blob([keptData]).size > maxSize) {
+          alert('localStorage ist voll. Bitte lösche einige alte Werke manuell oder verwende kleinere Bilder.')
+          return
+        }
+        
+        saveArtworks(keptArtworks)
+        alert(`Hinweis: Die ältesten Werke wurden automatisch gelöscht, um Platz zu schaffen.`)
+      } else {
+        saveArtworks(artworks)
+      }
+      
+      console.log('Werk gespeichert:', {
+        number: artworkData.number,
+        title: artworkData.title,
+        imageUrlLength: artworkData.imageUrl?.length || 0,
+        compressed: true
+      })
+      
+      // Event dispatchen, damit Galerie-Seite sich aktualisiert
+      window.dispatchEvent(new CustomEvent('artworks-updated'))
+      
+      // Aktualisiere lokale Liste
+      setAllArtworks(loadArtworks())
+      
+      // Gespeichertes Werk für Druck-Modal
+      setSavedArtwork({
+        ...artworkData,
+        file: selectedFile // Für QR-Code-Generierung behalten
+      })
+      
+      // Modal schließen und zurücksetzen
+      setShowAddModal(false)
+      setSelectedFile(null)
+      setPreviewUrl(null)
+      setArtworkTitle('')
+      setArtworkCategory('malerei')
+      setArtworkCeramicSubcategory('vase')
+      setArtworkCeramicHeight('')
+      setArtworkCeramicDiameter('')
+      setArtworkCeramicDescription('')
+      setArtworkPaintingWidth('')
+      setArtworkPaintingHeight('')
+      setArtworkArtist('')
+      setArtworkDescription('')
+      setArtworkPrice('')
+      setIsInShop(true)
+      
+      // Aktualisiere die Liste
+      setAllArtworks(JSON.parse(localStorage.getItem('k2-artworks') || '[]'))
+      
+      // Druck-Modal öffnen
+      setShowPrintModal(true)
+    } catch (error) {
+      console.error('Fehler beim Speichern:', error)
+      if (error instanceof Error && error.message.includes('QuotaExceededError')) {
+        alert('localStorage ist voll! Bitte lösche einige alte Werke oder verwende kleinere Bilder.')
+      } else {
+        alert('Fehler beim Speichern. Bitte versuche es erneut.')
+      }
+    }
+  }
+
+  // Drucken
+  const handlePrint = () => {
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) return
+
+    const qrCodeUrl = getQRCodeUrl(savedArtwork.number)
+    
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>K2 Galerie - Etikett ${savedArtwork.number}</title>
+          <style>
+            @media print {
+              @page {
+                size: A4;
+                margin: 10mm;
+              }
+            }
+            body {
+              font-family: Arial, sans-serif;
+              padding: 20px;
+              max-width: 100mm;
+              margin: 0 auto;
+            }
+            .label {
+              border: 2px solid #8b6914;
+              border-radius: 8px;
+              padding: 15px;
+              text-align: center;
+            }
+            .label-header {
+              font-size: 18px;
+              font-weight: bold;
+              color: #8b6914;
+              margin-bottom: 10px;
+            }
+            .label-number {
+              font-size: 24px;
+              font-weight: bold;
+              margin: 10px 0;
+              color: #333;
+            }
+            .label-title {
+              font-size: 14px;
+              margin: 10px 0;
+              color: #666;
+            }
+            .label-qr {
+              margin: 15px 0;
+            }
+            .label-qr img {
+              width: 150px;
+              height: 150px;
+            }
+            .label-footer {
+              font-size: 12px;
+              color: #999;
+              margin-top: 10px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="label">
+            <div class="label-header">K2 Galerie</div>
+            <div class="label-number" style="font-size: 28px; font-weight: bold; margin: 12px 0; color: #8b6914; border: 2px solid #8b6914; padding: 8px; border-radius: 6px;">
+              Seriennummer:<br/>${savedArtwork.number}
+            </div>
+            <div class="label-title">${savedArtwork.title}</div>
+            ${savedArtwork.category === 'malerei' && savedArtwork.paintingWidth && savedArtwork.paintingHeight ? `
+              <div style="font-size: 11px; color: #666; margin: 5px 0;">${savedArtwork.paintingWidth} × ${savedArtwork.paintingHeight} cm</div>
+            ` : ''}
+            ${savedArtwork.category === 'keramik' ? `
+              <div style="font-size: 11px; color: #666; margin: 5px 0;">
+                ${savedArtwork.ceramicSubcategory === 'vase' || savedArtwork.ceramicSubcategory === 'skulptur' ? `Höhe: ${savedArtwork.ceramicHeight || '?'} cm` : ''}
+                ${savedArtwork.ceramicSubcategory === 'teller' ? `Durchmesser: ${savedArtwork.ceramicDiameter || '?'} cm` : ''}
+                ${savedArtwork.ceramicSubcategory === 'sonstig' && savedArtwork.ceramicDescription ? savedArtwork.ceramicDescription : ''}
+              </div>
+              ${savedArtwork.ceramicType ? `<div style="font-size: 10px; color: #999; margin: 3px 0;">${savedArtwork.ceramicType === 'steingut' ? 'Steingut' : 'Steinzeug'}</div>` : ''}
+              ${savedArtwork.ceramicSurface ? `<div style="font-size: 10px; color: #999; margin: 3px 0;">${savedArtwork.ceramicSurface === 'engobe' ? 'Engobe' : savedArtwork.ceramicSurface === 'glasur' ? 'Glasur' : 'Mischtechnik'}</div>` : ''}
+            ` : ''}
+            <div class="label-qr">
+              <img src="${qrCodeUrl}" alt="QR Code" />
+            </div>
+            <div class="label-footer">${savedArtwork.category === 'malerei' ? 'Malerei' : 'Keramik'} • ${savedArtwork.artist}</div>
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+            }
+          </script>
+        </body>
+      </html>
+    `)
+    printWindow.document.close()
+  }
+
+  // PDF für QR-Code Plakat erstellen
+  const printQRCodePlakat = async () => {
+    const homepageUrl = `${window.location.origin}/projects/k2-galerie/galerie`
+    const rundgangUrl = `${window.location.origin}/projects/k2-galerie/virtueller-rundgang`
+    const homepageQRUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(homepageUrl)}`
+    const rundgangQRUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(rundgangUrl)}`
+
+    const date = new Date().toLocaleDateString('de-DE', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric'
+    })
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>QR-Codes - K2 Galerie</title>
+          <style>
+            @media print {
+              @page {
+                size: A4;
+                margin: 0;
+              }
+              * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+            }
+            * {
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            body {
+              font-family: 'Arial', 'Helvetica', sans-serif;
+              margin: 0;
+              padding: 0;
+              background: #ffffff !important;
+              color: #1f1f1f !important;
+              min-height: 100vh;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+            @media screen {
+              body {
+                padding: 20px;
+                background: #f5f5f5 !important;
+              }
+            }
+            .plakat {
+              width: 210mm;
+              min-height: 297mm;
+              background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%) !important;
+              padding: 20mm;
+              box-sizing: border-box;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              text-align: center;
+              position: relative;
+              color: #ffffff !important;
+            }
+            .content {
+              position: relative;
+              z-index: 1;
+              width: 100%;
+            }
+            .icon {
+              font-size: 60px;
+              margin-bottom: 20px;
+              opacity: 0.8;
+            }
+            h1 {
+              font-size: 48px;
+              font-weight: 700;
+              margin: 0 0 15px;
+              background: linear-gradient(135deg, #ffffff 0%, #b8b8ff 100%);
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+              background-clip: text;
+              letter-spacing: -0.02em;
+              line-height: 1.2;
+            }
+            h2 {
+              font-size: 28px;
+              font-weight: 600;
+              margin: 0 0 10px;
+              color: #ffffff;
+              letter-spacing: -0.01em;
+            }
+            .subtitle {
+              font-size: 18px;
+              color: rgba(255, 255, 255, 0.7);
+              margin-bottom: 35px;
+              font-weight: 300;
+              line-height: 1.5;
+            }
+            .text-block {
+              font-size: 15px;
+              color: rgba(255, 255, 255, 0.9);
+              line-height: 1.7;
+              margin-bottom: 30px;
+              max-width: 550px;
+              margin-left: auto;
+              margin-right: auto;
+              text-align: center;
+            }
+            .text-block strong {
+              color: #ffffff;
+              font-weight: 600;
+            }
+            .highlight-box {
+              background: rgba(255, 255, 255, 0.1);
+              backdrop-filter: blur(20px);
+              border: 1px solid rgba(255, 255, 255, 0.2);
+              border-radius: 16px;
+              padding: 25px;
+              margin: 35px 0;
+              max-width: 500px;
+              margin-left: auto;
+              margin-right: auto;
+            }
+            .highlight-box p {
+              margin: 0;
+              font-size: 16px;
+              color: #ffffff;
+              font-weight: 500;
+              line-height: 1.8;
+            }
+            .qr-grid {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 25px;
+              margin: 40px 0;
+              max-width: 550px;
+              margin-left: auto;
+              margin-right: auto;
+            }
+            .qr-container {
+              background: rgba(255, 255, 255, 0.95);
+              padding: 20px;
+              border-radius: 16px;
+              box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            }
+            .qr-code {
+              width: 100%;
+              max-width: 200px;
+              height: auto;
+              display: block;
+              margin: 0 auto;
+            }
+            .qr-label {
+              margin-top: 15px;
+              font-size: 16px;
+              color: #1f1f1f;
+              font-weight: 700;
+            }
+            .qr-description {
+              margin-top: 8px;
+              font-size: 13px;
+              color: #666;
+              line-height: 1.5;
+            }
+            .footer {
+              margin-top: 50px;
+              font-size: 13px;
+              color: rgba(255, 255, 255, 0.7);
+              line-height: 1.6;
+            }
+            .footer strong {
+              color: #ffffff;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="plakat">
+            <div class="content">
+              <div class="icon">🏛️</div>
+              <h1>K2 GALERIE</h1>
+              <h2>Besuchen Sie uns online</h2>
+              <p class="subtitle">Kunst & Keramik • Jederzeit verfügbar</p>
+              
+              <div class="text-block">
+                <p><strong>Entdecken Sie die K2 Galerie – auch wenn wir geschlossen haben!</strong></p>
+                <p>Die K2 Galerie öffnet ihre Türen für Sie – jederzeit und überall. Erleben Sie die aktuellen Werke von Martina und Georg Kreinecker bequem von zu Hause oder unterwegs. Entdecken Sie die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.</p>
+              </div>
+
+              <div class="highlight-box">
+                <p>🎨 Malerei & Keramik<br>
+                📱 Einfach QR-Code scannen<br>
+                🌐 Sofort verfügbar, jederzeit</p>
+              </div>
+
+              <div class="qr-grid">
+                <div class="qr-container">
+                  <img src="${homepageQRUrl}" alt="QR-Code für Homepage" class="qr-code" />
+                  <div class="qr-label">Homepage</div>
+                  <div class="qr-description">Besuchen Sie unsere Galerie-Website</div>
+                </div>
+                <div class="qr-container">
+                  <img src="${rundgangQRUrl}" alt="QR-Code für virtuellen Rundgang" class="qr-code" />
+                  <div class="qr-label">Virtueller Rundgang</div>
+                  <div class="qr-description">Erkunden Sie die Ausstellung</div>
+                </div>
+              </div>
+
+              <div class="text-block">
+                <p><strong>So funktioniert's:</strong></p>
+                <p>1. Öffnen Sie die Kamera-App auf Ihrem Smartphone<br>
+                2. Scannen Sie einen der QR-Codes<br>
+                3. Erkunden Sie unsere Galerie in Ruhe</p>
+                <p style="margin-top: 15px;">Lassen Sie sich von der Vielfalt unserer Kunstwerke inspirieren und entdecken Sie die einzigartige Verbindung von Malerei und Keramik.</p>
+              </div>
+
+              <div class="footer">
+                <p><strong>K2 Galerie</strong><br>
+                Martina & Georg Kreinecker<br>
+                Kunst & Keramik</p>
+                <p style="margin-top: 12px;">Erstellt am: ${date}</p>
+              </div>
+            </div>
+          </div>
+          
+          <script>
+            window.onload = function() {
+              // Zeige PDF an - Nutzer kann dann selbst drucken/speichern
+              // Kein automatischer Druck-Dialog mehr
+            }
+          </script>
+        </body>
+      </html>
+    `
+
+    // Speichere das PDF automatisch im Dokumentenordner
+    try {
+      // Erstelle ein Blob aus dem HTML
+      const blob = new Blob([htmlContent], { type: 'text/html' })
+      const reader = new FileReader()
+      
+      reader.onload = () => {
+        try {
+          const base64 = reader.result as string
+          
+          // Prüfe, ob bereits eine "Virtuelle Einladung" existiert
+          const existingDocs = loadDocuments()
+          const existingInvitation = existingDocs.find((d: any) => 
+            d.name && d.name.includes('Virtuelle Einladung')
+          )
+          
+          // Erstelle Dokument-Objekt
+          const doc = {
+            id: existingInvitation ? existingInvitation.id : `qr-plakat-${Date.now()}`,
+            name: `Virtuelle Einladung - QR-Code Plakat (${date}).html`,
+            type: 'text/html',
+            size: blob.size,
+            data: base64,
+            uploadedAt: new Date().toISOString(),
+            isPDF: false,
+            isPlaceholder: false
+          }
+          
+          // Ersetze vorhandenes oder füge neues hinzu
+          const updated = existingInvitation
+            ? existingDocs.map((d: any) => d.id === existingInvitation.id ? doc : d)
+            : [...existingDocs, doc]
+          
+          saveDocuments(updated)
+          setDocuments(updated)
+          
+          // Zeige Erfolgsmeldung
+          alert(`✅ Virtuelle Einladung wurde im Dokumentenordner gespeichert!\n\nDateiname: ${doc.name}`)
+        } catch (error) {
+          console.error('Fehler beim Speichern:', error)
+          alert('❌ Fehler beim Speichern der virtuellen Einladung')
+        }
+      }
+      
+      reader.onerror = () => {
+        alert('❌ Fehler beim Lesen der Datei')
+      }
+      
+      reader.readAsDataURL(blob)
+    } catch (error) {
+      console.error('Fehler beim Erstellen des Blobs:', error)
+      alert('❌ Fehler beim Speichern der virtuellen Einladung')
+    }
+
+    // Öffne auch das PDF-Fenster zur Ansicht
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) {
+      alert('Pop-up-Blocker verhindert PDF-Ansicht. Bitte erlaube Pop-ups.')
+      return
+    }
+    
+    printWindow.document.write(htmlContent)
+    printWindow.document.close()
+  }
+
+  // PDF für Werke drucken
+  const printPDF = (type: 'galerie' | 'verkauft') => {
+    let filteredArtworks = allArtworks
+    
+    if (type === 'galerie') {
+      // Nur Werke die in der Galerie sind
+      filteredArtworks = allArtworks.filter((a: any) => a.inExhibition === true)
+    } else if (type === 'verkauft') {
+      // Nur verkaufte Werke
+      try {
+        const soldData = localStorage.getItem('k2-sold-artworks')
+        if (soldData) {
+          const soldArtworks = JSON.parse(soldData)
+          const soldNumbers = new Set(soldArtworks.map((a: any) => a.number))
+          filteredArtworks = allArtworks.filter((a: any) => soldNumbers.has(a.number))
+        } else {
+          filteredArtworks = []
+        }
+      } catch (error) {
+        filteredArtworks = []
+      }
+    }
+
+    if (filteredArtworks.length === 0) {
+      alert(`Keine Werke gefunden für "${type === 'galerie' ? 'Galerie' : 'Verkaufte Werke'}"`)
+      return
+    }
+
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) {
+      alert('Pop-up-Blocker verhindert PDF-Erstellung. Bitte erlaube Pop-ups.')
+      return
+    }
+
+    const title = type === 'galerie' ? 'Werke in der Galerie' : 'Verkaufte Werke'
+    const date = new Date().toLocaleDateString('de-DE', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric'
+    })
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${title} - K2 Galerie</title>
+          <style>
+            @media print {
+              @page {
+                size: A4;
+                margin: 15mm;
+              }
+            }
+            body {
+              font-family: Arial, sans-serif;
+              font-size: 11px;
+              line-height: 1.5;
+              color: #000;
+              padding: 20px;
+            }
+            .header {
+              text-align: center;
+              border-bottom: 3px solid #8b6914;
+              padding-bottom: 15px;
+              margin-bottom: 20px;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 24px;
+              color: #8b6914;
+            }
+            .header p {
+              margin: 5px 0 0;
+              font-size: 12px;
+              color: #666;
+            }
+            .artwork-item {
+              margin-bottom: 20px;
+              padding-bottom: 15px;
+              border-bottom: 1px solid #ddd;
+              page-break-inside: avoid;
+            }
+            .artwork-item:last-child {
+              border-bottom: none;
+            }
+            .artwork-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: start;
+              margin-bottom: 10px;
+            }
+            .artwork-title {
+              font-size: 14px;
+              font-weight: bold;
+              color: #1f1f1f;
+            }
+            .artwork-number {
+              font-size: 12px;
+              font-weight: bold;
+              color: #8b6914;
+            }
+            .artwork-details {
+              font-size: 10px;
+              color: #666;
+              margin-bottom: 8px;
+            }
+            .artwork-image {
+              max-width: 200px;
+              max-height: 200px;
+              margin: 10px 0;
+              border: 1px solid #ddd;
+            }
+            .artwork-price {
+              font-size: 12px;
+              font-weight: bold;
+              color: #8b6914;
+              margin-top: 5px;
+            }
+            .footer {
+              margin-top: 30px;
+              text-align: center;
+              font-size: 9px;
+              color: #999;
+              border-top: 1px solid #ddd;
+              padding-top: 10px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>K2 GALERIE</h1>
+            <p>${title}</p>
+            <p>Erstellt am: ${date} • ${filteredArtworks.length} ${filteredArtworks.length === 1 ? 'Werk' : 'Werke'}</p>
+          </div>
+          
+          ${filteredArtworks.map((artwork: any) => `
+            <div class="artwork-item">
+              <div class="artwork-header">
+                <div class="artwork-title">${artwork.title || artwork.number}</div>
+                <div class="artwork-number">Seriennummer: ${artwork.number || artwork.id}</div>
+              </div>
+              <div class="artwork-details">
+                ${artwork.category === 'malerei' ? 'Malerei' : artwork.category === 'keramik' ? 'Keramik' : artwork.category}
+                ${artwork.artist ? ' • ' + artwork.artist : ''}
+                ${artwork.description ? '<br/>' + artwork.description : ''}
+              </div>
+              ${artwork.imageUrl ? `<img src="${artwork.imageUrl}" alt="${artwork.title}" class="artwork-image" />` : ''}
+              <div class="artwork-price">Preis: € ${artwork.price ? artwork.price.toFixed(2) : '0.00'}</div>
+              ${type === 'verkauft' ? '<div style="color: #2d6a2d; font-weight: bold; margin-top: 5px;">✓ Verkauft</div>' : ''}
+            </div>
+          `).join('')}
+          
+          <div class="footer">
+            <div>K2 Galerie - Kunst & Keramik</div>
+            <div>www.k2-galerie.at</div>
+          </div>
+          
+          <script>
+            window.onload = function() {
+              setTimeout(() => {
+                window.print();
+                setTimeout(() => window.close(), 500);
+              }, 500);
+            }
+          </script>
+        </body>
+      </html>
+    `)
+    printWindow.document.close()
+  }
+
+  // Cleanup nicht mehr nötig, da wir Data URLs verwenden (keine Blob URLs)
+
+  // Stelle sicher dass body/html Hintergrund haben
+  useEffect(() => {
+    try {
+      document.body.style.background = 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%)'
+      document.body.style.color = '#ffffff'
+      document.documentElement.style.background = 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%)'
+      document.documentElement.style.color = '#ffffff'
+    } catch (e) {
+      console.error('Fehler beim Setzen des Hintergrunds:', e)
+    }
+    return () => {
+      try {
+        document.body.style.background = ''
+        document.body.style.color = ''
+        document.documentElement.style.background = ''
+        document.documentElement.style.color = ''
+      } catch (e) {
+        // Ignorieren
+      }
+    }
+  }, [])
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%)',
+      color: '#ffffff',
+      position: 'relative',
+      overflowX: 'hidden',
+      width: '100%'
+    }}>
+      {/* Animated Background Elements */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.15), transparent 50%), radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.1), transparent 50%)',
+        pointerEvents: 'none',
+        zIndex: 0
+      }} />
+      
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <header style={{
+          padding: 'clamp(1.5rem, 4vw, 2.5rem) clamp(1.5rem, 4vw, 3rem)',
+          paddingTop: 'clamp(2rem, 5vw, 3rem)',
+          maxWidth: '1600px',
+          margin: '0 auto',
+          marginBottom: 'clamp(2rem, 5vw, 3rem)'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '1.5rem'
+          }}>
+            <div>
+              <h1 style={{
+                margin: 0,
+                fontSize: 'clamp(2rem, 6vw, 3rem)',
+                fontWeight: '700',
+                background: 'linear-gradient(135deg, #ffffff 0%, #b8b8ff 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                letterSpacing: '-0.02em',
+                lineHeight: '1.1'
+              }}>
+                K2 Galerie
+              </h1>
+              <span style={{
+                marginTop: '0.5rem',
+                display: 'block',
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)',
+                fontWeight: '300'
+              }}>
+                Admin-Verwaltung
+              </span>
+            </div>
+            <nav style={{
+              display: 'flex',
+              gap: 'clamp(0.75rem, 2vw, 1rem)',
+              flexWrap: 'wrap',
+              alignItems: 'center'
+            }}>
+              <Link 
+                to="/galerie" 
+                style={{
+                  padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  color: '#ffffff',
+                  textDecoration: 'none',
+                  borderRadius: '12px',
+                  fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                  fontWeight: '500',
+                  transition: 'all 0.3s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                  e.currentTarget.style.transform = 'translateY(0)'
+                }}
+              >
+                Zur Galerie
+              </Link>
+              <Link 
+                to="/galerie?kasse=1" 
+                style={{
+                  padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: '#ffffff',
+                  textDecoration: 'none',
+                  borderRadius: '12px',
+                  fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 15px 40px rgba(102, 126, 234, 0.4)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.3)'
+                }}
+              >
+                💰 Kasse
+              </Link>
+              <span style={{
+                padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                background: 'rgba(45, 106, 45, 0.2)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(45, 106, 45, 0.3)',
+                borderRadius: '12px',
+                fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                color: '#4ade80',
+                fontWeight: '500',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <span>✓</span> Admin-Modus
+              </span>
+            </nav>
+          </div>
+        </header>
+
+        <main style={{
+          padding: '0 clamp(1.5rem, 4vw, 3rem)',
+          paddingBottom: 'clamp(4rem, 10vw, 6rem)',
+          maxWidth: '1600px',
+          margin: '0 auto'
+        }}>
+          {/* Prominenter Kassa-Button */}
+          <div style={{ 
+            marginBottom: 'clamp(2rem, 5vw, 3rem)', 
+            textAlign: 'center',
+            padding: 'clamp(2rem, 5vw, 3rem)',
+            background: 'rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(20px)',
+            border: '2px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '24px',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)'
+          }}>
+            <Link 
+              to="/galerie?kasse=1" 
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: '#ffffff',
+                padding: 'clamp(1rem, 2.5vw, 1.25rem) clamp(2rem, 5vw, 2.5rem)',
+                borderRadius: '16px',
+                fontWeight: '700',
+                fontSize: 'clamp(1.1rem, 3vw, 1.4rem)',
+                textDecoration: 'none',
+                boxShadow: '0 15px 40px rgba(102, 126, 234, 0.4)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)'
+                e.currentTarget.style.boxShadow = '0 20px 50px rgba(102, 126, 234, 0.5)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 15px 40px rgba(102, 126, 234, 0.4)'
+              }}
+            >
+              💰 Kasse öffnen
+            </Link>
+            <p style={{ 
+              marginTop: 'clamp(1rem, 3vw, 1.5rem)', 
+              color: 'rgba(255, 255, 255, 0.8)', 
+              fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)',
+              fontWeight: '300'
+            }}>
+              Für Verkäufe in der Ausstellung
+            </p>
+          </div>
+
+          {/* Admin Tabs */}
+          <div style={{
+            display: 'flex',
+            gap: 'clamp(0.5rem, 2vw, 1rem)',
+            flexWrap: 'wrap',
+            marginBottom: 'clamp(2rem, 5vw, 3rem)',
+            background: 'rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '16px',
+            padding: 'clamp(0.75rem, 2vw, 1rem)'
+          }}>
+            <button 
+              onClick={() => setActiveTab('werke')}
+              style={{
+                padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                fontWeight: activeTab === 'werke' ? '600' : '500',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                background: activeTab === 'werke' 
+                  ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                  : 'rgba(255, 255, 255, 0.05)',
+                color: '#ffffff',
+                boxShadow: activeTab === 'werke' ? '0 10px 30px rgba(102, 126, 234, 0.3)' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== 'werke') {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== 'werke') {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                }
+              }}
+            >
+              🎨 Werke verwalten
+            </button>
+            <button 
+              onClick={() => setActiveTab('dokumente')}
+              style={{
+                padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                fontWeight: activeTab === 'dokumente' ? '600' : '500',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                background: activeTab === 'dokumente' 
+                  ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                  : 'rgba(255, 255, 255, 0.05)',
+                color: '#ffffff',
+                boxShadow: activeTab === 'dokumente' ? '0 10px 30px rgba(102, 126, 234, 0.3)' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== 'dokumente') {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== 'dokumente') {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                }
+              }}
+            >
+              📄 Dokumente
+            </button>
+            <button 
+              onClick={() => setActiveTab('einstellungen')}
+              style={{
+                padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                fontWeight: activeTab === 'einstellungen' ? '600' : '500',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                background: activeTab === 'einstellungen' 
+                  ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                  : 'rgba(255, 255, 255, 0.05)',
+                color: '#ffffff',
+                boxShadow: activeTab === 'einstellungen' ? '0 10px 30px rgba(102, 126, 234, 0.3)' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== 'einstellungen') {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== 'einstellungen') {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                }
+              }}
+            >
+              ⚙️ Einstellungen
+            </button>
+            <button 
+              onClick={() => setActiveTab('statistiken')}
+              style={{
+                padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                fontWeight: activeTab === 'statistiken' ? '600' : '500',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                background: activeTab === 'statistiken' 
+                  ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                  : 'rgba(255, 255, 255, 0.05)',
+                color: '#ffffff',
+                boxShadow: activeTab === 'statistiken' ? '0 10px 30px rgba(102, 126, 234, 0.3)' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== 'statistiken') {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== 'statistiken') {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                }
+              }}
+            >
+              📊 Statistiken
+            </button>
+            <button 
+              onClick={() => setActiveTab('eventplan')}
+              style={{
+                padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                fontWeight: activeTab === 'eventplan' ? '600' : '500',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                background: activeTab === 'eventplan' 
+                  ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                  : 'rgba(255, 255, 255, 0.05)',
+                color: '#ffffff',
+                boxShadow: activeTab === 'eventplan' ? '0 10px 30px rgba(102, 126, 234, 0.3)' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== 'eventplan') {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== 'eventplan') {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                }
+              }}
+            >
+              📅 Eventplanung
+            </button>
+            <button 
+              onClick={() => setActiveTab('öffentlichkeitsarbeit')}
+              style={{
+                padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                fontWeight: activeTab === 'öffentlichkeitsarbeit' ? '600' : '500',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                background: activeTab === 'öffentlichkeitsarbeit' 
+                  ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                  : 'rgba(255, 255, 255, 0.05)',
+                color: '#ffffff',
+                boxShadow: activeTab === 'öffentlichkeitsarbeit' ? '0 10px 30px rgba(102, 126, 234, 0.3)' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== 'öffentlichkeitsarbeit') {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== 'öffentlichkeitsarbeit') {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                }
+              }}
+            >
+              📢 Öffentlichkeitsarbeit
+            </button>
+          </div>
+
+          {/* Werke verwalten */}
+          {activeTab === 'werke' && (
+            <section style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '24px',
+              padding: 'clamp(2rem, 5vw, 3rem)',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+              marginBottom: 'clamp(2rem, 5vw, 3rem)'
+            }}>
+              <h2 style={{
+                fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
+                fontWeight: '700',
+                color: '#ffffff',
+                marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
+                letterSpacing: '-0.01em'
+              }}>
+                Werke verwalten
+              </h2>
+              <div style={{
+                display: 'flex',
+                gap: 'clamp(0.75rem, 2vw, 1rem)',
+                flexWrap: 'wrap',
+                marginBottom: 'clamp(2rem, 5vw, 3rem)'
+              }}>
+                <button 
+                  onClick={() => setShowAddModal(true)}
+                  style={{
+                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                    e.currentTarget.style.boxShadow = '0 15px 40px rgba(102, 126, 234, 0.4)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.3)'
+                  }}
+                >
+                  + Neues Werk hinzufügen
+                </button>
+              <div style={{ position: 'relative' }} data-export-menu>
+                <button 
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  style={{
+                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    color: '#ffffff',
+                    borderRadius: '12px',
+                    fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                    e.currentTarget.style.transform = 'translateY(0)'
+                  }}
+                >
+                  📄 PDFs & Speicherdaten
+                  <span style={{ fontSize: '0.8rem' }}>{showExportMenu ? '▲' : '▼'}</span>
+                </button>
+                
+                {showExportMenu && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    marginTop: '0.5rem',
+                    background: 'rgba(18, 22, 35, 0.95)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '12px',
+                    padding: '0.75rem',
+                    minWidth: '250px',
+                    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
+                    zIndex: 1000,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.5rem'
+                  }}>
+                    <div style={{
+                      fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
+                      color: '#8fa0c9',
+                      padding: '0.5rem',
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                      marginBottom: '0.25rem'
+                    }}>
+                      PDFs
+                    </div>
+                    <button
+                      onClick={() => {
+                        printPDF('galerie')
+                        setShowExportMenu(false)
+                      }}
+                      style={{
+                        padding: '0.6rem 1rem',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                      }}
+                    >
+                      📄 Werke in Galerie
+                    </button>
+                    <button
+                      onClick={() => {
+                        printPDF('verkauft')
+                        setShowExportMenu(false)
+                      }}
+                      style={{
+                        padding: '0.6rem 1rem',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                      }}
+                    >
+                      📄 Verkaufte Werke
+                    </button>
+                    
+                    <div style={{
+                      fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
+                      color: '#8fa0c9',
+                      padding: '0.5rem',
+                      borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                      marginTop: '0.25rem',
+                      marginBottom: '0.25rem'
+                    }}>
+                      Speicherdaten
+                    </div>
+                    <button
+                      onClick={() => {
+                        try {
+                          const artworks = JSON.parse(localStorage.getItem('k2-artworks') || '[]')
+                          const exportData = {
+                            artworks,
+                            exportedAt: new Date().toISOString(),
+                            version: '1.0'
+                          }
+                          const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+                          const url = URL.createObjectURL(blob)
+                          const a = document.createElement('a')
+                          a.href = url
+                          a.download = `k2-artworks-export-${new Date().toISOString().split('T')[0]}.json`
+                          document.body.appendChild(a)
+                          a.click()
+                          document.body.removeChild(a)
+                          // Cleanup nach Download
+                          setTimeout(() => {
+                            try {
+                              URL.revokeObjectURL(url)
+                            } catch (e) {
+                              console.warn('Fehler beim Freigeben der Export-URL:', e)
+                            }
+                          }, 1000)
+                          document.body.removeChild(a)
+                          URL.revokeObjectURL(url)
+                          alert(`✅ ${artworks.length} Werke wurden exportiert!`)
+                        } catch (error) {
+                          console.error('Export-Fehler:', error)
+                          alert('Fehler beim Exportieren der Daten.')
+                        }
+                        setShowExportMenu(false)
+                      }}
+                      style={{
+                        padding: '0.6rem 1rem',
+                        background: 'rgba(45, 106, 45, 0.3)',
+                        border: '1px solid rgba(45, 106, 45, 0.5)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(45, 106, 45, 0.5)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(45, 106, 45, 0.3)'
+                      }}
+                    >
+                      📤 Daten exportieren
+                    </button>
+                    <button
+                      onClick={() => {
+                        const input = document.createElement('input')
+                        input.type = 'file'
+                        input.accept = 'application/json'
+                        input.onchange = (e) => {
+                          const file = (e.target as HTMLInputElement).files?.[0]
+                          if (!file) return
+                          
+                          const reader = new FileReader()
+                          reader.onload = (event) => {
+                            try {
+                              const importData = JSON.parse(event.target?.result as string)
+                              if (importData.artworks && Array.isArray(importData.artworks)) {
+                                const existing = loadArtworks()
+                                const existingIds = new Set(existing.map((a: any) => a.id || a.number))
+                                const newArtworks = importData.artworks.filter((a: any) => !existingIds.has(a.id || a.number))
+                                
+                                if (newArtworks.length === 0) {
+                                  alert('Keine neuen Werke zum Importieren gefunden.')
+                                  return
+                                }
+                                
+                                const merged = [...existing, ...newArtworks]
+                                saveArtworks(merged)
+                                setAllArtworks(merged)
+                                window.dispatchEvent(new CustomEvent('artworks-updated'))
+                                alert(`✅ ${newArtworks.length} neue Werke wurden importiert!`)
+                              } else {
+                                alert('Ungültiges Export-Format.')
+                              }
+                            } catch (error) {
+                              console.error('Import-Fehler:', error)
+                              alert('Fehler beim Importieren der Daten.')
+                            }
+                          }
+                          reader.readAsText(file)
+                        }
+                        input.click()
+                        setShowExportMenu(false)
+                      }}
+                      style={{
+                        padding: '0.6rem 1rem',
+                        background: 'rgba(45, 106, 45, 0.3)',
+                        border: '1px solid rgba(45, 106, 45, 0.5)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(45, 106, 45, 0.5)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(45, 106, 45, 0.3)'
+                      }}
+                    >
+                      📥 Daten importieren
+                    </button>
+                    <button
+                      onClick={() => {
+                        try {
+                          let totalSize = 0
+                          for (let key in localStorage) {
+                            if (localStorage.hasOwnProperty(key)) {
+                              totalSize += localStorage[key].length + key.length
+                            }
+                          }
+                          const sizeInMB = (totalSize / (1024 * 1024)).toFixed(2)
+                          alert(`localStorage-Größe: ${sizeInMB} MB\n\nMaximal: ~5-10 MB`)
+                        } catch (error) {
+                          alert('Fehler beim Berechnen der Größe')
+                        }
+                        setShowExportMenu(false)
+                      }}
+                      style={{
+                        padding: '0.6rem 1rem',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                      }}
+                    >
+                      📊 Speicher prüfen
+                    </button>
+                    <button
+                      onClick={() => {
+                        const result = cleanupUnnecessaryData()
+                        if (result) {
+                          alert('✅ Cleanup erfolgreich abgeschlossen!\n\nGelöscht:\n- Alte Blob URLs\n- Ungültige Dokumente\n- Alte PR-Vorschläge\n- Leere Events')
+                        } else {
+                          alert('⚠️ Cleanup mit Fehlern abgeschlossen')
+                        }
+                        setShowExportMenu(false)
+                      }}
+                      style={{
+                        padding: '0.6rem 1rem',
+                        background: 'rgba(102, 126, 234, 0.3)',
+                        border: '1px solid rgba(102, 126, 234, 0.5)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(102, 126, 234, 0.5)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(102, 126, 234, 0.3)'
+                      }}
+                    >
+                      🧹 Cleanup durchführen
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+              <div style={{
+                display: 'flex',
+                gap: 'clamp(0.75rem, 2vw, 1rem)',
+                flexWrap: 'wrap',
+                marginBottom: 'clamp(2rem, 5vw, 3rem)'
+              }}>
+                <input 
+                  type="text" 
+                  placeholder="Werke durchsuchen..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    flex: 1,
+                    minWidth: '200px',
+                    padding: 'clamp(0.75rem, 2vw, 1rem)',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '12px',
+                    fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                    color: '#ffffff',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)'
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)'
+                  }}
+                />
+                <select 
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  style={{
+                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '12px',
+                    fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                    color: '#ffffff',
+                    outline: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="alle" style={{ background: '#1a1f3a', color: '#ffffff' }}>Alle Kategorien</option>
+                  <option value="malerei" style={{ background: '#1a1f3a', color: '#ffffff' }}>Malerei</option>
+                  <option value="keramik" style={{ background: '#1a1f3a', color: '#ffffff' }}>Keramik</option>
+                </select>
+              </div>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(clamp(200px, 30vw, 280px), 1fr))',
+                gap: 'clamp(1rem, 3vw, 1.5rem)'
+              }}>
+              {(() => {
+                const filtered = allArtworks.filter((artwork) => {
+                  if (!artwork) return false
+                  if (categoryFilter !== 'alle' && artwork.category !== categoryFilter) return false
+                  if (searchQuery && !artwork.title?.toLowerCase().includes(searchQuery.toLowerCase()) && 
+                      !artwork.number?.toLowerCase().includes(searchQuery.toLowerCase())) return false
+                  return true
+                })
+
+                if (filtered.length === 0) {
+                  return (
+                    <div style={{ 
+                      gridColumn: '1 / -1', 
+                      textAlign: 'center', 
+                      padding: 'clamp(3rem, 8vw, 5rem)',
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      backdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '20px'
+                    }}>
+                      <p style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', color: 'rgba(255, 255, 255, 0.9)' }}>
+                        Noch keine Werke vorhanden
+                      </p>
+                      <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', marginTop: '1rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+                        Klicke auf "+ Neues Werk hinzufügen" um ein Werk anzulegen.
+                      </p>
+                    </div>
+                  )
+                }
+
+                return filtered.map((artwork) => {
+                  const imageSrc = artwork.imageUrl || artwork.previewUrl
+                  
+                  return (
+                  <div 
+                    key={artwork.number || artwork.id} 
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      backdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '20px',
+                      padding: 'clamp(1rem, 3vw, 1.5rem)',
+                      boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-8px)'
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                    }}
+                  >
+                    {imageSrc ? (
+                      <img 
+                        src={imageSrc} 
+                        alt={artwork.title || artwork.number}
+                        style={{ width: '100%', height: 'clamp(180px, 30vw, 220px)', objectFit: 'cover', borderRadius: '12px', marginBottom: 'clamp(0.75rem, 2vw, 1rem)' }}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement
+                          target.style.display = 'none'
+                          const placeholder = document.createElement('div')
+                          placeholder.textContent = '🖼️'
+                          placeholder.style.cssText = 'width: 100%; height: clamp(180px, 30vw, 220px); display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border-radius: 12px; margin-bottom: clamp(0.75rem, 2vw, 1rem); color: rgba(255, 255, 255, 0.3); font-size: clamp(2rem, 5vw, 3rem)'
+                          target.parentElement?.insertBefore(placeholder, target)
+                        }}
+                      />
+                    ) : (
+                      <div style={{ 
+                        width: '100%', 
+                        height: 'clamp(180px, 30vw, 220px)', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        background: 'rgba(255, 255, 255, 0.05)', 
+                        borderRadius: '12px', 
+                        marginBottom: 'clamp(0.75rem, 2vw, 1rem)', 
+                        color: 'rgba(255, 255, 255, 0.3)',
+                        fontSize: 'clamp(2rem, 5vw, 3rem)'
+                      }}>
+                        🖼️
+                      </div>
+                    )}
+                    <h3 style={{
+                      margin: '0 0 0.5rem',
+                      fontSize: 'clamp(1rem, 3vw, 1.2rem)',
+                      color: '#ffffff',
+                      fontWeight: '600'
+                    }}>
+                      {artwork.title || artwork.number}
+                    </h3>
+                    <p style={{
+                      margin: '0.25rem 0',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      color: 'rgba(255, 255, 255, 0.6)'
+                    }}>
+                      {artwork.category === 'malerei' ? 'Malerei' : artwork.category === 'keramik' ? 'Keramik' : artwork.category}
+                    </p>
+                    {artwork.artist && (
+                      <p style={{ 
+                        fontSize: 'clamp(0.85rem, 2.5vw, 0.95rem)', 
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        margin: '0.25rem 0'
+                      }}>
+                        {artwork.artist}
+                      </p>
+                    )}
+                    {artwork.price && (
+                      <p style={{ 
+                        fontWeight: '700', 
+                        background: 'linear-gradient(135deg, #b8b8ff 0%, #ff77c6 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                        fontSize: 'clamp(1rem, 3vw, 1.2rem)',
+                        margin: '0.5rem 0'
+                      }}>
+                        € {artwork.price.toFixed(2)}
+                      </p>
+                    )}
+                    <div style={{ 
+                      marginTop: '0.75rem', 
+                      fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', 
+                      color: 'rgba(255, 255, 255, 0.6)' 
+                    }}>
+                      {artwork.inExhibition && <span style={{ display: 'block' }}>✓ Ausstellung</span>}
+                      {artwork.inShop && <span style={{ display: 'block' }}>✓ Shop</span>}
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      gap: 'clamp(0.5rem, 2vw, 0.75rem)',
+                      marginTop: 'clamp(1rem, 3vw, 1.5rem)'
+                    }}>
+                      <button 
+                        onClick={() => {
+                          const category = artwork.category || 'malerei'
+                          setArtworkCategory(category)
+                          // Bei Keramik: Titel aus Unterkategorie setzen, nicht aus artwork.title
+                          if (category === 'keramik') {
+                            const subcategory = artwork.ceramicSubcategory || 'vase'
+                            setArtworkCeramicSubcategory(subcategory as 'vase' | 'teller' | 'skulptur' | 'sonstig')
+                            const subcategoryLabels: Record<string, string> = {
+                              'vase': 'Vase',
+                              'teller': 'Teller',
+                              'skulptur': 'Skulptur',
+                              'sonstig': 'Sonstig'
+                            }
+                            setArtworkTitle(subcategoryLabels[subcategory] || 'Keramik')
+                            setArtworkCeramicHeight(artwork.ceramicHeight ? String(artwork.ceramicHeight) : '10')
+                            setArtworkCeramicDiameter(artwork.ceramicDiameter ? String(artwork.ceramicDiameter) : '10')
+                            setArtworkCeramicDescription(artwork.ceramicDescription || '')
+                            setArtworkCeramicType(artwork.ceramicType || 'steingut')
+                            setArtworkCeramicSurface(artwork.ceramicSurface || 'mischtechnik')
+                          } else {
+                            setArtworkTitle(artwork.title || '')
+                            setArtworkPaintingWidth(artwork.paintingWidth ? String(artwork.paintingWidth) : '')
+                            setArtworkPaintingHeight(artwork.paintingHeight ? String(artwork.paintingHeight) : '')
+                            setArtworkCeramicSubcategory('vase')
+                            setArtworkCeramicHeight('10')
+                            setArtworkCeramicDiameter('10')
+                            setArtworkCeramicDescription('')
+                            setArtworkCeramicType('steingut')
+                            setArtworkCeramicSurface('mischtechnik')
+                          }
+                          setArtworkArtist(artwork.artist || '')
+                          setArtworkDescription(artwork.description || '')
+                          setArtworkPrice(String(artwork.price || ''))
+                          setIsInShop(artwork.inShop !== undefined ? artwork.inShop : true)
+                          setArtworkNumber(artwork.number || '')
+                          setShowAddModal(true)
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: 'clamp(0.5rem, 1.5vw, 0.75rem)',
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          backdropFilter: 'blur(10px)',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          fontSize: 'clamp(0.85rem, 2.5vw, 0.95rem)',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                        }}
+                      >
+                        Bearbeiten
+                      </button>
+                      <button 
+                        onClick={async () => {
+                          if (confirm(`Möchtest du "${artwork.title || artwork.number}" wirklich löschen?`)) {
+                            const artworks = loadArtworks()
+                            const filtered = artworks.filter((a: any) => a.number !== artwork.number && a.id !== artwork.id)
+                            saveArtworks(filtered)
+                            window.dispatchEvent(new CustomEvent('artworks-updated'))
+                            setAllArtworks(filtered)
+                          }
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: 'clamp(0.5rem, 1.5vw, 0.75rem)',
+                          background: 'linear-gradient(135deg, #f5576c 0%, #f093fb 100%)',
+                          border: 'none',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          fontSize: 'clamp(0.85rem, 2.5vw, 0.95rem)',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease',
+                          boxShadow: '0 10px 30px rgba(245, 87, 108, 0.3)'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-2px)'
+                          e.currentTarget.style.boxShadow = '0 15px 40px rgba(245, 87, 108, 0.4)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)'
+                          e.currentTarget.style.boxShadow = '0 10px 30px rgba(245, 87, 108, 0.3)'
+                        }}
+                      >
+                        Löschen
+                      </button>
+                    </div>
+                  </div>
+                  )
+                })
+              })()}
+              </div>
+            </section>
+          )}
+
+          {/* Dokumente */}
+          {activeTab === 'dokumente' && (
+            <section style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '24px',
+              padding: 'clamp(2rem, 5vw, 3rem)',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+              marginBottom: 'clamp(2rem, 5vw, 3rem)'
+            }}>
+              <h2 style={{
+                fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
+                fontWeight: '700',
+                color: '#ffffff',
+                marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
+                letterSpacing: '-0.01em'
+              }}>
+                Dokumente verwalten
+              </h2>
+              
+              {/* Filter für Dokumente */}
+              <div style={{
+                display: 'flex',
+                gap: '0.75rem',
+                marginBottom: '1.5rem',
+                flexWrap: 'wrap'
+              }}>
+                <button
+                  onClick={() => setDocumentFilter('alle')}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: documentFilter === 'alle' 
+                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                      : 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '8px',
+                    color: '#ffffff',
+                    fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                    fontWeight: documentFilter === 'alle' ? '600' : '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  Alle
+                </button>
+                <button
+                  onClick={() => setDocumentFilter('pr-dokumente')}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: documentFilter === 'pr-dokumente' 
+                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                      : 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '8px',
+                    color: '#ffffff',
+                    fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                    fontWeight: documentFilter === 'pr-dokumente' ? '600' : '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  📢 PR-Dokumente
+                </button>
+                <button
+                  onClick={() => setDocumentFilter('sonstige')}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: documentFilter === 'sonstige' 
+                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                      : 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '8px',
+                    color: '#ffffff',
+                    fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                    fontWeight: documentFilter === 'sonstige' ? '600' : '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  Sonstige
+                </button>
+              </div>
+              
+              <div style={{
+                display: 'flex',
+                gap: 'clamp(0.75rem, 2vw, 1rem)',
+                flexWrap: 'wrap',
+                marginBottom: 'clamp(2rem, 5vw, 3rem)'
+              }}>
+                <button 
+                  onClick={() => setShowUploadModal(true)}
+                  style={{
+                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                    e.currentTarget.style.boxShadow = '0 15px 40px rgba(102, 126, 234, 0.4)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.3)'
+                  }}
+                >
+                  + Dokument hochladen
+                </button>
+                <button 
+                  onClick={() => {
+                    const input = document.createElement('input')
+                    input.type = 'file'
+                    input.multiple = true
+                    input.accept = '.pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,image/*,application/pdf'
+                    input.onchange = async (e) => {
+                      const files = Array.from((e.target as HTMLInputElement).files || [])
+                      if (files.length === 0) return
+                      
+                      let successCount = 0
+                      let errorCount = 0
+                      
+                      for (const file of files) {
+                        try {
+                          await handleDocumentUpload(file)
+                          successCount++
+                        } catch (error) {
+                          console.error('Fehler beim Hochladen:', file.name, error)
+                          errorCount++
+                        }
+                      }
+                      
+                      if (successCount > 0) {
+                        alert(`✅ ${successCount} Dokument${successCount > 1 ? 'e' : ''} erfolgreich hochgeladen${errorCount > 0 ? `\n❌ ${errorCount} Fehler` : ''}`)
+                      } else {
+                        alert(`❌ Fehler beim Hochladen der Dokumente`)
+                      }
+                    }
+                    input.click()
+                  }}
+                  style={{
+                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    color: '#ffffff',
+                    borderRadius: '12px',
+                    fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                    e.currentTarget.style.transform = 'translateY(0)'
+                  }}
+                >
+                  📁 Mehrere Dokumente hochladen
+                </button>
+                {documents.length === 0 && (
+                  <button 
+                  onClick={() => {
+                    if (confirm('Möchtest du die Beispiel-Dokumente wiederherstellen? Diese sind Platzhalter ohne echte Dateien.')) {
+                      const exampleDocs = [
+                        {
+                          id: 'example-1',
+                          name: 'Einladungsfolder',
+                          type: 'application/pdf',
+                          size: 2400000,
+                          data: '',
+                          uploadedAt: new Date('2026-02-01').toISOString(),
+                          isPDF: true,
+                          isPlaceholder: true
+                        },
+                        {
+                          id: 'example-2',
+                          name: 'Plakat A4',
+                          type: 'application/pdf',
+                          size: 1800000,
+                          data: '',
+                          uploadedAt: new Date('2026-02-02').toISOString(),
+                          isPDF: true,
+                          isPlaceholder: true
+                        },
+                        {
+                          id: 'example-3',
+                          name: 'Presse',
+                          type: 'application/pdf',
+                          size: 3100000,
+                          data: '',
+                          uploadedAt: new Date('2026-02-03').toISOString(),
+                          isPDF: true,
+                          isPlaceholder: true
+                        },
+                        {
+                          id: 'example-4',
+                          name: 'Katalog',
+                          type: 'application/pdf',
+                          size: 5200000,
+                          data: '',
+                          uploadedAt: new Date('2026-02-04').toISOString(),
+                          isPDF: true,
+                          isPlaceholder: true
+                        }
+                      ]
+                      saveDocuments(exampleDocs)
+                      alert('✅ Beispiel-Dokumente wiederhergestellt!\n\nHinweis: Diese sind Platzhalter. Bitte lade die echten Dokumente hoch, indem du auf die Dokumente klickst und sie durch echte Dateien ersetzt.')
+                    }
+                  }}
+                  style={{ background: '#666' }}
+                >
+                  📋 Beispiel-Dokumente wiederherstellen
+                </button>
+              )}
+            </div>
+            
+              {documents.length === 0 ? (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: 'clamp(3rem, 8vw, 5rem)',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '20px'
+                }}>
+                  <p style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', color: 'rgba(255, 255, 255, 0.9)' }}>
+                    Noch keine Dokumente vorhanden
+                  </p>
+                  <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', marginTop: '1rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+                    Klicke auf "+ Dokument hochladen" um ein Dokument hinzuzufügen.
+                  </p>
+                </div>
+              ) : (
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 'clamp(0.75rem, 2vw, 1rem)'
+                }}>
+                {documents
+                  .filter((doc: any) => {
+                    if (documentFilter === 'alle') return true
+                    if (documentFilter === 'pr-dokumente') return doc.category === 'pr-dokumente'
+                    if (documentFilter === 'sonstige') return !doc.category || doc.category !== 'pr-dokumente'
+                    return true
+                  })
+                  .map((doc) => {
+                  const fileSizeMB = (doc.size / (1024 * 1024)).toFixed(2)
+                  const uploadDate = new Date(doc.uploadedAt).toLocaleDateString('de-DE', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                  })
+                  
+                  let icon = '📄'
+                  if (doc.type.startsWith('image/')) icon = '🖼️'
+                  else if (doc.type === 'application/pdf') icon = '📋'
+                  else if (doc.type.includes('word') || doc.type.includes('document')) icon = '📝'
+                  
+                  return (
+                    <div key={doc.id} className="document-admin-item" style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '1rem',
+                      background: '#fff',
+                      borderRadius: '8px',
+                      marginBottom: '0.5rem',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                    }}>
+                      <span style={{ fontSize: '2rem', marginRight: '1rem' }}>{icon}</span>
+                      <div style={{ flex: 1 }}>
+                        <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#1f1f1f' }}>{doc.name}</h3>
+                        <p style={{ margin: '0.25rem 0 0', fontSize: '0.9rem', color: '#666' }}>
+                          {doc.isPlaceholder ? '⚠️ Platzhalter - Bitte Datei hochladen' : `${doc.isPDF ? 'PDF' : doc.type.split('/')[1]?.toUpperCase() || 'DATEI'} • ${fileSizeMB} MB`} • {doc.isPlaceholder ? 'Erstellt' : 'Hochgeladen'}: {uploadDate}
+                        </p>
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        {doc.isPlaceholder ? (
+                          <>
+                            <button 
+                              className="btn-secondary"
+                              onClick={() => {
+                                const input = document.createElement('input')
+                                input.type = 'file'
+                                input.accept = '.pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,image/*,application/pdf'
+                                input.onchange = async (e) => {
+                                  const file = (e.target as HTMLInputElement).files?.[0]
+                                  if (file) {
+                                    try {
+                                      const reader = new FileReader()
+                                      reader.onload = (e) => {
+                                        const base64 = e.target?.result as string
+                                        const updated = documents.map(d => 
+                                          d.id === doc.id 
+                                            ? { ...d, name: file.name, type: file.type, size: file.size, data: base64, isPDF: file.type === 'application/pdf', isPlaceholder: false }
+                                            : d
+                                        )
+                                        saveDocuments(updated)
+                                        alert('✅ Dokument erfolgreich ersetzt!')
+                                      }
+                                      reader.onerror = () => alert('❌ Fehler beim Laden der Datei')
+                                      reader.readAsDataURL(file)
+                                    } catch (error) {
+                                      alert('❌ Fehler beim Ersetzen')
+                                    }
+                                  }
+                                }
+                                input.click()
+                              }}
+                              style={{ background: '#8b6914', color: '#fff', padding: '0.5rem 1rem', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                            >
+                              📤 Datei hochladen
+                            </button>
+                            <button 
+                              className="btn-secondary"
+                              onClick={() => deleteDocument(doc.id)}
+                              style={{ background: '#c33', color: '#fff', padding: '0.5rem 1rem', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                            >
+                              🗑️ Löschen
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button 
+                              className="btn-secondary"
+                              onClick={() => convertToPDF(doc)}
+                              style={{ background: '#8b6914', color: '#fff', padding: '0.5rem 1rem', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                            >
+                              📄 Zu PDF
+                            </button>
+                            <button 
+                              className="btn-secondary"
+                              onClick={() => {
+                                const link = document.createElement('a')
+                                link.href = doc.data
+                                link.download = doc.name
+                                link.click()
+                              }}
+                              style={{ background: '#2d6a2d', color: '#fff', padding: '0.5rem 1rem', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                            >
+                              ⬇️ Download
+                            </button>
+                            <button 
+                              className="btn-secondary"
+                              onClick={() => deleteDocument(doc.id)}
+                              style={{ background: '#c33', color: '#fff', padding: '0.5rem 1rem', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                            >
+                              🗑️ Löschen
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Upload Modal */}
+        {showUploadModal && (
+          <div 
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowUploadModal(false)
+            }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0,0,0,0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000
+            }}
+          >
+            <div style={{
+              background: '#fff',
+              padding: '2rem',
+              borderRadius: '12px',
+              maxWidth: '500px',
+              width: '90%',
+              maxHeight: '90vh',
+              overflow: 'auto'
+            }}>
+              <h2 style={{ marginTop: 0 }}>Dokument hochladen</h2>
+              <p style={{ color: '#666', marginBottom: '1.5rem' }}>
+                Unterstützte Formate: PDF, Bilder (JPG, PNG, etc.), Word-Dokumente
+              </p>
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,image/*,application/pdf"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    try {
+                      await handleDocumentUpload(file)
+                      alert('✅ Dokument erfolgreich hochgeladen!')
+                      setShowUploadModal(false)
+                    } catch (error) {
+                      console.error('Upload-Fehler:', error)
+                      alert('❌ Fehler beim Hochladen. Bitte versuche es erneut.')
+                    }
+                  }
+                }}
+                style={{ width: '100%', padding: '0.5rem', marginBottom: '1rem' }}
+              />
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                <button 
+                  onClick={() => setShowUploadModal(false)}
+                  style={{ padding: '0.5rem 1rem', border: '1px solid #ddd', background: '#fff', borderRadius: '4px', cursor: 'pointer' }}
+                >
+                  Abbrechen
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+
+        {/* Einstellungen */}
+        {activeTab === 'einstellungen' && (
+          <section style={{
+            background: 'rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '24px',
+            padding: 'clamp(2rem, 5vw, 3rem)',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+            marginBottom: 'clamp(2rem, 5vw, 3rem)'
+          }}>
+            <h2 style={{
+              fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
+              fontWeight: '700',
+              color: '#ffffff',
+              marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
+              letterSpacing: '-0.01em'
+            }}>
+              ⚙️ Einstellungen
+            </h2>
+
+            {/* Sub-Tabs für Stammdaten und Design */}
+            <div style={{
+              display: 'flex',
+              gap: '1rem',
+              marginBottom: '2rem',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+              paddingBottom: '1rem'
+            }}>
+              <button
+                onClick={() => setSettingsSubTab('stammdaten')}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  fontWeight: settingsSubTab === 'stammdaten' ? '600' : '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  background: settingsSubTab === 'stammdaten'
+                    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                    : 'rgba(255, 255, 255, 0.05)',
+                  color: '#ffffff'
+                }}
+              >
+                👥 Stammdaten
+              </button>
+              <button
+                onClick={() => setSettingsSubTab('design')}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  fontWeight: settingsSubTab === 'design' ? '600' : '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  background: settingsSubTab === 'design'
+                    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                    : 'rgba(255, 255, 255, 0.05)',
+                  color: '#ffffff'
+                }}
+              >
+                🎨 Design
+              </button>
+            </div>
+
+            {/* Stammdaten Sub-Tab */}
+            {settingsSubTab === 'stammdaten' && (
+              <div>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                  gap: 'clamp(1rem, 2.5vw, 1.5rem)',
+                  marginBottom: 'clamp(1rem, 2.5vw, 1.5rem)'
+                }}>
+                  {/* Martina */}
+                  <div style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    padding: 'clamp(1rem, 2.5vw, 1.25rem)',
+                    borderRadius: '16px'
+                  }}>
+                    <h3 style={{
+                      marginTop: 0,
+                      marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
+                      fontSize: 'clamp(1rem, 2.5vw, 1.15rem)',
+                      fontWeight: '600',
+                      color: '#ffffff',
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                      paddingBottom: '0.5rem'
+                    }}>
+                      👩‍🎨 Martina
+                    </h3>
+                    <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem' }}>E-Mail</label>
+                        <input
+                          type="email"
+                          value={martinaData.email || ''}
+                          onChange={(e) => setMartinaData({ ...martinaData, email: e.target.value })}
+                          placeholder="martina@k2-galerie.at"
+                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
+                        />
+                      </div>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem' }}>Telefon</label>
+                        <input
+                          type="tel"
+                          value={martinaData.phone || ''}
+                          onChange={(e) => setMartinaData({ ...martinaData, phone: e.target.value })}
+                          placeholder="+43 ..."
+                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Georg */}
+                  <div style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    padding: 'clamp(1rem, 2.5vw, 1.25rem)',
+                    borderRadius: '16px'
+                  }}>
+                    <h3 style={{
+                      marginTop: 0,
+                      marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
+                      fontSize: 'clamp(1rem, 2.5vw, 1.15rem)',
+                      fontWeight: '600',
+                      color: '#ffffff',
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                      paddingBottom: '0.5rem'
+                    }}>
+                      👨‍🎨 Georg
+                    </h3>
+                    <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem' }}>E-Mail</label>
+                        <input
+                          type="email"
+                          value={georgData.email || ''}
+                          onChange={(e) => setGeorgData({ ...georgData, email: e.target.value })}
+                          placeholder="georg@k2-galerie.at"
+                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
+                        />
+                      </div>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem' }}>Telefon</label>
+                        <input
+                          type="tel"
+                          value={georgData.phone || ''}
+                          onChange={(e) => setGeorgData({ ...georgData, phone: e.target.value })}
+                          placeholder="+43 ..."
+                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Galerie */}
+                  <div style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    padding: 'clamp(1rem, 2.5vw, 1.25rem)',
+                    borderRadius: '16px'
+                  }}>
+                    <h3 style={{
+                      marginTop: 0,
+                      marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
+                      fontSize: 'clamp(1rem, 2.5vw, 1.15rem)',
+                      fontWeight: '600',
+                      color: '#ffffff',
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                      paddingBottom: '0.5rem'
+                    }}>
+                      🏛️ Galerie
+                    </h3>
+                    <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem' }}>Adresse</label>
+                        <input
+                          type="text"
+                          value={galleryData.address || ''}
+                          onChange={(e) => setGalleryData({ ...galleryData, address: e.target.value })}
+                          placeholder="Straße, PLZ Ort"
+                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
+                        />
+                      </div>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem' }}>Telefon</label>
+                        <input
+                          type="tel"
+                          value={galleryData.phone || ''}
+                          onChange={(e) => setGalleryData({ ...galleryData, phone: e.target.value })}
+                          placeholder="+43 ..."
+                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
+                        />
+                      </div>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem' }}>E-Mail</label>
+                        <input
+                          type="email"
+                          value={galleryData.email || ''}
+                          onChange={(e) => setGalleryData({ ...galleryData, email: e.target.value })}
+                          placeholder="info@k2-galerie.at"
+                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
+                        />
+                      </div>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem' }}>Internetadresse</label>
+                        <input
+                          type="url"
+                          value={galleryData.internetadresse || galleryData.website || ''}
+                          onChange={(e) => {
+                            const value = e.target.value.trim()
+                            setGalleryData({ 
+                              ...galleryData, 
+                              internetadresse: value,
+                              website: value // Synchronisiere auch website
+                            })
+                          }}
+                          placeholder="https://k2-galerie.at"
+                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
+                        />
+                        <small style={{ color: '#8fa0c9', fontSize: '0.75rem', marginTop: '0.25rem', display: 'block' }}>
+                          URL unter der die Seite erreichbar ist
+                        </small>
+                      </div>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem' }}>Bankverbindung</label>
+                        <textarea
+                          value={galleryData.bankverbindung || ''}
+                          onChange={(e) => setGalleryData({ ...galleryData, bankverbindung: e.target.value })}
+                          placeholder="IBAN: AT...&#10;BIC: ...&#10;Bank: ..."
+                          rows={4}
+                          style={{ 
+                            padding: '0.6rem', 
+                            fontSize: '0.9rem',
+                            fontFamily: 'inherit',
+                            resize: 'vertical',
+                            minHeight: '80px'
+                          }}
+                        />
+                      </div>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem' }}>Admin-Passwort</label>
+                        <input
+                          type="password"
+                          value={galleryData.adminPassword || 'k2Galerie2026'}
+                          onChange={(e) => setGalleryData({ ...galleryData, adminPassword: e.target.value })}
+                          placeholder="Admin-Zugangscode"
+                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
+                        />
+                      </div>
+                      
+                      {/* Bild-Upload für Willkommensseite */}
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem' }}>Bild für Willkommensseite</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0]
+                            if (file) {
+                              try {
+                                // AGRESSIV komprimiert für viele Bilder (600px, 50% Qualität)
+                                const compressedImage = await compressImage(file, 600, 0.5)
+                                setGalleryData({ ...galleryData, welcomeImage: compressedImage })
+                                // KEIN automatisches Speichern mehr - nur im State, muss explizit gespeichert werden
+                              } catch (error) {
+                                console.error('Fehler beim Komprimieren:', error)
+                                alert('Fehler beim Hochladen des Bildes')
+                              }
+                            }
+                          }}
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: '#ffffff' }}
+                        />
+                        {galleryData.welcomeImage && (
+                          <div style={{ marginTop: '0.5rem' }}>
+                            <img 
+                              src={galleryData.welcomeImage} 
+                              alt="Willkommensbild" 
+                              style={{ 
+                                maxWidth: '200px', 
+                                maxHeight: '150px', 
+                                borderRadius: '8px',
+                                border: '1px solid rgba(255, 255, 255, 0.2)',
+                                objectFit: 'cover'
+                              }} 
+                            />
+                            <button
+                              onClick={() => setGalleryData({ ...galleryData, welcomeImage: '' })}
+                              style={{
+                                marginTop: '0.5rem',
+                                padding: '0.4rem 0.8rem',
+                                background: 'rgba(255, 0, 0, 0.2)',
+                                border: '1px solid rgba(255, 0, 0, 0.3)',
+                                borderRadius: '6px',
+                                color: '#ff6b6b',
+                                fontSize: '0.8rem',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Bild entfernen
+                            </button>
+                          </div>
+                        )}
+                        <small style={{ color: '#8fa0c9', fontSize: '0.75rem', marginTop: '0.25rem', display: 'block' }}>
+                          Wird auf der Willkommensseite angezeigt (automatisch komprimiert)
+                          <br />
+                          <strong style={{ color: '#ffd700' }}>⚠️ Nicht vergessen: "Stammdaten speichern" klicken!</strong>
+                        </small>
+                      </div>
+                      
+                      {/* Bild-Upload für Virtuellen Rundgang */}
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem' }}>Bild für Virtuellen Rundgang</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0]
+                            if (file) {
+                              try {
+                                // AGRESSIV komprimiert für viele Bilder (600px, 50% Qualität)
+                                const compressedImage = await compressImage(file, 600, 0.5)
+                                setGalleryData({ ...galleryData, virtualTourImage: compressedImage })
+                                // KEIN automatisches Speichern mehr - nur im State, muss explizit gespeichert werden
+                              } catch (error) {
+                                console.error('Fehler beim Komprimieren:', error)
+                                alert('Fehler beim Hochladen des Bildes')
+                              }
+                            }
+                          }}
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: '#ffffff' }}
+                        />
+                        {galleryData.virtualTourImage && (
+                          <div style={{ marginTop: '0.5rem' }}>
+                            <img 
+                              src={galleryData.virtualTourImage} 
+                              alt="Virtueller Rundgang Bild" 
+                              style={{ 
+                                maxWidth: '200px', 
+                                maxHeight: '150px', 
+                                borderRadius: '8px',
+                                border: '1px solid rgba(255, 255, 255, 0.2)',
+                                objectFit: 'cover'
+                              }} 
+                            />
+                            <button
+                              onClick={() => setGalleryData({ ...galleryData, virtualTourImage: '' })}
+                              style={{
+                                marginTop: '0.5rem',
+                                padding: '0.4rem 0.8rem',
+                                background: 'rgba(255, 0, 0, 0.2)',
+                                border: '1px solid rgba(255, 0, 0, 0.3)',
+                                borderRadius: '6px',
+                                color: '#ff6b6b',
+                                fontSize: '0.8rem',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Bild entfernen
+                            </button>
+                          </div>
+                        )}
+                        <small style={{ color: '#8fa0c9', fontSize: '0.75rem', marginTop: '0.25rem', display: 'block' }}>
+                          Wird im Bereich "Virtueller Rundgang" angezeigt (automatisch komprimiert)
+                          <br />
+                          <strong style={{ color: '#ffd700' }}>⚠️ Nicht vergessen: "Stammdaten speichern" klicken!</strong>
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
+                  <button 
+                    className="btn-primary" 
+                    onClick={saveStammdaten}
+                    style={{
+                      padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 3vw, 2rem)',
+                      fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                      width: '100%'
+                    }}
+                  >
+                    💾 Stammdaten speichern
+                  </button>
+                  
+                  <button 
+                    className="btn-primary" 
+                    onClick={publishMobile}
+                    disabled={isDeploying}
+                    style={{
+                      padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 3vw, 2rem)',
+                      fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                      width: '100%',
+                      background: isDeploying 
+                        ? 'rgba(184, 184, 255, 0.5)' 
+                        : 'linear-gradient(135deg, rgba(184, 184, 255, 0.2) 0%, rgba(184, 184, 255, 0.4) 100%)',
+                      border: '1px solid rgba(184, 184, 255, 0.6)',
+                      cursor: isDeploying ? 'wait' : 'pointer',
+                      opacity: isDeploying ? 0.7 : 1
+                    }}
+                  >
+                    {isDeploying ? '⏳ Veröffentliche...' : '🚀 Mobile Version veröffentlichen'}
+                  </button>
+                  
+                  <button
+                    onClick={manualCheckVercel}
+                    disabled={checkingVercel}
+                    style={{
+                      padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 3vw, 2rem)',
+                      fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                      width: '100%',
+                      marginTop: '0.5rem',
+                      background: checkingVercel 
+                        ? 'rgba(95, 251, 241, 0.3)' 
+                        : 'linear-gradient(135deg, rgba(95, 251, 241, 0.2) 0%, rgba(95, 251, 241, 0.4) 100%)',
+                      border: '2px solid rgba(95, 251, 241, 0.6)',
+                      borderRadius: '8px',
+                      color: '#5ffbf1',
+                      fontWeight: '600',
+                      cursor: checkingVercel ? 'wait' : 'pointer',
+                      opacity: checkingVercel ? 0.7 : 1,
+                      boxShadow: '0 4px 12px rgba(95, 251, 241, 0.2)'
+                    }}
+                  >
+                    {checkingVercel ? '⏳ Prüfe Vercel...' : '🔍 Vercel-Status prüfen'}
+                  </button>
+                  
+                  {/* Veröffentlichungsgeschichte Button */}
+                  <button
+                    onClick={() => window.open('https://vercel.com/k2-galerie/k2-galerie/deployments', '_blank')}
+                    style={{
+                      padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 3vw, 2rem)',
+                      fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                      width: '100%',
+                      marginTop: '0.5rem',
+                      background: 'linear-gradient(135deg, rgba(255, 193, 7, 0.2) 0%, rgba(255, 193, 7, 0.4) 100%)',
+                      border: '2px solid rgba(255, 193, 7, 0.6)',
+                      borderRadius: '8px',
+                      color: '#ffc107',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(255, 193, 7, 0.2)'
+                    }}
+                  >
+                    📜 Veröffentlichungsgeschichte anzeigen
+                  </button>
+                  
+                  <button 
+                    onClick={() => {
+                      const before = checkLocalStorageSize()
+                      const cleaned = cleanupLargeImages()
+                      const after = checkLocalStorageSize()
+                      alert(`🧹 Bereinigung abgeschlossen!\n\nVorher: ${(before.size / 1024 / 1024).toFixed(2)}MB\nNachher: ${(after.size / 1024 / 1024).toFixed(2)}MB\n\n${cleaned > 0 ? `${cleaned} große Bilder entfernt` : 'Keine großen Bilder gefunden'}\n\n${getLocalStorageReport()}`)
+                    }}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      fontSize: '0.85rem',
+                      width: '100%',
+                      background: 'rgba(255, 193, 7, 0.2)',
+                      color: '#ffc107',
+                      border: '1px solid rgba(255, 193, 7, 0.5)',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontWeight: 500,
+                      marginTop: '0.5rem'
+                    }}
+                  >
+                    🧹 localStorage bereinigen ({getLocalStorageReport().split('(')[1]?.split('%')[0] || '?'}%)
+                  </button>
+                  
+                  <small style={{ 
+                    color: '#8fa0c9', 
+                    fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)', 
+                    textAlign: 'center',
+                    marginTop: '0.5rem'
+                  }}>
+                    Öffnet Vercel → dann "Redeploy" klicken
+                  </small>
+                </div>
+              </div>
+            )}
+
+            {/* Design Sub-Tab */}
+            {settingsSubTab === 'design' && (
+              <div>
+                <h3 style={{
+                  fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                  fontWeight: '600',
+                  color: '#5ffbf1',
+                  marginBottom: '1rem'
+                }}>
+                  Vordefinierte Themes
+                </h3>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap: '1rem',
+                  marginBottom: '2rem'
+                }}>
+                  {Object.entries(themes).map(([name, theme]) => (
+                    <button
+                      key={name}
+                      onClick={() => applyTheme(name as keyof typeof themes)}
+                      style={{
+                        padding: '1.5rem',
+                        background: `linear-gradient(135deg, ${theme.backgroundColor2}, ${theme.backgroundColor3})`,
+                        border: `2px solid ${theme.accentColor}`,
+                        borderRadius: '12px',
+                        color: theme.textColor,
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        textAlign: 'left'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px)'
+                        e.currentTarget.style.boxShadow = `0 10px 30px ${theme.accentColor}40`
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = 'none'
+                      }}
+                    >
+                      <div style={{
+                        fontSize: '1.2rem',
+                        fontWeight: '600',
+                        marginBottom: '0.5rem',
+                        textTransform: 'capitalize'
+                      }}>
+                        {name === 'default' ? 'Standard' : name === 'warm' ? 'Warm' : name === 'elegant' ? 'Elegant' : 'Modern'}
+                      </div>
+                      <div style={{
+                        display: 'flex',
+                        gap: '0.5rem',
+                        marginTop: '0.75rem'
+                      }}>
+                        <div style={{
+                          width: '20px',
+                          height: '20px',
+                          borderRadius: '4px',
+                          background: theme.accentColor
+                        }} />
+                        <div style={{
+                          width: '20px',
+                          height: '20px',
+                          borderRadius: '4px',
+                          background: theme.backgroundColor2
+                        }} />
+                        <div style={{
+                          width: '20px',
+                          height: '20px',
+                          borderRadius: '4px',
+                          background: theme.backgroundColor3
+                        }} />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                <h3 style={{
+                  fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                  fontWeight: '600',
+                  color: '#5ffbf1',
+                  marginBottom: '1rem'
+                }}>
+                  Individuelle Farben
+                </h3>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                  gap: '1.5rem'
+                }}>
+                  {/* Akzentfarbe */}
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.5rem',
+                      color: '#8fa0c9',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '500'
+                    }}>
+                      Akzentfarbe
+                    </label>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <input
+                        type="color"
+                        value={designSettings.accentColor}
+                        onChange={(e) => handleDesignChange('accentColor', e.target.value)}
+                        style={{
+                          width: '60px',
+                          height: '40px',
+                          border: 'none',
+                          borderRadius: '8px',
+                          cursor: 'pointer'
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={designSettings.accentColor}
+                        onChange={(e) => handleDesignChange('accentColor', e.target.value)}
+                        style={{
+                          flex: 1,
+                          padding: '0.75rem',
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          fontSize: '0.9rem'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Hintergrundfarbe 1 */}
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.5rem',
+                      color: '#8fa0c9',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '500'
+                    }}>
+                      Hintergrund Start
+                    </label>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <input
+                        type="color"
+                        value={designSettings.backgroundColor1}
+                        onChange={(e) => handleDesignChange('backgroundColor1', e.target.value)}
+                        style={{
+                          width: '60px',
+                          height: '40px',
+                          border: 'none',
+                          borderRadius: '8px',
+                          cursor: 'pointer'
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={designSettings.backgroundColor1}
+                        onChange={(e) => handleDesignChange('backgroundColor1', e.target.value)}
+                        style={{
+                          flex: 1,
+                          padding: '0.75rem',
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          fontSize: '0.9rem'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Hintergrundfarbe 2 */}
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.5rem',
+                      color: '#8fa0c9',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '500'
+                    }}>
+                      Hintergrund Mitte
+                    </label>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <input
+                        type="color"
+                        value={designSettings.backgroundColor2}
+                        onChange={(e) => handleDesignChange('backgroundColor2', e.target.value)}
+                        style={{
+                          width: '60px',
+                          height: '40px',
+                          border: 'none',
+                          borderRadius: '8px',
+                          cursor: 'pointer'
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={designSettings.backgroundColor2}
+                        onChange={(e) => handleDesignChange('backgroundColor2', e.target.value)}
+                        style={{
+                          flex: 1,
+                          padding: '0.75rem',
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          fontSize: '0.9rem'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Hintergrundfarbe 3 */}
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.5rem',
+                      color: '#8fa0c9',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '500'
+                    }}>
+                      Hintergrund Ende
+                    </label>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <input
+                        type="color"
+                        value={designSettings.backgroundColor3}
+                        onChange={(e) => handleDesignChange('backgroundColor3', e.target.value)}
+                        style={{
+                          width: '60px',
+                          height: '40px',
+                          border: 'none',
+                          borderRadius: '8px',
+                          cursor: 'pointer'
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={designSettings.backgroundColor3}
+                        onChange={(e) => handleDesignChange('backgroundColor3', e.target.value)}
+                        style={{
+                          flex: 1,
+                          padding: '0.75rem',
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          fontSize: '0.9rem'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Textfarbe */}
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.5rem',
+                      color: '#8fa0c9',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '500'
+                    }}>
+                      Textfarbe
+                    </label>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <input
+                        type="color"
+                        value={designSettings.textColor}
+                        onChange={(e) => handleDesignChange('textColor', e.target.value)}
+                        style={{
+                          width: '60px',
+                          height: '40px',
+                          border: 'none',
+                          borderRadius: '8px',
+                          cursor: 'pointer'
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={designSettings.textColor}
+                        onChange={(e) => handleDesignChange('textColor', e.target.value)}
+                        style={{
+                          flex: 1,
+                          padding: '0.75rem',
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          fontSize: '0.9rem'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Muted Color */}
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.5rem',
+                      color: '#8fa0c9',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '500'
+                    }}>
+                      Gedämpfte Farbe
+                    </label>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <input
+                        type="color"
+                        value={designSettings.mutedColor}
+                        onChange={(e) => handleDesignChange('mutedColor', e.target.value)}
+                        style={{
+                          width: '60px',
+                          height: '40px',
+                          border: 'none',
+                          borderRadius: '8px',
+                          cursor: 'pointer'
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={designSettings.mutedColor}
+                        onChange={(e) => handleDesignChange('mutedColor', e.target.value)}
+                        style={{
+                          flex: 1,
+                          padding: '0.75rem',
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          fontSize: '0.9rem'
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Live-Vorschau */}
+                <div style={{
+                  marginTop: '2rem',
+                  padding: '1.5rem',
+                  background: `linear-gradient(135deg, ${designSettings.backgroundColor1} 0%, ${designSettings.backgroundColor2} 55%, ${designSettings.backgroundColor3} 100%)`,
+                  borderRadius: '16px',
+                  border: `1px solid ${designSettings.accentColor}40`
+                }}>
+                  <h3 style={{
+                    fontSize: 'clamp(1rem, 2.5vw, 1.2rem)',
+                    fontWeight: '600',
+                    color: designSettings.accentColor,
+                    marginBottom: '1rem'
+                  }}>
+                    Live-Vorschau
+                  </h3>
+                  <div style={{
+                    background: `linear-gradient(145deg, ${designSettings.cardBg1}, ${designSettings.cardBg2})`,
+                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    border: `1px solid ${designSettings.accentColor}30`
+                  }}>
+                    <h4 style={{
+                      color: designSettings.accentColor,
+                      marginTop: 0,
+                      marginBottom: '0.5rem'
+                    }}>
+                      Beispiel-Karte
+                    </h4>
+                    <p style={{
+                      color: designSettings.textColor,
+                      marginBottom: '0.5rem'
+                    }}>
+                      Haupttext mit der gewählten Textfarbe
+                    </p>
+                    <p style={{
+                      color: designSettings.mutedColor,
+                      fontSize: '0.9rem',
+                      margin: 0
+                    }}>
+                      Sekundärtext mit der gewählten Muted-Farbe
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{
+                  marginTop: '1.5rem',
+                  padding: '1rem',
+                  background: 'rgba(95, 251, 241, 0.1)',
+                  border: '1px solid rgba(95, 251, 241, 0.2)',
+                  borderRadius: '12px',
+                  fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                  color: '#8fa0c9'
+                }}>
+                  💡 <strong>Tipp:</strong> Die Design-Änderungen werden automatisch gespeichert und auf der gesamten Galerie-Seite angewendet. Aktualisiere die Seite, um die Änderungen zu sehen.
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Statistiken */}
+        {activeTab === 'statistiken' && (() => {
+          // Echte Statistiken berechnen
+          const totalArtworks = allArtworks.length
+          const inGalerie = allArtworks.filter((a: any) => a.inExhibition === true).length
+          const inShop = allArtworks.filter((a: any) => a.inShop === true).length
+          
+          // Verkaufte Werke
+          let soldCount = 0
+          let soldTotal = 0
+          try {
+            const soldData = localStorage.getItem('k2-sold-artworks')
+            if (soldData) {
+              const soldArtworks = JSON.parse(soldData)
+              soldCount = soldArtworks.length
+              // Berechne Gesamtwert der verkauften Werke
+              const soldNumbers = new Set(soldArtworks.map((a: any) => a.number))
+              const soldItems = allArtworks.filter((a: any) => soldNumbers.has(a.number))
+              soldTotal = soldItems.reduce((sum: number, a: any) => sum + (a.price || 0), 0)
+            }
+          } catch (error) {
+            // Ignoriere Fehler
+          }
+
+          // Verkäufe aus Orders
+          let ordersCount = 0
+          let ordersTotal = 0
+          try {
+            const ordersData = localStorage.getItem('k2-orders')
+            if (ordersData) {
+              const orders = JSON.parse(ordersData)
+              ordersCount = orders.length
+              ordersTotal = orders.reduce((sum: number, o: any) => sum + (o.total || 0), 0)
+            }
+          } catch (error) {
+            // Ignoriere Fehler
+          }
+
+          // Kategorien
+          const malereiCount = allArtworks.filter((a: any) => a.category === 'malerei').length
+          const keramikCount = allArtworks.filter((a: any) => a.category === 'keramik').length
+
+          return (
+            <section className="admin-section">
+              <h2>Statistiken</h2>
+              
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <div className="stat-icon">🎨</div>
+                  <div className="stat-value">{totalArtworks}</div>
+                  <div className="stat-label">Werke insgesamt</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon">🏛️</div>
+                  <div className="stat-value">{inGalerie}</div>
+                  <div className="stat-label">In Galerie</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon">🛒</div>
+                  <div className="stat-value">{inShop}</div>
+                  <div className="stat-label">Im Shop</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon">💰</div>
+                  <div className="stat-value">{soldCount}</div>
+                  <div className="stat-label">Verkaufte Werke</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon">💵</div>
+                  <div className="stat-value">€{ordersTotal.toFixed(2)}</div>
+                  <div className="stat-label">Umsatz gesamt</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon">📦</div>
+                  <div className="stat-value">{ordersCount}</div>
+                  <div className="stat-label">Bestellungen</div>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '2rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                {/* Kategorien */}
+                <div style={{ background: '#fff', padding: '1.5rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                  <h3 style={{ marginTop: 0, color: '#8b6914' }}>Kategorien</h3>
+                  <div style={{ marginTop: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <span>Malerei:</span>
+                      <strong>{malereiCount}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Keramik:</span>
+                      <strong>{keramikCount}</strong>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Verkäufe */}
+                <div style={{ background: '#fff', padding: '1.5rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                  <h3 style={{ marginTop: 0, color: '#8b6914' }}>Verkäufe</h3>
+                  <div style={{ marginTop: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <span>Verkaufte Werke:</span>
+                      <strong>{soldCount}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <span>Gesamtwert:</span>
+                      <strong style={{ color: '#2d6a2d' }}>€{soldTotal.toFixed(2)}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Bestellungen:</span>
+                      <strong>{ordersCount}</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* Verkaufshistorie */}
+              <div style={{ marginTop: '2rem', background: '#fff', padding: '1.5rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                <h3 style={{ marginTop: 0, color: '#8b6914' }}>Letzte Verkäufe</h3>
+                <div style={{ marginTop: '1rem' }}>
+                  {(() => {
+                    try {
+                      const ordersData = localStorage.getItem('k2-orders')
+                      if (ordersData) {
+                        const orders = JSON.parse(ordersData)
+                        const recentOrders = orders.slice().reverse().slice(0, 10)
+                        
+                        if (recentOrders.length === 0) {
+                          return <p style={{ color: '#666', textAlign: 'center', padding: '2rem' }}>Noch keine Verkäufe</p>
+                        }
+                        
+                        return (
+                          <div>
+                            {recentOrders.map((order: any, index: number) => (
+                              <div key={index} style={{ 
+                                padding: '1rem', 
+                                background: '#f5f5f5', 
+                                borderRadius: '8px', 
+                                marginBottom: '0.5rem',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
+                              }}>
+                                <div>
+                                  <strong>{order.orderNumber}</strong>
+                                  <br />
+                                  <small style={{ color: '#666' }}>
+                                    {new Date(order.date).toLocaleDateString('de-DE', { 
+                                      day: '2-digit', 
+                                      month: '2-digit', 
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })} • {order.items.length} {order.items.length === 1 ? 'Werk' : 'Werke'}
+                                  </small>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                  <strong style={{ color: '#2d6a2d' }}>€{order.total.toFixed(2)}</strong>
+                                  <br />
+                                  <small style={{ color: '#666' }}>
+                                    {order.paymentMethod === 'cash' ? '💵 Bar' : order.paymentMethod === 'card' ? '💳 Karte' : '🏦 Überweisung'}
+                                  </small>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      }
+                    } catch (error) {
+                      // Ignoriere Fehler
+                    }
+                    return <p style={{ color: '#666', textAlign: 'center', padding: '2rem' }}>Noch keine Verkäufe</p>
+                  })()}
+                </div>
+              </div>
+            </section>
+          )
+        })()}
+
+        {/* Eventplan */}
+        {activeTab === 'eventplan' && (
+          <section style={{
+            background: 'rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '24px',
+            padding: 'clamp(2rem, 5vw, 3rem)',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+            marginBottom: 'clamp(2rem, 5vw, 3rem)'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
+              flexWrap: 'wrap',
+              gap: '1rem'
+            }}>
+              <h2 style={{
+                fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
+                fontWeight: '700',
+                color: '#ffffff',
+                margin: 0,
+                letterSpacing: '-0.01em'
+              }}>
+                📅 Eventplanung
+              </h2>
+              <button
+                onClick={openEventModal}
+                style={{
+                  padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                }}
+              >
+                + Event hinzufügen
+              </button>
+            </div>
+
+            {/* Events Liste */}
+            {events.length === 0 ? (
+              <div style={{
+                textAlign: 'center',
+                padding: 'clamp(3rem, 8vw, 5rem)',
+                color: '#8fa0c9'
+              }}>
+                <div style={{ fontSize: 'clamp(3rem, 8vw, 5rem)', marginBottom: '1rem' }}>📅</div>
+                <p style={{ fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', margin: 0 }}>
+                  Noch keine Events vorhanden
+                </p>
+                <p style={{ fontSize: 'clamp(0.85rem, 2vw, 1rem)', marginTop: '0.5rem', opacity: 0.7 }}>
+                  Klicke auf "Event hinzufügen" um zu beginnen
+                </p>
+              </div>
+            ) : (
+              <div style={{
+                display: 'grid',
+                gap: 'clamp(1rem, 3vw, 1.5rem)',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'
+              }}>
+                {events.map((event) => {
+                  const eventIcons: Record<string, string> = {
+                    galerieeröffnung: '🎉',
+                    vernissage: '🍷',
+                    finissage: '👋',
+                    öffentlichkeitsarbeit: '📢',
+                    sonstiges: '📌'
+                  }
+                  const eventLabels: Record<string, string> = {
+                    galerieeröffnung: 'Galerieeröffnung',
+                    vernissage: 'Vernissage',
+                    finissage: 'Finissage',
+                    öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
+                    sonstiges: 'Sonstiges'
+                  }
+                  
+                  return (
+                    <div
+                      key={event.id}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '16px',
+                        padding: 'clamp(1rem, 3vw, 1.5rem)',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        marginBottom: '1rem'
+                      }}>
+                        <div>
+                          <div style={{
+                            fontSize: 'clamp(1.5rem, 4vw, 2rem)',
+                            marginBottom: '0.5rem'
+                          }}>
+                            {eventIcons[event.type] || '📌'}
+                          </div>
+                          <h3 style={{
+                            fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                            fontWeight: '600',
+                            color: '#ffffff',
+                            margin: '0 0 0.5rem 0'
+                          }}>
+                            {event.title}
+                          </h3>
+                          <div style={{
+                            fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                            color: '#8fa0c9',
+                            background: 'rgba(102, 126, 234, 0.2)',
+                            padding: '0.25rem 0.75rem',
+                            borderRadius: '6px',
+                            display: 'inline-block',
+                            marginBottom: '0.5rem'
+                          }}>
+                            {eventLabels[event.type] || event.type}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div style={{
+                        fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                        color: '#b8c5e0',
+                        marginBottom: '0.75rem'
+                      }}>
+                        <div style={{ marginBottom: '0.25rem' }}>
+                          <strong>📅 Datum:</strong> {
+                            event.endDate && event.endDate !== event.date
+                              ? `${new Date(event.date).toLocaleDateString('de-DE', {
+                                  day: 'numeric',
+                                  month: 'long',
+                                  year: 'numeric'
+                                })} - ${new Date(event.endDate).toLocaleDateString('de-DE', {
+                                  day: 'numeric',
+                                  month: 'long',
+                                  year: 'numeric'
+                                })}`
+                              : new Date(event.date).toLocaleDateString('de-DE', {
+                                  weekday: 'long',
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric'
+                                })
+                          }
+                        </div>
+                        {(event.startTime || event.endTime || event.time || (event.dailyTimes && Object.keys(event.dailyTimes).length > 0)) && (
+                          <div style={{ marginBottom: '0.25rem' }}>
+                            <strong>🕐 Uhrzeit:</strong> {
+                              (() => {
+                                const startTime = event.startTime || event.time || ''
+                                const endTime = event.endTime || ''
+                                const isMultiDay = event.endDate && event.endDate !== event.date
+                                const hasDailyTimes = event.dailyTimes && Object.keys(event.dailyTimes).length > 0
+                                
+                                if (hasDailyTimes && isMultiDay) {
+                                  // Zeige tägliche Zeiten
+                                  const days = getEventDays(event.date, event.endDate)
+                                  return (
+                                    <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                      {days.map((day) => {
+                                        const dayTime = event.dailyTimes[day]
+                                        if (!dayTime) return null
+                                        const dayLabel = new Date(day).toLocaleDateString('de-DE', {
+                                          weekday: 'short',
+                                          day: 'numeric',
+                                          month: 'short'
+                                        })
+                                        let timeDisplay = ''
+                                        if (typeof dayTime === 'string') {
+                                          // Altes Format (nur Startzeit)
+                                          timeDisplay = `${dayTime} Uhr`
+                                        } else if (dayTime.start || dayTime.end) {
+                                          // Neues Format (Start- und Endzeit)
+                                          timeDisplay = dayTime.start 
+                                            ? (dayTime.end ? `${dayTime.start} - ${dayTime.end} Uhr` : `${dayTime.start} Uhr`)
+                                            : (dayTime.end ? `bis ${dayTime.end} Uhr` : '')
+                                        }
+                                        if (!timeDisplay) return null
+                                        return (
+                                          <div key={day} style={{ fontSize: 'clamp(0.85rem, 2vw, 0.95rem)' }}>
+                                            {dayLabel}: {timeDisplay}
+                                          </div>
+                                        )
+                                      })}
+                                    </div>
+                                  )
+                                } else if (isMultiDay) {
+                                  // Mehrere Tage ohne tägliche Zeiten: Zeige Startzeit für ersten Tag und Endzeit für letzten Tag
+                                  return startTime && endTime 
+                                    ? `${startTime} Uhr (${new Date(event.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })}) - ${endTime} Uhr (${new Date(event.endDate).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })})`
+                                    : startTime 
+                                    ? `${startTime} Uhr (${new Date(event.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })})`
+                                    : ''
+                                } else {
+                                  // Ein Tag: Zeige Start- und Endzeit
+                                  return startTime && endTime 
+                                    ? `${startTime} - ${endTime} Uhr`
+                                    : startTime 
+                                    ? `${startTime} Uhr`
+                                    : ''
+                                }
+                              })()
+                            }
+                          </div>
+                        )}
+                        {event.location && (
+                          <div style={{ marginBottom: '0.25rem' }}>
+                            <strong>📍 Ort:</strong> {event.location}
+                          </div>
+                        )}
+                        {event.description && (
+                          <div style={{ marginTop: '0.75rem', fontSize: 'clamp(0.85rem, 2vw, 0.95rem)' }}>
+                            {event.description}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Dokumente */}
+                      {(event.documents && event.documents.length > 0) && (
+                        <div style={{
+                          marginTop: '1rem',
+                          padding: '0.75rem',
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(255, 255, 255, 0.1)'
+                        }}>
+                          <div style={{
+                            fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                            fontWeight: '600',
+                            color: '#ffffff',
+                            marginBottom: '0.5rem'
+                          }}>
+                            📎 Dokumente ({event.documents.length})
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            {event.documents.map((doc: any) => {
+                              const docIcons: Record<string, string> = {
+                                flyer: '📄',
+                                plakat: '🖼️',
+                                presseaussendung: '📰',
+                                sonstiges: '📎'
+                              }
+                              return (
+                                <div
+                                  key={doc.id}
+                                  style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    padding: '0.5rem',
+                                    background: 'rgba(255, 255, 255, 0.03)',
+                                    borderRadius: '6px'
+                                  }}
+                                >
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
+                                    <span>{docIcons[doc.type] || '📎'}</span>
+                                    <span
+                                      onClick={() => handleViewEventDocument(doc)}
+                                      style={{
+                                        fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
+                                        color: '#5ffbf1',
+                                        cursor: 'pointer',
+                                        textDecoration: 'underline'
+                                      }}
+                                    >
+                                      {doc.name}
+                                    </span>
+                                  </div>
+                                  <button
+                                    onClick={() => handleDeleteEventDocument(event.id, doc.id)}
+                                    style={{
+                                      padding: '0.25rem 0.5rem',
+                                      background: 'rgba(255, 100, 100, 0.2)',
+                                      border: '1px solid rgba(255, 100, 100, 0.3)',
+                                      borderRadius: '4px',
+                                      color: '#ff6464',
+                                      cursor: 'pointer',
+                                      fontSize: 'clamp(0.75rem, 2vw, 0.85rem)'
+                                    }}
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      <div style={{
+                        display: 'flex',
+                        gap: '0.5rem',
+                        marginTop: '1rem',
+                        flexWrap: 'wrap'
+                      }}>
+                        <button
+                          onClick={() => handleEditEvent(event)}
+                          style={{
+                            flex: 1,
+                            minWidth: '120px',
+                            padding: '0.75rem',
+                            background: 'rgba(102, 126, 234, 0.2)',
+                            border: '1px solid rgba(102, 126, 234, 0.3)',
+                            borderRadius: '8px',
+                            color: '#ffffff',
+                            cursor: 'pointer',
+                            fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                            fontWeight: '500'
+                          }}
+                        >
+                          ✏️ Bearbeiten
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedEventForDocument(event.id)
+                            setShowDocumentModal(true)
+                          }}
+                          style={{
+                            flex: 1,
+                            minWidth: '120px',
+                            padding: '0.75rem',
+                            background: 'rgba(95, 251, 241, 0.2)',
+                            border: '1px solid rgba(95, 251, 241, 0.3)',
+                            borderRadius: '8px',
+                            color: '#5ffbf1',
+                            cursor: 'pointer',
+                            fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                            fontWeight: '500'
+                          }}
+                        >
+                          📎 Dokument
+                        </button>
+                        <button
+                          onClick={() => handleDeleteEvent(event.id)}
+                          style={{
+                            flex: 1,
+                            minWidth: '120px',
+                            padding: '0.75rem',
+                            background: 'rgba(255, 100, 100, 0.2)',
+                            border: '1px solid rgba(255, 100, 100, 0.3)',
+                            borderRadius: '8px',
+                            color: '#ff6464',
+                            cursor: 'pointer',
+                            fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                            fontWeight: '500'
+                          }}
+                        >
+                          🗑️ Löschen
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Event Modal */}
+        {showEventModal && (
+          <div
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowEventModal(false)
+                setEditingEvent(null)
+                setEventTitle('')
+                setEventType('galerieeröffnung')
+                setEventDate('')
+                setEventEndDate('')
+                setEventStartTime('')
+                setEventEndTime('')
+                setEventDailyTimes({})
+                setEventDescription('')
+                setEventLocation('')
+                setEventPRSuggestions(null)
+                setEditingPRType(null)
+              }
+            }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.8)',
+              backdropFilter: 'blur(10px)',
+              zIndex: 10000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1rem'
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+                borderRadius: '24px',
+                padding: 'clamp(2rem, 5vw, 3rem)',
+                maxWidth: '600px',
+                width: '100%',
+                maxHeight: '90vh',
+                overflowY: 'auto',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
+                <h2 style={{
+                  fontSize: 'clamp(1.5rem, 4vw, 2rem)',
+                  fontWeight: '700',
+                  color: '#ffffff',
+                  marginTop: 0,
+                  marginBottom: 0
+                }}>
+                  {editingEvent ? 'Event bearbeiten' : 'Neues Event hinzufügen'}
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowEventModal(false)
+                    setEditingEvent(null)
+                    setEventTitle('')
+                    setEventType('galerieeröffnung')
+                    setEventDate('')
+                    setEventEndDate('')
+                    setEventStartTime('')
+                    setEventEndTime('')
+                    setEventDailyTimes({})
+                    setEventDescription('')
+                    setEventLocation('')
+                    setEventPRSuggestions(null)
+                    setEditingPRType(null)
+                  }}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#ffffff',
+                    fontSize: '2rem',
+                    cursor: 'pointer',
+                    padding: '0.5rem',
+                    lineHeight: 1,
+                    opacity: 0.7,
+                    transition: 'opacity 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '0.7'}
+                >
+                  ×
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#8fa0c9',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                    fontWeight: '500'
+                  }}>
+                    Titel *
+                  </label>
+                  <input
+                    type="text"
+                    value={eventTitle}
+                    onChange={(e) => setEventTitle(e.target.value)}
+                    placeholder="z.B. Eröffnung der K2 Galerie"
+                    style={{
+                      width: '100%',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      color: '#ffffff',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#8fa0c9',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                    fontWeight: '500'
+                  }}>
+                    Event-Typ
+                  </label>
+                  <select
+                    value={eventType}
+                    onChange={(e) => setEventType(e.target.value as any)}
+                    style={{
+                      width: '100%',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      color: '#ffffff',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                    }}
+                  >
+                    <option value="galerieeröffnung">🎉 Galerieeröffnung</option>
+                    <option value="vernissage">🍷 Vernissage</option>
+                    <option value="finissage">👋 Finissage</option>
+                    <option value="öffentlichkeitsarbeit">📢 Öffentlichkeitsarbeit</option>
+                    <option value="sonstiges">📌 Sonstiges</option>
+                  </select>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.5rem',
+                      color: '#8fa0c9',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '500'
+                    }}>
+                      Startdatum *
+                    </label>
+                    <input
+                      type="date"
+                      value={eventDate}
+                      onChange={(e) => setEventDate(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: 'clamp(0.75rem, 2vw, 1rem)',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '12px',
+                        color: '#ffffff',
+                        fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.5rem',
+                      color: '#8fa0c9',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '500'
+                    }}>
+                      Enddatum
+                    </label>
+                    <input
+                      type="date"
+                      value={eventEndDate}
+                      onChange={(e) => setEventEndDate(e.target.value)}
+                      min={eventDate}
+                      style={{
+                        width: '100%',
+                        padding: 'clamp(0.75rem, 2vw, 1rem)',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '12px',
+                        color: '#ffffff',
+                        fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.5rem',
+                      color: '#8fa0c9',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '500'
+                    }}>
+                      Startzeit
+                    </label>
+                    <input
+                      type="time"
+                      value={eventStartTime}
+                      onChange={(e) => setEventStartTime(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: 'clamp(0.75rem, 2vw, 1rem)',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '12px',
+                        color: '#ffffff',
+                        fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.5rem',
+                      color: '#8fa0c9',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '500'
+                    }}>
+                      Endzeit
+                    </label>
+                    <input
+                      type="time"
+                      value={eventEndTime}
+                      onChange={(e) => setEventEndTime(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: 'clamp(0.75rem, 2vw, 1rem)',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '12px',
+                        color: '#ffffff',
+                        fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Tägliche Zeiten für mehrtägige Events */}
+                {eventDate && eventEndDate && eventEndDate !== eventDate && (
+                  <div style={{
+                    marginTop: '1rem',
+                    padding: '1rem',
+                    background: 'rgba(95, 251, 241, 0.1)',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(95, 251, 241, 0.2)'
+                  }}>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.75rem',
+                      color: '#5ffbf1',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '600'
+                    }}>
+                      🕐 Start- und Endzeiten für jeden Tag (optional)
+                    </label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      {getEventDays(eventDate, eventEndDate).map((day) => {
+                        const dayLabel = new Date(day).toLocaleDateString('de-DE', {
+                          weekday: 'short',
+                          day: 'numeric',
+                          month: 'short'
+                        })
+                        return (
+                          <div key={day} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                              <span style={{
+                                minWidth: '100px',
+                                fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                                color: '#b8c5e0',
+                                fontWeight: '500'
+                              }}>
+                                {dayLabel}:
+                              </span>
+                              <div style={{ display: 'flex', gap: '0.5rem', flex: 1, alignItems: 'center' }}>
+                                <div style={{ flex: 1 }}>
+                                  <label style={{
+                                    display: 'block',
+                                    fontSize: 'clamp(0.75rem, 1.8vw, 0.85rem)',
+                                    color: '#8fa0c9',
+                                    marginBottom: '0.25rem'
+                                  }}>
+                                    Start
+                                  </label>
+                                  <input
+                                    type="time"
+                                    value={typeof eventDailyTimes[day] === 'string' ? eventDailyTimes[day] : (eventDailyTimes[day]?.start || '')}
+                                    onChange={(e) => {
+                                      const current = eventDailyTimes[day]
+                                      const newValue = typeof current === 'string' 
+                                        ? { start: e.target.value, end: '' }
+                                        : { ...current, start: e.target.value }
+                                      setEventDailyTimes({
+                                        ...eventDailyTimes,
+                                        [day]: newValue
+                                      })
+                                    }}
+                                    placeholder="Start"
+                                    style={{
+                                      width: '100%',
+                                      padding: 'clamp(0.6rem, 2vw, 0.75rem)',
+                                      background: 'rgba(255, 255, 255, 0.1)',
+                                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                                      borderRadius: '8px',
+                                      color: '#ffffff',
+                                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)'
+                                    }}
+                                  />
+                                </div>
+                                <span style={{ 
+                                  color: '#8fa0c9', 
+                                  fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                                  marginTop: '1.5rem'
+                                }}>
+                                  bis
+                                </span>
+                                <div style={{ flex: 1 }}>
+                                  <label style={{
+                                    display: 'block',
+                                    fontSize: 'clamp(0.75rem, 1.8vw, 0.85rem)',
+                                    color: '#8fa0c9',
+                                    marginBottom: '0.25rem'
+                                  }}>
+                                    Ende
+                                  </label>
+                                  <input
+                                    type="time"
+                                    value={typeof eventDailyTimes[day] === 'string' ? '' : (eventDailyTimes[day]?.end || '')}
+                                    onChange={(e) => {
+                                      const current = eventDailyTimes[day]
+                                      const newValue = typeof current === 'string'
+                                        ? { start: current, end: e.target.value }
+                                        : { ...current, end: e.target.value }
+                                      setEventDailyTimes({
+                                        ...eventDailyTimes,
+                                        [day]: newValue
+                                      })
+                                    }}
+                                    placeholder="Ende"
+                                    style={{
+                                      width: '100%',
+                                      padding: 'clamp(0.6rem, 2vw, 0.75rem)',
+                                      background: 'rgba(255, 255, 255, 0.1)',
+                                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                                      borderRadius: '8px',
+                                      color: '#ffffff',
+                                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)'
+                                    }}
+                                  />
+                                </div>
+                                {(eventDailyTimes[day] && (typeof eventDailyTimes[day] === 'string' || eventDailyTimes[day].start || eventDailyTimes[day].end)) && (
+                                  <button
+                                    onClick={() => {
+                                      const newDailyTimes = { ...eventDailyTimes }
+                                      delete newDailyTimes[day]
+                                      setEventDailyTimes(newDailyTimes)
+                                    }}
+                                    style={{
+                                      padding: '0.4rem 0.6rem',
+                                      background: 'rgba(255, 100, 100, 0.2)',
+                                      border: '1px solid rgba(255, 100, 100, 0.3)',
+                                      borderRadius: '6px',
+                                      color: '#ff6464',
+                                      cursor: 'pointer',
+                                      fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
+                                      marginTop: '1.5rem',
+                                      height: 'fit-content'
+                                    }}
+                                  >
+                                    ×
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <button
+                      onClick={async () => {
+                        if (editingEvent) {
+                          // Aktualisiere das Event direkt mit den neuen täglichen Zeiten
+                          const updatedEvents = events.map(e => 
+                            e.id === editingEvent.id 
+                              ? { ...e, dailyTimes: eventDailyTimes }
+                              : e
+                          )
+                          setEvents(updatedEvents)
+                          saveEvents(updatedEvents)
+                          
+                          // Erstelle ein Dokument mit den täglichen Zeiten
+                          const days = getEventDays(eventDate, eventEndDate || eventDate)
+                          const timesContent = days
+                            .filter(day => eventDailyTimes[day] && (typeof eventDailyTimes[day] === 'string' || eventDailyTimes[day].start || eventDailyTimes[day].end))
+                            .map(day => {
+                              const dayLabel = new Date(day).toLocaleDateString('de-DE', {
+                                weekday: 'long',
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric'
+                              })
+                              const dayTime = eventDailyTimes[day]
+                              let timeDisplay = ''
+                              if (typeof dayTime === 'string') {
+                                timeDisplay = `${dayTime} Uhr`
+                              } else if (dayTime.start || dayTime.end) {
+                                timeDisplay = dayTime.start 
+                                  ? (dayTime.end ? `${dayTime.start} - ${dayTime.end} Uhr` : `${dayTime.start} Uhr`)
+                                  : (dayTime.end ? `bis ${dayTime.end} Uhr` : '')
+                              }
+                              return `<p><strong>${dayLabel}:</strong> ${timeDisplay}</p>`
+                            })
+                            .join('')
+                          
+                          if (timesContent) {
+                            const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Tägliche Zeiten - ${editingEvent.title}</title>
+  <style>
+    @media print {
+      body { margin: 0; background: white !important; }
+      .no-print { display: none; }
+      .page { background: white !important; color: #1a1f3a !important; border: none !important; box-shadow: none !important; }
+      h1 { color: #667eea !important; border-bottom-color: #667eea !important; }
+      p { color: #333 !important; }
+      strong { color: #667eea !important; }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
+      color: #f4f7ff;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    .page {
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 2rem;
+      background: linear-gradient(145deg, rgba(18, 22, 35, 0.95), rgba(12, 16, 28, 0.92));
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(95, 251, 241, 0.12);
+      border-radius: 24px;
+    }
+    h1 {
+      font-size: 2rem;
+      color: #5ffbf1;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid rgba(95, 251, 241, 0.3);
+      padding-bottom: 0.5rem;
+      letter-spacing: 0.02em;
+    }
+    h2 {
+      font-size: 1.3rem;
+      color: #5ffbf1;
+      margin: 1.5rem 0 1rem;
+    }
+    p {
+      color: #b8c5e0;
+      line-height: 1.8;
+      margin: 0.75rem 0;
+      font-size: 1.1rem;
+    }
+    strong {
+      color: #5ffbf1;
+    }
+    .no-print {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(95, 251, 241, 0.2);
+      border-radius: 12px;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 0 0.5rem;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button onclick="window.print()">🖨️ Als PDF drucken</button>
+  </div>
+  <div class="page">
+    <h1>🕐 Tägliche Zeiten</h1>
+    <h2>${editingEvent.title}</h2>
+    <p style="color: #8fa0c9; margin-bottom: 1.5rem;">
+      ${new Date(editingEvent.date).toLocaleDateString('de-DE', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })}${editingEvent.endDate && editingEvent.endDate !== editingEvent.date ? ` - ${new Date(editingEvent.endDate).toLocaleDateString('de-DE', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })}` : ''}
+    </p>
+    ${timesContent}
+  </div>
+</body>
+</html>
+                            `
+                            
+                            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' })
+                            const reader = new FileReader()
+                            reader.onloadend = () => {
+                              const documentData = {
+                                id: `daily-times-${editingEvent.id}-${Date.now()}`,
+                                name: `Tägliche Zeiten - ${editingEvent.title}`,
+                                type: 'sonstiges' as const,
+                                fileData: reader.result as string,
+                                fileName: `tägliche-zeiten-${editingEvent.title.replace(/\s+/g, '-').toLowerCase()}.html`,
+                                fileType: 'text/html',
+                                addedAt: new Date().toISOString()
+                              }
+                              
+                              const finalEvents = updatedEvents.map(event => {
+                                if (event.id === editingEvent.id) {
+                                  // Entferne alte "Tägliche Zeiten" Dokumente und füge neues hinzu
+                                  const filteredDocs = (event.documents || []).filter((doc: any) => 
+                                    !doc.name || !doc.name.includes('Tägliche Zeiten')
+                                  )
+                                  return {
+                                    ...event,
+                                    documents: [...filteredDocs, documentData]
+                                  }
+                                }
+                                return event
+                              })
+                              
+                              setEvents(finalEvents)
+                              saveEvents(finalEvents)
+                              alert('✅ Tägliche Zeiten gespeichert und als Dokument hinzugefügt!')
+                            }
+                            reader.readAsDataURL(blob)
+                          } else {
+                            alert('✅ Tägliche Zeiten gespeichert!')
+                          }
+                        }
+                      }}
+                      disabled={!editingEvent}
+                      style={{
+                        marginTop: '1rem',
+                        padding: 'clamp(0.75rem, 2vw, 1rem)',
+                        background: editingEvent 
+                          ? 'linear-gradient(135deg, rgba(95, 251, 241, 0.2) 0%, rgba(102, 126, 234, 0.2) 100%)'
+                          : 'rgba(255, 255, 255, 0.05)',
+                        border: editingEvent
+                          ? '1px solid rgba(95, 251, 241, 0.3)'
+                          : '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '12px',
+                        color: editingEvent ? '#5ffbf1' : '#8fa0c9',
+                        fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                        fontWeight: '600',
+                        cursor: editingEvent ? 'pointer' : 'not-allowed',
+                        transition: 'all 0.3s ease',
+                        width: '100%'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (editingEvent) {
+                          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(95, 251, 241, 0.3) 0%, rgba(102, 126, 234, 0.3) 100%)'
+                          e.currentTarget.style.transform = 'translateY(-2px)'
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (editingEvent) {
+                          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(95, 251, 241, 0.2) 0%, rgba(102, 126, 234, 0.2) 100%)'
+                          e.currentTarget.style.transform = 'translateY(0)'
+                        }
+                      }}
+                    >
+                      💾 Tägliche Zeiten speichern
+                    </button>
+                  </div>
+                )}
+
+                <div>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '0.5rem'
+                  }}>
+                    <label style={{
+                      color: '#8fa0c9',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '500'
+                    }}>
+                      Ort
+                    </label>
+                    <button
+                      type="button"
+                      onClick={applyStammdatenToEvent}
+                      style={{
+                        padding: '0.4rem 0.75rem',
+                        background: 'rgba(95, 251, 241, 0.2)',
+                        border: '1px solid rgba(95, 251, 241, 0.3)',
+                        borderRadius: '6px',
+                        color: '#5ffbf1',
+                        cursor: 'pointer',
+                        fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
+                        fontWeight: '500'
+                      }}
+                    >
+                      📋 Aus Stammdaten übernehmen
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={eventLocation}
+                    onChange={(e) => setEventLocation(e.target.value)}
+                    placeholder={galleryData.address || "z.B. K2 Galerie, Hauptstraße 1"}
+                    style={{
+                      width: '100%',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      color: '#ffffff',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                    }}
+                  />
+                  {galleryData.address && (
+                    <div style={{
+                      marginTop: '0.25rem',
+                      fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
+                      color: '#8fa0c9',
+                      fontStyle: 'italic'
+                    }}>
+                      Stammdaten: {galleryData.address}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#8fa0c9',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                    fontWeight: '500'
+                  }}>
+                    Beschreibung
+                  </label>
+                  <textarea
+                    value={eventDescription}
+                    onChange={(e) => setEventDescription(e.target.value)}
+                    placeholder="Weitere Details zum Event..."
+                    rows={4}
+                    style={{
+                      width: '100%',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      color: '#ffffff',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                      fontFamily: 'inherit',
+                      resize: 'vertical'
+                    }}
+                  />
+                </div>
+
+                {/* PR-Vorschläge als Text anzeigen */}
+                {eventPRSuggestions && (
+                  <div style={{
+                    marginTop: '2rem',
+                    padding: '1.5rem',
+                    background: 'linear-gradient(135deg, rgba(95, 251, 241, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%)',
+                    border: '1px solid rgba(95, 251, 241, 0.2)',
+                    borderRadius: '16px'
+                  }}>
+                    <h3 style={{
+                      fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                      fontWeight: '600',
+                      color: '#5ffbf1',
+                      margin: '0 0 1rem 0'
+                    }}>
+                      ✨ PR-Vorschläge
+                    </h3>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      {/* Presseaussendung */}
+                      {eventPRSuggestions.presseaussendung?.content && (
+                        <div style={{
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                          borderRadius: '12px',
+                          padding: '1rem'
+                        }}>
+                          <button
+                            onClick={() => {
+                              const event = editingEvent || {
+                                id: eventPRSuggestions.eventId,
+                                title: eventPRSuggestions.eventTitle,
+                                date: eventDate,
+                                location: eventLocation
+                              }
+                              // Öffne bearbeitbares PDF-Fenster
+                              generateEditablePresseaussendungPDF(eventPRSuggestions.presseaussendung, event)
+                            }}
+                            style={{
+                              width: '100%',
+                              fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                              fontWeight: '600',
+                              color: '#5ffbf1',
+                              marginBottom: '0.75rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.5rem',
+                              background: 'transparent',
+                              border: 'none',
+                              cursor: 'pointer',
+                              padding: '0.5rem',
+                              borderRadius: '8px',
+                              transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'rgba(95, 251, 241, 0.1)'
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'transparent'
+                            }}
+                          >
+                            <span>📰</span>
+                            <span>Presseaussendung</span>
+                            <span style={{ marginLeft: 'auto', fontSize: '0.85rem', opacity: 0.7 }}>→ PDF öffnen</span>
+                          </button>
+                          <div style={{
+                            fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                            color: '#b8c5e0',
+                            lineHeight: '1.8',
+                            whiteSpace: 'pre-wrap',
+                            wordWrap: 'break-word',
+                            fontFamily: 'inherit'
+                          }}>
+                            {(eventPRSuggestions.presseaussendung.content || '').split('\n').map((line: string, idx: number) => (
+                              <div key={idx} style={{ marginBottom: line.trim() ? '0.5rem' : '0.25rem' }}>
+                                {line.trim() || '\u00A0'}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Social Media */}
+                      {eventPRSuggestions.socialMedia && (
+                        <div style={{
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                          borderRadius: '12px',
+                          padding: '1rem'
+                        }}>
+                          <button
+                            onClick={() => {
+                              const event = editingEvent || {
+                                id: eventPRSuggestions.eventId,
+                                title: eventPRSuggestions.eventTitle,
+                                date: eventDate,
+                                location: eventLocation
+                              }
+                              generateEditableSocialMediaPDF(eventPRSuggestions.socialMedia, event)
+                            }}
+                            style={{
+                              width: '100%',
+                              fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                              fontWeight: '600',
+                              color: '#5ffbf1',
+                              marginBottom: '0.75rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.5rem',
+                              background: 'transparent',
+                              border: 'none',
+                              cursor: 'pointer',
+                              padding: '0.5rem',
+                              borderRadius: '8px',
+                              transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'rgba(95, 251, 241, 0.1)'
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'transparent'
+                            }}
+                          >
+                            <span>📱</span>
+                            <span>Social Media</span>
+                            <span style={{ marginLeft: 'auto', fontSize: '0.85rem', opacity: 0.7 }}>→ PDF öffnen</span>
+                          </button>
+                          {eventPRSuggestions.socialMedia.instagram && (
+                            <div style={{ marginBottom: '1rem' }}>
+                              <div style={{
+                                fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
+                                color: '#8fa0c9',
+                                marginBottom: '0.5rem',
+                                fontWeight: '500'
+                              }}>
+                                Instagram:
+                              </div>
+                              <div style={{
+                                fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                                color: '#b8c5e0',
+                                lineHeight: '1.8',
+                                whiteSpace: 'pre-wrap',
+                                wordWrap: 'break-word',
+                                fontFamily: 'inherit'
+                              }}>
+                                {eventPRSuggestions.socialMedia.instagram.split('\n').map((line: string, idx: number) => (
+                                  <div key={idx} style={{ marginBottom: line.trim() ? '0.5rem' : '0.25rem' }}>
+                                    {line.trim() || '\u00A0'}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {eventPRSuggestions.socialMedia.facebook && (
+                            <div>
+                              <div style={{
+                                fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
+                                color: '#8fa0c9',
+                                marginBottom: '0.5rem',
+                                fontWeight: '500'
+                              }}>
+                                Facebook:
+                              </div>
+                              <div style={{
+                                fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                                color: '#b8c5e0',
+                                lineHeight: '1.8',
+                                whiteSpace: 'pre-wrap',
+                                wordWrap: 'break-word',
+                                fontFamily: 'inherit'
+                              }}>
+                                {((eventPRSuggestions.socialMedia.facebook || '')).split('\n').map((line: string, idx: number) => (
+                                  <div key={idx} style={{ marginBottom: line.trim() ? '0.5rem' : '0.25rem' }}>
+                                    {line.trim() || '\u00A0'}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Newsletter */}
+                      {eventPRSuggestions.newsletter && (
+                        <div style={{
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                          borderRadius: '12px',
+                          padding: '1rem'
+                        }}>
+                          <button
+                            onClick={() => {
+                              const event = editingEvent || {
+                                id: eventPRSuggestions.eventId,
+                                title: eventPRSuggestions.eventTitle,
+                                date: eventDate,
+                                location: eventLocation
+                              }
+                              generateEditableNewsletterPDF(eventPRSuggestions.newsletter, event)
+                            }}
+                            style={{
+                              width: '100%',
+                              fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                              fontWeight: '600',
+                              color: '#5ffbf1',
+                              marginBottom: '0.75rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.5rem',
+                              background: 'transparent',
+                              border: 'none',
+                              cursor: 'pointer',
+                              padding: '0.5rem',
+                              borderRadius: '8px',
+                              transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'rgba(95, 251, 241, 0.1)'
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'transparent'
+                            }}
+                          >
+                            <span>📧</span>
+                            <span>Newsletter</span>
+                            <span style={{ marginLeft: 'auto', fontSize: '0.85rem', opacity: 0.7 }}>→ PDF öffnen</span>
+                          </button>
+                          {eventPRSuggestions.newsletter.subject && (
+                            <div style={{
+                              fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                              color: '#b8c5e0',
+                              marginBottom: '0.75rem',
+                              padding: '0.75rem',
+                              background: 'rgba(0, 0, 0, 0.2)',
+                              borderRadius: '8px'
+                            }}>
+                              <strong style={{ color: '#8fa0c9' }}>Betreff:</strong> {eventPRSuggestions.newsletter.subject}
+                            </div>
+                          )}
+                          {eventPRSuggestions.newsletter.body && (
+                            <div style={{
+                              fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                              color: '#b8c5e0',
+                              lineHeight: '1.8',
+                              whiteSpace: 'pre-wrap',
+                              wordWrap: 'break-word',
+                              fontFamily: 'inherit'
+                            }}>
+                              {((eventPRSuggestions.newsletter.body || '')).split('\n').map((line: string, idx: number) => (
+                                <div key={idx} style={{ marginBottom: line.trim() ? '0.5rem' : '0.25rem' }}>
+                                  {line.trim() || '\u00A0'}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* PR-Vorschläge als PDF exportieren */}
+                {eventPRSuggestions && (
+                  <button
+                    onClick={() => generateEditablePRSuggestionsPDF(eventPRSuggestions, editingEvent)}
+                    style={{
+                      width: '100%',
+                      marginTop: '1rem',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                    }}
+                  >
+                    📄 PR-Vorschläge als bearbeitbare PDF-Seiten
+                  </button>
+                )}
+
+                {/* Vorschläge neu generieren Button */}
+                {editingEvent && !eventPRSuggestions && (
+                  <button
+                    onClick={() => {
+                      const event = {
+                        id: editingEvent.id,
+                        title: eventTitle,
+                        type: eventType,
+                        date: eventDate,
+                        endDate: eventEndDate,
+                        startTime: eventStartTime,
+                        endTime: eventEndTime,
+                        description: eventDescription,
+                        location: eventLocation
+                      }
+                      const newSuggestions = {
+                        eventId: event.id,
+                        eventTitle: event.title,
+                        generatedAt: new Date().toISOString(),
+                        presseaussendung: generatePresseaussendungContent(event),
+                        socialMedia: generateSocialMediaContent(event),
+                        flyer: generateFlyerContent(event),
+                        newsletter: generateNewsletterContent(event),
+                        plakat: generatePlakatContent(event)
+                      }
+                      setEventPRSuggestions(newSuggestions)
+                    }}
+                    style={{
+                      width: '100%',
+                      marginTop: '1rem',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'linear-gradient(135deg, rgba(95, 251, 241, 0.2) 0%, rgba(102, 126, 234, 0.2) 100%)',
+                      color: '#5ffbf1',
+                      border: '1px solid rgba(95, 251, 241, 0.3)',
+                      borderRadius: '12px',
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      fontWeight: '500',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ✨ PR-Vorschläge generieren
+                  </button>
+                )}
+
+                <div style={{
+                  display: 'flex',
+                  gap: '1rem',
+                  marginTop: '1rem'
+                }}>
+                  <button
+                    onClick={handleSaveEvent}
+                    style={{
+                      flex: 1,
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                    }}
+                  >
+                    {editingEvent ? '✅ Aktualisieren' : '✅ Hinzufügen'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowEventModal(false)
+                      setEditingEvent(null)
+                      setEventTitle('')
+                      setEventType('galerieeröffnung')
+                      setEventDate('')
+                      setEventEndDate('')
+                      setEventStartTime('')
+                      setEventEndTime('')
+                      setEventDailyTimes({})
+                      setEventDescription('')
+                      setEventLocation('')
+                      setEventPRSuggestions(null)
+                      setEditingPRType(null)
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      color: '#ffffff',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                      fontWeight: '500',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Dokumente Modal */}
+        {showDocumentModal && selectedEventForDocument && (
+          <div
+            onClick={() => {
+              setShowDocumentModal(false)
+              setSelectedEventForDocument(null)
+              setEventDocumentFile(null)
+              setEventDocumentName('')
+              setEventDocumentType('flyer')
+            }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.8)',
+              backdropFilter: 'blur(10px)',
+              zIndex: 10001,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1rem'
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+                borderRadius: '24px',
+                padding: 'clamp(2rem, 5vw, 3rem)',
+                maxWidth: '500px',
+                width: '100%',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)'
+              }}
+            >
+              <h2 style={{
+                fontSize: 'clamp(1.5rem, 4vw, 2rem)',
+                fontWeight: '700',
+                color: '#ffffff',
+                marginTop: 0,
+                marginBottom: 'clamp(1.5rem, 4vw, 2rem)'
+              }}>
+                📎 Dokument hinzufügen
+              </h2>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#8fa0c9',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                    fontWeight: '500'
+                  }}>
+                    Dokument-Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={eventDocumentName}
+                    onChange={(e) => setEventDocumentName(e.target.value)}
+                    placeholder="z.B. Flyer Eröffnung"
+                    style={{
+                      width: '100%',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      color: '#ffffff',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#8fa0c9',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                    fontWeight: '500'
+                  }}>
+                    Dokument-Typ
+                  </label>
+                  <select
+                    value={eventDocumentType}
+                    onChange={(e) => setEventDocumentType(e.target.value as any)}
+                    style={{
+                      width: '100%',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      color: '#ffffff',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                    }}
+                  >
+                    <option value="flyer">📄 Flyer</option>
+                    <option value="plakat">🖼️ Plakat</option>
+                    <option value="presseaussendung">📰 Presseaussendung</option>
+                    <option value="sonstiges">📎 Sonstiges</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#8fa0c9',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                    fontWeight: '500'
+                  }}>
+                    Datei auswählen *
+                  </label>
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        setEventDocumentFile(file)
+                        if (!eventDocumentName) {
+                          setEventDocumentName(file.name.replace(/\.[^/.]+$/, ''))
+                        }
+                      }
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      color: '#ffffff',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                    }}
+                  />
+                  {eventDocumentFile && (
+                    <div style={{
+                      marginTop: '0.5rem',
+                      fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                      color: '#5ffbf1'
+                    }}>
+                      ✓ {eventDocumentFile.name} ({(eventDocumentFile.size / 1024 / 1024).toFixed(2)} MB)
+                    </div>
+                  )}
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  gap: '1rem',
+                  marginTop: '1rem'
+                }}>
+                  <button
+                    onClick={handleAddEventDocument}
+                    style={{
+                      flex: 1,
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                    }}
+                  >
+                    ✅ Hinzufügen
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowDocumentModal(false)
+                      setSelectedEventForDocument(null)
+                      setEventDocumentFile(null)
+                      setEventDocumentName('')
+                      setEventDocumentType('flyer')
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      color: '#ffffff',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                      fontWeight: '500',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Öffentlichkeitsarbeit */}
+        {activeTab === 'öffentlichkeitsarbeit' && (
+          <section style={{
+            background: 'rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '24px',
+            padding: 'clamp(2rem, 5vw, 3rem)',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+            marginBottom: 'clamp(2rem, 5vw, 3rem)'
+          }}>
+            <h2 style={{
+              fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
+              fontWeight: '700',
+              color: '#ffffff',
+              marginTop: 0,
+              marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
+              letterSpacing: '-0.01em'
+            }}>
+              📢 Öffentlichkeitsarbeit
+            </h2>
+
+            {/* PR-Vorschläge nach Events gruppiert */}
+            {(() => {
+              const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+              
+              // Events mit Vorschlägen zusammenführen
+              const eventsWithSuggestions = events
+                .map(event => {
+                  const suggestion = suggestions.find((s: any) => s.eventId === event.id)
+                  return { event, suggestion }
+                })
+                .filter(item => item.suggestion) // Nur Events mit Vorschlägen
+                .sort((a, b) => new Date(b.event.date).getTime() - new Date(a.event.date).getTime()) // Neueste zuerst
+              
+              if (eventsWithSuggestions.length > 0) {
+                return (
+                  <div style={{
+                    marginBottom: 'clamp(2rem, 5vw, 3rem)'
+                  }}>
+                    <h3 style={{
+                      fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
+                      fontWeight: '600',
+                      color: '#5ffbf1',
+                      margin: '0 0 1.5rem 0'
+                    }}>
+                      📅 PR-Vorschläge nach Events
+                    </h3>
+                    
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '1.5rem'
+                    }}>
+                      {eventsWithSuggestions.map(({ event, suggestion }: any, idx: number) => (
+                        <div
+                          key={event.id}
+                          style={{
+                            background: 'linear-gradient(135deg, rgba(95, 251, 241, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%)',
+                            border: '1px solid rgba(95, 251, 241, 0.2)',
+                            borderRadius: '16px',
+                            padding: 'clamp(1.5rem, 4vw, 2rem)',
+                            overflow: 'hidden'
+                          }}
+                        >
+                          {/* Event Header */}
+                          <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start',
+                            marginBottom: '1.5rem',
+                            flexWrap: 'wrap',
+                            gap: '1rem'
+                          }}>
+                            <div style={{ flex: 1 }}>
+                              <h4 style={{
+                                fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                                fontWeight: '600',
+                                color: '#ffffff',
+                                margin: '0 0 0.5rem 0'
+                              }}>
+                                {event.title}
+                              </h4>
+                              <div style={{
+                                fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                                color: '#8fa0c9',
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: '1rem'
+                              }}>
+                                <span>📅 {new Date(event.date).toLocaleDateString('de-DE', {
+                                  day: 'numeric',
+                                  month: 'long',
+                                  year: 'numeric'
+                                })}</span>
+                                {event.location && <span>📍 {event.location}</span>}
+                                {event.type && <span>🏷️ {event.type === 'galerieeröffnung' ? 'Galerieeröffnung' : event.type === 'vernissage' ? 'Vernissage' : event.type === 'finissage' ? 'Finissage' : event.type === 'öffentlichkeitsarbeit' ? 'Öffentlichkeitsarbeit' : 'Sonstiges'}</span>}
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => {
+                                handleEditEvent(event)
+                                setActiveTab('eventplan')
+                              }}
+                              style={{
+                                padding: '0.4rem 0.75rem',
+                                background: 'rgba(102, 126, 234, 0.3)',
+                                border: '1px solid rgba(102, 126, 234, 0.5)',
+                                borderRadius: '6px',
+                                color: '#ffffff',
+                                cursor: 'pointer',
+                                fontSize: 'clamp(0.75rem, 1.8vw, 0.85rem)',
+                                fontWeight: '500',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              ✏️ Event bearbeiten
+                            </button>
+                          </div>
+
+                          {/* PR-Vorschläge als PDF Button */}
+                          <div style={{
+                            marginBottom: '1.5rem',
+                            padding: '1rem',
+                            background: 'rgba(102, 126, 234, 0.1)',
+                            border: '1px solid rgba(102, 126, 234, 0.3)',
+                            borderRadius: '12px'
+                          }}>
+                            <button
+                              onClick={() => {
+                                const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+                                const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+                                if (eventSuggestion) {
+                                  generateEditablePRSuggestionsPDF(eventSuggestion, event)
+                                } else {
+                                  alert('Keine PR-Vorschläge für dieses Event gefunden.')
+                                }
+                              }}
+                              style={{
+                                width: '100%',
+                                padding: '0.5rem 0.75rem',
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                color: '#ffffff',
+                                border: 'none',
+                                borderRadius: '6px',
+                                fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)'
+                              }}
+                            >
+                              📄 Alle PR-Vorschläge als bearbeitbare PDF-Seiten
+                            </button>
+                          </div>
+
+                          {/* PR-Medien Grid */}
+                          <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                            gap: '1rem'
+                          }}>
+                            {/* Presseaussendung */}
+                            <div
+                              onClick={() => {
+                                const selectedEvent = events.find(e => e.id === event.id)
+                                if (selectedEvent) {
+                                  const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+                                  const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+                                  if (eventSuggestion && eventSuggestion.presseaussendung) {
+                                    generateEditablePresseaussendungPDF(eventSuggestion.presseaussendung, selectedEvent)
+                                  } else {
+                                    const presseaussendung = generatePresseaussendungContent(selectedEvent)
+                                    generateEditablePresseaussendungPDF(presseaussendung, selectedEvent)
+                                  }
+                                }
+                              }}
+                              style={{
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                borderRadius: '10px',
+                                padding: '0.75rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                textAlign: 'center'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                                e.currentTarget.style.transform = 'translateY(-2px)'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                                e.currentTarget.style.transform = 'translateY(0)'
+                              }}
+                            >
+                              <div style={{ fontSize: '1.5rem', marginBottom: '0.4rem' }}>📰</div>
+                              <div style={{
+                                fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)',
+                                fontWeight: '500',
+                                color: '#ffffff',
+                                marginBottom: '0.2rem'
+                              }}>
+                                Presseaussendung
+                              </div>
+                              <div style={{
+                                fontSize: 'clamp(0.7rem, 1.6vw, 0.75rem)',
+                                color: '#8fa0c9'
+                              }}>
+                                Generieren
+                              </div>
+                            </div>
+
+                            {/* Social Media */}
+                            <div
+                              onClick={() => {
+                                const selectedEvent = events.find(e => e.id === event.id)
+                                if (selectedEvent) {
+                                  const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+                                  const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+                                  if (eventSuggestion && eventSuggestion.socialMedia) {
+                                    generateEditableSocialMediaPDF(eventSuggestion.socialMedia, selectedEvent)
+                                  } else {
+                                    const socialMedia = generateSocialMediaContent(selectedEvent)
+                                    generateEditableSocialMediaPDF(socialMedia, selectedEvent)
+                                  }
+                                }
+                              }}
+                              style={{
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                borderRadius: '10px',
+                                padding: '0.75rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                textAlign: 'center'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                                e.currentTarget.style.transform = 'translateY(-2px)'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                                e.currentTarget.style.transform = 'translateY(0)'
+                              }}
+                            >
+                              <div style={{ fontSize: '1.5rem', marginBottom: '0.4rem' }}>📱</div>
+                              <div style={{
+                                fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)',
+                                fontWeight: '500',
+                                color: '#ffffff',
+                                marginBottom: '0.2rem'
+                              }}>
+                                Social Media
+                              </div>
+                              <div style={{
+                                fontSize: 'clamp(0.7rem, 1.6vw, 0.75rem)',
+                                color: '#8fa0c9'
+                              }}>
+                                Instagram & Facebook
+                              </div>
+                            </div>
+
+                            {/* Flyer */}
+                            <div
+                              onClick={() => {
+                                const selectedEvent = events.find(e => e.id === event.id)
+                                if (selectedEvent) {
+                                  const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+                                  const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+                                  if (eventSuggestion && eventSuggestion.flyer) {
+                                    generateEditableNewsletterPDF(eventSuggestion.flyer, selectedEvent)
+                                  } else {
+                                    const flyer = generateEventFlyerContent(selectedEvent)
+                                    generateEditableNewsletterPDF(flyer, selectedEvent)
+                                  }
+                                }
+                              }}
+                              style={{
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                borderRadius: '10px',
+                                padding: '0.75rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                textAlign: 'center'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                                e.currentTarget.style.transform = 'translateY(-2px)'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                                e.currentTarget.style.transform = 'translateY(0)'
+                              }}
+                            >
+                              <div style={{ fontSize: '1.5rem', marginBottom: '0.4rem' }}>📄</div>
+                              <div style={{
+                                fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)',
+                                fontWeight: '500',
+                                color: '#ffffff',
+                                marginBottom: '0.2rem'
+                              }}>
+                                Flyer
+                              </div>
+                              <div style={{
+                                fontSize: 'clamp(0.7rem, 1.6vw, 0.75rem)',
+                                color: '#8fa0c9'
+                              }}>
+                                A4 Format
+                              </div>
+                            </div>
+
+                            {/* Newsletter */}
+                            <div
+                              onClick={() => {
+                                const selectedEvent = events.find(e => e.id === event.id)
+                                if (selectedEvent) {
+                                  const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+                                  const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+                                  if (eventSuggestion && eventSuggestion.newsletter) {
+                                    generateEditableNewsletterPDF(eventSuggestion.newsletter, selectedEvent)
+                                  } else {
+                                    const newsletter = generateEmailNewsletterContent(selectedEvent)
+                                    generateEditableNewsletterPDF(newsletter, selectedEvent)
+                                  }
+                                }
+                              }}
+                              style={{
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                borderRadius: '10px',
+                                padding: '0.75rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                textAlign: 'center'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                                e.currentTarget.style.transform = 'translateY(-2px)'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                                e.currentTarget.style.transform = 'translateY(0)'
+                              }}
+                            >
+                              <div style={{ fontSize: '1.5rem', marginBottom: '0.4rem' }}>📧</div>
+                              <div style={{
+                                fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)',
+                                fontWeight: '500',
+                                color: '#ffffff',
+                                marginBottom: '0.2rem'
+                              }}>
+                                Newsletter
+                              </div>
+                              <div style={{
+                                fontSize: 'clamp(0.7rem, 1.6vw, 0.75rem)',
+                                color: '#8fa0c9'
+                              }}>
+                                E-Mail HTML
+                              </div>
+                            </div>
+
+                            {/* Plakat */}
+                            <div
+                              onClick={() => {
+                                console.log('Plakat-Button geklickt für Event:', event)
+                                const selectedEvent = events.find(e => e.id === event.id)
+                                console.log('Gefundenes Event:', selectedEvent)
+                                if (selectedEvent) {
+                                  console.log('Rufe generatePlakatForEvent auf...')
+                                  generatePlakatForEvent(selectedEvent)
+                                } else {
+                                  console.error('Kein Event gefunden für ID:', event.id)
+                                  alert('Fehler: Event nicht gefunden')
+                                }
+                              }}
+                              style={{
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                borderRadius: '10px',
+                                padding: '0.75rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                textAlign: 'center'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                                e.currentTarget.style.transform = 'translateY(-2px)'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                                e.currentTarget.style.transform = 'translateY(0)'
+                              }}
+                            >
+                              <div style={{ fontSize: '1.5rem', marginBottom: '0.4rem' }}>🖼️</div>
+                              <div style={{
+                                fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)',
+                                fontWeight: '500',
+                                color: '#ffffff',
+                                marginBottom: '0.2rem'
+                              }}>
+                                Plakat
+                              </div>
+                              <div style={{
+                                fontSize: 'clamp(0.7rem, 1.6vw, 0.75rem)',
+                                color: '#8fa0c9'
+                              }}>
+                                A3 Format
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              }
+              return (
+                <div style={{
+                  padding: '2rem',
+                  textAlign: 'center',
+                  color: '#8fa0c9',
+                  fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                }}>
+                  Noch keine PR-Vorschläge vorhanden. Erstelle ein Event, um automatisch Vorschläge zu generieren.
+                </div>
+              )
+            })()}
+
+            {/* QR-Code Plakat (allgemein, nicht Event-spezifisch) */}
+            <div style={{
+              marginTop: '3rem',
+              padding: '2rem',
+              background: 'rgba(95, 251, 241, 0.1)',
+              border: '1px solid rgba(95, 251, 241, 0.2)',
+              borderRadius: '16px'
+            }}>
+              <h3 style={{
+                fontSize: 'clamp(1.2rem, 3vw, 1.4rem)',
+                fontWeight: '600',
+                color: '#5ffbf1',
+                marginTop: 0,
+                marginBottom: '1rem'
+              }}>
+                🏛️ QR-Code Plakat (Galerie)
+              </h3>
+              <p style={{
+                color: '#b8c5e0',
+                fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                marginBottom: '1.5rem',
+                lineHeight: 1.6
+              }}>
+                Erstelle ein Plakat mit QR-Codes für die Homepage und den virtuellen Rundgang. Perfekt zum Aufhängen in der Galerie oder für Veranstaltungen.
+              </p>
+              <button
+                onClick={() => printQRCodePlakat()}
+                style={{
+                  padding: 'clamp(0.5rem, 1.5vw, 0.65rem) clamp(1rem, 2.5vw, 1.25rem)',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.4)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)'
+                }}
+              >
+                🏛️ QR-Code Plakat erstellen
+              </button>
+            </div>
+
+            {/* Fallback: Generische Medien-Generatoren (wenn keine Events vorhanden) */}
+            {events.length === 0 && (
+              <div style={{
+                padding: '2rem',
+                textAlign: 'center',
+                color: '#8fa0c9',
+                fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+              }}>
+                Erstelle zuerst ein Event in der Eventplanung, um PR-Vorschläge zu generieren.
+              </div>
+            )}
+          </section>
+        )}
+
+        </main>
+      </div>
+
+      {/* Kamera-Vollbild-Ansicht */}
+      {showCameraView && (
+        <div 
+          onClick={closeCamera}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: '#000',
+            zIndex: 10000,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain'
+            }}
+          />
+          <canvas ref={canvasRef} style={{ display: 'none' }} />
+          
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'absolute',
+              bottom: '2rem',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              display: 'flex',
+              gap: '1rem',
+              alignItems: 'center',
+              zIndex: 10001
+            }}
+          >
+            <button
+              onClick={closeCamera}
+              style={{
+                padding: '1rem 2rem',
+                background: '#dc2626',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '50px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                zIndex: 10002
+              }}
+            >
+              Abbrechen
+            </button>
+            <button
+              onClick={takePicture}
+              style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: '#fff',
+                border: '4px solid #333',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '2rem',
+                zIndex: 10002
+              }}
+            >
+              📸
+            </button>
+          </div>
+          
+          {/* X-Button oben rechts */}
+          <button
+            onClick={closeCamera}
+            style={{
+              position: 'absolute',
+              top: '1rem',
+              right: '1rem',
+              width: '50px',
+              height: '50px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.9)',
+              border: 'none',
+              fontSize: '1.5rem',
+              cursor: 'pointer',
+              zIndex: 10002,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+
+      {/* Modal: Neues Werk hinzufügen */}
+      {showAddModal && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.75)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '1rem'
+          }}
+          onClick={() => {
+            setShowAddModal(false)
+            setArtworkCategory('malerei')
+            setArtworkCeramicSubcategory('vase')
+            setArtworkCeramicHeight('10')
+            setArtworkCeramicDiameter('10')
+            setArtworkCeramicDescription('')
+            setArtworkCeramicType('steingut')
+            setArtworkCeramicSurface('mischtechnik')
+            setArtworkTitle('') // Bei Malerei leer
+            setArtworkPaintingWidth('')
+            setArtworkPaintingHeight('')
+            setArtworkArtist('')
+            setArtworkDescription('')
+            setArtworkPrice('')
+            setSelectedFile(null)
+            setPreviewUrl(null)
+            setIsInShop(true)
+          }}
+        >
+          <div 
+            style={{
+              background: 'linear-gradient(135deg, rgba(18, 22, 35, 0.98) 0%, rgba(12, 16, 28, 0.98) 100%)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: '24px',
+              maxWidth: '700px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxShadow: '0 25px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(95, 251, 241, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header - Kompakt */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '1rem 1.5rem',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+            }}>
+              <h2 style={{
+                margin: 0,
+                fontSize: '1.25rem',
+                fontWeight: '600',
+                color: '#ffffff'
+              }}>
+                Neues Werk
+              </h2>
+              <button 
+                onClick={() => {
+                  setShowAddModal(false)
+                  setArtworkTitle('')
+                  setArtworkCategory('malerei')
+                  setArtworkCeramicSubcategory('vase')
+                  setArtworkCeramicHeight('10')
+                  setArtworkCeramicDiameter('10')
+                  setArtworkCeramicDescription('')
+                  setArtworkPaintingWidth('')
+                  setArtworkPaintingHeight('')
+                  setArtworkArtist('')
+                  setArtworkDescription('')
+                  setArtworkPrice('')
+                  setSelectedFile(null)
+                  setPreviewUrl(null)
+                  setIsInShop(true)
+                }}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#8fa0c9',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '6px',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                  e.currentTarget.style.color = '#ffffff'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.color = '#8fa0c9'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            
+            {/* Content - Kompakt */}
+            <div style={{
+              padding: '1.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1rem'
+            }}>
+              {/* Bild-Upload - Sehr kompakt */}
+              {previewUrl ? (
+                <div style={{
+                  display: 'flex',
+                  gap: '0.75rem',
+                  alignItems: 'center',
+                  padding: '0.75rem',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                }}>
+                  <img 
+                    src={previewUrl} 
+                    alt="Vorschau" 
+                    style={{
+                      width: '80px',
+                      height: '80px',
+                      objectFit: 'cover',
+                      borderRadius: '8px'
+                    }}
+                  />
+                  <button 
+                    onClick={() => {
+                      setSelectedFile(null)
+                      setPreviewUrl(null)
+                    }}
+                    style={{
+                      padding: '0.4rem 0.75rem',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '6px',
+                      color: '#ffffff',
+                      cursor: 'pointer',
+                      fontSize: '0.85rem'
+                    }}
+                  >
+                    ✏️ Ändern
+                  </button>
+                </div>
+              ) : (
+                <div style={{
+                  display: 'flex',
+                  gap: '0.5rem',
+                  padding: '0.75rem',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  borderRadius: '10px',
+                  border: '1px dashed rgba(95, 251, 241, 0.3)'
+                }}>
+                  <label 
+                    htmlFor="file-input-upload" 
+                    style={{
+                      padding: '0.5rem 1rem',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      borderRadius: '6px',
+                      color: '#ffffff',
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                      fontWeight: '500',
+                      border: 'none',
+                      flex: 1
+                    }}
+                  >
+                    📁 Datei
+                  </label>
+                  <input
+                    id="file-input-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    style={{ display: 'none' }}
+                  />
+                  <input
+                    id="camera-input-direct"
+                    type="file"
+                    accept="image/*"
+                    capture
+                    onChange={handleFileSelect}
+                    style={{ display: 'none' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleCameraClick}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '6px',
+                      color: '#ffffff',
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                      fontWeight: '500',
+                      flex: 1
+                    }}
+                  >
+                    📸 Kamera
+                  </button>
+                </div>
+              )}
+
+              {/* Formular - Kompakt Grid */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: artworkCategory === 'malerei' ? '1fr 140px' : '140px',
+                gap: '0.75rem',
+                alignItems: 'start'
+              }}>
+                {artworkCategory === 'malerei' && (
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.4rem',
+                      fontSize: '0.8rem',
+                      color: '#8fa0c9',
+                      fontWeight: '500'
+                    }}>
+                      Titel *
+                    </label>
+                    <input
+                      type="text"
+                      value={artworkTitle}
+                      onChange={(e) => setArtworkTitle(e.target.value)}
+                      placeholder="z.B. Frühlingslandschaft"
+                      style={{
+                        width: '100%',
+                        padding: '0.6rem',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: '0.9rem',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+                )}
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.4rem',
+                    fontSize: '0.8rem',
+                    color: '#8fa0c9',
+                    fontWeight: '500'
+                  }}>
+                    Kategorie *
+                  </label>
+                  <select
+                    value={artworkCategory}
+                    onChange={(e) => {
+                      setArtworkCategory(e.target.value as 'malerei' | 'keramik')
+                      if (e.target.value === 'keramik') {
+                        // Setze Titel automatisch basierend auf Unterkategorie
+                        const subcategoryLabels: Record<string, string> = {
+                          'vase': 'Vase',
+                          'teller': 'Teller',
+                          'skulptur': 'Skulptur',
+                          'sonstig': 'Sonstig'
+                        }
+                        setArtworkTitle(subcategoryLabels[artworkCeramicSubcategory] || 'Keramik')
+                      } else {
+                        setArtworkTitle('')
+                      }
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '0.6rem',
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                      borderRadius: '8px',
+                      color: '#ffffff',
+                      fontSize: '0.9rem',
+                      outline: 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <option value="malerei">Malerei</option>
+                    <option value="keramik">Keramik</option>
+                  </select>
+                </div>
+              </div>
+              {/* Keramik-Unterkategorie */}
+              {artworkCategory === 'keramik' && (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                  gap: '0.75rem',
+                  alignItems: 'start'
+                }}>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.4rem',
+                      fontSize: '0.8rem',
+                      color: '#8fa0c9',
+                      fontWeight: '500'
+                    }}>
+                      Unterkategorie *
+                    </label>
+                    <select
+                      value={artworkCeramicSubcategory}
+                      onChange={(e) => {
+                        const newSubcategory = e.target.value as 'vase' | 'teller' | 'skulptur' | 'sonstig'
+                        setArtworkCeramicSubcategory(newSubcategory)
+                        setArtworkCeramicHeight('10')
+                        setArtworkCeramicDiameter('10')
+                        setArtworkCeramicDescription('')
+                        setArtworkCeramicType('steingut')
+                        setArtworkCeramicSurface('mischtechnik')
+                        // Setze Titel automatisch auf Unterkategorie-Bezeichnung
+                        const subcategoryLabels: Record<string, string> = {
+                          'vase': 'Vase',
+                          'teller': 'Teller',
+                          'skulptur': 'Skulptur',
+                          'sonstig': 'Sonstig'
+                        }
+                        setArtworkTitle(subcategoryLabels[newSubcategory] || 'Keramik')
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '0.6rem',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: '0.9rem',
+                        outline: 'none',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="vase">Vase</option>
+                      <option value="teller">Teller</option>
+                      <option value="skulptur">Skulptur</option>
+                      <option value="sonstig">Sonstig</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.4rem',
+                      fontSize: '0.8rem',
+                      color: '#8fa0c9',
+                      fontWeight: '500'
+                    }}>
+                      Beschreibung *
+                    </label>
+                    <select
+                      value={artworkCeramicType}
+                      onChange={(e) => setArtworkCeramicType(e.target.value as 'steingut' | 'steinzeug')}
+                      style={{
+                        width: '100%',
+                        padding: '0.6rem',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: '0.9rem',
+                        outline: 'none',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="steingut">Steingut (porös, nicht wasserdicht, niedrig gebrannt)</option>
+                      <option value="steinzeug">Steinzeug (dicht gebrannt, wasserundurchlässig)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.4rem',
+                      fontSize: '0.8rem',
+                      color: '#8fa0c9',
+                      fontWeight: '500'
+                    }}>
+                      Oberfläche *
+                    </label>
+                    <select
+                      value={artworkCeramicSurface}
+                      onChange={(e) => setArtworkCeramicSurface(e.target.value as 'engobe' | 'glasur' | 'mischtechnik')}
+                      style={{
+                        width: '100%',
+                        padding: '0.6rem',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: '0.9rem',
+                        outline: 'none',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="mischtechnik">Mischtechnik</option>
+                      <option value="engobe">Engobe</option>
+                      <option value="glasur">Glasur</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+              {/* Keramik-Maße */}
+              {artworkCategory === 'keramik' && (
+                <>
+                  {(artworkCeramicSubcategory === 'vase' || artworkCeramicSubcategory === 'skulptur') && (
+                    <div style={{ minWidth: '120px' }}>
+                      <label style={{
+                        display: 'block',
+                        marginBottom: '0.4rem',
+                        fontSize: '0.8rem',
+                        color: '#8fa0c9',
+                        fontWeight: '500'
+                      }}>
+                        Höhe (cm) *
+                      </label>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <input
+                          type="range"
+                          min="10"
+                          max="100"
+                          step="5"
+                          value={artworkCeramicHeight || '10'}
+                          onChange={(e) => setArtworkCeramicHeight(e.target.value)}
+                          style={{
+                            width: '100%',
+                            height: '6px',
+                            borderRadius: '3px',
+                            background: 'rgba(255, 255, 255, 0.2)',
+                            outline: 'none',
+                            cursor: 'pointer'
+                          }}
+                        />
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          gap: '0.2rem',
+                          flexWrap: 'wrap'
+                        }}>
+                          {[10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((val) => (
+                            <div
+                              key={val}
+                              style={{
+                                flex: '0 0 auto',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                padding: '0.2rem 0.3rem',
+                                background: artworkCeramicHeight === String(val) 
+                                  ? 'rgba(95, 251, 241, 0.3)' 
+                                  : 'rgba(255, 255, 255, 0.05)',
+                                border: artworkCeramicHeight === String(val)
+                                  ? '1px solid rgba(95, 251, 241, 0.5)'
+                                  : '1px solid rgba(255, 255, 255, 0.1)',
+                                borderRadius: '4px',
+                                fontSize: '0.65rem',
+                                color: artworkCeramicHeight === String(val) ? '#5ffbf1' : '#8fa0c9',
+                                fontWeight: artworkCeramicHeight === String(val) ? '600' : '400',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                minWidth: '28px'
+                              }}
+                              onClick={() => setArtworkCeramicHeight(String(val))}
+                            >
+                              {val}
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <input
+                            type="number"
+                            min="10"
+                            max="100"
+                            step="5"
+                            value={artworkCeramicHeight || '10'}
+                            onChange={(e) => {
+                              const val = e.target.value
+                              const numVal = parseFloat(val)
+                              // Nur 5cm-Schritte erlauben
+                              if (val === '' || (numVal >= 10 && numVal <= 100 && numVal % 5 === 0)) {
+                                setArtworkCeramicHeight(val)
+                              } else if (numVal >= 10 && numVal <= 100) {
+                                // Runde auf nächsten 5cm-Schritt
+                                const rounded = Math.round(numVal / 5) * 5
+                                setArtworkCeramicHeight(String(rounded))
+                              }
+                            }}
+                            style={{
+                              width: '70px',
+                              padding: '0.4rem',
+                              background: 'rgba(255, 255, 255, 0.1)',
+                              border: '1px solid rgba(255, 255, 255, 0.2)',
+                              borderRadius: '6px',
+                              color: '#ffffff',
+                              fontSize: '0.85rem'
+                            }}
+                          />
+                          <span style={{ color: '#8fa0c9', fontSize: '0.8rem', fontWeight: '600' }}>{artworkCeramicHeight || '10'} cm</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {artworkCeramicSubcategory === 'teller' && (
+                    <div style={{ minWidth: '120px' }}>
+                      <label style={{
+                        display: 'block',
+                        marginBottom: '0.4rem',
+                        fontSize: '0.8rem',
+                        color: '#8fa0c9',
+                        fontWeight: '500'
+                      }}>
+                        Durchmesser (cm) *
+                      </label>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <input
+                          type="range"
+                          min="10"
+                          max="100"
+                          step="5"
+                          value={artworkCeramicDiameter || '10'}
+                          onChange={(e) => setArtworkCeramicDiameter(e.target.value)}
+                          style={{
+                            width: '100%',
+                            height: '6px',
+                            borderRadius: '3px',
+                            background: 'rgba(255, 255, 255, 0.2)',
+                            outline: 'none',
+                            cursor: 'pointer'
+                          }}
+                        />
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          gap: '0.2rem',
+                          flexWrap: 'wrap'
+                        }}>
+                          {[10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((val) => (
+                            <div
+                              key={val}
+                              style={{
+                                flex: '0 0 auto',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                padding: '0.2rem 0.3rem',
+                                background: artworkCeramicDiameter === String(val) 
+                                  ? 'rgba(95, 251, 241, 0.3)' 
+                                  : 'rgba(255, 255, 255, 0.05)',
+                                border: artworkCeramicDiameter === String(val)
+                                  ? '1px solid rgba(95, 251, 241, 0.5)'
+                                  : '1px solid rgba(255, 255, 255, 0.1)',
+                                borderRadius: '4px',
+                                fontSize: '0.65rem',
+                                color: artworkCeramicDiameter === String(val) ? '#5ffbf1' : '#8fa0c9',
+                                fontWeight: artworkCeramicDiameter === String(val) ? '600' : '400',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                minWidth: '28px'
+                              }}
+                              onClick={() => setArtworkCeramicDiameter(String(val))}
+                            >
+                              {val}
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <input
+                            type="number"
+                            min="10"
+                            max="100"
+                            step="5"
+                            value={artworkCeramicDiameter || '10'}
+                            onChange={(e) => {
+                              const val = e.target.value
+                              const numVal = parseFloat(val)
+                              // Nur 5cm-Schritte erlauben
+                              if (val === '' || (numVal >= 10 && numVal <= 100 && numVal % 5 === 0)) {
+                                setArtworkCeramicDiameter(val)
+                              } else if (numVal >= 10 && numVal <= 100) {
+                                // Runde auf nächsten 5cm-Schritt
+                                const rounded = Math.round(numVal / 5) * 5
+                                setArtworkCeramicDiameter(String(rounded))
+                              }
+                            }}
+                            style={{
+                              width: '70px',
+                              padding: '0.4rem',
+                              background: 'rgba(255, 255, 255, 0.1)',
+                              border: '1px solid rgba(255, 255, 255, 0.2)',
+                              borderRadius: '6px',
+                              color: '#ffffff',
+                              fontSize: '0.85rem'
+                            }}
+                          />
+                          <span style={{ color: '#8fa0c9', fontSize: '0.8rem', fontWeight: '600' }}>{artworkCeramicDiameter || '10'} cm</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {artworkCeramicSubcategory === 'sonstig' && (
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <label style={{
+                        display: 'block',
+                        marginBottom: '0.4rem',
+                        fontSize: '0.8rem',
+                        color: '#8fa0c9',
+                        fontWeight: '500'
+                      }}>
+                        Beschreibung *
+                      </label>
+                      <textarea
+                        value={artworkCeramicDescription}
+                        onChange={(e) => setArtworkCeramicDescription(e.target.value)}
+                        placeholder="Beschreibe das Werk..."
+                        rows={2}
+                        style={{
+                          width: '100%',
+                          padding: '0.6rem',
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid rgba(255, 255, 255, 0.15)',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          fontSize: '0.9rem',
+                          outline: 'none',
+                          resize: 'vertical',
+                          fontFamily: 'inherit'
+                        }}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Malerei Bildgröße */}
+              {artworkCategory === 'malerei' && (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '0.75rem',
+                  alignItems: 'start'
+                }}>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.4rem',
+                      fontSize: '0.8rem',
+                      color: '#8fa0c9',
+                      fontWeight: '500'
+                    }}>
+                      Breite (cm)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      min="0"
+                      value={artworkPaintingWidth}
+                      onChange={(e) => setArtworkPaintingWidth(e.target.value)}
+                      placeholder="z.B. 50"
+                      style={{
+                        width: '100%',
+                        padding: '0.6rem',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: '0.9rem',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.4rem',
+                      fontSize: '0.8rem',
+                      color: '#8fa0c9',
+                      fontWeight: '500'
+                    }}>
+                      Höhe (cm)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      min="0"
+                      value={artworkPaintingHeight}
+                      onChange={(e) => setArtworkPaintingHeight(e.target.value)}
+                      placeholder="z.B. 70"
+                      style={{
+                        width: '100%',
+                        padding: '0.6rem',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: '0.9rem',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Weitere Felder - Kompakt Grid */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 120px',
+                gap: '0.75rem',
+                alignItems: 'start'
+              }}>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.4rem',
+                    fontSize: '0.8rem',
+                    color: '#8fa0c9',
+                    fontWeight: '500'
+                  }}>
+                    Künstler (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={artworkArtist}
+                    onChange={(e) => setArtworkArtist(e.target.value)}
+                    placeholder={artworkCategory === 'malerei' ? 'Martina Kreinecker' : 'Georg Kreinecker'}
+                    style={{
+                      width: '100%',
+                      padding: '0.6rem',
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                      borderRadius: '8px',
+                      color: '#ffffff',
+                      fontSize: '0.9rem',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.4rem',
+                    fontSize: '0.8rem',
+                    color: '#8fa0c9',
+                    fontWeight: '500'
+                  }}>
+                    Preis (€) *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={artworkPrice}
+                    onChange={(e) => setArtworkPrice(e.target.value)}
+                    placeholder="0.00"
+                    style={{
+                      width: '100%',
+                      padding: '0.6rem',
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                      borderRadius: '8px',
+                      color: '#ffffff',
+                      fontSize: '0.9rem',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Beschreibung */}
+              <div>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '0.4rem',
+                  fontSize: '0.8rem',
+                  color: '#8fa0c9',
+                  fontWeight: '500'
+                }}>
+                  Beschreibung (optional)
+                </label>
+                <textarea
+                  value={artworkDescription}
+                  onChange={(e) => setArtworkDescription(e.target.value)}
+                  placeholder="Optionale Beschreibung..."
+                  rows={3}
+                  style={{
+                    width: '100%',
+                    padding: '0.6rem',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '8px',
+                    color: '#ffffff',
+                    fontSize: '0.9rem',
+                    outline: 'none',
+                    resize: 'vertical',
+                    fontFamily: 'inherit'
+                  }}
+                />
+              </div>
+
+              {/* Shop-Checkbox */}
+              <div>
+                <label style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.6rem',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)'
+                }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isInShop}
+                    onChange={(e) => setIsInShop(e.target.checked)}
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      cursor: 'pointer'
+                    }}
+                  />
+                  <span style={{ fontSize: '0.85rem', color: '#8fa0c9' }}>
+                    Im Online-Shop verfügbar
+                  </span>
+                </label>
+              </div>
+
+              {/* Aktionen - Kompakt */}
+              <div style={{
+                display: 'flex',
+                gap: '0.75rem',
+                justifyContent: 'flex-end',
+                paddingTop: '1rem',
+                borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+              }}>
+                <button 
+                  onClick={() => {
+                    setShowAddModal(false)
+                    setArtworkTitle('')
+                    setArtworkCategory('malerei')
+                    setArtworkCeramicSubcategory('vase')
+                    setArtworkCeramicHeight('10')
+                    setArtworkCeramicDiameter('10')
+                    setArtworkCeramicDescription('')
+                    setArtworkPaintingWidth('')
+                    setArtworkPaintingHeight('')
+                    setArtworkArtist('')
+                    setArtworkDescription('')
+                    setArtworkPrice('')
+                    setSelectedFile(null)
+                    setPreviewUrl(null)
+                    setIsInShop(true)
+                  }}
+                  style={{
+                    padding: '0.6rem 1.25rem',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '8px',
+                    color: '#ffffff',
+                    fontSize: '0.9rem',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                  }}
+                >
+                  Abbrechen
+                </button>
+                <button 
+                  onClick={handleSaveArtwork}
+                  style={{
+                    padding: '0.6rem 1.25rem',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#ffffff',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.4)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)'
+                  }}
+                >
+                  💾 Speichern
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Druck-Modal */}
+      {showPrintModal && savedArtwork && (
+        <div className="admin-modal-overlay" onClick={() => setShowPrintModal(false)}>
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="admin-modal-header">
+              <h2>Etikett drucken</h2>
+              <button className="admin-modal-close" onClick={() => setShowPrintModal(false)}>×</button>
+            </div>
+            <div className="admin-modal-content">
+              <div style={{ textAlign: 'center', padding: '2rem' }}>
+                <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#8b6914', marginBottom: '1rem' }}>
+                  Werk erfolgreich angelegt!
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>
+                  {savedArtwork.number}
+                </div>
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <strong>{savedArtwork.title}</strong>
+                </div>
+                <div style={{ marginBottom: '2rem' }}>
+                  <img 
+                    src={getQRCodeUrl(savedArtwork.number)} 
+                    alt="QR Code" 
+                    style={{ width: '200px', height: '200px', border: '1px solid #ddd', borderRadius: '8px' }}
+                  />
+                </div>
+                <div style={{ marginBottom: '2rem', padding: '1rem', background: '#f5f5f5', borderRadius: '8px' }}>
+                  <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
+                    <strong>Kategorie:</strong> {savedArtwork.category === 'malerei' ? 'Malerei' : 'Keramik'}
+                  </p>
+                  <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
+                    <strong>Künstler:</strong> {savedArtwork.artist}
+                  </p>
+                  {savedArtwork.category === 'malerei' && savedArtwork.paintingWidth && savedArtwork.paintingHeight && (
+                    <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
+                      <strong>Größe:</strong> {savedArtwork.paintingWidth} × {savedArtwork.paintingHeight} cm
+                    </p>
+                  )}
+                  {savedArtwork.category === 'keramik' && (
+                    <>
+                      {savedArtwork.ceramicSubcategory === 'vase' || savedArtwork.ceramicSubcategory === 'skulptur' ? (
+                        savedArtwork.ceramicHeight && (
+                          <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
+                            <strong>Höhe:</strong> {savedArtwork.ceramicHeight} cm
+                          </p>
+                        )
+                      ) : savedArtwork.ceramicSubcategory === 'teller' ? (
+                        savedArtwork.ceramicDiameter && (
+                          <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
+                            <strong>Durchmesser:</strong> {savedArtwork.ceramicDiameter} cm
+                          </p>
+                        )
+                      ) : savedArtwork.ceramicDescription && (
+                        <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
+                          <strong>Beschreibung:</strong> {savedArtwork.ceramicDescription}
+                        </p>
+                      )}
+                      {savedArtwork.ceramicType && (
+                        <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
+                          <strong>Typ:</strong> {savedArtwork.ceramicType === 'steingut' ? 'Steingut' : 'Steinzeug'}
+                        </p>
+                      )}
+                      {savedArtwork.ceramicSurface && (
+                        <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
+                          <strong>Oberfläche:</strong> {savedArtwork.ceramicSurface === 'engobe' ? 'Engobe' : savedArtwork.ceramicSurface === 'glasur' ? 'Glasur' : 'Mischtechnik'}
+                        </p>
+                      )}
+                    </>
+                  )}
+                  {savedArtwork.inExhibition && (
+                    <p style={{ margin: '0.5rem 0', fontSize: '0.9rem', color: '#8b6914' }}>
+                      ✓ Teil der Ausstellung
+                    </p>
+                  )}
+                  {savedArtwork.inShop && (
+                    <p style={{ margin: '0.5rem 0', fontSize: '0.9rem', color: '#8b6914' }}>
+                      ✓ Im Online-Shop verfügbar
+                    </p>
+                  )}
+                </div>
+                <div className="admin-modal-actions">
+                  <button className="btn-secondary" onClick={() => setShowPrintModal(false)}>
+                    Später drucken
+                  </button>
+                  <button className="btn-primary" onClick={handlePrint}>
+                    🖨️ Jetzt drucken
+                  </button>
+                </div>
+                <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '1rem' }}>
+                  Wähle einen Drucker: Etikettendrucker oder Standarddrucker
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Verkaufs-Modal */}
+      {showSaleModal && (
+        <div className="admin-modal-overlay" onClick={() => setShowSaleModal(false)}>
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="admin-modal-header">
+              <h2>Werk als verkauft markieren</h2>
+              <button className="admin-modal-close" onClick={() => setShowSaleModal(false)}>×</button>
+            </div>
+            <div className="admin-modal-content">
+              {/* Methode wählen */}
+              <div className="field" style={{ marginBottom: '1.5rem' }}>
+                <label>Methode</label>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <button
+                    className={saleMethod === 'scan' ? 'btn-primary' : 'btn-secondary'}
+                    onClick={() => setSaleMethod('scan')}
+                    style={{ flex: 1 }}
+                  >
+                    📷 QR-Code scannen
+                  </button>
+                  <button
+                    className={saleMethod === 'manual' ? 'btn-primary' : 'btn-secondary'}
+                    onClick={() => setSaleMethod('manual')}
+                    style={{ flex: 1 }}
+                  >
+                    ⌨️ Seriennummer eingeben
+                  </button>
+                </div>
+              </div>
+
+              {/* QR-Code Scanner */}
+              {saleMethod === 'scan' && (
+                <div className="scan-area">
+                  <div className="upload-placeholder" style={{ padding: '2rem' }}>
+                    <div className="upload-icon">📷</div>
+                    <p>QR-Code mit Kamera scannen</p>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          // QR-Code aus Bild lesen
+                          const qrText = await readQRCodeFromImage(file)
+                          if (qrText) {
+                            // QR-Code enthält Werk-Nummer oder URL
+                            const match = qrText.match(/K2-\d{4}/) || qrText.match(/werk=([^&]+)/)
+                            if (match) {
+                              const artworkNum = match[1] || match[0]
+                              handleMarkAsSold(artworkNum)
+                            } else {
+                              alert('QR-Code konnte nicht gelesen werden. Bitte Seriennummer manuell eingeben.')
+                              setSaleMethod('manual')
+                            }
+                          } else {
+                            // Fallback: Manuelle Eingabe
+                            alert('QR-Code-Scan: Bitte Seriennummer manuell eingeben.\n\nFormat: K2-0001')
+                            setSaleMethod('manual')
+                          }
+                        }
+                      }}
+                      style={{ display: 'none' }}
+                      id="qr-scanner-input"
+                    />
+                    <label htmlFor="qr-scanner-input" className="btn-primary" style={{ marginTop: '1rem', cursor: 'pointer' }}>
+                      📷 Kamera öffnen
+                    </label>
+                    <p className="upload-hint" style={{ marginTop: '1rem' }}>
+                      Auf iPhone/iPad: Kamera öffnet sich automatisch
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Seriennummer Eingabe */}
+              {saleMethod === 'manual' && (
+                <div className="field">
+                  <label>Seriennummer eingeben</label>
+                  <input
+                    type="text"
+                    value={saleInput}
+                    onChange={(e) => setSaleInput(e.target.value.toUpperCase())}
+                    placeholder="z.B. K2-0001"
+                    style={{ fontSize: '1.2rem', textAlign: 'center', letterSpacing: '0.1em' }}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && saleInput.trim()) {
+                        handleMarkAsSold(saleInput.trim())
+                      }
+                    }}
+                  />
+                  <small style={{ color: '#666', fontSize: '0.85rem', marginTop: '0.5rem', display: 'block' }}>
+                    Format: K2-0001, K2-0002, etc.
+                  </small>
+                </div>
+              )}
+
+              {/* Aktionen */}
+              <div className="admin-modal-actions">
+                <button className="btn-secondary" onClick={() => {
+                  setShowSaleModal(false)
+                  setSaleInput('')
+                  setSaleMethod('scan')
+                }}>
+                  Abbrechen
+                </button>
+                {saleMethod === 'manual' && saleInput.trim() && (
+                  <button className="btn-primary" onClick={() => handleMarkAsSold(saleInput.trim())}>
+                    Als verkauft markieren
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ============================================================================
+// EXPORT-BLOCK - KRITISCH: NUR EINMAL EXPORTIEREN!
+// ============================================================================
+// ⚠️ WICHTIG: Doppelte Exports verursachen Build-Fehler!
+// ⚠️ Diese Zeilen NICHT duplizieren oder kopieren!
+// ⚠️ Vite Plugin prüft automatisch auf Duplikate beim Build!
+// ============================================================================
+export default ScreenshotExportAdmin
+export { ScreenshotExportAdmin }
+// ============================================================================

@@ -1,0 +1,25 @@
+# 🚀 K2 SOFORT STARTEN - FUNKTIONIERT IMMER
+
+## ✅ Kopiere diese 3 Zeilen und füge sie im Terminal ein:
+
+cd ~/k2Galerie
+export PATH="$HOME/.local/node-v20.19.0-darwin-x64/bin:$PATH"
+npm run dev
+
+## ✅ Das war's!
+
+Terminal muss offen bleiben!
+
+## 🛑 Server stoppen:
+
+Ctrl + C im Terminal
+
+## 🌐 Browser öffnen:
+
+http://127.0.0.1:5177/
+
+---
+
+## 💡 Das funktioniert GARANTIERT!
+
+Keine Buttons, keine Scripts - einfach diese 3 Zeilen!

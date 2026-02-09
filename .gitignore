@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+dist/
+
+# Screenshots (optional - falls nicht versioniert werden sollen)
+screenshots/*.png
+screenshots/*.jpg
+screenshots/*.jpeg
+
+# Aber behalte den Ordner
+!screenshots/.gitkeep
+
+# Große Dateien die nicht ins Git gehören
+.git.backup/
+release/
+*.app/
+*.dmg
+*.zip
+*.tar.gz
+
+# Backup-Dateien
+backup/
+*.backup
+*.bak
+
+# Log-Dateien
+*.log
+server.log
+server-error.log
+terminal-startup.log
+terminal-startup-error.log
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# VSCode/Cursor
+.vscode/
+.cursorrules
+
+# Temporäre Dateien
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Große Export-Dateien
+k2-export.json
+*.json.backup

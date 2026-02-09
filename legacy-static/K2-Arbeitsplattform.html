@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>K2 Mission Control</title>
+  <style>
+    :root {
+      --bg: radial-gradient(circle at top, #101522, #05070d 55%);
+      --panel: rgba(20, 25, 40, 0.9);
+      --panel-light: rgba(28, 34, 55, 0.9);
+      --accent: #2bd8f7;
+      --accent-soft: #1f9bd6;
+      --text: #f5f7ff;
+      --muted: #98a0c0;
+      --shadow: 0 12px 30px rgba(0,0,0,0.45);
+      --radius: 14px;
+      --grid-gap: 1.2rem;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #02040a;
+      color: var(--text);
+      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+      padding: 2.5rem clamp(1.5rem, 5vw, 4rem);
+    }
+    .viewport {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: var(--bg);
+      border-radius: 32px;
+      padding: 3rem clamp(1.5rem, 4vw, 4rem);
+      box-shadow: 0 40px 120px rgba(0,0,0,0.55);
+      border: 1px solid rgba(43, 216, 247, 0.1);
+    }
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    header h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 2.6rem);
+      letter-spacing: 0.04em;
+    }
+    header .meta { color: var(--muted); font-size: 0.95rem; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: var(--grid-gap);
+    }
+    .panel {
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 1.2rem 1.4rem;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.05);
+      backdrop-filter: blur(22px);
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      padding: 0.8rem 1rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(43, 216, 247, 0.12), rgba(32, 44, 78, 0.6));
+    }
+    .stat span { font-size: 0.8rem; color: var(--muted); }
+    .stat strong { font-size: 1.5rem; }
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      margin-top: 1rem;
+      border-left: 2px solid rgba(255,255,255,0.08);
+      padding-left: 1rem;
+    }
+    .pulse {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .pulse::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      animation: blink 1.8s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%,100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+    label.task {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.8rem;
+      margin: 0.5rem 0;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    label.task input {
+      margin-top: 0.1rem;
+      accent-color: var(--accent);
+      width: 1.15rem;
+      height: 1.15rem;
+    }
+    textarea {
+      width: 100%;
+      min-height: 70px;
+      margin-top: 0.6rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.25);
+      color: var(--text);
+      font-size: 0.95rem;
+      padding: 0.8rem;
+      resize: vertical;
+    }
+    .links { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+    .links strong { color: var(--accent); }
+    .links ul { padding-left: 1.2rem; margin: 0.4rem 0 0; }
+    .links li { margin: 0.2rem 0; }
+    .save {
+      margin-top: 1.5rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="viewport">
+  <header>
+    <div>
+      <h1>K2 Mission Control</h1>
+      <div class="meta">Hybrid‑Launch • April 2026 • Projektstatus Live</div>
+    </div>
+    <div class="pulse">Datenspeicher aktiv – Browser merkt sich deinen Fortschritt</div>
+  </header>
+
+  <div class="stats">
+    <div class="stat">
+      <span>Projektstatus</span>
+      <strong data-id="stat-progress">65%</strong>
+      <small class="muted">Automatisch berechnet (Häkchen)</small>
+    </div>
+    <div class="stat">
+      <span>Nächster Meilenstein</span>
+      <strong>Launch‑Sprint</strong>
+      <small id="nextMilestone" class="muted">Woche 3 – Social Media Drive</small>
+    </div>
+    <div class="stat">
+      <span>Heutiger Fokus</span>
+      <strong id="focusArea">Galerie Setup</strong>
+      <small class="muted">passt sich an offene Aufgaben an</small>
+    </div>
+  </div>
+
+  <section class="grid" style="margin-top:1.5rem;">
+    <div class="panel" data-panel="phase1">
+      <h2>Phase 1 · Vorbereitung</h2>
+      <label class="task"><input type="checkbox" data-id="p1-1"><span>Technik & Dev‑Umgebung laufen (Node, npm, `npm run dev`).</span></label>
+      <label class="task"><input type="checkbox" data-id="p1-2"><span>Supabase eingerichtet + .env gepflegt.</span></label>
+      <label class="task"><input type="checkbox" data-id="p1-3"><span>Inhalte: Texte, Künstler, Werke vorbereitet.</span></label>
+      <label class="task"><input type="checkbox" data-id="p1-4"><span>Brand/Domain‑Entscheidung final.</span></label>
+      <textarea data-id="notes-p1" placeholder="Notizen oder To‑Dos..."></textarea>
+    </div>
+
+    <div class="panel" data-panel="phase2">
+      <h2>Phase 2 · Online</h2>
+      <label class="task"><input type="checkbox" data-id="p2-1"><span>Repo auf GitHub + Zugang geteilt.</span></label>
+      <label class="task"><input type="checkbox" data-id="p2-2"><span>Vercel Deployment verknüpft.</span></label>
+      <label class="task"><input type="checkbox" data-id="p2-3"><span>Supabase Keys in Vercel gesetzt.</span></label>
+      <label class="task"><input type="checkbox" data-id="p2-4"><span>Live‑URL getestet inkl. Inhalte.</span></label>
+      <label class="task"><input type="checkbox" data-id="p2-5"><span>Optional: Eigene Domain verbunden.</span></label>
+      <textarea data-id="notes-p2" placeholder="Deployment‑Notizen..."></textarea>
+      <div class="links">
+        <strong>Anleitungen:</strong>
+        <ul><li>EINFACHES_DEPLOYMENT.md, VERCEL_ANLEITUNG_DEUTSCH.md, GITHUB_SETUP_ANLEITUNG.md</li></ul>
+      </div>
+    </div>
+
+    <div class="panel" data-panel="phase3">
+      <h2>Phase 3 · Marketing</h2>
+      <label class="task"><input type="checkbox" data-id="p3-1"><span>Slogan & Story formuliert.</span></label>
+      <label class="task"><input type="checkbox" data-id="p3-2"><span>Social Accounts aktiv & verlinkt.</span></label>
+      <label class="task"><input type="checkbox" data-id="p3-3"><span>Content Plan (Posts/Stories/Woche).</span></label>
+      <label class="task"><input type="checkbox" data-id="p3-4"><span>Einladungs‑/Mailingliste gepflegt.</span></label>
+      <label class="task"><input type="checkbox" data-id="p3-5"><span>Pressepartner & Multiplikatoren adressiert.</span></label>
+      <textarea data-id="notes-p3" placeholder="Marketing‑Ideen..."></textarea>
+      <div class="links">
+        <strong>Anleitungen:</strong>
+        <ul><li>SOCIAL_MEDIA_ANLEITUNG.md</li></ul>
+      </div>
+    </div>
+
+    <div class="panel" data-panel="phase4">
+      <h2>Phase 4 · Betrieb</h2>
+      <label class="task"><input type="checkbox" data-id="p4-1"><span>Preislisten + SumUp konfiguriert.</span></label>
+      <label class="task"><input type="checkbox" data-id="p4-2"><span>Druck/Print‑Bridge getestet.</span></label>
+      <label class="task"><input type="checkbox" data-id="p4-3"><span>Backup & Restore Plan verstanden.</span></label>
+      <label class="task"><input type="checkbox" data-id="p4-4"><span>Supportkontakt definiert.</span></label>
+      <textarea data-id="notes-p4" placeholder="Betriebsnotizen..."></textarea>
+      <div class="links">
+        <strong>Anleitungen:</strong>
+        <ul><li>SUMUP_KASSA_ANLEITUNG.md, MOBILE-PRINT-ANLEITUNG.md, BACKUP-ANLEITUNG.md, BILD_UPLOAD_ANLEITUNG.md</li></ul>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column: 1/-1; background: var(--panel-light);">
+      <h2>Mission Timeline</h2>
+      <div class="timeline">
+        <div>
+          <strong>Woche 1</strong> – Inhalte finalisieren & QA<br>
+          <small class="muted">Texte, Künstlerprofile, Bildqualität prüfen.</small>
+        </div>
+        <div>
+          <strong>Woche 2</strong> – Technik Freeze & Pre‑Launch Test<br>
+          <small class="muted">Vercel + Mobile + QR streng testen.</small>
+        </div>
+        <div>
+          <strong>Woche 3</strong> – Marketing Blast<br>
+          <small class="muted">Social Media, Newsletter, Pressefd.</small>
+        </div>
+        <div>
+          <strong>Launch Woche</strong> – Hybrid Event & Follow Up<br>
+          <small class="muted">Vor Ort + Online Betreuung, Presseberichte.</small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="save">Status & Notizen werden lokal im Browser gespeichert (kein Login nötig).</div>
+    </div>
+  </div>
+
+  <script>
+    const PREFIX = 'k2-command-';
+    const checkboxes = document.querySelectorAll('input[type="checkbox"][data-id]');
+    const fields = document.querySelectorAll('textarea[data-id]');
+    const statProgress = document.querySelector('[data-id="stat-progress"]');
+    const focusArea = document.getElementById('focusArea');
+    const nextMilestoneEl = document.getElementById('nextMilestone');
+
+    function loadState() {
+      checkboxes.forEach(cb => {
+        const key = PREFIX + cb.dataset.id;
+        cb.checked = localStorage.getItem(key) === '1';
+        cb.addEventListener('change', () => {
+          localStorage.setItem(key, cb.checked ? '1' : '0');
+          updateStats();
+        });
+      });
+      fields.forEach(field => {
+        const key = PREFIX + field.dataset.id;
+        field.value = localStorage.getItem(key) || '';
+        field.addEventListener('input', () => localStorage.setItem(key, field.value));
+      });
+      updateStats();
+    }
+
+    function updateStats() {
+      const total = checkboxes.length;
+      const done = Array.from(checkboxes).filter(cb => cb.checked).length;
+      const percent = Math.round((done / total) * 100);
+      statProgress.textContent = percent + '%';
+
+      const phases = ['phase1','phase2','phase3','phase4'];
+      const titles = {
+        phase1: 'Galerie Setup',
+        phase2: 'Deployment',
+        phase3: 'Marketing Launch',
+        phase4: 'Betrieb'
+      };
+      const pendingPhase = phases.find(phase => {
+        const panel = document.querySelector(`[data-panel=\"${phase}\"]`);
+        return panel && panel.querySelectorAll('input[type=\"checkbox\"]:not(:checked)').length > 0;
+      });
+      focusArea.textContent = pendingPhase ? titles[pendingPhase] : 'Feierabend';
+
+      const milestoneMap = {
+        phase1: 'Woche 1 – Inhalte finalisieren',
+        phase2: 'Woche 2 – Technik Freeze',
+        phase3: 'Woche 3 – Marketing Blast',
+        phase4: 'Launch Woche – Hybrid Event'
+      };
+      nextMilestoneEl.textContent = pendingPhase ? milestoneMap[pendingPhase] : 'Launch erreicht 🎉';
+    }
+
+    loadState();
+  </script>
+</body>
+</html>
