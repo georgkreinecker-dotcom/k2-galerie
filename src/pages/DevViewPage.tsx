@@ -147,16 +147,16 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   const [gitPushing, setGitPushing] = useState(false)
   // Smart Panel standardmäßig geöffnet (false = nicht minimiert)
   // WICHTIG: Standardmäßig NICHT minimiert damit es sichtbar ist
-  const [panelMinimized, setPanelMinimized] = usePersistentBoolean('devview-panel-minimized', false)
+  const [panelMinimized, setPanelMinimized] = useState(false) // Immer sichtbar beim Start
   
-  // Stelle sicher dass Panel beim ersten Laden sichtbar ist
+  // Speichere Panel-Status in localStorage (optional)
   useEffect(() => {
-    const wasMinimized = localStorage.getItem('devview-panel-minimized')
-    if (wasMinimized === null) {
-      // Erstes Laden: Panel immer öffnen
-      setPanelMinimized(false)
+    if (panelMinimized) {
+      localStorage.setItem('devview-panel-minimized', '1')
+    } else {
+      localStorage.removeItem('devview-panel-minimized') // Entferne wenn geöffnet
     }
-  }, [setPanelMinimized])
+  }, [panelMinimized])
   const [publishStatus, setPublishStatus] = useState<{ success: boolean; message: string; artworksCount?: number; size?: number } | null>(null)
   const [syncStatus, setSyncStatus] = useState<{ step: 'published' | 'git-push' | 'vercel-deploy' | 'ready' | null; progress: number }>({ step: null, progress: 0 })
   
@@ -1251,13 +1251,16 @@ end tell`
           pointerEvents: 'auto', // Sicherstellen dass Klicks funktionieren
           visibility: 'visible' // Explizit sichtbar machen
         }}>
-        {/* Minimize/Expand Button */}
+        {/* Minimize/Expand Button - IMMER sichtbar */}
         <button
-          onClick={() => setPanelMinimized(!panelMinimized)}
+          onClick={() => {
+            setPanelMinimized(!panelMinimized)
+            console.log('📱 Smart Panel:', !panelMinimized ? 'wird minimiert' : 'wird geöffnet')
+          }}
           style={{
             position: 'absolute',
             top: '1rem',
-            left: panelMinimized ? '1rem' : 'calc(100% - 3.5rem)',
+            right: '1rem', // Immer rechts im Panel
             width: '2.5rem',
             height: '2.5rem',
             background: 'rgba(95, 251, 241, 0.15)',
@@ -1270,19 +1273,59 @@ end tell`
             justifyContent: 'center',
             fontSize: '1.3rem',
             zIndex: 10001,
-            transition: 'left 0.3s ease, background 0.2s ease',
+            transition: 'background 0.2s ease',
             backdropFilter: 'blur(10px)'
           }}
           onMouseEnter={(e) => {
-            if (!panelMinimized) e.currentTarget.style.background = 'rgba(95, 251, 241, 0.25)'
+            e.currentTarget.style.background = 'rgba(95, 251, 241, 0.25)'
           }}
           onMouseLeave={(e) => {
-            if (!panelMinimized) e.currentTarget.style.background = 'rgba(95, 251, 241, 0.15)'
+            e.currentTarget.style.background = 'rgba(95, 251, 241, 0.15)'
           }}
           title={panelMinimized ? 'Panel öffnen' : 'Panel minimieren'}
         >
           {panelMinimized ? '⚡' : '←'}
         </button>
+        
+        {/* Button außerhalb des Panels wenn minimiert - IMMER sichtbar */}
+        {panelMinimized && (
+          <button
+            onClick={() => {
+              setPanelMinimized(false)
+              console.log('📱 Smart Panel wird geöffnet')
+            }}
+            style={{
+              position: 'fixed',
+              top: '1rem',
+              left: '1rem',
+              width: '3rem',
+              height: '3rem',
+              background: 'rgba(95, 251, 241, 0.2)',
+              border: '2px solid rgba(95, 251, 241, 0.4)',
+              borderRadius: '12px',
+              color: '#5ffbf1',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '1.5rem',
+              zIndex: 10003, // Höchster z-index
+              boxShadow: '0 4px 12px rgba(95, 251, 241, 0.3)',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(95, 251, 241, 0.3)'
+              e.currentTarget.style.transform = 'scale(1.1)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(95, 251, 241, 0.2)'
+              e.currentTarget.style.transform = 'scale(1)'
+            }}
+            title="Smart Panel öffnen"
+          >
+            ⚡
+          </button>
+        )}
         
         {/* Smart Panel Content */}
         {!panelMinimized && (
