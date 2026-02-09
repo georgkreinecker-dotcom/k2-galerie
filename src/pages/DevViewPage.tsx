@@ -146,7 +146,17 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   const [galerieSection, setGalerieSection] = useState<string>('willkommen')
   const [gitPushing, setGitPushing] = useState(false)
   // Smart Panel standardmäßig geöffnet (false = nicht minimiert)
+  // WICHTIG: Standardmäßig NICHT minimiert damit es sichtbar ist
   const [panelMinimized, setPanelMinimized] = usePersistentBoolean('devview-panel-minimized', false)
+  
+  // Stelle sicher dass Panel beim ersten Laden sichtbar ist
+  useEffect(() => {
+    const wasMinimized = localStorage.getItem('devview-panel-minimized')
+    if (wasMinimized === null) {
+      // Erstes Laden: Panel immer öffnen
+      setPanelMinimized(false)
+    }
+  }, [setPanelMinimized])
   const [publishStatus, setPublishStatus] = useState<{ success: boolean; message: string; artworksCount?: number; size?: number } | null>(null)
   const [syncStatus, setSyncStatus] = useState<{ step: 'published' | 'git-push' | 'vercel-deploy' | 'ready' | null; progress: number }>({ step: null, progress: 0 })
   
@@ -1238,7 +1248,8 @@ end tell`
           flexDirection: 'column',
           transition: 'left 0.3s ease',
           overflow: 'hidden',
-          pointerEvents: 'auto' // Sicherstellen dass Klicks funktionieren
+          pointerEvents: 'auto', // Sicherstellen dass Klicks funktionieren
+          visibility: 'visible' // Explizit sichtbar machen
         }}>
         {/* Minimize/Expand Button */}
         <button
