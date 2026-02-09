@@ -55,10 +55,22 @@ function checkAllFiles(dir) {
   const files = fs.readdirSync(dir, { recursive: true })
   const issues = []
   
+  // Verzeichnisse die ignoriert werden sollen
+  const ignoreDirs = ['node_modules', 'dist', '.git', 'build', '.next', 'coverage']
+  
   files.forEach(file => {
+    // Prüfe ob Datei in ignoriertem Verzeichnis ist
+    const fileParts = file.split(path.sep)
+    const shouldIgnore = fileParts.some(part => ignoreDirs.includes(part))
+    
+    if (shouldIgnore) return
+    
     if (file.endsWith('.ts') || file.endsWith('.tsx') || file.endsWith('.js') || file.endsWith('.jsx')) {
       const filePath = path.join(dir, file)
       try {
+        // Prüfe ob Datei existiert (kann bei rekursivem readdirSync anders sein)
+        if (!fs.existsSync(filePath)) return
+        
         const duplicates = checkDuplicateExports(filePath)
         if (duplicates.length > 0) {
           issues.push({
