@@ -1,0 +1,61 @@
+═══════════════════════════════════════════════════════════════
+  📍 SQL Editor finden
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+SQL Editor ist im Supabase Dashboard - links in der Sidebar!
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 1: Supabase Dashboard öffnen
+
+→ Gehe zu: supabase.com
+→ Melde dich an
+→ Wähle dein Projekt (k2-galerie-test)
+→ Dashboard öffnet sich
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 2: SQL Editor finden
+
+Links in der Sidebar siehst du:
+→ Table Editor
+→ Authentication
+→ Storage
+→ Edge Functions
+→ SQL Editor ← HIER KLICKEN!
+→ Database
+→ API
+→ Settings
+
+Klicke auf: "SQL Editor"
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 3: Neue Query erstellen
+
+→ Oben rechts: "New Query" Button
+→ Oder: "+" Button
+→ Klicke darauf
+→ Neuer Tab öffnet sich
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 4: SQL-Code einfügen
+
+→ Öffne auf Mac: supabase/migrations/001_create_artworks_table.sql
+→ Alles kopieren (Cmd+A, Cmd+C)
+→ In SQL Editor einfügen (Cmd+V)
+→ "RUN" klicken (oder Cmd+Enter)
+→ ✅ Success!
+
+═══════════════════════════════════════════════════════════════
+
+TIP:
+
+Falls SQL Editor nicht sichtbar:
+→ Prüfe ob du im richtigen Projekt bist
+→ Seite neu laden (Cmd+R)
+
+═══════════════════════════════════════════════════════════════

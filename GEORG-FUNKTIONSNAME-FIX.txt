@@ -1,0 +1,44 @@
+═══════════════════════════════════════════════════════════════
+  ⚠️ FALSCHER FUNKTIONSNAME!
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Du hast "quick-task" erstellt
+→ Das ist FALSCH!
+→ Funktion muss "artworks" heißen!
+
+═══════════════════════════════════════════════════════════════
+
+LÖSUNG: Neue Funktion erstellen
+
+1. Dashboard → Edge Functions
+2. "Deploy a new function" klicken
+3. Name eingeben: artworks (genau so, klein geschrieben!)
+4. "Create function" klicken
+5. Code einfügen (aus index.ts)
+6. Deployen
+7. ✅ Fertig!
+
+═══════════════════════════════════════════════════════════════
+
+WICHTIG:
+
+Name MUSS genau sein:
+→ artworks (klein geschrieben)
+→ Nicht "quick-task"
+→ Nicht "artworks-test"
+→ Genau: artworks
+
+Warum?
+→ App erwartet /functions/v1/artworks
+→ Andere Namen funktionieren nicht!
+
+═══════════════════════════════════════════════════════════════
+
+TIP:
+
+"quick-task" kannst du später löschen
+→ Oder einfach ignorieren (stört nicht)
+
+═══════════════════════════════════════════════════════════════

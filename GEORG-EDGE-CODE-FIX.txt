@@ -1,0 +1,68 @@
+═══════════════════════════════════════════════════════════════
+  🔧 Edge Function Code richtig einfügen
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Du siehst noch Template-Code und "artworks" am Ende
+→ Das ist falsch!
+→ Du musst den KOMPLETTEN Code einfügen
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 1: Alles löschen
+
+→ Im Supabase Editor
+→ Alles markieren (Cmd+A)
+→ Löschen (Backspace)
+→ Editor sollte leer sein
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 2: Code kopieren
+
+→ In Cursor: supabase/functions/artworks/index.ts öffnen
+→ Links → supabase → functions → artworks → index.ts
+→ Alles markieren (Cmd+A)
+→ Kopieren (Cmd+C)
+→ Sollte über 200 Zeilen sein!
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 3: Code einfügen
+
+→ Zurück zu Supabase Editor
+→ In Editor klicken (sollte leer sein)
+→ Einfügen (Cmd+V)
+→ Du solltest kompletten TypeScript-Code sehen
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 4: Name eingeben
+
+→ Oben im Editor: Name-Feld
+→ Name: artworks (klein geschrieben)
+→ Falls kein Name-Feld: Wird beim Deployen abgefragt
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 5: Deployen
+
+→ Oben rechts: "Deploy" Button
+→ Warten einige Sekunden
+→ ✅ "Deployed" oder "Success"!
+
+═══════════════════════════════════════════════════════════════
+
+WAS DU SEHEN SOLLTEST:
+
+RICHTIG:
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+...
+
+FALSCH:
+Hello World Template
+artworks
+
+═══════════════════════════════════════════════════════════════

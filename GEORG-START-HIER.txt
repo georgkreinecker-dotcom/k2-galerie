@@ -1,0 +1,41 @@
+═══════════════════════════════════════════════════════════════
+  🚀 K2 GALERIE - SUPABASE SETUP
+═══════════════════════════════════════════════════════════════
+
+GEORG - START HIER:
+
+1. Doppelklick auf diese Datei:
+  
+
+   
+   (Öffnet sich im Browser mit Schritt-für-Schritt Anleitung)
+
+ODER:
+
+2. Öffne diese Datei:
+   →
+
+   
+   (Text-Version mit allen Schritten)
+
+═══════════════════════════════════════════════════════════════
+
+WAS PASSIERT:
+
+1. Du erstellst Supabase-Konto (kostenlos)
+2. Du kopierst 2 Werte (URL und Key)
+3. Du fügst sie in .env Datei ein
+4. Du kopierst 2 Dateien in Supabase Dashboard
+5. FERTIG!
+
+Die App funktioniert dann automatisch mit Supabase!
+
+═══════════════════════════════════════════════════════════════
+
+EINFACHSTE METHODE:
+
+→ Doppelklick auf: public/supabase-setup.html
+→ Folge den Schritten im Browser
+→ FERTIG!
+
+═══════════════════════════════════════════════════════════════

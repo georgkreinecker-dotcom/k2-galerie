@@ -251,10 +251,26 @@ const writeGalleryDataMiddleware = () => {
               
               const stats = fs.statSync(outputFile)
               
+              // WICHTIG: Prüfe ob Datei Werke enthält
+              let artworksCount = 0
+              try {
+                const fileContent = fs.readFileSync(outputFile, 'utf8')
+                const jsonData = JSON.parse(fileContent)
+                artworksCount = Array.isArray(jsonData.artworks) ? jsonData.artworks.length : 0
+                console.log('✅ Datei geschrieben:', outputFile)
+                console.log('📊 Dateigröße:', stats.size, 'Bytes')
+                console.log('🎨 Werke in Datei:', artworksCount)
+                
+                if (artworksCount === 0) {
+                  console.warn('⚠️ WARNUNG: Datei enthält keine Werke!')
+                }
+              } catch (parseError) {
+                console.error('❌ Fehler beim Prüfen der Datei:', parseError)
+                throw new Error('Datei enthält ungültiges JSON')
+              }
+              
               // STABILITÄT: Git-Operationen entfernt - blockieren nicht mehr den API-Endpoint
               // Git-Operationen können über separates Script ausgeführt werden
-              console.log('✅ Datei geschrieben:', outputFile)
-              console.log('📊 Dateigröße:', stats.size, 'Bytes')
               
               res.writeHead(200, { 
                 'Content-Type': 'application/json',
@@ -265,6 +281,7 @@ const writeGalleryDataMiddleware = () => {
                 message: 'gallery-data.json erfolgreich geschrieben',
                 size: stats.size,
                 path: outputFile,
+                artworksCount: artworksCount,
                 gitHint: 'Bitte manuell pushen: scripts/git-push-gallery-data.sh oder manuell im Terminal'
               }))
             } catch (e: any) {
@@ -322,6 +339,7 @@ export default defineConfig({
     assetsDir: 'assets',
     sourcemap: false,
     minify: 'esbuild',
+    chunkSizeWarningLimit: 600, // Erhöhe Limit auf 600 KB (war 500 KB)
     rollupOptions: {
       output: {
         manualChunks: {

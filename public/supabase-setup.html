@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>K2 Galerie - Supabase Setup</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+      color: #fff;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(120deg, #5ffbf1, #33a1ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .step {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    .step h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: #5ffbf1;
+    }
+    .step ol, .step ul {
+      margin-left: 1.5rem;
+      margin-top: 1rem;
+    }
+    .step li {
+      margin-bottom: 0.5rem;
+    }
+    .code-block {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 1rem;
+      margin: 1rem 0;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 0.9rem;
+      overflow-x: auto;
+    }
+    .button {
+      display: inline-block;
+      background: linear-gradient(120deg, #5ffbf1, #33a1ff);
+      color: #0a0e27;
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      margin-top: 1rem;
+      transition: transform 0.2s;
+    }
+    .button:hover {
+      transform: translateY(-2px);
+    }
+    .alert {
+      background: rgba(95, 251, 241, 0.1);
+      border: 1px solid #5ffbf1;
+      border-radius: 10px;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+    .checklist {
+      list-style: none;
+      margin-left: 0;
+    }
+    .checklist li {
+      padding: 0.5rem 0;
+      padding-left: 2rem;
+      position: relative;
+    }
+    .checklist li:before {
+      content: "☐";
+      position: absolute;
+      left: 0;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 K2 Galerie - Supabase Setup</h1>
+    <p style="font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.9;">
+      Einfache Schritt-für-Schritt Anleitung - einfach folgen!
+    </p>
+
+    <div class="step">
+      <h2>Schritt 1: Supabase-Konto erstellen</h2>
+      <ol>
+        <li>Gehe zu <a href="https://supabase.com" target="_blank" style="color: #5ffbf1;">supabase.com</a></li>
+        <li>Klicke "Start your project"</li>
+        <li>Melde dich an (GitHub oder Email)</li>
+        <li>Klicke "New Project"</li>
+        <li>Name: <strong>k2-galerie</strong></li>
+        <li>Wähle Region: <strong>Frankfurt</strong></li>
+        <li>WICHTIG: Notiere dir das Datenbank-Passwort!</li>
+        <li>Klicke "Create new project"</li>
+        <li>Warte 2 Minuten</li>
+      </ol>
+    </div>
+
+    <div class="step">
+      <h2>Schritt 2: Credentials kopieren</h2>
+      <ol>
+        <li>Im Supabase Dashboard → <strong>Settings</strong> (Zahnrad oben rechts)</li>
+        <li>Klicke <strong>API</strong> (linke Sidebar)</li>
+        <li>Kopiere diese 2 Werte:</li>
+      </ol>
+      <div class="code-block">
+        <strong>Project URL:</strong><br>
+        https://xxxxx.supabase.co<br><br>
+        <strong>anon public key:</strong><br>
+        eyJhbGc... (lange Zeichenkette)
+      </div>
+    </div>
+
+    <div class="step">
+      <h2>Schritt 3: .env Datei ausfüllen</h2>
+      <ol>
+        <li>Öffne die Datei <strong>.env</strong> im Projektordner</li>
+        <li>Ersetze <code>https://dein-projekt.supabase.co</code> mit deiner Project URL</li>
+        <li>Ersetze <code>dein-anon-key-hier</code> mit deinem anon key</li>
+        <li>Speichere die Datei</li>
+      </ol>
+      <div class="alert">
+        💡 Die .env Datei ist bereits erstellt - einfach öffnen und ausfüllen!
+      </div>
+    </div>
+
+    <div class="step">
+      <h2>Schritt 4: Migration ausführen</h2>
+      <ol>
+        <li>Supabase Dashboard → <strong>SQL Editor</strong></li>
+        <li>Klicke <strong>"New Query"</strong></li>
+        <li>Öffne auf deinem Mac: <code>supabase/migrations/001_create_artworks_table.sql</code></li>
+        <li>Markiere ALLES (Cmd+A) und kopiere (Cmd+C)</li>
+        <li>Füge in SQL Editor ein (Cmd+V)</li>
+        <li>Klicke <strong>"RUN"</strong> (oder Cmd+Enter)</li>
+        <li>✅ Sollte "Success" anzeigen</li>
+      </ol>
+    </div>
+
+    <div class="step">
+      <h2>Schritt 5: Edge Function deployen</h2>
+      <ol>
+        <li>Supabase Dashboard → <strong>Edge Functions</strong></li>
+        <li>Klicke <strong>"Create a new function"</strong></li>
+        <li>Name: <strong>artworks</strong></li>
+        <li>Klicke "Create function"</li>
+        <li>Öffne auf deinem Mac: <code>supabase/functions/artworks/index.ts</code></li>
+        <li>Markiere ALLES (Cmd+A) und kopiere (Cmd+C)</li>
+        <li>Füge in Editor ein (Cmd+V)</li>
+        <li>Klicke <strong>"Deploy"</strong></li>
+        <li>✅ Sollte "Deployed" anzeigen</li>
+      </ol>
+    </div>
+
+    <div class="step">
+      <h2>Schritt 6: Vercel Environment-Variablen</h2>
+      <ol>
+        <li>Gehe zu <a href="https://vercel.com" target="_blank" style="color: #5ffbf1;">vercel.com</a></li>
+        <li>Wähle Projekt: <strong>k2-galerie</strong></li>
+        <li>Settings → <strong>Environment Variables</strong></li>
+        <li>Füge hinzu:
+          <ul>
+            <li><strong>VITE_SUPABASE_URL</strong> = deine Project URL</li>
+            <li><strong>VITE_SUPABASE_ANON_KEY</strong> = dein anon key</li>
+          </ul>
+        </li>
+        <li>Klicke "Redeploy"</li>
+      </ol>
+    </div>
+
+    <div class="step">
+      <h2>✅ Checkliste</h2>
+      <ul class="checklist">
+        <li>Supabase-Projekt erstellt</li>
+        <li>Credentials kopiert</li>
+        <li>.env Datei ausgefüllt</li>
+        <li>Migration ausgeführt</li>
+        <li>Edge Function deployed</li>
+        <li>Vercel Environment-Variablen gesetzt</li>
+      </ul>
+    </div>
+
+    <div class="step">
+      <h2>🎉 Fertig!</h2>
+      <p>Die App verwendet jetzt Supabase!</p>
+      <p style="margin-top: 1rem;"><strong>Testen:</strong></p>
+      <ol>
+        <li>App neu laden</li>
+        <li>Werk speichern → sollte funktionieren</li>
+        <li>Supabase Dashboard → Table Editor → artworks → sollte Werk sehen</li>
+      </ol>
+    </div>
+
+    <div style="text-align: center; margin-top: 3rem;">
+      <a href="https://supabase.com" target="_blank" class="button">Zu Supabase →</a>
+    </div>
+  </div>
+</body>
+</html>

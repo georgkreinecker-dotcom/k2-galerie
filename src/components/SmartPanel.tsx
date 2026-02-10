@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { PLATFORM_ROUTES, PROJECT_ROUTES } from '../config/navigation'
+import { checkMobileUpdates } from '../utils/supabaseClient'
 
 // Helper: Lese persistent Boolean ohne Hook
 function getPersistentBoolean(key: string): boolean {
@@ -15,6 +16,58 @@ interface SmartPanelProps {
 
 export default function SmartPanel({ currentPage, onGitPush }: SmartPanelProps) {
   const [vercelStatus, setVercelStatus] = useState<'checking' | 'deployed' | 'pending' | 'error' | null>(null)
+  const [mobileSyncAvailable, setMobileSyncAvailable] = useState(false)
+  
+  // Prüfe regelmäßig ob es neue Mobile-Daten gibt (nur auf Mac)
+  useEffect(() => {
+    const isMac = !/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && window.innerWidth > 768
+    if (!isMac) return // Nur auf Mac prüfen
+    
+    const checkForMobileUpdates = async () => {
+      try {
+        const { hasUpdates } = await checkMobileUpdates()
+        setMobileSyncAvailable(hasUpdates)
+      } catch (error) {
+        console.warn('⚠️ Mobile-Update-Check fehlgeschlagen:', error)
+      }
+    }
+    
+    // Sofort prüfen
+    checkForMobileUpdates()
+    
+    // Dann alle 10 Sekunden prüfen (häufiger für bessere Sync)
+    const interval = setInterval(checkForMobileUpdates, 10000)
+    return () => clearInterval(interval)
+  }, [])
+  
+  // Mobile-Daten synchronisieren (Mac → lokal)
+  const syncMobileData = async () => {
+    try {
+      const { hasUpdates, artworks } = await checkMobileUpdates()
+      if (hasUpdates && artworks) {
+        // Speichere in localStorage
+        localStorage.setItem('k2-artworks', JSON.stringify(artworks))
+        localStorage.setItem('k2-last-load-time', Date.now().toString())
+        
+        // Update Hash für bessere Update-Erkennung
+        const hash = artworks.map((a: any) => a.number || a.id).sort().join(',')
+        localStorage.setItem('k2-artworks-hash', hash)
+        
+        // Event für andere Komponenten
+        window.dispatchEvent(new CustomEvent('artworks-updated', { 
+          detail: { count: artworks.length, manualSync: true } 
+        }))
+        
+        setMobileSyncAvailable(false)
+        alert(`✅ ${artworks.length} Werke von Mobile synchronisiert!`)
+      } else {
+        alert('ℹ️ Keine neuen Mobile-Daten gefunden')
+      }
+    } catch (error) {
+      console.error('❌ Mobile-Sync Fehler:', error)
+      alert('⚠️ Fehler bei Mobile-Sync: ' + (error instanceof Error ? error.message : String(error)))
+    }
+  }
   
   // Projekt-Status berechnen
   const projectStatus = useMemo(() => {
@@ -95,6 +148,19 @@ export default function SmartPanel({ currentPage, onGitPush }: SmartPanelProps) 
         }
       },
       hint: 'Git Push starten'
+    },
+    {
+      label: mobileSyncAvailable ? '📱 Mobile Sync (neu!)' : '📱 Mobile Sync',
+      action: syncMobileData,
+      hint: mobileSyncAvailable ? 'Neue Daten von Mobile verfügbar' : 'Prüfe Mobile-Daten',
+      highlight: mobileSyncAvailable
+    },
+    {
+      label: '📍 Platzanordnung',
+      action: () => {
+        window.location.href = PROJECT_ROUTES['k2-galerie'].platzanordnung
+      },
+      hint: 'Plätze verwalten & Etiketten drucken'
     },
     {
       label: '🔑 GitHub Token',
@@ -268,43 +334,65 @@ export default function SmartPanel({ currentPage, onGitPush }: SmartPanelProps) 
         }}>
           ⚡ Schnellzugriff
         </h4>
+        <style>{`
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+          }
+        `}</style>
         <div style={{
           display: 'flex',
           flexDirection: 'column',
           gap: '0.5rem'
         }}>
-          {quickActions.map((action, i) => (
-            <button
-              key={i}
-              onClick={action.action}
-              style={{
-                padding: '0.75rem',
-                background: 'rgba(95, 251, 241, 0.1)',
-                border: '1px solid rgba(95, 251, 241, 0.2)',
-                borderRadius: '6px',
-                color: '#5ffbf1',
-                cursor: 'pointer',
-                fontSize: '0.85rem',
-                textAlign: 'left',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(95, 251, 241, 0.15)'
-                e.currentTarget.style.borderColor = 'rgba(95, 251, 241, 0.3)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(95, 251, 241, 0.1)'
-                e.currentTarget.style.borderColor = 'rgba(95, 251, 241, 0.2)'
-              }}
-              title={action.hint}
-            >
-              <span>{action.label}</span>
-              <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>→</span>
-            </button>
-          ))}
+          {quickActions.map((action, i) => {
+            const isHighlighted = (action as any).highlight
+            return (
+              <button
+                key={i}
+                onClick={action.action}
+                style={{
+                  padding: '0.75rem',
+                  background: isHighlighted 
+                    ? 'rgba(34, 197, 94, 0.15)' 
+                    : 'rgba(95, 251, 241, 0.1)',
+                  border: `1px solid ${isHighlighted 
+                    ? 'rgba(34, 197, 94, 0.4)' 
+                    : 'rgba(95, 251, 241, 0.2)'}`,
+                  borderRadius: '6px',
+                  color: isHighlighted ? '#86efac' : '#5ffbf1',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                  textAlign: 'left',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  animation: isHighlighted ? 'pulse 2s infinite' : 'none'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = isHighlighted 
+                    ? 'rgba(34, 197, 94, 0.2)' 
+                    : 'rgba(95, 251, 241, 0.15)'
+                  e.currentTarget.style.borderColor = isHighlighted 
+                    ? 'rgba(34, 197, 94, 0.5)' 
+                    : 'rgba(95, 251, 241, 0.3)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = isHighlighted 
+                    ? 'rgba(34, 197, 94, 0.15)' 
+                    : 'rgba(95, 251, 241, 0.1)'
+                  e.currentTarget.style.borderColor = isHighlighted 
+                    ? 'rgba(34, 197, 94, 0.4)' 
+                    : 'rgba(95, 251, 241, 0.2)'
+                }}
+                title={action.hint}
+              >
+                <span>{action.label}</span>
+                <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>→</span>
+              </button>
+            )
+          })}
         </div>
       </div>
 

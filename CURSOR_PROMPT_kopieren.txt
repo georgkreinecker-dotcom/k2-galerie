@@ -1,0 +1,101 @@
+# CURSOR PROMPT - K2 Galerie Probleme
+
+## 🎯 Hauptproblem
+
+Werke werden nicht in der Galerie angezeigt, obwohl sie erfolgreich gespeichert werden.
+
+## 📋 Problem-Beschreibung
+
+**Symptome:**
+- Werke werden erfolgreich in `localStorage` gespeichert (verifiziert durch Debug-Button)
+- `localStorage.getItem('k2-artworks')` enthält die Werke
+- Galerie zeigt jedoch "Noch keine Werke in der Galerie" oder leere Ansicht
+- Werke erscheinen nicht nach dem Speichern
+
+**Betroffene Komponente:**
+- `src/pages/GalerieVorschauPage.tsx` (~3400 Zeilen)
+
+## 🔍 Technischer Kontext
+
+### Bereits implementiert:
+
+1. **Synchrones Laden beim ersten Render:**
+   ```typescript
+   const initialArtworks = (() => {
+     // Lädt direkt aus localStorage beim Komponentenstart
+     const stored = localStorage.getItem('k2-artworks')
+     // ... Verarbeitung
+   })()
+   const [artworks, setArtworks] = useState<any[]>(initialArtworks)
+   ```
+
+2. **State-Korrektur-Mechanismus:**
+   ```typescript
+   useEffect(() => {
+     if ((!artworks || artworks.length === 0) && initialArtworks && initialArtworks.length > 0) {
+       setArtworks(initialArtworks)
+     }
+   }, [artworks, initialArtworks])
+   ```
+
+3. **Render-Fallback-Logik:**
+   ```typescript
+   {(() => {
+     let currentArtworks = artworks
+     if (!currentArtworks || currentArtworks.length === 0) {
+       if (initialArtworks && initialArtworks.length > 0) {
+         currentArtworks = initialArtworks
+         setArtworks(initialArtworks)
+       }
+     }
+     // ... Filter und Render
+   })()}
+   ```
+
+4. **Event-Listener für Updates:**
+   ```typescript
+   window.addEventListener('artworks-updated', handleArtworksUpdate)
+   ```
+
+### Debug-Informationen:
+
+- Console-Logs zeigen: `✅ Initiale Werke geladen: X Werke`
+- Debug-Button zeigt korrekte Anzahl in `localStorage`
+- Aber: `filteredArtworks` ist leer oder `artworks` State ist leer beim Render
+
+## 🐛 Mögliche Ursachen
+
+1. **Race Condition:** State wird nach initialem Render zurückgesetzt
+2. **Filter-Logik:** Filter filtert alle Werke heraus
+3. **Render-Zyklus:** Komponente rendert bevor Daten geladen sind
+4. **Event-Listener:** Triggert nicht korrekt oder zu spät
+
+## 💡 Was benötigt wird
+
+**Hauptfrage:**
+Warum werden Werke nicht angezeigt, obwohl sie in `localStorage` gespeichert sind und `initialArtworks` sie lädt?
+
+**Benötigte Analyse:**
+1. Prüfe React DevTools: Was ist der Wert von `artworks` State beim Render?
+2. Prüfe Filter-Logik: Werden Werke durch Filter herausgefiltert?
+3. Prüfe Render-Zyklus: Wird Komponente gerendert bevor State gesetzt ist?
+4. Prüfe Event-Listener: Wird `artworks-updated` Event korrekt getriggert?
+
+## 🔧 Erwartete Lösung
+
+- Werke sollten sofort nach dem Speichern in der Galerie erscheinen
+- Werke sollten beim Laden der Seite aus `localStorage` geladen werden
+- State sollte konsistent sein zwischen `initialArtworks` und `artworks`
+- Filter sollte korrekt funktionieren
+
+## 📊 System-Informationen
+
+- **Framework:** React + TypeScript + Vite
+- **State Management:** React `useState` + `localStorage`
+- **Routing:** React Router DOM
+- **Backend:** Supabase KV Store (optional, Fallback zu `localStorage`)
+
+---
+
+**Erstellt:** 9. Februar 2026  
+**Zweck:** Support-Anfrage für Cursor AI

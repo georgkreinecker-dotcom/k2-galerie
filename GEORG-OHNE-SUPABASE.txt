@@ -1,0 +1,95 @@
+═══════════════════════════════════════════════════════════════
+  💡 Lösung: App OHNE Supabase nutzen (kostenlos!)
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Organisation hat Usage Limits überschritten
+→ Neue Projekte helfen nicht
+→ Upgrade kostet Geld
+
+LÖSUNG: App OHNE Supabase nutzen!
+
+Die App hat bereits localStorage Fallback!
+→ Wenn Supabase nicht konfiguriert → verwendet localStorage
+→ Wenn Supabase fehlschlägt → verwendet localStorage
+→ KOSTENLOS!
+
+═══════════════════════════════════════════════════════════════
+
+LÖSUNG: Supabase deaktivieren
+
+Schritt 1: .env Datei leeren
+→ Öffne .env Datei
+→ Lösche die Werte (oder setze sie auf leer):
+
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+
+ODER: Lösche die Zeilen komplett
+→ Speichern: Cmd+S
+
+Schritt 2: App neu starten
+→ Terminal: Stoppe App (Ctrl+C)
+→ Neu starten: npm run dev
+→ Warten bis App läuft
+
+Schritt 3: Testen
+→ App öffnen
+→ Werk speichern
+→ Wird Werk gespeichert?
+→ Wird Werk angezeigt?
+
+═══════════════════════════════════════════════════════════════
+
+WAS FUNKTIONIERT OHNE SUPABASE:
+
+✅ Werke speichern (in localStorage)
+✅ Werke anzeigen (aus localStorage)
+✅ Werke bearbeiten (in localStorage)
+✅ Werke löschen (aus localStorage)
+✅ Filter (Malerei/Keramik)
+✅ Warenkorb
+✅ Admin-Funktionen
+
+═══════════════════════════════════════════════════════════════
+
+WAS FUNKTIONIERT NICHT OHNE SUPABASE:
+
+❌ Synchronisation zwischen Geräten (Mobile ↔ Mac)
+❌ Daten bleiben bei Browser-Cache-Löschung erhalten
+❌ Backup in Cloud
+
+Aber: Für lokale Entwicklung und Testing reicht das!
+
+═══════════════════════════════════════════════════════════════
+
+VORTEILE:
+
+✅ KOSTENLOS!
+✅ Funktioniert sofort
+✅ Keine Supabase-Konfiguration nötig
+✅ Keine Limits
+✅ Schnell und einfach
+
+═══════════════════════════════════════════════════════════════
+
+NACH DEM DEAKTIVIEREN:
+
+Die App funktioniert komplett mit localStorage:
+→ Alle Werke werden lokal gespeichert
+→ Alle Funktionen funktionieren
+→ Keine Supabase-Abhängigkeit
+
+Wenn du später Supabase nutzen willst:
+→ Einfach .env wieder ausfüllen
+→ App neu starten
+→ Fertig!
+
+═══════════════════════════════════════════════════════════════
+
+MÖCHTEST DU SUPABASE DEAKTIVIEREN?
+
+→ Das ist die einfachste kostenlose Lösung!
+
+═══════════════════════════════════════════════════════════════

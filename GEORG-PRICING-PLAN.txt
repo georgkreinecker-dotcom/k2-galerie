@@ -1,0 +1,48 @@
+═══════════════════════════════════════════════════════════════
+  ✅ KEIN Pricing Plan Feld? Das ist NORMAL!
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Pricing Plan wird NICHT beim Erstellen abgefragt
+→ Das ist normal!
+→ Projekt wird automatisch kostenlos (Free Plan)
+
+═══════════════════════════════════════════════════════════════
+
+EINFACH SO MACHEN:
+
+1. "New Project" klicken
+2. Name: k2-galerie-test
+3. Database Password: (sicheres Passwort wählen)
+4. Region: Frankfurt
+5. Organization: georgkreinecker-dotcom's Org (automatisch)
+6. "Create new project" klicken
+7. Warten 2-3 Minuten
+8. ✅ Projekt ist automatisch kostenlos!
+
+═══════════════════════════════════════════════════════════════
+
+WICHTIG:
+
+→ KEIN Pricing Plan Feld? → Normal!
+→ Projekt wird automatisch Free Plan
+→ Einfach erstellen!
+
+═══════════════════════════════════════════════════════════════
+
+PRÜFEN NACH DEM ERSTELLEN:
+
+→ Settings → General oder Billing
+→ Sollte "Free Plan" zeigen
+→ ✅ Bestätigt: Kostenlos!
+
+═══════════════════════════════════════════════════════════════
+
+DANN:
+
+Nach erfolgreichem Erstellen:
+→ Siehe: KOSTENLOS-TESTEN-ANLEITUNG.md
+→ Setup-Schritte ausführen
+
+═══════════════════════════════════════════════════════════════

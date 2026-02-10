@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { PROJECT_ROUTES } from '../config/navigation'
+import { PROJECT_ROUTES, PLATFORM_ROUTES } from '../config/navigation'
 import '../App.css'
 
 const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
@@ -173,12 +173,64 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
         }
         
         // Lade auch Werke wenn vorhanden - KRITISCH für Mobile
+        // WICHTIG: Merge mit lokalen Werken statt Überschreiben!
         if (data.artworks && Array.isArray(data.artworks)) {
           try {
-            localStorage.setItem('k2-artworks', JSON.stringify(data.artworks))
-            console.log('✅ Werke aktualisiert:', data.artworks.length, 'Werke')
-            // Trigger Event für andere Komponenten
-            window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: data.artworks.length } }))
+            // Lade ZUERST lokale Werke
+            const localArtworks = JSON.parse(localStorage.getItem('k2-artworks') || '[]')
+            const serverArtworks = data.artworks
+            
+            // Erstelle Map für schnelle Suche (unterstützt verschiedene Formate)
+            const serverMap = new Map<string, any>()
+            serverArtworks.forEach((a: any) => {
+              const key = a.number || a.id
+              if (key) {
+                serverMap.set(key, a)
+                // Auch ohne K/M Präfix prüfen (für alte Nummern)
+                if (key.includes('-K-') || key.includes('-M-')) {
+                  const oldFormat = key.replace('-K-', '-').replace('-M-', '-')
+                  if (oldFormat !== key) {
+                    serverMap.set(oldFormat, a)
+                  }
+                }
+              }
+            })
+            
+            // KRITISCH: Füge ALLE lokalen Werke hinzu die nicht auf Server sind ODER Mobile-Marker haben
+            // WICHTIG: Lokale Werke haben IMMER Priorität - sie wurden gerade erstellt/bearbeitet!
+            // WICHTIG: Starte mit lokalen Werken als Basis, füge dann Server-Werke hinzu die nicht lokal sind!
+            const localMap = new Map<string, any>()
+            localArtworks.forEach((local: any) => {
+              const key = local.number || local.id
+              if (key) {
+                localMap.set(key, local)
+              }
+            })
+            
+            // Starte mit ALLEN lokalen Werken (haben Priorität!)
+            const merged: any[] = []
+            
+            // Füge ZUERST alle lokalen Werke hinzu
+            localArtworks.forEach((local: any) => {
+              merged.push(local)
+            })
+            
+            // Füge dann Server-Werke hinzu die NICHT lokal sind
+            serverArtworks.forEach((server: any) => {
+              const key = server.number || server.id
+              if (key && !localMap.has(key)) {
+                merged.push(server)
+              }
+            })
+            
+            console.log('✅ Werke gemergt (Lokale zuerst, dann Server):', merged.length, 'Werke (', localArtworks.length, 'Lokal +', merged.length - localArtworks.length, 'Server)')
+            console.log('📋 Lokale Nummern:', localArtworks.map((a: any) => a.number || a.id).join(', '))
+            console.log('📋 Server Nummern:', serverArtworks.map((a: any) => a.number || a.id).join(', '))
+            console.log('📋 Gemergte Nummern:', merged.map((a: any) => a.number || a.id).join(', '))
+            
+            localStorage.setItem('k2-artworks', JSON.stringify(merged))
+            // Trigger Event für andere Komponenten - mit Flag dass es von GaleriePage kommt
+            window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: merged.length, fromGaleriePage: true } }))
           } catch (e) {
             console.warn('⚠️ Werke zu groß für localStorage:', e)
           }
@@ -319,7 +371,37 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
           // Lade auch Werke wenn vorhanden - KRITISCH für Mobile
           if (data.artworks && Array.isArray(data.artworks)) {
             try {
-              localStorage.setItem('k2-artworks', JSON.stringify(data.artworks))
+              // WICHTIG: Merge mit lokalen Werken statt Überschreiben!
+              const localArtworks = JSON.parse(localStorage.getItem('k2-artworks') || '[]')
+              const serverArtworks = data.artworks
+              
+              // Erstelle Map für lokale Werke
+              const localMap = new Map<string, any>()
+              localArtworks.forEach((local: any) => {
+                const key = local.number || local.id
+                if (key) {
+                  localMap.set(key, local)
+                }
+              })
+              
+              // Starte mit ALLEN lokalen Werken (haben Priorität!)
+              const merged: any[] = []
+              
+              // Füge ZUERST alle lokalen Werke hinzu
+              localArtworks.forEach((local: any) => {
+                merged.push(local)
+              })
+              
+              // Füge dann Server-Werke hinzu die NICHT lokal sind
+              serverArtworks.forEach((server: any) => {
+                const key = server.number || server.id
+                if (key && !localMap.has(key)) {
+                  merged.push(server)
+                }
+              })
+              
+              localStorage.setItem('k2-artworks', JSON.stringify(merged))
+              console.log('✅ Werke gemergt (Fallback-Pfad):', merged.length, 'Werke')
               console.log('✅ Werke in localStorage gespeichert:', data.artworks.length, 'Werke')
               // Trigger Event für andere Komponenten (z.B. GalerieVorschauPage)
               window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: data.artworks.length } }))
@@ -582,6 +664,46 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
       
       {/* Content */}
       <div style={{ position: 'relative', zIndex: 1 }}>
+        {/* Zurück-Button - PROMINENT & IMMER SICHTBAR */}
+        <Link
+          to={PLATFORM_ROUTES.home}
+          style={{
+            position: 'fixed',
+            top: '1rem',
+            left: '1rem',
+            background: 'linear-gradient(120deg, #5ffbf1, #33a1ff)',
+            color: '#0a0e27',
+            border: '2px solid rgba(95, 251, 241, 0.5)',
+            borderRadius: '12px',
+            padding: '0.75rem 1.25rem',
+            fontSize: '0.95rem',
+            fontWeight: '700',
+            cursor: 'pointer',
+            zIndex: 10000,
+            boxShadow: '0 4px 20px rgba(95, 251, 241, 0.6)',
+            transition: 'all 0.2s ease',
+            touchAction: 'manipulation',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            textDecoration: 'none',
+            minWidth: '140px',
+            minHeight: '44px'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05)'
+            e.currentTarget.style.boxShadow = '0 6px 24px rgba(95, 251, 241, 0.8)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+            e.currentTarget.style.boxShadow = '0 4px 20px rgba(95, 251, 241, 0.6)'
+          }}
+          title="Zurück zur Arbeitsplattform"
+        >
+          <span style={{ fontSize: '1.3em' }}>←</span>
+          <span>Arbeitsplattform</span>
+        </Link>
+        
         {/* Admin Button - unauffällig oben rechts */}
         <button
           onClick={handleAdminButtonClick}

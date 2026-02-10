@@ -1,0 +1,68 @@
+═══════════════════════════════════════════════════════════════
+  🔍 Browser-Konsole richtig öffnen
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Die Console-Befehle sind NICHT für Google-Suche!
+→ Sie sind für die Browser-Konsole (Entwicklertools)!
+
+═══════════════════════════════════════════════════════════════
+
+SO ÖFFNEST DU DIE KONSOLE:
+
+1. App im Browser öffnen
+   → Lokal: localhost:5177
+   → Oder: Deine Vercel-URL
+
+2. Entwicklertools öffnen
+   → Mac: Cmd + Option + I
+   → Oder: Cmd + Option + J
+   → Windows: F12
+
+3. Tab "Console" wählen
+   → Unten oder rechts: Panel mit Tabs
+   → Klicke auf "Console" Tab
+
+4. Console-Befehle eingeben
+   → Unten: Eingabefeld mit > Zeichen
+   → Tippe: console.log('URL:', import.meta.env.VITE_SUPABASE_URL)
+   → Enter drücken
+
+═══════════════════════════════════════════════════════════════
+
+ALTERNATIVE: .env Datei prüfen
+
+Statt Browser-Konsole:
+→ Öffne .env Datei in Cursor
+→ Links in Sidebar → .env suchen
+→ Prüfe ob ausgefüllt:
+
+VITE_SUPABASE_URL=https://sjqyeqnibwyxtwzcqklj.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_fa6tMCbi4g40m9XiyVUpBA__tpyb9h4
+
+═══════════════════════════════════════════════════════════════
+
+WO IST .env DATEI?
+
+→ Im Projektordner: k2Galerie/.env
+→ In Cursor: Links in Sidebar → .env suchen
+→ Falls nicht sichtbar: Cmd+Shift+. (Punkt) drücken
+
+═══════════════════════════════════════════════════════════════
+
+PRÜFEN:
+
+→ Sind beide Zeilen ausgefüllt?
+→ Beginnt URL mit https://?
+→ Ist Key lang (beginnt mit sb_publishable_)?
+
+═══════════════════════════════════════════════════════════════
+
+EINFACHSTE METHODE:
+
+→ Öffne .env Datei in Cursor
+→ Prüfe ob ausgefüllt
+→ Das reicht!
+
+═══════════════════════════════════════════════════════════════

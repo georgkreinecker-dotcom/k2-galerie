@@ -9,6 +9,7 @@ import K2TeamHandbuchPage from './pages/K2TeamHandbuchPage'
 import MobileConnectPage from './pages/MobileConnectPage'
 import GaleriePage from './pages/GaleriePage'
 import GalerieVorschauPage from './pages/GalerieVorschauPage'
+import PlatzanordnungPage from './pages/PlatzanordnungPage'
 import ShopPage from './pages/ShopPage'
 import VirtuellerRundgangPage from './pages/VirtuellerRundgangPage'
 import DialogStandalonePage from './pages/DialogStandalonePage'
@@ -207,12 +208,14 @@ function App() {
       <Route path={PLATFORM_ROUTES.projects} element={<ProjectsPage />} />
       <Route path="/projects/:projectId" element={<ProjectStartPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].galerie} element={<GaleriePage />} />
-      <Route path={PROJECT_ROUTES['k2-galerie'].galerieVorschau} element={<GalerieVorschauPage />} />
+            <Route path={PROJECT_ROUTES['k2-galerie'].galerieVorschau} element={<GalerieVorschauPage />} />
+            <Route path={PROJECT_ROUTES['k2-galerie'].platzanordnung} element={<PlatzanordnungPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].shop} element={<ShopPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].virtuellerRundgang} element={<VirtuellerRundgangPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].controlStudio} element={<ControlStudioPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].plan} element={<ProjectPlanPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].mobileConnect} element={<MobileConnectPage />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].platzanordnung} element={<PlatzanordnungPage />} />
       <Route path="/k2team-handbuch" element={<K2TeamHandbuchPage />} />
       
       {/* Legacy-Routen (Redirect für bestehende Links) */}

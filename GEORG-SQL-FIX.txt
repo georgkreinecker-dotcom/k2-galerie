@@ -1,0 +1,58 @@
+═══════════════════════════════════════════════════════════════
+  ❌ FEHLER: Dateipfad statt SQL-Code!
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Du hast den Dateipfad eingefügt:
+→ supabase/migrations/001_create_artworks_table.sql
+
+Das ist FALSCH!
+→ Du musst den INHALT der Datei kopieren, nicht den Pfad!
+
+═══════════════════════════════════════════════════════════════
+
+RICHTIG SO:
+
+1. Öffne die Datei auf deinem Mac:
+   → supabase/migrations/001_create_artworks_table.sql
+   → In Cursor oder Finder öffnen
+
+2. Alles markieren:
+   → Cmd+A (alles markieren)
+   → Cmd+C (kopieren)
+   → Du solltest SQL-Code sehen (CREATE TABLE, etc.)
+
+3. In SQL Editor einfügen:
+   → Alles löschen was da steht
+   → Cmd+V (einfügen)
+   → Du solltest SQL-Code sehen, nicht den Pfad!
+
+4. Run klicken:
+   → "Run" Button (grün, oben rechts)
+   → Oder: Cmd+Enter
+   → ✅ Success!
+
+═══════════════════════════════════════════════════════════════
+
+WAS DU SEHEN SOLLTEST:
+
+RICHTIG (SQL-Code):
+CREATE TABLE IF NOT EXISTS artworks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  ...
+
+FALSCH (Dateipfad):
+supabase/migrations/001_create_artworks_table.sql
+
+═══════════════════════════════════════════════════════════════
+
+TIP:
+
+Datei finden:
+→ In Cursor: Links → supabase → migrations → 001_create_artworks_table.sql
+→ Im Finder: k2Galerie → supabase → migrations → 001_create_artworks_table.sql
+
+Dann: Alles kopieren → In SQL Editor einfügen → Run!
+
+═══════════════════════════════════════════════════════════════

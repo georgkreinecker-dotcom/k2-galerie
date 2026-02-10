@@ -1,0 +1,84 @@
+═══════════════════════════════════════════════════════════════
+  📝 .env Datei EINFACH öffnen - OHNE Cursor!
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Vergiss Cursor - wir machen es EINFACH!
+
+═══════════════════════════════════════════════════════════════
+
+METHODE 1: Finder + TextEdit (EINFACHSTE!)
+
+1. Finder öffnen (Cmd+Space → "Finder")
+
+2. Oben im Finder:
+   → Gehe zu → Gehe zum Ordner...
+   → Oder: Cmd+Shift+G
+
+3. Pfad eingeben:
+   /Users/georgkreinecker/k2Galerie
+   → Enter
+
+4. Cmd+Shift+. (Punkt) drücken
+   → Zeigt versteckte Dateien (.env ist versteckt!)
+
+5. Suche: .env Datei
+   → Doppelklick
+   → Öffnet in TextEdit
+
+6. Werte eintragen (siehe unten)
+   → Cmd+S speichern
+   → Fertig!
+
+═══════════════════════════════════════════════════════════════
+
+METHODE 2: Terminal (NOCH EINFACHER!)
+
+1. Terminal öffnen (Cmd+Space → "Terminal")
+
+2. Diese Zeile eingeben und Enter:
+   open -a TextEdit ~/k2Galerie/.env
+
+3. TextEdit öffnet sich automatisch mit .env Datei!
+
+4. Werte eintragen
+   → Cmd+S speichern
+   → Fertig!
+
+═══════════════════════════════════════════════════════════════
+
+WAS EINTRAGEN:
+
+In der .env Datei siehst du:
+
+VITE_SUPABASE_URL=https://dein-projekt.supabase.co
+VITE_SUPABASE_ANON_KEY=dein-anon-key-hier
+
+Ersetze:
+→ https://dein-projekt.supabase.co
+  MIT deiner Project URL aus Supabase
+
+→ dein-anon-key-hier
+  MIT deinem anon key aus Supabase
+
+═══════════════════════════════════════════════════════════════
+
+BEISPIEL:
+
+VITE_SUPABASE_URL=https://abcdefghijklmnop.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+═══════════════════════════════════════════════════════════════
+
+WERTE AUS SUPABASE KOPIEREN:
+
+1. Gehe zu: supabase.com
+2. Dashboard öffnen
+3. Settings → API
+4. Kopiere Project URL
+5. Kopiere anon public key
+6. In .env einfügen
+7. Speichern
+
+═══════════════════════════════════════════════════════════════

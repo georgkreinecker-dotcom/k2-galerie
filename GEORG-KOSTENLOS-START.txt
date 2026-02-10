@@ -1,0 +1,81 @@
+═══════════════════════════════════════════════════════════════
+  🆓 KOSTENLOSES PROJEKT ZUM TESTEN
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+"Service restrict billing issues" = Kostenloses Kontingent aufgebraucht
+→ Lösung: Neues Projekt in GLEICHER Organisation erstellen
+→ Gibt dir wieder kostenloses Kontingent!
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 1: Neues Projekt erstellen
+
+→ Dashboard (georgkreinecker-dotcom!sOrg)
+→ Oben rechts: "New Project" klicken
+→ Name: k2-galerie-test
+→ Region: Frankfurt
+→ Pricing Plan: Free (automatisch)
+→ "Create new project"
+→ Warten 2-3 Minuten
+→ ✅ Neues kostenloses Kontingent!
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 2: API-Keys kopieren
+
+→ Settings → API
+→ Project URL kopieren
+→ anon key kopieren
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 3: .env ausfüllen
+
+→ Öffne .env Datei
+→ URL und Key eintragen
+→ Speichern
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 4: Migration
+
+→ SQL Editor → New Query
+→ Öffne: supabase/migrations/001_create_artworks_table.sql
+→ Alles kopieren → Einfügen → RUN
+→ ✅ Success
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 5: Edge Function
+
+→ Edge Functions → Create function
+→ Name: artworks
+→ Öffne: supabase/functions/artworks/index.ts
+→ Alles kopieren → Einfügen → Deploy
+→ ✅ Deployed
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 6: Vercel
+
+→ vercel.com → Projekt → Settings
+→ Environment Variables
+→ URL und Key hinzufügen
+→ Redeploy
+
+═══════════════════════════════════════════════════════════════
+
+✅ FERTIG!
+
+Neues Projekt = Kostenloses Kontingent
+→ Funktioniert zum Testen!
+
+═══════════════════════════════════════════════════════════════
+
+DETAILLIERTE ANLEITUNG:
+
+→ Öffne: KOSTENLOS-TESTEN-ANLEITUNG.md
+
+═══════════════════════════════════════════════════════════════

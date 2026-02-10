@@ -1,0 +1,39 @@
+═══════════════════════════════════════════════════════════════
+  ✅ RICHTIG: "artworks" löschen!
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Gut gemacht! "artworks" löschen ist richtig!
+
+═══════════════════════════════════════════════════════════════
+
+DANN SO:
+
+1. Alles löschen (auch Template-Code)
+   → Cmd+A → Backspace
+   → Editor sollte komplett leer sein
+
+2. Code kopieren
+   → In Cursor: supabase/functions/artworks/index.ts öffnen
+   → Cmd+A (alles markieren)
+   → Cmd+C (kopieren)
+
+3. Code einfügen
+   → Zurück zu Supabase Editor
+   → Cmd+V (einfügen)
+   → Du solltest kompletten Code sehen (über 200 Zeilen)
+
+4. Deployen
+   → "Deploy" Button klicken
+   → ✅ Fertig!
+
+═══════════════════════════════════════════════════════════════
+
+WICHTIG:
+
+→ Editor muss KOMPLETT leer sein
+→ Dann kompletten Code einfügen
+→ Nicht nur "artworks"!
+
+═══════════════════════════════════════════════════════════════

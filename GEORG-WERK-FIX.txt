@@ -1,0 +1,63 @@
+═══════════════════════════════════════════════════════════════
+  🔍 Werk gespeichert, aber nicht angezeigt
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Werk wurde gespeichert (K2-M-0009, Gesamt: 6)
+→ Aber es wird nicht angezeigt!
+
+═══════════════════════════════════════════════════════════════
+
+SCHNELL-FIX:
+
+1. Filter prüfen
+   → Klicke auf "Alle Werke" Filter
+   → Sollte alles zeigen
+
+2. Seite neu laden
+   → Cmd+R drücken
+   → Siehst du das Werk jetzt?
+
+3. Prüfen
+   → Scroll durch die Liste
+   → Suche nach "K2-M-0009"
+
+═══════════════════════════════════════════════════════════════
+
+MÖGLICHE URSACHEN:
+
+Problem 1: Filter aktiv
+→ Lösung: "Alle Werke" klicken
+
+Problem 2: Seite nicht aktualisiert
+→ Lösung: Cmd+R (neu laden)
+
+Problem 3: Werk nicht in Supabase
+→ Prüfe: Table Editor → artworks
+→ Ist K2-M-0009 da?
+
+Problem 4: Timing-Problem
+→ Lösung: Warte 5 Sekunden, dann prüfen
+
+═══════════════════════════════════════════════════════════════
+
+BROWSER-KONSOLE PRÜFEN:
+
+1. Konsole öffnen: Cmd+Option+I
+2. Tab: "Console"
+3. Nach Speichern schauen:
+   → Siehst du ✅ Erfolgsmeldungen?
+   → Siehst du ❌ Fehler?
+   → Kopiere Fehlermeldungen!
+
+═══════════════════════════════════════════════════════════════
+
+BITTE PRÜFE:
+
+1. Filter: "Alle Werke" aktiv?
+2. Seite neu laden: Cmd+R → Werk sichtbar?
+3. Supabase: K2-M-0009 in Table Editor?
+4. Browser-Konsole: Was steht da?
+
+═══════════════════════════════════════════════════════════════

@@ -1,6 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { PROJECT_ROUTES } from '../config/navigation'
+import { PROJECT_ROUTES, PLATFORM_ROUTES } from '../config/navigation'
+import { 
+  syncMobileToSupabase, 
+  checkMobileUpdates, 
+  saveArtworksToSupabase,
+  loadArtworksFromSupabase,
+  isSupabaseConfigured
+} from '../utils/supabaseClient'
 import '../App.css'
 
 // Einfache localStorage-Funktion
@@ -14,11 +21,74 @@ function loadArtworks(): any[] {
   }
 }
 
+function saveArtworks(artworks: any[]): boolean {
+  try {
+    const json = JSON.stringify(artworks)
+    
+    // Prüfe Größe
+    if (json.length > 5000000) {
+      console.error('❌ Daten zu groß für localStorage:', json.length, 'Bytes')
+      alert('⚠️ Zu viele Werke! Bitte einige löschen.')
+      return false
+    }
+    
+    localStorage.setItem('k2-artworks', json)
+    console.log('✅ Gespeichert:', artworks.length, 'Werke, Größe:', json.length, 'Bytes')
+    
+    // Verifiziere Speicherung
+    const verify = localStorage.getItem('k2-artworks')
+    if (!verify || verify !== json) {
+      console.error('❌ Verifikation fehlgeschlagen!')
+      return false
+    }
+    
+    return true
+  } catch (error: any) {
+    console.error('❌ Fehler beim Speichern:', error)
+    
+    // Spezifische Fehlerbehandlung
+    if (error.name === 'QuotaExceededError') {
+      alert('⚠️ Speicher voll! Bitte einige Werke löschen.')
+    } else {
+      alert('⚠️ Fehler beim Speichern: ' + (error.message || error))
+    }
+    
+    return false
+  }
+}
+
 type Filter = 'alle' | 'malerei' | 'keramik'
 
 const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
   const navigate = useNavigate()
-  const [artworks, setArtworks] = useState<any[]>([])
+  
+  // KRITISCH: Lade Werke SYNCHRON beim ersten Render aus localStorage
+  // Supabase wird asynchron geladen (siehe useEffect)
+  const initialArtworks = (() => {
+    try {
+      const stored = localStorage.getItem('k2-artworks')
+      if (!stored) return []
+      const parsed = JSON.parse(stored)
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        console.log('✅ Initiale Werke aus localStorage geladen:', parsed.length, 'Nummern:', parsed.map((a: any) => a.number || a.id))
+        return parsed.map((a: any) => {
+          if (!a.imageUrl && a.previewUrl) {
+            a.imageUrl = a.previewUrl
+          }
+          if (!a.imageUrl && !a.previewUrl) {
+            a.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+          }
+          return a
+        })
+      }
+      return []
+    } catch (error) {
+      console.error('Fehler beim initialen Laden:', error)
+      return []
+    }
+  })()
+  
+  const [artworks, setArtworks] = useState<any[]>(initialArtworks)
   const [filter, setFilter] = useState<Filter>(initialFilter || 'alle')
   const [cartCount, setCartCount] = useState(0)
   const [lightboxImage, setLightboxImage] = useState<{ src: string; title: string; artwork: any } | null>(null)
@@ -29,6 +99,102 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
   const [likedArtworks, setLikedArtworks] = useState<Set<string>>(new Set())
   const [isLoading, setIsLoading] = useState(false)
   const [loadStatus, setLoadStatus] = useState<{ message: string; success: boolean } | null>(null)
+  
+  // Mobile-First Admin: Neues Objekt hinzufügen / Bearbeiten
+  const [showMobileAdmin, setShowMobileAdmin] = useState(false)
+  const [editingArtwork, setEditingArtwork] = useState<any | null>(null) // null = neues Objekt, sonst = zu bearbeitendes Objekt
+  const [isEditingMode, setIsEditingMode] = useState(false) // Expliziter Flag für Bearbeitungs-Modus
+  const [mobilePhoto, setMobilePhoto] = useState<string | null>(null)
+  const [mobileTitle, setMobileTitle] = useState('')
+  const [mobileCategory, setMobileCategory] = useState<'malerei' | 'keramik'>('malerei')
+  const [mobilePrice, setMobilePrice] = useState('')
+  const [mobileDescription, setMobileDescription] = useState('')
+  const [mobileLocationType, setMobileLocationType] = useState<'regal' | 'bildflaeche' | 'sonstig' | ''>('')
+  const [mobileLocationNumber, setMobileLocationNumber] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+  const [showQRScanner, setShowQRScanner] = useState(false)
+  const [showLocationQR, setShowLocationQR] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
+  const qrScannerVideoRef = useRef<HTMLVideoElement>(null)
+  const qrScannerCanvasRef = useRef<HTMLCanvasElement>(null)
+  
+  // Öffne Modal zum Bearbeiten eines Objekts
+  const openEditModal = (artwork: any) => {
+    console.log('🔍 openEditModal aufgerufen mit artwork:', artwork)
+    
+    if (!artwork) {
+      console.error('❌ openEditModal: artwork ist null/undefined!')
+      return
+    }
+    
+    // Stelle sicher dass number oder id vorhanden ist
+    const artworkNumber = artwork.number || artwork.id
+    if (!artworkNumber) {
+      console.error('❌ openEditModal: artwork hat weder number noch id!', artwork)
+      return
+    }
+    
+    console.log('✅ artwork hat number/id:', artworkNumber)
+    
+    // Setze editingArtwork mit vollständigem Objekt - WICHTIG: number UND id müssen beide gesetzt sein
+    const artworkToEdit = {
+      ...artwork,
+      number: artwork.number || artwork.id,
+      id: artwork.id || artwork.number
+    }
+    
+    console.log('✅ artworkToEdit erstellt:', artworkToEdit)
+    console.log('✅ artworkToEdit.number:', artworkToEdit.number)
+    console.log('✅ artworkToEdit.id:', artworkToEdit.id)
+    
+    // WICHTIG: Setze editingArtwork ZUERST und explizit den Bearbeitungs-Modus
+    setEditingArtwork(artworkToEdit)
+    setIsEditingMode(true) // Expliziter Flag für Bearbeitungs-Modus
+    
+    // Setze alle anderen States
+    setMobilePhoto(artwork.imageUrl || artwork.previewUrl || null)
+    setMobileTitle(artwork.title || '')
+    setMobileCategory(artwork.category || 'malerei')
+    setMobilePrice(artwork.price ? String(artwork.price) : '')
+    setMobileDescription(artwork.description || '')
+    
+    // Zuweisungsplatz laden
+    if (artwork.location) {
+      if (artwork.location.startsWith('Regal')) {
+        setMobileLocationType('regal')
+        setMobileLocationNumber(artwork.location.replace('Regal ', '').trim())
+      } else if (artwork.location.startsWith('Bildfläche')) {
+        setMobileLocationType('bildflaeche')
+        setMobileLocationNumber(artwork.location.replace('Bildfläche ', '').trim())
+      } else {
+        setMobileLocationType('sonstig')
+        setMobileLocationNumber(artwork.location)
+      }
+    } else {
+      setMobileLocationType('')
+      setMobileLocationNumber('')
+    }
+    
+    // Öffne Modal NACH allen State Updates
+    setShowMobileAdmin(true)
+    
+    console.log('✅ Modal geöffnet im Bearbeitungs-Modus, editingArtwork:', artworkToEdit.number || artworkToEdit.id)
+  }
+  
+  // Öffne Modal für neues Objekt
+  const openNewModal = () => {
+    setEditingArtwork(null)
+    setIsEditingMode(false) // Explizit auf "Neues Objekt" Modus setzen
+    setMobilePhoto(null)
+    setMobileTitle('')
+    setMobileCategory('malerei')
+    setMobilePrice('')
+    setMobileDescription('')
+    setMobileLocationType('')
+    setMobileLocationNumber('')
+    setShowMobileAdmin(true)
+  }
 
   // Gelikte Werke laden
   useEffect(() => {
@@ -60,29 +226,454 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
       setFilter(initialFilter)
     }
   }, [initialFilter])
-
-  // Werke aus localStorage laden, falls leer: aus gallery-data.json laden
+  
+  // QR-Code Scanner für Zuweisungsplätze
   useEffect(() => {
-    const loadData = async () => {
+    if (!showQRScanner) return
+    
+    let stream: MediaStream | null = null
+    let scanningInterval: ReturnType<typeof setInterval> | null = null
+    
+    const startScanning = async () => {
+      try {
+        // Kamera-Zugriff anfordern
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' } // Rückkamera bevorzugen
+        })
+        
+        if (qrScannerVideoRef.current) {
+          qrScannerVideoRef.current.srcObject = stream
+        }
+        
+        // QR-Code-Scanning mit jsQR (falls verfügbar) oder einfachem Text-Scanning
+        scanningInterval = setInterval(() => {
+          if (qrScannerVideoRef.current && qrScannerCanvasRef.current) {
+            const video = qrScannerVideoRef.current
+            const canvas = qrScannerCanvasRef.current
+            const ctx = canvas.getContext('2d')
+            
+            if (ctx && video.videoWidth > 0 && video.videoHeight > 0) {
+              canvas.width = video.videoWidth
+              canvas.height = video.videoHeight
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+              
+              // Einfaches QR-Code-Scanning: Versuche BarcodeDetector API (moderne Browser)
+              if ('BarcodeDetector' in window) {
+                const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] })
+                detector.detect(canvas)
+                  .then((detectedCodes: any[]) => {
+                    if (detectedCodes && detectedCodes.length > 0) {
+                      const code = detectedCodes[0].rawValue
+                      handleScannedQRCode(code)
+                    }
+                  })
+                  .catch(() => {
+                    // Fallback: Manuelles Scannen
+                  })
+              }
+            }
+          }
+        }, 500) // Alle 500ms scannen
+      } catch (error) {
+        console.error('Kamera-Zugriff fehlgeschlagen:', error)
+        alert('⚠️ Kamera-Zugriff fehlgeschlagen. Bitte Berechtigung erteilen.')
+        setShowQRScanner(false)
+      }
+    }
+    
+    startScanning()
+    
+    return () => {
+      if (scanningInterval) {
+        clearInterval(scanningInterval)
+      }
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop())
+      }
+      if (qrScannerVideoRef.current) {
+        qrScannerVideoRef.current.srcObject = null
+      }
+    }
+  }, [showQRScanner])
+
+  // Debug: Prüfe editingArtwork wenn Modal geöffnet wird
+  useEffect(() => {
+    if (showMobileAdmin) {
+      console.log('🔍 Modal geöffnet - editingArtwork:', editingArtwork)
+      console.log('🔍 editingArtwork?.number:', editingArtwork?.number)
+      console.log('🔍 editingArtwork?.id:', editingArtwork?.id)
+      console.log('🔍 Hat number oder id?', editingArtwork && (editingArtwork.number || editingArtwork.id))
+    }
+  }, [showMobileAdmin, editingArtwork])
+  
+  // Handler für gescannten QR-Code
+  const handleScannedQRCode = (code: string) => {
+    // Prüfe ob es ein K2-LOCATION QR-Code ist
+    if (code.startsWith('K2-LOCATION:')) {
+      const locationData = code.replace('K2-LOCATION:', '').trim()
+      
+      if (locationData.startsWith('Regal')) {
+        const number = locationData.replace('Regal', '').trim()
+        setMobileLocationType('regal')
+        setMobileLocationNumber(number)
+        setShowQRScanner(false)
+        alert(`✅ Zuweisungsplatz gesetzt: Regal ${number}`)
+      } else if (locationData.startsWith('Bildfläche')) {
+        const number = locationData.replace('Bildfläche', '').trim()
+        setMobileLocationType('bildflaeche')
+        setMobileLocationNumber(number)
+        setShowQRScanner(false)
+        alert(`✅ Zuweisungsplatz gesetzt: Bildfläche ${number}`)
+      } else {
+        setMobileLocationType('sonstig')
+        setMobileLocationNumber(locationData)
+        setShowQRScanner(false)
+        alert(`✅ Zuweisungsplatz gesetzt: ${locationData}`)
+      }
+    } else {
+      // Nicht erkannt - zeige Info
+      console.log('Gescannt:', code)
+    }
+  }
+
+  // PROFESSIONELL: Lade Werke aus Supabase (primär) oder localStorage (Fallback)
+  // WICHTIG: Läuft nur beim ersten Mount - nicht bei jedem Re-Render!
+  useEffect(() => {
+    let isMounted = true
+    
+    const loadArtworksData = async () => {
+      // WICHTIG: Prüfe zuerst ob artworks bereits gesetzt sind (z.B. von initialArtworks)
+      // Wenn ja und localStorage hat die gleiche Anzahl, überspringe das Laden
+      const currentStored = loadArtworks()
+      if (artworks && artworks.length > 0 && currentStored && currentStored.length === artworks.length) {
+        // Vergleiche IDs um sicherzustellen dass es die gleichen Werke sind
+        const currentIds = new Set(artworks.map((a: any) => a.number || a.id).sort())
+        const storedIds = new Set(currentStored.map((a: any) => a.number || a.id).sort())
+        const idsMatch = currentIds.size === storedIds.size && [...currentIds].every(id => storedIds.has(id))
+        
+        if (idsMatch) {
+          console.log('⏭️ Überspringe Laden - artworks State ist bereits aktuell:', artworks.length, 'Werke')
+          setIsLoading(false)
+          return
+        }
+      }
+      
       setIsLoading(true)
       setLoadStatus({ message: '🔄 Lade Werke...', success: false })
       
       try {
-        // WICHTIG: Beim ersten Laden (QR-Code neu gescannt) IMMER von Server laden
-        // Prüfe ob dies ein "frischer" Besuch ist (keine localStorage-Daten oder sehr alt)
-        const lastLoadTime = localStorage.getItem('k2-last-load-time')
-        const timeSinceLastLoad = lastLoadTime ? Date.now() - parseInt(lastLoadTime, 10) : Infinity
-        const isFreshVisit = !lastLoadTime || timeSinceLastLoad > 300000 // 5 Minuten = frischer Besuch
+        // PRIORITÄT 1: Supabase (wenn konfiguriert)
+        if (isSupabaseConfigured()) {
+          console.log('🗄️ Supabase konfiguriert - lade aus Datenbank...')
+          
+          try {
+            const supabaseArtworks = await loadArtworksFromSupabase()
+            
+            if (isMounted && supabaseArtworks && supabaseArtworks.length > 0) {
+              console.log(`✅ ${supabaseArtworks.length} Werke aus Supabase geladen`)
+              setArtworks(supabaseArtworks)
+              setLoadStatus({ message: `✅ ${supabaseArtworks.length} Werke geladen`, success: true })
+              setTimeout(() => setLoadStatus(null), 2000)
+              setIsLoading(false)
+              return
+            }
+            
+            // Supabase ist leer - prüfe localStorage für Migration
+            if (isMounted && initialArtworks && initialArtworks.length > 0) {
+              console.log('🔄 Supabase leer - migriere localStorage → Supabase:', initialArtworks.length, 'Werke')
+              const migrationSuccess = await saveArtworksToSupabase(initialArtworks)
+              if (migrationSuccess && isMounted) {
+                console.log('✅ Migration erfolgreich - lade erneut aus Supabase')
+                const migratedArtworks = await loadArtworksFromSupabase()
+                if (migratedArtworks && migratedArtworks.length > 0) {
+                  setArtworks(migratedArtworks)
+                  setLoadStatus({ message: `✅ ${migratedArtworks.length} Werke migriert und geladen`, success: true })
+                  setTimeout(() => setLoadStatus(null), 2000)
+                  setIsLoading(false)
+                  return
+                }
+              }
+            }
+          } catch (supabaseError) {
+            console.warn('⚠️ Supabase-Laden fehlgeschlagen, verwende Fallback:', supabaseError)
+            // Fallback zu localStorage
+          }
+        }
         
-        // Zuerst aus localStorage laden (für schnelle Anzeige)
-        let stored = loadArtworks()
+        // PRIORITÄT 2: localStorage (Fallback oder wenn Supabase nicht konfiguriert)
+        // WICHTIG: Lade IMMER direkt aus localStorage (nicht initialArtworks verwenden!)
+        // initialArtworks wurde beim ersten Render erstellt und könnte veraltet sein
+        if (isMounted) {
+          // Lade IMMER direkt aus localStorage um neueste Daten zu bekommen
+          const stored = loadArtworks()
+          if (stored && stored.length > 0) {
+            const nummern = stored.map((a: any) => a.number || a.id).join(', ')
+            console.log('💾 Gefunden in localStorage:', stored.length, 'Werke, Nummern:', nummern)
+            // Bereite Werke für Anzeige vor
+            const exhibitionArtworks = stored.map((a: any) => {
+              if (!a.imageUrl && a.previewUrl) {
+                a.imageUrl = a.previewUrl
+              }
+              if (!a.imageUrl && !a.previewUrl) {
+                a.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+              }
+              return a
+            })
+            console.log('✅ Setze artworks State mit', exhibitionArtworks.length, 'Werken')
+            setArtworks(exhibitionArtworks)
+            setLoadStatus({ message: `✅ ${exhibitionArtworks.length} Werke geladen`, success: true })
+            setTimeout(() => setLoadStatus(null), 2000)
+            setIsLoading(false)
+            return
+          } else {
+            console.log('⚠️ Keine Werke in localStorage gefunden')
+          }
+        }
         
-        // WICHTIG: IMMER von Server laden, besonders bei frischem Besuch
-        // Das stellt sicher, dass Mobile IMMER die neuesten Daten von Vercel bekommt
-        console.log('🔄 Lade aus gallery-data.json...', isFreshVisit ? '(frischer Besuch - lade von Vercel)' : '(Synchronisierung)')
+        // Keine Daten gefunden
+        if (isMounted) {
+          console.log('ℹ️ Keine Werke gefunden')
+          setArtworks([])
+          setIsLoading(false)
+        }
+      } catch (error) {
+        console.error('❌ Fehler beim Laden:', error)
+        if (isMounted) {
+          setLoadStatus({ message: '❌ Fehler beim Laden', success: false })
+          setTimeout(() => setLoadStatus(null), 3000)
+          setIsLoading(false)
+        }
+      }
+    }
+    
+    loadArtworksData()
+    
+    // PROFESSIONELL: Automatisches Polling für Mobile-Updates (nur auf Mac)
+    const isMac = !/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && window.innerWidth > 768
+    let pollingInterval: ReturnType<typeof setInterval> | null = null
+    
+    if (isMac && isSupabaseConfigured()) {
+      const checkForMobileUpdates = async () => {
+        try {
+          const { hasUpdates, artworks } = await checkMobileUpdates()
+          if (hasUpdates && artworks && isMounted) {
+            console.log(`🔄 Automatisch ${artworks.length} neue Mobile-Daten gefunden und synchronisiert`)
+            setArtworks(artworks)
+            // Update Hash für nächsten Check
+            const hash = artworks.map((a: any) => a.number || a.id).sort().join(',')
+            localStorage.setItem('k2-artworks-hash', hash)
+            localStorage.setItem('k2-last-load-time', Date.now().toString())
+            // Event für andere Komponenten
+            window.dispatchEvent(new CustomEvent('artworks-updated', { 
+              detail: { count: artworks.length, autoSync: true } 
+            }))
+          }
+        } catch (error) {
+          console.warn('⚠️ Auto-Polling fehlgeschlagen:', error)
+        }
+      }
+      
+      // Prüfe alle 10 Sekunden auf Mobile-Updates
+      pollingInterval = setInterval(checkForMobileUpdates, 10000)
+      
+      // Erste Prüfung nach 5 Sekunden
+      setTimeout(checkForMobileUpdates, 5000)
+    }
+    
+    // Event Listener für Updates von Admin oder GaleriePage
+    const handleArtworksUpdate = async (event?: any) => {
+      // WICHTIG: Ignoriere Events die von dieser Komponente selbst kommen (justSaved Flag)
+      if (event?.detail?.justSaved || event?.detail?.autoSync) {
+        console.log('⏭️ Ignoriere artworks-updated Event (gerade gespeichert/synchronisiert)')
+        return
+      }
+      
+      // WICHTIG: Ignoriere Events von GaleriePage - die merged bereits korrekt und speichert in localStorage
+      // Wir müssen nicht neu laden wenn GaleriePage bereits alles korrekt gemacht hat
+      if (event?.detail?.fromGaleriePage) {
+        console.log('⏭️ Ignoriere artworks-updated Event (von GaleriePage - bereits gemerged)')
+        // Aber lade trotzdem aus localStorage um sicherzustellen dass State aktuell ist
+        setTimeout(() => {
+          if (!isMounted) return
+          const stored = loadArtworks()
+          if (stored && stored.length > 0 && isMounted) {
+            const exhibitionArtworks = stored.map((a: any) => {
+              if (!a.imageUrl && a.previewUrl) {
+                a.imageUrl = a.previewUrl
+              }
+              if (!a.imageUrl && !a.previewUrl) {
+                a.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+              }
+              return a
+            })
+            // Prüfe ob sich die Anzahl geändert hat
+            if (artworks.length !== exhibitionArtworks.length) {
+              console.log('🔄 Aktualisiere artworks State nach GaleriePage-Merge:', exhibitionArtworks.length, 'Werke')
+              setArtworks(exhibitionArtworks)
+            }
+          }
+        }, 100)
+        return
+      }
+      
+      console.log('🔄 Werke wurden aktualisiert (Admin/Galerie), lade neu...', event?.detail)
+      
+      // Lade aus Supabase wenn konfiguriert, sonst localStorage
+      setTimeout(async () => {
+        if (!isMounted) return
+        
+        if (isSupabaseConfigured()) {
+          try {
+            const updatedArtworks = await loadArtworksFromSupabase()
+            if (updatedArtworks && updatedArtworks.length > 0 && isMounted) {
+              setArtworks(updatedArtworks)
+            }
+          } catch (error) {
+            console.warn('⚠️ Supabase-Update fehlgeschlagen:', error)
+            const stored = loadArtworks()
+            if (stored && stored.length > 0 && isMounted) {
+              setArtworks(stored)
+            }
+          }
+        } else {
+          const stored = loadArtworks()
+          if (stored && stored.length > 0 && isMounted) {
+            const exhibitionArtworks = stored.map((a: any) => {
+              if (!a.imageUrl && a.previewUrl) {
+                a.imageUrl = a.previewUrl
+              }
+              if (!a.imageUrl && !a.previewUrl) {
+                a.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+              }
+              return a
+            })
+            setArtworks(exhibitionArtworks)
+          }
+        }
+      }, 200)
+    }
+    
+    // WICHTIG: Nur EINMAL registrieren (kein doppelter Listener)
+    window.addEventListener('artworks-updated', handleArtworksUpdate)
+    
+    return () => {
+      isMounted = false
+      if (pollingInterval) {
+        clearInterval(pollingInterval)
+      }
+      window.removeEventListener('artworks-updated', handleArtworksUpdate)
+    }
+  }, []) // WICHTIG: Leere Dependencies - läuft nur einmal beim Mount
+  
+  // ZUSÄTZLICHER useEffect: Stelle sicher dass artworks State IMMER aktuell ist
+  // WICHTIG: Prüft localStorage regelmäßig für Updates (z.B. von anderen Tabs/Komponenten)
+  // DEAKTIVIERT: Verursacht Konflikte mit dem Haupt-Loading-Mechanismus
+  // Die Haupt-Loading-Logik bei Zeile 340 lädt bereits korrekt aus localStorage
+  /*
+  useEffect(() => {
+    const checkForUpdates = () => {
+      try {
+        const stored = localStorage.getItem('k2-artworks')
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const processedArtworks = parsed.map((a: any) => {
+              if (!a.imageUrl && a.previewUrl) {
+                a.imageUrl = a.previewUrl
+              }
+              if (!a.imageUrl && !a.previewUrl) {
+                a.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+              }
+              return a
+            })
+            
+            // Prüfe ob sich die Anzahl geändert hat oder ob artworks leer ist
+            // WICHTIG: Vergleiche auch die IDs/Numbers um sicherzustellen dass wirklich neue Werke da sind
+            const currentIds = new Set(artworks?.map((a: any) => a.number || a.id) || [])
+            const newIds = new Set(processedArtworks.map((a: any) => a.number || a.id))
+            const hasNewArtworks = processedArtworks.some((a: any) => !currentIds.has(a.number || a.id))
+            
+            if (!artworks || artworks.length === 0 || artworks.length !== processedArtworks.length || hasNewArtworks) {
+              console.log('🔧 Aktualisiere artworks State:', {
+                alt: artworks?.length || 0,
+                neu: processedArtworks.length,
+                nummern: processedArtworks.map((a: any) => a.number || a.id),
+                hatNeue: hasNewArtworks
+              })
+              setArtworks(processedArtworks)
+            }
+          }
+        }
+      } catch (error) {
+        console.error('❌ Fehler beim Laden aus localStorage:', error)
+      }
+    }
+    
+    // Prüfe sofort beim Mount
+    checkForUpdates()
+    
+    // Prüfe auch bei Storage-Events (wenn localStorage von anderer Komponente geändert wird)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'k2-artworks') {
+        checkForUpdates()
+      }
+    }
+    window.addEventListener('storage', handleStorageChange)
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+    }
+  }, [artworks]) // WICHTIG: artworks als Dependency für Vergleich
+  */
+  
+  // Werke vom Server laden (nur wenn wirklich keine vorhanden sind)
+  useEffect(() => {
+    const loadData = async (forceLocalStorage = false) => {
+      setIsLoading(true)
+      setLoadStatus({ message: '🔄 Lade Werke...', success: false })
+      
+      let stored: any[] = []
+      
+      try {
+        // WICHTIG: Wenn forceLocalStorage=true (z.B. nach Admin-Speicherung), 
+        // lade direkt aus localStorage ohne Server-Check
+        if (forceLocalStorage) {
+          const stored = loadArtworks()
+          console.log('💾 Force-Load aus localStorage:', stored.length, 'Werke')
+          
+          if (Array.isArray(stored) && stored.length > 0) {
+            const exhibitionArtworks = stored.map((a: any) => {
+              if (!a.imageUrl && a.previewUrl) {
+                a.imageUrl = a.previewUrl
+              }
+              if (!a.imageUrl && !a.previewUrl) {
+                a.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+              }
+              return a
+            })
+            console.log('✅ Werke aus localStorage geladen (nach Admin-Update):', exhibitionArtworks.length)
+            setArtworks(exhibitionArtworks)
+            setLoadStatus({ message: `✅ ${exhibitionArtworks.length} Werke geladen`, success: true })
+            setTimeout(() => setLoadStatus(null), 2000)
+            setIsLoading(false)
+            
+            // Mobile-Sync
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
+            if (isMobile && exhibitionArtworks.length > 0) {
+              await saveArtworksToSupabase(exhibitionArtworks)
+              syncMobileToSupabase().catch(err => {
+                console.warn('⚠️ Mobile-Sync fehlgeschlagen:', err)
+              })
+            }
+            return
+          }
+        }
+        
+        // Nur wenn wirklich keine Werke vorhanden sind, lade vom Server
+        console.log('🔄 Keine Werke vorhanden - lade vom Server...')
         setLoadStatus({ message: '🔄 Synchronisiere mit Vercel...', success: false })
         
-          try {
+        try {
             const timestamp = Date.now()
             
             // WICHTIG: Prüfe ob wir auf Vercel sind oder localhost
@@ -168,18 +759,159 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
                 if (data.buildId) localStorage.setItem('k2-last-build-id', data.buildId)
                 localStorage.setItem('k2-last-load-time', String(Date.now()))
                 
-                // Speichere in localStorage
+                // WICHTIG: Merge-Logik - Lokale Werke IMMER behalten!
+                // Lade ZUERST lokale Werke BEVOR wir Server-Daten verwenden
+                const existingArtworks = loadArtworks()
+                const serverArtworks = data.artworks
+                
+                console.log('🔄 Merge startet:', {
+                  lokaleWerke: existingArtworks.length,
+                  serverWerke: serverArtworks.length,
+                  lokaleNummern: existingArtworks.map((a: any) => a.number || a.id)
+                })
+                
+                // Erstelle Map für schnelle Suche nach Nummern (unterstützt verschiedene Formate)
+                const serverMap = new Map<string, any>()
+                serverArtworks.forEach((a: any) => {
+                  const key = a.number || a.id
+                  if (key) {
+                    serverMap.set(key, a)
+                    // Auch ohne K/M Präfix prüfen (für alte Nummern)
+                    if (key.includes('-K-') || key.includes('-M-')) {
+                      const oldFormat = key.replace('-K-', '-').replace('-M-', '-')
+                      if (oldFormat !== key) {
+                        serverMap.set(oldFormat, a)
+                      }
+                    }
+                  }
+                })
+                
+                // Starte mit Server-Werken
+                const mergedArtworks = [...serverArtworks]
+                
+                // KRITISCH: Füge ALLE lokalen Werke hinzu die nicht auf Server sind ODER Mobile-Marker haben
+                existingArtworks.forEach((localArtwork: any) => {
+                  const key = localArtwork.number || localArtwork.id
+                  if (!key) return
+                  
+                  const serverArtwork = serverMap.get(key)
+                  
+                  // WICHTIG: Mobile-Werke IMMER behalten (createdOnMobile oder updatedOnMobile)
+                  const isMobileWork = localArtwork.createdOnMobile || localArtwork.updatedOnMobile
+                  
+                  if (!serverArtwork) {
+                    // Lokales Werk existiert nicht auf Server → IMMER hinzufügen
+                    console.log('💾 Behalte lokales Werk (nicht auf Server):', key, isMobileWork ? '(Mobile)' : '')
+                    mergedArtworks.push(localArtwork)
+                  } else {
+                    // Werk existiert auf beiden → prüfe Mobile-Marker ZUERST
+                    if (isMobileWork) {
+                      // Mobile-Werk → IMMER lokale Version behalten
+                      console.log('💾 Behalte Mobile-Werk (immer lokale Version):', key)
+                      const index = mergedArtworks.findIndex((a: any) => (a.number || a.id) === key)
+                      if (index >= 0) {
+                        mergedArtworks[index] = localArtwork
+                      } else {
+                        mergedArtworks.push(localArtwork)
+                      }
+                    } else {
+                      // Prüfe Timestamps
+                      const localCreated = localArtwork.createdAt ? new Date(localArtwork.createdAt).getTime() : 0
+                      const serverCreated = serverArtwork.createdAt ? new Date(serverArtwork.createdAt).getTime() : 0
+                      const localUpdated = localArtwork.updatedAt ? new Date(localArtwork.updatedAt).getTime() : 0
+                      const serverUpdated = serverArtwork.updatedAt ? new Date(serverArtwork.updatedAt).getTime() : 0
+                      
+                      // Wenn lokales Werk neuer ist ODER kein Timestamp hat → behalte lokale Version
+                      const isLocalNewer = localUpdated > serverUpdated || (localUpdated === 0 && localCreated > serverCreated)
+                      const hasNoTimestamps = localCreated === 0 && serverCreated === 0
+                      
+                      if (isLocalNewer || hasNoTimestamps) {
+                        console.log('💾 Behalte lokales Werk (neuer oder ohne Timestamp):', key)
+                        const index = mergedArtworks.findIndex((a: any) => (a.number || a.id) === key)
+                        if (index >= 0) {
+                          mergedArtworks[index] = localArtwork
+                        } else {
+                          mergedArtworks.push(localArtwork)
+                        }
+                      } else {
+                        // Prüfe ob lokales Werk sehr neu ist (< 1 Stunde alt) → behalte es trotzdem
+                        const oneHourAgo = Date.now() - 3600000
+                        if (localCreated > oneHourAgo) {
+                          console.log('💾 Behalte lokales Werk (sehr neu, < 1 Stunde):', key)
+                          const index = mergedArtworks.findIndex((a: any) => (a.number || a.id) === key)
+                          if (index >= 0) {
+                            mergedArtworks[index] = localArtwork
+                          } else {
+                            mergedArtworks.push(localArtwork)
+                          }
+                        }
+                      }
+                    }
+                  }
+                })
+                
+                console.log(`🔄 Merge abgeschlossen: ${serverArtworks.length} Server + ${existingArtworks.length} Lokal = ${mergedArtworks.length} Gesamt`)
+                console.log('📊 Finale Nummern:', mergedArtworks.map((a: any) => a.number || a.id))
+                
+                // WICHTIG: Speichere gemergte Liste UND synchronisiere zu Supabase (falls Mobile)
                 try {
-                  localStorage.setItem('k2-artworks', JSON.stringify(data.artworks))
-                  console.log('✅ Werke aus Vercel geladen und gespeichert:', data.artworks.length)
-                  stored = data.artworks
-                  setLoadStatus({ message: `✅ ${data.artworks.length} Werke von Vercel synchronisiert`, success: true })
+                  localStorage.setItem('k2-artworks', JSON.stringify(mergedArtworks))
+                  console.log('✅ Gemergte Werke gespeichert:', mergedArtworks.length)
+                  
+                  // Mobile: Synchronisiere gemergte Liste zu Supabase
+                  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
+                  if (isMobile && mergedArtworks.length > 0) {
+                    try {
+                      await saveArtworksToSupabase(mergedArtworks)
+                      console.log('✅ Gemergte Werke zu Supabase synchronisiert')
+                    } catch (syncError) {
+                      console.warn('⚠️ Supabase-Sync fehlgeschlagen:', syncError)
+                    }
+                  }
+                  
+                  stored = mergedArtworks
+                  
+                  // KRITISCH: Setze artworks SOFORT nach Merge
+                  // Stelle sicher dass ALLE Werke angezeigt werden
+                  const exhibitionArtworks = mergedArtworks.map((a: any) => {
+                    if (!a.imageUrl && a.previewUrl) {
+                      a.imageUrl = a.previewUrl
+                    }
+                    if (!a.imageUrl && !a.previewUrl) {
+                      a.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+                    }
+                    return a
+                  })
+                  
+                  console.log('🎨 Setze artworks State:', exhibitionArtworks.length, 'Werke')
+                  console.log('🎨 Nummern:', exhibitionArtworks.map((a: any) => a.number || a.id))
+                  setArtworks(exhibitionArtworks)
+                  
+                  setLoadStatus({ 
+                    message: `✅ ${mergedArtworks.length} Werke synchronisiert (${serverArtworks.length} Server + ${mergedArtworks.length - serverArtworks.length} Mobile)`, 
+                    success: true 
+                  })
                   setTimeout(() => setLoadStatus(null), 3000)
+                  setIsLoading(false)
                 } catch (e) {
                   console.warn('⚠️ Werke zu groß für localStorage, verwende direkt')
-                  stored = data.artworks
-                  setLoadStatus({ message: `✅ ${data.artworks.length} Werke von Vercel geladen`, success: true })
+                  stored = mergedArtworks
+                  
+                  // WICHTIG: Setze artworks auch wenn localStorage zu groß
+                  const exhibitionArtworks = mergedArtworks.map((a: any) => {
+                    if (!a.imageUrl && a.previewUrl) {
+                      a.imageUrl = a.previewUrl
+                    }
+                    if (!a.imageUrl && !a.previewUrl) {
+                      a.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+                    }
+                    return a
+                  })
+                  setArtworks(exhibitionArtworks)
+                  
+                  setLoadStatus({ message: `✅ ${mergedArtworks.length} Werke geladen`, success: true })
                   setTimeout(() => setLoadStatus(null), 3000)
+                  setIsLoading(false)
                 }
               } else {
                 console.error('❌ Keine Werke in Server-Antwort gefunden!')
@@ -193,12 +925,40 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
                 // Fallback: Verwende localStorage wenn vorhanden
                 if (stored && stored.length > 0) {
                   console.log('📦 Verwende localStorage-Daten (Server hat keine Werke):', stored.length)
+                  const exhibitionArtworks = stored.map((a: any) => {
+                    if (!a.imageUrl && a.previewUrl) {
+                      a.imageUrl = a.previewUrl
+                    }
+                    if (!a.imageUrl && !a.previewUrl) {
+                      a.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+                    }
+                    return a
+                  })
+                  setArtworks(exhibitionArtworks)
                   setLoadStatus({ message: `⚠️ Server hat keine Werke - verwende Cache (${stored.length})`, success: false })
                   setTimeout(() => setLoadStatus(null), 5000)
                 } else {
+                  setArtworks([])
                   setLoadStatus({ message: '❌ Keine Werke gefunden - weder Server noch Cache', success: false })
-                  setTimeout(() => setLoadStatus(null), 5000)
+                  setTimeout(() => setLoadStatus(null), 10000)
                 }
+                setIsLoading(false)
+              }
+            } else if (response.status === 404) {
+              console.error('❌ Datei nicht gefunden (404) - gallery-data.json existiert nicht auf Vercel!')
+              setLoadStatus({ 
+                message: '❌ Datei nicht auf Vercel gefunden - bitte "Veröffentlichen" und "Git Push" ausführen', 
+                success: false 
+              })
+              setTimeout(() => setLoadStatus(null), 10000)
+              
+              // Fallback: Verwende localStorage wenn vorhanden
+              if (stored && stored.length > 0) {
+                console.log('📦 Verwende localStorage-Daten (404-Fehler):', stored.length)
+                setArtworks(stored)
+                setIsLoading(false)
+              } else {
+                setIsLoading(false)
               }
             } else {
               console.error('❌ Server-Fehler:', response.status, response.statusText)
@@ -215,12 +975,14 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
               // Fallback: Verwende localStorage wenn vorhanden
               if (stored && stored.length > 0) {
                 console.log('📦 Verwende localStorage-Daten (Server-Fehler):', stored.length)
+                setArtworks(stored)
                 setLoadStatus({ message: `✅ ${stored.length} Werke aus Cache (Server-Fehler ${response.status})`, success: true })
-                setTimeout(() => setLoadStatus(null), 2000)
+                setTimeout(() => setLoadStatus(null), 3000)
               } else {
-                setLoadStatus({ message: `⚠️ Server-Fehler ${response.status}: ${response.statusText}`, success: false })
-                setTimeout(() => setLoadStatus(null), 5000)
+                setLoadStatus({ message: `⚠️ Server-Fehler ${response.status}: ${response.statusText} - bitte "Aktualisieren" klicken`, success: false })
+                setTimeout(() => setLoadStatus(null), 10000)
               }
+              setIsLoading(false)
             }
         } catch (error: any) {
           console.error('❌ gallery-data.json konnte nicht geladen werden:', error)
@@ -230,20 +992,44 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
             stack: error?.stack
           })
           
+          // WICHTIG: Bei Fehler IMMER Supabase prüfen (falls Mobile)
+          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
+          if (isMobile) {
+            try {
+              console.log('📱 Versuche Supabase als Fallback...')
+              const { loadArtworksFromSupabase } = await import('../utils/supabaseClient')
+              const supabaseArtworks = await loadArtworksFromSupabase()
+              if (supabaseArtworks && Array.isArray(supabaseArtworks) && supabaseArtworks.length > 0) {
+                console.log('✅ Supabase-Daten geladen:', supabaseArtworks.length)
+                localStorage.setItem('k2-artworks', JSON.stringify(supabaseArtworks))
+                stored = supabaseArtworks
+                setArtworks(supabaseArtworks)
+                setLoadStatus({ message: `✅ ${supabaseArtworks.length} Werke von Supabase geladen`, success: true })
+                setTimeout(() => setLoadStatus(null), 3000)
+                setIsLoading(false)
+                return
+              }
+            } catch (supabaseError) {
+              console.warn('⚠️ Supabase-Fallback fehlgeschlagen:', supabaseError)
+            }
+          }
+          
           // Fallback: Verwende localStorage wenn vorhanden
           if (stored && stored.length > 0) {
             console.log('📦 Verwende localStorage-Daten (Fehler):', stored.length)
+            setArtworks(stored)
             setLoadStatus({ message: `✅ ${stored.length} Werke aus Cache`, success: true })
-            setTimeout(() => setLoadStatus(null), 2000)
+            setTimeout(() => setLoadStatus(null), 3000)
           } else {
             const errorMsg = error?.name === 'AbortError' 
-              ? '⚠️ Zeitüberschreitung beim Laden' 
+              ? '⚠️ Zeitüberschreitung beim Laden - bitte "Aktualisieren" klicken' 
               : error?.message 
               ? `⚠️ Fehler: ${error.message}` 
-              : '⚠️ Fehler beim Laden'
+              : '⚠️ Fehler beim Laden - bitte "Aktualisieren" klicken'
             setLoadStatus({ message: errorMsg, success: false })
-            setTimeout(() => setLoadStatus(null), 5000)
+            setTimeout(() => setLoadStatus(null), 10000)
           }
+          setIsLoading(false)
         }
         
         if (Array.isArray(stored) && stored.length > 0) {
@@ -267,6 +1053,16 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
             withoutImage: exhibitionArtworks.filter((a: any) => !a.imageUrl || a.imageUrl.includes('data:image/svg')).length
           })
           setArtworks(exhibitionArtworks)
+          
+          // WICHTIG: Synchronisiere Mobile-Daten zu Supabase (für Mac-Sync)
+          // Nur auf Mobile-Geräten (nicht auf Mac)
+          // Wird auch nach Server-Laden gemacht, um sicherzustellen dass alle Daten synchronisiert sind
+          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
+          if (isMobile && exhibitionArtworks.length > 0) {
+            syncMobileToSupabase().catch(err => {
+              console.warn('⚠️ Mobile-Sync fehlgeschlagen:', err)
+            })
+          }
         } else {
           console.warn('⚠️ Keine Werke gefunden')
           setArtworks([])
@@ -283,20 +1079,11 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
       }
     }
     
-    loadData()
-    
-    // Event Listener für Updates von GaleriePage
-    const handleArtworksUpdate = () => {
-      console.log('🔄 Werke wurden aktualisiert, lade neu...')
+    // Nur wenn wirklich keine Werke vorhanden sind, lade vom Server
+    if ((!initialArtworks || initialArtworks.length === 0) && (!artworks || artworks.length === 0)) {
       loadData()
     }
-    
-    window.addEventListener('artworks-updated', handleArtworksUpdate)
-    
-    return () => {
-      window.removeEventListener('artworks-updated', handleArtworksUpdate)
-    }
-  }, [])
+  }, [artworks, initialArtworks])
   
   // Manuelle Refresh-Funktion - lädt IMMER neu vom Server
   const handleRefresh = async () => {
@@ -304,6 +1091,25 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
     setLoadStatus({ message: '🔄 Synchronisiere mit Server...', success: false })
     
     try {
+      // WICHTIG: Synchronisiere Mobile-Daten zu Supabase BEVOR wir neue Daten laden
+      // Das stellt sicher, dass neu hinzugefügte Bilder auch am Mac ankommen
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
+      if (isMobile) {
+        try {
+          const currentArtworks = loadArtworks()
+          if (currentArtworks && currentArtworks.length > 0) {
+            console.log('📱 Synchronisiere Mobile-Daten zu Supabase...', currentArtworks.length, 'Werke')
+            await saveArtworksToSupabase(currentArtworks)
+            await syncMobileToSupabase()
+            setLoadStatus({ message: '✅ Mobile-Daten synchronisiert', success: true })
+            setTimeout(() => setLoadStatus({ message: '🔄 Lade vom Server...', success: false }), 1000)
+          }
+        } catch (syncError) {
+          console.warn('⚠️ Mobile-Sync fehlgeschlagen:', syncError)
+          // Weiter mit Server-Laden auch wenn Sync fehlschlägt
+        }
+      }
+      
       // Leere localStorage um neue Daten zu erzwingen
       localStorage.removeItem('k2-artworks')
       localStorage.removeItem('k2-last-loaded-timestamp')
@@ -348,13 +1154,72 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
           if (data.exportedAt) localStorage.setItem('k2-last-loaded-timestamp', data.exportedAt)
           localStorage.setItem('k2-last-load-time', String(Date.now())) // WICHTIG: Load-Time speichern
           
-          // Speichere in localStorage
+          // WICHTIG: Merge-Logik auch hier - Mobile-Objekte NICHT überschreiben!
+          const existingArtworks = loadArtworks()
+          const serverArtworks = data.artworks
+          
+          // Merge-Strategie (gleiche Logik wie oben)
+          const serverMap = new Map<string, any>()
+          serverArtworks.forEach((a: any) => {
+            const key = a.number || a.id
+            if (key) serverMap.set(key, a)
+          })
+          
+          const mergedArtworks: any[] = []
+          
+          // Server-Objekte hinzufügen
+          serverArtworks.forEach((serverArtwork: any) => {
+            const key = serverArtwork.number || serverArtwork.id
+            if (key) mergedArtworks.push(serverArtwork)
+          })
+          
+          // Mobile-Objekte hinzufügen die nicht auf Server sind ODER neuer sind
+          existingArtworks.forEach((mobileArtwork: any) => {
+            const key = mobileArtwork.number || mobileArtwork.id
+            if (!key) return
+            
+            const serverArtwork = serverMap.get(key)
+            
+            if (!serverArtwork) {
+              // Mobile-Objekt existiert nicht auf Server → behalten
+              mergedArtworks.push(mobileArtwork)
+            } else {
+              // Prüfe welches neuer ist
+              const mobileUpdated = mobileArtwork.updatedAt || mobileArtwork.createdAt
+              const serverUpdated = serverArtwork.updatedAt || serverArtwork.createdAt
+              
+              if (mobileUpdated && serverUpdated) {
+                const mobileTime = new Date(mobileUpdated).getTime()
+                const serverTime = new Date(serverUpdated).getTime()
+                
+                if (mobileTime > serverTime) {
+                  // Mobile-Version ist neuer → Mobile-Version behalten
+                  const index = mergedArtworks.findIndex((a: any) => (a.number || a.id) === key)
+                  if (index >= 0) {
+                    mergedArtworks[index] = mobileArtwork
+                  } else {
+                    mergedArtworks.push(mobileArtwork)
+                  }
+                }
+              } else if (mobileUpdated && !serverUpdated) {
+                // Mobile hat updatedAt, Server nicht → Mobile-Version behalten
+                const index = mergedArtworks.findIndex((a: any) => (a.number || a.id) === key)
+                if (index >= 0) {
+                  mergedArtworks[index] = mobileArtwork
+                } else {
+                  mergedArtworks.push(mobileArtwork)
+                }
+              }
+            }
+          })
+          
+          // Speichere gemergte Liste
           try {
-            localStorage.setItem('k2-artworks', JSON.stringify(data.artworks))
-            console.log('✅ Neue Werke geladen:', data.artworks.length, 'Version:', data.version)
+            localStorage.setItem('k2-artworks', JSON.stringify(mergedArtworks))
+            console.log('✅ Gemergte Werke geladen:', mergedArtworks.length, 'Version:', data.version, `(${serverArtworks.length} Server + ${mergedArtworks.length - serverArtworks.length} Mobile)`)
             
             // WICHTIG: Zeige ALLE Werke - auch ohne Bild (für Debugging)
-            const exhibitionArtworks = data.artworks
+            const exhibitionArtworks = mergedArtworks
               .map((a: any) => {
                 if (!a) return null
                 // Stelle sicher, dass imageUrl korrekt gesetzt ist
@@ -494,47 +1359,32 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
     }
   }
 
-  // WICHTIG: Stelle sicher dass die Komponente immer etwas rendert - verhindert schwarze Seite
-  if (!artworks || artworks.length === 0) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%)',
-        color: '#ffffff',
-        padding: '2rem',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        {isLoading ? (
-          <div style={{ textAlign: 'center' }}>
-            <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>🔄 Lade Werke...</h1>
-            <p>{loadStatus?.message || 'Bitte warten...'}</p>
-          </div>
-        ) : (
-          <div style={{ textAlign: 'center' }}>
-            <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>📸 Keine Werke gefunden</h1>
-            <p style={{ marginBottom: '1rem' }}>Bitte aktualisiere die Seite.</p>
-            <button 
-              onClick={handleRefresh}
-              style={{
-                padding: '0.75rem 1.5rem',
-                background: '#667eea',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '1rem'
-              }}
-            >
-              🔄 Aktualisieren
-            </button>
-          </div>
-        )}
-      </div>
-    )
-  }
+  // KRITISCH: useEffect der prüft ob Werke geladen werden müssen
+  // Das stellt sicher, dass gespeicherte Werke angezeigt werden
+  useEffect(() => {
+    if ((!artworks || artworks.length === 0) && !isLoading) {
+      // Versuche aus localStorage zu laden
+      const stored = loadArtworks()
+      if (stored && stored.length > 0) {
+        console.log('⚠️ artworks State ist leer, aber localStorage hat Werke! Lade...', stored.length)
+        const exhibitionArtworks = stored.map((a: any) => {
+          if (!a.imageUrl && a.previewUrl) {
+            a.imageUrl = a.previewUrl
+          }
+          if (!a.imageUrl && !a.previewUrl) {
+            a.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+          }
+          return a
+        })
+        setArtworks(exhibitionArtworks)
+      }
+    }
+  }, [artworks, isLoading])
+  
+  // ENTFERNT: Prüfung die "Keine Werke gefunden" zeigt
+  // Die Werke werden jetzt synchron beim ersten Render geladen (initialArtworks)
+  // und der useEffect lädt sie falls nötig
+  // Diese Prüfung verhinderte die Anzeige der Werke
 
   return (
     <>
@@ -596,6 +1446,116 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
       }} />
       
       <div style={{ position: 'relative', zIndex: 1 }}>
+        {/* Mobile-First Admin: Neues Objekt Button - nur auf Mobile */}
+        {(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) && (
+          <button
+            onClick={openNewModal}
+            style={{
+              position: 'fixed',
+              top: '1rem',
+              left: '1rem',
+              zIndex: 10001,
+              background: 'linear-gradient(120deg, #10b981, #059669)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '12px',
+              padding: '0.75rem 1rem',
+              fontSize: '0.9rem',
+              fontWeight: '700',
+              cursor: 'pointer',
+              boxShadow: '0 4px 16px rgba(16, 185, 129, 0.5)',
+              transition: 'all 0.2s ease',
+              touchAction: 'manipulation',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              minWidth: '120px',
+              minHeight: '44px'
+            }}
+            title="Neues Objekt hinzufügen"
+          >
+            <span style={{ fontSize: '1.2em' }}>📸</span>
+            <span>Neu</span>
+          </button>
+        )}
+        
+        {/* Debug Button - Zeige localStorage Inhalt */}
+        {(() => {
+          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
+          if (!isMobile) return null
+          
+          return (
+            <button
+              onClick={() => {
+                const stored = loadArtworks()
+                const mobileArtworks = stored.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
+                alert(`📊 Debug Info:\n\nGesamt Werke: ${stored.length}\nMobile-Werke: ${mobileArtworks.length}\n\nNummern:\n${stored.map((a: any) => `${a.number || a.id}${(a.createdOnMobile || a.updatedOnMobile) ? ' (Mobile)' : ''}`).join('\n')}\n\nAngezeigt: ${artworks.length}`)
+                console.log('📊 Debug - Gespeicherte Werke:', stored)
+                console.log('📊 Debug - Mobile-Werke:', mobileArtworks)
+                console.log('📊 Debug - Angezeigte Werke:', artworks)
+              }}
+              style={{
+                position: 'fixed',
+                top: '1rem',
+                left: '1rem',
+                zIndex: 10002,
+                background: 'rgba(255, 193, 7, 0.9)',
+                color: '#0a0e27',
+                border: '2px solid rgba(255, 193, 7, 0.5)',
+                borderRadius: '12px',
+                padding: '0.5rem 0.75rem',
+                fontSize: '0.8rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                boxShadow: '0 4px 16px rgba(255, 193, 7, 0.5)',
+              }}
+              title="Debug: Zeige localStorage Inhalt"
+            >
+              🔍 Debug
+            </button>
+          )
+        })()}
+        
+        {/* Zurück-Button - PROMINENT & IMMER SICHTBAR */}
+        <Link
+          to={PLATFORM_ROUTES.home}
+          style={{
+            position: 'fixed',
+            top: '1rem',
+            left: '1rem',
+            zIndex: 10002,
+            background: 'linear-gradient(120deg, #5ffbf1, #33a1ff)',
+            color: '#0a0e27',
+            border: '2px solid rgba(95, 251, 241, 0.5)',
+            borderRadius: '12px',
+            padding: '0.75rem 1.25rem',
+            fontSize: '0.95rem',
+            fontWeight: '700',
+            cursor: 'pointer',
+            boxShadow: '0 4px 20px rgba(95, 251, 241, 0.6)',
+            transition: 'all 0.2s ease',
+            touchAction: 'manipulation',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            minWidth: '140px',
+            minHeight: '44px',
+            textDecoration: 'none'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05)'
+            e.currentTarget.style.boxShadow = '0 6px 24px rgba(95, 251, 241, 0.8)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+            e.currentTarget.style.boxShadow = '0 4px 20px rgba(95, 251, 241, 0.6)'
+          }}
+          title="Zurück zur Arbeitsplattform"
+        >
+          <span style={{ fontSize: '1.3em' }}>←</span>
+          <span>Arbeitsplattform</span>
+        </Link>
+        
         {/* Aktualisieren Button - Mobile */}
         <button
           onClick={handleRefresh}
@@ -645,7 +1605,67 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
             flexWrap: 'wrap', 
             gap: '1.5rem' 
           }}>
-            <div>
+            <div style={{ flex: 1 }}>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '1rem', 
+                marginBottom: '0.5rem',
+                flexWrap: 'wrap'
+              }}>
+                <Link 
+                  to={PLATFORM_ROUTES.home}
+                  style={{
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    textDecoration: 'none',
+                    fontSize: '0.9rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    padding: '0.4rem 0.8rem',
+                    borderRadius: '6px',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                    e.currentTarget.style.color = '#ffffff'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'
+                  }}
+                >
+                  <span>←</span>
+                  <span>Arbeitsplattform</span>
+                </Link>
+                <Link 
+                  to={PROJECT_ROUTES['k2-galerie'].home}
+                  style={{
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    textDecoration: 'none',
+                    fontSize: '0.9rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    padding: '0.4rem 0.8rem',
+                    borderRadius: '6px',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                    e.currentTarget.style.color = '#ffffff'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'
+                  }}
+                >
+                  <span>←</span>
+                  <span>Projekt-Start</span>
+                </Link>
+              </div>
               <h1 style={{ 
                 margin: 0, 
                 fontSize: 'clamp(2rem, 6vw, 3rem)',
@@ -918,10 +1938,59 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
           </div>
 
         {(() => {
-          const filteredArtworks = artworks.filter((artwork) => {
+          // WICHTIG: Verwende artworks State - useEffect sorgt für Korrektur wenn nötig
+          // Keine setState-Aufrufe während Render (verursacht Render-Loops)
+          let currentArtworks = artworks && artworks.length > 0 ? artworks : (initialArtworks && initialArtworks.length > 0 ? initialArtworks : [])
+          
+          // KRITISCH: Fallback - wenn beide leer sind, lade direkt aus localStorage
+          if (!currentArtworks || currentArtworks.length === 0) {
+            try {
+              const stored = localStorage.getItem('k2-artworks')
+              if (stored) {
+                const parsed = JSON.parse(stored)
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                  console.log('🔄 Render-Fallback: Lade direkt aus localStorage:', parsed.length)
+                  currentArtworks = parsed.map((a: any) => {
+                    if (!a.imageUrl && a.previewUrl) {
+                      a.imageUrl = a.previewUrl
+                    }
+                    if (!a.imageUrl && !a.previewUrl) {
+                      a.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+                    }
+                    return a
+                  })
+                }
+              }
+            } catch (error) {
+              console.error('❌ Fehler beim Render-Fallback-Laden:', error)
+            }
+          }
+          
+          // KRITISCH: Debug-Log um zu sehen was passiert
+          console.log('🎨 Render - artworks State:', {
+            artworksAnzahl: artworks?.length || 0,
+            initialArtworksAnzahl: initialArtworks?.length || 0,
+            currentArtworksAnzahl: currentArtworks.length,
+            nummern: currentArtworks.map((a: any) => a.number || a.id),
+            filter: filter
+          })
+          
+          const filteredArtworks = currentArtworks.filter((artwork) => {
             if (!artwork) return false
             if (filter === 'alle') return true
+            // WICHTIG: Prüfe ob artwork.category existiert und mit filter übereinstimmt
+            // Wenn category fehlt, zeige Werk bei Filter "alle" (bereits oben geprüft)
+            if (!artwork.category) {
+              console.warn('⚠️ Werk ohne category:', artwork.number || artwork.id)
+              return false // Verstecke Werke ohne category bei spezifischem Filter
+            }
             return artwork.category === filter
+          })
+          
+          console.log('🎨 Render - filteredArtworks:', {
+            anzahl: filteredArtworks.length,
+            nummern: filteredArtworks.map((a: any) => a.number || a.id),
+            filter: filter
           })
 
           return filteredArtworks.length === 0 ? (
@@ -991,6 +2060,37 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
                     e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
                   }}
                   >
+                    {/* Bearbeiten-Button - nur auf Mobile */}
+                    {(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openEditModal(artwork)
+                        }}
+                        style={{
+                          position: 'absolute',
+                          top: '0.75rem',
+                          left: '0.75rem',
+                          background: 'linear-gradient(120deg, #5ffbf1, #33a1ff)',
+                          color: '#0a0e27',
+                          border: 'none',
+                          borderRadius: '8px',
+                          padding: 'clamp(0.4rem, 1.5vw, 0.5rem) clamp(0.75rem, 2vw, 1rem)',
+                          fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
+                          fontWeight: '700',
+                          zIndex: 2,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(95, 251, 241, 0.4)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.25rem'
+                        }}
+                        title="Objekt bearbeiten"
+                      >
+                        ✏️ Bearbeiten
+                      </button>
+                    )}
+                    
                     {isSold && (
                       <div style={{
                         position: 'absolute',
@@ -1022,27 +2122,28 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
                       justifyContent: 'center'
                     }}>
                       {(artwork.imageUrl || artwork.previewUrl) ? (
-                        <img 
-                          src={artwork.imageUrl || artwork.previewUrl} 
-                          alt={artwork.title || artwork.number}
-                          style={{ 
-                            width: '100%', 
-                            height: '100%', 
-                            objectFit: 'cover', 
-                            display: 'block',
-                            cursor: 'pointer',
-                            transition: 'transform 0.3s ease'
-                          }}
-                          loading="lazy"
-                          onClick={() => {
-                            setLightboxImage({
-                              src: artwork.imageUrl || artwork.previewUrl || '',
-                              title: artwork.title || artwork.number || '',
-                              artwork: artwork
-                            })
-                            setImageZoom(1)
-                            setImagePosition({ x: 0, y: 0 })
-                          }}
+                        <>
+                          <img 
+                            src={artwork.imageUrl || artwork.previewUrl} 
+                            alt={artwork.title || artwork.number}
+                            style={{ 
+                              width: '100%', 
+                              height: '100%', 
+                              objectFit: 'cover', 
+                              display: 'block',
+                              cursor: 'pointer',
+                              transition: 'transform 0.3s ease'
+                            }}
+                            loading="lazy"
+                            onClick={() => {
+                              setLightboxImage({
+                                src: artwork.imageUrl || artwork.previewUrl || '',
+                                title: artwork.title || artwork.number || '',
+                                artwork: artwork
+                              })
+                              setImageZoom(1)
+                              setImagePosition({ x: 0, y: 0 })
+                            }}
                           onError={(e) => {
                             // Bei Fehler: Bild ausblenden und Platzhalter zeigen
                             const target = e.target as HTMLImageElement
@@ -1069,7 +2170,29 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
                               }
                             }
                           }}
-                        />
+                          />
+                          {/* Nummer als Overlay auf dem Bild */}
+                          {artwork.number && (
+                            <div style={{
+                              position: 'absolute',
+                              bottom: '0.5rem',
+                              right: '0.5rem',
+                              background: 'rgba(0, 0, 0, 0.7)',
+                              backdropFilter: 'blur(4px)',
+                              color: '#ffffff',
+                              padding: '0.25rem 0.5rem',
+                              borderRadius: '6px',
+                              fontSize: 'clamp(0.7rem, 2vw, 0.85rem)',
+                              fontWeight: '600',
+                              fontFamily: 'monospace',
+                              pointerEvents: 'none',
+                              zIndex: 2,
+                              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+                            }}>
+                              {artwork.number}
+                            </div>
+                          )}
+                        </>
                       ) : (
                         <div style={{ 
                           color: 'rgba(255, 255, 255, 0.5)',
@@ -1107,6 +2230,16 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
                       {artwork.category === 'malerei' ? 'Malerei' : artwork.category === 'keramik' ? 'Keramik' : artwork.category}
                       {artwork.artist && ` • ${artwork.artist}`}
                     </p>
+                    {artwork.location && (
+                      <p style={{ 
+                        margin: '0.25rem 0', 
+                        fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', 
+                        color: 'rgba(95, 251, 241, 0.8)',
+                        fontWeight: '500'
+                      }}>
+                        📍 {artwork.location}
+                      </p>
+                    )}
                     {/* Erweiterte Beschreibung mit allen Details */}
                     <div style={{ 
                       margin: '0.75rem 0', 
@@ -1295,15 +2428,26 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
             zIndex: 1,
             gap: '1rem'
           }}>
-            <h3 style={{
-              color: '#ffffff',
-              margin: 0,
-              fontSize: 'clamp(1rem, 3vw, 1.5rem)',
-              fontWeight: '600',
-              flex: 1
-            }}>
-              {lightboxImage.title}
-            </h3>
+            <div style={{ flex: 1 }}>
+              <h3 style={{
+                color: '#ffffff',
+                margin: 0,
+                fontSize: 'clamp(1rem, 3vw, 1.5rem)',
+                fontWeight: '600'
+              }}>
+                {lightboxImage.title}
+              </h3>
+              {lightboxImage.artwork?.number && (
+                <div style={{
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  fontSize: 'clamp(0.75rem, 2vw, 0.9rem)',
+                  fontFamily: 'monospace',
+                  marginTop: '0.25rem'
+                }}>
+                  {lightboxImage.artwork.number}
+                </div>
+              )}
+            </div>
             
             {/* Like Button */}
             {lightboxImage.artwork && (
@@ -1342,6 +2486,44 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
                 }}
               >
                 {likedArtworks.has(lightboxImage.artwork.number || lightboxImage.artwork.id) ? '❤️' : '🤍'}
+              </button>
+            )}
+
+            {/* Bild bearbeiten Button - nur auf Mobile */}
+            {lightboxImage.artwork && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  openEditModal(lightboxImage.artwork)
+                  setLightboxImage(null)
+                  setImageZoom(1)
+                  setImagePosition({ x: 0, y: 0 })
+                }}
+                style={{
+                  background: 'linear-gradient(120deg, #5ffbf1, #33a1ff)',
+                  border: 'none',
+                  color: '#0a0e27',
+                  fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                  padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(1rem, 3vw, 1.5rem)',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontWeight: '700',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 10px 30px rgba(95, 251, 241, 0.3)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 15px 40px rgba(95, 251, 241, 0.4)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 10px 30px rgba(95, 251, 241, 0.3)'
+                }}
+              >
+                ✏️ Bild bearbeiten
               </button>
             )}
 
@@ -1522,6 +2704,1160 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
               } as React.CSSProperties}
               draggable={false}
             />
+            {/* Nummer als Overlay auf dem Bild in der Lightbox */}
+            {lightboxImage.artwork?.number && (
+              <div style={{
+                position: 'absolute',
+                bottom: '1rem',
+                right: '1rem',
+                background: 'rgba(0, 0, 0, 0.75)',
+                backdropFilter: 'blur(6px)',
+                color: '#ffffff',
+                padding: '0.5rem 0.75rem',
+                borderRadius: '8px',
+                fontSize: 'clamp(0.9rem, 2.5vw, 1.1rem)',
+                fontWeight: '600',
+                fontFamily: 'monospace',
+                pointerEvents: 'none',
+                zIndex: 2,
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)'
+              }}>
+                {lightboxImage.artwork.number}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      
+      {/* Mobile-First Admin Modal */}
+      {showMobileAdmin && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.9)',
+          zIndex: 20000,
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '1rem',
+          overflowY: 'auto'
+        }}>
+          <div style={{
+            background: 'linear-gradient(135deg, #1a1f3a 0%, #0f1419 100%)',
+            borderRadius: '16px',
+            padding: '1.5rem',
+            maxWidth: '500px',
+            width: '100%',
+            margin: 'auto',
+            border: '2px solid rgba(95, 251, 241, 0.3)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ margin: 0, fontSize: '1.5rem', color: '#5ffbf1' }}>
+                {isEditingMode && editingArtwork && (editingArtwork.number || editingArtwork.id)
+                  ? `✏️ Objekt bearbeiten (${editingArtwork.number || editingArtwork.id})`
+                  : '📸 Neues Objekt'}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowMobileAdmin(false)
+                  setEditingArtwork(null)
+                  setIsEditingMode(false)
+                  setMobilePhoto(null)
+                  setMobileTitle('')
+                  setMobileCategory('malerei')
+                  setMobilePrice('')
+                  setMobileDescription('')
+                  setMobileLocationType('')
+                  setMobileLocationNumber('')
+                }}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: 'none',
+                  color: '#fff',
+                  fontSize: '1.5rem',
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            
+            {/* Foto */}
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#fff', fontWeight: '600' }}>
+                Foto
+              </label>
+              {mobilePhoto ? (
+                <div style={{ position: 'relative' }}>
+                  <img 
+                    src={mobilePhoto} 
+                    alt="Vorschau" 
+                    onLoad={() => {
+                      console.log('✅ Bild erfolgreich geladen und angezeigt')
+                    }}
+                    onError={(e) => {
+                      console.error('❌ Fehler beim Anzeigen des Bildes:', e)
+                      alert('❌ Fehler beim Anzeigen des Bildes. Bitte versuche es erneut.')
+                      setMobilePhoto(null)
+                    }}
+                    style={{ 
+                      width: '100%', 
+                      borderRadius: '12px', 
+                      maxHeight: '300px', 
+                      objectFit: 'contain',
+                      background: '#000',
+                      display: 'block'
+                    }} 
+                  />
+                  <button
+                    onClick={() => {
+                      console.log('🗑️ Bild entfernt')
+                      setMobilePhoto(null)
+                      // Reset input damit gleiche Datei wieder ausgewählt werden kann
+                      if (cameraInputRef.current) cameraInputRef.current.value = ''
+                      if (fileInputRef.current) fileInputRef.current.value = ''
+                    }}
+                    style={{
+                      position: 'absolute',
+                      top: '0.5rem',
+                      right: '0.5rem',
+                      background: 'rgba(239, 68, 68, 0.9)',
+                      border: 'none',
+                      color: '#fff',
+                      borderRadius: '8px',
+                      padding: '0.5rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <input
+                    ref={cameraInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    style={{ display: 'none' }}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      console.log('📷 Kamera-Datei ausgewählt:', file?.name, file?.size, file?.type)
+                      
+                      if (!file) {
+                        console.error('❌ Keine Datei ausgewählt')
+                        alert('❌ Keine Datei ausgewählt')
+                        return
+                      }
+                      
+                      // Prüfe Dateigröße (max 10MB)
+                      if (file.size > 10 * 1024 * 1024) {
+                        alert('❌ Bild ist zu groß (max. 10MB)')
+                        return
+                      }
+                      
+                      const reader = new FileReader()
+                      
+                      reader.onload = (event) => {
+                        const result = event.target?.result
+                        console.log('📷 FileReader onload:', result ? 'Erfolg' : 'Fehler', result ? `${String(result).substring(0, 50)}...` : 'kein Ergebnis')
+                        
+                        if (result && typeof result === 'string') {
+                          setMobilePhoto(result)
+                          console.log('✅ Bild geladen:', result.substring(0, 50) + '...')
+                        } else {
+                          console.error('❌ FileReader Ergebnis ist ungültig:', result)
+                          alert('❌ Fehler beim Laden des Bildes. Bitte versuche es erneut.')
+                        }
+                      }
+                      
+                      reader.onerror = (error) => {
+                        console.error('❌ FileReader Fehler:', error)
+                        alert('❌ Fehler beim Lesen der Datei. Bitte versuche es erneut.')
+                      }
+                      
+                      reader.onabort = () => {
+                        console.warn('⚠️ FileReader abgebrochen')
+                      }
+                      
+                      try {
+                        reader.readAsDataURL(file)
+                        console.log('📷 Starte FileReader.readAsDataURL...')
+                      } catch (error) {
+                        console.error('❌ Fehler beim Starten des FileReaders:', error)
+                        alert('❌ Fehler beim Laden des Bildes: ' + (error instanceof Error ? error.message : String(error)))
+                      }
+                    }}
+                  />
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      console.log('📁 Galerie-Datei ausgewählt:', file?.name, file?.size, file?.type)
+                      
+                      if (!file) {
+                        console.error('❌ Keine Datei ausgewählt')
+                        return
+                      }
+                      
+                      // Prüfe Dateigröße (max 10MB)
+                      if (file.size > 10 * 1024 * 1024) {
+                        alert('❌ Bild ist zu groß (max. 10MB)')
+                        return
+                      }
+                      
+                      const reader = new FileReader()
+                      
+                      reader.onload = (event) => {
+                        const result = event.target?.result
+                        console.log('📁 FileReader onload:', result ? 'Erfolg' : 'Fehler', result ? `${String(result).substring(0, 50)}...` : 'kein Ergebnis')
+                        
+                        if (result && typeof result === 'string') {
+                          setMobilePhoto(result)
+                          console.log('✅ Bild geladen:', result.substring(0, 50) + '...')
+                        } else {
+                          console.error('❌ FileReader Ergebnis ist ungültig:', result)
+                          alert('❌ Fehler beim Laden des Bildes. Bitte versuche es erneut.')
+                        }
+                      }
+                      
+                      reader.onerror = (error) => {
+                        console.error('❌ FileReader Fehler:', error)
+                        alert('❌ Fehler beim Lesen der Datei. Bitte versuche es erneut.')
+                      }
+                      
+                      reader.onabort = () => {
+                        console.warn('⚠️ FileReader abgebrochen')
+                      }
+                      
+                      try {
+                        reader.readAsDataURL(file)
+                        console.log('📁 Starte FileReader.readAsDataURL...')
+                      } catch (error) {
+                        console.error('❌ Fehler beim Starten des FileReaders:', error)
+                        alert('❌ Fehler beim Laden des Bildes: ' + (error instanceof Error ? error.message : String(error)))
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={() => cameraInputRef.current?.click()}
+                    style={{
+                      flex: 1,
+                      background: 'linear-gradient(120deg, #5ffbf1, #33a1ff)',
+                      border: 'none',
+                      color: '#0a0e27',
+                      padding: '1rem',
+                      borderRadius: '12px',
+                      fontSize: '1rem',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    📷 Kamera
+                  </button>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{
+                      flex: 1,
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '2px solid rgba(255, 255, 255, 0.2)',
+                      color: '#fff',
+                      padding: '1rem',
+                      borderRadius: '12px',
+                      fontSize: '1rem',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    📁 Galerie
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            {/* Titel */}
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#fff', fontWeight: '600' }}>
+                Titel *
+              </label>
+              <input
+                type="text"
+                value={mobileTitle}
+                onChange={(e) => setMobileTitle(e.target.value)}
+                placeholder="z.B. Sonnenuntergang"
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  borderRadius: '8px',
+                  border: '2px solid rgba(255, 255, 255, 0.2)',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  color: '#fff',
+                  fontSize: '1rem'
+                }}
+              />
+            </div>
+            
+            {/* Kategorie */}
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#fff', fontWeight: '600' }}>
+                Kategorie *
+              </label>
+              <select
+                value={mobileCategory}
+                onChange={(e) => setMobileCategory(e.target.value as 'malerei' | 'keramik')}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  borderRadius: '8px',
+                  border: '2px solid rgba(255, 255, 255, 0.2)',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  color: '#fff',
+                  fontSize: '1rem'
+                }}
+              >
+                <option value="malerei">🖼️ Malerei</option>
+                <option value="keramik">🏺 Keramik</option>
+              </select>
+            </div>
+            
+            {/* Preis */}
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#fff', fontWeight: '600' }}>
+                Preis (€)
+              </label>
+              <input
+                type="number"
+                value={mobilePrice}
+                onChange={(e) => setMobilePrice(e.target.value)}
+                placeholder="z.B. 250"
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  borderRadius: '8px',
+                  border: '2px solid rgba(255, 255, 255, 0.2)',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  color: '#fff',
+                  fontSize: '1rem'
+                }}
+              />
+            </div>
+            
+            {/* Beschreibung */}
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#fff', fontWeight: '600' }}>
+                Beschreibung
+              </label>
+              <textarea
+                value={mobileDescription}
+                onChange={(e) => setMobileDescription(e.target.value)}
+                placeholder="Optionale Beschreibung..."
+                rows={3}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  borderRadius: '8px',
+                  border: '2px solid rgba(255, 255, 255, 0.2)',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  color: '#fff',
+                  fontSize: '1rem',
+                  resize: 'vertical'
+                }}
+              />
+            </div>
+            
+            {/* Zuweisungsplatz in der Galerie */}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#fff', fontWeight: '600' }}>
+                Zuweisungsplatz (optional)
+              </label>
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <select
+                  value={mobileLocationType}
+                  onChange={(e) => {
+                    setMobileLocationType(e.target.value as 'regal' | 'bildflaeche' | 'sonstig' | '')
+                    if (!e.target.value) {
+                      setMobileLocationNumber('')
+                    }
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '0.75rem',
+                    borderRadius: '8px',
+                    border: '2px solid rgba(255, 255, 255, 0.2)',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    color: '#fff',
+                    fontSize: '1rem'
+                  }}
+                >
+                  <option value="">Keine Zuordnung</option>
+                  <option value="regal">📚 Regal</option>
+                  <option value="bildflaeche">🖼️ Bildfläche</option>
+                  <option value="sonstig">📍 Sonstig</option>
+                </select>
+                {mobileLocationType && (
+                  <input
+                    type="text"
+                    value={mobileLocationNumber}
+                    onChange={(e) => setMobileLocationNumber(e.target.value)}
+                    placeholder={mobileLocationType === 'regal' ? 'z.B. 1-50' : mobileLocationType === 'bildflaeche' ? 'z.B. 1-50' : 'z.B. Vitrine 3'}
+                    style={{
+                      flex: 1,
+                      padding: '0.75rem',
+                      borderRadius: '8px',
+                      border: '2px solid rgba(255, 255, 255, 0.2)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      color: '#fff',
+                      fontSize: '1rem'
+                    }}
+                  />
+                )}
+              </div>
+              {mobileLocationType && mobileLocationNumber && (
+                <div style={{
+                  padding: '0.5rem',
+                  background: 'rgba(95, 251, 241, 0.1)',
+                  border: '1px solid rgba(95, 251, 241, 0.3)',
+                  borderRadius: '8px',
+                  fontSize: '0.9rem',
+                  color: '#5ffbf1',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <span>
+                    {mobileLocationType === 'regal' && `📚 Regal ${mobileLocationNumber}`}
+                    {mobileLocationType === 'bildflaeche' && `🖼️ Bildfläche ${mobileLocationNumber}`}
+                    {mobileLocationType === 'sonstig' && `📍 ${mobileLocationNumber}`}
+                  </span>
+                  <button
+                    onClick={() => setShowLocationQR(true)}
+                    style={{
+                      background: 'rgba(95, 251, 241, 0.2)',
+                      border: '1px solid rgba(95, 251, 241, 0.4)',
+                      color: '#5ffbf1',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '6px',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      fontWeight: '600'
+                    }}
+                  >
+                    📱 QR-Code
+                  </button>
+                </div>
+              )}
+              
+              {/* QR-Code scannen Button */}
+              <button
+                onClick={() => setShowQRScanner(true)}
+                style={{
+                  width: '100%',
+                  background: 'rgba(95, 251, 241, 0.1)',
+                  border: '2px solid rgba(95, 251, 241, 0.3)',
+                  color: '#5ffbf1',
+                  padding: '0.75rem',
+                  borderRadius: '8px',
+                  fontSize: '0.9rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  marginTop: '0.5rem'
+                }}
+              >
+                📷 QR-Code scannen
+              </button>
+            </div>
+            
+            {/* Speichern Button */}
+            <button
+              onClick={async () => {
+                if (!mobilePhoto || !mobileTitle) {
+                  alert('Bitte Foto und Titel eingeben!')
+                  return
+                }
+                
+                setIsSaving(true)
+                
+                try {
+                  const artworks = loadArtworks()
+                  
+                  // TEMPORÄR: Alert-Logs für iPad-Debugging
+                  console.log('💾 Speichere... editingArtwork:', editingArtwork)
+                  
+                  if (editingArtwork && (editingArtwork.number || editingArtwork.id)) {
+                    // BEARBEITEN: Aktualisiere bestehendes Objekt - GLEICHE LOGIK WIE MAC
+                    console.log('✏️ Bearbeite Objekt:', editingArtwork.number || editingArtwork.id)
+                    console.log('✏️ editingArtwork komplett:', JSON.stringify(editingArtwork, null, 2))
+                    console.log('✏️ Alle artworks:', artworks.map((a: any) => ({ number: a.number, id: a.id })))
+                    
+                    // GLEICHE SUCH-LOGIK WIE MAC
+                    const index = artworks.findIndex((a: any) => 
+                      (a.id === editingArtwork.id || a.number === editingArtwork.number) ||
+                      (a.id === editingArtwork.id && a.number === editingArtwork.number)
+                    )
+                    
+                    console.log('✏️ Gefundener Index:', index, 'von', artworks.length, 'Objekten')
+                    
+                    if (index >= 0) {
+                      // Erstelle Location-String
+                      let locationString = undefined
+                      if (mobileLocationType && mobileLocationNumber) {
+                        if (mobileLocationType === 'regal') {
+                          locationString = `Regal ${mobileLocationNumber}`
+                        } else if (mobileLocationType === 'bildflaeche') {
+                          locationString = `Bildfläche ${mobileLocationNumber}`
+                        } else {
+                          locationString = mobileLocationNumber
+                        }
+                      }
+                      
+                      // GLEICHE UPDATE-STRATEGIE WIE MAC: Behalte createdAt, setze updatedAt
+                      const existingArtwork = artworks[index]
+                      const updatedArtwork = {
+                        ...existingArtwork, // Behalte alle bestehenden Felder
+                        title: mobileTitle,
+                        category: mobileCategory,
+                        imageUrl: mobilePhoto, // Kann auch das alte Bild sein wenn kein neues ausgewählt
+                        price: mobilePrice ? parseFloat(mobilePrice) : undefined,
+                        description: mobileDescription || undefined,
+                        location: locationString,
+                        inShop: !!mobilePrice && parseFloat(mobilePrice) > 0,
+                        createdAt: existingArtwork.createdAt || new Date().toISOString(), // Behalte createdAt
+                        updatedAt: new Date().toISOString(), // Setze updatedAt
+                        updatedOnMobile: true // Marker dass es auf Mobile aktualisiert wurde
+                      }
+                      
+                      // KRITISCH: Erstelle neue Array-Kopie (React State darf nicht direkt mutiert werden!)
+                      const updatedArtworks = [...artworks]
+                      updatedArtworks[index] = updatedArtwork
+                      
+                      // PROFESSIONELL: Speichere zuerst in Supabase (wenn konfiguriert), sonst localStorage
+                      let saved = false
+                      if (isSupabaseConfigured()) {
+                        try {
+                          saved = await saveArtworksToSupabase(updatedArtworks)
+                          if (saved) {
+                            console.log('✅ Objekt in Supabase aktualisiert:', updatedArtwork.number || updatedArtwork.id)
+                          } else {
+                            console.warn('⚠️ Supabase-Speichern fehlgeschlagen, verwende localStorage')
+                            saved = saveArtworks(updatedArtworks)
+                          }
+                        } catch (supabaseError) {
+                          console.warn('⚠️ Supabase-Fehler, verwende localStorage:', supabaseError)
+                          saved = saveArtworks(updatedArtworks)
+                        }
+                      } else {
+                        saved = saveArtworks(updatedArtworks)
+                      }
+                      
+                      if (!saved) {
+                        console.error('❌ Speichern fehlgeschlagen!')
+                        alert('❌ Fehler beim Speichern! Bitte versuche es erneut.')
+                        setIsSaving(false)
+                        return
+                      }
+                      
+                      // Bereite Werke für Anzeige vor (mit aktualisiertem Werk)
+                      const exhibitionArtworks = updatedArtworks.map((a: any) => {
+                        if (!a.imageUrl && a.previewUrl) {
+                          a.imageUrl = a.previewUrl
+                        }
+                        if (!a.imageUrl && !a.previewUrl) {
+                          a.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+                        }
+                        return a
+                      })
+                      
+                      // KRITISCH: State SOFORT aktualisieren mit neuer Liste (inkl. aktualisiertem Werk)
+                      setArtworks(exhibitionArtworks)
+                      console.log('✅ Werke-Liste nach Update aktualisiert:', exhibitionArtworks.length, 'Werke')
+                      
+                      // PROFESSIONELL: Automatische Mobile-Sync nach jedem Speichern
+                      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
+                      if (isMobile && isSupabaseConfigured()) {
+                        try {
+                          await syncMobileToSupabase()
+                          console.log('✅ Mobile-Sync nach Update erfolgreich')
+                        } catch (syncError) {
+                          console.warn('⚠️ Mobile-Sync fehlgeschlagen (nicht kritisch):', syncError)
+                        }
+                      }
+                      
+                      // KRITISCH: Automatisch für Mobile veröffentlichen
+                      // WICHTIG: Rufe publishMobile direkt auf damit Mobile-Geräte die Änderungen sehen!
+                      setTimeout(async () => {
+                        try {
+                          // Lade alle Werke aus localStorage
+                          const allArtworks = loadArtworks()
+                          if (allArtworks && allArtworks.length > 0) {
+                            const data = {
+                              martina: JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}'),
+                              georg: JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}'),
+                              gallery: JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}'),
+                              artworks: allArtworks,
+                              events: JSON.parse(localStorage.getItem('k2-events') || '[]'),
+                              documents: JSON.parse(localStorage.getItem('k2-documents') || '[]'),
+                              designSettings: JSON.parse(localStorage.getItem('k2-design-settings') || '{}'),
+                              version: Date.now(),
+                              buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
+                              exportedAt: new Date().toISOString()
+                            }
+                            
+                            const json = JSON.stringify(data)
+                            
+                            // Schreibe direkt über API
+                            const response = await fetch('/api/write-gallery-data', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: json
+                            })
+                            
+                            if (response.ok) {
+                              const result = await response.json()
+                              console.log('✅ Automatisch für Mobile veröffentlicht:', result)
+                            } else {
+                              console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen:', response.status)
+                            }
+                          }
+                        } catch (error) {
+                          console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen (nicht kritisch):', error)
+                        }
+                      }, 1500) // Warte 1.5 Sekunden damit localStorage sicher gespeichert ist
+                      
+                      // Event dispatchen - mit Verzögerung
+                      setTimeout(() => {
+                        window.dispatchEvent(new CustomEvent('artworks-updated', { 
+                          detail: { count: updatedArtworks.length, justSaved: true } 
+                        }))
+                        window.dispatchEvent(new CustomEvent('artwork-saved-needs-publish', { 
+                          detail: { artworkCount: updatedArtworks.length } 
+                        }))
+                      }, 500)
+                      
+                      console.log('✅ Objekt aktualisiert:', updatedArtwork)
+                    } else {
+                      console.error('❌ Objekt nicht gefunden!')
+                      console.error('❌ Gesucht nach:', { 
+                        id: editingArtwork.id, 
+                        number: editingArtwork.number 
+                      })
+                      console.error('❌ Verfügbare IDs/Numbers:', artworks.map((a: any) => ({ 
+                        id: a.id, 
+                        number: a.number 
+                      })))
+                      
+                      const availableIds = artworks.map((a: any) => a.number || a.id).join(', ')
+                      alert(`❌ Objekt nicht gefunden!\n\nGesucht: ${editingArtwork.number || editingArtwork.id}\n\nVerfügbare: ${availableIds || 'Keine'}\n\nGesamt: ${artworks.length} Objekte`)
+                    }
+                  } else {
+                    // NEU: Erstelle neues Objekt
+                    // WICHTIG: Finde maximale Nummer aus ALLEN artworks der GLEICHEN Kategorie (auch Supabase)
+                    // Kategorie-basiert: K für Keramik, M für Malerei
+                    // WICHTIG: Unterstützt auch alte Nummern ohne K/M Präfix
+                    const prefix = mobileCategory === 'keramik' ? 'K' : 'M'
+                    const categoryPrefix = `K2-${prefix}-`
+                    
+                    let maxNumber = 0
+                    artworks.forEach((a: any) => {
+                      if (!a.number) return
+                      
+                      // Prüfe ob neue Nummer mit K/M Präfix
+                      if (a.number.startsWith(categoryPrefix)) {
+                        const numStr = a.number.replace(categoryPrefix, '').replace(/[^0-9]/g, '')
+                        const num = parseInt(numStr || '0')
+                        if (num > maxNumber) {
+                          maxNumber = num
+                        }
+                      }
+                      // Prüfe ob alte Nummer ohne Präfix (z.B. "K2-0001")
+                      else if (a.number.startsWith('K2-') && !a.number.includes('-K-') && !a.number.includes('-M-')) {
+                        const numStr = a.number.replace('K2-', '').replace(/[^0-9]/g, '')
+                        const num = parseInt(numStr || '0')
+                        if (num > maxNumber) {
+                          maxNumber = num
+                        }
+                      }
+                    })
+                    
+                    // Versuche auch Supabase zu prüfen (nur wenn konfiguriert)
+                    if (isSupabaseConfigured()) {
+                      try {
+                        const { loadArtworksFromSupabase } = await import('../utils/supabaseClient')
+                        const supabaseArtworks = await loadArtworksFromSupabase()
+                        if (supabaseArtworks && Array.isArray(supabaseArtworks)) {
+                          supabaseArtworks.forEach((a: any) => {
+                            if (!a.number) return
+                            
+                            if (a.number.startsWith(categoryPrefix)) {
+                              const numStr = a.number.replace(categoryPrefix, '').replace(/[^0-9]/g, '')
+                              const num = parseInt(numStr || '0')
+                              if (num > maxNumber) {
+                                maxNumber = num
+                              }
+                            } else if (a.number.startsWith('K2-') && !a.number.includes('-K-') && !a.number.includes('-M-')) {
+                              const numStr = a.number.replace('K2-', '').replace(/[^0-9]/g, '')
+                              const num = parseInt(numStr || '0')
+                              if (num > maxNumber) {
+                                maxNumber = num
+                              }
+                            }
+                          })
+                        }
+                      } catch (e) {
+                        // Ignoriere Fehler - verwende nur localStorage
+                        console.warn('⚠️ Supabase-Nummer-Prüfung fehlgeschlagen, verwende nur localStorage:', e)
+                      }
+                    }
+                    
+                    const newNumber = `${categoryPrefix}${String(maxNumber + 1).padStart(4, '0')}`
+                    
+                    // Speichere auch in localStorage für Konsistenz (kategorie-spezifisch)
+                    localStorage.setItem(`k2-last-artwork-number-${prefix}`, String(maxNumber + 1))
+                    
+                    console.log('🔢 Neue Nummer generiert (Mobile):', newNumber, '(Kategorie:', mobileCategory, ', max gefunden:', maxNumber, ')')
+                    
+                    
+                    // Erstelle Location-String
+                    let locationString = undefined
+                    if (mobileLocationType && mobileLocationNumber) {
+                      if (mobileLocationType === 'regal') {
+                        locationString = `Regal ${mobileLocationNumber}`
+                      } else if (mobileLocationType === 'bildflaeche') {
+                        locationString = `Bildfläche ${mobileLocationNumber}`
+                      } else {
+                        locationString = mobileLocationNumber
+                      }
+                    }
+                    
+                    const newArtwork = {
+                      id: `artwork-${Date.now()}`,
+                      number: newNumber,
+                      title: mobileTitle,
+                      category: mobileCategory,
+                      imageUrl: mobilePhoto,
+                      price: mobilePrice ? parseFloat(mobilePrice) : undefined,
+                      description: mobileDescription || undefined,
+                      location: locationString,
+                      createdAt: new Date().toISOString(),
+                      updatedAt: new Date().toISOString(), // WICHTIG: updatedAt für Merge-Logik
+                      inShop: !!mobilePrice && parseFloat(mobilePrice) > 0,
+                      createdOnMobile: true // Marker dass es auf Mobile erstellt wurde
+                    }
+                    
+                    // KRITISCH: Erstelle neue Array-Kopie (React State darf nicht direkt mutiert werden!)
+                    const updatedArtworks = [...artworks, newArtwork]
+                    
+                    // PROFESSIONELL: Speichere zuerst in Supabase (wenn konfiguriert), sonst localStorage
+                    console.log('💾 Speichere Werk:', {
+                      nummer: newNumber,
+                      titel: mobileTitle,
+                      gesamtAnzahl: updatedArtworks.length,
+                      supabase: isSupabaseConfigured()
+                    })
+                    
+                    let saved = false
+                    if (isSupabaseConfigured()) {
+                      try {
+                        saved = await saveArtworksToSupabase(updatedArtworks)
+                        if (saved) {
+                          console.log('✅ Werk in Supabase gespeichert:', newNumber)
+                        } else {
+                          console.warn('⚠️ Supabase-Speichern fehlgeschlagen, verwende localStorage')
+                          saved = saveArtworks(updatedArtworks)
+                        }
+                      } catch (supabaseError) {
+                        console.warn('⚠️ Supabase-Fehler, verwende localStorage:', supabaseError)
+                        saved = saveArtworks(updatedArtworks)
+                      }
+                    } else {
+                      saved = saveArtworks(updatedArtworks)
+                    }
+                    
+                    if (!saved) {
+                      console.error('❌ Speichern fehlgeschlagen!')
+                      alert('❌ Fehler beim Speichern! Bitte versuche es erneut.')
+                      setIsSaving(false)
+                      return
+                    }
+                    
+                    // PROFESSIONELL: Automatische Mobile-Sync nach jedem Speichern
+                    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
+                    if (isMobile && isSupabaseConfigured()) {
+                      try {
+                        await syncMobileToSupabase()
+                        console.log('✅ Mobile-Sync nach Speichern erfolgreich')
+                      } catch (syncError) {
+                        console.warn('⚠️ Mobile-Sync fehlgeschlagen (nicht kritisch):', syncError)
+                      }
+                    }
+                    
+                    // Bereite Werke für Anzeige vor (mit neuem Werk)
+                    const exhibitionArtworks = updatedArtworks.map((a: any) => {
+                      if (!a.imageUrl && a.previewUrl) {
+                        a.imageUrl = a.previewUrl
+                      }
+                      if (!a.imageUrl && !a.previewUrl) {
+                        a.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+                      }
+                      return a
+                    })
+                    
+                    // KRITISCH: State SOFORT aktualisieren mit neuer Liste (inkl. neuem Werk)
+                    console.log('💾 Vor setArtworks - Anzahl Werke:', exhibitionArtworks.length, 'Nummern:', exhibitionArtworks.map((a: any) => a.number || a.id).join(', '))
+                    setArtworks(exhibitionArtworks)
+                    console.log('✅ Werke-Liste aktualisiert:', exhibitionArtworks.length, 'Werke (inkl. neuem Werk:', newNumber, ')')
+                    
+                    // WICHTIG: Verifiziere dass das Werk wirklich in localStorage ist
+                    setTimeout(() => {
+                      const verify = loadArtworks()
+                      const hasNewWork = verify.some((a: any) => (a.number || a.id) === newNumber)
+                      console.log('🔍 Verifikation nach Speichern:', {
+                        inLocalStorage: verify.length,
+                        hatNeuesWerk: hasNewWork,
+                        neueNummer: newNumber,
+                        alleNummern: verify.map((a: any) => a.number || a.id).join(', ')
+                      })
+                      if (!hasNewWork) {
+                        console.error('❌ KRITISCH: Neues Werk nicht in localStorage gefunden!')
+                      }
+                    }, 100)
+                    
+                    // KRITISCH: Automatisch für Mobile veröffentlichen UND Git Push
+                    // WICHTIG: Rufe publishMobile direkt auf damit Mobile-Geräte die neuen Werke sehen!
+                    setTimeout(async () => {
+                      try {
+                        // Lade alle Werke aus localStorage
+                        const allArtworks = loadArtworks()
+                        if (allArtworks && allArtworks.length > 0) {
+                          const data = {
+                            martina: JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}'),
+                            georg: JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}'),
+                            gallery: JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}'),
+                            artworks: allArtworks,
+                            events: JSON.parse(localStorage.getItem('k2-events') || '[]'),
+                            documents: JSON.parse(localStorage.getItem('k2-documents') || '[]'),
+                            designSettings: JSON.parse(localStorage.getItem('k2-design-settings') || '{}'),
+                            version: Date.now(),
+                            buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
+                            exportedAt: new Date().toISOString()
+                          }
+                          
+                          const json = JSON.stringify(data)
+                          
+                          // Schreibe direkt über API
+                          const response = await fetch('/api/write-gallery-data', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: json
+                          })
+                          
+                          if (response.ok) {
+                            const result = await response.json()
+                            console.log('✅ Automatisch für Mobile veröffentlicht:', result)
+                            
+                            // WICHTIG: Dispatche Event für automatischen Git Push
+                            window.dispatchEvent(new CustomEvent('gallery-data-published', { 
+                              detail: { 
+                                success: true,
+                                artworksCount: allArtworks.length,
+                                size: result.size
+                              } 
+                            }))
+                          } else {
+                            console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen:', response.status)
+                          }
+                        }
+                      } catch (error) {
+                        console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen (nicht kritisch):', error)
+                      }
+                    }, 1500) // Warte 1.5 Sekunden damit localStorage sicher gespeichert ist
+                    
+                    // Event dispatchen - mit Flag dass wir gerade gespeichert haben
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent('artworks-updated', { 
+                        detail: { count: updatedArtworks.length, newArtwork: newNumber, justSaved: true } 
+                      }))
+                    }, 500)
+                    window.dispatchEvent(new CustomEvent('artwork-saved-needs-publish', { 
+                      detail: { artworkCount: updatedArtworks.length } 
+                    }))
+                    
+                    console.log('✅ Neues Objekt gespeichert und angezeigt:', newNumber)
+                    alert(`✅ Werk gespeichert!\n\nNummer: ${newNumber}\nTitel: ${mobileTitle}\n\nAnzahl Werke: ${exhibitionArtworks.length}\n\n📱 Wird automatisch für Mobile-Geräte veröffentlicht...`)
+                  }
+                  
+                  // Zurücksetzen
+                  setShowMobileAdmin(false)
+                  setEditingArtwork(null)
+                  setIsEditingMode(false)
+                  setMobilePhoto(null)
+                  setMobileTitle('')
+                  setMobileCategory('malerei')
+                  setMobilePrice('')
+                  setMobileDescription('')
+                  setMobileLocationType('')
+                  setMobileLocationNumber('')
+                  
+                  // NICHT nochmal setArtworks aufrufen - wurde bereits oben gemacht!
+                } catch (error) {
+                  console.error('Fehler beim Speichern:', error)
+                  alert('❌ Fehler beim Speichern. Bitte versuche es erneut.')
+                } finally {
+                  setIsSaving(false)
+                }
+              }}
+              disabled={isSaving || !mobilePhoto || !mobileTitle}
+              style={{
+                width: '100%',
+                background: isSaving || !mobilePhoto || !mobileTitle
+                  ? 'rgba(16, 185, 129, 0.5)'
+                  : 'linear-gradient(120deg, #10b981, #059669)',
+                border: 'none',
+                color: '#fff',
+                padding: '1rem',
+                borderRadius: '12px',
+                fontSize: '1rem',
+                fontWeight: '700',
+                cursor: isSaving || !mobilePhoto || !mobileTitle ? 'not-allowed' : 'pointer',
+                opacity: isSaving || !mobilePhoto || !mobileTitle ? 0.7 : 1
+              }}
+            >
+              {isSaving 
+                ? '⏳ Speichere...' 
+                : (editingArtwork && (editingArtwork.number || editingArtwork.id))
+                  ? `✅ Aktualisieren (${editingArtwork.number || editingArtwork.id})`
+                  : '✅ Speichern'}
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* QR-Code Scanner Modal */}
+      {showQRScanner && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.95)',
+          zIndex: 30000,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: 'linear-gradient(135deg, #1a1f3a 0%, #0f1419 100%)',
+            borderRadius: '16px',
+            padding: '1.5rem',
+            maxWidth: '500px',
+            width: '100%',
+            border: '2px solid rgba(95, 251, 241, 0.3)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#5ffbf1' }}>📷 QR-Code scannen</h3>
+              <button
+                onClick={() => {
+                  setShowQRScanner(false)
+                  if (qrScannerVideoRef.current) {
+                    const stream = qrScannerVideoRef.current.srcObject as MediaStream
+                    if (stream) {
+                      stream.getTracks().forEach(track => track.stop())
+                    }
+                  }
+                }}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: 'none',
+                  color: '#fff',
+                  fontSize: '1.5rem',
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div style={{
+              width: '100%',
+              maxWidth: '400px',
+              margin: '0 auto',
+              background: '#000',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              position: 'relative',
+              aspectRatio: '1'
+            }}>
+              <video
+                ref={qrScannerVideoRef}
+                autoPlay
+                playsInline
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover'
+                }}
+              />
+              <canvas
+                ref={qrScannerCanvasRef}
+                style={{
+                  display: 'none'
+                }}
+              />
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '80%',
+                height: '80%',
+                border: '3px solid #5ffbf1',
+                borderRadius: '12px',
+                pointerEvents: 'none',
+                boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)'
+              }} />
+            </div>
+            
+            <p style={{
+              marginTop: '1rem',
+              textAlign: 'center',
+              color: 'rgba(255, 255, 255, 0.7)',
+              fontSize: '0.9rem'
+            }}>
+              Richte die Kamera auf den QR-Code des Zuweisungsplatzes
+            </p>
+          </div>
+        </div>
+      )}
+      
+      {/* QR-Code Anzeige Modal */}
+      {showLocationQR && mobileLocationType && mobileLocationNumber && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.9)',
+          zIndex: 30000,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: 'linear-gradient(135deg, #1a1f3a 0%, #0f1419 100%)',
+            borderRadius: '16px',
+            padding: '1.5rem',
+            maxWidth: '400px',
+            width: '100%',
+            border: '2px solid rgba(95, 251, 241, 0.3)',
+            textAlign: 'center'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#5ffbf1' }}>
+                {mobileLocationType === 'regal' && `📚 Regal ${mobileLocationNumber}`}
+                {mobileLocationType === 'bildflaeche' && `🖼️ Bildfläche ${mobileLocationNumber}`}
+                {mobileLocationType === 'sonstig' && `📍 ${mobileLocationNumber}`}
+              </h3>
+              <button
+                onClick={() => setShowLocationQR(false)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: 'none',
+                  color: '#fff',
+                  fontSize: '1.5rem',
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div style={{
+              background: '#fff',
+              padding: '1rem',
+              borderRadius: '12px',
+              marginBottom: '1rem',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`K2-LOCATION:${mobileLocationType === 'regal' ? 'Regal' : mobileLocationType === 'bildflaeche' ? 'Bildfläche' : ''} ${mobileLocationNumber}`)}`}
+                alt="QR-Code"
+                style={{
+                  width: '100%',
+                  maxWidth: '300px',
+                  height: 'auto'
+                }}
+              />
+            </div>
+            
+            <button
+              onClick={() => {
+                const qrData = `K2-LOCATION:${mobileLocationType === 'regal' ? 'Regal' : mobileLocationType === 'bildflaeche' ? 'Bildfläche' : ''} ${mobileLocationNumber}`
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrData)}`
+                const link = document.createElement('a')
+                link.href = qrUrl
+                link.download = `QR-${mobileLocationType === 'regal' ? 'Regal' : mobileLocationType === 'bildflaeche' ? 'Bildfläche' : 'Location'}-${mobileLocationNumber}.png`
+                link.click()
+              }}
+              style={{
+                width: '100%',
+                background: 'linear-gradient(120deg, #5ffbf1, #33a1ff)',
+                border: 'none',
+                color: '#0a0e27',
+                padding: '0.75rem',
+                borderRadius: '8px',
+                fontSize: '0.9rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                marginBottom: '0.5rem'
+              }}
+            >
+              💾 QR-Code herunterladen
+            </button>
+            
+            <button
+              onClick={() => {
+                window.print()
+              }}
+              style={{
+                width: '100%',
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: '2px solid rgba(255, 255, 255, 0.2)',
+                color: '#fff',
+                padding: '0.75rem',
+                borderRadius: '8px',
+                fontSize: '0.9rem',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+            >
+              🖨️ QR-Code drucken
+            </button>
           </div>
         </div>
       )}

@@ -980,6 +980,8 @@ header h1 {
   }
 }
 
+/* Mobile (kleine und mittlere Bildschirme) */
+@media (max-width: 768px) {
   .galerie-page {
     padding: 1rem;
     padding-bottom: env(safe-area-inset-bottom, 1rem);
@@ -1039,6 +1041,51 @@ header h1 {
     font-size: clamp(0.85rem, 3vw, 0.95rem);
     min-height: 44px; /* iOS Mindestgröße für Touch-Targets */
   }
+
+  /* Desktop-only Elemente ausblenden */
+  .desktop-only {
+    display: none !important;
+  }
+
+  /* Galerie Header Mobile */
+  .galerie-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Artists Grid Mobile */
+  .artists-grid,
+  .opening-info {
+    grid-template-columns: 1fr;
+  }
+
+  /* Footer Mobile */
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  /* Mission Control Mobile */
+  .mission-wrapper {
+    padding: 1rem;
+  }
+
+  .viewport {
+    padding: 1.5rem;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .grid.phases {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* iPhone (kleine Bildschirme) */
@@ -1097,52 +1144,7 @@ header h1 {
   display: block !important;
 }
 
-@media (max-width: 768px) {
-  .desktop-only {
-    display: none !important;
-  }
-  .galerie-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .galerie-nav {
-    width: 100%;
-    flex-wrap: wrap;
-  }
-
-  .artists-grid,
-  .opening-info {
-    grid-template-columns: 1fr;
-  }
-
-  .footer-content {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  /* Mission Control Mobile */
-  .mission-wrapper {
-    padding: 1rem;
-  }
-
-  .viewport {
-    padding: 1.5rem;
-  }
-
-  .stats {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .stat {
-    text-align: center;
-  }
-
-  .grid.phases {
-    grid-template-columns: 1fr;
-  }
-}
+/* Desktop-only wird bereits in @media (max-width: 768px) bei Zeile 984 behandelt */
 
 /* Dialog Standalone (Desktop-App) */
 .dialog-standalone {

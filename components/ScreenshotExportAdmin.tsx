@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { PROJECT_ROUTES } from '../src/config/navigation'
 import '../src/App.css'
 import { checkLocalStorageSize, cleanupLargeImages, getLocalStorageReport } from './SafeMode'
 import { startAutoSave, stopAutoSave, setupBeforeUnloadSave } from '../src/utils/autoSave'
@@ -23,11 +24,39 @@ try {
 }
 
 // Einfache localStorage-Funktionen für Werke-Verwaltung
-function saveArtworks(artworks: any[]): void {
+function saveArtworks(artworks: any[]): boolean {
   try {
-    localStorage.setItem('k2-artworks', JSON.stringify(artworks))
-  } catch (error) {
-    console.error('Fehler beim Speichern:', error)
+    const json = JSON.stringify(artworks)
+    
+    // Prüfe Größe
+    if (json.length > 10000000) { // Über 10MB = zu groß
+      console.error('❌ Daten zu groß für localStorage:', json.length, 'Bytes')
+      alert('⚠️ Zu viele Werke! Bitte einige löschen.')
+      return false
+    }
+    
+    localStorage.setItem('k2-artworks', json)
+    console.log('✅ Gespeichert:', artworks.length, 'Werke, Größe:', json.length, 'Bytes')
+    
+    // KRITISCH: Verifiziere Speicherung
+    const verify = localStorage.getItem('k2-artworks')
+    if (!verify || verify !== json) {
+      console.error('❌ Verifikation fehlgeschlagen!')
+      return false
+    }
+    
+    return true
+  } catch (error: any) {
+    console.error('❌ Fehler beim Speichern:', error)
+    
+    // Spezifische Fehlerbehandlung
+    if (error.name === 'QuotaExceededError') {
+      alert('⚠️ Speicher voll! Bitte einige Werke löschen.')
+    } else {
+      alert('⚠️ Fehler beim Speichern: ' + (error.message || error))
+    }
+    
+    return false
   }
 }
 
@@ -185,6 +214,7 @@ let globalAdminInstance: any = null
 let globalMountCount = 0
 
 function ScreenshotExportAdmin() {
+  const navigate = useNavigate()
   // Singleton-Check: Verhindere doppeltes Mounten - KRITISCH gegen Crashes
   const mountId = React.useRef(`admin-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`)
   const isMountedRef = React.useRef(true)
@@ -318,6 +348,7 @@ function ScreenshotExportAdmin() {
     cardBg2: 'rgba(12, 16, 28, 0.92)'
   })
   const [showAddModal, setShowAddModal] = useState(false)
+  const [editingArtwork, setEditingArtwork] = useState<any | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [artworkTitle, setArtworkTitle] = useState('')
@@ -1071,6 +1102,78 @@ function ScreenshotExportAdmin() {
     return () => {
       isMounted = false
       clearTimeout(timeoutId) // Cleanup beim Unmount
+    }
+  }, [])
+  
+  // WICHTIG: Event-Listener für Mobile-Updates (damit Mobile-Werke im Admin angezeigt werden)
+  useEffect(() => {
+    const handleArtworksUpdate = () => {
+      console.log('🔄 artworks-updated Event empfangen - lade Werke neu...')
+      try {
+        const artworks = loadArtworks()
+        console.log('📦 Geladene Werke:', artworks.length)
+        if (Array.isArray(artworks)) {
+          setAllArtworks(artworks)
+        }
+      } catch (error) {
+        console.error('Fehler beim Neuladen der Werke:', error)
+      }
+    }
+    
+    window.addEventListener('artworks-updated', handleArtworksUpdate)
+    
+    return () => {
+      window.removeEventListener('artworks-updated', handleArtworksUpdate)
+    }
+  }, [])
+  
+  // WICHTIG: Prüfe Supabase für Mobile-Werke beim Mount
+  useEffect(() => {
+    const checkMobileUpdates = async () => {
+      try {
+        // Importiere dynamisch um Fehler zu vermeiden wenn nicht verfügbar
+        const { loadArtworksFromSupabase } = await import('../src/utils/supabaseClient')
+        const supabaseArtworks = await loadArtworksFromSupabase()
+        
+        if (supabaseArtworks && Array.isArray(supabaseArtworks) && supabaseArtworks.length > 0) {
+          console.log('📱 Mobile-Werke von Supabase geladen:', supabaseArtworks.length)
+          
+          // Merge mit lokalen Werken
+          const localArtworks = loadArtworks()
+          const merged = [...localArtworks]
+          
+          supabaseArtworks.forEach((supabaseArtwork: any) => {
+            const exists = merged.some((a: any) => 
+              (a.number && supabaseArtwork.number && a.number === supabaseArtwork.number) ||
+              (a.id && supabaseArtwork.id && a.id === supabaseArtwork.id)
+            )
+            if (!exists) {
+              merged.push(supabaseArtwork)
+            }
+          })
+          
+          if (merged.length > localArtworks.length) {
+            console.log(`✅ ${merged.length - localArtworks.length} neue Mobile-Werke gefunden`)
+            const saved = saveArtworks(merged)
+            if (saved) {
+              setAllArtworks(merged)
+            } else {
+              console.error('❌ Fehler beim Speichern der Mobile-Werke')
+            }
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ Supabase-Check fehlgeschlagen (normal wenn nicht konfiguriert):', error)
+      }
+    }
+    
+    // Prüfe nach kurzer Verzögerung
+    const timeoutId = setTimeout(() => {
+      checkMobileUpdates()
+    }, 2000)
+    
+    return () => {
+      clearTimeout(timeoutId)
     }
   }, [])
 
@@ -5233,12 +5336,79 @@ ${'='.repeat(60)}
     }
   }
 
-  // Laufende Nummer generieren
-  const generateArtworkNumber = () => {
-    const lastNumber = localStorage.getItem('k2-last-artwork-number') || '0'
-    const nextNumber = parseInt(lastNumber, 10) + 1
-    const formattedNumber = `K2-${String(nextNumber).padStart(4, '0')}`
-    localStorage.setItem('k2-last-artwork-number', String(nextNumber))
+  // Laufende Nummer generieren - WICHTIG: Finde maximale Nummer aus ALLEN artworks
+  // Kategorie-basiert: K für Keramik, M für Malerei
+  // WICHTIG: Unterstützt auch alte Nummern ohne K/M Präfix (z.B. "K2-0001")
+  const generateArtworkNumber = async (category: 'malerei' | 'keramik' = 'malerei') => {
+    // Lade alle artworks (lokal)
+    const localArtworks = loadArtworks()
+    
+    // Bestimme Präfix basierend auf Kategorie
+    const prefix = category === 'keramik' ? 'K' : 'M'
+    const categoryPrefix = `K2-${prefix}-`
+    
+    // Finde maximale Nummer aus artworks der GLEICHEN Kategorie
+    // WICHTIG: Unterstützt auch alte Nummern ohne Präfix
+    let maxNumber = 0
+    localArtworks.forEach((a: any) => {
+      if (!a.number) return
+      
+      // Prüfe ob neue Nummer mit K/M Präfix
+      if (a.number.startsWith(categoryPrefix)) {
+        const numStr = a.number.replace(categoryPrefix, '').replace(/[^0-9]/g, '')
+        const num = parseInt(numStr || '0')
+        if (num > maxNumber) {
+          maxNumber = num
+        }
+      } 
+      // Prüfe ob alte Nummer ohne Präfix (z.B. "K2-0001")
+      else if (a.number.startsWith('K2-') && !a.number.includes('-K-') && !a.number.includes('-M-')) {
+        // Alte Nummer ohne Kategorie-Präfix
+        const numStr = a.number.replace('K2-', '').replace(/[^0-9]/g, '')
+        const num = parseInt(numStr || '0')
+        // Nur zählen wenn Kategorie passt (für Migration)
+        if (num > maxNumber) {
+          maxNumber = num
+        }
+      }
+    })
+    
+    // Versuche auch Supabase zu prüfen (falls verfügbar)
+    try {
+      const { loadArtworksFromSupabase } = await import('../src/utils/supabaseClient')
+      const supabaseArtworks = await loadArtworksFromSupabase()
+      if (supabaseArtworks && Array.isArray(supabaseArtworks)) {
+        supabaseArtworks.forEach((a: any) => {
+          if (!a.number) return
+          
+          if (a.number.startsWith(categoryPrefix)) {
+            const numStr = a.number.replace(categoryPrefix, '').replace(/[^0-9]/g, '')
+            const num = parseInt(numStr || '0')
+            if (num > maxNumber) {
+              maxNumber = num
+            }
+          } else if (a.number.startsWith('K2-') && !a.number.includes('-K-') && !a.number.includes('-M-')) {
+            const numStr = a.number.replace('K2-', '').replace(/[^0-9]/g, '')
+            const num = parseInt(numStr || '0')
+            if (num > maxNumber) {
+              maxNumber = num
+            }
+          }
+        })
+      }
+    } catch (e) {
+      // Ignoriere Fehler - verwende nur lokale Nummer
+      console.log('⚠️ Supabase-Check fehlgeschlagen, verwende nur lokale Nummer')
+    }
+    
+    // Die nächste Nummer ist maxNumber + 1
+    const nextNumber = maxNumber + 1
+    const formattedNumber = `${categoryPrefix}${String(nextNumber).padStart(4, '0')}`
+    
+    // Speichere auch in localStorage für Rückwärtskompatibilität (kategorie-spezifisch)
+    localStorage.setItem(`k2-last-artwork-number-${prefix}`, String(nextNumber))
+    
+    console.log('🔢 Neue Nummer generiert:', formattedNumber, '(Kategorie:', category, ', max gefunden:', maxNumber, ')')
     return formattedNumber
   }
 
@@ -5464,7 +5634,8 @@ ${'='.repeat(60)}
 
   // Werk speichern
   const handleSaveArtwork = async () => {
-    if (!selectedFile) {
+    // Bei Bearbeitung: Bild ist optional (wird beibehalten wenn kein neues ausgewählt)
+    if (!editingArtwork && !selectedFile) {
       alert('Bitte ein Bild auswählen')
       return
     }
@@ -5515,28 +5686,42 @@ ${'='.repeat(60)}
       }
     }
     
-    // Laufende Nummer generieren
-    const newArtworkNumber = generateArtworkNumber()
+    // Laufende Nummer generieren (nur bei neuem Werk)
+    // WICHTIG: Übergebe Kategorie für korrekte Nummerierung (K/M)
+    const newArtworkNumber = editingArtwork ? (editingArtwork.number || editingArtwork.id) : await generateArtworkNumber(artworkCategory)
     setArtworkNumber(newArtworkNumber)
     
     // Bild komprimieren bevor es gespeichert wird - optimiert für mobile (wenig Speicher)
     try {
-      // Für mobile: kleinere Größe (800px) und niedrigere Qualität (0.65)
-      const compressedDataUrl = await compressImage(selectedFile, 800, 0.65)
+      let imageDataUrl: string
       
-      // Prüfe ob Data URL zu groß ist (localStorage Limit ~5-10MB)
-      // Für mobile: strengeres Limit (1.5MB statt 2MB)
-      if (compressedDataUrl.length > 1500000) {
-        // Versuche noch stärkere Kompression
-        const moreCompressed = await compressImage(selectedFile, 600, 0.5)
-        if (moreCompressed.length > 1500000) {
-          alert('Bild ist auch nach Kompression zu groß. Bitte verwende ein kleineres Bild (max. ~1.5MB nach Kompression).')
-          return
+      if (selectedFile) {
+        // Neues Bild wurde ausgewählt - komprimieren
+        // Für mobile: kleinere Größe (800px) und niedrigere Qualität (0.65)
+        const compressedDataUrl = await compressImage(selectedFile, 800, 0.65)
+        
+        // Prüfe ob Data URL zu groß ist (localStorage Limit ~5-10MB)
+        // Für mobile: strengeres Limit (1.5MB statt 2MB)
+        if (compressedDataUrl.length > 1500000) {
+          // Versuche noch stärkere Kompression
+          const moreCompressed = await compressImage(selectedFile, 600, 0.5)
+          if (moreCompressed.length > 1500000) {
+            alert('Bild ist auch nach Kompression zu groß. Bitte verwende ein kleineres Bild (max. ~1.5MB nach Kompression).')
+            return
+          }
+          imageDataUrl = moreCompressed
+        } else {
+          imageDataUrl = compressedDataUrl
         }
-        await saveArtworkData(moreCompressed, newArtworkNumber)
+      } else if (editingArtwork && editingArtwork.imageUrl) {
+        // Bei Bearbeitung ohne neues Bild: Altes Bild beibehalten
+        imageDataUrl = editingArtwork.imageUrl
       } else {
-        await saveArtworkData(compressedDataUrl, newArtworkNumber)
+        alert('Bitte ein Bild auswählen')
+        return
       }
+      
+      await saveArtworkData(imageDataUrl, newArtworkNumber)
     } catch (error) {
       console.error('Fehler beim Komprimieren:', error)
       alert('Fehler beim Verarbeiten des Bildes. Bitte versuche es erneut.')
@@ -5601,7 +5786,25 @@ ${'='.repeat(60)}
     
     // Werk in localStorage speichern
     const artworks = loadArtworks()
-    artworks.push(artworkData)
+    
+    if (editingArtwork) {
+      // Bestehendes Werk aktualisieren
+      const index = artworks.findIndex((a: any) => 
+        (a.id === editingArtwork.id || a.number === editingArtwork.number) ||
+        (a.id === editingArtwork.id && a.number === editingArtwork.number)
+      )
+      if (index !== -1) {
+        // Behalte createdAt wenn vorhanden, sonst setze aktuelles Datum
+        artworkData.createdAt = artworks[index].createdAt || new Date().toISOString()
+        artworks[index] = artworkData
+      } else {
+        // Falls nicht gefunden, als neues Werk hinzufügen
+        artworks.push(artworkData)
+      }
+    } else {
+      // Neues Werk hinzufügen
+      artworks.push(artworkData)
+    }
     
     try {
       const dataToStore = JSON.stringify(artworks)
@@ -5626,24 +5829,116 @@ ${'='.repeat(60)}
           return
         }
         
-        saveArtworks(keptArtworks)
+        const saved = saveArtworks(keptArtworks)
+        if (!saved) {
+          console.error('❌ Speichern fehlgeschlagen!')
+          alert('⚠️ Fehler beim Speichern! Bitte versuche es erneut.')
+          return
+        }
         alert(`Hinweis: Die ältesten Werke wurden automatisch gelöscht, um Platz zu schaffen.`)
       } else {
-        saveArtworks(artworks)
+        const saved = saveArtworks(artworks)
+        if (!saved) {
+          console.error('❌ Speichern fehlgeschlagen!')
+          alert('⚠️ Fehler beim Speichern! Bitte versuche es erneut.')
+          return
+        }
       }
       
-      console.log('Werk gespeichert:', {
+      console.log('✅ Werk gespeichert:', {
         number: artworkData.number,
         title: artworkData.title,
         imageUrlLength: artworkData.imageUrl?.length || 0,
-        compressed: true
+        compressed: true,
+        totalArtworks: artworks.length
       })
       
-      // Event dispatchen, damit Galerie-Seite sich aktualisiert
-      window.dispatchEvent(new CustomEvent('artworks-updated'))
+      // KRITISCH: Prüfe ob Werk wirklich gespeichert wurde
+      const verifyStored = loadArtworks()
+      const isStored = verifyStored.some((a: any) => 
+        (a.number && artworkData.number && a.number === artworkData.number) ||
+        (a.id && artworkData.id && a.id === artworkData.id)
+      )
       
-      // Aktualisiere lokale Liste
-      setAllArtworks(loadArtworks())
+      if (!isStored) {
+        console.error('❌ KRITISCH: Werk wurde NICHT gespeichert!', {
+          gesucht: artworkData.number || artworkData.id,
+          gespeichert: verifyStored.map((a: any) => a.number || a.id),
+          anzahl: verifyStored.length
+        })
+        alert(`⚠️ Fehler: Werk konnte nicht gespeichert werden!\n\nNummer: ${artworkData.number}\nGespeicherte Werke: ${verifyStored.length}\n\nBitte versuche es erneut.`)
+        return
+      }
+      
+      console.log('✅ Werk-Verifikation erfolgreich:', {
+        nummer: artworkData.number,
+        titel: artworkData.title,
+        gesamtAnzahl: verifyStored.length,
+        alleNummern: verifyStored.map((a: any) => a.number || a.id)
+      })
+      
+      // KRITISCH: Aktualisiere lokale Liste SOFORT
+      const reloaded = loadArtworks()
+      console.log('📦 Reloaded artworks:', reloaded.length, 'Nummern:', reloaded.map((a: any) => a.number || a.id))
+      
+      // Prüfe ob das neue Werk wirklich drin ist
+      const containsNewArtwork = reloaded.some((a: any) => 
+        (a.number && artworkData.number && a.number === artworkData.number) ||
+        (a.id && artworkData.id && a.id === artworkData.id)
+      )
+      
+      if (!containsNewArtwork) {
+        console.error('❌ KRITISCH: Neues Werk nicht in reloaded gefunden!')
+        alert(`⚠️ Fehler: Werk wurde gespeichert, aber nicht in Liste gefunden!\n\nNummer: ${artworkData.number}\n\nBitte Seite neu laden.`)
+        return
+      }
+      
+      console.log('✅ Neues Werk in reloaded gefunden:', artworkData.number)
+      
+      // KRITISCH: Setze Filter auf 'alle' damit das neue Werk sichtbar ist
+      // Oder setze Filter auf die Kategorie des neuen Werks
+      if (categoryFilter !== 'alle' && categoryFilter !== artworkData.category) {
+        console.log('🔄 Setze Filter auf Kategorie des neuen Werks:', artworkData.category)
+        setCategoryFilter(artworkData.category)
+      }
+      
+      // Lösche Such-Query falls vorhanden
+      if (searchQuery) {
+        setSearchQuery('')
+      }
+      
+      setAllArtworks(reloaded)
+      
+      // WICHTIG: Kurze Verzögerung damit React State aktualisiert wird
+      setTimeout(() => {
+        const afterUpdate = loadArtworks()
+        const filteredAfterUpdate = afterUpdate.filter((a: any) => {
+          if (!a) return false
+          if (categoryFilter !== 'alle' && a.category !== categoryFilter) return false
+          return true
+        })
+        console.log('📊 Nach State-Update:', {
+          allArtworksState: allArtworks.length,
+          localStorage: afterUpdate.length,
+          gefiltert: filteredAfterUpdate.length,
+          enthaeltNeuesWerk: afterUpdate.some((a: any) => (a.number || a.id) === (artworkData.number || artworkData.id)),
+          filter: categoryFilter
+        })
+      }, 100)
+      
+      // Bestätigung für Benutzer
+      alert(`✅ Werk gespeichert!\n\nNummer: ${artworkData.number}\nTitel: ${artworkData.title}\nKategorie: ${artworkData.category}\n\nGesamt Werke: ${reloaded.length}\n\nDas Werk sollte jetzt in der Liste erscheinen.`)
+      
+      // Event dispatchen, damit Galerie-Seite sich aktualisiert
+      window.dispatchEvent(new CustomEvent('artworks-updated', { 
+        detail: { count: reloaded.length, newArtwork: artworkData.number } 
+      }))
+      
+      // WICHTIG: Dispatch Event für automatisches Veröffentlichen
+      // DevViewPage hört auf dieses Event und ruft publishMobile() auf
+      window.dispatchEvent(new CustomEvent('artwork-saved-needs-publish', { 
+        detail: { artworkCount: reloaded.length } 
+      }))
       
       // Gespeichertes Werk für Druck-Modal
       setSavedArtwork({
@@ -5653,6 +5948,7 @@ ${'='.repeat(60)}
       
       // Modal schließen und zurücksetzen
       setShowAddModal(false)
+      setEditingArtwork(null)
       setSelectedFile(null)
       setPreviewUrl(null)
       setArtworkTitle('')
@@ -5668,11 +5964,15 @@ ${'='.repeat(60)}
       setArtworkPrice('')
       setIsInShop(true)
       
-      // Aktualisiere die Liste
-      setAllArtworks(JSON.parse(localStorage.getItem('k2-artworks') || '[]'))
+      // NICHT nochmal setAllArtworks aufrufen - wurde bereits oben gemacht!
+      // Die Liste wurde bereits mit reloaded aktualisiert
       
-      // Druck-Modal öffnen
-      setShowPrintModal(true)
+      // Druck-Modal nur bei neuem Werk öffnen (nicht bei Bearbeitung)
+      if (!editingArtwork) {
+        setShowPrintModal(true)
+      } else {
+        alert('✅ Werk erfolgreich aktualisiert!')
+      }
     } catch (error) {
       console.error('Fehler beim Speichern:', error)
       if (error instanceof Error && error.message.includes('QuotaExceededError')) {
@@ -6684,7 +6984,10 @@ ${'='.repeat(60)}
                 marginBottom: 'clamp(2rem, 5vw, 3rem)'
               }}>
                 <button 
-                  onClick={() => setShowAddModal(true)}
+                  onClick={() => {
+                    setEditingArtwork(null)
+                    setShowAddModal(true)
+                  }}
                   style={{
                     padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -6707,6 +7010,138 @@ ${'='.repeat(60)}
                   }}
                 >
                   + Neues Werk hinzufügen
+                </button>
+                <button 
+                  onClick={async () => {
+                    // Lade Mobile-Werke von Supabase
+                    try {
+                      const { loadArtworksFromSupabase } = await import('../src/utils/supabaseClient')
+                      const supabaseArtworks = await loadArtworksFromSupabase()
+                      
+                      if (supabaseArtworks && Array.isArray(supabaseArtworks) && supabaseArtworks.length > 0) {
+                        const localArtworks = loadArtworks()
+                        const merged = [...localArtworks]
+                        
+                        supabaseArtworks.forEach((supabaseArtwork: any) => {
+                          const exists = merged.some((a: any) => 
+                            (a.number && supabaseArtwork.number && a.number === supabaseArtwork.number) ||
+                            (a.id && supabaseArtwork.id && a.id === supabaseArtwork.id)
+                          )
+                          if (!exists) {
+                            merged.push(supabaseArtwork)
+                          }
+                        })
+                        
+                        if (merged.length > localArtworks.length) {
+                          const saved = saveArtworks(merged)
+                          if (saved) {
+                            setAllArtworks(merged)
+                            alert(`✅ ${merged.length - localArtworks.length} neue Mobile-Werke geladen!`)
+                          } else {
+                            alert('⚠️ Fehler beim Speichern der Mobile-Werke!')
+                          }
+                        } else {
+                          alert('✅ Alle Werke sind bereits synchronisiert.')
+                        }
+                      } else {
+                        // Lade einfach aus localStorage neu
+                        const artworks = loadArtworks()
+                        setAllArtworks(artworks)
+                        alert(`✅ ${artworks.length} Werke geladen`)
+                      }
+                    } catch (error) {
+                      // Fallback: Lade aus localStorage
+                      const artworks = loadArtworks()
+                      setAllArtworks(artworks)
+                      alert(`✅ ${artworks.length} Werke geladen`)
+                    }
+                  }}
+                  style={{
+                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    color: '#ffffff',
+                    borderRadius: '12px',
+                    fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                    e.currentTarget.style.transform = 'translateY(0)'
+                  }}
+                >
+                  🔄 Mobile-Werke laden
+                </button>
+                <button 
+                  onClick={() => {
+                    navigate(PROJECT_ROUTES['k2-galerie'].platzanordnung)
+                  }}
+                  style={{
+                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 10px 30px rgba(16, 185, 129, 0.3)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                    e.currentTarget.style.boxShadow = '0 15px 40px rgba(16, 185, 129, 0.4)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 10px 30px rgba(16, 185, 129, 0.3)'
+                  }}
+                >
+                  📍 Platzanordnung
+                </button>
+                <button 
+                  onClick={() => {
+                    const stored = loadArtworks()
+                    const mobileArtworks = stored.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
+                    alert(`📊 Debug Info:\n\nGesamt Werke: ${stored.length}\nMobile-Werke: ${mobileArtworks.length}\n\nNummern:\n${stored.map((a: any) => `${a.number || a.id}${(a.createdOnMobile || a.updatedOnMobile) ? ' (Mobile)' : ''}`).join('\n')}\n\nAngezeigt: ${allArtworks.length}`)
+                    console.log('📊 Debug - Gespeicherte Werke:', stored)
+                    console.log('📊 Debug - Mobile-Werke:', mobileArtworks)
+                    console.log('📊 Debug - Angezeigte Werke:', allArtworks)
+                  }}
+                  style={{
+                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                    background: 'rgba(255, 193, 7, 0.9)',
+                    color: '#0a0e27',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: 'clamp(0.85rem, 2.5vw, 0.95rem)',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 16px rgba(255, 193, 7, 0.5)',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                    e.currentTarget.style.boxShadow = '0 15px 40px rgba(255, 193, 7, 0.6)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 4px 16px rgba(255, 193, 7, 0.5)'
+                  }}
+                >
+                  🔍 Debug
                 </button>
               <div style={{ position: 'relative' }} data-export-menu>
                 <button 
@@ -6909,10 +7344,14 @@ ${'='.repeat(60)}
                                 }
                                 
                                 const merged = [...existing, ...newArtworks]
-                                saveArtworks(merged)
-                                setAllArtworks(merged)
-                                window.dispatchEvent(new CustomEvent('artworks-updated'))
-                                alert(`✅ ${newArtworks.length} neue Werke wurden importiert!`)
+                                const saved = saveArtworks(merged)
+                                if (saved) {
+                                  setAllArtworks(merged)
+                                  window.dispatchEvent(new CustomEvent('artworks-updated'))
+                                  alert(`✅ ${newArtworks.length} neue Werke wurden importiert!`)
+                                } else {
+                                  alert('⚠️ Fehler beim Speichern der importierten Werke!')
+                                }
                               } else {
                                 alert('Ungültiges Export-Format.')
                               }
@@ -7131,19 +7570,42 @@ ${'='.repeat(60)}
                     }}
                   >
                     {imageSrc ? (
-                      <img 
-                        src={imageSrc} 
-                        alt={artwork.title || artwork.number}
-                        style={{ width: '100%', height: 'clamp(180px, 30vw, 220px)', objectFit: 'cover', borderRadius: '12px', marginBottom: 'clamp(0.75rem, 2vw, 1rem)' }}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement
-                          target.style.display = 'none'
-                          const placeholder = document.createElement('div')
-                          placeholder.textContent = '🖼️'
-                          placeholder.style.cssText = 'width: 100%; height: clamp(180px, 30vw, 220px); display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border-radius: 12px; margin-bottom: clamp(0.75rem, 2vw, 1rem); color: rgba(255, 255, 255, 0.3); font-size: clamp(2rem, 5vw, 3rem)'
-                          target.parentElement?.insertBefore(placeholder, target)
-                        }}
-                      />
+                      <div style={{ position: 'relative', width: '100%', marginBottom: 'clamp(0.75rem, 2vw, 1rem)' }}>
+                        <img 
+                          src={imageSrc} 
+                          alt={artwork.title || artwork.number}
+                          style={{ width: '100%', height: 'clamp(180px, 30vw, 220px)', objectFit: 'cover', borderRadius: '12px' }}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement
+                            target.style.display = 'none'
+                            const placeholder = document.createElement('div')
+                            placeholder.textContent = '🖼️'
+                            placeholder.style.cssText = 'width: 100%; height: clamp(180px, 30vw, 220px); display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border-radius: 12px; color: rgba(255, 255, 255, 0.3); font-size: clamp(2rem, 5vw, 3rem)'
+                            target.parentElement?.insertBefore(placeholder, target)
+                          }}
+                        />
+                        {/* Nummer als Overlay auf dem Bild */}
+                        {artwork.number && (
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '0.5rem',
+                            right: '0.5rem',
+                            background: 'rgba(0, 0, 0, 0.7)',
+                            backdropFilter: 'blur(4px)',
+                            color: '#ffffff',
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: '6px',
+                            fontSize: 'clamp(0.7rem, 2vw, 0.85rem)',
+                            fontWeight: '600',
+                            fontFamily: 'monospace',
+                            pointerEvents: 'none',
+                            zIndex: 2,
+                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+                          }}>
+                            {artwork.number}
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <div style={{ 
                         width: '100%', 
@@ -7212,6 +7674,9 @@ ${'='.repeat(60)}
                     }}>
                       <button 
                         onClick={() => {
+                          // Setze editingArtwork State für Bearbeitung
+                          setEditingArtwork(artwork)
+                          
                           const category = artwork.category || 'malerei'
                           setArtworkCategory(category)
                           // Bei Keramik: Titel aus Unterkategorie setzen, nicht aus artwork.title
@@ -7246,6 +7711,12 @@ ${'='.repeat(60)}
                           setArtworkPrice(String(artwork.price || ''))
                           setIsInShop(artwork.inShop !== undefined ? artwork.inShop : true)
                           setArtworkNumber(artwork.number || '')
+                          
+                          // Setze Preview-URL wenn vorhanden
+                          if (artwork.imageUrl) {
+                            setPreviewUrl(artwork.imageUrl)
+                          }
+                          
                           setShowAddModal(true)
                         }}
                         style={{
@@ -7275,9 +7746,13 @@ ${'='.repeat(60)}
                           if (confirm(`Möchtest du "${artwork.title || artwork.number}" wirklich löschen?`)) {
                             const artworks = loadArtworks()
                             const filtered = artworks.filter((a: any) => a.number !== artwork.number && a.id !== artwork.id)
-                            saveArtworks(filtered)
-                            window.dispatchEvent(new CustomEvent('artworks-updated'))
-                            setAllArtworks(filtered)
+                            const saved = saveArtworks(filtered)
+                            if (saved) {
+                              window.dispatchEvent(new CustomEvent('artworks-updated'))
+                              setAllArtworks(filtered)
+                            } else {
+                              alert('⚠️ Fehler beim Löschen! Bitte versuche es erneut.')
+                            }
                           }
                         }}
                         style={{
@@ -11077,6 +11552,7 @@ ${'='.repeat(60)}
           }}
           onClick={() => {
             setShowAddModal(false)
+            setEditingArtwork(null)
             setArtworkCategory('malerei')
             setArtworkCeramicSubcategory('vase')
             setArtworkCeramicHeight('10')
@@ -11125,11 +11601,12 @@ ${'='.repeat(60)}
                 fontWeight: '600',
                 color: '#ffffff'
               }}>
-                Neues Werk
+                {editingArtwork ? 'Werk bearbeiten' : 'Neues Werk'}
               </h2>
               <button 
                 onClick={() => {
                   setShowAddModal(false)
+                  setEditingArtwork(null)
                   setArtworkTitle('')
                   setArtworkCategory('malerei')
                   setArtworkCeramicSubcategory('vase')
@@ -11919,6 +12396,7 @@ ${'='.repeat(60)}
                 <button 
                   onClick={() => {
                     setShowAddModal(false)
+                    setEditingArtwork(null)
                     setArtworkTitle('')
                     setArtworkCategory('malerei')
                     setArtworkCeramicSubcategory('vase')

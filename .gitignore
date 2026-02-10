@@ -39,6 +39,11 @@ terminal-startup-error.log
 .vscode/
 .cursorrules
 
+# Environment-Variablen (NIEMALS committen!)
+.env
+.env.local
+.env.production
+
 # Temporäre Dateien
 *.tmp
 *.temp

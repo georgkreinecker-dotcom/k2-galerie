@@ -1,0 +1,50 @@
+═══════════════════════════════════════════════════════════════
+  ✅ VITE_SUPABASE_URL ist gesetzt!
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Perfekt! VITE_SUPABASE_URL ist bereits hinzugefügt!
+→ Jetzt noch VITE_SUPABASE_ANON_KEY hinzufügen!
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 1: "Add Environment Variable" klicken
+
+→ Oben rechts: "Add Environment Variable" Button
+→ Klicke darauf
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 2: Variable ausfüllen
+
+→ Key: VITE_SUPABASE_ANON_KEY
+→ Value: sb_publishable_fa6tMCbi4g40m9XiyVUpBA__tpyb9h4
+→ Environments: Alle auswählen (Production, Preview, Development)
+→ "Add" klicken
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 3: Prüfen
+
+Nach dem Hinzufügen solltest du sehen:
+→ VITE_SUPABASE_URL ✅
+→ VITE_SUPABASE_ANON_KEY ✅
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 4: Redeploy
+
+→ Oben rechts: "Redeploy" Button
+→ Warten bis Deployment fertig ist
+→ ✅ Fertig!
+
+═══════════════════════════════════════════════════════════════
+
+DANN TESTEN:
+
+→ App öffnen
+→ Werk speichern
+→ Sollte funktionieren!
+
+═══════════════════════════════════════════════════════════════

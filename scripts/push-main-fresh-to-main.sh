@@ -44,7 +44,7 @@ fi
 echo ""
 
 echo "${CYAN}Schritt 2/3:${NC} 💾 git commit..."
-git commit -m "Update: Mobile Synchronisation & GitHub Token Button" 2>&1
+git commit -m "Fix: CSS syntax error, dynamic imports, Git Push improvements, gallery-data.json update" 2>&1
 COMMIT_STATUS=$?
 if [ $COMMIT_STATUS -eq 0 ]; then
     echo "${GREEN}✅ Commit erstellt${NC}"

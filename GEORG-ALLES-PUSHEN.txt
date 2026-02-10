@@ -1,0 +1,57 @@
+═══════════════════════════════════════════════════════════════
+  🚀 ALLE ÄNDERUNGEN ZU VERCEL PUSHEN
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Du hast viele Änderungen gemacht, die noch nicht gepusht wurden!
+
+═══════════════════════════════════════════════════════════════
+
+WICHTIGE ÄNDERUNGEN:
+
+✅ CSS-Fix (App.css) - doppelter @media Block entfernt
+✅ Dynamischer Import (KostenPage.tsx) - Warnung behoben
+✅ Git Push Verbesserungen (DevViewPage.tsx, git-push-gallery-data.sh)
+✅ gallery-data.json - mit deinen Werken!
+✅ Vite Config - chunkSizeWarningLimit erhöht
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT-FÜR-SCHRITT:
+
+1. Terminal öffnen (am Mac)
+
+2. Führe aus:
+   cd /Users/georgkreinecker/k2Galerie
+   bash scripts/push-main-fresh-to-main.sh
+
+ODER manuell:
+
+   git add .
+   git commit -m "Fix: CSS syntax error, dynamic imports, Git Push improvements"
+   git checkout main
+   git merge main-fresh
+   git push origin main
+   git checkout main-fresh
+
+═══════════════════════════════════════════════════════════════
+
+WAS PASSIERT:
+
+1. Alle Änderungen werden zu Git hinzugefügt ✅
+2. Commit wird erstellt ✅
+3. main-fresh wird zu main gemerged ✅
+4. main wird zu GitHub gepusht ✅
+5. Vercel startet automatisch Deployment ✅
+6. Nach 1-2 Minuten: Neue Deployments im Dashboard! ✅
+
+═══════════════════════════════════════════════════════════════
+
+WICHTIG:
+
+- gallery-data.json wird mit gepusht (mit deinen Werken!)
+- Alle CSS-Fixes werden deployed
+- Alle Verbesserungen werden deployed
+
+═══════════════════════════════════════════════════════════════

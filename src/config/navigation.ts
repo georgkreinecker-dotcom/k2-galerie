@@ -25,6 +25,7 @@ export const PROJECT_ROUTES = {
     controlStudio: '/projects/k2-galerie/control-studio',
     plan: '/projects/k2-galerie/plan',
     mobileConnect: '/projects/k2-galerie/mobile-connect',
+    platzanordnung: '/projects/k2-galerie/platzanordnung',
   },
   // Weitere Projekte hier hinzufügen:
   // 'projekt-2': {

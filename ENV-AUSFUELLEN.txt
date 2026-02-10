@@ -1,0 +1,70 @@
+═══════════════════════════════════════════════════════════════
+  ✏️ .env Datei ausfüllen - SCHNELL
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Die .env Datei ist bereits erstellt!
+→ Du musst nur noch 2 Werte eintragen
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 1: .env Datei öffnen
+
+In Cursor:
+→ Links in Sidebar: .env suchen
+→ Falls nicht sichtbar: Cmd+Shift+. (Punkt) drücken
+→ Klicke auf .env
+
+ODER:
+
+Terminal:
+→ cd ~/k2Galerie
+→ cursor .env
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 2: Werte aus Supabase kopieren
+
+1. Gehe zu Supabase Dashboard
+2. Settings → API
+3. Kopiere diese 2 Werte:
+
+   Project URL:
+   https://xxxxx.supabase.co
+   (Kopiere die komplette URL)
+
+   anon public key:
+   eyJhbGc... (lange Zeichenkette)
+   (Kopiere die komplette Zeichenkette)
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 3: In .env eintragen
+
+Ersetze diese Zeilen:
+
+VITE_SUPABASE_URL=/https://sjayeqnibwyxtwzcqklj.supabase.co
+dein-projekt.supabase.co
+→ Ersetze mit deiner Project URL
+
+VITE_SUPABASE_ANON_KEY= sb_publishable_fa6tMCbi4g40m9XiyVUpBA__tpyb9h4
+
+→ Ersetze mit deinem anon key
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 4: Speichern
+
+Cmd+S drücken
+→ 
+✅ Fertig!
+
+═══════════════════════════════════════════════════════════════
+
+BEISPIEL:
+
+VITE_SUPABASE_URL=https://abcdefghijklmnop.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+═══════════════════════════════════════════════════════════════

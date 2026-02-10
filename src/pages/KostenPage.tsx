@@ -1,22 +1,32 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getUsage, resetUsage, estimateCostUsd } from '../utils/openaiUsage'
 import { PLATFORM_ROUTES } from '../config/navigation'
 
+type Usage = { promptTokens: number; completionTokens: number }
+
 export default function KostenPage() {
-  const [usage, setUsage] = useState(getUsage())
+  const [usage, setUsage] = useState<Usage>({ promptTokens: 0, completionTokens: 0 })
+  const [cost, setCost] = useState(0)
+  const [totalTokens, setTotalTokens] = useState(0)
 
   useEffect(() => {
-    const u = getUsage()
-    setUsage(u)
+    // Dynamischer Import um Warnung zu vermeiden
+    import('../utils/openaiUsage').then(({ getUsage, estimateCostUsd }) => {
+      const u = getUsage()
+      setUsage(u)
+      setCost(estimateCostUsd(u))
+      setTotalTokens(u.promptTokens + u.completionTokens)
+    })
   }, [])
 
-  const cost = estimateCostUsd(usage)
-  const totalTokens = usage.promptTokens + usage.completionTokens
-
-  const handleReset = () => {
+  const handleReset = async () => {
+    const { resetUsage, getUsage } = await import('../utils/openaiUsage')
     resetUsage()
-    setUsage(getUsage())
+    const u = getUsage()
+    setUsage(u)
+    const { estimateCostUsd } = await import('../utils/openaiUsage')
+    setCost(estimateCostUsd(u))
+    setTotalTokens(u.promptTokens + u.completionTokens)
   }
 
   return (

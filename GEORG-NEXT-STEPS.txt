@@ -1,0 +1,68 @@
+═══════════════════════════════════════════════════════════════
+  🚨 WICHTIG: Usage-Limit Problem lösen ZUERST!
+═══════════════════════════════════════════════════════════════
+
+GEORG - Das Problem:
+
+Dein Supabase-Projekt zeigt "EXCEEDING USAGE LIMITS"
+→ Das bedeutet: Projekt kann keine Anfragen bearbeiten
+→ Muss ZUERST gelöst werden!
+
+═══════════════════════════════════════════════════════════════
+
+SCHNELLSTE LÖSUNG:
+
+Option 1: Upgrade (für Produktion)
+→ Im Dashboard auf Warnung klicken
+→ Plan wählen (z.B. Pro $25/Monat)
+→ Bezahlen
+→ ✅ Sofort aktiv
+
+Option 2: Neues Projekt (kostenlos)
+→ Dashboard → New Project
+→ Name: k2-galerie-neu
+→ Erstellen
+→ Dann mit NEUEM Projekt weiter
+
+═══════════════════════════════════════════════════════════════
+
+DANN DIESE SCHRITTE:
+
+1. API-Keys kopieren
+   → Settings → API
+   → Project URL kopieren
+   → anon key kopieren
+
+2. .env ausfüllen
+   → Öffne .env Datei
+   → Füge URL und Key ein
+   → Speichern
+
+3. Migration ausführen
+   → SQL Editor → New Query
+   → Öffne: supabase/migrations/001_create_artworks_table.sql
+   → Alles kopieren
+   → In SQL Editor einfügen
+   → RUN klicken
+
+4. Edge Function deployen
+   → Edge Functions → Create function
+   → Name: artworks
+   → Öffne: supabase/functions/artworks/index.ts
+   → Alles kopieren
+   → In Editor einfügen
+   → Deploy klicken
+
+5. Vercel Environment-Variablen
+   → vercel.com → Projekt → Settings
+   → Environment Variables
+   → URL und Key hinzufügen
+   → Redeploy
+
+═══════════════════════════════════════════════════════════════
+
+DETAILLIERTE ANLEITUNG:
+
+→ Öffne: SUPABASE-PROBLEM-LOESEN.md
+
+═══════════════════════════════════════════════════════════════

@@ -1,10 +1,12 @@
-import { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { PROJECT_ROUTES, PLATFORM_ROUTES, getAllProjectIds } from '../config/navigation'
 import { usePersistentBoolean } from '../hooks/usePersistentState'
+import { checkMobileUpdates } from '../utils/supabaseClient'
 import '../App.css'
 import GaleriePage from './GaleriePage'
 import GalerieVorschauPage from './GalerieVorschauPage'
+import PlatzanordnungPage from './PlatzanordnungPage'
 import ShopPage from './ShopPage'
 import ControlStudioPage from './ControlStudioPage'
 import ProjectPlanPage from './ProjectPlanPage'
@@ -31,6 +33,10 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   const pageFromUrl = searchParams.get('page')
   const [checkingVercel, setCheckingVercel] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
+  
+  // WICHTIG: publishMobile Funktion muss außerhalb des useEffect definiert werden
+  // damit sie von Event-Listenern aufgerufen werden kann
+  const publishMobileRef = React.useRef<(() => Promise<void>) | null>(null)
   
   // KEINE automatische Vercel-Prüfung mehr - verursacht Abstürze!
   // Verwende nur den manuellen "🔍 Vercel-Status" Button
@@ -159,6 +165,322 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   }, [panelMinimized])
   const [publishStatus, setPublishStatus] = useState<{ success: boolean; message: string; artworksCount?: number; size?: number } | null>(null)
   const [syncStatus, setSyncStatus] = useState<{ step: 'published' | 'git-push' | 'vercel-deploy' | 'ready' | null; progress: number }>({ step: null, progress: 0 })
+  const [mobileSyncAvailable, setMobileSyncAvailable] = useState(false)
+  
+  // publishMobile Funktion - außerhalb des onClick Handlers definiert
+  const publishMobile = React.useCallback(async () => {
+    if (isPublishing) return // Verhindere mehrfaches Klicken
+    setIsPublishing(true)
+    
+    try {
+      const getItemSafe = (key: string, defaultValue: any) => {
+        try {
+          const item = localStorage.getItem(key)
+          if (!item || item.length > 1000000) return defaultValue
+          return JSON.parse(item)
+        } catch {
+          return defaultValue
+        }
+      }
+      
+      let artworks = getItemSafe('k2-artworks', [])
+      const events = getItemSafe('k2-events', [])
+      const documents = getItemSafe('k2-documents', [])
+      
+      // WICHTIG: Lade Mobile-Werke von Supabase BEVOR veröffentlicht wird
+      // Das stellt sicher, dass alle Mobile-Werke in gallery-data.json enthalten sind
+      try {
+        const { loadArtworksFromSupabase } = await import('../utils/supabaseClient')
+        const supabaseArtworks = await loadArtworksFromSupabase()
+        
+        if (supabaseArtworks && Array.isArray(supabaseArtworks) && supabaseArtworks.length > 0) {
+          console.log('📱 Mobile-Werke von Supabase geladen:', supabaseArtworks.length)
+          
+          // Merge mit lokalen Werken - Mobile-Werke haben Priorität
+          const localArtworks = Array.isArray(artworks) ? artworks : []
+          const merged: any[] = []
+          
+          // Erstelle Map für schnelle Suche
+          const localMap = new Map<string, any>()
+          localArtworks.forEach((a: any) => {
+            const key = a.number || a.id
+            if (key) localMap.set(key, a)
+          })
+          
+          // Füge zuerst alle lokalen Werke hinzu
+          localArtworks.forEach((a: any) => merged.push(a))
+          
+          // Dann füge Mobile-Werke hinzu oder ersetze lokale Versionen
+          supabaseArtworks.forEach((supabaseArtwork: any) => {
+            const key = supabaseArtwork.number || supabaseArtwork.id
+            if (!key) return
+            
+            const localArtwork = localMap.get(key)
+            const isMobileWork = supabaseArtwork.createdOnMobile || supabaseArtwork.updatedOnMobile
+            
+            if (!localArtwork) {
+              // Mobile-Werk existiert nicht lokal → hinzufügen
+              console.log('📱 Füge Mobile-Werk hinzu:', key)
+              merged.push(supabaseArtwork)
+            } else if (isMobileWork) {
+              // Mobile-Werk → IMMER Mobile-Version verwenden
+              console.log('📱 Ersetze lokales Werk mit Mobile-Version:', key)
+              const index = merged.findIndex((a: any) => (a.number || a.id) === key)
+              if (index >= 0) {
+                merged[index] = supabaseArtwork
+              } else {
+                merged.push(supabaseArtwork)
+              }
+            } else {
+              // Prüfe Timestamps - Mobile-Version könnte neuer sein
+              const localUpdated = localArtwork.updatedAt ? new Date(localArtwork.updatedAt).getTime() : 0
+              const mobileUpdated = supabaseArtwork.updatedAt ? new Date(supabaseArtwork.updatedAt).getTime() : 0
+              
+              if (mobileUpdated > localUpdated) {
+                console.log('📱 Ersetze lokales Werk mit neuerer Mobile-Version:', key)
+                const index = merged.findIndex((a: any) => (a.number || a.id) === key)
+                if (index >= 0) {
+                  merged[index] = supabaseArtwork
+                }
+              }
+            }
+          })
+          
+          if (merged.length > localArtworks.length) {
+            console.log(`✅ ${merged.length - localArtworks.length} Mobile-Werke zu Veröffentlichung hinzugefügt`)
+            artworks = merged
+            // Speichere auch lokal für nächste Veröffentlichung
+            try {
+              localStorage.setItem('k2-artworks', JSON.stringify(merged))
+            } catch (e) {
+              console.warn('⚠️ Konnte merged Werke nicht speichern:', e)
+            }
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ Supabase-Check fehlgeschlagen (normal wenn nicht konfiguriert):', error)
+        // Weiter mit lokalen Werken
+      }
+      
+      // KRITISCH: Alle Werke mitnehmen, nicht nur die ersten 50
+      const allArtworks = Array.isArray(artworks) ? artworks : []
+      console.log('📦 Veröffentliche Werke:', allArtworks.length, 'Werke gefunden (inkl. Mobile-Werke)')
+      
+      // WICHTIG: Wenn keine Werke gefunden werden, zeige Warnung
+      if (allArtworks.length === 0) {
+        console.warn('⚠️ KEINE WERKE GEFUNDEN in localStorage!')
+        setIsPublishing(false)
+        alert('⚠️ Keine Werke gefunden! Bitte zuerst im Admin Werke anlegen.')
+        return
+      }
+      
+      const data = {
+        martina: getItemSafe('k2-stammdaten-martina', {}),
+        georg: getItemSafe('k2-stammdaten-georg', {}),
+        gallery: getItemSafe('k2-stammdaten-galerie', {}),
+        artworks: allArtworks,
+        events: Array.isArray(events) ? events.slice(0, 20) : [],
+        documents: Array.isArray(documents) ? documents.slice(0, 20) : [],
+        designSettings: getItemSafe('k2-design-settings', {}),
+        version: Date.now(),
+        buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
+        exportedAt: new Date().toISOString()
+      }
+      
+      const json = JSON.stringify(data)
+      
+      if (json.length > 5000000) {
+        setIsPublishing(false)
+        alert('⚠️ Daten zu groß (über 5MB). Bitte reduzieren Sie die Anzahl der Werke.')
+        return
+      }
+      
+      // Versuche direkt in public Ordner zu schreiben über API
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => {
+        controller.abort()
+        setIsPublishing(false)
+        alert('⚠️ API-Timeout:\n\nDie Anfrage dauerte zu lange.\n\n📋 Bitte prüfen:\n1. Terminal öffnen\n2. cd /Users/georgkreinecker/k2Galerie\n3. Prüfe ob public/gallery-data.json existiert')
+      }, 5000)
+      
+      fetch('/api/write-gallery-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: json,
+        signal: controller.signal
+      })
+      .then(response => {
+        clearTimeout(timeoutId)
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+        return response.json()
+      })
+      .then(result => {
+        clearTimeout(timeoutId)
+        
+        if (result.success) {
+          const artworksCount = data.artworks.length
+          
+          console.log('✅ Datei geschrieben:', {
+            path: result.path,
+            size: result.size,
+            artworksCount: artworksCount
+          })
+          
+          // WICHTIG: Zeige Hinweis dass Git Push nötig ist
+          setPublishStatus({
+            success: true,
+            message: `✅ Datei geschrieben!\n\n📦 WICHTIG: Git Push ausführen!\n\n1. Button "📦 Git Push" klicken\nODER\n2. Terminal: bash scripts/git-push-gallery-data.sh\n\n📱 Mobile: Nach Git Push (1-2 Min) QR-Code neu scannen`,
+            artworksCount,
+            size: result.size
+          })
+          
+          setSyncStatus({ step: 'published', progress: 10 })
+          
+          setIsPublishing(false)
+          
+          setTimeout(() => {
+            setPublishStatus(null)
+          }, 120000) // 2 Minuten anzeigen
+        } else {
+          throw new Error(result.error || 'Unbekannter Fehler')
+        }
+      })
+      .catch(error => {
+        clearTimeout(timeoutId)
+        setIsPublishing(false)
+        
+        if (error.name === 'AbortError') {
+          setIsPublishing(false)
+          setPublishStatus({
+            success: false,
+            message: '⚠️ API-Timeout - Bitte manuell prüfen'
+          })
+          setTimeout(() => setPublishStatus(null), 5000)
+          return
+        }
+        
+        // Fallback: Download falls API nicht funktioniert
+        try {
+          const blob = new Blob([json], { type: 'application/json' })
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = 'gallery-data.json'
+          link.style.display = 'none'
+          document.body.appendChild(link)
+          link.click()
+          
+          setTimeout(() => {
+            try {
+              document.body.removeChild(link)
+              URL.revokeObjectURL(url)
+            } catch {}
+            alert('✅ gallery-data.json wurde heruntergeladen!\n\n📁 Nächste Schritte:\n1. Datei in "public" Ordner kopieren\n2. Terminal öffnen und ausführen:\n   git add public/gallery-data.json\n   git commit -m "Update"\n   git push\n3. Mobile: Seite neu laden')
+          }, 100)
+        } catch (downloadError) {
+          alert('❌ Fehler:\n\nAPI nicht verfügbar UND Download fehlgeschlagen\n\n' + (error instanceof Error ? error.message : String(error)))
+        }
+      })
+    } catch (error) {
+      setIsPublishing(false)
+      alert('Fehler: ' + (error instanceof Error ? error.message : String(error)))
+    }
+  }, [isPublishing])
+  
+  // Speichere publishMobile in Ref beim Mount
+  React.useEffect(() => {
+    publishMobileRef.current = publishMobile
+  }, [publishMobile])
+  
+  // Prüfe regelmäßig ob es neue Mobile-Daten gibt (nur auf Mac)
+  useEffect(() => {
+    const isMac = !/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && window.innerWidth > 768
+    if (!isMac) return // Nur auf Mac prüfen
+    
+    const checkForMobileUpdates = async () => {
+      try {
+        const { hasUpdates } = await checkMobileUpdates()
+        setMobileSyncAvailable(hasUpdates)
+      } catch (error) {
+        console.warn('⚠️ Mobile-Update-Check fehlgeschlagen:', error)
+      }
+    }
+    
+    // Sofort prüfen
+    checkForMobileUpdates()
+    
+    // Dann alle 10 Sekunden prüfen (häufiger für bessere Sync)
+    const interval = setInterval(checkForMobileUpdates, 10000)
+    return () => clearInterval(interval)
+  }, [])
+  
+  // WICHTIG: Automatisches Veröffentlichen nach Admin-Speicherung
+  useEffect(() => {
+    const handleArtworkSaved = (event: Event) => {
+      const customEvent = event as CustomEvent
+      console.log('📦 Neues Werk im Admin gespeichert - automatisches Veröffentlichen...')
+      const artworkCount = (customEvent.detail as any)?.artworkCount || 0
+      
+      // Warte kurz damit localStorage sicher gespeichert ist
+      setTimeout(() => {
+        // Prüfe ob publishMobile verfügbar ist
+        if (publishMobileRef.current) {
+          console.log('🚀 Rufe publishMobile() automatisch auf...')
+          publishMobileRef.current()
+        } else {
+          console.warn('⚠️ publishMobile noch nicht verfügbar - Event wird ignoriert')
+        }
+      }, 1000) // 1 Sekunde warten damit localStorage sicher gespeichert ist
+    }
+    
+    // WICHTIG: Automatischer Git Push nach Veröffentlichung
+    const handleGalleryDataPublished = (event: Event) => {
+      const customEvent = event as CustomEvent
+      console.log('📦 gallery-data.json wurde veröffentlicht - Git Push nötig!')
+      
+      // Zeige Hinweis dass Git Push nötig ist
+      console.log('💡 Hinweis: Bitte "📦 Git Push" Button klicken damit Datei auf Vercel verfügbar ist')
+    }
+    
+    window.addEventListener('artwork-saved-needs-publish', handleArtworkSaved)
+    window.addEventListener('gallery-data-published', handleGalleryDataPublished)
+    
+    return () => {
+      window.removeEventListener('artwork-saved-needs-publish', handleArtworkSaved)
+      window.removeEventListener('gallery-data-published', handleGalleryDataPublished)
+    }
+  }, [])
+  
+  // Mobile-Daten synchronisieren (Mac → lokal)
+  const syncMobileData = async () => {
+    try {
+      const { hasUpdates, artworks } = await checkMobileUpdates()
+      if (hasUpdates && artworks) {
+        // Speichere in localStorage
+        localStorage.setItem('k2-artworks', JSON.stringify(artworks))
+        localStorage.setItem('k2-last-load-time', Date.now().toString())
+        
+        // Update Hash für bessere Update-Erkennung
+        const hash = artworks.map((a: any) => a.number || a.id).sort().join(',')
+        localStorage.setItem('k2-artworks-hash', hash)
+        
+        // Event für andere Komponenten
+        window.dispatchEvent(new CustomEvent('artworks-updated', { 
+          detail: { count: artworks.length, manualSync: true } 
+        }))
+        
+        setMobileSyncAvailable(false)
+        alert(`✅ ${artworks.length} Werke von Mobile synchronisiert!`)
+      } else {
+        alert('ℹ️ Keine neuen Mobile-Daten gefunden')
+      }
+    } catch (error) {
+      console.error('❌ Mobile-Sync Fehler:', error)
+      alert('⚠️ Fehler bei Mobile-Sync: ' + (error instanceof Error ? error.message : String(error)))
+    }
+  }
   
   // Aktuelles Projekt & Status berechnen
   const currentProject = useMemo(() => {
@@ -192,6 +514,43 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
     if (gitPushing) return
     setGitPushing(true)
     
+    // WICHTIG: Prüfe zuerst ob Datei existiert und Werke enthält
+    let artworksCount = 0
+    let fileExists = false
+    
+    try {
+      // Versuche Datei zu lesen um Anzahl der Werke zu prüfen
+      const response = await fetch('/gallery-data.json?t=' + Date.now())
+      if (response.ok) {
+        const data = await response.json()
+        artworksCount = Array.isArray(data.artworks) ? data.artworks.length : 0
+        fileExists = true
+        
+        if (artworksCount === 0) {
+          setPublishStatus({
+            success: false,
+            message: '⚠️ Keine Werke gefunden - prüfe localStorage\n\nBitte zuerst Werke speichern und veröffentlichen!',
+            artworksCount: 0
+          })
+          setGitPushing(false)
+          setTimeout(() => setPublishStatus(null), 8000)
+          return
+        }
+      } else {
+        setPublishStatus({
+          success: false,
+          message: '⚠️ Datei gallery-data.json nicht gefunden!\n\nBitte zuerst Werke speichern und veröffentlichen!',
+          artworksCount: 0
+        })
+        setGitPushing(false)
+        setTimeout(() => setPublishStatus(null), 8000)
+        return
+      }
+    } catch (error) {
+      console.warn('⚠️ Konnte Datei nicht prüfen:', error)
+      // Weiter mit Git Push auch wenn Prüfung fehlschlägt
+    }
+    
     // Synchronisierungs-Status: Git Push gestartet
     setSyncStatus({ step: 'git-push', progress: 33 })
     
@@ -221,11 +580,15 @@ end tell`
         document.execCommand('copy')
         document.body.removeChild(textarea)
         
-        // Zeige nicht-blockierenden Hinweis
+        // Zeige nicht-blockierenden Hinweis mit Anzahl der Werke
+        const statusMessage = fileExists && artworksCount > 0
+          ? `✅ Befehle kopiert! Terminal öffnen und einfügen (Cmd+V)\n\n📦 ${artworksCount} Werke werden gepusht`
+          : '✅ Befehle kopiert! Terminal öffnen und einfügen (Cmd+V)'
+        
         setPublishStatus({
           success: true,
-          message: '✅ Befehle kopiert! Terminal öffnen und einfügen (Cmd+V)',
-          artworksCount: 0
+          message: statusMessage,
+          artworksCount: artworksCount
         })
         
         // Status: Warte auf Git Push Abschluss
@@ -241,13 +604,17 @@ end tell`
           }, 90000) // 90 Sekunden für Vercel Deployment
         }, 5000)
         
-        setTimeout(() => setPublishStatus(null), 5000)
+        setTimeout(() => setPublishStatus(null), 8000)
       } catch (copyError) {
         // Fallback: Zeige Befehle
+        const statusMessage = fileExists && artworksCount > 0
+          ? `Terminal öffnen und ausführen:\n${commands}\n\n📦 ${artworksCount} Werke werden gepusht`
+          : `Terminal öffnen und ausführen:\n${commands}`
+        
         setPublishStatus({
           success: true,
-          message: `Terminal öffnen und ausführen:\n${commands}`,
-          artworksCount: 0
+          message: statusMessage,
+          artworksCount: artworksCount
         })
         setTimeout(() => setPublishStatus(null), 8000)
       }
@@ -267,6 +634,7 @@ end tell`
   const pages = [
     { id: 'galerie', name: 'Galerie', component: GaleriePage },
     { id: 'galerie-vorschau', name: 'Galerie-Vorschau', component: GalerieVorschauPage },
+    { id: 'platzanordnung', name: 'Platzanordnung', component: PlatzanordnungPage },
     { id: 'shop', name: 'Shop', component: ShopPage },
     { id: 'control', name: 'Control Studio', component: ControlStudioPage },
     { id: 'mission', name: 'Projektplan', component: ProjectPlanPage },
@@ -294,6 +662,9 @@ end tell`
     }
     if (currentPage === 'galerie-vorschau') {
       return <GalerieVorschauPage key={componentKey} initialFilter={galerieFilter} />
+    }
+    if (currentPage === 'platzanordnung') {
+      return <PlatzanordnungPage key={componentKey} />
     }
     
     // Admin-Komponente: Nur einmal rendern - IMMER gleicher Key verhindert doppeltes Mounten
@@ -665,209 +1036,6 @@ end tell`
         </Link>
         <button
           onClick={() => {
-            if (isPublishing) return // Verhindere mehrfaches Klicken
-            setIsPublishing(true)
-            
-            // Gleiche Funktion wie in Admin-Seite - lädt gallery-data.json herunter
-            const publishMobile = () => {
-              try {
-                const getItemSafe = (key: string, defaultValue: any) => {
-                  try {
-                    const item = localStorage.getItem(key)
-                    if (!item || item.length > 1000000) return defaultValue
-                    return JSON.parse(item)
-                  } catch {
-                    return defaultValue
-                  }
-                }
-                
-                const artworks = getItemSafe('k2-artworks', [])
-                const events = getItemSafe('k2-events', [])
-                const documents = getItemSafe('k2-documents', [])
-                
-                // KRITISCH: Alle Werke mitnehmen, nicht nur die ersten 50
-                const allArtworks = Array.isArray(artworks) ? artworks : []
-                console.log('📦 Veröffentliche Werke:', allArtworks.length, 'Werke gefunden')
-                console.log('📦 localStorage k2-artworks:', {
-                  exists: !!localStorage.getItem('k2-artworks'),
-                  length: localStorage.getItem('k2-artworks')?.length || 0,
-                  parsedLength: allArtworks.length,
-                  firstArtwork: allArtworks[0] ? {
-                    id: allArtworks[0].id,
-                    number: allArtworks[0].number,
-                    title: allArtworks[0].title
-                  } : null
-                })
-                
-                // WICHTIG: Wenn keine Werke gefunden werden, zeige Warnung
-                if (allArtworks.length === 0) {
-                  console.warn('⚠️ KEINE WERKE GEFUNDEN in localStorage!')
-                  console.warn('⚠️ Prüfe localStorage direkt:', {
-                    raw: localStorage.getItem('k2-artworks')?.substring(0, 200),
-                    keys: Object.keys(localStorage).filter(k => k.includes('artwork'))
-                  })
-                }
-                
-                const data = {
-                  martina: getItemSafe('k2-stammdaten-martina', {}),
-                  georg: getItemSafe('k2-stammdaten-georg', {}),
-                  gallery: getItemSafe('k2-stammdaten-galerie', {}),
-                  artworks: allArtworks, // ALLE Werke, nicht nur erste 50
-                  events: Array.isArray(events) ? events.slice(0, 20) : [],
-                  documents: Array.isArray(documents) ? documents.slice(0, 20) : [],
-                  designSettings: getItemSafe('k2-design-settings', {}),
-                  version: Date.now(), // Versionsnummer für Cache-Busting
-                  buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
-                  exportedAt: new Date().toISOString()
-                }
-                
-                console.log('📊 Daten für gallery-data.json:', {
-                  artworks: data.artworks.length,
-                  events: data.events.length,
-                  documents: data.documents.length
-                })
-                
-                const stringifyData = () => {
-                  try {
-                    // JSON.stringify mit Timeout-Schutz
-                    let json: string
-                    try {
-                      json = JSON.stringify(data)
-                    } catch (stringifyError) {
-                      setIsPublishing(false)
-                      alert('⚠️ Fehler beim Erstellen der JSON-Datei:\n\n' + (stringifyError instanceof Error ? stringifyError.message : String(stringifyError)))
-                      return
-                    }
-                    
-                    if (json.length > 5000000) {
-                      setIsPublishing(false)
-                      alert('⚠️ Daten zu groß (über 5MB). Bitte reduzieren Sie die Anzahl der Werke.')
-                      return
-                    }
-                    
-                    // Versuche direkt in public Ordner zu schreiben über API
-                    // WICHTIG: Nur EINMAL aufrufen, nicht mehrfach!
-                    // MIT TIMEOUT-Schutz (5 Sekunden - API ist jetzt schnell ohne Git-Operationen)
-                    const controller = new AbortController()
-                    const timeoutId = setTimeout(() => {
-                      controller.abort()
-                      setIsPublishing(false)
-                      alert('⚠️ API-Timeout:\n\nDie Anfrage dauerte zu lange.\n\n📋 Bitte prüfen:\n1. Terminal öffnen\n2. cd /Users/georgkreinecker/k2Galerie\n3. Prüfe ob public/gallery-data.json existiert')
-                    }, 5000)
-                    
-                    fetch('/api/write-gallery-data', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: json,
-                      signal: controller.signal
-                    })
-                    .then(response => {
-                      clearTimeout(timeoutId)
-                      if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-                      }
-                      return response.json()
-                    })
-                    .then(result => {
-                      clearTimeout(timeoutId)
-                      
-                      if (result.success) {
-                        setIsPublishing(false)
-                        
-                        // Zeige Status-Banner statt blockierenden Alert
-                        const artworksCount = data.artworks.length
-                        setPublishStatus({
-                          success: true,
-                          message: `✅ Datei erfolgreich geschrieben!`,
-                          artworksCount,
-                          size: result.size
-                        })
-                        
-                        // Synchronisierungs-Status: Veröffentlichung erfolgreich
-                        setSyncStatus({ step: 'published', progress: 10 })
-                        
-                        // WICHTIG: Prüfe ob Datei wirklich geschrieben wurde
-                        console.log('✅ Datei geschrieben:', {
-                          path: result.path,
-                          size: result.size,
-                          artworksCount: artworksCount
-                        })
-                        
-                        // Prüfe ob Datei wirklich existiert
-                        fetch('/gallery-data.json?check=true&t=' + Date.now(), { method: 'HEAD' })
-                          .then(checkResponse => {
-                            if (checkResponse.ok) {
-                              console.log('✅ Datei ist lokal verfügbar')
-                            } else {
-                              console.warn('⚠️ Datei ist lokal NICHT verfügbar:', checkResponse.status)
-                            }
-                          })
-                          .catch(e => {
-                            console.warn('⚠️ Prüfung fehlgeschlagen:', e)
-                          })
-                        
-                        // Auto-Close nach 10 Sekunden
-                        setTimeout(() => {
-                          setPublishStatus(null)
-                        }, 10000)
-                      } else {
-                        throw new Error(result.error || 'Unbekannter Fehler')
-                      }
-                    })
-                    .catch(error => {
-                      clearTimeout(timeoutId)
-                      setIsPublishing(false)
-                      
-                      // Prüfe ob es ein Timeout war
-                      if (error.name === 'AbortError') {
-                        setIsPublishing(false)
-                        setPublishStatus({
-                          success: false,
-                          message: '⚠️ API-Timeout - Bitte manuell prüfen'
-                        })
-                        setTimeout(() => setPublishStatus(null), 5000)
-                        return
-                      }
-                      
-                      // Fallback: Download falls API nicht funktioniert (Server läuft nicht)
-                      try {
-                        const blob = new Blob([json], { type: 'application/json' })
-                        const url = URL.createObjectURL(blob)
-                        const link = document.createElement('a')
-                        link.href = url
-                        link.download = 'gallery-data.json'
-                        link.style.display = 'none'
-                        document.body.appendChild(link)
-                        link.click()
-                        
-                        setTimeout(() => {
-                          try {
-                            document.body.removeChild(link)
-                            URL.revokeObjectURL(url)
-                          } catch {}
-                          alert('✅ gallery-data.json wurde heruntergeladen!\n\n📁 Nächste Schritte:\n1. Datei in "public" Ordner kopieren (im Projektordner)\n2. Terminal öffnen und ausführen:\n   git add public/gallery-data.json\n   git commit -m "Update"\n   git push\n3. Dann "🔍 Vercel-Status" Button verwenden\n4. Mobile: Seite neu laden')
-                        }, 100)
-                      } catch (downloadError) {
-                        alert('❌ Fehler:\n\nAPI nicht verfügbar UND Download fehlgeschlagen\n\n' + (error instanceof Error ? error.message : String(error)))
-                      }
-                    })
-                  } catch (e) {
-                    setIsPublishing(false) // Button wieder aktivieren
-                    alert('Fehler: ' + (e instanceof Error ? e.message : String(e)))
-                  }
-                }
-                
-                if (typeof window.requestIdleCallback === 'function') {
-                  requestIdleCallback(stringifyData, { timeout: 5000 })
-                } else {
-                  setTimeout(stringifyData, 100)
-                }
-              } catch (error) {
-                setIsPublishing(false)
-                alert('Fehler: ' + (error instanceof Error ? error.message : String(error)))
-              }
-            }
-            
             publishMobile()
           }}
           disabled={isPublishing}

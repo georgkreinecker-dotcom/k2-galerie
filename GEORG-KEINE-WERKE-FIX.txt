@@ -1,0 +1,71 @@
+═══════════════════════════════════════════════════════════════
+  🔧 Fix: Keine Werke in Supabase
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Keine Werke in Supabase = Speichern funktioniert nicht!
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 1: Edge Function Logs prüfen
+
+→ Dashboard → Edge Functions → artworks
+→ Tab: Logs
+→ Werk speichern in App
+→ Kommt Request an?
+
+Falls JA:
+→ ✅ Edge Function wird aufgerufen
+→ Prüfe ob Fehler in Logs
+
+Falls NEIN:
+→ ❌ Edge Function wird nicht aufgerufen
+→ Problem: App kann Edge Function nicht erreichen
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT 2: Edge Function Secrets prüfen
+
+→ Edge Functions → artworks → Settings
+→ Secrets
+→ Sind SUPABASE_URL und SUPABASE_ANON_KEY gesetzt?
+
+Falls NEIN:
+→ ❌ Edge Function kann nicht auf Datenbank zugreifen!
+→ Lösung: Secrets hinzufügen (siehe unten)
+
+═══════════════════════════════════════════════════════════════
+
+FIX: Edge Function Secrets setzen
+
+1. Edge Functions → artworks → Settings
+2. Secrets → Add Secret
+3. Füge hinzu:
+
+   Name: SUPABASE_URL
+   Value: https://sjqyeqnibwyxtwzcqklj.supabase.co
+   Add
+
+   Name: SUPABASE_ANON_KEY
+   Value: sb_publishable_fa6tMCbi4g40m9XiyVUpBA__tpyb9h4
+   Add
+
+4. Redeploy: Edge Function → Deploy
+
+═══════════════════════════════════════════════════════════════
+
+WICHTIG:
+
+Edge Function braucht Secrets um auf Datenbank zuzugreifen!
+→ Ohne Secrets kann sie nicht speichern!
+
+═══════════════════════════════════════════════════════════════
+
+BITTE PRÜFE:
+
+1. Edge Function Logs: Kommt Request an? (Ja/Nein)
+2. Edge Function Secrets: Sind sie gesetzt? (Ja/Nein)
+3. .env URL: Ist sie korrekt?
+
+═══════════════════════════════════════════════════════════════

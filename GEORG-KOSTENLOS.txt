@@ -1,0 +1,89 @@
+═══════════════════════════════════════════════════════════════
+  💰 Kostenlose Lösungen
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Entschuldigung! Ich hätte früher sagen sollen, dass Upgrade
+Geld kostet. Hier sind kostenlose Alternativen:
+
+═══════════════════════════════════════════════════════════════
+
+OPTION 1: Bestehendes Projekt löschen (KOSTENLOS!)
+
+Du hast bereits 2 kostenlose Projekte:
+→ Altes Projekt (mit Usage Limits)
+→ Neues Projekt k2-galerie-test (auch mit Limits)
+
+Lösung:
+→ Altes Projekt löschen
+→ Neues Projekt hat dann wieder kostenloses Kontingent
+→ KOSTENLOS!
+
+Schritte:
+1. Dashboard → Projekte-Liste
+2. Altes Projekt öffnen (nicht k2-galerie-test)
+3. Settings → Delete Project
+4. Projekt-Name eingeben zur Bestätigung
+5. Delete klicken
+6. ✅ Neues Projekt hat wieder kostenloses Kontingent!
+
+═══════════════════════════════════════════════════════════════
+
+OPTION 2: Lokale Entwicklung mit localStorage (KOSTENLOS!)
+
+Für lokale Entwicklung:
+→ App funktioniert mit localStorage (ohne Supabase)
+→ Werke werden lokal gespeichert
+→ KOSTENLOS!
+
+Nachteil:
+→ Funktioniert nur lokal (nicht auf Vercel)
+→ Keine Synchronisation zwischen Geräten
+
+═══════════════════════════════════════════════════════════════
+
+OPTION 3: Warten bis Limit zurückgesetzt wird (KOSTENLOS!)
+
+Falls möglich:
+→ Supabase Limits werden manchmal monatlich zurückgesetzt
+→ Warte bis Limit zurückgesetzt wird
+→ KOSTENLOS!
+
+Nachteil:
+→ Ungewiss wann Limit zurückgesetzt wird
+
+═══════════════════════════════════════════════════════════════
+
+EMPFOHLEN: Option 1 (Projekt löschen)
+
+→ Einfachste und schnellste Lösung
+→ 5 Minuten Arbeit
+→ KOSTENLOS!
+→ Alles funktioniert wieder!
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT-FÜR-SCHRITT: Projekt löschen
+
+1. Dashboard → Oben links: Organisations-Name klicken
+2. Projekte-Liste öffnet sich
+3. Altes Projekt finden (k2-galerie, nicht k2-galerie-test)
+4. Projekt öffnen
+5. Settings → Ganz unten: Delete Project
+6. Projekt-Name eingeben zur Bestätigung
+7. Delete klicken
+8. ✅ Fertig!
+
+Dann:
+→ Zurück zu k2-galerie-test
+→ Prüfen: Ist Usage Limits Warnung weg?
+→ Falls JA: ✅ Alles funktioniert wieder!
+
+═══════════════════════════════════════════════════════════════
+
+MÖCHTEST DU DAS ALTE PROJEKT LÖSCHEN?
+
+→ Das ist die einfachste kostenlose Lösung!
+
+═══════════════════════════════════════════════════════════════

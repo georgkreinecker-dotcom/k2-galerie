@@ -1,0 +1,82 @@
+═══════════════════════════════════════════════════════════════
+  🔍 VERCEL DEPLOYMENT - Checkliste
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Ich sehe im Dashboard:
+- ✅ 1 erfolgreiches Deployment (Ready) von vor 22h
+- ❌ 2 fehlgeschlagene Deployments (Error)
+
+═══════════════════════════════════════════════════════════════
+
+SCHRITT-FÜR-SCHRITT PRÜFUNG:
+
+1. LOKALER BUILD TESTEN:
+   
+   Terminal öffnen:
+   cd /Users/georgkreinecker/k2Galerie
+   npm run build
+   
+   ✅ Muss erfolgreich sein ohne Fehler!
+   ❌ Falls Fehler → diese zuerst beheben!
+
+2. PRÜFE OB DATEI EXISTIERT:
+   
+   ls -la public/gallery-data.json
+   
+   ✅ Muss existieren und größer als 0 Bytes sein!
+   ❌ Falls nicht → Werk speichern und veröffentlichen!
+
+3. PRÜFE OB DATEI WERKE ENTHÄLT:
+   
+   node -e "const fs=require('fs'); const d=JSON.parse(fs.readFileSync('public/gallery-data.json')); console.log('Werke:', d.artworks?.length || 0)"
+   
+   ✅ Sollte Anzahl zeigen (z.B. "Werke: 7")
+   ❌ Falls 0 → Werk speichern und veröffentlichen!
+
+4. GIT STATUS PRÜFEN:
+   
+   git status
+   
+   ✅ Prüfe ob gallery-data.json geändert wurde
+   ✅ Prüfe ob alle Änderungen committed sind
+
+5. GIT PUSH AUSFÜHREN:
+   
+   bash scripts/git-push-gallery-data.sh
+   
+   ✅ Script sollte erfolgreich durchlaufen
+   ✅ Prüfe ob Datei nach Push noch existiert
+
+6. VERCEL DASHBOARD PRÜFEN:
+   
+   - Gehe zu vercel.com/dashboard
+   - Klicke auf das NEUESTE fehlgeschlagene Deployment
+   - Öffne "Build Logs"
+   - Kopiere die Fehlermeldung
+   
+   ✅ Falls keine Fehler → Deployment sollte erfolgreich sein
+   ❌ Falls Fehler → Fehlermeldung zeigen
+
+═══════════════════════════════════════════════════════════════
+
+WICHTIG:
+
+- Lokaler Build MUSS erfolgreich sein!
+- gallery-data.json MUSS existieren und Werke enthalten!
+- Alle Änderungen MÜSSEN committed sein!
+- Git Push MUSS erfolgreich sein!
+
+═══════════════════════════════════════════════════════════════
+
+FALLS PROBLEM BLEIBT:
+
+1. Öffne das fehlgeschlagene Deployment in Vercel
+2. Klicke auf "Build Logs"
+3. Kopiere die Fehlermeldung
+4. Zeige mir die Fehlermeldung
+
+Dann kann ich genau sehen was das Problem ist!
+
+═══════════════════════════════════════════════════════════════
