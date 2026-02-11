@@ -6,6 +6,7 @@ import { checkMobileUpdates } from '../utils/supabaseClient'
 import '../App.css'
 import GaleriePage from './GaleriePage'
 import GalerieVorschauPage from './GalerieVorschauPage'
+import ProduktVorschauPage from './ProduktVorschauPage'
 import PlatzanordnungPage from './PlatzanordnungPage'
 import ShopPage from './ShopPage'
 import ControlStudioPage from './ControlStudioPage'
@@ -14,6 +15,7 @@ import ScreenshotExportAdmin from '../../components/ScreenshotExportAdmin'
 import ProjectsPage from './ProjectsPage'
 import PlatformStartPage from './PlatformStartPage'
 import SmartPanel from '../components/SmartPanel'
+import { BUILD_LABEL } from '../buildInfo.generated'
 
 // Helper: Lese persistent Boolean ohne Hook (für useMemo)
 function getPersistentBoolean(key: string): boolean {
@@ -118,6 +120,19 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       setCurrentPage('galerie')
     }
   }, [pageFromUrl, isLocalhost])
+
+  // Auf Mobile: "platform" Tab automatisch zu "galerie" umleiten
+  useEffect(() => {
+    const isMobileDevice = typeof window !== 'undefined' && (
+      window.innerWidth <= 768 || 
+      /iPad|iPhone|iPod/.test(navigator.userAgent)
+    )
+    
+    if (isMobileDevice && currentPage === 'platform') {
+      console.log('📱 Mobile erkannt - leite von "platform" zu "galerie" um...')
+      setCurrentPage('galerie')
+    }
+  }, [currentPage])
 
   // Bereiche der aktuellen Seite für untere Navigationsleiste
   const getPageSections = (): PageSection[] => {
@@ -295,6 +310,42 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
         return
       }
       
+      // Prüfung: Nur veröffentlichen wenn sich etwas geändert hat (sonst verwirrend)
+      const signaturePayload = {
+        a: allArtworks.map((x: any) => (x.number || x.id) + ':' + (x.updatedAt || x.createdAt || '')).sort().join(','),
+        n: allArtworks.length,
+        m: JSON.stringify(data.martina),
+        g: JSON.stringify(data.georg),
+        gal: JSON.stringify(data.gallery),
+        e: data.events.length,
+        d: data.documents.length,
+        design: JSON.stringify(data.designSettings)
+      }
+      const simpleHash = (str: string) => {
+        let h = 0
+        for (let i = 0; i < str.length; i++) {
+          h = ((h << 5) - h) + str.charCodeAt(i)
+          h |= 0
+        }
+        return String(h)
+      }
+      const currentSignature = simpleHash(JSON.stringify(signaturePayload))
+      const lastSignature = localStorage.getItem('k2-last-publish-signature')
+      if (lastSignature !== null && lastSignature === currentSignature) {
+        setIsPublishing(false)
+        const lastBackup = localStorage.getItem('k2-last-publish-time')
+        const backupLabel = lastBackup ? new Date(lastBackup).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' }) : ''
+        setPublishStatus({
+          success: true,
+          message: backupLabel
+            ? `📁 Daten: Keine Änderungen\n\nNichts veröffentlicht – Stand wie beim letzten Backup (${backupLabel}).\n\nDaten sind identisch.`
+            : '📁 Daten: Keine Änderungen – nichts veröffentlicht. Daten sind identisch mit dem letzten Stand.',
+          artworksCount: allArtworks.length
+        })
+        setTimeout(() => setPublishStatus(null), 6000)
+        return
+      }
+      
       // Versuche direkt in public Ordner zu schreiben über API
       const controller = new AbortController()
       const timeoutId = setTimeout(() => {
@@ -321,17 +372,22 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
         
         if (result.success) {
           const artworksCount = data.artworks.length
-          
+          const backupTime = new Date().toISOString()
+          try {
+            localStorage.setItem('k2-last-publish-signature', currentSignature)
+            localStorage.setItem('k2-last-publish-time', backupTime)
+          } catch (_) {}
           console.log('✅ Datei geschrieben:', {
             path: result.path,
             size: result.size,
             artworksCount: artworksCount
           })
           
-          // WICHTIG: Zeige Hinweis dass Git Push nötig ist
+          // Klar als "Daten veröffentlicht" kennzeichnen (nicht Code-Update)
+          const backupLabel = new Date(backupTime).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })
           setPublishStatus({
             success: true,
-            message: `✅ Datei geschrieben!\n\n📦 WICHTIG: Git Push ausführen!\n\n1. Button "📦 Git Push" klicken\nODER\n2. Terminal: bash scripts/git-push-gallery-data.sh\n\n📱 Mobile: Nach Git Push (1-2 Min) QR-Code neu scannen`,
+            message: `📁 Daten veröffentlicht\n\n✅ Datei geschrieben. Backup: ${backupLabel}\n\nNächster Schritt: "📦 Code-Update (Git)" klicken\nODER Terminal: bash scripts/git-push-gallery-data.sh\n\n📱 Mobile: Danach (1-2 Min) QR neu scannen`,
             artworksCount,
             size: result.size
           })
@@ -441,7 +497,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       console.log('📦 gallery-data.json wurde veröffentlicht - Git Push nötig!')
       
       // Zeige Hinweis dass Git Push nötig ist
-      console.log('💡 Hinweis: Bitte "📦 Git Push" Button klicken damit Datei auf Vercel verfügbar ist')
+      console.log('💡 Hinweis: Bitte "📦 Code-Update (Git)" klicken damit Datei auf Vercel verfügbar ist')
     }
     
     window.addEventListener('artwork-saved-needs-publish', handleArtworkSaved)
@@ -529,7 +585,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
         if (artworksCount === 0) {
           setPublishStatus({
             success: false,
-            message: '⚠️ Keine Werke gefunden - prüfe localStorage\n\nBitte zuerst Werke speichern und veröffentlichen!',
+            message: '📦 Code-Update: Keine Werke in gallery-data.json.\n\nZuerst „📁 Daten veröffentlichen“ klicken, dann Code-Update.',
             artworksCount: 0
           })
           setGitPushing(false)
@@ -539,7 +595,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       } else {
         setPublishStatus({
           success: false,
-          message: '⚠️ Datei gallery-data.json nicht gefunden!\n\nBitte zuerst Werke speichern und veröffentlichen!',
+          message: '📦 Code-Update: gallery-data.json fehlt.\n\nZuerst „📁 Daten veröffentlichen“, dann Code-Update (Git).',
           artworksCount: 0
         })
         setGitPushing(false)
@@ -580,15 +636,13 @@ end tell`
         document.execCommand('copy')
         document.body.removeChild(textarea)
         
-        // Zeige nicht-blockierenden Hinweis mit Anzahl der Werke
-        const statusMessage = fileExists && artworksCount > 0
-          ? `✅ Befehle kopiert! Terminal öffnen und einfügen (Cmd+V)\n\n📦 ${artworksCount} Werke werden gepusht`
-          : '✅ Befehle kopiert! Terminal öffnen und einfügen (Cmd+V)'
+        // Zeige nur Code-Update – keine Werke-Anzahl (nur bei Daten relevant)
+        const statusMessage = '📦 Code-Update (Git)\n\n✅ Befehle in Zwischenablage. Terminal öffnen und einfügen (Cmd+V) – dann baut Vercel die neue Version.'
         
         setPublishStatus({
           success: true,
-          message: statusMessage,
-          artworksCount: artworksCount
+          message: statusMessage
+          // artworksCount weglassen → Banner zeigt nicht "X Werke gespeichert"
         })
         
         // Status: Warte auf Git Push Abschluss
@@ -606,22 +660,19 @@ end tell`
         
         setTimeout(() => setPublishStatus(null), 8000)
       } catch (copyError) {
-        // Fallback: Zeige Befehle
-        const statusMessage = fileExists && artworksCount > 0
-          ? `Terminal öffnen und ausführen:\n${commands}\n\n📦 ${artworksCount} Werke werden gepusht`
-          : `Terminal öffnen und ausführen:\n${commands}`
+        // Fallback: Zeige Befehle – nur Code-Update, keine Werke-Anzahl
+        const statusMessage = `📦 Code-Update (Git)\n\nTerminal öffnen und ausführen:\n${commands}\n\n→ Vercel baut danach die neue Version.`
         
         setPublishStatus({
           success: true,
-          message: statusMessage,
-          artworksCount: artworksCount
+          message: statusMessage
         })
         setTimeout(() => setPublishStatus(null), 8000)
       }
     } catch (error) {
       setPublishStatus({
         success: false,
-        message: 'Fehler: ' + (error instanceof Error ? error.message : String(error))
+        message: '📦 Code-Update fehlgeschlagen: ' + (error instanceof Error ? error.message : String(error))
       })
       setSyncStatus({ step: null, progress: 0 })
       setTimeout(() => setPublishStatus(null), 5000)
@@ -631,9 +682,16 @@ end tell`
     }
   }
 
-  const pages = [
+  // Mobile-Erkennung für Tab-Filterung
+  const isMobileDevice = typeof window !== 'undefined' && (
+    window.innerWidth <= 768 || 
+    /iPad|iPhone|iPod/.test(navigator.userAgent)
+  )
+
+  const allPages = [
     { id: 'galerie', name: 'Galerie', component: GaleriePage },
     { id: 'galerie-vorschau', name: 'Galerie-Vorschau', component: GalerieVorschauPage },
+    { id: 'produkt-vorschau', name: 'Produkt-Vorschau', component: ProduktVorschauPage },
     { id: 'platzanordnung', name: 'Platzanordnung', component: PlatzanordnungPage },
     { id: 'shop', name: 'Shop', component: ShopPage },
     { id: 'control', name: 'Control Studio', component: ControlStudioPage },
@@ -643,32 +701,45 @@ end tell`
     { id: 'platform', name: 'Plattform Start', component: PlatformStartPage },
   ]
 
-  const currentPageData = pages.find(p => p.id === currentPage) || pages[0]
+  // Auf Mobile: "Plattform Start" Tab ausblenden (nur für Mac)
+  const pages = isMobileDevice 
+    ? allPages.filter(p => p.id !== 'platform')
+    : allPages
+
+  // Wenn aktueller Tab "platform" auf Mobile ist → automatisch zu "galerie" wechseln
+  const effectiveCurrentPage = isMobileDevice && currentPage === 'platform' 
+    ? 'galerie' 
+    : currentPage
+
+  const currentPageData = pages.find(p => p.id === effectiveCurrentPage) || pages[0]
   const CurrentComponent = currentPageData.component
   
   // Render-Komponente mit Props für GaleriePage
   // WICHTIG: Admin-Komponente nur einmal rendern (verhindert doppeltes Mounten)
   const renderComponent = (key?: string, skipAdmin?: boolean) => {
+    // Verwende effectiveCurrentPage statt currentPage (umleitet "platform" auf Mobile zu "galerie")
+    const pageToRender = effectiveCurrentPage
+    
     // Im Split-Mode: Admin nur im Desktop-Bereich rendern
-    if (skipAdmin && currentPage === 'admin') {
+    if (skipAdmin && pageToRender === 'admin') {
       return <div key={`${key}-skip`} style={{ padding: '2rem', textAlign: 'center', color: '#999' }}>Admin nur im Desktop-Bereich</div>
     }
     
-    // Eindeutiger Key: Kombiniere currentPage mit viewMode um doppeltes Mounten zu verhindern
-    const componentKey = `${currentPage}-${key || 'default'}`
+    // Eindeutiger Key: Kombiniere pageToRender mit viewMode um doppeltes Mounten zu verhindern
+    const componentKey = `${pageToRender}-${key || 'default'}`
     
-    if (currentPage === 'galerie') {
+    if (pageToRender === 'galerie') {
       return <GaleriePage key={componentKey} scrollToSection={galerieSection} />
     }
-    if (currentPage === 'galerie-vorschau') {
+    if (pageToRender === 'galerie-vorschau') {
       return <GalerieVorschauPage key={componentKey} initialFilter={galerieFilter} />
     }
-    if (currentPage === 'platzanordnung') {
+    if (pageToRender === 'platzanordnung') {
       return <PlatzanordnungPage key={componentKey} />
     }
     
     // Admin-Komponente: Nur einmal rendern - IMMER gleicher Key verhindert doppeltes Mounten
-    if (currentPage === 'admin') {
+    if (pageToRender === 'admin') {
       // WICHTIG: Gleicher Key für alle Render-Modi verhindert doppeltes Mounten
       return <ScreenshotExportAdmin key="admin-singleton" />
     }
@@ -753,7 +824,7 @@ end tell`
                 if (!gitPushing) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
               }}
             >
-              {gitPushing ? '⏳ Push...' : '📦 Git Push'}
+              {gitPushing ? '⏳ Push...' : '📦 Code-Update (Git)'}
             </button>
           )}
           <button
@@ -811,13 +882,13 @@ end tell`
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 'bold', fontSize: '0.95rem', color: '#5ffbf1', marginBottom: '0.25rem' }}>
                 {syncStatus.step === 'published' && 'Veröffentlichung erfolgreich'}
-                {syncStatus.step === 'git-push' && 'Git Push läuft...'}
+                {syncStatus.step === 'git-push' && 'Code-Update (Git) läuft...'}
                 {syncStatus.step === 'vercel-deploy' && 'Warte auf Vercel Deployment...'}
                 {syncStatus.step === 'ready' && '✅ Bereit für Mobile!'}
               </div>
               <div style={{ fontSize: '0.8rem', color: '#8fa0c9' }}>
                 {syncStatus.step === 'published' && 'Datei wurde gespeichert'}
-                {syncStatus.step === 'git-push' && 'Terminal öffnen und Git Push ausführen'}
+                {syncStatus.step === 'git-push' && 'Terminal öffnen und Code-Update ausführen'}
                 {syncStatus.step === 'vercel-deploy' && 'Deployment dauert ca. 1-2 Minuten'}
                 {syncStatus.step === 'ready' && 'Mobile Gerät: QR-Code neu scannen oder Seite aktualisieren'}
               </div>
@@ -1013,10 +1084,26 @@ end tell`
           ))}
         </select>
 
-        {/* Quick-Actions - Git Push und Mission Control sind jetzt im Smart Panel */}
+        {/* Entwicklungsstand: Gleicher Stand wie auf dem Handy? */}
+        <span
+          style={{
+            padding: '0.35rem 0.6rem',
+            background: 'rgba(0,0,0,0.3)',
+            color: 'rgba(255,255,255,0.7)',
+            borderRadius: '6px',
+            fontSize: '0.75rem',
+            fontFamily: 'monospace'
+          }}
+          title="Vergleiche mit Handy – gleicher Stand = gleiche Version"
+        >
+          Stand: {BUILD_LABEL}
+        </span>
+
+        {/* Quick-Actions: Daten veröffentlichen + Code-Update (Git) nebeneinander */}
         <Link
           to={currentPageData.id === 'galerie' ? PROJECT_ROUTES['k2-galerie'].galerie :
               currentPageData.id === 'galerie-vorschau' ? PROJECT_ROUTES['k2-galerie'].galerieVorschau :
+              currentPageData.id === 'produkt-vorschau' ? PROJECT_ROUTES['k2-galerie'].produktVorschau :
               currentPageData.id === 'shop' ? PROJECT_ROUTES['k2-galerie'].shop :
               currentPageData.id === 'control' ? PROJECT_ROUTES['k2-galerie'].controlStudio :
               currentPageData.id === 'mission' ? PROJECT_ROUTES['k2-galerie'].plan :
@@ -1050,9 +1137,31 @@ end tell`
             fontWeight: '500',
             opacity: isPublishing ? 0.7 : 1
           }}
-          title="Mobile Version veröffentlichen - lädt gallery-data.json herunter"
+          title="Galerie-Daten (Werke, Stammdaten) in Datei schreiben – für Mobile"
         >
-          {isPublishing ? '⏳ Veröffentliche...' : '🚀 Veröffentlichen'}
+          {isPublishing ? '⏳ ...' : '📁 Daten veröffentlichen'}
+        </button>
+        <button
+          onClick={async (e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            await handleGitPush()
+          }}
+          disabled={gitPushing}
+          style={{
+            padding: '0.5rem 1rem',
+            background: '#6366f1',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '6px',
+            fontSize: '0.9rem',
+            cursor: gitPushing ? 'wait' : 'pointer',
+            fontWeight: '500',
+            opacity: gitPushing ? 0.7 : 1
+          }}
+          title="Code-Änderungen (App, Freistellung, etc.) zu Vercel pushen"
+        >
+          {gitPushing ? '⏳ Push...' : '📦 Code-Update (Git)'}
         </button>
         <button
           onClick={(e) => {
@@ -1541,7 +1650,7 @@ end tell`
         
         {/* Smart Panel Content */}
         {!panelMinimized && (
-          <SmartPanel currentPage={currentPage} onGitPush={handleGitPush} />
+          <SmartPanel currentPage={currentPage} />
         )}
       </div>
     </div>

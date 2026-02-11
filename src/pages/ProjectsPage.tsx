@@ -1,15 +1,9 @@
 import { Link } from 'react-router-dom'
 import '../App.css'
-import { PROJECT_ROUTES, PLATFORM_ROUTES, getAllProjectIds } from '../config/navigation'
+import { PLATFORM_ROUTES } from '../config/navigation'
+import { getProjectCards } from '../config/projectsDisplay'
 
-const projects = getAllProjectIds().map((id) => ({
-  id,
-  title: PROJECT_ROUTES[id].name,
-  description: 'Kunst & Keramik Galerie – Hybrid-Eröffnung April 2026', // TODO: aus Config
-  status: 'in-progress' as 'in-progress' | 'planned',
-  color: '#5ffbf1', // TODO: aus Config
-  to: PROJECT_ROUTES[id].home,
-}))
+const projects = getProjectCards()
 
 export default function ProjectsPage() {
   return (

@@ -1,0 +1,76 @@
+═══════════════════════════════════════════════════════════════
+  📱 AUSSTELLUNGS-SETUP - Mobile untereinander synchronisieren
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Praktischer Workflow für die Ausstellung:
+
+═══════════════════════════════════════════════════════════════
+
+VOR ORT IN DER AUSSTELLUNG:
+
+1. Mac läuft (kann auch im Büro sein wenn Router Internet hat)
+   - Dev-Server starten: npm run dev
+   - Server läuft auf Port 5177
+   - Erreichbar über Router-IP
+
+2. Router einrichten:
+   - Eigener Router für Ausstellung
+   - Alle Geräte verbinden sich (Handy, iPad, Mac)
+   - Gleiches WLAN
+
+3. Mobile-Geräte verbinden:
+   - Handy: QR-Code scannen → http://[MAC-IP]:5177/...
+   - iPad: QR-Code scannen → http://[MAC-IP]:5177/...
+   - Beide sehen gleiche Daten ✅
+
+4. Automatische Synchronisation:
+   - Werk auf Handy erstellt → wird zu gallery-data.json geschrieben ✅
+   - iPad lädt automatisch alle 10 Sekunden neu → sieht neues Werk ✅
+   - Umgekehrt genauso ✅
+   - Mobile-Geräte synchronisieren untereinander ✅
+
+5. Später im Büro:
+   - Mac: Git Push ausführen
+   - Alle Werke kommen zu Vercel ✅
+   - Öffentliche Galerie wird aktualisiert ✅
+
+═══════════════════════════════════════════════════════════════
+
+WICHTIGE FEATURES:
+
+✅ Automatisches Polling alle 10 Sekunden (nur auf Mobile, nicht Vercel)
+✅ Mobile-Geräte sehen neue Werke automatisch
+✅ Kein manuelles Neuladen nötig
+✅ Funktioniert über lokales Netzwerk (Router)
+
+═══════════════════════════════════════════════════════════════
+
+SETUP-SCHRITTE:
+
+1. Mac: Dev-Server starten
+   cd /Users/georgkreinecker/k2Galerie
+   npm run dev
+
+2. IP-Adresse finden:
+   - Terminal zeigt: "Local: http://192.168.x.x:5177/"
+   - Diese IP-Adresse notieren
+
+3. Mobile-Connect öffnen:
+   - URL ändern zu: http://[MAC-IP]:5177/projects/k2-galerie/galerie
+   - QR-Code scannen mit Handy/iPad
+
+4. Fertig! Mobile-Geräte synchronisieren automatisch ✅
+
+═══════════════════════════════════════════════════════════════
+
+ZUSAMMENFASSUNG:
+
+- Mac läuft (im Büro oder vor Ort)
+- Dev-Server erreichbar über Router
+- Mobile-Geräte verbinden sich über QR-Code
+- Automatische Synchronisation alle 10 Sekunden ✅
+- Später: Git Push zu Vercel ✅
+
+═══════════════════════════════════════════════════════════════

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { usePersistentBoolean, usePersistentString } from '../hooks/usePersistentState'
 import { ProjectNavButton } from '../components/Navigation'
 
@@ -11,6 +11,171 @@ const quickPrompts = [
 ]
 
 type ControlTab = 'kasse' | 'galerie' | 'verkaufe' | 'archiv' | 'events' | 'einstellungen'
+
+// Archiv-Tab Komponente für Verkaufshistorie
+const ArchivTab = () => {
+  const [soldArtworks, setSoldArtworks] = useState<any[]>([])
+  const [allArtworks, setAllArtworks] = useState<any[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const loadData = () => {
+      try {
+        // Lade verkaufte Werke
+        const soldData = localStorage.getItem('k2-sold-artworks')
+        const sold = soldData ? JSON.parse(soldData) : []
+        
+        // Lade alle Werke um Details zu bekommen
+        const artworksData = localStorage.getItem('k2-artworks')
+        const artworks = artworksData ? JSON.parse(artworksData) : []
+        
+        // Kombiniere verkaufte Werke mit Werk-Details
+        const soldWithDetails = sold.map((soldItem: any) => {
+          const artwork = artworks.find((a: any) => a.number === soldItem.number)
+          return {
+            ...soldItem,
+            ...artwork,
+            soldAt: soldItem.soldAt || soldItem.soldAt
+          }
+        })
+        
+        setSoldArtworks(soldWithDetails)
+        setAllArtworks(artworks)
+        setIsLoading(false)
+      } catch (error) {
+        console.error('Fehler beim Laden der Verkaufshistorie:', error)
+        setIsLoading(false)
+      }
+    }
+    
+    loadData()
+    
+    // Event Listener für Updates
+    const handleUpdate = () => loadData()
+    window.addEventListener('artworks-updated', handleUpdate)
+    
+    return () => {
+      window.removeEventListener('artworks-updated', handleUpdate)
+    }
+  }, [])
+
+  // Filter verkaufte Werke nach Suchbegriff
+  const filteredSold = soldArtworks.filter((item: any) => {
+    if (!searchQuery) return true
+    const query = searchQuery.toLowerCase()
+    return (
+      (item.number || '').toLowerCase().includes(query) ||
+      (item.title || '').toLowerCase().includes(query) ||
+      (item.description || '').toLowerCase().includes(query) ||
+      (item.category || '').toLowerCase().includes(query)
+    )
+  })
+
+  // Statistiken berechnen
+  const stats = useMemo(() => {
+    const total = soldArtworks.length
+    const malerei = soldArtworks.filter((a: any) => a.category === 'malerei').length
+    const keramik = soldArtworks.filter((a: any) => a.category === 'keramik').length
+    const totalRevenue = soldArtworks.reduce((sum: number, a: any) => {
+      return sum + (a.price || 0)
+    }, 0)
+    
+    return { total, malerei, keramik, totalRevenue }
+  }, [soldArtworks])
+
+  if (isLoading) {
+    return (
+      <div className="card">
+        <h2>Verkaufshistorie – Archiv</h2>
+        <p className="meta">Lädt...</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="card">
+      <h2>Verkaufshistorie – Archiv</h2>
+      <p className="meta">Alle verkauften Kunstwerke im Archiv. Verkaufte Werke werden automatisch hier gespeichert.</p>
+      
+      <div className="stat-row">
+        <span>{stats.total} Verkauft</span>
+        <span>{stats.malerei} Malerei</span>
+        <span>{stats.keramik} Keramik</span>
+        <span>€{stats.totalRevenue.toFixed(2)} Gesamtumsatz</span>
+      </div>
+      
+      <input 
+        type="text" 
+        placeholder="Suche nach Titel, Beschreibung oder Produktnummer..." 
+        className="search-input"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+      
+      {filteredSold.length === 0 ? (
+        <p className="meta">Noch keine Verkäufe</p>
+      ) : (
+        <div style={{ marginTop: '1.5rem' }}>
+          {filteredSold.map((item: any) => (
+            <div 
+              key={item.number} 
+              style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '12px',
+                padding: '1rem',
+                marginBottom: '1rem',
+                display: 'flex',
+                gap: '1rem',
+                alignItems: 'center'
+              }}
+            >
+              {item.imageUrl && (
+                <img 
+                  src={item.imageUrl} 
+                  alt={item.title || item.number}
+                  style={{
+                    width: '80px',
+                    height: '80px',
+                    objectFit: 'cover',
+                    borderRadius: '8px'
+                  }}
+                />
+              )}
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
+                  {item.title || item.number}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: '#8fa0c9', marginBottom: '0.25rem' }}>
+                  {item.category === 'malerei' ? 'Malerei' : item.category === 'keramik' ? 'Keramik' : 'Unbekannt'}
+                  {item.artist && ` • ${item.artist}`}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: '#8fa0c9' }}>
+                  Verkauft am: {item.soldAt ? new Date(item.soldAt).toLocaleDateString('de-DE', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  }) : 'Unbekannt'}
+                </div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#5ffbf1' }}>
+                  €{(item.price || 0).toFixed(2)}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#8fa0c9', marginTop: '0.25rem' }}>
+                  {item.number}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const ControlStudioPage = () => {
   const [activeTab, setActiveTab] = useState<ControlTab>('galerie')
@@ -167,18 +332,7 @@ const ControlStudioPage = () => {
               </div>
             )}
             {activeTab === 'archiv' && (
-              <div className="card">
-                <h2>Verkaufshistorie – Archiv</h2>
-                <p className="meta">Alle verkauften Kunstwerke im Archiv.</p>
-                <div className="stat-row">
-                  <span>0 Verkauft</span>
-                  <span>0 Malerei</span>
-                  <span>0 Keramik</span>
-                  <span>€0.00 Gesamtumsatz</span>
-                </div>
-                <input type="text" placeholder="Suche nach Titel, Beschreibung oder Produktnummer..." className="search-input" />
-                <p className="meta">Noch keine Verkäufe</p>
-              </div>
+              <ArchivTab />
             )}
             {activeTab === 'events' && (
               <div className="card">

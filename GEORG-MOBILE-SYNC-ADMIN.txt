@@ -1,0 +1,50 @@
+═══════════════════════════════════════════════════════════════
+  ✅ MOBILE-SYNC IM ADMIN-BEREICH - AUTOMATISCH AKTIVIERT
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Jetzt sind ALLE Mobile-Geräte automatisch synchronisiert! 💚
+
+═══════════════════════════════════════════════════════════════
+
+WAS WURDE IMPLEMENTIERT:
+
+✅ Öffentliche Galerie (GaleriePage.tsx):
+   - Automatisches Polling alle 10 Sekunden
+   - Mobile-Geräte sehen neue Werke automatisch
+
+✅ Admin-Bereich (GalerieVorschauPage.tsx):
+   - Automatisches Polling alle 10 Sekunden
+   - Mobile-Geräte im Admin synchronisieren automatisch
+   - Lädt gallery-data.json und merged mit localStorage
+
+═══════════════════════════════════════════════════════════════
+
+WIE ES FUNKTIONIERT:
+
+1. Mobile-Gerät öffnet Admin-Bereich (GalerieVorschauPage)
+2. Automatisches Polling startet (alle 10 Sekunden)
+3. Lädt gallery-data.json vom Dev-Server
+4. Merged mit lokalen Werken (lokale haben Priorität)
+5. Zeigt neue Werke automatisch an ✅
+
+═══════════════════════════════════════════════════════════════
+
+VORAUSSETZUNGEN:
+
+✅ Nur auf Mobile-Geräten aktiv (iPhone/iPad)
+✅ Nur wenn auf Dev-Server (nicht auf Vercel)
+✅ Gleiches Netzwerk (Router)
+✅ Dev-Server läuft auf Mac
+
+═══════════════════════════════════════════════════════════════
+
+ZUSAMMENFASSUNG:
+
+- Öffentliche Galerie: ✅ Automatisch synchronisiert
+- Admin-Bereich: ✅ Automatisch synchronisiert
+- Alle Mobile-Geräte: ✅ Sehen neue Werke automatisch
+- Kein manuelles Neuladen nötig ✅
+
+═══════════════════════════════════════════════════════════════

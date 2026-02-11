@@ -269,9 +269,140 @@ const writeGalleryDataMiddleware = () => {
                 throw new Error('Datei enthält ungültiges JSON')
               }
               
-              // STABILITÄT: Git-Operationen entfernt - blockieren nicht mehr den API-Endpoint
-              // Git-Operationen können über separates Script ausgeführt werden
+              // Git Push synchron ausführen (mit Timeout)
+              const { execSync } = require('child_process')
+              const projectRoot = path.resolve(__dirname)
               
+              // WICHTIG: Verwende absoluten Pfad ohne Leerzeichen-Probleme
+              const gitScript = path.resolve(projectRoot, 'scripts', 'git-push-gallery-data.sh')
+              
+              // Prüfe ob Script existiert
+              if (!fs.existsSync(gitScript)) {
+                throw new Error(`Git-Script nicht gefunden: ${gitScript}`)
+              }
+              
+              // Prüfe ob Script ausführbar ist
+              try {
+                fs.accessSync(gitScript, fs.constants.X_OK)
+              } catch (e) {
+                // Mache Script ausführbar falls nötig
+                fs.chmodSync(gitScript, 0o755)
+              }
+              
+              let gitOutput = ''
+              let gitError = ''
+              let gitSuccess = false
+              let gitExitCode = 0
+              
+              try {
+                console.log(`🔧 Führe Git-Script aus: ${gitScript}`)
+                console.log(`📁 Working Directory: ${projectRoot}`)
+                
+                // Führe Git Push synchron aus (mit Timeout)
+                // WICHTIG: Verwende absoluten Pfad und escape für Shell
+                // WICHTIG: stdio: 'inherit' würde Output direkt zeigen, aber wir brauchen es als String
+                // Verwende 'pipe' für stdout/stderr um beide zu erfassen
+                gitOutput = execSync(`bash "${gitScript}"`, {
+                  cwd: projectRoot,
+                  timeout: 30000, // 30 Sekunden Timeout
+                  maxBuffer: 1024 * 1024 * 10, // 10MB Buffer
+                  encoding: 'utf8',
+                  stdio: ['pipe', 'pipe', 'pipe'] // stdin, stdout, stderr
+                }) as string
+                gitSuccess = true
+                console.log('✅ Git Push erfolgreich:', gitOutput.substring(0, 200))
+              } catch (error: any) {
+                // WICHTIG: Bei execSync wird stdout/stderr im error-Objekt gespeichert
+                // Aber das Script leitet stderr nach stdout um (2>&1), also sollte alles in stdout sein
+                // Erfasse alle möglichen Fehlerquellen
+                gitExitCode = error.status || error.code || -1
+                const errorParts: string[] = []
+                
+                // WICHTIG: execSync gibt stdout/stderr im error-Objekt zurück
+                // Das Script leitet stderr nach stdout um (2>&1), also sollte alles in stdout sein
+                const stdout = error.stdout ? String(error.stdout) : ''
+                const stderr = error.stderr ? String(error.stderr) : ''
+                const message = error.message ? String(error.message) : ''
+                
+                console.log('🔍 Fehler-Debug:', {
+                  hasStdout: !!stdout,
+                  stdoutLength: stdout.length,
+                  hasStderr: !!stderr,
+                  stderrLength: stderr.length,
+                  hasMessage: !!message,
+                  status: error.status,
+                  code: error.code,
+                  signal: error.signal,
+                  errorKeys: Object.keys(error)
+                })
+                
+                // Prüfe ob es ein spezifischer Fehler ist
+                if (stdout.includes('keine Werke') || stdout.includes('WARNUNG: Datei enthält keine Werke')) {
+                  gitError = `⚠️ Datei enthält keine Werke!\n\n${stdout}\n\nBitte zuerst Werke speichern bevor veröffentlicht wird.`
+                } else {
+                  // Sammle ALLE Fehlerinformationen - IMMER etwas zurückgeben!
+                  if (stdout && stdout.trim().length > 0) {
+                    // Zeige stdout IMMER, auch wenn kein expliziter Fehler erkannt wird
+                    errorParts.push(`SCRIPT OUTPUT:\n${stdout}`)
+                  }
+                  
+                  if (stderr && stderr.trim().length > 0) {
+                    errorParts.push(`SCRIPT STDERR:\n${stderr}`)
+                  }
+                  
+                  if (message && message.trim().length > 0) {
+                    errorParts.push(`ERROR MESSAGE:\n${message}`)
+                  }
+                  
+                  if (error.signal) {
+                    errorParts.push(`SIGNAL: ${error.signal}`)
+                  }
+                  
+                  if (error.status !== undefined) {
+                    errorParts.push(`EXIT CODE: ${error.status}`)
+                    gitExitCode = error.status
+                  }
+                  
+                  if (error.code) {
+                    errorParts.push(`ERROR CODE: ${error.code}`)
+                  }
+                  
+                  // Falls immer noch nichts gefunden, zeige vollständiges Error-Objekt
+                  if (errorParts.length === 0) {
+                    try {
+                      const errorStr = JSON.stringify(error, Object.getOwnPropertyNames(error), 2)
+                      errorParts.push(`VOLLSTÄNDIGER FEHLER:\n${errorStr}`)
+                    } catch {
+                      errorParts.push(`FEHLER OBJEKT: ${String(error)}`)
+                      errorParts.push(`FEHLER TYP: ${typeof error}`)
+                      errorParts.push(`FEHLER KEYS: ${Object.keys(error).join(', ')}`)
+                    }
+                  }
+                }
+                
+                // Vollständigen Fehler zusammenstellen - IMMER etwas zurückgeben!
+                if (!gitError && errorParts.length > 0) {
+                  gitError = errorParts.join('\n\n')
+                } else if (!gitError) {
+                  // Fallback: Zeige zumindest Exit Code und Message
+                  gitError = `Git Push fehlgeschlagen!\n\nExit Code: ${gitExitCode}\nMessage: ${message || 'Keine Fehlermeldung verfügbar'}\n\nBitte prüfe die Konsole für Details.`
+                }
+                
+                gitSuccess = false
+                console.error('❌ Git Push Fehler Details:', {
+                  scriptPath: gitScript,
+                  projectRoot: projectRoot,
+                  exitCode: gitExitCode,
+                  stdoutLength: stdout.length,
+                  stderrLength: stderr.length,
+                  stdoutPreview: stdout.substring(0, 1000),
+                  stderrPreview: stderr.substring(0, 1000),
+                  errorPreview: gitError.substring(0, 1000),
+                  fullError: error
+                })
+              }
+              
+              // Antwort senden mit Git Push Ergebnis
               res.writeHead(200, { 
                 'Content-Type': 'application/json',
                 'Last-Modified': stats.mtime.toUTCString()
@@ -282,7 +413,12 @@ const writeGalleryDataMiddleware = () => {
                 size: stats.size,
                 path: outputFile,
                 artworksCount: artworksCount,
-                gitHint: 'Bitte manuell pushen: scripts/git-push-gallery-data.sh oder manuell im Terminal'
+                git: {
+                  output: gitOutput ? gitOutput.substring(0, 2000) : '', // Erste 2000 Zeichen
+                  error: gitError ? gitError.substring(0, 2000) : '', // Erste 2000 Zeichen
+                  success: gitSuccess,
+                  exitCode: gitExitCode
+                }
               }))
             } catch (e: any) {
               console.error('Fehler beim Schreiben:', e)
@@ -311,8 +447,14 @@ export default defineConfig({
   base: '/',
   server: {
     port: 5177,
-    host: true, // Erlaubt Zugriff von localhost und Netzwerk
+    host: '0.0.0.0', // Erlaubt Zugriff von ALLEN Netzwerk-Interfaces (localhost + Netzwerk)
     strictPort: false, // Falls Port belegt, automatisch nächsten Port verwenden
+    headers: {
+      // Cache-Control für Dev-Server: Kein Caching von JavaScript/TypeScript Dateien
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    },
     hmr: {
       // DEAKTIVIERT: HMR verursacht ständige Reloads und instabile Kommunikation
       overlay: false, // Keine Fehler-Overlays die Reloads auslösen

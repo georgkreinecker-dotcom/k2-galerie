@@ -3,51 +3,42 @@ import { usePersistentString } from '../hooks/usePersistentState'
 import { ProjectNavButton } from '../components/Navigation'
 import { Link } from 'react-router-dom'
 
+const VERCEL_GALERIE_URL = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
+
 const MobileConnectPage = () => {
   const [url, setUrl] = usePersistentString('k2-mobile-url')
-  const [localIP, setLocalIP] = useState('')
+  const [localGalerieUrl, setLocalGalerieUrl] = useState('')
   const [devViewUrl, setDevViewUrl] = useState('')
 
-  // Automatisch Vercel-URL vorschlagen wenn nicht gesetzt
   useEffect(() => {
-    // Wenn keine URL gesetzt ist, verwende Vercel-URL als Standard
-    if (!url || url === '') {
-      const vercelUrl = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
-      setUrl(vercelUrl)
-      console.log('📱 Mobile-Connect: Vercel-URL automatisch gesetzt:', vercelUrl)
-    }
-  }, [url, setUrl])
+    if (!url || url === '') setUrl(VERCEL_GALERIE_URL)
+  }, [])
 
-  // Automatisch lokale IP-Adresse finden
   useEffect(() => {
     const hostname = window.location.hostname
+    const port = window.location.port || '5177'
+    const protocol = window.location.protocol
     if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
-      setLocalIP(hostname)
-      setDevViewUrl(`http://${hostname}:5177/#/dev-view`)
+      setLocalGalerieUrl(`${protocol}//${hostname}:${port}/projects/k2-galerie/galerie`)
+      setDevViewUrl(`${protocol}//${hostname}:${port}/#/dev-view`)
     } else {
-      // Fallback: Versuche IP zu ermitteln
-      fetch('/')
-        .then(() => {
-          // Wenn Server läuft, nutze window.location
-          const port = window.location.port || '5177'
-          const protocol = window.location.protocol
-          setDevViewUrl(`${protocol}//${window.location.hostname}:${port}/#/dev-view`)
-        })
-        .catch(() => {
-          // Standard localhost
-          setDevViewUrl('http://localhost:5177/#/dev-view')
-        })
+      setDevViewUrl(`${protocol}//${window.location.hostname}:${port}/#/dev-view`)
     }
   }, [])
 
   const qrUrl = useMemo(() => {
     if (!url) return ''
-    return `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(url)}`
+    return `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(url)}`
   }, [url])
+
+  const localQrUrl = useMemo(() => {
+    if (!localGalerieUrl) return ''
+    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(localGalerieUrl)}`
+  }, [localGalerieUrl])
 
   const devViewQrUrl = useMemo(() => {
     if (!devViewUrl) return ''
-    return `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(devViewUrl)}`
+    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(devViewUrl)}`
   }, [devViewUrl])
 
   return (
@@ -55,114 +46,111 @@ const MobileConnectPage = () => {
       <div className="viewport">
         <header>
           <div>
-            <h1>Mobile-Connect</h1>
-            <div className="meta">QR-Hub für iPhone/iPad – Galerie wie eine App.</div>
+            <h1>Handy mit Mac verbinden</h1>
+            <div className="meta">Ein QR – Galerie auf dem Handy, immer aktuell.</div>
           </div>
           <ProjectNavButton projectId="k2-galerie" />
         </header>
 
-        <div className="card mobile-card">
-          <label className="field">
-            Deine K2-URL (Live-Adresse)
+        {/* Hauptbereich: der eine QR für normale Nutzung */}
+        <div
+          className="card mobile-card"
+          style={{
+            border: '2px solid rgba(34, 197, 94, 0.5)',
+            background: 'linear-gradient(180deg, rgba(34, 197, 94, 0.08) 0%, transparent 50%)'
+          }}
+        >
+          <h2 style={{ color: '#22c55e', marginBottom: '0.5rem' }}>📱 Galerie auf dem Handy öffnen</h2>
+          <p style={{ margin: '0 0 1rem', fontSize: '0.95rem', color: '#a3a3a3' }}>
+            Diesen QR mit der Handy-Kamera scannen → Galerie öffnet sich. Nach Änderungen am Mac: <strong>Veröffentlichen + Git Push</strong>, dann auf dem Handy <strong>Seite neu laden</strong> oder QR nochmal scannen.
+          </p>
+          <label className="field" style={{ marginBottom: '0.75rem' }}>
+            URL (Standard: Vercel – funktioniert überall)
             <input
               type="text"
               value={url}
-              onChange={(event) => setUrl(event.target.value)}
-              placeholder="https://k2-galerie.vercel.app/projects/k2-galerie/galerie"
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder={VERCEL_GALERIE_URL}
             />
           </label>
-          {!url && (
-            <div style={{
-              padding: '0.75rem',
-              background: 'rgba(251, 191, 36, 0.1)',
-              border: '1px solid rgba(251, 191, 36, 0.3)',
-              borderRadius: '8px',
-              marginTop: '0.5rem',
-              fontSize: '0.85rem',
-              color: '#fcd34d'
-            }}>
-              💡 <strong>Tipp:</strong> Verwende die Vercel-URL für die Live-Version oder die IP-Adresse deines Macs für lokale Entwicklung.
-            </div>
+          {url && !url.includes('vercel.app') && (
+            <button
+              type="button"
+              onClick={() => setUrl(VERCEL_GALERIE_URL)}
+              style={{
+                marginBottom: '1rem',
+                padding: '0.5rem 1rem',
+                background: '#22c55e',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '0.9rem',
+                cursor: 'pointer'
+              }}
+            >
+              Auf Vercel wechseln (überall nutzbar)
+            </button>
           )}
-          <div className="qr-area" style={{ marginTop: '1rem' }}>
+          <div className="qr-area" style={{ marginTop: '0.5rem' }}>
             {qrUrl ? (
               <>
-                <img src={qrUrl} alt="QR Code" />
-                <div style={{ 
-                  marginTop: '0.75rem', 
-                  fontSize: '0.8rem', 
-                  color: '#999',
-                  wordBreak: 'break-all',
-                  textAlign: 'center'
-                }}>
+                <img src={qrUrl} alt="QR Code Galerie" />
+                <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#666', wordBreak: 'break-all', textAlign: 'center' }}>
                   {url}
                 </div>
               </>
             ) : (
-              <div className="meta">QR-Code erscheint hier</div>
+              <div className="meta">URL eintragen → QR erscheint</div>
             )}
           </div>
         </div>
 
-        {/* Dev-View für Entwicklung */}
-        {devViewUrl && (
-          <div className="card mobile-card" style={{ marginTop: '1rem' }}>
-            <h2>🔧 Dev-View Tool (für Entwicklung)</h2>
-            <div style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#999' }}>
-              Öffne die Dev-View auf deinem iPhone/iPad:
-            </div>
-            <div style={{ 
-              background: '#2a2a2a', 
-              padding: '0.75rem', 
-              borderRadius: '6px', 
-              marginBottom: '1rem',
-              fontFamily: 'monospace',
-              fontSize: '0.85rem',
-              wordBreak: 'break-all'
-            }}>
-              {devViewUrl}
-            </div>
-            <div className="qr-area">
-              {devViewQrUrl ? (
-                <>
-                  <img src={devViewQrUrl} alt="Dev-View QR Code" />
-                  <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#999' }}>
-                    QR-Code scannen → Dev-View öffnet sich
-                  </div>
-                </>
-              ) : (
-                <div className="meta">QR-Code wird generiert...</div>
-              )}
-            </div>
-            <div style={{ marginTop: '1rem' }}>
-              <Link
-                to="/dev-view"
-                style={{
-                  display: 'inline-block',
-                  padding: '0.5rem 1rem',
-                  background: '#5ffbf1',
-                  color: '#000',
-                  textDecoration: 'none',
-                  borderRadius: '6px',
-                  fontSize: '0.9rem',
-                  fontWeight: 'bold'
-                }}
-              >
-                → Dev-View am Mac öffnen
-              </Link>
-            </div>
-          </div>
-        )}
-
-        <div className="card">
-          <h2>So verbindest du iPhone/iPad</h2>
-          <ol className="steps">
-            <li>Diese Seite am Computer öffnen und die Live-URL eintragen.</li>
-            <li>Mit iPhone/iPad Kamera den QR-Code scannen.</li>
-            <li>Link öffnen → Galerie erscheint im Browser.</li>
-            <li>Teilen → „Zum Home-Bildschirm“ für App-Icon.</li>
+        {/* Kurz: 3 Schritte */}
+        <div className="card" style={{ marginTop: '1rem' }}>
+          <h3 style={{ marginBottom: '0.5rem' }}>So geht’s</h3>
+          <ol className="steps" style={{ margin: 0, paddingLeft: '1.25rem' }}>
+            <li>QR oben mit dem Handy scannen</li>
+            <li>Galerie öffnet sich; optional: „Zum Home-Bildschirm“ für App-Icon</li>
+            <li>Nach Änderungen am Mac: Veröffentlichen → Git Push → auf dem Handy neu laden</li>
           </ol>
         </div>
+
+        {/* Optional: nur gleiches WLAN */}
+        {localGalerieUrl && (
+          <details style={{ marginTop: '1rem' }} className="card mobile-card">
+            <summary style={{ cursor: 'pointer', color: '#eab308', fontWeight: '600' }}>
+              📶 Nur im gleichen WLAN (z. B. APf)
+            </summary>
+            <p style={{ margin: '0.5rem 0 0.75rem', fontSize: '0.85rem', color: '#999' }}>
+              Wenn Handy und Mac im gleichen WLAN sind – z. B. für Service-QR zum Aufkleben.
+            </p>
+            <div className="qr-area" style={{ display: 'inline-block', padding: '0.75rem', background: '#fefce8', borderRadius: '12px' }}>
+              {localQrUrl && <img src={localQrUrl} alt="QR nur gleiches WLAN" />}
+            </div>
+            <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#854d0e', wordBreak: 'break-all' }}>
+              {localGalerieUrl}
+            </div>
+          </details>
+        )}
+
+        {/* Dev-View nur auf Klappbereich */}
+        {devViewUrl && (
+          <details style={{ marginTop: '1rem' }}
+            className="card mobile-card"
+          >
+            <summary style={{ cursor: 'pointer', fontSize: '0.9rem', color: '#888' }}>
+              🔧 Für Entwickler: Dev-View auf Handy öffnen
+            </summary>
+            <div style={{ marginTop: '0.75rem' }}>
+              <div className="qr-area">
+                {devViewQrUrl && <img src={devViewQrUrl} alt="Dev-View QR" />}
+              </div>
+              <Link to="/dev-view" style={{ display: 'inline-block', marginTop: '0.75rem', color: '#5ffbf1', fontSize: '0.9rem' }}>
+                → Dev-View am Mac
+              </Link>
+            </div>
+          </details>
+        )}
       </div>
     </main>
   )

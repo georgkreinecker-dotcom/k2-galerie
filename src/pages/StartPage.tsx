@@ -4,7 +4,7 @@ import '../App.css'
 const cards = [
   {
     title: 'Galerie',
-    description: 'Öffentliche K2 Galerie – Kunst & Keramik, Eröffnung, Werke.',
+    description: 'ök2 – Öffentliche K2 Galerie, Kunst & Keramik, Eröffnung, Werke.',
     to: '/galerie',
     cta: 'Öffnen →',
   },

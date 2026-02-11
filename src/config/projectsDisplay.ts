@@ -1,0 +1,75 @@
+/**
+ * Anzeige der Projekte im Projektordner (Projekte-Seite).
+ *
+ * Regel: Alle neuen Projekte hier ablegen, jedes mit einer anderen Farbe.
+ * - Neue Projekte: in navigation.ts PROJECT_ROUTES eintragen, hier in PROJECT_COLORS eine Farbe vergeben.
+ * - Zusatzeinträge (z. B. „Öffentliche K2 Galerie“): in extraCards in getProjectCards() ergänzen.
+ */
+
+import { PROJECT_ROUTES, getAllProjectIds, type ProjectId } from './navigation'
+
+/** Farben pro Projekt – jedes Projekt eindeutig */
+export const PROJECT_COLORS: Record<string, string> = {
+  'k2-galerie': '#5ffbf1',
+  'k2-galerie-oeffentlich': '#b8b8ff',
+  // Neue Projekte hier eintragen mit eigener Farbe, z. B.:
+  // 'projekt-2': '#22c55e',
+}
+
+/** Fallback-Palette für Projekte ohne Eintrag in PROJECT_COLORS */
+const PROJECT_PALETTE = [
+  '#5ffbf1', // Cyan
+  '#b8b8ff', // Lavender
+  '#22c55e', // Grün
+  '#eab308', // Gelb
+  '#f5576c', // Pink
+  '#33a1ff', // Blau
+  '#a855f7', // Violett
+]
+
+export interface ProjectCard {
+  id: string
+  title: string
+  description: string
+  to: string
+  color: string
+  status: 'in-progress' | 'planned'
+}
+
+/** Alle Projekt-Karten für die Projekte-Seite (aus Navigation + feste Zusatzeinträge) */
+export function getProjectCards(): ProjectCard[] {
+  const ids = getAllProjectIds()
+  const cards: ProjectCard[] = ids.map((id, index) => {
+    const route = PROJECT_ROUTES[id]
+    const color = PROJECT_COLORS[id] ?? PROJECT_PALETTE[index % PROJECT_PALETTE.length]
+    return {
+      id: `${id}-projekt`,
+      title: route.name,
+      description: getDefaultDescription(id),
+      to: route.home,
+      color,
+      status: 'in-progress',
+    }
+  })
+
+  // Feste Zusatzeinträge: Öffentliche Seite nur mit Mustertexten (keine echten Daten) – Abkürzung: ök2
+  const extraCards: ProjectCard[] = [
+    {
+      id: 'k2-galerie-oeffentlich',
+      title: 'ök2 – Öffentliche K2 Galerie',
+      description: 'Galerie-Vorschau nur mit Mustertexten – keine persönlichen Daten.',
+      to: PROJECT_ROUTES['k2-galerie'].galerieOeffentlich,
+      color: PROJECT_COLORS['k2-galerie-oeffentlich'] ?? PROJECT_PALETTE[1],
+      status: 'in-progress',
+    },
+  ]
+
+  return [...cards, ...extraCards]
+}
+
+function getDefaultDescription(projectId: ProjectId): string {
+  const descriptions: Partial<Record<ProjectId, string>> = {
+    'k2-galerie': 'Projekt-Start, Control-Studio, Plan, Mobile-Connect – Steuerung und Inhalte.',
+  }
+  return descriptions[projectId] ?? 'Projekt öffnen.'
+}

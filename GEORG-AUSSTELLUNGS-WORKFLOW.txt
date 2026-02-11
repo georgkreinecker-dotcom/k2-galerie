@@ -1,0 +1,94 @@
+═══════════════════════════════════════════════════════════════
+  📱 AUSSTELLUNGS-WORKFLOW - Mobile untereinander synchronisieren
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Praktischer Use-Case für die Ausstellung:
+
+═══════════════════════════════════════════════════════════════
+
+SITUATION VOR ORT:
+
+- Handy fotografiert Werke ✅
+- iPad arbeitet an Kassa/Ettikettendrucker ✅
+- Beide Geräte müssen untereinander synchronisieren ✅
+- Eigener Router (lokales Netzwerk) ✅
+- Später im Büro: Mac spielt alles ein ✅
+
+═══════════════════════════════════════════════════════════════
+
+LÖSUNG FÜR MOBILE-UNTEREINANDER-SYNC:
+
+OPTION 1: Dev-Server auf einem Gerät (EMPFOHLEN)
+
+1. Eines der Mobile-Geräte (z.B. iPad) startet Dev-Server:
+   - Terminal-App installieren (z.B. "Termius" oder "Blink Shell")
+   - SSH zu Mac oder lokal Server starten
+   - Oder: Mac läuft im Hintergrund (kann auch im Büro sein)
+
+2. Alle Mobile-Geräte verbinden sich:
+   - Gleiches WLAN (eigener Router)
+   - URL: http://[SERVER-IP]:5177/projects/k2-galerie/galerie
+   - QR-Code scannen für einfachen Zugriff
+
+3. Synchronisation:
+   - Werk auf Handy erstellt → wird zu gallery-data.json geschrieben ✅
+   - iPad lädt automatisch neu → sieht neues Werk ✅
+   - Umgekehrt genauso ✅
+
+4. Später im Büro:
+   - Mac: Git Push ausführen
+   - Alle Werke kommen zu Vercel ✅
+
+═══════════════════════════════════════════════════════════════
+
+OPTION 2: Supabase wieder aktivieren (BESTE LÖSUNG)
+
+Für echte Mobile-zu-Mobile Synchronisation:
+- Mobile-Werke werden zu Supabase geschrieben ✅
+- Alle Geräte laden von Supabase ✅
+- Echte Echtzeit-Synchronisation ✅
+- Kein Dev-Server nötig ✅
+
+ABER: Kosten nach Usage Limits
+
+═══════════════════════════════════════════════════════════════
+
+OPTION 3: Lokaler Sync-Server (KOMPLEX)
+
+- Eigener Node.js Server auf Router/Server
+- Mobile-Geräte synchronisieren über diesen Server
+- Komplex zu implementieren
+
+═══════════════════════════════════════════════════════════════
+
+EMPFEHLUNG FÜR AUSSTELLUNG:
+
+1. Mac läuft im Hintergrund (kann auch im Büro sein)
+   - Dev-Server läuft (npm run dev)
+   - Erreichbar über Router-IP
+
+2. Alle Mobile-Geräte verbinden sich:
+   - Gleiches WLAN
+   - QR-Code scannen
+   - Alle sehen gleiche Daten ✅
+
+3. Synchronisation:
+   - Werk auf Handy → wird sofort zu gallery-data.json geschrieben ✅
+   - iPad lädt automatisch neu → sieht neues Werk ✅
+   - Umgekehrt genauso ✅
+
+4. Später im Büro:
+   - Mac: Git Push ausführen
+   - Alle Werke kommen zu Vercel ✅
+
+═══════════════════════════════════════════════════════════════
+
+WICHTIG:
+
+- Dev-Server muss erreichbar sein (gleiches Netzwerk)
+- Router muss Geräte verbinden können
+- QR-Code macht Verbindung einfach
+
+═══════════════════════════════════════════════════════════════

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { PROJECT_ROUTES, PLATFORM_ROUTES } from '../config/navigation'
+import { PROJECT_ROUTES } from '../config/navigation'
+import { MUSTER_ARTWORKS } from '../config/tenantConfig'
 import { 
   syncMobileToSupabase, 
   checkMobileUpdates, 
@@ -8,6 +9,8 @@ import {
   loadArtworksFromSupabase,
   isSupabaseConfigured
 } from '../utils/supabaseClient'
+import { compositeOnProfessionalBackground } from '../utils/professionalImageBackground'
+import { BUILD_LABEL } from '../buildInfo.generated'
 import '../App.css'
 
 // Einfache localStorage-Funktion
@@ -21,8 +24,51 @@ function loadArtworks(): any[] {
   }
 }
 
+// KRITISCH: Backup-System für Mobile-Werke
+function createBackup(artworks: any[]): void {
+  try {
+    const backup = {
+      timestamp: new Date().toISOString(),
+      artworks: artworks,
+      count: artworks.length,
+      mobileWorks: artworks.filter((a: any) => a.createdOnMobile || a.updatedOnMobile).length
+    }
+    localStorage.setItem('k2-artworks-backup', JSON.stringify(backup))
+    console.log('💾 Backup erstellt:', backup.count, 'Werke,', backup.mobileWorks, 'Mobile-Werke')
+  } catch (error) {
+    console.warn('⚠️ Backup konnte nicht erstellt werden:', error)
+  }
+}
+
+// KRITISCH: Lade Backup falls vorhanden
+function loadBackup(): any[] | null {
+  try {
+    const backupData = localStorage.getItem('k2-artworks-backup')
+    if (backupData) {
+      const backup = JSON.parse(backupData)
+      console.log('💾 Backup gefunden:', backup.count, 'Werke,', backup.mobileWorks, 'Mobile-Werke')
+      return backup.artworks || null
+    }
+  } catch (error) {
+    console.warn('⚠️ Backup konnte nicht geladen werden:', error)
+  }
+  return null
+}
+
 function saveArtworks(artworks: any[]): boolean {
   try {
+    // KRITISCH: Erstelle Backup VOR dem Speichern (besonders wichtig für Mobile-Werke!)
+    const currentArtworks = loadArtworks()
+    if (currentArtworks && currentArtworks.length > 0) {
+      createBackup(currentArtworks)
+    }
+    
+    // KRITISCH: Prüfe ob Mobile-Werke vorhanden sind
+    const mobileWorks = artworks.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
+    if (mobileWorks.length > 0) {
+      console.log(`🔒 ${mobileWorks.length} Mobile-Werke werden geschützt beim Speichern`)
+    }
+    
     const json = JSON.stringify(artworks)
     
     // Prüfe Größe
@@ -32,6 +78,25 @@ function saveArtworks(artworks: any[]): boolean {
       return false
     }
     
+    // KRITISCH: Prüfe ob wir versehentlich alle Werke löschen wollen
+    if (artworks.length === 0 && currentArtworks && currentArtworks.length > 0) {
+      console.error('❌ KRITISCH: Versuch alle Werke zu löschen!')
+      console.error('Aktuelle Werke:', currentArtworks.length)
+      console.error('Mobile-Werke:', currentArtworks.filter((a: any) => a.createdOnMobile || a.updatedOnMobile).length)
+      
+      // Stelle Backup wieder her
+      const backup = loadBackup()
+      if (backup && backup.length > 0) {
+        console.log('💾 Backup wiederhergestellt:', backup.length, 'Werke')
+        localStorage.setItem('k2-artworks', JSON.stringify(backup))
+        alert('⚠️ KRITISCH: Alle Werke würden gelöscht werden!\n\n💾 Backup wurde wiederhergestellt.\n\nBitte prüfe was passiert ist!')
+        return false
+      } else {
+        alert('⚠️ KRITISCH: Alle Werke würden gelöscht werden!\n\n❌ Kein Backup verfügbar!\n\nVorgang abgebrochen!')
+        return false
+      }
+    }
+    
     localStorage.setItem('k2-artworks', json)
     console.log('✅ Gespeichert:', artworks.length, 'Werke, Größe:', json.length, 'Bytes')
     
@@ -39,12 +104,25 @@ function saveArtworks(artworks: any[]): boolean {
     const verify = localStorage.getItem('k2-artworks')
     if (!verify || verify !== json) {
       console.error('❌ Verifikation fehlgeschlagen!')
+      // Stelle Backup wieder her
+      const backup = loadBackup()
+      if (backup && backup.length > 0) {
+        console.log('💾 Backup wiederhergestellt nach Verifikationsfehler')
+        localStorage.setItem('k2-artworks', JSON.stringify(backup))
+      }
       return false
     }
     
     return true
   } catch (error: any) {
     console.error('❌ Fehler beim Speichern:', error)
+    
+    // Stelle Backup wieder her bei Fehler
+    const backup = loadBackup()
+    if (backup && backup.length > 0) {
+      console.log('💾 Backup wiederhergestellt nach Fehler')
+      localStorage.setItem('k2-artworks', JSON.stringify(backup))
+    }
     
     // Spezifische Fehlerbehandlung
     if (error.name === 'QuotaExceededError') {
@@ -59,12 +137,12 @@ function saveArtworks(artworks: any[]): boolean {
 
 type Filter = 'alle' | 'malerei' | 'keramik'
 
-const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
+const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFilter?: Filter; musterOnly?: boolean }) => {
   const navigate = useNavigate()
   
-  // KRITISCH: Lade Werke SYNCHRON beim ersten Render aus localStorage
-  // Supabase wird asynchron geladen (siehe useEffect)
+  // ök2 (musterOnly): nur Musterwerke, keine echten Daten. Sonst: aus localStorage (Supabase async im useEffect)
   const initialArtworks = (() => {
+    if (musterOnly) return [...MUSTER_ARTWORKS]
     try {
       const stored = localStorage.getItem('k2-artworks')
       if (!stored) return []
@@ -91,6 +169,11 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
   const [artworks, setArtworks] = useState<any[]>(initialArtworks)
   const [filter, setFilter] = useState<Filter>(initialFilter || 'alle')
   const [cartCount, setCartCount] = useState(0)
+
+  // ök2: Bei musterOnly immer nur Musterwerke anzeigen (auch bei Navigation von normaler Vorschau)
+  useEffect(() => {
+    if (musterOnly) setArtworks([...MUSTER_ARTWORKS])
+  }, [musterOnly])
   const [lightboxImage, setLightboxImage] = useState<{ src: string; title: string; artwork: any } | null>(null)
   const [imageZoom, setImageZoom] = useState(1)
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 })
@@ -337,9 +420,17 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
   }
 
   // PROFESSIONELL: Lade Werke aus Supabase (primär) oder localStorage (Fallback)
-  // WICHTIG: Läuft nur beim ersten Mount - nicht bei jedem Re-Render!
+  // musterOnly (ök2): keine echten Daten laden
   useEffect(() => {
+    if (musterOnly) return () => {}
     let isMounted = true
+    
+    // KRITISCH: Erstelle Backup beim ersten Laden
+    const currentArtworks = loadArtworks()
+    if (currentArtworks && currentArtworks.length > 0) {
+      createBackup(currentArtworks)
+      console.log('💾 Initiales Backup erstellt:', currentArtworks.length, 'Werke')
+    }
     
     const loadArtworksData = async () => {
       // WICHTIG: Prüfe zuerst ob artworks bereits gesetzt sind (z.B. von initialArtworks)
@@ -403,12 +494,17 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
         // PRIORITÄT 2: localStorage (Fallback oder wenn Supabase nicht konfiguriert)
         // WICHTIG: Lade IMMER direkt aus localStorage (nicht initialArtworks verwenden!)
         // initialArtworks wurde beim ersten Render erstellt und könnte veraltet sein
+        // KRITISCH: Lokale Werke haben IMMER Priorität - sie wurden gerade erstellt/bearbeitet!
         if (isMounted) {
           // Lade IMMER direkt aus localStorage um neueste Daten zu bekommen
           const stored = loadArtworks()
           if (stored && stored.length > 0) {
             const nummern = stored.map((a: any) => a.number || a.id).join(', ')
+            const mobileWorks = stored.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
             console.log('💾 Gefunden in localStorage:', stored.length, 'Werke, Nummern:', nummern)
+            if (mobileWorks.length > 0) {
+              console.log(`🔒 ${mobileWorks.length} lokale Mobile-Werke geschützt:`, mobileWorks.map((a: any) => a.number || a.id).join(', '))
+            }
             // Bereite Werke für Anzeige vor
             const exhibitionArtworks = stored.map((a: any) => {
               if (!a.imageUrl && a.previewUrl) {
@@ -419,7 +515,7 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
               }
               return a
             })
-            console.log('✅ Setze artworks State mit', exhibitionArtworks.length, 'Werken')
+            console.log('✅ Setze artworks State mit', exhibitionArtworks.length, 'Werken (lokale Werke geschützt)')
             setArtworks(exhibitionArtworks)
             setLoadStatus({ message: `✅ ${exhibitionArtworks.length} Werke geladen`, success: true })
             setTimeout(() => setLoadStatus(null), 2000)
@@ -433,7 +529,16 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
         // Keine Daten gefunden
         if (isMounted) {
           console.log('ℹ️ Keine Werke gefunden')
-          setArtworks([])
+          // KRITISCH: Prüfe Backup bevor wir leeren!
+          const backup = loadBackup()
+          if (backup && backup.length > 0) {
+            console.log('💾 Backup gefunden - verwende Backup statt leeren:', backup.length, 'Werke')
+            setArtworks(backup)
+            localStorage.setItem('k2-artworks', JSON.stringify(backup))
+          } else {
+            // Nur leeren wenn wirklich keine Daten vorhanden sind
+            setArtworks([])
+          }
           setIsLoading(false)
         }
       } catch (error) {
@@ -451,6 +556,7 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
     // PROFESSIONELL: Automatisches Polling für Mobile-Updates (nur auf Mac)
     const isMac = !/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && window.innerWidth > 768
     let pollingInterval: ReturnType<typeof setInterval> | null = null
+    let initialCheckTimeoutId: ReturnType<typeof setTimeout> | null = null
     
     if (isMac && isSupabaseConfigured()) {
       const checkForMobileUpdates = async () => {
@@ -476,8 +582,144 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
       // Prüfe alle 10 Sekunden auf Mobile-Updates
       pollingInterval = setInterval(checkForMobileUpdates, 10000)
       
+      // Erste Prüfung nach 5 Sekunden (mit Cleanup beim Unmount)
+      initialCheckTimeoutId = setTimeout(() => {
+        if (isMounted) checkForMobileUpdates()
+      }, 5000)
+    }
+    
+    // WICHTIG: Automatisches Polling für Mobile-zu-Mobile Sync im Admin-Bereich
+    // (nur wenn nicht auf Vercel und auf Mobile-Gerät)
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
+    const isVercel = window.location.hostname.includes('vercel.app')
+    let mobilePollingInterval: ReturnType<typeof setInterval> | null = null
+    
+    if (isMobile && !isVercel && isMounted) {
+      console.log('✅ Automatisches Mobile-Polling im Admin-Bereich aktiviert (alle 10 Sekunden)')
+      
+      const syncFromGalleryData = async () => {
+        try {
+          // KRITISCH: Lade ZUERST lokale Werke um sicherzustellen dass sie nicht verloren gehen
+          const localArtworks = loadArtworks()
+          const localCount = localArtworks.length
+          
+          // Lade gallery-data.json mit Cache-Busting
+          const timestamp = Date.now()
+          const random = Math.random()
+          const url = `/gallery-data.json?v=${timestamp}&t=${timestamp}&r=${random}&_=${Date.now()}`
+          
+          const response = await fetch(url, { 
+            cache: 'no-store',
+            method: 'GET',
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache'
+            }
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            
+            if (data.artworks && Array.isArray(data.artworks)) {
+              // KRITISCH: Merge mit lokalen Werken - LOKALE HABEN IMMER PRIORITÄT!
+              // WICHTIG: Lokale Werke wurden gerade erstellt/bearbeitet und dürfen NICHT überschrieben werden!
+              const localMap = new Map<string, any>()
+              localArtworks.forEach((local: any) => {
+                const key = local.number || local.id
+                if (key) {
+                  localMap.set(key, local)
+                  // Marker für lokale Werke die noch nicht auf Server sind
+                  if (local.createdOnMobile || local.updatedOnMobile) {
+                    console.log(`🔒 Lokales Werk behalten: ${key} (createdOnMobile/updatedOnMobile)`)
+                  }
+                }
+              })
+              
+              // Starte MIT ALLEN lokalen Werken (haben Priorität!)
+              const merged: any[] = [...localArtworks]
+              
+              // Füge Server-Werke hinzu die NICHT lokal sind
+              data.artworks.forEach((server: any) => {
+                const key = server.number || server.id
+                if (key && !localMap.has(key)) {
+                  merged.push(server)
+                }
+              })
+              
+              // KRITISCH: Prüfe ob lokale Werke erhalten bleiben
+              const localKeys = new Set(localArtworks.map((a: any) => a.number || a.id))
+              const mergedKeys = new Set(merged.map((a: any) => a.number || a.id))
+              const allLocalPreserved = [...localKeys].every(key => mergedKeys.has(key))
+              
+              if (!allLocalPreserved) {
+                console.error('❌ KRITISCH: Lokale Werke wurden verloren beim Merge!')
+                console.error('Lokale Nummern:', [...localKeys])
+                console.error('Gemergte Nummern:', [...mergedKeys])
+                // Stelle lokale Werke wieder her
+                merged.length = 0
+                merged.push(...localArtworks)
+                data.artworks.forEach((server: any) => {
+                  const key = server.number || server.id
+                  if (key && !localMap.has(key)) {
+                    merged.push(server)
+                  }
+                })
+                console.log('✅ Lokale Werke wiederhergestellt')
+              }
+              
+              // Nur updaten wenn sich etwas geändert hat
+              const currentHash = artworks.map((a: any) => a.number || a.id).sort().join(',')
+              const newHash = merged.map((a: any) => a.number || a.id).sort().join(',')
+              
+              if (currentHash !== newHash && isMounted) {
+                console.log(`🔄 Admin-Bereich: ${merged.length} Werke synchronisiert (${localArtworks.length} lokal + ${merged.length - localArtworks.length} Server)`)
+                console.log(`🔒 Lokale Werke geschützt: ${localArtworks.length} Werke bleiben erhalten`)
+                // KRITISCH: Speichere merged Liste in localStorage
+                localStorage.setItem('k2-artworks', JSON.stringify(merged))
+                setArtworks(merged)
+                window.dispatchEvent(new CustomEvent('artworks-updated', { 
+                  detail: { count: merged.length, autoSync: true, fromAdmin: true } 
+                }))
+              }
+            } else {
+              // Keine Server-Werke - behalte lokale Werke
+              if (localArtworks.length > 0 && isMounted) {
+                console.log(`🔒 Keine Server-Daten - behalte ${localArtworks.length} lokale Werke`)
+                localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
+                if (artworks.length !== localArtworks.length) {
+                  setArtworks(localArtworks)
+                }
+              }
+            }
+          } else {
+            // Server nicht erreichbar - behalte lokale Werke
+            if (localArtworks.length > 0 && isMounted) {
+              console.log(`🔒 Server nicht erreichbar - behalte ${localArtworks.length} lokale Werke`)
+              localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
+              if (artworks.length !== localArtworks.length) {
+                setArtworks(localArtworks)
+              }
+            }
+          }
+        } catch (error) {
+          console.warn('⚠️ Admin-Bereich Auto-Polling fehlgeschlagen:', error)
+          // Bei Fehler: Behalte lokale Werke
+          const localArtworks = loadArtworks()
+          if (localArtworks.length > 0 && isMounted) {
+            console.log(`🔒 Fehler beim Polling - behalte ${localArtworks.length} lokale Werke`)
+            localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
+            if (artworks.length !== localArtworks.length) {
+              setArtworks(localArtworks)
+            }
+          }
+        }
+      }
+      
+      // Automatisches Polling alle 10 Sekunden
+      mobilePollingInterval = setInterval(syncFromGalleryData, 10000)
+      
       // Erste Prüfung nach 5 Sekunden
-      setTimeout(checkForMobileUpdates, 5000)
+      setTimeout(syncFromGalleryData, 5000)
     }
     
     // Event Listener für Updates von Admin oder GaleriePage
@@ -558,12 +800,19 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
     
     return () => {
       isMounted = false
+      if (initialCheckTimeoutId) {
+        clearTimeout(initialCheckTimeoutId)
+      }
       if (pollingInterval) {
         clearInterval(pollingInterval)
       }
+      if (mobilePollingInterval) {
+        console.log('🛑 Automatisches Mobile-Polling im Admin-Bereich gestoppt')
+        clearInterval(mobilePollingInterval)
+      }
       window.removeEventListener('artworks-updated', handleArtworksUpdate)
     }
-  }, []) // WICHTIG: Leere Dependencies - läuft nur einmal beim Mount
+  }, [musterOnly])
   
   // ZUSÄTZLICHER useEffect: Stelle sicher dass artworks State IMMER aktuell ist
   // WICHTIG: Prüft localStorage regelmäßig für Updates (z.B. von anderen Tabs/Komponenten)
@@ -938,8 +1187,17 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
                   setLoadStatus({ message: `⚠️ Server hat keine Werke - verwende Cache (${stored.length})`, success: false })
                   setTimeout(() => setLoadStatus(null), 5000)
                 } else {
-                  setArtworks([])
-                  setLoadStatus({ message: '❌ Keine Werke gefunden - weder Server noch Cache', success: false })
+                  // KRITISCH: Prüfe Backup bevor wir leeren!
+                  const backup = loadBackup()
+                  if (backup && backup.length > 0) {
+                    console.log('💾 Backup gefunden - verwende Backup statt leeren:', backup.length, 'Werke')
+                    setArtworks(backup)
+                    localStorage.setItem('k2-artworks', JSON.stringify(backup))
+                    setLoadStatus({ message: `💾 Backup wiederhergestellt: ${backup.length} Werke`, success: true })
+                  } else {
+                    setArtworks([])
+                    setLoadStatus({ message: '❌ Keine Werke gefunden - weder Server noch Cache', success: false })
+                  }
                   setTimeout(() => setLoadStatus(null), 10000)
                 }
                 setIsLoading(false)
@@ -1065,14 +1323,32 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
           }
         } else {
           console.warn('⚠️ Keine Werke gefunden')
-          setArtworks([])
-          setLoadStatus({ message: '⚠️ Keine Werke gefunden', success: false })
+          // KRITISCH: Prüfe Backup bevor wir leeren!
+          const backup = loadBackup()
+          if (backup && backup.length > 0) {
+            console.log('💾 Backup gefunden - verwende Backup statt leeren:', backup.length, 'Werke')
+            setArtworks(backup)
+            localStorage.setItem('k2-artworks', JSON.stringify(backup))
+            setLoadStatus({ message: `💾 Backup wiederhergestellt: ${backup.length} Werke`, success: true })
+          } else {
+            setArtworks([])
+            setLoadStatus({ message: '⚠️ Keine Werke gefunden', success: false })
+          }
           setTimeout(() => setLoadStatus(null), 3000)
         }
       } catch (error) {
         console.error('❌ Fehler beim Laden:', error)
-        setArtworks([])
-        setLoadStatus({ message: '❌ Fehler beim Laden', success: false })
+        // KRITISCH: Bei Fehler Backup wiederherstellen!
+        const backup = loadBackup()
+        if (backup && backup.length > 0) {
+          console.log('💾 Backup wiederhergestellt nach Fehler:', backup.length, 'Werke')
+          setArtworks(backup)
+          localStorage.setItem('k2-artworks', JSON.stringify(backup))
+          setLoadStatus({ message: `💾 Backup wiederhergestellt: ${backup.length} Werke`, success: true })
+        } else {
+          setArtworks([])
+          setLoadStatus({ message: '❌ Fehler beim Laden', success: false })
+        }
         setTimeout(() => setLoadStatus(null), 3000)
       } finally {
         setIsLoading(false)
@@ -1086,20 +1362,29 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
   }, [artworks, initialArtworks])
   
   // Manuelle Refresh-Funktion - lädt IMMER neu vom Server
+  // KRITISCH: Mobile-Werke haben ABSOLUTE PRIORITÄT - sie dürfen NIEMALS gelöscht werden!
   const handleRefresh = async () => {
     setIsLoading(true)
     setLoadStatus({ message: '🔄 Synchronisiere mit Server...', success: false })
     
+    // KRITISCH: Lade ZUERST lokale Werke um Mobile-Werke zu schützen! (außerhalb try-catch für Scope)
+    const localArtworks = loadArtworks()
+    
     try {
+      const mobileWorks = localArtworks.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
+      
+      if (mobileWorks.length > 0) {
+        console.log(`🔒 ${mobileWorks.length} Mobile-Werke geschützt vor Synchronisierung:`, mobileWorks.map((a: any) => a.number || a.id).join(', '))
+      }
+      
       // WICHTIG: Synchronisiere Mobile-Daten zu Supabase BEVOR wir neue Daten laden
       // Das stellt sicher, dass neu hinzugefügte Bilder auch am Mac ankommen
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
       if (isMobile) {
         try {
-          const currentArtworks = loadArtworks()
-          if (currentArtworks && currentArtworks.length > 0) {
-            console.log('📱 Synchronisiere Mobile-Daten zu Supabase...', currentArtworks.length, 'Werke')
-            await saveArtworksToSupabase(currentArtworks)
+          if (localArtworks && localArtworks.length > 0) {
+            console.log('📱 Synchronisiere Mobile-Daten zu Supabase...', localArtworks.length, 'Werke')
+            await saveArtworksToSupabase(localArtworks)
             await syncMobileToSupabase()
             setLoadStatus({ message: '✅ Mobile-Daten synchronisiert', success: true })
             setTimeout(() => setLoadStatus({ message: '🔄 Lade vom Server...', success: false }), 1000)
@@ -1110,8 +1395,8 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
         }
       }
       
-      // Leere localStorage um neue Daten zu erzwingen
-      localStorage.removeItem('k2-artworks')
+      // WICHTIG: Lösche NICHT localStorage - Mobile-Werke müssen erhalten bleiben!
+      // Nur Cache-Marker löschen, nicht die Werke selbst!
       localStorage.removeItem('k2-last-loaded-timestamp')
       localStorage.removeItem('k2-last-loaded-version')
       localStorage.removeItem('k2-last-build-id')
@@ -1154,64 +1439,63 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
           if (data.exportedAt) localStorage.setItem('k2-last-loaded-timestamp', data.exportedAt)
           localStorage.setItem('k2-last-load-time', String(Date.now())) // WICHTIG: Load-Time speichern
           
-          // WICHTIG: Merge-Logik auch hier - Mobile-Objekte NICHT überschreiben!
-          const existingArtworks = loadArtworks()
+          // KRITISCH: Merge-Logik - Mobile-Werke haben ABSOLUTE PRIORITÄT!
+          // WICHTIG: Lokale Werke wurden oben bereits geladen und gesichert!
           const serverArtworks = data.artworks
           
-          // Merge-Strategie (gleiche Logik wie oben)
+          // Erstelle Map für schnelle Suche
           const serverMap = new Map<string, any>()
           serverArtworks.forEach((a: any) => {
             const key = a.number || a.id
             if (key) serverMap.set(key, a)
           })
           
-          const mergedArtworks: any[] = []
-          
-          // Server-Objekte hinzufügen
-          serverArtworks.forEach((serverArtwork: any) => {
-            const key = serverArtwork.number || serverArtwork.id
-            if (key) mergedArtworks.push(serverArtwork)
-          })
-          
-          // Mobile-Objekte hinzufügen die nicht auf Server sind ODER neuer sind
-          existingArtworks.forEach((mobileArtwork: any) => {
-            const key = mobileArtwork.number || mobileArtwork.id
-            if (!key) return
-            
-            const serverArtwork = serverMap.get(key)
-            
-            if (!serverArtwork) {
-              // Mobile-Objekt existiert nicht auf Server → behalten
-              mergedArtworks.push(mobileArtwork)
-            } else {
-              // Prüfe welches neuer ist
-              const mobileUpdated = mobileArtwork.updatedAt || mobileArtwork.createdAt
-              const serverUpdated = serverArtwork.updatedAt || serverArtwork.createdAt
-              
-              if (mobileUpdated && serverUpdated) {
-                const mobileTime = new Date(mobileUpdated).getTime()
-                const serverTime = new Date(serverUpdated).getTime()
-                
-                if (mobileTime > serverTime) {
-                  // Mobile-Version ist neuer → Mobile-Version behalten
-                  const index = mergedArtworks.findIndex((a: any) => (a.number || a.id) === key)
-                  if (index >= 0) {
-                    mergedArtworks[index] = mobileArtwork
-                  } else {
-                    mergedArtworks.push(mobileArtwork)
-                  }
-                }
-              } else if (mobileUpdated && !serverUpdated) {
-                // Mobile hat updatedAt, Server nicht → Mobile-Version behalten
-                const index = mergedArtworks.findIndex((a: any) => (a.number || a.id) === key)
-                if (index >= 0) {
-                  mergedArtworks[index] = mobileArtwork
-                } else {
-                  mergedArtworks.push(mobileArtwork)
-                }
+          // KRITISCH: Starte mit ALLEN lokalen Werken (haben ABSOLUTE Priorität!)
+          const localMap = new Map<string, any>()
+          localArtworks.forEach((local: any) => {
+            const key = local.number || local.id
+            if (key) {
+              localMap.set(key, local)
+              // Mobile-Werke besonders markieren
+              if (local.createdOnMobile || local.updatedOnMobile) {
+                console.log(`🔒 Lokales Mobile-Werk geschützt: ${key}`)
               }
             }
           })
+          
+          // Starte mit ALLEN lokalen Werken (haben Priorität!)
+          const mergedArtworks: any[] = [...localArtworks]
+          
+          // Füge Server-Werke hinzu die NICHT lokal sind
+          serverArtworks.forEach((serverArtwork: any) => {
+            const key = serverArtwork.number || serverArtwork.id
+            if (key && !localMap.has(key)) {
+              mergedArtworks.push(serverArtwork)
+            }
+          })
+          
+          // KRITISCH: Prüfe ob ALLE lokalen Werke erhalten bleiben!
+          const localKeys = new Set(localArtworks.map((a: any) => a.number || a.id))
+          const mergedKeys = new Set(mergedArtworks.map((a: any) => a.number || a.id))
+          const allLocalPreserved = [...localKeys].every(key => mergedKeys.has(key))
+          
+          if (!allLocalPreserved) {
+            console.error('❌ KRITISCH: Lokale Werke wurden verloren beim Merge!')
+            console.error('Lokale Nummern:', [...localKeys])
+            console.error('Gemergte Nummern:', [...mergedKeys])
+            // Stelle lokale Werke wieder her - Mobile-Werke haben Priorität!
+            mergedArtworks.length = 0
+            mergedArtworks.push(...localArtworks)
+            serverArtworks.forEach((serverArtwork: any) => {
+              const key = serverArtwork.number || serverArtwork.id
+              if (key && !localMap.has(key)) {
+                mergedArtworks.push(serverArtwork)
+              }
+            })
+            console.log('✅ Lokale Werke wiederhergestellt - Mobile-Werke geschützt!')
+          }
+          
+          console.log(`🔒 Lokale Werke geschützt: ${localArtworks.length} Werke bleiben erhalten`)
           
           // Speichere gemergte Liste
           try {
@@ -1248,16 +1532,65 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
             setTimeout(() => setLoadStatus(null), 3000)
           }
         } else {
-          setLoadStatus({ message: '⚠️ Keine Werke in Datei', success: false })
-          setTimeout(() => setLoadStatus(null), 3000)
+          // KEINE Server-Daten - behalte ALLE lokalen Werke!
+          console.warn('⚠️ Keine Werke in gallery-data.json gefunden - behalte lokale Werke:', localArtworks.length)
+          if (localArtworks.length > 0) {
+            console.log('🔒 Lokale Werke bleiben erhalten:', localArtworks.map((a: any) => a.number || a.id).join(', '))
+            // Stelle sicher dass lokale Werke gespeichert bleiben
+            localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
+            const exhibitionArtworks = localArtworks.map((a: any) => {
+              if (!a.imageUrl && a.previewUrl) a.imageUrl = a.previewUrl
+              if (!a.imageUrl && !a.previewUrl) {
+                a.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+              }
+              return a
+            })
+            setArtworks(exhibitionArtworks)
+            setLoadStatus({ message: `✅ ${localArtworks.length} lokale Werke erhalten`, success: true })
+            setTimeout(() => setLoadStatus(null), 3000)
+          } else {
+            setLoadStatus({ message: '⚠️ Keine Werke in Datei', success: false })
+            setTimeout(() => setLoadStatus(null), 3000)
+          }
         }
       } else {
-        setLoadStatus({ message: '⚠️ Server nicht erreichbar', success: false })
+        // Server nicht erreichbar - behalte lokale Werke!
+        console.warn('⚠️ Server nicht erreichbar - behalte lokale Werke:', localArtworks.length)
+        if (localArtworks.length > 0) {
+          console.log('🔒 Lokale Werke bleiben erhalten:', localArtworks.map((a: any) => a.number || a.id).join(', '))
+          localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
+          const exhibitionArtworks = localArtworks.map((a: any) => {
+            if (!a.imageUrl && a.previewUrl) a.imageUrl = a.previewUrl
+            if (!a.imageUrl && !a.previewUrl) {
+              a.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+            }
+            return a
+          })
+          setArtworks(exhibitionArtworks)
+          setLoadStatus({ message: `✅ ${localArtworks.length} lokale Werke erhalten`, success: true })
+        } else {
+          setLoadStatus({ message: '⚠️ Server nicht erreichbar', success: false })
+        }
         setTimeout(() => setLoadStatus(null), 3000)
       }
     } catch (error) {
       console.error('❌ Fehler beim Aktualisieren:', error)
-      setLoadStatus({ message: '❌ Fehler beim Laden', success: false })
+      // Bei Fehler: Behalte lokale Werke!
+      if (localArtworks.length > 0) {
+        console.log('🔒 Fehler beim Laden - behalte lokale Werke:', localArtworks.length)
+        localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
+        const exhibitionArtworks = localArtworks.map((a: any) => {
+          if (!a.imageUrl && a.previewUrl) a.imageUrl = a.previewUrl
+          if (!a.imageUrl && !a.previewUrl) {
+            a.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+          }
+          return a
+        })
+        setArtworks(exhibitionArtworks)
+        setLoadStatus({ message: `✅ ${localArtworks.length} lokale Werke erhalten`, success: true })
+      } else {
+        setLoadStatus({ message: '❌ Fehler beim Laden', success: false })
+      }
       setTimeout(() => setLoadStatus(null), 3000)
     } finally {
       setIsLoading(false)
@@ -1446,8 +1779,25 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
       }} />
       
       <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Mobile-First Admin: Neues Objekt Button - nur auf Mobile */}
-        {(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) && (
+        {/* Entwicklungsstand (Mac = Handy? Profi-Check) */}
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '0.5rem',
+            left: '0.5rem',
+            zIndex: 9999,
+            fontSize: '0.7rem',
+            color: 'rgba(255, 255, 255, 0.4)',
+            fontFamily: 'monospace',
+            pointerEvents: 'none'
+          }}
+          title="Gleicher Stand wie am Mac? Hier vergleichen."
+        >
+          Stand: {BUILD_LABEL}
+        </div>
+
+        {/* Mobile-First Admin: Neues Objekt Button (ök2: ausblenden) */}
+        {!musterOnly && showMobileAdmin && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) && (
           <button
             onClick={openNewModal}
             style={{
@@ -1479,117 +1829,9 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
           </button>
         )}
         
-        {/* Debug Button - Zeige localStorage Inhalt */}
-        {(() => {
-          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
-          if (!isMobile) return null
-          
-          return (
-            <button
-              onClick={() => {
-                const stored = loadArtworks()
-                const mobileArtworks = stored.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
-                alert(`📊 Debug Info:\n\nGesamt Werke: ${stored.length}\nMobile-Werke: ${mobileArtworks.length}\n\nNummern:\n${stored.map((a: any) => `${a.number || a.id}${(a.createdOnMobile || a.updatedOnMobile) ? ' (Mobile)' : ''}`).join('\n')}\n\nAngezeigt: ${artworks.length}`)
-                console.log('📊 Debug - Gespeicherte Werke:', stored)
-                console.log('📊 Debug - Mobile-Werke:', mobileArtworks)
-                console.log('📊 Debug - Angezeigte Werke:', artworks)
-              }}
-              style={{
-                position: 'fixed',
-                top: '1rem',
-                left: '1rem',
-                zIndex: 10002,
-                background: 'rgba(255, 193, 7, 0.9)',
-                color: '#0a0e27',
-                border: '2px solid rgba(255, 193, 7, 0.5)',
-                borderRadius: '12px',
-                padding: '0.5rem 0.75rem',
-                fontSize: '0.8rem',
-                fontWeight: '700',
-                cursor: 'pointer',
-                boxShadow: '0 4px 16px rgba(255, 193, 7, 0.5)',
-              }}
-              title="Debug: Zeige localStorage Inhalt"
-            >
-              🔍 Debug
-            </button>
-          )
-        })()}
+        {/* Arbeitsplattform-Link entfernt - nicht benötigt auf iPad/Mobile */}
         
-        {/* Zurück-Button - PROMINENT & IMMER SICHTBAR */}
-        <Link
-          to={PLATFORM_ROUTES.home}
-          style={{
-            position: 'fixed',
-            top: '1rem',
-            left: '1rem',
-            zIndex: 10002,
-            background: 'linear-gradient(120deg, #5ffbf1, #33a1ff)',
-            color: '#0a0e27',
-            border: '2px solid rgba(95, 251, 241, 0.5)',
-            borderRadius: '12px',
-            padding: '0.75rem 1.25rem',
-            fontSize: '0.95rem',
-            fontWeight: '700',
-            cursor: 'pointer',
-            boxShadow: '0 4px 20px rgba(95, 251, 241, 0.6)',
-            transition: 'all 0.2s ease',
-            touchAction: 'manipulation',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            minWidth: '140px',
-            minHeight: '44px',
-            textDecoration: 'none'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.05)'
-            e.currentTarget.style.boxShadow = '0 6px 24px rgba(95, 251, 241, 0.8)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)'
-            e.currentTarget.style.boxShadow = '0 4px 20px rgba(95, 251, 241, 0.6)'
-          }}
-          title="Zurück zur Arbeitsplattform"
-        >
-          <span style={{ fontSize: '1.3em' }}>←</span>
-          <span>Arbeitsplattform</span>
-        </Link>
-        
-        {/* Aktualisieren Button - Mobile */}
-        <button
-          onClick={handleRefresh}
-          disabled={isLoading}
-          style={{
-            position: 'fixed',
-            top: '1rem',
-            right: '1rem',
-            zIndex: 10001,
-            background: isLoading 
-              ? 'rgba(95, 251, 241, 0.5)' 
-              : 'linear-gradient(120deg, #5ffbf1, #33a1ff)',
-            color: '#0a0e27',
-            border: '2px solid rgba(95, 251, 241, 0.5)',
-            borderRadius: '12px',
-            padding: '0.75rem 1rem',
-            fontSize: '0.9rem',
-            fontWeight: '700',
-            cursor: isLoading ? 'wait' : 'pointer',
-            opacity: isLoading ? 0.7 : 1,
-            boxShadow: '0 4px 16px rgba(95, 251, 241, 0.5)',
-            transition: 'all 0.2s ease',
-            touchAction: 'manipulation',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            minWidth: '120px',
-            minHeight: '44px'
-          }}
-          title="Daten vom Server neu laden"
-        >
-          <span style={{ fontSize: '1.2em' }}>{isLoading ? '⏳' : '🔄'}</span>
-          <span>{isLoading ? 'Lädt...' : 'Aktualisieren'}</span>
-        </button>
+        {/* Aktualisieren Button entfernt - nicht benötigt auf iPad/Mobile */}
         
         <header style={{ 
           padding: 'clamp(2rem, 6vw, 4rem) clamp(1.5rem, 4vw, 3rem)',
@@ -1613,32 +1855,7 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
                 marginBottom: '0.5rem',
                 flexWrap: 'wrap'
               }}>
-                <Link 
-                  to={PLATFORM_ROUTES.home}
-                  style={{
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    textDecoration: 'none',
-                    fontSize: '0.9rem',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                    padding: '0.4rem 0.8rem',
-                    borderRadius: '6px',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
-                    e.currentTarget.style.color = '#ffffff'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'
-                  }}
-                >
-                  <span>←</span>
-                  <span>Arbeitsplattform</span>
-                </Link>
+                {/* Arbeitsplattform-Link entfernt - nicht benötigt auf iPad/Mobile */}
                 <Link 
                   to={PROJECT_ROUTES['k2-galerie'].home}
                   style={{
@@ -1692,10 +1909,11 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
               display: 'flex', 
               gap: '0.75rem', 
               flexWrap: 'wrap',
-              fontSize: 'clamp(0.85rem, 2.5vw, 1rem)'
+              fontSize: 'clamp(0.85rem, 2.5vw, 1rem)',
+              alignItems: 'center'
             }}>
               <Link 
-                to={PROJECT_ROUTES['k2-galerie'].galerie} 
+                to={musterOnly ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie} 
                 style={{ 
                   padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)', 
                   background: 'rgba(255, 255, 255, 0.1)',
@@ -1772,6 +1990,7 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
                   </span>
                 )}
               </Link>
+              {!musterOnly && (
               <Link 
                 to="/admin" 
                 style={{ 
@@ -1801,6 +2020,7 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
               >
                 ⚙️ Admin
               </Link>
+              )}
             </nav>
           </div>
         </header>
@@ -2060,8 +2280,8 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
                     e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
                   }}
                   >
-                    {/* Bearbeiten-Button - nur auf Mobile */}
-                    {(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) && (
+                    {/* Bearbeiten-Button (ök2: ausblenden) */}
+                    {!musterOnly && showMobileAdmin && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
@@ -2368,7 +2588,7 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
         </main>
       </div>
 
-      {/* Bildschirmfüllende Lightbox für Bilder */}
+      {/* Bildschirmfüllende Lightbox für Bilder - auf Mobile ganzer Bildschirm (100dvh) */}
       {lightboxImage && (
         <div
           style={{
@@ -2377,13 +2597,18 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
             left: 0,
             right: 0,
             bottom: 0,
+            width: (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) ? '100vw' : undefined,
+            height: (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) ? '100dvh' : undefined,
+            minHeight: (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) ? '100vh' : undefined,
             background: 'rgba(0, 0, 0, 0.95)',
             zIndex: 10000,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '1rem'
+            padding: (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768)
+              ? 'max(env(safe-area-inset-top), 0.5rem) max(env(safe-area-inset-left), 0.5rem) max(env(safe-area-inset-bottom), 0.5rem) max(env(safe-area-inset-right), 0.5rem)'
+              : '1rem'
           }}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
@@ -2489,8 +2714,8 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
               </button>
             )}
 
-            {/* Bild bearbeiten Button - nur auf Mobile */}
-            {lightboxImage.artwork && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) && (
+            {/* Bild bearbeiten Button (ök2: ausblenden) */}
+            {!musterOnly && showMobileAdmin && lightboxImage.artwork && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) && (
               <button
                 onClick={(e) => {
                   e.stopPropagation()
@@ -2678,11 +2903,13 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
             </button>
           </div>
 
-          {/* Bild Container */}
+          {/* Bild Container - auf Mobile ganzer Bildschirm (flex: 1) */}
           <div
             style={{
               width: '100%',
               height: '100%',
+              flex: (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) ? 1 : undefined,
+              minHeight: (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) ? 0 : undefined,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -2863,13 +3090,19 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
                       
                       const reader = new FileReader()
                       
-                      reader.onload = (event) => {
+                      reader.onload = async (event) => {
                         const result = event.target?.result
                         console.log('📷 FileReader onload:', result ? 'Erfolg' : 'Fehler', result ? `${String(result).substring(0, 50)}...` : 'kein Ergebnis')
                         
                         if (result && typeof result === 'string') {
-                          setMobilePhoto(result)
-                          console.log('✅ Bild geladen:', result.substring(0, 50) + '...')
+                          try {
+                            const processed = await compositeOnProfessionalBackground(result)
+                            setMobilePhoto(processed)
+                            console.log('✅ Bild geladen und mit professionellem Hintergrund aufbereitet')
+                          } catch (e) {
+                            console.warn('⚠️ Hintergrund-Aufbereitung fehlgeschlagen, verwende Original:', e)
+                            setMobilePhoto(result)
+                          }
                         } else {
                           console.error('❌ FileReader Ergebnis ist ungültig:', result)
                           alert('❌ Fehler beim Laden des Bildes. Bitte versuche es erneut.')
@@ -2916,13 +3149,19 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
                       
                       const reader = new FileReader()
                       
-                      reader.onload = (event) => {
+                      reader.onload = async (event) => {
                         const result = event.target?.result
                         console.log('📁 FileReader onload:', result ? 'Erfolg' : 'Fehler', result ? `${String(result).substring(0, 50)}...` : 'kein Ergebnis')
                         
                         if (result && typeof result === 'string') {
-                          setMobilePhoto(result)
-                          console.log('✅ Bild geladen:', result.substring(0, 50) + '...')
+                          try {
+                            const processed = await compositeOnProfessionalBackground(result)
+                            setMobilePhoto(processed)
+                            console.log('✅ Bild geladen und mit professionellem Hintergrund aufbereitet')
+                          } catch (e) {
+                            console.warn('⚠️ Hintergrund-Aufbereitung fehlgeschlagen, verwende Original:', e)
+                            setMobilePhoto(result)
+                          }
                         } else {
                           console.error('❌ FileReader Ergebnis ist ungültig:', result)
                           alert('❌ Fehler beim Laden des Bildes. Bitte versuche es erneut.')
@@ -3317,18 +3556,26 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
                             
                             const json = JSON.stringify(data)
                             
-                            // Schreibe direkt über API
-                            const response = await fetch('/api/write-gallery-data', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: json
-                            })
+                            // Schreibe direkt über API (nur wenn Dev-Server läuft)
+                            // WICHTIG: Auf Vercel existiert dieser Endpoint nicht!
+                            const isVercel = window.location.hostname.includes('vercel.app')
                             
-                            if (response.ok) {
-                              const result = await response.json()
-                              console.log('✅ Automatisch für Mobile veröffentlicht:', result)
+                            if (isVercel) {
+                              console.warn('⚠️ Auf Vercel: Automatische Veröffentlichung nicht möglich')
+                              console.warn('💡 Mobile-Werke müssen über Dev-Server erstellt werden')
                             } else {
-                              console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen:', response.status)
+                              const response = await fetch('/api/write-gallery-data', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: json
+                              })
+                              
+                              if (response.ok) {
+                                const result = await response.json()
+                                console.log('✅ Automatisch für Mobile veröffentlicht:', result)
+                              } else {
+                                console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen:', response.status)
+                              }
                             }
                           }
                         } catch (error) {
@@ -3556,27 +3803,36 @@ const GalerieVorschauPage = ({ initialFilter }: { initialFilter?: Filter }) => {
                           
                           const json = JSON.stringify(data)
                           
-                          // Schreibe direkt über API
-                          const response = await fetch('/api/write-gallery-data', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: json
-                          })
+                          // Schreibe direkt über API (nur wenn Dev-Server läuft)
+                          // WICHTIG: Auf Vercel existiert dieser Endpoint nicht!
+                          const isVercel = window.location.hostname.includes('vercel.app')
                           
-                          if (response.ok) {
-                            const result = await response.json()
-                            console.log('✅ Automatisch für Mobile veröffentlicht:', result)
-                            
-                            // WICHTIG: Dispatche Event für automatischen Git Push
-                            window.dispatchEvent(new CustomEvent('gallery-data-published', { 
-                              detail: { 
-                                success: true,
-                                artworksCount: allArtworks.length,
-                                size: result.size
-                              } 
-                            }))
+                          if (isVercel) {
+                            console.warn('⚠️ Auf Vercel: Automatische Veröffentlichung nicht möglich')
+                            console.warn('💡 Mobile-Werke müssen über Dev-Server erstellt werden')
+                            alert('⚠️ Auf Vercel: Werk wurde gespeichert, aber automatische Veröffentlichung nicht möglich.\n\n💡 Für Mobile → Mac/iPad Sync:\n1. Handy auf lokalem Dev-Server verwenden\n2. Oder: Mac muss Git Push ausführen')
                           } else {
-                            console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen:', response.status)
+                            const response = await fetch('/api/write-gallery-data', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: json
+                            })
+                            
+                            if (response.ok) {
+                              const result = await response.json()
+                              console.log('✅ Automatisch für Mobile veröffentlicht:', result)
+                              
+                              // WICHTIG: Dispatche Event für automatischen Git Push
+                              window.dispatchEvent(new CustomEvent('gallery-data-published', { 
+                                detail: { 
+                                  success: true,
+                                  artworksCount: allArtworks.length,
+                                  size: result.size
+                                } 
+                              }))
+                            } else {
+                              console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen:', response.status)
+                            }
                           }
                         }
                       } catch (error) {

@@ -8,7 +8,7 @@ const projectCards: Record<ProjectId, Array<{ title: string; description: string
   'k2-galerie': [
     {
       title: 'Galerie',
-      description: 'Öffentliche K2 Galerie – Kunst & Keramik, Eröffnung, Werke.',
+      description: 'ök2 – Öffentliche K2 Galerie, Kunst & Keramik, Eröffnung, Werke.',
       routeKey: 'galerie',
       cta: 'Öffnen →',
     },

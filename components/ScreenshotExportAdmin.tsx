@@ -1,7 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../src/config/navigation'
+import { MUSTER_TEXTE } from '../src/config/tenantConfig'
 import '../src/App.css'
+
+const ADMIN_CONTEXT_KEY = 'k2-admin-context'
+function isOeffentlichAdminContext(): boolean {
+  try {
+    // URL hat Vorrang: /admin?context=oeffentlich (von ök2-Willkommensseite)
+    if (typeof window !== 'undefined' && window.location.search) {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('context') === 'oeffentlich') return true
+    }
+    return typeof sessionStorage !== 'undefined' && sessionStorage.getItem(ADMIN_CONTEXT_KEY) === 'oeffentlich'
+  } catch {
+    return false
+  }
+}
 import { checkLocalStorageSize, cleanupLargeImages, getLocalStorageReport } from './SafeMode'
 import { startAutoSave, stopAutoSave, setupBeforeUnloadSave } from '../src/utils/autoSave'
 
@@ -69,7 +84,137 @@ function loadArtworks(): any[] {
       console.warn('Werke-Daten zu groß, überspringe Laden')
       return []
     }
-    return JSON.parse(stored)
+    const artworks = JSON.parse(stored)
+    
+    // KRITISCH: Behebe automatisch doppelte Nummern beim Laden
+    const numberMap = new Map<string, any[]>()
+    artworks.forEach((a: any) => {
+      if (a.number) {
+        if (!numberMap.has(a.number)) {
+          numberMap.set(a.number, [])
+        }
+        numberMap.get(a.number)!.push(a)
+      }
+    })
+    
+    let hasDuplicates = false
+    const fixedNumbers: string[] = []
+    
+    numberMap.forEach((duplicates, number) => {
+      if (duplicates.length > 1) {
+        hasDuplicates = true
+        console.warn(`⚠️ Doppelte Nummer gefunden: ${number} (${duplicates.length} Werke)`)
+        
+        // Sortiere nach createdAt (neuestes zuerst) oder deviceId für bessere Unterscheidung
+        duplicates.sort((a: any, b: any) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+          // Falls gleiches Datum: Sortiere nach deviceId
+          if (dateA === dateB) {
+            const deviceA = a.deviceId || ''
+            const deviceB = b.deviceId || ''
+            return deviceB.localeCompare(deviceA)
+          }
+          return dateB - dateA
+        })
+        
+        // Behalte das erste (neueste), benenne andere um mit eindeutiger Nummer
+        // WICHTIG: Beide Werke bleiben erhalten, bekommen aber unterschiedliche Nummern
+        for (let i = 1; i < duplicates.length; i++) {
+          const duplicate = duplicates[i]
+          const prefix = duplicate.category === 'keramik' ? 'K' : 'M'
+          
+          // Extrahiere Basis-Nummer (z.B. "0011" aus "K2-M-0011")
+          const baseNumber = number.replace(/K2-[KM]-/, '').replace(/[^0-9]/g, '')
+          const baseNum = parseInt(baseNumber) || 1
+          
+          // Finde nächste freie Nummer mit Suffix (z.B. K2-M-0011-1, K2-M-0011-2)
+          let newNumber = ''
+          let suffix = 1
+          let maxAttempts = 100
+          
+          while (maxAttempts > 0) {
+            const candidate = `K2-${prefix}-${String(baseNum).padStart(4, '0')}-${suffix}`
+            const exists = artworks.some((a: any) => {
+              // Prüfe ob Nummer bereits verwendet wird (außer vom aktuellen Werk)
+              return a.number === candidate && a.id !== duplicate.id && !fixedNumbers.includes(candidate)
+            })
+            
+            if (!exists) {
+              newNumber = candidate
+              break
+            }
+            suffix++
+            maxAttempts--
+          }
+          
+          // Fallback: Wenn keine Suffix-Nummer gefunden, verwende Timestamp + Device-ID
+          if (!newNumber) {
+            const deviceId = duplicate.deviceId || 'unknown'
+            const deviceHash = deviceId.split('-').pop()?.substring(0, 2) || Math.floor(Math.random() * 100).toString().padStart(2, '0')
+            const timestamp = Date.now().toString().slice(-6)
+            newNumber = `K2-${prefix}-${timestamp}${deviceHash}`
+            console.warn(`⚠️ Fallback-Nummer verwendet: ${newNumber}`)
+          }
+          
+          // Finde und aktualisiere im artworks Array
+          const index = artworks.findIndex((a: any) => {
+            // Exakte Übereinstimmung finden
+            if (a.id === duplicate.id) return true
+            if (a.number === duplicate.number && a.createdAt === duplicate.createdAt) {
+              // Zusätzliche Prüfung: deviceId falls vorhanden
+              if (duplicate.deviceId && a.deviceId) {
+                return a.deviceId === duplicate.deviceId
+              }
+              return true
+            }
+            return false
+          })
+          
+          if (index !== -1) {
+            console.log(`🔄 Automatische Umbenennung: ${number} → ${newNumber}`)
+            console.log(`   Werk: ${duplicate.title || 'Unbekannt'}, Device: ${duplicate.deviceId || 'Unbekannt'}, Index: ${index}`)
+            artworks[index].number = newNumber
+            artworks[index].id = newNumber
+            artworks[index].renamedFrom = number // Speichere Original-Nummer für Referenz
+            artworks[index].renamedAt = new Date().toISOString()
+            fixedNumbers.push(newNumber)
+            console.log(`✅ Werk umbenannt:`, artworks[index])
+          } else {
+            console.error(`❌ Konnte Werk nicht finden für Umbenennung`)
+            console.error(`   Gesucht:`, duplicate)
+            console.error(`   Verfügbare IDs:`, artworks.map((a: any) => ({ id: a.id, number: a.number, createdAt: a.createdAt })))
+          }
+        }
+      }
+    })
+    
+    // Speichere korrigierte Daten zurück falls Änderungen gemacht wurden
+    if (hasDuplicates && fixedNumbers.length > 0) {
+      try {
+        console.log(`💾 Speichere ${fixedNumbers.length} umbenannte Werke...`)
+        const saved = saveArtworks(artworks)
+        if (saved) {
+          console.log('✅ Doppelte Nummern automatisch behoben und gespeichert')
+          console.log(`📝 ${fixedNumbers.length} Werke umbenannt:`, fixedNumbers)
+          // Dispatch Event damit UI aktualisiert wird
+          window.dispatchEvent(new CustomEvent('artworks-updated'))
+          // Zeige Info-Meldung (nur einmal, nicht bei jedem Laden)
+          const lastFixTime = localStorage.getItem('k2-duplicate-fix-time')
+          const now = Date.now()
+          if (!lastFixTime || (now - parseInt(lastFixTime)) > 60000) { // Maximal alle 60 Sekunden
+            localStorage.setItem('k2-duplicate-fix-time', now.toString())
+            console.log(`ℹ️ ${fixedNumbers.length} Werke wurden automatisch umbenannt um Duplikate zu beheben`)
+          }
+        } else {
+          console.error('❌ Fehler beim Speichern korrigierter Daten')
+        }
+      } catch (e) {
+        console.error('Fehler beim Speichern korrigierter Daten:', e)
+      }
+    }
+    
+    return artworks
   } catch (error) {
     console.error('Fehler beim Laden:', error)
     return []
@@ -272,7 +417,30 @@ function ScreenshotExportAdmin() {
   }, [])
   
   const [activeTab, setActiveTab] = useState<'werke' | 'dokumente' | 'einstellungen' | 'statistiken' | 'eventplan' | 'öffentlichkeitsarbeit'>('werke')
-  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'design'>('stammdaten')
+  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'design' | 'drucker'>('stammdaten')
+  
+  // Drucker-Einstellungen
+  const [printerSettings, setPrinterSettings] = useState({
+    ipAddress: localStorage.getItem('k2-printer-ip') || '192.168.1.102',
+    printerModel: 'Brother QL-820MWBc',
+    printerType: (localStorage.getItem('k2-printer-type') || 'etikettendrucker') as 'etikettendrucker' | 'standarddrucker'
+  })
+
+  // Drucker-Einstellungen laden beim Mount
+  useEffect(() => {
+    try {
+      const storedIP = localStorage.getItem('k2-printer-ip')
+      const storedType = localStorage.getItem('k2-printer-type')
+      if (storedIP) {
+        setPrinterSettings(prev => ({ ...prev, ipAddress: storedIP }))
+      }
+      if (storedType) {
+        setPrinterSettings(prev => ({ ...prev, printerType: storedType as 'etikettendrucker' | 'standarddrucker' }))
+      }
+    } catch (error) {
+      console.error('Fehler beim Laden der Drucker-Einstellungen:', error)
+    }
+  }, [])
   
   // Cleanup beim Mount: Schließe alle Modals (falls durch StrictMode doppelt geöffnet)
   useEffect(() => {
@@ -295,20 +463,47 @@ function ScreenshotExportAdmin() {
       try {
         const { size, limit, needsCleanup } = checkLocalStorageSize()
         
-        if (needsCleanup) {
+        if (needsCleanup || size > 4 * 1024 * 1024) { // Warnung bei 80% ODER über 4MB
           console.warn('⚠️ localStorage zu voll!', getLocalStorageReport())
           
-          // Automatische Bereinigung (nur einmal)
-          const cleaned = cleanupLargeImages()
-          if (cleaned > 0) {
-            console.log(`✅ ${cleaned} große Bilder entfernt`)
+          // Aggressive Bereinigung (mehrfach bis genug Platz)
+          let cleaned = 0
+          let attempts = 0
+          let afterCleanup = checkLocalStorageSize()
+          const initialSize = size
+          
+          // Mehrere Durchläufe für aggressives Cleanup
+          while ((afterCleanup.needsCleanup || afterCleanup.size > 3.5 * 1024 * 1024) && attempts < 5) {
+            const beforeSize = afterCleanup.size
+            cleaned += cleanupLargeImages()
+            afterCleanup = checkLocalStorageSize()
+            const freed = beforeSize - afterCleanup.size
+            
+            if (freed > 0) {
+              console.log(`✅ Cleanup Durchlauf ${attempts + 1}: ${(freed / 1024 / 1024).toFixed(2)}MB freigegeben`)
+            } else {
+              console.log(`⚠️ Cleanup Durchlauf ${attempts + 1}: Keine Verbesserung`)
+            }
+            
+            attempts++
+            
+            // Wenn keine Verbesserung mehr, stoppe
+            if (freed < 10000) break // Weniger als 10KB freigegeben
           }
           
-          // Prüfe nochmal (nur einmal)
-          const afterCleanup = checkLocalStorageSize()
-          if (afterCleanup.needsCleanup) {
-            console.error('❌ localStorage immer noch zu voll! Bitte manuell bereinigen.')
-            alert(`⚠️ WARNUNG: localStorage ist zu voll (${(afterCleanup.size / 1024 / 1024).toFixed(2)}MB)!\n\nBitte entferne große Bilder oder lösche alte Daten.\n\nSonst kann die App crashen!`)
+          // Prüfe nochmal
+          const finalCheck = checkLocalStorageSize()
+          const freedTotal = initialSize - finalCheck.size
+          
+          if (cleaned > 0 || freedTotal > 0) {
+            console.log(`✅ Cleanup abgeschlossen: ${cleaned} Einträge entfernt, ${(freedTotal / 1024 / 1024).toFixed(2)}MB freigegeben`)
+          }
+          
+          if (finalCheck.needsCleanup || finalCheck.size > 4 * 1024 * 1024) {
+            console.error('❌ localStorage immer noch zu voll!')
+            alert(`⚠️ WARNUNG: localStorage ist zu voll (${(finalCheck.size / 1024 / 1024).toFixed(2)}MB)!\n\nAutomatisches Cleanup:\n- ${cleaned} Einträge entfernt\n- ${(freedTotal / 1024 / 1024).toFixed(2)}MB freigegeben\n\nAber es ist immer noch zu voll!\n\nBitte:\n1. Lösche alte Werke manuell in "Werke verwalten"\n2. Oder verwende kleinere Bilder\n3. Oder lösche Browser-Cache komplett\n\nSonst kann die App crashen!`)
+          } else if (cleaned > 0 || freedTotal > 0) {
+            console.log(`✅ Cleanup erfolgreich: ${(finalCheck.size / 1024 / 1024).toFixed(2)}MB verbleibend (${(freedTotal / 1024 / 1024).toFixed(2)}MB freigegeben)`)
           }
         }
       } catch (e) {
@@ -564,42 +759,78 @@ function ScreenshotExportAdmin() {
   const [eventDocumentName, setEventDocumentName] = useState('')
   const [eventDocumentType, setEventDocumentType] = useState<'flyer' | 'plakat' | 'presseaussendung' | 'sonstiges'>('flyer')
   
-  // Stammdaten
-  const [martinaData, setMartinaData] = useState({
-    name: 'Martina Kreinecker',
-    category: 'malerei',
-    bio: 'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. Ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.',
-    email: '',
-    phone: '',
-    website: ''
-  })
-  const [georgData, setGeorgData] = useState({
-    name: 'Georg Kreinecker',
-    category: 'keramik',
-    bio: 'Georg verbindet in seiner Keramikarbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail, das Ergebnis von jahrzehntelanger Erfahrung.',
-    email: '',
-    phone: '',
-    website: ''
-  })
-  const [galleryData, setGalleryData] = useState<any>({
-    name: 'K2 Galerie',
-    subtitle: 'Kunst & Keramik',
-    description: 'Gemeinsam eröffnen Martina und Georg nach über 20 Jahren kreativer Tätigkeit die K2 Galerie – ein Raum, wo Malerei und Keramik verschmelzen und Kunst zum Leben erwacht.',
-    address: '',
-    phone: '',
-    email: '',
-    website: '',
-    internetadresse: '', // Für QR-Code
-    openingHours: '',
-    bankverbindung: '',
-    adminPassword: 'k2Galerie2026',
-    soldArtworksDisplayDays: 30, // Tage wie lange verkaufte Werke in der Galerie bleiben
-    welcomeImage: '',
-    virtualTourImage: ''
-  })
+  // Stammdaten – bei ök2-Kontext nur Musterdaten (keine Vermischung mit K2)
+  const [martinaData, setMartinaData] = useState(() =>
+    isOeffentlichAdminContext()
+      ? { name: MUSTER_TEXTE.martina.name, email: '', phone: '', category: 'malerei' as const, bio: MUSTER_TEXTE.artist1Bio, website: '' }
+      : {
+          name: 'Martina Kreinecker',
+          category: 'malerei',
+          bio: 'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. Ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.',
+          email: '',
+          phone: '',
+          website: ''
+        }
+  )
+  const [georgData, setGeorgData] = useState(() =>
+    isOeffentlichAdminContext()
+      ? { name: MUSTER_TEXTE.georg.name, email: '', phone: '', category: 'keramik' as const, bio: MUSTER_TEXTE.artist2Bio, website: '' }
+      : {
+          name: 'Georg Kreinecker',
+          category: 'keramik',
+          bio: 'Georg verbindet in seiner Keramikarbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail, das Ergebnis von jahrzehntelanger Erfahrung.',
+          email: '',
+          phone: '',
+          website: ''
+        }
+  )
+  const [galleryData, setGalleryData] = useState<any>(() =>
+    isOeffentlichAdminContext()
+      ? {
+          name: 'Galerie Muster',
+          subtitle: 'Malerei & Skulptur',
+          description: MUSTER_TEXTE.gemeinsamText,
+          address: MUSTER_TEXTE.gallery.address,
+          phone: MUSTER_TEXTE.gallery.phone || '',
+          email: MUSTER_TEXTE.gallery.email || '',
+          website: MUSTER_TEXTE.gallery.website || '',
+          internetadresse: MUSTER_TEXTE.gallery.internetadresse || '',
+          openingHours: '',
+          bankverbindung: '',
+          adminPassword: '',
+          soldArtworksDisplayDays: 30,
+          welcomeImage: '',
+          virtualTourImage: ''
+        }
+      : {
+          name: 'K2 Galerie',
+          subtitle: 'Kunst & Keramik',
+          description: 'Gemeinsam eröffnen Martina und Georg nach über 20 Jahren kreativer Tätigkeit die K2 Galerie – ein Raum, wo Malerei und Keramik verschmelzen und Kunst zum Leben erwacht.',
+          address: '',
+          phone: '',
+          email: '',
+          website: '',
+          internetadresse: '',
+          openingHours: '',
+          bankverbindung: '',
+          adminPassword: 'k2Galerie2026',
+          soldArtworksDisplayDays: 30,
+          welcomeImage: '',
+          virtualTourImage: ''
+        }
+  )
 
-  // Stammdaten aus localStorage laden - SAFE MODE: Überspringe große Daten - mit Cleanup
+  // URL-Parameter context=oeffentlich in sessionStorage übernehmen (ök2-Admin von Willkommensseite)
   useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('context') === 'oeffentlich') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'oeffentlich')
+    } catch (_) {}
+  }, [])
+
+  // Stammdaten aus localStorage laden – bei ök2-Kontext nicht laden (nur Musterdaten)
+  useEffect(() => {
+    if (isOeffentlichAdminContext()) return
     let isMounted = true // Flag um Updates nach Unmount zu verhindern
     
     // Lade Daten verzögert um Abstürze zu vermeiden
@@ -698,9 +929,14 @@ function ScreenshotExportAdmin() {
     }
   }, [])
 
-  // Stammdaten speichern - explizit nur wenn Button geklickt wird - mit Timeout um Hänger zu vermeiden
+  // Stammdaten speichern - bei ök2-Kontext nicht in echte K2-Daten schreiben
   const saveStammdaten = () => {
     return new Promise<void>((resolve, reject) => {
+      if (isOeffentlichAdminContext()) {
+        alert('Demo-Modus (ök2): Es werden keine echten Daten gespeichert. Wechsle zur K2-Galerie für echte Stammdaten.')
+        resolve()
+        return
+      }
       const timeoutId = setTimeout(() => {
         reject(new Error('Speichern dauerte zu lange'))
       }, 5000) // Max 5 Sekunden
@@ -838,7 +1074,39 @@ function ScreenshotExportAdmin() {
         }
         
         // SEHR aggressive Begrenzung um Hänger zu vermeiden
-        const artworks = getItemSafe('k2-artworks', [])
+        // KRITISCH: Lade ALLE Werke inkl. Mobile-Werke für Synchronisation!
+        let artworks = getItemSafe('k2-artworks', [])
+        
+        // WICHTIG: Prüfe ob Werke vorhanden sind
+        if (!Array.isArray(artworks) || artworks.length === 0) {
+          console.warn('⚠️ WARNUNG: Keine Werke gefunden in localStorage!')
+          console.log('localStorage k2-artworks:', localStorage.getItem('k2-artworks')?.substring(0, 200))
+          
+          // Versuche alternative Methode
+          try {
+            const stored = localStorage.getItem('k2-artworks')
+            if (stored) {
+              artworks = JSON.parse(stored)
+              console.log('✅ Werke geladen via alternative Methode:', artworks.length)
+            }
+          } catch (e) {
+            console.error('❌ Fehler beim Laden der Werke:', e)
+          }
+        }
+        
+        // WICHTIG: Prüfe ob Mobile-Werke vorhanden sind und stelle sicher dass sie mit exportiert werden
+        const mobileWorks = artworks.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
+        if (mobileWorks.length > 0) {
+          console.log(`📱 ${mobileWorks.length} Mobile-Werke werden mit exportiert:`, mobileWorks.map((a: any) => a.number || a.id).join(', '))
+        }
+        
+        // WICHTIG: Prüfe ob Werke vorhanden sind BEVOR exportiert wird
+        if (!Array.isArray(artworks) || artworks.length === 0) {
+          if (isMountedRef.current) setIsDeploying(false)
+          alert('⚠️ KEINE WERKE GEFUNDEN!\n\nBitte zuerst Werke speichern bevor veröffentlicht wird.\n\n📋 Prüfe:\n1. Sind Werke in "Werke verwalten" vorhanden?\n2. Werden Werke korrekt gespeichert?\n3. Prüfe Browser-Konsole für Fehler')
+          return
+        }
+        
         const events = getItemSafe('k2-events', [])
         const documents = getItemSafe('k2-documents', [])
         
@@ -860,6 +1128,20 @@ function ScreenshotExportAdmin() {
           version: newVersion, // Versionsnummer für Cache-Busting
           buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}` // Eindeutige Build-ID
         }
+        
+        // WICHTIG: Prüfe nochmal ob Werke im Export vorhanden sind
+        if (!data.artworks || data.artworks.length === 0) {
+          console.error('❌ FEHLER: Keine Werke im Export-Objekt!', {
+            artworksCount: artworks.length,
+            dataArtworksCount: data.artworks.length,
+            dataKeys: Object.keys(data)
+          })
+          if (isMountedRef.current) setIsDeploying(false)
+          alert('⚠️ FEHLER: Keine Werke im Export!\n\nBitte prüfe Browser-Konsole für Details.')
+          return
+        }
+        
+        console.log(`✅ Export vorbereitet: ${data.artworks.length} Werke werden exportiert`)
         
         // JSON.stringify in separatem Frame mit Progress-Check
         const stringifyData = () => {
@@ -904,18 +1186,66 @@ function ScreenshotExportAdmin() {
               if (result.success) {
                 const gitOutput = result.git?.output || ''
                 const gitError = result.git?.error || ''
+                const gitSuccess = result.git?.success !== false // Default true wenn nicht gesetzt
+                const gitExitCode = result.git?.exitCode || 0
                 
-                if (isMountedRef.current) setIsDeploying(false)
+                console.log('🔍 Git Push Ergebnis:', {
+                  gitSuccess,
+                  gitExitCode,
+                  gitOutputLength: gitOutput.length,
+                  gitErrorLength: gitError.length,
+                  gitOutputPreview: gitOutput.substring(0, 300),
+                  gitErrorPreview: gitError.substring(0, 300),
+                  fullResult: result.git
+                })
                 
-                // Prüfe ob git push wirklich erfolgreich war - VERBESSERTE PRÜFUNG
+                // WICHTIG: Setze isDeploying IMMER auf false, auch bei Fehlern!
+                // Das verhindert dass die Seite hängen bleibt
+                setIsDeploying(false)
+                
+                // WICHTIG: Prüfe zuerst ob gitSuccess explizit false ist
+                // Das ist die zuverlässigste Quelle
+                if (!gitSuccess || gitExitCode !== 0) {
+                  // Git push fehlgeschlagen - zeige IMMER Fehlermeldung
+                  const gitExitCodeStr = gitExitCode !== 0 ? `\nExit Code: ${gitExitCode}` : ''
+                  const gitOutputFull = gitOutput || ''
+                  const gitErrorFull = gitError || 'Git Push fehlgeschlagen (keine Details verfügbar)'
+                  
+                  // Vollständige Fehlermeldung zusammenstellen
+                  let fullErrorMsg = gitErrorFull
+                  
+                  // Zeige Output IMMER wenn vorhanden
+                  if (gitOutputFull && gitOutputFull.trim().length > 0) {
+                    fullErrorMsg += `\n\n📋 SCRIPT OUTPUT:\n${gitOutputFull.substring(0, 2000)}`
+                  }
+                  
+                  if (gitExitCodeStr) {
+                    fullErrorMsg += gitExitCodeStr
+                  }
+                  
+                  console.error('❌ Git Push Fehler Details:', {
+                    exitCode: gitExitCode,
+                    error: gitErrorFull,
+                    output: gitOutputFull,
+                    fullResult: result.git,
+                    resultSize: result.size,
+                    artworksCount: result.artworksCount
+                  })
+                  
+                  // Zeige IMMER Fehlermeldung
+                  alert(`⚠️⚠️⚠️ GIT PUSH FEHLGESCHLAGEN ⚠️⚠️⚠️\n\n📁 Datei geschrieben: public/gallery-data.json ✅\n📊 Größe: ${(result.size / 1024).toFixed(1)} KB\n🎨 Werke: ${result.artworksCount || 0}\n\n❌ Git Push: FEHLGESCHLAGEN\n\n📋 BITTE MANUELL PUSHEN:\n\n1. Terminal öffnen\n2. cd /Users/georgkreinecker/k2Galerie\n3. git add public/gallery-data.json\n4. git commit -m "Update gallery-data.json"\n5. git push origin main\n\n💡 FEHLER-DETAILS:\n${fullErrorMsg.substring(0, 2000)}\n\n⚠️ WICHTIG: Ohne Git Push kommt die Datei NICHT bei Vercel an!`)
+                  return
+                }
+                
+                // Prüfe ob git push wirklich erfolgreich war - ZUSÄTZLICHE PRÜFUNG
                 // WICHTIG: Prüfe auf verschiedene Erfolgs-Indikatoren
                 const hasSuccessMessage = gitOutput.includes('git push erfolgreich') || 
+                                         gitOutput.includes('✅✅✅ Git Push erfolgreich') ||
                                          gitOutput.includes('To https://') ||
                                          gitOutput.includes('Enumerating objects') ||
                                          gitOutput.includes('Counting objects') ||
                                          gitOutput.includes('Writing objects') ||
-                                         gitOutput.includes('remote:') ||
-                                         (gitOutput.length > 50 && !gitOutput.toLowerCase().includes('error'))
+                                         gitOutput.includes('remote:')
                 
                 const hasError = gitError.includes('GIT PUSH FEHLER') ||
                                gitError.includes('FEHLER') ||
@@ -923,49 +1253,77 @@ function ScreenshotExportAdmin() {
                                gitError.toLowerCase().includes('failed') ||
                                gitError.toLowerCase().includes('authentication') ||
                                gitError.toLowerCase().includes('credential') ||
-                               gitError.toLowerCase().includes('denied')
+                               gitError.toLowerCase().includes('denied') ||
+                               gitError.toLowerCase().includes('fehlgeschlagen')
                 
-                // WICHTIG: finalPushSuccess ist true wenn Erfolg UND kein Fehler
-                // Prüfe nur auf gitOutput und gitError - keine externe Variable nötig
-                const gitErrorIsEmpty = gitError.trim().length === 0
-                const finalPushSuccess = hasSuccessMessage && !hasError && gitErrorIsEmpty
+                // Prüfe ob Fehler vorhanden ist
+                if (hasError || (gitError && gitError.trim().length > 0)) {
+                  // Fehler gefunden - zeige Fehlermeldung
+                  const gitExitCodeStr = gitExitCode !== 0 ? `\nExit Code: ${gitExitCode}` : ''
+                  let fullErrorMsg = gitError
+                  
+                  if (gitOutput && gitOutput.trim().length > 0) {
+                    fullErrorMsg += `\n\n📋 SCRIPT OUTPUT:\n${gitOutput.substring(0, 1500)}`
+                  }
+                  
+                  if (gitExitCodeStr) {
+                    fullErrorMsg += gitExitCodeStr
+                  }
+                  
+                  console.error('❌ Git Push Fehler erkannt:', {
+                    hasError,
+                    gitError,
+                    gitOutput,
+                    exitCode: gitExitCode
+                  })
+                  
+                  alert(`⚠️⚠️⚠️ GIT PUSH FEHLGESCHLAGEN ⚠️⚠️⚠️\n\n📁 Datei geschrieben: public/gallery-data.json ✅\n📊 Größe: ${(result.size / 1024).toFixed(1)} KB\n🎨 Werke: ${result.artworksCount || 0}\n\n❌ Git Push: FEHLGESCHLAGEN\n\n📋 BITTE MANUELL PUSHEN:\n\n1. Terminal öffnen\n2. cd /Users/georgkreinecker/k2Galerie\n3. git add public/gallery-data.json\n4. git commit -m "Update gallery-data.json"\n5. git push origin main\n\n💡 FEHLER-DETAILS:\n${fullErrorMsg.substring(0, 2000)}\n\n⚠️ WICHTIG: Ohne Git Push kommt die Datei NICHT bei Vercel an!`)
+                  return
+                }
                 
-                console.log('🔍 Git Push Prüfung:', {
-                  hasSuccessMessage,
-                  hasError,
-                  gitErrorLength: gitError.length,
-                  finalPushSuccess,
-                  gitOutputPreview: gitOutput.substring(0, 200)
-                })
-                
-                if (finalPushSuccess) {
+                // Erfolg - zeige Erfolgsmeldung
+                if (hasSuccessMessage || gitSuccess) {
                   // WICHTIG: Erhöhe Versionsnummer für Cache-Busting
                   const currentVersion = parseInt(localStorage.getItem('k2-data-version') || '0')
                   const newVersion = currentVersion + 1
                   localStorage.setItem('k2-data-version', newVersion.toString())
                   
-                  // Öffne Vercel Deployments-Seite in neuem Tab - VERBESSERT für Veröffentlichungsgeschichte
+                  // Zeige Erfolgsmeldung mit Link statt automatisch zu öffnen
+                  // (Popups werden oft blockiert und verursachen Probleme)
                   const vercelDeploymentsUrl = 'https://vercel.com/k2-galerie/k2-galerie/deployments'
-                  const vercelWindow = window.open(vercelDeploymentsUrl, '_blank', 'noopener,noreferrer')
                   
-                  // Warte kurz damit Tab geöffnet wird
-                  setTimeout(() => {
-                    if (vercelWindow && !vercelWindow.closed) {
-                      console.log('✅ Vercel Deployments-Seite geöffnet')
+                  const userWantsVercel = confirm(`✅✅✅ VERÖFFENTLICHUNG ERFOLGREICH! ✅✅✅\n\n📁 Datei geschrieben: public/gallery-data.json\n📊 Größe: ${(result.size / 1024).toFixed(1)} KB\n📦 Version: ${newVersion}\n\n📦 Git Push erfolgreich!\n\n🚀 Vercel:\n⏳ Deployment startet automatisch (1-2 Minuten)\n\n📱 MOBILE AKTUALISIEREN (WICHTIG!):\n\n1. ⏰ Warte 2-3 Minuten bis Deployment fertig ist\n2. 📱 QR-Code NEU scannen (sehr wichtig!)\n3. 🔄 Oder: Im Browser Cache leeren (Cmd+Shift+R)\n\n⚠️ WICHTIG:\n- QR-Code muss NEU gescannt werden!\n- Alter QR-Code zeigt alte Daten!\n- Warte bis Deployment fertig ist!\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nMöchtest du die Vercel Deployments-Seite öffnen?\n\n(OK = Öffnen, Abbrechen = Nur Link anzeigen)`)
+                  
+                  if (userWantsVercel) {
+                    // Versuche Vercel-Seite zu öffnen
+                    const vercelWindow = window.open(vercelDeploymentsUrl, '_blank', 'noopener,noreferrer')
+                    if (!vercelWindow || vercelWindow.closed) {
+                      // Popup wurde blockiert - zeige Link
+                      alert(`⚠️ Popup wurde blockiert!\n\n📋 Bitte manuell öffnen:\n\n${vercelDeploymentsUrl}\n\n💡 Tipp: Kopiere den Link und öffne ihn in einem neuen Tab`)
                     }
-                  }, 500)
-                  
-                  alert(`✅✅✅ VERÖFFENTLICHUNG ERFOLGREICH! ✅✅✅\n\n📁 Datei geschrieben: public/gallery-data.json\n📊 Größe: ${(result.size / 1024).toFixed(1)} KB\n📦 Version: ${newVersion}\n\n📦 Git:\n${gitOutput}\n\n🚀 Vercel:\n⏳ Deployment startet automatisch (1-2 Minuten)\n📜 Veröffentlichungsgeschichte wurde geöffnet\n\n📱 MOBILE AKTUALISIEREN (WICHTIG!):\n\n1. ⏰ Warte 2-3 Minuten bis Deployment fertig ist\n2. 📱 QR-Code NEU scannen (sehr wichtig!)\n3. 🔄 Oder: Im Browser Cache leeren (Cmd+Shift+R)\n\n⚠️ WICHTIG:\n- QR-Code muss NEU gescannt werden!\n- Alter QR-Code zeigt alte Daten!\n- Warte bis Deployment fertig ist!\n\n💡 Prüfe Status mit "🔍 Vercel-Status" Button`)
+                  } else {
+                    // Nutzer möchte nicht öffnen - zeige Link
+                    alert(`📋 Vercel Deployments-Seite:\n\n${vercelDeploymentsUrl}\n\n💡 Tipp: Kopiere den Link und öffne ihn in einem neuen Tab\n\n📱 MOBILE:\nWarte 2-3 Minuten, dann QR-Code NEU scannen!`)
+                  }
                 } else {
-                  // Git push fehlgeschlagen - zeige klare Anweisungen
-                  const errorMsg = gitError || 'Unbekannter Git-Fehler'
-                  alert(`⚠️⚠️⚠️ GIT PUSH FEHLGESCHLAGEN ⚠️⚠️⚠️\n\n📁 Datei geschrieben: public/gallery-data.json ✅\n📊 Größe: ${(result.size / 1024).toFixed(1)} KB\n\n❌ Git Push: FEHLGESCHLAGEN\n\n📋 BITTE MANUELL PUSHEN:\n\n1. Terminal öffnen\n2. cd /Users/georgkreinecker/k2Galerie\n3. git add public/gallery-data.json\n4. git commit -m "Update gallery-data.json"\n5. git push origin main\n\n💡 FEHLER-DETAILS:\n${errorMsg}\n\n⚠️ WICHTIG: Ohne Git Push kommt die Datei NICHT bei Vercel an!`)
+                  // Unklarer Status - zeige Warnung
+                  console.warn('⚠️ Unklarer Git Push Status:', {
+                    gitSuccess,
+                    gitExitCode,
+                    gitOutput,
+                    gitError
+                  })
+                  
+                  alert(`⚠️ WARNUNG: Git Push Status unklar!\n\n📁 Datei geschrieben: public/gallery-data.json ✅\n📊 Größe: ${(result.size / 1024).toFixed(1)} KB\n🎨 Werke: ${result.artworksCount || 0}\n\n❓ Git Push Status: Unklar\n\n📋 BITTE MANUELL PRÜFEN:\n\n1. Terminal öffnen\n2. cd /Users/georgkreinecker/k2Galerie\n3. git status\n4. Falls Änderungen: git add/commit/push manuell\n\n💡 OUTPUT:\n${gitOutput.substring(0, 1000)}\n\n⚠️ Prüfe Browser-Konsole für Details!`)
                 }
               } else {
                 throw new Error(result.error || 'Unbekannter Fehler')
               }
             })
             .catch(error => {
+              // WICHTIG: Setze isDeploying IMMER auf false bei Fehlern!
+              setIsDeploying(false)
+              
               if (!timeoutCleared) {
                 clearTimeout(timeoutId)
                 timeoutCleared = true
@@ -973,7 +1331,6 @@ function ScreenshotExportAdmin() {
               
               // Prüfe ob es ein Timeout war
               if (error.name === 'AbortError') {
-                if (isMountedRef.current) setIsDeploying(false)
                 alert('⚠️ API-Timeout:\n\nDie Anfrage dauerte zu lange.\n\n📋 Bitte manuell:\n1. Terminal öffnen\n2. cd /Users/georgkreinecker/k2Galerie\n3. Prüfe ob public/gallery-data.json existiert\n4. Falls ja: git add/commit/push manuell')
                 return
               }
@@ -1044,6 +1401,26 @@ function ScreenshotExportAdmin() {
     // Die Timeouts werden durch isMountedRef.current geschützt
   }
 
+  // KRITISCH: Behebe Duplikate beim initialen Laden
+  useEffect(() => {
+    let isMounted = true
+    const timeoutId = setTimeout(() => {
+      if (!isMounted) return
+      
+      // Lade Werke und behebe Duplikate
+      const artworks = loadArtworks() // Diese Funktion behebt automatisch Duplikate
+      if (isMounted) {
+        setAllArtworks(artworks)
+        console.log('✅ Werke geladen und Duplikate geprüft:', artworks.length)
+      }
+    }, 100)
+    
+    return () => {
+      isMounted = false
+      clearTimeout(timeoutId)
+    }
+  }, [])
+  
   // Automatisch Künstler basierend auf Kategorie setzen - NUR wenn Kategorie sich ändert
   useEffect(() => {
     let isMounted = true
@@ -1127,52 +1504,113 @@ function ScreenshotExportAdmin() {
     }
   }, [])
   
-  // WICHTIG: Prüfe Supabase für Mobile-Werke beim Mount
+  // WICHTIG: Automatische Synchronisation von Mobile-Werken beim Mount
+  // KRITISCH: Mobile-Werke werden automatisch geladen - kein manuelles Speichern nötig!
+  // CRASH-SCHUTZ: isMounted prüfen vor jedem setState/Event nach Unmount
   useEffect(() => {
+    let isMounted = true
+    
     const checkMobileUpdates = async () => {
       try {
-        // Importiere dynamisch um Fehler zu vermeiden wenn nicht verfügbar
-        const { loadArtworksFromSupabase } = await import('../src/utils/supabaseClient')
-        const supabaseArtworks = await loadArtworksFromSupabase()
+        if (!isMounted) return
+        // 1. Prüfe Supabase (falls konfiguriert)
+        try {
+          const { loadArtworksFromSupabase } = await import('../src/utils/supabaseClient')
+          const supabaseArtworks = await loadArtworksFromSupabase()
+          if (!isMounted) return
+          
+          if (supabaseArtworks && Array.isArray(supabaseArtworks) && supabaseArtworks.length > 0) {
+            console.log('📱 Mobile-Werke von Supabase geladen:', supabaseArtworks.length)
+            
+            const localArtworks = loadArtworks()
+            const merged = [...localArtworks]
+            
+            supabaseArtworks.forEach((supabaseArtwork: any) => {
+              const exists = merged.some((a: any) => 
+                (a.number && supabaseArtwork.number && a.number === supabaseArtwork.number) ||
+                (a.id && supabaseArtwork.id && a.id === supabaseArtwork.id)
+              )
+              if (!exists) {
+                merged.push(supabaseArtwork)
+              }
+            })
+            
+            if (merged.length > localArtworks.length && isMounted) {
+              console.log(`✅ ${merged.length - localArtworks.length} neue Mobile-Werke gefunden`)
+              const saved = saveArtworks(merged)
+              if (saved && isMounted) {
+                setAllArtworks(merged)
+              } else if (!saved) {
+                console.error('❌ Fehler beim Speichern der Mobile-Werke')
+              }
+            }
+          }
+        } catch (supabaseError) {
+          console.warn('⚠️ Supabase-Check fehlgeschlagen (normal wenn nicht konfiguriert):', supabaseError)
+        }
         
-        if (supabaseArtworks && Array.isArray(supabaseArtworks) && supabaseArtworks.length > 0) {
-          console.log('📱 Mobile-Werke von Supabase geladen:', supabaseArtworks.length)
+        if (!isMounted) return
+        // 2. KRITISCH: Automatische Synchronisation von Mobile-Werken vom Server
+        try {
+          const timestamp = Date.now()
+          const url = `/gallery-data.json?v=${timestamp}&t=${timestamp}&_=${Math.random()}`
           
-          // Merge mit lokalen Werken
-          const localArtworks = loadArtworks()
-          const merged = [...localArtworks]
-          
-          supabaseArtworks.forEach((supabaseArtwork: any) => {
-            const exists = merged.some((a: any) => 
-              (a.number && supabaseArtwork.number && a.number === supabaseArtwork.number) ||
-              (a.id && supabaseArtwork.id && a.id === supabaseArtwork.id)
-            )
-            if (!exists) {
-              merged.push(supabaseArtwork)
+          const response = await fetch(url, { 
+            cache: 'no-store',
+            method: 'GET',
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache'
             }
           })
           
-          if (merged.length > localArtworks.length) {
-            console.log(`✅ ${merged.length - localArtworks.length} neue Mobile-Werke gefunden`)
-            const saved = saveArtworks(merged)
-            if (saved) {
-              setAllArtworks(merged)
-            } else {
-              console.error('❌ Fehler beim Speichern der Mobile-Werke')
+          if (!isMounted) return
+          if (response.ok) {
+            const data = await response.json()
+            if (data.artworks && Array.isArray(data.artworks)) {
+              const serverArtworks = data.artworks
+              const localArtworks = loadArtworks()
+              
+              const mobileWorksOnServer = serverArtworks.filter((a: any) => 
+                (a.createdOnMobile || a.updatedOnMobile) && 
+                !localArtworks.some((local: any) => 
+                  (local.number && a.number && local.number === a.number) ||
+                  (local.id && a.id && local.id === a.id)
+                )
+              )
+              
+              if (mobileWorksOnServer.length > 0 && isMounted) {
+                console.log(`📱 ${mobileWorksOnServer.length} Mobile-Werke automatisch vom Server synchronisiert:`, mobileWorksOnServer.map((a: any) => a.number || a.id).join(', '))
+                
+                const merged = [...localArtworks, ...mobileWorksOnServer]
+                const saved = saveArtworks(merged)
+                
+                if (saved && isMounted) {
+                  console.log(`✅ ${mobileWorksOnServer.length} Mobile-Werke automatisch synchronisiert - kein manuelles Speichern nötig!`)
+                  setAllArtworks(merged)
+                  window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: merged.length, mobileSync: true, autoSync: true } }))
+                } else if (!saved) {
+                  console.error('❌ Fehler beim automatischen Speichern der Mobile-Werke')
+                }
+              } else if (mobileWorksOnServer.length === 0) {
+                console.log('ℹ️ Keine neuen Mobile-Werke auf dem Server gefunden')
+              }
             }
           }
+        } catch (serverError) {
+          console.warn('⚠️ Automatische Synchronisation von Mobile-Werken fehlgeschlagen:', serverError)
         }
       } catch (error) {
-        console.warn('⚠️ Supabase-Check fehlgeschlagen (normal wenn nicht konfiguriert):', error)
+        console.warn('⚠️ Fehler beim Prüfen auf Mobile-Updates:', error)
       }
     }
     
-    // Prüfe nach kurzer Verzögerung
     const timeoutId = setTimeout(() => {
-      checkMobileUpdates()
+      if (isMounted) checkMobileUpdates()
     }, 2000)
     
     return () => {
+      isMounted = false
       clearTimeout(timeoutId)
     }
   }, [])
@@ -5340,18 +5778,63 @@ ${'='.repeat(60)}
   // Kategorie-basiert: K für Keramik, M für Malerei
   // WICHTIG: Unterstützt auch alte Nummern ohne K/M Präfix (z.B. "K2-0001")
   const generateArtworkNumber = async (category: 'malerei' | 'keramik' = 'malerei') => {
-    // Lade alle artworks (lokal)
-    const localArtworks = loadArtworks()
-    
     // Bestimme Präfix basierend auf Kategorie
     const prefix = category === 'keramik' ? 'K' : 'M'
     const categoryPrefix = `K2-${prefix}-`
     
+    // Lade alle artworks (lokal)
+    const localArtworks = loadArtworks()
+    
+    // Versuche auch gallery-data.json zu laden (für Synchronisation ohne Supabase)
+    let serverArtworks: any[] = []
+    try {
+      const response = await fetch('/gallery-data.json?' + Date.now(), {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        serverArtworks = data.artworks || []
+        console.log('📡 Server-Nummern geladen (gallery-data.json):', serverArtworks.length, 'Werke')
+      }
+    } catch (e) {
+      console.log('⚠️ Server-Check fehlgeschlagen, verwende nur lokale Nummer')
+    }
+    
     // Finde maximale Nummer aus artworks der GLEICHEN Kategorie
     // WICHTIG: Unterstützt auch alte Nummern ohne Präfix
     let maxNumber = 0
+    const usedNumbers = new Set<string>()
+    
+    // ZUERST Server-Nummern prüfen (höchste Priorität - synchronisiert über gallery-data.json)
+    if (serverArtworks && Array.isArray(serverArtworks)) {
+      serverArtworks.forEach((a: any) => {
+        if (!a.number) return
+        usedNumbers.add(a.number)
+        
+        if (a.number.startsWith(categoryPrefix)) {
+          const numStr = a.number.replace(categoryPrefix, '').replace(/[^0-9]/g, '')
+          const num = parseInt(numStr || '0')
+          if (num > maxNumber) {
+            maxNumber = num
+          }
+        } else if (a.number.startsWith('K2-') && !a.number.includes('-K-') && !a.number.includes('-M-')) {
+          const numStr = a.number.replace('K2-', '').replace(/[^0-9]/g, '')
+          const num = parseInt(numStr || '0')
+          if (num > maxNumber) {
+            maxNumber = num
+          }
+        }
+      })
+    }
+    
+    // DANN lokale Nummern prüfen
     localArtworks.forEach((a: any) => {
       if (!a.number) return
+      usedNumbers.add(a.number)
       
       // Prüfe ob neue Nummer mit K/M Präfix
       if (a.number.startsWith(categoryPrefix)) {
@@ -5373,42 +5856,35 @@ ${'='.repeat(60)}
       }
     })
     
-    // Versuche auch Supabase zu prüfen (falls verfügbar)
-    try {
-      const { loadArtworksFromSupabase } = await import('../src/utils/supabaseClient')
-      const supabaseArtworks = await loadArtworksFromSupabase()
-      if (supabaseArtworks && Array.isArray(supabaseArtworks)) {
-        supabaseArtworks.forEach((a: any) => {
-          if (!a.number) return
-          
-          if (a.number.startsWith(categoryPrefix)) {
-            const numStr = a.number.replace(categoryPrefix, '').replace(/[^0-9]/g, '')
-            const num = parseInt(numStr || '0')
-            if (num > maxNumber) {
-              maxNumber = num
-            }
-          } else if (a.number.startsWith('K2-') && !a.number.includes('-K-') && !a.number.includes('-M-')) {
-            const numStr = a.number.replace('K2-', '').replace(/[^0-9]/g, '')
-            const num = parseInt(numStr || '0')
-            if (num > maxNumber) {
-              maxNumber = num
-            }
-          }
-        })
-      }
-    } catch (e) {
-      // Ignoriere Fehler - verwende nur lokale Nummer
-      console.log('⚠️ Supabase-Check fehlgeschlagen, verwende nur lokale Nummer')
+    // Die nächste Nummer ist maxNumber + 1
+    let nextNumber = maxNumber + 1
+    let formattedNumber = `${categoryPrefix}${String(nextNumber).padStart(4, '0')}`
+    
+    // KRITISCH: Prüfe auf Konflikte und erhöhe bis eindeutig
+    // Dies verhindert doppelte Nummern bei gleichzeitiger Erstellung auf mehreren Geräten
+    let attempts = 0
+    while (usedNumbers.has(formattedNumber) && attempts < 100) {
+      nextNumber++
+      formattedNumber = `${categoryPrefix}${String(nextNumber).padStart(4, '0')}`
+      attempts++
     }
     
-    // Die nächste Nummer ist maxNumber + 1
-    const nextNumber = maxNumber + 1
-    const formattedNumber = `${categoryPrefix}${String(nextNumber).padStart(4, '0')}`
+    // Falls immer noch Konflikt: Verwende Timestamp + Device-ID für eindeutige Nummer
+    if (usedNumbers.has(formattedNumber)) {
+      const deviceId = localStorage.getItem('k2-device-id') || `device-${Date.now()}-${Math.random().toString(36).substring(7)}`
+      if (!localStorage.getItem('k2-device-id')) {
+        localStorage.setItem('k2-device-id', deviceId)
+      }
+      const timestamp = Date.now().toString().slice(-6) // Letzte 6 Ziffern
+      const deviceHash = deviceId.split('-').pop()?.substring(0, 2) || Math.floor(Math.random() * 100).toString().padStart(2, '0')
+      formattedNumber = `${categoryPrefix}${timestamp}${deviceHash}`
+      console.warn('⚠️ Konflikt erkannt - verwende eindeutige Device+Timestamp-Nummer:', formattedNumber)
+    }
     
     // Speichere auch in localStorage für Rückwärtskompatibilität (kategorie-spezifisch)
     localStorage.setItem(`k2-last-artwork-number-${prefix}`, String(nextNumber))
     
-    console.log('🔢 Neue Nummer generiert:', formattedNumber, '(Kategorie:', category, ', max gefunden:', maxNumber, ')')
+    console.log('🔢 Neue Nummer generiert:', formattedNumber, '(Kategorie:', category, ', max gefunden:', maxNumber, ', Versuche:', attempts, ')')
     return formattedNumber
   }
 
@@ -5475,16 +5951,17 @@ ${'='.repeat(60)}
     e.target.value = ''
   }
 
-  // Kamera öffnen - auf Desktop mit MediaDevices API, auf Mobile mit capture
+  // Kamera öffnen - auf Desktop mit MediaDevices API, auf Mobile/iPad mit capture
   const handleCameraClick = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
 
-    // Prüfe ob wir auf einem mobilen Gerät sind
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+    // Prüfe ob wir auf einem mobilen Gerät oder iPad sind
+    const isIPad = /iPad/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    const isMobile = /iPhone|iPod|Android/i.test(navigator.userAgent) || isIPad
     
-    if (isMobile) {
-      // Auf Mobile: Verwende capture Attribut
+    if (isMobile || isIPad) {
+      // Auf Mobile/iPad: Verwende capture Attribut
       const input = document.getElementById('camera-input-direct') as HTMLInputElement
       if (input) {
         input.value = ''
@@ -5743,10 +6220,21 @@ ${'='.repeat(60)}
       finalTitle = subcategoryLabels[artworkCeramicSubcategory] || 'Keramik'
     }
     
+    // Prüfe ob Nummer bereits existiert (Konflikt-Erkennung)
+    const existingArtworks = loadArtworks()
+    const existingWithSameNumber = existingArtworks.find((a: any) => a.number === newArtworkNumber && (!editingArtwork || (a.id !== editingArtwork.id && a.number !== editingArtwork.number)))
+    
+    // Falls Konflikt: Generiere neue eindeutige Nummer
+    let finalArtworkNumber = newArtworkNumber
+    if (existingWithSameNumber && !editingArtwork) {
+      console.warn('⚠️ Nummer bereits vorhanden:', newArtworkNumber, '- generiere neue Nummer')
+      finalArtworkNumber = await generateArtworkNumber(artworkCategory)
+    }
+    
     // Werk-Daten speichern
     const artworkData: any = {
-      id: newArtworkNumber,
-      number: newArtworkNumber,
+      id: finalArtworkNumber,
+      number: finalArtworkNumber,
       title: finalTitle,
       category: artworkCategory,
       artist: artworkArtist,
@@ -5755,7 +6243,17 @@ ${'='.repeat(60)}
       inExhibition: isInExhibition,
       inShop: isInShop,
       imageUrl: imageDataUrl, // Komprimierte Data URL
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      // Markiere als Mobile-Werk für bessere Synchronisation
+      createdOnMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
+      deviceId: localStorage.getItem('k2-device-id') || `device-${Date.now()}-${Math.random().toString(36).substring(7)}`
+    }
+    
+    // Erstelle/Setze Device-ID falls nicht vorhanden
+    if (!localStorage.getItem('k2-device-id')) {
+      const deviceId = `device-${Date.now()}-${Math.random().toString(36).substring(7)}`
+      localStorage.setItem('k2-device-id', deviceId)
+      artworkData.deviceId = deviceId
     }
     
     // Malerei-spezifische Daten hinzufügen
@@ -5787,6 +6285,52 @@ ${'='.repeat(60)}
     // Werk in localStorage speichern
     const artworks = loadArtworks()
     
+    // KRITISCH: Prüfe auf doppelte Nummern und behebe Konflikte
+    const duplicateNumbers = new Map<string, any[]>()
+    artworks.forEach((a: any) => {
+      if (a.number) {
+        if (!duplicateNumbers.has(a.number)) {
+          duplicateNumbers.set(a.number, [])
+        }
+        duplicateNumbers.get(a.number)!.push(a)
+      }
+    })
+    
+    // Behebe Konflikte: Behalte das neueste Werk, benenne andere um
+    duplicateNumbers.forEach((duplicates, number) => {
+      if (duplicates.length > 1) {
+        console.warn(`⚠️ Doppelte Nummer gefunden: ${number} (${duplicates.length} Werke)`)
+        // Sortiere nach createdAt (neuestes zuerst)
+        duplicates.sort((a: any, b: any) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+          return dateB - dateA
+        })
+        
+        // Behalte das erste (neueste), benenne andere um
+        for (let i = 1; i < duplicates.length; i++) {
+          const duplicate = duplicates[i]
+          const newNumber = `${number}-${i}`
+          console.log(`🔄 Umbenennen: ${number} → ${newNumber}`)
+          
+          // Finde und aktualisiere im artworks Array
+          const index = artworks.findIndex((a: any) => 
+            a.id === duplicate.id || (a.number === duplicate.number && a.createdAt === duplicate.createdAt)
+          )
+          if (index !== -1) {
+            artworks[index].number = newNumber
+            artworks[index].id = newNumber
+            if (artworks[index].number === finalArtworkNumber && !editingArtwork) {
+              // Falls das aktuelle Werk betroffen ist, aktualisiere auch artworkData
+              finalArtworkNumber = newNumber
+              artworkData.number = newNumber
+              artworkData.id = newNumber
+            }
+          }
+        }
+      }
+    })
+    
     if (editingArtwork) {
       // Bestehendes Werk aktualisieren
       const index = artworks.findIndex((a: any) => 
@@ -5796,37 +6340,86 @@ ${'='.repeat(60)}
       if (index !== -1) {
         // Behalte createdAt wenn vorhanden, sonst setze aktuelles Datum
         artworkData.createdAt = artworks[index].createdAt || new Date().toISOString()
+        artworkData.updatedOnMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
         artworks[index] = artworkData
       } else {
         // Falls nicht gefunden, als neues Werk hinzufügen
         artworks.push(artworkData)
       }
     } else {
-      // Neues Werk hinzufügen
+      // Neues Werk hinzufügen - prüfe nochmal ob Nummer eindeutig ist
+      const existing = artworks.find((a: any) => a.number === finalArtworkNumber)
+      if (existing) {
+        // Falls immer noch Konflikt: Verwende Timestamp-basierte Nummer
+        const timestamp = Date.now().toString().slice(-6)
+        const random = Math.floor(Math.random() * 100).toString().padStart(2, '0')
+        const prefix = artworkCategory === 'keramik' ? 'K' : 'M'
+        finalArtworkNumber = `K2-${prefix}-${timestamp}${random}`
+        artworkData.number = finalArtworkNumber
+        artworkData.id = finalArtworkNumber
+        console.warn('⚠️ Letzter Konflikt-Fallback - neue Nummer:', finalArtworkNumber)
+      }
       artworks.push(artworkData)
+    }
+    
+    // KRITISCH: Wenn Mobile-Werk gespeichert wird, automatisch Event auslösen für Synchronisation
+    if (artworkData.createdOnMobile || artworkData.updatedOnMobile) {
+      console.log(`📱 Mobile-Werk gespeichert: ${artworkData.number || artworkData.id} - Event für Synchronisation ausgelöst`)
+      // Event auslösen damit andere Geräte das neue Werk erkennen können
+      window.dispatchEvent(new CustomEvent('mobile-artwork-saved', { 
+        detail: { artwork: artworkData } 
+      }))
     }
     
     try {
       const dataToStore = JSON.stringify(artworks)
       
-      // Prüfe localStorage-Größe
-      // Für mobile: kleineres Limit (3MB statt 5MB)
+      // Prüfe localStorage-Größe und führe automatisches Cleanup durch
       const currentSize = new Blob([dataToStore]).size
-      const maxSize = 3 * 1024 * 1024 // 3MB für mobile Optimierung
+      const maxSize = 3.5 * 1024 * 1024 // 3.5MB Limit (unter 5MB Browser-Limit)
       
       if (currentSize > maxSize) {
-        // Versuche alte Werke zu löschen
-        const sortedArtworks = artworks.sort((a: any, b: any) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        )
+        // Automatisches Cleanup: Entferne große Bilder und alte Werke
+        console.log(`⚠️ Daten zu groß (${(currentSize / 1024 / 1024).toFixed(2)}MB) - führe Cleanup durch...`)
         
-        // Behalte nur die 15 neuesten Werke (für mobile: weniger Werke = weniger Speicher)
-        const keptArtworks = sortedArtworks.slice(0, 15)
-        const keptData = JSON.stringify(keptArtworks)
+        // 1. Komprimiere große Bilder (entferne sehr große Bilder >500KB)
+        const cleanedArtworks = artworks.map((artwork: any) => {
+          if (artwork.imageUrl && artwork.imageUrl.length > 500000) { // Über 500KB
+            console.log(`🗜️ Entferne sehr großes Bild von Werk ${artwork.number || artwork.id} (${(artwork.imageUrl.length / 1024).toFixed(0)}KB)`)
+            return { ...artwork, imageUrl: '' }
+          }
+          return artwork
+        })
         
-        if (new Blob([keptData]).size > maxSize) {
-          alert('localStorage ist voll. Bitte lösche einige alte Werke manuell oder verwende kleinere Bilder.')
-          return
+        // 2. Sortiere nach Datum (neueste zuerst)
+        const sortedArtworks = cleanedArtworks.sort((a: any, b: any) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+          return dateB - dateA
+        })
+        
+        // 3. Behalte nur die 20 neuesten Werke
+        let keptArtworks = sortedArtworks.slice(0, 20)
+        let keptData = JSON.stringify(keptArtworks)
+        let keptSize = new Blob([keptData]).size
+        
+        // 4. Falls immer noch zu groß: Entferne mehr alte Werke
+        if (keptSize > maxSize) {
+          keptArtworks = sortedArtworks.slice(0, 15)
+          keptData = JSON.stringify(keptArtworks)
+          keptSize = new Blob([keptData]).size
+          
+          if (keptSize > maxSize) {
+            // Letzter Versuch: Nur 10 neueste Werke
+            keptArtworks = sortedArtworks.slice(0, 10)
+            keptData = JSON.stringify(keptArtworks)
+            keptSize = new Blob([keptData]).size
+            
+            if (keptSize > maxSize) {
+              alert(`⚠️ localStorage ist voll (${(currentSize / 1024 / 1024).toFixed(2)}MB)!\n\nBitte lösche einige alte Werke manuell oder verwende kleinere Bilder.\n\nAutomatisches Cleanup konnte nicht genug Platz schaffen.`)
+              return
+            }
+          }
         }
         
         const saved = saveArtworks(keptArtworks)
@@ -5835,7 +6428,11 @@ ${'='.repeat(60)}
           alert('⚠️ Fehler beim Speichern! Bitte versuche es erneut.')
           return
         }
-        alert(`Hinweis: Die ältesten Werke wurden automatisch gelöscht, um Platz zu schaffen.`)
+        
+        const removedCount = artworks.length - keptArtworks.length
+        if (removedCount > 0) {
+          alert(`⚠️ localStorage war zu voll!\n\nDie ältesten ${removedCount} Werke wurden automatisch gelöscht.\n\nBitte verwende kleinere Bilder um Platz zu sparen.`)
+        }
       } else {
         const saved = saveArtworks(artworks)
         if (!saved) {
@@ -5876,6 +6473,38 @@ ${'='.repeat(60)}
         gesamtAnzahl: verifyStored.length,
         alleNummern: verifyStored.map((a: any) => a.number || a.id)
       })
+      
+      // KRITISCH: Markiere Nummer als verwendet für bessere Synchronisation
+      // Speichere Nummer in separatem Index für schnelle Prüfung
+      try {
+        const numberIndex = JSON.parse(localStorage.getItem('k2-number-index') || '[]')
+        if (!numberIndex.includes(artworkData.number)) {
+          numberIndex.push(artworkData.number)
+          localStorage.setItem('k2-number-index', JSON.stringify(numberIndex))
+          console.log('✅ Nummer im Index gespeichert:', artworkData.number)
+        }
+      } catch (e) {
+        console.warn('⚠️ Nummer-Index fehlgeschlagen:', e)
+      }
+      
+      // Optional: Versuche Supabase-Sync (falls konfiguriert)
+      try {
+        const { isSupabaseConfigured, saveArtworkToSupabase, autoSyncMobileToSupabase } = await import('../src/utils/supabaseClient')
+        if (isSupabaseConfigured()) {
+          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
+          
+          if (isMobile) {
+            await autoSyncMobileToSupabase()
+            console.log('✅ Mobile-Sync erfolgreich - Nummer synchronisiert:', artworkData.number)
+          } else {
+            await saveArtworkToSupabase(artworkData)
+            console.log('✅ Desktop-Sync erfolgreich - Nummer synchronisiert:', artworkData.number)
+          }
+        }
+      } catch (syncError) {
+        // Nicht kritisch - Supabase ist optional
+        console.log('ℹ️ Supabase nicht konfiguriert oder Sync fehlgeschlagen (optional)')
+      }
       
       // KRITISCH: Aktualisiere lokale Liste SOFORT
       const reloaded = loadArtworks()
@@ -5926,21 +6555,7 @@ ${'='.repeat(60)}
         })
       }, 100)
       
-      // Bestätigung für Benutzer
-      alert(`✅ Werk gespeichert!\n\nNummer: ${artworkData.number}\nTitel: ${artworkData.title}\nKategorie: ${artworkData.category}\n\nGesamt Werke: ${reloaded.length}\n\nDas Werk sollte jetzt in der Liste erscheinen.`)
-      
-      // Event dispatchen, damit Galerie-Seite sich aktualisiert
-      window.dispatchEvent(new CustomEvent('artworks-updated', { 
-        detail: { count: reloaded.length, newArtwork: artworkData.number } 
-      }))
-      
-      // WICHTIG: Dispatch Event für automatisches Veröffentlichen
-      // DevViewPage hört auf dieses Event und ruft publishMobile() auf
-      window.dispatchEvent(new CustomEvent('artwork-saved-needs-publish', { 
-        detail: { artworkCount: reloaded.length } 
-      }))
-      
-      // Gespeichertes Werk für Druck-Modal
+      // Gespeichertes Werk für Druck-Modal ZUERST setzen
       setSavedArtwork({
         ...artworkData,
         file: selectedFile // Für QR-Code-Generierung behalten
@@ -5964,12 +6579,27 @@ ${'='.repeat(60)}
       setArtworkPrice('')
       setIsInShop(true)
       
+      // Event dispatchen, damit Galerie-Seite sich aktualisiert
+      window.dispatchEvent(new CustomEvent('artworks-updated', { 
+        detail: { count: reloaded.length, newArtwork: artworkData.number } 
+      }))
+      
+      // WICHTIG: Dispatch Event für automatisches Veröffentlichen
+      // DevViewPage hört auf dieses Event und ruft publishMobile() auf
+      window.dispatchEvent(new CustomEvent('artwork-saved-needs-publish', { 
+        detail: { artworkCount: reloaded.length } 
+      }))
+      
       // NICHT nochmal setAllArtworks aufrufen - wurde bereits oben gemacht!
       // Die Liste wurde bereits mit reloaded aktualisiert
       
       // Druck-Modal nur bei neuem Werk öffnen (nicht bei Bearbeitung)
+      // WICHTIG: Kurze Verzögerung damit State aktualisiert wird und Alert nicht blockiert
       if (!editingArtwork) {
-        setShowPrintModal(true)
+        // Kein Alert mehr - direkt Modal öffnen für bessere UX
+        setTimeout(() => {
+          setShowPrintModal(true)
+        }, 200)
       } else {
         alert('✅ Werk erfolgreich aktualisiert!')
       }
@@ -7081,6 +7711,56 @@ ${'='.repeat(60)}
                 >
                   🔄 Mobile-Werke laden
                 </button>
+                {/* Mobile-Veröffentlichen Button - nur auf Mobile-Geräten sichtbar */}
+                {(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) && (
+                  <button 
+                    onClick={() => {
+                      const mobileWorks = allArtworks.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
+                      if (mobileWorks.length === 0) {
+                        alert('ℹ️ Keine Mobile-Werke zum Veröffentlichen gefunden.\n\nMobile-Werke werden automatisch veröffentlicht, wenn sie gespeichert werden.')
+                        return
+                      }
+                      if (confirm(`📱 Mobile-Werke veröffentlichen?\n\n${mobileWorks.length} Mobile-Werk(e) werden veröffentlicht:\n${mobileWorks.slice(0, 5).map((a: any) => `• ${a.number || a.id}`).join('\n')}${mobileWorks.length > 5 ? `\n... und ${mobileWorks.length - 5} weitere` : ''}\n\nNach der Veröffentlichung sind die Werke auf allen Geräten sichtbar.`)) {
+                        publishMobile()
+                      }
+                    }}
+                    disabled={isDeploying}
+                    style={{
+                      padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                      background: isDeploying 
+                        ? 'rgba(255, 255, 255, 0.2)' 
+                        : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                      fontWeight: '600',
+                      cursor: isDeploying ? 'not-allowed' : 'pointer',
+                      transition: 'all 0.3s ease',
+                      boxShadow: isDeploying 
+                        ? 'none' 
+                        : '0 10px 30px rgba(245, 158, 11, 0.4)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      opacity: isDeploying ? 0.6 : 1
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isDeploying) {
+                        e.currentTarget.style.transform = 'translateY(-2px)'
+                        e.currentTarget.style.boxShadow = '0 15px 40px rgba(245, 158, 11, 0.5)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isDeploying) {
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = '0 10px 30px rgba(245, 158, 11, 0.4)'
+                      }
+                    }}
+                  >
+                    {isDeploying ? '⏳ Veröffentlichen...' : '🚀 Mobile-Werke veröffentlichen'}
+                  </button>
+                )}
                 <button 
                   onClick={() => {
                     navigate(PROJECT_ROUTES['k2-galerie'].platzanordnung)
@@ -7110,38 +7790,6 @@ ${'='.repeat(60)}
                   }}
                 >
                   📍 Platzanordnung
-                </button>
-                <button 
-                  onClick={() => {
-                    const stored = loadArtworks()
-                    const mobileArtworks = stored.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
-                    alert(`📊 Debug Info:\n\nGesamt Werke: ${stored.length}\nMobile-Werke: ${mobileArtworks.length}\n\nNummern:\n${stored.map((a: any) => `${a.number || a.id}${(a.createdOnMobile || a.updatedOnMobile) ? ' (Mobile)' : ''}`).join('\n')}\n\nAngezeigt: ${allArtworks.length}`)
-                    console.log('📊 Debug - Gespeicherte Werke:', stored)
-                    console.log('📊 Debug - Mobile-Werke:', mobileArtworks)
-                    console.log('📊 Debug - Angezeigte Werke:', allArtworks)
-                  }}
-                  style={{
-                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                    background: 'rgba(255, 193, 7, 0.9)',
-                    color: '#0a0e27',
-                    border: 'none',
-                    borderRadius: '12px',
-                    fontSize: 'clamp(0.85rem, 2.5vw, 0.95rem)',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 16px rgba(255, 193, 7, 0.5)',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 15px 40px rgba(255, 193, 7, 0.6)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = '0 4px 16px rgba(255, 193, 7, 0.5)'
-                  }}
-                >
-                  🔍 Debug
                 </button>
               <div style={{ position: 'relative' }} data-export-menu>
                 <button 
@@ -8285,11 +8933,42 @@ ${'='.repeat(60)}
               >
                 🎨 Design
               </button>
+              <button
+                onClick={() => setSettingsSubTab('drucker')}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  fontWeight: settingsSubTab === 'drucker' ? '600' : '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  background: settingsSubTab === 'drucker'
+                    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                    : 'rgba(255, 255, 255, 0.05)',
+                  color: '#ffffff'
+                }}
+              >
+                🖨️ Drucker
+              </button>
             </div>
 
             {/* Stammdaten Sub-Tab */}
             {settingsSubTab === 'stammdaten' && (
               <div>
+                {isOeffentlichAdminContext() && (
+                  <div style={{
+                    padding: '0.75rem 1rem',
+                    marginBottom: '1rem',
+                    background: 'rgba(184, 184, 255, 0.15)',
+                    border: '1px solid rgba(184, 184, 255, 0.4)',
+                    borderRadius: '8px',
+                    color: '#b8b8ff',
+                    fontSize: '0.9rem'
+                  }}>
+                    🔒 Demo-Modus (ök2): Nur Musterdaten – Speichern schreibt keine echten K2-Daten.
+                  </div>
+                )}
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -8313,7 +8992,7 @@ ${'='.repeat(60)}
                       borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
                       paddingBottom: '0.5rem'
                     }}>
-                      👩‍🎨 Martina
+                      👩‍🎨 {isOeffentlichAdminContext() ? MUSTER_TEXTE.martina.name : (martinaData.name || 'Künstlerin')}
                     </h3>
                     <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                       <div className="field">
@@ -8356,7 +9035,7 @@ ${'='.repeat(60)}
                       borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
                       paddingBottom: '0.5rem'
                     }}>
-                      👨‍🎨 Georg
+                      👨‍🎨 {isOeffentlichAdminContext() ? MUSTER_TEXTE.georg.name : (georgData.name || 'Künstler')}
                     </h3>
                     <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                       <div className="field">
@@ -8433,48 +9112,18 @@ ${'='.repeat(60)}
                         />
                       </div>
                       <div className="field">
-                        <label style={{ fontSize: '0.85rem' }}>Internetadresse</label>
+                        <label style={{ fontSize: '0.85rem' }}>Website</label>
                         <input
                           type="url"
-                          value={galleryData.internetadresse || galleryData.website || ''}
+                          value={galleryData.website || ''}
                           onChange={(e) => {
                             const value = e.target.value.trim()
                             setGalleryData({ 
                               ...galleryData, 
-                              internetadresse: value,
-                              website: value // Synchronisiere auch website
+                              website: value
                             })
                           }}
                           placeholder="https://k2-galerie.at"
-                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
-                        />
-                        <small style={{ color: '#8fa0c9', fontSize: '0.75rem', marginTop: '0.25rem', display: 'block' }}>
-                          URL unter der die Seite erreichbar ist
-                        </small>
-                      </div>
-                      <div className="field">
-                        <label style={{ fontSize: '0.85rem' }}>Bankverbindung</label>
-                        <textarea
-                          value={galleryData.bankverbindung || ''}
-                          onChange={(e) => setGalleryData({ ...galleryData, bankverbindung: e.target.value })}
-                          placeholder="IBAN: AT...&#10;BIC: ...&#10;Bank: ..."
-                          rows={4}
-                          style={{ 
-                            padding: '0.6rem', 
-                            fontSize: '0.9rem',
-                            fontFamily: 'inherit',
-                            resize: 'vertical',
-                            minHeight: '80px'
-                          }}
-                        />
-                      </div>
-                      <div className="field">
-                        <label style={{ fontSize: '0.85rem' }}>Admin-Passwort</label>
-                        <input
-                          type="password"
-                          value={galleryData.adminPassword || 'k2Galerie2026'}
-                          onChange={(e) => setGalleryData({ ...galleryData, adminPassword: e.target.value })}
-                          placeholder="Admin-Zugangscode"
                           style={{ padding: '0.6rem', fontSize: '0.9rem' }}
                         />
                       </div>
@@ -8613,99 +9262,6 @@ ${'='.repeat(60)}
                     💾 Stammdaten speichern
                   </button>
                   
-                  <button 
-                    className="btn-primary" 
-                    onClick={publishMobile}
-                    disabled={isDeploying}
-                    style={{
-                      padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 3vw, 2rem)',
-                      fontSize: 'clamp(0.9rem, 2vw, 1rem)',
-                      width: '100%',
-                      background: isDeploying 
-                        ? 'rgba(184, 184, 255, 0.5)' 
-                        : 'linear-gradient(135deg, rgba(184, 184, 255, 0.2) 0%, rgba(184, 184, 255, 0.4) 100%)',
-                      border: '1px solid rgba(184, 184, 255, 0.6)',
-                      cursor: isDeploying ? 'wait' : 'pointer',
-                      opacity: isDeploying ? 0.7 : 1
-                    }}
-                  >
-                    {isDeploying ? '⏳ Veröffentliche...' : '🚀 Mobile Version veröffentlichen'}
-                  </button>
-                  
-                  <button
-                    onClick={manualCheckVercel}
-                    disabled={checkingVercel}
-                    style={{
-                      padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 3vw, 2rem)',
-                      fontSize: 'clamp(0.9rem, 2vw, 1rem)',
-                      width: '100%',
-                      marginTop: '0.5rem',
-                      background: checkingVercel 
-                        ? 'rgba(95, 251, 241, 0.3)' 
-                        : 'linear-gradient(135deg, rgba(95, 251, 241, 0.2) 0%, rgba(95, 251, 241, 0.4) 100%)',
-                      border: '2px solid rgba(95, 251, 241, 0.6)',
-                      borderRadius: '8px',
-                      color: '#5ffbf1',
-                      fontWeight: '600',
-                      cursor: checkingVercel ? 'wait' : 'pointer',
-                      opacity: checkingVercel ? 0.7 : 1,
-                      boxShadow: '0 4px 12px rgba(95, 251, 241, 0.2)'
-                    }}
-                  >
-                    {checkingVercel ? '⏳ Prüfe Vercel...' : '🔍 Vercel-Status prüfen'}
-                  </button>
-                  
-                  {/* Veröffentlichungsgeschichte Button */}
-                  <button
-                    onClick={() => window.open('https://vercel.com/k2-galerie/k2-galerie/deployments', '_blank')}
-                    style={{
-                      padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 3vw, 2rem)',
-                      fontSize: 'clamp(0.9rem, 2vw, 1rem)',
-                      width: '100%',
-                      marginTop: '0.5rem',
-                      background: 'linear-gradient(135deg, rgba(255, 193, 7, 0.2) 0%, rgba(255, 193, 7, 0.4) 100%)',
-                      border: '2px solid rgba(255, 193, 7, 0.6)',
-                      borderRadius: '8px',
-                      color: '#ffc107',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 12px rgba(255, 193, 7, 0.2)'
-                    }}
-                  >
-                    📜 Veröffentlichungsgeschichte anzeigen
-                  </button>
-                  
-                  <button 
-                    onClick={() => {
-                      const before = checkLocalStorageSize()
-                      const cleaned = cleanupLargeImages()
-                      const after = checkLocalStorageSize()
-                      alert(`🧹 Bereinigung abgeschlossen!\n\nVorher: ${(before.size / 1024 / 1024).toFixed(2)}MB\nNachher: ${(after.size / 1024 / 1024).toFixed(2)}MB\n\n${cleaned > 0 ? `${cleaned} große Bilder entfernt` : 'Keine großen Bilder gefunden'}\n\n${getLocalStorageReport()}`)
-                    }}
-                    style={{
-                      padding: '0.5rem 1rem',
-                      fontSize: '0.85rem',
-                      width: '100%',
-                      background: 'rgba(255, 193, 7, 0.2)',
-                      color: '#ffc107',
-                      border: '1px solid rgba(255, 193, 7, 0.5)',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontWeight: 500,
-                      marginTop: '0.5rem'
-                    }}
-                  >
-                    🧹 localStorage bereinigen ({getLocalStorageReport().split('(')[1]?.split('%')[0] || '?'}%)
-                  </button>
-                  
-                  <small style={{ 
-                    color: '#8fa0c9', 
-                    fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)', 
-                    textAlign: 'center',
-                    marginTop: '0.5rem'
-                  }}>
-                    Öffnet Vercel → dann "Redeploy" klicken
-                  </small>
                 </div>
               </div>
             )}
@@ -9101,6 +9657,142 @@ ${'='.repeat(60)}
                   color: '#8fa0c9'
                 }}>
                   💡 <strong>Tipp:</strong> Die Design-Änderungen werden automatisch gespeichert und auf der gesamten Galerie-Seite angewendet. Aktualisiere die Seite, um die Änderungen zu sehen.
+                </div>
+              </div>
+            )}
+
+            {/* Drucker Sub-Tab */}
+            {settingsSubTab === 'drucker' && (
+              <div>
+                <h3 style={{
+                  fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                  fontWeight: '600',
+                  color: '#5ffbf1',
+                  marginBottom: '1.5rem'
+                }}>
+                  🖨️ Drucker-Einstellungen
+                </h3>
+
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                  gap: '1.5rem',
+                  marginBottom: '1.5rem'
+                }}>
+                  {/* Brother QL-820MWBc Einstellungen */}
+                  <div style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    padding: '1.5rem',
+                    borderRadius: '16px'
+                  }}>
+                    <h4 style={{
+                      marginTop: 0,
+                      marginBottom: '1rem',
+                      fontSize: '1.1rem',
+                      fontWeight: '600',
+                      color: '#ffffff',
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                      paddingBottom: '0.75rem'
+                    }}>
+                      Brother QL-820MWBc
+                    </h4>
+
+                    <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div className="field">
+                        <label style={{ fontSize: '0.9rem', color: '#8fa0c9', marginBottom: '0.5rem', display: 'block' }}>
+                          IP-Adresse
+                        </label>
+                        <input
+                          type="text"
+                          value={printerSettings.ipAddress}
+                          onChange={(e) => {
+                            const newSettings = { ...printerSettings, ipAddress: e.target.value }
+                            setPrinterSettings(newSettings)
+                            localStorage.setItem('k2-printer-ip', e.target.value)
+                          }}
+                          placeholder="192.168.1.102"
+                          style={{
+                            padding: '0.75rem',
+                            background: 'rgba(255, 255, 255, 0.1)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            borderRadius: '8px',
+                            color: '#ffffff',
+                            fontSize: '0.95rem',
+                            width: '100%'
+                          }}
+                        />
+                        <p style={{ fontSize: '0.8rem', color: '#8fa0c9', marginTop: '0.5rem', marginBottom: 0 }}>
+                          Aktuelle IP: 192.168.1.102 (auf mobilem Gerät als zweiter Router)
+                        </p>
+                      </div>
+
+                      <div className="field">
+                        <label style={{ fontSize: '0.9rem', color: '#8fa0c9', marginBottom: '0.5rem', display: 'block' }}>
+                          Drucker-Typ
+                        </label>
+                        <select
+                          value={printerSettings.printerType}
+                          onChange={(e) => {
+                            const newSettings = { ...printerSettings, printerType: e.target.value as 'etikettendrucker' | 'standarddrucker' }
+                            setPrinterSettings(newSettings)
+                            localStorage.setItem('k2-printer-type', e.target.value)
+                          }}
+                          style={{
+                            padding: '0.75rem',
+                            background: 'rgba(255, 255, 255, 0.1)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            borderRadius: '8px',
+                            color: '#ffffff',
+                            fontSize: '0.95rem',
+                            width: '100%'
+                          }}
+                        >
+                          <option value="etikettendrucker">Etikettendrucker</option>
+                          <option value="standarddrucker">Standarddrucker</option>
+                        </select>
+                      </div>
+
+                      <div style={{
+                        padding: '1rem',
+                        background: 'rgba(95, 251, 241, 0.1)',
+                        border: '1px solid rgba(95, 251, 241, 0.2)',
+                        borderRadius: '12px',
+                        fontSize: '0.85rem',
+                        color: '#8fa0c9'
+                      }}>
+                        <strong style={{ color: '#5ffbf1' }}>ℹ️ Info:</strong>
+                        <ul style={{ marginTop: '0.5rem', paddingLeft: '1.5rem' }}>
+                          <li>Drucker funktioniert bereits auf IP 192.168.1.102</li>
+                          <li>Zweiter Router auf mobilem Gerät installiert</li>
+                          <li>Zugriff von Mac, iPad und Handy möglich</li>
+                          <li>Einstellungen werden automatisch gespeichert</li>
+                        </ul>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          localStorage.setItem('k2-printer-ip', printerSettings.ipAddress)
+                          localStorage.setItem('k2-printer-type', printerSettings.printerType)
+                          alert('✅ Drucker-Einstellungen gespeichert!')
+                        }}
+                        style={{
+                          padding: '0.75rem 1.5rem',
+                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                          border: 'none',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          fontSize: '1rem',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          marginTop: '0.5rem'
+                        }}
+                      >
+                        💾 Einstellungen speichern
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

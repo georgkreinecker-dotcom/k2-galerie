@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { PLATFORM_ROUTES, PROJECT_ROUTES } from '../config/navigation'
-import { checkMobileUpdates } from '../utils/supabaseClient'
+
+// Smart Panel (SP) – Projekt-Status & Schnellzugriff (ohne Git Push, Mobile Sync, GitHub, Vercel; die sind woanders)
 
 // Helper: Lese persistent Boolean ohne Hook
 function getPersistentBoolean(key: string): boolean {
@@ -11,64 +12,9 @@ function getPersistentBoolean(key: string): boolean {
 
 interface SmartPanelProps {
   currentPage?: string
-  onGitPush?: () => void
 }
 
-export default function SmartPanel({ currentPage, onGitPush }: SmartPanelProps) {
-  const [vercelStatus, setVercelStatus] = useState<'checking' | 'deployed' | 'pending' | 'error' | null>(null)
-  const [mobileSyncAvailable, setMobileSyncAvailable] = useState(false)
-  
-  // Prüfe regelmäßig ob es neue Mobile-Daten gibt (nur auf Mac)
-  useEffect(() => {
-    const isMac = !/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && window.innerWidth > 768
-    if (!isMac) return // Nur auf Mac prüfen
-    
-    const checkForMobileUpdates = async () => {
-      try {
-        const { hasUpdates } = await checkMobileUpdates()
-        setMobileSyncAvailable(hasUpdates)
-      } catch (error) {
-        console.warn('⚠️ Mobile-Update-Check fehlgeschlagen:', error)
-      }
-    }
-    
-    // Sofort prüfen
-    checkForMobileUpdates()
-    
-    // Dann alle 10 Sekunden prüfen (häufiger für bessere Sync)
-    const interval = setInterval(checkForMobileUpdates, 10000)
-    return () => clearInterval(interval)
-  }, [])
-  
-  // Mobile-Daten synchronisieren (Mac → lokal)
-  const syncMobileData = async () => {
-    try {
-      const { hasUpdates, artworks } = await checkMobileUpdates()
-      if (hasUpdates && artworks) {
-        // Speichere in localStorage
-        localStorage.setItem('k2-artworks', JSON.stringify(artworks))
-        localStorage.setItem('k2-last-load-time', Date.now().toString())
-        
-        // Update Hash für bessere Update-Erkennung
-        const hash = artworks.map((a: any) => a.number || a.id).sort().join(',')
-        localStorage.setItem('k2-artworks-hash', hash)
-        
-        // Event für andere Komponenten
-        window.dispatchEvent(new CustomEvent('artworks-updated', { 
-          detail: { count: artworks.length, manualSync: true } 
-        }))
-        
-        setMobileSyncAvailable(false)
-        alert(`✅ ${artworks.length} Werke von Mobile synchronisiert!`)
-      } else {
-        alert('ℹ️ Keine neuen Mobile-Daten gefunden')
-      }
-    } catch (error) {
-      console.error('❌ Mobile-Sync Fehler:', error)
-      alert('⚠️ Fehler bei Mobile-Sync: ' + (error instanceof Error ? error.message : String(error)))
-    }
-  }
-  
+export default function SmartPanel({ currentPage }: SmartPanelProps) {
   // Projekt-Status berechnen
   const projectStatus = useMemo(() => {
     const projectId = 'k2-galerie'
@@ -94,88 +40,7 @@ export default function SmartPanel({ currentPage, onGitPush }: SmartPanelProps) 
     }
   }, [])
 
-  // Vercel Status prüfen
-  const checkVercelStatus = async () => {
-    setVercelStatus('checking')
-    try {
-      const response = await fetch('/api/vercel-status?' + Date.now(), {
-        cache: 'no-store',
-        headers: { 'Cache-Control': 'no-cache' }
-      })
-      if (response.ok) {
-        const data = await response.json()
-        console.log('📊 Vercel Status:', data)
-        // Status: 'ready', 'pending', oder 'error'
-        if (data.status === 'ready') {
-          setVercelStatus('deployed')
-        } else if (data.status === 'pending') {
-          setVercelStatus('pending')
-        } else {
-          setVercelStatus('error')
-        }
-      } else {
-        console.warn('⚠️ Vercel Status Fehler:', response.status, response.statusText)
-        setVercelStatus('error')
-      }
-    } catch (error) {
-      console.error('❌ Vercel Status Check Fehler:', error)
-      setVercelStatus('error')
-    }
-  }
-
-  useEffect(() => {
-    checkVercelStatus()
-    const interval = setInterval(checkVercelStatus, 30000) // Alle 30 Sekunden
-    return () => clearInterval(interval)
-  }, [])
-
   const quickActions = [
-    {
-      label: '📦 Git Push',
-      action: () => {
-        // Verwende handleGitPush von DevViewPage wenn verfügbar
-        if (onGitPush) {
-          onGitPush()
-        } else {
-          // Fallback: Zeige Anleitung (sollte nicht mehr vorkommen)
-          const commands = [
-            'cd /Users/georgkreinecker/k2Galerie',
-            'git add public/gallery-data.json',
-            'git commit -m "Update gallery-data.json"',
-            'git push origin main'
-          ]
-          alert(`📦 Git Push:\n\n💡 Option 1: Script ausführen\n   ./scripts/git-push-gallery-data.sh\n\n💡 Option 2: Manuell im Terminal\n   ${commands.join('\n   ')}\n\n✅ Nach Git Push:\n⏳ Vercel Deployment startet automatisch (1-2 Minuten)`)
-        }
-      },
-      hint: 'Git Push starten'
-    },
-    {
-      label: mobileSyncAvailable ? '📱 Mobile Sync (neu!)' : '📱 Mobile Sync',
-      action: syncMobileData,
-      hint: mobileSyncAvailable ? 'Neue Daten von Mobile verfügbar' : 'Prüfe Mobile-Daten',
-      highlight: mobileSyncAvailable
-    },
-    {
-      label: '📍 Platzanordnung',
-      action: () => {
-        window.location.href = PROJECT_ROUTES['k2-galerie'].platzanordnung
-      },
-      hint: 'Plätze verwalten & Etiketten drucken'
-    },
-    {
-      label: '🔑 GitHub Token',
-      action: () => {
-        window.location.href = PLATFORM_ROUTES.githubToken
-      },
-      hint: 'GitHub Token verwalten'
-    },
-    {
-      label: '🚀 Vercel',
-      action: () => {
-        window.open('https://vercel.com/dashboard', '_blank')
-      },
-      hint: 'Vercel Dashboard'
-    },
     {
       label: '📊 Mission Control',
       action: () => {
@@ -189,8 +54,28 @@ export default function SmartPanel({ currentPage, onGitPush }: SmartPanelProps) 
         window.location.href = PLATFORM_ROUTES.projects
       },
       hint: 'Alle Projekte'
+    },
+    {
+      label: '🌐 ök2',
+      action: () => {
+        window.location.href = PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+      },
+      hint: 'Öffentliche K2 Galerie (nur Muster)'
     }
   ]
+
+  // Service-QR (Lokal / Arbeitsplattform) – nur wenn wir nicht auf localhost sind
+  const localGalerieUrl = useMemo(() => {
+    if (typeof window === 'undefined') return ''
+    const hostname = window.location.hostname
+    if (!hostname || hostname === 'localhost' || hostname === '127.0.0.1') return ''
+    return `${window.location.protocol}//${hostname}:${window.location.port || '5177'}${PROJECT_ROUTES['k2-galerie'].galerie}`
+  }, [])
+
+  const serviceQrUrl = useMemo(() => {
+    if (!localGalerieUrl) return ''
+    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(localGalerieUrl)}`
+  }, [localGalerieUrl])
 
   const nextSteps = useMemo(() => {
     const steps: string[] = []
@@ -396,58 +281,62 @@ export default function SmartPanel({ currentPage, onGitPush }: SmartPanelProps) 
         </div>
       </div>
 
-      {/* Vercel Status */}
-      <div>
+      {/* Service-QR unten (für Arbeitsplattform, gelb) – immer sichtbar */}
+      <div style={{
+        border: '2px solid #eab308',
+        background: 'linear-gradient(180deg, rgba(234, 179, 8, 0.12) 0%, rgba(234, 179, 8, 0.04) 100%)',
+        borderRadius: '8px',
+        padding: '0.75rem',
+        marginTop: 'auto'
+      }}>
         <h4 style={{
           margin: '0 0 0.5rem 0',
           fontSize: '0.9rem',
-          color: '#5ffbf1',
+          color: '#eab308',
           fontWeight: 600
         }}>
-          🚀 Deployment Status
+          📶 Service / APf
         </h4>
-        <div style={{
-          padding: '0.75rem',
-          background: vercelStatus === 'deployed' 
-            ? 'rgba(34, 197, 94, 0.1)' 
-            : vercelStatus === 'pending'
-            ? 'rgba(251, 191, 36, 0.1)'
-            : vercelStatus === 'error'
-            ? 'rgba(239, 68, 68, 0.1)'
-            : 'rgba(95, 251, 241, 0.05)',
-          border: `1px solid ${
-            vercelStatus === 'deployed' 
-              ? 'rgba(34, 197, 94, 0.3)' 
-              : vercelStatus === 'pending'
-              ? 'rgba(251, 191, 36, 0.3)'
-              : vercelStatus === 'error'
-              ? 'rgba(239, 68, 68, 0.3)'
-              : 'rgba(95, 251, 241, 0.15)'
-          }`,
-          borderRadius: '6px',
-          fontSize: '0.85rem',
-          color: vercelStatus === 'deployed' ? '#86efac' : vercelStatus === 'pending' ? '#fcd34d' : vercelStatus === 'error' ? '#fca5a5' : '#8fa0c9',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          cursor: vercelStatus === 'error' ? 'pointer' : 'default'
-        }}
-        onClick={vercelStatus === 'error' ? checkVercelStatus : undefined}
-        title={vercelStatus === 'error' ? 'Klicken zum erneuten Prüfen' : ''}
-        >
-          <span>
-            {vercelStatus === 'checking' && '⏳ Prüfe...'}
-            {vercelStatus === 'deployed' && '✅ Online'}
-            {vercelStatus === 'pending' && '🔄 Wird deployed...'}
-            {vercelStatus === 'error' && '❌ Fehler - Klicken zum Prüfen'}
-            {!vercelStatus && '⏳ Prüfe...'}
-          </span>
-        </div>
+        {serviceQrUrl ? (
+          <>
+            <div style={{
+              fontSize: '0.75rem',
+              color: '#a3a3a3',
+              marginBottom: '0.5rem'
+            }}>
+              Nur gleiches WLAN – QR ausdrucken & gelb anbringen
+            </div>
+            <div style={{
+              display: 'inline-block',
+              padding: '0.5rem',
+              background: '#fefce8',
+              borderRadius: '8px'
+            }}>
+              <img src={serviceQrUrl} alt="Service QR – K2 Galerie (gleiches WLAN)" style={{ display: 'block' }} />
+            </div>
+          </>
+        ) : (
+          <div style={{ fontSize: '0.8rem', color: '#a3a3a3' }}>
+            <p style={{ margin: '0 0 0.5rem 0' }}>
+              QR erscheint, wenn du die App <strong>nicht</strong> über localhost öffnest.
+            </p>
+            <p style={{ margin: 0 }}>
+              Öffne z. B. <strong>http://[deine-Mac-IP]:5177</strong> (gleiches WLAN) oder gehe zu{' '}
+              <Link
+                to={PROJECT_ROUTES['k2-galerie'].mobileConnect}
+                style={{ color: '#eab308', fontWeight: 600 }}
+              >
+                Mobile-Connect
+              </Link>
+              , dort siehst du den Service-QR.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Links */}
       <div style={{
-        marginTop: 'auto',
+        marginTop: '1rem',
         paddingTop: '1rem',
         borderTop: '1px solid rgba(95, 251, 241, 0.1)'
       }}>

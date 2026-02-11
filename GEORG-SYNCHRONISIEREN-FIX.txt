@@ -1,0 +1,73 @@
+═══════════════════════════════════════════════════════════════
+  🔒 SYNCHRONISIEREN-FIX - Mobile-Werke werden NIEMALS gelöscht
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Problem behoben: Mobile-Werke werden beim Synchronisieren NICHT mehr gelöscht! 💚
+
+═══════════════════════════════════════════════════════════════
+
+WAS WAR DAS PROBLEM:
+
+1. Werk wird am Mobile erstellt ✅
+2. Werk wird in localStorage gespeichert ✅
+3. "Synchronisieren"-Button wird gedrückt ✅
+4. App lädt gallery-data.json vom Server ✅
+5. Server hat das neue Werk noch nicht (nicht gepusht) ❌
+6. Merge-Logik könnte lokale Werke überschreiben ❌
+7. Mobile-Werk wird gelöscht ❌
+
+═══════════════════════════════════════════════════════════════
+
+WAS WURDE GEFIXT:
+
+✅ Mobile-Werke haben ABSOLUTE PRIORITÄT
+✅ Lokale Werke werden ZUERST geladen (vor Server-Daten)
+✅ Merge startet IMMER mit ALLEN lokalen Werken
+✅ Prüfung ob lokale Werke erhalten bleiben
+✅ Bei Verlust: Automatische Wiederherstellung
+✅ Bei Fehler: Lokale Werke bleiben erhalten
+✅ Wenn Server leer: Lokale Werke bleiben erhalten
+
+═══════════════════════════════════════════════════════════════
+
+WIE ES JETZT FUNKTIONIERT:
+
+1. Werk wird am Mobile erstellt ✅
+2. Werk wird in localStorage gespeichert ✅
+3. Werk bekommt Marker: createdOnMobile: true ✅
+4. "Synchronisieren"-Button wird gedrückt ✅
+5. App lädt ZUERST lokale Werke ✅
+6. Mobile-Werke werden erkannt und geschützt ✅
+7. Server-Daten werden geladen ✅
+8. Merge startet mit ALLEN lokalen Werken ✅
+9. Server-Werke werden nur hinzugefügt (nicht überschrieben) ✅
+10. Prüfung: Alle lokalen Werke erhalten? ✅
+11. Bei Verlust: Automatische Wiederherstellung ✅
+12. Mobile-Werk bleibt erhalten ✅
+
+═══════════════════════════════════════════════════════════════
+
+SCHUTZ-MECHANISMEN:
+
+✅ Lokale Werke werden ZUERST geladen (vor Server-Daten)
+✅ Merge startet IMMER mit ALLEN lokalen Werken
+✅ Server-Werke werden nur hinzugefügt (nicht überschrieben)
+✅ Prüfung ob ALLE lokalen Werke erhalten bleiben
+✅ Bei Verlust: Automatische Wiederherstellung
+✅ Bei Fehler: Lokale Werke bleiben erhalten
+✅ Wenn Server leer: Lokale Werke bleiben erhalten
+✅ Mobile-Marker (createdOnMobile/updatedOnMobile) werden geschützt
+
+═══════════════════════════════════════════════════════════════
+
+ZUSAMMENFASSUNG:
+
+- Mobile-Werke haben ABSOLUTE PRIORITÄT ✅
+- Werke werden beim Synchronisieren NIEMALS gelöscht ✅
+- Lokale Werke werden ZUERST geladen und geschützt ✅
+- Merge-Logik prüft und stellt sicher dass nichts verloren geht ✅
+- Automatische Wiederherstellung bei Verlust ✅
+
+═══════════════════════════════════════════════════════════════

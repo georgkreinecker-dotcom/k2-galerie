@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "check-exports": "node scripts/check-duplicate-exports.js",
-    "build": "npm run check-exports && tsc -b && vite build",
+    "build": "node scripts/write-build-info.js && npm run check-exports && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "electron": "electron .",
@@ -16,6 +16,8 @@
     "electron:platform:build": "npm run build && electron-builder --mac --config.build.productName='K2 Plattform' --config.main='electron/platform-main.cjs'"
   },
   "dependencies": {
+    "@imgly/background-removal": "^1.7.0",
+    "onnxruntime-web": "^1.21.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^6.30.3"
@@ -26,6 +28,9 @@
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
+    "concurrently": "^9.0.0",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.0",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
@@ -33,9 +38,6 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
-    "electron": "^33.0.0",
-    "electron-builder": "^25.1.0",
-    "concurrently": "^9.0.0",
     "wait-on": "^8.0.0"
   },
   "build": {

@@ -3,6 +3,8 @@
  * Änderungen hier werden automatisch auf allen Seiten übernommen
  */
 
+import { PRODUCT_BRAND_NAME } from './tenantConfig'
+
 export const PLATFORM_ROUTES = {
   home: '/',
   projects: '/projects',
@@ -16,9 +18,11 @@ export const PLATFORM_ROUTES = {
 export const PROJECT_ROUTES = {
   'k2-galerie': {
     id: 'k2-galerie',
-    name: 'K2 Galerie',
+    name: PRODUCT_BRAND_NAME,
     home: '/projects/k2-galerie',
     galerie: '/projects/k2-galerie/galerie',
+    galerieOeffentlich: '/projects/k2-galerie/galerie-oeffentlich',
+    galerieOeffentlichVorschau: '/projects/k2-galerie/galerie-oeffentlich-vorschau',
     galerieVorschau: '/projects/k2-galerie/galerie-vorschau',
     shop: '/projects/k2-galerie/shop',
     virtuellerRundgang: '/projects/k2-galerie/virtueller-rundgang',
@@ -26,6 +30,7 @@ export const PROJECT_ROUTES = {
     plan: '/projects/k2-galerie/plan',
     mobileConnect: '/projects/k2-galerie/mobile-connect',
     platzanordnung: '/projects/k2-galerie/platzanordnung',
+    produktVorschau: '/projects/k2-galerie/produkt-vorschau',
   },
   // Weitere Projekte hier hinzufügen:
   // 'projekt-2': {

@@ -1,0 +1,70 @@
+═══════════════════════════════════════════════════════════════
+  📚 VERKAUFSHISTORIE - Verkaufte Werke bleiben im Archiv
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Verkaufshistorie implementiert! Verkaufte Werke bleiben im Archiv! 💚
+
+═══════════════════════════════════════════════════════════════
+
+WAS WURDE IMPLEMENTIERT:
+
+✅ Verkaufshistorie im Archiv-Tab
+   - Zeigt alle verkauften Werke
+   - Statistiken: Anzahl, Malerei, Keramik, Gesamtumsatz
+   - Suche nach Titel, Beschreibung, Produktnummer
+   - Automatische Aktualisierung bei neuen Verkäufen
+
+✅ Verkaufte Werke bleiben erhalten
+   - Werke werden NICHT gelöscht nach Verkauf
+   - Werden automatisch in History verschoben
+   - Bleiben in Hauptliste (als "verkauft" markiert)
+   - Werden zusätzlich im Archiv gespeichert
+
+✅ Nur einzelne Werke können gelöscht werden
+   - Keine "Alle löschen" Funktion
+   - Einzelne Werke können manuell gelöscht werden
+   - Verkaufte Werke bleiben geschützt
+
+═══════════════════════════════════════════════════════════════
+
+WIE ES FUNKTIONIERT:
+
+1. Werk wird verkauft ✅
+2. Werk wird in k2-sold-artworks gespeichert ✅
+3. Werk bleibt in Hauptliste (als "verkauft" markiert) ✅
+4. Werk erscheint automatisch im Archiv-Tab ✅
+5. Statistiken werden automatisch aktualisiert ✅
+
+═══════════════════════════════════════════════════════════════
+
+ARCHIV-FUNKTIONEN:
+
+✅ Zeigt alle verkauften Werke
+✅ Statistiken: Anzahl, Kategorien, Gesamtumsatz
+✅ Suche nach Titel, Beschreibung, Produktnummer
+✅ Automatische Aktualisierung
+✅ Verkaufsdatum und Preis werden angezeigt
+
+═══════════════════════════════════════════════════════════════
+
+SCHUTZ-MECHANISMEN:
+
+✅ Verkaufte Werke werden NICHT gelöscht
+✅ Werke bleiben in Hauptliste (als "verkauft" markiert)
+✅ Werke werden zusätzlich im Archiv gespeichert
+✅ Keine "Alle löschen" Funktion
+✅ Nur einzelne Werke können gelöscht werden
+
+═══════════════════════════════════════════════════════════════
+
+ZUSAMMENFASSUNG:
+
+- Verkaufte Werke bleiben erhalten ✅
+- Werke werden automatisch in History verschoben ✅
+- Archiv-Tab zeigt alle Verkäufe ✅
+- Statistiken werden automatisch aktualisiert ✅
+- Nur einzelne Werke können gelöscht werden ✅
+
+═══════════════════════════════════════════════════════════════

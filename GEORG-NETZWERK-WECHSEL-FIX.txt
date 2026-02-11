@@ -1,0 +1,63 @@
+═══════════════════════════════════════════════════════════════
+  🔒 NETZWERK-WECHSEL FIX - Lokale Werke bleiben erhalten
+═══════════════════════════════════════════════════════════════
+
+GEORG:
+
+Problem behoben: Werk wird nicht mehr gelöscht beim Netzwerk-Wechsel! 💚
+
+═══════════════════════════════════════════════════════════════
+
+WAS WAR DAS PROBLEM:
+
+1. Werk wird am Handy erstellt ✅
+2. Werk wird in localStorage gespeichert ✅
+3. Netzwerk wird gewechselt (z.B. von Dev-Server zu Vercel)
+4. App lädt neu → lädt gallery-data.json von Vercel
+5. gallery-data.json enthält das neue Werk noch nicht ❌
+6. Merge-Logik könnte lokale Werke überschreiben ❌
+
+═══════════════════════════════════════════════════════════════
+
+WAS WURDE GEFIXT:
+
+✅ Lokale Werke haben IMMER Priorität
+✅ Merge-Logik prüft ob lokale Werke erhalten bleiben
+✅ Bei Fehler: Lokale Werke werden wiederhergestellt
+✅ Marker für Mobile-Werke (createdOnMobile/updatedOnMobile)
+✅ Beim Laden: Lokale Werke werden zuerst geladen und geschützt
+
+═══════════════════════════════════════════════════════════════
+
+WIE ES JETZT FUNKTIONIERT:
+
+1. Werk wird am Handy erstellt ✅
+2. Werk wird in localStorage gespeichert ✅
+3. Werk bekommt Marker: createdOnMobile: true ✅
+4. Netzwerk wird gewechselt ✅
+5. App lädt neu → lädt ZUERST localStorage ✅
+6. Lokale Werke werden geschützt ✅
+7. Merge mit Server-Daten (lokale haben Priorität) ✅
+8. Werk bleibt erhalten ✅
+
+═══════════════════════════════════════════════════════════════
+
+SCHUTZ-MECHANISMEN:
+
+✅ Lokale Werke werden ZUERST geladen
+✅ Merge startet mit ALLEN lokalen Werken
+✅ Server-Werke werden nur hinzugefügt (nicht überschrieben)
+✅ Prüfung ob lokale Werke erhalten bleiben
+✅ Bei Verlust: Lokale Werke werden wiederhergestellt
+✅ Bei Fehler: Lokale Werke bleiben erhalten
+
+═══════════════════════════════════════════════════════════════
+
+ZUSAMMENFASSUNG:
+
+- Lokale Werke haben IMMER Priorität ✅
+- Werke werden nicht mehr gelöscht beim Netzwerk-Wechsel ✅
+- Marker für Mobile-Werke schützt sie zusätzlich ✅
+- Merge-Logik prüft und stellt sicher dass nichts verloren geht ✅
+
+═══════════════════════════════════════════════════════════════

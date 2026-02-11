@@ -1,20 +1,33 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { PROJECT_ROUTES, PLATFORM_ROUTES } from '../config/navigation'
+import { PROJECT_ROUTES } from '../config/navigation'
+import { getTenantConfig, getCurrentTenantId, TENANT_CONFIGS, MUSTER_TEXTE } from '../config/tenantConfig'
+import { BUILD_LABEL } from '../buildInfo.generated'
 import '../App.css'
 
-const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
+const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?: string; musterOnly?: boolean }) => {
   const navigate = useNavigate()
+  const tenantConfig = musterOnly ? TENANT_CONFIGS.oeffentlich : getTenantConfig()
+  const tenantId = musterOnly ? 'oeffentlich' : getCurrentTenantId()
   const willkommenRef = React.useRef<HTMLDivElement>(null)
   const galerieRef = React.useRef<HTMLDivElement>(null)
   const kunstschaffendeRef = React.useRef<HTMLDivElement>(null)
   const [mobileUrl, setMobileUrl] = React.useState<string>('')
   // Mobile-Erkennung: Prüfe sowohl Bildschirmbreite als auch User-Agent
   const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false
     const width = window.innerWidth <= 768
     const userAgent = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
     return width || userAgent
   })
+  
+  // Mobile-Erkennung für CSS - wird bei jedem Render neu geprüft
+  const isMobileDevice = React.useMemo(() => {
+    if (typeof window === 'undefined') return false
+    const width = window.innerWidth <= 768
+    const userAgent = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+    return width || userAgent
+  }, [])
   const [showAdminModal, setShowAdminModal] = useState(false)
   const [adminPasswordInput, setAdminPasswordInput] = useState('')
   // adminPassword wird nur für Initialisierung verwendet, nicht für Login-Validierung
@@ -31,27 +44,34 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
   }, [])
 
   
-  // Stammdaten laden
-  const [martinaData, setMartinaData] = React.useState({
-    name: 'Martina Kreinecker',
-    email: '',
-    phone: ''
-  })
-  const [georgData, setGeorgData] = React.useState({
-    name: 'Georg Kreinecker',
-    email: '',
-    phone: ''
-  })
-  const [galleryData, setGalleryData] = React.useState({
-    address: '',
-    phone: '',
-    email: '',
-    website: '',
-    internetadresse: '', // Für QR-Code
-    adminPassword: 'k2Galerie2026',
-    welcomeImage: '',
-    virtualTourImage: ''
-  })
+  // Stammdaten laden (bei musterOnly nur Mustertexte, keine echten Daten)
+  const [martinaData, setMartinaData] = React.useState(() =>
+    musterOnly ? MUSTER_TEXTE.martina : { name: 'Martina Kreinecker', email: '', phone: '' }
+  )
+  const [georgData, setGeorgData] = React.useState(() =>
+    musterOnly ? MUSTER_TEXTE.georg : { name: 'Georg Kreinecker', email: '', phone: '' }
+  )
+  const [galleryData, setGalleryData] = React.useState(() =>
+    musterOnly ? MUSTER_TEXTE.gallery : {
+      address: '',
+      phone: '',
+      email: '',
+      website: '',
+      internetadresse: '',
+      adminPassword: 'k2Galerie2026',
+      welcomeImage: '',
+      virtualTourImage: ''
+    }
+  )
+
+  // ök2: Stammdaten immer auf Musterdaten halten (auch bei Navigation von normaler Galerie)
+  React.useEffect(() => {
+    if (musterOnly) {
+      setMartinaData({ ...MUSTER_TEXTE.martina })
+      setGeorgData({ ...MUSTER_TEXTE.georg })
+      setGalleryData({ ...MUSTER_TEXTE.gallery })
+    }
+  }, [musterOnly])
   
   // Mobile-URL für QR-Code ermitteln (IP statt localhost) - mit useMemo optimiert
   const mobileUrlMemo = useMemo(() => {
@@ -81,7 +101,7 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
   // Aktualisieren-Funktion für Mobile-Version - lädt neue Daten ohne Reload
   const [isRefreshing, setIsRefreshing] = React.useState(false)
   
-  const handleRefresh = async () => {
+  const handleRefresh = React.useCallback(async () => {
     setIsRefreshing(true)
     try {
       // KRITISCH: Kompletter Cache-Clear für Mobile
@@ -172,12 +192,19 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
           setAdminPassword(data.gallery.adminPassword || 'k2Galerie2026')
         }
         
+        // KRITISCH: Lade ZUERST lokale Werke um sicherzustellen dass Mobile-Werke NICHT verloren gehen!
+        const localArtworks = JSON.parse(localStorage.getItem('k2-artworks') || '[]')
+        const mobileWorks = localArtworks.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
+        
+        if (mobileWorks.length > 0) {
+          console.log(`🔒 ${mobileWorks.length} Mobile-Werke geschützt:`, mobileWorks.map((a: any) => a.number || a.id).join(', '))
+        }
+        
         // Lade auch Werke wenn vorhanden - KRITISCH für Mobile
         // WICHTIG: Merge mit lokalen Werken statt Überschreiben!
+        // KRITISCH: Mobile-Werke haben ABSOLUTE PRIORITÄT - sie dürfen NIEMALS gelöscht werden!
         if (data.artworks && Array.isArray(data.artworks)) {
           try {
-            // Lade ZUERST lokale Werke
-            const localArtworks = JSON.parse(localStorage.getItem('k2-artworks') || '[]')
             const serverArtworks = data.artworks
             
             // Erstelle Map für schnelle Suche (unterstützt verschiedene Formate)
@@ -196,46 +223,126 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
               }
             })
             
-            // KRITISCH: Füge ALLE lokalen Werke hinzu die nicht auf Server sind ODER Mobile-Marker haben
-            // WICHTIG: Lokale Werke haben IMMER Priorität - sie wurden gerade erstellt/bearbeitet!
-            // WICHTIG: Starte mit lokalen Werken als Basis, füge dann Server-Werke hinzu die nicht lokal sind!
+            // KRITISCH: Lokale Werke haben IMMER Priorität - sie wurden gerade erstellt/bearbeitet!
+            // WICHTIG: Starte mit ALLEN lokalen Werken als Basis!
             const localMap = new Map<string, any>()
             localArtworks.forEach((local: any) => {
               const key = local.number || local.id
               if (key) {
                 localMap.set(key, local)
+                // Mobile-Werke besonders markieren
+                if (local.createdOnMobile || local.updatedOnMobile) {
+                  console.log(`🔒 Lokales Mobile-Werk geschützt: ${key}`)
+                }
               }
             })
             
-            // Starte mit ALLEN lokalen Werken (haben Priorität!)
+            // KRITISCH: Starte mit ALLEN lokalen Werken (haben ABSOLUTE Priorität!)
+            // Mobile-Werke dürfen NIEMALS verloren gehen!
             const merged: any[] = []
             
-            // Füge ZUERST alle lokalen Werke hinzu
+            // ZUERST: Alle lokalen Werke hinzufügen (inkl. Mobile-Werke)
             localArtworks.forEach((local: any) => {
               merged.push(local)
+              if (local.createdOnMobile || local.updatedOnMobile) {
+                console.log(`🔒 Mobile-Werk geschützt beim Merge: ${local.number || local.id}`)
+              }
             })
             
-            // Füge dann Server-Werke hinzu die NICHT lokal sind
+            // DANN: Server-Werke hinzufügen die NICHT lokal sind
             serverArtworks.forEach((server: any) => {
               const key = server.number || server.id
               if (key && !localMap.has(key)) {
-                merged.push(server)
+                // Prüfe ob Server-Werk eine Nummer hat die lokal bereits existiert (aber andere ID)
+                const localWithSameNumber = localArtworks.find((l: any) => (l.number || l.id) === key)
+                if (!localWithSameNumber) {
+                  merged.push(server)
+                } else {
+                  console.log(`⚠️ Server-Werk ${key} übersprungen - lokales Werk existiert bereits`)
+                }
               }
             })
+            
+            // KRITISCH: Prüfe ob ALLE lokalen Werke erhalten bleiben!
+            const localKeys = new Set(localArtworks.map((a: any) => a.number || a.id))
+            const mergedKeys = new Set(merged.map((a: any) => a.number || a.id))
+            const missingLocal = [...localKeys].filter(key => !mergedKeys.has(key))
+            
+            if (missingLocal.length > 0) {
+              console.error('❌ KRITISCH: Lokale Werke wurden verloren beim Merge!')
+              console.error('Fehlende Nummern:', missingLocal)
+              // Stelle fehlende lokale Werke wieder her
+              missingLocal.forEach(missingKey => {
+                const missingArtwork = localArtworks.find((a: any) => (a.number || a.id) === missingKey)
+                if (missingArtwork) {
+                  console.log(`🔧 Stelle fehlendes Werk wieder her: ${missingKey}`)
+                  merged.push(missingArtwork)
+                }
+              })
+              console.log('✅ Fehlende lokale Werke wiederhergestellt!')
+            }
+            
+            // ZUSÄTZLICH: Prüfe ob Mobile-Werke alle erhalten sind
+            const mobileKeys = new Set(mobileWorks.map((a: any) => a.number || a.id))
+            const mergedMobileKeys = new Set(merged.filter((a: any) => a.createdOnMobile || a.updatedOnMobile).map((a: any) => a.number || a.id))
+            const missingMobile = [...mobileKeys].filter(key => !mergedMobileKeys.has(key))
+            
+            if (missingMobile.length > 0) {
+              console.error('❌ KRITISCH: Mobile-Werke wurden verloren!')
+              console.error('Fehlende Mobile-Nummern:', missingMobile)
+              // Stelle fehlende Mobile-Werke wieder her
+              missingMobile.forEach(missingKey => {
+                const missingArtwork = mobileWorks.find((a: any) => (a.number || a.id) === missingKey)
+                if (missingArtwork) {
+                  console.log(`🔧 Stelle fehlendes Mobile-Werk wieder her: ${missingKey}`)
+                  // Prüfe ob bereits in merged
+                  const exists = merged.find((a: any) => (a.number || a.id) === missingKey)
+                  if (!exists) {
+                    merged.push(missingArtwork)
+                  }
+                }
+              })
+              console.log('✅ Fehlende Mobile-Werke wiederhergestellt!')
+            }
             
             console.log('✅ Werke gemergt (Lokale zuerst, dann Server):', merged.length, 'Werke (', localArtworks.length, 'Lokal +', merged.length - localArtworks.length, 'Server)')
             console.log('📋 Lokale Nummern:', localArtworks.map((a: any) => a.number || a.id).join(', '))
             console.log('📋 Server Nummern:', serverArtworks.map((a: any) => a.number || a.id).join(', '))
             console.log('📋 Gemergte Nummern:', merged.map((a: any) => a.number || a.id).join(', '))
             
+            // KRITISCH: Speichere merged Liste - Mobile-Werke sind geschützt!
             localStorage.setItem('k2-artworks', JSON.stringify(merged))
+            
+            // ZUSÄTZLICH: Prüfe ob neue Mobile-Werke vom Server geladen wurden
+            const newMobileWorks = merged.filter((a: any) => 
+              (a.createdOnMobile || a.updatedOnMobile) && 
+              !localArtworks.some((local: any) => 
+                (local.number && a.number && local.number === a.number) ||
+                (local.id && a.id && local.id === a.id)
+              )
+            )
+            
+            if (newMobileWorks.length > 0) {
+              console.log(`📱 ${newMobileWorks.length} neue Mobile-Werke vom Server synchronisiert:`, newMobileWorks.map((a: any) => a.number || a.id).join(', '))
+            }
+            
             // Trigger Event für andere Komponenten - mit Flag dass es von GaleriePage kommt
-            window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: merged.length, fromGaleriePage: true } }))
+            window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: merged.length, fromGaleriePage: true, newMobileWorks: newMobileWorks.length } }))
           } catch (e) {
             console.warn('⚠️ Werke zu groß für localStorage:', e)
+            // Bei Fehler: Behalte lokale Werke!
+            console.log('🔒 Fehler beim Merge - behalte lokale Werke:', localArtworks.length)
+            localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
           }
         } else {
-          console.warn('⚠️ Keine Werke in gallery-data.json gefunden')
+          // KEINE Server-Daten - behalte ALLE lokalen Werke!
+          console.warn('⚠️ Keine Werke in gallery-data.json gefunden - behalte lokale Werke:', localArtworks.length)
+          if (localArtworks.length > 0) {
+            console.log('🔒 Lokale Werke bleiben erhalten:', localArtworks.map((a: any) => a.number || a.id).join(', '))
+            // Stelle sicher dass lokale Werke gespeichert bleiben
+            localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
+            window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: localArtworks.length, fromGaleriePage: true, localOnly: true } }))
+          }
         }
         
         // Lade auch Events wenn vorhanden
@@ -274,9 +381,137 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
         // Trigger Event für GalerieVorschauPage
         window.dispatchEvent(new CustomEvent('artworks-updated'))
       }
+    }, [])
+
+  // Pull-to-Refresh für Mobile - Wischen nach unten lädt Seite neu
+  React.useEffect(() => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
+    if (!isMobile) return
+
+    let touchStartY = 0
+    let touchCurrentY = 0
+    let isPulling = false
+
+    const handleTouchStart = (e: TouchEvent) => {
+      // Nur wenn ganz oben gescrollt ist
+      if (window.scrollY === 0) {
+        touchStartY = e.touches[0].clientY
+        isPulling = true
+      }
     }
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isPulling) return
+      touchCurrentY = e.touches[0].clientY
+      const pullDistance = touchCurrentY - touchStartY
+      
+      // Wenn nach unten gezogen wird (mehr als 80px)
+      if (pullDistance > 80 && window.scrollY === 0) {
+        // Zeige visuelles Feedback
+        document.body.style.transform = `translateY(${Math.min(pullDistance, 100)}px)`
+      }
+    }
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (!isPulling) return
+      const pullDistance = touchCurrentY - touchStartY
+      
+      // Reset Transform
+      document.body.style.transform = ''
+      
+      // Wenn weit genug nach unten gezogen wurde → Reload
+      if (pullDistance > 80 && window.scrollY === 0) {
+        console.log('🔄 Pull-to-Refresh: Lade Seite neu...')
+        // Kompletter Cache-Clear
+        if ('caches' in window) {
+          caches.keys().then(names => {
+            names.forEach(name => caches.delete(name))
+          })
+        }
+        // Hard Reload mit Cache-Busting
+        window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now() + '&reload=' + Math.random()
+      }
+      
+      isPulling = false
+      touchStartY = 0
+      touchCurrentY = 0
+    }
+
+    window.addEventListener('touchstart', handleTouchStart, { passive: true })
+    window.addEventListener('touchmove', handleTouchMove, { passive: true })
+    window.addEventListener('touchend', handleTouchEnd, { passive: true })
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart)
+      window.removeEventListener('touchmove', handleTouchMove)
+      window.removeEventListener('touchend', handleTouchEnd)
+      document.body.style.transform = ''
+    }
+  }, [])
+
+  // WICHTIG: Automatisches Polling für Mobile-zu-Mobile Sync (nur wenn nicht auf Vercel)
+  // KRITISCH: Mobile-Werke werden automatisch synchronisiert - kein manuelles Speichern nötig!
+  React.useEffect(() => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
+    const isVercel = window.location.hostname.includes('vercel.app')
+    
+    // Nur auf Mobile-Geräten die auf Dev-Server zugreifen (nicht Vercel)
+    if (isMobile && !isVercel) {
+      console.log('✅ Automatisches Mobile-Polling aktiviert (alle 10 Sekunden)')
+      console.log('📱 Mobile-Werke werden automatisch synchronisiert - kein manuelles Speichern nötig!')
+      
+      // Automatisches Polling alle 10 Sekunden für Mobile-zu-Mobile Sync
+      const pollingInterval = setInterval(() => {
+        console.log('🔄 Automatisches Polling für Mobile-Sync...')
+        handleRefresh()
+      }, 10000) // Alle 10 Sekunden
+      
+      return () => {
+        console.log('🛑 Automatisches Mobile-Polling gestoppt')
+        clearInterval(pollingInterval)
+      }
+    }
+  }, [handleRefresh])
+  
+  // KRITISCH: Event-Listener für Mobile-Werke Synchronisation zwischen Geräten
+  React.useEffect(() => {
+    const handleMobileArtworkSaved = (event: CustomEvent) => {
+      const artwork = event.detail?.artwork
+      if (!artwork) return
+      
+      console.log(`📱 Mobile-Werk-Synchronisation erkannt: ${artwork.number || artwork.id}`)
+      
+      // Lade aktuelle Werke
+      const localArtworks = JSON.parse(localStorage.getItem('k2-artworks') || '[]')
+      
+      // Prüfe ob Werk bereits vorhanden
+      const exists = localArtworks.some((a: any) => 
+        (a.number && artwork.number && a.number === artwork.number) ||
+        (a.id && artwork.id && a.id === artwork.id)
+      )
+      
+      if (!exists) {
+        console.log(`✅ Neues Mobile-Werk synchronisiert: ${artwork.number || artwork.id}`)
+        // Füge Werk hinzu
+        localArtworks.push(artwork)
+        localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
+        
+        // Trigger Event für UI-Update
+        window.dispatchEvent(new CustomEvent('artworks-updated', { 
+          detail: { count: localArtworks.length, mobileSync: true } 
+        }))
+      }
+    }
+    
+    window.addEventListener('mobile-artwork-saved', handleMobileArtworkSaved as EventListener)
+    
+    return () => {
+      window.removeEventListener('mobile-artwork-saved', handleMobileArtworkSaved as EventListener)
+    }
+  }, [])
   
   React.useEffect(() => {
+    if (musterOnly) return () => {} // Öffentliches Projekt: keine echten Daten laden
     // Lade Daten: Zuerst aus JSON-Datei (für Mobile-Version auf Vercel), dann localStorage (für lokale Entwicklung)
     let isMounted = true
     let timeoutId: ReturnType<typeof setTimeout> | null = null
@@ -369,10 +604,17 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
           }
           
           // Lade auch Werke wenn vorhanden - KRITISCH für Mobile
+          // KRITISCH: Mobile-Werke haben ABSOLUTE PRIORITÄT - sie dürfen NIEMALS gelöscht werden!
           if (data.artworks && Array.isArray(data.artworks)) {
             try {
-              // WICHTIG: Merge mit lokalen Werken statt Überschreiben!
+              // KRITISCH: Lade ZUERST lokale Werke um sicherzustellen dass Mobile-Werke NICHT verloren gehen!
               const localArtworks = JSON.parse(localStorage.getItem('k2-artworks') || '[]')
+              const mobileWorks = localArtworks.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
+              
+              if (mobileWorks.length > 0) {
+                console.log(`🔒 ${mobileWorks.length} Mobile-Werke geschützt beim Initial-Load:`, mobileWorks.map((a: any) => a.number || a.id).join(', '))
+              }
+              
               const serverArtworks = data.artworks
               
               // Erstelle Map für lokale Werke
@@ -381,35 +623,106 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
                 const key = local.number || local.id
                 if (key) {
                   localMap.set(key, local)
+                  // Mobile-Werke besonders markieren
+                  if (local.createdOnMobile || local.updatedOnMobile) {
+                    console.log(`🔒 Lokales Mobile-Werk geschützt beim Initial-Load: ${key}`)
+                  }
                 }
               })
               
-              // Starte mit ALLEN lokalen Werken (haben Priorität!)
+              // KRITISCH: Starte mit ALLEN lokalen Werken (haben ABSOLUTE Priorität!)
               const merged: any[] = []
               
-              // Füge ZUERST alle lokalen Werke hinzu
+              // ZUERST: Alle lokalen Werke hinzufügen (inkl. Mobile-Werke)
               localArtworks.forEach((local: any) => {
                 merged.push(local)
+                if (local.createdOnMobile || local.updatedOnMobile) {
+                  console.log(`🔒 Mobile-Werk geschützt beim Initial-Load: ${local.number || local.id}`)
+                }
               })
               
-              // Füge dann Server-Werke hinzu die NICHT lokal sind
+              // DANN: Server-Werke hinzufügen die NICHT lokal sind
               serverArtworks.forEach((server: any) => {
                 const key = server.number || server.id
                 if (key && !localMap.has(key)) {
-                  merged.push(server)
+                  // Prüfe ob Server-Werk eine Nummer hat die lokal bereits existiert (aber andere ID)
+                  const localWithSameNumber = localArtworks.find((l: any) => (l.number || l.id) === key)
+                  if (!localWithSameNumber) {
+                    merged.push(server)
+                  } else {
+                    console.log(`⚠️ Server-Werk ${key} übersprungen beim Initial-Load - lokales Werk existiert bereits`)
+                  }
                 }
               })
               
+              // KRITISCH: Prüfe ob ALLE lokalen Werke erhalten bleiben!
+              const localKeys = new Set(localArtworks.map((a: any) => a.number || a.id))
+              const mergedKeys = new Set(merged.map((a: any) => a.number || a.id))
+              const missingLocal = [...localKeys].filter(key => !mergedKeys.has(key))
+              
+              if (missingLocal.length > 0) {
+                console.error('❌ KRITISCH: Lokale Werke wurden verloren beim Initial-Load!')
+                console.error('Fehlende Nummern:', missingLocal)
+                // Stelle fehlende lokale Werke wieder her
+                missingLocal.forEach(missingKey => {
+                  const missingArtwork = localArtworks.find((a: any) => (a.number || a.id) === missingKey)
+                  if (missingArtwork) {
+                    console.log(`🔧 Stelle fehlendes Werk wieder her beim Initial-Load: ${missingKey}`)
+                    merged.push(missingArtwork)
+                  }
+                })
+                console.log('✅ Fehlende lokale Werke wiederhergestellt beim Initial-Load!')
+              }
+              
+              // ZUSÄTZLICH: Prüfe ob Mobile-Werke alle erhalten sind
+              const mobileKeys = new Set(mobileWorks.map((a: any) => a.number || a.id))
+              const mergedMobileKeys = new Set(merged.filter((a: any) => a.createdOnMobile || a.updatedOnMobile).map((a: any) => a.number || a.id))
+              const missingMobile = [...mobileKeys].filter(key => !mergedMobileKeys.has(key))
+              
+              if (missingMobile.length > 0) {
+                console.error('❌ KRITISCH: Mobile-Werke wurden verloren beim Initial-Load!')
+                console.error('Fehlende Mobile-Nummern:', missingMobile)
+                // Stelle fehlende Mobile-Werke wieder her
+                missingMobile.forEach(missingKey => {
+                  const missingArtwork = mobileWorks.find((a: any) => (a.number || a.id) === missingKey)
+                  if (missingArtwork) {
+                    console.log(`🔧 Stelle fehlendes Mobile-Werk wieder her beim Initial-Load: ${missingKey}`)
+                    // Prüfe ob bereits in merged
+                    const exists = merged.find((a: any) => (a.number || a.id) === missingKey)
+                    if (!exists) {
+                      merged.push(missingArtwork)
+                    }
+                  }
+                })
+                console.log('✅ Fehlende Mobile-Werke wiederhergestellt beim Initial-Load!')
+              }
+              
               localStorage.setItem('k2-artworks', JSON.stringify(merged))
-              console.log('✅ Werke gemergt (Fallback-Pfad):', merged.length, 'Werke')
-              console.log('✅ Werke in localStorage gespeichert:', data.artworks.length, 'Werke')
+              console.log('✅ Werke gemergt beim Initial-Load (Lokale zuerst, dann Server):', merged.length, 'Werke (', localArtworks.length, 'Lokal +', merged.length - localArtworks.length, 'Server)')
+              console.log('📋 Lokale Nummern:', localArtworks.map((a: any) => a.number || a.id).join(', '))
+              console.log('📋 Server Nummern:', serverArtworks.map((a: any) => a.number || a.id).join(', '))
+              console.log('📋 Gemergte Nummern:', merged.map((a: any) => a.number || a.id).join(', '))
               // Trigger Event für andere Komponenten (z.B. GalerieVorschauPage)
-              window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: data.artworks.length } }))
+              window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: merged.length, fromGaleriePage: true, initialLoad: true } }))
             } catch (e) {
               console.warn('⚠️ Werke zu groß für localStorage:', e)
+              // Bei Fehler: Behalte lokale Werke!
+              const localArtworks = JSON.parse(localStorage.getItem('k2-artworks') || '[]')
+              if (localArtworks.length > 0) {
+                console.log('🔒 Fehler beim Merge beim Initial-Load - behalte lokale Werke:', localArtworks.length)
+                localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
+              }
             }
           } else {
-            console.warn('⚠️ Keine Werke in gallery-data.json gefunden')
+            // KEINE Server-Daten - behalte ALLE lokalen Werke!
+            const localArtworks = JSON.parse(localStorage.getItem('k2-artworks') || '[]')
+            if (localArtworks.length > 0) {
+              console.warn('⚠️ Keine Werke in gallery-data.json gefunden beim Initial-Load - behalte lokale Werke:', localArtworks.length)
+              console.log('🔒 Lokale Werke bleiben erhalten beim Initial-Load:', localArtworks.map((a: any) => a.number || a.id).join(', '))
+              // Stelle sicher dass lokale Werke gespeichert bleiben
+              localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
+              window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: localArtworks.length, fromGaleriePage: true, localOnly: true, initialLoad: true } }))
+            }
           }
           
           // DEAKTIVIERT: Automatisches Reload verursacht Crashes
@@ -452,28 +765,64 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
         }
       }
       
-      // Setze Daten
-      if (data) {
-        // Martina Daten
-        if (data.martina) {
+      // Setze Daten - PRIORITÄT: localStorage > JSON-Datei
+      // Zuerst aus localStorage laden (aktuellste Daten)
+      try {
+        const martinaStored = localStorage.getItem('k2-stammdaten-martina')
+        if (martinaStored) {
+          const martinaLocal = JSON.parse(martinaStored)
+          setMartinaData({
+            name: martinaLocal.name || 'Martina Kreinecker',
+            email: martinaLocal.email || '',
+            phone: martinaLocal.phone || ''
+          })
+        } else if (data?.martina) {
           setMartinaData({
             name: data.martina.name || 'Martina Kreinecker',
             email: data.martina.email || '',
             phone: data.martina.phone || ''
           })
         }
-        
-        // Georg Daten
-        if (data.georg) {
+      } catch (error) {
+        console.error('Fehler beim Laden von Martina-Daten:', error)
+      }
+      
+      try {
+        const georgStored = localStorage.getItem('k2-stammdaten-georg')
+        if (georgStored) {
+          const georgLocal = JSON.parse(georgStored)
+          setGeorgData({
+            name: georgLocal.name || 'Georg Kreinecker',
+            email: georgLocal.email || '',
+            phone: georgLocal.phone || ''
+          })
+        } else if (data?.georg) {
           setGeorgData({
             name: data.georg.name || 'Georg Kreinecker',
             email: data.georg.email || '',
             phone: data.georg.phone || ''
           })
         }
-        
-        // Galerie Daten
-        if (data.gallery) {
+      } catch (error) {
+        console.error('Fehler beim Laden von Georg-Daten:', error)
+      }
+      
+      try {
+        const galleryStored = localStorage.getItem('k2-stammdaten-galerie')
+        if (galleryStored) {
+          const galleryLocal = JSON.parse(galleryStored)
+          setGalleryData({
+            address: galleryLocal.address || '',
+            phone: galleryLocal.phone || '',
+            email: galleryLocal.email || '',
+            website: galleryLocal.website || 'www.k2-galerie.at',
+            internetadresse: galleryLocal.internetadresse || galleryLocal.website || '',
+            adminPassword: galleryLocal.adminPassword || 'k2Galerie2026',
+            welcomeImage: galleryLocal.welcomeImage || '',
+            virtualTourImage: galleryLocal.virtualTourImage || ''
+          })
+          setAdminPassword(galleryLocal.adminPassword || 'k2Galerie2026')
+        } else if (data?.gallery) {
           setGalleryData({
             address: data.gallery.address || '',
             phone: data.gallery.phone || '',
@@ -485,21 +834,23 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
             virtualTourImage: data.gallery.virtualTourImage || ''
           })
           setAdminPassword(data.gallery.adminPassword || 'k2Galerie2026')
+        } else {
+          // Fallback: Standard-Daten
+          const defaultData = {
+            address: '',
+            phone: '',
+            email: '',
+            website: 'www.k2-galerie.at',
+            internetadresse: '',
+            adminPassword: 'k2Galerie2026',
+            welcomeImage: '',
+            virtualTourImage: ''
+          }
+          setGalleryData(defaultData)
+          setAdminPassword('k2Galerie2026')
         }
-      } else {
-        // Fallback: Standard-Daten
-        const defaultData = {
-          address: '',
-          phone: '',
-          email: '',
-          website: 'www.k2-galerie.at',
-          internetadresse: '',
-          adminPassword: 'k2Galerie2026',
-          welcomeImage: '',
-          virtualTourImage: ''
-        }
-        setGalleryData(defaultData)
-        setAdminPassword('k2Galerie2026')
+      } catch (error) {
+        console.error('Fehler beim Laden von Galerie-Daten:', error)
       }
     }
     
@@ -561,16 +912,82 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
       } catch (error) {}
     }
     
-    // DEAKTIVIERT: Verursacht Render-Loops und Crashes (Code 5)
-    // Diese Event-Listener triggern State-Updates die wieder Events dispatchen → Endlos-Loop
-    // window.addEventListener('storage', handleStorageUpdate)
-    // window.addEventListener('stammdaten-updated', handleStorageUpdate)
+    // Event Listener für Stammdaten-Updates (sicher implementiert)
+    // Prüfe nur localStorage, keine Events die Loops verursachen könnten
+    const checkStammdatenUpdate = () => {
+      try {
+        const martinaStored = localStorage.getItem('k2-stammdaten-martina')
+        if (martinaStored) {
+          const data = JSON.parse(martinaStored)
+          setMartinaData(prev => {
+            // Nur updaten wenn sich etwas geändert hat
+            if (prev.email !== data.email || prev.phone !== data.phone || prev.name !== data.name) {
+              return {
+                name: data.name || 'Martina Kreinecker',
+                email: data.email || '',
+                phone: data.phone || ''
+              }
+            }
+            return prev
+          })
+        }
+      } catch (error) {}
+      
+      try {
+        const georgStored = localStorage.getItem('k2-stammdaten-georg')
+        if (georgStored) {
+          const data = JSON.parse(georgStored)
+          setGeorgData(prev => {
+            // Nur updaten wenn sich etwas geändert hat
+            if (prev.email !== data.email || prev.phone !== data.phone || prev.name !== data.name) {
+              return {
+                name: data.name || 'Georg Kreinecker',
+                email: data.email || '',
+                phone: data.phone || ''
+              }
+            }
+            return prev
+          })
+        }
+      } catch (error) {}
+      
+      try {
+        const galleryStored = localStorage.getItem('k2-stammdaten-galerie')
+        if (galleryStored) {
+          const data = JSON.parse(galleryStored)
+          setGalleryData(prev => {
+            // Nur updaten wenn sich etwas geändert hat
+            if (prev.address !== data.address || prev.phone !== data.phone || prev.email !== data.email || prev.website !== data.website) {
+              return {
+                address: data.address || '',
+                phone: data.phone || '',
+                email: data.email || '',
+                website: data.website || 'www.k2-galerie.at',
+                internetadresse: data.internetadresse || data.website || '',
+                adminPassword: data.adminPassword || 'k2Galerie2026',
+                welcomeImage: data.welcomeImage || '',
+                virtualTourImage: data.virtualTourImage || ''
+              }
+            }
+            return prev
+          })
+        }
+      } catch (error) {}
+    }
+    
+    // Prüfe alle 2 Sekunden ob Stammdaten aktualisiert wurden
+    const intervalId = setInterval(checkStammdatenUpdate, 2000)
+    
+    // Cleanup
+    return () => {
+      clearInterval(intervalId)
+    }
     
     // Cleanup: Setze isMounted auf false beim Unmount
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [musterOnly])
 
   // Scroll zu Bereich wenn scrollToSection sich ändert
   useEffect(() => {
@@ -600,7 +1017,8 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
                        window.location.hostname === '192.168.0.27'
     
     if (isLocalhost) {
-      navigate('/admin')
+      try { sessionStorage.setItem('k2-admin-context', musterOnly ? 'oeffentlich' : 'k2') } catch (_) {}
+      navigate(musterOnly ? '/admin?context=oeffentlich' : '/admin')
       return
     }
     
@@ -617,7 +1035,8 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
     }
     
     if (adminPasswordInput === currentPassword) {
-      navigate('/admin')
+      try { sessionStorage.setItem('k2-admin-context', musterOnly ? 'oeffentlich' : 'k2') } catch (_) {}
+      navigate(musterOnly ? '/admin?context=oeffentlich' : '/admin')
       setShowAdminModal(false)
       setAdminPasswordInput('')
     } else {
@@ -634,8 +1053,8 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
                        window.location.hostname === '192.168.0.27'
     
     if (isLocalhost) {
-      // Auf localhost direkt zum Admin navigieren
-      navigate('/admin')
+      try { sessionStorage.setItem('k2-admin-context', musterOnly ? 'oeffentlich' : 'k2') } catch (_) {}
+      navigate(musterOnly ? '/admin?context=oeffentlich' : '/admin')
     } else {
       // Auf Produktion Modal öffnen
       setShowAdminModal(true)
@@ -664,47 +1083,24 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
       
       {/* Content */}
       <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Zurück-Button - PROMINENT & IMMER SICHTBAR */}
-        <Link
-          to={PLATFORM_ROUTES.home}
+        {/* Entwicklungsstand (Mac = Handy? Profi-Check) – unten links, dezent */}
+        <div
           style={{
             position: 'fixed',
-            top: '1rem',
-            left: '1rem',
-            background: 'linear-gradient(120deg, #5ffbf1, #33a1ff)',
-            color: '#0a0e27',
-            border: '2px solid rgba(95, 251, 241, 0.5)',
-            borderRadius: '12px',
-            padding: '0.75rem 1.25rem',
-            fontSize: '0.95rem',
-            fontWeight: '700',
-            cursor: 'pointer',
-            zIndex: 10000,
-            boxShadow: '0 4px 20px rgba(95, 251, 241, 0.6)',
-            transition: 'all 0.2s ease',
-            touchAction: 'manipulation',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            textDecoration: 'none',
-            minWidth: '140px',
-            minHeight: '44px'
+            bottom: '0.5rem',
+            left: '0.5rem',
+            zIndex: 9999,
+            fontSize: '0.7rem',
+            color: 'rgba(255, 255, 255, 0.4)',
+            fontFamily: 'monospace',
+            pointerEvents: 'none'
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.05)'
-            e.currentTarget.style.boxShadow = '0 6px 24px rgba(95, 251, 241, 0.8)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)'
-            e.currentTarget.style.boxShadow = '0 4px 20px rgba(95, 251, 241, 0.6)'
-          }}
-          title="Zurück zur Arbeitsplattform"
+          title="Gleicher Stand wie am Mac? Hier vergleichen."
         >
-          <span style={{ fontSize: '1.3em' }}>←</span>
-          <span>Arbeitsplattform</span>
-        </Link>
-        
-        {/* Admin Button - unauffällig oben rechts */}
+          Stand: {BUILD_LABEL}
+        </div>
+
+        {/* Admin Button – auf normaler Galerie und auf ök2-Willkommensseite (eigener Admin-Zugang) */}
         <button
           onClick={handleAdminButtonClick}
           style={{
@@ -721,7 +1117,10 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
             cursor: 'pointer',
             zIndex: 1000,
             transition: 'all 0.3s ease',
-            opacity: 0.6
+            opacity: 0.6,
+            touchAction: 'manipulation',
+            minWidth: '44px',
+            minHeight: '44px'
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.opacity = '1'
@@ -731,67 +1130,24 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
             e.currentTarget.style.opacity = '0.6'
             e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
           }}
+          onTouchStart={(e) => {
+            e.currentTarget.style.opacity = '1'
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'
+          }}
+          onTouchEnd={(e) => {
+            setTimeout(() => {
+              e.currentTarget.style.opacity = '0.6'
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+            }, 200)
+          }}
         >
           ⚙️ Admin
         </button>
         
-        {/* Aktualisieren Button - für Mobile-Version - PROMINENTER & FUNKTIONIERT */}
-        {isMobile && (
-          <button
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              console.log('🔄 Aktualisieren-Button geklickt')
-              handleRefresh()
-            }}
-            disabled={isRefreshing}
-            style={{
-              position: 'fixed',
-              top: 'clamp(1rem, 2vw, 1.5rem)',
-              left: 'clamp(1rem, 3vw, 1.5rem)', // Links statt rechts, damit Admin-Button nicht überdeckt wird
-              zIndex: 10001, // Höher als Admin-Button (1000)
-              background: isRefreshing 
-                ? 'rgba(95, 251, 241, 0.5)' 
-                : 'linear-gradient(120deg, #5ffbf1, #33a1ff)',
-              color: '#0a0e27',
-              border: '2px solid rgba(95, 251, 241, 0.5)',
-              borderRadius: '12px',
-              padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.25rem, 4vw, 1.75rem)',
-              fontSize: 'clamp(0.85rem, 2.5vw, 1rem)',
-              fontWeight: '700',
-              cursor: isRefreshing ? 'wait' : 'pointer',
-              opacity: isRefreshing ? 0.7 : 1,
-              boxShadow: '0 6px 20px rgba(95, 251, 241, 0.5)',
-              transition: 'all 0.2s ease',
-              touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'rgba(95, 251, 241, 0.3)',
-              minWidth: '120px',
-              minHeight: '44px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem'
-            }}
-            title="Daten vom Server neu laden"
-            onTouchStart={(e) => {
-              if (!isRefreshing) {
-                e.currentTarget.style.transform = 'scale(0.95)'
-                e.currentTarget.style.opacity = '0.9'
-              }
-            }}
-            onTouchEnd={(e) => {
-              if (!isRefreshing) {
-                e.currentTarget.style.transform = 'scale(1)'
-                e.currentTarget.style.opacity = '1'
-              }
-            }}
-          >
-            <span style={{ fontSize: '1.2em' }}>{isRefreshing ? '⏳' : '🔄'}</span>
-            <span>{isRefreshing ? 'Lädt...' : 'Aktualisieren'}</span>
-          </button>
-        )}
+        {/* Aktualisieren Button ENTFERNT - Automatisches Polling alle 10 Sekunden aktiv! */}
+        {/* Neue Werke werden automatisch synchronisiert - kein manueller Button nötig */}
 
-        {/* Admin Login Modal */}
+        {/* Admin Login Modal – auch von ök2-Willkommensseite erreichbar */}
         {showAdminModal && (
           <div
             style={{
@@ -940,7 +1296,7 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
               letterSpacing: '-0.02em',
               lineHeight: '1.1'
             }}>
-              K2 Galerie
+              {tenantConfig.galleryName}
             </h1>
             <p style={{ 
               margin: '0.75rem 0 0', 
@@ -949,7 +1305,7 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
               fontWeight: '300',
               letterSpacing: '0.05em'
             }}>
-              Kunst & Keramik
+              {tenantConfig.tagline}
             </p>
           </div>
 
@@ -994,14 +1350,14 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
               color: '#ffffff',
               letterSpacing: '-0.02em'
             }}>
-              Willkommen bei K2 –<br />
+              Willkommen bei {tenantConfig.galleryName} –<br />
               <span style={{
                 background: 'linear-gradient(135deg, #b8b8ff 0%, #ff77c6 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text'
               }}>
-                Kunst & Keramik
+                {tenantConfig.tagline}
               </span>
             </h2>
             <p style={{ 
@@ -1012,154 +1368,10 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
               maxWidth: '600px',
               marginBottom: 'clamp(2rem, 5vw, 3rem)'
             }}>
-              Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.
+              {musterOnly ? MUSTER_TEXTE.welcomeText : 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.'}
             </p>
             
-            {/* QR-Code auf Willkommensseite - EINMALIG */}
-            {(() => {
-              try {
-                const hostname = window.location.hostname || ''
-                const isVercel = hostname.includes('vercel.app')
-                
-                // WICHTIG: Immer die korrekte Galerie-Route verwenden
-                let finalUrl = ''
-                
-                if (isVercel) {
-                  // Auf Vercel: Verwende aktuelle Domain + korrekte Route
-                  finalUrl = `${window.location.protocol}//${hostname}${PROJECT_ROUTES['k2-galerie'].galerie}`
-                } else if (mobileUrl && !mobileUrl.includes('localhost') && !mobileUrl.includes('127.0.0.1')) {
-                  // Lokale Netzwerk-IP: Verwende mobileUrl (bereits korrekt formatiert)
-                  finalUrl = mobileUrl
-                } else if (galleryData?.internetadresse) {
-                  // Aus Stammdaten: Stelle sicher dass Route korrekt ist
-                  const url = galleryData.internetadresse.trim()
-                  if (url) {
-                    let baseUrl = url.startsWith('http') ? url : `https://${url.replace(/^www\./, '')}`
-                    // Stelle sicher dass Route angehängt ist
-                    if (!baseUrl.includes('/galerie') && !baseUrl.includes('/projects/k2-galerie/galerie')) {
-                      baseUrl = baseUrl.replace(/\/$/, '') + PROJECT_ROUTES['k2-galerie'].galerie
-                    }
-                    finalUrl = baseUrl
-                  }
-                } else {
-                  // Fallback: Verwende mobileUrlMemo wenn verfügbar
-                  finalUrl = mobileUrlMemo || `${window.location.origin}${PROJECT_ROUTES['k2-galerie'].galerie}`
-                }
-                
-                // WICHTIG: Entferne Hash-Fragmente die Probleme verursachen können
-                finalUrl = finalUrl.split('#')[0]
-                
-                // WICHTIG: Prüfe ob localhost - das funktioniert NICHT auf Handy!
-                const isLocalhost = finalUrl.includes('localhost') || finalUrl.includes('127.0.0.1')
-                
-                // Wenn localhost: Versuche IP-Adresse zu finden oder verwende Vercel-URL
-                if (isLocalhost) {
-                  // Versuche IP-Adresse zu ermitteln für lokale Entwicklung
-                  const networkIP = mobileUrlMemo && !mobileUrlMemo.includes('localhost') 
-                    ? mobileUrlMemo 
-                    : null
-                  
-                  if (networkIP) {
-                    finalUrl = networkIP
-                    console.log('📱 QR-Code: localhost erkannt → verwende Netzwerk-IP:', finalUrl)
-                  } else {
-                    // Fallback: IMMER Vercel-URL verwenden (funktioniert auf Handy!)
-                    finalUrl = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
-                    console.log('📱 QR-Code: localhost erkannt → verwende Vercel-URL:', finalUrl)
-                  }
-                }
-                
-                // Stelle sicher dass URL gültig ist
-                if (!finalUrl || finalUrl === '') {
-                  // Letzter Fallback: Root-URL der aktuellen Domain
-                  finalUrl = `${window.location.origin}${PROJECT_ROUTES['k2-galerie'].galerie}`
-                  console.warn('⚠️ QR-Code: Keine gültige URL gefunden, verwende Fallback:', finalUrl)
-                }
-                
-                // Wenn auf Vercel: Verwende aktuelle Domain
-                if (hostname.includes('vercel.app') && !isLocalhost) {
-                  finalUrl = `${window.location.protocol}//${hostname}${PROJECT_ROUTES['k2-galerie'].galerie}`
-                  console.log('📱 QR-Code: Auf Vercel → verwende aktuelle Domain:', finalUrl)
-                }
-                
-                // Debug-Log für Entwicklung
-                console.log('📱 QR-Code URL:', finalUrl)
-                
-                // URL für QR-Code encoden
-                const encodedUrl = encodeURIComponent(finalUrl)
-                
-                return (
-                  <div 
-                    key="welcome-qr-code-single"
-                    style={{
-                      marginTop: 'clamp(2rem, 5vw, 3rem)',
-                      textAlign: 'center',
-                      padding: 'clamp(1.5rem, 4vw, 2rem)',
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      backdropFilter: 'blur(20px)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '20px'
-                    }}>
-                    <p style={{ 
-                      margin: '0 0 1rem', 
-                      fontSize: 'clamp(0.9rem, 2.5vw, 1.1rem)',
-                      color: 'rgba(255, 255, 255, 0.9)',
-                      fontWeight: '500'
-                    }}>
-                      QR-Code für diese Seite
-                    </p>
-                    <div style={{
-                      background: '#ffffff',
-                      padding: '0.75rem',
-                      borderRadius: '12px',
-                      display: 'inline-block',
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
-                    }}>
-                      <img 
-                        key="qr-code-image-single"
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodedUrl}`}
-                        alt="QR-Code"
-                        style={{
-                          width: '180px',
-                          height: '180px',
-                          display: 'block'
-                        }}
-                      />
-                    </div>
-                    <p style={{ 
-                      margin: '1rem 0 0.5rem', 
-                      fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)',
-                      color: 'rgba(255, 255, 255, 0.6)',
-                      wordBreak: 'break-all'
-                    }}>
-                      {finalUrl}
-                    </p>
-                    {/* Test-Link für Debugging */}
-                    <a 
-                      href={finalUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        display: 'inline-block',
-                        marginTop: '0.5rem',
-                        padding: '0.5rem 1rem',
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                        borderRadius: '6px',
-                        color: '#ffffff',
-                        textDecoration: 'none',
-                        fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)'
-                      }}
-                    >
-                      🔗 Link testen
-                    </a>
-                  </div>
-                )
-              } catch (error) {
-                console.error('QR-Code Fehler:', error)
-                return null
-              }
-            })()}
+            {/* QR-Code ENTFERNT von Willkommensseite - jetzt im Impressum unten */}
           </section>
         </header>
 
@@ -1224,7 +1436,7 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
                   margin: '0 auto clamp(1.5rem, 4vw, 2rem)',
                   boxShadow: '0 10px 30px rgba(102, 126, 234, 0.4)'
                 }}>
-                  M
+                  {(musterOnly ? MUSTER_TEXTE.martina.name : (tenantId === 'demo' ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name))).charAt(0)}
                 </div>
                 <h4 style={{
                   margin: '0 0 0.75rem',
@@ -1232,7 +1444,7 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
                   color: '#ffffff',
                   fontWeight: '600'
                 }}>
-                  Martina Kreinecker
+                  {musterOnly ? MUSTER_TEXTE.martina.name : (tenantId === 'demo' ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name))}
                 </h4>
                 <p style={{
                   color: 'rgba(255, 255, 255, 0.6)',
@@ -1250,7 +1462,7 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
                   margin: 0,
                   lineHeight: '1.7'
                 }}>
-                  Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. Ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.
+                  {musterOnly ? MUSTER_TEXTE.artist1Bio : 'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. Ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.'}
                 </p>
               </div>
               
@@ -1287,7 +1499,7 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
                   margin: '0 auto clamp(1.5rem, 4vw, 2rem)',
                   boxShadow: '0 10px 30px rgba(245, 87, 108, 0.4)'
                 }}>
-                  G
+                  {(musterOnly ? MUSTER_TEXTE.georg.name : (tenantId === 'demo' ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name))).charAt(0)}
                 </div>
                 <h4 style={{
                   margin: '0 0 0.75rem',
@@ -1295,7 +1507,7 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
                   color: '#ffffff',
                   fontWeight: '600'
                 }}>
-                  Georg Kreinecker
+                  {musterOnly ? MUSTER_TEXTE.georg.name : (tenantId === 'demo' ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name))}
                 </h4>
                 <p style={{
                   color: 'rgba(255, 255, 255, 0.6)',
@@ -1313,7 +1525,7 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
                   margin: 0,
                   lineHeight: '1.7'
                 }}>
-                  Georg verbindet in seiner Keramikarbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail, das Ergebnis von langjähriger Erfahrung.
+                  {musterOnly ? MUSTER_TEXTE.artist2Bio : 'Georg verbindet in seiner Keramikarbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail, das Ergebnis von langjähriger Erfahrung.'}
                 </p>
               </div>
             </div>
@@ -1330,7 +1542,7 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
               fontWeight: '300',
               marginBottom: 'clamp(3rem, 8vw, 4rem)'
             }}>
-              Gemeinsam eröffnen Martina und Georg nach über 20 Jahren kreativer Tätigkeit die K2 Galerie – ein Raum, wo Malerei und Keramik verschmelzen und Kunst zum Leben erwacht.
+              {musterOnly ? MUSTER_TEXTE.gemeinsamText : `Gemeinsam eröffnen ${tenantId === 'demo' ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name)} und ${tenantId === 'demo' ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name)} nach über 20 Jahren kreativer Tätigkeit die ${tenantConfig.galleryName} – ein Raum, wo Malerei und Keramik verschmelzen und Kunst zum Leben erwacht.`}
             </p>
 
             {/* Virtueller Rundgang & Galerie Vorschau */}
@@ -1340,7 +1552,8 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
               gap: 'clamp(1.5rem, 4vw, 2rem)',
               marginBottom: 'clamp(3rem, 8vw, 5rem)'
             }}>
-              {/* Virtueller Rundgang */}
+              {/* Virtueller Rundgang – ök2: ausblenden (keine echten Bilder) */}
+              {!musterOnly && (
               <div style={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 backdropFilter: 'blur(20px)',
@@ -1438,6 +1651,7 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
                   Rundgang starten →
                 </Link>
               </div>
+              )}
 
               {/* Galerie Vorschau */}
               <div style={{
@@ -1514,7 +1728,7 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
                   gap: 'clamp(0.75rem, 2vw, 1rem)'
                 }}>
                   <Link 
-                    to={PROJECT_ROUTES['k2-galerie'].galerieVorschau}
+                    to={musterOnly ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerieVorschau}
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -1541,6 +1755,7 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
                   >
                     Alle Werke anzeigen →
                   </Link>
+                  {!musterOnly && (
                   <Link 
                     to={PROJECT_ROUTES['k2-galerie'].shop}
                     style={{
@@ -1570,6 +1785,7 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
                   >
                     🛒 Zum Shop →
                   </Link>
+                  )}
                 </div>
               </div>
             </div>
@@ -1582,145 +1798,230 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
             borderTop: '1px solid rgba(255, 255, 255, 0.1)'
           }}>
             <div style={{
-              maxWidth: '700px',
+              maxWidth: '1000px',
               margin: '0 auto',
               fontSize: 'clamp(0.75rem, 1.8vw, 0.85rem)',
               color: 'rgba(255, 255, 255, 0.7)',
               lineHeight: '1.5',
             }}>
-              {/* Kontaktdaten */}
-              <div>
-                <p style={{ margin: '0 0 0.5rem', fontWeight: '600', color: '#ffffff' }}>
-                  K2 Galerie | Martina & Georg Kreinecker
-                </p>
-                {galleryData.address && <p style={{ margin: '0 0 0.25rem' }}>{galleryData.address}</p>}
-                
-                {/* Galerie Kontakt */}
-                {(galleryData.phone || galleryData.email) && (
-                  <div style={{ marginTop: '0.5rem' }}>
-                    <span style={{ fontWeight: '600', color: '#ffffff', marginRight: '0.5rem' }}>Galerie:</span>
-                    {galleryData.phone && <span style={{ marginRight: '0.75rem' }}>{galleryData.phone}</span>}
-                    {galleryData.email && (
-                      <a href={`mailto:${galleryData.email}`} style={{ color: '#b8b8ff', textDecoration: 'none', marginRight: '0.75rem' }}>
-                        {galleryData.email}
-                      </a>
+              {/* Impressum Layout: Stammdaten links, QR-Code rechts */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr auto',
+                gap: 'clamp(2rem, 4vw, 3rem)',
+                alignItems: 'flex-start'
+              }}>
+                {/* Linke Seite: Vollständige Stammdaten */}
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ 
+                    margin: '0 0 1rem', 
+                    fontSize: 'clamp(1rem, 2.5vw, 1.25rem)', 
+                    fontWeight: '600', 
+                    color: '#ffffff' 
+                  }}>
+                    {tenantConfig.footerLine}
+                  </h4>
+                  
+                  {/* Galerie Kontakt - Kompakt (ök2: immer aus MUSTER_TEXTE) */}
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <p style={{ margin: '0 0 0.25rem', fontWeight: '500', color: '#ffffff', fontSize: 'clamp(0.95rem, 2.2vw, 1.1rem)' }}>
+                      {tenantConfig.galleryName}
+                    </p>
+                    {(musterOnly ? MUSTER_TEXTE.gallery.address : galleryData.address) && (
+                      <p style={{ margin: '0 0 0.15rem', color: 'rgba(255, 255, 255, 0.7)', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', lineHeight: '1.4' }}>
+                        {musterOnly ? MUSTER_TEXTE.gallery.address : galleryData.address}
+                      </p>
+                    )}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.15rem' }}>
+                      {(musterOnly ? MUSTER_TEXTE.gallery.phone : galleryData.phone) && (
+                        <span style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
+                          📞 {musterOnly ? MUSTER_TEXTE.gallery.phone : galleryData.phone}
+                        </span>
+                      )}
+                      {(musterOnly ? MUSTER_TEXTE.gallery.email : galleryData.email) && (
+                        <span style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
+                          ✉️ <a href={`mailto:${musterOnly ? MUSTER_TEXTE.gallery.email : galleryData.email}`} style={{ color: '#b8b8ff', textDecoration: 'none' }}>
+                            {musterOnly ? MUSTER_TEXTE.gallery.email : galleryData.email}
+                          </a>
+                        </span>
+                      )}
+                      {(musterOnly ? MUSTER_TEXTE.gallery.website : galleryData.website) && (
+                        <span style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
+                          🌐 <a href={`https://${(musterOnly ? MUSTER_TEXTE.gallery.website : galleryData.website).replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" style={{ color: '#b8b8ff', textDecoration: 'none' }}>
+                            {musterOnly ? MUSTER_TEXTE.gallery.website : galleryData.website}
+                          </a>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Martina Kontakt - Kompakt (ök2: immer aus MUSTER_TEXTE) */}
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <p style={{ margin: '0 0 0.15rem', fontWeight: '500', color: '#ffffff', fontSize: 'clamp(0.95rem, 2.2vw, 1.1rem)' }}>
+                      {musterOnly ? MUSTER_TEXTE.martina.name : (martinaData.name || 'Martina Kreinecker')}
+                    </p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      {(musterOnly ? MUSTER_TEXTE.martina.phone : martinaData.phone) && (
+                        <span style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
+                          📞 {musterOnly ? MUSTER_TEXTE.martina.phone : martinaData.phone}
+                        </span>
+                      )}
+                      {(musterOnly ? MUSTER_TEXTE.martina.email : martinaData.email) && (
+                        <span style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
+                          ✉️ <a href={`mailto:${musterOnly ? MUSTER_TEXTE.martina.email : martinaData.email}`} style={{ color: '#b8b8ff', textDecoration: 'none' }}>
+                            {musterOnly ? MUSTER_TEXTE.martina.email : martinaData.email}
+                          </a>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Georg Kontakt - Kompakt (ök2: immer aus MUSTER_TEXTE) */}
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <p style={{ margin: '0 0 0.15rem', fontWeight: '500', color: '#ffffff', fontSize: 'clamp(0.95rem, 2.2vw, 1.1rem)' }}>
+                      {musterOnly ? MUSTER_TEXTE.georg.name : (georgData.name || 'Georg Kreinecker')}
+                    </p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      {(musterOnly ? MUSTER_TEXTE.georg.phone : georgData.phone) && (
+                        <span style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
+                          📞 {musterOnly ? MUSTER_TEXTE.georg.phone : georgData.phone}
+                        </span>
+                      )}
+                      {(musterOnly ? MUSTER_TEXTE.georg.email : georgData.email) && (
+                        <span style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
+                          ✉️ <a href={`mailto:${musterOnly ? MUSTER_TEXTE.georg.email : georgData.email}`} style={{ color: '#b8b8ff', textDecoration: 'none' }}>
+                            {musterOnly ? MUSTER_TEXTE.georg.email : georgData.email}
+                          </a>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Gewerbe & Haftungsausschluss */}
+                  <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                    <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)' }}>
+                      Gewerbe: freie Kunstschaffende
+                    </p>
+                    <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)', opacity: 0.6 }}>
+                      Haftungsausschluss: Die Inhalte wurden mit Sorgfalt erstellt. Für Richtigkeit, Vollständigkeit und Aktualität kann keine Gewähr übernommen werden.
+                    </p>
+                    {!musterOnly && (
+                    <p style={{ margin: '1rem 0 0', fontSize: 'clamp(0.65rem, 1.5vw, 0.75rem)', opacity: 0.5, fontStyle: 'italic' }}>
+                      Website erstellt von Georg Kreinecker
+                    </p>
                     )}
                   </div>
-                )}
+                </div>
                 
-                {/* Martina Kontakt */}
-                {(martinaData.phone || martinaData.email) && (
-                  <div style={{ marginTop: '0.5rem' }}>
-                    <span style={{ fontWeight: '600', color: '#ffffff', marginRight: '0.5rem' }}>Martina:</span>
-                    {martinaData.phone && <span style={{ marginRight: '0.75rem' }}>{martinaData.phone}</span>}
-                    {martinaData.email && (
-                      <a href={`mailto:${martinaData.email}`} style={{ color: '#b8b8ff', textDecoration: 'none', marginRight: '0.75rem' }}>
-                        {martinaData.email}
-                      </a>
-                    )}
-                  </div>
-                )}
-                
-                {/* Georg Kontakt */}
-                {(georgData.phone || georgData.email) && (
-                  <div style={{ marginTop: '0.5rem' }}>
-                    <span style={{ fontWeight: '600', color: '#ffffff', marginRight: '0.5rem' }}>Georg:</span>
-                    {georgData.phone && <span style={{ marginRight: '0.75rem' }}>{georgData.phone}</span>}
-                    {georgData.email && (
-                      <a href={`mailto:${georgData.email}`} style={{ color: '#b8b8ff', textDecoration: 'none', marginRight: '0.75rem' }}>
-                        {georgData.email}
-                      </a>
-                    )}
-                  </div>
-                )}
-                
-                <p style={{ margin: '0.75rem 0 0.5rem', fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)' }}>
-                  Gewerbe: freie Kunstschaffende
-                </p>
-                
-                <p style={{ margin: '1rem 0 0', fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)', opacity: 0.6 }}>
-                  Haftungsausschluss: Die Inhalte wurden mit Sorgfalt erstellt. Für Richtigkeit, Vollständigkeit und Aktualität kann keine Gewähr übernommen werden.
-                </p>
-              </div>
-              
-              {/* QR-Code im Impressum */}
-              {(() => {
+                {/* Rechte Seite: QR-Code (platzsparend) */}
+                {(() => {
                 try {
                   const hostname = window.location.hostname || ''
+                  const port = window.location.port || '5177'
+                  const protocol = window.location.protocol
                   const isVercel = hostname.includes('vercel.app')
                   
-                  // Gleiche Logik wie auf Willkommensseite
+                  // WICHTIG: Immer die korrekte Galerie-Route verwenden
                   let finalUrl = ''
                   
-                  if (isVercel) {
-                    finalUrl = `${window.location.protocol}//${hostname}${PROJECT_ROUTES['k2-galerie'].galerie}`
-                  } else if (mobileUrl && !mobileUrl.includes('localhost') && !mobileUrl.includes('127.0.0.1')) {
-                    finalUrl = mobileUrl
-                  } else if (galleryData?.internetadresse) {
-                    const url = galleryData.internetadresse.trim()
-                    if (url) {
-                      let baseUrl = url.startsWith('http') ? url : `https://${url.replace(/^www\./, '')}`
-                      if (!baseUrl.includes('/galerie') && !baseUrl.includes('/projects/k2-galerie/galerie')) {
-                        baseUrl = baseUrl.replace(/\/$/, '') + PROJECT_ROUTES['k2-galerie'].galerie
+                  // KRITISCH: Wenn NICHT auf Vercel → IMMER lokale IP verwenden!
+                  if (!isVercel) {
+                    // Prüfe ob hostname eine IP-Adresse ist (192.168.x.x oder 10.x.x.x etc.)
+                    const isIPAddress = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname)
+                    
+                    if (isIPAddress) {
+                      // IP-Adresse gefunden → VERWENDE DIESE DIREKT!
+                      finalUrl = `${protocol}//${hostname}:${port}${PROJECT_ROUTES['k2-galerie'].galerie}`
+                      console.log('📱 QR-Code: IP-Adresse direkt verwendet:', finalUrl)
+                    } else if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+                      // Andere hostname (nicht localhost) → verwende diese
+                      finalUrl = `${protocol}//${hostname}:${port}${PROJECT_ROUTES['k2-galerie'].galerie}`
+                      console.log('📱 QR-Code: Hostname verwendet:', finalUrl)
+                    } else {
+                      // Auf localhost: Versuche mobileUrl oder mobileUrlMemo
+                      if (mobileUrl && !mobileUrl.includes('localhost') && !mobileUrl.includes('127.0.0.1')) {
+                        finalUrl = mobileUrl
+                        console.log('📱 QR-Code: mobileUrl verwendet:', finalUrl)
+                      } else if (mobileUrlMemo && !mobileUrlMemo.includes('localhost') && !mobileUrlMemo.includes('127.0.0.1')) {
+                        finalUrl = mobileUrlMemo
+                        console.log('📱 QR-Code: mobileUrlMemo verwendet:', finalUrl)
+                      } else {
+                        // Fallback: Verwende bekannte Netzwerk-IPs aus Server-Output
+                        const knownIPs = ['192.168.0.31', '192.168.0.27']
+                        const fallbackIP = knownIPs[0] // Verwende erste bekannte IP
+                        finalUrl = `http://${fallbackIP}:${port}${PROJECT_ROUTES['k2-galerie'].galerie}`
+                        console.log('📱 QR-Code: localhost erkannt → verwende Fallback-IP:', finalUrl)
                       }
-                      finalUrl = baseUrl
                     }
                   } else {
-                    finalUrl = mobileUrlMemo || `https://k2-galerie.vercel.app/projects/k2-galerie/galerie`
+                    // Nur auf Vercel: Verwende Vercel-URL
+                    finalUrl = `${window.location.protocol}//${hostname}${PROJECT_ROUTES['k2-galerie'].galerie}`
+                    console.log('📱 QR-Code: Auf Vercel → verwende Vercel-URL:', finalUrl)
                   }
                   
+                  // WICHTIG: Entferne Hash-Fragmente die Probleme verursachen können
                   finalUrl = finalUrl.split('#')[0]
-                  const isLocalhost = finalUrl.includes('localhost') || finalUrl.includes('127.0.0.1')
                   
-                  // Wenn localhost: Zeige Vercel-URL statt Warnung
-                  if (isLocalhost) {
-                    finalUrl = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
+                  // WICHTIG: Wenn noch localhost oder Vercel drin ist (und nicht auf Vercel) → Fallback-IP verwenden
+                  if (!isVercel && (finalUrl.includes('localhost') || finalUrl.includes('127.0.0.1') || finalUrl.includes('vercel.app'))) {
+                    console.warn('⚠️ QR-Code: Ungültige URL erkannt, verwende Fallback-IP:', finalUrl)
+                    const knownIPs = ['192.168.0.31', '192.168.0.27']
+                    const fallbackIP = knownIPs[0]
+                    finalUrl = `http://${fallbackIP}:${port}${PROJECT_ROUTES['k2-galerie'].galerie}`
+                    console.log('📱 QR-Code: Fallback-IP verwendet:', finalUrl)
                   }
                   
                   // Stelle sicher dass URL gültig ist
                   if (!finalUrl || finalUrl === '') {
-                    finalUrl = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
+                    // Letzter Fallback: Verwende bekannte IP
+                    const knownIPs = ['192.168.0.31', '192.168.0.27']
+                    const fallbackIP = knownIPs[0]
+                    finalUrl = `http://${fallbackIP}:${port}${PROJECT_ROUTES['k2-galerie'].galerie}`
+                    console.log('📱 QR-Code: Letzter Fallback verwendet:', finalUrl)
                   }
                   
+                  // Debug-Log für Entwicklung
+                  console.log('📱 QR-Code URL:', finalUrl)
+                  
+                  // URL für QR-Code encoden
                   const encodedUrl = encodeURIComponent(finalUrl)
                   
                   return (
                     <div style={{
-                      marginTop: 'clamp(1.5rem, 3vw, 2rem)',
-                      paddingTop: 'clamp(1rem, 2vw, 1.5rem)',
-                      borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-                      textAlign: 'center'
+                      textAlign: 'center',
+                      flexShrink: 0
                     }}>
                       <p style={{ 
-                        margin: '0 0 0.75rem', 
-                        fontSize: 'clamp(0.75rem, 1.8vw, 0.85rem)',
+                        margin: '0 0 0.5rem', 
+                        fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)',
                         color: 'rgba(255, 255, 255, 0.8)',
                         fontWeight: '500'
                       }}>
-                        QR-Code für diese Seite
+                        QR-Code
                       </p>
                       <div style={{
                         background: '#ffffff',
-                        padding: '0.5rem',
+                        padding: '0.4rem',
                         borderRadius: '8px',
                         display: 'inline-block',
                         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
                       }}>
                         <img 
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodedUrl}`}
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodedUrl}`}
                           alt="QR-Code"
                           style={{
-                            width: '120px',
-                            height: '120px',
+                            width: '100px',
+                            height: '100px',
                             display: 'block'
                           }}
                         />
                       </div>
                       <p style={{ 
-                        margin: '0.5rem 0 0', 
-                        fontSize: 'clamp(0.65rem, 1.5vw, 0.75rem)',
+                        margin: '0.4rem 0 0', 
+                        fontSize: 'clamp(0.6rem, 1.3vw, 0.7rem)',
                         color: 'rgba(255, 255, 255, 0.5)',
-                        wordBreak: 'break-all'
+                        wordBreak: 'break-all',
+                        maxWidth: '120px'
                       }}>
                         {finalUrl}
                       </p>
@@ -1731,6 +2032,7 @@ const GaleriePage = ({ scrollToSection }: { scrollToSection?: string }) => {
                   return null
                 }
               })()}
+              </div>
             </div>
           </section>
         </main>

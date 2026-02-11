@@ -3,9 +3,10 @@
 
 cd /Users/georgkreinecker/k2Galerie || exit 1
 
-# Stelle sicher dass Ausgabe sofort angezeigt wird
-exec > >(tee -a /dev/tty)
-exec 2>&1
+# WICHTIG: Stelle sicher dass Fehler IMMER ausgegeben werden
+# Verwende exec um stdout/stderr zu erfassen, aber zeige auch auf Terminal
+set -e  # Stoppe bei Fehlern
+set -o pipefail  # Erfasse Fehler in Pipes
 
 # Farben für Terminal
 GREEN='\033[0;32m'
@@ -373,7 +374,7 @@ if [ $PUSH_STATUS -eq 0 ]; then
 else
     echo ""
     echo "${BLUE}═══════════════════════════════════════════════════════════${NC}"
-    echo "${RED}❌ Git Push fehlgeschlagen${NC}"
+    echo "${RED}❌ Git Push fehlgeschlagen (Exit Code: ${PUSH_STATUS})${NC}"
     echo "${BLUE}═══════════════════════════════════════════════════════════${NC}"
     echo ""
     echo "${YELLOW}💡 Bitte manuell pushen:${NC}"
@@ -388,7 +389,25 @@ else
         echo "   ${CYAN}git push origin main${NC}"
     fi
     echo ""
-    echo "${RED}Fehler-Details:${NC}"
+    echo "${RED}═══════════════════════════════════════════════════════════${NC}"
+    echo "${RED}FEHLER-DETAILS:${NC}"
+    echo "${RED}═══════════════════════════════════════════════════════════${NC}"
+    echo ""
+    echo "${RED}Exit Code: ${PUSH_STATUS}${NC}"
+    echo ""
+    echo "${RED}Git Push Output:${NC}"
     echo "${RED}${PUSH_OUTPUT}${NC}"
+    echo ""
+    echo "${YELLOW}Mögliche Ursachen:${NC}"
+    echo "   - Netzwerk-Problem"
+    echo "   - GitHub Authentifizierung fehlgeschlagen"
+    echo "   - Branch-Konflikt"
+    echo "   - Repository nicht gefunden"
+    echo ""
+    echo "${CYAN}Debug-Info:${NC}"
+    echo "   Branch: ${CURRENT_BRANCH}"
+    echo "   Datei: public/gallery-data.json"
+    echo "   Dateigröße: $(du -h public/gallery-data.json 2>/dev/null | cut -f1 || echo 'unbekannt')"
+    echo ""
     exit 1
 fi

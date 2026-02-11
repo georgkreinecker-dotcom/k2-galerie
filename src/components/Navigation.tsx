@@ -60,7 +60,7 @@ export function DevViewNavButton({ defaultPage = 'mission' }: { defaultPage?: st
         color: '#04111f'
       }}
     >
-      📱 Arbeitsplattform
+      📱 APf
     </Link>
   )
 }

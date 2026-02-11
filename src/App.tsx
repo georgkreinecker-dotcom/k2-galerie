@@ -7,6 +7,7 @@ import MissionControlPage from './pages/MissionControlPage'
 import ProjectPlanPage from './pages/ProjectPlanPage'
 import K2TeamHandbuchPage from './pages/K2TeamHandbuchPage'
 import MobileConnectPage from './pages/MobileConnectPage'
+import ProduktVorschauPage from './pages/ProduktVorschauPage'
 import GaleriePage from './pages/GaleriePage'
 import GalerieVorschauPage from './pages/GalerieVorschauPage'
 import PlatzanordnungPage from './pages/PlatzanordnungPage'
@@ -19,6 +20,7 @@ import GitHubTokenPage from './pages/GitHubTokenPage'
 import SecondMacPage from './pages/SecondMacPage'
 import ScreenshotExportAdmin from '../components/ScreenshotExportAdmin'
 import DevViewPage from './pages/DevViewPage'
+import PlatformStartPage from './pages/PlatformStartPage'
 import { PLATFORM_ROUTES, PROJECT_ROUTES } from './config/navigation'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 
@@ -208,13 +210,16 @@ function App() {
       <Route path={PLATFORM_ROUTES.projects} element={<ProjectsPage />} />
       <Route path="/projects/:projectId" element={<ProjectStartPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].galerie} element={<GaleriePage />} />
-            <Route path={PROJECT_ROUTES['k2-galerie'].galerieVorschau} element={<GalerieVorschauPage />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich} element={<GaleriePage musterOnly />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau} element={<GalerieVorschauPage musterOnly />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].galerieVorschau} element={<GalerieVorschauPage />} />
             <Route path={PROJECT_ROUTES['k2-galerie'].platzanordnung} element={<PlatzanordnungPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].shop} element={<ShopPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].virtuellerRundgang} element={<VirtuellerRundgangPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].controlStudio} element={<ControlStudioPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].plan} element={<ProjectPlanPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].mobileConnect} element={<MobileConnectPage />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].produktVorschau} element={<ProduktVorschauPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].platzanordnung} element={<PlatzanordnungPage />} />
       <Route path="/k2team-handbuch" element={<K2TeamHandbuchPage />} />
       
