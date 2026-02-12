@@ -8,6 +8,27 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* K2 Galerie Standard-Theme (wird ggf. von Admin/designSettings überschrieben) */
+  --k2-bg-1: #0a0e27;
+  --k2-bg-2: #1a1f3a;
+  --k2-bg-3: #111c33;
+  --k2-text: #f4f7ff;
+  --k2-muted: #8fa0c9;
+  --k2-accent: #5ffbf1;
+  --k2-card-bg-1: rgba(18, 22, 35, 0.95);
+  --k2-card-bg-2: rgba(12, 16, 28, 0.92);
+}
+
+/* ök2: helles Theme (nur wenn .ok2-theme gesetzt) – keine inline style-Variablen nötig */
+.ok2-theme {
+  --k2-bg-1: #f6f4f0;
+  --k2-bg-2: #ebe7e0;
+  --k2-bg-3: #e0dbd2;
+  --k2-text: #2d2d2a;
+  --k2-muted: #5c5c57;
+  --k2-accent: #5a7a6e;
+  --k2-card-bg-1: rgba(255, 255, 255, 0.85);
+  --k2-card-bg-2: rgba(246, 244, 240, 0.9);
 }
 
 * {
@@ -22,4 +43,27 @@ body {
 
 a {
   color: inherit;
+}
+
+/* Etikett-Druck: Seite + Container passen sich dynamisch an (widthMm/heightMm aus Admin) */
+@media print {
+  body > *:not(#k2-print-label) { display: none !important; }
+  #k2-print-label * { visibility: visible !important; }
+  #k2-print-label {
+    display: block !important;  /* keine flex – exakte Maße, kein Stauchen */
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    /* width/height kommen aus Inline-Style (printLabelData) */
+  }
+  #k2-print-label img {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    border: none !important;
+  }
 }

@@ -17,6 +17,7 @@ export interface AutoSaveData {
   events?: any[]
   documents?: any[]
   designSettings?: any
+  pageTexts?: any
 }
 
 /**
@@ -66,6 +67,13 @@ export function startAutoSave(getData: () => AutoSaveData) {
       }
       if (data.designSettings) {
         localStorage.setItem('k2-design-settings', JSON.stringify(data.designSettings))
+      }
+      if (data.pageTexts) {
+        try {
+          localStorage.setItem('k2-page-texts', JSON.stringify(data.pageTexts))
+        } catch (e) {
+          console.warn('⚠️ Seitentexte zu groß für Auto-Save')
+        }
       }
       
       // Speichere Timestamp

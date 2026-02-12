@@ -1,13 +1,27 @@
 /**
  * Hochgeladene Fotos (z. B. iPad/iPhone): Echte Objektfreistellung + professioneller
- * Hintergrund. Läuft komplett im Browser, kostenlos, funktioniert auch bei ök2.
- * Nutzt @imgly/background-removal (ONNX im Browser). Fallback: nur Pro-Hintergrund ohne Freistellung.
+ * Studio-Hintergrund. Wirkt wie in einem professionellen Studio aufgenommen.
+ * Läuft komplett im Browser, kostenlos. Nutzt @imgly/background-removal (ONNX).
+ * Fallback: nur Pro-Hintergrund ohne Freistellung.
  */
 
 const MAX_SIDE = 1200
-const PADDING_PERCENT = 0.08
-const BACKGROUND_TOP = '#fafafa'
-const BACKGROUND_BOTTOM = '#e8e8e8'
+/** Mehr Rand wie im Studio – Objekt hat „Luft“, wirkt professionell */
+const PADDING_PERCENT = 0.1
+
+/**
+ * Studio-Hintergründe: weiche Verläufe wie bei Studiobühnen/Galerie-Fotos.
+ * Oben = heller (Licht von oben), unten = weicher Schattenverlauf.
+ */
+export const BACKGROUND_PRESETS = {
+  hell: { top: '#f5f5f5', bottom: '#e2e2e2' },       // Neutralgrau, klassisches Studio
+  weiss: { top: '#fefefe', bottom: '#f0f0f0' },     // Weiß/Seamless-Papier
+  warm: { top: '#f8f6f3', bottom: '#ebe8e4' },      // Leicht warm, Galerie
+  kuehl: { top: '#f4f5f6', bottom: '#e6e8ea' },     // Kühles Grau, modern
+  dunkel: { top: '#4a4a4a', bottom: '#2d2d2d' }     // Dunkelgrau, Studio-Drama
+} as const
+
+export type BackgroundPresetKey = keyof typeof BACKGROUND_PRESETS
 
 /**
  * Zeichnet ein Bild (oder freigestelltes PNG-Blob) zentriert auf professionellen Verlauf.
@@ -15,7 +29,8 @@ const BACKGROUND_BOTTOM = '#e8e8e8'
  */
 function drawOnProfessionalBackground(
   imageSource: HTMLImageElement | Blob,
-  isBlob: boolean
+  isBlob: boolean,
+  background: { top: string; bottom: string } = BACKGROUND_PRESETS.hell
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const finish = (img: HTMLImageElement) => {
@@ -42,9 +57,11 @@ function drawOnProfessionalBackground(
           reject(new Error('Canvas nicht verfügbar'))
           return
         }
+        // Weicher Verlauf wie im Studio: oben hell (Licht), unten weich abfallend
         const gradient = ctx.createLinearGradient(0, 0, 0, canvasH)
-        gradient.addColorStop(0, BACKGROUND_TOP)
-        gradient.addColorStop(1, BACKGROUND_BOTTOM)
+        gradient.addColorStop(0, background.top)
+        gradient.addColorStop(0.5, background.bottom) // Mittiger Übergang = weicher
+        gradient.addColorStop(1, background.bottom)
         ctx.fillStyle = gradient
         ctx.fillRect(0, 0, canvasW, canvasH)
         ctx.drawImage(img, pad, pad, w, h)
@@ -76,12 +93,15 @@ function drawOnProfessionalBackground(
 /**
  * Nur professioneller Hintergrund (ohne Freistellung). Wird bei Fehler oder Fallback genutzt.
  */
-function onlyProfessionalBackground(imageDataUrl: string): Promise<string> {
+function onlyProfessionalBackground(
+  imageDataUrl: string,
+  background: { top: string; bottom: string } = BACKGROUND_PRESETS.hell
+): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.onload = () => {
-      drawOnProfessionalBackground(img, false).then(resolve).catch(reject)
+      drawOnProfessionalBackground(img, false, background).then(resolve).catch(reject)
     }
     img.onerror = () => reject(new Error('Bild konnte nicht geladen werden'))
     img.src = imageDataUrl
@@ -91,16 +111,21 @@ function onlyProfessionalBackground(imageDataUrl: string): Promise<string> {
 /**
  * Echte Objektfreistellung + professioneller Hintergrund.
  * Kostenlos, im Browser, funktioniert auch bei ök2. Bei Fehler: Fallback auf Pro-Hintergrund ohne Freistellung.
+ * @param backgroundPreset Optional: 'hell' | 'weiss' | 'warm' | 'kuehl' | 'dunkel' (Standard: 'hell')
  */
-export function compositeOnProfessionalBackground(imageDataUrl: string): Promise<string> {
+export function compositeOnProfessionalBackground(
+  imageDataUrl: string,
+  backgroundPreset: BackgroundPresetKey = 'hell'
+): Promise<string> {
+  const background = BACKGROUND_PRESETS[backgroundPreset] ?? BACKGROUND_PRESETS.hell
   return (async () => {
     try {
       const { removeBackground } = await import('@imgly/background-removal')
       const blob = await removeBackground(imageDataUrl)
-      return drawOnProfessionalBackground(blob, true)
+      return drawOnProfessionalBackground(blob, true, background)
     } catch (e) {
       console.warn('Freistellung fehlgeschlagen, verwende professionellen Hintergrund ohne Freistellung:', e)
-      return onlyProfessionalBackground(imageDataUrl)
+      return onlyProfessionalBackground(imageDataUrl, background)
     }
   })()
 }

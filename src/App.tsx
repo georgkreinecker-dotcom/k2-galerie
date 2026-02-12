@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
 import ProjectsPage from './pages/ProjectsPage'
@@ -19,9 +20,11 @@ import KostenPage from './pages/KostenPage'
 import GitHubTokenPage from './pages/GitHubTokenPage'
 import SecondMacPage from './pages/SecondMacPage'
 import ScreenshotExportAdmin from '../components/ScreenshotExportAdmin'
+import { Ok2ThemeWrapper } from './components/Ok2ThemeWrapper'
 import DevViewPage from './pages/DevViewPage'
 import PlatformStartPage from './pages/PlatformStartPage'
 import { PLATFORM_ROUTES, PROJECT_ROUTES } from './config/navigation'
+import { BUILD_LABEL } from './buildInfo.generated'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 
 // Error Boundary für gesamte App
@@ -80,20 +83,50 @@ class AppErrorBoundary extends Component<{ children: ReactNode }, { hasError: bo
               </pre>
             )}
           </div>
-          <button
-            onClick={() => window.location.reload()}
-            style={{
-              padding: '0.75rem 1.5rem',
-              background: '#667eea',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '1rem'
-            }}
-          >
-            Seite neu laden
-          </button>
+          <p style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#aaa' }}>
+            Wenn die K2-Seite nach Drucken/Teilen nicht mehr lädt: „Reset &amp; neu laden“ versuchen.
+          </p>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <button
+              onClick={() => {
+                try {
+                  const keys: string[] = []
+                  for (let i = 0; i < localStorage.length; i++) {
+                    const k = localStorage.key(i)
+                    if (k && k.startsWith('k2-')) keys.push(k)
+                  }
+                  keys.forEach(k => localStorage.removeItem(k))
+                  sessionStorage.clear()
+                } catch (_) {}
+                window.location.reload()
+              }}
+              style={{
+                padding: '0.75rem 1.5rem',
+                background: '#dc2626',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '1rem'
+              }}
+            >
+              Reset &amp; neu laden
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              style={{
+                padding: '0.75rem 1.5rem',
+                background: '#667eea',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '1rem'
+              }}
+            >
+              Nur neu laden
+            </button>
+          </div>
         </div>
       )
     }
@@ -180,9 +213,22 @@ class AdminErrorBoundary extends Component<{ children: ReactNode }, { hasError: 
   }
 }
 
+function StandBadgeSync() {
+  useEffect(() => {
+    const el = document.getElementById('app-stand-badge')
+    if (el) {
+      const isLocal = typeof window !== 'undefined' && /^https?:\/\/localhost|127\.0\.0\.1/i.test(window.location?.origin || '')
+      el.textContent = isLocal ? `Stand: ${BUILD_LABEL} (lokal)` : `Stand: ${BUILD_LABEL}`
+      el.setAttribute('title', isLocal ? 'Neuester Stand – hier am Mac gebaut. Mobil zeigt die zuletzt deployte Version.' : 'Build-Stand (deployt).')
+    }
+  }, [])
+  return null
+}
+
 function App() {
   return (
     <AppErrorBoundary>
+    <StandBadgeSync />
     <Routes>
       {/* Root-Route: Arbeitsplattform (auf localhost automatisch Galerie in Desktop-Ansicht) */}
       <Route path="/" element={
@@ -206,12 +252,12 @@ function App() {
       <Route path={PLATFORM_ROUTES.dialog} element={<DialogStandalonePage />} />
       <Route path="/platform/second-mac" element={<SecondMacPage />} />
       
-      {/* Projekt-Routen */}
+      {/* Projekt-Routen – Galerie zuerst, damit QR-Code /projects/k2-galerie/galerie auf Mobile trifft */}
       <Route path={PLATFORM_ROUTES.projects} element={<ProjectsPage />} />
-      <Route path="/projects/:projectId" element={<ProjectStartPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].galerie} element={<GaleriePage />} />
-      <Route path={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich} element={<GaleriePage musterOnly />} />
-      <Route path={PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau} element={<GalerieVorschauPage musterOnly />} />
+      <Route path="/projects/:projectId" element={<ProjectStartPage />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich} element={<Ok2ThemeWrapper><GaleriePage musterOnly /></Ok2ThemeWrapper>} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau} element={<Ok2ThemeWrapper><GalerieVorschauPage musterOnly /></Ok2ThemeWrapper>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].galerieVorschau} element={<GalerieVorschauPage />} />
             <Route path={PROJECT_ROUTES['k2-galerie'].platzanordnung} element={<PlatzanordnungPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].shop} element={<ShopPage />} />

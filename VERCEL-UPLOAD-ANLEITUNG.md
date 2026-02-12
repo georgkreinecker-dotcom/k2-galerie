@@ -57,10 +57,13 @@ git push -u origin main
 
 **Auch ohne "Upload" Button:**
 
-1. Öffne den `dist/` Ordner im Finder
-2. Gehe zu [vercel.com/new](https://vercel.com/new)
-3. **Ziehe den gesamten `dist/` Ordner** direkt auf die Vercel-Seite
-4. Es sollte automatisch erkannt werden!
+1. **Zuerst Build:** Im Terminal `npm run build` (im Ordner k2Galerie)
+2. Öffne den **`dist/`** Ordner im Finder (nicht den ganzen Projektordner!)
+3. Gehe zu [vercel.com/new](https://vercel.com/new)
+4. **Ziehe den gesamten `dist/` Ordner** direkt auf die Vercel-Seite
+5. Es sollte automatisch erkannt werden!
+
+⚠️ **Nur Textseite nach Upload?** → Du hast wahrscheinlich den **Projektordner** statt **dist** hochgeladen. Siehe `UPLOAD-NUR-TEXTSEITE-FIX.md`.
 
 ---
 

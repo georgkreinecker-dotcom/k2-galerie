@@ -64,19 +64,6 @@ export default function SmartPanel({ currentPage }: SmartPanelProps) {
     }
   ]
 
-  // Service-QR (Lokal / Arbeitsplattform) – nur wenn wir nicht auf localhost sind
-  const localGalerieUrl = useMemo(() => {
-    if (typeof window === 'undefined') return ''
-    const hostname = window.location.hostname
-    if (!hostname || hostname === 'localhost' || hostname === '127.0.0.1') return ''
-    return `${window.location.protocol}//${hostname}:${window.location.port || '5177'}${PROJECT_ROUTES['k2-galerie'].galerie}`
-  }, [])
-
-  const serviceQrUrl = useMemo(() => {
-    if (!localGalerieUrl) return ''
-    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(localGalerieUrl)}`
-  }, [localGalerieUrl])
-
   const nextSteps = useMemo(() => {
     const steps: string[] = []
     
@@ -279,59 +266,6 @@ export default function SmartPanel({ currentPage }: SmartPanelProps) {
             )
           })}
         </div>
-      </div>
-
-      {/* Service-QR unten (für Arbeitsplattform, gelb) – immer sichtbar */}
-      <div style={{
-        border: '2px solid #eab308',
-        background: 'linear-gradient(180deg, rgba(234, 179, 8, 0.12) 0%, rgba(234, 179, 8, 0.04) 100%)',
-        borderRadius: '8px',
-        padding: '0.75rem',
-        marginTop: 'auto'
-      }}>
-        <h4 style={{
-          margin: '0 0 0.5rem 0',
-          fontSize: '0.9rem',
-          color: '#eab308',
-          fontWeight: 600
-        }}>
-          📶 Service / APf
-        </h4>
-        {serviceQrUrl ? (
-          <>
-            <div style={{
-              fontSize: '0.75rem',
-              color: '#a3a3a3',
-              marginBottom: '0.5rem'
-            }}>
-              Nur gleiches WLAN – QR ausdrucken & gelb anbringen
-            </div>
-            <div style={{
-              display: 'inline-block',
-              padding: '0.5rem',
-              background: '#fefce8',
-              borderRadius: '8px'
-            }}>
-              <img src={serviceQrUrl} alt="Service QR – K2 Galerie (gleiches WLAN)" style={{ display: 'block' }} />
-            </div>
-          </>
-        ) : (
-          <div style={{ fontSize: '0.8rem', color: '#a3a3a3' }}>
-            <p style={{ margin: '0 0 0.5rem 0' }}>
-              QR erscheint, wenn du die App <strong>nicht</strong> über localhost öffnest.
-            </p>
-            <p style={{ margin: 0 }}>
-              Öffne z. B. <strong>http://[deine-Mac-IP]:5177</strong> (gleiches WLAN) oder gehe zu{' '}
-              <Link
-                to={PROJECT_ROUTES['k2-galerie'].mobileConnect}
-                style={{ color: '#eab308', fontWeight: 600 }}
-              >
-                Mobile-Connect
-              </Link>
-              , dort siehst du den Service-QR.
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Links */}

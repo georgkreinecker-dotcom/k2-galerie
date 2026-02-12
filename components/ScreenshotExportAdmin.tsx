@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
+import QRCode from 'qrcode'
 import { PROJECT_ROUTES } from '../src/config/navigation'
-import { MUSTER_TEXTE } from '../src/config/tenantConfig'
+
+/** Feste Galerie-URL für Etiketten-QR (unabhängig vom Router/WLAN) – gleiche Basis wie Mobile Connect */
+const GALERIE_QR_BASE = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
+import { MUSTER_TEXTE, getCurrentTenantId, type TenantId } from '../src/config/tenantConfig'
+import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import '../src/App.css'
 
 const ADMIN_CONTEXT_KEY = 'k2-admin-context'
@@ -417,30 +423,76 @@ function ScreenshotExportAdmin() {
   }, [])
   
   const [activeTab, setActiveTab] = useState<'werke' | 'dokumente' | 'einstellungen' | 'statistiken' | 'eventplan' | 'öffentlichkeitsarbeit'>('werke')
-  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'design' | 'drucker'>('stammdaten')
+  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'design' | 'drucker' | 'seitentexte'>('stammdaten')
   
-  // Drucker-Einstellungen
-  const [printerSettings, setPrinterSettings] = useState({
-    ipAddress: localStorage.getItem('k2-printer-ip') || '192.168.1.102',
-    printerModel: 'Brother QL-820MWBc',
-    printerType: (localStorage.getItem('k2-printer-type') || 'etikettendrucker') as 'etikettendrucker' | 'standarddrucker'
-  })
-
-  // Drucker-Einstellungen laden beim Mount
-  useEffect(() => {
-    try {
-      const storedIP = localStorage.getItem('k2-printer-ip')
-      const storedType = localStorage.getItem('k2-printer-type')
-      if (storedIP) {
-        setPrinterSettings(prev => ({ ...prev, ipAddress: storedIP }))
-      }
-      if (storedType) {
-        setPrinterSettings(prev => ({ ...prev, printerType: storedType as 'etikettendrucker' | 'standarddrucker' }))
-      }
-    } catch (error) {
-      console.error('Fehler beim Laden der Drucker-Einstellungen:', error)
+  // Brother-Etikettengröße parsen (Format "29x90.3" → { width: 29, height: 90.3 })
+  const parseLabelSize = (s: string) => {
+    const match = (s || '').trim().match(/^(\d+(?:[.,]\d+)?)\s*[x×]\s*(\d+(?:[.,]\d+)?)$/i)
+    if (match) {
+      const w = parseFloat(match[1].replace(',', '.'))
+      const h = parseFloat(match[2].replace(',', '.'))
+      if (w > 0 && h > 0) return { width: w, height: h }
     }
-  }, [])
+    return { width: 29, height: 90.3 }
+  }
+
+  // Mandantenspezifische Drucker-Einstellungen (K2, ök2, Demo – je eigener Drucker + Format)
+  const printerStorageKey = (tenantId: TenantId, key: 'ip' | 'type' | 'labelSize') => {
+    const suffix = key === 'ip' ? 'printer-ip' : key === 'type' ? 'printer-type' : 'label-size'
+    return `k2-${suffix}-${tenantId}`
+  }
+  const defaultPrinterSettings = () => ({
+    ipAddress: '192.168.1.102',
+    printerModel: 'Brother QL-820MWBc',
+    printerType: 'etikettendrucker' as const,
+    labelSize: '29x90,3'
+  })
+  const loadPrinterSettingsForTenant = (tenantId: TenantId) => {
+    try {
+      const def = defaultPrinterSettings()
+      // Migration: alte Keys ohne Mandant-Suffix (nur für k2) einmal in neue Keys übernehmen
+      if (tenantId === 'k2') {
+        const newIpKey = printerStorageKey('k2', 'ip')
+        if (!localStorage.getItem(newIpKey)) {
+          const oldIp = localStorage.getItem('k2-printer-ip')
+          if (oldIp) localStorage.setItem(newIpKey, oldIp)
+        }
+        if (!localStorage.getItem(printerStorageKey('k2', 'type'))) {
+          const oldType = localStorage.getItem('k2-printer-type')
+          if (oldType) localStorage.setItem(printerStorageKey('k2', 'type'), oldType)
+        }
+        if (!localStorage.getItem(printerStorageKey('k2', 'labelSize'))) {
+          const oldLabel = localStorage.getItem('k2-label-size')
+          if (oldLabel) localStorage.setItem(printerStorageKey('k2', 'labelSize'), oldLabel)
+        }
+      }
+      const ip = localStorage.getItem(printerStorageKey(tenantId, 'ip'))
+      const type = localStorage.getItem(printerStorageKey(tenantId, 'type'))
+      const labelSize = localStorage.getItem(printerStorageKey(tenantId, 'labelSize'))
+      return {
+        ipAddress: ip || def.ipAddress,
+        printerModel: def.printerModel,
+        printerType: (type || def.printerType) as 'etikettendrucker' | 'standarddrucker',
+        labelSize: labelSize || def.labelSize
+      }
+    } catch {
+      return defaultPrinterSettings()
+    }
+  }
+  const savePrinterSetting = (tenantId: TenantId, key: 'ip' | 'type' | 'labelSize', value: string) => {
+    try {
+      const k = key === 'ip' ? printerStorageKey(tenantId, 'ip') : key === 'type' ? printerStorageKey(tenantId, 'type') : printerStorageKey(tenantId, 'labelSize')
+      localStorage.setItem(k, value)
+    } catch (_) {}
+  }
+
+  const [printerSettingsForTenant, setPrinterSettingsForTenant] = useState<TenantId>(() => getCurrentTenantId())
+  const [printerSettings, setPrinterSettings] = useState(() => loadPrinterSettingsForTenant(getCurrentTenantId()))
+
+  // Beim Wechsel des Mandanten (Drucker-Tab): Einstellungen für diesen Mandanten laden
+  useEffect(() => {
+    setPrinterSettings(loadPrinterSettingsForTenant(printerSettingsForTenant))
+  }, [printerSettingsForTenant])
   
   // Cleanup beim Mount: Schließe alle Modals (falls durch StrictMode doppelt geöffnet)
   useEffect(() => {
@@ -531,6 +583,9 @@ function ScreenshotExportAdmin() {
     }
   }, [])
   
+  // Seitentexte (bearbeitbare Texte pro Seite – Basis: Textversion der App)
+  const [pageTexts, setPageTextsState] = useState<PageTextsConfig>(() => getPageTexts())
+
   // Design-Einstellungen
   const [designSettings, setDesignSettings] = useState({
     accentColor: '#5ffbf1',
@@ -546,6 +601,10 @@ function ScreenshotExportAdmin() {
   const [editingArtwork, setEditingArtwork] = useState<any | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  // Nur im Admin: Foto freistellen (mit Pro-Hintergrund) oder Original unverändert benutzen
+  const [photoUseFreistellen, setPhotoUseFreistellen] = useState(true)
+  // Hintergrund-Variante bei Freistellung: hell | weiss | warm | kuehl | dunkel
+  const [photoBackgroundPreset, setPhotoBackgroundPreset] = useState<'hell' | 'weiss' | 'warm' | 'kuehl' | 'dunkel'>('hell')
   const [artworkTitle, setArtworkTitle] = useState('')
   const [artworkCategory, setArtworkCategory] = useState<'malerei' | 'keramik'>('malerei')
   const [artworkCeramicSubcategory, setArtworkCeramicSubcategory] = useState<'vase' | 'teller' | 'skulptur' | 'sonstig'>('vase')
@@ -566,6 +625,10 @@ function ScreenshotExportAdmin() {
   const [isInShop, setIsInShop] = useState(true)
   const [artworkNumber, setArtworkNumber] = useState<string>('')
   const [showPrintModal, setShowPrintModal] = useState(false)
+  const [showShareFallbackOverlay, setShowShareFallbackOverlay] = useState(false)
+  const [shareFallbackImageUrl, setShareFallbackImageUrl] = useState<string | null>(null)
+  const shareFallbackBlobRef = useRef<Blob | null>(null)
+  const [printLabelData, setPrintLabelData] = useState<{ url: string; widthMm: number; heightMm: number } | null>(null)
   const [savedArtwork, setSavedArtwork] = useState<any>(null)
   const [showSaleModal, setShowSaleModal] = useState(false)
   const [saleInput, setSaleInput] = useState('')
@@ -656,6 +719,22 @@ function ScreenshotExportAdmin() {
       isMounted = false
       clearTimeout(timeoutId) // Cleanup beim Unmount
     }
+  }, [])
+
+  // Seitentexte laden (wie Design)
+  useEffect(() => {
+    let isMounted = true
+    const t = setTimeout(() => {
+      if (!isMounted) return
+      try {
+        const stored = localStorage.getItem('k2-page-texts')
+        if (stored && stored.length < 50000) {
+          const saved = JSON.parse(stored) as PageTextsConfig
+          if (isMounted) setPageTextsState(saved)
+        }
+      } catch (_) {}
+    }, 100)
+    return () => { isMounted = false; clearTimeout(t) }
   }, [])
 
   // CSS-Variablen setzen - NUR beim Mount um Render-Loops zu vermeiden
@@ -1124,6 +1203,7 @@ function ScreenshotExportAdmin() {
           events: Array.isArray(events) ? events.slice(0, 20) : [], // NUR 20 Events
           documents: Array.isArray(documents) ? documents.slice(0, 20) : [], // NUR 20 Dokumente
           designSettings: getItemSafe('k2-design-settings', {}),
+          pageTexts: getItemSafe('k2-page-texts', null),
           exportedAt: exportedAt,
           version: newVersion, // Versionsnummer für Cache-Busting
           buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}` // Eindeutige Build-ID
@@ -1685,7 +1765,8 @@ function ScreenshotExportAdmin() {
       artworks: allArtworks,
       events: events,
       documents: documents,
-      designSettings: designSettings
+      designSettings: designSettings,
+      pageTexts: pageTexts
     })
     
     // Starte Auto-Save
@@ -1698,7 +1779,7 @@ function ScreenshotExportAdmin() {
       isMounted = false
       stopAutoSave()
     }
-  }, [martinaData, georgData, galleryData, allArtworks, events, documents, designSettings])
+  }, [martinaData, georgData, galleryData, allArtworks, events, documents, designSettings, pageTexts])
 
   // Event hinzufügen/bearbeiten
   const handleSaveEvent = () => {
@@ -5888,9 +5969,25 @@ ${'='.repeat(60)}
     return formattedNumber
   }
 
-  // QR-Code URL generieren
+  // Artwork-URL für QR (gleiche Basis wie Mobile Connect) – für lokale QR-Erzeugung und für API-Fallback
+  const getArtworkUrlForQR = (artworkId: string): string => {
+    let base = ''
+    try {
+      base = (typeof localStorage !== 'undefined' && localStorage.getItem('k2-mobile-url')) || ''
+    } catch (_) {}
+    base = (base || GALERIE_QR_BASE).replace(/\?.*$/, '').replace(/#.*$/, '')
+    return `${base}${base.includes('?') ? '&' : '?'}werk=${encodeURIComponent(artworkId)}`
+  }
+
+  // QR als Data-URL lokal erzeugen (Standalone – funktioniert ohne Internet/WLAN)
+  const getQRDataUrl = async (artworkId: string): Promise<string> => {
+    const url = getArtworkUrlForQR(artworkId)
+    return QRCode.toDataURL(url, { width: 200, margin: 1 })
+  }
+
+  // QR-Code URL für Etiketten-Vorschau (API – nur wo Netz; Druck nutzt getQRDataUrl)
   const getQRCodeUrl = (artworkId: string) => {
-    const artworkUrl = `${window.location.origin}/galerie?werk=${artworkId}`
+    const artworkUrl = getArtworkUrlForQR(artworkId)
     return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(artworkUrl)}`
   }
 
@@ -6189,6 +6286,16 @@ ${'='.repeat(60)}
           imageDataUrl = moreCompressed
         } else {
           imageDataUrl = compressedDataUrl
+        }
+        // Option im Admin: Foto freistellen (Pro-Hintergrund) oder Original unverändert
+        if (photoUseFreistellen) {
+          try {
+            const { compositeOnProfessionalBackground } = await import('../src/utils/professionalImageBackground')
+            imageDataUrl = await compositeOnProfessionalBackground(imageDataUrl, photoBackgroundPreset)
+          } catch (err) {
+            console.warn('Freistellung fehlgeschlagen, verwende Original:', err)
+            // imageDataUrl bleibt komprimiertes Original
+          }
         }
       } else if (editingArtwork && editingArtwork.imageUrl) {
         // Bei Bearbeitung ohne neues Bild: Altes Bild beibehalten
@@ -6593,15 +6700,12 @@ ${'='.repeat(60)}
       // NICHT nochmal setAllArtworks aufrufen - wurde bereits oben gemacht!
       // Die Liste wurde bereits mit reloaded aktualisiert
       
-      // Druck-Modal nur bei neuem Werk öffnen (nicht bei Bearbeitung)
-      // WICHTIG: Kurze Verzögerung damit State aktualisiert wird und Alert nicht blockiert
-      if (!editingArtwork) {
-        // Kein Alert mehr - direkt Modal öffnen für bessere UX
-        setTimeout(() => {
-          setShowPrintModal(true)
-        }, 200)
-      } else {
-        alert('✅ Werk erfolgreich aktualisiert!')
+      // Etikett-Druck-Modal immer anbieten (bei neuem Werk und bei Bearbeitung)
+      setTimeout(() => {
+        setShowPrintModal(true)
+      }, 200)
+      if (editingArtwork) {
+        console.log('✅ Werk aktualisiert – Etikett kann erneut gedruckt werden')
       }
     } catch (error) {
       console.error('Fehler beim Speichern:', error)
@@ -6613,101 +6717,204 @@ ${'='.repeat(60)}
     }
   }
 
-  // Drucken
-  const handlePrint = () => {
-    const printWindow = window.open('', '_blank')
-    if (!printWindow) return
+  // Drucken: Fenster SOFORT öffnen (vor await) – sonst blockiert Pop-up-Blocker
+  const handlePrint = async () => {
+    if (!savedArtwork) return
+    const win = window.open('', '_blank', 'width=400,height=500')
+    if (!win) {
+      alert('Pop-up blockiert. Bitte erlaube Fenster für diese Seite (Adresszeile/Safari) und versuche erneut.')
+      return
+    }
+    win.document.write('<html><body style="margin:0;padding:2rem;font-family:system-ui;text-align:center;">Etikett wird erstellt …</body></html>')
+    try {
+      const activeTenant = getCurrentTenantId()
+      const settings = loadPrinterSettingsForTenant(activeTenant)
+      const lm = parseLabelSize(settings.labelSize)
+      const blob = await getEtikettBlob(lm.width, lm.height)
+      const url = URL.createObjectURL(blob)
+      const w = lm.width
+      const h = lm.height
+      win.document.write(`
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Etikett</title>
+<style>
+* { margin: 0; padding: 0; }
+@page { size: ${w}mm ${h}mm; margin: 0; }
+html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h}mm; overflow: hidden; }
+img { width: ${w}mm; height: ${h}mm; display: block; object-fit: fill; }
+</style></head>
+<body><img src="${url}" alt="Etikett"></body></html>`)
+      win.document.close()
+      const doPrint = () => {
+        win.print()
+        win.addEventListener('afterprint', () => {
+          win.close()
+          URL.revokeObjectURL(url)
+        }, { once: true })
+      }
+      const img = win.document.querySelector('img')
+      if (img?.complete) {
+        setTimeout(doPrint, 100)
+      } else {
+        img?.addEventListener('load', () => setTimeout(doPrint, 100), { once: true })
+        img?.addEventListener('error', () => { win.close(); URL.revokeObjectURL(url) }, { once: true })
+      }
+    } catch (e) {
+      win.close()
+      console.error('Etikett für Druck fehlgeschlagen:', e)
+      alert((e as Error)?.message || 'Etikett konnte nicht erzeugt werden. Bitte erneut versuchen.')
+    }
+  }
 
-    const qrCodeUrl = getQRCodeUrl(savedArtwork.number)
-    
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>K2 Galerie - Etikett ${savedArtwork.number}</title>
-          <style>
-            @media print {
-              @page {
-                size: A4;
-                margin: 10mm;
-              }
-            }
-            body {
-              font-family: Arial, sans-serif;
-              padding: 20px;
-              max-width: 100mm;
-              margin: 0 auto;
-            }
-            .label {
-              border: 2px solid #8b6914;
-              border-radius: 8px;
-              padding: 15px;
-              text-align: center;
-            }
-            .label-header {
-              font-size: 18px;
-              font-weight: bold;
-              color: #8b6914;
-              margin-bottom: 10px;
-            }
-            .label-number {
-              font-size: 24px;
-              font-weight: bold;
-              margin: 10px 0;
-              color: #333;
-            }
-            .label-title {
-              font-size: 14px;
-              margin: 10px 0;
-              color: #666;
-            }
-            .label-qr {
-              margin: 15px 0;
-            }
-            .label-qr img {
-              width: 150px;
-              height: 150px;
-            }
-            .label-footer {
-              font-size: 12px;
-              color: #999;
-              margin-top: 10px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="label">
-            <div class="label-header">K2 Galerie</div>
-            <div class="label-number" style="font-size: 28px; font-weight: bold; margin: 12px 0; color: #8b6914; border: 2px solid #8b6914; padding: 8px; border-radius: 6px;">
-              Seriennummer:<br/>${savedArtwork.number}
-            </div>
-            <div class="label-title">${savedArtwork.title}</div>
-            ${savedArtwork.category === 'malerei' && savedArtwork.paintingWidth && savedArtwork.paintingHeight ? `
-              <div style="font-size: 11px; color: #666; margin: 5px 0;">${savedArtwork.paintingWidth} × ${savedArtwork.paintingHeight} cm</div>
-            ` : ''}
-            ${savedArtwork.category === 'keramik' ? `
-              <div style="font-size: 11px; color: #666; margin: 5px 0;">
-                ${savedArtwork.ceramicSubcategory === 'vase' || savedArtwork.ceramicSubcategory === 'skulptur' ? `Höhe: ${savedArtwork.ceramicHeight || '?'} cm` : ''}
-                ${savedArtwork.ceramicSubcategory === 'teller' ? `Durchmesser: ${savedArtwork.ceramicDiameter || '?'} cm` : ''}
-                ${savedArtwork.ceramicSubcategory === 'sonstig' && savedArtwork.ceramicDescription ? savedArtwork.ceramicDescription : ''}
-              </div>
-              ${savedArtwork.ceramicType ? `<div style="font-size: 10px; color: #999; margin: 3px 0;">${savedArtwork.ceramicType === 'steingut' ? 'Steingut' : 'Steinzeug'}</div>` : ''}
-              ${savedArtwork.ceramicSurface ? `<div style="font-size: 10px; color: #999; margin: 3px 0;">${savedArtwork.ceramicSurface === 'engobe' ? 'Engobe' : savedArtwork.ceramicSurface === 'glasur' ? 'Glasur' : 'Mischtechnik'}</div>` : ''}
-            ` : ''}
-            <div class="label-qr">
-              <img src="${qrCodeUrl}" alt="QR Code" />
-            </div>
-            <div class="label-footer">${savedArtwork.category === 'malerei' ? 'Malerei' : 'Keramik'} • ${savedArtwork.artist}</div>
-          </div>
-          <script>
-            window.onload = function() {
-              window.print();
-            }
-          </script>
-        </body>
-      </html>
-    `)
-    printWindow.document.close()
+  // Mobil: Etikett als Bild erzeugen und Teilen-Menü öffnen (ein Tipp → Drucker/Brother-App wählen)
+  const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 768 || 'ontouchstart' in window)
+
+  const closeShareFallbackOverlay = () => {
+    if (shareFallbackImageUrl) URL.revokeObjectURL(shareFallbackImageUrl)
+    setShareFallbackImageUrl(null)
+    shareFallbackBlobRef.current = null
+    setShowShareFallbackOverlay(false)
+  }
+
+  const canUseShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
+
+  const handleDownloadEtikettFromOverlay = () => {
+    const blob = shareFallbackBlobRef.current
+    if (!blob || !savedArtwork) return
+    const name = `etikett-${savedArtwork.number}.png`.replace(/[^a-zA-Z0-9._-]/g, '_')
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = name
+    a.style.display = 'none'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  const handleShareFromFallbackOverlay = async () => {
+    const blob = shareFallbackBlobRef.current
+    if (!blob || !savedArtwork) {
+      alert('Etikett-Bild nicht mehr verfügbar. Bitte erneut „Etikett teilen“ im Druck-Modal tippen.')
+      return
+    }
+    if (!canUseShare) {
+      handleDownloadEtikettFromOverlay()
+      return
+    }
+    const file = new File([blob], `etikett-${savedArtwork.number}.png`, { type: 'image/png' })
+    try {
+      await navigator.share({ title: `Etikett ${savedArtwork.number}`, files: [file] })
+      closeShareFallbackOverlay()
+    } catch (e) {
+      const err = e as Error
+      if (err?.name === 'AbortError') return
+      const msg = err?.message || ''
+      alert('Teilen fehlgeschlagen' + (msg ? ': ' + msg : '') + '.\n\nNutze „Etikett herunterladen“ und öffne die Datei in Brother iPrint & Label.')
+    }
+  }
+
+  /** Erzeugt Etikett als PNG-Bild in exakter Etikettengröße (widthMm x heightMm). Alles proportional, nichts außerhalb. */
+  const getEtikettBlob = (widthMm = 29, heightMm = 90.3): Promise<Blob> => {
+    if (!savedArtwork) return Promise.reject(new Error('Kein Werk'))
+    const pxPerMm = 96 / 25.4
+    const w = Math.round(widthMm * pxPerMm)
+    const h = Math.round(heightMm * pxPerMm)
+    return getQRDataUrl(savedArtwork.number).then((qrDataUrl) => {
+      const canvas = document.createElement('canvas')
+      canvas.width = w
+      canvas.height = h
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return Promise.reject(new Error('Canvas fehlgeschlagen'))
+      const pad = Math.max(2, w * 0.03)
+      ctx.fillStyle = '#fff'
+      ctx.fillRect(0, 0, w, h)
+      ctx.strokeStyle = '#8b6914'
+      ctx.lineWidth = Math.max(1, w * 0.007)
+      ctx.strokeRect(pad, pad, w - pad * 2, h - pad * 2)
+      ctx.fillStyle = '#8b6914'
+      ctx.textAlign = 'center'
+      const fs1 = Math.max(8, w * 0.12)
+      const fs2 = Math.max(10, w * 0.16)
+      const fs3 = Math.max(6, w * 0.1)
+      const fs4 = Math.max(5, w * 0.09)
+      ctx.font = `bold ${fs1}px Arial,sans-serif`
+      ctx.fillText('K2 Galerie', w / 2, h * 0.08)
+      ctx.font = `bold ${fs2}px Arial,sans-serif`
+      ctx.fillText(savedArtwork.number, w / 2, h * 0.15)
+      ctx.fillStyle = '#666'
+      ctx.font = `${fs3}px Arial,sans-serif`
+      const title = ((savedArtwork.title || '').substring(0, 18)) + ((savedArtwork.title || '').length > 18 ? '…' : '')
+      ctx.fillText(title, w / 2, h * 0.21)
+      if (savedArtwork.category === 'malerei' && savedArtwork.paintingWidth && savedArtwork.paintingHeight) {
+        ctx.font = `${fs4}px Arial,sans-serif`
+        ctx.fillText(`${savedArtwork.paintingWidth} × ${savedArtwork.paintingHeight} cm`, w / 2, h * 0.26)
+      }
+      const qrSize = Math.min(w * 0.75, h * 0.25)
+      const qrX = (w - qrSize) / 2
+      const qrY = h * 0.55
+      return new Promise<Blob>((resolve, reject) => {
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        img.onload = () => {
+          ctx.drawImage(img, qrX, qrY, qrSize, qrSize)
+          ctx.fillStyle = '#999'
+          ctx.font = `${fs4}px Arial,sans-serif`
+          const footer = `${savedArtwork.category === 'malerei' ? 'Malerei' : 'Keramik'} • ${(savedArtwork.artist || '').substring(0, 15)}`
+          ctx.fillText(footer, w / 2, h - pad - fs4)
+          canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Blob fehlgeschlagen'))), 'image/png', 0.95)
+        }
+        img.onerror = () => reject(new Error('QR-Bild konnte nicht geladen werden.'))
+        img.src = qrDataUrl
+      })
+    })
+  }
+
+  /** Ein Tipp → Download, dann Modal schließen (damit man wieder in der App ist, nicht „fest“). */
+  const handleDownloadEtikettDirect = () => {
+    if (!savedArtwork) return
+    getEtikettBlob()
+      .then((blob) => {
+        const name = `etikett-${String(savedArtwork.number).replace(/[^a-zA-Z0-9._-]/g, '_')}.png`
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = name
+        a.style.display = 'none'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+        setShowPrintModal(false)
+      })
+      .catch((e) => {
+        alert(e?.message || 'Etikett konnte nicht erzeugt werden. Bitte erneut versuchen.')
+      })
+  }
+
+  const handleShareLabel = async () => {
+    if (!savedArtwork) return
+    try {
+      const blob = await getEtikettBlob()
+      const file = new File([blob], `etikett-${savedArtwork.number}.png`, { type: 'image/png' })
+      if (isMobile) {
+        shareFallbackBlobRef.current = blob
+        setShareFallbackImageUrl(URL.createObjectURL(blob))
+        setShowShareFallbackOverlay(true)
+        return
+      }
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        await navigator.share({ title: `Etikett ${savedArtwork.number}`, text: `${savedArtwork.title || ''} – K2 Galerie`, files: [file] })
+      } else {
+        const blobUrl = URL.createObjectURL(blob)
+        const w = window.open(blobUrl, '_blank')
+        if (w) w.document.title = `Etikett ${savedArtwork.number}`
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+      }
+    } catch (e) {
+      if ((e as Error)?.message?.includes('QR')) alert('QR konnte nicht erzeugt werden. Bitte erneut versuchen.')
+      else alert((e as Error)?.message || 'Etikett konnte nicht erzeugt werden.')
+    }
   }
 
   // PDF für QR-Code Plakat erstellen
@@ -8951,6 +9158,24 @@ ${'='.repeat(60)}
               >
                 🖨️ Drucker
               </button>
+              <button
+                onClick={() => setSettingsSubTab('seitentexte')}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  fontWeight: settingsSubTab === 'seitentexte' ? '600' : '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  background: settingsSubTab === 'seitentexte'
+                    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                    : 'rgba(255, 255, 255, 0.05)',
+                  color: '#ffffff'
+                }}
+              >
+                📝 Seitentexte
+              </button>
             </div>
 
             {/* Stammdaten Sub-Tab */}
@@ -9696,8 +9921,34 @@ ${'='.repeat(60)}
                       borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
                       paddingBottom: '0.75rem'
                     }}>
-                      Brother QL-820MWBc
+                      Drucker &amp; Format (pro Mandant)
                     </h4>
+
+                    <div className="field">
+                      <label style={{ fontSize: '0.9rem', color: '#8fa0c9', marginBottom: '0.5rem', display: 'block' }}>
+                        Einstellungen für
+                      </label>
+                      <select
+                        value={printerSettingsForTenant}
+                        onChange={(e) => setPrinterSettingsForTenant(e.target.value as TenantId)}
+                        style={{
+                          padding: '0.75rem',
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          fontSize: '0.95rem',
+                          width: '100%'
+                        }}
+                      >
+                        <option value="k2">K2 Galerie</option>
+                        <option value="oeffentlich">ök2 (öffentlich)</option>
+                        <option value="demo">Demo</option>
+                      </select>
+                      <p style={{ fontSize: '0.8rem', color: '#8fa0c9', marginTop: '0.5rem', marginBottom: 0 }}>
+                        K2, ök2 und Kassabeleg können jeweils eigenen Drucker und Etikettenformat haben.
+                      </p>
+                    </div>
 
                     <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <div className="field">
@@ -9708,9 +9959,9 @@ ${'='.repeat(60)}
                           type="text"
                           value={printerSettings.ipAddress}
                           onChange={(e) => {
-                            const newSettings = { ...printerSettings, ipAddress: e.target.value }
-                            setPrinterSettings(newSettings)
-                            localStorage.setItem('k2-printer-ip', e.target.value)
+                            const v = e.target.value
+                            setPrinterSettings(prev => ({ ...prev, ipAddress: v }))
+                            savePrinterSetting(printerSettingsForTenant, 'ip', v)
                           }}
                           placeholder="192.168.1.102"
                           style={{
@@ -9735,9 +9986,9 @@ ${'='.repeat(60)}
                         <select
                           value={printerSettings.printerType}
                           onChange={(e) => {
-                            const newSettings = { ...printerSettings, printerType: e.target.value as 'etikettendrucker' | 'standarddrucker' }
-                            setPrinterSettings(newSettings)
-                            localStorage.setItem('k2-printer-type', e.target.value)
+                            const v = e.target.value
+                            setPrinterSettings(prev => ({ ...prev, printerType: v as 'etikettendrucker' | 'standarddrucker' }))
+                            savePrinterSetting(printerSettingsForTenant, 'type', v)
                           }}
                           style={{
                             padding: '0.75rem',
@@ -9754,6 +10005,34 @@ ${'='.repeat(60)}
                         </select>
                       </div>
 
+                      <div className="field">
+                        <label style={{ fontSize: '0.9rem', color: '#8fa0c9', marginBottom: '0.5rem', display: 'block' }}>
+                          Etikettenformat (Brother)
+                        </label>
+                        <input
+                          type="text"
+                          value={printerSettings.labelSize}
+                          onChange={(e) => {
+                            const v = e.target.value
+                            setPrinterSettings(prev => ({ ...prev, labelSize: v }))
+                            savePrinterSetting(printerSettingsForTenant, 'labelSize', v)
+                          }}
+                          placeholder="29x90,3"
+                          style={{
+                            padding: '0.75rem',
+                            background: 'rgba(255, 255, 255, 0.1)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            borderRadius: '8px',
+                            color: '#ffffff',
+                            fontSize: '0.95rem',
+                            width: '100%'
+                          }}
+                        />
+                        <p style={{ fontSize: '0.8rem', color: '#8fa0c9', marginTop: '0.5rem', marginBottom: 0 }}>
+                          Breite × Höhe in mm (z. B. 29x90,3). Pro Mandant getrennt; Kassabeleg kann anderes Format nutzen.
+                        </p>
+                      </div>
+
                       <div style={{
                         padding: '1rem',
                         background: 'rgba(95, 251, 241, 0.1)',
@@ -9768,14 +10047,16 @@ ${'='.repeat(60)}
                           <li>Zweiter Router auf mobilem Gerät installiert</li>
                           <li>Zugriff von Mac, iPad und Handy möglich</li>
                           <li>Einstellungen werden automatisch gespeichert</li>
+                          <li><strong>»AirPrint nicht gefunden«?</strong> Brother erscheint oft nicht automatisch. <strong>Mac:</strong> Systemeinstellungen → Drucker & Scanner → „+“ → „IP-Drucker“ → IP eintragen (z. B. {printerSettings.ipAddress}) → hinzufügen. Danach im Druckdialog wählbar.</li>
                         </ul>
                       </div>
 
                       <button
                         onClick={() => {
-                          localStorage.setItem('k2-printer-ip', printerSettings.ipAddress)
-                          localStorage.setItem('k2-printer-type', printerSettings.printerType)
-                          alert('✅ Drucker-Einstellungen gespeichert!')
+                          savePrinterSetting(printerSettingsForTenant, 'ip', printerSettings.ipAddress)
+                          savePrinterSetting(printerSettingsForTenant, 'type', printerSettings.printerType)
+                          savePrinterSetting(printerSettingsForTenant, 'labelSize', printerSettings.labelSize)
+                          alert(`✅ Drucker & Format für ${printerSettingsForTenant === 'k2' ? 'K2' : printerSettingsForTenant === 'oeffentlich' ? 'ök2' : 'Demo'} gespeichert!`)
                         }}
                         style={{
                           padding: '0.75rem 1.5rem',
@@ -9793,6 +10074,281 @@ ${'='.repeat(60)}
                       </button>
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Seitentexte Sub-Tab – Texte pro Seite bearbeiten (Basis: Textversion der App) */}
+            {settingsSubTab === 'seitentexte' && (
+              <div>
+                <p style={{
+                  marginBottom: '1.5rem',
+                  color: '#8fa0c9',
+                  fontSize: 'clamp(0.9rem, 2vw, 1rem)'
+                }}>
+                  Hier kannst du die sichtbaren Texte der einzelnen Seiten zentral eingeben oder ändern. Sie erscheinen auf der Startseite, im Projekt-Start und in der Galerie. Änderungen werden automatisch gespeichert.
+                </p>
+
+                {/* Startseite (Mission Deck) */}
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '16px',
+                  padding: '1.5rem',
+                  marginBottom: '1.5rem'
+                }}>
+                  <h3 style={{ marginTop: 0, marginBottom: '1rem', color: '#5ffbf1', fontSize: '1.15rem' }}>🏠 Startseite (Mission Deck)</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div>
+                      <label style={{ fontSize: '0.85rem', color: '#8fa0c9', display: 'block', marginBottom: '0.35rem' }}>Überschrift</label>
+                      <input
+                        type="text"
+                        value={pageTexts.start?.headerTitle ?? defaultPageTexts.start.headerTitle}
+                        onChange={(e) => setPageTextsState(prev => ({
+                          ...prev,
+                          start: { ...defaultPageTexts.start, ...prev.start, headerTitle: e.target.value }
+                        }))}
+                        style={{ padding: '0.6rem', width: '100%', maxWidth: '400px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: '#fff', fontSize: '0.95rem' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '0.85rem', color: '#8fa0c9', display: 'block', marginBottom: '0.35rem' }}>Untertitel</label>
+                      <input
+                        type="text"
+                        value={pageTexts.start?.headerSubtitle ?? defaultPageTexts.start.headerSubtitle}
+                        onChange={(e) => setPageTextsState(prev => ({
+                          ...prev,
+                          start: { ...defaultPageTexts.start, ...prev.start, headerSubtitle: e.target.value }
+                        }))}
+                        style={{ padding: '0.6rem', width: '100%', maxWidth: '500px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: '#fff', fontSize: '0.95rem' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '0.85rem', color: '#8fa0c9', display: 'block', marginBottom: '0.35rem' }}>Hinweis (z. B. Desktop-Button)</label>
+                      <input
+                        type="text"
+                        value={pageTexts.start?.headerHint ?? defaultPageTexts.start.headerHint}
+                        onChange={(e) => setPageTextsState(prev => ({
+                          ...prev,
+                          start: { ...defaultPageTexts.start, ...prev.start, headerHint: e.target.value }
+                        }))}
+                        style={{ padding: '0.6rem', width: '100%', maxWidth: '500px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: '#fff', fontSize: '0.95rem' }}
+                      />
+                    </div>
+                    <div style={{ marginTop: '0.5rem' }}>
+                      <label style={{ fontSize: '0.9rem', color: '#fff', display: 'block', marginBottom: '0.5rem' }}>Karten (Titel · Beschreibung · Button)</label>
+                      {(pageTexts.start?.cards ?? defaultPageTexts.start.cards).map((card, i) => (
+                        <div key={i} style={{
+                          background: 'rgba(0,0,0,0.2)',
+                          padding: '1rem',
+                          borderRadius: '12px',
+                          marginBottom: '0.75rem',
+                          border: '1px solid rgba(255,255,255,0.08)'
+                        }}>
+                          <input
+                            placeholder="Titel"
+                            value={card.title}
+                            onChange={(e) => setPageTextsState(prev => ({
+                              ...prev,
+                              start: {
+                                ...defaultPageTexts.start,
+                                ...prev.start,
+                                cards: (prev.start?.cards ?? defaultPageTexts.start.cards).map((c, j) =>
+                                  j === i ? { ...c, title: e.target.value } : c
+                                )
+                              }
+                            }))}
+                            style={{ padding: '0.5rem', width: '100%', marginBottom: '0.5rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: '#fff', fontSize: '0.9rem' }}
+                          />
+                          <input
+                            placeholder="Beschreibung"
+                            value={card.description}
+                            onChange={(e) => setPageTextsState(prev => ({
+                              ...prev,
+                              start: {
+                                ...defaultPageTexts.start,
+                                ...prev.start,
+                                cards: (prev.start?.cards ?? defaultPageTexts.start.cards).map((c, j) =>
+                                  j === i ? { ...c, description: e.target.value } : c
+                                )
+                              }
+                            }))}
+                            style={{ padding: '0.5rem', width: '100%', marginBottom: '0.5rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: '#fff', fontSize: '0.9rem' }}
+                          />
+                          <input
+                            placeholder="Button-Text (z. B. Öffnen →)"
+                            value={card.cta}
+                            onChange={(e) => setPageTextsState(prev => ({
+                              ...prev,
+                              start: {
+                                ...defaultPageTexts.start,
+                                ...prev.start,
+                                cards: (prev.start?.cards ?? defaultPageTexts.start.cards).map((c, j) =>
+                                  j === i ? { ...c, cta: e.target.value } : c
+                                )
+                              }
+                            }))}
+                            style={{ padding: '0.5rem', width: '100%', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: '#fff', fontSize: '0.9rem' }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Projekt-Start (Karten) */}
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '16px',
+                  padding: '1.5rem',
+                  marginBottom: '1.5rem'
+                }}>
+                  <h3 style={{ marginTop: 0, marginBottom: '1rem', color: '#5ffbf1', fontSize: '1.15rem' }}>📋 Projekt-Start (Karten)</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div>
+                      <label style={{ fontSize: '0.85rem', color: '#8fa0c9', display: 'block', marginBottom: '0.35rem' }}>Überschrift</label>
+                      <input
+                        type="text"
+                        value={pageTexts.projectStart?.headerTitle ?? defaultPageTexts.projectStart.headerTitle}
+                        onChange={(e) => setPageTextsState(prev => ({
+                          ...prev,
+                          projectStart: { ...defaultPageTexts.projectStart, ...prev.projectStart, headerTitle: e.target.value }
+                        }))}
+                        style={{ padding: '0.6rem', width: '100%', maxWidth: '400px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: '#fff', fontSize: '0.95rem' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '0.85rem', color: '#8fa0c9', display: 'block', marginBottom: '0.35rem' }}>Untertitel</label>
+                      <input
+                        type="text"
+                        value={pageTexts.projectStart?.headerSubtitle ?? defaultPageTexts.projectStart.headerSubtitle}
+                        onChange={(e) => setPageTextsState(prev => ({
+                          ...prev,
+                          projectStart: { ...defaultPageTexts.projectStart, ...prev.projectStart, headerSubtitle: e.target.value }
+                        }))}
+                        style={{ padding: '0.6rem', width: '100%', maxWidth: '500px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: '#fff', fontSize: '0.95rem' }}
+                      />
+                    </div>
+                    <div style={{ marginTop: '0.5rem' }}>
+                      <label style={{ fontSize: '0.9rem', color: '#fff', display: 'block', marginBottom: '0.5rem' }}>Karten (Galerie, Control-Studio, Projektplan, Mobile)</label>
+                      {(pageTexts.projectStart?.cards ?? defaultPageTexts.projectStart.cards).map((card, i) => (
+                        <div key={i} style={{
+                          background: 'rgba(0,0,0,0.2)',
+                          padding: '1rem',
+                          borderRadius: '12px',
+                          marginBottom: '0.75rem',
+                          border: '1px solid rgba(255,255,255,0.08)'
+                        }}>
+                          <input
+                            placeholder="Titel"
+                            value={card.title}
+                            onChange={(e) => setPageTextsState(prev => ({
+                              ...prev,
+                              projectStart: {
+                                ...defaultPageTexts.projectStart,
+                                ...prev.projectStart,
+                                cards: (prev.projectStart?.cards ?? defaultPageTexts.projectStart.cards).map((c, j) =>
+                                  j === i ? { ...c, title: e.target.value } : c
+                                )
+                              }
+                            }))}
+                            style={{ padding: '0.5rem', width: '100%', marginBottom: '0.5rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: '#fff', fontSize: '0.9rem' }}
+                          />
+                          <input
+                            placeholder="Beschreibung"
+                            value={card.description}
+                            onChange={(e) => setPageTextsState(prev => ({
+                              ...prev,
+                              projectStart: {
+                                ...defaultPageTexts.projectStart,
+                                ...prev.projectStart,
+                                cards: (prev.projectStart?.cards ?? defaultPageTexts.projectStart.cards).map((c, j) =>
+                                  j === i ? { ...c, description: e.target.value } : c
+                                )
+                              }
+                            }))}
+                            style={{ padding: '0.5rem', width: '100%', marginBottom: '0.5rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: '#fff', fontSize: '0.9rem' }}
+                          />
+                          <input
+                            placeholder="Button-Text"
+                            value={card.cta}
+                            onChange={(e) => setPageTextsState(prev => ({
+                              ...prev,
+                              projectStart: {
+                                ...defaultPageTexts.projectStart,
+                                ...prev.projectStart,
+                                cards: (prev.projectStart?.cards ?? defaultPageTexts.projectStart.cards).map((c, j) =>
+                                  j === i ? { ...c, cta: e.target.value } : c
+                                )
+                              }
+                            }))}
+                            style={{ padding: '0.5rem', width: '100%', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: '#fff', fontSize: '0.9rem' }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Galerie-Seite */}
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '16px',
+                  padding: '1.5rem',
+                  marginBottom: '1rem'
+                }}>
+                  <h3 style={{ marginTop: 0, marginBottom: '1rem', color: '#5ffbf1', fontSize: '1.15rem' }}>🖼️ Galerie-Seite</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div>
+                      <label style={{ fontSize: '0.85rem', color: '#8fa0c9', display: 'block', marginBottom: '0.35rem' }}>Seitentitel</label>
+                      <input
+                        type="text"
+                        value={pageTexts.galerie?.pageTitle ?? defaultPageTexts.galerie.pageTitle}
+                        onChange={(e) => setPageTextsState(prev => ({
+                          ...prev,
+                          galerie: { ...defaultPageTexts.galerie, ...prev.galerie, pageTitle: e.target.value }
+                        }))}
+                        style={{ padding: '0.6rem', width: '100%', maxWidth: '300px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: '#fff', fontSize: '0.95rem' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '0.85rem', color: '#8fa0c9', display: 'block', marginBottom: '0.35rem' }}>Willkommens-Überschrift</label>
+                      <input
+                        type="text"
+                        value={pageTexts.galerie?.welcomeHeading ?? defaultPageTexts.galerie.welcomeHeading}
+                        onChange={(e) => setPageTextsState(prev => ({
+                          ...prev,
+                          galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeHeading: e.target.value }
+                        }))}
+                        style={{ padding: '0.6rem', width: '100%', maxWidth: '400px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: '#fff', fontSize: '0.95rem' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '0.85rem', color: '#8fa0c9', display: 'block', marginBottom: '0.35rem' }}>Willkommens-Text</label>
+                      <input
+                        type="text"
+                        value={pageTexts.galerie?.welcomeSubtext ?? defaultPageTexts.galerie.welcomeSubtext}
+                        onChange={(e) => setPageTextsState(prev => ({
+                          ...prev,
+                          galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeSubtext: e.target.value }
+                        }))}
+                        style={{ padding: '0.6rem', width: '100%', maxWidth: '500px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: '#fff', fontSize: '0.95rem' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{
+                  padding: '1rem',
+                  background: 'rgba(95, 251, 241, 0.08)',
+                  border: '1px solid rgba(95, 251, 241, 0.2)',
+                  borderRadius: '12px',
+                  fontSize: '0.9rem',
+                  color: '#8fa0c9'
+                }}>
+                  💡 Seitentexte werden automatisch gespeichert und mit „Veröffentlichen“ in die Galerie übernommen.
                 </div>
               </div>
             )}
@@ -12259,11 +12815,13 @@ ${'='.repeat(60)}
             setArtworkDescription('')
             setArtworkPrice('')
             setSelectedFile(null)
-            setPreviewUrl(null)
+setPreviewUrl(null)
+            setPhotoUseFreistellen(true)
+            setPhotoBackgroundPreset('hell')
             setIsInShop(true)
           }}
         >
-          <div 
+          <div
             style={{
               background: 'linear-gradient(135deg, rgba(18, 22, 35, 0.98) 0%, rgba(12, 16, 28, 0.98) 100%)',
               backdropFilter: 'blur(20px)',
@@ -12312,6 +12870,8 @@ ${'='.repeat(60)}
                   setArtworkPrice('')
                   setSelectedFile(null)
                   setPreviewUrl(null)
+                  setPhotoUseFreistellen(true)
+                  setPhotoBackgroundPreset('hell')
                   setIsInShop(true)
                 }}
                 style={{
@@ -12444,6 +13004,67 @@ ${'='.repeat(60)}
                   >
                     📸 Kamera
                   </button>
+                </div>
+              )}
+
+              {/* Option: Foto freistellen oder Original – nur anzeigen wenn Bild gewählt */}
+              {previewUrl && (
+                <div style={{
+                  padding: '0.75rem',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(95, 251, 241, 0.2)'
+                }}>
+                  <span style={{ fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500', display: 'block', marginBottom: '0.5rem' }}>
+                    Bildverarbeitung
+                  </span>
+                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#f4f7ff' }}>
+                      <input
+                        type="radio"
+                        name="photo-option"
+                        checked={photoUseFreistellen}
+                        onChange={() => setPhotoUseFreistellen(true)}
+                      />
+                      Foto freistellen (mit Pro-Hintergrund)
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#f4f7ff' }}>
+                      <input
+                        type="radio"
+                        name="photo-option"
+                        checked={!photoUseFreistellen}
+                        onChange={() => setPhotoUseFreistellen(false)}
+                      />
+                      Original benutzen
+                    </label>
+                  </div>
+                  {photoUseFreistellen && (
+                    <div style={{ marginTop: '0.75rem' }}>
+                      <span style={{ fontSize: '0.8rem', color: '#8fa0c9', display: 'block', marginBottom: '0.35rem' }}>
+                        Hintergrund (wirkt wie im professionellen Studio)
+                      </span>
+                      <select
+                        value={photoBackgroundPreset}
+                        onChange={(e) => setPhotoBackgroundPreset(e.target.value as 'hell' | 'weiss' | 'warm' | 'kuehl' | 'dunkel')}
+                        style={{
+                          padding: '0.5rem 0.75rem',
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid rgba(255, 255, 255, 0.15)',
+                          borderRadius: '8px',
+                          color: '#f4f7ff',
+                          fontSize: '0.9rem',
+                          cursor: 'pointer',
+                          minWidth: '140px'
+                        }}
+                      >
+                        <option value="hell">Studio hell (Standard)</option>
+                        <option value="weiss">Studio weiß</option>
+                        <option value="warm">Studio warm</option>
+                        <option value="kuehl">Studio kühl</option>
+                        <option value="dunkel">Studio dunkel</option>
+                      </select>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -13155,7 +13776,7 @@ ${'='.repeat(60)}
         </div>
       )}
 
-      {/* Druck-Modal */}
+      {/* Druck-Modal – auf Mobil: Buttons zuerst, kurzer Weg (ein Tipp = Download) */}
       {showPrintModal && savedArtwork && (
         <div className="admin-modal-overlay" onClick={() => setShowPrintModal(false)}>
           <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
@@ -13164,89 +13785,187 @@ ${'='.repeat(60)}
               <button className="admin-modal-close" onClick={() => setShowPrintModal(false)}>×</button>
             </div>
             <div className="admin-modal-content">
-              <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#8b6914', marginBottom: '1rem' }}>
-                  Werk erfolgreich angelegt!
-                </div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>
+              <div style={{ textAlign: 'center', padding: isMobile ? '0.75rem' : '1rem' }}>
+                <div style={{ fontSize: isMobile ? '0.9rem' : '1rem', fontWeight: 'bold', color: '#8b6914', marginBottom: isMobile ? '0.5rem' : '0.75rem' }}>
                   {savedArtwork.number}
                 </div>
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <strong>{savedArtwork.title}</strong>
-                </div>
-                <div style={{ marginBottom: '2rem' }}>
-                  <img 
-                    src={getQRCodeUrl(savedArtwork.number)} 
-                    alt="QR Code" 
-                    style={{ width: '200px', height: '200px', border: '1px solid #ddd', borderRadius: '8px' }}
-                  />
-                </div>
-                <div style={{ marginBottom: '2rem', padding: '1rem', background: '#f5f5f5', borderRadius: '8px' }}>
-                  <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
-                    <strong>Kategorie:</strong> {savedArtwork.category === 'malerei' ? 'Malerei' : 'Keramik'}
-                  </p>
-                  <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
-                    <strong>Künstler:</strong> {savedArtwork.artist}
-                  </p>
-                  {savedArtwork.category === 'malerei' && savedArtwork.paintingWidth && savedArtwork.paintingHeight && (
-                    <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
-                      <strong>Größe:</strong> {savedArtwork.paintingWidth} × {savedArtwork.paintingHeight} cm
-                    </p>
-                  )}
-                  {savedArtwork.category === 'keramik' && (
+                {/* iPad/Handy: 1-Klick-Nähe – ein Tipp öffnet Druckdialog, zweiter Tipp = Drucken */}
+                <div className="admin-modal-actions" style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'stretch', marginBottom: isMobile ? '1rem' : '1.5rem' }}>
+                  {isMobile ? (
                     <>
-                      {savedArtwork.ceramicSubcategory === 'vase' || savedArtwork.ceramicSubcategory === 'skulptur' ? (
-                        savedArtwork.ceramicHeight && (
-                          <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
-                            <strong>Höhe:</strong> {savedArtwork.ceramicHeight} cm
-                          </p>
-                        )
-                      ) : savedArtwork.ceramicSubcategory === 'teller' ? (
-                        savedArtwork.ceramicDiameter && (
-                          <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
-                            <strong>Durchmesser:</strong> {savedArtwork.ceramicDiameter} cm
-                          </p>
-                        )
-                      ) : savedArtwork.ceramicDescription && (
-                        <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
-                          <strong>Beschreibung:</strong> {savedArtwork.ceramicDescription}
-                        </p>
-                      )}
-                      {savedArtwork.ceramicType && (
-                        <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
-                          <strong>Typ:</strong> {savedArtwork.ceramicType === 'steingut' ? 'Steingut' : 'Steinzeug'}
-                        </p>
-                      )}
-                      {savedArtwork.ceramicSurface && (
-                        <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
-                          <strong>Oberfläche:</strong> {savedArtwork.ceramicSurface === 'engobe' ? 'Engobe' : savedArtwork.ceramicSurface === 'glasur' ? 'Glasur' : 'Mischtechnik'}
-                        </p>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => { handlePrint(); setShowPrintModal(false); }}
+                        style={{
+                          padding: '1.25rem 1.5rem',
+                          fontSize: '1.25rem',
+                          fontWeight: 700,
+                          background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                          border: 'none',
+                          borderRadius: '12px',
+                          color: '#fff',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 14px rgba(34, 197, 94, 0.4)'
+                        }}
+                      >
+                        🖨️ Etikett drucken
+                      </button>
+                      <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.25rem 0 0 0' }}>
+                        Ein Tipp → Druckdialog erscheint (aus dieser Seite, kein separates Fenster) → „Drucken“ tippen.
+                      </p>
+                      <button className="btn-secondary" onClick={() => setShowPrintModal(false)} style={{ marginTop: '0.5rem' }}>
+                        Später drucken
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleDownloadEtikettDirect}
+                        style={{ fontSize: '0.8rem', background: 'none', border: 'none', color: '#888', cursor: 'pointer', textDecoration: 'underline', marginTop: '0.5rem' }}
+                      >
+                        Stattdessen als Datei speichern (für Brother-App)
+                      </button>
+                      <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
+                        Fallback: „Als Datei speichern“, dann in iPrint &amp; Label öffnen.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <button type="button" onClick={handleShareLabel} style={{ padding: '0.6rem 1rem', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', border: '1px solid #16a34a', borderRadius: '8px', color: '#fff', fontWeight: 600, cursor: 'pointer' }}>
+                        📤 Etikett teilen
+                      </button>
+                      <button type="button" onClick={handleDownloadEtikettDirect} className="btn-secondary">⬇️ Herunterladen</button>
+                      <button className="btn-primary" onClick={handlePrint}>🖨️ Jetzt drucken</button>
+                      <button className="btn-secondary" onClick={() => setShowPrintModal(false)}>Später drucken</button>
                     </>
                   )}
-                  {savedArtwork.inExhibition && (
-                    <p style={{ margin: '0.5rem 0', fontSize: '0.9rem', color: '#8b6914' }}>
-                      ✓ Teil der Ausstellung
-                    </p>
-                  )}
-                  {savedArtwork.inShop && (
-                    <p style={{ margin: '0.5rem 0', fontSize: '0.9rem', color: '#8b6914' }}>
-                      ✓ Im Online-Shop verfügbar
-                    </p>
-                  )}
                 </div>
-                <div className="admin-modal-actions">
-                  <button className="btn-secondary" onClick={() => setShowPrintModal(false)}>
-                    Später drucken
-                  </button>
-                  <button className="btn-primary" onClick={handlePrint}>
-                    🖨️ Jetzt drucken
-                  </button>
-                </div>
-                <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '1rem' }}>
-                  Wähle einen Drucker: Etikettendrucker oder Standarddrucker
+                {/* Vorschau kompakt */}
+                {(() => {
+                  const printTenant = getCurrentTenantId()
+                  const previewSettings = loadPrinterSettingsForTenant(printTenant)
+                  const lm = parseLabelSize(previewSettings.labelSize)
+                  const scale = isMobile ? 3 : 4
+                  const pw = Math.round(lm.width * scale)
+                  const ph = Math.round(lm.height * scale)
+                  return (
+                    <div style={{ marginBottom: '1rem' }}>
+                      <div style={{ fontSize: '0.7rem', color: '#999', marginBottom: '2px' }}>
+                        Vorschau ({previewSettings.labelSize} mm)
+                      </div>
+                      <div style={{
+                        width: pw + 'px',
+                        height: ph + 'px',
+                        margin: '0 auto',
+                        border: '1px solid #8b6914',
+                        borderRadius: '4px',
+                        padding: '4px',
+                        background: '#fff',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        boxShadow: '0 1px 4px rgba(0,0,0,0.08)'
+                      }}>
+                        <div style={{ fontSize: '8px', fontWeight: 'bold', color: '#8b6914' }}>K2 Galerie</div>
+                        <div style={{ fontSize: '9px', fontWeight: 'bold', color: '#8b6914' }}>{savedArtwork.number}</div>
+                        <div style={{ fontSize: '6px', color: '#666', textAlign: 'center', wordBreak: 'break-word', maxWidth: '100%' }}>
+                          {(savedArtwork.title || '').substring(0, 18)}{(savedArtwork.title || '').length > 18 ? '…' : ''}
+                        </div>
+                        <div style={{ minWidth: '66px', minHeight: '66px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f0f0f0' }}>
+                          <img src={getQRCodeUrl(savedArtwork.number)} alt="QR" style={{ width: '66px', height: '66px', display: 'block' }} />
+                        </div>
+                        <div style={{ fontSize: '6px', color: '#999' }}>
+                          {savedArtwork.category === 'malerei' ? 'Malerei' : 'Keramik'} • {(savedArtwork.artist || '').substring(0, 10)}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })()}
+                <details style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#666', textAlign: 'left' }}>
+                  <summary style={{ cursor: 'pointer' }}>Werk-Details</summary>
+                  <div style={{ padding: '0.5rem 0', borderTop: '1px solid #eee', marginTop: '0.25rem' }}>
+                    <p style={{ margin: '0.25rem 0' }}><strong>Kategorie:</strong> {savedArtwork.category === 'malerei' ? 'Malerei' : 'Keramik'}</p>
+                    <p style={{ margin: '0.25rem 0' }}><strong>Künstler:</strong> {savedArtwork.artist}</p>
+                    {savedArtwork.category === 'malerei' && savedArtwork.paintingWidth && savedArtwork.paintingHeight && (
+                      <p style={{ margin: '0.25rem 0' }}><strong>Größe:</strong> {savedArtwork.paintingWidth} × {savedArtwork.paintingHeight} cm</p>
+                    )}
+                    {savedArtwork.category === 'keramik' && (savedArtwork.ceramicHeight || savedArtwork.ceramicDiameter) && (
+                      <p style={{ margin: '0.25rem 0' }}>
+                        {savedArtwork.ceramicSubcategory === 'teller' ? `Ø ${savedArtwork.ceramicDiameter} cm` : `H ${savedArtwork.ceramicHeight} cm`}
+                      </p>
+                    )}
+                  </div>
+                </details>
+                <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
+                  AirPrint-Problem? Drucker in Systemeinstellungen → Drucker &amp; Scanner per IP hinzufügen.
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Etikett-Druck: ein Bild im Hauptfenster (nur bei Druck sichtbar, index.css @media print) */}
+      {printLabelData && typeof document !== 'undefined' && document.body && createPortal(
+        <div
+          id="k2-print-label"
+          style={{
+            display: 'none',
+            position: 'fixed',
+            left: 0,
+            top: 0,
+            width: `${printLabelData.widthMm}mm`,
+            height: `${printLabelData.heightMm}mm`,
+            background: '#fff'
+          }}
+          aria-hidden="true"
+        >
+          <img
+            src={printLabelData.url}
+            alt={`Etikett ${savedArtwork?.number || ''}`}
+            style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+          />
+        </div>,
+        document.body
+      )}
+
+      {/* Teilen-Fallback Overlay: Bild + „Etikett teilen“ oder „Etikett herunterladen“ (neutral, kein blaues Rahmen) */}
+      {showShareFallbackOverlay && shareFallbackImageUrl && savedArtwork && (
+        <div className="admin-modal-overlay" onClick={closeShareFallbackOverlay}>
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px', textAlign: 'center', border: '1px solid #e0e0e0', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
+            <div className="admin-modal-header">
+              <h2>{canUseShare ? 'Etikett teilen' : 'Etikett herunterladen'}</h2>
+              <button className="admin-modal-close" onClick={closeShareFallbackOverlay}>×</button>
+            </div>
+            <div className="admin-modal-content" style={{ padding: '1rem' }}>
+              <p style={{ margin: '0 0 0.5rem', fontWeight: 600, color: '#8b6914' }}>Etikett {savedArtwork.number}</p>
+              <div style={{ background: '#fff', padding: '1rem', borderRadius: 8, margin: '0.5rem 0' }}>
+                <img src={shareFallbackImageUrl} alt="Etikett" style={{ maxWidth: '100%', height: 'auto', display: 'block', margin: '0 auto', border: 'none', outline: 'none' }} />
+              </div>
+              {canUseShare ? (
+                <p style={{ fontSize: '0.85rem', color: '#666', margin: '0.75rem 0' }}>→ Brother iPrint &amp; Label wählen</p>
+              ) : (
+                <p style={{ fontSize: '0.85rem', color: '#666', margin: '0.75rem 0' }}>Datei öffnen → Brother iPrint &amp; Label → Drucken</p>
+              )}
+              <button
+                type="button"
+                onClick={handleShareFromFallbackOverlay}
+                style={{
+                  width: '100%',
+                  padding: '1rem 1.25rem',
+                  fontSize: '1.1rem',
+                  fontWeight: 600,
+                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  cursor: 'pointer'
+                }}
+              >
+                {canUseShare ? '📤 Etikett teilen' : '⬇️ Etikett herunterladen'}
+              </button>
+              <button type="button" className="btn-secondary" onClick={closeShareFallbackOverlay} style={{ marginTop: '0.5rem' }}>
+                Schließen
+              </button>
             </div>
           </div>
         </div>

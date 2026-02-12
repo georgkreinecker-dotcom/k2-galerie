@@ -9,8 +9,7 @@ import {
   loadArtworksFromSupabase,
   isSupabaseConfigured
 } from '../utils/supabaseClient'
-import { compositeOnProfessionalBackground } from '../utils/professionalImageBackground'
-import { BUILD_LABEL } from '../buildInfo.generated'
+// Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
 import '../App.css'
 
 // Einfache localStorage-Funktion
@@ -197,8 +196,6 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
   const [isSaving, setIsSaving] = useState(false)
   const [showQRScanner, setShowQRScanner] = useState(false)
   const [showLocationQR, setShowLocationQR] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const cameraInputRef = useRef<HTMLInputElement>(null)
   const qrScannerVideoRef = useRef<HTMLVideoElement>(null)
   const qrScannerCanvasRef = useRef<HTMLCanvasElement>(null)
   
@@ -1761,41 +1758,28 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
       
     <div style={{ 
       minHeight: '-webkit-fill-available',
-      background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%)',
-      color: '#ffffff',
+      background: musterOnly
+        ? 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 50%, var(--k2-bg-3) 100%)'
+        : 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%)',
+      color: musterOnly ? 'var(--k2-text)' : '#ffffff',
       position: 'relative',
       overflowX: 'hidden'
     }}>
-      {/* Animated Background Elements */}
+      {/* Animated Background Elements (ök2: dezent) */}
       <div style={{
         position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.15), transparent 50%), radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.1), transparent 50%)',
+        background: musterOnly
+          ? 'radial-gradient(circle at 30% 40%, rgba(90, 122, 110, 0.08), transparent 50%), radial-gradient(circle at 70% 70%, rgba(90, 122, 110, 0.05), transparent 50%)'
+          : 'radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.15), transparent 50%), radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.1), transparent 50%)',
         pointerEvents: 'none',
         zIndex: 0
       }} />
       
       <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Entwicklungsstand (Mac = Handy? Profi-Check) */}
-        <div
-          style={{
-            position: 'fixed',
-            bottom: '0.5rem',
-            left: '0.5rem',
-            zIndex: 9999,
-            fontSize: '0.7rem',
-            color: 'rgba(255, 255, 255, 0.4)',
-            fontFamily: 'monospace',
-            pointerEvents: 'none'
-          }}
-          title="Gleicher Stand wie am Mac? Hier vergleichen."
-        >
-          Stand: {BUILD_LABEL}
-        </div>
-
         {/* Mobile-First Admin: Neues Objekt Button (ök2: ausblenden) */}
         {!musterOnly && showMobileAdmin && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) && (
           <button
@@ -1916,10 +1900,10 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                 to={musterOnly ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie} 
                 style={{ 
                   padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)', 
-                  background: 'rgba(255, 255, 255, 0.1)',
+                  background: musterOnly ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.1)',
                   backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  color: '#ffffff', 
+                  border: musterOnly ? '1px solid rgba(45, 45, 42, 0.15)' : '1px solid rgba(255, 255, 255, 0.2)',
+                  color: musterOnly ? 'var(--k2-text)' : '#ffffff', 
                   textDecoration: 'none', 
                   borderRadius: '12px',
                   fontSize: 'inherit',
@@ -1931,11 +1915,11 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                   gap: '0.5rem'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                  e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.2)'
                   e.currentTarget.style.transform = 'translateY(-2px)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                  e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.1)'
                   e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
@@ -1945,8 +1929,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                 to={PROJECT_ROUTES['k2-galerie'].shop}
                 style={{ 
                   padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)', 
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  color: '#ffffff', 
+                  background: musterOnly ? 'linear-gradient(135deg, var(--k2-accent) 0%, #6b9080 100%)' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: musterOnly ? 'var(--k2-text)' : '#ffffff', 
                   textDecoration: 'none', 
                   borderRadius: '12px',
                   fontSize: 'inherit',
@@ -3014,210 +2998,39 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
               </button>
             </div>
             
-            {/* Foto */}
+            {/* Foto: nur im Admin (Neues Werk hinzufügen) – hier nur Hinweis bzw. Anzeige beim Bearbeiten */}
             <div style={{ marginBottom: '1rem' }}>
               <label style={{ display: 'block', marginBottom: '0.5rem', color: '#fff', fontWeight: '600' }}>
                 Foto
               </label>
-              {mobilePhoto ? (
+              {editingArtwork && (mobilePhoto || editingArtwork.imageUrl) ? (
                 <div style={{ position: 'relative' }}>
-                  <img 
-                    src={mobilePhoto} 
-                    alt="Vorschau" 
-                    onLoad={() => {
-                      console.log('✅ Bild erfolgreich geladen und angezeigt')
-                    }}
-                    onError={(e) => {
-                      console.error('❌ Fehler beim Anzeigen des Bildes:', e)
-                      alert('❌ Fehler beim Anzeigen des Bildes. Bitte versuche es erneut.')
-                      setMobilePhoto(null)
-                    }}
-                    style={{ 
-                      width: '100%', 
-                      borderRadius: '12px', 
-                      maxHeight: '300px', 
+                  <img
+                    src={mobilePhoto || editingArtwork.imageUrl || ''}
+                    alt="Vorschau"
+                    style={{
+                      width: '100%',
+                      borderRadius: '12px',
+                      maxHeight: '300px',
                       objectFit: 'contain',
                       background: '#000',
                       display: 'block'
-                    }} 
+                    }}
                   />
-                  <button
-                    onClick={() => {
-                      console.log('🗑️ Bild entfernt')
-                      setMobilePhoto(null)
-                      // Reset input damit gleiche Datei wieder ausgewählt werden kann
-                      if (cameraInputRef.current) cameraInputRef.current.value = ''
-                      if (fileInputRef.current) fileInputRef.current.value = ''
-                    }}
-                    style={{
-                      position: 'absolute',
-                      top: '0.5rem',
-                      right: '0.5rem',
-                      background: 'rgba(239, 68, 68, 0.9)',
-                      border: 'none',
-                      color: '#fff',
-                      borderRadius: '8px',
-                      padding: '0.5rem',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    ✕
-                  </button>
+                  <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#8fa0c9' }}>
+                    Bild nur im Admin unter „Werk bearbeiten“ oder „Neues Werk hinzufügen“ ändern (dort Option: Foto freistellen oder Original).
+                  </p>
                 </div>
               ) : (
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <input
-                    ref={cameraInputRef}
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    style={{ display: 'none' }}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      console.log('📷 Kamera-Datei ausgewählt:', file?.name, file?.size, file?.type)
-                      
-                      if (!file) {
-                        console.error('❌ Keine Datei ausgewählt')
-                        alert('❌ Keine Datei ausgewählt')
-                        return
-                      }
-                      
-                      // Prüfe Dateigröße (max 10MB)
-                      if (file.size > 10 * 1024 * 1024) {
-                        alert('❌ Bild ist zu groß (max. 10MB)')
-                        return
-                      }
-                      
-                      const reader = new FileReader()
-                      
-                      reader.onload = async (event) => {
-                        const result = event.target?.result
-                        console.log('📷 FileReader onload:', result ? 'Erfolg' : 'Fehler', result ? `${String(result).substring(0, 50)}...` : 'kein Ergebnis')
-                        
-                        if (result && typeof result === 'string') {
-                          try {
-                            const processed = await compositeOnProfessionalBackground(result)
-                            setMobilePhoto(processed)
-                            console.log('✅ Bild geladen und mit professionellem Hintergrund aufbereitet')
-                          } catch (e) {
-                            console.warn('⚠️ Hintergrund-Aufbereitung fehlgeschlagen, verwende Original:', e)
-                            setMobilePhoto(result)
-                          }
-                        } else {
-                          console.error('❌ FileReader Ergebnis ist ungültig:', result)
-                          alert('❌ Fehler beim Laden des Bildes. Bitte versuche es erneut.')
-                        }
-                      }
-                      
-                      reader.onerror = (error) => {
-                        console.error('❌ FileReader Fehler:', error)
-                        alert('❌ Fehler beim Lesen der Datei. Bitte versuche es erneut.')
-                      }
-                      
-                      reader.onabort = () => {
-                        console.warn('⚠️ FileReader abgebrochen')
-                      }
-                      
-                      try {
-                        reader.readAsDataURL(file)
-                        console.log('📷 Starte FileReader.readAsDataURL...')
-                      } catch (error) {
-                        console.error('❌ Fehler beim Starten des FileReaders:', error)
-                        alert('❌ Fehler beim Laden des Bildes: ' + (error instanceof Error ? error.message : String(error)))
-                      }
-                    }}
-                  />
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      console.log('📁 Galerie-Datei ausgewählt:', file?.name, file?.size, file?.type)
-                      
-                      if (!file) {
-                        console.error('❌ Keine Datei ausgewählt')
-                        return
-                      }
-                      
-                      // Prüfe Dateigröße (max 10MB)
-                      if (file.size > 10 * 1024 * 1024) {
-                        alert('❌ Bild ist zu groß (max. 10MB)')
-                        return
-                      }
-                      
-                      const reader = new FileReader()
-                      
-                      reader.onload = async (event) => {
-                        const result = event.target?.result
-                        console.log('📁 FileReader onload:', result ? 'Erfolg' : 'Fehler', result ? `${String(result).substring(0, 50)}...` : 'kein Ergebnis')
-                        
-                        if (result && typeof result === 'string') {
-                          try {
-                            const processed = await compositeOnProfessionalBackground(result)
-                            setMobilePhoto(processed)
-                            console.log('✅ Bild geladen und mit professionellem Hintergrund aufbereitet')
-                          } catch (e) {
-                            console.warn('⚠️ Hintergrund-Aufbereitung fehlgeschlagen, verwende Original:', e)
-                            setMobilePhoto(result)
-                          }
-                        } else {
-                          console.error('❌ FileReader Ergebnis ist ungültig:', result)
-                          alert('❌ Fehler beim Laden des Bildes. Bitte versuche es erneut.')
-                        }
-                      }
-                      
-                      reader.onerror = (error) => {
-                        console.error('❌ FileReader Fehler:', error)
-                        alert('❌ Fehler beim Lesen der Datei. Bitte versuche es erneut.')
-                      }
-                      
-                      reader.onabort = () => {
-                        console.warn('⚠️ FileReader abgebrochen')
-                      }
-                      
-                      try {
-                        reader.readAsDataURL(file)
-                        console.log('📁 Starte FileReader.readAsDataURL...')
-                      } catch (error) {
-                        console.error('❌ Fehler beim Starten des FileReaders:', error)
-                        alert('❌ Fehler beim Laden des Bildes: ' + (error instanceof Error ? error.message : String(error)))
-                      }
-                    }}
-                  />
-                  <button
-                    onClick={() => cameraInputRef.current?.click()}
-                    style={{
-                      flex: 1,
-                      background: 'linear-gradient(120deg, #5ffbf1, #33a1ff)',
-                      border: 'none',
-                      color: '#0a0e27',
-                      padding: '1rem',
-                      borderRadius: '12px',
-                      fontSize: '1rem',
-                      fontWeight: '700',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    📷 Kamera
-                  </button>
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    style={{
-                      flex: 1,
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      border: '2px solid rgba(255, 255, 255, 0.2)',
-                      color: '#fff',
-                      padding: '1rem',
-                      borderRadius: '12px',
-                      fontSize: '1rem',
-                      fontWeight: '700',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    📁 Galerie
-                  </button>
+                <div style={{
+                  padding: '1rem',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '12px',
+                  border: '1px dashed rgba(95, 251, 241, 0.3)',
+                  color: '#8fa0c9',
+                  fontSize: '0.9rem'
+                }}>
+                  📸 Fotos für neue Werke nur im <strong>Admin</strong> unter „Neues Werk hinzufügen“ (dort Option: <strong>Foto freistellen</strong> oder <strong>Original benutzen</strong>). Hier nur Titel, Kategorie, Preis anlegen – Bild später im Admin ergänzen.
                 </div>
               )}
             </div>
@@ -3688,12 +3501,13 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                       }
                     }
                     
+                    const PLACEHOLDER_KEIN_BILD = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
                     const newArtwork = {
                       id: `artwork-${Date.now()}`,
                       number: newNumber,
                       title: mobileTitle,
                       category: mobileCategory,
-                      imageUrl: mobilePhoto,
+                      imageUrl: mobilePhoto || PLACEHOLDER_KEIN_BILD,
                       price: mobilePrice ? parseFloat(mobilePrice) : undefined,
                       description: mobileDescription || undefined,
                       location: locationString,
@@ -3874,10 +3688,10 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                   setIsSaving(false)
                 }
               }}
-              disabled={isSaving || !mobilePhoto || !mobileTitle}
+              disabled={isSaving || !mobileTitle}
               style={{
                 width: '100%',
-                background: isSaving || !mobilePhoto || !mobileTitle
+                background: isSaving || !mobileTitle
                   ? 'rgba(16, 185, 129, 0.5)'
                   : 'linear-gradient(120deg, #10b981, #059669)',
                 border: 'none',
@@ -3886,8 +3700,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                 borderRadius: '12px',
                 fontSize: '1rem',
                 fontWeight: '700',
-                cursor: isSaving || !mobilePhoto || !mobileTitle ? 'not-allowed' : 'pointer',
-                opacity: isSaving || !mobilePhoto || !mobileTitle ? 0.7 : 1
+                cursor: isSaving || !mobileTitle ? 'not-allowed' : 'pointer',
+                opacity: isSaving || !mobileTitle ? 0.7 : 1
               }}
             >
               {isSaving 

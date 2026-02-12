@@ -2,8 +2,33 @@ import React, { useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { getTenantConfig, getCurrentTenantId, TENANT_CONFIGS, MUSTER_TEXTE } from '../config/tenantConfig'
-import { BUILD_LABEL } from '../buildInfo.generated'
 import '../App.css'
+
+/** Fallback-URL für Aktualisierung in anderem Netzwerk (z. B. zuerst Mac-WLAN, dann Mobilfunk) */
+const GALLERY_DATA_PUBLIC_URL = 'https://k2-galerie.vercel.app'
+/** K2 im Internet – gleiche Seite, funktioniert in jedem WLAN/Mobilfunk */
+function getK2PublicPageUrl(): string {
+  if (typeof window === 'undefined') return 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
+  return GALLERY_DATA_PUBLIC_URL + window.location.pathname
+}
+
+function isLocalOrPrivateOrigin(): boolean {
+  if (typeof window === 'undefined') return false
+  const h = window.location.hostname
+  return h === 'localhost' || h === '127.0.0.1' || h.startsWith('192.168.') || h.startsWith('10.')
+}
+
+/** Verhindert Absturz bei kaputtem localStorage (z. B. nach Druck/Teilen). */
+function safeParseArtworks(): any[] {
+  try {
+    const raw = localStorage.getItem('k2-artworks')
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
 
 const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?: string; musterOnly?: boolean }) => {
   const navigate = useNavigate()
@@ -122,16 +147,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
       const buildId = `${Date.now()}-${Math.random().toString(36).substring(7)}`
       sessionStorage.setItem('k2-session-id', sessionId)
       
-      // KRITISCH: Maximale Cache-Busting URL
-      const url = `/gallery-data.json?v=${timestamp}&t=${timestamp}&r=${random}&sid=${sessionId}&ver=${newVersion}&bid=${buildId}&_=${Date.now()}&nocache=${Math.random()}&force=${Date.now()}&refresh=${Math.random()}`
+      // KRITISCH: Maximale Cache-Busting URL (gleicher Pfad für Fallback in anderem Netzwerk)
+      const pathAndQuery = `/gallery-data.json?v=${timestamp}&t=${timestamp}&r=${random}&sid=${sessionId}&ver=${newVersion}&bid=${buildId}&_=${Date.now()}&nocache=${Math.random()}&force=${Date.now()}&refresh=${Math.random()}`
       
-      console.log('🔄 Lade neue Daten mit maximalem Cache-Busting...', {
-        url: url.substring(0, 100) + '...',
-        version: newVersion,
-        timestamp: new Date(timestamp).toISOString()
-      })
-      
-      const response = await fetch(url, { 
+      const fetchOpts: RequestInit = {
         cache: 'no-store',
         method: 'GET',
         headers: {
@@ -148,9 +167,23 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
         redirect: 'follow',
         referrerPolicy: 'no-referrer',
         credentials: 'omit'
-      })
-      
-      if (response.ok) {
+      }
+
+      let response: Response | null = null
+      try {
+        response = await fetch(pathAndQuery, fetchOpts)
+      } catch (_) {
+        // Netzwerkfehler (z. B. anderes WLAN / Mobilfunk – aktuelle Origin nicht erreichbar)
+      }
+      if ((!response || !response.ok) && !window.location.hostname.includes('vercel.app')) {
+        try {
+          response = await fetch(GALLERY_DATA_PUBLIC_URL + pathAndQuery, fetchOpts)
+        } catch (_) {
+          response = response || null
+        }
+      }
+
+      if (response?.ok) {
         const data = await response.json()
         const currentTimestamp = data.exportedAt || ''
         const currentVersion = data.version || 0
@@ -193,7 +226,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
         }
         
         // KRITISCH: Lade ZUERST lokale Werke um sicherzustellen dass Mobile-Werke NICHT verloren gehen!
-        const localArtworks = JSON.parse(localStorage.getItem('k2-artworks') || '[]')
+        const localArtworks = safeParseArtworks()
         const mobileWorks = localArtworks.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
         
         if (mobileWorks.length > 0) {
@@ -368,13 +401,16 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
         
         // DEAKTIVIERT: Automatisches Reload verursacht Crashes
         // Daten werden bereits oben gesetzt - kein Reload nötig
-        console.log('✅ Daten aktualisiert - verwende manuellen Refresh-Button falls nötig')
       } else {
-        alert(`⚠️ Keine neuen Daten gefunden (HTTP ${response.status}).\n\nBitte:\n1. Warte 2-3 Minuten nach Veröffentlichung\n2. QR-Code NEU scannen\n3. Oder: Seite komplett neu laden`)
+        if (!response) {
+          alert('⚠️ Aktualisieren fehlgeschlagen.\n\nBitte Verbindung prüfen oder später erneut versuchen.')
+        } else {
+          alert(`⚠️ Keine neuen Daten gefunden (HTTP ${response.status}).\n\nBitte:\n1. Warte 2-3 Minuten nach Veröffentlichung\n2. QR-Code NEU scannen\n3. Oder: Seite komplett neu laden`)
+        }
       }
       } catch (error) {
         console.error('❌ Fehler beim Aktualisieren:', error)
-        alert('⚠️ Fehler beim Aktualisieren.\n\nBitte QR-Code neu scannen oder Seite neu laden.')
+        alert('⚠️ Aktualisieren fehlgeschlagen.\n\nBitte Verbindung prüfen oder später erneut versuchen.')
         setIsRefreshing(false)
       } finally {
         setIsRefreshing(false)
@@ -482,7 +518,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
       console.log(`📱 Mobile-Werk-Synchronisation erkannt: ${artwork.number || artwork.id}`)
       
       // Lade aktuelle Werke
-      const localArtworks = JSON.parse(localStorage.getItem('k2-artworks') || '[]')
+      const localArtworks = safeParseArtworks()
       
       // Prüfe ob Werk bereits vorhanden
       const exists = localArtworks.some((a: any) => 
@@ -527,7 +563,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
       try {
         // Einfacheres Cache-Busting - nicht zu aggressiv
         const timestamp = Date.now()
-        const url = `/gallery-data.json?v=${timestamp}&t=${timestamp}&_=${Math.random()}`
+        const pathAndQuery = `/gallery-data.json?v=${timestamp}&t=${timestamp}&_=${Math.random()}`
         
         // WICHTIG: Timeout hinzufügen um Hänger zu vermeiden
         controller = new AbortController()
@@ -535,22 +571,41 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
           if (controller) controller.abort()
         }, 8000) // 8 Sekunden Timeout (kürzer = weniger Crash-Risiko)
         
-        const response = await fetch(url, { 
-          cache: 'no-store',
-          method: 'GET',
-          signal: controller.signal, // WICHTIG: Signal für Timeout
+        const fetchOpts = {
+          cache: 'no-store' as RequestCache,
+          method: 'GET' as const,
+          signal: controller.signal,
           headers: {
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             'Pragma': 'no-cache'
           }
-        })
-        
+        }
+
+        let response: Response | null = null
+        try {
+          response = await fetch(pathAndQuery, fetchOpts)
+        } catch (_) {
+          response = null
+        }
         if (timeoutId) {
           clearTimeout(timeoutId)
           timeoutId = null
         }
-        
-        if (response.ok) {
+        if ((!response || !response.ok) && !window.location.hostname.includes('vercel.app')) {
+          try {
+            controller = new AbortController()
+            timeoutId = setTimeout(() => { if (controller) controller.abort() }, 8000)
+            response = await fetch(GALLERY_DATA_PUBLIC_URL + pathAndQuery, { ...fetchOpts, signal: controller.signal })
+          } catch (_) {
+            response = response || null
+          }
+          if (timeoutId) {
+            clearTimeout(timeoutId)
+            timeoutId = null
+          }
+        }
+
+        if (response?.ok) {
           const jsonData = await response.json()
           data = jsonData
           
@@ -608,7 +663,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
           if (data.artworks && Array.isArray(data.artworks)) {
             try {
               // KRITISCH: Lade ZUERST lokale Werke um sicherzustellen dass Mobile-Werke NICHT verloren gehen!
-              const localArtworks = JSON.parse(localStorage.getItem('k2-artworks') || '[]')
+              const localArtworks = safeParseArtworks()
               const mobileWorks = localArtworks.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
               
               if (mobileWorks.length > 0) {
@@ -707,7 +762,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
             } catch (e) {
               console.warn('⚠️ Werke zu groß für localStorage:', e)
               // Bei Fehler: Behalte lokale Werke!
-              const localArtworks = JSON.parse(localStorage.getItem('k2-artworks') || '[]')
+              const localArtworks = safeParseArtworks()
               if (localArtworks.length > 0) {
                 console.log('🔒 Fehler beim Merge beim Initial-Load - behalte lokale Werke:', localArtworks.length)
                 localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
@@ -715,7 +770,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
             }
           } else {
             // KEINE Server-Daten - behalte ALLE lokalen Werke!
-            const localArtworks = JSON.parse(localStorage.getItem('k2-artworks') || '[]')
+            const localArtworks = safeParseArtworks()
             if (localArtworks.length > 0) {
               console.warn('⚠️ Keine Werke in gallery-data.json gefunden beim Initial-Load - behalte lokale Werke:', localArtworks.length)
               console.log('🔒 Lokale Werke bleiben erhalten beim Initial-Load:', localArtworks.map((a: any) => a.number || a.id).join(', '))
@@ -730,7 +785,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
           // Keine automatischen Reloads mehr!
         } else {
           // Nicht kritisch - verwende localStorage Daten
-          console.log('ℹ️ gallery-data.json nicht verfügbar (HTTP ' + response.status + ') - verwende localStorage')
+          console.log('ℹ️ gallery-data.json nicht verfügbar (HTTP ' + (response?.status ?? 'n/a') + ') - verwende localStorage')
         }
       } catch (error) {
         // KRITISCH: Fehler NICHT als Warnung loggen - verursacht Crashes
@@ -854,138 +909,61 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
       }
     }
     
-    loadData()
-    
-    // Cleanup beim Unmount
-    return () => {
-      isMounted = false
-      if (timeoutId) {
-        clearTimeout(timeoutId)
-      }
-      if (controller) {
-        controller.abort()
-      }
-    }
-    
-    // Event Listener für Updates
-    const handleStorageUpdate = () => {
-      try {
-        const martinaStored = localStorage.getItem('k2-stammdaten-martina')
-        if (martinaStored) {
-          const data = JSON.parse(martinaStored)
-          setMartinaData({
-            name: data.name || 'Martina Kreinecker',
-            email: data.email || '',
-            phone: data.phone || ''
-          })
-        }
-      } catch (error) {}
-      
-      try {
-        const georgStored = localStorage.getItem('k2-stammdaten-georg')
-        if (georgStored) {
-          const data = JSON.parse(georgStored)
-          setGeorgData({
-            name: data.name || 'Georg Kreinecker',
-            email: data.email || '',
-            phone: data.phone || ''
-          })
-        }
-      } catch (error) {}
-      
-      try {
-        const galleryStored = localStorage.getItem('k2-stammdaten-galerie')
-        if (galleryStored) {
-          const data = JSON.parse(galleryStored)
-          setGalleryData({
-            address: data.address || '',
-            phone: data.phone || '',
-            email: data.email || '',
-            website: data.website || 'www.k2-galerie.at',
-            internetadresse: data.internetadresse || data.website || '', // Für QR-Code
-            adminPassword: data.adminPassword || 'k2Galerie2026',
-            welcomeImage: data.welcomeImage || '',
-            virtualTourImage: data.virtualTourImage || ''
-          })
-          setAdminPassword(data.adminPassword || 'k2Galerie2026')
-        }
-      } catch (error) {}
-    }
-    
-    // Event Listener für Stammdaten-Updates (sicher implementiert)
-    // Prüfe nur localStorage, keine Events die Loops verursachen könnten
+    // Stammdaten-Updates: Prüfe alle 2 Sekunden localStorage (ohne storage-Event = kein Render-Loop)
     const checkStammdatenUpdate = () => {
+      if (!isMounted) return
       try {
         const martinaStored = localStorage.getItem('k2-stammdaten-martina')
         if (martinaStored) {
           const data = JSON.parse(martinaStored)
           setMartinaData(prev => {
-            // Nur updaten wenn sich etwas geändert hat
             if (prev.email !== data.email || prev.phone !== data.phone || prev.name !== data.name) {
-              return {
-                name: data.name || 'Martina Kreinecker',
-                email: data.email || '',
-                phone: data.phone || ''
-              }
+              return { name: data.name || 'Martina Kreinecker', email: data.email || '', phone: data.phone || '' }
             }
             return prev
           })
         }
-      } catch (error) {}
-      
+      } catch {}
       try {
         const georgStored = localStorage.getItem('k2-stammdaten-georg')
         if (georgStored) {
           const data = JSON.parse(georgStored)
           setGeorgData(prev => {
-            // Nur updaten wenn sich etwas geändert hat
             if (prev.email !== data.email || prev.phone !== data.phone || prev.name !== data.name) {
-              return {
-                name: data.name || 'Georg Kreinecker',
-                email: data.email || '',
-                phone: data.phone || ''
-              }
+              return { name: data.name || 'Georg Kreinecker', email: data.email || '', phone: data.phone || '' }
             }
             return prev
           })
         }
-      } catch (error) {}
-      
+      } catch {}
       try {
         const galleryStored = localStorage.getItem('k2-stammdaten-galerie')
         if (galleryStored) {
           const data = JSON.parse(galleryStored)
           setGalleryData(prev => {
-            // Nur updaten wenn sich etwas geändert hat
             if (prev.address !== data.address || prev.phone !== data.phone || prev.email !== data.email || prev.website !== data.website) {
               return {
-                address: data.address || '',
-                phone: data.phone || '',
-                email: data.email || '',
-                website: data.website || 'www.k2-galerie.at',
-                internetadresse: data.internetadresse || data.website || '',
-                adminPassword: data.adminPassword || 'k2Galerie2026',
-                welcomeImage: data.welcomeImage || '',
-                virtualTourImage: data.virtualTourImage || ''
+                address: data.address || '', phone: data.phone || '', email: data.email || '',
+                website: data.website || 'www.k2-galerie.at', internetadresse: data.internetadresse || data.website || '',
+                adminPassword: data.adminPassword || 'k2Galerie2026', welcomeImage: data.welcomeImage || '', virtualTourImage: data.virtualTourImage || ''
               }
             }
             return prev
           })
+          setAdminPassword(data.adminPassword || 'k2Galerie2026')
         }
-      } catch (error) {}
+      } catch {}
     }
     
-    // Prüfe alle 2 Sekunden ob Stammdaten aktualisiert wurden
     const intervalId = setInterval(checkStammdatenUpdate, 2000)
+    loadData()
     
-    // Cleanup
-    return () => {
-      clearInterval(intervalId)
-    }
-    
-    // Cleanup: Setze isMounted auf false beim Unmount
+    // Ein einziger Cleanup: interval, timeout, controller, isMounted
     return () => {
       isMounted = false
+      clearInterval(intervalId)
+      if (timeoutId) clearTimeout(timeoutId)
+      if (controller) controller.abort()
     }
   }, [musterOnly])
 
@@ -1061,45 +1039,54 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
     }
   }
 
+  const theme = musterOnly
+    ? { text: 'var(--k2-text)', muted: 'var(--k2-muted)', accent: 'var(--k2-accent)', accentGradient: 'linear-gradient(135deg, var(--k2-accent) 0%, #6b9080 100%)', cardBg: 'var(--k2-card-bg-1)' }
+    : { text: '#ffffff', muted: 'rgba(255,255,255,0.7)', accent: '#5ffbf1', accentGradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', cardBg: 'rgba(18,22,35,0.95)' }
+
   return (
     <div style={{ 
       minHeight: '-webkit-fill-available',
-      background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%)',
-      color: '#ffffff',
+      background: musterOnly
+        ? 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 50%, var(--k2-bg-3) 100%)'
+        : 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%)',
+      color: musterOnly ? 'var(--k2-text)' : '#ffffff',
       position: 'relative',
       overflowX: 'hidden'
     }}>
-      {/* Animated Background Elements */}
+      {/* Animated Background Elements (ök2: dezent für Wohlbefinden) */}
       <div style={{
         position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.15), transparent 50%), radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.1), transparent 50%)',
+        background: musterOnly
+          ? 'radial-gradient(circle at 30% 40%, rgba(90, 122, 110, 0.08), transparent 50%), radial-gradient(circle at 70% 70%, rgba(90, 122, 110, 0.05), transparent 50%)'
+          : 'radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.15), transparent 50%), radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.1), transparent 50%)',
         pointerEvents: 'none',
         zIndex: 0
       }} />
       
       {/* Content */}
       <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Entwicklungsstand (Mac = Handy? Profi-Check) – unten links, dezent */}
-        <div
-          style={{
-            position: 'fixed',
-            bottom: '0.5rem',
-            left: '0.5rem',
-            zIndex: 9999,
-            fontSize: '0.7rem',
-            color: 'rgba(255, 255, 255, 0.4)',
-            fontFamily: 'monospace',
-            pointerEvents: 'none'
-          }}
-          title="Gleicher Stand wie am Mac? Hier vergleichen."
-        >
-          Stand: {BUILD_LABEL}
-        </div>
-
+        {/* Optional: Link für Internet-Zugriff (App soll aus beiden LAN-Adressen wie früher funktionieren) */}
+        {isLocalOrPrivateOrigin() && (
+          <div style={{
+            padding: '0.5rem 1rem',
+            margin: '0 0 0.5rem 0',
+            background: 'rgba(0,0,0,0.2)',
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            fontSize: '0.8rem',
+            textAlign: 'center'
+          }}>
+            <span style={{ marginRight: '0.5rem', color: musterOnly ? 'var(--k2-text)' : 'rgba(255,255,255,0.75)' }}>
+              Auch aus anderem WLAN erreichbar:
+            </span>
+            <a href={getK2PublicPageUrl()} target="_blank" rel="noopener noreferrer" style={{ color: musterOnly ? 'var(--k2-accent)' : '#5ffbf1', fontWeight: 600, textDecoration: 'underline' }}>
+              K2 im Internet öffnen
+            </a>
+          </div>
+        )}
         {/* Admin Button – auf normaler Galerie und auf ök2-Willkommensseite (eigener Admin-Zugang) */}
         <button
           onClick={handleAdminButtonClick}
@@ -1107,10 +1094,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
             position: 'fixed',
             top: 'clamp(1rem, 2vw, 1.5rem)',
             right: 'clamp(1rem, 2vw, 1.5rem)',
-            background: 'rgba(255, 255, 255, 0.05)',
+            background: musterOnly ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.05)',
             backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            color: 'rgba(255, 255, 255, 0.5)',
+            border: musterOnly ? '1px solid rgba(45, 45, 42, 0.2)' : '1px solid rgba(255, 255, 255, 0.1)',
+            color: musterOnly ? 'var(--k2-text)' : 'rgba(255, 255, 255, 0.5)',
             padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem)',
             borderRadius: '8px',
             fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)',
@@ -1124,20 +1111,20 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.opacity = '1'
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+            e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.opacity = '0.6'
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+            e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.05)'
           }}
           onTouchStart={(e) => {
             e.currentTarget.style.opacity = '1'
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'
+            e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.15)'
           }}
           onTouchEnd={(e) => {
             setTimeout(() => {
               e.currentTarget.style.opacity = '0.6'
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+              e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.05)'
             }, 200)
           }}
         >
@@ -1173,8 +1160,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
           >
             <div
               style={{
-                background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
+                background: musterOnly ? 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 100%)' : 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%)',
+                border: musterOnly ? '1px solid rgba(45, 45, 42, 0.15)' : '1px solid rgba(255, 255, 255, 0.2)',
                 borderRadius: '20px',
                 padding: 'clamp(2rem, 5vw, 3rem)',
                 maxWidth: '400px',
@@ -1289,7 +1276,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
               margin: 0, 
               fontSize: 'clamp(2.5rem, 8vw, 4.5rem)',
               fontWeight: '700',
-              background: 'linear-gradient(135deg, #ffffff 0%, #b8b8ff 100%)',
+              background: musterOnly ? 'linear-gradient(135deg, var(--k2-text) 0%, var(--k2-accent) 100%)' : 'linear-gradient(135deg, #ffffff 0%, #b8b8ff 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -1300,7 +1287,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
             </h1>
             <p style={{ 
               margin: '0.75rem 0 0', 
-              color: 'rgba(255, 255, 255, 0.7)', 
+              color: musterOnly ? 'var(--k2-muted)' : 'rgba(255, 255, 255, 0.7)', 
               fontSize: 'clamp(1rem, 3vw, 1.25rem)',
               fontWeight: '300',
               letterSpacing: '0.05em'
@@ -1347,12 +1334,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
               marginBottom: '1.5rem',
               fontWeight: '700',
               lineHeight: '1.2',
-              color: '#ffffff',
+              color: musterOnly ? 'var(--k2-text)' : '#ffffff',
               letterSpacing: '-0.02em'
             }}>
               Willkommen bei {tenantConfig.galleryName} –<br />
               <span style={{
-                background: 'linear-gradient(135deg, #b8b8ff 0%, #ff77c6 100%)',
+                background: musterOnly ? 'linear-gradient(135deg, var(--k2-accent) 0%, #6b9080 100%)' : 'linear-gradient(135deg, #b8b8ff 0%, #ff77c6 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text'
@@ -1362,7 +1349,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
             </h2>
             <p style={{ 
               fontSize: 'clamp(1.1rem, 3vw, 1.4rem)', 
-              color: 'rgba(255, 255, 255, 0.8)',
+              color: musterOnly ? 'var(--k2-muted)' : 'rgba(255, 255, 255, 0.8)',
               lineHeight: '1.6',
               fontWeight: '300',
               maxWidth: '600px',
@@ -1390,7 +1377,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
               fontSize: 'clamp(1.75rem, 5vw, 2.5rem)', 
               marginBottom: 'clamp(2rem, 5vw, 3rem)',
               fontWeight: '700',
-              color: '#ffffff',
+              color: musterOnly ? 'var(--k2-text)' : '#ffffff',
               textAlign: 'center',
               letterSpacing: '-0.02em'
             }}>
@@ -1427,8 +1414,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   width: 'clamp(80px, 12vw, 100px)',
                   height: 'clamp(80px, 12vw, 100px)',
                   borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  color: '#ffffff',
+                  background: theme.accentGradient,
+                  color: theme.text,
                   display: 'grid',
                   placeItems: 'center',
                   fontSize: 'clamp(2rem, 5vw, 2.5rem)',
@@ -1490,8 +1477,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   width: 'clamp(80px, 12vw, 100px)',
                   height: 'clamp(80px, 12vw, 100px)',
                   borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                  color: '#ffffff',
+                  background: musterOnly ? 'linear-gradient(135deg, #6b9080 0%, var(--k2-accent) 100%)' : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                  color: theme.text,
                   display: 'grid',
                   placeItems: 'center',
                   fontSize: 'clamp(2rem, 5vw, 2.5rem)',
@@ -1824,7 +1811,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   
                   {/* Galerie Kontakt - Kompakt (ök2: immer aus MUSTER_TEXTE) */}
                   <div style={{ marginBottom: '0.75rem' }}>
-                    <p style={{ margin: '0 0 0.25rem', fontWeight: '500', color: '#ffffff', fontSize: 'clamp(0.95rem, 2.2vw, 1.1rem)' }}>
+                    <p style={{ margin: '0 0 0.25rem', fontWeight: '500', color: theme.text, fontSize: 'clamp(0.95rem, 2.2vw, 1.1rem)' }}>
                       {tenantConfig.galleryName}
                     </p>
                     {(musterOnly ? MUSTER_TEXTE.gallery.address : galleryData.address) && (
@@ -1840,14 +1827,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                       )}
                       {(musterOnly ? MUSTER_TEXTE.gallery.email : galleryData.email) && (
                         <span style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
-                          ✉️ <a href={`mailto:${musterOnly ? MUSTER_TEXTE.gallery.email : galleryData.email}`} style={{ color: '#b8b8ff', textDecoration: 'none' }}>
+                          ✉️ <a href={`mailto:${musterOnly ? MUSTER_TEXTE.gallery.email : galleryData.email}`} style={{ color: musterOnly ? 'var(--k2-accent)' : '#b8b8ff', textDecoration: 'none' }}>
                             {musterOnly ? MUSTER_TEXTE.gallery.email : galleryData.email}
                           </a>
                         </span>
                       )}
                       {(musterOnly ? MUSTER_TEXTE.gallery.website : galleryData.website) && (
                         <span style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
-                          🌐 <a href={`https://${(musterOnly ? MUSTER_TEXTE.gallery.website : galleryData.website).replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" style={{ color: '#b8b8ff', textDecoration: 'none' }}>
+                          🌐 <a href={`https://${(musterOnly ? MUSTER_TEXTE.gallery.website : galleryData.website).replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" style={{ color: musterOnly ? 'var(--k2-accent)' : '#b8b8ff', textDecoration: 'none' }}>
                             {musterOnly ? MUSTER_TEXTE.gallery.website : galleryData.website}
                           </a>
                         </span>
@@ -1857,7 +1844,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   
                   {/* Martina Kontakt - Kompakt (ök2: immer aus MUSTER_TEXTE) */}
                   <div style={{ marginBottom: '0.75rem' }}>
-                    <p style={{ margin: '0 0 0.15rem', fontWeight: '500', color: '#ffffff', fontSize: 'clamp(0.95rem, 2.2vw, 1.1rem)' }}>
+                    <p style={{ margin: '0 0 0.15rem', fontWeight: '500', color: theme.text, fontSize: 'clamp(0.95rem, 2.2vw, 1.1rem)' }}>
                       {musterOnly ? MUSTER_TEXTE.martina.name : (martinaData.name || 'Martina Kreinecker')}
                     </p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -1868,7 +1855,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                       )}
                       {(musterOnly ? MUSTER_TEXTE.martina.email : martinaData.email) && (
                         <span style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
-                          ✉️ <a href={`mailto:${musterOnly ? MUSTER_TEXTE.martina.email : martinaData.email}`} style={{ color: '#b8b8ff', textDecoration: 'none' }}>
+                          ✉️ <a href={`mailto:${musterOnly ? MUSTER_TEXTE.martina.email : martinaData.email}`} style={{ color: musterOnly ? 'var(--k2-accent)' : '#b8b8ff', textDecoration: 'none' }}>
                             {musterOnly ? MUSTER_TEXTE.martina.email : martinaData.email}
                           </a>
                         </span>
@@ -1878,7 +1865,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   
                   {/* Georg Kontakt - Kompakt (ök2: immer aus MUSTER_TEXTE) */}
                   <div style={{ marginBottom: '0.75rem' }}>
-                    <p style={{ margin: '0 0 0.15rem', fontWeight: '500', color: '#ffffff', fontSize: 'clamp(0.95rem, 2.2vw, 1.1rem)' }}>
+                    <p style={{ margin: '0 0 0.15rem', fontWeight: '500', color: theme.text, fontSize: 'clamp(0.95rem, 2.2vw, 1.1rem)' }}>
                       {musterOnly ? MUSTER_TEXTE.georg.name : (georgData.name || 'Georg Kreinecker')}
                     </p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -1889,7 +1876,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                       )}
                       {(musterOnly ? MUSTER_TEXTE.georg.email : georgData.email) && (
                         <span style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
-                          ✉️ <a href={`mailto:${musterOnly ? MUSTER_TEXTE.georg.email : georgData.email}`} style={{ color: '#b8b8ff', textDecoration: 'none' }}>
+                          ✉️ <a href={`mailto:${musterOnly ? MUSTER_TEXTE.georg.email : georgData.email}`} style={{ color: musterOnly ? 'var(--k2-accent)' : '#b8b8ff', textDecoration: 'none' }}>
                             {musterOnly ? MUSTER_TEXTE.georg.email : georgData.email}
                           </a>
                         </span>

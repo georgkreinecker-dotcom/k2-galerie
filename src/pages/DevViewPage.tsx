@@ -15,7 +15,6 @@ import ScreenshotExportAdmin from '../../components/ScreenshotExportAdmin'
 import ProjectsPage from './ProjectsPage'
 import PlatformStartPage from './PlatformStartPage'
 import SmartPanel from '../components/SmartPanel'
-import { BUILD_LABEL } from '../buildInfo.generated'
 
 // Helper: Lese persistent Boolean ohne Hook (für useMemo)
 function getPersistentBoolean(key: string): boolean {
@@ -1083,21 +1082,6 @@ end tell`
             <option key={page.id} value={page.id}>{page.name}</option>
           ))}
         </select>
-
-        {/* Entwicklungsstand: Gleicher Stand wie auf dem Handy? */}
-        <span
-          style={{
-            padding: '0.35rem 0.6rem',
-            background: 'rgba(0,0,0,0.3)',
-            color: 'rgba(255,255,255,0.7)',
-            borderRadius: '6px',
-            fontSize: '0.75rem',
-            fontFamily: 'monospace'
-          }}
-          title="Vergleiche mit Handy – gleicher Stand = gleiche Version"
-        >
-          Stand: {BUILD_LABEL}
-        </span>
 
         {/* Quick-Actions: Daten veröffentlichen + Code-Update (Git) nebeneinander */}
         <Link

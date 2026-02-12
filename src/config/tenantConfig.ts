@@ -83,21 +83,29 @@ export const MUSTER_ARTWORKS = [
   { id: 'muster-4', number: 'M4', title: 'Musterwerk Skulptur 2', category: 'keramik', imageUrl: MUSTER_PLACEHOLDER_IMAGE, price: '', description: 'Beispiel Skulptur.', inExhibition: true },
 ]
 
-/** Aktuellen Mandanten lesen (localStorage, Default: k2) */
+/** Aktuellen Mandanten lesen (localStorage, Default: k2). Wirft nie – auch bei leerem Cache/Privatmodus. */
 export function getCurrentTenantId(): TenantId {
   if (typeof window === 'undefined') return 'k2'
-  const stored = localStorage.getItem(STORAGE_KEY)
-  if (stored === 'demo' || stored === 'k2' || stored === 'oeffentlich') return stored as TenantId
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored === 'demo' || stored === 'k2' || stored === 'oeffentlich') return stored as TenantId
+  } catch (_) {}
   return 'k2'
 }
 
 /** Mandanten setzen (z. B. für Produkt-Vorschau) */
 export function setCurrentTenantId(tenantId: TenantId): void {
   if (typeof window === 'undefined') return
-  localStorage.setItem(STORAGE_KEY, tenantId)
+  try {
+    localStorage.setItem(STORAGE_KEY, tenantId)
+  } catch (_) {}
 }
 
-/** Konfiguration des aktuellen Mandanten */
+/** Konfiguration des aktuellen Mandanten. Wirft nie. */
 export function getTenantConfig(): TenantConfig {
-  return TENANT_CONFIGS[getCurrentTenantId()]
+  try {
+    return TENANT_CONFIGS[getCurrentTenantId()]
+  } catch (_) {
+    return TENANT_CONFIGS.k2
+  }
 }

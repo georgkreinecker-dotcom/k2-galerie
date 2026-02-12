@@ -2,42 +2,34 @@ import { Link, useParams } from 'react-router-dom'
 import { useState } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES, PLATFORM_ROUTES, getProjectRoutes, type ProjectId } from '../config/navigation'
+import { getPageTexts, defaultPageTexts } from '../config/pageTexts'
 import DevViewPage from './DevViewPage'
 
-const projectCards: Record<ProjectId, Array<{ title: string; description: string; routeKey: keyof typeof PROJECT_ROUTES['k2-galerie']; cta: string }>> = {
-  'k2-galerie': [
-    {
-      title: 'Galerie',
-      description: 'ök2 – Öffentliche K2 Galerie, Kunst & Keramik, Eröffnung, Werke.',
-      routeKey: 'galerie',
-      cta: 'Öffnen →',
-    },
-    {
-      title: 'Control-Studio',
-      description: 'Komplettes Kommandozentrum inkl. KI-Agent, Launch-Plan und Aufgabenfeldern.',
-      routeKey: 'controlStudio',
-      cta: 'Starten →',
-    },
-    {
-      title: 'Projektplan',
-      description: 'Projekt-spezifische Planung mit Phasen, Aufgaben & Timeline.',
-      routeKey: 'plan',
-      cta: 'Öffnen →',
-    },
-    {
-      title: 'Mobile-Connect',
-      description: 'QR-Hub für iPhone/iPad, damit die Galerie wie eine App läuft.',
-      routeKey: 'mobileConnect',
-      cta: 'Zu Mobile →',
-    },
-  ],
+const ROUTE_KEYS: (keyof typeof PROJECT_ROUTES['k2-galerie'])[] = ['galerie', 'controlStudio', 'plan', 'mobileConnect']
+
+function getProjectCards(projectId: ProjectId): Array<{ title: string; description: string; routeKey: keyof typeof PROJECT_ROUTES['k2-galerie']; cta: string }> | null {
+  if (projectId !== 'k2-galerie') return null
+  let ps = defaultPageTexts.projectStart
+  try {
+    const config = getPageTexts()
+    if (config?.projectStart && Array.isArray(config.projectStart.cards)) ps = config.projectStart
+  } catch (_) {}
+  return (ps.cards || []).slice(0, 4).map((card, i) => ({
+    ...card,
+    routeKey: ROUTE_KEYS[i] ?? 'galerie',
+  }))
 }
 
 export default function ProjectStartPage() {
   const { projectId } = useParams<{ projectId: string }>()
   const routes = projectId && projectId in PROJECT_ROUTES ? getProjectRoutes(projectId as ProjectId) : null
-  const cards = projectId && projectId in projectCards ? projectCards[projectId as ProjectId] : null
+  const cards = projectId ? getProjectCards(projectId as ProjectId) : null
   const [showDevView, setShowDevView] = useState(true)
+  let projectTexts = defaultPageTexts.projectStart
+  try {
+    const config = getPageTexts()
+    if (config?.projectStart) projectTexts = config.projectStart
+  } catch (_) {}
 
   if (!routes || !cards) {
     return (
@@ -71,8 +63,8 @@ export default function ProjectStartPage() {
       <div className="viewport">
         <header>
           <div>
-            <h1>{routes.name} – Mission Deck</h1>
-            <div className="meta">Direkter Zugriff auf alle Projekt-Systeme</div>
+            <h1>{routes.name} – {projectTexts.headerTitle}</h1>
+            <div className="meta">{projectTexts.headerSubtitle}</div>
           </div>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
             <Link to={PLATFORM_ROUTES.projects} className="meta">← Projekte</Link>
