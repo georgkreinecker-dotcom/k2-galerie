@@ -30,6 +30,7 @@ const ShopPage = () => {
   const [showScanner, setShowScanner] = useState(false)
   const [serialInput, setSerialInput] = useState('')
   const [allArtworks, setAllArtworks] = useState<any[]>([])
+  const [orders, setOrders] = useState<any[]>([])
 
   // Warenkorb aus localStorage laden
   useEffect(() => {
@@ -76,6 +77,30 @@ const ShopPage = () => {
     window.addEventListener('artworks-updated', loadArtworks)
     return () => window.removeEventListener('artworks-updated', loadArtworks)
   }, [])
+
+  // Bestellungen laden (für Bon erneut drucken)
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('k2-orders')
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        if (Array.isArray(parsed)) {
+          setOrders(parsed.slice(-20).reverse()) // Letzte 20, neueste zuerst
+        }
+      }
+    } catch (_) {}
+  }, [])
+
+  // Bon erneut drucken – Dialog wie bei neuem Verkauf
+  const handleReprintOrder = (order: any) => {
+    const paymentText = order.paymentMethod === 'cash' ? 'Bar' : order.paymentMethod === 'card' ? 'Karte' : 'Überweisung'
+    const useEtikett = confirm(`Bon ${order.orderNumber}\n€${(order.total || 0).toFixed(2)} · ${paymentText}\n\nEtikettendrucker (80mm) = OK\nA4 Druck = Abbrechen`)
+    if (useEtikett) {
+      printReceipt(order)
+    } else {
+      printReceiptA4(order)
+    }
+  }
 
   // Werk per Seriennummer finden und zum Warenkorb hinzufügen
   const addBySerialNumber = () => {
@@ -218,16 +243,17 @@ const ShopPage = () => {
   const discountAmount = (subtotal * discount) / 100
   const total = subtotal - discountAmount
 
-  // Schnellverkauf - direkt abschließen mit Standard-Zahlungsmethode
-  const quickSale = () => {
+  // Schnellverkauf - direkt abschließen mit gewählter Zahlungsmethode
+  // WICHTIG: paymentMethod als Parameter, da setState async ist und sonst alter Wert verwendet wird
+  const quickSale = (method: 'cash' | 'card' | 'transfer') => {
     if (cart.length === 0) {
       alert('Warenkorb ist leer')
       return
     }
-    processOrder()
+    processOrder(method)
   }
 
-  // Kassenbon drucken (optimiert für Brother QL-820NWBc und A4)
+  // Kassenbon drucken (80mm Breite = Standard-Kassenbon, vollständig sichtbar)
   const printReceipt = (order: any) => {
     const printWindow = window.open('', '_blank')
     if (!printWindow) {
@@ -253,7 +279,7 @@ const ShopPage = () => {
           <style>
             @media print {
               @page {
-                size: 29mm 90.3mm;
+                size: 80mm 400mm;
                 margin: 0;
                 padding: 0;
               }
@@ -268,21 +294,21 @@ const ShopPage = () => {
             }
             body {
               font-family: 'Courier New', monospace;
-              font-size: 9px;
-              line-height: 1.2;
-              width: 29mm;
-              max-width: 29mm;
+              font-size: 11px;
+              line-height: 1.3;
+              width: 80mm;
+              max-width: 80mm;
               margin: 0;
-              padding: 3mm 2mm;
+              padding: 5mm 4mm;
               color: #000;
               background: #fff;
             }
             @media screen {
               body {
-                width: 29mm;
+                width: 80mm;
                 margin: 20px auto;
                 border: 1px dashed #ccc;
-                min-height: 90.3mm;
+                min-height: 200px;
               }
             }
             .header {
@@ -293,19 +319,19 @@ const ShopPage = () => {
             }
             .header h1 {
               margin: 0;
-              font-size: 12px;
+              font-size: 14px;
               font-weight: bold;
               letter-spacing: 0.5px;
               line-height: 1.2;
             }
             .header p {
               margin: 2px 0 0;
-              font-size: 7px;
+              font-size: 9px;
             }
             .info {
-              margin: 4px 0;
-              font-size: 7px;
-              line-height: 1.3;
+              margin: 6px 0;
+              font-size: 10px;
+              line-height: 1.4;
             }
             .items {
               border-top: 1px solid #000;
@@ -320,11 +346,11 @@ const ShopPage = () => {
             .item-title {
               font-weight: bold;
               margin-bottom: 1px;
-              font-size: 8px;
+              font-size: 10px;
               line-height: 1.2;
             }
             .item-details {
-              font-size: 7px;
+              font-size: 9px;
               margin-left: 4px;
               line-height: 1.2;
             }
@@ -332,7 +358,7 @@ const ShopPage = () => {
               text-align: right;
               margin-top: 1px;
               font-weight: bold;
-              font-size: 8px;
+              font-size: 10px;
             }
             .total {
               margin-top: 4px;
@@ -342,33 +368,33 @@ const ShopPage = () => {
             .total-row {
               display: flex;
               justify-content: space-between;
-              margin: 2px 0;
-              font-size: 8px;
+              margin: 3px 0;
+              font-size: 10px;
             }
             .total-final {
-              font-size: 10px;
+              font-size: 12px;
               font-weight: bold;
-              margin-top: 3px;
-              padding-top: 2px;
+              margin-top: 4px;
+              padding-top: 3px;
               border-top: 1px solid #000;
             }
             .payment {
-              margin-top: 6px;
-              padding-top: 4px;
+              margin-top: 8px;
+              padding-top: 6px;
               border-top: 1px solid #000;
               text-align: center;
-              font-size: 8px;
+              font-size: 10px;
             }
             .footer {
-              margin-top: 8px;
+              margin-top: 10px;
               text-align: center;
-              font-size: 6px;
-              line-height: 1.3;
+              font-size: 9px;
+              line-height: 1.4;
             }
             .divider {
               text-align: center;
-              margin: 4px 0;
-              font-size: 7px;
+              margin: 6px 0;
+              font-size: 9px;
               letter-spacing: 1px;
             }
           </style>
@@ -674,8 +700,9 @@ const ShopPage = () => {
     }, 250)
   }
 
-  // Bestellung abschließen
-  const processOrder = () => {
+  // Bestellung abschließen (paymentMethodOverride: bei Schnellverkauf direkt übergeben, sonst aus State)
+  const processOrder = (paymentMethodOverride?: 'cash' | 'card' | 'transfer') => {
+    const method = paymentMethodOverride ?? paymentMethod
     // Bestellung speichern
     const order = {
       id: `ORDER-${Date.now()}`,
@@ -684,14 +711,15 @@ const ShopPage = () => {
       subtotal,
       discount: discountAmount,
       total,
-      paymentMethod,
+      paymentMethod: method,
       orderNumber: `O-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-4)}`
     }
 
     // Bestellungen speichern
-    const orders = JSON.parse(localStorage.getItem('k2-orders') || '[]')
-    orders.push(order)
-    localStorage.setItem('k2-orders', JSON.stringify(orders))
+    const ordersStored = JSON.parse(localStorage.getItem('k2-orders') || '[]')
+    ordersStored.push(order)
+    localStorage.setItem('k2-orders', JSON.stringify(ordersStored))
+    setOrders(prev => [order, ...prev.slice(0, 19)])
 
     // Werke als verkauft markieren
     cart.forEach(item => {
@@ -714,7 +742,7 @@ const ShopPage = () => {
     setShowCheckout(false)
     
     // Erfolgsmeldung mit Druck-Optionen
-    const paymentMethodText = paymentMethod === 'cash' ? 'Bar' : paymentMethod === 'card' ? 'Karte' : 'Überweisung'
+    const paymentMethodText = method === 'cash' ? 'Bar' : method === 'card' ? 'Karte' : 'Überweisung'
     const printChoice = confirm(`✅ Verkauf erfolgreich!\n\nBetrag: €${total.toFixed(2)}\nZahlung: ${paymentMethodText}\n\nKassenbon drucken?\n\nOK = Etikettendrucker (80mm)\nAbbrechen = A4 Druck`)
     
     if (printChoice) {
@@ -964,6 +992,64 @@ const ShopPage = () => {
           </div>
         </section>
 
+        {/* Bon erneut drucken */}
+        {orders.length > 0 && (
+          <section style={{
+            background: 'rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '20px',
+            padding: 'clamp(1.5rem, 4vw, 2rem)',
+            marginBottom: 'clamp(2rem, 5vw, 3rem)'
+          }}>
+            <h3 style={{ 
+              fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', 
+              marginBottom: '1rem',
+              color: '#ffffff',
+              fontWeight: '600'
+            }}>
+              📄 Bon erneut drucken
+            </h3>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+              {orders.map((order) => {
+                const dateStr = order.date ? new Date(order.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '–'
+                return (
+                  <button
+                    key={order.id || order.orderNumber || order.date}
+                    onClick={() => handleReprintOrder(order)}
+                    style={{
+                      padding: '0.6rem 1rem',
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '10px',
+                      color: '#ffffff',
+                      fontSize: '0.9rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.75rem',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'
+                      e.currentTarget.style.borderColor = 'rgba(95, 251, 241, 0.5)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)'
+                    }}
+                  >
+                    <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>{dateStr}</span>
+                    <span style={{ fontWeight: '600' }}>{order.orderNumber}</span>
+                    <span style={{ color: '#5ffbf1' }}>€{(order.total || 0).toFixed(2)}</span>
+                    <span style={{ fontSize: '0.85rem' }}>🖨️</span>
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+        )}
+
         {/* QR-Scanner Modal */}
         {showScanner && (
           <div style={{
@@ -1136,11 +1222,39 @@ const ShopPage = () => {
             <p style={{ 
               fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', 
               color: 'rgba(255, 255, 255, 0.6)', 
-              marginBottom: '2rem', 
+              marginBottom: orders.length > 0 ? '1rem' : '2rem', 
               fontStyle: 'italic' 
             }}>
               Hinweis: Nicht alle Werke sind im Online-Shop verfügbar. Werke, die nur zur Ausstellung gehören, können nicht online gekauft werden.
             </p>
+            {orders.length > 0 && (
+              <button
+                onClick={() => handleReprintOrder(orders[0])}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.75rem 1.25rem',
+                  background: 'rgba(95, 251, 241, 0.15)',
+                  border: '1px solid rgba(95, 251, 241, 0.4)',
+                  borderRadius: '12px',
+                  color: '#5ffbf1',
+                  fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  marginBottom: '1.5rem',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(95, 251, 241, 0.25)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(95, 251, 241, 0.15)'
+                }}
+              >
+                🖨️ Letzten Bon erneut drucken ({orders[0].orderNumber} · €{(orders[0].total || 0).toFixed(2)})
+              </button>
+            )}
             <Link 
               to={PROJECT_ROUTES['k2-galerie'].galerieVorschau}
               style={{
@@ -1367,7 +1481,7 @@ const ShopPage = () => {
                   <button
                     onClick={() => {
                       setPaymentMethod('cash')
-                      quickSale()
+                      quickSale('cash')
                     }}
                     style={{
                       padding: 'clamp(1rem, 2.5vw, 1.5rem)',
@@ -1400,7 +1514,7 @@ const ShopPage = () => {
                   <button
                     onClick={() => {
                       setPaymentMethod('card')
-                      quickSale()
+                      quickSale('card')
                     }}
                     style={{
                       padding: 'clamp(1rem, 2.5vw, 1.5rem)',
@@ -1433,7 +1547,7 @@ const ShopPage = () => {
                   <button
                     onClick={() => {
                       setPaymentMethod('transfer')
-                      quickSale()
+                      quickSale('transfer')
                     }}
                     style={{
                       padding: 'clamp(1rem, 2.5vw, 1.5rem)',
@@ -1629,7 +1743,7 @@ const ShopPage = () => {
                     Zurück
                   </button>
                   <button
-                    onClick={processOrder}
+                    onClick={() => processOrder()}
                     style={{
                       flex: 2,
                       padding: 'clamp(0.75rem, 2vw, 1rem)',

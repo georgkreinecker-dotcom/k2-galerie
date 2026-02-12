@@ -8,14 +8,19 @@ cd /Users/georgkreinecker/k2Galerie || exit 1
 set -e  # Stoppe bei Fehlern
 set -o pipefail  # Erfasse Fehler in Pipes
 
-# Farben für Terminal
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-BOLD='\033[1m'
-NC='\033[0m' # No Color
+# Farben für Terminal - NUR wenn Ausgabe an Terminal geht (nicht bei API-Aufruf)
+# Bei execSync/pipe ist stdout kein TTY → keine Farben = saubere Fehlermeldungen
+if [ -t 1 ]; then
+  GREEN='\033[0;32m'
+  YELLOW='\033[1;33m'
+  RED='\033[0;31m'
+  BLUE='\033[0;34m'
+  CYAN='\033[0;36m'
+  BOLD='\033[1m'
+  NC='\033[0m'
+else
+  GREEN=''; YELLOW=''; RED=''; BLUE=''; CYAN=''; BOLD=''; NC=''
+fi
 
 # Status-Balken Funktion - verbessert für bessere Sichtbarkeit
 show_progress() {
@@ -27,8 +32,8 @@ show_progress() {
     local empty=$((width - filled))
     local percent=$((current * 100 / total))
     
-    # Lösche vorherige Zeile und zeige neuen Status
-    printf "\r\033[K"
+    # Lösche vorherige Zeile - nur bei Terminal (bei API: keine Control-Sequenzen)
+    [ -t 1 ] && printf "\r\033[K"
     printf "${BOLD}${CYAN}["
     # Fülle Balken
     for ((i=0; i<filled; i++)); do
@@ -63,8 +68,8 @@ restore_file() {
     fi
 }
 
-# Lösche Bildschirm für bessere Sichtbarkeit
-clear
+# Lösche Bildschirm - nur bei Terminal (bei API: nichts ausgeben)
+[ -t 1 ] && clear
 
 echo ""
 echo "${BLUE}═══════════════════════════════════════════════════════════${NC}"

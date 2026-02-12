@@ -9,6 +9,7 @@ import {
   loadArtworksFromSupabase,
   isSupabaseConfigured
 } from '../utils/supabaseClient'
+import { sortArtworksNewestFirst } from '../utils/artworkSort'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
 import '../App.css'
 
@@ -1786,8 +1787,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
             onClick={openNewModal}
             style={{
               position: 'fixed',
-              top: '1rem',
-              left: '1rem',
+              top: 'max(1rem, calc(env(safe-area-inset-top, 0px) + 0.5rem))',
+              left: 'max(1rem, env(safe-area-inset-left, 0px))',
               zIndex: 10001,
               background: 'linear-gradient(120deg, #10b981, #059669)',
               color: '#fff',
@@ -2179,17 +2180,19 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
             filter: filter
           })
           
-          const filteredArtworks = currentArtworks.filter((artwork) => {
-            if (!artwork) return false
-            if (filter === 'alle') return true
-            // WICHTIG: Prüfe ob artwork.category existiert und mit filter übereinstimmt
-            // Wenn category fehlt, zeige Werk bei Filter "alle" (bereits oben geprüft)
-            if (!artwork.category) {
-              console.warn('⚠️ Werk ohne category:', artwork.number || artwork.id)
-              return false // Verstecke Werke ohne category bei spezifischem Filter
-            }
-            return artwork.category === filter
-          })
+          const filteredArtworks = sortArtworksNewestFirst(
+            currentArtworks.filter((artwork) => {
+              if (!artwork) return false
+              if (filter === 'alle') return true
+              // WICHTIG: Prüfe ob artwork.category existiert und mit filter übereinstimmt
+              // Wenn category fehlt, zeige Werk bei Filter "alle" (bereits oben geprüft)
+              if (!artwork.category) {
+                console.warn('⚠️ Werk ohne category:', artwork.number || artwork.id)
+                return false
+              }
+              return artwork.category === filter
+            })
+          )
           
           console.log('🎨 Render - filteredArtworks:', {
             anzahl: filteredArtworks.length,

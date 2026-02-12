@@ -25,6 +25,7 @@ function isOeffentlichAdminContext(): boolean {
 }
 import { checkLocalStorageSize, cleanupLargeImages, getLocalStorageReport } from './SafeMode'
 import { startAutoSave, stopAutoSave, setupBeforeUnloadSave } from '../src/utils/autoSave'
+import { sortArtworksNewestFirst } from '../src/utils/artworkSort'
 
 // KRITISCH: Importiere Safe Mode Utilities für Crash-Schutz
 let safeModeUtils: any = null
@@ -1047,6 +1048,79 @@ function ScreenshotExportAdmin() {
 
   // Mobile Version veröffentlichen - Daten speichern + JSON-Datei erstellen + Vercel öffnen
   const [isDeploying, setIsDeploying] = React.useState(false)
+  const [isSyncing, setIsSyncing] = React.useState(false)
+  const [publishErrorMsg, setPublishErrorMsg] = React.useState<string | null>(null)
+  
+  // Smart Sync: Lädt Werke von Vercel gallery-data.json und merged mit lokalen (lokale haben Priorität)
+  const handleSyncFromServer = async () => {
+    if (isSyncing) return
+    setIsSyncing(true)
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 15000)
+      const url = 'https://k2-galerie.vercel.app/gallery-data.json?t=' + Date.now()
+      const res = await fetch(url, { signal: controller.signal })
+      clearTimeout(timeout)
+      if (!res.ok) throw new Error('HTTP ' + res.status)
+      const data = await res.json()
+      const serverArtworks = Array.isArray(data?.artworks) ? data.artworks : []
+      const localArtworks = loadArtworks()
+      const merged = [...localArtworks]
+      let added = 0
+      serverArtworks.forEach((s: any) => {
+        const exists = merged.some((a: any) =>
+          (a.number && s.number && String(a.number) === String(s.number)) ||
+          (a.id && s.id && String(a.id) === String(s.id))
+        )
+        if (!exists) {
+          merged.push(s)
+          added++
+        }
+      })
+      if (added > 0) {
+        const ok = saveArtworks(merged)
+        if (ok) {
+          setAllArtworks(merged)
+          alert(`✅ ${added} neue Werk(e) vom Server geladen!\n\nLokal: ${localArtworks.length} → Jetzt: ${merged.length}`)
+        } else {
+          alert('⚠️ Fehler beim Speichern.')
+        }
+      } else {
+        setAllArtworks(localArtworks)
+        alert(`✅ Alles aktuell.\n\nServer: ${serverArtworks.length} Werke\nLokal: ${localArtworks.length} Werke`)
+      }
+    } catch (err) {
+      try {
+        const { loadArtworksFromSupabase } = await import('../src/utils/supabaseClient')
+        const supabaseArtworks = await loadArtworksFromSupabase()
+        if (supabaseArtworks && Array.isArray(supabaseArtworks) && supabaseArtworks.length > 0) {
+          const localArtworks = loadArtworks()
+          const merged = [...localArtworks]
+          supabaseArtworks.forEach((s: any) => {
+            const exists = merged.some((a: any) =>
+              (a.number && s.number && a.number === s.number) || (a.id && s.id && a.id === s.id)
+            )
+            if (!exists) merged.push(s)
+          })
+          if (merged.length > localArtworks.length) {
+            saveArtworks(merged)
+            setAllArtworks(merged)
+            alert(`✅ ${merged.length - localArtworks.length} Werk(e) von Supabase geladen.`)
+          } else {
+            alert('✅ Alle Werke bereits synchronisiert.')
+          }
+        } else {
+          throw new Error('Supabase leer')
+        }
+      } catch {
+        const artworks = loadArtworks()
+        setAllArtworks(artworks)
+        alert(`⚠️ Server nicht erreichbar.\n\nLokal ${artworks.length} Werke geladen.\n\nPrüfe: Internet, Vercel-Status.`)
+      }
+    } finally {
+      setIsSyncing(false)
+    }
+  }
   
   // SICHERHEIT: Stelle sicher dass isDeploying nach 60 Sekunden zurückgesetzt wird
   React.useEffect(() => {
@@ -1199,7 +1273,7 @@ function ScreenshotExportAdmin() {
           martina: getItemSafe('k2-stammdaten-martina', {}),
           georg: getItemSafe('k2-stammdaten-georg', {}),
           gallery: getItemSafe('k2-stammdaten-galerie', {}),
-          artworks: Array.isArray(artworks) ? artworks.slice(0, 50) : [], // NUR 50 Werke
+          artworks: Array.isArray(artworks) ? sortArtworksNewestFirst(artworks) : [],
           events: Array.isArray(events) ? events.slice(0, 20) : [], // NUR 20 Events
           documents: Array.isArray(documents) ? documents.slice(0, 20) : [], // NUR 20 Dokumente
           designSettings: getItemSafe('k2-design-settings', {}),
@@ -1264,8 +1338,14 @@ function ScreenshotExportAdmin() {
               // Timeout bereits gelöscht
               
               if (result.success) {
-                const gitOutput = result.git?.output || ''
-                const gitError = result.git?.error || ''
+                // ANSI-Escape-Codes entfernen (033/034 = Farben aus git-push Script)
+                const stripAnsi = (s: string) => String(s)
+                  .replace(/\x1b\[[0-9;]*[a-zA-Z]?/g, '')
+                  .replace(/[\u001b\u009b]\[[0-9;]*[a-zA-Z]?/g, '')
+                  .replace(/\[0?;?3[0-9]m/g, '')  // orphaned ";33m" ";34m" etc
+                  .replace(/\r/g, '')
+                const gitOutput = stripAnsi(result.git?.output || '')
+                const gitError = stripAnsi(result.git?.error || '')
                 const gitSuccess = result.git?.success !== false // Default true wenn nicht gesetzt
                 const gitExitCode = result.git?.exitCode || 0
                 
@@ -1312,8 +1392,9 @@ function ScreenshotExportAdmin() {
                     artworksCount: result.artworksCount
                   })
                   
-                  // Zeige IMMER Fehlermeldung
-                  alert(`⚠️⚠️⚠️ GIT PUSH FEHLGESCHLAGEN ⚠️⚠️⚠️\n\n📁 Datei geschrieben: public/gallery-data.json ✅\n📊 Größe: ${(result.size / 1024).toFixed(1)} KB\n🎨 Werke: ${result.artworksCount || 0}\n\n❌ Git Push: FEHLGESCHLAGEN\n\n📋 BITTE MANUELL PUSHEN:\n\n1. Terminal öffnen\n2. cd /Users/georgkreinecker/k2Galerie\n3. git add public/gallery-data.json\n4. git commit -m "Update gallery-data.json"\n5. git push origin main\n\n💡 FEHLER-DETAILS:\n${fullErrorMsg.substring(0, 2000)}\n\n⚠️ WICHTIG: Ohne Git Push kommt die Datei NICHT bei Vercel an!`)
+                  // Zeige Fehlermeldung mit Kopier-Button (für Mobile: an Cursor schicken)
+                  const msg = `GIT PUSH FEHLGESCHLAGEN\n\nDatei geschrieben: public/gallery-data.json\nGröße: ${(result.size / 1024).toFixed(1)} KB\nWerke: ${result.artworksCount || 0}\n\nFEHLER-DETAILS:\n${fullErrorMsg.substring(0, 3000)}\n\n---\nManuell pushen:\n1. Terminal: cd /Users/georgkreinecker/k2Galerie\n2. git add public/gallery-data.json\n3. git commit -m "Update gallery-data.json"\n4. git push origin main`
+                  setPublishErrorMsg(msg)
                   return
                 }
                 
@@ -1357,7 +1438,8 @@ function ScreenshotExportAdmin() {
                     exitCode: gitExitCode
                   })
                   
-                  alert(`⚠️⚠️⚠️ GIT PUSH FEHLGESCHLAGEN ⚠️⚠️⚠️\n\n📁 Datei geschrieben: public/gallery-data.json ✅\n📊 Größe: ${(result.size / 1024).toFixed(1)} KB\n🎨 Werke: ${result.artworksCount || 0}\n\n❌ Git Push: FEHLGESCHLAGEN\n\n📋 BITTE MANUELL PUSHEN:\n\n1. Terminal öffnen\n2. cd /Users/georgkreinecker/k2Galerie\n3. git add public/gallery-data.json\n4. git commit -m "Update gallery-data.json"\n5. git push origin main\n\n💡 FEHLER-DETAILS:\n${fullErrorMsg.substring(0, 2000)}\n\n⚠️ WICHTIG: Ohne Git Push kommt die Datei NICHT bei Vercel an!`)
+                  const msg = `GIT PUSH FEHLGESCHLAGEN\n\nDatei geschrieben: public/gallery-data.json\nGröße: ${(result.size / 1024).toFixed(1)} KB\nWerke: ${result.artworksCount || 0}\n\nFEHLER-DETAILS:\n${fullErrorMsg.substring(0, 3000)}\n\n---\nManuell pushen:\n1. Terminal: cd /Users/georgkreinecker/k2Galerie\n2. git add public/gallery-data.json\n3. git commit -m "Update gallery-data.json"\n4. git push origin main`
+                  setPublishErrorMsg(msg)
                   return
                 }
                 
@@ -1394,7 +1476,8 @@ function ScreenshotExportAdmin() {
                     gitError
                   })
                   
-                  alert(`⚠️ WARNUNG: Git Push Status unklar!\n\n📁 Datei geschrieben: public/gallery-data.json ✅\n📊 Größe: ${(result.size / 1024).toFixed(1)} KB\n🎨 Werke: ${result.artworksCount || 0}\n\n❓ Git Push Status: Unklar\n\n📋 BITTE MANUELL PRÜFEN:\n\n1. Terminal öffnen\n2. cd /Users/georgkreinecker/k2Galerie\n3. git status\n4. Falls Änderungen: git add/commit/push manuell\n\n💡 OUTPUT:\n${gitOutput.substring(0, 1000)}\n\n⚠️ Prüfe Browser-Konsole für Details!`)
+                  const msg = `Git Push Status unklar\n\nDatei: public/gallery-data.json\nGröße: ${(result.size / 1024).toFixed(1)} KB\nWerke: ${result.artworksCount || 0}\n\nOUTPUT:\n${gitOutput.substring(0, 2000)}\n\nManuell prüfen: git status, git add/commit/push`
+                  setPublishErrorMsg(msg)
                 }
               } else {
                 throw new Error(result.error || 'Unbekannter Fehler')
@@ -7245,6 +7328,8 @@ img { width: ${w}mm; height: ${h}mm; display: block; object-fit: fill; }
       return
     }
 
+    filteredArtworks = sortArtworksNewestFirst(filteredArtworks)
+
     const printWindow = window.open('', '_blank')
     if (!printWindow) {
       alert('Pop-up-Blocker verhindert PDF-Erstellung. Bitte erlaube Pop-ups.')
@@ -7849,125 +7934,83 @@ img { width: ${w}mm; height: ${h}mm; display: block; object-fit: fill; }
                   + Neues Werk hinzufügen
                 </button>
                 <button 
-                  onClick={async () => {
-                    // Lade Mobile-Werke von Supabase
-                    try {
-                      const { loadArtworksFromSupabase } = await import('../src/utils/supabaseClient')
-                      const supabaseArtworks = await loadArtworksFromSupabase()
-                      
-                      if (supabaseArtworks && Array.isArray(supabaseArtworks) && supabaseArtworks.length > 0) {
-                        const localArtworks = loadArtworks()
-                        const merged = [...localArtworks]
-                        
-                        supabaseArtworks.forEach((supabaseArtwork: any) => {
-                          const exists = merged.some((a: any) => 
-                            (a.number && supabaseArtwork.number && a.number === supabaseArtwork.number) ||
-                            (a.id && supabaseArtwork.id && a.id === supabaseArtwork.id)
-                          )
-                          if (!exists) {
-                            merged.push(supabaseArtwork)
-                          }
-                        })
-                        
-                        if (merged.length > localArtworks.length) {
-                          const saved = saveArtworks(merged)
-                          if (saved) {
-                            setAllArtworks(merged)
-                            alert(`✅ ${merged.length - localArtworks.length} neue Mobile-Werke geladen!`)
-                          } else {
-                            alert('⚠️ Fehler beim Speichern der Mobile-Werke!')
-                          }
-                        } else {
-                          alert('✅ Alle Werke sind bereits synchronisiert.')
-                        }
-                      } else {
-                        // Lade einfach aus localStorage neu
-                        const artworks = loadArtworks()
-                        setAllArtworks(artworks)
-                        alert(`✅ ${artworks.length} Werke geladen`)
-                      }
-                    } catch (error) {
-                      // Fallback: Lade aus localStorage
-                      const artworks = loadArtworks()
-                      setAllArtworks(artworks)
-                      alert(`✅ ${artworks.length} Werke geladen`)
-                    }
-                  }}
+                  onClick={handleSyncFromServer}
+                  disabled={isSyncing}
                   style={{
                     padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                    background: 'rgba(255, 255, 255, 0.1)',
+                    background: isSyncing ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)',
                     border: '1px solid rgba(255, 255, 255, 0.2)',
                     color: '#ffffff',
                     borderRadius: '12px',
                     fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
                     fontWeight: '600',
-                    cursor: 'pointer',
+                    cursor: isSyncing ? 'wait' : 'pointer',
                     transition: 'all 0.3s ease',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.5rem'
+                    gap: '0.5rem',
+                    opacity: isSyncing ? 0.8 : 1
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
-                    e.currentTarget.style.transform = 'translateY(-2px)'
+                    if (!isSyncing) {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                    e.currentTarget.style.background = isSyncing ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)'
                     e.currentTarget.style.transform = 'translateY(0)'
                   }}
                 >
-                  🔄 Mobile-Werke laden
+                  {isSyncing ? '⏳ Synchronisiere...' : '🔄 Vom Server laden'}
                 </button>
-                {/* Mobile-Veröffentlichen Button - nur auf Mobile-Geräten sichtbar */}
-                {(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) && (
-                  <button 
-                    onClick={() => {
-                      const mobileWorks = allArtworks.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
-                      if (mobileWorks.length === 0) {
-                        alert('ℹ️ Keine Mobile-Werke zum Veröffentlichen gefunden.\n\nMobile-Werke werden automatisch veröffentlicht, wenn sie gespeichert werden.')
-                        return
-                      }
-                      if (confirm(`📱 Mobile-Werke veröffentlichen?\n\n${mobileWorks.length} Mobile-Werk(e) werden veröffentlicht:\n${mobileWorks.slice(0, 5).map((a: any) => `• ${a.number || a.id}`).join('\n')}${mobileWorks.length > 5 ? `\n... und ${mobileWorks.length - 5} weitere` : ''}\n\nNach der Veröffentlichung sind die Werke auf allen Geräten sichtbar.`)) {
-                        publishMobile()
-                      }
-                    }}
-                    disabled={isDeploying}
-                    style={{
-                      padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                      background: isDeploying 
-                        ? 'rgba(255, 255, 255, 0.2)' 
-                        : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '12px',
-                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                      fontWeight: '600',
-                      cursor: isDeploying ? 'not-allowed' : 'pointer',
-                      transition: 'all 0.3s ease',
-                      boxShadow: isDeploying 
-                        ? 'none' 
-                        : '0 10px 30px rgba(245, 158, 11, 0.4)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      opacity: isDeploying ? 0.6 : 1
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isDeploying) {
-                        e.currentTarget.style.transform = 'translateY(-2px)'
-                        e.currentTarget.style.boxShadow = '0 15px 40px rgba(245, 158, 11, 0.5)'
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isDeploying) {
-                        e.currentTarget.style.transform = 'translateY(0)'
-                        e.currentTarget.style.boxShadow = '0 10px 30px rgba(245, 158, 11, 0.4)'
-                      }
-                    }}
-                  >
-                    {isDeploying ? '⏳ Veröffentlichen...' : '🚀 Mobile-Werke veröffentlichen'}
-                  </button>
-                )}
+                {/* Veröffentlichen - auf ALLEN Geräten (Mac + Mobile) */}
+                <button 
+                  onClick={() => {
+                    if (allArtworks.length === 0) {
+                      alert('ℹ️ Keine Werke zum Veröffentlichen.\n\nFüge zuerst Werke hinzu oder lade sie vom Server.')
+                      return
+                    }
+                    if (confirm(`🚀 Veröffentlichen?\n\n${allArtworks.length} Werk(e) werden auf Vercel veröffentlicht:\n${allArtworks.slice(0, 5).map((a: any) => `• ${a.number || a.id || a.title}`).join('\n')}${allArtworks.length > 5 ? `\n... und ${allArtworks.length - 5} weitere` : ''}\n\nDanach sind die Werke auf allen Geräten sichtbar (QR-Code neu scannen).`)) {
+                      publishMobile()
+                    }
+                  }}
+                  disabled={isDeploying}
+                  style={{
+                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                    background: isDeploying 
+                      ? 'rgba(255, 255, 255, 0.2)' 
+                      : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                    fontWeight: '600',
+                    cursor: isDeploying ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: isDeploying 
+                      ? 'none' 
+                      : '0 10px 30px rgba(245, 158, 11, 0.4)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    opacity: isDeploying ? 0.6 : 1
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isDeploying) {
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                      e.currentTarget.style.boxShadow = '0 15px 40px rgba(245, 158, 11, 0.5)'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isDeploying) {
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = '0 10px 30px rgba(245, 158, 11, 0.4)'
+                    }
+                  }}
+                >
+                  {isDeploying ? '⏳ Veröffentlichen...' : '🚀 Veröffentlichen'}
+                </button>
                 <button 
                   onClick={() => {
                     navigate(PROJECT_ROUTES['k2-galerie'].platzanordnung)
@@ -8371,13 +8414,15 @@ img { width: ${w}mm; height: ${h}mm; display: block; object-fit: fill; }
                 gap: 'clamp(1rem, 3vw, 1.5rem)'
               }}>
               {(() => {
-                const filtered = allArtworks.filter((artwork) => {
-                  if (!artwork) return false
-                  if (categoryFilter !== 'alle' && artwork.category !== categoryFilter) return false
-                  if (searchQuery && !artwork.title?.toLowerCase().includes(searchQuery.toLowerCase()) && 
-                      !artwork.number?.toLowerCase().includes(searchQuery.toLowerCase())) return false
-                  return true
-                })
+                const filtered = sortArtworksNewestFirst(
+                  allArtworks.filter((artwork) => {
+                    if (!artwork) return false
+                    if (categoryFilter !== 'alle' && artwork.category !== categoryFilter) return false
+                    if (searchQuery && !artwork.title?.toLowerCase().includes(searchQuery.toLowerCase()) && 
+                        !artwork.number?.toLowerCase().includes(searchQuery.toLowerCase())) return false
+                    return true
+                  })
+                )
 
                 if (filtered.length === 0) {
                   return (
@@ -12781,7 +12826,87 @@ img { width: ${w}mm; height: ${h}mm; display: block; object-fit: fill; }
       )}
 
 
-      {/* Modal: Neues Werk hinzufügen */}
+      {/* Modal: Fehlermeldung Veröffentlichen – mit Kopieren-Button für Mobile → Cursor schicken */}
+      {publishErrorMsg && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99998,
+            padding: '1rem'
+          }}
+          onClick={() => setPublishErrorMsg(null)}
+        >
+          <div
+            style={{
+              background: '#1a1d24',
+              borderRadius: '16px',
+              maxWidth: '500px',
+              width: '100%',
+              maxHeight: '80vh',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+              border: '1px solid rgba(255,255,255,0.1)'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '1.1rem', fontWeight: 600, color: '#f59e0b' }}>
+              ⚠️ Veröffentlichen fehlgeschlagen
+            </div>
+            <pre style={{ flex: 1, overflow: 'auto', padding: '1rem 1.25rem', margin: 0, fontSize: '0.85rem', color: '#e2e8f0', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+              {publishErrorMsg}
+            </pre>
+            <div style={{ padding: '1rem 1.25rem', display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+              <button
+                onClick={() => {
+                  if (navigator.clipboard?.writeText) {
+                    navigator.clipboard.writeText(publishErrorMsg).then(() => alert('✅ Kopiert! In Cursor einfügen und an den Assistenten schicken.')).catch(() => alert('⚠️ Kopieren fehlgeschlagen. Text manuell markieren.'))
+                  } else {
+                    alert('Kopieren nicht verfügbar. Text manuell markieren.')
+                  }
+                }}
+                style={{
+                  padding: '0.6rem 1.2rem',
+                  background: '#3b82f6',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                📋 Kopieren (an Cursor schicken)
+              </button>
+              <button
+                onClick={() => setPublishErrorMsg(null)}
+                style={{
+                  padding: '0.6rem 1.2rem',
+                  background: 'rgba(255,255,255,0.15)',
+                  color: '#fff',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  cursor: 'pointer'
+                }}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Neues Werk hinzufügen - z-index hoch damit es über allem liegt */}
       {showAddModal && (
         <div 
           style={{
@@ -12795,7 +12920,7 @@ img { width: ${w}mm; height: ${h}mm; display: block; object-fit: fill; }
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 1000,
+            zIndex: 99999,
             padding: '1rem'
           }}
           onClick={() => {

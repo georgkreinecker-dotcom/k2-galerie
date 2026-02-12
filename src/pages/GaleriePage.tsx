@@ -1088,11 +1088,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
           </div>
         )}
         {/* Admin Button – auf normaler Galerie und auf ök2-Willkommensseite (eigener Admin-Zugang) */}
+        {/* iPhone: safe-area-inset-top + größerer Abstand, damit Button unter Notch sichtbar bleibt */}
         <button
           onClick={handleAdminButtonClick}
           style={{
             position: 'fixed',
-            top: 'clamp(1rem, 2vw, 1.5rem)',
+            top: 'max(clamp(1rem, 2vw, 1.5rem), calc(env(safe-area-inset-top, 0px) + 1rem))',
             right: 'clamp(1rem, 2vw, 1.5rem)',
             background: musterOnly ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.05)',
             backdropFilter: 'blur(10px)',
@@ -1104,7 +1105,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
             cursor: 'pointer',
             zIndex: 1000,
             transition: 'all 0.3s ease',
-            opacity: 0.6,
+            opacity: (isMobileDevice || isMobile) ? 0.9 : 0.6,
             touchAction: 'manipulation',
             minWidth: '44px',
             minHeight: '44px'
@@ -1114,7 +1115,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
             e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.opacity = '0.6'
+            e.currentTarget.style.opacity = (isMobileDevice || isMobile) ? '0.9' : '0.6'
             e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.05)'
           }}
           onTouchStart={(e) => {
@@ -1123,7 +1124,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
           }}
           onTouchEnd={(e) => {
             setTimeout(() => {
-              e.currentTarget.style.opacity = '0.6'
+              e.currentTarget.style.opacity = (isMobileDevice || isMobile) ? '0.9' : '0.6'
               e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.05)'
             }, 200)
           }}
@@ -1423,7 +1424,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   margin: '0 auto clamp(1.5rem, 4vw, 2rem)',
                   boxShadow: '0 10px 30px rgba(102, 126, 234, 0.4)'
                 }}>
-                  {(musterOnly ? MUSTER_TEXTE.martina.name : (tenantId === 'demo' ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name))).charAt(0)}
+                  {(musterOnly ? MUSTER_TEXTE.martina.name : (tenantId === 'demo' ? tenantConfig.artist1Name : ((tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name)))).charAt(0)}
                 </div>
                 <h4 style={{
                   margin: '0 0 0.75rem',
@@ -1431,7 +1432,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   color: '#ffffff',
                   fontWeight: '600'
                 }}>
-                  {musterOnly ? MUSTER_TEXTE.martina.name : (tenantId === 'demo' ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name))}
+                  {musterOnly ? MUSTER_TEXTE.martina.name : (tenantId === 'demo' ? tenantConfig.artist1Name : ((tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name)))}
                 </h4>
                 <p style={{
                   color: 'rgba(255, 255, 255, 0.6)',
@@ -1486,7 +1487,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   margin: '0 auto clamp(1.5rem, 4vw, 2rem)',
                   boxShadow: '0 10px 30px rgba(245, 87, 108, 0.4)'
                 }}>
-                  {(musterOnly ? MUSTER_TEXTE.georg.name : (tenantId === 'demo' ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name))).charAt(0)}
+                  {(musterOnly ? MUSTER_TEXTE.georg.name : (tenantId === 'demo' ? tenantConfig.artist2Name : ((tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name)))).charAt(0)}
                 </div>
                 <h4 style={{
                   margin: '0 0 0.75rem',
@@ -1494,7 +1495,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   color: '#ffffff',
                   fontWeight: '600'
                 }}>
-                  {musterOnly ? MUSTER_TEXTE.georg.name : (tenantId === 'demo' ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name))}
+                  {musterOnly ? MUSTER_TEXTE.georg.name : (tenantId === 'demo' ? tenantConfig.artist2Name : ((tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name)))}
                 </h4>
                 <p style={{
                   color: 'rgba(255, 255, 255, 0.6)',
@@ -1529,7 +1530,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
               fontWeight: '300',
               marginBottom: 'clamp(3rem, 8vw, 4rem)'
             }}>
-              {musterOnly ? MUSTER_TEXTE.gemeinsamText : `Gemeinsam eröffnen ${tenantId === 'demo' ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name)} und ${tenantId === 'demo' ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name)} nach über 20 Jahren kreativer Tätigkeit die ${tenantConfig.galleryName} – ein Raum, wo Malerei und Keramik verschmelzen und Kunst zum Leben erwacht.`}
+              {musterOnly ? MUSTER_TEXTE.gemeinsamText : `Gemeinsam eröffnen ${tenantId === 'demo' ? tenantConfig.artist1Name : ((tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name))} und ${tenantId === 'demo' ? tenantConfig.artist2Name : ((tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name))} nach über 20 Jahren kreativer Tätigkeit die ${tenantConfig.galleryName} – ein Raum, wo Malerei und Keramik verschmelzen und Kunst zum Leben erwacht.`}
             </p>
 
             {/* Virtueller Rundgang & Galerie Vorschau */}
@@ -1845,7 +1846,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   {/* Martina Kontakt - Kompakt (ök2: immer aus MUSTER_TEXTE) */}
                   <div style={{ marginBottom: '0.75rem' }}>
                     <p style={{ margin: '0 0 0.15rem', fontWeight: '500', color: theme.text, fontSize: 'clamp(0.95rem, 2.2vw, 1.1rem)' }}>
-                      {musterOnly ? MUSTER_TEXTE.martina.name : (martinaData.name || 'Martina Kreinecker')}
+                      {musterOnly ? MUSTER_TEXTE.martina.name : ((tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name))}
                     </p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                       {(musterOnly ? MUSTER_TEXTE.martina.phone : martinaData.phone) && (
@@ -1866,7 +1867,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   {/* Georg Kontakt - Kompakt (ök2: immer aus MUSTER_TEXTE) */}
                   <div style={{ marginBottom: '0.75rem' }}>
                     <p style={{ margin: '0 0 0.15rem', fontWeight: '500', color: theme.text, fontSize: 'clamp(0.95rem, 2.2vw, 1.1rem)' }}>
-                      {musterOnly ? MUSTER_TEXTE.georg.name : (georgData.name || 'Georg Kreinecker')}
+                      {musterOnly ? MUSTER_TEXTE.georg.name : ((tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name))}
                     </p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                       {(musterOnly ? MUSTER_TEXTE.georg.phone : georgData.phone) && (

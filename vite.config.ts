@@ -402,6 +402,11 @@ const writeGalleryDataMiddleware = () => {
                 })
               }
               
+              // ANSI-Escape-Codes entfernen (033/034 = Farben aus git-push Script)
+              const stripAnsi = (s: string) => s.replace(/\x1b\[[0-9;]*m/g, '').replace(/\r/g, '')
+              const cleanOutput = gitOutput ? stripAnsi(gitOutput).substring(0, 2000) : ''
+              const cleanError = gitError ? stripAnsi(gitError).substring(0, 2000) : ''
+              
               // Antwort senden mit Git Push Ergebnis
               res.writeHead(200, { 
                 'Content-Type': 'application/json',
@@ -414,8 +419,8 @@ const writeGalleryDataMiddleware = () => {
                 path: outputFile,
                 artworksCount: artworksCount,
                 git: {
-                  output: gitOutput ? gitOutput.substring(0, 2000) : '', // Erste 2000 Zeichen
-                  error: gitError ? gitError.substring(0, 2000) : '', // Erste 2000 Zeichen
+                  output: cleanOutput,
+                  error: cleanError,
                   success: gitSuccess,
                   exitCode: gitExitCode
                 }
