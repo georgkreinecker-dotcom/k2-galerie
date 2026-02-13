@@ -439,7 +439,10 @@ function ScreenshotExportAdmin() {
     printerModel: 'Brother QL-820MWBc',
     printerType: 'etikettendrucker' as const,
     labelSize: '29x90,3',
-    printServerUrl: ''
+    // Standard: Am Mac localhost; Mobilgeräte und Drucker im LAN 192.168.1.x → Print-Server-URL in diesem Netz.
+    printServerUrl: typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'http://localhost:3847'
+      : 'http://192.168.1.1:3847'
   })
   const loadPrinterSettingsForTenant = (tenantId: TenantId) => {
     try {
@@ -458,6 +461,10 @@ function ScreenshotExportAdmin() {
         if (!localStorage.getItem(printerStorageKey('k2', 'labelSize'))) {
           const oldLabel = localStorage.getItem('k2-label-size')
           if (oldLabel) localStorage.setItem(printerStorageKey('k2', 'labelSize'), oldLabel)
+        }
+        if (!localStorage.getItem(printerStorageKey('k2', 'printServerUrl'))) {
+          const oldUrl = localStorage.getItem('k2-print-server-url')
+          if (oldUrl) localStorage.setItem(printerStorageKey('k2', 'printServerUrl'), oldUrl)
         }
       }
       const ip = localStorage.getItem(printerStorageKey(tenantId, 'ip'))
@@ -6798,7 +6805,7 @@ ${'='.repeat(60)}
     if (!savedArtwork) return
     const tenant = getCurrentTenantId()
     const settings = loadPrinterSettingsForTenant(tenant)
-    const url = (settings.printServerUrl || '').trim().replace(/\/$/, '')
+    const url = (settings.printServerUrl || '').trim().replace(/\/$/, '').replace(/\/print\/?$/i, '')
     if (!url) {
       alert('Print-Server URL fehlt. Einstellungen → Drucker → Print-Server URL eintragen (z.B. http://localhost:3847)')
       return
@@ -6849,7 +6856,7 @@ ${'='.repeat(60)}
       if (isHttps && isHttpUrl && isNetworkError) {
         urlHint = '\n\n📌 Standalone (ohne Mac vor Ort): Von Vercel aus blockiert der Browser Anrufe an http://. Print-Server muss per HTTPS erreichbar sein (z.B. ngrok am Gerät vor Ort). Oder: K2 vor Ort per http:// öffnen (siehe DRUCKER-STANDALONE.md).'
       } else if (isIpadOrPhone) {
-        urlHint = '\n\n📱 Auf iPad/Handy: Print-Server URL = IP des Geräts, das den Print-Server läuft (z.B. http://192.168.0.31:3847), alle im gleichen WLAN.'
+        urlHint = '\n\n📱 Auf iPad/Handy: Print-Server URL = IP des Geräts, das den Print-Server läuft (z.B. http://192.168.1.1:3847), alle im gleichen WLAN.'
       } else if (isNetworkError) {
         urlHint = '\n\n💡 Print-Server läuft auf dem Gerät vor Ort? Dort: npm run print-server'
       }
@@ -10163,7 +10170,7 @@ img { width: ${w}mm; height: ${h}mm; max-width: ${w}mm; max-height: ${h}mm; disp
                             setPrinterSettings(prev => ({ ...prev, printServerUrl: v }))
                             savePrinterSetting(printerSettingsForTenant, 'printServerUrl', v)
                           }}
-                          placeholder="Am Mac: http://localhost:3847 — Am iPad: http://MAC-IP:3847 (z.B. 192.168.0.31)"
+                          placeholder="Am Mac: http://localhost:3847 — Im mobilen LAN (192.168.1.x): z.B. http://192.168.1.1:3847"
                           style={{
                             padding: '0.75rem',
                             background: 'rgba(255, 255, 255, 0.1)',
@@ -14141,43 +14148,8 @@ setPreviewUrl(null)
                 <div style={{ fontSize: isMobile ? '0.9rem' : '1rem', fontWeight: 'bold', color: '#8b6914', marginBottom: isMobile ? '0.5rem' : '0.75rem' }}>
                   {savedArtwork.number}
                 </div>
-                {/* One-Click immer anzeigen (iPad/Desktop); ohne Print-Server URL → Hinweis anzeigen */}
+                {/* Mobil: AirPrint (Etikett drucken) zuerst – kein Mac vor Ort nötig. One-Click nur optional. */}
                 <div className="admin-modal-actions" style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'stretch', marginBottom: isMobile ? '1rem' : '1.5rem' }}>
-                  <button
-                    type="button"
-                    disabled={oneClickPrinting}
-                    onPointerDown={(e) => e.currentTarget.releasePointerCapture(e.pointerId)}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      const url = (loadPrinterSettingsForTenant(getCurrentTenantId()).printServerUrl || '').trim()
-                      if (url) {
-                        handleOneClickPrint()
-                      } else {
-                        alert(
-                          '⚡ One-Click-Anwendung einrichten\n\n' +
-                          '1. Einstellungen → Drucker → Tab „Drucker“\n' +
-                          '2. „Print-Server URL“ eintragen:\n   • Am Mac: http://localhost:3847\n   • Standalone (ohne Mac vor Ort): IP des Geräts, das den Print-Server läuft, z. B. http://192.168.0.31:3847 (alle im gleichen WLAN)\n' +
-                          '3. Print-Server starten: auf dem Gerät am gleichen Netz wie Drucker/Tablet (Projektordner)\n   npm run print-server\n   oder\n   node scripts/k2-print-server.js\n\n' +
-                          'Standalone (Tablet + Drucker vor Ort, Mac woanders): siehe DRUCKER-STANDALONE.md.'
-                        )
-                      }
-                    }}
-                    style={{
-                      padding: isMobile ? '1.25rem 1.5rem' : '0.75rem 1.25rem',
-                      fontSize: isMobile ? '1.25rem' : '1rem',
-                      fontWeight: 700,
-                      background: oneClickPrinting ? 'rgba(34, 197, 94, 0.6)' : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                      border: 'none',
-                      borderRadius: '12px',
-                      color: '#fff',
-                      cursor: oneClickPrinting ? 'wait' : 'pointer',
-                      boxShadow: '0 4px 14px rgba(34, 197, 94, 0.4)',
-                      touchAction: 'manipulation'
-                    }}
-                  >
-                    {oneClickPrinting ? '⏳ Wird gesendet …' : '⚡ One-Click drucken'}
-                  </button>
                   {isMobile ? (
                     <>
                       <button
@@ -14192,13 +14164,14 @@ setPreviewUrl(null)
                           borderRadius: '12px',
                           color: '#fff',
                           cursor: 'pointer',
-                          boxShadow: '0 4px 14px rgba(34, 197, 94, 0.4)'
+                          boxShadow: '0 4px 14px rgba(34, 197, 94, 0.4)',
+                          touchAction: 'manipulation'
                         }}
                       >
                         🖨️ Etikett drucken
                       </button>
                       <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.25rem 0 0 0' }}>
-                        Ein Tipp → Druckdialog erscheint (aus dieser Seite, kein separates Fenster) → „Drucken“ tippen.
+                        Druckdialog öffnet sich → Brother (AirPrint) wählen → Papier 29×90,3 mm, 100 % → Drucken.
                       </p>
                       <button className="btn-secondary" onClick={() => setShowPrintModal(false)} style={{ marginTop: '0.5rem' }}>
                         Später drucken
@@ -14213,9 +14186,39 @@ setPreviewUrl(null)
                       <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
                         Fallback: „Als Datei speichern“, dann in iPrint &amp; Label öffnen.
                       </p>
+                      <details style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#888' }}>
+                        <summary style={{ cursor: 'pointer' }}>Optional: One-Click (nur wenn Print-Server vor Ort läuft)</summary>
+                        <p style={{ margin: '0.35rem 0 0 0' }}>Braucht ein Gerät im gleichen WLAN wie Tablet und Drucker mit laufendem Print-Server.</p>
+                        <button
+                          type="button"
+                          disabled={oneClickPrinting}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            const url = (loadPrinterSettingsForTenant(getCurrentTenantId()).printServerUrl || '').trim()
+                            if (url) handleOneClickPrint()
+                            else alert('Einstellungen → Drucker → Print-Server URL eintragen (IP des Geräts vor Ort, z. B. http://192.168.1.1:3847)')
+                          }}
+                          style={{ marginTop: '0.5rem', padding: '0.5rem 0.75rem', fontSize: '0.85rem', background: 'rgba(34, 197, 94, 0.2)', border: '1px solid #22c55e', borderRadius: '8px', color: '#16a34a', cursor: oneClickPrinting ? 'wait' : 'pointer' }}
+                        >
+                          {oneClickPrinting ? '⏳ Wird gesendet …' : '⚡ One-Click drucken'}
+                        </button>
+                      </details>
                     </>
                   ) : (
                     <>
+                      <button
+                        type="button"
+                        disabled={oneClickPrinting}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          const url = (loadPrinterSettingsForTenant(getCurrentTenantId()).printServerUrl || '').trim()
+                          if (url) handleOneClickPrint()
+                          else alert('Einstellungen → Drucker → Print-Server URL eintragen (z. B. http://localhost:3847)')
+                        }}
+                        style={{ padding: '0.6rem 1rem', fontWeight: 600, background: oneClickPrinting ? 'rgba(34, 197, 94, 0.6)' : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', border: 'none', borderRadius: '8px', color: '#fff', cursor: oneClickPrinting ? 'wait' : 'pointer' }}
+                      >
+                        {oneClickPrinting ? '⏳ Wird gesendet …' : '⚡ One-Click drucken'}
+                      </button>
                       <button type="button" onClick={handleShareLabel} style={{ padding: '0.6rem 1rem', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', border: '1px solid #16a34a', borderRadius: '8px', color: '#fff', fontWeight: 600, cursor: 'pointer' }}>
                         📤 Etikett teilen
                       </button>

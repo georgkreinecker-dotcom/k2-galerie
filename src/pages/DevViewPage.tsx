@@ -910,7 +910,7 @@ end tell`
                 {syncStatus.step === 'published' && 'Datei wurde gespeichert'}
                 {syncStatus.step === 'git-push' && 'Terminal öffnen und Code-Update ausführen'}
                 {syncStatus.step === 'vercel-deploy' && 'Prüfe alle 10 s – erst bei „Bereit“ QR scannen'}
-                {syncStatus.step === 'ready' && 'Jetzt QR scannen. Siehst du noch 9:24? → Unten links auf „Stand“ tippen (lädt neu).'}
+                {syncStatus.step === 'ready' && 'Jetzt QR scannen. Siehst du einen älteren Stand auf dem Handy? → Unten links auf „Stand“ tippen (lädt neu).'}
               </div>
             </div>
             {syncStatus.step === 'ready' && (
