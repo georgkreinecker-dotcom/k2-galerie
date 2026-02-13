@@ -15,6 +15,7 @@ import ScreenshotExportAdmin from '../../components/ScreenshotExportAdmin'
 import ProjectsPage from './ProjectsPage'
 import PlatformStartPage from './PlatformStartPage'
 import SmartPanel from '../components/SmartPanel'
+import { BUILD_TIMESTAMP } from '../buildInfo.generated'
 
 // Helper: Lese persistent Boolean ohne Hook (für useMemo)
 function getPersistentBoolean(key: string): boolean {
@@ -644,17 +645,37 @@ end tell`
           // artworksCount weglassen → Banner zeigt nicht "X Werke gespeichert"
         })
         
-        // Status: Warte auf Git Push Abschluss
+        // Status: Warte auf Vercel – echte Prüfung per build-info.json
         setTimeout(() => {
           setSyncStatus({ step: 'vercel-deploy', progress: 66 })
-          
-          // Simuliere Vercel Deployment Check (nach 90 Sekunden)
-          setTimeout(() => {
-            setSyncStatus({ step: 'ready', progress: 100 })
-            setTimeout(() => {
-              setSyncStatus({ step: null, progress: 0 })
-            }, 5000)
-          }, 90000) // 90 Sekunden für Vercel Deployment
+          const vercelUrl = 'https://k2-galerie.vercel.app/build-info.json'
+          const maxAttempts = 18
+          let attempts = 0
+          const check = () => {
+            attempts += 1
+            fetch(vercelUrl + '?t=' + Date.now(), { cache: 'no-store' })
+              .then((r) => r.ok ? r.json() : null)
+              .then((d: { timestamp?: number } | null) => {
+                if (d?.timestamp != null && d.timestamp >= BUILD_TIMESTAMP) {
+                  setSyncStatus({ step: 'ready', progress: 100 })
+                  setTimeout(() => setSyncStatus({ step: null, progress: 0 }), 8000)
+                  return
+                }
+                if (attempts < maxAttempts) setTimeout(check, 10000)
+                else {
+                  setSyncStatus({ step: 'ready', progress: 100 })
+                  setTimeout(() => setSyncStatus({ step: null, progress: 0 }), 8000)
+                }
+              })
+              .catch(() => {
+                if (attempts < maxAttempts) setTimeout(check, 10000)
+                else {
+                  setSyncStatus({ step: 'ready', progress: 100 })
+                  setTimeout(() => setSyncStatus({ step: null, progress: 0 }), 8000)
+                }
+              })
+          }
+          setTimeout(check, 8000)
         }, 5000)
         
         setTimeout(() => setPublishStatus(null), 8000)
@@ -888,8 +909,8 @@ end tell`
               <div style={{ fontSize: '0.8rem', color: '#8fa0c9' }}>
                 {syncStatus.step === 'published' && 'Datei wurde gespeichert'}
                 {syncStatus.step === 'git-push' && 'Terminal öffnen und Code-Update ausführen'}
-                {syncStatus.step === 'vercel-deploy' && 'Deployment dauert ca. 1-2 Minuten'}
-                {syncStatus.step === 'ready' && 'Mobile Gerät: QR-Code neu scannen oder Seite aktualisieren'}
+                {syncStatus.step === 'vercel-deploy' && 'Prüfe alle 10 s – erst bei „Bereit“ QR scannen'}
+                {syncStatus.step === 'ready' && 'Jetzt QR scannen. Siehst du noch 9:24? → Unten links auf „Stand“ tippen (lädt neu).'}
               </div>
             </div>
             {syncStatus.step === 'ready' && (

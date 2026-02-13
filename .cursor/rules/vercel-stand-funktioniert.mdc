@@ -5,15 +5,17 @@ alwaysApply: true
 
 # Stand überall gleich – Vercel/QR (unbedingt beibehalten)
 
-## Was funktioniert (13.02.26)
+**Verbindliche Detail-Regel (QR/Stand darf nie wieder kaputtgehen):** .cursor/rules/stand-qr-niemals-zurueck.mdc
 
-- Push auf **main** → Vercel baut Production. Wenn Deployment **Ready** + **Current** ist, stimmt der Stand; QR scannen oder am Handy auf **Stand-Badge tippen** (Cache-Bypass).
-- **vercel.json:** Muss gültiges JSON sein. **Keine** überzählige `}` am Ende – sonst Vercel „Invalid vercel.json“, Build Failed.
-- **Build:** `npm run build` = `write-build-info.js --inject-html` + … + vite build. Im Repo: index.html mit Placeholder `<!-- BUILD_TS_INJECT -->` (wird beim Build ersetzt). buildInfo.generated.ts: nur **einmal** BUILD_LABEL und BUILD_TIMESTAMP. index.html: nur **ein** `<div id="root">`.
-- Bei Merge/Refactors: Keine doppelten Exports, keine doppelten root-divs, keine kaputten Klammern in vercel.json.
+## Was funktioniert
+
+- Push auf **main** → Vercel baut Production. Wenn Deployment **Ready** + **Current** ist, stimmt der Stand. QR **muss** Server-Stand + Cache-Bust nutzen (buildQrUrlWithBust + useQrVersionTimestamp), **nicht** nur urlWithBuildVersion.
+- **vercel.json:** Gültiges JSON, **keine** überzählige `}`. No-cache für index.html und build-info.json.
+- **Build:** `npm run build` = `write-build-info.js --inject-html` + … + vite build. index.html: Placeholder `<!-- BUILD_TS_INJECT -->`; Inject-Script **nicht** entfernen. buildInfo.generated.ts: einmal BUILD_LABEL, BUILD_TIMESTAMP.
+- Bei Merge/Refactors: Keine doppelten Exports, keine doppelten root-divs.
 
 ## Bei Änderungen an vercel.json oder Build/Stand
 
-- vercel.json nach Änderung mit `node -e "JSON.parse(require('fs').readFileSync('vercel.json','utf8')); console.log('OK')"` prüfen.
-- Lokal `npm run build` ausführen vor Push.
-- Doku: docs/VERCEL-STAND-HANDY.md, GEORG-STAND-9-24-BEHEBEN.md.
+- Regel **stand-qr-niemals-zurueck.mdc** einhalten (QR = Server-Stand + Bust; Inject-Script; no-cache).
+- vercel.json mit `node -e "JSON.parse(require('fs').readFileSync('vercel.json','utf8')); console.log('OK')"` prüfen.
+- Lokal `npm run build` vor Push.

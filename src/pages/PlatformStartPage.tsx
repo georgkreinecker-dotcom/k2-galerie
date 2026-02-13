@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
 import '../App.css'
 import { PLATFORM_ROUTES, PROJECT_ROUTES } from '../config/navigation'
-import { urlWithBuildVersion } from '../buildInfo.generated'
+import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
 // Haupt-Features (wichtigste Funktionen)
 const mainFeatures = [
@@ -130,11 +130,12 @@ export default function PlatformStartPage() {
     }
   }, [])
 
-  // QR-Code lokal erzeugen – mit Stand für Cache-Busting
+  const qrVersionTs = useQrVersionTimestamp()
+  // QR-Code mit Server-Stand + Cache-Bust – Scan lädt immer aktuelle Version
   useEffect(() => {
     if (!galerieUrl) { setGalerieQrUrl(''); return }
-    QRCode.toDataURL(urlWithBuildVersion(galerieUrl), { width: 200, margin: 1 }).then(setGalerieQrUrl).catch(() => setGalerieQrUrl(''))
-  }, [galerieUrl])
+    QRCode.toDataURL(buildQrUrlWithBust(galerieUrl, qrVersionTs), { width: 200, margin: 1 }).then(setGalerieQrUrl).catch(() => setGalerieQrUrl(''))
+  }, [galerieUrl, qrVersionTs])
 
   return (
     <div className="mission-wrapper">

@@ -3,7 +3,7 @@ import { usePersistentString } from '../hooks/usePersistentState'
 import { ProjectNavButton } from '../components/Navigation'
 import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { urlWithBuildVersion } from '../buildInfo.generated'
+import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
 const VERCEL_GALERIE_URL = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
 
@@ -34,15 +34,16 @@ const MobileConnectPage = () => {
     }
   }, [])
 
-  // QR-Codes lokal erzeugen – mit Build-Version (Stand) für Cache-Busting, Scan = aktueller Build
+  const qrVersionTs = useQrVersionTimestamp()
+  // QR mit Server-Stand + Cache-Bust – Scan lädt immer aktuelle Version (auch im fremden WLAN)
   useEffect(() => {
     if (!url) { setQrUrl(''); return }
-    QRCode.toDataURL(urlWithBuildVersion(url), { width: 280, margin: 1 }).then(setQrUrl).catch(() => setQrUrl(''))
-  }, [url])
+    QRCode.toDataURL(buildQrUrlWithBust(url, qrVersionTs), { width: 280, margin: 1 }).then(setQrUrl).catch(() => setQrUrl(''))
+  }, [url, qrVersionTs])
   useEffect(() => {
     if (!localGalerieUrl) { setLocalQrUrl(''); return }
-    QRCode.toDataURL(urlWithBuildVersion(localGalerieUrl), { width: 200, margin: 1 }).then(setLocalQrUrl).catch(() => setLocalQrUrl(''))
-  }, [localGalerieUrl])
+    QRCode.toDataURL(buildQrUrlWithBust(localGalerieUrl, qrVersionTs), { width: 200, margin: 1 }).then(setLocalQrUrl).catch(() => setLocalQrUrl(''))
+  }, [localGalerieUrl, qrVersionTs])
   useEffect(() => {
     if (!devViewUrl) { setDevViewQrUrl(''); return }
     QRCode.toDataURL(devViewUrl, { width: 200, margin: 1 }).then(setDevViewQrUrl).catch(() => setDevViewQrUrl(''))
@@ -54,7 +55,7 @@ const MobileConnectPage = () => {
         <header>
           <div>
             <h1>Handy mit Mac verbinden</h1>
-            <div className="meta">Ein QR – Galerie auf dem Handy, immer aktuell.</div>
+            <div className="meta">Derselbe QR wie damals – feste Vercel-URL, mit aktuellem Stand (Scan = immer aktuelle Version).</div>
           </div>
           <ProjectNavButton projectId="k2-galerie" />
         </header>

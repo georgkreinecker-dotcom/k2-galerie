@@ -38,7 +38,7 @@ fs.writeFileSync(publicPath, JSON.stringify({ label, timestamp: now.getTime() })
 // Beim Build (--inject-html): Build-Check in index.html injizieren – läuft auch bei gecachtem HTML
 if (process.argv.includes('--inject-html')) {
   const ts = now.getTime()
-  const injectScript = '<script>(function(){var b=' + ts + ';fetch("/build-info.json?t="+Date.now()+"&r="+Math.random(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b)location.href=location.origin+location.pathname+"?v="+Date.now()}).catch(function(){});})();</script>'
+  const injectScript = '<script>(function(){var b=' + ts + ';var o=location.origin;var p=location.pathname;var q=location.search||"";var sep=q?"&":"?";if(Date.now()-b>120000){try{var k2="k2_stale";if(!sessionStorage.getItem(k2)){sessionStorage.setItem(k2,"1");location.replace(o+p+q+sep+"_="+Date.now());}}catch(e){}return;}var bust="v="+Date.now();var url=o+"/build-info.json?t="+Date.now()+"&r="+Math.random();fetch(url,{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b)location.replace(o+p+sep+bust)}).catch(function(){try{var k="k2_noreload";if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,"1");location.replace(o+p+q+sep+"_="+Date.now())}}catch(e){}});})();</script>'
   const indexPath = path.join(__dirname, '..', 'index.html')
   let indexHtml = fs.readFileSync(indexPath, 'utf8')
   if (indexHtml.includes('BUILD_TS_INJECT')) {

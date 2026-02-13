@@ -269,7 +269,7 @@ function StandBadgeSync() {
     el.textContent = text
     el.setAttribute('title', isLocal
       ? 'Lokal gebaut. Gleich überall: pushen, dann auf Handy neu scannen.'
-      : 'Tippen lädt neu (frischer Stand).')
+      : 'Tippen oder neue Seite öffnen (neuer Tab) = frischer Stand. Auch im fremden WLAN.')
     el.style.background = 'rgba(0,0,0,0.85)'
   }, [serverNewer, isLocal])
 

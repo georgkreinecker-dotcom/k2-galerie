@@ -1,0 +1,63 @@
+---
+description: Stand/QR – NIEMALS abschwächen. Sonst steht Georg wieder vor altem Stand auf dem Handy (Stunden Frust).
+alwaysApply: true
+---
+
+# 🔒 STAND & QR – NIEMALS ZURÜCK (kritisch für Georg)
+
+## Warum diese Regel
+
+- Georg hat **dutzende Male** das Problem gehabt: Handy zeigt alte Version (z.B. 15:22), obwohl auf Vercel neu (15:46). Dann funktioniert es, ein paar Sessions später wieder derselbe Fehler → **Stunden umsonst**.
+- Diese Regel stellt sicher, dass **keine** Änderung die Fixes wieder rückgängig macht. Jede Session (AI/Entwickler) muss sie einhalten.
+
+## Unveränderliche Anforderungen
+
+### 1. QR-Code = immer Server-Stand + Cache-Bust
+
+- **NIEMALS** nur `urlWithBuildVersion(url)` mit lokalem `BUILD_TIMESTAMP` für QR verwenden. Das führt dazu, dass der QR die **lokale** Build-Zeit enthält; wenn der Mac einen alten Build hat oder Cache im Spiel ist, bekommt das Handy die alte Version.
+- **IMMER** für alle QR-Codes, die auf die **Vercel-Galerie** zeigen:
+  - **Server-Stand** verwenden: z.B. `useServerBuildTimestamp()` / `useQrVersionTimestamp()` aus `src/hooks/useServerBuildTimestamp.ts`.
+  - **Cache-Bust pro Anzeige:** `buildQrUrlWithBust(url, versionTs)` – hängt `v=<timestamp>&_=<Date.now()>` an. Jeder Scan = neue URL = kein CDN-Cache.
+- **Betroffene Dateien:** `GaleriePage.tsx`, `PlatformStartPage.tsx`, `MobileConnectPage.tsx`. Dort **darf** für Vercel-/Galerie-URLs **nur** `buildQrUrlWithBust(..., useQrVersionTimestamp())` (bzw. Hook + Bust) verwendet werden, **nicht** `urlWithBuildVersion(...)`.
+
+### 2. Build: inject-Script in index.html
+
+- `scripts/write-build-info.js` muss mit `--inject-html` aufgerufen werden (z.B. im npm build). Das Script:
+  - Prüft, ob das geladene HTML älter als 2 Minuten ist → einmal Reload mit Cache-Bust.
+  - Holt `build-info.json`; wenn Server neuer → Reload mit frischer URL.
+  - Bei Fetch-Fehler (fremdes WLAN etc.): einmal Reload mit Cache-Bust (mit sessionStorage gegen Schleifen).
+- **NIEMALS** das Inject-Script entfernen oder so vereinfachen, dass diese drei Verhaltensweisen wegfallen.
+- **Placeholder** in `index.html`: `<!-- BUILD_TS_INJECT -->` muss vorhanden sein, damit das Script beim Build eingefügt wird.
+
+### 3. Vercel: no-cache für HTML und build-info
+
+- `vercel.json`: Für `/`, `/index.html`, `/build-info.json`, `/projects/:path*` **muss** `Cache-Control: no-cache, no-store, must-revalidate, max-age=0` gesetzt sein.
+- **NIEMALS** diese Header entfernen oder abschwächen (z.B. max-age > 0 für index.html).
+- `build-info.json` muss von Rewrites ausgenommen sein (erreichbar unter `/build-info.json`).
+
+### 4. Server-Stand für QR
+
+- `src/hooks/useServerBuildTimestamp.ts`: Enthält `useServerBuildTimestamp`, `buildQrUrlWithBust`, `useQrVersionTimestamp`. **Nicht entfernen oder umbenennen**, sodass die Seiten wieder auf rein lokalen Build umstellen könnten.
+- Die Produktions-URL für build-info ist `https://k2-galerie.vercel.app/build-info.json`. Beim Öffnen der APf wird diese URL abgefragt; der QR verwendet dann den **Server-**Timestamp.
+
+## Checkliste vor Änderungen (wenn einer dieser Bereiche betroffen ist)
+
+- Build-Skripte (package.json, write-build-info.js)
+- index.html (Placeholder, Scripte)
+- vercel.json (Headers, Rewrites)
+- QR-Code-Generierung (GaleriePage, PlatformStartPage, MobileConnectPage)
+- Hooks/Utils für Stand (useServerBuildTimestamp, buildInfo.generated)
+
+**Dann prüfen:**
+
+- [ ] QR für Vercel-Galerie nutzt weiterhin Server-Timestamp + `buildQrUrlWithBust` (kein reines `urlWithBuildVersion`).
+- [ ] Build ruft weiterhin `write-build-info.js --inject-html` auf; Inject-Script bleibt vollständig (Stale-Check, build-info-Fetch, Fehler-Reload).
+- [ ] vercel.json behält no-cache für index.html und build-info.json.
+- [ ] Hook `useServerBuildTimestamp` / `buildQrUrlWithBust` bleibt in Verwendung für alle relevanten QRs.
+
+## Kurzfassung
+
+- **QR:** Immer Server-Stand + `&_=Date.now()` (buildQrUrlWithBust + useQrVersionTimestamp). Nie nur lokaler BUILD_TIMESTAMP für QR.
+- **HTML:** Inject-Script bleibt (Stale + build-info + Fehler-Reload). Placeholder in index.html bleibt.
+- **Vercel:** no-cache für index.html und build-info.json bleibt.
+- **Nicht:** Diese Logik „vereinfachen“, „aufräumen“ oder durch „nur lokalen Stand“ ersetzen – sonst ist das Problem sofort wieder da.

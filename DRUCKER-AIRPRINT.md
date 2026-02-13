@@ -1,8 +1,29 @@
-# Brother-Drucker: AirPrint & Druck-Einstellungen
+# Brother-Drucker: AirPrint & Druck vom iPad/Handy
 
-## AirPrint aktiviert
+## QL-820**N**WBc (wie auf der Verpackung) = **AirPrint**
 
-AirPrint ist eingerichtet und funktioniert (z. B. über handyPrint, Printopia oder Mac-Freigabe). Beim Etikett-Druck:
+**Brother QL-820NWBc** – „Works with Apple AirPrint“, „Made for iPhone | iPad | iPod“. Das ist die einfache Lösung für Mobile.
+
+**Vom iPad/Handy drucken:**
+
+1. In K2: **„Jetzt drucken“** tippen
+2. Im Druckdialog **Brother** bzw. **AirPrint-Drucker** wählen
+3. **Papier:** 29×90,3 mm (Brother-Etikett)
+4. **Skalierung:** 100 %
+
+Fertig – kein Mac, kein Print-Server nötig.
+
+---
+
+## Nur bei Modell QL-820**M**WBc (mit M): kein AirPrint
+
+Falls du das **ältere Modell mit M** (QL-820**M**WBc) hast: das hat kein AirPrint. Dann: „Etikett teilen“ → Brother iPrint & Label App → drucken.
+
+---
+
+## AirPrint aktiviert (QL-820NWBc)
+
+AirPrint ist eingerichtet (z. B. über handyPrint, Printopia oder Mac-Freigabe). Beim Etikett-Druck:
 
 1. **„Jetzt drucken“** tippen
 2. **Drucker wählen** (Brother oder AirPrint-Drucker)
@@ -11,9 +32,9 @@ AirPrint ist eingerichtet und funktioniert (z. B. über handyPrint, Printopia 
 
 ---
 
-## Brother QL-820MWBc – AirPrint über Mac/Apps
+## Brother QL-820**M**WBc (älteres Modell) – kein AirPrint
 
-Der Brother QL-820MWBc hat von Haus aus kein AirPrint. Mit **handyPrint**, **Printopia** oder **Mac-Freigabe** wird er als AirPrint-Drucker sichtbar.
+Nur das **ältere** Modell QL-820**M**WBc (mit M) hat kein AirPrint. Mit handyPrint, Printopia oder Mac-Freigabe kann man es nachrüsten (Mac muss laufen).
 
 ---
 
@@ -60,15 +81,15 @@ Mac-Apps, die **AirPrint auf beliebigen Druckern** aktivieren. Brother an den Ma
 
 ---
 
-## Brother-Modelle mit AirPrint (bei Neukauf)
+## Brother-Modelle
 
-| Modell | AirPrint |
-|--------|----------|
-| **QL-820NWBc** | Ja (laut Hersteller) |
+| Modell | AirPrint | Verpackung |
+|--------|----------|------------|
+| **QL-820NWBc** | **Ja** – „Works with Apple AirPrint“, Made for iPhone/iPad/iPod |
+| **QL-820MWBc** | Nein (älteres Modell mit M) |
 | **QL-810Wc** | Ja (laut Hersteller) |
-| **QL-820MWBc** | Nein |
 
-QL-820**N**WBc (mit N) hat AirPrint, QL-820**M**WBc (mit M) nicht.
+Dein Drucker (QL-820**N**WBc) = AirPrint, einfach „Jetzt drucken“ → Brother wählen.
 
 ---
 

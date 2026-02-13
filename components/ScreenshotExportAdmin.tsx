@@ -6803,6 +6803,7 @@ ${'='.repeat(60)}
       alert('Print-Server URL fehlt. Einstellungen → Drucker → Print-Server URL eintragen (z.B. http://localhost:3847)')
       return
     }
+    // Von Vercel (HTTPS) aus: Browser blockiert Anfragen an http:// (Mixed Content). Print-Server muss dann per HTTPS erreichbar sein (z. B. ngrok), oder K2 wird vor Ort per http:// geöffnet.
     setOneClickPrinting(true)
     const timeoutMs = 20000
     const timeoutPromise = new Promise<never>((_, reject) =>
@@ -6841,10 +6842,18 @@ ${'='.repeat(60)}
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'One-Click-Druck fehlgeschlagen'
       const isIpadOrPhone = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-      const urlHint = isIpadOrPhone
-        ? '\n\n📱 Auf iPad/Handy: Print-Server URL muss die MAC-IP sein, nicht localhost!\n   Einstellungen → Drucker → z.B. http://192.168.0.31:3847 (Mac im gleichen WLAN).'
-        : ''
-      alert('❌ One-Click-Druck fehlgeschlagen: ' + msg + '\n\nVersucht: ' + url + '/print' + urlHint + '\n\nOne-Click-Anwendung starten:\n• Am Mac im Projektordner (Cursor- oder Mac-Terminal):\n  npm run print-server\n  oder\n  node scripts/k2-print-server.js')
+      const isNetworkError = /fetch|network|Failed to fetch/i.test(String(msg))
+      const isHttps = typeof window !== 'undefined' && window.location?.protocol === 'https:'
+      const isHttpUrl = url.toLowerCase().startsWith('http://')
+      let urlHint = ''
+      if (isHttps && isHttpUrl && isNetworkError) {
+        urlHint = '\n\n📌 Standalone (ohne Mac vor Ort): Von Vercel aus blockiert der Browser Anrufe an http://. Print-Server muss per HTTPS erreichbar sein (z.B. ngrok am Gerät vor Ort). Oder: K2 vor Ort per http:// öffnen (siehe DRUCKER-STANDALONE.md).'
+      } else if (isIpadOrPhone) {
+        urlHint = '\n\n📱 Auf iPad/Handy: Print-Server URL = IP des Geräts, das den Print-Server läuft (z.B. http://192.168.0.31:3847), alle im gleichen WLAN.'
+      } else if (isNetworkError) {
+        urlHint = '\n\n💡 Print-Server läuft auf dem Gerät vor Ort? Dort: npm run print-server'
+      }
+      alert('❌ One-Click-Druck fehlgeschlagen: ' + msg + '\n\nVersucht: ' + url + '/print' + urlHint + '\n\nOne-Click-Anwendung starten (auf dem Gerät, das am gleichen Netz wie Drucker/Tablet ist):\n  npm run print-server\n  oder\n  node scripts/k2-print-server.js')
     } finally {
       setOneClickPrinting(false)
     }
@@ -14148,9 +14157,9 @@ setPreviewUrl(null)
                         alert(
                           '⚡ One-Click-Anwendung einrichten\n\n' +
                           '1. Einstellungen → Drucker → Tab „Drucker“\n' +
-                          '2. „Print-Server URL“ eintragen:\n   • Am Mac: http://localhost:3847\n   • Am iPad/Handy: Mac-IP, z. B. http://192.168.0.31:3847 (Mac im gleichen WLAN)\n' +
-                          '3. One-Click-Anwendung starten: im Projektordner (Cursor- oder Mac-Terminal)\n   npm run print-server\n   oder\n   node scripts/k2-print-server.js\n\n' +
-                          'Dann funktioniert „One-Click drucken“ und sendet das Etikett direkt an den Drucker.'
+                          '2. „Print-Server URL“ eintragen:\n   • Am Mac: http://localhost:3847\n   • Standalone (ohne Mac vor Ort): IP des Geräts, das den Print-Server läuft, z. B. http://192.168.0.31:3847 (alle im gleichen WLAN)\n' +
+                          '3. Print-Server starten: auf dem Gerät am gleichen Netz wie Drucker/Tablet (Projektordner)\n   npm run print-server\n   oder\n   node scripts/k2-print-server.js\n\n' +
+                          'Standalone (Tablet + Drucker vor Ort, Mac woanders): siehe DRUCKER-STANDALONE.md.'
                         )
                       }
                     }}
@@ -14273,8 +14282,8 @@ setPreviewUrl(null)
                     )}
                   </div>
                 </details>
-                <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
-                  AirPrint aktiv – Brother/AirPrint-Drucker im Druckdialog wählen. Papier: 29×90,3 mm.
+                <p style={{ fontSize: '0.75rem', color: '#666', marginTop: '0.5rem' }}>
+                  AirPrint (QL-820NWBc): „Jetzt drucken“ → Brother wählen. Papier: 29×90,3 mm, 100 %.
                 </p>
               </div>
             </div>

@@ -4,7 +4,7 @@ import QRCode from 'qrcode'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { getTenantConfig, getCurrentTenantId, TENANT_CONFIGS, MUSTER_TEXTE } from '../config/tenantConfig'
 import { appendToHistory } from '../utils/artworkHistory'
-import { urlWithBuildVersion } from '../buildInfo.generated'
+import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import '../App.css'
 
 /** Fallback-URL für Aktualisierung in anderem Netzwerk (z. B. zuerst Mac-WLAN, dann Mobilfunk) */
@@ -58,7 +58,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
   }, [])
   const [showAdminModal, setShowAdminModal] = useState(false)
   const [adminPasswordInput, setAdminPasswordInput] = useState('')
-  const [qrDataUrl, setQrDataUrl] = useState('')
   const [vercelQrDataUrl, setVercelQrDataUrl] = useState('')
   // adminPassword wird nur für Initialisierung verwendet, nicht für Login-Validierung
   const [, setAdminPassword] = useState('')
@@ -171,17 +170,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
     }
   }, [mobileUrl, mobileUrlMemo])
 
-  useEffect(() => {
-    if (!qrFinalUrl) return
-    QRCode.toDataURL(urlWithBuildVersion(qrFinalUrl), { width: 100, margin: 1 }).then(setQrDataUrl).catch(() => setQrDataUrl(''))
-  }, [qrFinalUrl])
-
+  const qrVersionTs = useQrVersionTimestamp()
   const vercelGalerieUrl = GALLERY_DATA_PUBLIC_URL + PROJECT_ROUTES['k2-galerie'].galerie
-  const isLocalOrigin = typeof window !== 'undefined' && !window.location.hostname.includes('vercel.app')
+  // Ein QR für Impressum (Vercel – funktioniert überall)
   useEffect(() => {
-    if (!isLocalOrigin) return
-    QRCode.toDataURL(urlWithBuildVersion(vercelGalerieUrl), { width: 100, margin: 1 }).then(setVercelQrDataUrl).catch(() => setVercelQrDataUrl(''))
-  }, [isLocalOrigin])
+    QRCode.toDataURL(buildQrUrlWithBust(vercelGalerieUrl, qrVersionTs), { width: 100, margin: 1 }).then(setVercelQrDataUrl).catch(() => setVercelQrDataUrl(''))
+  }, [vercelGalerieUrl, qrVersionTs])
 
   // Aktualisieren-Funktion für Mobile-Version - lädt neue Daten ohne Reload
   const [isRefreshing, setIsRefreshing] = React.useState(false)
@@ -1894,45 +1888,25 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   </div>
                 </div>
                 
-                {/* Rechte Seite: QR-Code(s) – bei lokalem Aufruf zwei: WLAN + Vercel (iPad hängt sonst) */}
-                {qrDataUrl && qrFinalUrl && (
+                {/* Rechte Seite: genau ein QR (Vercel – funktioniert überall) */}
+                {vercelQrDataUrl && (
                     <div style={{
                       textAlign: 'center',
                       flexShrink: 0,
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '1rem',
+                      gap: '0.5rem',
                       alignItems: 'center'
                     }}>
-                      {isLocalOrigin && vercelQrDataUrl ? (
-                        <>
-                          <p style={{ margin: '0 0 0.25rem', fontSize: 'clamp(0.65rem, 1.4vw, 0.75rem)', color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>
-                            📱 Für iPad/Handy: diesen QR scannen (lädt, aktueller Stand)
-                          </p>
-                          <div style={{ background: '#fff', padding: '0.4rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
-                            <img src={vercelQrDataUrl} alt="QR Vercel" style={{ width: 100, height: 100, display: 'block' }} />
-                          </div>
-                          <p style={{ margin: 0, fontSize: 'clamp(0.55rem, 1.2vw, 0.65rem)', color: 'rgba(255,255,255,0.5)', wordBreak: 'break-all', maxWidth: 140 }}>
-                            k2-galerie.vercel.app
-                          </p>
-                          <p style={{ margin: '0.5rem 0 0', fontSize: 'clamp(0.6rem, 1.3vw, 0.7rem)', color: 'rgba(255,255,255,0.5)' }}>
-                            Nur gleiches WLAN: <span style={{ fontSize: '0.65em' }}>{qrFinalUrl.replace(/^https?:\/\//, '').split('/')[0]}</span>
-                          </p>
-                          <div style={{ background: '#fff', padding: '0.3rem', borderRadius: '6px' }}>
-                            <img src={qrDataUrl} alt="QR lokal" style={{ width: 70, height: 70, display: 'block' }} />
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)', color: 'rgba(255, 255, 255, 0.8)', fontWeight: '500' }}>QR-Code</p>
-                          <div style={{ background: '#ffffff', padding: '0.4rem', borderRadius: '8px', display: 'inline-block', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}>
-                            <img src={qrDataUrl} alt="QR-Code" style={{ width: '100px', height: '100px', display: 'block' }} />
-                          </div>
-                          <p style={{ margin: '0.4rem 0 0', fontSize: 'clamp(0.6rem, 1.3vw, 0.7rem)', color: 'rgba(255, 255, 255, 0.5)', wordBreak: 'break-all', maxWidth: '120px' }}>
-                            {qrFinalUrl}
-                          </p>
-                        </>
-                      )}
+                      <p style={{ margin: '0 0 0.25rem', fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)', color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>
+                        📱 Für iPad/Handy: QR scannen (immer aktueller Stand)
+                      </p>
+                      <div style={{ background: '#fff', padding: '0.4rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+                        <img src={vercelQrDataUrl} alt="QR Galerie" style={{ width: 100, height: 100, display: 'block' }} />
+                      </div>
+                      <p style={{ margin: 0, fontSize: 'clamp(0.55rem, 1.2vw, 0.65rem)', color: 'rgba(255,255,255,0.5)', wordBreak: 'break-all', maxWidth: 140 }}>
+                        k2-galerie.vercel.app
+                      </p>
                     </div>
                 )}
               </div>
