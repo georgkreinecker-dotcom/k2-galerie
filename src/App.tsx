@@ -223,16 +223,19 @@ function doHardReload() {
 
 function StandBadgeSync() {
   const [serverNewer, setServerNewer] = useState(false)
+  const [displayLabel, setDisplayLabel] = useState(BUILD_LABEL)
   const isLocal = typeof window !== 'undefined' && /^https?:\/\/localhost|127\.0\.0\.1/i.test(window.location?.origin || '')
 
-  // Auf Vercel/Produktion: prüfen ob Server eine neuere Version hat → automatisch neu laden
+  // Auf Vercel/Produktion: Stand vom Server holen → Badge zeigt immer aktuellen Stand (auch auf Mac bei gecachtem Bundle)
   useEffect(() => {
     if (isLocal) return
     const url = '/build-info.json?t=' + Date.now() + '&r=' + Math.random()
     fetch(url, { cache: 'no-store' })
       .then((r) => r.ok ? r.json() : null)
-      .then((data: { timestamp?: number } | null) => {
-        if (data?.timestamp && data.timestamp > BUILD_TIMESTAMP) setServerNewer(true)
+      .then((data: { label?: string; timestamp?: number } | null) => {
+        if (!data) return
+        if (data.label) setDisplayLabel(data.label)
+        if (data.timestamp && data.timestamp > BUILD_TIMESTAMP) setServerNewer(true)
       })
       .catch(() => {})
   }, [isLocal])
@@ -243,7 +246,7 @@ function StandBadgeSync() {
     return () => clearTimeout(t)
   }, [serverNewer])
 
-  const label = serverNewer ? 'Aktualisiere …' : (isLocal ? `Stand: ${BUILD_LABEL} (lokal)` : `Stand: ${BUILD_LABEL}`)
+  const label = serverNewer ? 'Aktualisiere …' : (isLocal ? `Stand: ${BUILD_LABEL} (lokal)` : `Stand: ${displayLabel}`)
   const title = isLocal
     ? 'Lokal gebaut. Gleich überall: pushen, dann auf Handy neu scannen.'
     : 'Tippen oder neue Seite öffnen (neuer Tab) = frischer Stand. Auch im fremden WLAN.'
