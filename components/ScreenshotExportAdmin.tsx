@@ -10216,7 +10216,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           <li>Zweiter Router auf mobilem Gerät installiert</li>
                           <li>Zugriff von Mac, iPad und Handy möglich</li>
                           <li>Einstellungen werden automatisch gespeichert</li>
-                          <li><strong>AirPrint aktiv:</strong> Im Druckdialog Brother oder AirPrint-Drucker wählen. Papier: 29×90,3 mm, 100 % Skalierung.</li>
+                          <li><strong>AirPrint aktiv:</strong> Im Druckdialog Brother wählen (Name ggf. „QL-820NWB“ ohne c). Papier: 29×90,3 mm, 100 %.</li>
                         </ul>
                       </div>
 
@@ -14305,7 +14305,7 @@ setPreviewUrl(null)
                   </div>
                 </details>
                 <p style={{ fontSize: '0.75rem', color: '#666', marginTop: '0.5rem' }}>
-                  AirPrint (QL-820NWBc): „Jetzt drucken“ → Brother wählen. Papier: 29×90,3 mm, 100 %.
+                  AirPrint (QL-820NWBc): „Jetzt drucken“ → Brother wählen (im Dialog ggf. „QL-820NWB“ ohne c). Papier: 29×90,3 mm, 100 %.
                 </p>
               </div>
             </div>
