@@ -3,6 +3,17 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
 
+// QR-Scan im mobilen LAN: Einmal Reload mit Cache-Buster, damit die Seite frisch lädt (nicht aus Cache)
+const skipBootstrapForReload =
+  typeof window !== 'undefined' &&
+  (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) &&
+  !/[?&]_=\d+/.test(window.location.href)
+if (skipBootstrapForReload) {
+  const url = window.location.href
+  const sep = url.includes('?') ? '&' : '?'
+  window.location.replace(url + sep + '_=' + Date.now())
+}
+
 // Cache-Busting: Versions-Info für Debugging
 const BUILD_VERSION = '1.0.0-' + Date.now()
 if (typeof window !== 'undefined') {
@@ -126,6 +137,7 @@ if (typeof window !== 'undefined') {
   }, 30000) // Alle 30 Sekunden prüfen
 }
 
+if (!skipBootstrapForReload) {
 try {
   const rootElement = document.getElementById('root')
   if (!rootElement) {
@@ -204,4 +216,5 @@ try {
       </div>
     `
   }
+}
 }

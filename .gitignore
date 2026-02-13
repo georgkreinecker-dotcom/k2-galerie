@@ -54,3 +54,4 @@ terminal-startup-error.log
 # Große Export-Dateien
 k2-export.json
 *.json.backup
+public/gallery-data.json.backup.*

@@ -5,6 +5,7 @@
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "node scripts/write-build-info.js && vite",
+    "print-server": "node scripts/k2-print-server.js",
     "check-exports": "node scripts/check-duplicate-exports.js",
     "build": "node scripts/write-build-info.js && npm run check-exports && tsc -b && vite build",
     "lint": "eslint .",
@@ -17,6 +18,7 @@
   },
   "dependencies": {
     "@imgly/background-removal": "^1.7.0",
+    "ipp": "^1.1.0",
     "onnxruntime-web": "^1.21.0",
     "qrcode": "^1.5.4",
     "react": "^19.2.0",

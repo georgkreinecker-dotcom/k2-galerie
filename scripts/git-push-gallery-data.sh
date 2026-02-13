@@ -252,6 +252,15 @@ if [ "$CURRENT_BRANCH" = "main-fresh" ]; then
     echo "${CYAN}Schritt 5/5:${NC} 🔄 Merge zu main und Push..."
     show_progress 5 5 "🔄 Merge zu main..."
     
+    # Uncommitted Änderungen (z.B. buildInfo.generated.ts) zwischenspeichern
+    # Sonst blockiert "git checkout main" bei lokalen Änderungen
+    STASHED=0
+    if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
+        echo ""
+        echo "${CYAN}📦 Speichere lokale Änderungen temporär (stash)...${NC}"
+        git stash push -m "gallery-push-temp" 2>/dev/null && STASHED=1 || true
+    fi
+    
     # Stelle sicher dass main Branch existiert
     if ! git show-ref --verify --quiet refs/heads/main; then
         echo "${CYAN}Erstelle main Branch von main-fresh...${NC}"
@@ -271,6 +280,13 @@ if [ "$CURRENT_BRANCH" = "main-fresh" ]; then
     
     # Zurück zu main-fresh
     git checkout main-fresh
+    
+    # Stash wiederherstellen falls wir einen gemacht haben
+    if [ "$STASHED" = "1" ]; then
+        echo ""
+        echo "${CYAN}📦 Stelle lokale Änderungen wieder her...${NC}"
+        git stash pop 2>/dev/null || true
+    fi
     
 elif [ "$CURRENT_BRANCH" = "main" ]; then
     echo ""

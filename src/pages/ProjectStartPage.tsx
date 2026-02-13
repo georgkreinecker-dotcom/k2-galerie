@@ -1,9 +1,14 @@
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, Navigate } from 'react-router-dom'
 import { useState } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES, PLATFORM_ROUTES, getProjectRoutes, type ProjectId } from '../config/navigation'
 import { getPageTexts, defaultPageTexts } from '../config/pageTexts'
 import DevViewPage from './DevViewPage'
+
+function isMobileDevice(): boolean {
+  if (typeof window === 'undefined') return false
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (window.innerWidth <= 768 && (('ontouchstart' in window) || (navigator.maxTouchPoints ?? 0) > 0))
+}
 
 const ROUTE_KEYS: (keyof typeof PROJECT_ROUTES['k2-galerie'])[] = ['galerie', 'controlStudio', 'plan', 'mobileConnect']
 
@@ -31,6 +36,11 @@ export default function ProjectStartPage() {
     if (config?.projectStart) projectTexts = config.projectStart
   } catch (_) {}
 
+  // Auf Handy/Tablet: Sofort zur Galerie (niemals Dev-Ansicht/Smart Panel, auch beim Wiederöffnen)
+  if (projectId === 'k2-galerie' && routes && isMobileDevice()) {
+    return <Navigate to={routes.galerie} replace />
+  }
+
   if (!routes || !cards) {
     return (
       <div className="mission-wrapper">
@@ -44,9 +54,12 @@ export default function ProjectStartPage() {
     )
   }
 
-  // Dev-View Tool ist Standardansicht für Projektbearbeitung
-  if (showDevView) {
+  // Auf Mobile: nichts rendern (Redirect läuft); auf Desktop: Dev-View
+  if (showDevView && !isMobileDevice()) {
     return <DevViewPage defaultPage="galerie" />
+  }
+  if (showDevView && isMobileDevice()) {
+    return null
   }
 
   // Fallback: Alte Ansicht (falls benötigt)

@@ -26,6 +26,8 @@ function isOeffentlichAdminContext(): boolean {
 import { checkLocalStorageSize, cleanupLargeImages, getLocalStorageReport } from './SafeMode'
 import { startAutoSave, stopAutoSave, setupBeforeUnloadSave } from '../src/utils/autoSave'
 import { sortArtworksNewestFirst } from '../src/utils/artworkSort'
+import { appendToHistory } from '../src/utils/artworkHistory'
+import { urlWithBuildVersion } from '../src/buildInfo.generated'
 
 // KRITISCH: Importiere Safe Mode Utilities für Crash-Schutz
 let safeModeUtils: any = null
@@ -405,18 +407,8 @@ function ScreenshotExportAdmin() {
         // Schließe alle PDF-Fenster
         closeAllPDFWindows()
         
-        // Entferne ALLE Event Listener die möglicherweise noch aktiv sind
-        // (Sicherheitsmaßnahme gegen Memory Leaks und Crashes)
-        const events = ['beforeunload', 'unload', 'afterprint', 'keydown', 'mousedown', 'storage', 'stammdaten-updated']
-        events.forEach(eventType => {
-          try {
-            // Versuche alle möglichen Handler zu entfernen
-            window.removeEventListener(eventType as any, () => {})
-            document.removeEventListener(eventType as any, () => {})
-          } catch (e) {
-            // Ignoriere Fehler
-          }
-        })
+        // Hinweis: Echte Listener werden in den jeweiligen useEffects mit derselben Referenz entfernt.
+        // storage/stammdaten-updated werden hier nicht registriert → kein Render-Loop-Risiko.
       } catch (e) {
         console.error('Fehler beim Cleanup:', e)
       }
@@ -438,15 +430,16 @@ function ScreenshotExportAdmin() {
   }
 
   // Mandantenspezifische Drucker-Einstellungen (K2, ök2, Demo – je eigener Drucker + Format)
-  const printerStorageKey = (tenantId: TenantId, key: 'ip' | 'type' | 'labelSize') => {
-    const suffix = key === 'ip' ? 'printer-ip' : key === 'type' ? 'printer-type' : 'label-size'
+  const printerStorageKey = (tenantId: TenantId, key: 'ip' | 'type' | 'labelSize' | 'printServerUrl') => {
+    const suffix = key === 'ip' ? 'printer-ip' : key === 'type' ? 'printer-type' : key === 'labelSize' ? 'label-size' : 'print-server-url'
     return `k2-${suffix}-${tenantId}`
   }
   const defaultPrinterSettings = () => ({
     ipAddress: '192.168.1.102',
     printerModel: 'Brother QL-820MWBc',
     printerType: 'etikettendrucker' as const,
-    labelSize: '29x90,3'
+    labelSize: '29x90,3',
+    printServerUrl: ''
   })
   const loadPrinterSettingsForTenant = (tenantId: TenantId) => {
     try {
@@ -470,20 +463,21 @@ function ScreenshotExportAdmin() {
       const ip = localStorage.getItem(printerStorageKey(tenantId, 'ip'))
       const type = localStorage.getItem(printerStorageKey(tenantId, 'type'))
       const labelSize = localStorage.getItem(printerStorageKey(tenantId, 'labelSize'))
+      const printServerUrl = localStorage.getItem(printerStorageKey(tenantId, 'printServerUrl'))
       return {
         ipAddress: ip || def.ipAddress,
         printerModel: def.printerModel,
         printerType: (type || def.printerType) as 'etikettendrucker' | 'standarddrucker',
-        labelSize: labelSize || def.labelSize
+        labelSize: labelSize || def.labelSize,
+        printServerUrl: printServerUrl || def.printServerUrl
       }
     } catch {
       return defaultPrinterSettings()
     }
   }
-  const savePrinterSetting = (tenantId: TenantId, key: 'ip' | 'type' | 'labelSize', value: string) => {
+  const savePrinterSetting = (tenantId: TenantId, key: 'ip' | 'type' | 'labelSize' | 'printServerUrl', value: string) => {
     try {
-      const k = key === 'ip' ? printerStorageKey(tenantId, 'ip') : key === 'type' ? printerStorageKey(tenantId, 'type') : printerStorageKey(tenantId, 'labelSize')
-      localStorage.setItem(k, value)
+      localStorage.setItem(printerStorageKey(tenantId, key), value)
     } catch (_) {}
   }
 
@@ -626,6 +620,7 @@ function ScreenshotExportAdmin() {
   const [isInShop, setIsInShop] = useState(true)
   const [artworkNumber, setArtworkNumber] = useState<string>('')
   const [showPrintModal, setShowPrintModal] = useState(false)
+  const [oneClickPrinting, setOneClickPrinting] = useState(false)
   const [showShareFallbackOverlay, setShowShareFallbackOverlay] = useState(false)
   const [shareFallbackImageUrl, setShareFallbackImageUrl] = useState<string | null>(null)
   const shareFallbackBlobRef = useRef<Blob | null>(null)
@@ -738,48 +733,31 @@ function ScreenshotExportAdmin() {
     return () => { isMounted = false; clearTimeout(t) }
   }, [])
 
-  // CSS-Variablen setzen - NUR beim Mount um Render-Loops zu vermeiden
-  // Änderungen werden erst nach Reload aktiv (verhindert Crashes)
+  // CSS-Variablen setzen wenn designSettings vorhanden (setState-frei → kein Render-Loop)
   useEffect(() => {
+    if (!designSettings || Object.keys(designSettings).length === 0) return
     let isMounted = true
-    let timeoutId: ReturnType<typeof setTimeout> | null = null
-    
-    // Warte bis designSettings geladen ist
-    const setCSSVars = () => {
+    const timeoutId = setTimeout(() => {
       if (!isMounted) return
       try {
         const root = document.documentElement
-        // Nur setzen wenn Werte existieren und nicht leer sind
-        if (designSettings?.accentColor) root.style.setProperty('--k2-accent', designSettings.accentColor)
-        if (designSettings?.backgroundColor1) root.style.setProperty('--k2-bg-1', designSettings.backgroundColor1)
-        if (designSettings?.backgroundColor2) root.style.setProperty('--k2-bg-2', designSettings.backgroundColor2)
-        if (designSettings?.backgroundColor3) root.style.setProperty('--k2-bg-3', designSettings.backgroundColor3)
-        if (designSettings?.textColor) root.style.setProperty('--k2-text', designSettings.textColor)
-        if (designSettings?.mutedColor) root.style.setProperty('--k2-muted', designSettings.mutedColor)
-        if (designSettings?.cardBg1) root.style.setProperty('--k2-card-bg-1', designSettings.cardBg1)
-        if (designSettings?.cardBg2) root.style.setProperty('--k2-card-bg-2', designSettings.cardBg2)
+        if (designSettings.accentColor) root.style.setProperty('--k2-accent', designSettings.accentColor)
+        if (designSettings.backgroundColor1) root.style.setProperty('--k2-bg-1', designSettings.backgroundColor1)
+        if (designSettings.backgroundColor2) root.style.setProperty('--k2-bg-2', designSettings.backgroundColor2)
+        if (designSettings.backgroundColor3) root.style.setProperty('--k2-bg-3', designSettings.backgroundColor3)
+        if (designSettings.textColor) root.style.setProperty('--k2-text', designSettings.textColor)
+        if (designSettings.mutedColor) root.style.setProperty('--k2-muted', designSettings.mutedColor)
+        if (designSettings.cardBg1) root.style.setProperty('--k2-card-bg-1', designSettings.cardBg1)
+        if (designSettings.cardBg2) root.style.setProperty('--k2-card-bg-2', designSettings.cardBg2)
       } catch (error) {
         console.error('Fehler beim Setzen der CSS-Variablen:', error)
       }
-    }
-    
-    // Wenn designSettings bereits vorhanden, sofort setzen
-    if (designSettings && Object.keys(designSettings).length > 0) {
-      timeoutId = setTimeout(setCSSVars, 100)
-    } else {
-      // Sonst warte bis es geladen ist (max 2 Sekunden)
-      timeoutId = setTimeout(() => {
-        if (isMounted && designSettings && Object.keys(designSettings).length > 0) {
-          setCSSVars()
-        }
-      }, 500)
-    }
-    
+    }, 100)
     return () => {
       isMounted = false
-      if (timeoutId) clearTimeout(timeoutId)
+      clearTimeout(timeoutId)
     }
-  }, []) // NUR beim Mount - verhindert Render-Loops // KEINE Dependency - verhindert Render-Loops, lädt nur beim Mount
+  }, [designSettings])
 
   // Design-Einstellungen speichern
   const handleDesignChange = (key: string, value: string) => {
@@ -1050,8 +1028,9 @@ function ScreenshotExportAdmin() {
   const [isDeploying, setIsDeploying] = React.useState(false)
   const [isSyncing, setIsSyncing] = React.useState(false)
   const [publishErrorMsg, setPublishErrorMsg] = React.useState<string | null>(null)
+  const [publishSuccessModal, setPublishSuccessModal] = React.useState<{ size: number; version: number } | null>(null)
   
-  // Smart Sync: Lädt Werke von Vercel gallery-data.json und merged mit lokalen (lokale haben Priorität)
+  // Smart Sync: Server = Quelle der Wahrheit (wie GaleriePage/GalerieVorschauPage)
   const handleSyncFromServer = async () => {
     if (isSyncing) return
     setIsSyncing(true)
@@ -1065,29 +1044,49 @@ function ScreenshotExportAdmin() {
       const data = await res.json()
       const serverArtworks = Array.isArray(data?.artworks) ? data.artworks : []
       const localArtworks = loadArtworks()
-      const merged = [...localArtworks]
-      let added = 0
-      serverArtworks.forEach((s: any) => {
-        const exists = merged.some((a: any) =>
-          (a.number && s.number && String(a.number) === String(s.number)) ||
-          (a.id && s.id && String(a.id) === String(s.id))
-        )
-        if (!exists) {
-          merged.push(s)
-          added++
+      const serverMap = new Map<string, any>()
+      serverArtworks.forEach((a: any) => {
+        const key = a.number || a.id
+        if (key) serverMap.set(key, a)
+      })
+      const merged: any[] = [...serverArtworks]
+      const toHistory: any[] = []
+      localArtworks.forEach((local: any) => {
+        const key = local.number || local.id
+        if (!key) return
+        const serverArtwork = serverMap.get(key)
+        const isMobileWork = local.createdOnMobile || local.updatedOnMobile
+        const createdAt = local.createdAt ? new Date(local.createdAt).getTime() : 0
+        const isVeryNew = createdAt > Date.now() - 600000
+        if (!serverArtwork) {
+          if (isMobileWork && isVeryNew) merged.push(local)
+          else toHistory.push(local)
+        } else {
+          if (isMobileWork) {
+            const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
+            if (idx >= 0) merged[idx] = local
+            else merged.push(local)
+          } else {
+            const localUpdated = local.updatedAt ? new Date(local.updatedAt).getTime() : 0
+            const serverUpdated = serverArtwork.updatedAt ? new Date(serverArtwork.updatedAt).getTime() : 0
+            if (localUpdated > serverUpdated) {
+              const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
+              if (idx >= 0) merged[idx] = local
+              else merged.push(local)
+            }
+          }
         }
       })
-      if (added > 0) {
-        const ok = saveArtworks(merged)
-        if (ok) {
-          setAllArtworks(merged)
-          alert(`✅ ${added} neue Werk(e) vom Server geladen!\n\nLokal: ${localArtworks.length} → Jetzt: ${merged.length}`)
-        } else {
-          alert('⚠️ Fehler beim Speichern.')
-        }
+      if (toHistory.length > 0) appendToHistory(toHistory)
+      const ok = saveArtworks(merged)
+      if (ok) {
+        setAllArtworks(merged)
+        const msg = toHistory.length > 0
+          ? `✅ ${merged.length} Werke geladen (Server = Quelle).\n\n${toHistory.length} gelöschte Werke in History archiviert.`
+          : `✅ ${merged.length} Werke synchronisiert.`
+        alert(msg)
       } else {
-        setAllArtworks(localArtworks)
-        alert(`✅ Alles aktuell.\n\nServer: ${serverArtworks.length} Werke\nLokal: ${localArtworks.length} Werke`)
+        alert('⚠️ Fehler beim Speichern.')
       }
     } catch (err) {
       try {
@@ -1100,7 +1099,12 @@ function ScreenshotExportAdmin() {
             const exists = merged.some((a: any) =>
               (a.number && s.number && a.number === s.number) || (a.id && s.id && a.id === s.id)
             )
-            if (!exists) merged.push(s)
+            if (!exists) {
+              const work = { ...s }
+              if (!work.addedToGalleryAt) work.addedToGalleryAt = new Date().toISOString()
+              if (!work.createdAt) work.createdAt = work.addedToGalleryAt
+              merged.push(work)
+            }
           })
           if (merged.length > localArtworks.length) {
             saveArtworks(merged)
@@ -1450,23 +1454,9 @@ function ScreenshotExportAdmin() {
                   const newVersion = currentVersion + 1
                   localStorage.setItem('k2-data-version', newVersion.toString())
                   
-                  // Zeige Erfolgsmeldung mit Link statt automatisch zu öffnen
-                  // (Popups werden oft blockiert und verursachen Probleme)
-                  const vercelDeploymentsUrl = 'https://vercel.com/k2-galerie/k2-galerie/deployments'
-                  
-                  const userWantsVercel = confirm(`✅✅✅ VERÖFFENTLICHUNG ERFOLGREICH! ✅✅✅\n\n📁 Datei geschrieben: public/gallery-data.json\n📊 Größe: ${(result.size / 1024).toFixed(1)} KB\n📦 Version: ${newVersion}\n\n📦 Git Push erfolgreich!\n\n🚀 Vercel:\n⏳ Deployment startet automatisch (1-2 Minuten)\n\n📱 MOBILE AKTUALISIEREN (WICHTIG!):\n\n1. ⏰ Warte 2-3 Minuten bis Deployment fertig ist\n2. 📱 QR-Code NEU scannen (sehr wichtig!)\n3. 🔄 Oder: Im Browser Cache leeren (Cmd+Shift+R)\n\n⚠️ WICHTIG:\n- QR-Code muss NEU gescannt werden!\n- Alter QR-Code zeigt alte Daten!\n- Warte bis Deployment fertig ist!\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nMöchtest du die Vercel Deployments-Seite öffnen?\n\n(OK = Öffnen, Abbrechen = Nur Link anzeigen)`)
-                  
-                  if (userWantsVercel) {
-                    // Versuche Vercel-Seite zu öffnen
-                    const vercelWindow = window.open(vercelDeploymentsUrl, '_blank', 'noopener,noreferrer')
-                    if (!vercelWindow || vercelWindow.closed) {
-                      // Popup wurde blockiert - zeige Link
-                      alert(`⚠️ Popup wurde blockiert!\n\n📋 Bitte manuell öffnen:\n\n${vercelDeploymentsUrl}\n\n💡 Tipp: Kopiere den Link und öffne ihn in einem neuen Tab`)
-                    }
-                  } else {
-                    // Nutzer möchte nicht öffnen - zeige Link
-                    alert(`📋 Vercel Deployments-Seite:\n\n${vercelDeploymentsUrl}\n\n💡 Tipp: Kopiere den Link und öffne ihn in einem neuen Tab\n\n📱 MOBILE:\nWarte 2-3 Minuten, dann QR-Code NEU scannen!`)
-                  }
+                  // Zeige Modal mit Button statt confirm+window.open (Popup-Blocker umgehen)
+                  // Nutzer klickt Button → window.open ist direkt user-initiiert → kein Block
+                  setPublishSuccessModal({ size: result.size, version: newVersion })
                 } else {
                   // Unklarer Status - zeige Warnung
                   console.warn('⚠️ Unklarer Git Push Status:', {
@@ -6052,14 +6042,15 @@ ${'='.repeat(60)}
     return formattedNumber
   }
 
-  // Artwork-URL für QR (gleiche Basis wie Mobile Connect) – für lokale QR-Erzeugung und für API-Fallback
+  // Artwork-URL für QR (gleiche Basis wie Mobile Connect) – mit Stand für Cache-Busting
   const getArtworkUrlForQR = (artworkId: string): string => {
     let base = ''
     try {
       base = (typeof localStorage !== 'undefined' && localStorage.getItem('k2-mobile-url')) || ''
     } catch (_) {}
     base = (base || GALERIE_QR_BASE).replace(/\?.*$/, '').replace(/#.*$/, '')
-    return `${base}${base.includes('?') ? '&' : '?'}werk=${encodeURIComponent(artworkId)}`
+    const url = `${base}${base.includes('?') ? '&' : '?'}werk=${encodeURIComponent(artworkId)}`
+    return urlWithBuildVersion(url)
   }
 
   // QR als Data-URL lokal erzeugen (Standalone – funktioniert ohne Internet/WLAN)
@@ -6434,6 +6425,7 @@ ${'='.repeat(60)}
       inShop: isInShop,
       imageUrl: imageDataUrl, // Komprimierte Data URL
       createdAt: new Date().toISOString(),
+      addedToGalleryAt: new Date().toISOString(), // Zeitstempel: wann in Galerie aufgenommen
       // Markiere als Mobile-Werk für bessere Synchronisation
       createdOnMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
       deviceId: localStorage.getItem('k2-device-id') || `device-${Date.now()}-${Math.random().toString(36).substring(7)}`
@@ -6528,8 +6520,9 @@ ${'='.repeat(60)}
         (a.id === editingArtwork.id && a.number === editingArtwork.number)
       )
       if (index !== -1) {
-        // Behalte createdAt wenn vorhanden, sonst setze aktuelles Datum
+        // Behalte createdAt und addedToGalleryAt wenn vorhanden
         artworkData.createdAt = artworks[index].createdAt || new Date().toISOString()
+        artworkData.addedToGalleryAt = artworks[index].addedToGalleryAt || artworks[index].createdAt || artworkData.createdAt
         artworkData.updatedOnMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
         artworks[index] = artworkData
       } else {
@@ -6800,6 +6793,63 @@ ${'='.repeat(60)}
     }
   }
 
+  // One-Click: Etikett direkt an Print-Server senden (kein Druckdialog)
+  const handleOneClickPrint = async () => {
+    if (!savedArtwork) return
+    const tenant = getCurrentTenantId()
+    const settings = loadPrinterSettingsForTenant(tenant)
+    const url = (settings.printServerUrl || '').trim().replace(/\/$/, '')
+    if (!url) {
+      alert('Print-Server URL fehlt. Einstellungen → Drucker → Print-Server URL eintragen (z.B. http://localhost:3847)')
+      return
+    }
+    setOneClickPrinting(true)
+    const timeoutMs = 20000
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout – Server antwortet nicht. One-Click-Anwendung im Projektordner starten?')), timeoutMs)
+    )
+    try {
+      const lm = parseLabelSize(settings.labelSize)
+      const blob = await Promise.race([getEtikettBlob(lm.width, lm.height), timeoutPromise])
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const r = new FileReader()
+        r.onload = () => {
+          const data = (r.result as string) || ''
+          const m = data.match(/^data:[^;]+;base64,(.+)$/)
+          resolve(m ? m[1]! : data)
+        }
+        r.onerror = () => reject(new Error('Bild konnte nicht gelesen werden'))
+        r.readAsDataURL(blob)
+      })
+      const res = await Promise.race([
+        fetch(`${url}/print`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: base64,
+            printerIP: settings.ipAddress || '192.168.1.102',
+            widthMm: lm.width,
+            heightMm: lm.height
+          })
+        }),
+        timeoutPromise
+      ])
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(json.error || `Fehler ${res.status}`)
+      setShowPrintModal(false)
+      alert('✅ Etikett gesendet – Brother druckt.')
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'One-Click-Druck fehlgeschlagen'
+      const isIpadOrPhone = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+      const urlHint = isIpadOrPhone
+        ? '\n\n📱 Auf iPad/Handy: Print-Server URL muss die MAC-IP sein, nicht localhost!\n   Einstellungen → Drucker → z.B. http://192.168.0.31:3847 (Mac im gleichen WLAN).'
+        : ''
+      alert('❌ One-Click-Druck fehlgeschlagen: ' + msg + '\n\nVersucht: ' + url + '/print' + urlHint + '\n\nOne-Click-Anwendung starten:\n• Am Mac im Projektordner (Cursor- oder Mac-Terminal):\n  npm run print-server\n  oder\n  node scripts/k2-print-server.js')
+    } finally {
+      setOneClickPrinting(false)
+    }
+  }
+
   // Drucken: Fenster SOFORT öffnen (vor await) – sonst blockiert Pop-up-Blocker
   const handlePrint = async () => {
     if (!savedArtwork) return
@@ -6818,12 +6868,12 @@ ${'='.repeat(60)}
       const w = lm.width
       const h = lm.height
       win.document.write(`
-<!DOCTYPE html><html><head><meta charset="utf-8"><title>Etikett</title>
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Etikett ${w}×${h}mm</title>
 <style>
-* { margin: 0; padding: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 @page { size: ${w}mm ${h}mm; margin: 0; }
-html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h}mm; overflow: hidden; }
-img { width: ${w}mm; height: ${h}mm; display: block; object-fit: fill; }
+html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; min-width: ${w}mm; height: ${h}mm; min-height: ${h}mm; overflow: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+img { width: ${w}mm; height: ${h}mm; max-width: ${w}mm; max-height: ${h}mm; display: block; object-fit: contain; object-position: center; }
 </style></head>
 <body><img src="${url}" alt="Etikett"></body></html>`)
       win.document.close()
@@ -6897,10 +6947,10 @@ img { width: ${w}mm; height: ${h}mm; display: block; object-fit: fill; }
     }
   }
 
-  /** Erzeugt Etikett als PNG-Bild in exakter Etikettengröße (widthMm x heightMm). Alles proportional, nichts außerhalb. */
+  /** Erzeugt Etikett als PNG-Bild in exakter Etikettengröße (widthMm x heightMm). Brother 300 DPI = 300/25.4 px/mm. */
   const getEtikettBlob = (widthMm = 29, heightMm = 90.3): Promise<Blob> => {
     if (!savedArtwork) return Promise.reject(new Error('Kein Werk'))
-    const pxPerMm = 96 / 25.4
+    const pxPerMm = 300 / 25.4  /* Brother QL-820: 300 DPI */
     const w = Math.round(widthMm * pxPerMm)
     const h = Math.round(heightMm * pxPerMm)
     return getQRDataUrl(savedArtwork.number).then((qrDataUrl) => {
@@ -7000,12 +7050,14 @@ img { width: ${w}mm; height: ${h}mm; display: block; object-fit: fill; }
     }
   }
 
-  // PDF für QR-Code Plakat erstellen
+  // PDF für QR-Code Plakat erstellen (lokal generiert – keine externe API)
   const printQRCodePlakat = async () => {
     const homepageUrl = `${window.location.origin}/projects/k2-galerie/galerie`
     const rundgangUrl = `${window.location.origin}/projects/k2-galerie/virtueller-rundgang`
-    const homepageQRUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(homepageUrl)}`
-    const rundgangQRUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(rundgangUrl)}`
+    const [homepageQRUrl, rundgangQRUrl] = await Promise.all([
+      QRCode.toDataURL(homepageUrl, { width: 300, margin: 1 }),
+      QRCode.toDataURL(rundgangUrl, { width: 300, margin: 1 })
+    ])
 
     const date = new Date().toLocaleDateString('de-DE', { 
       day: '2-digit', 
@@ -8566,6 +8618,18 @@ img { width: ${w}mm; height: ${h}mm; display: block; object-fit: fill; }
                     }}>
                       {artwork.inExhibition && <span style={{ display: 'block' }}>✓ Ausstellung</span>}
                       {artwork.inShop && <span style={{ display: 'block' }}>✓ Shop</span>}
+                      {(artwork.addedToGalleryAt || artwork.createdAt) && (
+                        <span style={{ display: 'block', color: 'rgba(255, 255, 255, 0.45)', fontSize: 'clamp(0.75rem, 2vw, 0.85rem)' }}>
+                          Aufgenommen: {(() => {
+                            const d = artwork.addedToGalleryAt || artwork.createdAt
+                            if (!d) return ''
+                            try {
+                              const dt = new Date(d)
+                              return dt.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                            } catch { return d }
+                          })()}
+                        </span>
+                      )}
                     </div>
                     <div style={{
                       display: 'flex',
@@ -10078,6 +10142,34 @@ img { width: ${w}mm; height: ${h}mm; display: block; object-fit: fill; }
                         </p>
                       </div>
 
+                      <div className="field">
+                        <label style={{ fontSize: '0.9rem', color: '#8fa0c9', marginBottom: '0.5rem', display: 'block' }}>
+                          Print-Server URL (One-Click-Druck)
+                        </label>
+                        <input
+                          type="text"
+                          value={printerSettings.printServerUrl ?? ''}
+                          onChange={(e) => {
+                            const v = e.target.value.trim()
+                            setPrinterSettings(prev => ({ ...prev, printServerUrl: v }))
+                            savePrinterSetting(printerSettingsForTenant, 'printServerUrl', v)
+                          }}
+                          placeholder="Am Mac: http://localhost:3847 — Am iPad: http://MAC-IP:3847 (z.B. 192.168.0.31)"
+                          style={{
+                            padding: '0.75rem',
+                            background: 'rgba(255, 255, 255, 0.1)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            borderRadius: '8px',
+                            color: '#ffffff',
+                            fontSize: '0.95rem',
+                            width: '100%'
+                          }}
+                        />
+                        <p style={{ fontSize: '0.8rem', color: '#8fa0c9', marginTop: '0.5rem', marginBottom: 0 }}>
+                          Optional. Wenn gesetzt: „One-Click drucken“ im Etikett-Modal. Bei Fehlermeldung: One-Click-Anwendung im Projektordner starten: <code style={{ fontSize: '0.75rem' }}>npm run print-server</code> oder <code style={{ fontSize: '0.75rem' }}>node scripts/k2-print-server.js</code>
+                        </p>
+                      </div>
+
                       <div style={{
                         padding: '1rem',
                         background: 'rgba(95, 251, 241, 0.1)',
@@ -10092,7 +10184,7 @@ img { width: ${w}mm; height: ${h}mm; display: block; object-fit: fill; }
                           <li>Zweiter Router auf mobilem Gerät installiert</li>
                           <li>Zugriff von Mac, iPad und Handy möglich</li>
                           <li>Einstellungen werden automatisch gespeichert</li>
-                          <li><strong>»AirPrint nicht gefunden«?</strong> Brother erscheint oft nicht automatisch. <strong>Mac:</strong> Systemeinstellungen → Drucker & Scanner → „+“ → „IP-Drucker“ → IP eintragen (z. B. {printerSettings.ipAddress}) → hinzufügen. Danach im Druckdialog wählbar.</li>
+                          <li><strong>AirPrint aktiv:</strong> Im Druckdialog Brother oder AirPrint-Drucker wählen. Papier: 29×90,3 mm, 100 % Skalierung.</li>
                         </ul>
                       </div>
 
@@ -10101,6 +10193,7 @@ img { width: ${w}mm; height: ${h}mm; display: block; object-fit: fill; }
                           savePrinterSetting(printerSettingsForTenant, 'ip', printerSettings.ipAddress)
                           savePrinterSetting(printerSettingsForTenant, 'type', printerSettings.printerType)
                           savePrinterSetting(printerSettingsForTenant, 'labelSize', printerSettings.labelSize)
+                          savePrinterSetting(printerSettingsForTenant, 'printServerUrl', printerSettings.printServerUrl ?? '')
                           alert(`✅ Drucker & Format für ${printerSettingsForTenant === 'k2' ? 'K2' : printerSettingsForTenant === 'oeffentlich' ? 'ök2' : 'Demo'} gespeichert!`)
                         }}
                         style={{
@@ -12826,6 +12919,97 @@ img { width: ${w}mm; height: ${h}mm; display: block; object-fit: fill; }
       )}
 
 
+      {/* Modal: Veröffentlichung erfolgreich – Button öffnet Vercel (kein Popup-Block) */}
+      {publishSuccessModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0, 0, 0, 0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99998,
+            padding: '1rem'
+          }}
+          onClick={() => setPublishSuccessModal(null)}
+        >
+          <div
+            style={{
+              background: '#1a1d24',
+              borderRadius: '16px',
+              maxWidth: '420px',
+              width: '100%',
+              padding: '1.5rem',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+              border: '1px solid rgba(95, 251, 241, 0.3)'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 style={{ margin: '0 0 1rem', color: '#22c55e', fontSize: '1.2rem' }}>✅ Veröffentlichung erfolgreich</h3>
+            {typeof window !== 'undefined' && (() => {
+              const ua = navigator.userAgent
+              const isMobileUA = /iPhone|iPad|iPod|Android/i.test(ua)
+              const isTouch = 'ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0)
+              return !isMobileUA && !isTouch && window.innerWidth >= 768
+            })() ? (
+              <>
+                <p style={{ margin: '0 0 0.75rem', color: '#e2e8f0', fontSize: '0.95rem' }}>
+                  Datei: gallery-data.json ({((publishSuccessModal.size || 0) / 1024).toFixed(1)} KB)
+                </p>
+                <p style={{ margin: '0 0 1rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>
+                  📱 Mobile: 2–3 Min warten, dann QR-Code neu scannen.
+                </p>
+              </>
+            ) : (
+              <p style={{ margin: '0 0 1rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>
+                In 2–3 Min auf allen Geräten sichtbar.
+              </p>
+            )}
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              {typeof window !== 'undefined' && (() => {
+                const ua = navigator.userAgent
+                const isMobileUA = /iPhone|iPad|iPod|Android/i.test(ua)
+                const isTouch = 'ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0)
+                return !isMobileUA && !isTouch && window.innerWidth >= 768
+              })() && (
+                <a
+                  href="https://vercel.com/k2-galerie/k2-galerie/deployments"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Vercel-Dashboard öffnen – siehst ob Deployment läuft oder fertig ist"
+                  style={{
+                    padding: '0.6rem 1.2rem',
+                    background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                    color: '#fff',
+                    textDecoration: 'none',
+                    borderRadius: '8px',
+                    fontSize: '1rem',
+                    fontWeight: 600
+                  }}
+                >
+                  🚀 Vercel öffnen
+                </a>
+              )}
+              <button
+                onClick={() => setPublishSuccessModal(null)}
+                style={{
+                  padding: '0.6rem 1.2rem',
+                  background: 'rgba(255,255,255,0.15)',
+                  color: '#fff',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Schließen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal: Fehlermeldung Veröffentlichen – mit Kopieren-Button für Mobile → Cursor schicken */}
       {publishErrorMsg && (
         <div
@@ -12862,16 +13046,50 @@ img { width: ${w}mm; height: ${h}mm; display: block; object-fit: fill; }
             <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '1.1rem', fontWeight: 600, color: '#f59e0b' }}>
               ⚠️ Veröffentlichen fehlgeschlagen
             </div>
-            <pre style={{ flex: 1, overflow: 'auto', padding: '1rem 1.25rem', margin: 0, fontSize: '0.85rem', color: '#e2e8f0', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-              {publishErrorMsg}
-            </pre>
+            <div style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', color: '#94a3b8' }}>
+              Text antippen → halten → „Kopieren“ wählen (funktioniert auf iPad/iPhone)
+            </div>
+            <textarea
+              readOnly
+              value={publishErrorMsg}
+              style={{
+                flex: 1,
+                minHeight: '120px',
+                overflow: 'auto',
+                padding: '1rem 1.25rem',
+                margin: '0 1rem',
+                fontSize: '0.85rem',
+                color: '#e2e8f0',
+                background: '#0f1114',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '8px',
+                resize: 'none',
+                fontFamily: 'monospace'
+              }}
+              onClick={e => e.stopPropagation()}
+            />
             <div style={{ padding: '1rem 1.25rem', display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
               <button
                 onClick={() => {
+                  const doCopy = () => {
+                    const ta = document.createElement('textarea')
+                    ta.value = publishErrorMsg
+                    ta.style.position = 'fixed'
+                    ta.style.left = '-9999px'
+                    document.body.appendChild(ta)
+                    ta.select()
+                    try {
+                      document.execCommand('copy')
+                      alert('✅ Kopiert! In Cursor einfügen und an den Assistenten schicken.')
+                    } catch {
+                      alert('Text antippen, halten, dann „Kopieren“ wählen.')
+                    }
+                    document.body.removeChild(ta)
+                  }
                   if (navigator.clipboard?.writeText) {
-                    navigator.clipboard.writeText(publishErrorMsg).then(() => alert('✅ Kopiert! In Cursor einfügen und an den Assistenten schicken.')).catch(() => alert('⚠️ Kopieren fehlgeschlagen. Text manuell markieren.'))
+                    navigator.clipboard.writeText(publishErrorMsg).then(() => alert('✅ Kopiert! In Cursor einfügen und an den Assistenten schicken.')).catch(doCopy)
                   } else {
-                    alert('Kopieren nicht verfügbar. Text manuell markieren.')
+                    doCopy()
                   }
                 }}
                 style={{
@@ -13914,8 +14132,43 @@ setPreviewUrl(null)
                 <div style={{ fontSize: isMobile ? '0.9rem' : '1rem', fontWeight: 'bold', color: '#8b6914', marginBottom: isMobile ? '0.5rem' : '0.75rem' }}>
                   {savedArtwork.number}
                 </div>
-                {/* iPad/Handy: 1-Klick-Nähe – ein Tipp öffnet Druckdialog, zweiter Tipp = Drucken */}
+                {/* One-Click immer anzeigen (iPad/Desktop); ohne Print-Server URL → Hinweis anzeigen */}
                 <div className="admin-modal-actions" style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'stretch', marginBottom: isMobile ? '1rem' : '1.5rem' }}>
+                  <button
+                    type="button"
+                    disabled={oneClickPrinting}
+                    onPointerDown={(e) => e.currentTarget.releasePointerCapture(e.pointerId)}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      const url = (loadPrinterSettingsForTenant(getCurrentTenantId()).printServerUrl || '').trim()
+                      if (url) {
+                        handleOneClickPrint()
+                      } else {
+                        alert(
+                          '⚡ One-Click-Anwendung einrichten\n\n' +
+                          '1. Einstellungen → Drucker → Tab „Drucker“\n' +
+                          '2. „Print-Server URL“ eintragen:\n   • Am Mac: http://localhost:3847\n   • Am iPad/Handy: Mac-IP, z. B. http://192.168.0.31:3847 (Mac im gleichen WLAN)\n' +
+                          '3. One-Click-Anwendung starten: im Projektordner (Cursor- oder Mac-Terminal)\n   npm run print-server\n   oder\n   node scripts/k2-print-server.js\n\n' +
+                          'Dann funktioniert „One-Click drucken“ und sendet das Etikett direkt an den Drucker.'
+                        )
+                      }
+                    }}
+                    style={{
+                      padding: isMobile ? '1.25rem 1.5rem' : '0.75rem 1.25rem',
+                      fontSize: isMobile ? '1.25rem' : '1rem',
+                      fontWeight: 700,
+                      background: oneClickPrinting ? 'rgba(34, 197, 94, 0.6)' : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                      border: 'none',
+                      borderRadius: '12px',
+                      color: '#fff',
+                      cursor: oneClickPrinting ? 'wait' : 'pointer',
+                      boxShadow: '0 4px 14px rgba(34, 197, 94, 0.4)',
+                      touchAction: 'manipulation'
+                    }}
+                  >
+                    {oneClickPrinting ? '⏳ Wird gesendet …' : '⚡ One-Click drucken'}
+                  </button>
                   {isMobile ? (
                     <>
                       <button
@@ -14021,7 +14274,7 @@ setPreviewUrl(null)
                   </div>
                 </details>
                 <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
-                  AirPrint-Problem? Drucker in Systemeinstellungen → Drucker &amp; Scanner per IP hinzufügen.
+                  AirPrint aktiv – Brother/AirPrint-Drucker im Druckdialog wählen. Papier: 29×90,3 mm.
                 </p>
               </div>
             </div>

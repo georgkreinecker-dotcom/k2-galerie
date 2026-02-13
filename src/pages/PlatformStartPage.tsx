@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
 import '../App.css'
 import { PLATFORM_ROUTES, PROJECT_ROUTES } from '../config/navigation'
+import { urlWithBuildVersion } from '../buildInfo.generated'
 
 // Haupt-Features (wichtigste Funktionen)
 const mainFeatures = [
@@ -129,10 +130,10 @@ export default function PlatformStartPage() {
     }
   }, [])
 
-  // QR-Code lokal erzeugen (keine externe API)
+  // QR-Code lokal erzeugen – mit Stand für Cache-Busting
   useEffect(() => {
     if (!galerieUrl) { setGalerieQrUrl(''); return }
-    QRCode.toDataURL(galerieUrl, { width: 200, margin: 1 }).then(setGalerieQrUrl).catch(() => setGalerieQrUrl(''))
+    QRCode.toDataURL(urlWithBuildVersion(galerieUrl), { width: 200, margin: 1 }).then(setGalerieQrUrl).catch(() => setGalerieQrUrl(''))
   }, [galerieUrl])
 
   return (

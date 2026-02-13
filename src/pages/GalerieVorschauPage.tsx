@@ -10,6 +10,7 @@ import {
   isSupabaseConfigured
 } from '../utils/supabaseClient'
 import { sortArtworksNewestFirst } from '../utils/artworkSort'
+import { appendToHistory } from '../utils/artworkHistory'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
 import '../App.css'
 
@@ -1033,23 +1034,32 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                   }
                 })
                 
-                // Starte mit Server-Werken
+                // SERVER = QUELLE DER WAHRHEIT nach Veröffentlichung
+                // Lokale Werke die nicht auf Server sind = wurden woanders gelöscht → History, nicht Galerie
                 const mergedArtworks = [...serverArtworks]
+                const toHistory: any[] = []
                 
-                // KRITISCH: Füge ALLE lokalen Werke hinzu die nicht auf Server sind ODER Mobile-Marker haben
                 existingArtworks.forEach((localArtwork: any) => {
                   const key = localArtwork.number || localArtwork.id
                   if (!key) return
                   
                   const serverArtwork = serverMap.get(key)
                   
-                  // WICHTIG: Mobile-Werke IMMER behalten (createdOnMobile oder updatedOnMobile)
+                  // WICHTIG: Mobile-Werke die < 10 Min alt sind → evtl. noch nicht veröffentlicht, behalten
                   const isMobileWork = localArtwork.createdOnMobile || localArtwork.updatedOnMobile
+                  const createdAt = localArtwork.createdAt ? new Date(localArtwork.createdAt).getTime() : 0
+                  const isVeryNew = createdAt > Date.now() - 600000 // 10 Min
                   
                   if (!serverArtwork) {
-                    // Lokales Werk existiert nicht auf Server → IMMER hinzufügen
-                    console.log('💾 Behalte lokales Werk (nicht auf Server):', key, isMobileWork ? '(Mobile)' : '')
-                    mergedArtworks.push(localArtwork)
+                    if (isMobileWork && isVeryNew) {
+                      // Sehr neues Mobile-Werk, noch nicht veröffentlicht
+                      console.log('💾 Behalte sehr neues Mobile-Werk (noch nicht auf Server):', key)
+                      mergedArtworks.push(localArtwork)
+                    } else {
+                      // Wurde woanders gelöscht und veröffentlicht → nur in History
+                      console.log('📜 Werk nicht auf Server → History:', key)
+                      toHistory.push(localArtwork)
+                    }
                   } else {
                     // Werk existiert auf beiden → prüfe Mobile-Marker ZUERST
                     if (isMobileWork) {
@@ -1097,7 +1107,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                   }
                 })
                 
-                console.log(`🔄 Merge abgeschlossen: ${serverArtworks.length} Server + ${existingArtworks.length} Lokal = ${mergedArtworks.length} Gesamt`)
+                if (toHistory.length > 0) appendToHistory(toHistory)
+                
+                console.log(`🔄 Merge abgeschlossen: ${serverArtworks.length} Server (Quelle) → ${mergedArtworks.length} Gesamt, ${toHistory.length} in History`)
                 console.log('📊 Finale Nummern:', mergedArtworks.map((a: any) => a.number || a.id))
                 
                 // WICHTIG: Speichere gemergte Liste UND synchronisiere zu Supabase (falls Mobile)
@@ -1448,52 +1460,40 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
             if (key) serverMap.set(key, a)
           })
           
-          // KRITISCH: Starte mit ALLEN lokalen Werken (haben ABSOLUTE Priorität!)
-          const localMap = new Map<string, any>()
-          localArtworks.forEach((local: any) => {
-            const key = local.number || local.id
-            if (key) {
-              localMap.set(key, local)
-              // Mobile-Werke besonders markieren
-              if (local.createdOnMobile || local.updatedOnMobile) {
-                console.log(`🔒 Lokales Mobile-Werk geschützt: ${key}`)
+          // SERVER = QUELLE DER WAHRHEIT (wie Initial-Load)
+          const mergedArtworks: any[] = [...serverArtworks]
+          const toHistory: any[] = []
+          
+          localArtworks.forEach((localArtwork: any) => {
+            const key = localArtwork.number || localArtwork.id
+            if (!key) return
+            const serverArtwork = serverMap.get(key)
+            const isMobileWork = localArtwork.createdOnMobile || localArtwork.updatedOnMobile
+            const createdAt = localArtwork.createdAt ? new Date(localArtwork.createdAt).getTime() : 0
+            const isVeryNew = createdAt > Date.now() - 600000
+            
+            if (!serverArtwork) {
+              if (isMobileWork && isVeryNew) mergedArtworks.push(localArtwork)
+              else toHistory.push(localArtwork)
+            } else {
+              if (isMobileWork) {
+                const idx = mergedArtworks.findIndex((a: any) => (a.number || a.id) === key)
+                if (idx >= 0) mergedArtworks[idx] = localArtwork
+                else mergedArtworks.push(localArtwork)
+              } else {
+                const localUpdated = localArtwork.updatedAt ? new Date(localArtwork.updatedAt).getTime() : 0
+                const serverUpdated = serverArtwork.updatedAt ? new Date(serverArtwork.updatedAt).getTime() : 0
+                if (localUpdated > serverUpdated) {
+                  const idx = mergedArtworks.findIndex((a: any) => (a.number || a.id) === key)
+                  if (idx >= 0) mergedArtworks[idx] = localArtwork
+                  else mergedArtworks.push(localArtwork)
+                }
               }
             }
           })
           
-          // Starte mit ALLEN lokalen Werken (haben Priorität!)
-          const mergedArtworks: any[] = [...localArtworks]
-          
-          // Füge Server-Werke hinzu die NICHT lokal sind
-          serverArtworks.forEach((serverArtwork: any) => {
-            const key = serverArtwork.number || serverArtwork.id
-            if (key && !localMap.has(key)) {
-              mergedArtworks.push(serverArtwork)
-            }
-          })
-          
-          // KRITISCH: Prüfe ob ALLE lokalen Werke erhalten bleiben!
-          const localKeys = new Set(localArtworks.map((a: any) => a.number || a.id))
-          const mergedKeys = new Set(mergedArtworks.map((a: any) => a.number || a.id))
-          const allLocalPreserved = [...localKeys].every(key => mergedKeys.has(key))
-          
-          if (!allLocalPreserved) {
-            console.error('❌ KRITISCH: Lokale Werke wurden verloren beim Merge!')
-            console.error('Lokale Nummern:', [...localKeys])
-            console.error('Gemergte Nummern:', [...mergedKeys])
-            // Stelle lokale Werke wieder her - Mobile-Werke haben Priorität!
-            mergedArtworks.length = 0
-            mergedArtworks.push(...localArtworks)
-            serverArtworks.forEach((serverArtwork: any) => {
-              const key = serverArtwork.number || serverArtwork.id
-              if (key && !localMap.has(key)) {
-                mergedArtworks.push(serverArtwork)
-              }
-            })
-            console.log('✅ Lokale Werke wiederhergestellt - Mobile-Werke geschützt!')
-          }
-          
-          console.log(`🔒 Lokale Werke geschützt: ${localArtworks.length} Werke bleiben erhalten`)
+          if (toHistory.length > 0) appendToHistory(toHistory)
+          console.log(`🔒 Server = Quelle: ${mergedArtworks.length} Werke, ${toHistory.length} in History`)
           
           // Speichere gemergte Liste
           try {

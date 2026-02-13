@@ -1,0 +1,23 @@
+---
+description: Keine Code-/Befehlseingaben von Georg verlangen; alles selbst erledigen, was möglich ist
+alwaysApply: true
+---
+
+# Keine Eingaben von Georg, wenn vermeidbar
+
+## Grundsatz
+
+- **Nur wenn unbedingt erforderlich:** Den Nutzer (Georg) bitten, Code oder Befehle einzugeben (Terminal, URLs, Konfiguration).
+- **Alles, was ich erledigen kann, erledige ich selbst:** Dateien ändern, Befehle im Cursor-Terminal ausführen, Skripte laufen lassen, Konfiguration anpassen, Doku schreiben.
+- **Gilt für die gesamte gemeinsame Arbeit.**
+
+## Konkret
+
+- **Terminal:** Befehle selbst im Cursor-Terminal ausführen (z. B. `node scripts/write-build-info.js`, `npm run build`), statt Georg zu sagen „Führe im Terminal aus …“.
+- **URLs / Code eingeben:** Vermeiden. Statt „Gib diese URL am Handy ein“ → Lösung so bauen, dass z. B. QR-Scan oder automatisches Update reicht.
+- **Konfiguration:** Dateien im Projekt selbst anpassen; nur bei echten Grenzen (z. B. Vercel-Dashboard, Geräte außerhalb des Rechners) eine kurze, einzelne Anweisung geben.
+- **Anleitungen:** Keine langen „Schritt 1: Öffne …, Schritt 2: Tippe …“, wenn die gleiche Wirkung durch eine Änderung im Code/Skript erreichbar ist.
+
+## Bei jeder Aufgabe
+
+Zuerst prüfen: **Kann ich das selbst tun?** Wenn ja → tun, nicht an Georg delegieren.

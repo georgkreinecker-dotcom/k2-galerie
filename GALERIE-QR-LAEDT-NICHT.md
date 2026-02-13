@@ -1,4 +1,12 @@
-# Galerie lädt nach QR-Scan nicht
+# Galerie lädt nach QR-Scan auf dem Handy nicht
+
+## Wichtig: Richtige URL im QR-Code
+
+**Für Handy-Scan überall (WLAN + Mobilfunk):** QR muss zeigen auf  
+`https://k2-galerie.vercel.app/projects/k2-galerie/galerie`
+
+**Nur gleiches WLAN:** `http://DEINE-MAC-IP:5178/projects/k2-galerie/galerie`  
+→ Mobile Connect nutzt standardmäßig die Vercel-URL.
 
 ## Was geändert wurde
 

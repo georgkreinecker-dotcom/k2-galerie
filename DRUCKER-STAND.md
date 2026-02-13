@@ -21,6 +21,6 @@ Damit du nicht raten musst: Hier steht, was **bereits implementiert** ist.
 
 - **Einstellungen im Admin:** Einstellungen → Tab „Drucker“ → dort „Einstellungen für“ (K2 / ök2 / Demo), IP, Typ, Etikettenformat.
 - **Dieser Stand:** `DRUCKER-STAND.md` (diese Datei) – bei Unsicherheit „Wurde das schon gemacht?“ hier nachsehen.
-- **„AirPrint nicht gefunden“ obwohl Brother im Netz?** → `DRUCKER-AIRPRINT.md` (Drucker per IP in Systemeinstellungen hinzufügen).
+- **AirPrint aktiv:** Drucker im Druckdialog wählen. Details → `DRUCKER-AIRPRINT.md`.
 
 *Zuletzt aktualisiert: Februar 2026*

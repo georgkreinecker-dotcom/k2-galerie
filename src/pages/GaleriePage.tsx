@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { getTenantConfig, getCurrentTenantId, TENANT_CONFIGS, MUSTER_TEXTE } from '../config/tenantConfig'
+import { appendToHistory } from '../utils/artworkHistory'
+import { urlWithBuildVersion } from '../buildInfo.generated'
 import '../App.css'
 
 /** Fallback-URL für Aktualisierung in anderem Netzwerk (z. B. zuerst Mac-WLAN, dann Mobilfunk) */
@@ -57,6 +59,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
   const [showAdminModal, setShowAdminModal] = useState(false)
   const [adminPasswordInput, setAdminPasswordInput] = useState('')
   const [qrDataUrl, setQrDataUrl] = useState('')
+  const [vercelQrDataUrl, setVercelQrDataUrl] = useState('')
   // adminPassword wird nur für Initialisierung verwendet, nicht für Login-Validierung
   const [, setAdminPassword] = useState('')
 
@@ -100,30 +103,43 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
     }
   }, [musterOnly])
   
-  // Mobile-URL für QR-Code ermitteln (IP statt localhost) - mit useMemo optimiert
+  // LAN-IP für QR (z. B. 192.168.0.31) – bei localhost per RTCPeerConnection ermitteln
+  const [detectedLanIp, setDetectedLanIp] = useState<string>('')
   const mobileUrlMemo = useMemo(() => {
     try {
       const hostname = window.location.hostname
       const port = window.location.port || '5177'
       const protocol = window.location.protocol
-      
-      // WICHTIG: Wenn localhost, versuche IP-Adresse zu ermitteln
       if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        // Für Entwicklung: Zeige Hinweis dass IP-Adresse benötigt wird
-        // Die echte IP muss manuell eingegeben werden oder über MobileConnectPage
-        return '' // Leer lassen, damit der Hinweis angezeigt wird
+        return '' // Wird unten durch detectedLanIp oder 192.168.0.31 ersetzt
       }
-      
-      // Wenn bereits IP-Adresse vorhanden, verwende diese
       return `${protocol}//${hostname}:${port}${PROJECT_ROUTES['k2-galerie'].galerie}`
     } catch {
       return ''
     }
   }, [])
-  
+
+  useEffect(() => {
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') return
+    let cancelled = false
+    const rtc = new (window.RTCPeerConnection as any)({ iceServers: [] })
+    rtc.createDataChannel('')
+    rtc.createOffer().then((offer: any) => rtc.setLocalDescription(offer))
+    rtc.onicecandidate = (e: any) => {
+      if (cancelled || !e?.candidate?.candidate) return
+      const m = e.candidate.candidate.match(/^candidate:\d+ \d+ udp \d+ (\d+\.\d+\.\d+\.\d+)/)
+      if (m && (m[1].startsWith('192.168.') || m[1].startsWith('10.'))) {
+        if (!cancelled) setDetectedLanIp(m[1])
+        rtc.close()
+      }
+    }
+    const t = setTimeout(() => { rtc.close() }, 3000)
+    return () => { cancelled = true; clearTimeout(t); rtc.close() }
+  }, [])
+
   React.useEffect(() => {
-    setMobileUrl(mobileUrlMemo)
-  }, [mobileUrlMemo])
+    setMobileUrl(mobileUrlMemo || (detectedLanIp ? `http://${detectedLanIp}:${window.location.port || '5177'}${PROJECT_ROUTES['k2-galerie'].galerie}` : ''))
+  }, [mobileUrlMemo, detectedLanIp])
 
   // QR-Code URL für Impressum (gleiche Logik wie unten)
   const qrFinalUrl = useMemo(() => {
@@ -157,8 +173,15 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
 
   useEffect(() => {
     if (!qrFinalUrl) return
-    QRCode.toDataURL(qrFinalUrl, { width: 100, margin: 1 }).then(setQrDataUrl).catch(() => setQrDataUrl(''))
+    QRCode.toDataURL(urlWithBuildVersion(qrFinalUrl), { width: 100, margin: 1 }).then(setQrDataUrl).catch(() => setQrDataUrl(''))
   }, [qrFinalUrl])
+
+  const vercelGalerieUrl = GALLERY_DATA_PUBLIC_URL + PROJECT_ROUTES['k2-galerie'].galerie
+  const isLocalOrigin = typeof window !== 'undefined' && !window.location.hostname.includes('vercel.app')
+  useEffect(() => {
+    if (!isLocalOrigin) return
+    QRCode.toDataURL(urlWithBuildVersion(vercelGalerieUrl), { width: 100, margin: 1 }).then(setVercelQrDataUrl).catch(() => setVercelQrDataUrl(''))
+  }, [isLocalOrigin])
 
   // Aktualisieren-Funktion für Mobile-Version - lädt neue Daten ohne Reload
   const [isRefreshing, setIsRefreshing] = React.useState(false)
@@ -206,18 +229,28 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
         credentials: 'omit'
       }
 
+      const origin = typeof window !== 'undefined' ? window.location.origin : ''
+      const isLocalLan = /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.|10\.)/.test(origin)
+
       let response: Response | null = null
       try {
         response = await fetch(pathAndQuery, fetchOpts)
       } catch (_) {
-        // Netzwerkfehler (z. B. anderes WLAN / Mobilfunk – aktuelle Origin nicht erreichbar)
+        // Netzwerkfehler (z. B. Mobilgerät im LAN kann gleiche Origin nicht erreichen)
       }
-      if ((!response || !response.ok) && !window.location.hostname.includes('vercel.app')) {
+      // Im lokalen LAN: Bei Fehler auch volle Origin-URL versuchen (manche Mobile Browser)
+      if (!response?.ok && isLocalLan && origin) {
         try {
-          response = await fetch(GALLERY_DATA_PUBLIC_URL + pathAndQuery, fetchOpts)
-        } catch (_) {
-          response = response || null
-        }
+          const fullUrlRes = await fetch(origin + pathAndQuery, fetchOpts)
+          if (fullUrlRes.ok) response = fullUrlRes
+        } catch (_) {}
+      }
+      // Fallback: Vercel (funktioniert wenn Handy Internet hat)
+      if (!response?.ok) {
+        try {
+          const fallbackRes = await fetch(GALLERY_DATA_PUBLIC_URL + pathAndQuery, fetchOpts)
+          if (fallbackRes.ok) response = fallbackRes
+        } catch (_) {}
       }
 
       if (response?.ok) {
@@ -293,89 +326,44 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
               }
             })
             
-            // KRITISCH: Lokale Werke haben IMMER Priorität - sie wurden gerade erstellt/bearbeitet!
-            // WICHTIG: Starte mit ALLEN lokalen Werken als Basis!
-            const localMap = new Map<string, any>()
+            // SERVER = QUELLE DER WAHRHEIT nach Veröffentlichung (wie GalerieVorschauPage)
+            const merged: any[] = [...serverArtworks]
+            const toHistory: any[] = []
+            
             localArtworks.forEach((local: any) => {
               const key = local.number || local.id
-              if (key) {
-                localMap.set(key, local)
-                // Mobile-Werke besonders markieren
-                if (local.createdOnMobile || local.updatedOnMobile) {
-                  console.log(`🔒 Lokales Mobile-Werk geschützt: ${key}`)
-                }
-              }
-            })
-            
-            // KRITISCH: Starte mit ALLEN lokalen Werken (haben ABSOLUTE Priorität!)
-            // Mobile-Werke dürfen NIEMALS verloren gehen!
-            const merged: any[] = []
-            
-            // ZUERST: Alle lokalen Werke hinzufügen (inkl. Mobile-Werke)
-            localArtworks.forEach((local: any) => {
-              merged.push(local)
-              if (local.createdOnMobile || local.updatedOnMobile) {
-                console.log(`🔒 Mobile-Werk geschützt beim Merge: ${local.number || local.id}`)
-              }
-            })
-            
-            // DANN: Server-Werke hinzufügen die NICHT lokal sind
-            serverArtworks.forEach((server: any) => {
-              const key = server.number || server.id
-              if (key && !localMap.has(key)) {
-                // Prüfe ob Server-Werk eine Nummer hat die lokal bereits existiert (aber andere ID)
-                const localWithSameNumber = localArtworks.find((l: any) => (l.number || l.id) === key)
-                if (!localWithSameNumber) {
-                  merged.push(server)
+              if (!key) return
+              const serverArtwork = serverMap.get(key)
+              const isMobileWork = local.createdOnMobile || local.updatedOnMobile
+              const createdAt = local.createdAt ? new Date(local.createdAt).getTime() : 0
+              const isVeryNew = createdAt > Date.now() - 600000
+              
+              if (!serverArtwork) {
+                if (isMobileWork && isVeryNew) {
+                  merged.push(local)
                 } else {
-                  console.log(`⚠️ Server-Werk ${key} übersprungen - lokales Werk existiert bereits`)
+                  toHistory.push(local)
                 }
-              }
-            })
-            
-            // KRITISCH: Prüfe ob ALLE lokalen Werke erhalten bleiben!
-            const localKeys = new Set(localArtworks.map((a: any) => a.number || a.id))
-            const mergedKeys = new Set(merged.map((a: any) => a.number || a.id))
-            const missingLocal = [...localKeys].filter(key => !mergedKeys.has(key))
-            
-            if (missingLocal.length > 0) {
-              console.error('❌ KRITISCH: Lokale Werke wurden verloren beim Merge!')
-              console.error('Fehlende Nummern:', missingLocal)
-              // Stelle fehlende lokale Werke wieder her
-              missingLocal.forEach(missingKey => {
-                const missingArtwork = localArtworks.find((a: any) => (a.number || a.id) === missingKey)
-                if (missingArtwork) {
-                  console.log(`🔧 Stelle fehlendes Werk wieder her: ${missingKey}`)
-                  merged.push(missingArtwork)
-                }
-              })
-              console.log('✅ Fehlende lokale Werke wiederhergestellt!')
-            }
-            
-            // ZUSÄTZLICH: Prüfe ob Mobile-Werke alle erhalten sind
-            const mobileKeys = new Set(mobileWorks.map((a: any) => a.number || a.id))
-            const mergedMobileKeys = new Set(merged.filter((a: any) => a.createdOnMobile || a.updatedOnMobile).map((a: any) => a.number || a.id))
-            const missingMobile = [...mobileKeys].filter(key => !mergedMobileKeys.has(key))
-            
-            if (missingMobile.length > 0) {
-              console.error('❌ KRITISCH: Mobile-Werke wurden verloren!')
-              console.error('Fehlende Mobile-Nummern:', missingMobile)
-              // Stelle fehlende Mobile-Werke wieder her
-              missingMobile.forEach(missingKey => {
-                const missingArtwork = mobileWorks.find((a: any) => (a.number || a.id) === missingKey)
-                if (missingArtwork) {
-                  console.log(`🔧 Stelle fehlendes Mobile-Werk wieder her: ${missingKey}`)
-                  // Prüfe ob bereits in merged
-                  const exists = merged.find((a: any) => (a.number || a.id) === missingKey)
-                  if (!exists) {
-                    merged.push(missingArtwork)
+              } else {
+                if (isMobileWork) {
+                  const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
+                  if (idx >= 0) merged[idx] = local
+                  else merged.push(local)
+                } else {
+                  const localUpdated = local.updatedAt ? new Date(local.updatedAt).getTime() : 0
+                  const serverUpdated = serverArtwork.updatedAt ? new Date(serverArtwork.updatedAt).getTime() : 0
+                  if (localUpdated > serverUpdated) {
+                    const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
+                    if (idx >= 0) merged[idx] = local
+                    else merged.push(local)
                   }
                 }
-              })
-              console.log('✅ Fehlende Mobile-Werke wiederhergestellt!')
-            }
+              }
+            })
             
-            console.log('✅ Werke gemergt (Lokale zuerst, dann Server):', merged.length, 'Werke (', localArtworks.length, 'Lokal +', merged.length - localArtworks.length, 'Server)')
+            if (toHistory.length > 0) appendToHistory(toHistory)
+            
+            console.log('✅ Werke gemergt (Server = Quelle):', merged.length, 'Gesamt,', toHistory.length, 'in History')
             console.log('📋 Lokale Nummern:', localArtworks.map((a: any) => a.number || a.id).join(', '))
             console.log('📋 Server Nummern:', serverArtworks.map((a: any) => a.number || a.id).join(', '))
             console.log('📋 Gemergte Nummern:', merged.map((a: any) => a.number || a.id).join(', '))
@@ -439,10 +427,27 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
         // DEAKTIVIERT: Automatisches Reload verursacht Crashes
         // Daten werden bereits oben gesetzt - kein Reload nötig
       } else {
+        const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
+        const onLocalLan = isLocalOrPrivateOrigin()
+        const localHint = onLocalLan
+          ? '\n• Im LAN (192.168.0.x): Auf dem Mac „Veröffentlichen“ klicken, damit gallery-data.json existiert. Dev-Server muss laufen (npm run dev).'
+          : ''
         if (!response) {
-          alert('⚠️ Aktualisieren fehlgeschlagen.\n\nBitte Verbindung prüfen oder später erneut versuchen.')
+          alert(
+            '⚠️ Aktualisieren fehlgeschlagen.\n\n' +
+            '• Verbindung prüfen (WLAN/Mobilfunk)\n' +
+            (isMobileDevice ? '• QR-Code NEU scannen (lädt aktuelle Version)\n' : '') +
+            localHint +
+            '\n• Oder in 1–2 Min. erneut versuchen'
+          )
         } else {
-          alert(`⚠️ Keine neuen Daten gefunden (HTTP ${response.status}).\n\nBitte:\n1. Warte 2-3 Minuten nach Veröffentlichung\n2. QR-Code NEU scannen\n3. Oder: Seite komplett neu laden`)
+          alert(
+            `⚠️ Keine neuen Daten (HTTP ${response.status}).\n\n` +
+            '• Nach Veröffentlichung 2–3 Min. warten\n' +
+            (isMobileDevice ? '• QR-Code NEU scannen (frischer Laden)\n' : '') +
+            localHint +
+            '\n• Oder: Seite komplett neu laden (Pull nach unten)'
+          )
         }
       }
       } catch (error) {
@@ -695,102 +700,53 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
             })
           }
           
-          // Lade auch Werke wenn vorhanden - KRITISCH für Mobile
-          // KRITISCH: Mobile-Werke haben ABSOLUTE PRIORITÄT - sie dürfen NIEMALS gelöscht werden!
+          // Lade auch Werke - SERVER = QUELLE DER WAHRHEIT (wie handleRefresh)
           if (data.artworks && Array.isArray(data.artworks)) {
             try {
-              // KRITISCH: Lade ZUERST lokale Werke um sicherzustellen dass Mobile-Werke NICHT verloren gehen!
               const localArtworks = safeParseArtworks()
-              const mobileWorks = localArtworks.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
-              
-              if (mobileWorks.length > 0) {
-                console.log(`🔒 ${mobileWorks.length} Mobile-Werke geschützt beim Initial-Load:`, mobileWorks.map((a: any) => a.number || a.id).join(', '))
-              }
-              
               const serverArtworks = data.artworks
               
-              // Erstelle Map für lokale Werke
-              const localMap = new Map<string, any>()
+              const serverMap = new Map<string, any>()
+              serverArtworks.forEach((a: any) => {
+                const key = a.number || a.id
+                if (key) serverMap.set(key, a)
+              })
+              
+              const merged: any[] = [...serverArtworks]
+              const toHistory: any[] = []
+              
               localArtworks.forEach((local: any) => {
                 const key = local.number || local.id
-                if (key) {
-                  localMap.set(key, local)
-                  // Mobile-Werke besonders markieren
-                  if (local.createdOnMobile || local.updatedOnMobile) {
-                    console.log(`🔒 Lokales Mobile-Werk geschützt beim Initial-Load: ${key}`)
-                  }
-                }
-              })
-              
-              // KRITISCH: Starte mit ALLEN lokalen Werken (haben ABSOLUTE Priorität!)
-              const merged: any[] = []
-              
-              // ZUERST: Alle lokalen Werke hinzufügen (inkl. Mobile-Werke)
-              localArtworks.forEach((local: any) => {
-                merged.push(local)
-                if (local.createdOnMobile || local.updatedOnMobile) {
-                  console.log(`🔒 Mobile-Werk geschützt beim Initial-Load: ${local.number || local.id}`)
-                }
-              })
-              
-              // DANN: Server-Werke hinzufügen die NICHT lokal sind
-              serverArtworks.forEach((server: any) => {
-                const key = server.number || server.id
-                if (key && !localMap.has(key)) {
-                  // Prüfe ob Server-Werk eine Nummer hat die lokal bereits existiert (aber andere ID)
-                  const localWithSameNumber = localArtworks.find((l: any) => (l.number || l.id) === key)
-                  if (!localWithSameNumber) {
-                    merged.push(server)
+                if (!key) return
+                const serverArtwork = serverMap.get(key)
+                const isMobileWork = local.createdOnMobile || local.updatedOnMobile
+                const createdAt = local.createdAt ? new Date(local.createdAt).getTime() : 0
+                const isVeryNew = createdAt > Date.now() - 600000
+                
+                if (!serverArtwork) {
+                  if (isMobileWork && isVeryNew) merged.push(local)
+                  else toHistory.push(local)
+                } else {
+                  if (isMobileWork) {
+                    const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
+                    if (idx >= 0) merged[idx] = local
+                    else merged.push(local)
                   } else {
-                    console.log(`⚠️ Server-Werk ${key} übersprungen beim Initial-Load - lokales Werk existiert bereits`)
-                  }
-                }
-              })
-              
-              // KRITISCH: Prüfe ob ALLE lokalen Werke erhalten bleiben!
-              const localKeys = new Set(localArtworks.map((a: any) => a.number || a.id))
-              const mergedKeys = new Set(merged.map((a: any) => a.number || a.id))
-              const missingLocal = [...localKeys].filter(key => !mergedKeys.has(key))
-              
-              if (missingLocal.length > 0) {
-                console.error('❌ KRITISCH: Lokale Werke wurden verloren beim Initial-Load!')
-                console.error('Fehlende Nummern:', missingLocal)
-                // Stelle fehlende lokale Werke wieder her
-                missingLocal.forEach(missingKey => {
-                  const missingArtwork = localArtworks.find((a: any) => (a.number || a.id) === missingKey)
-                  if (missingArtwork) {
-                    console.log(`🔧 Stelle fehlendes Werk wieder her beim Initial-Load: ${missingKey}`)
-                    merged.push(missingArtwork)
-                  }
-                })
-                console.log('✅ Fehlende lokale Werke wiederhergestellt beim Initial-Load!')
-              }
-              
-              // ZUSÄTZLICH: Prüfe ob Mobile-Werke alle erhalten sind
-              const mobileKeys = new Set(mobileWorks.map((a: any) => a.number || a.id))
-              const mergedMobileKeys = new Set(merged.filter((a: any) => a.createdOnMobile || a.updatedOnMobile).map((a: any) => a.number || a.id))
-              const missingMobile = [...mobileKeys].filter(key => !mergedMobileKeys.has(key))
-              
-              if (missingMobile.length > 0) {
-                console.error('❌ KRITISCH: Mobile-Werke wurden verloren beim Initial-Load!')
-                console.error('Fehlende Mobile-Nummern:', missingMobile)
-                // Stelle fehlende Mobile-Werke wieder her
-                missingMobile.forEach(missingKey => {
-                  const missingArtwork = mobileWorks.find((a: any) => (a.number || a.id) === missingKey)
-                  if (missingArtwork) {
-                    console.log(`🔧 Stelle fehlendes Mobile-Werk wieder her beim Initial-Load: ${missingKey}`)
-                    // Prüfe ob bereits in merged
-                    const exists = merged.find((a: any) => (a.number || a.id) === missingKey)
-                    if (!exists) {
-                      merged.push(missingArtwork)
+                    const localUpdated = local.updatedAt ? new Date(local.updatedAt).getTime() : 0
+                    const serverUpdated = serverArtwork.updatedAt ? new Date(serverArtwork.updatedAt).getTime() : 0
+                    if (localUpdated > serverUpdated) {
+                      const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
+                      if (idx >= 0) merged[idx] = local
+                      else merged.push(local)
                     }
                   }
-                })
-                console.log('✅ Fehlende Mobile-Werke wiederhergestellt beim Initial-Load!')
-              }
+                }
+              })
+              
+              if (toHistory.length > 0) appendToHistory(toHistory)
               
               localStorage.setItem('k2-artworks', JSON.stringify(merged))
-              console.log('✅ Werke gemergt beim Initial-Load (Lokale zuerst, dann Server):', merged.length, 'Werke (', localArtworks.length, 'Lokal +', merged.length - localArtworks.length, 'Server)')
+              console.log('✅ Werke gemergt beim Initial-Load (Server = Quelle):', merged.length, 'Gesamt,', toHistory.length, 'in History')
               console.log('📋 Lokale Nummern:', localArtworks.map((a: any) => a.number || a.id).join(', '))
               console.log('📋 Server Nummern:', serverArtworks.map((a: any) => a.number || a.id).join(', '))
               console.log('📋 Gemergte Nummern:', merged.map((a: any) => a.number || a.id).join(', '))
@@ -1106,8 +1062,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
       
       {/* Content */}
       <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Optional: Link für Internet-Zugriff (App soll aus beiden LAN-Adressen wie früher funktionieren) */}
-        {isLocalOrPrivateOrigin() && (
+        {/* Optional: Link für Internet-Zugriff – nur auf Desktop, nicht auf iPhone/iPad */}
+        {isLocalOrPrivateOrigin() && !(isMobileDevice || isMobile) && (
           <div style={{
             padding: '0.5rem 1rem',
             margin: '0 0 0.5rem 0',
@@ -1938,46 +1894,45 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   </div>
                 </div>
                 
-                {/* Rechte Seite: QR-Code (lokal generiert – funktioniert ohne externe API) */}
+                {/* Rechte Seite: QR-Code(s) – bei lokalem Aufruf zwei: WLAN + Vercel (iPad hängt sonst) */}
                 {qrDataUrl && qrFinalUrl && (
                     <div style={{
                       textAlign: 'center',
-                      flexShrink: 0
+                      flexShrink: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '1rem',
+                      alignItems: 'center'
                     }}>
-                      <p style={{ 
-                        margin: '0 0 0.5rem', 
-                        fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)',
-                        color: 'rgba(255, 255, 255, 0.8)',
-                        fontWeight: '500'
-                      }}>
-                        QR-Code
-                      </p>
-                      <div style={{
-                        background: '#ffffff',
-                        padding: '0.4rem',
-                        borderRadius: '8px',
-                        display: 'inline-block',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
-                      }}>
-                        <img 
-                          src={qrDataUrl}
-                          alt="QR-Code"
-                          style={{
-                            width: '100px',
-                            height: '100px',
-                            display: 'block'
-                          }}
-                        />
-                      </div>
-                      <p style={{ 
-                        margin: '0.4rem 0 0', 
-                        fontSize: 'clamp(0.6rem, 1.3vw, 0.7rem)',
-                        color: 'rgba(255, 255, 255, 0.5)',
-                        wordBreak: 'break-all',
-                        maxWidth: '120px'
-                      }}>
-                        {qrFinalUrl}
-                      </p>
+                      {isLocalOrigin && vercelQrDataUrl ? (
+                        <>
+                          <p style={{ margin: '0 0 0.25rem', fontSize: 'clamp(0.65rem, 1.4vw, 0.75rem)', color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>
+                            📱 Für iPad/Handy: diesen QR scannen (lädt, aktueller Stand)
+                          </p>
+                          <div style={{ background: '#fff', padding: '0.4rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+                            <img src={vercelQrDataUrl} alt="QR Vercel" style={{ width: 100, height: 100, display: 'block' }} />
+                          </div>
+                          <p style={{ margin: 0, fontSize: 'clamp(0.55rem, 1.2vw, 0.65rem)', color: 'rgba(255,255,255,0.5)', wordBreak: 'break-all', maxWidth: 140 }}>
+                            k2-galerie.vercel.app
+                          </p>
+                          <p style={{ margin: '0.5rem 0 0', fontSize: 'clamp(0.6rem, 1.3vw, 0.7rem)', color: 'rgba(255,255,255,0.5)' }}>
+                            Nur gleiches WLAN: <span style={{ fontSize: '0.65em' }}>{qrFinalUrl.replace(/^https?:\/\//, '').split('/')[0]}</span>
+                          </p>
+                          <div style={{ background: '#fff', padding: '0.3rem', borderRadius: '6px' }}>
+                            <img src={qrDataUrl} alt="QR lokal" style={{ width: 70, height: 70, display: 'block' }} />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)', color: 'rgba(255, 255, 255, 0.8)', fontWeight: '500' }}>QR-Code</p>
+                          <div style={{ background: '#ffffff', padding: '0.4rem', borderRadius: '8px', display: 'inline-block', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}>
+                            <img src={qrDataUrl} alt="QR-Code" style={{ width: '100px', height: '100px', display: 'block' }} />
+                          </div>
+                          <p style={{ margin: '0.4rem 0 0', fontSize: 'clamp(0.6rem, 1.3vw, 0.7rem)', color: 'rgba(255, 255, 255, 0.5)', wordBreak: 'break-all', maxWidth: '120px' }}>
+                            {qrFinalUrl}
+                          </p>
+                        </>
+                      )}
                     </div>
                 )}
               </div>

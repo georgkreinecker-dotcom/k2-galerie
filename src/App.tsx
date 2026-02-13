@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
 import ProjectsPage from './pages/ProjectsPage'
@@ -24,7 +24,7 @@ import { Ok2ThemeWrapper } from './components/Ok2ThemeWrapper'
 import DevViewPage from './pages/DevViewPage'
 import PlatformStartPage from './pages/PlatformStartPage'
 import { PLATFORM_ROUTES, PROJECT_ROUTES } from './config/navigation'
-import { BUILD_LABEL } from './buildInfo.generated'
+import { BUILD_LABEL, BUILD_TIMESTAMP } from './buildInfo.generated'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 
 // Error Boundary für gesamte App
@@ -213,16 +213,89 @@ class AdminErrorBoundary extends Component<{ children: ReactNode }, { hasError: 
   }
 }
 
+/** Cache-Bypass: komplette Seite mit neuem URL-Parameter laden (umgeht Browser-Cache). */
+function doHardReload() {
+  const u = typeof window !== 'undefined' ? window.location : null
+  if (!u) return
+  const sep = u.pathname.includes('?') ? '&' : '?'
+  u.href = u.origin + u.pathname + sep + 'v=' + Date.now()
+}
+
 function StandBadgeSync() {
+  const [serverNewer, setServerNewer] = useState(false)
+  const isLocal = typeof window !== 'undefined' && /^https?:\/\/localhost|127\.0\.0\.1/i.test(window.location?.origin || '')
+
   useEffect(() => {
     const el = document.getElementById('app-stand-badge')
-    if (el) {
-      const isLocal = typeof window !== 'undefined' && /^https?:\/\/localhost|127\.0\.0\.1/i.test(window.location?.origin || '')
-      el.textContent = isLocal ? `Stand: ${BUILD_LABEL} (lokal)` : `Stand: ${BUILD_LABEL}`
-      el.setAttribute('title', isLocal ? 'Neuester Stand – hier am Mac gebaut. Mobil zeigt die zuletzt deployte Version.' : 'Build-Stand (deployt).')
-    }
+    if (!el) return
+    el.style.pointerEvents = 'auto'
+    el.style.cursor = 'pointer'
+    const onClick = () => doHardReload()
+    el.addEventListener('click', onClick)
+    return () => el.removeEventListener('click', onClick)
   }, [])
+
+  // Auf Vercel/Produktion: prüfen ob Server eine neuere Version hat → automatisch neu laden (kein Tippen nötig)
+  useEffect(() => {
+    if (isLocal) return
+    const url = '/build-info.json?t=' + Date.now() + '&r=' + Math.random()
+    fetch(url, { cache: 'no-store' })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data: { timestamp?: number } | null) => {
+        if (data?.timestamp && data.timestamp > BUILD_TIMESTAMP) setServerNewer(true)
+      })
+      .catch(() => {})
+  }, [isLocal])
+
+  // Sobald Server-Version neuer ist: automatisch neu laden (umgeht Cache), ohne dass der Nutzer etwas eingeben oder tippen muss
+  useEffect(() => {
+    if (!serverNewer) return
+    const el = document.getElementById('app-stand-badge')
+    if (el) {
+      el.textContent = 'Aktualisiere …'
+      el.style.background = 'rgba(200,120,0,0.95)'
+    }
+    const t = setTimeout(doHardReload, 1200)
+    return () => clearTimeout(t)
+  }, [serverNewer])
+
+  useEffect(() => {
+    const el = document.getElementById('app-stand-badge')
+    if (!el) return
+    if (serverNewer) return // wird von anderem useEffect überschrieben
+    const text = isLocal
+      ? `Stand: ${BUILD_LABEL} (lokal)`
+      : `Stand: ${BUILD_LABEL}`
+    el.textContent = text
+    el.setAttribute('title', isLocal
+      ? 'Lokal gebaut. Gleich überall: pushen, dann auf Handy neu scannen.'
+      : 'Tippen lädt neu (frischer Stand).')
+    el.style.background = 'rgba(0,0,0,0.85)'
+  }, [serverNewer, isLocal])
+
   return null
+}
+
+const isMobileView = () => typeof window !== 'undefined' && (
+  /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+  (window.innerWidth <= 768 && ('ontouchstart' in window || (navigator.maxTouchPoints ?? 0) > 0)) ||
+  window.innerWidth <= 768 // schmaler Bildschirm = immer Galerie (kein Smart Panel), auch bei „Desktop“-Browser
+)
+
+/** Auf Mobile / schmalem Bildschirm: Root "/" → sofort Galerie (niemals DevView/Smart Panel). */
+function MobileRootRedirect() {
+  if (isMobileView()) {
+    return <Navigate to={PROJECT_ROUTES['k2-galerie'].galerie} replace />
+  }
+  return <DevViewPage defaultPage="galerie" />
+}
+
+/** Auf Mobile: /dev-view → sofort Galerie (niemals 4 Seiten/Smart Panel). */
+function DevViewMobileRedirect() {
+  if (isMobileView()) {
+    return <Navigate to={PROJECT_ROUTES['k2-galerie'].galerie} replace />
+  }
+  return <DevViewPage />
 }
 
 function App() {
@@ -230,20 +303,20 @@ function App() {
     <AppErrorBoundary>
     <StandBadgeSync />
     <Routes>
-      {/* Root-Route: Arbeitsplattform (auf localhost automatisch Galerie in Desktop-Ansicht) */}
+      {/* Root-Route: Auf Mobile → direkt Galerie, auf Desktop → DevView/APf */}
       <Route path="/" element={
         <AppErrorBoundary>
-          <DevViewPage defaultPage="galerie" />
+          <MobileRootRedirect />
         </AppErrorBoundary>
       } />
       
       {/* Galerie als separate Route */}
       <Route path="/galerie-home" element={<GaleriePage />} />
       
-      {/* Plattform-Routen */}
+      {/* Plattform-Routen – auf Mobile sofort Galerie (kein Smart Panel) */}
       <Route path="/platform" element={
         <AppErrorBoundary>
-          <DevViewPage defaultPage="mission" />
+          {isMobileView() ? <Navigate to={PROJECT_ROUTES['k2-galerie'].galerie} replace /> : <DevViewPage defaultPage="mission" />}
         </AppErrorBoundary>
       } />
       <Route path={PLATFORM_ROUTES.key} element={<KeyPage />} />
@@ -285,10 +358,10 @@ function App() {
       <Route path={PLATFORM_ROUTES.missionControl} element={<MissionControlPage />} />
       <Route path="/mobile-connect" element={<Navigate to={PROJECT_ROUTES['k2-galerie'].mobileConnect} replace />} />
       
-      {/* Dev-Tool für parallele Ansichten */}
+      {/* Dev-Tool für parallele Ansichten – auf Mobile → Galerie (keine 4 Seiten/Smart Panel) */}
       <Route path="/dev-view" element={
         <AppErrorBoundary>
-          <DevViewPage />
+          <DevViewMobileRedirect />
         </AppErrorBoundary>
       } />
       

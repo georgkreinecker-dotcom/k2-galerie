@@ -1,12 +1,23 @@
-# Brother-Drucker: AirPrint & zuverlässige Alternativen
+# Brother-Drucker: AirPrint & Druck-Einstellungen
 
-## Brother QL-820MWBc – nicht AirPrint-fähig
+## AirPrint aktiviert
 
-Die meisten Etikettendrucker (Brother QL-820MWBc, DYMO, Epson LabelWorks) unterstützen **kein zuverlässiges AirPrint**. Das liegt an der Geräteklasse, nicht an K2. Die Meldung „AirPrint nicht gefunden“ kommt von Safari/macOS.
+AirPrint ist eingerichtet und funktioniert (z. B. über handyPrint, Printopia oder Mac-Freigabe). Beim Etikett-Druck:
+
+1. **„Jetzt drucken“** tippen
+2. **Drucker wählen** (Brother oder AirPrint-Drucker)
+3. **Papier:** 29×90,3 mm (Brother-Etikett)
+4. **Skalierung:** 100 %
 
 ---
 
-## Zuverlässige Alternativen (ohne AirPrint)
+## Brother QL-820MWBc – AirPrint über Mac/Apps
+
+Der Brother QL-820MWBc hat von Haus aus kein AirPrint. Mit **handyPrint**, **Printopia** oder **Mac-Freigabe** wird er als AirPrint-Drucker sichtbar.
+
+---
+
+## Alternativen (falls AirPrint ausfällt)
 
 ### 1. Druck über den Mac – am zuverlässigsten
 
@@ -61,13 +72,40 @@ QL-820**N**WBc (mit N) hat AirPrint, QL-820**M**WBc (mit M) nicht.
 
 ---
 
-## Etikett-Druck in K2: Ablauf
+## One-Click-Druck (ohne Druckdialog)
+
+Wenn der **K2 Print-Server** läuft:
+
+1. **Print-Server starten** (im Cursor- oder Mac-Terminal):
+   ```bash
+   npm run print-server
+   ```
+2. **In K2:** Einstellungen → Drucker → **Print-Server URL** eintragen (z.B. `http://localhost:3847` oder `http://MAC-IP:3847` für iPad)
+3. **Etikett-Modal:** Button **„⚡ One-Click drucken“** – Etikett geht direkt an den Brother, kein Druckdialog.
+
+**Voraussetzung:** Brother im WLAN erreichbar (IP in Drucker-Einstellungen), Mac und Gerät im gleichen Netz.
+
+**Wichtig – Drucker im mobilen LAN:** Wenn der Brother am mobilen Router/Hotspot (192.168.1.x) hängt, der Mac aber im anderen Haus-WLAN (z.B. 192.168.0.x) ist, erreicht der Mac den Drucker nicht. One-Click funktioniert nur, wenn der Mac im **gleichen** Netz wie der Brother ist (z.B. Mac per WLAN mit dem mobilen Hotspot verbinden).
+
+**iPad/iPhone:** K2 und Print-Server müssen beide per HTTP erreichbar sein (z.B. K2 unter `http://MAC-IP:5175`, Print-Server unter `http://MAC-IP:3847`). Bei K2 von Vercel (HTTPS) blockiert der Browser den Zugriff auf den lokalen Print-Server.
+
+---
+
+## Etikett-Druck in K2: Ablauf (klassisch)
 
 1. **Vorschau:** K2 zeigt das Etikett
 2. **„Jetzt drucken“** tippen
 3. **„Automatisches Drucken erlauben“** – einmal bestätigen (Pop-up)
 4. **Druckdialog:** Brother (oder Mac als Drucker) wählen, **Papier: 29×90,3 mm**
 5. **100 % Skalierung**
+
+---
+
+## Format passt nicht?
+
+- **Papier wählen:** Im Druckdialog unbedingt „29 × 90 mm“ oder „Etikett“ / „Label“ wählen (nicht A4).
+- **Skalierung 100 %:** „An Seite anpassen“ oder „Fit to page“ deaktivieren, Skalierung auf 100 %.
+- **iPad/iPhone:** Falls der Browser das Format ignoriert: „Etikett teilen“ → PNG speichern → in **Brother iPrint & Label** öffnen und drucken.
 
 ---
 

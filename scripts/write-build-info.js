@@ -22,6 +22,17 @@ const outPath = path.join(__dirname, '..', 'src', 'buildInfo.generated.ts')
 const content = `// Automatisch beim Build erzeugt – nicht von Hand ändern
 export const BUILD_LABEL = '${label}'
 export const BUILD_TIMESTAMP = ${now.getTime()}
+
+/** QR-URL mit Stand (Cache-Busting) – Scan liefert immer aktuellen Build */
+export function urlWithBuildVersion(url: string): string {
+  const sep = url.includes('?') ? '&' : '?'
+  return \`\${url}\${sep}v=\${BUILD_TIMESTAMP}\`
+}
 `
 fs.writeFileSync(outPath, content, 'utf8')
+
+// build-info.json für Abruf im Browser (Cache-Check, immer no-cache)
+const publicPath = path.join(__dirname, '..', 'public', 'build-info.json')
+fs.writeFileSync(publicPath, JSON.stringify({ label, timestamp: now.getTime() }), 'utf8')
+
 console.log('✅ Build-Info geschrieben:', label)

@@ -3,6 +3,7 @@ import { usePersistentString } from '../hooks/usePersistentState'
 import { ProjectNavButton } from '../components/Navigation'
 import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
+import { urlWithBuildVersion } from '../buildInfo.generated'
 
 const VERCEL_GALERIE_URL = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
 
@@ -26,18 +27,21 @@ const MobileConnectPage = () => {
       setLocalGalerieUrl(`${protocol}//${hostname}:${port}/projects/k2-galerie/galerie`)
       setDevViewUrl(`${protocol}//${hostname}:${port}/#/dev-view`)
     } else {
-      setDevViewUrl(`${protocol}//${window.location.hostname}:${port}/#/dev-view`)
+      // Am Mac mit localhost: QR muss LAN-IP zeigen (z. B. 192.168.0.31), sonst kann das Handy nicht verbinden
+      const lanIp = '192.168.0.31'
+      setLocalGalerieUrl(`http://${lanIp}:${port}/projects/k2-galerie/galerie`)
+      setDevViewUrl(`http://${lanIp}:${port}/#/dev-view`)
     }
   }, [])
 
-  // QR-Codes lokal erzeugen (keine externe API – funktioniert auch bei Ad-Blockern)
+  // QR-Codes lokal erzeugen – mit Build-Version (Stand) für Cache-Busting, Scan = aktueller Build
   useEffect(() => {
     if (!url) { setQrUrl(''); return }
-    QRCode.toDataURL(url, { width: 280, margin: 1 }).then(setQrUrl).catch(() => setQrUrl(''))
+    QRCode.toDataURL(urlWithBuildVersion(url), { width: 280, margin: 1 }).then(setQrUrl).catch(() => setQrUrl(''))
   }, [url])
   useEffect(() => {
     if (!localGalerieUrl) { setLocalQrUrl(''); return }
-    QRCode.toDataURL(localGalerieUrl, { width: 200, margin: 1 }).then(setLocalQrUrl).catch(() => setLocalQrUrl(''))
+    QRCode.toDataURL(urlWithBuildVersion(localGalerieUrl), { width: 200, margin: 1 }).then(setLocalQrUrl).catch(() => setLocalQrUrl(''))
   }, [localGalerieUrl])
   useEffect(() => {
     if (!devViewUrl) { setDevViewQrUrl(''); return }
