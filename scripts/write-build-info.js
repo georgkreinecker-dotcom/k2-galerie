@@ -35,4 +35,16 @@ fs.writeFileSync(outPath, content, 'utf8')
 const publicPath = path.join(__dirname, '..', 'public', 'build-info.json')
 fs.writeFileSync(publicPath, JSON.stringify({ label, timestamp: now.getTime() }), 'utf8')
 
+// Beim Build (--inject-html): Build-Check in index.html injizieren – läuft auch bei gecachtem HTML
+if (process.argv.includes('--inject-html')) {
+  const ts = now.getTime()
+  const injectScript = '<script>(function(){var b=' + ts + ';fetch("/build-info.json?t="+Date.now()+"&r="+Math.random(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b)location.href=location.origin+location.pathname+"?v="+Date.now()}).catch(function(){});})();</script>'
+  const indexPath = path.join(__dirname, '..', 'index.html')
+  let indexHtml = fs.readFileSync(indexPath, 'utf8')
+  if (indexHtml.includes('BUILD_TS_INJECT')) {
+    indexHtml = indexHtml.replace('<!-- BUILD_TS_INJECT -->', injectScript)
+    fs.writeFileSync(indexPath, indexHtml, 'utf8')
+  }
+}
+
 console.log('✅ Build-Info geschrieben:', label)

@@ -47,3 +47,9 @@ git push origin main
 ## Kurz
 
 - **Stand bleibt 9:24 trotz Push** → fast immer: **Production-Branch in Vercel auf den Branch stellen, auf den du pushst (main-fresh), oder auf main pushen.**
+
+## Wenn das Deployment „Error“ zeigt (Build fehlgeschlagen)
+
+- Im Vercel-Dashboard auf das **fehlgeschlagene Deployment** (roter Punkt „Error“) klicken.
+- **„View Build Log“** oder Build-Log öffnen – dort steht die genaue Fehlermeldung.
+- Häufige Ursachen: Node-Version (im Projekt ist `engines.node >= 18` gesetzt), Speicher, fehlende Abhängigkeit. Log prüfen und Fehlermeldung beheben.
