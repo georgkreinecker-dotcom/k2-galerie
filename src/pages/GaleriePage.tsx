@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { getTenantConfig, getCurrentTenantId, TENANT_CONFIGS, MUSTER_TEXTE } from '../config/tenantConfig'
+import { TENANT_CONFIGS, MUSTER_TEXTE } from '../config/tenantConfig'
 import { appendToHistory } from '../utils/artworkHistory'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import '../App.css'
@@ -35,8 +35,9 @@ function safeParseArtworks(): any[] {
 
 const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?: string; musterOnly?: boolean }) => {
   const navigate = useNavigate()
-  const tenantConfig = musterOnly ? TENANT_CONFIGS.oeffentlich : getTenantConfig()
-  const tenantId = musterOnly ? 'oeffentlich' : getCurrentTenantId()
+  // K2-Galerie-Route: immer echte K2-Daten (Impressum, Willkommen). Keine Vermischung mit ök2 auch wenn k2-tenant mal auf oeffentlich steht.
+  const tenantConfig = musterOnly ? TENANT_CONFIGS.oeffentlich : TENANT_CONFIGS.k2
+  const tenantId = musterOnly ? 'oeffentlich' : 'k2'
   const willkommenRef = React.useRef<HTMLDivElement>(null)
   const galerieRef = React.useRef<HTMLDivElement>(null)
   const kunstschaffendeRef = React.useRef<HTMLDivElement>(null)
@@ -1411,7 +1412,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   margin: '0 auto clamp(1.5rem, 4vw, 2rem)',
                   boxShadow: '0 10px 30px rgba(102, 126, 234, 0.4)'
                 }}>
-                  {(musterOnly ? MUSTER_TEXTE.martina.name : (tenantId === 'demo' ? tenantConfig.artist1Name : ((tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name)))).charAt(0)}
+                  {(musterOnly ? MUSTER_TEXTE.martina.name : ((tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name))).charAt(0)}
                 </div>
                 <h4 style={{
                   margin: '0 0 0.75rem',
@@ -1419,7 +1420,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   color: '#ffffff',
                   fontWeight: '600'
                 }}>
-                  {musterOnly ? MUSTER_TEXTE.martina.name : (tenantId === 'demo' ? tenantConfig.artist1Name : ((tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name)))}
+                  {musterOnly ? MUSTER_TEXTE.martina.name : ((tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name))}
                 </h4>
                 <p style={{
                   color: 'rgba(255, 255, 255, 0.6)',
@@ -1474,7 +1475,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   margin: '0 auto clamp(1.5rem, 4vw, 2rem)',
                   boxShadow: '0 10px 30px rgba(245, 87, 108, 0.4)'
                 }}>
-                  {(musterOnly ? MUSTER_TEXTE.georg.name : (tenantId === 'demo' ? tenantConfig.artist2Name : ((tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name)))).charAt(0)}
+                  {(musterOnly ? MUSTER_TEXTE.georg.name : ((tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name))).charAt(0)}
                 </div>
                 <h4 style={{
                   margin: '0 0 0.75rem',
@@ -1482,7 +1483,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   color: '#ffffff',
                   fontWeight: '600'
                 }}>
-                  {musterOnly ? MUSTER_TEXTE.georg.name : (tenantId === 'demo' ? tenantConfig.artist2Name : ((tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name)))}
+                  {musterOnly ? MUSTER_TEXTE.georg.name : ((tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name))}
                 </h4>
                 <p style={{
                   color: 'rgba(255, 255, 255, 0.6)',
@@ -1517,7 +1518,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
               fontWeight: '300',
               marginBottom: 'clamp(3rem, 8vw, 4rem)'
             }}>
-              {musterOnly ? MUSTER_TEXTE.gemeinsamText : `Gemeinsam eröffnen ${tenantId === 'demo' ? tenantConfig.artist1Name : ((tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name))} und ${tenantId === 'demo' ? tenantConfig.artist2Name : ((tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name))} nach über 20 Jahren kreativer Tätigkeit die ${tenantConfig.galleryName} – ein Raum, wo Malerei und Keramik verschmelzen und Kunst zum Leben erwacht.`}
+              {musterOnly ? MUSTER_TEXTE.gemeinsamText : `Gemeinsam eröffnen ${(tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name)} und ${(tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name)} nach über 20 Jahren kreativer Tätigkeit die ${tenantConfig.galleryName} – ein Raum, wo Malerei und Keramik verschmelzen und Kunst zum Leben erwacht.`}
             </p>
 
             {/* Virtueller Rundgang & Galerie Vorschau */}
