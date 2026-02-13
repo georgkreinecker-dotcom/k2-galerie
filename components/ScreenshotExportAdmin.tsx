@@ -7035,26 +7035,48 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
     })
   }
 
-  /** Ein Tipp → Download, dann Modal schließen (damit man wieder in der App ist, nicht „fest“). */
-  const handleDownloadEtikettDirect = () => {
+  /** Ein Tipp → auf Mobil: Teilen-Sheet (Speichern / iPrint&Label), sonst Download. */
+  const handleDownloadEtikettDirect = async () => {
     if (!savedArtwork) return
-    getEtikettBlob()
-      .then((blob) => {
-        const name = `etikett-${String(savedArtwork.number).replace(/[^a-zA-Z0-9._-]/g, '_')}.png`
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = name
-        a.style.display = 'none'
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
-        setShowPrintModal(false)
-      })
-      .catch((e) => {
-        alert(e?.message || 'Etikett konnte nicht erzeugt werden. Bitte erneut versuchen.')
-      })
+    try {
+      const blob = await getEtikettBlob()
+      const name = `etikett-${String(savedArtwork.number).replace(/[^a-zA-Z0-9._-]/g, '_')}.png`
+      const file = new File([blob], name, { type: 'image/png' })
+
+      if (isMobile && typeof navigator !== 'undefined' && navigator.share) {
+        try {
+          await navigator.share({
+            title: `Etikett ${savedArtwork.number}`,
+            text: `${savedArtwork.title || ''} – K2 Galerie`,
+            files: [file]
+          })
+          setShowPrintModal(false)
+        } catch (shareErr: unknown) {
+          const err = shareErr as Error
+          if (err?.name === 'AbortError') return
+          const msg = err?.message || ''
+          if (/freigegeben|cannot be shared|Share canceled/i.test(msg)) {
+            alert('Teilen wurde abgebrochen oder ist hier nicht möglich.\n\nVersuche: „Etikett in neuem Tab öffnen“ (unten) → im Tab langes Drücken auf das Bild → „Bild speichern“ oder „In Fotos speichern“. Dann in Brother iPrint & Label öffnen.')
+          } else {
+            alert('Teilen fehlgeschlagen: ' + (msg || 'Unbekannter Fehler') + '.\n\nNutze „Etikett in neuem Tab öffnen“ (unten), dann Bild speichern und in iPrint & Label öffnen.')
+          }
+        }
+        return
+      }
+
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = name
+      a.style.display = 'none'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      setShowPrintModal(false)
+    } catch (e) {
+      alert((e as Error)?.message || 'Etikett konnte nicht erzeugt werden. Bitte erneut versuchen.')
+    }
   }
 
   const handleShareLabel = async () => {
@@ -14190,7 +14212,10 @@ setPreviewUrl(null)
                         📥 Etikett speichern → in Brother iPrint&amp;Label drucken
                       </button>
                       <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.35rem 0 0 0' }}>
-                        Etikett wird gespeichert. In „Fotos“ oder „Dateien“ öffnen → Teilen → <strong>Brother iPrint&amp;Label</strong> → Drucken. Fertig, richtige Größe.
+                        Teilen-Menü öffnet sich → „In Fotos speichern“ oder <strong>Brother iPrint&amp;Label</strong> wählen → Drucken.
+                      </p>
+                      <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
+                        Wenn „Daten können nicht freigegeben werden“ erscheint: <button type="button" onClick={async () => { try { const b = await getEtikettBlob(); const u = URL.createObjectURL(b); window.open(u, '_blank'); setTimeout(() => URL.revokeObjectURL(u), 60000); } catch (e) { alert((e as Error)?.message || 'Etikett konnte nicht erzeugt werden.'); } }} style={{ background: 'none', border: 'none', color: '#16a34a', textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 'inherit' }}>Etikett in neuem Tab öffnen</button> → im Tab langes Drücken auf das Bild → „Bild speichern“. Dann in iPrint&amp;Label öffnen.
                       </p>
                       <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.75rem' }}>
                         Oder direkt über Safari:
