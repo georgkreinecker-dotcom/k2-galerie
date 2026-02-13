@@ -35,16 +35,20 @@ fs.writeFileSync(outPath, content, 'utf8')
 const publicPath = path.join(__dirname, '..', 'public', 'build-info.json')
 fs.writeFileSync(publicPath, JSON.stringify({ label, timestamp: now.getTime() }), 'utf8')
 
-// Beim Build (--inject-html): Build-Check in index.html injizieren – läuft auch bei gecachtem HTML
+// Beim Build (--inject-html): Build-Check in index.html injizieren – JEDEN Build aktueller Timestamp (Seite öffnen = Update)
 if (process.argv.includes('--inject-html')) {
   const ts = now.getTime()
   const injectScript = '<script>(function(){var b=' + ts + ';var o=location.origin;var p=location.pathname;var q=location.search||"";var sep=q?"&":"?";if(Date.now()-b>120000){try{var k2="k2_stale";if(!sessionStorage.getItem(k2)){sessionStorage.setItem(k2,"1");location.replace(o+p+q+sep+"_="+Date.now());}}catch(e){}return;}var bust="v="+Date.now();var url=o+"/build-info.json?t="+Date.now()+"&r="+Math.random();fetch(url,{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b)location.replace(o+p+sep+bust)}).catch(function(){try{var k="k2_noreload";if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,"1");location.replace(o+p+q+sep+"_="+Date.now())}}catch(e){}});})();</script>'
   const indexPath = path.join(__dirname, '..', 'index.html')
   let indexHtml = fs.readFileSync(indexPath, 'utf8')
-  if (indexHtml.includes('BUILD_TS_INJECT')) {
+  if (indexHtml.includes('<!-- BUILD_TS_INJECT -->')) {
     indexHtml = indexHtml.replace('<!-- BUILD_TS_INJECT -->', injectScript)
-    fs.writeFileSync(indexPath, indexHtml, 'utf8')
+  } else {
+    // Fallback: bereits injiziertes Script komplett durch neues ersetzen (var b=alterTimestamp → aktueller Build)
+    const oldScriptRe = /<script>\(function\(\)\{var b=\d+;[^<]*\}\);<\/script>/
+    if (oldScriptRe.test(indexHtml)) indexHtml = indexHtml.replace(oldScriptRe, injectScript)
   }
+  fs.writeFileSync(indexPath, indexHtml, 'utf8')
 }
 
 console.log('✅ Build-Info geschrieben:', label)
