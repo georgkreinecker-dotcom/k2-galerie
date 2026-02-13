@@ -1,0 +1,19 @@
+---
+description: Stand-Update über Vercel – was funktioniert, beibehalten (vercel.json, Build, QR)
+alwaysApply: true
+---
+
+# Stand überall gleich – Vercel/QR (unbedingt beibehalten)
+
+## Was funktioniert (13.02.26)
+
+- Push auf **main** → Vercel baut Production. Wenn Deployment **Ready** + **Current** ist, stimmt der Stand; QR scannen oder am Handy auf **Stand-Badge tippen** (Cache-Bypass).
+- **vercel.json:** Muss gültiges JSON sein. **Keine** überzählige `}` am Ende – sonst Vercel „Invalid vercel.json“, Build Failed.
+- **Build:** `npm run build` = `write-build-info.js --inject-html` + … + vite build. Im Repo: index.html mit Placeholder `<!-- BUILD_TS_INJECT -->` (wird beim Build ersetzt). buildInfo.generated.ts: nur **einmal** BUILD_LABEL und BUILD_TIMESTAMP. index.html: nur **ein** `<div id="root">`.
+- Bei Merge/Refactors: Keine doppelten Exports, keine doppelten root-divs, keine kaputten Klammern in vercel.json.
+
+## Bei Änderungen an vercel.json oder Build/Stand
+
+- vercel.json nach Änderung mit `node -e "JSON.parse(require('fs').readFileSync('vercel.json','utf8')); console.log('OK')"` prüfen.
+- Lokal `npm run build` ausführen vor Push.
+- Doku: docs/VERCEL-STAND-HANDY.md, GEORG-STAND-9-24-BEHEBEN.md.

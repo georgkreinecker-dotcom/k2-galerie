@@ -1,5 +1,14 @@
 # Warum das Handy nach QR-Scan noch Stand 9:24 zeigt
 
+## ✅ Damit der Stand überall stimmt (Checkliste – unbedingt einhalten)
+
+- **vercel.json:** Gültiges JSON, **keine** überzählige `}` am Ende (sonst Vercel: „Invalid vercel.json“ → Build Failed).
+- **Push:** `git push origin main` → Vercel baut. In Vercel Deployments prüfen: neues Deployment **Ready** und **Current**.
+- **QR scannen** erst, wenn Vercel **Ready** ist (oder auf dem Mac „Bereit für Mobile“ angezeigt wird). Siehst du am Handy noch alte Zeit → **unten links auf „Stand“ tippen** (lädt neu).
+- **Build:** `package.json` → Script `build` mit `write-build-info.js --inject-html`. Repo: index.html mit `<!-- BUILD_TS_INJECT -->`, keine doppelten Exports in buildInfo.generated.ts, nur ein `<div id="root">` in index.html.
+
+---
+
 ## Häufigste Ursache: Falscher Branch = Production wird nicht aktualisiert
 
 **Du pushst auf `main-fresh`, aber Vercel „Production“ baut von Branch `main`.**
@@ -53,3 +62,4 @@ git push origin main
 - Im Vercel-Dashboard auf das **fehlgeschlagene Deployment** (roter Punkt „Error“) klicken.
 - **„View Build Log“** oder Build-Log öffnen – dort steht die genaue Fehlermeldung.
 - Häufige Ursachen: Node-Version (im Projekt ist `engines.node >= 18` gesetzt), Speicher, fehlende Abhängigkeit. Log prüfen und Fehlermeldung beheben.
+- Nach dem Fix: erneut pushen oder in Vercel beim letzten Commit **Redeploy** auslösen.
