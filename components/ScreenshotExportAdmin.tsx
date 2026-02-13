@@ -6884,15 +6884,19 @@ ${'='.repeat(60)}
       const url = URL.createObjectURL(blob)
       const w = lm.width
       const h = lm.height
+      // Pixelmaße = Etikett in mm bei 300 DPI, damit Druck-Engine die Größe nicht falsch interpretiert
+      const pw = Math.round(w * (300 / 25.4))
+      const ph = Math.round(h * (300 / 25.4))
       win.document.write(`
 <!DOCTYPE html><html><head><meta charset="utf-8"><title>Etikett ${w}×${h}mm</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 @page { size: ${w}mm ${h}mm; margin: 0; }
-html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; min-width: ${w}mm; height: ${h}mm; min-height: ${h}mm; overflow: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-img { width: ${w}mm; height: ${h}mm; max-width: ${w}mm; max-height: ${h}mm; display: block; object-fit: contain; object-position: center; }
+html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h}mm; overflow: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.etikett-wrap { width: ${w}mm; height: ${h}mm; display: block; overflow: hidden; }
+.etikett-wrap img { width: 100%; height: 100%; display: block; object-fit: contain; object-position: center; }
 </style></head>
-<body><img src="${url}" alt="Etikett"></body></html>`)
+<body><div class="etikett-wrap"><img src="${url}" alt="Etikett" width="${pw}" height="${ph}"></div></body></html>`)
       win.document.close()
       const doPrint = () => {
         win.print()
