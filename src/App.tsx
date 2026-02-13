@@ -225,17 +225,7 @@ function StandBadgeSync() {
   const [serverNewer, setServerNewer] = useState(false)
   const isLocal = typeof window !== 'undefined' && /^https?:\/\/localhost|127\.0\.0\.1/i.test(window.location?.origin || '')
 
-  useEffect(() => {
-    const el = document.getElementById('app-stand-badge')
-    if (!el) return
-    el.style.pointerEvents = 'auto'
-    el.style.cursor = 'pointer'
-    const onClick = () => doHardReload()
-    el.addEventListener('click', onClick)
-    return () => el.removeEventListener('click', onClick)
-  }, [])
-
-  // Auf Vercel/Produktion: prüfen ob Server eine neuere Version hat → automatisch neu laden (kein Tippen nötig)
+  // Auf Vercel/Produktion: prüfen ob Server eine neuere Version hat → automatisch neu laden
   useEffect(() => {
     if (isLocal) return
     const url = '/build-info.json?t=' + Date.now() + '&r=' + Math.random()
@@ -247,33 +237,42 @@ function StandBadgeSync() {
       .catch(() => {})
   }, [isLocal])
 
-  // Sobald Server-Version neuer ist: automatisch neu laden (umgeht Cache), ohne dass der Nutzer etwas eingeben oder tippen muss
   useEffect(() => {
     if (!serverNewer) return
-    const el = document.getElementById('app-stand-badge')
-    if (el) {
-      el.textContent = 'Aktualisiere …'
-      el.style.background = 'rgba(200,120,0,0.95)'
-    }
     const t = setTimeout(doHardReload, 1200)
     return () => clearTimeout(t)
   }, [serverNewer])
 
-  useEffect(() => {
-    const el = document.getElementById('app-stand-badge')
-    if (!el) return
-    if (serverNewer) return // wird von anderem useEffect überschrieben
-    const text = isLocal
-      ? `Stand: ${BUILD_LABEL} (lokal)`
-      : `Stand: ${BUILD_LABEL}`
-    el.textContent = text
-    el.setAttribute('title', isLocal
-      ? 'Lokal gebaut. Gleich überall: pushen, dann auf Handy neu scannen.'
-      : 'Tippen oder neue Seite öffnen (neuer Tab) = frischer Stand. Auch im fremden WLAN.')
-    el.style.background = 'rgba(0,0,0,0.85)'
-  }, [serverNewer, isLocal])
+  const label = serverNewer ? 'Aktualisiere …' : (isLocal ? `Stand: ${BUILD_LABEL} (lokal)` : `Stand: ${BUILD_LABEL}`)
+  const title = isLocal
+    ? 'Lokal gebaut. Gleich überall: pushen, dann auf Handy neu scannen.'
+    : 'Tippen oder neue Seite öffnen (neuer Tab) = frischer Stand. Auch im fremden WLAN.'
 
-  return null
+  return (
+    <div
+      id="app-stand-badge"
+      role="status"
+      onClick={doHardReload}
+      title={title}
+      style={{
+        position: 'fixed',
+        bottom: 10,
+        left: 10,
+        zIndex: 2147483647,
+        fontSize: 12,
+        color: '#fff',
+        background: serverNewer ? 'rgba(200,120,0,0.95)' : 'rgba(0,0,0,0.85)',
+        padding: '6px 10px',
+        borderRadius: 8,
+        cursor: 'pointer',
+        fontFamily: 'system-ui, sans-serif',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+        pointerEvents: 'auto'
+      }}
+    >
+      {label}
+    </div>
+  )
 }
 
 const isMobileView = () => typeof window !== 'undefined' && (
