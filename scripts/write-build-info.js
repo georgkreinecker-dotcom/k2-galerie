@@ -16,7 +16,8 @@ const fmt = new Intl.DateTimeFormat('de-AT', {
   hour12: false
 })
 const parts = Object.fromEntries(fmt.formatToParts(now).filter(p => p.type !== 'literal').map(p => [p.type, p.value]))
-const label = `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}`
+const yy = String(parts.year).slice(-2)
+const label = `${parts.day}.${parts.month}.${yy} ${parts.hour}:${parts.minute}`
 const outPath = path.join(__dirname, '..', 'src', 'buildInfo.generated.ts')
 const content = `// Automatisch beim Build erzeugt – nicht von Hand ändern
 export const BUILD_LABEL = '${label}'

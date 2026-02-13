@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import QRCode from 'qrcode'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { getTenantConfig, getCurrentTenantId, TENANT_CONFIGS, MUSTER_TEXTE } from '../config/tenantConfig'
 import '../App.css'
@@ -55,6 +56,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
   }, [])
   const [showAdminModal, setShowAdminModal] = useState(false)
   const [adminPasswordInput, setAdminPasswordInput] = useState('')
+  const [qrDataUrl, setQrDataUrl] = useState('')
   // adminPassword wird nur für Initialisierung verwendet, nicht für Login-Validierung
   const [, setAdminPassword] = useState('')
 
@@ -122,6 +124,41 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
   React.useEffect(() => {
     setMobileUrl(mobileUrlMemo)
   }, [mobileUrlMemo])
+
+  // QR-Code URL für Impressum (gleiche Logik wie unten)
+  const qrFinalUrl = useMemo(() => {
+    try {
+      const hostname = window.location.hostname || ''
+      const port = window.location.port || '5177'
+      const protocol = window.location.protocol
+      const isVercel = hostname.includes('vercel.app')
+      let finalUrl = ''
+      if (!isVercel) {
+        const isIPAddress = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname)
+        if (isIPAddress) {
+          finalUrl = `${protocol}//${hostname}:${port}${PROJECT_ROUTES['k2-galerie'].galerie}`
+        } else if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+          finalUrl = `${protocol}//${hostname}:${port}${PROJECT_ROUTES['k2-galerie'].galerie}`
+        } else if (mobileUrl && !mobileUrl.includes('localhost') && !mobileUrl.includes('127.0.0.1')) {
+          finalUrl = mobileUrl
+        } else if (mobileUrlMemo && !mobileUrlMemo.includes('localhost') && !mobileUrlMemo.includes('127.0.0.1')) {
+          finalUrl = mobileUrlMemo
+        } else {
+          finalUrl = `http://192.168.0.31:${port}${PROJECT_ROUTES['k2-galerie'].galerie}`
+        }
+      } else {
+        finalUrl = `${window.location.protocol}//${hostname}${PROJECT_ROUTES['k2-galerie'].galerie}`
+      }
+      return finalUrl.split('#')[0] || `http://192.168.0.31:${port}${PROJECT_ROUTES['k2-galerie'].galerie}`
+    } catch {
+      return 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
+    }
+  }, [mobileUrl, mobileUrlMemo])
+
+  useEffect(() => {
+    if (!qrFinalUrl) return
+    QRCode.toDataURL(qrFinalUrl, { width: 100, margin: 1 }).then(setQrDataUrl).catch(() => setQrDataUrl(''))
+  }, [qrFinalUrl])
 
   // Aktualisieren-Funktion für Mobile-Version - lädt neue Daten ohne Reload
   const [isRefreshing, setIsRefreshing] = React.useState(false)
@@ -1901,80 +1938,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   </div>
                 </div>
                 
-                {/* Rechte Seite: QR-Code (platzsparend) */}
-                {(() => {
-                try {
-                  const hostname = window.location.hostname || ''
-                  const port = window.location.port || '5177'
-                  const protocol = window.location.protocol
-                  const isVercel = hostname.includes('vercel.app')
-                  
-                  // WICHTIG: Immer die korrekte Galerie-Route verwenden
-                  let finalUrl = ''
-                  
-                  // KRITISCH: Wenn NICHT auf Vercel → IMMER lokale IP verwenden!
-                  if (!isVercel) {
-                    // Prüfe ob hostname eine IP-Adresse ist (192.168.x.x oder 10.x.x.x etc.)
-                    const isIPAddress = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname)
-                    
-                    if (isIPAddress) {
-                      // IP-Adresse gefunden → VERWENDE DIESE DIREKT!
-                      finalUrl = `${protocol}//${hostname}:${port}${PROJECT_ROUTES['k2-galerie'].galerie}`
-                      console.log('📱 QR-Code: IP-Adresse direkt verwendet:', finalUrl)
-                    } else if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
-                      // Andere hostname (nicht localhost) → verwende diese
-                      finalUrl = `${protocol}//${hostname}:${port}${PROJECT_ROUTES['k2-galerie'].galerie}`
-                      console.log('📱 QR-Code: Hostname verwendet:', finalUrl)
-                    } else {
-                      // Auf localhost: Versuche mobileUrl oder mobileUrlMemo
-                      if (mobileUrl && !mobileUrl.includes('localhost') && !mobileUrl.includes('127.0.0.1')) {
-                        finalUrl = mobileUrl
-                        console.log('📱 QR-Code: mobileUrl verwendet:', finalUrl)
-                      } else if (mobileUrlMemo && !mobileUrlMemo.includes('localhost') && !mobileUrlMemo.includes('127.0.0.1')) {
-                        finalUrl = mobileUrlMemo
-                        console.log('📱 QR-Code: mobileUrlMemo verwendet:', finalUrl)
-                      } else {
-                        // Fallback: Verwende bekannte Netzwerk-IPs aus Server-Output
-                        const knownIPs = ['192.168.0.31', '192.168.0.27']
-                        const fallbackIP = knownIPs[0] // Verwende erste bekannte IP
-                        finalUrl = `http://${fallbackIP}:${port}${PROJECT_ROUTES['k2-galerie'].galerie}`
-                        console.log('📱 QR-Code: localhost erkannt → verwende Fallback-IP:', finalUrl)
-                      }
-                    }
-                  } else {
-                    // Nur auf Vercel: Verwende Vercel-URL
-                    finalUrl = `${window.location.protocol}//${hostname}${PROJECT_ROUTES['k2-galerie'].galerie}`
-                    console.log('📱 QR-Code: Auf Vercel → verwende Vercel-URL:', finalUrl)
-                  }
-                  
-                  // WICHTIG: Entferne Hash-Fragmente die Probleme verursachen können
-                  finalUrl = finalUrl.split('#')[0]
-                  
-                  // WICHTIG: Wenn noch localhost oder Vercel drin ist (und nicht auf Vercel) → Fallback-IP verwenden
-                  if (!isVercel && (finalUrl.includes('localhost') || finalUrl.includes('127.0.0.1') || finalUrl.includes('vercel.app'))) {
-                    console.warn('⚠️ QR-Code: Ungültige URL erkannt, verwende Fallback-IP:', finalUrl)
-                    const knownIPs = ['192.168.0.31', '192.168.0.27']
-                    const fallbackIP = knownIPs[0]
-                    finalUrl = `http://${fallbackIP}:${port}${PROJECT_ROUTES['k2-galerie'].galerie}`
-                    console.log('📱 QR-Code: Fallback-IP verwendet:', finalUrl)
-                  }
-                  
-                  // Stelle sicher dass URL gültig ist
-                  if (!finalUrl || finalUrl === '') {
-                    // Letzter Fallback: Verwende bekannte IP
-                    const knownIPs = ['192.168.0.31', '192.168.0.27']
-                    const fallbackIP = knownIPs[0]
-                    finalUrl = `http://${fallbackIP}:${port}${PROJECT_ROUTES['k2-galerie'].galerie}`
-                    console.log('📱 QR-Code: Letzter Fallback verwendet:', finalUrl)
-                  }
-                  
-                  // Debug-Log für Entwicklung
-                  console.log('📱 QR-Code URL:', finalUrl)
-                  
-                  // URL für QR-Code encoden
-                  const encodedUrl = encodeURIComponent(finalUrl)
-                  
-                  return (
+                {/* Rechte Seite: QR-Code (lokal generiert – funktioniert ohne externe API) */}
+                {qrDataUrl && qrFinalUrl && (
                     <div style={{
                       textAlign: 'center',
                       flexShrink: 0
@@ -1995,7 +1960,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
                       }}>
                         <img 
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodedUrl}`}
+                          src={qrDataUrl}
                           alt="QR-Code"
                           style={{
                             width: '100px',
@@ -2011,15 +1976,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                         wordBreak: 'break-all',
                         maxWidth: '120px'
                       }}>
-                        {finalUrl}
+                        {qrFinalUrl}
                       </p>
                     </div>
-                  )
-                } catch (error) {
-                  console.error('QR-Code Fehler:', error)
-                  return null
-                }
-              })()}
+                )}
               </div>
             </div>
           </section>

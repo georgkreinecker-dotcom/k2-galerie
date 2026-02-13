@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
+import QRCode from 'qrcode'
 import '../App.css'
 import { PLATFORM_ROUTES, PROJECT_ROUTES } from '../config/navigation'
 
@@ -60,6 +61,7 @@ const secondaryFeatures = [
 export default function PlatformStartPage() {
   const navigate = useNavigate()
   const [galerieUrl, setGalerieUrl] = useState('')
+  const [galerieQrUrl, setGalerieQrUrl] = useState('')
   const [isIOS, setIsIOS] = useState(false)
   const [isStandalone, setIsStandalone] = useState(false)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
@@ -127,9 +129,10 @@ export default function PlatformStartPage() {
     }
   }, [])
 
-  const galerieQrUrl = useMemo(() => {
-    if (!galerieUrl) return ''
-    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(galerieUrl)}`
+  // QR-Code lokal erzeugen (keine externe API)
+  useEffect(() => {
+    if (!galerieUrl) { setGalerieQrUrl(''); return }
+    QRCode.toDataURL(galerieUrl, { width: 200, margin: 1 }).then(setGalerieQrUrl).catch(() => setGalerieQrUrl(''))
   }, [galerieUrl])
 
   return (

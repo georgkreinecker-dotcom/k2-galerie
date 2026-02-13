@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from 'react'
 import { usePersistentString } from '../hooks/usePersistentState'
 import { ProjectNavButton } from '../components/Navigation'
 import { Link } from 'react-router-dom'
+import QRCode from 'qrcode'
 
 const VERCEL_GALERIE_URL = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
 
@@ -9,6 +10,9 @@ const MobileConnectPage = () => {
   const [url, setUrl] = usePersistentString('k2-mobile-url')
   const [localGalerieUrl, setLocalGalerieUrl] = useState('')
   const [devViewUrl, setDevViewUrl] = useState('')
+  const [qrUrl, setQrUrl] = useState('')
+  const [localQrUrl, setLocalQrUrl] = useState('')
+  const [devViewQrUrl, setDevViewQrUrl] = useState('')
 
   useEffect(() => {
     if (!url || url === '') setUrl(VERCEL_GALERIE_URL)
@@ -26,19 +30,18 @@ const MobileConnectPage = () => {
     }
   }, [])
 
-  const qrUrl = useMemo(() => {
-    if (!url) return ''
-    return `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(url)}`
+  // QR-Codes lokal erzeugen (keine externe API – funktioniert auch bei Ad-Blockern)
+  useEffect(() => {
+    if (!url) { setQrUrl(''); return }
+    QRCode.toDataURL(url, { width: 280, margin: 1 }).then(setQrUrl).catch(() => setQrUrl(''))
   }, [url])
-
-  const localQrUrl = useMemo(() => {
-    if (!localGalerieUrl) return ''
-    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(localGalerieUrl)}`
+  useEffect(() => {
+    if (!localGalerieUrl) { setLocalQrUrl(''); return }
+    QRCode.toDataURL(localGalerieUrl, { width: 200, margin: 1 }).then(setLocalQrUrl).catch(() => setLocalQrUrl(''))
   }, [localGalerieUrl])
-
-  const devViewQrUrl = useMemo(() => {
-    if (!devViewUrl) return ''
-    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(devViewUrl)}`
+  useEffect(() => {
+    if (!devViewUrl) { setDevViewQrUrl(''); return }
+    QRCode.toDataURL(devViewUrl, { width: 200, margin: 1 }).then(setDevViewQrUrl).catch(() => setDevViewQrUrl(''))
   }, [devViewUrl])
 
   return (

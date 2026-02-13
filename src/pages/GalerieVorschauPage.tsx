@@ -3505,6 +3505,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                     }
                     
                     const PLACEHOLDER_KEIN_BILD = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+                    const now = new Date().toISOString()
                     const newArtwork = {
                       id: `artwork-${Date.now()}`,
                       number: newNumber,
@@ -3514,8 +3515,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                       price: mobilePrice ? parseFloat(mobilePrice) : undefined,
                       description: mobileDescription || undefined,
                       location: locationString,
-                      createdAt: new Date().toISOString(),
-                      updatedAt: new Date().toISOString(), // WICHTIG: updatedAt für Merge-Logik
+                      createdAt: now,
+                      addedToGalleryAt: now, // Zeitstempel: wann in Galerie aufgenommen
+                      updatedAt: now, // WICHTIG: updatedAt für Merge-Logik
                       inShop: !!mobilePrice && parseFloat(mobilePrice) > 0,
                       createdOnMobile: true // Marker dass es auf Mobile erstellt wurde
                     }
