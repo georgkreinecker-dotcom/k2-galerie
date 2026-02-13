@@ -28,6 +28,7 @@ import { startAutoSave, stopAutoSave, setupBeforeUnloadSave } from '../src/utils
 import { sortArtworksNewestFirst } from '../src/utils/artworkSort'
 import { appendToHistory } from '../src/utils/artworkHistory'
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
+import { writePngDpi } from 'png-dpi-reader-writer'
 
 // KRITISCH: Importiere Safe Mode Utilities für Crash-Schutz
 let safeModeUtils: any = null
@@ -7011,7 +7012,18 @@ img { width: ${w}mm; height: ${h}mm; max-width: ${w}mm; max-height: ${h}mm; disp
           ctx.font = `${fs4}px Arial,sans-serif`
           const footer = `${savedArtwork.category === 'malerei' ? 'Malerei' : 'Keramik'} • ${(savedArtwork.artist || '').substring(0, 15)}`
           ctx.fillText(footer, w / 2, h - pad - fs4)
-          canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Blob fehlgeschlagen'))), 'image/png', 0.95)
+          canvas.toBlob((b) => {
+            if (!b) { reject(new Error('Blob fehlgeschlagen')); return }
+            b.arrayBuffer().then((ab) => {
+              try {
+                const withDpi = writePngDpi(ab, 300)
+                const slice = withDpi.buffer.slice(withDpi.byteOffset, withDpi.byteOffset + withDpi.byteLength)
+                resolve(new Blob([slice as ArrayBuffer], { type: 'image/png' }))
+              } catch {
+                resolve(b)
+              }
+            }).catch(() => resolve(b))
+          }, 'image/png', 0.95)
         }
         img.onerror = () => reject(new Error('QR-Bild konnte nicht geladen werden.'))
         img.src = qrDataUrl
@@ -14171,7 +14183,10 @@ setPreviewUrl(null)
                         🖨️ Etikett drucken
                       </button>
                       <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.25rem 0 0 0' }}>
-                        Druckdialog öffnet sich → Brother (AirPrint) wählen → Papier 29×90,3 mm, 100 % → Drucken.
+                        Brother (AirPrint) wählen → Papier <strong>29×90,3 mm</strong>, Skalierung <strong>100 %</strong> → Drucken. Das Bild hat 300 DPI (richtige Größe).
+                      </p>
+                      <p style={{ fontSize: '0.75rem', color: '#22c55e', margin: '0.35rem 0 0 0' }}>
+                        Am zuverlässigsten: „Als Datei speichern“ → in <strong>Brother iPrint&amp;Label</strong> öffnen → dort drucken (App setzt Etikettengröße automatisch).
                       </p>
                       <button className="btn-secondary" onClick={() => setShowPrintModal(false)} style={{ marginTop: '0.5rem' }}>
                         Später drucken
@@ -14184,7 +14199,7 @@ setPreviewUrl(null)
                         Stattdessen als Datei speichern (für Brother-App)
                       </button>
                       <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
-                        Fallback: „Als Datei speichern“, dann in iPrint &amp; Label öffnen.
+                        Empfohlen bei Skalierungsproblemen: „Als Datei speichern“, dann in <strong>Brother iPrint&amp;Label</strong> öffnen (App druckt in korrekter Etikettengröße).
                       </p>
                       <details style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#888' }}>
                         <summary style={{ cursor: 'pointer' }}>Optional: One-Click (nur wenn Print-Server vor Ort läuft)</summary>

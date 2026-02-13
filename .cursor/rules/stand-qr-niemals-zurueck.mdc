@@ -20,14 +20,18 @@ alwaysApply: true
   - **Cache-Bust pro Anzeige:** `buildQrUrlWithBust(url, versionTs)` – hängt `v=<timestamp>&_=<Date.now()>` an. Jeder Scan = neue URL = kein CDN-Cache.
 - **Betroffene Dateien:** `GaleriePage.tsx`, `PlatformStartPage.tsx`, `MobileConnectPage.tsx`. Dort **darf** für Vercel-/Galerie-URLs **nur** `buildQrUrlWithBust(..., useQrVersionTimestamp())` (bzw. Hook + Bust) verwendet werden, **nicht** `urlWithBuildVersion(...)`.
 
-### 2. Build: inject-Script in index.html
+### 2. Build: inject-Script in index.html – „Seite öffnen = Update“
 
+- **Ohne dieses Script bekommen Mobilgeräte beim Seitenneustart kein Update** (Georg hat das mehrfach erlebt). Es ist genauso kritisch wie QR/Stand.
 - `scripts/write-build-info.js` muss mit `--inject-html` aufgerufen werden (z.B. im npm build). Das Script:
   - Prüft, ob das geladene HTML älter als 2 Minuten ist → einmal Reload mit Cache-Bust.
   - Holt `build-info.json`; wenn Server neuer → Reload mit frischer URL.
   - Bei Fetch-Fehler (fremdes WLAN etc.): einmal Reload mit Cache-Bust (mit sessionStorage gegen Schleifen).
 - **NIEMALS** das Inject-Script entfernen oder so vereinfachen, dass diese drei Verhaltensweisen wegfallen.
-- **Placeholder** in `index.html`: `<!-- BUILD_TS_INJECT -->` muss vorhanden sein, damit das Script beim Build eingefügt wird.
+- **JEDER Build muss das Inject-Script mit AKTUELLEM Timestamp ausliefern.** Dafür:
+  - **Option A:** In `index.html` steht der Placeholder `<!-- BUILD_TS_INJECT -->` → Build ersetzt ihn durch das Script (mit aktuellem `b=<timestamp>`).
+  - **Option B (Fallback):** Steht schon ein altes Script drin (z.B. `var b=123456;`), muss write-build-info.js das **gesamte** alte Script per Regex ersetzen durch das neue mit aktuellem Timestamp. **Diesen Fallback NIEMALS entfernen** – sonst wird nach dem ersten Inject nie wieder aktualisiert und „Seite öffnen = Update“ ist sofort wieder kaputt.
+- **Placeholder:** Ideal ist, dass `index.html` im Repo den Placeholder enthält; wenn nicht, muss Option B (Regex-Ersetzung des alten Scripts) greifen.
 
 ### 3. Vercel: no-cache für HTML und build-info
 
@@ -52,12 +56,13 @@ alwaysApply: true
 
 - [ ] QR für Vercel-Galerie nutzt weiterhin Server-Timestamp + `buildQrUrlWithBust` (kein reines `urlWithBuildVersion`).
 - [ ] Build ruft weiterhin `write-build-info.js --inject-html` auf; Inject-Script bleibt vollständig (Stale-Check, build-info-Fetch, Fehler-Reload).
+- [ ] Inject bei jedem Build mit aktuellem Timestamp: Placeholder in index.html ODER Fallback in write-build-info.js (altes Script per Regex ersetzen) – beides nicht entfernen.
 - [ ] vercel.json behält no-cache für index.html und build-info.json.
 - [ ] Hook `useServerBuildTimestamp` / `buildQrUrlWithBust` bleibt in Verwendung für alle relevanten QRs.
 
 ## Kurzfassung
 
 - **QR:** Immer Server-Stand + `&_=Date.now()` (buildQrUrlWithBust + useQrVersionTimestamp). Nie nur lokaler BUILD_TIMESTAMP für QR.
-- **HTML:** Inject-Script bleibt (Stale + build-info + Fehler-Reload). Placeholder in index.html bleibt.
+- **HTML:** Inject-Script bleibt (Stale + build-info + Fehler-Reload). Jeder Build muss Script mit aktuellem Timestamp liefern (Placeholder oder Fallback-Regex in write-build-info.js).
 - **Vercel:** no-cache für index.html und build-info.json bleibt.
 - **Nicht:** Diese Logik „vereinfachen“, „aufräumen“ oder durch „nur lokalen Stand“ ersetzen – sonst ist das Problem sofort wieder da.

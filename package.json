@@ -2,7 +2,9 @@
   "name": "k2-galerie",
   "private": true,
   "version": "1.0.0",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "node scripts/write-build-info.js && vite",
@@ -21,6 +23,7 @@
     "@imgly/background-removal": "^1.7.0",
     "ipp": "^1.1.0",
     "onnxruntime-web": "^1.21.0",
+    "png-dpi-reader-writer": "^0.2.4",
     "qrcode": "^1.5.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

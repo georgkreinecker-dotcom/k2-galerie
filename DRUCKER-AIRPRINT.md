@@ -130,6 +130,12 @@ Wenn der **K2 Print-Server** läuft:
 
 ---
 
+## 300 DPI im Etikett-PNG (technisch)
+
+K2 schreibt beim Export des Etiketts **300 DPI (pHYs)** ins PNG. Damit erkennen AirPrint und Drucker die richtige physische Größe (29×90,3 mm bei 100 % Skalierung). Wenn trotzdem die Größe nicht stimmt: **„Als Datei speichern“** → in **Brother iPrint & Label** öffnen → dort drucken (App setzt Etikettengröße zuverlässig).
+
+---
+
 ## Kurz-Übersicht
 
 | Gerät | Lösung |
