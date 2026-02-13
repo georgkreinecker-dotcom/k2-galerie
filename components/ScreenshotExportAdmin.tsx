@@ -14164,16 +14164,19 @@ setPreviewUrl(null)
                 <div style={{ fontSize: isMobile ? '0.9rem' : '1rem', fontWeight: 'bold', color: '#8b6914', marginBottom: isMobile ? '0.5rem' : '0.75rem' }}>
                   {savedArtwork.number}
                 </div>
-                {/* Mobil: AirPrint (Etikett drucken) zuerst – kein Mac vor Ort nötig. One-Click nur optional. */}
+                {/* Mobil: Zuverlässige Methode zuerst – Speichern → iPrint&Label. Safari-AirPrint oft falsche Skalierung. */}
                 <div className="admin-modal-actions" style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'stretch', marginBottom: isMobile ? '1rem' : '1.5rem' }}>
                   {isMobile ? (
                     <>
+                      <p style={{ fontSize: '0.85rem', color: '#166534', fontWeight: 600, margin: '0 0 0.5rem 0' }}>
+                        Auf dem iPad: So passt die Größe garantiert
+                      </p>
                       <button
                         type="button"
-                        onClick={() => { handlePrint(); setShowPrintModal(false); }}
+                        onClick={handleDownloadEtikettDirect}
                         style={{
                           padding: '1.25rem 1.5rem',
-                          fontSize: '1.25rem',
+                          fontSize: '1.2rem',
                           fontWeight: 700,
                           background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
                           border: 'none',
@@ -14184,27 +14187,24 @@ setPreviewUrl(null)
                           touchAction: 'manipulation'
                         }}
                       >
-                        🖨️ Etikett drucken
+                        📥 Etikett speichern → in Brother iPrint&amp;Label drucken
                       </button>
-                      <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.25rem 0 0 0' }}>
-                        Brother (AirPrint) wählen → Papier <strong>29×90,3 mm</strong>, Skalierung <strong>100 %</strong> → Drucken. Das Bild hat 300 DPI (richtige Größe).
+                      <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.35rem 0 0 0' }}>
+                        Etikett wird gespeichert. In „Fotos“ oder „Dateien“ öffnen → Teilen → <strong>Brother iPrint&amp;Label</strong> → Drucken. Fertig, richtige Größe.
                       </p>
-                      <p style={{ fontSize: '0.75rem', color: '#22c55e', margin: '0.35rem 0 0 0' }}>
-                        Am zuverlässigsten: „Als Datei speichern“ → in <strong>Brother iPrint&amp;Label</strong> öffnen → dort drucken (App setzt Etikettengröße automatisch).
+                      <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.75rem' }}>
+                        Oder direkt über Safari:
                       </p>
+                      <button
+                        type="button"
+                        onClick={() => { handlePrint(); setShowPrintModal(false); }}
+                        style={{ padding: '0.75rem 1rem', fontSize: '0.95rem', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '10px', color: '#475569', cursor: 'pointer' }}
+                      >
+                        🖨️ Jetzt drucken (Safari – Skalierung kann abweichen)
+                      </button>
                       <button className="btn-secondary" onClick={() => setShowPrintModal(false)} style={{ marginTop: '0.5rem' }}>
                         Später drucken
                       </button>
-                      <button
-                        type="button"
-                        onClick={handleDownloadEtikettDirect}
-                        style={{ fontSize: '0.8rem', background: 'none', border: 'none', color: '#888', cursor: 'pointer', textDecoration: 'underline', marginTop: '0.5rem' }}
-                      >
-                        Stattdessen als Datei speichern (für Brother-App)
-                      </button>
-                      <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
-                        Empfohlen bei Skalierungsproblemen: „Als Datei speichern“, dann in <strong>Brother iPrint&amp;Label</strong> öffnen (App druckt in korrekter Etikettengröße).
-                      </p>
                       <details style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#888' }}>
                         <summary style={{ cursor: 'pointer' }}>Optional: One-Click (nur wenn Print-Server vor Ort läuft)</summary>
                         <p style={{ margin: '0.35rem 0 0 0' }}>Braucht ein Gerät im gleichen WLAN wie Tablet und Drucker mit laufendem Print-Server.</p>

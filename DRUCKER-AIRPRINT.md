@@ -6,12 +6,9 @@
 
 **Vom iPad/Handy drucken:**
 
-1. In K2: **„Jetzt drucken“** tippen
-2. Im Druckdialog **Brother** bzw. **AirPrint-Drucker** wählen
-3. **Papier:** 29×90,3 mm (Brother-Etikett)
-4. **Skalierung:** 100 %
+**A) Zuverlässig (Größe passt garantiert):** In K2 **„Etikett speichern“** tippen → Datei in Fotos/Dateien öffnen → **Teilen** → **Brother iPrint & Label** → dort drucken. Kein Mac nötig.
 
-Fertig – kein Mac, kein Print-Server nötig.
+**B) Direkt über Safari:** „Jetzt drucken“ → Brother wählen → Papier 29×90,3 mm, 100 %. Safari ignoriert oft unsere Größenangaben (Skalierungsproblem), dann A nutzen.
 
 ---
 
