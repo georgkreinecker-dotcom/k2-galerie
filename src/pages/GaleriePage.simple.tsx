@@ -92,7 +92,7 @@ const GaleriePage = () => {
                   )}
                   <h4 style={{ margin: '0.5rem 0', fontSize: '1rem' }}>{artwork.title || artwork.number}</h4>
                   <p style={{ margin: '0.25rem 0', fontSize: '0.9rem', color: '#666' }}>
-                    {artwork.category === 'malerei' ? 'Malerei' : artwork.category === 'keramik' ? 'Keramik' : artwork.category}
+                    {artwork.category === 'malerei' ? 'Bilder' : artwork.category === 'keramik' ? 'Keramik' : artwork.category}
                     {artwork.artist && ` • ${artwork.artist}`}
                   </p>
                   {artwork.price && (

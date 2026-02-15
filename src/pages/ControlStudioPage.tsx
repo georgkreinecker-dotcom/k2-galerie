@@ -1,6 +1,9 @@
 import { useMemo, useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { usePersistentBoolean, usePersistentString } from '../hooks/usePersistentState'
 import { ProjectNavButton } from '../components/Navigation'
+import { KundenTab } from '../components/KundenTab'
+import { getCustomers, type Customer } from '../utils/customers'
 
 type ChatMessage = { role: 'user' | 'ai'; content: string }
 
@@ -10,11 +13,12 @@ const quickPrompts = [
   'Formuliere einen Presse-Text für die Eröffnung.',
 ]
 
-type ControlTab = 'kasse' | 'galerie' | 'verkaufe' | 'archiv' | 'events' | 'einstellungen'
+type ControlTab = 'kasse' | 'galerie' | 'verkaufe' | 'archiv' | 'kunden' | 'events' | 'einstellungen'
 
 // Archiv-Tab Komponente für Verkaufshistorie
 const ArchivTab = () => {
   const [soldArtworks, setSoldArtworks] = useState<any[]>([])
+  const [customers, setCustomers] = useState<Customer[]>([])
   const [allArtworks, setAllArtworks] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -22,41 +26,30 @@ const ArchivTab = () => {
   useEffect(() => {
     const loadData = () => {
       try {
-        // Lade verkaufte Werke
         const soldData = localStorage.getItem('k2-sold-artworks')
         const sold = soldData ? JSON.parse(soldData) : []
-        
-        // Lade alle Werke um Details zu bekommen
         const artworksData = localStorage.getItem('k2-artworks')
         const artworks = artworksData ? JSON.parse(artworksData) : []
-        
-        // Kombiniere verkaufte Werke mit Werk-Details
         const soldWithDetails = sold.map((soldItem: any) => {
           const artwork = artworks.find((a: any) => a.number === soldItem.number)
-          return {
-            ...soldItem,
-            ...artwork,
-            soldAt: soldItem.soldAt || soldItem.soldAt
-          }
+          return { ...soldItem, ...artwork, soldAt: soldItem.soldAt || soldItem.soldAt }
         })
-        
         setSoldArtworks(soldWithDetails)
         setAllArtworks(artworks)
+        setCustomers(getCustomers())
         setIsLoading(false)
       } catch (error) {
         console.error('Fehler beim Laden der Verkaufshistorie:', error)
         setIsLoading(false)
       }
     }
-    
     loadData()
-    
-    // Event Listener für Updates
     const handleUpdate = () => loadData()
     window.addEventListener('artworks-updated', handleUpdate)
-    
+    window.addEventListener('customers-updated', handleUpdate)
     return () => {
       window.removeEventListener('artworks-updated', handleUpdate)
+      window.removeEventListener('customers-updated', handleUpdate)
     }
   }, [])
 
@@ -100,7 +93,7 @@ const ArchivTab = () => {
       
       <div className="stat-row">
         <span>{stats.total} Verkauft</span>
-        <span>{stats.malerei} Malerei</span>
+        <span>{stats.malerei} Bilder</span>
         <span>{stats.keramik} Keramik</span>
         <span>€{stats.totalRevenue.toFixed(2)} Gesamtumsatz</span>
       </div>
@@ -148,7 +141,7 @@ const ArchivTab = () => {
                   {item.title || item.number}
                 </div>
                 <div style={{ fontSize: '0.85rem', color: '#8fa0c9', marginBottom: '0.25rem' }}>
-                  {item.category === 'malerei' ? 'Malerei' : item.category === 'keramik' ? 'Keramik' : 'Unbekannt'}
+                  {item.category === 'malerei' ? 'Bilder' : item.category === 'keramik' ? 'Keramik' : 'Unbekannt'}
                   {item.artist && ` • ${item.artist}`}
                 </div>
                 <div style={{ fontSize: '0.85rem', color: '#8fa0c9' }}>
@@ -160,6 +153,11 @@ const ArchivTab = () => {
                     minute: '2-digit'
                   }) : 'Unbekannt'}
                 </div>
+                {item.customerId && (
+                  <div style={{ fontSize: '0.85rem', color: '#5ffbf1', marginTop: '0.2rem' }}>
+                    Verkauft an: {customers.find(c => c.id === item.customerId)?.name ?? 'Unbekannt'}
+                  </div>
+                )}
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#5ffbf1' }}>
@@ -178,7 +176,17 @@ const ArchivTab = () => {
 }
 
 const ControlStudioPage = () => {
-  const [activeTab, setActiveTab] = useState<ControlTab>('galerie')
+  const [searchParams] = useSearchParams()
+  const tabFromUrl = searchParams.get('tab') as ControlTab | null
+  const [activeTab, setActiveTab] = useState<ControlTab>(() => {
+    const valid: ControlTab[] = ['kasse', 'galerie', 'verkaufe', 'archiv', 'kunden', 'events', 'einstellungen']
+    return (tabFromUrl && valid.includes(tabFromUrl)) ? tabFromUrl : 'galerie'
+  })
+  useEffect(() => {
+    if (tabFromUrl && (['kasse', 'galerie', 'verkaufe', 'archiv', 'kunden', 'events', 'einstellungen'] as const).includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl)
+    }
+  }, [tabFromUrl])
   const [galleryName, setGalleryName] = usePersistentString('k2-control-gallery')
   const [launchDate, setLaunchDate] = usePersistentString('k2-control-launch-date')
   const [team, setTeam] = usePersistentString('k2-control-team', 'Georg & Martina')
@@ -306,7 +314,7 @@ const ControlStudioPage = () => {
         </header>
 
         <nav className="control-tabs">
-          {(['kasse', 'galerie', 'verkaufe', 'archiv', 'events', 'einstellungen'] as const).map((tab) => (
+          {(['kasse', 'galerie', 'verkaufe', 'archiv', 'kunden', 'events', 'einstellungen'] as const).map((tab) => (
             <button
               key={tab}
               type="button"
@@ -317,6 +325,7 @@ const ControlStudioPage = () => {
               {tab === 'galerie' && 'Galerie'}
               {tab === 'verkaufe' && 'Verkäufe'}
               {tab === 'archiv' && 'Archiv'}
+              {tab === 'kunden' && 'Kunden'}
               {tab === 'events' && 'Events'}
               {tab === 'einstellungen' && 'Einstellungen'}
             </button>
@@ -333,6 +342,9 @@ const ControlStudioPage = () => {
             )}
             {activeTab === 'archiv' && (
               <ArchivTab />
+            )}
+            {activeTab === 'kunden' && (
+              <KundenTab />
             )}
             {activeTab === 'events' && (
               <div className="card">

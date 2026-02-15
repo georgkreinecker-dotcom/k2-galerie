@@ -13,7 +13,7 @@ const mainFeatures = [
     to: PROJECT_ROUTES['k2-galerie'].galerie,
     cta: 'Galerie öffnen →',
     icon: '🎨',
-    color: 'linear-gradient(135deg, #5ffbf1, #33a1ff)',
+    color: 'linear-gradient(135deg, var(--k2-accent), #e67a2a)',
     priority: 'high'
   },
   {
@@ -22,7 +22,7 @@ const mainFeatures = [
     to: PLATFORM_ROUTES.projects,
     cta: 'Zu Projekten →',
     icon: '📁',
-    color: 'linear-gradient(135deg, #8b5cf6, #6366f1)',
+    color: 'linear-gradient(135deg, #d4a574, var(--k2-accent))',
     priority: 'high'
   },
 ]
@@ -143,7 +143,7 @@ export default function PlatformStartPage() {
         <header>
           <div>
             <h1 style={{ 
-              background: 'linear-gradient(135deg, #5ffbf1, #33a1ff)', 
+              background: 'linear-gradient(135deg, var(--k2-accent), #e67a2a)', 
               WebkitBackgroundClip: 'text', 
               WebkitTextFillColor: 'transparent', 
               backgroundClip: 'text',
@@ -292,7 +292,7 @@ export default function PlatformStartPage() {
                   </p>
                   <div style={{
                     fontSize: '0.85rem',
-                    color: '#5ffbf1',
+                    color: 'var(--k2-accent)',
                     fontWeight: '500'
                   }}>
                     {feature.cta}
@@ -497,10 +497,10 @@ export default function PlatformStartPage() {
                 color: '#fff',
                 textAlign: 'center'
               }}>
-                <div style={{ marginBottom: '0.5rem', fontWeight: '600', color: '#5ffbf1' }}>
+                <div style={{ marginBottom: '0.5rem', fontWeight: '600', color: 'var(--k2-accent)' }}>
                   📱 Zum Home-Bildschirm hinzufügen
                 </div>
-                <div style={{ fontSize: '0.8rem', color: '#8fa0c9', lineHeight: '1.5' }}>
+                <div style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', lineHeight: '1.5' }}>
                   Teilen → "Zum Home-Bildschirm" → Hinzufügen
                 </div>
               </div>

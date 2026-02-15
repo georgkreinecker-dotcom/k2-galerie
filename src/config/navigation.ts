@@ -27,10 +27,13 @@ export const PROJECT_ROUTES = {
     shop: '/projects/k2-galerie/shop',
     virtuellerRundgang: '/projects/k2-galerie/virtueller-rundgang',
     controlStudio: '/projects/k2-galerie/control-studio',
+    kunden: '/projects/k2-galerie/kunden',
     plan: '/projects/k2-galerie/plan',
     mobileConnect: '/projects/k2-galerie/mobile-connect',
     platzanordnung: '/projects/k2-galerie/platzanordnung',
     produktVorschau: '/projects/k2-galerie/produkt-vorschau',
+    vitaMartina: '/projects/k2-galerie/vita/martina',
+    vitaGeorg: '/projects/k2-galerie/vita/georg',
   },
   // Weitere Projekte hier hinzufügen:
   // 'projekt-2': {

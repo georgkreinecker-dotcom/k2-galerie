@@ -1,0 +1,63 @@
+---
+description: Kritische Benutzerdaten (Stammdaten, Kontakt) niemals verlieren. Repo = Quelle, Merge beim Laden/Speichern.
+alwaysApply: true
+---
+
+# 🔒 Kein Datenverlust – kritische Daten immer sichern
+
+## ⛔ ABSOLUTES NO-GO (führt zu Chaos)
+
+**Gespeicherte Stammdaten (localStorage, k2-stammdaten-*) NIEMALS mit leeren Werten überschreiben.**
+
+- **Verboten:** Ein Feld, das im Speicher bereits einen Wert hat (z. B. welcomeImage, virtualTourImage, galerieCardImage, Kontakt, Adresse), durch `''` oder `undefined` zu ersetzen.
+- **Pflicht:** Beim Zusammenführen (Merge), Reparieren oder Laden: **Bestehenden Wert aus dem Speicher übernehmen**, wenn der neue Wert leer ist. Nur auffüllen, nie leeren.
+- **Bilder:** welcomeImage, virtualTourImage, galerieCardImage sind besonders fehleranfällig (z. B. beim Laden von gallery-data.json ohne Base64). Immer: `neuerWert || bestehenderWertAusSpeicher || ''` – nie nur `neuerWert || ''`.
+
+Wer diese Regel bricht, löscht Nutzerdaten und verursacht Chaos. Bei jeder Änderung an Laden/Speichern/Merge von Stammdaten: Prüfen, ob ein bestehender Wert durch Leer überschrieben werden könnte – wenn ja, zuerst aus Speicher lesen und erhalten.
+
+## Regel (immer einhalten)
+
+**Kritische Benutzerdaten dürfen niemals verloren gehen.** Dafür gelten:
+
+1. **Quelle im Repo**
+   - Stammdaten (Kontakt: E-Mail, Telefon, Namen, Galerie) haben eine **verbindliche Quelle im Code**: `src/config/tenantConfig.ts` → `K2_STAMMDATEN_DEFAULTS`.
+   - Diese Werte sind die Fallback-Standards. Sie müssen vollständig und korrekt sein (z. B. echte @kgm.at-Adressen, echte Telefonnummern).
+
+2. **Beim Laden / „Reparieren“**
+   - Wo immer Stammdaten aus localStorage geladen werden: **Leere Kontaktfelder** (email, phone, name, website) werden aus `K2_STAMMDATEN_DEFAULTS` gefüllt.
+   - **Niemals** beim Reparieren das **gesamte** Objekt überschreiben: Nur die Kontaktfelder (email, phone, name, website; bei Galerie zusätzlich address, city, country, openingHours) in den Speicher zurückschreiben. **welcomeImage**, **virtualTourImage**, **galerieCardImage** und alle anderen Felder aus dem **bestehenden** gespeicherten Objekt übernehmen (Spread: `{ ...existing, email: ..., phone: ... }`). **Niemals** ein Objekt bauen, in dem Bild- oder andere Nutzerfelder mit `''` stehen, ohne vorher den bestehenden Speicher zu lesen und diese Felder daraus zu übernehmen. Sonst gehen Willkommensbild, Adresse und andere vom Nutzer gepflegte Daten verloren.
+
+3. **Beim Speichern (Auto-Save, saveNow, manuell)**
+   - **Niemals** vorhandene E-Mail/Telefon/Namen/Adresse mit **leeren** Werten überschreiben.
+   - Vor dem Schreiben: Wenn der eingehende Wert leer ist, **bestehenden** Wert aus localStorage behalten; wenn auch der bestehende leer ist, **Repo-Standard** (`K2_STAMMDATEN_DEFAULTS`) verwenden.
+   - Umsetzung: siehe `src/utils/autoSave.ts` (mergeStammdatenPerson, mergeStammdatenGallery) und gleiche Logik überall, wo Stammdaten geschrieben werden.
+
+4. **Keine Ausrede „nur localStorage“**
+   - Sich auf „die Daten waren vermutlich nur im localStorage“ zu berufen ist unzulässig.
+   - Aufgabe ist, **dafür zu sorgen**, dass nichts verloren geht: Repo-Standard + Merge beim Laden/Speichern.
+
+5. **Bei gemeldetem Datenverlust: ZUERST Backup nutzen**
+   - Wir haben ein doppeltes Backup (Auto-Backup alle 5 Sek. in `k2-full-backup` + Vollbackup-Datei / backupmicro).
+   - Wenn der Nutzer sagt, Daten (z. B. Stammdaten, E-Mail, Telefon) seien weg oder falsch:
+     - **Zuerst:** Hinweis auf **„Aus letztem Backup wiederherstellen“** (Admin → Einstellungen → Backup & Wiederherstellung). Die Stammdaten sind im Vollbackup enthalten.
+     - **Prüfen:** Gibt es eine Vollbackup-Datei im Projekt (z. B. „K2 Backups“, exportierte JSON)? Wenn ja, daraus die Werte ermitteln und in `K2_STAMMDATEN_DEFAULTS` oder per Wiederherstellung zurückführen.
+   - Erst danach oder zusätzlich: Repo-Standard (K2_STAMMDATEN_DEFAULTS) sicherstellen und Merge-Logik beim Laden/Speichern.
+
+## Betroffene Stellen
+
+- `src/config/tenantConfig.ts`: `K2_STAMMDATEN_DEFAULTS` aktuell und vollständig halten.
+- `src/utils/autoSave.ts`: Stammdaten-Merge beim Intervall und bei saveNow.
+- `components/ScreenshotExportAdmin.tsx`: Stammdaten-Laden mit Auffüllen aus K2_STAMMDATEN_DEFAULTS; Speichern nur über saveStammdaten (ök2 schreibt nicht in K2-Keys).
+- `src/pages/GaleriePage.tsx`: Stammdaten-Laden mit Auffüllen aus K2_STAMMDATEN_DEFAULTS.
+
+## Bei neuen Features
+
+- Wenn neue **kritische Daten** (Kontakt, Adresse, Öffnungszeiten, etc.) dazu kommen: zuerst in `K2_STAMMDATEN_DEFAULTS` abbilden, dann beim Laden/Speichern die gleiche „nie leer überschreiben / immer aus Repo auffüllen“-Logik anwenden.
+
+## Checkliste bei Änderungen an Stammdaten-Logik
+
+Vor dem Abschluss prüfen:
+
+- [ ] Wird irgendwo ein Objekt für Galerie/Martina/Georg gebaut, in dem Felder (z. B. welcomeImage, virtualTourImage, galerieCardImage) auf `''` gesetzt werden? Wenn ja: vorher bestehenden Speicher lesen und diese Felder daraus übernehmen.
+- [ ] Beim Merge mit Server-Daten (z. B. gallery-data.json): Enthält die Antwort oft keine Base64-Bilder? Wenn ja: Bilder aus localStorage übernehmen, wenn Server-Wert leer ist.
+- [ ] Wird `setGalleryData` / ähnlicher State mit einem Objekt aufgerufen, das Nutzerfelder leer hat? Wenn ja: nur befüllte Felder überschreiben oder vorher bestehende Werte einspielen.

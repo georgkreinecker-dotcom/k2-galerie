@@ -1,0 +1,46 @@
+---
+description: K2 vs. ök2 – strikte Datentrennung, keine Vermischung (Multi-Tenant-Basis)
+alwaysApply: true
+---
+
+# K2 vs. ök2 – funktionssicher trennen
+
+## Warum
+
+- **K2** = echte Galerie (Martina & Georg, echte Werke/Stammdaten). **ök2** = öffentliche Demo (nur Muster).
+- K2 ist der Prototyp; ök2 und spätere Mandanten müssen **ohne Datenvermischung** laufen. Ein Fehler (z. B. ök2 schreibt in K2-Keys) kann echte Daten gefährden.
+
+## Unveränderliche Regeln
+
+### 1. Keine Vermischung
+
+- Auf **ök2-Routen** (`galerie-oeffentlich`, `galerie-oeffentlich-vorschau`, Admin mit `context=oeffentlich`): **niemals** `k2-artworks`, `k2-stammdaten-*`, `k2-events`, `k2-documents`, `gallery-data.json` (echte Daten) lesen oder schreiben.
+- In **K2-Kontext**: echte Keys nutzen; keine Musterdaten für die Galerie-Anzeige verwenden (außer Fallback, wenn bewusst so gewollt).
+
+### 2. Umsetzung im Code
+
+- **Laden/Anzeigen:** Immer `musterOnly` bzw. `tenantId === 'oeffentlich'` prüfen. Bei true: nur MUSTER_TEXTE, MUSTER_ARTWORKS, TENANT_CONFIGS.oeffentlich, ggf. `k2-oeffentlich-artworks` (Demo-Werke).
+- **Schreiben:** Im ök2-Admin **nur** in `k2-oeffentlich-artworks`, `k2-oeffentlich-events`, `k2-oeffentlich-documents` schreiben. **Nie** in `k2-artworks`, `k2-events`, `k2-documents`, `k2-stammdaten-*`.
+- **Auto-Save / Veröffentlichen:** Nur im K2-Admin aktiv; im ök2-Admin deaktiviert oder ausgeblendet (Hinweis anzeigen).
+
+### 3. Betroffene Stellen (bei Änderungen prüfen)
+
+- GaleriePage, GalerieVorschauPage: `musterOnly`-Logik beim Laden der Werke/Stammdaten.
+- ScreenshotExportAdmin: Kontext `oeffentlich` → andere Keys, kein Auto-Save, kein „Veröffentlichen“ für K2.
+- Alle Stellen, die Stammdaten oder Werke aus localStorage/Supabase lesen oder schreiben: Kontext (K2 vs. ök2) berücksichtigen.
+
+### 4. Neue Features
+
+- Bei jedem neuen Feature, das Werke/Stammdaten/Events/Dokumente betrifft: **zuerst** klären, ob es in K2, ök2 oder beiden gilt – und dann die passenden Keys/Kontext-Checks einbauen. **Nicht** nachträglich „irgendwo anpassen“.
+
+## Kurzfassung
+
+- **ök2** = nur Muster + `k2-oeffentlich-*` Keys. **K2** = echte Keys, echte Daten.
+- Kein Lesen/Schreiben von K2-Daten im ök2-Kontext. Kein Schreiben in K2-Keys aus ök2-Admin.
+- Doku: `docs/K2-OEK2-DATENTRENNUNG.md`.
+
+---
+
+## Erinnerung für Georg
+
+**Wenn wir an ök2 arbeiten** (Routen galerie-oeffentlich, Admin context=oeffentlich, Musterwerke, Demo-Inhalte): Georg kurz daran erinnern, die **Checkliste** in `docs/K2-OEK2-DATENTRENNUNG.md` (Abschnitt „ök2 funktionssicher machen“) zu beachten und die Trennung K2 vs. ök2 im Blick zu behalten.

@@ -414,7 +414,7 @@ const PlatzanordnungPage = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%)',
+      background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 50%, var(--k2-bg-3) 100%)',
       color: '#ffffff',
       padding: '1rem'
     }}>
@@ -500,7 +500,7 @@ const PlatzanordnungPage = () => {
                       {artwork.title || artwork.number}
                     </div>
                     <div style={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-                      {artwork.number} • {artwork.category === 'malerei' ? 'Malerei' : 'Keramik'}
+                      {artwork.number} • {artwork.category === 'malerei' ? 'Bilder' : 'Keramik'}
                       {artwork.location && ` • 📍 ${artwork.location}`}
                     </div>
                   </div>
@@ -672,7 +672,7 @@ const PlatzanordnungPage = () => {
             padding: '1rem'
           }}>
             <div style={{
-              background: 'linear-gradient(135deg, #1a1f3a 0%, #0f1419 100%)',
+              background: 'linear-gradient(135deg, var(--k2-bg-2) 0%, var(--k2-bg-1) 100%)',
               borderRadius: '16px',
               padding: '1.5rem',
               maxWidth: '500px',
@@ -776,7 +776,7 @@ const PlatzanordnungPage = () => {
             padding: '1rem'
           }}>
             <div style={{
-              background: 'linear-gradient(135deg, #1a1f3a 0%, #0f1419 100%)',
+              background: 'linear-gradient(135deg, var(--k2-bg-2) 0%, var(--k2-bg-1) 100%)',
               borderRadius: '16px',
               padding: '1.5rem',
               maxWidth: '400px',
@@ -986,7 +986,7 @@ const PlatzanordnungPage = () => {
             overflowY: 'auto'
           }}>
             <div style={{
-              background: 'linear-gradient(135deg, #1a1f3a 0%, #0f1419 100%)',
+              background: 'linear-gradient(135deg, var(--k2-bg-2) 0%, var(--k2-bg-1) 100%)',
               borderRadius: '16px',
               padding: '1.5rem',
               maxWidth: '500px',

@@ -12,7 +12,7 @@ export interface TenantConfig {
   id: TenantId
   /** Galerie- / Atelier-Name (z. B. "K2 Galerie", "Atelier Muster") */
   galleryName: string
-  /** Künstler:in 1 (z. B. Malerei) */
+  /** Künstler:in 1 (z. B. Bilder) */
   artist1Name: string
   /** Künstler:in 2 (z. B. Keramik) */
   artist2Name: string
@@ -23,6 +23,37 @@ export interface TenantConfig {
 }
 
 const STORAGE_KEY = 'k2-tenant'
+
+/**
+ * K2-Stammdaten: E-Mail und Telefon (Vorgabe für Admin/Galerie, wenn noch nichts gespeichert).
+ * Nach Änderung: In der App unter Admin → Stammdaten speichern, damit sie überall ankommen.
+ */
+export const K2_STAMMDATEN_DEFAULTS = {
+  martina: {
+    name: 'Martina Kreinecker',
+    email: 'martina.kreinecker@kgm.at',
+    phone: '0664 1046337',
+    website: '',
+  },
+  georg: {
+    name: 'Georg Kreinecker',
+    email: 'georg.kreinecker@kgm.at',
+    phone: '0664 1046337',
+    website: '',
+  },
+  gallery: {
+    name: 'K2 Galerie',
+    address: '',
+    city: '',
+    country: '',
+    phone: '0664 1046337',
+    email: 'info@kgm.at', // Galerie-Kontakt (anpassen falls anders)
+    website: '',
+    internetadresse: '',
+    openingHours: '',
+    bankverbindung: '',
+  },
+}
 
 /** Konfiguration pro Mandant – K2 = deine Galerie, Demo = Beispiel für Lizenzversion */
 export const TENANT_CONFIGS: Record<TenantId, TenantConfig> = {
@@ -39,7 +70,7 @@ export const TENANT_CONFIGS: Record<TenantId, TenantConfig> = {
     galleryName: 'Atelier Muster',
     artist1Name: 'Lisa Muster',
     artist2Name: 'Max Muster',
-    tagline: 'Malerei & Skulptur',
+    tagline: 'Bilder & Skulptur',
     footerLine: 'Atelier Muster | Lisa & Max Muster',
   },
   oeffentlich: {
@@ -47,29 +78,44 @@ export const TENANT_CONFIGS: Record<TenantId, TenantConfig> = {
     galleryName: 'Galerie Muster',
     artist1Name: 'Künstlerin Muster',
     artist2Name: 'Künstler Muster',
-    tagline: 'Malerei & Skulptur',
+    tagline: 'Bilder & Skulptur',
     footerLine: 'Galerie Muster | Künstlerin & Künstler Muster',
   },
 }
 
-/** Mustertexte für Öffentliches Projekt – keine echten personenbezogenen Daten */
+/** Mustertexte für Öffentliches Projekt (ök2) – keine echten personenbezogenen Daten, vollständige Basis für Impressum/Shop/Demo */
 export const MUSTER_TEXTE = {
-  martina: { name: 'Künstlerin Muster', email: '', phone: '' },
-  georg: { name: 'Künstler Muster', email: '', phone: '' },
+  martina: {
+    name: 'Künstlerin Muster',
+    email: 'kontakt-bilder@galerie-muster.example',
+    phone: '+43 1 234 5678',
+    website: 'www.kuenstlerin-muster.example',
+  },
+  georg: {
+    name: 'Künstler Muster',
+    email: 'kontakt-skulptur@galerie-muster.example',
+    phone: '+43 1 234 5679',
+    website: 'www.kuenstler-muster.example',
+  },
   gallery: {
-    address: 'Musterstraße 1, 12345 Musterstadt',
-    phone: '',
-    email: '',
+    address: 'Musterstraße 1',
+    city: '12345 Musterstadt',
+    country: 'Österreich',
+    phone: '+43 1 234 5670',
+    email: 'info@galerie-muster.example',
     website: 'www.galerie-muster.example',
     internetadresse: 'www.galerie-muster.example',
+    openingHours: 'Do–So 14–18 Uhr',
+    bankverbindung: 'AT00 0000 0000 0000 0000 (Musterbank, nur Demo)',
     adminPassword: '',
     welcomeImage: '',
     virtualTourImage: '',
+    galerieCardImage: '',
   },
-  welcomeText: 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Skulptur in einem Raum, wo Kunst zum Leben erwacht.',
-  artist1Bio: 'Künstlerin Muster bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. Ihre Werke spiegeln Jahre des Lernens und der Leidenschaft für die Malerei wider.',
+  welcomeText: 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Bildern und Skulptur in einem Raum, wo Kunst zum Leben erwacht.',
+  artist1Bio: 'Künstlerin Muster bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. Ihre Werke spiegeln Jahre des Lernens und der Leidenschaft für die Bilder wider.',
   artist2Bio: 'Künstler Muster verbindet in seiner Arbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail.',
-  gemeinsamText: 'Gemeinsam eröffnen Künstlerin und Künstler Muster die Galerie Muster – ein Raum, wo Malerei und Skulptur verschmelzen und Kunst zum Leben erwacht.',
+  gemeinsamText: 'Gemeinsam eröffnen Künstlerin und Künstler Muster die Galerie Muster – ein Raum, wo Bilder und Skulptur verschmelzen und Kunst zum Leben erwacht.',
 }
 
 /** Platzhalter-Bild für Musterwerke (keine echten Fotos) – gleicher Stil wie „Kein Bild“ in der App */
@@ -77,8 +123,8 @@ const MUSTER_PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAw
 
 /** Musterwerke für ök2 – nur Platzhalter, keine echten Fotos */
 export const MUSTER_ARTWORKS = [
-  { id: 'muster-1', number: 'M1', title: 'Musterwerk Malerei 1', category: 'malerei', imageUrl: MUSTER_PLACEHOLDER_IMAGE, price: '', description: 'Beispiel Malerei.', inExhibition: true },
-  { id: 'muster-2', number: 'M2', title: 'Musterwerk Malerei 2', category: 'malerei', imageUrl: MUSTER_PLACEHOLDER_IMAGE, price: '', description: 'Beispiel Malerei.', inExhibition: true },
+  { id: 'muster-1', number: 'M1', title: 'Musterwerk Bilder 1', category: 'malerei', imageUrl: MUSTER_PLACEHOLDER_IMAGE, price: '', description: 'Beispiel Bilder.', inExhibition: true },
+  { id: 'muster-2', number: 'M2', title: 'Musterwerk Bilder 2', category: 'malerei', imageUrl: MUSTER_PLACEHOLDER_IMAGE, price: '', description: 'Beispiel Bilder.', inExhibition: true },
   { id: 'muster-3', number: 'M3', title: 'Musterwerk Skulptur 1', category: 'keramik', imageUrl: MUSTER_PLACEHOLDER_IMAGE, price: '', description: 'Beispiel Skulptur.', inExhibition: true },
   { id: 'muster-4', number: 'M4', title: 'Musterwerk Skulptur 2', category: 'keramik', imageUrl: MUSTER_PLACEHOLDER_IMAGE, price: '', description: 'Beispiel Skulptur.', inExhibition: true },
 ]

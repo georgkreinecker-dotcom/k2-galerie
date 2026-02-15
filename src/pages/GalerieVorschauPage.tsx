@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useState, useEffect, useRef } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { MUSTER_ARTWORKS } from '../config/tenantConfig'
 import { 
@@ -175,6 +175,79 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
   useEffect(() => {
     if (musterOnly) setArtworks([...MUSTER_ARTWORKS])
   }, [musterOnly])
+
+  // K2-Orange statt altes Blau (wie GaleriePage – gleicher Stand auf allen Geräten)
+  const K2_ORANGE = React.useMemo(() => ({
+    backgroundColor1: '#1a0f0a',
+    backgroundColor2: '#2d1a14',
+    backgroundColor3: '#3d2419',
+    textColor: '#fff5f0',
+    mutedColor: '#d4a574',
+    accentColor: '#ff8c42',
+    cardBg1: 'rgba(45, 26, 20, 0.95)',
+    cardBg2: 'rgba(26, 15, 10, 0.92)'
+  }), [])
+  const isOldBlueTheme = React.useCallback((design: Record<string, string>): boolean => {
+    if (!design || typeof design !== 'object') return true
+    const norm = (s: string) => (s || '').toLowerCase().trim().replace(/\s/g, '')
+    const bg1 = norm(design.backgroundColor1)
+    const bg2 = norm(design.backgroundColor2)
+    const accent = norm(design.accentColor)
+    const BLUE_BG = ['0a0e', '1a1f', '0d14', '111c', '0304', '0f14', '1426', '0e27', '1f3a']
+    const BLUE_ACCENT = ['5ff', '33a', '667', '764', 'b8b', '8fa', 'a1f', 'eea', '667eea', '5ffbf1', '33a1ff']
+    if (BLUE_BG.some(p => bg1.includes(p) || bg2.includes(p))) return true
+    if (BLUE_ACCENT.some(p => accent.includes(p))) return true
+    return false
+  }, [])
+  const applyDesignToDocument = React.useCallback((design: Record<string, string> | null | undefined) => {
+    if (!design || typeof design !== 'object') return
+    try {
+      const root = document.documentElement
+      const use = isOldBlueTheme(design) ? K2_ORANGE : design
+      if (use.accentColor) root.style.setProperty('--k2-accent', use.accentColor)
+      if (use.backgroundColor1) root.style.setProperty('--k2-bg-1', use.backgroundColor1)
+      if (use.backgroundColor2) root.style.setProperty('--k2-bg-2', use.backgroundColor2)
+      if (use.backgroundColor3) root.style.setProperty('--k2-bg-3', use.backgroundColor3)
+      if (use.textColor) root.style.setProperty('--k2-text', use.textColor)
+      if (use.mutedColor) root.style.setProperty('--k2-muted', use.mutedColor)
+      if (use.cardBg1) root.style.setProperty('--k2-card-bg-1', use.cardBg1)
+      if (use.cardBg2) root.style.setProperty('--k2-card-bg-2', use.cardBg2)
+    } catch (_) {}
+  }, [K2_ORANGE, isOldBlueTheme])
+  const applyDesignFromStorage = React.useCallback(() => {
+    try {
+      const stored = localStorage.getItem('k2-design-settings')
+      if (!stored || stored.length > 50000) return
+      const design = JSON.parse(stored) as Record<string, string>
+      const use = isOldBlueTheme(design) ? K2_ORANGE : design
+      if (isOldBlueTheme(design)) localStorage.setItem('k2-design-settings', JSON.stringify(K2_ORANGE))
+      applyDesignToDocument(use)
+    } catch (_) {}
+  }, [applyDesignToDocument, K2_ORANGE, isOldBlueTheme])
+  useEffect(() => {
+    applyDesignFromStorage()
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'k2-design-settings') applyDesignFromStorage()
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [applyDesignFromStorage])
+
+  // Admin-Kontext nur beenden, wenn Nutzer bewusst aus dem Admin „Zur Galerie“ geklickt hat (nicht bei direktem Aufruf/Mobil → Kassa bleibt nutzbar)
+  const location = useLocation()
+  useEffect(() => {
+    try {
+      const fromAdmin = (location.state as { fromAdmin?: boolean } | null)?.fromAdmin === true
+      if (fromAdmin) {
+        sessionStorage.removeItem('k2-admin-context')
+        sessionStorage.removeItem('k2-from-galerie-view')
+      } else {
+        // Shop soll Kundenansicht zeigen, wenn von hier aus gewechselt wird (auch bei SPA-Navigation ohne Referrer)
+        sessionStorage.setItem('k2-from-galerie-view', '1')
+      }
+    } catch (_) {}
+  }, [location.state])
+
   const [lightboxImage, setLightboxImage] = useState<{ src: string; title: string; artwork: any } | null>(null)
   const [imageZoom, setImageZoom] = useState(1)
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 })
@@ -387,6 +460,24 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
       console.log('🔍 Hat number oder id?', editingArtwork && (editingArtwork.number || editingArtwork.id))
     }
   }, [showMobileAdmin, editingArtwork])
+
+  // Mobile: Viewport beim Öffnen/Schließen des Werk-Modals vergrößern für optimale Eingabestruktur
+  const VIEWPORT_DEFAULT = 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover'
+  const VIEWPORT_ZOOMED = 'width=device-width, initial-scale=1.35, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover'
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    const meta = document.querySelector('meta[name="viewport"]') as HTMLMetaElement | null
+    if (!meta) return
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
+    if (showMobileAdmin && isMobile) {
+      meta.setAttribute('content', VIEWPORT_ZOOMED)
+    } else {
+      meta.setAttribute('content', VIEWPORT_DEFAULT)
+    }
+    return () => {
+      meta.setAttribute('content', VIEWPORT_DEFAULT)
+    }
+  }, [showMobileAdmin])
   
   // Handler für gescannten QR-Code
   const handleScannedQRCode = (code: string) => {
@@ -452,12 +543,17 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
       setLoadStatus({ message: '🔄 Lade Werke...', success: false })
       
       try {
-        // PRIORITÄT 1: Supabase (wenn konfiguriert)
+        // PRIORITÄT 1: Supabase (wenn konfiguriert) – auf Mobile mit Timeout, damit Offline/anderes LAN nicht blockiert
         if (isSupabaseConfigured()) {
           console.log('🗄️ Supabase konfiguriert - lade aus Datenbank...')
+          const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
+          const supabaseTimeoutMs = isMobileDevice ? 8000 : 15000
           
           try {
-            const supabaseArtworks = await loadArtworksFromSupabase()
+            const supabaseArtworks = await Promise.race([
+              loadArtworksFromSupabase(),
+              new Promise<undefined>((_, reject) => setTimeout(() => reject(new Error('Supabase-Timeout')), supabaseTimeoutMs))
+            ])
             
             if (isMounted && supabaseArtworks && supabaseArtworks.length > 0) {
               console.log(`✅ ${supabaseArtworks.length} Werke aus Supabase geladen`)
@@ -956,9 +1052,11 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
               console.warn('⚠️ Test-Request fehlgeschlagen:', testError)
             }
             
-            // Timeout für große Dateien: 30 Sekunden
+            // Auf Mobile/anderem LAN: kürzeres Timeout, damit „Werk hinzufügen“ bald nutzbar ist
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
+            const fetchTimeoutMs = isMobile ? 12000 : 30000
             const controller = new AbortController()
-            const timeoutId = setTimeout(() => controller.abort(), 30000)
+            const timeoutId = setTimeout(() => controller.abort(), fetchTimeoutMs)
             
             const response = await fetch(url, {
               cache: 'no-store',
@@ -1290,12 +1388,12 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
             setTimeout(() => setLoadStatus(null), 3000)
           } else {
             const errorMsg = error?.name === 'AbortError' 
-              ? '⚠️ Zeitüberschreitung beim Laden - bitte "Aktualisieren" klicken' 
+              ? '⚠️ Offline/anderes Netzwerk – Werke hinzufügen geht trotzdem: Admin → Neues Werk' 
               : error?.message 
-              ? `⚠️ Fehler: ${error.message}` 
-              : '⚠️ Fehler beim Laden - bitte "Aktualisieren" klicken'
+              ? `⚠️ ${error.message} – Werke hinzufügen: Admin → Neues Werk` 
+              : '⚠️ Offline/anderes Netzwerk – Werke hinzufügen: Admin → Neues Werk'
             setLoadStatus({ message: errorMsg, success: false })
-            setTimeout(() => setLoadStatus(null), 10000)
+            setTimeout(() => setLoadStatus(null), 12000)
           }
           setIsLoading(false)
         }
@@ -1365,6 +1463,12 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
       }
     }
     
+    const isVorschauModus = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('vorschau') === '1'
+    // Vorschau aus Einstellungen „Seiten prüfen“: nur localStorage (gerade gespeicherte Daten), kein Server-Fetch
+    if (isVorschauModus) {
+      loadData(true)
+      return
+    }
     // Nur wenn wirklich keine Werke vorhanden sind, lade vom Server
     if ((!initialArtworks || initialArtworks.length === 0) && (!artworks || artworks.length === 0)) {
       loadData()
@@ -1442,6 +1546,13 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
       
       if (response.ok) {
         const data = await response.json()
+        if (data.designSettings != null && typeof data.designSettings === 'object') {
+          try {
+            const designToUse = isOldBlueTheme(data.designSettings) ? K2_ORANGE : data.designSettings
+            localStorage.setItem('k2-design-settings', JSON.stringify(designToUse))
+            applyDesignToDocument(designToUse)
+          } catch (_) {}
+        }
         if (data.artworks && Array.isArray(data.artworks)) {
           // Speichere Version-Info und Zeitstempel
           if (data.version) localStorage.setItem('k2-last-loaded-version', String(data.version))
@@ -1617,15 +1728,18 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
     }
   }, [])
 
-  // Zum Warenkorb hinzufügen
-  const addToCart = (artwork: any) => {
-    // Prüfe ob Werk im Shop verfügbar ist
-    if (!artwork.inShop && artwork.inShop !== true) {
-      alert('Dieses Werk ist nicht im Online-Shop verfügbar.')
-      return
+  // Zur Auswahl hinzufügen – gibt true zurück wenn erfolgreich (dann Navigation in den Shop)
+  const addToCart = (artwork: any): boolean => {
+    if (artwork.inShop === false) {
+      alert('Dieses Werk ist nur für die Ausstellung.')
+      return false
+    }
+    const price = Number(artwork.price) || 0
+    if (price <= 0) {
+      alert('Dieses Werk hat keinen Preis.')
+      return false
     }
 
-    // Prüfe ob bereits verkauft
     try {
       const soldData = localStorage.getItem('k2-sold-artworks')
       if (soldData) {
@@ -1634,24 +1748,16 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
           const isSold = soldArtworks.some((a: any) => a && a.number === artwork.number)
           if (isSold) {
             alert('Dieses Werk ist bereits verkauft.')
-            return
+            return false
           }
         }
       }
-    } catch (error) {
-      // Ignoriere Fehler
-    }
-
-    // Prüfe ob Preis vorhanden
-    if (!artwork.price || artwork.price <= 0) {
-      alert('Dieses Werk hat keinen Preis.')
-      return
-    }
+    } catch (_) {}
 
     const cartItem = {
       number: artwork.number,
       title: artwork.title || artwork.number,
-      price: artwork.price || 0,
+      price: price,
       category: artwork.category,
       artist: artwork.artist,
       imageUrl: artwork.imageUrl,
@@ -1669,24 +1775,19 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
     try {
       const cartData = localStorage.getItem('k2-cart')
       const cart = cartData ? JSON.parse(cartData) : []
-      
-      // Prüfe ob bereits im Warenkorb
       if (cart.some((item: any) => item.number === artwork.number)) {
-        alert('Dieses Werk ist bereits im Warenkorb.')
-        return
+        alert('Dieses Werk ist bereits in deiner/Ihrer Auswahl.')
+        return false
       }
-
       cart.push(cartItem)
       localStorage.setItem('k2-cart', JSON.stringify(cart))
       setCartCount(cart.length)
-      
-      // Event für andere Komponenten
       window.dispatchEvent(new CustomEvent('cart-updated'))
-      
-      alert('Werk wurde zum Warenkorb hinzugefügt!')
+      return true
     } catch (error) {
-      console.error('Fehler beim Hinzufügen zum Warenkorb:', error)
-      alert('Fehler beim Hinzufügen zum Warenkorb.')
+      console.error('Fehler beim Hinzufügen zur Auswahl:', error)
+      alert('Fehler beim Hinzufügen zur Auswahl.')
+      return false
     }
   }
 
@@ -1717,8 +1818,39 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
   // und der useEffect lädt sie falls nötig
   // Diese Prüfung verhinderte die Anzeige der Werke
 
+  const isVorschauModus = typeof window !== 'undefined' && new URLSearchParams(location.search).get('vorschau') === '1'
+
   return (
     <>
+      {/* Vorschau aus Einstellungen „Seiten prüfen“ – Zurück-Link */}
+      {isVorschauModus && (
+        <div style={{
+          position: 'sticky',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 200,
+          padding: '0.6rem 1rem',
+          background: 'rgba(245, 158, 11, 0.95)',
+          color: '#1a1a1a',
+          fontSize: '0.95rem',
+          fontWeight: 600,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '0.5rem',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+        }}>
+          <button
+            type="button"
+            onClick={() => navigate('/admin')}
+            style={{ background: 'rgba(0,0,0,0.2)', border: 'none', color: 'inherit', padding: '0.4rem 0.8rem', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}
+          >
+            ← Zurück zu Einstellungen
+          </button>
+          <span style={{ opacity: 0.9 }}>Vorschau (Werke) – deine gespeicherten Änderungen</span>
+        </div>
+      )}
       {/* Synchronisierungs-Status-Balken für Mobile */}
       {loadStatus && (
         <div style={{
@@ -1761,7 +1893,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
       minHeight: '-webkit-fill-available',
       background: musterOnly
         ? 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 50%, var(--k2-bg-3) 100%)'
-        : 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%)',
+        : 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 50%, var(--k2-bg-3) 100%)',
       color: musterOnly ? 'var(--k2-text)' : '#ffffff',
       position: 'relative',
       overflowX: 'hidden'
@@ -1928,6 +2060,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
               </Link>
               <Link 
                 to={PROJECT_ROUTES['k2-galerie'].shop}
+                state={{ fromGalerieView: true }}
                 style={{ 
                   padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)', 
                   background: musterOnly ? 'linear-gradient(135deg, var(--k2-accent) 0%, #6b9080 100%)' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -1953,7 +2086,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                   e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.3)'
                 }}
               >
-                🛒 Warenkorb
+                🛒 Meine Auswahl
                 {cartCount > 0 && (
                   <span style={{
                     position: 'absolute',
@@ -1975,37 +2108,6 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                   </span>
                 )}
               </Link>
-              {!musterOnly && (
-              <Link 
-                to="/admin" 
-                style={{ 
-                  padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)', 
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  color: '#ffffff', 
-                  textDecoration: 'none', 
-                  borderRadius: '12px',
-                  fontSize: 'inherit',
-                  whiteSpace: 'nowrap',
-                  fontWeight: '500',
-                  transition: 'all 0.3s ease',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-                  e.currentTarget.style.transform = 'translateY(0)'
-                }}
-              >
-                ⚙️ Admin
-              </Link>
-              )}
             </nav>
           </div>
         </header>
@@ -2030,7 +2132,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
             lineHeight: '1.6'
           }}>
             <strong style={{ color: '#ffffff' }}>Alle Werke</strong> sind Teil unserer Ausstellung und in der Online-Galerie sichtbar. 
-            Werke mit <strong style={{ color: '#b8b8ff' }}>"Zum Warenkorb"</strong>-Button können zusätzlich online gekauft werden.
+            Wenn dir/Ihnen ein Werk gefällt und du/Sie es erwerben möchtest/möchten: <strong style={{ color: '#b8b8ff' }}>"Gefällt mir – möchte ich erwerben"</strong> wählen – du wirst/Sie werden in den Shop weitergeleitet.
           </div>
 
           {/* Filter - Mobile optimiert */}
@@ -2105,7 +2207,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                 }
               }}
             >
-              Malerei
+              Bilder
             </button>
             <button
               onClick={() => setFilter('keramik')}
@@ -2434,7 +2536,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                       color: 'rgba(255, 255, 255, 0.6)',
                       lineHeight: '1.4'
                     }}>
-                      {artwork.category === 'malerei' ? 'Malerei' : artwork.category === 'keramik' ? 'Keramik' : artwork.category}
+                      {artwork.category === 'malerei' ? 'Bilder' : artwork.category === 'keramik' ? 'Keramik' : artwork.category}
                       {artwork.artist && ` • ${artwork.artist}`}
                     </p>
                     {artwork.location && (
@@ -2474,8 +2576,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                         <>
                           {artwork.ceramicSubcategory && (
                             <p style={{ margin: '0.25rem 0', fontSize: 'clamp(0.75rem, 2vw, 0.85rem)' }}>
-                              {artwork.ceramicSubcategory === 'vase' ? 'Vase' : 
-                               artwork.ceramicSubcategory === 'teller' ? 'Teller' : 
+                              {artwork.ceramicSubcategory === 'vase' ? 'Gefäße - Vasen' : 
+                               artwork.ceramicSubcategory === 'teller' ? 'Schalen - Teller' : 
                                artwork.ceramicSubcategory === 'skulptur' ? 'Skulptur' : 
                                artwork.ceramicSubcategory === 'sonstig' ? 'Sonstig' : artwork.ceramicSubcategory}
                             </p>
@@ -2507,7 +2609,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                         </>
                       )}
                     </div>
-                    {artwork.price && (
+                    {artwork.price != null && (Number(artwork.price) || 0) > 0 && (
                       <p style={{ 
                         margin: '0.75rem 0 0', 
                         fontWeight: '700', 
@@ -2517,13 +2619,17 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                         backgroundClip: 'text',
                         fontSize: 'clamp(1.1rem, 3vw, 1.3rem)'
                       }}>
-                        € {artwork.price.toFixed(2)}
+                        € {(Number(artwork.price) || 0).toFixed(2)}
                       </p>
                     )}
-                    {/* Warenkorb-Button kleiner und weniger präsent */}
-                    {!isSold && artwork.inShop && artwork.price && artwork.price > 0 && (
+                    {/* Auswahl: anzeigen wenn im Shop (nur bei explizit false ausblenden) */}
+                    {!isSold && artwork.inShop !== false && (
                       <button
-                        onClick={() => addToCart(artwork)}
+                        onClick={() => {
+                          if (addToCart(artwork)) {
+                            navigate(PROJECT_ROUTES['k2-galerie'].shop, { state: { fromGalerieView: true } })
+                          }
+                        }}
                         style={{
                           width: '100%',
                           marginTop: '0.75rem',
@@ -2546,11 +2652,11 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                           e.currentTarget.style.borderColor = 'rgba(102, 126, 234, 0.3)'
                         }}
                       >
-                        🛒 Zum Warenkorb
+                        Gefällt mir – möchte ich erwerben
                       </button>
                     )}
-                    {/* Info wenn Werk nicht im Shop verfügbar ist */}
-                    {!isSold && !artwork.inShop && artwork.price && artwork.price > 0 && (
+                    {/* Info wenn Werk explizit nur für Ausstellung markiert */}
+                    {!isSold && artwork.inShop === false && (
                       <p style={{
                         width: '100%',
                         marginTop: '1rem',
@@ -2740,12 +2846,12 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
             )}
 
             {/* Möchte ich kaufen Button */}
-            {lightboxImage.artwork && lightboxImage.artwork.inShop && lightboxImage.artwork.price && (
+            {lightboxImage.artwork && lightboxImage.artwork.inShop !== false && (
               <button
                 onClick={(e) => {
                   e.stopPropagation()
                   addToCart(lightboxImage.artwork)
-                  navigate(PROJECT_ROUTES['k2-galerie'].shop)
+                  navigate(PROJECT_ROUTES['k2-galerie'].shop, { state: { fromGalerieView: true } })
                   setLightboxImage(null)
                   setImageZoom(1)
                   setImagePosition({ x: 0, y: 0 })
@@ -2959,7 +3065,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
           overflowY: 'auto'
         }}>
           <div style={{
-            background: 'linear-gradient(135deg, #1a1f3a 0%, #0f1419 100%)',
+            background: 'linear-gradient(135deg, var(--k2-bg-2) 0%, var(--k2-bg-1) 100%)',
             borderRadius: '16px',
             padding: '1.5rem',
             maxWidth: '500px',
@@ -3078,7 +3184,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                   fontSize: '1rem'
                 }}
               >
-                <option value="malerei">🖼️ Malerei</option>
+                <option value="malerei">🖼️ Bilder</option>
                 <option value="keramik">🏺 Keramik</option>
               </select>
             </div>
@@ -3736,7 +3842,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
           padding: '1rem'
         }}>
           <div style={{
-            background: 'linear-gradient(135deg, #1a1f3a 0%, #0f1419 100%)',
+            background: 'linear-gradient(135deg, var(--k2-bg-2) 0%, var(--k2-bg-1) 100%)',
             borderRadius: '16px',
             padding: '1.5rem',
             maxWidth: '500px',
@@ -3839,7 +3945,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
           padding: '1rem'
         }}>
           <div style={{
-            background: 'linear-gradient(135deg, #1a1f3a 0%, #0f1419 100%)',
+            background: 'linear-gradient(135deg, var(--k2-bg-2) 0%, var(--k2-bg-1) 100%)',
             borderRadius: '16px',
             padding: '1.5rem',
             maxWidth: '400px',

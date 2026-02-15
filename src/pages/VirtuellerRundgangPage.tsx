@@ -50,8 +50,9 @@ const VirtuellerRundgangPage = () => {
 
   // Zum Warenkorb hinzufügen
   const addToCart = (artwork: any) => {
-    if (!artwork.inShop && artwork.inShop !== true) {
-      alert('Dieses Werk ist nicht im Online-Shop verfügbar.')
+    const priceVal = typeof artwork?.price === 'number' ? artwork.price : (parseFloat(String(artwork?.price ?? 0)) || 0)
+    if (artwork.inShop === false || priceVal <= 0) {
+      alert('Dieses Werk ist nicht im Online-Shop verfügbar oder hat keinen Preis.')
       return
     }
 
@@ -74,7 +75,7 @@ const VirtuellerRundgangPage = () => {
       
       // Prüfe ob bereits im Warenkorb
       if (Array.isArray(cart) && cart.some((item: any) => item.number === artwork.number)) {
-        alert('Dieses Werk ist bereits im Warenkorb.')
+        alert('Dieses Werk ist bereits in deiner/Ihrer Auswahl.')
         return
       }
 
@@ -91,7 +92,7 @@ const VirtuellerRundgangPage = () => {
       window.dispatchEvent(new CustomEvent('cart-updated'))
     } catch (error) {
       console.error('Fehler beim Hinzufügen zum Warenkorb:', error)
-      alert('Fehler beim Hinzufügen zum Warenkorb.')
+      alert('Fehler beim Hinzufügen zur Auswahl.')
     }
   }
 
@@ -149,7 +150,7 @@ const VirtuellerRundgangPage = () => {
   return (
     <div style={{ 
       minHeight: '-webkit-fill-available',
-      background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%)',
+      background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 50%, var(--k2-bg-3) 100%)',
       color: '#ffffff',
       position: 'relative',
       overflowX: 'hidden'
@@ -386,7 +387,7 @@ const VirtuellerRundgangPage = () => {
                       color: 'rgba(255, 255, 255, 0.6)',
                       lineHeight: '1.4'
                     }}>
-                      {artwork.category === 'malerei' ? 'Malerei' : artwork.category === 'keramik' ? 'Keramik' : artwork.category}
+                      {artwork.category === 'malerei' ? 'Bilder' : artwork.category === 'keramik' ? 'Keramik' : artwork.category}
                       {artwork.artist && ` • ${artwork.artist}`}
                     </p>
                     {artwork.price && (
@@ -520,8 +521,8 @@ const VirtuellerRundgangPage = () => {
               </button>
             )}
 
-            {/* Möchte ich kaufen Button */}
-            {lightboxImage.artwork && lightboxImage.artwork.inShop && lightboxImage.artwork.price && (
+            {/* Möchte ich kaufen Button – alle mit Preis, sofern nicht explizit "nur Ausstellung" */}
+            {lightboxImage.artwork && lightboxImage.artwork.inShop !== false && (parseFloat(String(lightboxImage.artwork.price)) || 0) > 0 && (
               <button
                 onClick={(e) => {
                   e.stopPropagation()

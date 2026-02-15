@@ -2,21 +2,21 @@
   font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #f4f7ff;
-  background-color: #03040a;
+  color: var(--k2-text);
+  background-color: var(--k2-bg-1);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* K2 Galerie Standard-Theme (wird ggf. von Admin/designSettings überschrieben) */
-  --k2-bg-1: #0a0e27;
-  --k2-bg-2: #1a1f3a;
-  --k2-bg-3: #111c33;
-  --k2-text: #f4f7ff;
-  --k2-muted: #8fa0c9;
-  --k2-accent: #5ffbf1;
-  --k2-card-bg-1: rgba(18, 22, 35, 0.95);
-  --k2-card-bg-2: rgba(12, 16, 28, 0.92);
+  /* K2 Galerie Standard-Theme Orange (wird ggf. von Admin/designSettings überschrieben) */
+  --k2-bg-1: #1a0f0a;
+  --k2-bg-2: #2d1a14;
+  --k2-bg-3: #3d2419;
+  --k2-text: #fff5f0;
+  --k2-muted: #d4a574;
+  --k2-accent: #ff8c42;
+  --k2-card-bg-1: rgba(45, 26, 20, 0.95);
+  --k2-card-bg-2: rgba(26, 15, 10, 0.92);
 }
 
 /* ök2: helles Theme (nur wenn .ok2-theme gesetzt) – keine inline style-Variablen nötig */
@@ -38,26 +38,35 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: #03040a;
+  background: var(--k2-bg-1);
 }
 
 a {
   color: inherit;
 }
 
-/* Etikett-Druck: Seite + Container passen sich dynamisch an (widthMm/heightMm aus Admin) */
+/* Druck: Normalerweise #root anzeigen (Flyer, Handbuch, etc.). Etikett-Druck nur wenn #k2-print-label existiert. */
 @media print {
-  body > *:not(#k2-print-label) { display: none !important; }
+  /* Standard: Nur #root anzeigen (Flyer/Seiten drucken) */
+  body > * { display: none !important; }
+  #root { display: block !important; min-height: auto !important; }
+  /* APf-Button beim Drucken ausblenden */
+  .apf-float-btn { display: none !important; }
+  /* Etikett-Druck: Wenn k2-print-label vorhanden, nur dieses anzeigen */
+  body:has(#k2-print-label) #root { display: none !important; }
+  body:has(#k2-print-label) #k2-print-label { display: block !important; }
   #k2-print-label * { visibility: visible !important; }
   #k2-print-label {
-    display: block !important;  /* keine flex – exakte Maße, kein Stauchen */
+    display: none !important;  /* Standard aus, wird von body:has oben überschrieben */
     position: absolute !important;
     left: 0 !important;
     top: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
     background: #fff !important;
-    /* width/height kommen aus Inline-Style (printLabelData) */
+  }
+  body:has(#k2-print-label) #k2-print-label {
+    display: block !important;
   }
   #k2-print-label img {
     display: block !important;

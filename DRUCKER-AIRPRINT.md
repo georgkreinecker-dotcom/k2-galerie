@@ -59,11 +59,11 @@ Nur das **ältere** Modell QL-820**M**WBc (mit M) hat kein AirPrint. Mit handyPr
 ### 2. Etikett herunterladen + Brother iPrint & Label (App)
 
 1. In K2: **„Etikett teilen“** oder **„Etikett herunterladen“**
-2. PNG auf dem iPad speichern
-3. In der **Brother iPrint & Label** App (App Store) öffnen
+2. PNG auf dem Gerät speichern
+3. In der **Brother iPrint & Label** App öffnen (App Store / Play Store)
 4. Dort drucken – per Bluetooth oder WLAN direkt zum Brother
 
-**Vorteil:** Umgeht den Browser-Druck komplett. Kein AirPrint nötig.
+**Vorteil:** Umgeht den Browser-Druck komplett. Kein AirPrint nötig. Funktioniert auf iPad, iPhone und Android.
 
 ---
 
@@ -139,3 +139,4 @@ K2 schreibt beim Export des Etiketts **300 DPI (pHYs)** ins PNG. Damit erkennen 
 |--------|--------|
 | **Mac** | Brother per IP hinzufügen (Systemeinstellungen → Drucker & Scanner) |
 | **iPad/iPhone** | 1) Druck über Mac („Für iOS freigeben“) – zuverlässig<br>2) Etikett herunterladen → Brother iPrint & Label App |
+| **Android** | Etikett teilen/herunterladen → Brother iPrint & Label App (Play Store) – Größe passt dort |

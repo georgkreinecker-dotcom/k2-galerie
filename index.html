@@ -17,9 +17,29 @@
     <title>K2 Galerie - Kunst & Keramik</title>
     <meta name="description" content="K2 Galerie - Entdecke die Verbindung von Malerei und Keramik. Werke von Martina und Georg Kreinecker." />
   </head>
-  <body style="margin: 0; padding: 0; background: #0a0e27;">
+  <body style="margin: 0; padding: 0; background: #1a0f0a;">
+    <!-- K2 Theme: Orange sofort setzen (auch für Mobil), bevor React/localStorage laufen -->
+    <script>
+      (function(){
+        try {
+          var r = document.documentElement.style;
+          r.setProperty('background', '#1a0f0a');
+          r.setProperty('color', '#fff5f0');
+          r.setProperty('--k2-bg-1', '#1a0f0a');
+          r.setProperty('--k2-bg-2', '#2d1a14');
+          r.setProperty('--k2-bg-3', '#3d2419');
+          r.setProperty('--k2-text', '#fff5f0');
+          r.setProperty('--k2-muted', '#d4a574');
+          r.setProperty('--k2-accent', '#ff8c42');
+          r.setProperty('--k2-card-bg-1', 'rgba(45, 26, 20, 0.95)');
+          r.setProperty('--k2-card-bg-2', 'rgba(26, 15, 10, 0.92)');
+          document.body.style.setProperty('background', '#1a0f0a');
+          document.body.style.setProperty('color', '#fff5f0');
+        } catch (e) {}
+      })();
+    </script>
     <script>(function(){var b=1770998248027;var o=location.origin;var p=location.pathname;var q=location.search||"";var sep=q?"&":"?";if(Date.now()-b>120000){try{var k2="k2_stale";if(!sessionStorage.getItem(k2)){sessionStorage.setItem(k2,"1");location.replace(o+p+q+sep+"_="+Date.now());}}catch(e){}return;}var bust="v="+Date.now();var url=o+"/build-info.json?t="+Date.now()+"&r="+Math.random();fetch(url,{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b)location.replace(o+p+sep+bust)}).catch(function(){try{var k="k2_noreload";if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,"1");location.replace(o+p+q+sep+"_="+Date.now())}}catch(e){}});})();</script>
-    <div id="root" style="min-height: 100vh; background: #0a0e27; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="setTimeout(function(){ var r=document.getElementById('root'); if(r&&r.querySelector('#root-loading')) location.reload(); }, 100)">
+    <div id="root" style="min-height: 100vh; background: #1a0f0a; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="setTimeout(function(){ var r=document.getElementById('root'); if(r&&r.querySelector('#root-loading')) location.reload(); }, 100)">
       <div id="root-loading" style="text-align:center;color:rgba(255,255,255,0.9);font-family:system-ui;padding:2rem;">
         <p style="margin:0 0 0.5rem;font-size:1.1rem;">Laden …</p>
         <p style="margin:0;font-size:0.85rem;color:rgba(255,255,255,0.6);">Nach QR-Scan: Warte kurz.<br>Lädt nicht? Tippe hier zum Neuladen.</p>
@@ -42,7 +62,7 @@
     <!-- Stand-Badge wird von der App (React) gerendert – sichtbar auf Mac, iPad und Handy -->
     <script type="module" src="/src/main.tsx"></script>
     <noscript>
-      <div style="padding: 2rem; color: white; background: #0a0e27; min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center;">
+      <div style="padding: 2rem; color: white; background: #1a0f0a; min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center;">
         <div>
           <h1>JavaScript erforderlich</h1>
           <p>Bitte aktiviere JavaScript in deinem Browser um die K2 Galerie zu verwenden.</p>

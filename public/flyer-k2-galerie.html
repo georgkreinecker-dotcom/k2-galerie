@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>K2 Galerie – Flyer</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@300;400;600&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @media print {
+      @page { size: A4; margin: 0; }
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0 !important; margin: 0 !important; }
+      .flyer { box-shadow: none !important; width: 210mm !important; height: 297mm !important; min-height: 0 !important; }
+    }
+
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      background: #e8e8e8;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .flyer {
+      width: 210mm;
+      height: 297mm;
+      max-height: 297mm;
+      background: linear-gradient(165deg, #0f1419 0%, #1a1f3a 45%, #0d1220 100%);
+      color: #fff;
+      padding: 10mm 14mm;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .flyer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(102, 126, 234, 0.2), transparent 50%),
+                  radial-gradient(ellipse 60% 40% at 85% 100%, rgba(184, 184, 255, 0.12), transparent 45%);
+      pointer-events: none;
+    }
+
+    .content { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 6px; }
+
+    .tagline {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.8);
+      margin: 0;
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 34px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin: 0;
+      background: linear-gradient(135deg, #ffffff 0%, #b8b8ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.9);
+      margin: 0;
+    }
+
+    .line {
+      width: 40px;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(184, 184, 255, 0.8), transparent);
+      margin: 0;
+    }
+
+    .welcome-image-wrap {
+      width: 100%;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .welcome-image-wrap img {
+      max-width: 100%;
+      max-height: 58mm;
+      height: auto;
+      width: auto;
+      object-fit: contain;
+      display: block;
+      border-radius: 8px;
+    }
+
+    .intro {
+      font-size: 12px;
+      line-height: 1.5;
+      color: rgba(255,255,255,0.9);
+      max-width: 100%;
+      margin: 0;
+    }
+
+    .intro strong { color: #fff; font-weight: 600; }
+
+    .points {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .points li {
+      font-size: 11px;
+      line-height: 1.45;
+      color: rgba(255,255,255,0.88);
+      padding-left: 16px;
+      position: relative;
+      margin: 0;
+    }
+
+    .points li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.5em;
+      width: 5px;
+      height: 5px;
+      background: rgba(184, 184, 255, 0.7);
+      border-radius: 50%;
+    }
+
+    .cta {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: #b8b8ff;
+      margin: 0;
+    }
+    .event-date {
+      font-size: 14px;
+      font-weight: 600;
+      color: #b8b8ff;
+      margin: 0;
+      letter-spacing: 0.02em;
+    }
+    .event-date.empty { display: none; }
+    .info-kuerze {
+      font-size: 11px;
+      color: rgba(255,255,255,0.78);
+      margin: 0;
+      font-style: italic;
+    }
+
+    .footer {
+      margin: 6px 0 0 0;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      font-size: 10px;
+      color: rgba(255,255,255,0.7);
+      letter-spacing: 0.02em;
+      line-height: 1.4;
+    }
+
+    .footer strong { color: rgba(255,255,255,0.9); }
+
+    .welcome-image-wrap.empty { display: none; }
+  </style>
+</head>
+<body>
+  <div class="flyer">
+    <div class="content">
+      <p class="tagline">Kunst & Keramik</p>
+      <h1>K2 Galerie</h1>
+      <p class="subtitle">Martina & Georg Kreinecker</p>
+      <div class="line"></div>
+      <div class="welcome-image-wrap empty" id="welcomeImageWrap">
+        <img id="welcomeImage" src="" alt="Willkommensbild K2 Galerie" />
+      </div>
+      <p class="intro">
+        Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von <strong>Malerei und Keramik</strong> in einem Raum, wo Kunst zum Leben erwacht.
+      </p>
+      <ul class="points">
+        <li>Eigene Werke: Malerei von Martina, Keramik von Georg</li>
+        <li>Ausstellungen, Verkauf und persönliche Beratung</li>
+        <li>Digitale Galerie und Terminvereinbarung</li>
+      </ul>
+      <p class="cta">Wir freuen uns auf deinen/Ihren Besuch.</p>
+      <p class="event-date empty" id="eventDateLine">Termin: <span id="eventDateText"></span></p>
+      <p class="info-kuerze">Weitere Infos erfolgen in Kürze.</p>
+      <div class="footer">
+        <strong>K2 Galerie</strong> · Schlosserasse 4 · 4070 Eferding · Österreich<br>
+        Kontakt: 0664 1046337 · martina.kreinecker@kgm.at · georg.kreinecker@kgm.at
+      </div>
+    </div>
+  </div>
+  <script>
+    (function() {
+      try {
+        var raw = localStorage.getItem('k2-stammdaten-galerie');
+        if (raw) {
+          var data = JSON.parse(raw);
+          if (data.welcomeImage && data.welcomeImage.length > 50) {
+            var wrap = document.getElementById('welcomeImageWrap');
+            var img = document.getElementById('welcomeImage');
+            if (wrap && img) {
+              img.src = data.welcomeImage;
+              img.onload = function() { wrap.classList.remove('empty'); };
+              img.onerror = function() { wrap.classList.add('empty'); };
+              wrap.classList.remove('empty');
+            }
+          }
+        }
+      } catch (e) {}
+      try {
+        var eventsRaw = localStorage.getItem('k2-events');
+        if (eventsRaw) {
+          var list = JSON.parse(eventsRaw);
+          if (Array.isArray(list)) {
+            var event = list.find(function(e) { return e && e.type === 'galerieeröffnung' && e.date; }) || list.find(function(e) { return e && e.date; });
+            if (event && event.date) {
+              var d = new Date(event.date);
+              var end = event.endDate && event.endDate !== event.date ? new Date(event.endDate) : null;
+              var text = '';
+              if (end && d.getMonth() === end.getMonth() && d.getFullYear() === end.getFullYear()) {
+                text = d.getDate() + '.–' + end.getDate() + '. ' + end.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+              } else if (end) {
+                text = d.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' }) + ' – ' + end.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
+              } else {
+                text = d.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
+              }
+              var el = document.getElementById('eventDateText');
+              var line = document.getElementById('eventDateLine');
+              if (el && text) { el.textContent = text; if (line) line.classList.remove('empty'); }
+            }
+          }
+        }
+      } catch (e) {}
+    })();
+  </script>
+</body>
+</html>

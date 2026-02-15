@@ -1,0 +1,38 @@
+---
+description: Georgs Verständnis von "smarter Benutzeroberfläche" – bei UI/UX anwenden
+alwaysApply: true
+---
+
+# Smarte Benutzeroberfläche (Georgs Präferenz)
+
+Georg versteht unter **smarter Benutzeroberfläche** Folgendes. Bei allen UI-Änderungen und neuen Meldungen daran orientieren.
+
+## Eine Aufgabe = ein Button, ein Klick
+
+- **Keine leeren Kilometer:** Wenn der Nutzer auf einen Button klickt (z. B. „Kasse“), muss die Aufgabe **sofort** erledigt sein – keine Zwischenseiten, keine weiteren Klicks.
+- **Ein Button pro Aufgabe:** Nicht drei Kassa-Buttons, bei denen man noch nicht in der Kassa ist. Ein Klick „Kasse“ → Kassa öffnet sich.
+- **Direkt zur Sache:** Keine Zwischentabs oder Umwege. Der Button führt unmittelbar zum Ziel.
+
+## Klar und minimal
+
+- **Eine Hauptaktion pro Situation:** Statt langer Anweisungen („QR-Code neu scannen“, „pushen“, „Terminal …“) lieber **„Einfach OK drücken“** oder einen klaren **OK**-Button, wenn damit die Sache erledigt ist.
+- **Keine technischen Schritte in Erfolgsmeldungen**, wenn der Nutzer nur weitermachen soll – z. B. nach erfolgreicher Veröffentlichung reicht: „Fertig. Einfach OK drücken.“ (kein „Du musst noch pushen“ o. Ä.).
+
+## Richtige Zuordnung
+
+- **Funktionen da anbieten, wo sie thematisch hingehören:** z. B. Veröffentlichen, Backup, PDFs & Speicherdaten in **Einstellungen**, nicht unter „Werke“. Georg sucht sie dort.
+- **Alles mit Gestaltung ins Design:** Farben, Themes, Seitentexte, Seitengestaltung (Willkommensbild, Galerie-Karte etc.) gehören in die **Design**-Abteilung – nicht in Einstellungen. Georg sucht sie dort.
+- **Marketing = Außenkommunikation:** Eventplanung ist Teil der Marketingabteilung. Im Tab **Marketing** gehört alles, was mit Außenkommunikation zu tun hat: Events, Dokumente, Flyer, Öffentlichkeitsarbeit. Neue Features für Flyer, Presse, Social Media etc. dort anbieten.
+
+## Automatisch aufklappen bei Bedarf
+
+- **Bereiche minimierbar**, aber **bei Bedarf von selbst aufklappen**, damit der Nutzer den relevanten Inhalt sieht (z. B. Backup-Wiederherstellung: beim Laufen automatisch aufklappen, damit der **Balkenverlauf** sichtbar ist).
+
+## Formulierung
+
+- **„Seite neu öffnen oder QR-Code neu scannen“** statt nur „QR-Code neu scannen“, wenn beides zum Aktualisieren reicht.
+- **Button „OK“** statt „Schließen“, wenn die einzige Aktion ist, das Fenster zu schließen.
+
+## Kurzfassung
+
+Smarte Oberfläche = **weniger Text, eine klare Aktion, alles am richtigen Ort, automatisch aufklappen wenn nötig**. Keine überflüssigen technischen Schritte in Erfolgsmeldungen.

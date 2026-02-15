@@ -85,23 +85,9 @@ export function cleanupLargeImages(): number {
         
         localStorage.setItem(key, JSON.stringify(finalArray))
         
-      } else if (parsed.welcomeImage || parsed.virtualTourImage) {
-        // Für gallery data: Entferne große Bilder ab 200KB
-        let changed = false
-        if (parsed.welcomeImage && parsed.welcomeImage.length > 200000) {
-          parsed.welcomeImage = ''
-          cleaned++
-          changed = true
-        }
-        if (parsed.virtualTourImage && parsed.virtualTourImage.length > 200000) {
-          parsed.virtualTourImage = ''
-          cleaned++
-          changed = true
-        }
-        if (changed) {
-          localStorage.setItem(key, JSON.stringify(parsed))
-        }
       }
+      // Stammdaten-Galerie (welcomeImage, virtualTourImage, galerieCardImage): NIEMALS automatisch löschen.
+      // Diese Bilder sind Nutzerinhalt; SafeMode darf sie nicht entfernen (sonst verschwindet das Willkommensbild).
     } catch (e) {
       console.warn(`Fehler beim Bereinigen von ${key}:`, e)
     }

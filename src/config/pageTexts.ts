@@ -22,8 +22,22 @@ export interface ProjectStartPageTexts {
 
 export interface GaleriePageTexts {
   pageTitle: string
+  /** Großer Titel unter dem Brand (editierbar aus Vorschau), z. B. Galeriename für diese Seite */
+  heroTitle: string
   welcomeHeading: string
   welcomeSubtext: string
+  /** Willkommenstext (Intro unter „Willkommen bei …“), editierbar aus Vorschau */
+  welcomeIntroText: string
+  /** Überschrift über den Events (z. B. „Aktuelles aus den Eventplanungen“) */
+  eventSectionHeading: string
+  /** Überschrift der Sektion Kunstschaffende */
+  kunstschaffendeHeading: string
+  /** Kurzbio Künstler:in 1 (z. B. Martina) */
+  martinaBio: string
+  /** Kurzbio Künstler:in 2 (z. B. Georg) */
+  georgBio: string
+  /** Absatz unter den Kunstschaffenden (z. B. „Gemeinsam eröffnen …“). Leer = wird aus Namen + Galeriename erzeugt. */
+  gemeinsamText: string
 }
 
 export interface PageTextsConfig {
@@ -65,8 +79,15 @@ const defaults: PageTextsConfig = {
   },
   galerie: {
     pageTitle: 'K2 Galerie',
-    welcomeHeading: 'Willkommen',
+    heroTitle: 'K2 Galerie',
+    welcomeHeading: 'Willkommen bei',
     welcomeSubtext: 'Kunst & Keramik – Martina und Georg Kreinecker',
+    welcomeIntroText: 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.',
+    eventSectionHeading: 'Aktuelles aus den Eventplanungen',
+    kunstschaffendeHeading: 'Die Kunstschaffenden',
+    martinaBio: 'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. Ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.',
+    georgBio: 'Georg verbindet in seiner Keramikarbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail, das Ergebnis von langjähriger Erfahrung.',
+    gemeinsamText: '',
   },
 }
 
@@ -111,6 +132,13 @@ export function getPageTexts(): PageTextsConfig {
   if (!result.projectStart || typeof result.projectStart !== 'object') result.projectStart = d.projectStart
   if (!Array.isArray(result.projectStart.cards)) result.projectStart = { ...d.projectStart, ...result.projectStart, cards: d.projectStart.cards }
   if (!result.galerie || typeof result.galerie !== 'object') result.galerie = d.galerie
+  else {
+    result.galerie = { ...d.galerie, ...result.galerie } as GaleriePageTexts
+    // Neue Felder (z. B. welcomeIntroText) bei alten Saves aus Defaults auffüllen
+    for (const k of Object.keys(d.galerie) as (keyof GaleriePageTexts)[]) {
+      if (result.galerie[k] === undefined || result.galerie[k] === null) (result.galerie as unknown as Record<string, string>)[k] = d.galerie[k]
+    }
+  }
   return result
 }
 

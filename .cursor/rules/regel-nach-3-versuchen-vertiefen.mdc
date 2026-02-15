@@ -1,0 +1,31 @@
+---
+description: Nach 3 erfolglosen Lösungsversuchen vertiefte Analyse, kein endloses Im-Kreis-Drehen
+alwaysApply: true
+---
+
+# Regel: Nach 3. Versuch vertiefen, nicht im Kreis drehen
+
+## Grundsatz
+
+Wenn ein Problem **nach dem 3. Versuch** noch nicht gelöst ist: **Nicht** weitere ähnliche Ansätze versuchen. Stattdessen: **vertiefte Analyse** des Problems und ggf. anderer Lösungsweg.
+
+## Konkret
+
+### Ab dem 3. Versuch
+
+1. **Stopp:** Keine weiteren „Quick Fixes“ derselben Art (z. B. nochmal speichern, nochmal Parameter, nochmal Link-Art).
+2. **Vertiefte Analyse:**
+   - Gesamten **Datenfluss** von Aktion bis Anzeige durchgehen (z. B. Klick → State → Speicher → Ladevorgang → Render).
+   - **Annahmen** prüfen: Stimmt „gleicher Tab“, „gleicher Origin“, „State ist aktuell“ wirklich?
+   - **Alternative Ursachen** einbeziehen: Cache, Reihenfolge, andere Komponente überschreibt, andere Route/Context.
+3. **Anderer Ansatz:** Wenn nötig, **grundlegend andere Lösung** wählen (z. B. gleicher Tab statt neuer Tab, explizites Übergeben von Daten statt localStorage, anderer Ablauf).
+
+### Was vermeiden
+
+- Immer wieder kleine Varianten derselben Idee („nochmal speichern“, „noch ein Parameter“, „noch ein Hint“).
+- Wiederholte Versuche ohne neue Analyse.
+- „Noch ein Versuch“ ohne zu hinterfragen, warum die bisherigen nicht gegriffen haben.
+
+## Kurzfassung
+
+**3 Versuche → dann vertiefte Analyse und ggf. anderer Lösungsweg. Kein endloses Im-Kreis-Drehen.**

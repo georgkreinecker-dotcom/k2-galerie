@@ -29,7 +29,7 @@ export default function ProduktVorschauPage() {
     <div
       style={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%)',
+        background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 50%, var(--k2-bg-3) 100%)',
         color: '#fff',
         padding: '2rem',
         maxWidth: '900px',

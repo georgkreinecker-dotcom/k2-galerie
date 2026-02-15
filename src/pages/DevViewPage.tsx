@@ -16,6 +16,7 @@ import ProjectsPage from './ProjectsPage'
 import PlatformStartPage from './PlatformStartPage'
 import SmartPanel from '../components/SmartPanel'
 import { BUILD_TIMESTAMP } from '../buildInfo.generated'
+import { getPageContentGalerie } from '../config/pageContentGalerie'
 
 // Helper: Lese persistent Boolean ohne Hook (für useMemo)
 function getPersistentBoolean(key: string): boolean {
@@ -52,7 +53,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
     // Timeout nach 10 Sekunden - verhindert Hänger
     const timeoutId = setTimeout(() => {
       setCheckingVercel(false)
-      alert('⚠️ Vercel-Check:\n\nTimeout nach 10 Sekunden\n\nPrüfe manuell: https://vercel.com/k2-galerie/k2-galerie')
+      alert('⚠️ Vercel-Check:\n\nTimeout nach 10 Sekunden\n\nPrüfe manuell: https://vercel.com/dashboard')
     }, 10000)
     
     try {
@@ -73,15 +74,15 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
         })
         .then(data => {
           const exportedAt = data?.exportedAt || 'nicht gefunden'
-          alert(`✅ Vercel-Status:\n\nDatei verfügbar\nExportedAt: ${exportedAt}\n\nPrüfe: https://vercel.com/k2-galerie/k2-galerie`)
+          alert(`✅ Vercel-Status:\n\nDatei verfügbar\nExportedAt: ${exportedAt}\n\nPrüfe: https://vercel.com/dashboard`)
         })
         .catch(err => {
           clearTimeout(fetchTimeout)
           clearTimeout(timeoutId)
           if (err.name === 'AbortError') {
-            alert('⚠️ Vercel-Check:\n\nTimeout - Anfrage dauerte zu lange\n\nPrüfe: https://vercel.com/k2-galerie/k2-galerie')
+            alert('⚠️ Vercel-Check:\n\nTimeout - Anfrage dauerte zu lange\n\nPrüfe: https://vercel.com/dashboard')
           } else {
-            alert('⚠️ Vercel-Check:\n\nDatei nicht verfügbar\n\nPrüfe: https://vercel.com/k2-galerie/k2-galerie')
+            alert('⚠️ Vercel-Check:\n\nDatei nicht verfügbar\n\nPrüfe: https://vercel.com/dashboard')
           }
         })
         .finally(() => {
@@ -148,7 +149,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       // Filter für Galerie-Vorschau
       return [
         { id: 'alle', name: 'Alle', icon: '📋', filter: 'alle' },
-        { id: 'malerei', name: 'Malerei', icon: '🖼️', filter: 'malerei' },
+        { id: 'malerei', name: 'Bilder', icon: '🖼️', filter: 'malerei' },
         { id: 'keramik', name: 'Keramik', icon: '🏺', filter: 'keramik' },
       ]
     }
@@ -289,10 +290,17 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
         return
       }
       
+      const galleryStamm = getItemSafe('k2-stammdaten-galerie', {})
+      const pageContent = getPageContentGalerie()
       const data = {
         martina: getItemSafe('k2-stammdaten-martina', {}),
         georg: getItemSafe('k2-stammdaten-georg', {}),
-        gallery: getItemSafe('k2-stammdaten-galerie', {}),
+        gallery: {
+          ...galleryStamm,
+          welcomeImage: pageContent.welcomeImage ?? galleryStamm.welcomeImage ?? '',
+          galerieCardImage: pageContent.galerieCardImage ?? galleryStamm.galerieCardImage ?? '',
+          virtualTourImage: pageContent.virtualTourImage ?? galleryStamm.virtualTourImage ?? ''
+        },
         artworks: allArtworks,
         events: Array.isArray(events) ? events.slice(0, 20) : [],
         documents: Array.isArray(documents) ? documents.slice(0, 20) : [],
@@ -770,8 +778,8 @@ end tell`
   return (
     <div style={{ 
       minHeight: '100vh', 
-      background: '#1a1a1a', 
-      color: '#fff',
+      background: 'var(--k2-bg-1, #1a0f0a)', 
+      color: 'var(--k2-text, #fff5f0)',
       padding: '1rem',
       paddingBottom: '80px', // Platz für untere Navigationsleiste
       paddingLeft: !panelMinimized ? '420px' : '1rem', // Platz für Smart Panel
@@ -879,7 +887,7 @@ end tell`
           transform: 'translateX(-50%)',
           zIndex: 10003,
           background: 'linear-gradient(120deg, rgba(26, 31, 50, 0.98), rgba(12, 16, 28, 0.98))',
-          border: '1px solid rgba(95, 251, 241, 0.3)',
+          border: '1px solid rgba(255, 140, 66, 0.3)',
           borderRadius: '12px',
           padding: '1rem 1.5rem',
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
@@ -900,7 +908,7 @@ end tell`
               {syncStatus.step === 'ready' && '✅'}
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 'bold', fontSize: '0.95rem', color: '#5ffbf1', marginBottom: '0.25rem' }}>
+              <div style={{ fontWeight: 'bold', fontSize: '0.95rem', color: 'var(--k2-accent)', marginBottom: '0.25rem' }}>
                 {syncStatus.step === 'published' && 'Veröffentlichung erfolgreich'}
                 {syncStatus.step === 'git-push' && 'Code-Update (Git) läuft...'}
                 {syncStatus.step === 'vercel-deploy' && 'Warte auf Vercel Deployment...'}
@@ -917,10 +925,10 @@ end tell`
               <button
                 onClick={() => setSyncStatus({ step: null, progress: 0 })}
                 style={{
-                  background: 'rgba(95, 251, 241, 0.2)',
+                  background: 'rgba(255, 140, 66, 0.2)',
                   border: 'none',
                   borderRadius: '6px',
-                  color: '#5ffbf1',
+                  color: 'var(--k2-accent)',
                   width: '28px',
                   height: '28px',
                   cursor: 'pointer',
@@ -940,7 +948,7 @@ end tell`
           <div style={{
             width: '100%',
             height: '6px',
-            background: 'rgba(95, 251, 241, 0.1)',
+            background: 'rgba(255, 140, 66, 0.1)',
             borderRadius: '3px',
             overflow: 'hidden'
           }}>
@@ -949,7 +957,7 @@ end tell`
               height: '100%',
               background: syncStatus.step === 'ready' 
                 ? 'linear-gradient(90deg, #10b981, #059669)'
-                : 'linear-gradient(90deg, #5ffbf1, #33a1ff)',
+                : 'linear-gradient(90deg, var(--k2-accent), #e67a2a)',
               transition: 'width 0.3s ease',
               animation: syncStatus.step !== 'ready' ? 'pulse 2s ease-in-out infinite' : 'none'
             }} />
@@ -998,7 +1006,7 @@ end tell`
               onClick={() => setViewMode(mode)}
               style={{
                 padding: '0.5rem 1rem',
-                background: viewMode === mode ? '#5ffbf1' : '#444',
+                background: viewMode === mode ? 'var(--k2-accent)' : '#444',
                 color: viewMode === mode ? '#000' : '#fff',
                 border: 'none',
                 borderRadius: '6px',
@@ -1177,9 +1185,9 @@ end tell`
           disabled={checkingVercel}
           style={{
             padding: '0.5rem 1rem',
-            background: checkingVercel ? 'rgba(95, 251, 241, 0.3)' : 'rgba(95, 251, 241, 0.2)',
-            color: '#5ffbf1',
-            border: '1px solid rgba(95, 251, 241, 0.4)',
+            background: checkingVercel ? 'rgba(255, 140, 66, 0.3)' : 'rgba(255, 140, 66, 0.2)',
+            color: 'var(--k2-accent)',
+            border: '1px solid rgba(255, 140, 66, 0.4)',
             borderRadius: '6px',
             fontSize: '0.9rem',
             cursor: checkingVercel ? 'wait' : 'pointer',
@@ -1328,7 +1336,7 @@ end tell`
                   alignItems: 'center',
                   gap: '0.25rem',
                   padding: '0.5rem 0.75rem',
-                  background: isActive ? '#5ffbf1' : '#444',
+                  background: isActive ? 'var(--k2-accent)' : '#444',
                   color: isActive ? '#000' : '#fff',
                   border: 'none',
                   borderRadius: '8px',
@@ -1380,7 +1388,7 @@ end tell`
                 alignItems: 'center',
                 gap: '0.25rem',
                 padding: '0.5rem 0.75rem',
-                background: currentPage === section.id ? '#5ffbf1' : '#444',
+                background: currentPage === section.id ? 'var(--k2-accent)' : '#444',
                 color: currentPage === section.id ? '#000' : '#fff',
                 textDecoration: 'none',
                 borderRadius: '8px',
@@ -1403,9 +1411,9 @@ end tell`
           left: panelMinimized ? '-380px' : '0',
           width: '400px',
           height: '100vh',
-          background: 'linear-gradient(180deg, rgba(26, 31, 50, 0.98), rgba(12, 16, 28, 0.98))',
+          background: 'linear-gradient(180deg, var(--k2-bg-2, #2d1a14), var(--k2-bg-1, #1a0f0a))',
           backdropFilter: 'blur(20px)',
-          borderRight: '1px solid rgba(95, 251, 241, 0.2)',
+          borderRight: '1px solid rgba(255, 140, 66, 0.2)',
           boxShadow: '8px 0 32px rgba(0, 0, 0, 0.5)',
           zIndex: 10002, // Höher als Status-Banner (10001)
           display: 'flex',
@@ -1427,10 +1435,10 @@ end tell`
             right: '1rem', // Immer rechts im Panel
             width: '2.5rem',
             height: '2.5rem',
-            background: 'rgba(95, 251, 241, 0.15)',
-            border: '1px solid rgba(95, 251, 241, 0.3)',
+            background: 'rgba(255, 140, 66, 0.15)',
+            border: '1px solid rgba(255, 140, 66, 0.3)',
             borderRadius: '8px',
-            color: '#5ffbf1',
+            color: 'var(--k2-accent)',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -1441,10 +1449,10 @@ end tell`
             backdropFilter: 'blur(10px)'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(95, 251, 241, 0.25)'
+            e.currentTarget.style.background = 'rgba(255, 140, 66, 0.25)'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(95, 251, 241, 0.15)'
+            e.currentTarget.style.background = 'rgba(255, 140, 66, 0.15)'
           }}
           title={panelMinimized ? 'Panel öffnen' : 'Panel minimieren'}
         >
@@ -1464,25 +1472,25 @@ end tell`
               left: '1rem',
               width: '3rem',
               height: '3rem',
-              background: 'rgba(95, 251, 241, 0.2)',
-              border: '2px solid rgba(95, 251, 241, 0.4)',
+              background: 'rgba(255, 140, 66, 0.2)',
+              border: '2px solid rgba(255, 140, 66, 0.4)',
               borderRadius: '12px',
-              color: '#5ffbf1',
+              color: 'var(--k2-accent)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '1.5rem',
               zIndex: 10003, // Höchster z-index
-              boxShadow: '0 4px 12px rgba(95, 251, 241, 0.3)',
+              boxShadow: '0 4px 12px rgba(255, 140, 66, 0.3)',
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(95, 251, 241, 0.3)'
+              e.currentTarget.style.background = 'rgba(255, 140, 66, 0.3)'
               e.currentTarget.style.transform = 'scale(1.1)'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(95, 251, 241, 0.2)'
+              e.currentTarget.style.background = 'rgba(255, 140, 66, 0.2)'
               e.currentTarget.style.transform = 'scale(1)'
             }}
             title="Smart Panel öffnen"

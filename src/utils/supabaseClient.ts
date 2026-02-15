@@ -71,7 +71,7 @@ export async function loadArtworksFromSupabase(): Promise<any[]> {
       price: artwork.price,
       description: artwork.description,
       location: artwork.location,
-      inShop: artwork.in_shop,
+      inShop: artwork.in_shop !== false,
       createdAt: artwork.created_at,
       updatedAt: artwork.updated_at,
       createdOnMobile: artwork.created_on_mobile,

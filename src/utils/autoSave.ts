@@ -3,6 +3,8 @@
  * Verhindert Datenverlust bei Cursor-Crashes
  */
 
+import { K2_STAMMDATEN_DEFAULTS } from '../config/tenantConfig'
+
 // Auto-Save alle 5 Sekunden
 const AUTO_SAVE_INTERVAL = 5000
 
@@ -20,6 +22,35 @@ export interface AutoSaveData {
   pageTexts?: any
 }
 
+/** Niemals leere Kontaktfelder persistieren: vorhanden > Repo-Standard */
+function mergeStammdatenPerson(incoming: any, existing: any, defaults: { name: string; email: string; phone: string; website?: string }) {
+  const e = existing && typeof existing === 'object' ? existing : {}
+  return {
+    ...incoming,
+    name: (incoming?.name && String(incoming.name).trim()) || e.name || defaults.name,
+    email: (incoming?.email && String(incoming.email).trim()) || (e.email && String(e.email).trim()) || defaults.email,
+    phone: (incoming?.phone && String(incoming.phone).trim()) || (e.phone && String(e.phone).trim()) || defaults.phone,
+    website: (incoming?.website && String(incoming.website).trim()) || (e.website && String(e.website).trim()) || (defaults.website || '')
+  }
+}
+
+function mergeStammdatenGallery(incoming: any, existing: any, defaults: typeof K2_STAMMDATEN_DEFAULTS.gallery) {
+  const e = existing && typeof existing === 'object' ? existing : {}
+  return {
+    ...incoming,
+    name: (incoming?.name && String(incoming.name).trim()) || e.name || defaults.name,
+    address: (incoming?.address != null && String(incoming.address).trim()) ? incoming.address : (e.address || defaults.address),
+    city: (incoming?.city != null && String(incoming.city).trim()) ? incoming.city : (e.city || defaults.city),
+    country: (incoming?.country != null && String(incoming.country).trim()) ? incoming.country : (e.country || defaults.country),
+    phone: (incoming?.phone && String(incoming.phone).trim()) || (e.phone && String(e.phone).trim()) || defaults.phone,
+    email: (incoming?.email && String(incoming.email).trim()) || (e.email && String(e.email).trim()) || defaults.email,
+    website: (incoming?.website != null && String(incoming.website).trim()) ? incoming.website : (e.website || defaults.website || ''),
+    internetadresse: (incoming?.internetadresse != null && String(incoming.internetadresse).trim()) ? incoming.internetadresse : (e.internetadresse || defaults.internetadresse || ''),
+    openingHours: (incoming?.openingHours != null && String(incoming.openingHours).trim()) ? incoming.openingHours : ((e as any)?.openingHours || defaults.openingHours || ''),
+    bankverbindung: (incoming?.bankverbindung != null && String(incoming.bankverbindung).trim()) ? incoming.bankverbindung : (e.bankverbindung || defaults.bankverbindung || '')
+  }
+}
+
 /**
  * Starte Auto-Save für alle Daten
  */
@@ -34,15 +65,24 @@ export function startAutoSave(getData: () => AutoSaveData) {
     try {
       const data = getData()
       
-      // Speichere alle Daten in localStorage
+      // Stammdaten: Niemals vorhandene E-Mail/Telefon mit leer überschreiben (Quelle: vorhanden > Repo-Standard)
       if (data.martina) {
-        localStorage.setItem('k2-stammdaten-martina', JSON.stringify(data.martina))
+        let existing: any = null
+        try { existing = JSON.parse(localStorage.getItem('k2-stammdaten-martina') || 'null') } catch (_) {}
+        const merged = mergeStammdatenPerson(data.martina, existing, K2_STAMMDATEN_DEFAULTS.martina)
+        localStorage.setItem('k2-stammdaten-martina', JSON.stringify({ ...data.martina, ...merged }))
       }
       if (data.georg) {
-        localStorage.setItem('k2-stammdaten-georg', JSON.stringify(data.georg))
+        let existing: any = null
+        try { existing = JSON.parse(localStorage.getItem('k2-stammdaten-georg') || 'null') } catch (_) {}
+        const merged = mergeStammdatenPerson(data.georg, existing, K2_STAMMDATEN_DEFAULTS.georg)
+        localStorage.setItem('k2-stammdaten-georg', JSON.stringify({ ...data.georg, ...merged }))
       }
       if (data.gallery) {
-        localStorage.setItem('k2-stammdaten-galerie', JSON.stringify(data.gallery))
+        let existing: any = null
+        try { existing = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || 'null') } catch (_) {}
+        const merged = mergeStammdatenGallery(data.gallery, existing, K2_STAMMDATEN_DEFAULTS.gallery)
+        localStorage.setItem('k2-stammdaten-galerie', JSON.stringify({ ...data.gallery, ...merged }))
       }
       if (data.artworks) {
         try {
@@ -53,14 +93,30 @@ export function startAutoSave(getData: () => AutoSaveData) {
       }
       if (data.events) {
         try {
-          localStorage.setItem('k2-events', JSON.stringify(data.events))
+          const existingRaw = localStorage.getItem('k2-events')
+          const existingArr = existingRaw ? JSON.parse(existingRaw) : []
+          const hasExisting = Array.isArray(existingArr) && existingArr.length > 0
+          const incomingEmpty = !Array.isArray(data.events) || data.events.length === 0
+          if (hasExisting && incomingEmpty) {
+            // Niemals vorhandene Eventplanung mit leerem Zustand überschreiben
+          } else {
+            localStorage.setItem('k2-events', JSON.stringify(data.events))
+          }
         } catch (e) {
           console.warn('⚠️ Events zu groß für Auto-Save')
         }
       }
       if (data.documents) {
         try {
-          localStorage.setItem('k2-documents', JSON.stringify(data.documents))
+          const existingRaw = localStorage.getItem('k2-documents')
+          const existingArr = existingRaw ? JSON.parse(existingRaw) : []
+          const hasExisting = Array.isArray(existingArr) && existingArr.length > 0
+          const incomingEmpty = !Array.isArray(data.documents) || data.documents.length === 0
+          if (hasExisting && incomingEmpty) {
+            // Niemals vorhandene Dokumente mit leerem Zustand überschreiben
+          } else {
+            localStorage.setItem('k2-documents', JSON.stringify(data.documents))
+          }
         } catch (e) {
           console.warn('⚠️ Documents zu groß für Auto-Save')
         }
@@ -78,14 +134,55 @@ export function startAutoSave(getData: () => AutoSaveData) {
       
       // Speichere Timestamp
       localStorage.setItem('k2-last-auto-save', new Date().toISOString())
-      
+
+      // Automatisches Vollbackup (ein Slot) – bei Datenverlust wiederherstellbar
+      try {
+        let customers: any[] = []
+        try {
+          const raw = localStorage.getItem('k2-customers')
+          if (raw) customers = JSON.parse(raw)
+          if (!Array.isArray(customers)) customers = []
+        } catch (_) {}
+        let pageContentGalerie: string | null = null
+        try {
+          pageContentGalerie = localStorage.getItem('k2-page-content-galerie')
+        } catch (_) {}
+        const backup = {
+          backupAt: new Date().toISOString(),
+          martina: data.martina,
+          georg: data.georg,
+          gallery: data.gallery,
+          artworks: data.artworks,
+          events: data.events,
+          documents: data.documents,
+          customers,
+          designSettings: data.designSettings,
+          pageTexts: data.pageTexts,
+          pageContentGalerie: pageContentGalerie ?? undefined
+        }
+        const backupJson = JSON.stringify(backup)
+        if (backupJson.length < 4 * 1024 * 1024) {
+          localStorage.setItem('k2-full-backup', backupJson)
+          // Verlauf: letzte 30 Backup-Zeitpunkte speichern
+          const ts = backup.backupAt
+          try {
+            const raw = localStorage.getItem('k2-backup-timestamps')
+            const list: string[] = raw ? JSON.parse(raw) : []
+            const next = [ts, ...list.filter(t => t !== ts)].slice(0, 30)
+            localStorage.setItem('k2-backup-timestamps', JSON.stringify(next))
+          } catch (_) {}
+        }
+      } catch (e) {
+        console.warn('⚠️ Vollbackup übersprungen (Größe oder Fehler)')
+      }
+
       console.log('💾 Auto-Save erfolgreich')
     } catch (error) {
       console.error('❌ Auto-Save Fehler:', error)
     }
   }, AUTO_SAVE_INTERVAL)
-  
-  console.log('✅ Auto-Save gestartet (alle 5 Sekunden)')
+
+  console.log('✅ Auto-Save gestartet (alle 5 Sekunden, inkl. Vollbackup)')
 }
 
 /**
@@ -100,22 +197,79 @@ export function stopAutoSave() {
 }
 
 /**
- * Speichere sofort (ohne auf Timer zu warten)
+ * Speichere sofort (ohne auf Timer zu warten) – alle Daten wie beim Intervall (Stammdaten, Werke, Events, Dokumente, …)
  */
 export function saveNow(getData: () => AutoSaveData) {
   try {
     const data = getData()
-    
+
     if (data.martina) {
-      localStorage.setItem('k2-stammdaten-martina', JSON.stringify(data.martina))
+      let existing: any = null
+      try { existing = JSON.parse(localStorage.getItem('k2-stammdaten-martina') || 'null') } catch (_) {}
+      const merged = mergeStammdatenPerson(data.martina, existing, K2_STAMMDATEN_DEFAULTS.martina)
+      localStorage.setItem('k2-stammdaten-martina', JSON.stringify({ ...data.martina, ...merged }))
     }
     if (data.georg) {
-      localStorage.setItem('k2-stammdaten-georg', JSON.stringify(data.georg))
+      let existing: any = null
+      try { existing = JSON.parse(localStorage.getItem('k2-stammdaten-georg') || 'null') } catch (_) {}
+      const merged = mergeStammdatenPerson(data.georg, existing, K2_STAMMDATEN_DEFAULTS.georg)
+      localStorage.setItem('k2-stammdaten-georg', JSON.stringify({ ...data.georg, ...merged }))
     }
     if (data.gallery) {
-      localStorage.setItem('k2-stammdaten-galerie', JSON.stringify(data.gallery))
+      let existing: any = null
+      try { existing = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || 'null') } catch (_) {}
+      const merged = mergeStammdatenGallery(data.gallery, existing, K2_STAMMDATEN_DEFAULTS.gallery)
+      localStorage.setItem('k2-stammdaten-galerie', JSON.stringify({ ...data.gallery, ...merged }))
     }
-    
+    if (data.artworks) {
+      try {
+        localStorage.setItem('k2-artworks', JSON.stringify(data.artworks))
+      } catch (e) {
+        console.warn('⚠️ Artworks zu groß für Sofort-Save')
+      }
+    }
+    // KRITISCH: Niemals vorhandene Events/Dokumente mit leerem State überschreiben (verhindert Datenverlust beim Tab-Wechsel/Reload)
+    if (data.events) {
+      try {
+        const incomingEmpty = !Array.isArray(data.events) || data.events.length === 0
+        const existingRaw = localStorage.getItem('k2-events')
+        const existing = existingRaw ? JSON.parse(existingRaw) : []
+        const hasExisting = Array.isArray(existing) && existing.length > 0
+        if (hasExisting && incomingEmpty) {
+          // Lokale Events behalten – State war vielleicht noch nicht geladen
+        } else {
+          localStorage.setItem('k2-events', JSON.stringify(data.events))
+        }
+      } catch (e) {
+        console.warn('⚠️ Events zu groß für Sofort-Save')
+      }
+    }
+    if (data.documents) {
+      try {
+        const incomingEmpty = !Array.isArray(data.documents) || data.documents.length === 0
+        const existingRaw = localStorage.getItem('k2-documents')
+        const existing = existingRaw ? JSON.parse(existingRaw) : []
+        const hasExisting = Array.isArray(existing) && existing.length > 0
+        if (hasExisting && incomingEmpty) {
+          // Lokale Dokumente behalten
+        } else {
+          localStorage.setItem('k2-documents', JSON.stringify(data.documents))
+        }
+      } catch (e) {
+        console.warn('⚠️ Documents zu groß für Sofort-Save')
+      }
+    }
+    if (data.designSettings) {
+      localStorage.setItem('k2-design-settings', JSON.stringify(data.designSettings))
+    }
+    if (data.pageTexts) {
+      try {
+        localStorage.setItem('k2-page-texts', JSON.stringify(data.pageTexts))
+      } catch (e) {
+        console.warn('⚠️ Seitentexte zu groß für Sofort-Save')
+      }
+    }
+
     localStorage.setItem('k2-last-auto-save', new Date().toISOString())
     console.log('💾 Sofort-Speicherung erfolgreich')
   } catch (error) {
@@ -137,4 +291,197 @@ export function setupBeforeUnloadSave(getData: () => AutoSaveData) {
       saveNow(getData)
     }
   })
+}
+
+const FULL_BACKUP_KEY = 'k2-full-backup'
+
+/**
+ * Stellt alle Daten aus dem letzten Auto-Backup wieder her (localStorage).
+ * Leere Kontaktfelder (email, phone) werden nach der Wiederherstellung aus K2_STAMMDATEN_DEFAULTS gefüllt – so geht nichts verloren.
+ * @returns true wenn ein Backup gefunden und wiederhergestellt wurde, sonst false
+ */
+export function restoreFromBackup(): boolean {
+  try {
+    const raw = localStorage.getItem(FULL_BACKUP_KEY)
+    if (!raw) return false
+    const backup = JSON.parse(raw)
+    if (!backup || !backup.backupAt) return false
+
+    const dm = K2_STAMMDATEN_DEFAULTS.martina
+    const dg = K2_STAMMDATEN_DEFAULTS.georg
+    const dgal = K2_STAMMDATEN_DEFAULTS.gallery
+
+    if (backup.martina) {
+      const m = { ...backup.martina }
+      if (!m.email?.trim()) m.email = dm.email
+      if (!m.phone?.trim()) m.phone = dm.phone
+      if (!m.name?.trim()) m.name = dm.name
+      localStorage.setItem('k2-stammdaten-martina', JSON.stringify(m))
+    }
+    if (backup.georg) {
+      const g = { ...backup.georg }
+      if (!g.email?.trim()) g.email = dg.email
+      if (!g.phone?.trim()) g.phone = dg.phone
+      if (!g.name?.trim()) g.name = dg.name
+      localStorage.setItem('k2-stammdaten-georg', JSON.stringify(g))
+    }
+    if (backup.gallery) {
+      const gal = { ...backup.gallery }
+      if (!gal.phone?.trim()) gal.phone = dgal.phone
+      if (!gal.email?.trim()) gal.email = dgal.email
+      if (!gal.name?.trim()) gal.name = dgal.name
+      localStorage.setItem('k2-stammdaten-galerie', JSON.stringify(gal))
+    }
+    if (Array.isArray(backup.artworks)) {
+      localStorage.setItem('k2-artworks', JSON.stringify(backup.artworks))
+    }
+    if (Array.isArray(backup.events)) {
+      localStorage.setItem('k2-events', JSON.stringify(backup.events))
+    }
+    if (Array.isArray(backup.documents)) {
+      localStorage.setItem('k2-documents', JSON.stringify(backup.documents))
+    }
+    if (Array.isArray(backup.customers)) {
+      localStorage.setItem('k2-customers', JSON.stringify(backup.customers))
+    }
+    if (backup.designSettings) {
+      localStorage.setItem('k2-design-settings', JSON.stringify(backup.designSettings))
+    }
+    if (backup.pageTexts != null) {
+      localStorage.setItem('k2-page-texts', JSON.stringify(backup.pageTexts))
+    }
+    if (backup.pageContentGalerie != null && typeof backup.pageContentGalerie === 'string') {
+      localStorage.setItem('k2-page-content-galerie', backup.pageContentGalerie)
+    }
+
+    console.log('💾 Wiederherstellung aus Backup:', backup.backupAt)
+    return true
+  } catch (e) {
+    console.error('❌ Wiederherstellung aus Backup fehlgeschlagen:', e)
+    return false
+  }
+}
+
+/**
+ * Stellt alle Daten aus einer Backup-Datei wieder her (z. B. zuvor mit „Vollbackup herunterladen“ gespeichert).
+ * Gleiches Format wie k2-full-backup: { martina, georg, gallery, artworks, events, documents, customers?, designSettings, pageTexts, backupAt? }
+ * @returns true wenn das Objekt gültig war und geschrieben wurde
+ */
+export function restoreFromBackupFile(backup: {
+  martina?: any
+  georg?: any
+  gallery?: any
+  artworks?: any[]
+  events?: any[]
+  documents?: any[]
+  customers?: any[]
+  designSettings?: any
+  pageTexts?: any
+  pageContentGalerie?: string
+}): boolean {
+  try {
+    if (!backup || (typeof backup !== 'object')) return false
+    const dm = K2_STAMMDATEN_DEFAULTS.martina
+    const dg = K2_STAMMDATEN_DEFAULTS.georg
+    const dgal = K2_STAMMDATEN_DEFAULTS.gallery
+
+    if (backup.martina && typeof backup.martina === 'object') {
+      const m = { ...backup.martina }
+      if (!m.email?.trim()) m.email = dm.email
+      if (!m.phone?.trim()) m.phone = dm.phone
+      if (!m.name?.trim()) m.name = dm.name
+      localStorage.setItem('k2-stammdaten-martina', JSON.stringify(m))
+    }
+    if (backup.georg && typeof backup.georg === 'object') {
+      const g = { ...backup.georg }
+      if (!g.email?.trim()) g.email = dg.email
+      if (!g.phone?.trim()) g.phone = dg.phone
+      if (!g.name?.trim()) g.name = dg.name
+      localStorage.setItem('k2-stammdaten-georg', JSON.stringify(g))
+    }
+    if (backup.gallery && typeof backup.gallery === 'object') {
+      const gal = { ...backup.gallery }
+      if (!gal.phone?.trim()) gal.phone = dgal.phone
+      if (!gal.email?.trim()) gal.email = dgal.email
+      if (!gal.name?.trim()) gal.name = dgal.name
+      localStorage.setItem('k2-stammdaten-galerie', JSON.stringify(gal))
+    }
+    if (Array.isArray(backup.artworks)) {
+      localStorage.setItem('k2-artworks', JSON.stringify(backup.artworks))
+    }
+    if (Array.isArray(backup.events)) {
+      localStorage.setItem('k2-events', JSON.stringify(backup.events))
+    }
+    if (Array.isArray(backup.documents)) {
+      localStorage.setItem('k2-documents', JSON.stringify(backup.documents))
+    }
+    if (Array.isArray(backup.customers)) {
+      localStorage.setItem('k2-customers', JSON.stringify(backup.customers))
+    }
+    if (backup.designSettings != null) {
+      localStorage.setItem('k2-design-settings', JSON.stringify(backup.designSettings))
+    }
+    if (backup.pageTexts != null) {
+      try {
+        localStorage.setItem('k2-page-texts', JSON.stringify(backup.pageTexts))
+      } catch (_) {}
+    }
+    if (backup.pageContentGalerie != null && typeof backup.pageContentGalerie === 'string') {
+      localStorage.setItem('k2-page-content-galerie', backup.pageContentGalerie)
+    }
+    console.log('💾 Wiederherstellung aus Backup-Datei erfolgreich')
+    return true
+  } catch (e) {
+    console.error('❌ Wiederherstellung aus Backup-Datei fehlgeschlagen:', e)
+    return false
+  }
+}
+
+/**
+ * Prüft ob ein Auto-Backup vorhanden ist (für Anzeige im UI)
+ */
+export function hasBackup(): boolean {
+  try {
+    const raw = localStorage.getItem(FULL_BACKUP_KEY)
+    if (!raw) return false
+    const backup = JSON.parse(raw)
+    return !!(backup && backup.backupAt)
+  } catch {
+    return false
+  }
+}
+
+const BACKUP_TIMESTAMPS_KEY = 'k2-backup-timestamps'
+
+/**
+ * Gibt das Datum des letzten Backups zurück (für Anzeige)
+ */
+export function getBackupTimestamp(): string | null {
+  try {
+    const raw = localStorage.getItem(FULL_BACKUP_KEY)
+    if (!raw) return null
+    const backup = JSON.parse(raw)
+    return backup?.backupAt || null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Gibt die letzten Backup-Zeitpunkte zurück (Verlauf, neueste zuerst)
+ */
+export function getBackupTimestamps(): string[] {
+  try {
+    const raw = localStorage.getItem(BACKUP_TIMESTAMPS_KEY)
+    let list: string[] = raw ? JSON.parse(raw) : []
+    if (!Array.isArray(list)) list = []
+    // Falls noch kein Verlauf gespeichert, aktuelles Backup einmal anzeigen
+    if (list.length === 0) {
+      const last = getBackupTimestamp()
+      if (last) list = [last]
+    }
+    return list
+  } catch {
+    return []
+  }
 }

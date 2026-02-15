@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import './App.css'
 import ProjectsPage from './pages/ProjectsPage'
 import ProjectStartPage from './pages/ProjectStartPage'
@@ -12,6 +12,7 @@ import ProduktVorschauPage from './pages/ProduktVorschauPage'
 import GaleriePage from './pages/GaleriePage'
 import GalerieVorschauPage from './pages/GalerieVorschauPage'
 import PlatzanordnungPage from './pages/PlatzanordnungPage'
+import VitaPage from './pages/VitaPage'
 import ShopPage from './pages/ShopPage'
 import VirtuellerRundgangPage from './pages/VirtuellerRundgangPage'
 import DialogStandalonePage from './pages/DialogStandalonePage'
@@ -23,6 +24,8 @@ import ScreenshotExportAdmin from '../components/ScreenshotExportAdmin'
 import { Ok2ThemeWrapper } from './components/Ok2ThemeWrapper'
 import DevViewPage from './pages/DevViewPage'
 import PlatformStartPage from './pages/PlatformStartPage'
+import FlyerK2GaleriePage from './pages/FlyerK2GaleriePage'
+import KundenPage from './pages/KundenPage'
 import { PLATFORM_ROUTES, PROJECT_ROUTES } from './config/navigation'
 import { BUILD_LABEL, BUILD_TIMESTAMP } from './buildInfo.generated'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
@@ -52,8 +55,8 @@ class AppErrorBoundary extends Component<{ children: ReactNode }, { hasError: bo
       return (
         <div style={{
           minHeight: '100vh',
-          background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%)',
-          color: '#ffffff',
+          background: '#1a0f0a',
+          color: '#fff5f0',
           padding: '2rem',
           display: 'flex',
           flexDirection: 'column',
@@ -160,8 +163,8 @@ class AdminErrorBoundary extends Component<{ children: ReactNode }, { hasError: 
       return (
         <div style={{
           minHeight: '100vh',
-          background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%)',
-          color: '#ffffff',
+          background: '#1a0f0a',
+          color: '#fff5f0',
           padding: '2rem',
           display: 'flex',
           flexDirection: 'column',
@@ -246,35 +249,70 @@ function StandBadgeSync() {
     return () => clearTimeout(t)
   }, [serverNewer])
 
-  const label = serverNewer ? 'Aktualisiere …' : (isLocal ? `Stand: ${BUILD_LABEL} (lokal)` : `Stand: ${displayLabel}`)
+  const isMobile = typeof window !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768)
+  const label = serverNewer
+    ? (isMobile ? 'Neuer Stand – tippen!' : 'Aktualisiere …')
+    : (isLocal ? `Stand: ${BUILD_LABEL} (lokal)` : `Stand: ${displayLabel}`)
   const title = isLocal
     ? 'Lokal gebaut. Gleich überall: pushen, dann auf Handy neu scannen.'
-    : 'Tippen oder neue Seite öffnen (neuer Tab) = frischer Stand. Auch im fremden WLAN.'
+    : isMobile
+      ? 'Tippen = Seite neu laden (immer neueste Version). Siehst du noch Blau oder alte Bilder? Einmal tippen.'
+      : 'Tippen oder neue Seite öffnen (neuer Tab) = frischer Stand. Auch im fremden WLAN.'
 
   return (
-    <div
-      id="app-stand-badge"
-      role="status"
-      onClick={doHardReload}
-      title={title}
-      style={{
-        position: 'fixed',
-        bottom: 10,
-        left: 10,
-        zIndex: 2147483647,
-        fontSize: 12,
-        color: '#fff',
-        background: serverNewer ? 'rgba(200,120,0,0.95)' : 'rgba(0,0,0,0.85)',
-        padding: '6px 10px',
-        borderRadius: 8,
-        cursor: 'pointer',
-        fontFamily: 'system-ui, sans-serif',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
-        pointerEvents: 'auto'
-      }}
-    >
-      {label}
-    </div>
+    <>
+      {/* Auf Mobile: Deutlicher Hinweis wenn neuer Stand, damit Reload nicht übersehen wird */}
+      {serverNewer && isMobile && (
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={doHardReload}
+          onKeyDown={(e) => e.key === 'Enter' && doHardReload()}
+          style={{
+            position: 'fixed',
+            top: 12,
+            left: 12,
+            right: 12,
+            zIndex: 2147483646,
+            fontSize: 14,
+            fontWeight: 600,
+            color: '#fff',
+            background: 'rgba(200,100,0,0.95)',
+            padding: '10px 14px',
+            borderRadius: 10,
+            cursor: 'pointer',
+            fontFamily: 'system-ui, sans-serif',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.4)',
+            textAlign: 'center'
+          }}
+        >
+          Neuer Stand verfügbar – hier tippen zum Aktualisieren
+        </div>
+      )}
+      <div
+        id="app-stand-badge"
+        role="status"
+        onClick={doHardReload}
+        title={title}
+        style={{
+          position: 'fixed',
+          bottom: 10,
+          left: 10,
+          zIndex: 2147483647,
+          fontSize: isMobile ? 14 : 12,
+          color: '#fff',
+          background: serverNewer ? 'rgba(200,120,0,0.95)' : 'rgba(0,0,0,0.85)',
+          padding: isMobile ? '8px 12px' : '6px 10px',
+          borderRadius: 8,
+          cursor: 'pointer',
+          fontFamily: 'system-ui, sans-serif',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+          pointerEvents: 'auto'
+        }}
+      >
+        {label}
+      </div>
+    </>
   )
 }
 
@@ -300,10 +338,96 @@ function DevViewMobileRedirect() {
   return <DevViewPage />
 }
 
+/** Admin-Login dauerhaft: Bei App-Start sessionStorage aus localStorage wiederherstellen (Mobil bleibt eingeloggt). */
+const K2_ADMIN_UNLOCKED_KEY = 'k2-admin-unlocked'
+const K2_ADMIN_UNLOCKED_EXPIRY_KEY = 'k2-admin-unlocked-expiry'
+const K2_ADMIN_CONTEXT_KEY = 'k2-admin-context'
+
+function restoreAdminSessionIfNeeded() {
+  try {
+    if (typeof sessionStorage === 'undefined' || typeof localStorage === 'undefined') return
+    const pathname = window.location.pathname
+    // Root oder K2-Galerie (nicht öffentliche Demo) – damit Mobil nach Reload wieder eingeloggt ist
+    const isK2Route = pathname === '/' || (pathname.startsWith('/projects/k2-galerie') && !pathname.includes('galerie-oeffentlich'))
+    if (!isK2Route) return
+    if (sessionStorage.getItem(K2_ADMIN_CONTEXT_KEY)) return // schon gesetzt
+    const unlocked = localStorage.getItem(K2_ADMIN_UNLOCKED_KEY)
+    if (unlocked !== 'k2') return
+    const expiry = localStorage.getItem(K2_ADMIN_UNLOCKED_EXPIRY_KEY)
+    if (expiry && Date.now() > parseInt(expiry, 10)) {
+      localStorage.removeItem(K2_ADMIN_UNLOCKED_KEY)
+      localStorage.removeItem(K2_ADMIN_UNLOCKED_EXPIRY_KEY)
+      return
+    }
+    sessionStorage.setItem(K2_ADMIN_CONTEXT_KEY, 'k2')
+  } catch (_) {}
+}
+
+/** Aktuelle Route → APf-Tab (DevView page id), damit die gleiche Seite in der APf geöffnet wird */
+function getApfPageFromPath(pathname: string, search: string): string {
+  if (pathname === '/') {
+    const page = new URLSearchParams(search).get('page')
+    return page || 'platform'
+  }
+  if (pathname === '/admin') return 'admin'
+  if (pathname === PLATFORM_ROUTES.projects) return 'projects'
+  if (pathname === PROJECT_ROUTES['k2-galerie'].galerie) return 'galerie'
+  if (pathname === PROJECT_ROUTES['k2-galerie'].galerieVorschau) return 'galerie-vorschau'
+  if (pathname === PROJECT_ROUTES['k2-galerie'].platzanordnung) return 'platzanordnung'
+  if (pathname === PROJECT_ROUTES['k2-galerie'].shop) return 'shop'
+  if (pathname === PROJECT_ROUTES['k2-galerie'].controlStudio) return 'control'
+  if (pathname === PROJECT_ROUTES['k2-galerie'].plan) return 'mission'
+  if (pathname === PROJECT_ROUTES['k2-galerie'].produktVorschau) return 'produkt-vorschau'
+  if (pathname.startsWith('/projects/k2-galerie')) return 'galerie' // z. B. Projekt-Start → Galerie
+  return 'platform'
+}
+
 function App() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const currentApfPage = getApfPageFromPath(location.pathname, location.search || '')
+  const isOnApf = location.pathname === '/'
+
+  // Beim Start: Gespeicherten Admin-Login wiederherstellen (Mobil: Kasse/Admin bleibt gültig)
+  useEffect(() => {
+    restoreAdminSessionIfNeeded()
+  }, [])
+
   return (
     <AppErrorBoundary>
     <StandBadgeSync />
+    {/* Von jeder Seite in die APf – gleiche Seite bleibt in der APf geöffnet; Vollbild wird beendet */}
+    {typeof window !== 'undefined' && !isMobileView() && (
+      <button
+        type="button"
+        onClick={() => {
+          try {
+            if (document.fullscreenElement) (document as any).exitFullscreen?.()
+          } catch (_) {}
+          navigate(`/?page=${currentApfPage}`)
+        }}
+        title={`Zurück zur APf (diese Seite: ${currentApfPage})`}
+        className="apf-float-btn"
+        style={{
+          position: 'fixed',
+          top: '12px',
+          left: '12px',
+          zIndex: 99998,
+          padding: '8px 14px',
+          fontSize: '14px',
+          fontWeight: '600',
+          color: '#fff',
+          background: 'linear-gradient(135deg, var(--k2-accent, #ff8c42) 0%, #e67a2a 100%)',
+          border: 'none',
+          borderRadius: '10px',
+          cursor: 'pointer',
+          boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
+          opacity: isOnApf ? 0.85 : 1,
+        }}
+      >
+        APf
+      </button>
+    )}
     <Routes>
       {/* Root-Route: Auf Mobile → direkt Galerie, auf Desktop → DevView/APf */}
       <Route path="/" element={
@@ -314,6 +438,7 @@ function App() {
       
       {/* Galerie als separate Route */}
       <Route path="/galerie-home" element={<GaleriePage />} />
+      <Route path="/flyer-k2-galerie" element={<FlyerK2GaleriePage />} />
       
       {/* Plattform-Routen – auf Mobile sofort Galerie (kein Smart Panel) */}
       <Route path="/platform" element={
@@ -338,8 +463,10 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].shop} element={<ShopPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].virtuellerRundgang} element={<VirtuellerRundgangPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].controlStudio} element={<ControlStudioPage />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].kunden} element={<KundenPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].plan} element={<ProjectPlanPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].mobileConnect} element={<MobileConnectPage />} />
+      <Route path="/projects/k2-galerie/vita/:artistId" element={<VitaPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].produktVorschau} element={<ProduktVorschauPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].platzanordnung} element={<PlatzanordnungPage />} />
       <Route path="/k2team-handbuch" element={<K2TeamHandbuchPage />} />

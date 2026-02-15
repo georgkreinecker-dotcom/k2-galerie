@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
+import { getCustomers, createCustomer, updateCustomer, type Customer } from '../utils/customers'
 import '../App.css'
 
 interface CartItem {
@@ -23,6 +24,7 @@ interface CartItem {
 
 const ShopPage = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const [cart, setCart] = useState<CartItem[]>([])
   const [showCheckout, setShowCheckout] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'transfer'>('card')
@@ -31,6 +33,80 @@ const ShopPage = () => {
   const [serialInput, setSerialInput] = useState('')
   const [allArtworks, setAllArtworks] = useState<any[]>([])
   const [orders, setOrders] = useState<any[]>([])
+  const [bankverbindung, setBankverbindung] = useState('')
+  const [customers, setCustomers] = useState<Customer[]>([])
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null)
+  // Internetshop: Kundendaten vom Besucher (werden in Kundendatei gespeichert)
+  const [guestName, setGuestName] = useState('')
+  const [guestEmail, setGuestEmail] = useState('')
+  const [guestPhone, setGuestPhone] = useState('')
+  // Reservierung: Formular und Kundendaten (ebenfalls in Kundendatei)
+  const [showReservationForm, setShowReservationForm] = useState(false)
+  const [reservationName, setReservationName] = useState('')
+  const [reservationEmail, setReservationEmail] = useState('')
+  const [reservationPhone, setReservationPhone] = useState('')
+  // Mobil: Wenn Besucher-Ansicht, aber Admin-Login gespeichert → „Als Kasse öffnen“ anzeigen und nach Klick Kasse aktivieren
+  const [forceKasseOpen, setForceKasseOpen] = useState(false)
+
+  // Galerie-Stammdaten: Bankverbindung, Kontakt, Internetshop-Hinweis
+  const [internetShopNotSetUp, setInternetShopNotSetUp] = useState(true)
+  const [galleryEmail, setGalleryEmail] = useState('')
+  const [galleryPhone, setGalleryPhone] = useState('')
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('k2-stammdaten-galerie')
+      if (stored) {
+        const data = JSON.parse(stored)
+        setBankverbindung(data.bankverbindung || '')
+        setGalleryEmail(data.email || '')
+        setGalleryPhone(data.phone || '')
+        setInternetShopNotSetUp(data.internetShopNotSetUp !== false)
+      }
+    } catch (_) {}
+  }, [])
+
+  // Von Galerie (Willkommensseite oder Galerie-Vorschau) zum Shop → Kundenansicht. Flag + Referrer (State geht bei SPA oft verloren).
+  const fromStorage = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-from-galerie-view') === '1'
+  const referrer = typeof document !== 'undefined' ? document.referrer : ''
+  // Nur Galerie-Vorschau (Werke ansehen) = Kundenansicht. Willkommensseite nicht – Workflow: Start → Admin → Kassa.
+  const fromReferrer = referrer.includes('galerie-vorschau')
+  const fromGalerieView =
+    fromStorage ||
+    (location.state as { fromGalerieView?: boolean } | null)?.fromGalerieView === true ||
+    fromReferrer
+
+  useEffect(() => {
+    if (fromGalerieView) {
+      try {
+        sessionStorage.removeItem('k2-admin-context')
+        sessionStorage.removeItem('k2-from-galerie-view')
+      } catch (_) {}
+      if ((location.state as { fromGalerieView?: boolean } | null)?.fromGalerieView === true) {
+        navigate(location.pathname, { replace: true, state: {} })
+      }
+    }
+  }, [fromGalerieView, location.state, location.pathname, navigate])
+
+  // Admin: openAsKasse → direkt Kasse öffnen, ein Klick (keine leeren Kilometer)
+  useEffect(() => {
+    const state = location.state as { openAsKasse?: boolean } | null
+    if (state?.openAsKasse) {
+      try { sessionStorage.setItem('k2-admin-context', 'k2') } catch (_) {}
+      setForceKasseOpen(true)
+    }
+  }, [location.state])
+
+  // Nur mit Admin-Login: Kasse. Von Galerie kommend = Kundenansicht. „Als Kasse öffnen“ setzt forceKasseOpen.
+  const hasStoredAdminLogin =
+    typeof localStorage !== 'undefined' &&
+    localStorage.getItem('k2-admin-unlocked') === 'k2' &&
+    (() => {
+      const exp = localStorage.getItem('k2-admin-unlocked-expiry')
+      return !exp || Date.now() < parseInt(exp, 10)
+    })()
+  const isAdminContext =
+    forceKasseOpen ||
+    (!fromGalerieView && typeof sessionStorage !== 'undefined' && !!sessionStorage.getItem('k2-admin-context'))
 
   // Warenkorb aus localStorage laden
   useEffect(() => {
@@ -91,6 +167,14 @@ const ShopPage = () => {
     } catch (_) {}
   }, [])
 
+  // Kunden für Zuordnung beim Verkauf
+  useEffect(() => {
+    const load = () => setCustomers(getCustomers())
+    load()
+    window.addEventListener('customers-updated', load)
+    return () => window.removeEventListener('customers-updated', load)
+  }, [])
+
   // Bon erneut drucken – Dialog wie bei neuem Verkauf
   const handleReprintOrder = (order: any) => {
     const paymentText = order.paymentMethod === 'cash' ? 'Bar' : order.paymentMethod === 'card' ? 'Karte' : 'Überweisung'
@@ -140,13 +224,14 @@ const ShopPage = () => {
 
     // Prüfe ob bereits im Warenkorb
     if (cart.some(item => item.number === artwork.number)) {
-      alert('Dieses Werk ist bereits im Warenkorb')
+      alert('Dieses Werk ist bereits in deiner/Ihrer Auswahl.')
       return
     }
 
     // Prüfe ob im Shop verfügbar
-    if (!artwork.inShop && artwork.inShop !== true) {
-      alert('Dieses Werk ist nicht im Online-Shop verfügbar.')
+    const priceVal = typeof artwork?.price === 'number' ? artwork.price : (parseFloat(String(artwork?.price ?? 0)) || 0)
+    if (artwork.inShop === false || priceVal <= 0) {
+      alert('Dieses Werk ist nicht im Online-Shop verfügbar oder hat keinen Preis.')
       return
     }
 
@@ -177,7 +262,7 @@ const ShopPage = () => {
 
     setCart([...cart, cartItem])
     setSerialInput('')
-    alert(`✅ "${artwork.title || artwork.number}" wurde zum Warenkorb hinzugefügt`)
+    alert(`✅ "${artwork.title || artwork.number}" wurde zur Auswahl hinzugefügt.`)
   }
 
   // QR-Code scannen (für mobile Geräte)
@@ -247,7 +332,7 @@ const ShopPage = () => {
   // WICHTIG: paymentMethod als Parameter, da setState async ist und sonst alter Wert verwendet wird
   const quickSale = (method: 'cash' | 'card' | 'transfer') => {
     if (cart.length === 0) {
-      alert('Warenkorb ist leer')
+      alert('Auswahl ist leer.')
       return
     }
     processOrder(method)
@@ -260,6 +345,12 @@ const ShopPage = () => {
       alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
       return
     }
+
+    let bankForReceipt = ''
+    try {
+      const g = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
+      bankForReceipt = (g.bankverbindung || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    } catch (_) {}
 
     const paymentMethodText = order.paymentMethod === 'cash' ? 'Bar' : order.paymentMethod === 'card' ? 'Karte' : 'Überweisung'
     const date = new Date(order.date)
@@ -414,7 +505,7 @@ const ShopPage = () => {
             ${order.items.map((item: CartItem) => `
               <div class="item">
                 <div class="item-title">${item.title || item.number}</div>
-                <div class="item-details">${item.category === 'malerei' ? 'Malerei' : 'Keramik'}${item.artist ? ' • ' + item.artist : ''}</div>
+                <div class="item-details">${item.category === 'malerei' ? 'Bilder' : 'Keramik'}${item.artist ? ' • ' + item.artist : ''}</div>
                 <div class="item-details" style="font-weight: bold; margin-top: 2px;">Seriennummer: ${item.number}</div>
                 <div class="item-price">€ ${item.price.toFixed(2)}</div>
               </div>
@@ -442,6 +533,7 @@ const ShopPage = () => {
             <div style="font-weight: bold; margin-bottom: 3px; font-size: 8px;">
               ${order.paymentMethod === 'cash' ? 'Bar bezahlt' : order.paymentMethod === 'card' ? 'Mit Karte bezahlt' : 'Überweisung'}
             </div>
+            ${order.paymentMethod === 'transfer' && bankForReceipt ? `<div style="font-size: 7px; margin-top: 6px; text-align: left; white-space: pre-wrap; word-break: break-all;">Für Überweisung:\n${bankForReceipt}</div>` : ''}
             <div style="font-size: 7px;">Vielen Dank!</div>
           </div>
           
@@ -475,6 +567,12 @@ const ShopPage = () => {
       alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
       return
     }
+
+    let bankForReceipt = ''
+    try {
+      const g = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
+      bankForReceipt = (g.bankverbindung || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    } catch (_) {}
 
     const paymentMethodText = order.paymentMethod === 'cash' ? 'Bar' : order.paymentMethod === 'card' ? 'Karte' : 'Überweisung'
     const date = new Date(order.date)
@@ -646,7 +744,7 @@ const ShopPage = () => {
               return `
               <div class="item">
                 <div class="item-title">${item.title || item.number}</div>
-                <div class="item-details">${item.category === 'malerei' ? 'Malerei' : 'Keramik'}${item.artist ? ' • ' + item.artist : ''}</div>
+                <div class="item-details">${item.category === 'malerei' ? 'Bilder' : 'Keramik'}${item.artist ? ' • ' + item.artist : ''}</div>
                 ${sizeInfo ? `<div class="item-details" style="margin-top: 1px;">${sizeInfo}</div>` : ''}
                 <div class="item-details" style="font-weight: bold; margin-top: 2px;">Seriennummer: ${item.number}</div>
                 <div class="item-price">€ ${item.price.toFixed(2)}</div>
@@ -676,6 +774,7 @@ const ShopPage = () => {
             <div style="font-weight: bold; margin-bottom: 3px; font-size: 8px;">
               ${order.paymentMethod === 'cash' ? 'Bar bezahlt' : order.paymentMethod === 'card' ? 'Mit Karte bezahlt' : 'Überweisung'}
             </div>
+            ${order.paymentMethod === 'transfer' && bankForReceipt ? `<div style="font-size: 7px; margin-top: 6px; text-align: left; white-space: pre-wrap; word-break: break-all;">Für Überweisung:\n${bankForReceipt}</div>` : ''}
             <div style="font-size: 7px;">Vielen Dank!</div>
           </div>
           
@@ -703,6 +802,30 @@ const ShopPage = () => {
   // Bestellung abschließen (paymentMethodOverride: bei Schnellverkauf direkt übergeben, sonst aus State)
   const processOrder = (paymentMethodOverride?: 'cash' | 'card' | 'transfer') => {
     const method = paymentMethodOverride ?? paymentMethod
+    const isAdmin = typeof sessionStorage !== 'undefined' && !!sessionStorage.getItem('k2-admin-context')
+
+    let customerId: string | undefined
+    if (isAdmin) {
+      customerId = selectedCustomerId || undefined
+    } else {
+      // Internetshop: Kundendaten erforderlich, in Kundendatei speichern
+      const name = guestName.trim()
+      const email = guestEmail.trim()
+      if (!name || !email) {
+        alert('Bitte Name und E-Mail-Adresse angeben.')
+        return
+      }
+      const phone = guestPhone.trim() || undefined
+      const existing = getCustomers().find(c => c.email && c.email.toLowerCase() === email.toLowerCase())
+      if (existing) {
+        customerId = existing.id
+        updateCustomer(existing.id, { name: name || existing.name, phone: phone ?? existing.phone })
+      } else {
+        const created = createCustomer({ name, email, phone })
+        customerId = created.id
+      }
+    }
+
     // Bestellung speichern
     const order = {
       id: `ORDER-${Date.now()}`,
@@ -712,6 +835,7 @@ const ShopPage = () => {
       discount: discountAmount,
       total,
       paymentMethod: method,
+      customerId,
       orderNumber: `O-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-4)}`
     }
 
@@ -721,14 +845,15 @@ const ShopPage = () => {
     localStorage.setItem('k2-orders', JSON.stringify(ordersStored))
     setOrders(prev => [order, ...prev.slice(0, 19)])
 
-    // Werke als verkauft markieren
+    // Werke als verkauft markieren (mit optionaler Kundenzuordnung)
     cart.forEach(item => {
       const soldArtworks = JSON.parse(localStorage.getItem('k2-sold-artworks') || '[]')
       if (!soldArtworks.find((a: any) => a.number === item.number)) {
         soldArtworks.push({
           number: item.number,
           soldAt: new Date().toISOString(),
-          orderId: order.id
+          orderId: order.id,
+          ...(customerId ? { customerId } : {})
         })
         localStorage.setItem('k2-sold-artworks', JSON.stringify(soldArtworks))
       }
@@ -737,27 +862,81 @@ const ShopPage = () => {
     // Event für andere Komponenten
     window.dispatchEvent(new CustomEvent('artworks-updated'))
 
-    // Warenkorb leeren
     setCart([])
     setShowCheckout(false)
-    
-    // Erfolgsmeldung mit Druck-Optionen
-    const paymentMethodText = method === 'cash' ? 'Bar' : method === 'card' ? 'Karte' : 'Überweisung'
-    const printChoice = confirm(`✅ Verkauf erfolgreich!\n\nBetrag: €${total.toFixed(2)}\nZahlung: ${paymentMethodText}\n\nKassenbon drucken?\n\nOK = Etikettendrucker (80mm)\nAbbrechen = A4 Druck`)
-    
-    if (printChoice) {
-      // Etikettendrucker (80mm)
-      printReceipt(order)
-    } else {
-      // A4 Druck
-      printReceiptA4(order)
+    setSelectedCustomerId(null)
+    if (!isAdmin) {
+      setGuestName('')
+      setGuestEmail('')
+      setGuestPhone('')
     }
+
+    const paymentMethodText = method === 'cash' ? 'Bar' : method === 'card' ? 'Karte' : 'Überweisung'
+
+    if (isAdmin) {
+      // Admin: Erfolgsmeldung mit Druck-Optionen
+      const printChoice = confirm(`✅ Verkauf erfolgreich!\n\nBetrag: €${total.toFixed(2)}\nZahlung: ${paymentMethodText}\n\nKassenbon drucken?\n\nOK = Etikettendrucker (80mm)\nAbbrechen = A4 Druck`)
+      if (printChoice) {
+        printReceipt(order)
+      } else {
+        printReceiptA4(order)
+      }
+    } else {
+      // Besucher: nur Bestätigung, kein Bon
+      alert(`✅ Bestellung aufgenommen!\n\nBetrag: €${total.toFixed(2)}\nZahlung: ${paymentMethodText}\n\nWir melden uns bei Ihnen.`)
+    }
+  }
+
+  // Reservierung: Kundendaten erforderlich, in Kundendatei speichern + Reservierung in k2-reservations
+  const submitReservation = () => {
+    const name = reservationName.trim()
+    const email = reservationEmail.trim()
+    if (!name || !email) {
+      alert('Bitte Name und E-Mail-Adresse angeben.')
+      return
+    }
+    const phone = reservationPhone.trim() || undefined
+    let customerId: string
+    const existing = getCustomers().find(c => c.email && c.email.toLowerCase() === email.toLowerCase())
+    if (existing) {
+      customerId = existing.id
+      updateCustomer(existing.id, { name: name || existing.name, phone: phone ?? existing.phone })
+    } else {
+      const created = createCustomer({ name, email, phone })
+      customerId = created.id
+    }
+    const reservation = {
+      id: `RES-${Date.now()}`,
+      date: new Date().toISOString(),
+      customerId,
+      items: [...cart],
+      total,
+      status: 'offen'
+    }
+    try {
+      const stored = JSON.parse(localStorage.getItem('k2-reservations') || '[]')
+      stored.push(reservation)
+      localStorage.setItem('k2-reservations', JSON.stringify(stored))
+    } catch (_) {
+      alert('Reservierung konnte nicht gespeichert werden.')
+      return
+    }
+    setShowReservationForm(false)
+    setReservationName('')
+    setReservationEmail('')
+    setReservationPhone('')
+    setCart([])
+    try {
+      localStorage.setItem('k2-cart', '[]')
+    } catch (_) {}
+    window.dispatchEvent(new CustomEvent('cart-updated'))
+    alert(`✅ Reservierung aufgenommen!\n\nWir melden uns bei Ihnen.`)
   }
 
   return (
     <div style={{ 
       minHeight: '-webkit-fill-available',
-      background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%)',
+      background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 50%, var(--k2-bg-3) 100%)',
       color: '#ffffff',
       position: 'relative',
       overflowX: 'hidden'
@@ -801,7 +980,7 @@ const ShopPage = () => {
                 letterSpacing: '-0.02em',
                 lineHeight: '1.1'
               }}>
-                Kasse
+                {isAdminContext ? 'Kasse' : 'Deine/Ihre Auswahl'}
               </h1>
               <p style={{ 
                 margin: '0.75rem 0 0', 
@@ -809,7 +988,7 @@ const ShopPage = () => {
                 fontSize: 'clamp(1rem, 3vw, 1.2rem)',
                 fontWeight: '300'
               }}>
-                {cart.length > 0 ? `${cart.length} ${cart.length === 1 ? 'Artikel' : 'Artikel'} • €${total.toFixed(2)}` : 'Warenkorb'}
+                {cart.length > 0 ? `${cart.length} ${cart.length === 1 ? 'Werk' : 'Werke'} • €${total.toFixed(2)}` : 'Auswahl'}
               </p>
             </div>
             <nav style={{ 
@@ -847,6 +1026,35 @@ const ShopPage = () => {
               >
                 ← Zur Galerie
               </Link>
+              {!isAdminContext && hasStoredAdminLogin && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    try {
+                      sessionStorage.setItem('k2-admin-context', 'k2')
+                      sessionStorage.removeItem('k2-from-galerie-view')
+                    } catch (_) {}
+                    setForceKasseOpen(true)
+                  }}
+                  style={{
+                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                    background: 'rgba(95, 251, 241, 0.2)',
+                    border: '1px solid rgba(95, 251, 241, 0.5)',
+                    color: '#5ffbf1',
+                    borderRadius: '12px',
+                    fontSize: 'inherit',
+                    whiteSpace: 'nowrap',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}
+                >
+                  🧾 Als Kasse öffnen
+                </button>
+              )}
+              {isAdminContext && (
               <Link 
                 to="/admin" 
                 style={{ 
@@ -876,6 +1084,7 @@ const ShopPage = () => {
               >
                 ⚙️ Admin
               </Link>
+              )}
             </nav>
           </div>
         </header>
@@ -886,7 +1095,31 @@ const ShopPage = () => {
           maxWidth: '1400px',
           margin: '0 auto'
         }}>
-          {/* QR-Scanner & Seriennummer-Eingabe */}
+          {internetShopNotSetUp && (
+            <div style={{
+              marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
+              padding: 'clamp(1rem, 3vw, 1.25rem) clamp(1.25rem, 3vw, 1.5rem)',
+              background: 'rgba(102, 126, 234, 0.15)',
+              border: '1px solid rgba(102, 126, 234, 0.35)',
+              borderRadius: '16px',
+              color: 'rgba(255, 255, 255, 0.95)',
+              fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+              lineHeight: 1.5
+            }}>
+              <strong>Besuchen Sie gern unsere Galerie und vereinbaren Sie einen Termin.</strong>
+              {' '}
+              So können Sie die Werke vor Ort erleben. Eine Reservierung ist möglich.
+              {galleryPhone ? (
+                <> – Termin: <a href={`tel:${galleryPhone.replace(/\s/g, '')}`} style={{ color: '#b8b8ff', textDecoration: 'none' }}>{galleryPhone}</a></>
+              ) : galleryEmail ? (
+                <> – <a href={`mailto:${galleryEmail}`} style={{ color: '#b8b8ff', textDecoration: 'none' }}>{galleryEmail}</a></>
+              ) : (
+                ' (Kontakt siehe Galerie / Impressum).'
+              )}.
+            </div>
+          )}
+          {/* Nur für Admin: Werk hinzufügen (QR/Seriennummer) – Galerie-Besucher sehen das nicht */}
+          {isAdminContext && (
           <section style={{
             background: 'rgba(255, 255, 255, 0.05)',
             backdropFilter: 'blur(20px)',
@@ -991,9 +1224,10 @@ const ShopPage = () => {
             </button>
           </div>
         </section>
+          )}
 
-        {/* Bon erneut drucken */}
-        {orders.length > 0 && (
+        {/* Nur für Admin: Bon erneut drucken */}
+        {isAdminContext && orders.length > 0 && (
           <section style={{
             background: 'rgba(255, 255, 255, 0.05)',
             backdropFilter: 'blur(20px)',
@@ -1210,14 +1444,14 @@ const ShopPage = () => {
               color: '#ffffff',
               fontWeight: '700'
             }}>
-              Dein Warenkorb ist leer
+              Deine/Ihre Auswahl ist leer
             </h2>
             <p style={{ 
               fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', 
               marginBottom: '1rem',
               color: 'rgba(255, 255, 255, 0.8)'
             }}>
-              Entdecke unsere Kunstwerke und füge sie zu deinem Warenkorb hinzu.
+              Entdecke unsere Kunstwerke und füge sie zu deiner/Ihrer Auswahl hinzu.
             </p>
             <p style={{ 
               fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', 
@@ -1227,7 +1461,7 @@ const ShopPage = () => {
             }}>
               Hinweis: Nicht alle Werke sind im Online-Shop verfügbar. Werke, die nur zur Ausstellung gehören, können nicht online gekauft werden.
             </p>
-            {orders.length > 0 && (
+            {isAdminContext && orders.length > 0 && (
               <button
                 onClick={() => handleReprintOrder(orders[0])}
                 style={{
@@ -1294,7 +1528,7 @@ const ShopPage = () => {
                 color: '#ffffff',
                 fontWeight: '600'
               }}>
-                Warenkorb ({cart.length} {cart.length === 1 ? 'Artikel' : 'Artikel'})
+                Auswahl ({cart.length} {cart.length === 1 ? 'Werk' : 'Werke'})
               </h2>
               
               <div style={{ 
@@ -1383,7 +1617,7 @@ const ShopPage = () => {
                         fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', 
                         color: 'rgba(255, 255, 255, 0.6)' 
                       }}>
-                        {item.category === 'malerei' ? 'Malerei' : item.category === 'keramik' ? 'Keramik' : item.category}
+                        {item.category === 'malerei' ? 'Bilder' : item.category === 'keramik' ? 'Keramik' : item.category}
                         {item.artist && ` • ${item.artist}`}
                       </p>
                       <p style={{ 
@@ -1428,8 +1662,73 @@ const ShopPage = () => {
               </div>
             </section>
 
-            {/* Zusammenfassung & Schnellverkauf */}
-            {!showCheckout && (
+            {/* Für Galerie-Besucher (ohne Admin): nur Gesamt + Kontakt – keine Kasse */}
+            {!isAdminContext && cart.length > 0 && (
+              <section style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '20px',
+                padding: 'clamp(1.5rem, 4vw, 2rem)',
+                marginBottom: 'clamp(2rem, 5vw, 3rem)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <span style={{ fontWeight: '600', color: '#fff' }}>Gesamt:</span>
+                  <span style={{ fontWeight: '700', fontSize: 'clamp(1.2rem, 3.5vw, 1.5rem)', background: 'linear-gradient(135deg, #b8b8ff 0%, #ff77c6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>€ {total.toFixed(2)}</span>
+                </div>
+                <p style={{ margin: '0 0 1rem', color: 'rgba(255,255,255,0.9)', fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)' }}>
+                  Bei Interesse an diesen Werken kontaktieren Sie uns gerne. Eine Reservierung ist möglich – dazu bitte Ihre Daten angeben.
+                </p>
+                {!showReservationForm ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
+                    <button
+                      onClick={() => setShowReservationForm(true)}
+                      style={{ padding: '0.75rem 1.25rem', background: 'rgba(95, 251, 241, 0.2)', border: '1px solid rgba(95, 251, 241, 0.5)', borderRadius: '12px', color: '#5ffbf1', fontWeight: '600', fontSize: 'clamp(0.95rem, 2.2vw, 1.05rem)', cursor: 'pointer' }}
+                    >
+                      📌 Reservierung anfragen
+                    </button>
+                    <button
+                      onClick={() => setShowCheckout(true)}
+                      style={{ padding: '0.75rem 1.25rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: '600', fontSize: 'clamp(0.95rem, 2.2vw, 1.05rem)', cursor: 'pointer', boxShadow: '0 4px 14px rgba(102, 126, 234, 0.4)' }}
+                    >
+                      Zur Kasse (Karte / Überweisung)
+                    </button>
+                    {galleryEmail && (
+                      <a href={`mailto:${galleryEmail}`} style={{ padding: '0.6rem 1rem', background: 'rgba(102, 126, 234, 0.3)', border: '1px solid rgba(102, 126, 234, 0.5)', borderRadius: '10px', color: '#fff', textDecoration: 'none', fontWeight: '600', fontSize: 'clamp(0.9rem, 2.2vw, 1rem)' }}>E-Mail</a>
+                    )}
+                    {galleryPhone && (
+                      <a href={`tel:${galleryPhone.replace(/\s/g, '')}`} style={{ padding: '0.6rem 1rem', background: 'rgba(95, 251, 241, 0.2)', border: '1px solid rgba(95, 251, 241, 0.4)', borderRadius: '10px', color: '#5ffbf1', textDecoration: 'none', fontWeight: '600', fontSize: 'clamp(0.9rem, 2.2vw, 1rem)' }}>Anrufen</a>
+                    )}
+                    <Link to={PROJECT_ROUTES['k2-galerie'].galerieVorschau} style={{ padding: '0.6rem 1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', color: '#fff', textDecoration: 'none', fontWeight: '600', fontSize: 'clamp(0.9rem, 2.2vw, 1rem)' }}>Zur Galerie</Link>
+                  </div>
+                ) : (
+                  <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                    <p style={{ margin: '0 0 1rem', fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: 'rgba(255,255,255,0.9)' }}>Ihre Daten (werden in der Kundendatei gespeichert):</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '360px', marginBottom: '1rem' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)', marginBottom: '0.25rem' }}>Name *</label>
+                        <input type="text" value={reservationName} onChange={(e) => setReservationName(e.target.value)} placeholder="Vor- und Nachname" style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '0.95rem' }} />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)', marginBottom: '0.25rem' }}>E-Mail *</label>
+                        <input type="email" value={reservationEmail} onChange={(e) => setReservationEmail(e.target.value)} placeholder="ihre@email.at" style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '0.95rem' }} />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)', marginBottom: '0.25rem' }}>Telefon (optional)</label>
+                        <input type="tel" value={reservationPhone} onChange={(e) => setReservationPhone(e.target.value)} placeholder="+43 …" style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '0.95rem' }} />
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <button onClick={submitReservation} disabled={!reservationName.trim() || !reservationEmail.trim()} style={{ padding: '0.6rem 1.25rem', background: (!reservationName.trim() || !reservationEmail.trim()) ? 'rgba(255,255,255,0.2)' : 'linear-gradient(135deg, #5ffbf1 0%, #667eea 100%)', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: '600', fontSize: '0.95rem', cursor: (!reservationName.trim() || !reservationEmail.trim()) ? 'not-allowed' : 'pointer', opacity: (!reservationName.trim() || !reservationEmail.trim()) ? 0.7 : 1 }}>Reservierung absenden</button>
+                      <button onClick={() => setShowReservationForm(false)} style={{ padding: '0.6rem 1rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '10px', color: 'rgba(255,255,255,0.9)', fontSize: '0.9rem', cursor: 'pointer' }}>Abbrechen</button>
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Nur Admin: Zusammenfassung & Schnellverkauf (Bar/Karte/Überweisung) */}
+            {isAdminContext && !showCheckout && (
               <section style={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 backdropFilter: 'blur(20px)',
@@ -1607,7 +1906,7 @@ const ShopPage = () => {
               </section>
             )}
 
-            {/* Checkout */}
+            {/* Checkout für alle: Karte / Überweisung / Bar, Bankverbindung aus Stammdaten */}
             {showCheckout && (
               <section style={{
                 background: 'rgba(255, 255, 255, 0.05)',
@@ -1618,6 +1917,105 @@ const ShopPage = () => {
                 boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
                 marginBottom: 'clamp(2rem, 5vw, 3rem)'
               }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
+                  <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', color: '#ffffff', fontWeight: '600', margin: 0 }}>
+                    Bestellübersicht
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowCheckout(false)}
+                    style={{ padding: '0.5rem 1rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '10px', color: 'rgba(255,255,255,0.9)', fontSize: '0.9rem', cursor: 'pointer' }}
+                  >
+                    ← Zurück zur Auswahl
+                  </button>
+                </div>
+                <ul style={{ margin: '0 0 1.25rem', paddingLeft: '1.25rem', color: 'rgba(255,255,255,0.9)', fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', lineHeight: 1.6 }}>
+                  {cart.map((item, idx) => (
+                    <li key={`${item.number}-${idx}`}>
+                      {item.title || item.number} — € {item.price.toFixed(2)}
+                    </li>
+                  ))}
+                </ul>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.15)' }}>
+                  <span style={{ fontWeight: '600', color: '#ffffff' }}>Gesamt:</span>
+                  <span style={{ fontWeight: '700', background: 'linear-gradient(135deg, #b8b8ff 0%, #ff77c6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontSize: 'clamp(1.1rem, 3vw, 1.25rem)' }}>€ {total.toFixed(2)}</span>
+                </div>
+
+                {internetShopNotSetUp && (
+                  <p style={{ margin: '0 0 1.5rem', color: 'rgba(255,255,255,0.85)', fontSize: 'clamp(0.9rem, 2.5vw, 1rem)' }}>
+                    💡 Ein Besuch unserer Galerie und ein Termin sind sinnvoll – Sie können die Werke vor Ort erleben. Bestellung oder Reservierung hier möglich.
+                  </p>
+                )}
+                {!isAdminContext && (
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <h3 style={{ fontSize: 'clamp(1rem, 2.8vw, 1.2rem)', color: '#ffffff', fontWeight: '600', marginBottom: '1rem' }}>
+                      Ihre Daten (werden in der Kundendatei gespeichert)
+                    </h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '400px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)', marginBottom: '0.35rem' }}>Name *</label>
+                        <input
+                          type="text"
+                          value={guestName}
+                          onChange={(e) => setGuestName(e.target.value)}
+                          placeholder="Vor- und Nachname"
+                          style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '1rem' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)', marginBottom: '0.35rem' }}>E-Mail *</label>
+                        <input
+                          type="email"
+                          value={guestEmail}
+                          onChange={(e) => setGuestEmail(e.target.value)}
+                          placeholder="ihre@email.at"
+                          style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '1rem' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)', marginBottom: '0.35rem' }}>Telefon (optional)</label>
+                        <input
+                          type="tel"
+                          value={guestPhone}
+                          onChange={(e) => setGuestPhone(e.target.value)}
+                          placeholder="+43 …"
+                          style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '1rem' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {isAdminContext && (
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <label style={{ display: 'block', fontSize: 'clamp(0.9rem, 2.5vw, 1rem)', color: 'rgba(255,255,255,0.85)', marginBottom: '0.5rem' }}>
+                      Kunde zuordnen (optional)
+                    </label>
+                    <select
+                      value={selectedCustomerId ?? ''}
+                      onChange={(e) => setSelectedCustomerId(e.target.value ? e.target.value : null)}
+                      style={{
+                        width: '100%',
+                        maxWidth: '400px',
+                        padding: '0.75rem 1rem',
+                        borderRadius: '12px',
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        background: 'rgba(255,255,255,0.08)',
+                        color: '#fff',
+                        fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="">— Kein Kunde —</option>
+                      {customers.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name}{c.email ? ` · ${c.email}` : ''}</option>
+                      ))}
+                    </select>
+                    <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.35rem' }}>
+                      Kunden verwaltest du im Control-Studio unter „Kunden“. Erscheint im Archiv bei „Verkauft an“.
+                    </p>
+                  </div>
+                )}
+
                 <h3 style={{ 
                   fontSize: 'clamp(1.25rem, 3.5vw, 1.5rem)', 
                   marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
@@ -1672,6 +2070,22 @@ const ShopPage = () => {
                     />
                     <span style={{ fontSize: 'clamp(1rem, 3vw, 1.1rem)', fontWeight: paymentMethod === 'transfer' ? '600' : '400', color: '#ffffff' }}>🏦 Überweisung</span>
                   </label>
+                  {paymentMethod === 'transfer' && bankverbindung && (
+                    <div style={{
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: 'rgba(102, 126, 234, 0.15)',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(102, 126, 234, 0.3)',
+                      fontSize: 'clamp(0.8rem, 2.2vw, 0.95rem)',
+                      color: 'rgba(255, 255, 255, 0.95)',
+                      lineHeight: 1.4,
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word'
+                    }}>
+                      <strong>Für Überweisung:</strong><br />
+                      {bankverbindung}
+                    </div>
+                  )}
                   <label style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
@@ -1743,30 +2157,35 @@ const ShopPage = () => {
                     Zurück
                   </button>
                   <button
+                    type="button"
                     onClick={() => processOrder()}
+                    disabled={!isAdminContext && (!guestName.trim() || !guestEmail.trim())}
                     style={{
                       flex: 2,
                       padding: 'clamp(0.75rem, 2vw, 1rem)',
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      background: (!isAdminContext && (!guestName.trim() || !guestEmail.trim())) ? 'rgba(255,255,255,0.2)' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                       color: '#fff',
                       border: 'none',
                       borderRadius: '12px',
                       fontSize: 'clamp(1rem, 3vw, 1.1rem)',
                       fontWeight: '600',
-                      cursor: 'pointer',
+                      cursor: (!isAdminContext && (!guestName.trim() || !guestEmail.trim())) ? 'not-allowed' : 'pointer',
                       transition: 'all 0.3s ease',
-                      boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                      boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)',
+                      opacity: (!isAdminContext && (!guestName.trim() || !guestEmail.trim())) ? 0.7 : 1
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-2px)'
-                      e.currentTarget.style.boxShadow = '0 15px 40px rgba(102, 126, 234, 0.4)'
+                      if (isAdminContext || (guestName.trim() && guestEmail.trim())) {
+                        e.currentTarget.style.transform = 'translateY(-2px)'
+                        e.currentTarget.style.boxShadow = '0 15px 40px rgba(102, 126, 234, 0.4)'
+                      }
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)'
                       e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.3)'
                     }}
                   >
-                    Verkauf abschließen
+                    {isAdminContext ? 'Verkauf abschließen' : 'Bestellung abschließen'}
                   </button>
                 </div>
               </section>

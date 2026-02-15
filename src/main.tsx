@@ -137,8 +137,28 @@ if (typeof window !== 'undefined') {
   }, 30000) // Alle 30 Sekunden prüfen
 }
 
+// Design-Farben aus Admin sofort anwenden (damit „So sehen Kunden die Galerie“ und alle Seiten die gespeicherten Farben zeigen)
+function applyDesignFromStorageSync() {
+  try {
+    const stored = typeof localStorage !== 'undefined' ? localStorage.getItem('k2-design-settings') : null
+    if (!stored || stored.length > 50000) return
+    const design = JSON.parse(stored) as Record<string, string>
+    const root = document.documentElement
+    if (design.accentColor) root.style.setProperty('--k2-accent', design.accentColor)
+    if (design.backgroundColor1) root.style.setProperty('--k2-bg-1', design.backgroundColor1)
+    if (design.backgroundColor2) root.style.setProperty('--k2-bg-2', design.backgroundColor2)
+    if (design.backgroundColor3) root.style.setProperty('--k2-bg-3', design.backgroundColor3)
+    if (design.textColor) root.style.setProperty('--k2-text', design.textColor)
+    if (design.mutedColor) root.style.setProperty('--k2-muted', design.mutedColor)
+    if (design.cardBg1) root.style.setProperty('--k2-card-bg-1', design.cardBg1)
+    if (design.cardBg2) root.style.setProperty('--k2-card-bg-2', design.cardBg2)
+  } catch (_) {}
+}
+
 if (!skipBootstrapForReload) {
 try {
+  applyDesignFromStorageSync()
+
   const rootElement = document.getElementById('root')
   if (!rootElement) {
     throw new Error('Root element nicht gefunden')
@@ -175,7 +195,7 @@ try {
         // Zeige Fehlerseite nach allen Versuchen - MIT HINTERGRUND damit keine schwarze Seite
         if (rootElement) {
           rootElement.innerHTML = `
-          <div style="padding: 2rem; color: white; background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%); min-height: 100vh; font-family: system-ui; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <div style="padding: 2rem; color: white; background: #1a0f0a; min-height: 100vh; font-family: system-ui; display: flex; flex-direction: column; align-items: center; justify-content: center;">
             <h1 style="color: #ff6b6b; margin-bottom: 1rem;">⚠️ App konnte nicht gestartet werden</h1>
             <p style="margin-bottom: 2rem; text-align: center; max-width: 600px;">
               Bitte versuche:<br />
@@ -201,7 +221,7 @@ try {
   const rootElement = document.getElementById('root')
   if (rootElement) {
     rootElement.innerHTML = `
-      <div style="padding: 2rem; color: white; background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%); min-height: 100vh; font-family: system-ui; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <div style="padding: 2rem; color: white; background: #1a0f0a; min-height: 100vh; font-family: system-ui; display: flex; flex-direction: column; align-items: center; justify-content: center;">
         <h1 style="color: #ff6b6b; margin-bottom: 1rem;">⚠️ App-Fehler</h1>
         <p style="margin-bottom: 1rem;">${error instanceof Error ? error.message : String(error)}</p>
         <details style="background: rgba(0, 0, 0, 0.3); padding: 1rem; border-radius: 4px; margin-bottom: 2rem; max-width: 800px; width: 100%; overflow: auto;">
