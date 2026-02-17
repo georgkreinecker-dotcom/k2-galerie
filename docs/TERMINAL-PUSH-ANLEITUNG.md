@@ -38,6 +38,10 @@ git push
 
 Schickt alles zu GitHub – Vercel baut dann automatisch (1–2 Min).
 
+**Falls Fehler:** `The current branch main has no upstream branch`  
+→ einmalig ausführen: **`git push --set-upstream origin main`**  
+Danach reicht wieder normales **`git push`**.
+
 ---
 
 ## Wichtig

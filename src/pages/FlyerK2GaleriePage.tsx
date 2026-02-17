@@ -1,34 +1,11 @@
 import { useEffect, useState } from 'react'
 import { getGalerieImages } from '../config/pageContentGalerie'
+import { getPageTexts } from '../config/pageTexts'
+import { getWerbelinieCss, WERBELINIE_FONTS_URL } from '../config/marketingWerbelinie'
+import { K2_STAMMDATEN_DEFAULTS } from '../config/tenantConfig'
+import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
 
-const FLYER_CSS = `
-  .flyer-k2-page body { margin: 0; padding: 0; box-sizing: border-box; }
-  .flyer-k2-page { font-family: 'Source Sans 3', sans-serif; background: #e8e8e8; padding: 20px; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-  @media print {
-    @page { size: A4; margin: 0; }
-    .flyer-k2-page { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0 !important; margin: 0 !important; background: #e8e8e8 !important; }
-    .flyer-k2-page .flyer-box { box-shadow: none !important; width: 210mm !important; height: 297mm !important; min-height: 0 !important; }
-  }
-  .flyer-k2-page .flyer-box { width: 210mm; height: 297mm; max-height: 297mm; background: linear-gradient(165deg, #0f1419 0%, #1a1f3a 45%, #0d1220 100%); color: #fff; padding: 10mm 14mm; box-shadow: 0 20px 60px rgba(0,0,0,0.35); position: relative; overflow: hidden; display: flex; flex-direction: column; }
-  .flyer-k2-page .flyer-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(102, 126, 234, 0.2), transparent 50%), radial-gradient(ellipse 60% 40% at 85% 100%, rgba(184, 184, 255, 0.12), transparent 45%); pointer-events: none; }
-  .flyer-k2-page .content { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 6px; }
-  .flyer-k2-page .tagline { font-family: 'Cormorant Garamond', serif; font-size: 12px; letter-spacing: 0.32em; text-transform: uppercase; color: rgba(255,255,255,0.8); margin: 0; }
-  .flyer-k2-page h1 { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; margin: 0; background: linear-gradient(135deg, #fff 0%, #b8b8ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .flyer-k2-page .subtitle { font-size: 14px; font-weight: 300; color: rgba(255,255,255,0.9); margin: 0; }
-  .flyer-k2-page .line { width: 40px; height: 2px; background: linear-gradient(90deg, rgba(184, 184, 255, 0.8), transparent); margin: 0; }
-  .flyer-k2-page .welcome-image-wrap { width: 100%; margin: 0; display: flex; align-items: center; justify-content: center; }
-  .flyer-k2-page .welcome-image-wrap img { max-width: 100%; max-height: 58mm; height: auto; width: auto; object-fit: contain; display: block; border-radius: 8px; }
-  .flyer-k2-page .intro { font-size: 12px; line-height: 1.5; color: rgba(255,255,255,0.9); max-width: 100%; margin: 0; }
-  .flyer-k2-page .intro strong { color: #fff; font-weight: 600; }
-  .flyer-k2-page .points { list-style: none; margin: 0; padding: 0; }
-  .flyer-k2-page .points li { font-size: 11px; line-height: 1.45; color: rgba(255,255,255,0.88); padding-left: 16px; position: relative; margin: 0; }
-  .flyer-k2-page .points li::before { content: ''; position: absolute; left: 0; top: 0.5em; width: 5px; height: 5px; background: rgba(184, 184, 255, 0.7); border-radius: 50%; }
-  .flyer-k2-page .cta { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: #b8b8ff; margin: 0; }
-  .flyer-k2-page .event-date { font-size: 14px; font-weight: 600; color: #b8b8ff; margin: 0; letter-spacing: 0.02em; }
-  .flyer-k2-page .info-kuerze { font-size: 11px; color: rgba(255,255,255,0.78); margin: 0; font-style: italic; }
-  .flyer-k2-page .footer { margin: 6px 0 0 0; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.15); font-size: 10px; color: rgba(255,255,255,0.7); letter-spacing: 0.02em; line-height: 1.4; }
-  .flyer-k2-page .footer strong { color: rgba(255,255,255,0.9); }
-`
+const DOC_CLASS = 'flyer-k2-page'
 
 function formatEventDate(dateStr: string, endDateStr?: string): string {
   try {
@@ -45,22 +22,76 @@ function formatEventDate(dateStr: string, endDateStr?: string): string {
   }
 }
 
+function loadStammdaten(): {
+  martinaName: string
+  georgName: string
+  address: string
+  city: string
+  country: string
+  phone: string
+  email: string
+} {
+  const def = K2_STAMMDATEN_DEFAULTS
+  try {
+    const rawM = localStorage.getItem('k2-stammdaten-martina')
+    const rawG = localStorage.getItem('k2-stammdaten-georg')
+    const rawGal = localStorage.getItem('k2-stammdaten-galerie')
+    const martina = rawM && rawM.length < 50000 ? JSON.parse(rawM) as { name?: string } : {}
+    const georg = rawG && rawG.length < 50000 ? JSON.parse(rawG) as { name?: string } : {}
+    const gallery = rawGal && rawGal.length < 50000 ? JSON.parse(rawGal) as { address?: string; city?: string; country?: string; phone?: string; email?: string } : {}
+    return {
+      martinaName: (martina.name || def.martina.name).trim(),
+      georgName: (georg.name || def.georg.name).trim(),
+      address: (gallery.address || def.gallery.address || '').trim(),
+      city: (gallery.city || def.gallery.city || '').trim(),
+      country: (gallery.country || def.gallery.country || '').trim(),
+      phone: (gallery.phone || def.gallery.phone || '').trim(),
+      email: (gallery.email || def.gallery.email || '').trim(),
+    }
+  } catch {
+    return {
+      martinaName: def.martina.name,
+      georgName: def.georg.name,
+      address: def.gallery.address || '',
+      city: def.gallery.city || '',
+      country: def.gallery.country || '',
+      phone: def.gallery.phone || '',
+      email: def.gallery.email || '',
+    }
+  }
+}
+
 export default function FlyerK2GaleriePage() {
   const [welcomeImage, setWelcomeImage] = useState<string>('')
   const [eventDateText, setEventDateText] = useState<string>('')
+  const [tagline, setTagline] = useState<string>('Kunst & Keramik')
+  const [subtitle, setSubtitle] = useState<string>('Martina & Georg Kreinecker')
+  const [intro, setIntro] = useState<string>('')
+  const [stammdaten, setStammdaten] = useState(loadStammdaten)
 
   useEffect(() => {
     let isMounted = true
     try {
-      let stamm: { welcomeImage?: string; galerieCardImage?: string; virtualTourImage?: string } = {}
+      const stamm: Record<string, string> = {}
       const raw = localStorage.getItem('k2-stammdaten-galerie')
       if (raw && raw.length < 6 * 1024 * 1024) {
-        stamm = JSON.parse(raw) as typeof stamm
+        Object.assign(stamm, JSON.parse(raw))
       }
       const images = getGalerieImages(stamm)
       const img = images.welcomeImage
       if (img && typeof img === 'string' && img.length > 50 && img.length < 3 * 1024 * 1024 && isMounted) {
         setWelcomeImage(img)
+      }
+    } catch (_) {}
+
+    try {
+      const texts = getPageTexts()
+      const g = texts.galerie
+      if (g && isMounted) {
+        setTagline('Kunst & Keramik')
+        const names = loadStammdaten()
+        setSubtitle(`${names.martinaName} & ${names.georgName}`)
+        setIntro((g.welcomeIntroText || '').trim() || 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.')
       }
     } catch (_) {}
 
@@ -78,38 +109,52 @@ export default function FlyerK2GaleriePage() {
         }
       }
     } catch (_) {}
+
+    setStammdaten(loadStammdaten())
     return () => { isMounted = false }
   }, [])
 
+  const footerLine1 = [
+    PRODUCT_BRAND_NAME,
+    stammdaten.address,
+    [stammdaten.city, stammdaten.country].filter(Boolean).join(' · '),
+  ].filter(Boolean).join(' · ')
+  const contactParts = [stammdaten.phone, stammdaten.email].filter(Boolean)
+  const footerLine2 = contactParts.length ? `Kontakt: ${contactParts.join(' · ')}` : ''
+
   return (
-    <div className="flyer-k2-page">
-      <style>{FLYER_CSS}</style>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@300;400;600&display=swap" />
-      <div className="flyer-box">
+    <div className={DOC_CLASS}>
+      <style>{getWerbelinieCss(DOC_CLASS)}</style>
+      <link rel="stylesheet" href={WERBELINIE_FONTS_URL} />
+      <div className="doc-box">
         <div className="content">
-          <p className="tagline">Kunst & Keramik</p>
-          <h1>K2 Galerie</h1>
-          <p className="subtitle">Martina & Georg Kreinecker</p>
+          <p className="tagline">{tagline}</p>
+          <h1>{PRODUCT_BRAND_NAME}</h1>
+          <p className="subtitle">{subtitle}</p>
           <div className="line" />
           {welcomeImage ? (
             <div className="welcome-image-wrap">
-              <img src={welcomeImage} alt="Willkommensbild K2 Galerie" />
+              <img src={welcomeImage} alt={`Willkommensbild ${PRODUCT_BRAND_NAME}`} />
             </div>
           ) : null}
-          <p className="intro">
-            Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von <strong>Malerei und Keramik</strong> in einem Raum, wo Kunst zum Leben erwacht.
-          </p>
+          <p className="intro">{intro}</p>
           <ul className="points">
-            <li>Eigene Werke: Malerei von Martina, Keramik von Georg</li>
+            <li>Eigene Werke: Malerei von {stammdaten.martinaName}, Keramik von {stammdaten.georgName}</li>
             <li>Ausstellungen, Verkauf und persönliche Beratung</li>
             <li>Digitale Galerie und Terminvereinbarung</li>
           </ul>
-          <p className="cta">Wir freuen uns auf deinen/Ihren Besuch.</p>
+          <p className="cta">Wir freuen uns auf deinen Besuch.</p>
           {eventDateText ? <p className="event-date">Termin: {eventDateText}</p> : null}
           <p className="info-kuerze">Weitere Infos erfolgen in Kürze.</p>
           <div className="footer">
-            <strong>K2 Galerie</strong> · Schlosserasse 4 · 4070 Eferding · Österreich<br />
-            Kontakt: 0664 1046337 · martina.kreinecker@kgm.at · georg.kreinecker@kgm.at
+            {footerLine1 && (
+              <>
+                <strong>{PRODUCT_BRAND_NAME}</strong>
+                {footerLine1 !== PRODUCT_BRAND_NAME ? ` · ${footerLine1.replace(PRODUCT_BRAND_NAME, '').replace(/^ · /, '').trim()}` : ''}
+              </>
+            )}
+            {footerLine2 && <><br />{footerLine2}</>}
+            <br />{PRODUCT_COPYRIGHT}
           </div>
         </div>
       </div>

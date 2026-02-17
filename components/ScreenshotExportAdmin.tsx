@@ -2,13 +2,15 @@ import React, { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES } from '../src/config/navigation'
+import { PROJECT_ROUTES, AGB_ROUTE } from '../src/config/navigation'
 
 /** Feste Galerie-URL für Etiketten-QR (unabhängig vom Router/WLAN) – gleiche Basis wie Mobile Connect */
 const GALERIE_QR_BASE = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
-import { MUSTER_TEXTE, MUSTER_ARTWORKS, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, type TenantId } from '../src/config/tenantConfig'
+import { MUSTER_TEXTE, MUSTER_ARTWORKS, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, type TenantId, type ArtworkCategoryId } from '../src/config/tenantConfig'
+import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
+import { getWerbeliniePrDocCss, WERBELINIE_FONTS_URL, WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../src/config/marketingWerbelinie'
 import '../src/App.css'
 
 const ADMIN_CONTEXT_KEY = 'k2-admin-context'
@@ -35,10 +37,29 @@ function getEventsKey(): string {
 function getDocumentsKey(): string {
   return isOeffentlichAdminContext() ? 'k2-oeffentlich-documents' : 'k2-documents'
 }
-import { checkLocalStorageSize, cleanupLargeImages, getLocalStorageReport } from './SafeMode'
+const KEY_OEF_ADMIN_PASSWORD = 'k2-oeffentlich-admin-password'
+const KEY_OEF_ADMIN_EMAIL = 'k2-oeffentlich-admin-email'
+const KEY_OEF_ADMIN_PHONE = 'k2-oeffentlich-admin-phone'
+/** Design für ök2 (Kundenansicht) – eigener Key, damit Arbeitsansicht = Kundenansicht */
+const KEY_OEF_DESIGN = 'k2-oeffentlich-design-settings'
+/** Stammdaten in der Muster-Galerie (ök2) – werden nach Lizenz-Erwerb in K2 übernommen */
+const KEY_OEF_STAMMDATEN_MARTINA = 'k2-oeffentlich-stammdaten-martina'
+const KEY_OEF_STAMMDATEN_GEORG = 'k2-oeffentlich-stammdaten-georg'
+const KEY_OEF_STAMMDATEN_GALERIE = 'k2-oeffentlich-stammdaten-galerie'
+const OEF_DESIGN_DEFAULT = {
+  accentColor: '#5a7a6e',
+  backgroundColor1: '#f6f4f0',
+  backgroundColor2: '#ebe7e0',
+  backgroundColor3: '#e0dbd2',
+  textColor: '#2d2d2a',
+  mutedColor: '#5c5c57',
+  cardBg1: 'rgba(255, 255, 255, 0.85)',
+  cardBg2: 'rgba(246, 244, 240, 0.9)'
+} as const
+import { checkLocalStorageSize, cleanupLargeImages, getLocalStorageReport, tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from './SafeMode'
+import { GalerieAssistent } from '../src/components/GalerieAssistent'
 import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps } from '../src/utils/autoSave'
 import { sortArtworksNewestFirst } from '../src/utils/artworkSort'
-import { appendToHistory } from '../src/utils/artworkHistory'
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
 import { writePngDpi } from 'png-dpi-reader-writer'
 
@@ -62,10 +83,9 @@ try {
 
 // Einfache localStorage-Funktionen für Werke-Verwaltung (Key abhängig von K2 vs. ök2 – K2 wird nie in ök2 überschrieben)
 function saveArtworks(artworks: any[]): boolean {
+  const key = getArtworksKey()
+  const json = JSON.stringify(artworks)
   try {
-    const key = getArtworksKey()
-    const json = JSON.stringify(artworks)
-    
     // Prüfe Größe
     if (json.length > 10000000) { // Über 10MB = zu groß
       console.error('❌ Daten zu groß für localStorage:', json.length, 'Bytes')
@@ -87,9 +107,20 @@ function saveArtworks(artworks: any[]): boolean {
   } catch (error: any) {
     console.error('❌ Fehler beim Speichern:', error)
     
-    // Spezifische Fehlerbehandlung
     if (error.name === 'QuotaExceededError') {
-      alert('⚠️ Speicher voll! Bitte einige Werke löschen.')
+      const freed = tryFreeLocalStorageSpace()
+      if (freed > 0) {
+        try {
+          localStorage.setItem(key, json)
+          console.log('✅ Nach Speicher-Freigabe gespeichert')
+          return true
+        } catch (retryErr: any) {
+          if (retryErr.name === 'QuotaExceededError') alert('⚠️ ' + SPEICHER_VOLL_MELDUNG)
+          else alert('⚠️ Fehler beim Speichern: ' + (retryErr.message || retryErr))
+          return false
+        }
+      }
+      alert('⚠️ ' + SPEICHER_VOLL_MELDUNG)
     } else {
       alert('⚠️ Fehler beim Speichern: ' + (error.message || error))
     }
@@ -112,7 +143,24 @@ function loadArtworks(): any[] {
       console.warn('Werke-Daten zu groß, überspringe Laden')
       return []
     }
-    const artworks = JSON.parse(stored)
+    let artworks = JSON.parse(stored)
+    
+    // KRITISCH: Im ök2-Kontext nur echte K2-Galerie-Werke entfernen (K2-M-, K2-K-, … bzw. K2-0001), nicht ök2-eigene (K2-W-*)
+    if (isOeffentlichAdminContext()) {
+      const before = artworks.length
+      artworks = artworks.filter((a: any) => {
+        const num = a?.number != null ? String(a.number) : ''
+        if (!num.startsWith('K2-')) return true // M1, M2, etc. behalten
+        if (num.startsWith('K2-W-')) return true // ök2-Demo-Werke behalten
+        return false // K2-M-*, K2-K-*, K2-0001 etc. entfernen
+      })
+      if (artworks.length < before) {
+        console.log(`🧹 ök2: ${before - artworks.length} K2-Galerie-Werke entfernt (gehören nicht in Demo)`)
+        try {
+          localStorage.setItem(key, JSON.stringify(artworks))
+        } catch (_) {}
+      }
+    }
     
     // KRITISCH: Behebe automatisch doppelte Nummern beim Laden
     const numberMap = new Map<string, any[]>()
@@ -150,7 +198,7 @@ function loadArtworks(): any[] {
         // WICHTIG: Beide Werke bleiben erhalten, bekommen aber unterschiedliche Nummern
         for (let i = 1; i < duplicates.length; i++) {
           const duplicate = duplicates[i]
-          const prefix = duplicate.category === 'keramik' ? 'K' : 'M'
+          const prefix = getCategoryPrefixLetter(duplicate.category)
           
           // Extrahiere Basis-Nummer (z.B. "0011" aus "K2-M-0011")
           const baseNumber = number.replace(/K2-[KM]-/, '').replace(/[^0-9]/g, '')
@@ -442,8 +490,8 @@ function ScreenshotExportAdmin() {
   }, [])
 
   // Klare Admin-Struktur: Werke | Eventplanung | Design | Einstellungen. Kasse = ein Button im Header, öffnet direkt den Shop.
-  const [activeTab, setActiveTab] = useState<'werke' | 'eventplan' | 'design' | 'einstellungen'>('werke')
-  const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'dokumente' | 'öffentlichkeitsarbeit'>('events')
+  const [activeTab, setActiveTab] = useState<'werke' | 'eventplan' | 'design' | 'einstellungen' | 'assistent'>('werke')
+  const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>('events')
   const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'drucker' | 'sicherheit' | 'lager'>('stammdaten')
   const [designSubTab, setDesignSubTab] = useState<'vorschau' | 'farben'>('vorschau')
   const [designPreviewEdit, setDesignPreviewEdit] = useState<string | null>(null) // z. B. 'p1-title' | 'p2-martinaBio' – alles auf der Seite klickbar
@@ -457,6 +505,10 @@ function ScreenshotExportAdmin() {
   const [restoreProgress, setRestoreProgress] = useState<'idle' | 'running' | 'done'>('idle')
   const [backupPanelMinimized, setBackupPanelMinimized] = useState(true)
   const backupFileInputRef = useRef<HTMLInputElement>(null)
+  const [adminNewPw, setAdminNewPw] = useState('')
+  const [adminNewPwConfirm, setAdminNewPwConfirm] = useState('')
+  const [adminContactEmail, setAdminContactEmail] = useState('')
+  const [adminContactPhone, setAdminContactPhone] = useState('')
 
   // Bei laufender Wiederherstellung automatisch aufklappen, damit der Balkenverlauf sichtbar ist
   useEffect(() => {
@@ -569,87 +621,11 @@ function ScreenshotExportAdmin() {
     setShowUploadModal(false)
   }, [])
   
-  // Safe Mode: Prüfe localStorage-Größe NUR beim Mount - KEIN Interval mehr!
-  useEffect(() => {
-    let isMounted = true
-    
-    // Prüfe nur einmal beim Mount, nicht regelmäßig
-    const checkStorage = () => {
-      if (!isMounted) return
-      
-      try {
-        const { size, limit, needsCleanup } = checkLocalStorageSize()
-        
-        if (needsCleanup || size > 4 * 1024 * 1024) { // Warnung bei 80% ODER über 4MB
-          console.warn('⚠️ localStorage zu voll!', getLocalStorageReport())
-          
-          // Aggressive Bereinigung (mehrfach bis genug Platz)
-          let cleaned = 0
-          let attempts = 0
-          let afterCleanup = checkLocalStorageSize()
-          const initialSize = size
-          
-          // Mehrere Durchläufe für aggressives Cleanup
-          while ((afterCleanup.needsCleanup || afterCleanup.size > 3.5 * 1024 * 1024) && attempts < 5) {
-            const beforeSize = afterCleanup.size
-            cleaned += cleanupLargeImages()
-            afterCleanup = checkLocalStorageSize()
-            const freed = beforeSize - afterCleanup.size
-            
-            if (freed > 0) {
-              console.log(`✅ Cleanup Durchlauf ${attempts + 1}: ${(freed / 1024 / 1024).toFixed(2)}MB freigegeben`)
-            } else {
-              console.log(`⚠️ Cleanup Durchlauf ${attempts + 1}: Keine Verbesserung`)
-            }
-            
-            attempts++
-            
-            // Wenn keine Verbesserung mehr, stoppe
-            if (freed < 10000) break // Weniger als 10KB freigegeben
-          }
-          
-          // Prüfe nochmal
-          const finalCheck = checkLocalStorageSize()
-          const freedTotal = initialSize - finalCheck.size
-          
-          if (cleaned > 0 || freedTotal > 0) {
-            console.log(`✅ Cleanup abgeschlossen: ${cleaned} Einträge entfernt, ${(freedTotal / 1024 / 1024).toFixed(2)}MB freigegeben`)
-          }
-          
-          if (finalCheck.needsCleanup || finalCheck.size > 4 * 1024 * 1024) {
-            console.error('❌ localStorage immer noch zu voll!')
-            alert(`⚠️ WARNUNG: localStorage ist zu voll (${(finalCheck.size / 1024 / 1024).toFixed(2)}MB)!\n\nAutomatisches Cleanup:\n- ${cleaned} Einträge entfernt\n- ${(freedTotal / 1024 / 1024).toFixed(2)}MB freigegeben\n\nAber es ist immer noch zu voll!\n\nBitte:\n1. Lösche alte Werke manuell in "Werke verwalten"\n2. Oder verwende kleinere Bilder\n3. Oder lösche Browser-Cache komplett\n\nSonst kann die App crashen!`)
-          } else if (cleaned > 0 || freedTotal > 0) {
-            console.log(`✅ Cleanup erfolgreich: ${(finalCheck.size / 1024 / 1024).toFixed(2)}MB verbleibend (${(freedTotal / 1024 / 1024).toFixed(2)}MB freigegeben)`)
-          }
-        }
-      } catch (e) {
-        console.error('Fehler beim Safe Mode Check:', e)
-      }
-    }
-    
-    // Prüfe nur einmal beim Mount - KEIN Interval mehr (verursacht Crashes!)
-    // Verzögert ausführen um sicherzustellen dass Component vollständig geladen ist
-    const timeoutId = setTimeout(() => {
-      if (isMounted) {
-        checkStorage()
-      }
-    }, 1000) // 1 Sekunde Verzögerung
-    
-    return () => {
-      isMounted = false
-      clearTimeout(timeoutId)
-      // Bereinige alle PDF-Fenster Intervalle
-      cleanupAllIntervals()
-      // Schließe alle PDF-Fenster
-      closeAllPDFWindows()
-      // Stoppe Auto-Save beim Unmount
-      stopAutoSave()
-    }
-  }, [])
+  // KEIN automatischer Safe-Mode-Check mehr beim Öffnen/Reopen (verursacht Fenster-Abstürze).
+  // Speicher prüfen/bereinigen nur manuell: Einstellungen → Backup & Wiederherstellung / Export-Menü.
   
-  // Seitentexte (bearbeitbare Texte pro Seite – Basis: Textversion der App)
-  const [pageTexts, setPageTextsState] = useState<PageTextsConfig>(() => getPageTexts())
+  // Seitentexte (bearbeitbare Texte pro Seite) – K2 vs. ök2 getrennt
+  const [pageTexts, setPageTextsState] = useState<PageTextsConfig>(() => getPageTexts(isOeffentlichAdminContext() ? 'oeffentlich' : undefined))
 
   // Altes Blau-Theme erkennen → K2-Orange (wie in GaleriePage)
   const K2_ORANGE_DESIGN = {
@@ -665,31 +641,34 @@ function ScreenshotExportAdmin() {
   const OLD_BLUE_BG_LIST = ['#0a0e27', '#03040a', '#1a1f3a', '#0d1426', '#111c33', '#0f1419']
   const isOldBlueDesign = (d: Record<string, string>) => OLD_BLUE_BG_LIST.includes((d.backgroundColor1 || '').toLowerCase().trim())
 
-  // Design-Einstellungen – aus localStorage; altes Blau wird auf K2-Orange migriert
+  const getDesignStorageKey = () => (isOeffentlichAdminContext() ? KEY_OEF_DESIGN : 'k2-design-settings')
+  // Design-Einstellungen – aus localStorage; K2: altes Blau → K2-Orange; ök2: eigener Key, Standard = OEF_DESIGN_DEFAULT
   const [designSettings, setDesignSettings] = useState(() => {
     try {
-      const stored = typeof localStorage !== 'undefined' ? localStorage.getItem('k2-design-settings') : null
+      const key = getDesignStorageKey()
+      const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null
       if (stored && stored.length > 0 && stored.length < 50000) {
         const parsed = JSON.parse(stored)
         if (parsed && typeof parsed === 'object' && (parsed.accentColor || parsed.backgroundColor1)) {
-          if (isOldBlueDesign(parsed)) {
+          if (!isOeffentlichAdminContext() && isOldBlueDesign(parsed)) {
             try { localStorage.setItem('k2-design-settings', JSON.stringify(K2_ORANGE_DESIGN)) } catch (_) {}
             return K2_ORANGE_DESIGN
           }
+          const defaults = isOeffentlichAdminContext() ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN
           return {
-            accentColor: parsed.accentColor ?? '#ff8c42',
-            backgroundColor1: parsed.backgroundColor1 ?? '#1a0f0a',
-            backgroundColor2: parsed.backgroundColor2 ?? '#2d1a14',
-            backgroundColor3: parsed.backgroundColor3 ?? '#3d2419',
-            textColor: parsed.textColor ?? '#fff5f0',
-            mutedColor: parsed.mutedColor ?? '#d4a574',
-            cardBg1: parsed.cardBg1 ?? 'rgba(45, 26, 20, 0.95)',
-            cardBg2: parsed.cardBg2 ?? 'rgba(26, 15, 10, 0.92)'
+            accentColor: parsed.accentColor ?? (defaults as Record<string, string>).accentColor,
+            backgroundColor1: parsed.backgroundColor1 ?? (defaults as Record<string, string>).backgroundColor1,
+            backgroundColor2: parsed.backgroundColor2 ?? (defaults as Record<string, string>).backgroundColor2,
+            backgroundColor3: parsed.backgroundColor3 ?? (defaults as Record<string, string>).backgroundColor3,
+            textColor: parsed.textColor ?? (defaults as Record<string, string>).textColor,
+            mutedColor: parsed.mutedColor ?? (defaults as Record<string, string>).mutedColor,
+            cardBg1: parsed.cardBg1 ?? (defaults as Record<string, string>).cardBg1,
+            cardBg2: parsed.cardBg2 ?? (defaults as Record<string, string>).cardBg2
           }
         }
       }
     } catch (_) {}
-    return { ...K2_ORANGE_DESIGN }
+    return { ...(isOeffentlichAdminContext() ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN) }
   })
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingArtwork, setEditingArtwork] = useState<any | null>(null)
@@ -700,7 +679,7 @@ function ScreenshotExportAdmin() {
   // Hintergrund-Variante bei Freistellung: hell | weiss | warm | kuehl | dunkel
   const [photoBackgroundPreset, setPhotoBackgroundPreset] = useState<'hell' | 'weiss' | 'warm' | 'kuehl' | 'dunkel'>('hell')
   const [artworkTitle, setArtworkTitle] = useState('')
-  const [artworkCategory, setArtworkCategory] = useState<'malerei' | 'keramik'>('malerei')
+  const [artworkCategory, setArtworkCategory] = useState<ArtworkCategoryId>('malerei')
   const [artworkCeramicSubcategory, setArtworkCeramicSubcategory] = useState<'vase' | 'teller' | 'skulptur' | 'sonstig'>('vase')
   const [artworkCeramicHeight, setArtworkCeramicHeight] = useState<string>('10')
   const [artworkCeramicDiameter, setArtworkCeramicDiameter] = useState<string>('10')
@@ -717,7 +696,13 @@ function ScreenshotExportAdmin() {
   // - inShop: Werke im Online-Shop verfügbar (kann geändert werden)
   const [isInExhibition] = useState(true)
   const [isInShop, setIsInShop] = useState(true)
+  const [artworkQuantity, setArtworkQuantity] = useState<string>('1')
   const [artworkNumber, setArtworkNumber] = useState<string>('')
+  // ök2 Künstler: Schnellversion (wenig Felder) vs. ausführliche Version; alle Kategorien/Beschreibungen frei
+  const [artworkFormVariantOek2, setArtworkFormVariantOek2] = useState<'schnell' | 'ausfuehrlich'>('schnell')
+  const [artworkCategoryFree, setArtworkCategoryFree] = useState<string>('')
+  const [artworkSubcategoryFree, setArtworkSubcategoryFree] = useState<string>('')
+  const [artworkDimensionsFree, setArtworkDimensionsFree] = useState<string>('')
   const [showPrintModal, setShowPrintModal] = useState(false)
   const [oneClickPrinting, setOneClickPrinting] = useState(false)
   const [showShareFallbackOverlay, setShowShareFallbackOverlay] = useState(false)
@@ -725,6 +710,9 @@ function ScreenshotExportAdmin() {
   const shareFallbackBlobRef = useRef<Blob | null>(null)
   const [printLabelData, setPrintLabelData] = useState<{ url: string; widthMm: number; heightMm: number } | null>(null)
   const [savedArtwork, setSavedArtwork] = useState<any>(null)
+  const [isSavingArtwork, setIsSavingArtwork] = useState(false)
+  const [selectedForBatchPrint, setSelectedForBatchPrint] = useState<Set<string>>(new Set())
+  const [batchPrintUrls, setBatchPrintUrls] = useState<string[] | null>(null)
   const [showSaleModal, setShowSaleModal] = useState(false)
   const [saleInput, setSaleInput] = useState('')
   const [saleMethod, setSaleMethod] = useState<'scan' | 'manual'>('scan')
@@ -736,6 +724,8 @@ function ScreenshotExportAdmin() {
   const [documentFilter, setDocumentFilter] = useState<'alle' | 'pr-dokumente' | 'sonstige'>('alle')
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [showExportMenu, setShowExportMenu] = useState(false)
+  /** ök2: Verkaufte Werke in Galerie anzeigen (Tage) – Speicher: k2-oeffentlich-galerie-settings */
+  const [soldArtworksDisplayDaysOek2, setSoldArtworksDisplayDaysOek2] = useState<number>(30)
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -754,9 +744,8 @@ function ScreenshotExportAdmin() {
   const [eventDescription, setEventDescription] = useState('')
   const [eventLocation, setEventLocation] = useState('')
   
-  // PR-Vorschläge State
-  const [eventPRSuggestions, setEventPRSuggestions] = useState<any>(null)
-  const [editingPRType, setEditingPRType] = useState<string | null>(null)
+  // Refresh für Öffentlichkeitsarbeit nach „PR-Vorschläge generieren“
+  const [prSuggestionsRefresh, setPrSuggestionsRefresh] = useState(0)
 
   // ESC-Taste zum Schließen des Event-Modals
   useEffect(() => {
@@ -773,8 +762,6 @@ function ScreenshotExportAdmin() {
         setEventDailyTimes({})
         setEventDescription('')
         setEventLocation('')
-        setEventPRSuggestions(null)
-        setEditingPRType(null)
       }
     }
     window.addEventListener('keydown', handleEsc)
@@ -812,56 +799,36 @@ function ScreenshotExportAdmin() {
 
   // Design wird bereits im useState-Initializer aus localStorage gelesen – kein zweites Laden nötig (verhindert Überschreiben von Variante A/B)
 
-  // Seitentexte laden (wie Design)
+  // Seitentexte laden (K2 oder ök2 je nach Kontext)
   useEffect(() => {
     let isMounted = true
+    const key = isOeffentlichAdminContext() ? 'k2-oeffentlich-page-texts' : 'k2-page-texts'
     const t = setTimeout(() => {
       if (!isMounted) return
       try {
-        const stored = localStorage.getItem('k2-page-texts')
+        const stored = localStorage.getItem(key)
         if (stored && stored.length < 50000) {
           const saved = JSON.parse(stored) as PageTextsConfig
           if (isMounted) setPageTextsState(saved)
+        } else if (isOeffentlichAdminContext()) {
+          if (isMounted) setPageTextsState(getPageTexts('oeffentlich'))
         }
       } catch (_) {}
     }, 100)
     return () => { isMounted = false; clearTimeout(t) }
   }, [])
 
-  // CSS-Variablen setzen wenn designSettings vorhanden (setState-frei → kein Render-Loop)
-  useEffect(() => {
-    if (!designSettings || Object.keys(designSettings).length === 0) return
-    let isMounted = true
-    const timeoutId = setTimeout(() => {
-      if (!isMounted) return
-      try {
-        const root = document.documentElement
-        if (designSettings.accentColor) root.style.setProperty('--k2-accent', designSettings.accentColor)
-        if (designSettings.backgroundColor1) root.style.setProperty('--k2-bg-1', designSettings.backgroundColor1)
-        if (designSettings.backgroundColor2) root.style.setProperty('--k2-bg-2', designSettings.backgroundColor2)
-        if (designSettings.backgroundColor3) root.style.setProperty('--k2-bg-3', designSettings.backgroundColor3)
-        if (designSettings.textColor) root.style.setProperty('--k2-text', designSettings.textColor)
-        if (designSettings.mutedColor) root.style.setProperty('--k2-muted', designSettings.mutedColor)
-        if (designSettings.cardBg1) root.style.setProperty('--k2-card-bg-1', designSettings.cardBg1)
-        if (designSettings.cardBg2) root.style.setProperty('--k2-card-bg-2', designSettings.cardBg2)
-      } catch (error) {
-        console.error('Fehler beim Setzen der CSS-Variablen:', error)
-      }
-    }, 100)
-    return () => {
-      isMounted = false
-      clearTimeout(timeoutId)
-    }
-  }, [designSettings])
-
-  // Design-Einstellungen bei Änderung sofort speichern (Vorschau zeigt dann dieselben Farben)
-  useEffect(() => {
-    if (!designSettings || Object.keys(designSettings).length === 0) return
-    try {
-      const json = JSON.stringify(designSettings)
-      if (json.length < 50000) localStorage.setItem('k2-design-settings', json)
-    } catch (_) {}
-  }, [designSettings])
+  // Design-Entwurf nur in der Design-Tab-Vorschau sichtbar; echte Übernahme erst nach „Speichern“ (kein Auto-Save, kein Anwenden auf document.root)
+  const designDraftCssVars = (designSettings && Object.keys(designSettings).length > 0) ? {
+    ['--k2-accent' as string]: designSettings.accentColor,
+    ['--k2-bg-1' as string]: designSettings.backgroundColor1,
+    ['--k2-bg-2' as string]: designSettings.backgroundColor2,
+    ['--k2-bg-3' as string]: designSettings.backgroundColor3,
+    ['--k2-text' as string]: designSettings.textColor,
+    ['--k2-muted' as string]: designSettings.mutedColor,
+    ['--k2-card-bg-1' as string]: designSettings.cardBg1,
+    ['--k2-card-bg-2' as string]: designSettings.cardBg2,
+  } as React.CSSProperties : {}
 
   // Hex ↔ HSL für stufenlose Schieber (0–360 H, 0–100 S, 0–100 L)
   const hexToHsl = (hex: string): { h: number; s: number; l: number } => {
@@ -947,14 +914,15 @@ function ScreenshotExportAdmin() {
 
   const [designSaveFeedback, setDesignSaveFeedback] = useState<'ok' | null>(null)
 
-  const DESIGN_VARIANT_KEYS = { a: 'k2-design-variant-a', b: 'k2-design-variant-b' } as const
+  const DESIGN_VARIANT_KEYS = isOeffentlichAdminContext()
+    ? { a: 'k2-oeffentlich-design-variant-a', b: 'k2-oeffentlich-design-variant-b' } as const
+    : { a: 'k2-design-variant-a', b: 'k2-design-variant-b' } as const
   const saveDesignVariant = (slot: 'a' | 'b') => {
     try {
       const json = JSON.stringify(designSettings)
       if (json.length >= 50000) { alert('Design zu groß zum Speichern.'); return }
       localStorage.setItem(DESIGN_VARIANT_KEYS[slot], json)
-      localStorage.setItem('k2-design-settings', json)
-      alert('Variante ' + (slot === 'a' ? 'A' : 'B') + ' gespeichert. Bleibt erhalten – mit „Anwenden“ wieder abrufbar.')
+      alert('Variante ' + (slot === 'a' ? 'A' : 'B') + ' gespeichert. Mit „Anwenden“ wieder in den Entwurf laden – erst „Speichern“ übernimmt ins Design.')
     } catch (_) { alert('Speichern fehlgeschlagen.') }
   }
   const loadDesignVariant = (slot: 'a' | 'b') => {
@@ -964,8 +932,6 @@ function ScreenshotExportAdmin() {
         const next = JSON.parse(raw)
         if (next && typeof next === 'object') {
           setDesignSettings(next)
-          // Sofort in k2-design-settings schreiben, damit „So sehen Kunden die Galerie“ dieselben Farben zeigt
-          localStorage.setItem('k2-design-settings', JSON.stringify(next))
         }
         return
       }
@@ -986,7 +952,7 @@ function ScreenshotExportAdmin() {
       : {
           name: K2_STAMMDATEN_DEFAULTS.martina.name,
           category: 'malerei',
-          bio: 'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. Ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.',
+          bio: 'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.',
           email: K2_STAMMDATEN_DEFAULTS.martina.email,
           phone: K2_STAMMDATEN_DEFAULTS.martina.phone,
           website: K2_STAMMDATEN_DEFAULTS.martina.website || ''
@@ -1048,10 +1014,10 @@ function ScreenshotExportAdmin() {
         }
   )
 
-  // Seitengestaltung (Willkommensseite & Galerie-Vorschau) – getrennt von Stammdaten
-  const [pageContent, setPageContent] = useState<PageContentGalerie>(() => getPageContentGalerie())
+  // Seitengestaltung (Willkommensseite & Galerie-Vorschau) – K2 vs. ök2 getrennt
+  const [pageContent, setPageContent] = useState<PageContentGalerie>(() => getPageContentGalerie(isOeffentlichAdminContext() ? 'oeffentlich' : undefined))
   useEffect(() => {
-    if (!isOeffentlichAdminContext()) setPageContent(getPageContentGalerie())
+    setPageContent(getPageContentGalerie(isOeffentlichAdminContext() ? 'oeffentlich' : undefined))
   }, [])
 
   // URL-Parameter context=oeffentlich in sessionStorage übernehmen (ök2-Admin von Willkommensseite)
@@ -1062,16 +1028,45 @@ function ScreenshotExportAdmin() {
     } catch (_) {}
   }, [])
 
-  // Stammdaten aus localStorage laden – bei ök2-Kontext nicht laden (nur Musterdaten)
+  // ök2: Lager-Tab nicht verfügbar – bei Lager-Auswahl auf Stammdaten wechseln
+  useEffect(() => {
+    if (isOeffentlichAdminContext() && settingsSubTab === 'lager') setSettingsSubTab('stammdaten')
+  }, [settingsSubTab])
+
+  // ök2: Verkaufte-Werke-Anzeige (Tage) aus k2-oeffentlich-galerie-settings laden
+  useEffect(() => {
+    if (!isOeffentlichAdminContext()) return
+    try {
+      const raw = localStorage.getItem('k2-oeffentlich-galerie-settings')
+      if (raw) {
+        const o = JSON.parse(raw)
+        if (typeof o.soldArtworksDisplayDays === 'number') setSoldArtworksDisplayDaysOek2(o.soldArtworksDisplayDays)
+      }
+    } catch (_) {}
+  }, [])
+
+  // Stammdaten aus localStorage laden – bei ök2-Kontext aus k2-oeffentlich-stammdaten-* (siehe separater Effect)
   useEffect(() => {
     if (isOeffentlichAdminContext()) return
-    let isMounted = true // Flag um Updates nach Unmount zu verhindern
+    let isMounted = true
     
-    // Lade Daten verzögert um Abstürze zu vermeiden
     const timeoutId = setTimeout(() => {
-      if (!isMounted) return // Verhindere Updates nach Unmount
+      if (!isMounted) return
       
       try {
+        // Einmalig: Wenn K2-Stammdaten leer sind, aber der Kunde in der Muster-Galerie schon etwas eingegeben hat → übernehmen
+        const k2Martina = localStorage.getItem('k2-stammdaten-martina')
+        const oefMartina = localStorage.getItem(KEY_OEF_STAMMDATEN_MARTINA)
+        if ((!k2Martina || k2Martina.length < 10) && oefMartina && oefMartina.length > 0) {
+          try {
+            localStorage.setItem('k2-stammdaten-martina', oefMartina)
+            const oefGeorg = localStorage.getItem(KEY_OEF_STAMMDATEN_GEORG)
+            const oefGalerie = localStorage.getItem(KEY_OEF_STAMMDATEN_GALERIE)
+            if (oefGeorg) localStorage.setItem('k2-stammdaten-georg', oefGeorg)
+            if (oefGalerie) localStorage.setItem('k2-stammdaten-galerie', oefGalerie)
+          } catch (_) {}
+        }
+        
         const storedMartina = localStorage.getItem('k2-stammdaten-martina')
         const d = K2_STAMMDATEN_DEFAULTS.martina
         let mergedMartina: any
@@ -1141,7 +1136,7 @@ function ScreenshotExportAdmin() {
         }
         let mergedGallery: any
         if (data && typeof data === 'object') {
-          // Bestehende Daten behalten (Adresse, welcomeImage, virtualTourImage, etc.) – nur leere Kontaktfelder aus Defaults füllen
+          // Bestehende Daten behalten (Adresse, welcomeImage, virtualTourImage, soldArtworksDisplayDays, etc.) – nur leere Kontaktfelder aus Defaults füllen
           mergedGallery = {
             ...data,
             name: (data.name && String(data.name).trim()) ? data.name : g.name,
@@ -1153,7 +1148,8 @@ function ScreenshotExportAdmin() {
             website: (data.website != null && String(data.website).trim()) ? data.website : (g.website || data.website || ''),
             internetadresse: (data.internetadresse != null && String(data.internetadresse).trim()) ? data.internetadresse : (data.website || g.internetadresse || ''),
             openingHours: (data.openingHours != null && String(data.openingHours).trim()) ? data.openingHours : (g.openingHours || data.openingHours || ''),
-            bankverbindung: (data.bankverbindung != null && String(data.bankverbindung).trim()) ? data.bankverbindung : (g.bankverbindung || data.bankverbindung || '')
+            bankverbindung: (data.bankverbindung != null && String(data.bankverbindung).trim()) ? data.bankverbindung : (g.bankverbindung || data.bankverbindung || ''),
+            soldArtworksDisplayDays: typeof data.soldArtworksDisplayDays === 'number' ? data.soldArtworksDisplayDays : 30
           }
         } else {
           mergedGallery = {
@@ -1202,21 +1198,18 @@ function ScreenshotExportAdmin() {
           setGalleryData(fallback)
         }
       }
-    }, 200) // Längere Verzögerung für Stabilität
+    }, 1500) // Starke Verzögerung (Crash-Schutz: kein schweres Parsen direkt nach Reopen)
     
     return () => {
-      isMounted = false // Verhindere Updates nach Unmount
-      clearTimeout(timeoutId) // Cleanup beim Unmount
+      isMounted = false
+      clearTimeout(timeoutId)
     }
   }, [])
 
-  /** Speichert alle aktuellen Admin-Daten in localStorage (K2-Keys), damit „Seiten prüfen“ die neuesten Änderungen anzeigt. Nur in K2-Admin in echte K2-Keys schreiben. */
+  /** Speichert alle aktuellen Admin-Daten in localStorage (K2/ök2-Key), damit „Seiten prüfen“ die neuesten Änderungen anzeigt. Design wird hier nicht mitgeschrieben – nur über „Speichern“ im Design-Tab. */
   const saveAllForVorschau = () => {
     try {
-      if (designSettings && Object.keys(designSettings).length > 0) {
-        const ds = JSON.stringify(designSettings)
-        if (ds.length < 50000) localStorage.setItem('k2-design-settings', ds)
-      }
+      // Stammdaten nur in K2 schreiben (ök2 = nur Muster)
       if (!isOeffentlichAdminContext()) {
         const martinaStr = JSON.stringify(martinaData)
         const georgStr = JSON.stringify(georgData)
@@ -1224,13 +1217,14 @@ function ScreenshotExportAdmin() {
         if (martinaStr.length < 100000) localStorage.setItem('k2-stammdaten-martina', martinaStr)
         if (georgStr.length < 100000) localStorage.setItem('k2-stammdaten-georg', georgStr)
         if (galleryStr.length < 5000000) localStorage.setItem('k2-stammdaten-galerie', galleryStr)
-        const artworksStr = JSON.stringify(allArtworks)
-        if (artworksStr.length < 10000000) localStorage.setItem('k2-artworks', artworksStr)
-        localStorage.setItem('k2-events', JSON.stringify(events))
-        localStorage.setItem('k2-documents', JSON.stringify(documents))
       }
-      setPageTexts(pageTexts)
-      setPageContentGalerie(pageContent)
+      // Werke, Events, Dokumente: Kontext-Key (K2 = k2-artworks, ök2 = k2-oeffentlich-artworks)
+      const artworksStr = JSON.stringify(allArtworks)
+      if (artworksStr.length < 10000000) localStorage.setItem(getArtworksKey(), artworksStr)
+      localStorage.setItem(getEventsKey(), JSON.stringify(events))
+      localStorage.setItem(getDocumentsKey(), JSON.stringify(documents))
+      setPageTexts(pageTexts, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
+      setPageContentGalerie(pageContent, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
     } catch (e) {
       console.warn('Vorschau-Speichern:', e)
     }
@@ -1279,109 +1273,8 @@ function ScreenshotExportAdmin() {
 
   // Mobile Version veröffentlichen - Daten speichern + JSON-Datei erstellen + Vercel öffnen
   const [isDeploying, setIsDeploying] = React.useState(false)
-  const [isSyncing, setIsSyncing] = React.useState(false)
   const [publishErrorMsg, setPublishErrorMsg] = React.useState<string | null>(null)
   const [publishSuccessModal, setPublishSuccessModal] = React.useState<{ size: number; version: number } | null>(null)
-  
-  // Smart Sync: Server = Quelle der Wahrheit (wie GaleriePage/GalerieVorschauPage)
-  const handleSyncFromServer = async () => {
-    if (isSyncing) return
-    if (isOeffentlichAdminContext()) {
-      alert('Sync vom Server ist nur in der K2-Galerie verfügbar. Wechsle zur K2-Galerie für echte Daten.')
-      return
-    }
-    setIsSyncing(true)
-    try {
-      const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 15000)
-      const url = 'https://k2-galerie.vercel.app/gallery-data.json?t=' + Date.now()
-      const res = await fetch(url, { signal: controller.signal })
-      clearTimeout(timeout)
-      if (!res.ok) throw new Error('HTTP ' + res.status)
-      const data = await res.json()
-      const serverArtworks = Array.isArray(data?.artworks) ? data.artworks : []
-      const localArtworks = loadArtworks()
-      const serverMap = new Map<string, any>()
-      serverArtworks.forEach((a: any) => {
-        const key = a.number || a.id
-        if (key) serverMap.set(key, a)
-      })
-      const merged: any[] = [...serverArtworks]
-      const toHistory: any[] = []
-      localArtworks.forEach((local: any) => {
-        const key = local.number || local.id
-        if (!key) return
-        const serverArtwork = serverMap.get(key)
-        const isMobileWork = local.createdOnMobile || local.updatedOnMobile
-        const createdAt = local.createdAt ? new Date(local.createdAt).getTime() : 0
-        const isVeryNew = createdAt > Date.now() - 600000
-        if (!serverArtwork) {
-          if (isMobileWork && isVeryNew) merged.push(local)
-          else toHistory.push(local)
-        } else {
-          if (isMobileWork) {
-            const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
-            if (idx >= 0) merged[idx] = local
-            else merged.push(local)
-          } else {
-            const localUpdated = local.updatedAt ? new Date(local.updatedAt).getTime() : 0
-            const serverUpdated = serverArtwork.updatedAt ? new Date(serverArtwork.updatedAt).getTime() : 0
-            if (localUpdated > serverUpdated) {
-              const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
-              if (idx >= 0) merged[idx] = local
-              else merged.push(local)
-            }
-          }
-        }
-      })
-      if (toHistory.length > 0) appendToHistory(toHistory)
-      const ok = saveArtworks(merged)
-      if (ok) {
-        setAllArtworks(merged)
-        const msg = toHistory.length > 0
-          ? `✅ ${merged.length} Werke geladen (Server = Quelle).\n\n${toHistory.length} gelöschte Werke in History archiviert.`
-          : `✅ ${merged.length} Werke synchronisiert.`
-        alert(msg)
-      } else {
-        alert('⚠️ Fehler beim Speichern.')
-      }
-    } catch (err) {
-      try {
-        const { loadArtworksFromSupabase } = await import('../src/utils/supabaseClient')
-        const supabaseArtworks = await loadArtworksFromSupabase()
-        if (supabaseArtworks && Array.isArray(supabaseArtworks) && supabaseArtworks.length > 0) {
-          const localArtworks = loadArtworks()
-          const merged = [...localArtworks]
-          supabaseArtworks.forEach((s: any) => {
-            const exists = merged.some((a: any) =>
-              (a.number && s.number && a.number === s.number) || (a.id && s.id && a.id === s.id)
-            )
-            if (!exists) {
-              const work = { ...s }
-              if (!work.addedToGalleryAt) work.addedToGalleryAt = new Date().toISOString()
-              if (!work.createdAt) work.createdAt = work.addedToGalleryAt
-              merged.push(work)
-            }
-          })
-          if (merged.length > localArtworks.length) {
-            saveArtworks(merged)
-            setAllArtworks(merged)
-            alert(`✅ ${merged.length - localArtworks.length} Werk(e) von Supabase geladen.`)
-          } else {
-            alert('✅ Alle Werke bereits synchronisiert.')
-          }
-        } else {
-          throw new Error('Supabase leer')
-        }
-      } catch {
-        const artworks = loadArtworks()
-        setAllArtworks(artworks)
-        alert(`⚠️ Server nicht erreichbar.\n\nLokal ${artworks.length} Werke geladen.\n\nPrüfe: Internet, Vercel-Status.`)
-      }
-    } finally {
-      setIsSyncing(false)
-    }
-  }
   
   // SICHERHEIT: Stelle sicher dass isDeploying nach 60 Sekunden zurückgesetzt wird
   React.useEffect(() => {
@@ -1406,7 +1299,7 @@ function ScreenshotExportAdmin() {
   // Manueller Vercel-Check-Button
   const [checkingVercel, setCheckingVercel] = React.useState(false)
   
-  // MINIMALE Vercel-Prüfung - MIT TIMEOUT UND CRASH-SCHUTZ
+  // MINIMALE Vercel-Prüfung - MIT TIMEOUT UND CRASH-SCHUTZ (setState nur wenn gemountet)
   const manualCheckVercel = () => {
     if (checkingVercel) return
     
@@ -1414,6 +1307,7 @@ function ScreenshotExportAdmin() {
     
     // Timeout nach 10 Sekunden - verhindert Hänger
     const timeoutId = setTimeout(() => {
+      if (!isMountedRef.current) return
       setCheckingVercel(false)
       alert('⚠️ Vercel-Check:\n\nTimeout nach 10 Sekunden\n\nPrüfe manuell: https://vercel.com/dashboard → Projekt k2-galerie')
     }, 10000)
@@ -1435,12 +1329,14 @@ function ScreenshotExportAdmin() {
           throw new Error('HTTP ' + response.status)
         })
         .then(data => {
+          if (!isMountedRef.current) return
           const exportedAt = data?.exportedAt || 'nicht gefunden'
           alert(`✅ Vercel-Status:\n\nDatei verfügbar\nExportedAt: ${exportedAt}\n\nPrüfe: https://vercel.com/dashboard → k2-galerie`)
         })
         .catch(err => {
           clearTimeout(fetchTimeout)
           clearTimeout(timeoutId)
+          if (!isMountedRef.current) return
           if (err.name === 'AbortError') {
             alert('⚠️ Vercel-Check:\n\nTimeout - Anfrage dauerte zu lange\n\nPrüfe: https://vercel.com/dashboard → k2-galerie')
           } else {
@@ -1450,11 +1346,11 @@ function ScreenshotExportAdmin() {
         .finally(() => {
           clearTimeout(fetchTimeout)
           clearTimeout(timeoutId)
-          setCheckingVercel(false)
+          if (isMountedRef.current) setCheckingVercel(false)
         })
     } catch (error) {
       clearTimeout(timeoutId)
-      setCheckingVercel(false)
+      if (isMountedRef.current) setCheckingVercel(false)
       alert('⚠️ Vercel-Check Fehler:\n\n' + (error instanceof Error ? error.message : String(error)))
     }
   }
@@ -1488,7 +1384,7 @@ function ScreenshotExportAdmin() {
         events: eventsForBackup,
         documents: documentsForBackup,
         customers: Array.isArray(customersForBackup) ? customersForBackup : [],
-        designSettings: getItemSafe('k2-design-settings', {}),
+        designSettings: getItemSafe(getDesignStorageKey(), {}),
         pageTexts: getItemSafe('k2-page-texts', null),
         pageContentGalerie: pageContentGalerieRaw,
         exportedAt: new Date().toISOString(),
@@ -1538,17 +1434,18 @@ function ScreenshotExportAdmin() {
         }
         
         // SEHR aggressive Begrenzung um Hänger zu vermeiden
-        // KRITISCH: Lade ALLE Werke inkl. Mobile-Werke für Synchronisation!
-        let artworks = getItemSafe('k2-artworks', [])
+        // KRITISCH: Lade ALLE Werke inkl. Mobile-Werke für Synchronisation! Key = Kontext (K2 vs. ök2)
+        const artworksKey = getArtworksKey()
+        let artworks = getItemSafe(artworksKey, [])
         
         // WICHTIG: Prüfe ob Werke vorhanden sind
         if (!Array.isArray(artworks) || artworks.length === 0) {
           console.warn('⚠️ WARNUNG: Keine Werke gefunden in localStorage!')
-          console.log('localStorage k2-artworks:', localStorage.getItem('k2-artworks')?.substring(0, 200))
+          console.log('localStorage', artworksKey + ':', localStorage.getItem(artworksKey)?.substring(0, 200))
           
           // Versuche alternative Methode
           try {
-            const stored = localStorage.getItem('k2-artworks')
+            const stored = localStorage.getItem(artworksKey)
             if (stored) {
               artworks = JSON.parse(stored)
               console.log('✅ Werke geladen via alternative Methode:', artworks.length)
@@ -1564,42 +1461,68 @@ function ScreenshotExportAdmin() {
           console.log(`📱 ${mobileWorks.length} Mobile-Werke werden mit exportiert:`, mobileWorks.map((a: any) => a.number || a.id).join(', '))
         }
         
-        // WICHTIG: Prüfe ob Werke vorhanden sind BEVOR exportiert wird
-        if (!Array.isArray(artworks) || artworks.length === 0) {
+        // WICHTIG: Export nur wenn irgendwo Werke sind (State oder localStorage)
+        const _artworksCheck = getItemSafe(artworksKey, [])
+        const hasArtworksInState = Array.isArray(artworks) && artworks.length > 0
+        const hasArtworksInStorage = Array.isArray(_artworksCheck) && _artworksCheck.length > 0
+        if (!hasArtworksInState && !hasArtworksInStorage) {
           if (isMountedRef.current) setIsDeploying(false)
           alert('⚠️ KEINE WERKE GEFUNDEN!\n\nBitte zuerst Werke speichern bevor veröffentlicht wird.\n\n📋 Prüfe:\n1. Sind Werke in "Werke verwalten" vorhanden?\n2. Werden Werke korrekt gespeichert?\n3. Prüfe Browser-Konsole für Fehler')
           return
         }
         
-        // KRITISCH: Beim Export aktuellen State verwenden (nicht nur localStorage), damit Eventplanung + Öffentlichkeitsarbeit mitgehen
-        const eventsForExport = (Array.isArray(events) && events.length > 0) ? events : (getItemSafe('k2-events', []) || [])
-        const documentsForExport = (Array.isArray(documents) && documents.length > 0) ? documents : (getItemSafe('k2-documents', []) || [])
-        
+        // REGEL: Beim Veröffentlichen immer den aktuellen Admin-State verwenden (was du siehst, geht raus).
+        // Fallback localStorage, dann Merge – keine halbe Lieferung. Alle geänderten Daten müssen mit.
         const exportedAt = new Date().toISOString()
-        // KRITISCH: Erhöhe Versionsnummer für Cache-Busting
         const currentVersion = parseInt(localStorage.getItem('k2-data-version') || '0')
         const newVersion = currentVersion + 1
         localStorage.setItem('k2-data-version', newVersion.toString())
-        
+
+        const martinaStored = getItemSafe('k2-stammdaten-martina', {})
+        const georgStored = getItemSafe('k2-stammdaten-georg', {})
         const galleryStamm = getItemSafe('k2-stammdaten-galerie', {})
-        const pageContent = getPageContentGalerie()
+        const oeffentlich = isOeffentlichAdminContext()
+        const pageContent = getPageContentGalerie(oeffentlich ? 'oeffentlich' : undefined)
+        const eventsStored = getItemSafe(getEventsKey(), []) || []
+        const documentsStored = getItemSafe(getDocumentsKey(), []) || []
+        const artworksStored = getItemSafe(getArtworksKey(), []) || []
+        const designStored = getItemSafe(getDesignStorageKey(), {})
+        const pageTextsStored = getItemSafe(oeffentlich ? 'k2-oeffentlich-page-texts' : 'k2-page-texts', null)
+
+        const martinaExport = (martinaData && typeof martinaData === 'object' && Object.keys(martinaData).length > 0) ? { ...martinaStored, ...martinaData } : martinaStored
+        const georgExport = (georgData && typeof georgData === 'object' && Object.keys(georgData).length > 0) ? { ...georgStored, ...georgData } : georgStored
+        const galleryMerged = { ...galleryStamm, ...(galleryData || {}) }
+        const galleryExport = {
+          ...galleryMerged,
+          welcomeImage: (galleryData?.welcomeImage ?? pageContent.welcomeImage ?? galleryStamm.welcomeImage ?? '') || galleryMerged.welcomeImage || '',
+          galerieCardImage: (galleryData?.galerieCardImage ?? pageContent.galerieCardImage ?? galleryStamm.galerieCardImage ?? '') || galleryMerged.galerieCardImage || '',
+          virtualTourImage: (galleryData?.virtualTourImage ?? pageContent.virtualTourImage ?? galleryStamm.virtualTourImage ?? '') || galleryMerged.virtualTourImage || ''
+        }
+        const designExport = (designSettings && typeof designSettings === 'object' && Object.keys(designSettings).length > 0) ? designSettings : designStored
+        const pageTextsExport = (pageTexts != null && typeof pageTexts === 'object') ? pageTexts : pageTextsStored
+        const eventsMerged = Array.isArray(events) && events.length > 0 ? events : eventsStored
+        const documentsMerged = Array.isArray(documents) && documents.length > 0 ? documents : documentsStored
+        const maxList = 100
+        const eventsForExport = Array.isArray(eventsMerged) ? eventsMerged.slice(0, maxList) : []
+        const documentsForExport = Array.isArray(documentsMerged) ? documentsMerged.slice(0, maxList) : []
+        const artworksState = Array.isArray(artworks) ? artworks : []
+        const artworksById = new Map<string, any>()
+        artworksStored.forEach((a: any) => { const k = a?.number || a?.id; if (k) artworksById.set(String(k), a) })
+        artworksState.forEach((a: any) => { const k = a?.number || a?.id; if (k) artworksById.set(String(k), a) })
+        const artworksForExport = sortArtworksNewestFirst(Array.from(artworksById.values()))
+
         const data = {
-          martina: getItemSafe('k2-stammdaten-martina', {}),
-          georg: getItemSafe('k2-stammdaten-georg', {}),
-          gallery: {
-            ...galleryStamm,
-            welcomeImage: galleryData.welcomeImage ?? pageContent.welcomeImage ?? galleryStamm.welcomeImage ?? '',
-            galerieCardImage: galleryData.galerieCardImage ?? pageContent.galerieCardImage ?? galleryStamm.galerieCardImage ?? '',
-            virtualTourImage: galleryData.virtualTourImage ?? pageContent.virtualTourImage ?? galleryStamm.virtualTourImage ?? ''
-          },
-          artworks: Array.isArray(artworks) ? sortArtworksNewestFirst(artworks) : [],
-          events: Array.isArray(eventsForExport) ? eventsForExport.slice(0, 20) : [], // NUR 20 Events – aus State oder localStorage
-          documents: Array.isArray(documentsForExport) ? documentsForExport.slice(0, 20) : [], // NUR 20 Dokumente
-          designSettings: getItemSafe('k2-design-settings', {}),
-          pageTexts: getItemSafe('k2-page-texts', null),
+          martina: martinaExport,
+          georg: georgExport,
+          gallery: galleryExport,
+          artworks: artworksForExport,
+          events: eventsForExport,
+          documents: documentsForExport,
+          designSettings: designExport,
+          pageTexts: pageTextsExport,
           exportedAt: exportedAt,
-          version: newVersion, // Versionsnummer für Cache-Busting
-          buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}` // Eindeutige Build-ID
+          version: newVersion,
+          buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`
         }
         
         // WICHTIG: Prüfe nochmal ob Werke im Export vorhanden sind
@@ -1622,7 +1545,7 @@ function ScreenshotExportAdmin() {
             const json = JSON.stringify(data)
             if (json.length > 5000000) { // Max 5MB
               if (isMountedRef.current) setIsDeploying(false)
-              alert('⚠️ Daten zu groß. Bitte reduzieren Sie die Anzahl der Werke.')
+              alert('⚠️ Daten zu groß. Bitte reduziere die Anzahl der Werke.')
               return
             }
             
@@ -1869,26 +1792,6 @@ function ScreenshotExportAdmin() {
     // Die Timeouts werden durch isMountedRef.current geschützt
   }
 
-  // KRITISCH: Behebe Duplikate beim initialen Laden
-  useEffect(() => {
-    let isMounted = true
-    const timeoutId = setTimeout(() => {
-      if (!isMounted) return
-      
-      // Lade Werke und behebe Duplikate
-      const artworks = loadArtworks() // Diese Funktion behebt automatisch Duplikate
-      if (isMounted) {
-        setAllArtworks(artworks)
-        console.log('✅ Werke geladen und Duplikate geprüft:', artworks.length)
-      }
-    }, 100)
-    
-    return () => {
-      isMounted = false
-      clearTimeout(timeoutId)
-    }
-  }, [])
-  
   // Automatisch Künstler basierend auf Kategorie setzen - NUR wenn Kategorie sich ändert
   useEffect(() => {
     let isMounted = true
@@ -1897,9 +1800,10 @@ function ScreenshotExportAdmin() {
       if (!isMounted) return
       try {
         // Prüfe nur wenn Kategorie sich ändert, nicht wenn Artist sich ändert
-        if (artworkCategory === 'malerei' && martinaData?.name) {
+        // Künstler je nach Kategorie (max 5): Martina = Bilder/Grafik/Sonstiges, Georg = Keramik/Skulptur
+        if ((artworkCategory === 'malerei' || artworkCategory === 'grafik' || artworkCategory === 'sonstiges') && martinaData?.name) {
           setArtworkArtist(martinaData.name)
-        } else if (artworkCategory === 'keramik' && georgData?.name) {
+        } else if ((artworkCategory === 'keramik' || artworkCategory === 'skulptur') && georgData?.name) {
           setArtworkArtist(georgData.name)
         }
       } catch (error) {
@@ -1915,40 +1819,25 @@ function ScreenshotExportAdmin() {
   }, [artworkCategory]) // NUR Kategorie - verhindert Render-Loop!
 
 
-  // Alle Werke aus localStorage laden - SAFE MODE mit Größenprüfung - mit Cleanup
+  // Werke aus localStorage laden – erst 3 s nach Mount (starker Reopen-Crash-Schutz)
   useEffect(() => {
     let isMounted = true
-    
-    // Lade Werke verzögert nach anderen Daten
-    const timeoutId = setTimeout(() => {
+    const t = setTimeout(() => {
       if (!isMounted) return
-      
       try {
         const key = getArtworksKey()
         const stored = localStorage.getItem(key)
-        if (stored && stored.length > 10000000) { // Über 10MB = zu groß
-          console.warn('Werke-Daten zu groß, lade leer')
+        if (stored && stored.length > 10000000) {
           if (isMounted) setAllArtworks([])
           return
         }
         const artworks = loadArtworks()
-        if (isMounted) {
-          if (Array.isArray(artworks)) {
-            setAllArtworks(artworks)
-          } else {
-            setAllArtworks([])
-          }
-        }
-      } catch (error) {
-        console.error('Fehler beim Laden der Werke:', error)
+        if (isMounted && Array.isArray(artworks)) setAllArtworks(artworks)
+      } catch (_) {
         if (isMounted) setAllArtworks([])
       }
-    }, 500) // Lade nach Stammdaten mit mehr Verzögerung
-    
-    return () => {
-      isMounted = false
-      clearTimeout(timeoutId) // Cleanup beim Unmount
-    }
+    }, 3000)
+    return () => { isMounted = false; clearTimeout(t) }
   }, [])
   
   // WICHTIG: Event-Listener für Mobile-Updates (damit Mobile-Werke im Admin angezeigt werden)
@@ -1973,116 +1862,8 @@ function ScreenshotExportAdmin() {
     }
   }, [])
   
-  // WICHTIG: Automatische Synchronisation von Mobile-Werken beim Mount
-  // KRITISCH: Mobile-Werke werden automatisch geladen - kein manuelles Speichern nötig!
-  // CRASH-SCHUTZ: isMounted prüfen vor jedem setState/Event nach Unmount
-  useEffect(() => {
-    let isMounted = true
-    
-    const checkMobileUpdates = async () => {
-      try {
-        if (!isMounted) return
-        // 1. Prüfe Supabase (falls konfiguriert)
-        try {
-          const { loadArtworksFromSupabase } = await import('../src/utils/supabaseClient')
-          const supabaseArtworks = await loadArtworksFromSupabase()
-          if (!isMounted) return
-          
-          if (supabaseArtworks && Array.isArray(supabaseArtworks) && supabaseArtworks.length > 0) {
-            console.log('📱 Mobile-Werke von Supabase geladen:', supabaseArtworks.length)
-            
-            const localArtworks = loadArtworks()
-            const merged = [...localArtworks]
-            
-            supabaseArtworks.forEach((supabaseArtwork: any) => {
-              const exists = merged.some((a: any) => 
-                (a.number && supabaseArtwork.number && a.number === supabaseArtwork.number) ||
-                (a.id && supabaseArtwork.id && a.id === supabaseArtwork.id)
-              )
-              if (!exists) {
-                merged.push(supabaseArtwork)
-              }
-            })
-            
-            if (merged.length > localArtworks.length && isMounted) {
-              console.log(`✅ ${merged.length - localArtworks.length} neue Mobile-Werke gefunden`)
-              const saved = saveArtworks(merged)
-              if (saved && isMounted) {
-                setAllArtworks(merged)
-              } else if (!saved) {
-                console.error('❌ Fehler beim Speichern der Mobile-Werke')
-              }
-            }
-          }
-        } catch (supabaseError) {
-          console.warn('⚠️ Supabase-Check fehlgeschlagen (normal wenn nicht konfiguriert):', supabaseError)
-        }
-        
-        if (!isMounted) return
-        // 2. KRITISCH: Automatische Synchronisation von Mobile-Werken vom Server
-        try {
-          const timestamp = Date.now()
-          const url = `/gallery-data.json?v=${timestamp}&t=${timestamp}&_=${Math.random()}`
-          
-          const response = await fetch(url, { 
-            cache: 'no-store',
-            method: 'GET',
-            headers: {
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache'
-            }
-          })
-          
-          if (!isMounted) return
-          if (response.ok) {
-            const data = await response.json()
-            if (data.artworks && Array.isArray(data.artworks)) {
-              const serverArtworks = data.artworks
-              const localArtworks = loadArtworks()
-              
-              const mobileWorksOnServer = serverArtworks.filter((a: any) => 
-                (a.createdOnMobile || a.updatedOnMobile) && 
-                !localArtworks.some((local: any) => 
-                  (local.number && a.number && local.number === a.number) ||
-                  (local.id && a.id && local.id === a.id)
-                )
-              )
-              
-              if (mobileWorksOnServer.length > 0 && isMounted) {
-                console.log(`📱 ${mobileWorksOnServer.length} Mobile-Werke automatisch vom Server synchronisiert:`, mobileWorksOnServer.map((a: any) => a.number || a.id).join(', '))
-                
-                const merged = [...localArtworks, ...mobileWorksOnServer]
-                const saved = saveArtworks(merged)
-                
-                if (saved && isMounted) {
-                  console.log(`✅ ${mobileWorksOnServer.length} Mobile-Werke automatisch synchronisiert - kein manuelles Speichern nötig!`)
-                  setAllArtworks(merged)
-                  window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: merged.length, mobileSync: true, autoSync: true } }))
-                } else if (!saved) {
-                  console.error('❌ Fehler beim automatischen Speichern der Mobile-Werke')
-                }
-              } else if (mobileWorksOnServer.length === 0) {
-                console.log('ℹ️ Keine neuen Mobile-Werke auf dem Server gefunden')
-              }
-            }
-          }
-        } catch (serverError) {
-          console.warn('⚠️ Automatische Synchronisation von Mobile-Werken fehlgeschlagen:', serverError)
-        }
-      } catch (error) {
-        console.warn('⚠️ Fehler beim Prüfen auf Mobile-Updates:', error)
-      }
-    }
-    
-    const timeoutId = setTimeout(() => {
-      if (isMounted) checkMobileUpdates()
-    }, 2000)
-    
-    return () => {
-      isMounted = false
-      clearTimeout(timeoutId)
-    }
-  }, [])
+  // KEIN Auto-Sync (Supabase / gallery-data.json) mehr beim Admin-Start – verursacht Fenster-Abstürze.
+  // Mobile-Werke kommen über artworks-updated Event beim Speichern; Werke werden nur aus localStorage geladen (siehe oben, 2 s Verzögerung).
 
   // Dokumente aus localStorage laden (Key abhängig von K2 vs. ök2)
   const loadDocuments = () => {
@@ -2096,6 +1877,20 @@ function ScreenshotExportAdmin() {
       console.error('Fehler beim Laden der Dokumente:', error)
       return []
     }
+  }
+
+  // Eindeutiger Name für weiteren Werbematerial-Vorschlag (mehrere pro Zeile)
+  const getNextWerbematerialVorschlagName = (
+    eventId: string,
+    eventTitle: string,
+    werbematerialTyp: string,
+    baseName: string
+  ): string => {
+    const existing = loadDocuments().filter(
+      (d: any) => d.category === 'pr-dokumente' && d.eventId === eventId && d.werbematerialTyp === werbematerialTyp
+    )
+    const num = existing.length + 1
+    return num === 1 ? `${baseName} – ${eventTitle}` : `${baseName} – ${eventTitle} (Vorschlag ${num})`
   }
 
   // Dokumente aus localStorage laden - verzögert - mit Cleanup
@@ -2206,20 +2001,14 @@ function ScreenshotExportAdmin() {
     setEvents(updatedEvents)
     saveEvents(updatedEvents)
     
-    // PR-Vorschläge speichern falls vorhanden
-    if (eventPRSuggestions) {
-      eventPRSuggestions.eventId = eventData.id
-      eventPRSuggestions.eventTitle = eventData.title
-      const existingSuggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
-      const index = existingSuggestions.findIndex((s: any) => s.eventId === eventData.id)
-      if (index >= 0) {
-        existingSuggestions[index] = eventPRSuggestions
-      } else {
-        existingSuggestions.push(eventPRSuggestions)
-      }
+    // PR-Vorschläge: Bei Bearbeitung eventTitle in localStorage aktualisieren; bei neuem Event automatisch generieren
+    const existingSuggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+    const suggestionIndex = existingSuggestions.findIndex((s: any) => s.eventId === eventData.id)
+    if (editingEvent && suggestionIndex >= 0) {
+      existingSuggestions[suggestionIndex].eventTitle = eventData.title
+      existingSuggestions[suggestionIndex].eventId = eventData.id
       localStorage.setItem('k2-pr-suggestions', JSON.stringify(existingSuggestions))
     } else if (!editingEvent) {
-      // Automatisch Vorschläge für neues Event generieren
       generateAutomaticSuggestions(eventData)
     }
     
@@ -2235,10 +2024,13 @@ function ScreenshotExportAdmin() {
     setEventDailyTimes({})
     setEventDescription('')
     setEventLocation('')
-    setEventPRSuggestions(null)
-    setEditingPRType(null)
     
-    alert(editingEvent ? '✅ Event aktualisiert!' : '✅ Event hinzugefügt!')
+    if (editingEvent) {
+      alert('✅ Event aktualisiert!')
+    } else {
+      setEventplanSubTab('öffentlichkeitsarbeit')
+      alert('✅ Event angelegt. Unten siehst du die neue Rubrik mit allen Werbe-Werkzeugen – Newsletter, Presse, Social Media, PDF.')
+    }
   }
 
   // Event bearbeiten
@@ -2264,27 +2056,6 @@ function ScreenshotExportAdmin() {
     setEventDailyTimes(convertedDailyTimes)
     setEventDescription(event.description || '')
     setEventLocation(event.location || '')
-    
-    // PR-Vorschläge laden falls vorhanden
-    const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
-    const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
-    if (eventSuggestion) {
-      setEventPRSuggestions(eventSuggestion)
-    } else {
-      // Neue Vorschläge generieren falls noch nicht vorhanden
-      const newSuggestions = {
-        eventId: event.id,
-        eventTitle: event.title,
-        generatedAt: new Date().toISOString(),
-        presseaussendung: generatePresseaussendungContent(event),
-        socialMedia: generateSocialMediaContent(event),
-        flyer: generateFlyerContent(event),
-        newsletter: generateNewsletterContent(event),
-        plakat: generatePlakatContent(event)
-      }
-      setEventPRSuggestions(newSuggestions)
-    }
-    
     setShowEventModal(true)
   }
 
@@ -2419,13 +2190,13 @@ ${galleryData.phone ? `Tel: ${galleryData.phone}` : ''}
 ${galleryData.email ? `E-Mail: ${galleryData.email}` : ''}
 
 BESCHREIBUNG:
-${event.description || 'Wir laden Sie herzlich zu unserer Veranstaltung ein.'}
+${event.description || 'Wir laden dich herzlich zu unserer Veranstaltung ein.'}
 
 KÜNSTLER:
 ${martinaData.name}: ${martinaData.bio}
 ${georgData.name}: ${georgData.bio}
 
-Für weitere Informationen kontaktieren Sie bitte:
+Für weitere Informationen kontaktiere uns bitte:
 ${galleryData.email || ''}
 ${galleryData.phone || ''}
       `.trim()
@@ -2460,22 +2231,22 @@ ${galleryData.phone || ''}
 
 📍 ${event.location || galleryData.address || ''}
 
-${event.description || 'Wir freuen uns auf deinen/Ihren Besuch!'}
+${event.description || 'Wir freuen uns auf deinen Besuch!'}
 
 ${eventTypeLabels[event.type] || '#Kunst #Galerie'} #K2Galerie #KunstUndKeramik
       `.trim(),
       facebook: `
 ${event.title}
 
-Wir laden Sie herzlich ein zu unserer ${eventTypeNames[event.type] || 'Veranstaltung'}!
+Wir laden dich herzlich ein zu unserer ${eventTypeNames[event.type] || 'Veranstaltung'}!
 
 📅 ${datesFormatted}
 
 📍 ${event.location || galleryData.address || ''}
 
-${event.description || 'Besuchen Sie uns auch online!'}
+${event.description || 'Besuch uns auch online!'}
 
-Wir freuen uns auf deinen/Ihren Besuch!
+Wir freuen uns auf deinen Besuch!
       `.trim()
     }
   }
@@ -2509,7 +2280,7 @@ Wir freuen uns auf deinen/Ihren Besuch!
       subject: `Einladung: ${event.title}`,
       greeting: 'Liebe Kunstfreunde,',
       body: `
-wir laden Sie herzlich ein zu unserer ${eventTypeNames[event.type] || 'Veranstaltung'}!
+wir laden dich herzlich ein zu unserer ${eventTypeNames[event.type] || 'Veranstaltung'}!
 
 TERMINDATEN:
 📅 ${formatEventDates(event)}
@@ -2518,7 +2289,7 @@ ORT:
 📍 ${event.location || galleryData.address || ''}
 
 BESCHREIBUNG:
-${event.description || 'Wir freuen uns auf deinen/Ihren Besuch!'}
+${event.description || 'Wir freuen uns auf deinen Besuch!'}
 
 KONTAKT:
 ${galleryData.phone ? `Tel: ${galleryData.phone}` : ''}
@@ -2682,188 +2453,24 @@ ${'='.repeat(60)}
 <head>
   <meta charset="UTF-8">
   <title>Presseaussendung - ${event?.title || 'Event'}</title>
-  <style>
-    @media print {
-      @page {
-        size: A4;
-        margin: 20mm;
-      }
-      body { 
-        margin: 0; 
-        background: white !important; 
-        padding: 0 !important;
-      }
-      .no-print { display: none !important; }
-      .page { 
-        background: white !important; 
-        color: #1a1a1a !important; 
-        border: none !important; 
-        box-shadow: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        max-width: 100% !important;
-      }
-      .header { 
-        border-bottom: 3px solid #667eea !important;
-        padding-bottom: 15px !important;
-        margin-bottom: 25px !important;
-      }
-      .header h1 { 
-        color: #667eea !important; 
-        border-bottom: none !important;
-        padding-bottom: 0 !important;
-      }
-      .header-info { color: #666 !important; }
-      h1 { 
-        color: #1a1a1a !important; 
-        border-bottom: 2px solid #667eea !important;
-        padding-bottom: 10px !important;
-        margin-bottom: 20px !important;
-      }
-      label { 
-        color: #333 !important; 
-        font-weight: 700 !important;
-      }
-      textarea, input[type="text"] { 
-        background: white !important; 
-        color: #1a1a1a !important; 
-        border: 2px solid #ddd !important;
-        padding: 12px !important;
-      }
-      textarea:focus, input[type="text"]:focus {
-        border-color: #667eea !important;
-        outline: 2px solid rgba(102, 126, 234, 0.2) !important;
-      }
-      .field-group {
-        margin-bottom: 25px !important;
-      }
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Georgia', 'Times New Roman', serif;
-      background: #f5f5f5;
-      color: #1a1a1a;
-      padding: 2rem;
-      min-height: 100vh;
-      line-height: 1.7;
-    }
-    .page {
-      max-width: 210mm;
-      margin: 0 auto;
-      padding: 30mm 25mm;
-      background: white;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    }
-    .header {
-      border-bottom: 3px solid #667eea;
-      padding-bottom: 20px;
-      margin-bottom: 30px;
-    }
-    .header h1 {
-      font-size: 2.2rem;
-      color: #667eea;
-      margin-bottom: 10px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-    .header-info {
-      font-size: 0.9rem;
-      color: #666;
-      line-height: 1.8;
-    }
-    .header-info strong {
-      color: #333;
-      font-weight: 600;
-    }
-    h1 {
-      font-size: 1.8rem;
-      color: #1a1a1a;
-      margin-bottom: 15px;
-      border-bottom: 2px solid #667eea;
-      padding-bottom: 10px;
-      font-weight: 700;
-    }
-    .field-group {
-      margin-bottom: 25px;
-    }
-    label {
-      display: block;
-      font-weight: 700;
-      color: #333;
-      margin-bottom: 8px;
-      font-size: 0.95rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-family: 'Arial', sans-serif;
-    }
-    textarea, input[type="text"] {
-      width: 100%;
-      padding: 12px 15px;
-      border: 2px solid #ddd;
-      border-radius: 6px;
-      font-family: inherit;
-      font-size: 1rem;
-      line-height: 1.7;
-      resize: vertical;
-      background: white;
-      color: #1a1a1a;
-      transition: all 0.2s ease;
-    }
-    textarea:focus, input[type="text"]:focus {
-      outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-    textarea {
-      min-height: 300px;
-      font-size: 1.05rem;
-    }
-    input[type="text"] {
-      font-size: 1.1rem;
-      font-weight: 600;
-    }
-    button {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      margin: 8px;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-      transition: all 0.3s ease;
-      font-family: 'Arial', sans-serif;
-    }
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
-    }
-    .no-print {
-      background: #f8f9fa;
-      border: 2px solid #667eea;
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      text-align: center;
-    }
-    .no-print p {
-      color: #666;
-      margin-top: 10px;
-      font-size: 0.9rem;
-    }
-  </style>
+  <link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" />
+  <style>${getWerbeliniePrDocCss('k2-pr-doc')}</style>
+  <style id="print-page-size">@media print { @page { size: A4; margin: 15mm; } }</style>
 </head>
-<body>
+<body class="k2-pr-doc format-a4">
   <div class="no-print">
-    <button onclick="goBack(); return false;" style="background: #6b7280; margin-right: 8px; cursor: pointer;">← Zurück</button>
+    <button onclick="goBack(); return false;" class="secondary">← Zurück</button>
+    <span style="margin: 0 8px; color: #666;">Format:</span>
+    <button onclick="setFormat('a4'); return false;">A4</button>
+    <button onclick="setFormat('a3'); return false;">A3 (Plakat)</button>
+    <button onclick="setFormat('a5'); return false;">A5</button>
     <button onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
-    <button onclick="saveChanges(); return false;">💾 Änderungen speichern</button>
-    <p>Bearbeite die Felder direkt. Nach dem Drucken kannst du die Änderungen speichern.</p>
+    <button onclick="saveChanges(); return false;">💾 Speichern</button>
+    <p>Galerie-Design, druckbar als A4 / A3 / A5. Format wählen, dann drucken.</p>
   </div>
 
   <div class="page">
+    <div class="content">
     <div class="header">
       <h1>${galleryName}</h1>
       <div class="header-info">
@@ -2886,9 +2493,15 @@ ${'='.repeat(60)}
       <label>Inhalt der Presseaussendung</label>
       <textarea id="presse-content" rows="30">${(presseaussendung?.content || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
     </div>
+    </div>
   </div>
 
   <script>
+    function setFormat(f) {
+      document.body.className = 'k2-pr-doc format-' + f;
+      var p = document.getElementById('print-page-size');
+      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 15mm; } }';
+    }
     function goBack() {
       var adminUrl = window.location.origin + '/admin'
       
@@ -3000,25 +2613,25 @@ ${'='.repeat(60)}
       const reader = new FileReader()
       const blobToSave: Blob = blob // Explizite Type-Assertion
       reader.onloadend = () => {
+        const eid = event?.id || 'unknown'
+        const etitle = event?.title || 'Event'
         const documentData = {
-          id: `pr-editable-presseaussendung-${event?.id || 'unknown'}-${Date.now()}`,
-          name: `Presseaussendung (bearbeitbar) - ${event?.title || 'Event'}`,
+          id: `pr-editable-presseaussendung-${eid}-${Date.now()}`,
+          name: getNextWerbematerialVorschlagName(eid, etitle, 'presse', 'Presseaussendung (bearbeitbar)'),
           type: 'text/html',
           size: blobToSave.size,
           data: reader.result as string,
-          fileName: `presseaussendung-editable-${(event?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+          fileName: `presseaussendung-editable-${etitle.replace(/\s+/g, '-').toLowerCase()}.html`,
           uploadedAt: new Date().toISOString(),
           isPDF: false,
           isPlaceholder: false,
           category: 'pr-dokumente',
-          eventId: event?.id,
-          eventTitle: event?.title
+          eventId: eid,
+          eventTitle: etitle,
+          werbematerialTyp: 'presse'
         }
         const existingDocs = loadDocuments()
-        const filteredDocs = existingDocs.filter((d: any) => 
-          !(d.category === 'pr-dokumente' && d.eventId === event?.id && d.name.includes('Presseaussendung (bearbeitbar)'))
-        )
-        const updated = [...filteredDocs, documentData]
+        const updated = [...existingDocs, documentData]
         saveDocuments(updated)
       }
       reader.readAsDataURL(blob)
@@ -3035,194 +2648,24 @@ ${'='.repeat(60)}
 <head>
   <meta charset="UTF-8">
   <title>Social Media - ${event?.title || 'Event'}</title>
-  <style>
-    @media print {
-      @page {
-        size: A4;
-        margin: 20mm;
-      }
-      body { 
-        margin: 0; 
-        background: white !important; 
-        padding: 0 !important;
-      }
-      .no-print { display: none !important; }
-      .page { 
-        background: white !important; 
-        color: #1a1a1a !important; 
-        border: none !important; 
-        box-shadow: none !important;
-        padding: 0 !important;
-        margin: 0 0 30mm 0 !important;
-        max-width: 100% !important;
-      }
-      .page-break { page-break-after: always; }
-      .header { 
-        border-bottom: 3px solid #667eea !important;
-        padding-bottom: 15px !important;
-        margin-bottom: 25px !important;
-      }
-      .header h1 { 
-        color: #667eea !important; 
-        border-bottom: none !important;
-        padding-bottom: 0 !important;
-      }
-      h1 { 
-        color: #1a1a1a !important; 
-        border-bottom: 2px solid #667eea !important;
-        padding-bottom: 10px !important;
-        margin-bottom: 20px !important;
-      }
-      h2 { 
-        color: #333 !important; 
-        border-bottom: 1px solid #ddd !important;
-        padding-bottom: 8px !important;
-        margin-top: 30px !important;
-      }
-      label { 
-        color: #333 !important; 
-        font-weight: 700 !important;
-      }
-      textarea { 
-        background: white !important; 
-        color: #1a1a1a !important; 
-        border: 2px solid #ddd !important;
-        padding: 12px !important;
-      }
-      textarea:focus {
-        border-color: #667eea !important;
-        outline: 2px solid rgba(102, 126, 234, 0.2) !important;
-      }
-      .field-group {
-        margin-bottom: 25px !important;
-      }
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Arial', 'Helvetica', sans-serif;
-      background: #f5f5f5;
-      color: #1a1a1a;
-      padding: 2rem;
-      min-height: 100vh;
-      line-height: 1.7;
-    }
-    .page {
-      max-width: 210mm;
-      margin: 0 auto 2rem;
-      padding: 30mm 25mm;
-      background: white;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    }
-    .header {
-      border-bottom: 3px solid #667eea;
-      padding-bottom: 20px;
-      margin-bottom: 30px;
-    }
-    .header h1 {
-      font-size: 2.2rem;
-      color: #667eea;
-      margin-bottom: 10px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-    .header-info {
-      font-size: 0.9rem;
-      color: #666;
-      line-height: 1.8;
-    }
-    .header-info strong {
-      color: #333;
-      font-weight: 600;
-    }
-    h1 {
-      font-size: 1.8rem;
-      color: #1a1a1a;
-      margin-bottom: 15px;
-      border-bottom: 2px solid #667eea;
-      padding-bottom: 10px;
-      font-weight: 700;
-    }
-    h2 {
-      font-size: 1.4rem;
-      color: #333;
-      margin: 30px 0 15px;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 8px;
-      font-weight: 600;
-    }
-    .field-group {
-      margin-bottom: 25px;
-    }
-    label {
-      display: block;
-      font-weight: 700;
-      color: #333;
-      margin-bottom: 8px;
-      font-size: 0.95rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    textarea {
-      width: 100%;
-      padding: 12px 15px;
-      border: 2px solid #ddd;
-      border-radius: 6px;
-      font-family: inherit;
-      font-size: 1rem;
-      line-height: 1.7;
-      resize: vertical;
-      background: white;
-      color: #1a1a1a;
-      min-height: 200px;
-      transition: all 0.2s ease;
-    }
-    textarea:focus {
-      outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-    button {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      margin: 8px;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-      transition: all 0.3s ease;
-      font-family: 'Arial', sans-serif;
-    }
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
-    }
-    .no-print {
-      background: #f8f9fa;
-      border: 2px solid #667eea;
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      text-align: center;
-    }
-    .no-print p {
-      color: #666;
-      margin-top: 10px;
-      font-size: 0.9rem;
-    }
-  </style>
+  <link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" />
+  <style>${getWerbeliniePrDocCss('k2-pr-doc')}</style>
+  <style id="print-page-size">@media print { @page { size: A4; margin: 15mm; } }</style>
 </head>
-<body>
+<body class="k2-pr-doc format-a4">
   <div class="no-print">
-    <button onclick="goBack(); return false;" style="background: #6b7280; margin-right: 8px; cursor: pointer;">← Zurück</button>
+    <button onclick="goBack(); return false;" class="secondary">← Zurück</button>
+    <span style="margin: 0 8px; color: #666;">Format:</span>
+    <button onclick="setFormat('a4'); return false;">A4</button>
+    <button onclick="setFormat('a3'); return false;">A3 (Plakat)</button>
+    <button onclick="setFormat('a5'); return false;">A5</button>
     <button onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
-    <button onclick="saveChanges(); return false;">💾 Änderungen speichern</button>
-    <p>Bearbeite die Felder direkt. Nach dem Drucken kannst du die Änderungen speichern.</p>
+    <button onclick="saveChanges(); return false;">💾 Speichern</button>
+    <p>Galerie-Design, druckbar als A4 / A3 / A5.</p>
   </div>
 
   <div class="page">
+    <div class="content">
     <div class="header">
       <h1>${galleryName}</h1>
       <div class="header-info">
@@ -3244,9 +2687,15 @@ ${'='.repeat(60)}
       <label>Facebook Text</label>
       <textarea id="facebook-post" rows="18">${((socialMedia?.facebook || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
     </div>
+    </div>
   </div>
 
   <script>
+    function setFormat(f) {
+      document.body.className = 'k2-pr-doc format-' + f;
+      var p = document.getElementById('print-page-size');
+      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 15mm; } }';
+    }
     function goBack() {
       var adminUrl = window.location.origin + '/admin'
       
@@ -3351,25 +2800,25 @@ ${'='.repeat(60)}
       // Speichere auch in Dokumente-Sektion
       const reader = new FileReader()
       reader.onloadend = () => {
+        const eid = event?.id || 'unknown'
+        const etitle = event?.title || 'Event'
         const documentData = {
-          id: `pr-editable-socialmedia-${event?.id || 'unknown'}-${Date.now()}`,
-          name: `Social Media Posts (bearbeitbar) - ${event?.title || 'Event'}`,
+          id: `pr-editable-socialmedia-${eid}-${Date.now()}`,
+          name: getNextWerbematerialVorschlagName(eid, etitle, 'social', 'Social Media (bearbeitbar)'),
           type: 'text/html',
           size: blob.size,
           data: reader.result as string,
-          fileName: `social-media-editable-${(event?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+          fileName: `social-media-editable-${etitle.replace(/\s+/g, '-').toLowerCase()}.html`,
           uploadedAt: new Date().toISOString(),
           isPDF: false,
           isPlaceholder: false,
           category: 'pr-dokumente',
-          eventId: event?.id,
-          eventTitle: event?.title
+          eventId: eid,
+          eventTitle: etitle,
+          werbematerialTyp: 'social'
         }
         const existingDocs = loadDocuments()
-        const filteredDocs = existingDocs.filter((d: any) => 
-          !(d.category === 'pr-dokumente' && d.eventId === event?.id && d.name.includes('Social Media Posts (bearbeitbar)'))
-        )
-        const updated = [...filteredDocs, documentData]
+        const updated = [...existingDocs, documentData]
         saveDocuments(updated)
       }
       reader.onerror = () => {
@@ -3403,188 +2852,24 @@ ${'='.repeat(60)}
 <head>
   <meta charset="UTF-8">
   <title>Newsletter - ${event?.title || 'Event'}</title>
-  <style>
-    @media print {
-      @page {
-        size: A4;
-        margin: 20mm;
-      }
-      body { 
-        margin: 0; 
-        background: white !important; 
-        padding: 0 !important;
-      }
-      .no-print { display: none !important; }
-      .page { 
-        background: white !important; 
-        color: #1a1a1a !important; 
-        border: none !important; 
-        box-shadow: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        max-width: 100% !important;
-      }
-      .header { 
-        border-bottom: 3px solid #667eea !important;
-        padding-bottom: 15px !important;
-        margin-bottom: 25px !important;
-      }
-      .header h1 { 
-        color: #667eea !important; 
-        border-bottom: none !important;
-        padding-bottom: 0 !important;
-      }
-      .header-info { color: #666 !important; }
-      h1 { 
-        color: #1a1a1a !important; 
-        border-bottom: 2px solid #667eea !important;
-        padding-bottom: 10px !important;
-        margin-bottom: 20px !important;
-      }
-      label { 
-        color: #333 !important; 
-        font-weight: 700 !important;
-      }
-      textarea, input[type="text"] { 
-        background: white !important; 
-        color: #1a1a1a !important; 
-        border: 2px solid #ddd !important;
-        padding: 12px !important;
-      }
-      textarea:focus, input[type="text"]:focus {
-        border-color: #667eea !important;
-        outline: 2px solid rgba(102, 126, 234, 0.2) !important;
-      }
-      .field-group {
-        margin-bottom: 25px !important;
-      }
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Georgia', 'Times New Roman', serif;
-      background: #f5f5f5;
-      color: #1a1a1a;
-      padding: 2rem;
-      min-height: 100vh;
-      line-height: 1.7;
-    }
-    .page {
-      max-width: 210mm;
-      margin: 0 auto;
-      padding: 30mm 25mm;
-      background: white;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    }
-    .header {
-      border-bottom: 3px solid #667eea;
-      padding-bottom: 20px;
-      margin-bottom: 30px;
-    }
-    .header h1 {
-      font-size: 2.2rem;
-      color: #667eea;
-      margin-bottom: 10px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-    .header-info {
-      font-size: 0.9rem;
-      color: #666;
-      line-height: 1.8;
-    }
-    .header-info strong {
-      color: #333;
-      font-weight: 600;
-    }
-    h1 {
-      font-size: 1.8rem;
-      color: #1a1a1a;
-      margin-bottom: 15px;
-      border-bottom: 2px solid #667eea;
-      padding-bottom: 10px;
-      font-weight: 700;
-    }
-    .field-group {
-      margin-bottom: 25px;
-    }
-    label {
-      display: block;
-      font-weight: 700;
-      color: #333;
-      margin-bottom: 8px;
-      font-size: 0.95rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-family: 'Arial', sans-serif;
-    }
-    textarea, input[type="text"] {
-      width: 100%;
-      padding: 12px 15px;
-      border: 2px solid #ddd;
-      border-radius: 6px;
-      font-family: inherit;
-      font-size: 1rem;
-      line-height: 1.7;
-      resize: vertical;
-      background: white;
-      color: #1a1a1a;
-      transition: all 0.2s ease;
-    }
-    textarea:focus, input[type="text"]:focus {
-      outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-    textarea {
-      min-height: 300px;
-      font-size: 1.05rem;
-    }
-    input[type="text"] {
-      font-size: 1.1rem;
-      font-weight: 600;
-    }
-    button {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      margin: 8px;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-      transition: all 0.3s ease;
-      font-family: 'Arial', sans-serif;
-    }
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
-    }
-    .no-print {
-      background: #f8f9fa;
-      border: 2px solid #667eea;
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      text-align: center;
-    }
-    .no-print p {
-      color: #666;
-      margin-top: 10px;
-      font-size: 0.9rem;
-    }
-  </style>
+  <link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" />
+  <style>${getWerbeliniePrDocCss('k2-pr-doc')}</style>
+  <style id="print-page-size">@media print { @page { size: A4; margin: 15mm; } }</style>
 </head>
-<body>
+<body class="k2-pr-doc format-a4">
   <div class="no-print">
-    <button onclick="goBack(); return false;" style="background: #6b7280; margin-right: 8px; cursor: pointer;">← Zurück</button>
+    <button onclick="goBack(); return false;" class="secondary">← Zurück</button>
+    <span style="margin: 0 8px; color: #666;">Format:</span>
+    <button onclick="setFormat('a4'); return false;">A4</button>
+    <button onclick="setFormat('a3'); return false;">A3 (Plakat)</button>
+    <button onclick="setFormat('a5'); return false;">A5</button>
     <button onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
-    <button onclick="saveChanges(); return false;">💾 Änderungen speichern</button>
-    <p>Bearbeite die Felder direkt. Nach dem Drucken kannst du die Änderungen speichern.</p>
+    <button onclick="saveChanges(); return false;">💾 Speichern</button>
+    <p>Galerie-Design, druckbar als A4 / A3 / A5.</p>
   </div>
 
   <div class="page">
+    <div class="content">
     <div class="header">
       <h1>${galleryName}</h1>
       <div class="header-info">
@@ -3604,9 +2889,15 @@ ${'='.repeat(60)}
       <label>Newsletter Inhalt</label>
       <textarea id="newsletter-body" rows="30">${((newsletter?.body || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
     </div>
+    </div>
   </div>
 
   <script>
+    function setFormat(f) {
+      document.body.className = 'k2-pr-doc format-' + f;
+      var p = document.getElementById('print-page-size');
+      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 15mm; } }';
+    }
     function goBack() {
       var adminUrl = window.location.origin + '/admin'
       
@@ -3682,25 +2973,25 @@ ${'='.repeat(60)}
     // Speichere auch in Dokumente-Sektion
     const reader = new FileReader()
     reader.onloadend = () => {
+      const eid = event?.id || 'unknown'
+      const etitle = event?.title || 'Event'
       const documentData = {
-        id: `pr-editable-newsletter-${event?.id || 'unknown'}-${Date.now()}`,
-        name: `Newsletter (bearbeitbar) - ${event?.title || 'Event'}`,
+        id: `pr-editable-newsletter-${eid}-${Date.now()}`,
+        name: getNextWerbematerialVorschlagName(eid, etitle, 'newsletter', 'Newsletter (bearbeitbar)'),
         type: 'text/html',
         size: blob.size,
         data: reader.result as string,
-        fileName: `newsletter-editable-${(event?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+        fileName: `newsletter-editable-${etitle.replace(/\s+/g, '-').toLowerCase()}.html`,
         uploadedAt: new Date().toISOString(),
         isPDF: false,
         isPlaceholder: false,
         category: 'pr-dokumente',
-        eventId: event?.id,
-        eventTitle: event?.title
+        eventId: eid,
+        eventTitle: etitle,
+        werbematerialTyp: 'newsletter'
       }
       const existingDocs = loadDocuments()
-      const filteredDocs = existingDocs.filter((d: any) => 
-        !(d.category === 'pr-dokumente' && d.eventId === event?.id && d.name.includes('Newsletter (bearbeitbar)'))
-      )
-      const updated = [...filteredDocs, documentData]
+      const updated = [...existingDocs, documentData]
       saveDocuments(updated)
     }
     reader.readAsDataURL(blob)
@@ -3717,225 +3008,25 @@ ${'='.repeat(60)}
 <head>
   <meta charset="UTF-8">
   <title>PR-Vorschläge - ${suggestions.eventTitle || 'Event'}</title>
-  <style>
-    @media print {
-      @page {
-        size: A4;
-        margin: 20mm;
-      }
-      body { 
-        margin: 0; 
-        background: white !important; 
-        padding: 0 !important;
-      }
-      .no-print { display: none !important; }
-      .page-break { page-break-after: always; }
-      .page { 
-        background: white !important; 
-        color: #1a1a1a !important; 
-        border: none !important; 
-        box-shadow: none !important;
-        padding: 0 !important;
-        margin: 0 0 30mm 0 !important;
-        max-width: 100% !important;
-      }
-      .header { 
-        border-bottom: 3px solid #667eea !important;
-        padding-bottom: 15px !important;
-        margin-bottom: 25px !important;
-      }
-      .header h1 { 
-        color: #667eea !important; 
-        border-bottom: none !important;
-        padding-bottom: 0 !important;
-      }
-      .header-info { color: #666 !important; }
-      h1 { 
-        color: #1a1a1a !important; 
-        border-bottom: 2px solid #667eea !important;
-        padding-bottom: 10px !important;
-        margin-bottom: 20px !important;
-      }
-      h2 { 
-        color: #333 !important; 
-        border-bottom: 1px solid #ddd !important;
-        padding-bottom: 8px !important;
-        margin-top: 30px !important;
-      }
-      label { 
-        color: #333 !important; 
-        font-weight: 700 !important;
-      }
-      textarea, input[type="text"] { 
-        background: white !important; 
-        color: #1a1a1a !important; 
-        border: 2px solid #ddd !important;
-        padding: 12px !important;
-      }
-      textarea:focus, input[type="text"]:focus {
-        border-color: #667eea !important;
-        outline: 2px solid rgba(102, 126, 234, 0.2) !important;
-      }
-      .info-box { 
-        background: #f5f5f5 !important; 
-        border-left: 4px solid #667eea !important;
-        color: #333 !important;
-      }
-      .info-box strong { 
-        color: #667eea !important; 
-      }
-      .field-group {
-        margin-bottom: 25px !important;
-      }
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Georgia', 'Times New Roman', serif;
-      background: #f5f5f5;
-      color: #1a1a1a;
-      padding: 2rem;
-      min-height: 100vh;
-      line-height: 1.7;
-    }
-    .page {
-      max-width: 210mm;
-      margin: 0 auto 2rem;
-      padding: 30mm 25mm;
-      background: white;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    }
-    .header {
-      border-bottom: 3px solid #667eea;
-      padding-bottom: 20px;
-      margin-bottom: 30px;
-    }
-    .header h1 {
-      font-size: 2.2rem;
-      color: #667eea;
-      margin-bottom: 10px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-    .header-info {
-      font-size: 0.9rem;
-      color: #666;
-      line-height: 1.8;
-    }
-    .header-info strong {
-      color: #333;
-      font-weight: 600;
-    }
-    h1 {
-      font-size: 1.8rem;
-      color: #1a1a1a;
-      margin-bottom: 15px;
-      border-bottom: 2px solid #667eea;
-      padding-bottom: 10px;
-      font-weight: 700;
-    }
-    h2 {
-      font-size: 1.4rem;
-      color: #333;
-      margin: 30px 0 15px;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 8px;
-      font-weight: 600;
-    }
-    .field-group {
-      margin-bottom: 25px;
-    }
-    label {
-      display: block;
-      font-weight: 700;
-      color: #333;
-      margin-bottom: 8px;
-      font-size: 0.95rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-family: 'Arial', sans-serif;
-    }
-    textarea, input[type="text"] {
-      width: 100%;
-      padding: 12px 15px;
-      border: 2px solid #ddd;
-      border-radius: 6px;
-      font-family: inherit;
-      font-size: 1rem;
-      line-height: 1.7;
-      resize: vertical;
-      background: white;
-      color: #1a1a1a;
-      transition: all 0.2s ease;
-    }
-    textarea:focus, input[type="text"]:focus {
-      outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-    textarea {
-      min-height: 200px;
-      font-size: 1.05rem;
-    }
-    input[type="text"] {
-      font-size: 1.1rem;
-      font-weight: 600;
-    }
-    .info-box {
-      background: #f5f5f5;
-      border-left: 4px solid #667eea;
-      padding: 15px 20px;
-      margin-bottom: 25px;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      line-height: 1.8;
-    }
-    .info-box strong {
-      color: #667eea;
-      font-weight: 600;
-    }
-    button {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      margin: 8px;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-      transition: all 0.3s ease;
-      font-family: 'Arial', sans-serif;
-    }
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
-    }
-    .no-print {
-      background: #f8f9fa;
-      border: 2px solid #667eea;
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      text-align: center;
-    }
-    .no-print p {
-      color: #666;
-      margin-top: 10px;
-      font-size: 0.9rem;
-    }
-  </style>
+  <link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" />
+  <style>${getWerbeliniePrDocCss('k2-pr-doc')}</style>
+  <style id="print-page-size">@media print { @page { size: A4; margin: 15mm; } }</style>
 </head>
-<body>
+<body class="k2-pr-doc format-a4">
   <div class="no-print">
-    <button onclick="goBack()" style="background: #6b7280; margin-right: 8px;">← Zurück</button>
+    <button onclick="goBack()" class="secondary">← Zurück</button>
+    <span style="margin: 0 8px; color: #666;">Format:</span>
+    <button onclick="setFormat('a4'); return false;">A4</button>
+    <button onclick="setFormat('a3'); return false;">A3 (Plakat)</button>
+    <button onclick="setFormat('a5'); return false;">A5</button>
     <button onclick="window.print()">🖨️ Als PDF drucken</button>
-    <button onclick="saveAllChanges()">💾 Alle Änderungen speichern</button>
-    <p>Bearbeite die Felder direkt. Nach dem Drucken kannst du die Änderungen speichern.</p>
+    <button onclick="saveAllChanges()">💾 Alle speichern</button>
+    <p>Galerie-Design, druckbar als A4 / A3 / A5.</p>
   </div>
 
   <!-- Seite 1: Presseaussendung -->
   <div class="page">
+    <div class="content">
     <div class="header">
       <h1>${galleryName}</h1>
       <div class="header-info">
@@ -3955,10 +3046,12 @@ ${'='.repeat(60)}
       <label>Inhalt der Presseaussendung</label>
       <textarea id="presse-content" rows="22">${(suggestions.presseaussendung?.content || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
     </div>
+    </div>
   </div>
 
   <!-- Seite 2: Social Media -->
   <div class="page page-break">
+    <div class="content">
     <div class="header">
       <h1>${galleryName}</h1>
       <div class="header-info">
@@ -3979,10 +3072,12 @@ ${'='.repeat(60)}
       <label>Facebook Text</label>
       <textarea id="facebook-post" rows="15">${((suggestions.socialMedia?.facebook || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
     </div>
+    </div>
   </div>
 
   <!-- Seite 3: Newsletter -->
   <div class="page page-break">
+    <div class="content">
     <div class="header">
       <h1>${galleryName}</h1>
       <div class="header-info">
@@ -4001,9 +3096,15 @@ ${'='.repeat(60)}
       <label>Newsletter Inhalt</label>
       <textarea id="newsletter-body" rows="22">${((suggestions.newsletter?.body || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
     </div>
+    </div>
   </div>
 
   <script>
+    function setFormat(f) {
+      document.body.className = 'k2-pr-doc format-' + f;
+      var p = document.getElementById('print-page-size');
+      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 15mm; } }';
+    }
     function goBack() {
       var adminUrl = window.location.origin + '/admin'
       
@@ -4090,25 +3191,25 @@ ${'='.repeat(60)}
     // Speichere auch in Dokumente-Sektion
     const reader = new FileReader()
     reader.onloadend = () => {
+      const eid = event?.id || 'unknown'
+      const etitle = event?.title || suggestions.eventTitle || 'Event'
       const documentData = {
-        id: `pr-editable-all-${event?.id || 'unknown'}-${Date.now()}`,
-        name: `PR-Vorschläge (alle bearbeitbar) - ${event?.title || suggestions.eventTitle || 'Event'}`,
+        id: `pr-editable-all-${eid}-${Date.now()}`,
+        name: getNextWerbematerialVorschlagName(eid, etitle, 'pr-alle', 'PR-Vorschläge (alle bearbeitbar)'),
         type: 'text/html',
         size: blob.size,
         data: reader.result as string,
-        fileName: `pr-suggestions-editable-${(event?.title || suggestions.eventTitle || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+        fileName: `pr-suggestions-editable-${etitle.replace(/\s+/g, '-').toLowerCase()}.html`,
         uploadedAt: new Date().toISOString(),
         isPDF: false,
         isPlaceholder: false,
         category: 'pr-dokumente',
-        eventId: event?.id,
-        eventTitle: event?.title || suggestions.eventTitle
+        eventId: eid,
+        eventTitle: etitle,
+        werbematerialTyp: 'pr-alle'
       }
       const existingDocs = loadDocuments()
-      const filteredDocs = existingDocs.filter((d: any) => 
-        !(d.category === 'pr-dokumente' && d.eventId === event?.id && d.name.includes('PR-Vorschläge (alle bearbeitbar)'))
-      )
-      const updated = [...filteredDocs, documentData]
+      const updated = [...existingDocs, documentData]
       saveDocuments(updated)
     }
     reader.readAsDataURL(blob)
@@ -4256,7 +3357,7 @@ ${'='.repeat(60)}
     reader.onloadend = () => {
       const documentData = {
         id: `pr-presseaussendung-${event.id}-${Date.now()}`,
-        name: `Presseaussendung - ${event.title}`,
+        name: getNextWerbematerialVorschlagName(event.id, event.title, 'presse', 'Presseaussendung'),
         type: 'text/html',
         size: blob.size,
         data: reader.result as string,
@@ -4266,14 +3367,11 @@ ${'='.repeat(60)}
         isPlaceholder: false,
         category: 'pr-dokumente',
         eventId: event.id,
-        eventTitle: event.title
+        eventTitle: event.title,
+        werbematerialTyp: 'presse'
       }
       const existingDocs = loadDocuments()
-      // Entferne alte Presseaussendung für dieses Event
-      const filteredDocs = existingDocs.filter((d: any) => 
-        !(d.category === 'pr-dokumente' && d.eventId === event.id && d.name.includes('Presseaussendung'))
-      )
-      const updated = [...filteredDocs, documentData]
+      const updated = [...existingDocs, documentData]
       saveDocuments(updated)
     }
     reader.readAsDataURL(blob)
@@ -4410,7 +3508,7 @@ ${'='.repeat(60)}
     reader.onloadend = () => {
       const documentData = {
         id: `pr-socialmedia-${event.id}-${Date.now()}`,
-        name: `Social Media Posts - ${event.title}`,
+        name: getNextWerbematerialVorschlagName(event.id, event.title, 'social', 'Social Media'),
         type: 'text/html',
         size: blob.size,
         data: reader.result as string,
@@ -4420,13 +3518,11 @@ ${'='.repeat(60)}
         isPlaceholder: false,
         category: 'pr-dokumente',
         eventId: event.id,
-        eventTitle: event.title
+        eventTitle: event.title,
+        werbematerialTyp: 'social'
       }
       const existingDocs = loadDocuments()
-      const filteredDocs = existingDocs.filter((d: any) => 
-        !(d.category === 'pr-dokumente' && d.eventId === event.id && d.name.includes('Social Media'))
-      )
-      const updated = [...filteredDocs, documentData]
+      const updated = [...existingDocs, documentData]
       saveDocuments(updated)
     }
     reader.readAsDataURL(blob)
@@ -4571,7 +3667,7 @@ ${'='.repeat(60)}
     </div>
     
     <div class="qr-code">
-      <p style="color: #5ffbf1; font-weight: 600; margin-bottom: 1rem;">Besuchen Sie uns online:</p>
+      <p style="color: #5ffbf1; font-weight: 600; margin-bottom: 1rem;">Besuch uns online:</p>
       <img src="${qrCodeUrl}" alt="QR Code" />
       <p style="font-size: 0.9rem; margin-top: 0.5rem; color: #8fa0c9;">${flyerContent.qrCode}</p>
     </div>
@@ -4643,7 +3739,7 @@ ${'='.repeat(60)}
     reader.onloadend = () => {
       const documentData = {
         id: `pr-flyer-${event.id}-${Date.now()}`,
-        name: `Flyer - ${event.title}`,
+        name: getNextWerbematerialVorschlagName(event.id, event.title, 'event-flyer', 'Event-Flyer'),
         type: 'text/html',
         size: blob.size,
         data: reader.result as string,
@@ -4653,13 +3749,11 @@ ${'='.repeat(60)}
         isPlaceholder: false,
         category: 'pr-dokumente',
         eventId: event.id,
-        eventTitle: event.title
+        eventTitle: event.title,
+        werbematerialTyp: 'event-flyer'
       }
       const existingDocs = loadDocuments()
-      const filteredDocs = existingDocs.filter((d: any) => 
-        !(d.category === 'pr-dokumente' && d.eventId === event.id && d.name.includes('Flyer'))
-      )
-      const updated = [...filteredDocs, documentData]
+      const updated = [...existingDocs, documentData]
       saveDocuments(updated)
     }
     reader.readAsDataURL(blob)
@@ -4816,7 +3910,7 @@ ${'='.repeat(60)}
     reader.onloadend = () => {
       const documentData = {
         id: `pr-newsletter-${event.id}-${Date.now()}`,
-        name: `Newsletter - ${event.title}`,
+        name: getNextWerbematerialVorschlagName(event.id, event.title, 'newsletter', 'Newsletter'),
         type: 'text/html',
         size: blob.size,
         data: reader.result as string,
@@ -4826,13 +3920,11 @@ ${'='.repeat(60)}
         isPlaceholder: false,
         category: 'pr-dokumente',
         eventId: event.id,
-        eventTitle: event.title
+        eventTitle: event.title,
+        werbematerialTyp: 'newsletter'
       }
       const existingDocs = loadDocuments()
-      const filteredDocs = existingDocs.filter((d: any) => 
-        !(d.category === 'pr-dokumente' && d.eventId === event.id && d.name.includes('Newsletter'))
-      )
-      const updated = [...filteredDocs, documentData]
+      const updated = [...existingDocs, documentData]
       saveDocuments(updated)
     }
     reader.readAsDataURL(blob)
@@ -5139,7 +4231,7 @@ ${'='.repeat(60)}
       reader.onloadend = () => {
         const documentData = {
           id: `pr-plakat-${event.id}-${Date.now()}`,
-          name: `Plakat - ${event.title}`,
+          name: getNextWerbematerialVorschlagName(event.id, event.title, 'plakat', 'Plakat'),
           type: 'text/html',
           size: blob!.size,
           data: reader.result as string,
@@ -5149,13 +4241,11 @@ ${'='.repeat(60)}
           isPlaceholder: false,
           category: 'pr-dokumente',
           eventId: event.id,
-          eventTitle: event.title
+          eventTitle: event.title,
+          werbematerialTyp: 'plakat'
         }
         const existingDocs = loadDocuments()
-        const filteredDocs = existingDocs.filter((d: any) => 
-          !(d.category === 'pr-dokumente' && d.eventId === event.id && d.name.includes('Plakat'))
-        )
-        const updated = [...filteredDocs, documentData]
+        const updated = [...existingDocs, documentData]
         saveDocuments(updated)
       }
       reader.readAsDataURL(blob)
@@ -5874,7 +4964,7 @@ ${'='.repeat(60)}
       <div class="artwork-info">
         <div class="artwork-title">${artwork.title}</div>
         <p><strong>Künstler:</strong> ${artwork.artist}</p>
-        <p><strong>Kategorie:</strong> ${artwork.category === 'malerei' ? 'Bilder' : 'Keramik'}</p>
+        <p><strong>Kategorie:</strong> ${getCategoryLabel(artwork.category)}</p>
         ${artwork.description ? `<p>${artwork.description}</p>` : ''}
         <p><strong>Preis:</strong> €${artwork.price?.toFixed(2) || '0.00'}</p>
         <p><strong>Nummer:</strong> ${artwork.number || artwork.id}</p>
@@ -5992,28 +5082,52 @@ ${'='.repeat(60)}
     }
   }
 
-  // Dokument öffnen/anschauen (documentUrl = Link zum Projekt-Flyer, z. B. K2 Galerie Flyer)
+  // Eintrag aus Liste entfernen (z. B. K2 Flyer / Presse-Einladung aus Anzeige ausblenden)
+  const handleHideFromEventList = (eventId: string, docId: string) => {
+    const updatedEvents = events.map(event => {
+      if (event.id !== eventId) return event
+      const hidden = [...(event.hiddenDocIds || []), docId]
+      return { ...event, hiddenDocIds: hidden }
+    })
+    setEvents(updatedEvents)
+    saveEvents(updatedEvents)
+  }
+
+  // Dokument öffnen/anschauen (documentUrl = Link zum Projekt-Flyer, z. B. K2 Galerie Flyer). Unterstützt auch data/fileData aus globalem Speicher.
   const handleViewEventDocument = (document: any) => {
     if (document.documentUrl) {
       window.open(document.documentUrl, '_blank')
       return
     }
+    const fileData = document.fileData || document.data
+    const fileType = document.fileType || document.type || ''
     const newWindow = window.open()
-    if (newWindow && document.fileData) {
+    if (newWindow && fileData) {
       newWindow.document.write(`
         <html>
           <head><title>${document.name}</title></head>
           <body style="margin:0; padding:20px; background:#f5f5f5;">
-            ${document.fileType?.includes('pdf') 
-              ? `<iframe src="${document.fileData}" style="width:100%; height:100vh; border:none;"></iframe>`
-              : document.fileType?.includes('image')
-              ? `<img src="${document.fileData}" style="max-width:100%; height:auto;" />`
-              : `<a href="${document.fileData}" download="${document.fileName}">Download: ${document.name}</a>`
+            ${fileType?.includes('pdf')
+              ? `<iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe>`
+              : fileType?.includes('image')
+              ? `<img src="${fileData}" style="max-width:100%; height:auto;" />`
+              : fileType?.includes('html')
+              ? `<iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe>`
+              : `<a href="${fileData}" download="${document.fileName || document.name}">Download: ${document.name}</a>`
             }
           </body>
         </html>
       `)
     }
+  }
+
+  // Werbematerial-Vorschlag aus globalem Dokumentenspeicher löschen
+  const handleDeleteWerbematerialDocument = (documentId: string) => {
+    if (!confirm('Diesen Vorschlag wirklich löschen?')) return
+    const updated = documents.filter((d: any) => d.id !== documentId)
+    saveDocuments(updated)
+    setDocuments(updated)
+    setPrSuggestionsRefresh((r: number) => r + 1)
   }
 
   // Event löschen
@@ -6047,7 +5161,7 @@ ${'='.repeat(60)}
     const updated = [...events, newEvent].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     setEvents(updated)
     saveEvents(updated)
-    alert('✅ Eröffnungsevent 24.–26. April wieder angelegt!\n\nJetzt auf das Event klicken und unter „Dokumente“ deinen Flyer (PDF) hinzufügen. Danach „Veröffentlichen“, damit es überall sicher mitgeht.')
+    alert('✅ Eröffnungsevent 24.–26. April wieder angelegt!\n\nDokumente zu diesem Event: Marketing → Öffentlichkeitsarbeit → Rubrik dieses Events → „Dokument zu dieser Rubrik hinzufügen“. Danach „Veröffentlichen“.')
   }
 
   // Event-Modal öffnen
@@ -6063,8 +5177,6 @@ ${'='.repeat(60)}
     setEventDescription('')
     // Automatisch komplette Adresse aus Stammdaten übernehmen
     setEventLocation([galleryData.address, galleryData.city, galleryData.country].filter(Boolean).join(', ') || '')
-    setEventPRSuggestions(null)
-    setEditingPRType(null)
     setShowEventModal(true)
   }
 
@@ -6097,9 +5209,21 @@ ${'='.repeat(60)}
     try {
       localStorage.setItem(getDocumentsKey(), JSON.stringify(docs))
       setDocuments(docs)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Fehler beim Speichern:', error)
-      alert('Fehler beim Speichern. Möglicherweise ist der Speicher voll.')
+      if (error?.name === 'QuotaExceededError') {
+        const freed = tryFreeLocalStorageSpace()
+        if (freed > 0) {
+          try {
+            localStorage.setItem(getDocumentsKey(), JSON.stringify(docs))
+            setDocuments(docs)
+            return
+          } catch (_) {}
+        }
+        alert('⚠️ ' + SPEICHER_VOLL_MELDUNG)
+      } else {
+        alert('Fehler beim Speichern. Möglicherweise ist der Speicher voll.')
+      }
     }
   }
 
@@ -6276,12 +5400,12 @@ ${'='.repeat(60)}
   }
 
   // Laufende Nummer generieren - WICHTIG: Finde maximale Nummer aus ALLEN artworks
-  // Kategorie-basiert: K für Keramik, M für Malerei
-  // WICHTIG: Unterstützt auch alte Nummern ohne K/M Präfix (z.B. "K2-0001")
-  const generateArtworkNumber = async (category: 'malerei' | 'keramik' = 'malerei') => {
-    // Bestimme Präfix basierend auf Kategorie
-    const prefix = category === 'keramik' ? 'K' : 'M'
-    const categoryPrefix = `K2-${prefix}-`
+  // K2: Kategorie-basiert (M/K/G/S/O). ök2: ein Präfix W (Werk)
+  const generateArtworkNumber = async (category: ArtworkCategoryId = 'malerei') => {
+    const forOek2 = isOeffentlichAdminContext()
+    const letter = getCategoryPrefixLetter(category)
+    const categoryPrefix = forOek2 ? 'K2-W-' : `K2-${letter}-`
+    const prefix = forOek2 ? 'W' : letter
     
     // Lade alle artworks (lokal)
     const localArtworks = loadArtworks()
@@ -6322,7 +5446,7 @@ ${'='.repeat(60)}
           if (num > maxNumber) {
             maxNumber = num
           }
-        } else if (a.number.startsWith('K2-') && !a.number.includes('-K-') && !a.number.includes('-M-')) {
+        } else if (a.number.startsWith('K2-') && !a.number.includes('-K-') && !a.number.includes('-M-') && !a.number.includes('-G-') && !a.number.includes('-S-') && !a.number.includes('-O-') && !a.number.includes('-W-')) {
           const numStr = a.number.replace('K2-', '').replace(/[^0-9]/g, '')
           const num = parseInt(numStr || '0')
           if (num > maxNumber) {
@@ -6337,7 +5461,7 @@ ${'='.repeat(60)}
       if (!a.number) return
       usedNumbers.add(a.number)
       
-      // Prüfe ob neue Nummer mit K/M Präfix
+      // Prüfe ob neue Nummer mit Kategorie-Präfix (K/M oder W für ök2)
       if (a.number.startsWith(categoryPrefix)) {
         const numStr = a.number.replace(categoryPrefix, '').replace(/[^0-9]/g, '')
         const num = parseInt(numStr || '0')
@@ -6345,8 +5469,8 @@ ${'='.repeat(60)}
           maxNumber = num
         }
       } 
-      // Prüfe ob alte Nummer ohne Präfix (z.B. "K2-0001")
-      else if (a.number.startsWith('K2-') && !a.number.includes('-K-') && !a.number.includes('-M-')) {
+      // Prüfe ob alte Nummer ohne K/M/W-Präfix (z.B. "K2-0001")
+      else if (a.number.startsWith('K2-') && !a.number.includes('-K-') && !a.number.includes('-M-') && !a.number.includes('-G-') && !a.number.includes('-S-') && !a.number.includes('-O-') && !a.number.includes('-W-')) {
         // Alte Nummer ohne Kategorie-Präfix
         const numStr = a.number.replace('K2-', '').replace(/[^0-9]/g, '')
         const num = parseInt(numStr || '0')
@@ -6430,9 +5554,8 @@ ${'='.repeat(60)}
     })
   }
 
-  // Werk als verkauft markieren
+  // Werk als verkauft markieren – Stückzahl automatisch um 1 verringern
   const handleMarkAsSold = (artworkNumber: string) => {
-    // Hier würde normalerweise die Datenbank aktualisiert werden
     const soldArtworks = JSON.parse(localStorage.getItem('k2-sold-artworks') || '[]')
     if (!soldArtworks.find((a: any) => a.number === artworkNumber)) {
       soldArtworks.push({
@@ -6440,12 +5563,32 @@ ${'='.repeat(60)}
         soldAt: new Date().toISOString()
       })
       localStorage.setItem('k2-sold-artworks', JSON.stringify(soldArtworks))
-      alert(`✅ Werk ${artworkNumber} wurde als verkauft markiert!`)
     } else {
       alert(`⚠️ Werk ${artworkNumber} ist bereits als verkauft markiert.`)
+      setShowSaleModal(false)
+      setSaleInput('')
+      setSaleMethod('scan')
+      return
     }
-    
-    // Modal schließen
+
+    // Stückzahl in Werke-Verwaltung um 1 verringern (gleicher Key wie Admin: K2 bzw. ök2)
+    const artworks = loadArtworks()
+    const idx = artworks.findIndex((a: any) => (a.number || a.id) === artworkNumber)
+    if (idx !== -1) {
+      const a = artworks[idx]
+      const q = a.quantity != null ? Number(a.quantity) : 1
+      if (q > 1) {
+        artworks[idx] = { ...a, quantity: q - 1 }
+      } else {
+        artworks[idx] = { ...a, quantity: 0, inShop: false }
+      }
+      if (saveArtworks(artworks)) {
+        setAllArtworks(loadArtworks())
+        window.dispatchEvent(new CustomEvent('artworks-updated'))
+      }
+    }
+
+    alert(`✅ Werk ${artworkNumber} wurde als verkauft markiert!${idx !== -1 ? ' Stückzahl wurde angepasst.' : ''}`)
     setShowSaleModal(false)
     setSaleInput('')
     setSaleMethod('scan')
@@ -6629,60 +5772,75 @@ ${'='.repeat(60)}
 
   // Werk speichern
   const handleSaveArtwork = async () => {
-    // Bei Bearbeitung: Bild ist optional (wird beibehalten wenn kein neues ausgewählt)
+    if (isSavingArtwork) return
+    setIsSavingArtwork(true)
+    const forOek2 = isOeffentlichAdminContext()
+    
     if (!editingArtwork && !selectedFile) {
+      setIsSavingArtwork(false)
       alert('Bitte ein Bild auswählen')
       return
     }
     
-    // Bei Keramik: Titel automatisch aus Unterkategorie setzen
-    if (artworkCategory === 'keramik') {
-      const subcategoryLabels: Record<string, string> = {
-        'vase': 'Gefäße - Vasen',
-        'teller': 'Schalen - Teller',
-        'skulptur': 'Skulptur',
-        'sonstig': 'Sonstig'
+    if (forOek2) {
+      if (!artworkTitle || !artworkTitle.trim()) {
+        setIsSavingArtwork(false)
+        alert('Bitte einen Titel eingeben')
+        return
       }
-      setArtworkTitle(subcategoryLabels[artworkCeramicSubcategory] || 'Keramik')
-    }
-    
-    // Validierung: Titel nur bei Malerei erforderlich
-    if (artworkCategory === 'malerei' && !artworkTitle) {
-      alert('Bitte einen Titel eingeben')
-      return
-    }
-    
-    if (!artworkPrice || parseFloat(artworkPrice) <= 0) {
-      alert('Bitte einen gültigen Preis eingeben')
-      return
-    }
-    
-    // Validierung für Keramik-Unterkategorien
-    if (artworkCategory === 'keramik') {
-      if (artworkCeramicSubcategory === 'vase' || artworkCeramicSubcategory === 'skulptur') {
-        const height = parseFloat(artworkCeramicHeight)
-        if (!artworkCeramicHeight || height < 10 || height % 5 !== 0) {
-          alert('Bitte die Höhe in cm eingeben (mindestens 10cm, nur 5cm Schritte: 10, 15, 20, 25, ...)')
-          return
+      const priceVal = parseFloat(artworkPrice)
+      if (!artworkPrice || isNaN(priceVal) || priceVal < 0) {
+        setIsSavingArtwork(false)
+        alert('Bitte einen gültigen Preis eingeben (0 oder höher)')
+        return
+      }
+    } else {
+      if (artworkCategory === 'keramik') {
+        const subcategoryLabels: Record<string, string> = {
+          'vase': 'Gefäße - Vasen',
+          'teller': 'Schalen - Teller',
+          'skulptur': 'Skulptur',
+          'sonstig': 'Sonstig'
+        }
+        setArtworkTitle(subcategoryLabels[artworkCeramicSubcategory] || 'Keramik')
+      }
+      if (artworkCategory !== 'keramik' && !artworkTitle) {
+        setIsSavingArtwork(false)
+        alert('Bitte einen Titel eingeben')
+        return
+      }
+      if (!artworkPrice || parseFloat(artworkPrice) <= 0) {
+        setIsSavingArtwork(false)
+        alert('Bitte einen gültigen Preis eingeben')
+        return
+      }
+      if (artworkCategory === 'keramik') {
+        if (artworkCeramicSubcategory === 'vase' || artworkCeramicSubcategory === 'skulptur') {
+          const height = parseFloat(artworkCeramicHeight)
+          if (!artworkCeramicHeight || height < 10 || height % 5 !== 0) {
+            setIsSavingArtwork(false)
+            alert('Bitte die Höhe in cm eingeben (mindestens 10cm, nur 5cm Schritte: 10, 15, 20, 25, ...)')
+            return
+          }
+        }
+        if (artworkCeramicSubcategory === 'teller') {
+          const diameter = parseFloat(artworkCeramicDiameter)
+          if (!artworkCeramicDiameter || diameter < 10 || diameter % 5 !== 0) {
+            setIsSavingArtwork(false)
+            alert('Bitte den Durchmesser in cm eingeben (mindestens 10cm, nur 5cm Schritte: 10, 15, 20, 25, ...)')
+            return
+          }
+        }
+        if (artworkCeramicSubcategory === 'sonstig') {
+          if (!artworkCeramicDescription || artworkCeramicDescription.trim() === '') {
+            setIsSavingArtwork(false)
+            alert('Bitte eine Beschreibung eingeben')
+            return
+          }
         }
       }
-      if (artworkCeramicSubcategory === 'teller') {
-        const diameter = parseFloat(artworkCeramicDiameter)
-        if (!artworkCeramicDiameter || diameter < 10 || diameter % 5 !== 0) {
-          alert('Bitte den Durchmesser in cm eingeben (mindestens 10cm, nur 5cm Schritte: 10, 15, 20, 25, ...)')
-          return
-        }
-      }
-      if (artworkCeramicSubcategory === 'sonstig') {
-        if (!artworkCeramicDescription || artworkCeramicDescription.trim() === '') {
-          alert('Bitte eine Beschreibung eingeben')
-          return
-        }
-      }
     }
     
-    // Laufende Nummer generieren (nur bei neuem Werk)
-    // WICHTIG: Übergebe Kategorie für korrekte Nummerierung (K/M)
     const newArtworkNumber = editingArtwork ? (editingArtwork.number || editingArtwork.id) : await generateArtworkNumber(artworkCategory)
     setArtworkNumber(newArtworkNumber)
     
@@ -6691,17 +5849,15 @@ ${'='.repeat(60)}
       let imageDataUrl: string
       
       if (selectedFile) {
-        // Neues Bild wurde ausgewählt - komprimieren
-        // Für mobile: kleinere Größe (800px) und niedrigere Qualität (0.65)
-        const compressedDataUrl = await compressImage(selectedFile, 800, 0.65)
+        // Neues Bild: anständig komprimieren, um Datenmenge klein zu halten (max 720px, Qualität 0.6)
+        const compressedDataUrl = await compressImage(selectedFile, 720, 0.6)
         
-        // Prüfe ob Data URL zu groß ist (localStorage Limit ~5-10MB)
-        // Für mobile: strengeres Limit (1.5MB statt 2MB)
-        if (compressedDataUrl.length > 1500000) {
-          // Versuche noch stärkere Kompression
+        // Grenze 1.2MB pro Bild (localStorage schonend, viele Werke möglich)
+        if (compressedDataUrl.length > 1200000) {
           const moreCompressed = await compressImage(selectedFile, 600, 0.5)
-          if (moreCompressed.length > 1500000) {
-            alert('Bild ist auch nach Kompression zu groß. Bitte verwende ein kleineres Bild (max. ~1.5MB nach Kompression).')
+          if (moreCompressed.length > 1200000) {
+            setIsSavingArtwork(false)
+            alert('Bild ist auch nach Kompression zu groß. Bitte kleineres Bild wählen (max. ~1.2MB nach Kompression).')
             return
           }
           imageDataUrl = moreCompressed
@@ -6722,6 +5878,7 @@ ${'='.repeat(60)}
         // Bei Bearbeitung ohne neues Bild: Altes Bild beibehalten
         imageDataUrl = editingArtwork.imageUrl
       } else {
+        setIsSavingArtwork(false)
         alert('Bitte ein Bild auswählen')
         return
       }
@@ -6729,16 +5886,19 @@ ${'='.repeat(60)}
       await saveArtworkData(imageDataUrl, newArtworkNumber)
     } catch (error) {
       console.error('Fehler beim Komprimieren:', error)
+      setIsSavingArtwork(false)
       alert('Fehler beim Verarbeiten des Bildes. Bitte versuche es erneut.')
+    } finally {
+      setIsSavingArtwork(false)
     }
   }
 
   // Werk-Daten speichern
   const saveArtworkData = async (imageDataUrl: string, newArtworkNumber: string) => {
-      
-    // Titel bestimmen: Bei Keramik aus Unterkategorie, sonst aus Eingabe
+    const forOek2 = isOeffentlichAdminContext()
+    
     let finalTitle = artworkTitle
-    if (artworkCategory === 'keramik') {
+    if (!forOek2 && artworkCategory === 'keramik') {
       const subcategoryLabels: Record<string, string> = {
         'vase': 'Gefäße - Vasen',
         'teller': 'Schalen - Teller',
@@ -6748,55 +5908,51 @@ ${'='.repeat(60)}
       finalTitle = subcategoryLabels[artworkCeramicSubcategory] || 'Keramik'
     }
     
-    // Prüfe ob Nummer bereits existiert (Konflikt-Erkennung)
     const existingArtworks = loadArtworks()
     const existingWithSameNumber = existingArtworks.find((a: any) => a.number === newArtworkNumber && (!editingArtwork || (a.id !== editingArtwork.id && a.number !== editingArtwork.number)))
     
-    // Falls Konflikt: Generiere neue eindeutige Nummer
     let finalArtworkNumber = newArtworkNumber
     if (existingWithSameNumber && !editingArtwork) {
       console.warn('⚠️ Nummer bereits vorhanden:', newArtworkNumber, '- generiere neue Nummer')
       finalArtworkNumber = await generateArtworkNumber(artworkCategory)
     }
     
-    // Werk-Daten speichern
+    const quantityNum = Math.min(99, Math.max(1, parseInt(artworkQuantity, 10) || 1))
     const artworkData: any = {
       id: finalArtworkNumber,
       number: finalArtworkNumber,
-      title: finalTitle,
+      title: (finalTitle || '').trim(),
       category: artworkCategory,
       artist: artworkArtist,
       description: artworkDescription,
-      price: parseFloat(artworkPrice),
+      price: parseFloat(artworkPrice) || 0,
+      quantity: quantityNum,
       inExhibition: isInExhibition,
       inShop: isInShop,
-      imageUrl: imageDataUrl, // Komprimierte Data URL
+      imageUrl: imageDataUrl,
       createdAt: new Date().toISOString(),
-      addedToGalleryAt: new Date().toISOString(), // Zeitstempel: wann in Galerie aufgenommen
-      // Markiere als Mobile-Werk für bessere Synchronisation
+      addedToGalleryAt: new Date().toISOString(),
       createdOnMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
       deviceId: localStorage.getItem('k2-device-id') || `device-${Date.now()}-${Math.random().toString(36).substring(7)}`
     }
     
-    // Erstelle/Setze Device-ID falls nicht vorhanden
     if (!localStorage.getItem('k2-device-id')) {
       const deviceId = `device-${Date.now()}-${Math.random().toString(36).substring(7)}`
       localStorage.setItem('k2-device-id', deviceId)
       artworkData.deviceId = deviceId
     }
     
-    // Malerei-spezifische Daten hinzufügen
-    if (artworkCategory === 'malerei') {
-      if (artworkPaintingWidth) {
-        artworkData.paintingWidth = parseFloat(artworkPaintingWidth)
-      }
-      if (artworkPaintingHeight) {
-        artworkData.paintingHeight = parseFloat(artworkPaintingHeight)
-      }
+    if (forOek2) {
+      if (artworkSubcategoryFree.trim()) artworkData.subcategoryFree = artworkSubcategoryFree.trim()
+      if (artworkDimensionsFree.trim()) artworkData.dimensionsFree = artworkDimensionsFree.trim()
     }
     
-    // Keramik-spezifische Daten hinzufügen
-    if (artworkCategory === 'keramik') {
+    if (!forOek2 && artworkCategory !== 'keramik') {
+      if (artworkPaintingWidth) artworkData.paintingWidth = parseFloat(artworkPaintingWidth)
+      if (artworkPaintingHeight) artworkData.paintingHeight = parseFloat(artworkPaintingHeight)
+    }
+    
+    if (!forOek2 && artworkCategory === 'keramik') {
       artworkData.ceramicSubcategory = artworkCeramicSubcategory
       artworkData.ceramicType = artworkCeramicType
       artworkData.ceramicSurface = artworkCeramicSurface
@@ -6883,7 +6039,7 @@ ${'='.repeat(60)}
         // Falls immer noch Konflikt: Verwende Timestamp-basierte Nummer
         const timestamp = Date.now().toString().slice(-6)
         const random = Math.floor(Math.random() * 100).toString().padStart(2, '0')
-        const prefix = artworkCategory === 'keramik' ? 'K' : 'M'
+        const prefix = forOek2 ? 'W' : getCategoryPrefixLetter(artworkCategory)
         finalArtworkNumber = `K2-${prefix}-${timestamp}${random}`
         artworkData.number = finalArtworkNumber
         artworkData.id = finalArtworkNumber
@@ -7107,6 +6263,7 @@ ${'='.repeat(60)}
       setArtworkArtist('')
       setArtworkDescription('')
       setArtworkPrice('')
+      setArtworkQuantity('1')
       setIsInShop(true)
       
       // Event dispatchen, damit Galerie-Seite sich aktualisiert
@@ -7130,13 +6287,16 @@ ${'='.repeat(60)}
       if (editingArtwork) {
         console.log('✅ Werk aktualisiert – Etikett kann erneut gedruckt werden')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Fehler beim Speichern:', error)
-      if (error instanceof Error && error.message.includes('QuotaExceededError')) {
-        alert('localStorage ist voll! Bitte lösche einige alte Werke oder verwende kleinere Bilder.')
+      if (error?.name === 'QuotaExceededError') {
+        tryFreeLocalStorageSpace()
+        alert('⚠️ ' + SPEICHER_VOLL_MELDUNG)
       } else {
         alert('Fehler beim Speichern. Bitte versuche es erneut.')
       }
+    } finally {
+      setIsSavingArtwork(false)
     }
   }
 
@@ -7258,6 +6418,89 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
     }
   }
 
+  /** Sammeldruck: Alle ausgewählten Werke als Etiketten in einem Druckvorgang. */
+  const handleBatchPrintEtiketten = async () => {
+    const ids = Array.from(selectedForBatchPrint)
+    if (ids.length === 0) return
+    const toPrint = allArtworks.filter((a: any) => {
+      const n = a?.number || a?.id
+      return n && ids.includes(n)
+    })
+    if (toPrint.length === 0) return
+    const win = window.open('', '_blank', 'width=400,height=500')
+    if (!win) {
+      alert('Pop-up blockiert. Bitte erlaube Fenster für diese Seite und versuche erneut.')
+      return
+    }
+    win.document.write('<html><body style="margin:0;padding:2rem;font-family:system-ui;text-align:center;">Etiketten werden vorbereitet …</body></html>')
+    const activeTenant = getCurrentTenantId()
+    const settings = loadPrinterSettingsForTenant(activeTenant)
+    const lm = parseLabelSize(settings.labelSize)
+    const urls: string[] = []
+    try {
+      for (const artwork of toPrint) {
+        const blob = await getEtikettBlobForArtwork(artwork, lm.width, lm.height)
+        const url = URL.createObjectURL(blob)
+        const q = Math.min(99, Math.max(1, Number(artwork.quantity) || 1))
+        for (let i = 0; i < q; i++) urls.push(url)
+      }
+      const w = lm.width
+      const h = lm.height
+      const pw = Math.round(w * (300 / 25.4))
+      const ph = Math.round(h * (300 / 25.4))
+      /* Pro Seite: gleiche Struktur wie Einzeletikett – feste mm-Größe, Bild füllt mit 100% damit das ganze Etikett sichtbar ist */
+      const pagesHtml = urls.map((url) => `
+        <div class="etikett-page" style="width:${w}mm;height:${h}mm;page-break-after:always;overflow:hidden;display:block;">
+          <div class="etikett-wrap" style="width:100%;height:100%;display:block;overflow:hidden;">
+            <img src="${url}" alt="Etikett" width="${pw}" height="${ph}" style="width:100%;height:100%;display:block;object-fit:contain;object-position:center;" />
+          </div>
+        </div>`).join('')
+      win.document.write(`
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Etiketten (${toPrint.length})</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+@page { size: ${w}mm ${h}mm; margin: 0; }
+html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.etikett-page { overflow: hidden; }
+.etikett-page:last-child { page-break-after: auto; }
+.etikett-wrap img { width: 100%; height: 100%; object-fit: contain; object-position: center; }
+</style></head>
+<body>${pagesHtml}</body></html>`)
+      win.document.close()
+      const cleanup = () => {
+        urls.forEach((u) => URL.revokeObjectURL(u))
+        setBatchPrintUrls(null)
+        setSelectedForBatchPrint(new Set())
+      }
+      const doPrint = () => {
+        win.print()
+        win.addEventListener('afterprint', () => {
+          win.close()
+          cleanup()
+        }, { once: true })
+      }
+      const imgs = win.document.querySelectorAll('img')
+      const total = imgs.length
+      let loaded = 0
+      const check = () => {
+        loaded++
+        if (loaded >= total) setTimeout(doPrint, 150)
+      }
+      imgs.forEach((img) => {
+        if ((img as HTMLImageElement).complete) check()
+        else img.addEventListener('load', check, { once: true })
+      })
+      if (total === 0) {
+        doPrint()
+      }
+    } catch (e) {
+      urls.forEach((u) => URL.revokeObjectURL(u))
+      win.close()
+      console.error('Sammeldruck fehlgeschlagen:', e)
+      alert((e as Error)?.message || 'Etiketten konnten nicht erzeugt werden. Bitte erneut versuchen.')
+    }
+  }
+
   // Mobil: Etikett als Bild erzeugen und Teilen-Menü öffnen (ein Tipp → Drucker/Brother-App wählen)
   const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 768 || 'ontouchstart' in window)
 
@@ -7353,7 +6596,75 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
           ctx.drawImage(img, qrX, qrY, qrSize, qrSize)
           ctx.fillStyle = '#999'
           ctx.font = `${fs4}px Arial,sans-serif`
-          const footer = `${savedArtwork.category === 'malerei' ? 'Bilder' : 'Keramik'} • ${(savedArtwork.artist || '').substring(0, 15)}`
+          const footer = `${getCategoryLabel(savedArtwork.category)} • ${(savedArtwork.artist || '').substring(0, 15)}`
+          ctx.fillText(footer, w / 2, h - pad - fs4)
+          canvas.toBlob((b) => {
+            if (!b) { reject(new Error('Blob fehlgeschlagen')); return }
+            b.arrayBuffer().then((ab) => {
+              try {
+                const withDpi = writePngDpi(ab, 300)
+                const slice = withDpi.buffer.slice(withDpi.byteOffset, withDpi.byteOffset + withDpi.byteLength)
+                resolve(new Blob([slice as ArrayBuffer], { type: 'image/png' }))
+              } catch {
+                resolve(b)
+              }
+            }).catch(() => resolve(b))
+          }, 'image/png', 0.95)
+        }
+        img.onerror = () => reject(new Error('QR-Bild konnte nicht geladen werden.'))
+        img.src = qrDataUrl
+      })
+    })
+  }
+
+  /** Etikett für beliebiges Werk (für Sammeldruck). Gleiche Logik wie getEtikettBlob, aber mit übergebenem artwork. */
+  const getEtikettBlobForArtwork = (artwork: { number?: string; id?: string; title?: string; category?: string; paintingWidth?: number; paintingHeight?: number; artist?: string }, widthMm = 29, heightMm = 90.3): Promise<Blob> => {
+    const num = artwork?.number || artwork?.id
+    if (!num) return Promise.reject(new Error('Werk ohne Nummer'))
+    const pxPerMm = 300 / 25.4
+    const w = Math.round(widthMm * pxPerMm)
+    const h = Math.round(heightMm * pxPerMm)
+    return getQRDataUrl(num).then((qrDataUrl) => {
+      const canvas = document.createElement('canvas')
+      canvas.width = w
+      canvas.height = h
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return Promise.reject(new Error('Canvas fehlgeschlagen'))
+      const pad = Math.max(2, w * 0.03)
+      ctx.fillStyle = '#fff'
+      ctx.fillRect(0, 0, w, h)
+      ctx.strokeStyle = '#8b6914'
+      ctx.lineWidth = Math.max(1, w * 0.007)
+      ctx.strokeRect(pad, pad, w - pad * 2, h - pad * 2)
+      ctx.fillStyle = '#8b6914'
+      ctx.textAlign = 'center'
+      const fs1 = Math.max(8, w * 0.12)
+      const fs2 = Math.max(10, w * 0.16)
+      const fs3 = Math.max(6, w * 0.1)
+      const fs4 = Math.max(5, w * 0.09)
+      ctx.font = `bold ${fs1}px Arial,sans-serif`
+      ctx.fillText('K2 Galerie', w / 2, h * 0.08)
+      ctx.font = `bold ${fs2}px Arial,sans-serif`
+      ctx.fillText(num, w / 2, h * 0.15)
+      ctx.fillStyle = '#666'
+      ctx.font = `${fs3}px Arial,sans-serif`
+      const title = ((artwork.title || '').substring(0, 18)) + ((artwork.title || '').length > 18 ? '…' : '')
+      ctx.fillText(title, w / 2, h * 0.21)
+      if (artwork.category === 'malerei' && artwork.paintingWidth && artwork.paintingHeight) {
+        ctx.font = `${fs4}px Arial,sans-serif`
+        ctx.fillText(`${artwork.paintingWidth} × ${artwork.paintingHeight} cm`, w / 2, h * 0.26)
+      }
+      const qrSize = Math.min(w * 0.75, h * 0.25)
+      const qrX = (w - qrSize) / 2
+      const qrY = h * 0.55
+      return new Promise<Blob>((resolve, reject) => {
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        img.onload = () => {
+          ctx.drawImage(img, qrX, qrY, qrSize, qrSize)
+          ctx.fillStyle = '#999'
+          ctx.font = `${fs4}px Arial,sans-serif`
+          const footer = `${getCategoryLabel(artwork.category || 'malerei')} • ${(artwork.artist || '').substring(0, 15)}`
           ctx.fillText(footer, w / 2, h - pad - fs4)
           canvas.toBlob((b) => {
             if (!b) { reject(new Error('Blob fehlgeschlagen')); return }
@@ -7443,8 +6754,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
     }
   }
 
-  // PDF für QR-Code Plakat erstellen (lokal generiert – keine externe API)
-  const printQRCodePlakat = async () => {
+  // PDF für QR-Code Plakat erstellen (lokal generiert – keine externe API). Optional event für Zuordnung zur Rubrik.
+  const printQRCodePlakat = async (event?: any) => {
     const homepageUrl = `${window.location.origin}/projects/k2-galerie/galerie`
     const rundgangUrl = `${window.location.origin}/projects/k2-galerie/virtueller-rundgang`
     const [homepageQRUrl, rundgangQRUrl] = await Promise.all([
@@ -7626,12 +6937,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             <div class="content">
               <div class="icon">🏛️</div>
               <h1>K2 GALERIE</h1>
-              <h2>Besuchen Sie uns online</h2>
+              <h2>Besuch uns online</h2>
               <p class="subtitle">Kunst & Keramik • Jederzeit verfügbar</p>
               
               <div class="text-block">
-                <p><strong>Entdecken Sie die K2 Galerie – auch wenn wir geschlossen haben!</strong></p>
-                <p>Die K2 Galerie öffnet ihre Türen für Sie – jederzeit und überall. Erleben Sie die aktuellen Werke von Martina und Georg Kreinecker bequem von zu Hause oder unterwegs. Entdecken Sie die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.</p>
+                <p><strong>Entdecke die K2 Galerie – auch wenn wir geschlossen haben!</strong></p>
+                <p>Die K2 Galerie öffnet ihre Türen für dich – jederzeit und überall. Erlebe die aktuellen Werke von Martina und Georg Kreinecker bequem von zu Hause oder unterwegs. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.</p>
               </div>
 
               <div class="highlight-box">
@@ -7644,21 +6955,21 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div class="qr-container">
                   <img src="${homepageQRUrl}" alt="QR-Code für Homepage" class="qr-code" />
                   <div class="qr-label">Homepage</div>
-                  <div class="qr-description">Besuchen Sie unsere Galerie-Website</div>
+                  <div class="qr-description">Besuch unsere Galerie-Website</div>
                 </div>
                 <div class="qr-container">
                   <img src="${rundgangQRUrl}" alt="QR-Code für virtuellen Rundgang" class="qr-code" />
                   <div class="qr-label">Virtueller Rundgang</div>
-                  <div class="qr-description">Erkunden Sie die Ausstellung</div>
+                  <div class="qr-description">Erkunde die Ausstellung</div>
                 </div>
               </div>
 
               <div class="text-block">
                 <p><strong>So funktioniert's:</strong></p>
-                <p>1. Öffnen Sie die Kamera-App auf Ihrem Smartphone<br>
-                2. Scannen Sie einen der QR-Codes<br>
-                3. Erkunden Sie unsere Galerie in Ruhe</p>
-                <p style="margin-top: 15px;">Lassen Sie sich von der Vielfalt unserer Kunstwerke inspirieren und entdecken Sie die einzigartige Verbindung von Malerei und Keramik.</p>
+                <p>1. Öffne die Kamera-App auf deinem Smartphone<br>
+                2. Scanne einen der QR-Codes<br>
+                3. Erkunde unsere Galerie in Ruhe</p>
+                <p style="margin-top: 15px;">Lass dich von der Vielfalt unserer Kunstwerke inspirieren und entdecke die einzigartige Verbindung von Malerei und Keramik.</p>
               </div>
 
               <div class="footer">
@@ -7690,33 +7001,45 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
         try {
           const base64 = reader.result as string
           
-          // Prüfe, ob bereits eine "Virtuelle Einladung" existiert
           const existingDocs = loadDocuments()
-          const existingInvitation = existingDocs.find((d: any) => 
-            d.name && d.name.includes('Virtuelle Einladung')
-          )
-          
-          // Erstelle Dokument-Objekt
-          const doc = {
-            id: existingInvitation ? existingInvitation.id : `qr-plakat-${Date.now()}`,
-            name: `Virtuelle Einladung - QR-Code Plakat (${date}).html`,
-            type: 'text/html',
-            size: blob.size,
-            data: base64,
-            uploadedAt: new Date().toISOString(),
-            isPDF: false,
-            isPlaceholder: false
+          let doc: any
+          if (event?.id) {
+            doc = {
+              id: `qr-plakat-${event.id}-${Date.now()}`,
+              name: getNextWerbematerialVorschlagName(event.id, event.title, 'qr-plakat', 'QR-Code Plakat'),
+              type: 'text/html',
+              size: blob.size,
+              data: base64,
+              uploadedAt: new Date().toISOString(),
+              isPDF: false,
+              isPlaceholder: false,
+              category: 'pr-dokumente',
+              eventId: event.id,
+              eventTitle: event.title,
+              werbematerialTyp: 'qr-plakat'
+            }
+            saveDocuments([...existingDocs, doc])
+            setDocuments([...existingDocs, doc])
+          } else {
+            const existingInvitation = existingDocs.find((d: any) =>
+              d.name && d.name.includes('Virtuelle Einladung')
+            )
+            doc = {
+              id: existingInvitation ? existingInvitation.id : `qr-plakat-${Date.now()}`,
+              name: `Virtuelle Einladung - QR-Code Plakat (${date}).html`,
+              type: 'text/html',
+              size: blob.size,
+              data: base64,
+              uploadedAt: new Date().toISOString(),
+              isPDF: false,
+              isPlaceholder: false
+            }
+            const updated = existingInvitation
+              ? existingDocs.map((d: any) => d.id === existingInvitation.id ? doc : d)
+              : [...existingDocs, doc]
+            saveDocuments(updated)
+            setDocuments(updated)
           }
-          
-          // Ersetze vorhandenes oder füge neues hinzu
-          const updated = existingInvitation
-            ? existingDocs.map((d: any) => d.id === existingInvitation.id ? doc : d)
-            : [...existingDocs, doc]
-          
-          saveDocuments(updated)
-          setDocuments(updated)
-          
-          // Zeige Erfolgsmeldung
           alert(`✅ Virtuelle Einladung wurde im Dokumentenordner gespeichert!\n\nDateiname: ${doc.name}`)
         } catch (error) {
           console.error('Fehler beim Speichern:', error)
@@ -7889,7 +7212,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div class="artwork-number">Seriennummer: ${artwork.number || artwork.id}</div>
               </div>
               <div class="artwork-details">
-                ${artwork.category === 'malerei' ? 'Bilder' : artwork.category === 'keramik' ? 'Keramik' : artwork.category}
+                ${getCategoryLabel(artwork.category)}
                 ${artwork.artist ? ' • ' + artwork.artist : ''}
                 ${artwork.description ? '<br/>' + artwork.description : ''}
               </div>
@@ -7922,23 +7245,27 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
 
   // Kein body/html-Override mehr – K2-Theme (Orange) aus index.css/index.html gilt für die ganze App
 
+  const s = WERBEUNTERLAGEN_STIL
+
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, var(--k2-bg-1, #1a0f0a) 0%, var(--k2-bg-2, #2d1a14) 50%, var(--k2-bg-3, #3d2419) 100%)',
-      color: 'var(--k2-text, #fff5f0)',
+      background: s.bgDark,
+      color: s.text,
       position: 'relative',
       overflowX: 'hidden',
-      width: '100%'
+      width: '100%',
+      fontFamily: s.fontBody
     }}>
-      {/* Animated Background Elements – K2 Orange */}
+      <link rel="stylesheet" href={PROMO_FONTS_URL} />
+      {/* Dezenter Akzent-Hintergrund – wie Willkommensseite Mustergalerie */}
       <div style={{
         position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'radial-gradient(circle at 20% 50%, rgba(255, 140, 66, 0.12), transparent 50%), radial-gradient(circle at 80% 80%, rgba(212, 165, 116, 0.08), transparent 50%)',
+        background: `radial-gradient(ellipse 90% 70% at 50% 0%, ${s.accentSoft}, transparent 55%)`,
         pointerEvents: 'none',
         zIndex: 0
       }} />
@@ -7959,28 +7286,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             gap: '1.5rem'
           }}>
             <div>
-              <h1 style={{
-                margin: 0,
-                fontSize: 'clamp(2rem, 6vw, 3rem)',
-                fontWeight: '700',
-                background: 'linear-gradient(135deg, #ffffff 0%, #b8b8ff 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                letterSpacing: '-0.02em',
-                lineHeight: '1.1'
-              }}>
-                K2 Galerie
-              </h1>
-              <span style={{
-                marginTop: '0.5rem',
-                display: 'block',
-                color: 'rgba(255, 255, 255, 0.7)',
-                fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)',
-                fontWeight: '300'
-              }}>
-                Admin-Verwaltung
-              </span>
+              <AdminBrandLogo />
             </div>
             <nav style={{
               display: 'flex',
@@ -7989,29 +7295,29 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               alignItems: 'center'
             }}>
               <Link 
-                to={PROJECT_ROUTES['k2-galerie'].galerie}
+                to={isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerie}
                 state={{ fromAdmin: true }}
                 style={{
                   padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  color: '#ffffff',
+                  background: s.bgCard,
+                  border: `1px solid ${s.accent}33`,
+                  color: s.text,
                   textDecoration: 'none',
-                  borderRadius: '12px',
+                  borderRadius: s.radius,
                   fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
                   fontWeight: '500',
                   transition: 'all 0.3s ease',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.5rem'
+                  gap: '0.5rem',
+                  boxShadow: s.shadow
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                  e.currentTarget.style.background = s.bgElevated
                   e.currentTarget.style.transform = 'translateY(-2px)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                  e.currentTarget.style.background = s.bgCard
                   e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
@@ -8019,28 +7325,28 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               </Link>
               <Link 
                 to={PROJECT_ROUTES['k2-galerie'].shop}
-                state={{ openAsKasse: true }}
+                state={{ openAsKasse: true, fromOeffentlich: isOeffentlichAdminContext() || undefined }}
                 style={{
                   padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: s.gradientAccent,
                   color: '#ffffff',
                   textDecoration: 'none',
-                  borderRadius: '12px',
+                  borderRadius: s.radius,
                   fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
                   fontWeight: '600',
                   transition: 'all 0.3s ease',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.5rem',
-                  boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                  boxShadow: s.shadow
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-2px)'
-                  e.currentTarget.style.boxShadow = '0 15px 40px rgba(102, 126, 234, 0.4)'
+                  e.currentTarget.style.boxShadow = '0 16px 44px rgba(181, 74, 30, 0.25)'
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.3)'
+                  e.currentTarget.style.boxShadow = s.shadow
                 }}
               >
                 💰 Kasse
@@ -8049,25 +7355,25 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 to={PROJECT_ROUTES['k2-galerie'].kunden} 
                 style={{
                   padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                  background: 'rgba(95, 251, 241, 0.15)',
-                  border: '1px solid rgba(95, 251, 241, 0.4)',
-                  color: '#5ffbf1',
+                  background: s.bgCard,
+                  border: `1px solid ${s.accent}40`,
+                  color: s.accent,
                   textDecoration: 'none',
-                  borderRadius: '12px',
+                  borderRadius: s.radius,
                   fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
                   fontWeight: '600',
                   transition: 'all 0.3s ease',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.5rem',
-                  boxShadow: '0 4px 14px rgba(0,0,0,0.2)'
+                  boxShadow: s.shadow
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(95, 251, 241, 0.25)'
+                  e.currentTarget.style.background = s.bgElevated
                   e.currentTarget.style.transform = 'translateY(-2px)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(95, 251, 241, 0.15)'
+                  e.currentTarget.style.background = s.bgCard
                   e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
@@ -8080,12 +7386,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               }}>
                 <span style={{
                   padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                  background: 'rgba(45, 106, 45, 0.2)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(45, 106, 45, 0.3)',
-                  borderRadius: '12px',
+                  background: `${s.accent}18`,
+                  border: `1px solid ${s.accent}40`,
+                  borderRadius: s.radius,
                   fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                  color: '#4ade80',
+                  color: s.accent,
                   fontWeight: '500',
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -8102,14 +7407,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         localStorage.removeItem('k2-admin-unlocked')
                         localStorage.removeItem('k2-admin-unlocked-expiry')
                       } catch (_) {}
-                      navigate(PROJECT_ROUTES['k2-galerie'].galerie)
+                      navigate(isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerie)
                     }}
                     style={{
                       padding: 'clamp(0.5rem, 1.5vw, 0.6rem) clamp(0.75rem, 2vw, 1rem)',
                       background: 'transparent',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      color: 'rgba(255, 255, 255, 0.7)',
-                      borderRadius: '10px',
+                      border: `1px solid ${s.muted}66`,
+                      color: s.muted,
+                      borderRadius: s.radius,
                       fontSize: 'clamp(0.7rem, 1.8vw, 0.8rem)',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease'
@@ -8136,13 +7441,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             gap: 'clamp(0.5rem, 2vw, 1rem)',
             flexWrap: 'wrap',
             marginBottom: 'clamp(2rem, 5vw, 3rem)',
-            background: 'rgba(255, 255, 255, 0.05)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: s.bgCard,
+            border: `1px solid ${s.accent}22`,
             borderRadius: '16px',
-            padding: 'clamp(0.75rem, 2vw, 1rem)'
+            padding: 'clamp(0.75rem, 2vw, 1rem)',
+            boxShadow: s.shadow
           }}>
             {[
+              { id: 'assistent' as const, label: '🤖 Assistent', desc: 'Galerie einrichten – Schritt für Schritt' },
               { id: 'werke' as const, label: '🎨 Werke verwalten', desc: 'Neue Werke hinzufügen' },
               { id: 'eventplan' as const, label: '📢 Marketing', desc: 'Eventplanung, Außenkommunikation, Flyer, Dokumente' },
               { id: 'design' as const, label: '✨ Design', desc: 'Aussehen ändern' },
@@ -8155,22 +7461,20 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 style={{
                   padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
                   border: 'none',
-                  borderRadius: '12px',
+                  borderRadius: s.radius,
                   fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
                   fontWeight: activeTab === tab.id ? '600' : '500',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
-                  background: activeTab === tab.id
-                    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                    : 'rgba(255, 255, 255, 0.05)',
-                  color: '#ffffff',
-                  boxShadow: activeTab === tab.id ? '0 10px 30px rgba(102, 126, 234, 0.3)' : 'none'
+                  background: activeTab === tab.id ? s.gradientAccent : s.bgElevated,
+                  color: activeTab === tab.id ? '#ffffff' : s.text,
+                  boxShadow: activeTab === tab.id ? s.shadow : 'none'
                 }}
                 onMouseEnter={(e) => {
-                  if (activeTab !== tab.id) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                  if (activeTab !== tab.id) e.currentTarget.style.background = `${s.accent}14`
                 }}
                 onMouseLeave={(e) => {
-                  if (activeTab !== tab.id) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                  if (activeTab !== tab.id) e.currentTarget.style.background = s.bgElevated
                 }}
               >
                 {tab.label}
@@ -8178,21 +7482,31 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             ))}
           </div>
 
+          {/* Galerie-Assistent: neue Kunden Schritt für Schritt zur eigenen Galerie führen */}
+          {activeTab === 'assistent' && (
+            <GalerieAssistent
+              onGoToStep={(tab, subTab) => {
+                setActiveTab(tab)
+                if (subTab && tab === 'einstellungen') setSettingsSubTab(subTab as 'stammdaten' | 'drucker' | 'sicherheit' | 'lager')
+                if (subTab && tab === 'eventplan') setEventplanSubTab(subTab as 'events' | 'öffentlichkeitsarbeit')
+              }}
+            />
+          )}
+
           {/* Werke verwalten – Kasse = ein Button im Header, öffnet direkt den Shop */}
           {activeTab === 'werke' && (
             <section style={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: s.bgCard,
+              border: `1px solid ${s.accent}22`,
               borderRadius: '24px',
               padding: 'clamp(2rem, 5vw, 3rem)',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+              boxShadow: s.shadow,
               marginBottom: 'clamp(2rem, 5vw, 3rem)'
             }}>
               <h2 style={{
                 fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
                 fontWeight: '700',
-                color: '#ffffff',
+                color: s.text,
                 marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
                 letterSpacing: '-0.01em'
               }}>
@@ -8211,7 +7525,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   }}
                   style={{
                     padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: s.gradientAccent,
                     color: '#ffffff',
                     border: 'none',
                     borderRadius: '12px',
@@ -8219,50 +7533,52 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     fontWeight: '600',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
-                    boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                    boxShadow: s.shadow
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 15px 40px rgba(102, 126, 234, 0.4)'
+                    e.currentTarget.style.boxShadow = '0 16px 44px rgba(181, 74, 30, 0.25)'
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.3)'
+                    e.currentTarget.style.boxShadow = s.shadow
                   }}
                 >
                   + Neues Werk hinzufügen
                 </button>
                 <button 
-                  onClick={handleSyncFromServer}
-                  disabled={isSyncing}
+                  type="button"
+                  onClick={() => {
+                    if (selectedForBatchPrint.size > 0) {
+                      handleBatchPrintEtiketten()
+                    } else {
+                      alert('Bitte bei den Werken unten „Zum Sammeldruck“ ankreuzen. Dann hier erneut auf „Sammeldruck“ klicken.')
+                    }
+                  }}
                   style={{
                     padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                    background: isSyncing ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    background: s.gradientSecondary,
                     color: '#ffffff',
+                    border: 'none',
                     borderRadius: '12px',
                     fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
                     fontWeight: '600',
-                    cursor: isSyncing ? 'wait' : 'pointer',
+                    cursor: 'pointer',
                     transition: 'all 0.3s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    opacity: isSyncing ? 0.8 : 1
+                    boxShadow: '0 4px 14px rgba(28, 26, 24, 0.12)'
                   }}
                   onMouseEnter={(e) => {
-                    if (!isSyncing) {
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
-                      e.currentTarget.style.transform = 'translateY(-2px)'
-                    }
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(28, 26, 24, 0.18)'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = isSyncing ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)'
                     e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 4px 14px rgba(28, 26, 24, 0.12)'
                   }}
                 >
-                  {isSyncing ? '⏳ Synchronisiere...' : '🔄 Vom Server laden'}
+                  🖨️ Sammeldruck
                 </button>
+                {!isOeffentlichAdminContext() && (
                 <button 
                   onClick={() => {
                     navigate(PROJECT_ROUTES['k2-galerie'].platzanordnung)
@@ -8293,59 +7609,158 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 >
                   📍 Platzanordnung
                 </button>
+                )}
+            </div>
+            {/* K2 + ök2: Verkaufte Werke in Galerie anzeigen – K2 = k2-stammdaten-galerie, ök2 = k2-oeffentlich-galerie-settings */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1rem', marginBottom: 'clamp(1.5rem, 4vw, 2rem)', padding: '1rem', background: s.bgElevated, borderRadius: '12px', border: `1px solid ${s.accent}22` }}>
+              <span style={{ fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: s.text, fontWeight: '500' }}>Verkaufte Werke in Galerie anzeigen</span>
+              <select
+                value={isOeffentlichAdminContext()
+                  ? soldArtworksDisplayDaysOek2
+                  : (typeof galleryData.soldArtworksDisplayDays === 'number' ? galleryData.soldArtworksDisplayDays : 30)}
+                onChange={(e) => {
+                  const days = Number(e.target.value)
+                  if (isOeffentlichAdminContext()) {
+                    setSoldArtworksDisplayDaysOek2(days)
+                    try {
+                      const raw = localStorage.getItem('k2-oeffentlich-galerie-settings')
+                      const current = raw ? JSON.parse(raw) : {}
+                      localStorage.setItem('k2-oeffentlich-galerie-settings', JSON.stringify({ ...current, soldArtworksDisplayDays: days }))
+                    } catch (_) {}
+                  } else {
+                    setGalleryData((prev: any) => ({ ...prev, soldArtworksDisplayDays: days }))
+                    try {
+                      const raw = localStorage.getItem('k2-stammdaten-galerie')
+                      const current = raw ? JSON.parse(raw) : {}
+                      localStorage.setItem('k2-stammdaten-galerie', JSON.stringify({ ...current, soldArtworksDisplayDays: days }))
+                    } catch (_) {}
+                  }
+                }}
+                style={{
+                  padding: '0.5rem 0.75rem',
+                  background: s.bgCard,
+                  border: `1px solid ${s.accent}33`,
+                  borderRadius: s.radius,
+                  fontSize: 'clamp(0.9rem, 2.2vw, 1rem)',
+                  color: s.text,
+                  cursor: 'pointer',
+                  minWidth: '200px'
+                }}
+              >
+                <option value={0}>Sofort in History (nicht in Galerie)</option>
+                <option value={7}>1 Woche</option>
+                <option value={14}>2 Wochen</option>
+                <option value={28}>4 Wochen</option>
+                <option value={30}>ca. 1 Monat</option>
+                <option value={56}>8 Wochen</option>
+                <option value={84}>12 Wochen</option>
+              </select>
+              <span style={{ fontSize: '0.85rem', color: s.muted }}>Danach erscheinen verkaufte Werke nur noch in der History.</span>
             </div>
               <div style={{
                 display: 'flex',
-                gap: 'clamp(0.75rem, 2vw, 1rem)',
+                gap: 'clamp(1rem, 3vw, 1.5rem)',
                 flexWrap: 'wrap',
+                alignItems: 'center',
                 marginBottom: 'clamp(2rem, 5vw, 3rem)'
               }}>
-                <input 
-                  type="text" 
-                  placeholder="Werke durchsuchen..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{
-                    flex: 1,
-                    minWidth: '200px',
-                    padding: 'clamp(0.75rem, 2vw, 1rem)',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    borderRadius: '12px',
-                    fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                    color: '#ffffff',
-                    outline: 'none'
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)'
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)'
-                  }}
-                />
-                <select 
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  style={{
-                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    borderRadius: '12px',
-                    fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                    color: '#ffffff',
-                    outline: 'none',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <option value="alle" style={{ background: '#1a1f3a', color: '#ffffff' }}>Alle Kategorien</option>
-                  <option value="malerei" style={{ background: '#1a1f3a', color: '#ffffff' }}>Bilder</option>
-                  <option value="keramik" style={{ background: '#1a1f3a', color: '#ffffff' }}>Keramik</option>
-                </select>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: '1', minWidth: '200px' }}>
+                  <span style={{ fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: s.muted, whiteSpace: 'nowrap' }}>Suchen</span>
+                  <input 
+                    type="text" 
+                    placeholder="Titel oder Nummer…" 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{
+                      flex: 1,
+                      minWidth: '120px',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: s.bgCard,
+                      border: `1px solid ${s.accent}33`,
+                      borderRadius: s.radius,
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                      color: s.text,
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = `${s.accent}88`
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = `${s.accent}33`
+                    }}
+                  />
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: s.muted, whiteSpace: 'nowrap' }}>Kategorie</span>
+                  <select 
+                    value={categoryFilter}
+                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    style={{
+                      padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.25rem, 3vw, 1.5rem)',
+                      background: s.bgCard,
+                      border: `1px solid ${s.accent}33`,
+                      borderRadius: s.radius,
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                      color: s.text,
+                      outline: 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <option value="alle" style={{ background: s.bgCard, color: s.text }}>Alle</option>
+                    {ARTWORK_CATEGORIES.map((c) => (
+                      <option key={c.id} value={c.id} style={{ background: s.bgCard, color: s.text }}>{c.label}</option>
+                    ))}
+                  </select>
+                </label>
               </div>
+              {selectedForBatchPrint.size > 0 && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem',
+                  flexWrap: 'wrap',
+                  padding: '0.75rem 1rem',
+                  background: `${s.accent}15`,
+                  border: `1px solid ${s.accent}40`,
+                  borderRadius: s.radius,
+                  marginBottom: '1rem'
+                }}>
+                  <span style={{ fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: s.text }}>
+                    {selectedForBatchPrint.size} Etikett{selectedForBatchPrint.size !== 1 ? 'en' : ''} gesammelt
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleBatchPrintEtiketten}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      background: s.gradientSecondary,
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: '#fff',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      fontSize: 'clamp(0.85rem, 2.2vw, 0.95rem)'
+                    }}
+                  >
+                    Sammeldruck: {selectedForBatchPrint.size} Etiketten drucken
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedForBatchPrint(new Set())}
+                    style={{
+                      padding: '0.5rem 0.75rem',
+                      background: s.bgElevated,
+                      border: `1px solid ${s.accent}40`,
+                      borderRadius: '8px',
+                      color: s.text,
+                      cursor: 'pointer',
+                      fontSize: 'clamp(0.85rem, 2.2vw, 0.95rem)'
+                    }}
+                  >
+                    Abwählen
+                  </button>
+                </div>
+              )}
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(clamp(200px, 30vw, 280px), 1fr))',
@@ -8368,15 +7783,15 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       gridColumn: '1 / -1', 
                       textAlign: 'center', 
                       padding: 'clamp(3rem, 8vw, 5rem)',
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      backdropFilter: 'blur(20px)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '20px'
+                      background: s.bgCard,
+                      border: `1px solid ${s.accent}22`,
+                      borderRadius: '20px',
+                      boxShadow: s.shadow
                     }}>
-                      <p style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', color: 'rgba(255, 255, 255, 0.9)' }}>
+                      <p style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', color: s.text }}>
                         Noch keine Werke vorhanden
                       </p>
-                      <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', marginTop: '1rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+                      <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', marginTop: '1rem', color: s.muted }}>
                         Klicke auf "+ Neues Werk hinzufügen" um ein Werk anzulegen.
                       </p>
                     </div>
@@ -8390,21 +7805,20 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   <div 
                     key={artwork.number || artwork.id} 
                     style={{
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      backdropFilter: 'blur(20px)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      background: s.bgCard,
+                      border: `1px solid ${s.accent}22`,
                       borderRadius: '20px',
                       padding: 'clamp(1rem, 3vw, 1.5rem)',
-                      boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+                      boxShadow: s.shadow,
                       transition: 'all 0.3s ease'
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'translateY(-8px)'
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+                      e.currentTarget.style.background = s.bgElevated
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                      e.currentTarget.style.background = s.bgCard
                     }}
                   >
                     {imageSrc ? (
@@ -8451,10 +7865,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         display: 'flex', 
                         alignItems: 'center', 
                         justifyContent: 'center', 
-                        background: 'rgba(255, 255, 255, 0.05)', 
+                        background: s.bgElevated, 
                         borderRadius: '12px', 
                         marginBottom: 'clamp(0.75rem, 2vw, 1rem)', 
-                        color: 'rgba(255, 255, 255, 0.3)',
+                        color: s.muted,
                         fontSize: 'clamp(2rem, 5vw, 3rem)'
                       }}>
                         🖼️
@@ -8463,7 +7877,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     <h3 style={{
                       margin: '0 0 0.5rem',
                       fontSize: 'clamp(1rem, 3vw, 1.2rem)',
-                      color: '#ffffff',
+                      color: s.text,
                       fontWeight: '600'
                     }}>
                       {artwork.title || artwork.number}
@@ -8471,14 +7885,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     <p style={{
                       margin: '0.25rem 0',
                       fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
-                      color: 'rgba(255, 255, 255, 0.6)'
+                      color: s.muted
                     }}>
-                      {artwork.category === 'malerei' ? 'Bilder' : artwork.category === 'keramik' ? 'Keramik' : artwork.category}
+                      {getCategoryLabel(artwork.category)}
                     </p>
                     {artwork.artist && (
                       <p style={{ 
                         fontSize: 'clamp(0.85rem, 2.5vw, 0.95rem)', 
-                        color: 'rgba(255, 255, 255, 0.5)',
+                        color: s.muted,
                         margin: '0.25rem 0'
                       }}>
                         {artwork.artist}
@@ -8487,25 +7901,27 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     {artwork.price && (
                       <p style={{ 
                         fontWeight: '700', 
-                        background: 'linear-gradient(135deg, #b8b8ff 0%, #ff77c6 100%)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text',
+                        color: s.accent,
                         fontSize: 'clamp(1rem, 3vw, 1.2rem)',
                         margin: '0.5rem 0'
                       }}>
                         € {artwork.price.toFixed(2)}
                       </p>
                     )}
+                    {(artwork.quantity && artwork.quantity > 1) && (
+                      <p style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', color: s.muted, margin: '0.25rem 0' }}>
+                        Stück: {artwork.quantity}
+                      </p>
+                    )}
                     <div style={{ 
                       marginTop: '0.75rem', 
                       fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', 
-                      color: 'rgba(255, 255, 255, 0.6)' 
+                      color: s.muted 
                     }}>
                       {artwork.inExhibition && <span style={{ display: 'block' }}>✓ Ausstellung</span>}
                       {artwork.inShop && <span style={{ display: 'block' }}>✓ Shop</span>}
                       {(artwork.addedToGalleryAt || artwork.createdAt) && (
-                        <span style={{ display: 'block', color: 'rgba(255, 255, 255, 0.45)', fontSize: 'clamp(0.75rem, 2vw, 0.85rem)' }}>
+                        <span style={{ display: 'block', color: s.muted, fontSize: 'clamp(0.75rem, 2vw, 0.85rem)' }}>
                           Aufgenommen: {(() => {
                             const d = artwork.addedToGalleryAt || artwork.createdAt
                             if (!d) return ''
@@ -8517,6 +7933,32 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         </span>
                       )}
                     </div>
+                    <label style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      marginTop: 'clamp(0.75rem, 2vw, 1rem)',
+                      fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
+                      color: s.muted,
+                      cursor: 'pointer'
+                    }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedForBatchPrint.has(artwork.number || artwork.id || '')}
+                        onChange={() => {
+                          const num = artwork.number || artwork.id || ''
+                          if (!num) return
+                          setSelectedForBatchPrint((prev) => {
+                            const next = new Set(prev)
+                            if (next.has(num)) next.delete(num)
+                            else next.add(num)
+                            return next
+                          })
+                        }}
+                        style={{ cursor: 'pointer', accentColor: s.accent }}
+                      />
+                      Zum Sammeldruck
+                    </label>
                     <div style={{
                       display: 'flex',
                       gap: 'clamp(0.5rem, 2vw, 0.75rem)',
@@ -8527,9 +7969,25 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           // Setze editingArtwork State für Bearbeitung
                           setEditingArtwork(artwork)
                           
-                          const category = artwork.category || 'malerei'
+                          if (isOeffentlichAdminContext()) {
+                            setArtworkTitle(artwork.title || '')
+                            setArtworkCategory(ARTWORK_CATEGORIES.some((c) => c.id === artwork.category) ? (artwork.category as ArtworkCategoryId) : 'malerei')
+                            setArtworkSubcategoryFree(artwork.subcategoryFree || artwork.ceramicSubcategory || '')
+                            setArtworkDimensionsFree(artwork.dimensionsFree || (artwork.paintingWidth && artwork.paintingHeight ? `${artwork.paintingWidth} × ${artwork.paintingHeight} cm` : '') || '')
+                            setArtworkArtist(artwork.artist || '')
+                            setArtworkDescription(artwork.description || '')
+                            setArtworkPrice(String(artwork.price || ''))
+                            setArtworkQuantity(String(artwork.quantity ?? 1))
+                            setIsInShop(artwork.inShop !== undefined ? artwork.inShop : true)
+                            setArtworkNumber(artwork.number || '')
+                            setArtworkFormVariantOek2((artwork.subcategoryFree || artwork.dimensionsFree || artwork.artist) ? 'ausfuehrlich' : 'schnell')
+                            if (artwork.imageUrl) setPreviewUrl(artwork.imageUrl)
+                            setShowAddModal(true)
+                            return
+                          }
+                          
+                          const category = ARTWORK_CATEGORIES.some((c) => c.id === artwork.category) ? (artwork.category as ArtworkCategoryId) : 'malerei'
                           setArtworkCategory(category)
-                          // Bei Keramik: Titel aus Unterkategorie setzen, nicht aus artwork.title
                           if (category === 'keramik') {
                             const subcategory = artwork.ceramicSubcategory || 'vase'
                             setArtworkCeramicSubcategory(subcategory as 'vase' | 'teller' | 'skulptur' | 'sonstig')
@@ -8559,34 +8017,29 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           setArtworkArtist(artwork.artist || '')
                           setArtworkDescription(artwork.description || '')
                           setArtworkPrice(String(artwork.price || ''))
+                          setArtworkQuantity(String(artwork.quantity ?? 1))
                           setIsInShop(artwork.inShop !== undefined ? artwork.inShop : true)
                           setArtworkNumber(artwork.number || '')
-                          
-                          // Setze Preview-URL wenn vorhanden
-                          if (artwork.imageUrl) {
-                            setPreviewUrl(artwork.imageUrl)
-                          }
-                          
+                          if (artwork.imageUrl) setPreviewUrl(artwork.imageUrl)
                           setShowAddModal(true)
                         }}
                         style={{
                           flex: 1,
                           padding: 'clamp(0.5rem, 1.5vw, 0.75rem)',
-                          background: 'rgba(255, 255, 255, 0.1)',
-                          backdropFilter: 'blur(10px)',
-                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          background: s.bgElevated,
+                          border: `1px solid ${s.accent}40`,
                           borderRadius: '8px',
-                          color: '#ffffff',
+                          color: s.text,
                           fontSize: 'clamp(0.85rem, 2.5vw, 0.95rem)',
                           fontWeight: '500',
                           cursor: 'pointer',
                           transition: 'all 0.3s ease'
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                          e.currentTarget.style.background = `${s.accent}18`
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                          e.currentTarget.style.background = s.bgElevated
                         }}
                       >
                         Bearbeiten
@@ -8608,7 +8061,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         style={{
                           flex: 1,
                           padding: 'clamp(0.5rem, 1.5vw, 0.75rem)',
-                          background: 'linear-gradient(135deg, #f5576c 0%, #f093fb 100%)',
+                          background: s.gradientDanger,
                           border: 'none',
                           borderRadius: '8px',
                           color: '#ffffff',
@@ -8616,15 +8069,15 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           fontWeight: '500',
                           cursor: 'pointer',
                           transition: 'all 0.3s ease',
-                          boxShadow: '0 10px 30px rgba(245, 87, 108, 0.3)'
+                          boxShadow: '0 4px 12px rgba(155, 58, 40, 0.25)'
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.transform = 'translateY(-2px)'
-                          e.currentTarget.style.boxShadow = '0 15px 40px rgba(245, 87, 108, 0.4)'
+                          e.currentTarget.style.boxShadow = '0 8px 20px rgba(155, 58, 40, 0.35)'
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.transform = 'translateY(0)'
-                          e.currentTarget.style.boxShadow = '0 10px 30px rgba(245, 87, 108, 0.3)'
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(155, 58, 40, 0.25)'
                         }}
                       >
                         Löschen
@@ -8637,375 +8090,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               </div>
             </section>
           )}
-
-          {/* Eventplanung: Dokumente (Marketingabteilung) – Sub-Tabs stehen in Eventplanung-Section oben */}
-          {activeTab === 'eventplan' && eventplanSubTab === 'dokumente' && (
-            <section style={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '24px',
-              padding: 'clamp(2rem, 5vw, 3rem)',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-              marginBottom: 'clamp(2rem, 5vw, 3rem)'
-            }}>
-              <h2 style={{
-                fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
-                fontWeight: '700',
-                color: '#ffffff',
-                marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
-                letterSpacing: '-0.01em'
-              }}>
-                Dokumente verwalten
-              </h2>
-              
-              {/* Filter für Dokumente */}
-              <div style={{
-                display: 'flex',
-                gap: '0.75rem',
-                marginBottom: '1.5rem',
-                flexWrap: 'wrap'
-              }}>
-                <button
-                  onClick={() => setDocumentFilter('alle')}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    background: documentFilter === 'alle' 
-                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                      : 'rgba(255, 255, 255, 0.1)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    borderRadius: '8px',
-                    color: '#ffffff',
-                    fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                    fontWeight: documentFilter === 'alle' ? '600' : '500',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}
-                >
-                  Alle
-                </button>
-                <button
-                  onClick={() => setDocumentFilter('pr-dokumente')}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    background: documentFilter === 'pr-dokumente' 
-                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                      : 'rgba(255, 255, 255, 0.1)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    borderRadius: '8px',
-                    color: '#ffffff',
-                    fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                    fontWeight: documentFilter === 'pr-dokumente' ? '600' : '500',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}
-                >
-                  📢 PR-Dokumente
-                </button>
-                <button
-                  onClick={() => setDocumentFilter('sonstige')}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    background: documentFilter === 'sonstige' 
-                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                      : 'rgba(255, 255, 255, 0.1)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    borderRadius: '8px',
-                    color: '#ffffff',
-                    fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                    fontWeight: documentFilter === 'sonstige' ? '600' : '500',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}
-                >
-                  Sonstige
-                </button>
-              </div>
-              
-              <div style={{
-                display: 'flex',
-                gap: 'clamp(0.75rem, 2vw, 1rem)',
-                flexWrap: 'wrap',
-                marginBottom: 'clamp(2rem, 5vw, 3rem)'
-              }}>
-                <button 
-                  onClick={() => setShowUploadModal(true)}
-                  style={{
-                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '12px',
-                    fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 15px 40px rgba(102, 126, 234, 0.4)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.3)'
-                  }}
-                >
-                  + Dokument hochladen
-                </button>
-                <button 
-                  onClick={() => {
-                    const input = document.createElement('input')
-                    input.type = 'file'
-                    input.multiple = true
-                    input.accept = '.pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,image/*,application/pdf'
-                    input.onchange = async (e) => {
-                      const files = Array.from((e.target as HTMLInputElement).files || [])
-                      if (files.length === 0) return
-                      
-                      let successCount = 0
-                      let errorCount = 0
-                      
-                      for (const file of files) {
-                        try {
-                          await handleDocumentUpload(file)
-                          successCount++
-                        } catch (error) {
-                          console.error('Fehler beim Hochladen:', file.name, error)
-                          errorCount++
-                        }
-                      }
-                      
-                      if (successCount > 0) {
-                        alert(`✅ ${successCount} Dokument${successCount > 1 ? 'e' : ''} erfolgreich hochgeladen${errorCount > 0 ? `\n❌ ${errorCount} Fehler` : ''}`)
-                      } else {
-                        alert(`❌ Fehler beim Hochladen der Dokumente`)
-                      }
-                    }
-                    input.click()
-                  }}
-                  style={{
-                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    color: '#ffffff',
-                    borderRadius: '12px',
-                    fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-                    e.currentTarget.style.transform = 'translateY(0)'
-                  }}
-                >
-                  📁 Mehrere Dokumente hochladen
-                </button>
-                {documents.length === 0 && (
-                  <button 
-                  onClick={() => {
-                    if (confirm('Möchtest du die Beispiel-Dokumente wiederherstellen? Diese sind Platzhalter ohne echte Dateien.')) {
-                      const exampleDocs = [
-                        {
-                          id: 'example-1',
-                          name: 'Einladungsfolder',
-                          type: 'application/pdf',
-                          size: 2400000,
-                          data: '',
-                          uploadedAt: new Date('2026-02-01').toISOString(),
-                          isPDF: true,
-                          isPlaceholder: true
-                        },
-                        {
-                          id: 'example-2',
-                          name: 'Plakat A4',
-                          type: 'application/pdf',
-                          size: 1800000,
-                          data: '',
-                          uploadedAt: new Date('2026-02-02').toISOString(),
-                          isPDF: true,
-                          isPlaceholder: true
-                        },
-                        {
-                          id: 'example-3',
-                          name: 'Presse',
-                          type: 'application/pdf',
-                          size: 3100000,
-                          data: '',
-                          uploadedAt: new Date('2026-02-03').toISOString(),
-                          isPDF: true,
-                          isPlaceholder: true
-                        },
-                        {
-                          id: 'example-4',
-                          name: 'Katalog',
-                          type: 'application/pdf',
-                          size: 5200000,
-                          data: '',
-                          uploadedAt: new Date('2026-02-04').toISOString(),
-                          isPDF: true,
-                          isPlaceholder: true
-                        }
-                      ]
-                      saveDocuments(exampleDocs)
-                      alert('✅ Beispiel-Dokumente wiederhergestellt!\n\nHinweis: Diese sind Platzhalter. Bitte lade die echten Dokumente hoch, indem du auf die Dokumente klickst und sie durch echte Dateien ersetzt.')
-                    }
-                  }}
-                  style={{ background: '#666' }}
-                >
-                  📋 Beispiel-Dokumente wiederherstellen
-                </button>
-              )}
-            </div>
-            
-              {documents.length === 0 ? (
-                <div style={{ 
-                  textAlign: 'center', 
-                  padding: 'clamp(3rem, 8vw, 5rem)',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '20px'
-                }}>
-                  <p style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', color: 'rgba(255, 255, 255, 0.9)' }}>
-                    Noch keine Dokumente vorhanden
-                  </p>
-                  <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', marginTop: '1rem', color: 'rgba(255, 255, 255, 0.7)' }}>
-                    Klicke auf "+ Dokument hochladen" um ein Dokument hinzuzufügen.
-                  </p>
-                </div>
-              ) : (
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 'clamp(0.75rem, 2vw, 1rem)'
-                }}>
-                {documents
-                  .filter((doc: any) => {
-                    if (documentFilter === 'alle') return true
-                    if (documentFilter === 'pr-dokumente') return doc.category === 'pr-dokumente'
-                    if (documentFilter === 'sonstige') return !doc.category || doc.category !== 'pr-dokumente'
-                    return true
-                  })
-                  .map((doc) => {
-                  const fileSizeMB = (doc.size / (1024 * 1024)).toFixed(2)
-                  const uploadDate = new Date(doc.uploadedAt).toLocaleDateString('de-DE', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric'
-                  })
-                  
-                  let icon = '📄'
-                  if (doc.type.startsWith('image/')) icon = '🖼️'
-                  else if (doc.type === 'application/pdf') icon = '📋'
-                  else if (doc.type.includes('word') || doc.type.includes('document')) icon = '📝'
-                  
-                  return (
-                    <div key={doc.id} className="document-admin-item" style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: '1rem',
-                      background: '#fff',
-                      borderRadius: '8px',
-                      marginBottom: '0.5rem',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                    }}>
-                      <span style={{ fontSize: '2rem', marginRight: '1rem' }}>{icon}</span>
-                      <div style={{ flex: 1 }}>
-                        <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#1f1f1f' }}>{doc.name}</h3>
-                        <p style={{ margin: '0.25rem 0 0', fontSize: '0.9rem', color: '#666' }}>
-                          {doc.isPlaceholder ? '⚠️ Platzhalter - Bitte Datei hochladen' : `${doc.isPDF ? 'PDF' : doc.type.split('/')[1]?.toUpperCase() || 'DATEI'} • ${fileSizeMB} MB`} • {doc.isPlaceholder ? 'Erstellt' : 'Hochgeladen'}: {uploadDate}
-                        </p>
-                      </div>
-                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                        {doc.isPlaceholder ? (
-                          <>
-                            <button 
-                              className="btn-secondary"
-                              onClick={() => {
-                                const input = document.createElement('input')
-                                input.type = 'file'
-                                input.accept = '.pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,image/*,application/pdf'
-                                input.onchange = async (e) => {
-                                  const file = (e.target as HTMLInputElement).files?.[0]
-                                  if (file) {
-                                    try {
-                                      const reader = new FileReader()
-                                      reader.onload = (e) => {
-                                        const base64 = e.target?.result as string
-                                        const updated = documents.map(d => 
-                                          d.id === doc.id 
-                                            ? { ...d, name: file.name, type: file.type, size: file.size, data: base64, isPDF: file.type === 'application/pdf', isPlaceholder: false }
-                                            : d
-                                        )
-                                        saveDocuments(updated)
-                                        alert('✅ Dokument erfolgreich ersetzt!')
-                                      }
-                                      reader.onerror = () => alert('❌ Fehler beim Laden der Datei')
-                                      reader.readAsDataURL(file)
-                                    } catch (error) {
-                                      alert('❌ Fehler beim Ersetzen')
-                                    }
-                                  }
-                                }
-                                input.click()
-                              }}
-                              style={{ background: '#8b6914', color: '#fff', padding: '0.5rem 1rem', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                            >
-                              📤 Datei hochladen
-                            </button>
-                            <button 
-                              className="btn-secondary"
-                              onClick={() => deleteDocument(doc.id)}
-                              style={{ background: '#c33', color: '#fff', padding: '0.5rem 1rem', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                            >
-                              🗑️ Löschen
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button 
-                              className="btn-secondary"
-                              onClick={() => convertToPDF(doc)}
-                              style={{ background: '#8b6914', color: '#fff', padding: '0.5rem 1rem', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                            >
-                              📄 Zu PDF
-                            </button>
-                            <button 
-                              className="btn-secondary"
-                              onClick={() => {
-                                const link = document.createElement('a')
-                                link.href = doc.data
-                                link.download = doc.name
-                                link.click()
-                              }}
-                              style={{ background: '#2d6a2d', color: '#fff', padding: '0.5rem 1rem', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                            >
-                              ⬇️ Download
-                            </button>
-                            <button 
-                              className="btn-secondary"
-                              onClick={() => deleteDocument(doc.id)}
-                              style={{ background: '#c33', color: '#fff', padding: '0.5rem 1rem', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                            >
-                              🗑️ Löschen
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </section>
-        )}
 
         {/* Upload Modal */}
         {showUploadModal && (
@@ -9080,32 +8164,33 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
             marginBottom: 'clamp(2rem, 5vw, 3rem)'
           }}>
+            <div style={designDraftCssVars}>
             {/* Nur bei Farben: Titel + Zurück zur Vorschau */}
             {designSubTab === 'farben' && (
               <>
-                <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: '700', color: '#ffffff', marginBottom: 'clamp(1.5rem, 4vw, 2rem)', letterSpacing: '-0.01em' }}>✨ Design</h2>
-                <p style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '1.5rem' }}>Farben und Themes anpassen.</p>
-                <button type="button" onClick={() => setDesignSubTab('vorschau')} style={{ padding: '0.75rem 1.5rem', marginBottom: '2rem', border: 'none', borderRadius: 8, fontSize: '1rem', background: 'rgba(255, 255, 255, 0.08)', color: '#fff', cursor: 'pointer' }}>← Zur Vorschau</button>
+                <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: '700', color: s.text, marginBottom: 'clamp(1.5rem, 4vw, 2rem)', letterSpacing: '-0.01em' }}>✨ Design</h2>
+                <p style={{ color: s.muted, marginBottom: '1.5rem' }}>Farben und Themes anpassen.</p>
+                <button type="button" onClick={() => setDesignSubTab('vorschau')} style={{ padding: '0.75rem 1.5rem', marginBottom: '2rem', border: `1px solid ${s.accent}33`, borderRadius: 8, fontSize: '1rem', background: s.bgElevated, color: s.text, cursor: 'pointer' }}>← Zur Vorschau</button>
               </>
             )}
 
-            {/* Vorschau – füllt den gesamten Bereich, nur minimale Leiste */}
-            {designSubTab === 'vorschau' && !isOeffentlichAdminContext() && (
-              <div ref={previewContainerRef} style={{ width: '100%', minHeight: 'calc(100vh - 180px)', background: 'linear-gradient(135deg, var(--k2-bg-1, #0a0e27) 0%, var(--k2-bg-2, #1a1f3a) 100%)' }}>
+            {/* Vorschau – wie in K2: Seite 1 / Seite 2 / Farben, für K2 und ök2 gleich */}
+            {designSubTab === 'vorschau' && (
+              <div ref={previewContainerRef} style={{ width: '100%', minHeight: 'calc(100vh - 180px)', background: WERBEUNTERLAGEN_STIL.bgDark }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', padding: '0.5rem 1rem', marginBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                   <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                     <button type="button" onClick={() => setPreviewFullscreenPage(1)} style={{ padding: '0.4rem 0.9rem', fontSize: '0.9rem', background: previewFullscreenPage === 1 ? 'rgba(95, 251, 241, 0.25)' : 'transparent', border: '1px solid ' + (previewFullscreenPage === 1 ? 'var(--k2-accent)' : 'rgba(255,255,255,0.2)'), borderRadius: 6, color: previewFullscreenPage === 1 ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>Seite 1</button>
                     <button type="button" onClick={() => setPreviewFullscreenPage(2)} style={{ padding: '0.4rem 0.9rem', fontSize: '0.9rem', background: previewFullscreenPage === 2 ? 'rgba(95, 251, 241, 0.25)' : 'transparent', border: '1px solid ' + (previewFullscreenPage === 2 ? 'var(--k2-accent)' : 'rgba(255,255,255,0.2)'), borderRadius: 6, color: previewFullscreenPage === 2 ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>Seite 2</button>
-                    <a href={PROJECT_ROUTES['k2-galerie'].galerie} target="_blank" rel="noopener noreferrer" style={{ padding: '0.5rem 1rem', fontSize: '0.95rem', background: 'rgba(16, 185, 129, 0.25)', border: '1px solid #10b981', borderRadius: 6, color: '#10b981', textDecoration: 'none', fontWeight: 600 }} title="Öffnet die Galerie – genau wie Kunden sie sehen">So sehen Kunden die Galerie →</a>
+                    <a href={isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie} target="_blank" rel="noopener noreferrer" style={{ padding: '0.5rem 1rem', fontSize: '0.95rem', background: 'rgba(16, 185, 129, 0.25)', border: '1px solid #10b981', borderRadius: 6, color: '#10b981', textDecoration: 'none', fontWeight: 600 }} title="Öffnet die Galerie – genau wie Kunden sie sehen">So sehen Kunden die Galerie →</a>
                   </div>
                   <button type="button" onClick={() => setDesignSubTab('farben')} style={{ padding: '0.4rem 0.9rem', fontSize: '0.9rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6, color: 'var(--k2-muted)', cursor: 'pointer' }}>🎨 Farben</button>
                 </div>
-                <p style={{ margin: '0 1rem 0.5rem', fontSize: '0.85rem', color: 'var(--k2-muted)' }}>Am Handy: Seite 1 oder 2 wählen – dann ist die ganze Seite sichtbar, Texte zum Bearbeiten antippen.</p>
+                <p style={{ margin: '0 1rem 0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)' }}>Am Handy: Seite 1 oder 2 wählen – dann ist die ganze Seite sichtbar, Texte zum Bearbeiten antippen.</p>
                 <input type="file" accept="image/*" ref={welcomeImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { setPageContent({ ...pageContent, welcomeImage: await compressImage(f, 1200, 0.7) }) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                 <input type="file" accept="image/*" ref={galerieImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { setPageContent({ ...pageContent, galerieCardImage: await compressImage(f, 1200, 0.7) }) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                 <input type="file" accept="image/*" ref={virtualTourImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { setPageContent({ ...pageContent, virtualTourImage: await compressImage(f, 1200, 0.7) }) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                 {(() => {
-                  const tc = TENANT_CONFIGS.k2
+                  const tc = isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich : TENANT_CONFIGS.k2
                   const galleryName = tc.galleryName
                   const tagline = tc.tagline
                   const welcomeIntroDefault = defaultPageTexts.galerie.welcomeIntroText || 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.'
@@ -9123,44 +8208,44 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   <div style={{ width: '100%', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 100%)' }}>
                     {/* Brand linkes oberes Eck – nur K2 Galerie */}
                     <div style={{ position: 'absolute', top: 12, left: 14, zIndex: 10 }}>
-                      <div style={{ fontSize: '1rem', fontWeight: '600', color: 'rgba(255, 255, 255, 0.92)', letterSpacing: '0.02em', lineHeight: 1.25 }}>{PRODUCT_BRAND_NAME}</div>
+                      <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--k2-text)', letterSpacing: '0.02em', lineHeight: 1.25 }}>{PRODUCT_BRAND_NAME}</div>
                     </div>
                     <header style={{ padding: '24px 18px 24px', paddingTop: 44, maxWidth: 412, margin: 0 }}>
                       <div style={{ marginBottom: 32 }}>
                         {designPreviewEdit === 'p1-heroTitle' ? (
-                          <input autoFocus type="text" value={pageTexts.galerie?.heroTitle ?? defaultPageTexts.galerie.heroTitle ?? galleryName} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, heroTitle: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.5rem', fontSize: '2rem', fontWeight: '700', color: 'rgba(255,255,255,0.95)', background: 'rgba(0,0,0,0.3)', border: '2px solid var(--k2-accent)', borderRadius: 8 }} placeholder="Großer Titel (z. B. Galeriename)" />
+                          <input autoFocus type="text" value={pageTexts.galerie?.heroTitle ?? defaultPageTexts.galerie.heroTitle ?? galleryName} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, heroTitle: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.5rem', fontSize: '2rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.12)', border: '2px solid var(--k2-accent)', borderRadius: 8 }} placeholder="Großer Titel (z. B. Galeriename)" />
                         ) : (
                           <h1 role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-heroTitle')} style={{ margin: 0, fontSize: '2rem', fontWeight: '700', background: 'linear-gradient(135deg, var(--k2-text) 0%, var(--k2-accent) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', letterSpacing: '-0.02em', lineHeight: 1.1, cursor: 'pointer' }} title="Klicken: Großer Titel bearbeiten">{(pageTexts.galerie?.heroTitle ?? defaultPageTexts.galerie.heroTitle)?.trim() || galleryName}</h1>
                         )}
                         {designPreviewEdit === 'p1-tagline' ? (
-                          <input autoFocus type="text" value={pageTexts.galerie?.welcomeSubtext ?? tagline} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeSubtext: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', marginTop: '0.5rem', padding: '0.5rem', fontSize: '1rem', color: 'rgba(255,255,255,0.7)', background: 'rgba(0,0,0,0.3)', border: '2px solid var(--k2-accent)', borderRadius: 8 }} />
+                          <input autoFocus type="text" value={pageTexts.galerie?.welcomeSubtext ?? tagline} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeSubtext: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', marginTop: '0.5rem', padding: '0.5rem', fontSize: '1rem', color: 'var(--k2-muted)', background: 'rgba(0,0,0,0.12)', border: '2px solid var(--k2-accent)', borderRadius: 8 }} />
                         ) : (
-                          <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-tagline')} style={{ margin: '0.5rem 0 0', color: 'rgba(255, 255, 255, 0.7)', fontSize: '1rem', fontWeight: '300', letterSpacing: '0.05em', cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.welcomeSubtext ?? defaultPageTexts.galerie.welcomeSubtext) || tagline}</p>
+                          <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-tagline')} style={{ margin: '0.5rem 0 0', color: 'var(--k2-muted)', fontSize: '1rem', fontWeight: '300', letterSpacing: '0.05em', cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.welcomeSubtext ?? defaultPageTexts.galerie.welcomeSubtext) || tagline}</p>
                         )}
                       </div>
                       <section style={{ marginBottom: 40, maxWidth: 412, width: '100%' }}>
-                        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', fontWeight: '700', lineHeight: 1.2, color: '#ffffff', letterSpacing: '-0.02em' }}>
+                        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', fontWeight: '700', lineHeight: 1.2, color: 'var(--k2-text)', letterSpacing: '-0.02em' }}>
                           {designPreviewEdit === 'p1-welcomeHeading' ? (
-                            <input autoFocus type="text" value={pageTexts.galerie?.welcomeHeading ?? defaultPageTexts.galerie.welcomeHeading ?? 'Willkommen bei'} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeHeading: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.4rem', fontSize: '1.5rem', fontWeight: '700', color: '#fff', background: 'rgba(0,0,0,0.3)', border: '2px solid var(--k2-accent)', borderRadius: 8 }} placeholder="z. B. Willkommen bei" />
+                            <input autoFocus type="text" value={pageTexts.galerie?.welcomeHeading ?? defaultPageTexts.galerie.welcomeHeading ?? 'Willkommen bei'} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeHeading: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.4rem', fontSize: '1.5rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.12)', border: '2px solid var(--k2-accent)', borderRadius: 8 }} placeholder="z. B. Willkommen bei" />
                           ) : (
                             <span role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-welcomeHeading')} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit('p1-welcomeHeading')} style={{ cursor: 'pointer' }}>{(pageTexts.galerie?.welcomeHeading ?? defaultPageTexts.galerie.welcomeHeading)?.trim() || 'Willkommen bei'} {(pageTexts.galerie?.heroTitle ?? defaultPageTexts.galerie.heroTitle)?.trim() || galleryName} –</span>
                           )}<br />
                           {designPreviewEdit === 'p1-taglineH2' ? (
-                            <textarea autoFocus rows={2} value={pageTexts.galerie?.welcomeSubtext ?? defaultPageTexts.galerie.welcomeSubtext ?? tagline} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeSubtext: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', marginTop: 4, padding: '0.4rem', fontSize: '1.1rem', color: 'rgba(255,255,255,0.9)', background: 'rgba(0,0,0,0.3)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
+                            <textarea autoFocus rows={2} value={pageTexts.galerie?.welcomeSubtext ?? defaultPageTexts.galerie.welcomeSubtext ?? tagline} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeSubtext: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', marginTop: 4, padding: '0.4rem', fontSize: '1.1rem', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.12)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
                           ) : (
                             <span role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-taglineH2')} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit('p1-taglineH2')} style={{ cursor: 'pointer', background: 'linear-gradient(135deg, var(--k2-accent) 0%, #e67a2a 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{(pageTexts.galerie?.welcomeSubtext ?? defaultPageTexts.galerie.welcomeSubtext) || tagline}</span>
                           )}
                         </h2>
                         {designPreviewEdit === 'p1-intro' ? (
-                          <textarea autoFocus rows={4} value={pageTexts.galerie?.welcomeIntroText ?? defaultPageTexts.galerie.welcomeIntroText ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeIntroText: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.75rem', fontSize: '1.05rem', color: 'rgba(255,255,255,0.8)', lineHeight: 1.6, background: 'rgba(0,0,0,0.25)', border: '2px solid var(--k2-accent)', borderRadius: 12, marginBottom: '1rem', resize: 'vertical', boxSizing: 'border-box' }} placeholder={welcomeIntroDefault} />
+                          <textarea autoFocus rows={4} value={pageTexts.galerie?.welcomeIntroText ?? defaultPageTexts.galerie.welcomeIntroText ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeIntroText: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.75rem', fontSize: '1.05rem', color: 'var(--k2-text)', lineHeight: 1.6, background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 12, marginBottom: '1rem', resize: 'vertical', boxSizing: 'border-box' }} placeholder={welcomeIntroDefault} />
                         ) : (
-                          <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-intro')} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit('p1-intro')} style={{ fontSize: '1.05rem', color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.6, fontWeight: '300', maxWidth: 340, marginBottom: 24, cursor: 'pointer' }}>{(pageTexts.galerie?.welcomeIntroText ?? defaultPageTexts.galerie.welcomeIntroText)?.trim() || welcomeIntroDefault}</p>
+                          <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-intro')} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit('p1-intro')} style={{ fontSize: '1.05rem', color: 'var(--k2-text)', lineHeight: 1.6, fontWeight: '300', maxWidth: 340, marginBottom: 24, cursor: 'pointer' }}>{(pageTexts.galerie?.welcomeIntroText ?? defaultPageTexts.galerie.welcomeIntroText)?.trim() || welcomeIntroDefault}</p>
                         )}
-                        <div role="button" tabIndex={0} onClick={() => welcomeImageInputRef.current?.click()} onKeyDown={(e) => e.key === 'Enter' && welcomeImageInputRef.current?.click()} style={{ cursor: 'pointer', width: '100%', marginTop: 20, overflow: 'hidden', border: '2px dashed rgba(255,255,255,0.2)', boxSizing: 'border-box' }}>
+                        <div role="button" tabIndex={0} onClick={() => welcomeImageInputRef.current?.click()} onKeyDown={(e) => e.key === 'Enter' && welcomeImageInputRef.current?.click()} style={{ cursor: 'pointer', width: '100%', marginTop: 20, overflow: 'hidden', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box' }}>
                           {pageContent.welcomeImage ? (
                             <img src={pageContent.welcomeImage} alt="Willkommen" style={{ width: '100%', height: 'auto', display: 'block', maxHeight: 480, objectFit: 'cover', boxSizing: 'border-box' }} />
                           ) : (
-                            <div style={{ width: '100%', minHeight: 200, background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8fa0c9', fontSize: '1rem' }}>Klicken zum Willkommensbild</div>
+                            <div style={{ width: '100%', minHeight: 200, background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '1rem' }}>Klicken zum Willkommensbild</div>
                           )}
                         </div>
                       </section>
@@ -9170,51 +8255,51 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   {previewFullscreenPage === 2 && (
                   <div style={{ width: '100%', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 100%)' }}>
                     <div style={{ position: 'absolute', top: 12, left: 14, zIndex: 10 }}>
-                      <div style={{ fontSize: '1rem', fontWeight: '600', color: 'rgba(255, 255, 255, 0.92)', letterSpacing: '0.02em', lineHeight: 1.25 }}>{PRODUCT_BRAND_NAME}</div>
+                      <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--k2-text)', letterSpacing: '0.02em', lineHeight: 1.25 }}>{PRODUCT_BRAND_NAME}</div>
                     </div>
                     <main style={{ padding: '24px 18px 40px', maxWidth: 412, margin: 0 }}>
                       <section style={{ marginTop: 36 }}>
                         {designPreviewEdit === 'p2-kunstschaffendeHeading' ? (
-                          <input autoFocus value={pageTexts.galerie?.kunstschaffendeHeading ?? defaultPageTexts.galerie.kunstschaffendeHeading ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, kunstschaffendeHeading: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '1.5rem', fontWeight: '700', color: '#fff', background: 'rgba(0,0,0,0.25)', border: '2px solid var(--k2-accent)', borderRadius: 8, marginBottom: 24, textAlign: 'center', boxSizing: 'border-box' }} />
+                          <input autoFocus value={pageTexts.galerie?.kunstschaffendeHeading ?? defaultPageTexts.galerie.kunstschaffendeHeading ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, kunstschaffendeHeading: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '1.5rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, marginBottom: 24, textAlign: 'center', boxSizing: 'border-box' }} />
                         ) : (
-                          <h3 role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-kunstschaffendeHeading')} style={{ fontSize: '1.5rem', marginBottom: 24, fontWeight: '700', color: '#ffffff', textAlign: 'center', letterSpacing: '-0.02em', cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.kunstschaffendeHeading ?? defaultPageTexts.galerie.kunstschaffendeHeading) || 'Die Kunstschaffenden'}</h3>
+                          <h3 role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-kunstschaffendeHeading')} style={{ fontSize: '1.5rem', marginBottom: 24, fontWeight: '700', color: 'var(--k2-text)', textAlign: 'center', letterSpacing: '-0.02em', cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.kunstschaffendeHeading ?? defaultPageTexts.galerie.kunstschaffendeHeading) || 'Die Kunstschaffenden'}</h3>
                         )}
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 28 }}>
-                          <div style={{ position: 'relative', background: 'linear-gradient(145deg, rgba(184, 184, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 50%)', backdropFilter: 'blur(20px)', border: '1px solid rgba(184, 184, 255, 0.2)', borderRadius: '16px 16px 8px 16px', padding: 20, overflow: 'hidden' }}>
+                          <div style={{ position: 'relative', background: 'var(--k2-card-bg-1)', backdropFilter: 'blur(20px)', border: '1px solid var(--k2-muted)', borderRadius: '16px 16px 8px 16px', padding: 20, overflow: 'hidden' }}>
                             <div style={{ position: 'absolute', top: 0, left: 0, width: 4, height: '60%', background: 'linear-gradient(180deg, var(--k2-accent) 0%, #e67a2a 100%)', borderRadius: '0 4px 4px 0' }} />
                             {designPreviewEdit === 'p2-martinaBio' ? (
-                              <textarea autoFocus rows={4} value={pageTexts.galerie?.martinaBio ?? defaultPageTexts.galerie.martinaBio ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, martinaBio: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)', background: 'rgba(0,0,0,0.25)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
+                              <textarea autoFocus rows={4} value={pageTexts.galerie?.martinaBio ?? defaultPageTexts.galerie.martinaBio ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, martinaBio: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '0.9rem', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
                             ) : (
-                              <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-martinaBio')} style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.9rem', margin: 0, lineHeight: 1.7, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.martinaBio ?? defaultPageTexts.galerie.martinaBio) || 'Kurzbio Künstler:in 1 (z. B. Martina)'}</p>
+                              <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-martinaBio')} style={{ color: 'var(--k2-text)', fontSize: '0.9rem', margin: 0, lineHeight: 1.7, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.martinaBio ?? defaultPageTexts.galerie.martinaBio) || 'Kurzbio Künstler:in 1 (z. B. Martina)'}</p>
                             )}
                           </div>
-                          <div style={{ position: 'relative', background: 'linear-gradient(145deg, rgba(255, 119, 198, 0.06) 0%, rgba(255, 255, 255, 0.04) 50%)', backdropFilter: 'blur(20px)', border: '1px solid rgba(245, 87, 108, 0.2)', borderRadius: '16px 16px 16px 8px', padding: 20, overflow: 'hidden' }}>
-                            <div style={{ position: 'absolute', top: 0, right: 0, width: 4, height: '60%', background: 'linear-gradient(180deg, #f093fb 0%, #f5576c 100%)', borderRadius: '4px 0 0 4px' }} />
+                          <div style={{ position: 'relative', background: 'var(--k2-card-bg-2)', backdropFilter: 'blur(20px)', border: '1px solid var(--k2-muted)', borderRadius: '16px 16px 16px 8px', padding: 20, overflow: 'hidden' }}>
+                            <div style={{ position: 'absolute', top: 0, right: 0, width: 4, height: '60%', background: 'var(--k2-accent)', borderRadius: '4px 0 0 4px' }} />
                             {designPreviewEdit === 'p2-georgBio' ? (
-                              <textarea autoFocus rows={4} value={pageTexts.galerie?.georgBio ?? defaultPageTexts.galerie.georgBio ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, georgBio: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)', background: 'rgba(0,0,0,0.25)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
+                              <textarea autoFocus rows={4} value={pageTexts.galerie?.georgBio ?? defaultPageTexts.galerie.georgBio ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, georgBio: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '0.9rem', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
                             ) : (
-                              <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-georgBio')} style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.9rem', margin: 0, lineHeight: 1.7, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.georgBio ?? defaultPageTexts.galerie.georgBio) || 'Kurzbio Künstler:in 2 (z. B. Georg)'}</p>
+                              <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-georgBio')} style={{ color: 'var(--k2-text)', fontSize: '0.9rem', margin: 0, lineHeight: 1.7, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.georgBio ?? defaultPageTexts.galerie.georgBio) || 'Kurzbio Künstler:in 2 (z. B. Georg)'}</p>
                             )}
                           </div>
                         </div>
                         {designPreviewEdit === 'p2-gemeinsamText' ? (
-                          <textarea autoFocus rows={3} value={pageTexts.galerie?.gemeinsamText ?? defaultPageTexts.galerie.gemeinsamText ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, gemeinsamText: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} placeholder="Leer = wird aus Namen erzeugt" style={{ width: '100%', margin: '0 auto 28px', display: 'block', padding: '0.6rem', fontSize: '1.05rem', color: 'rgba(255,255,255,0.8)', lineHeight: 1.7, textAlign: 'center', background: 'rgba(0,0,0,0.25)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
+                          <textarea autoFocus rows={3} value={pageTexts.galerie?.gemeinsamText ?? defaultPageTexts.galerie.gemeinsamText ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, gemeinsamText: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} placeholder="Leer = wird aus Namen erzeugt" style={{ width: '100%', margin: '0 auto 28px', display: 'block', padding: '0.6rem', fontSize: '1.05rem', color: 'var(--k2-text)', lineHeight: 1.7, textAlign: 'center', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
                         ) : (
-                          <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-gemeinsamText')} style={{ marginTop: 24, fontSize: '1.05rem', lineHeight: 1.7, color: 'rgba(255, 255, 255, 0.8)', textAlign: 'center', marginLeft: 'auto', marginRight: 'auto', marginBottom: 28, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.gemeinsamText ?? defaultPageTexts.galerie.gemeinsamText) || 'Gemeinsam eröffnen … (leer = automatisch)'}</p>
+                          <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-gemeinsamText')} style={{ marginTop: 24, fontSize: '1.05rem', lineHeight: 1.7, color: 'var(--k2-text)', textAlign: 'center', marginLeft: 'auto', marginRight: 'auto', marginBottom: 28, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.gemeinsamText ?? defaultPageTexts.galerie.gemeinsamText) || 'Gemeinsam eröffnen … (leer = automatisch)'}</p>
                         )}
-                        <p style={{ fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: 16, textAlign: 'center' }}>Willkommen in der Eingangshalle – wähle deinen Weg:</p>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--k2-muted)', marginBottom: 16, textAlign: 'center' }}>Willkommen in der Eingangshalle – wähle deinen Weg:</p>
                         <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 14, alignItems: 'stretch' }}>
-                          <div style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.18)', borderRadius: 16, padding: 16, textAlign: 'center' }}>
-                            <div role="button" tabIndex={0} onClick={() => galerieImageInputRef.current?.click()} style={{ cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.galerieCardImage ? 'transparent' : 'rgba(255,255,255,0.06)', border: '2px dashed rgba(255,255,255,0.2)' }}>
-                              {pageContent.galerieCardImage ? <img src={pageContent.galerieCardImage} alt="In die Galerie" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8fa0c9', fontSize: '0.9rem' }}>Klicken: Bild „In die Galerie“</div>}
+                          <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 16, padding: 16, textAlign: 'center' }}>
+                            <div role="button" tabIndex={0} onClick={() => galerieImageInputRef.current?.click()} style={{ cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.galerieCardImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)' }}>
+                              {pageContent.galerieCardImage ? <img src={pageContent.galerieCardImage} alt="In die Galerie" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem' }}>Klicken: Bild „In die Galerie“</div>}
                             </div>
-                            <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: '#ffffff', marginBottom: 4 }}>In die Galerie</h3>
+                            <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--k2-text)', marginBottom: 4 }}>In die Galerie</h3>
                           </div>
-                          <div style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.18)', borderRadius: 16, padding: 16, textAlign: 'center' }}>
-                            <div role="button" tabIndex={0} onClick={() => virtualTourImageInputRef.current?.click()} style={{ cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(255,255,255,0.06)', border: '2px dashed rgba(255,255,255,0.2)' }}>
-                              {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8fa0c9', fontSize: '0.9rem' }}>Klicken: Bild Virtueller Rundgang</div>}
+                          <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 16, padding: 16, textAlign: 'center' }}>
+                            <div role="button" tabIndex={0} onClick={() => virtualTourImageInputRef.current?.click()} style={{ cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)' }}>
+                              {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem' }}>Klicken: Bild Virtueller Rundgang</div>}
                             </div>
-                            <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: '#ffffff', marginBottom: 4 }}>Virtueller Rundgang</h3>
+                            <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--k2-text)', marginBottom: 4 }}>Virtueller Rundgang</h3>
                           </div>
                         </div>
                       </section>
@@ -9232,16 +8317,18 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
                   <button type="button" className="btn-primary" onClick={() => {
                     try {
-                      setPageContentGalerie(pageContent)
-                      setPageTexts(pageTexts)
+                      setPageContentGalerie(pageContent, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
+                      setPageTexts(pageTexts, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
                       if (designSettings && Object.keys(designSettings).length > 0) {
                         const ds = JSON.stringify(designSettings)
-                        if (ds.length < 50000) localStorage.setItem('k2-design-settings', ds)
+                        if (ds.length < 50000) localStorage.setItem(getDesignStorageKey(), ds)
                       }
-                      const pageTextsRaw = localStorage.getItem('k2-page-texts')
+                      const pageTextsKey = isOeffentlichAdminContext() ? 'k2-oeffentlich-page-texts' : 'k2-page-texts'
+                      const pageContentKey = isOeffentlichAdminContext() ? 'k2-oeffentlich-page-content-galerie' : 'k2-page-content-galerie'
+                      const pageTextsRaw = localStorage.getItem(pageTextsKey)
                       const pageTextsOk = pageTextsRaw != null && pageTextsRaw.length > 0
-                      const pageContentOk = localStorage.getItem('k2-page-content-galerie') != null
-                      const designStored = localStorage.getItem('k2-design-settings')
+                      const pageContentOk = localStorage.getItem(pageContentKey) != null
+                      const designStored = localStorage.getItem(getDesignStorageKey())
                       const designOk = !designSettings || Object.keys(designSettings).length === 0 || (designStored != null && designStored.length > 0)
                       if (pageTextsOk && pageContentOk && designOk) {
                         setDesignSaveFeedback('ok')
@@ -9255,8 +8342,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       alert('Fehler beim Speichern: ' + (e instanceof Error ? e.message : String(e)))
                     }
                   }} style={{ padding: '0.75rem 1.5rem', fontSize: '1rem' }}>💾 Speichern</button>
+                  <button type="button" onClick={() => setDesignSettings({ ...(isOeffentlichAdminContext() ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN) })} style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', background: 'transparent', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer' }} title="Entwurf auf Standard-Design zurücksetzen (erst mit Speichern übernehmen)">↩ Zum Originalzustand</button>
                   {designSaveFeedback === 'ok' && <span style={{ fontSize: '0.9rem', color: '#10b981', fontWeight: 600 }}>✓ Gerade gespeichert</span>}
-                  <span style={{ fontSize: '0.9rem', color: '#8fa0c9' }}>Mit „Veröffentlichen“ (Einstellungen) auf alle Geräte.</span>
+                  <span style={{ fontSize: '0.9rem', color: s.muted }}>Änderungen gelten erst nach „Speichern“. Mit „Veröffentlichen“ (Einstellungen) auf alle Geräte.</span>
                 </div>
               </div>
             )}
@@ -9292,7 +8380,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         </div>
                       )
                     })}
-                    <p style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', margin: 0 }}>Wird automatisch gespeichert. Gilt sofort in Vorschau und Galerie.</p>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', margin: 0 }}>Änderungen gelten erst nach „Speichern“ (Vorschau-Tab).</p>
+                    <button type="button" onClick={() => setDesignSettings({ ...(isOeffentlichAdminContext() ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN) })} style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: 'transparent', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer', marginTop: '0.5rem' }}>↩ Zum Originalzustand</button>
                     <h3 style={{ fontSize: '1rem', color: 'var(--k2-accent)', marginBottom: '0.5rem', marginTop: '0.5rem' }}>Varianten</h3>
                     <p style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', margin: '0 0 0.5rem' }}>Zum Experimentieren: aktuellen Stand als A oder B speichern, später anwenden. Die aktuelle Einstellung gilt – jederzeit änderbar.</p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -9307,7 +8396,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     <h3 style={{ fontSize: '1rem', color: 'var(--k2-accent)', marginBottom: '0.75rem' }}>Vorschau</h3>
                     <div style={{ overflow: 'auto', maxHeight: 'min(70vh, 520px)', borderRadius: 16, border: '2px solid var(--k2-accent)', background: 'var(--k2-bg-1)' }}>
                       {(() => {
-                        const tc = TENANT_CONFIGS.k2
+                        const tc = isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich : TENANT_CONFIGS.k2
                         const galleryName = tc.galleryName
                         const tagline = tc.tagline
                         const welcomeIntroDefault = defaultPageTexts.galerie.welcomeIntroText || 'Ein Neuanfang mit Leidenschaft …'
@@ -9338,44 +8427,45 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </div>
               )
             })()}
+            </div>
           </section>
         )}
 
         {/* Einstellungen */}
         {activeTab === 'einstellungen' && (
           <section style={{
-            background: 'rgba(255, 255, 255, 0.05)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: s.bgCard,
+            border: `1px solid ${s.accent}22`,
             borderRadius: '24px',
             padding: 'clamp(2rem, 5vw, 3rem)',
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+            boxShadow: s.shadow,
             marginBottom: 'clamp(2rem, 5vw, 3rem)'
           }}>
             <h2 style={{
               fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
               fontWeight: '700',
-              color: '#ffffff',
+              color: s.text,
               marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
               letterSpacing: '-0.01em'
             }}>
               ⚙️ Einstellungen
             </h2>
 
-            {/* Veröffentlichung – gesamte App auf alle Geräte */}
+            {/* Veröffentlichung – nur K2 (ök2 braucht das nicht) */}
+            {!isOeffentlichAdminContext() && (
             <div style={{
               marginBottom: '2rem',
               padding: '1.25rem',
-              background: 'rgba(245, 158, 11, 0.1)',
-              border: '1px solid rgba(245, 158, 11, 0.35)',
+              background: `${s.accent}14`,
+              border: `1px solid ${s.accent}44`,
               borderRadius: '16px'
             }}>
-              <h3 style={{ fontSize: '1.1rem', color: '#f59e0b', marginBottom: '0.5rem' }}>🚀 Veröffentlichung</h3>
+              <h3 style={{ fontSize: '1.1rem', color: s.accent, marginBottom: '0.5rem' }}>🚀 Veröffentlichung</h3>
 
               {/* Vor dem Veröffentlichen: Seiten komplett prüfen */}
-              <div style={{ marginBottom: '1.25rem', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <h4 style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.95)', marginBottom: '0.5rem' }}>📋 Vor dem Veröffentlichen: Seiten prüfen</h4>
-                <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
+              <div style={{ marginBottom: '1.25rem', padding: '1rem', background: s.bgElevated, borderRadius: '12px', border: `1px solid ${s.accent}22` }}>
+                <h4 style={{ fontSize: '0.95rem', color: s.text, marginBottom: '0.5rem' }}>📋 Vor dem Veröffentlichen: Seiten prüfen</h4>
+                <p style={{ color: s.muted, fontSize: '0.85rem', marginBottom: '0.75rem' }}>
                   Speichert alle Änderungen und zeigt die Seite hier an (kein neuer Tab). Oben erscheint „← Zurück zu Einstellungen“. Wenn alles passt, zurückgehen und unten auf Veröffentlichen klicken.
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -9383,9 +8473,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     type="button"
                     onClick={() => {
                       saveAllForVorschau()
-                      requestAnimationFrame(() => { navigate(PROJECT_ROUTES['k2-galerie'].galerie + '?vorschau=1') })
+                      const seite1Route = isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie
+                      requestAnimationFrame(() => { navigate(seite1Route + '?vorschau=1') })
                     }}
-                    style={{ padding: '0.5rem 0.9rem', fontSize: '0.9rem', background: 'rgba(95, 251, 241, 0.15)', border: '1px solid rgba(95, 251, 241, 0.4)', borderRadius: 8, color: '#5ffbf1', fontWeight: 500, cursor: 'pointer' }}
+                    style={{ padding: '0.5rem 0.9rem', fontSize: '0.9rem', background: `${s.accent}20`, border: `1px solid ${s.accent}66`, borderRadius: 8, color: s.accent, fontWeight: 500, cursor: 'pointer' }}
                   >
                     Seite 1 (Willkommen) anzeigen →
                   </button>
@@ -9393,16 +8484,17 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     type="button"
                     onClick={() => {
                       saveAllForVorschau()
-                      requestAnimationFrame(() => { navigate(PROJECT_ROUTES['k2-galerie'].galerieVorschau + '?vorschau=1') })
+                      const vorschauRoute = isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerieVorschau
+                      requestAnimationFrame(() => { navigate(vorschauRoute + '?vorschau=1') })
                     }}
-                    style={{ padding: '0.5rem 0.9rem', fontSize: '0.9rem', background: 'rgba(95, 251, 241, 0.15)', border: '1px solid rgba(95, 251, 241, 0.4)', borderRadius: 8, color: '#5ffbf1', fontWeight: 500, cursor: 'pointer' }}
+                    style={{ padding: '0.5rem 0.9rem', fontSize: '0.9rem', background: `${s.accent}20`, border: `1px solid ${s.accent}66`, borderRadius: 8, color: s.accent, fontWeight: 500, cursor: 'pointer' }}
                   >
                     Seite 2 (Werke) anzeigen →
                   </button>
                 </div>
               </div>
 
-              <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem', marginBottom: '1rem' }}>
+              <p style={{ color: s.muted, fontSize: '0.9rem', marginBottom: '1rem' }}>
                 Stammdaten, Werke, Events, Dokumente und Seitentexte auf Vercel pushen. Danach auf allen Geräten aktuell (Seite neu öffnen oder QR-Code neu scannen).
               </p>
               <button 
@@ -9419,8 +8511,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 disabled={isDeploying}
                 style={{
                   padding: '0.75rem 1.5rem',
-                  background: isDeploying ? 'rgba(255, 255, 255, 0.2)' : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                  color: '#ffffff',
+                  background: isDeploying ? s.bgElevated : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                  color: isDeploying ? s.muted : '#ffffff',
                   border: 'none',
                   borderRadius: '10px',
                   fontSize: '0.95rem',
@@ -9433,13 +8525,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 {isDeploying ? '⏳ App wird aktualisiert...' : '🚀 Veröffentlichen'}
               </button>
             </div>
+            )}
 
-            {/* Lager (Backup) – Backup & Wiederherstellung; bei Wiederherstellung automatisch aufklappen */}
-            {settingsSubTab === 'lager' && (
+            {/* Lager (Backup) – nur K2 (ök2 braucht kein Vollbackup) */}
+            {settingsSubTab === 'lager' && !isOeffentlichAdminContext() && (
             <div style={{
               marginBottom: '2rem',
-              background: 'rgba(95, 251, 241, 0.08)',
-              border: '1px solid rgba(95, 251, 241, 0.25)',
+              background: `${s.accent}12`,
+              border: `1px solid ${s.accent}33`,
               borderRadius: '16px',
               overflow: 'hidden'
             }}>
@@ -9455,7 +8548,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  color: '#5ffbf1',
+                  color: s.accent,
                   fontSize: backupPanelMinimized ? '0.95rem' : '1.1rem',
                   fontWeight: '600',
                   textAlign: 'left'
@@ -9465,9 +8558,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <span style={{ opacity: 0.8, fontSize: '0.85rem' }}>{backupPanelMinimized ? '▼ Aufklappen' : '▲ Einklappen'}</span>
               </button>
               {!backupPanelMinimized && (
-                <div style={{ padding: '0 1.25rem 1.25rem', borderTop: '1px solid rgba(95, 251, 241, 0.15)' }}>
-              <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem', marginTop: '0.75rem', marginBottom: '1rem' }}>
-                Wenn Einstellungen oder Eventplanung weg sind: Hier kannst du das letzte Auto-Backup wiederherstellen, eine zuvor gespeicherte Backup-Datei einspielen oder ein neues Vollbackup herunterladen.
+                <div style={{ padding: '0 1.25rem 1.25rem', borderTop: `1px solid ${s.accent}22` }}>
+              <p style={{ color: s.muted, fontSize: '0.9rem', marginTop: '0.75rem', marginBottom: '1rem' }}>
+                Vollbackup auf der Speicherplatte (z. B. backupmicro) reicht. Hier: Vollbackup herunterladen und sicher aufbewahren, bei Bedarf aus Backup-Datei wiederherstellen.
               </p>
               <input
                 ref={backupFileInputRef}
@@ -9512,7 +8605,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   borderRadius: '10px',
                   border: '1px solid rgba(95, 251, 241, 0.3)'
                 }}>
-                  <div style={{ color: '#5ffbf1', fontSize: '0.95rem', marginBottom: '0.5rem' }}>
+                  <div style={{ color: s.accent, fontSize: '0.95rem', marginBottom: '0.5rem' }}>
                     {restoreProgress === 'running' ? 'Wiederherstellung läuft…' : 'Fertig. Lade neu…'}
                   </div>
                   <div style={{
@@ -9537,10 +8630,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   onClick={downloadFullBackup}
                   style={{
                     padding: '0.75rem 1.25rem',
-                    background: 'rgba(255, 255, 255, 0.12)',
-                    border: '1px solid rgba(255, 255, 255, 0.25)',
+                    background: s.bgElevated,
+                    border: `1px solid ${s.accent}33`,
                     borderRadius: '10px',
-                    color: '#fff',
+                    color: s.text,
                     fontSize: '0.95rem',
                     fontWeight: '600',
                     cursor: 'pointer'
@@ -9554,10 +8647,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   onClick={() => backupFileInputRef.current?.click()}
                   style={{
                     padding: '0.75rem 1.25rem',
-                    background: 'rgba(255, 255, 255, 0.08)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    background: s.bgElevated,
+                    border: `1px solid ${s.accent}33`,
                     borderRadius: '10px',
-                    color: '#fff',
+                    color: s.text,
                     fontSize: '0.95rem',
                     fontWeight: '600',
                     cursor: 'pointer'
@@ -9584,10 +8677,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     }}
                     style={{
                       padding: '0.75rem 1.25rem',
-                      background: 'rgba(95, 251, 241, 0.2)',
-                      border: '1px solid rgba(95, 251, 241, 0.4)',
+                      background: `${s.accent}20`,
+                      border: `1px solid ${s.accent}66`,
                       borderRadius: '10px',
-                      color: '#5ffbf1',
+                      color: s.accent,
                       fontSize: '0.95rem',
                       fontWeight: '600',
                       cursor: 'pointer'
@@ -9601,22 +8694,46 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     )}
                   </button>
                 ) : (
-                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem' }}>
-                    Kein Auto-Backup vorhanden (wird alle 5 Sek. erstellt, wenn du im Admin arbeitest).
+                  <span style={{ color: s.muted, fontSize: '0.9rem' }}>
+                    Kein Backup im Browser – Vollbackup auf Speicherplatte reicht. Bei Bedarf „Vollbackup herunterladen“ oder „Aus Backup-Datei wiederherstellen“.
                   </span>
                 )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const freed = tryFreeLocalStorageSpace()
+                    if (freed > 0) {
+                      alert(`✅ Speicher freigegeben: ca. ${(freed / 1024).toFixed(0)} KB.\n\nDas lokale Auto-Backup wurde entfernt. Bei Bedarf kannst du „Aus Backup-Datei wiederherstellen“ nutzen. Ein neues Auto-Backup entsteht beim nächsten Speichern.`)
+                    } else {
+                      alert('Kein lokales Auto-Backup im Speicher (oder bereits gelöscht). Bei „Speicher voll“-Meldung: Browser-Daten für diese Seite löschen.')
+                    }
+                  }}
+                  style={{
+                    padding: '0.6rem 1rem',
+                    background: s.bgElevated,
+                    border: `1px solid ${s.accent}33`,
+                    borderRadius: '8px',
+                    color: s.text,
+                    fontSize: '0.85rem',
+                    fontWeight: '500',
+                    cursor: 'pointer'
+                  }}
+                  title="Entfernt das im Browser gespeicherte Auto-Backup (k2-full-backup) – hilft bei „Speicher voll“"
+                >
+                  🔓 Speicher freigeben (lokales Auto-Backup löschen)
+                </button>
               </div>
               {/* Verlauf: letzte Backups */}
               {backupTimestamps.length > 0 && (
-                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                  <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginBottom: '0.5rem' }}>Verlauf (letzte Backups, neueste zuerst)</div>
+                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: `1px solid ${s.accent}22` }}>
+                  <div style={{ fontSize: '0.85rem', color: s.muted, marginBottom: '0.5rem' }}>Verlauf (letzte Backups, neueste zuerst)</div>
                   <ul style={{
                     margin: 0,
                     paddingLeft: '1.25rem',
                     maxHeight: '140px',
                     overflowY: 'auto',
                     fontSize: '0.85rem',
-                    color: 'rgba(255,255,255,0.85)',
+                    color: s.text,
                     lineHeight: '1.5'
                   }}>
                     {backupTimestamps.map((iso, i) => (
@@ -9636,12 +8753,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             <div style={{
               marginBottom: '2rem',
               padding: '1.25rem',
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              borderRadius: '16px'
+              background: s.bgCard,
+              border: `1px solid ${s.accent}22`,
+              borderRadius: '16px',
+              boxShadow: s.shadow
             }}>
-              <h3 style={{ fontSize: '1.1rem', color: '#e2e8f0', marginBottom: '0.5rem' }}>📄 PDFs & Speicherdaten</h3>
-              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', marginBottom: '1rem' }}>
+              <h3 style={{ fontSize: '1.1rem', color: s.text, marginBottom: '0.5rem' }}>📄 PDFs & Speicherdaten</h3>
+              <p style={{ color: s.muted, fontSize: '0.9rem', marginBottom: '1rem' }}>
                 PDF-Export (Galerie, verkaufte Werke), Werke-Daten exportieren/importieren, Speicher prüfen, Cleanup.
               </p>
               <div style={{ position: 'relative', display: 'inline-block' }}>
@@ -9650,9 +8768,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   onClick={() => setShowExportMenu(!showExportMenu)}
                   style={{
                     padding: '0.75rem 1.25rem',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    color: '#fff',
+                    background: s.bgElevated,
+                    border: `1px solid ${s.accent}40`,
+                    color: s.text,
                     borderRadius: '10px',
                     fontSize: '0.95rem',
                     fontWeight: '600',
@@ -9667,21 +8785,21 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     top: '100%',
                     left: 0,
                     marginTop: '0.5rem',
-                    background: 'rgba(18, 22, 35, 0.98)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    background: s.bgCard,
+                    border: `1px solid ${s.accent}33`,
                     borderRadius: '12px',
                     padding: '0.75rem',
                     minWidth: '240px',
-                    boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+                    boxShadow: s.shadow,
                     zIndex: 1000,
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '0.5rem'
                   }}>
-                    <div style={{ fontSize: '0.8rem', color: '#8fa0c9', padding: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>PDFs</div>
-                    <button type="button" onClick={() => { printPDF('galerie'); setShowExportMenu(false) }} style={{ padding: '0.6rem 1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left' }}>📄 Werke in Galerie</button>
-                    <button type="button" onClick={() => { printPDF('verkauft'); setShowExportMenu(false) }} style={{ padding: '0.6rem 1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left' }}>📄 Verkaufte Werke</button>
-                    <div style={{ fontSize: '0.8rem', color: '#8fa0c9', padding: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>Speicherdaten</div>
+                    <div style={{ fontSize: '0.8rem', color: s.muted, padding: '0.5rem', borderBottom: `1px solid ${s.accent}22` }}>PDFs</div>
+                    <button type="button" onClick={() => { printPDF('galerie'); setShowExportMenu(false) }} style={{ padding: '0.6rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}22`, borderRadius: '8px', color: s.text, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left' }}>📄 Werke in Galerie</button>
+                    <button type="button" onClick={() => { printPDF('verkauft'); setShowExportMenu(false) }} style={{ padding: '0.6rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}22`, borderRadius: '8px', color: s.text, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left' }}>📄 Verkaufte Werke</button>
+                    <div style={{ fontSize: '0.8rem', color: s.muted, padding: '0.5rem', borderTop: `1px solid ${s.accent}22`, borderBottom: `1px solid ${s.accent}22` }}>Speicherdaten</div>
                     <button type="button" onClick={() => {
                       try {
                         const artworks = JSON.parse(localStorage.getItem(getArtworksKey()) || '[]')
@@ -9690,7 +8808,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         const url = URL.createObjectURL(blob)
                         const a = document.createElement('a')
                         a.href = url
-                        a.download = `k2-artworks-export-${new Date().toISOString().split('T')[0]}.json`
+                        a.download = `${getArtworksKey()}-export-${new Date().toISOString().split('T')[0]}.json`
                         document.body.appendChild(a)
                         a.click()
                         document.body.removeChild(a)
@@ -9698,7 +8816,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         alert(`✅ ${artworks.length} Werke exportiert!`)
                       } catch (e) { console.error(e); alert('Fehler beim Export.') }
                       setShowExportMenu(false)
-                    }} style={{ padding: '0.6rem 1rem', background: 'rgba(45,106,45,0.3)', border: '1px solid rgba(45,106,45,0.5)', borderRadius: '8px', color: '#fff', fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left' }}>📤 Daten exportieren</button>
+                    }} style={{ padding: '0.6rem 1rem', background: `${s.accent}18`, border: `1px solid ${s.accent}55`, borderRadius: '8px', color: s.accent, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', fontWeight: '600' }}>📤 Daten exportieren</button>
                     <button type="button" onClick={() => {
                       const input = document.createElement('input')
                       input.type = 'file'
@@ -9725,7 +8843,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       }
                       input.click()
                       setShowExportMenu(false)
-                    }} style={{ padding: '0.6rem 1rem', background: 'rgba(45,106,45,0.3)', border: '1px solid rgba(45,106,45,0.5)', borderRadius: '8px', color: '#fff', fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left' }}>📥 Daten importieren</button>
+                    }} style={{ padding: '0.6rem 1rem', background: `${s.accent}18`, border: `1px solid ${s.accent}55`, borderRadius: '8px', color: s.accent, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', fontWeight: '600' }}>📥 Daten importieren</button>
                     <button type="button" onClick={() => {
                       try {
                         let totalSize = 0
@@ -9733,11 +8851,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         alert(`localStorage: ${(totalSize / (1024 * 1024)).toFixed(2)} MB (max. ~5–10 MB)`)
                       } catch (_) { alert('Fehler.') }
                       setShowExportMenu(false)
-                    }} style={{ padding: '0.6rem 1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left' }}>📊 Speicher prüfen</button>
+                    }} style={{ padding: '0.6rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}22`, borderRadius: '8px', color: s.text, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left' }}>📊 Speicher prüfen</button>
                     <button type="button" onClick={() => {
                       try { cleanupUnnecessaryData(); alert('✅ Cleanup abgeschlossen.') } catch (_) { alert('⚠️ Cleanup mit Fehlern.') }
                       setShowExportMenu(false)
-                    }} style={{ padding: '0.6rem 1rem', background: 'rgba(102,126,234,0.3)', border: '1px solid rgba(102,126,234,0.5)', borderRadius: '8px', color: '#fff', fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left' }}>🧹 Cleanup durchführen</button>
+                    }} style={{ padding: '0.6rem 1rem', background: `${s.accent}20`, border: `1px solid ${s.accent}55`, borderRadius: '8px', color: s.accent, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', fontWeight: '600' }}>🧹 Cleanup durchführen</button>
                   </div>
                 )}
               </div>
@@ -9748,7 +8866,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               display: 'flex',
               gap: '1rem',
               marginBottom: '2rem',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+              borderBottom: `1px solid ${s.accent}22`,
               paddingBottom: '1rem'
             }}>
               <button
@@ -9761,10 +8879,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   fontWeight: settingsSubTab === 'stammdaten' ? '600' : '500',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
-                  background: settingsSubTab === 'stammdaten'
-                    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                    : 'rgba(255, 255, 255, 0.05)',
-                  color: '#ffffff'
+                  background: settingsSubTab === 'stammdaten' ? s.gradientAccent : s.bgElevated,
+                  color: settingsSubTab === 'stammdaten' ? '#ffffff' : s.text
                 }}
               >
                 👥 Stammdaten
@@ -9779,14 +8895,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   fontWeight: settingsSubTab === 'sicherheit' ? '600' : '500',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
-                  background: settingsSubTab === 'sicherheit'
-                    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                    : 'rgba(255, 255, 255, 0.05)',
-                  color: '#ffffff'
+                  background: settingsSubTab === 'sicherheit' ? s.gradientAccent : s.bgElevated,
+                  color: settingsSubTab === 'sicherheit' ? '#ffffff' : s.text
                 }}
               >
                 🔒 Sicherheit
               </button>
+              {!isOeffentlichAdminContext() && (
               <button
                 onClick={() => setSettingsSubTab('lager')}
                 style={{
@@ -9797,14 +8912,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   fontWeight: settingsSubTab === 'lager' ? '600' : '500',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
-                  background: settingsSubTab === 'lager'
-                    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                    : 'rgba(255, 255, 255, 0.05)',
-                  color: '#ffffff'
+                  background: settingsSubTab === 'lager' ? s.gradientAccent : s.bgElevated,
+                  color: settingsSubTab === 'lager' ? '#ffffff' : s.text
                 }}
               >
                 📦 Lager
               </button>
+              )}
               <button
                 onClick={() => setSettingsSubTab('drucker')}
                 style={{
@@ -9815,10 +8929,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   fontWeight: settingsSubTab === 'drucker' ? '600' : '500',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
-                  background: settingsSubTab === 'drucker'
-                    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                    : 'rgba(255, 255, 255, 0.05)',
-                  color: '#ffffff'
+                  background: settingsSubTab === 'drucker' ? s.gradientAccent : s.bgElevated,
+                  color: settingsSubTab === 'drucker' ? '#ffffff' : s.text
                 }}
               >
                 🖨️ Drucker
@@ -9842,92 +8954,113 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   </div>
                 )}
                 <div style={{
+                  padding: '0.75rem 1rem',
+                  marginBottom: '1.25rem',
+                  background: s.bgCard,
+                  border: `1px solid ${s.accent}33`,
+                  borderRadius: s.radius,
+                  color: s.text,
+                  fontSize: '0.9rem',
+                  lineHeight: 1.5
+                }}>
+                  <strong>Hinweis:</strong> Die Galerie wird in der Hauptsache von einer Person betrieben. Optional kannst du eine zweite Person anbieten – dazu die erforderlichen Eintragungen bei „Person 2 (optional)“ vornehmen (Name, E-Mail, Telefon; Name ggf. im Design-Tab unter Willkommensseite/Galerie anpassen). Nach dem Speichern erscheint die zweite Person z. B. im Impressum und in der Vita.
+                </div>
+                <div style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
                   gap: 'clamp(1rem, 2.5vw, 1.5rem)',
                   marginBottom: 'clamp(1rem, 2.5vw, 1.5rem)'
                 }}>
-                  {/* Martina */}
+                  {/* Person 1 */}
                   <div style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: s.bgCard,
+                    border: `1px solid ${s.accent}22`,
                     padding: 'clamp(1rem, 2.5vw, 1.25rem)',
-                    borderRadius: '16px'
+                    borderRadius: '16px',
+                    boxShadow: s.shadow
                   }}>
                     <h3 style={{
                       marginTop: 0,
-                      marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
+                      marginBottom: '0.25rem',
                       fontSize: 'clamp(1rem, 2.5vw, 1.15rem)',
                       fontWeight: '600',
-                      color: '#ffffff',
-                      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                      color: s.text,
+                      borderBottom: `1px solid ${s.accent}22`,
                       paddingBottom: '0.5rem'
                     }}>
-                      👩‍🎨 {isOeffentlichAdminContext() ? MUSTER_TEXTE.martina.name : (martinaData.name || 'Künstlerin')}
+                      👩‍🎨 Person 1 (Hauptansprechpartner)
                     </h3>
-                    <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <p style={{ margin: '0 0 clamp(0.75rem, 2vw, 1rem)', fontSize: '0.8rem', color: s.muted }}>
+                      {isOeffentlichAdminContext() ? MUSTER_TEXTE.martina.name : (martinaData.name || 'Name im Design-Tab festlegen')}
+                    </p>
+                    <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', color: s.text }}>
                       <div className="field">
-                        <label style={{ fontSize: '0.85rem' }}>E-Mail</label>
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>E-Mail</label>
                         <input
                           type="email"
                           value={martinaData.email || ''}
                           onChange={(e) => setMartinaData({ ...martinaData, email: e.target.value })}
                           placeholder="martina@k2-galerie.at"
-                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
                       <div className="field">
-                        <label style={{ fontSize: '0.85rem' }}>Telefon</label>
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Telefon</label>
                         <input
                           type="tel"
                           value={martinaData.phone || ''}
                           onChange={(e) => setMartinaData({ ...martinaData, phone: e.target.value })}
                           placeholder="+43 ..."
-                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
                     </div>
                   </div>
 
-                  {/* Georg */}
+                  {/* Person 2 (optional) */}
                   <div style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: s.bgCard,
+                    border: `1px solid ${s.accent}22`,
                     padding: 'clamp(1rem, 2.5vw, 1.25rem)',
-                    borderRadius: '16px'
+                    borderRadius: '16px',
+                    boxShadow: s.shadow
                   }}>
                     <h3 style={{
                       marginTop: 0,
-                      marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
+                      marginBottom: '0.25rem',
                       fontSize: 'clamp(1rem, 2.5vw, 1.15rem)',
                       fontWeight: '600',
-                      color: '#ffffff',
-                      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                      color: s.text,
+                      borderBottom: `1px solid ${s.accent}22`,
                       paddingBottom: '0.5rem'
                     }}>
-                      👨‍🎨 {isOeffentlichAdminContext() ? MUSTER_TEXTE.georg.name : (georgData.name || 'Künstler')}
+                      👨‍🎨 Person 2 (optional)
                     </h3>
-                    <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <p style={{ margin: '0 0 clamp(0.75rem, 2vw, 1rem)', fontSize: '0.8rem', color: s.muted }}>
+                      {isOeffentlichAdminContext() ? MUSTER_TEXTE.georg.name : (georgData.name || 'Name im Design-Tab festlegen')}
+                    </p>
+<p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: s.muted }}>
+                    Für Anzeige einer zweiten Person: E-Mail und Telefon ausfüllen, dann „Stammdaten speichern“. Name ggf. im Design-Tab anpassen.
+                    </p>
+                    <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', color: s.text }}>
                       <div className="field">
-                        <label style={{ fontSize: '0.85rem' }}>E-Mail</label>
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>E-Mail</label>
                         <input
                           type="email"
                           value={georgData.email || ''}
                           onChange={(e) => setGeorgData({ ...georgData, email: e.target.value })}
                           placeholder="georg@k2-galerie.at"
-                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
                       <div className="field">
-                        <label style={{ fontSize: '0.85rem' }}>Telefon</label>
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Telefon</label>
                         <input
                           type="tel"
                           value={georgData.phone || ''}
                           onChange={(e) => setGeorgData({ ...georgData, phone: e.target.value })}
                           placeholder="+43 ..."
-                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
                     </div>
@@ -9935,76 +9068,76 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
 
                   {/* Galerie */}
                   <div style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: s.bgCard,
+                    border: `1px solid ${s.accent}22`,
                     padding: 'clamp(1rem, 2.5vw, 1.25rem)',
-                    borderRadius: '16px'
+                    borderRadius: '16px',
+                    boxShadow: s.shadow
                   }}>
                     <h3 style={{
                       marginTop: 0,
                       marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
                       fontSize: 'clamp(1rem, 2.5vw, 1.15rem)',
                       fontWeight: '600',
-                      color: '#ffffff',
-                      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                      color: s.text,
+                      borderBottom: `1px solid ${s.accent}22`,
                       paddingBottom: '0.5rem'
                     }}>
                       🏛️ Galerie
                     </h3>
-                    <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', color: s.text }}>
                       <div className="field">
-                        <label style={{ fontSize: '0.85rem' }}>Adresse (Straße, Hausnummer)</label>
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Adresse (Straße, Hausnummer)</label>
                         <input
                           type="text"
                           value={galleryData.address || ''}
                           onChange={(e) => setGalleryData({ ...galleryData, address: e.target.value })}
                           placeholder="z. B. Hauptstraße 12"
-                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
                       <div className="field">
-                        <label style={{ fontSize: '0.85rem' }}>Ort (PLZ und Ortsname)</label>
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Ort (PLZ und Ortsname)</label>
                         <input
                           type="text"
                           value={galleryData.city || ''}
                           onChange={(e) => setGalleryData({ ...galleryData, city: e.target.value })}
                           placeholder="z. B. 1010 Wien"
-                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
                       <div className="field">
-                        <label style={{ fontSize: '0.85rem' }}>Land</label>
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Land</label>
                         <input
                           type="text"
                           value={galleryData.country || ''}
                           onChange={(e) => setGalleryData({ ...galleryData, country: e.target.value })}
                           placeholder="z. B. Österreich"
-                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
                       <div className="field">
-                        <label style={{ fontSize: '0.85rem' }}>Telefon</label>
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Telefon</label>
                         <input
                           type="tel"
                           value={galleryData.phone || ''}
                           onChange={(e) => setGalleryData({ ...galleryData, phone: e.target.value })}
                           placeholder="+43 ..."
-                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
                       <div className="field">
-                        <label style={{ fontSize: '0.85rem' }}>E-Mail</label>
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>E-Mail</label>
                         <input
                           type="email"
                           value={galleryData.email || ''}
                           onChange={(e) => setGalleryData({ ...galleryData, email: e.target.value })}
                           placeholder="info@k2-galerie.at"
-                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
                       <div className="field">
-                        <label style={{ fontSize: '0.85rem' }}>Website</label>
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Website</label>
                         <input
                           type="url"
                           value={galleryData.website || ''}
@@ -10016,21 +9149,21 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             })
                           }}
                           placeholder="https://k2-galerie.at"
-                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
                       <div className="field">
-                        <label style={{ fontSize: '0.85rem' }}>Bankverbindung / IBAN (für Überweisungszwecke, z. B. Shop)</label>
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Bankverbindung / IBAN (für Überweisungszwecke, z. B. Shop)</label>
                         <input
                           type="text"
                           value={galleryData.bankverbindung || ''}
                           onChange={(e) => setGalleryData({ ...galleryData, bankverbindung: e.target.value })}
                           placeholder="z. B. AT12 3456 7890 1234 5678, K2 Galerie"
-                          style={{ padding: '0.6rem', fontSize: '0.9rem' }}
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
                       <div className="field">
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', color: s.text }}>
                           <input
                             type="checkbox"
                             checked={galleryData.internetShopNotSetUp !== false}
@@ -10039,13 +9172,17 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           />
                           Hinweis anzeigen: Galerie besuchen & Termin vereinbaren
                         </label>
-                        <small style={{ color: '#8fa0c9', fontSize: '0.75rem', marginTop: '0.25rem', display: 'block' }}>
+                        <small style={{ color: s.muted, fontSize: '0.75rem', marginTop: '0.25rem', display: 'block' }}>
                           Wenn aktiv: Im Shop erscheint ein freundlicher Hinweis, dass ein Besuch der Galerie und eine Terminvereinbarung sinnvoll sind. Der Shop bleibt voll nutzbar (Bestellung, Zahlung).
                         </small>
                       </div>
-                      <small style={{ color: '#8fa0c9', fontSize: '0.75rem', marginTop: '0.5rem', display: 'block' }}>
+                      <small style={{ color: s.muted, fontSize: '0.75rem', marginTop: '0.5rem', display: 'block' }}>
                         Bilder und Texte für Willkommensseite & Galerie findest du im <strong>Design</strong>-Tab in der Vorschau – dort auf Text oder Bild klicken zum Bearbeiten.
                       </small>
+                      <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: `1px solid ${s.accent}22` }}>
+                        <label style={{ fontSize: '0.85rem', display: 'block', marginBottom: '0.25rem', color: s.text }}>📜 AGB (Allgemeine Geschäftsbedingungen)</label>
+                        <Link to={AGB_ROUTE} target="_blank" rel="noopener noreferrer" style={{ color: s.accent, textDecoration: 'underline', fontSize: '0.9rem' }}>AGB-Seite im Volltext anzeigen →</Link>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -10069,19 +9206,56 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             {/* Sicherheit Sub-Tab */}
             {settingsSubTab === 'sicherheit' && (
               <div>
-                <h3 style={{ fontSize: '1.1rem', color: '#5ffbf1', marginBottom: '1rem' }}>🔒 Sicherheitsabteilung</h3>
-                <p style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '1rem' }}>
-                  Admin-Zugang, Passwort-Einstellungen und Zugriffskontrolle.
+                <h3 style={{ fontSize: '1.1rem', color: s.accent, marginBottom: '1rem' }}>🔒 Sicherheitsabteilung</h3>
+                <p style={{ color: s.muted, marginBottom: '1rem' }}>
+                  Admin-Zugang, Passwort-Einstellungen und Zugriffskontrolle. Neue Kunden haben 2 Wochen Testphase ohne Passwort; danach oder für Wiederkehr Passwort setzen.
                 </p>
                 <div style={{
                   padding: '1rem',
-                  background: 'rgba(255,255,255,0.05)',
+                  background: s.bgElevated,
                   borderRadius: '12px',
-                  border: '1px solid rgba(255,255,255,0.1)'
+                  border: `1px solid ${s.accent}22`,
+                  marginBottom: '1rem'
                 }}>
-                  <p style={{ margin: 0, fontSize: '0.9rem' }}>
+                  <p style={{ margin: 0, fontSize: '0.9rem', color: s.text }}>
                     Verwaltet in Stammdaten (Admin-Passwort). Admin-Login beenden über den Header (👤 Symbol).
                   </p>
+                </div>
+                {/* Admin-Passwort ändern / setzen (K2: Stammdaten, ök2: eigener Key) */}
+                <div style={{ padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33`, marginBottom: '1rem' }}>
+                  <h4 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text }}>Admin-Passwort ändern</h4>
+                  <p style={{ margin: '0 0 1rem', fontSize: '0.85rem', color: s.muted }}>Mindestens 6 Zeichen. E-Mail/Telefon optional – für Passwort-Zurücksetzen.</p>
+                  <input type="email" value={adminContactEmail} onChange={(e) => setAdminContactEmail(e.target.value)} placeholder="E-Mail (optional)" style={{ width: '100%', padding: '0.6rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem', marginBottom: '0.5rem', boxSizing: 'border-box' }} />
+                  <input type="tel" value={adminContactPhone} onChange={(e) => setAdminContactPhone(e.target.value)} placeholder="Telefon (optional)" style={{ width: '100%', padding: '0.6rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem', marginBottom: '0.5rem', boxSizing: 'border-box' }} />
+                  <input type="password" value={adminNewPw} onChange={(e) => setAdminNewPw(e.target.value)} placeholder="Neues Passwort (min. 6 Zeichen)" style={{ width: '100%', padding: '0.6rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem', marginBottom: '0.5rem', boxSizing: 'border-box' }} />
+                  <input type="password" value={adminNewPwConfirm} onChange={(e) => setAdminNewPwConfirm(e.target.value)} placeholder="Passwort wiederholen" style={{ width: '100%', padding: '0.6rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem', marginBottom: '0.75rem', boxSizing: 'border-box' }} />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (adminNewPw.length < 6) { alert('Passwort muss mindestens 6 Zeichen haben.'); return }
+                      if (adminNewPw !== adminNewPwConfirm) { alert('Passwort und Wiederholung stimmen nicht überein.'); return }
+                      try {
+                        if (isOeffentlichAdminContext()) {
+                          localStorage.setItem(KEY_OEF_ADMIN_PASSWORD, adminNewPw)
+                          if (adminContactEmail.trim()) localStorage.setItem(KEY_OEF_ADMIN_EMAIL, adminContactEmail.trim())
+                          if (adminContactPhone.trim()) localStorage.setItem(KEY_OEF_ADMIN_PHONE, adminContactPhone.trim())
+                        } else {
+                          const galleryStored = localStorage.getItem('k2-stammdaten-galerie')
+                          const data = galleryStored ? JSON.parse(galleryStored) : {}
+                          data.adminPassword = adminNewPw
+                          localStorage.setItem('k2-stammdaten-galerie', JSON.stringify(data))
+                        }
+                        alert('✅ Passwort wurde gespeichert.')
+                        setAdminNewPw('')
+                        setAdminNewPwConfirm('')
+                      } catch (e) {
+                        alert('Speichern fehlgeschlagen.')
+                      }
+                    }}
+                    style={{ padding: '0.5rem 1rem', background: s.gradientAccent, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}
+                  >
+                    Passwort speichern
+                  </button>
                 </div>
               </div>
             )}
@@ -10092,7 +9266,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <h3 style={{
                   fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
                   fontWeight: '600',
-                  color: '#5ffbf1',
+                  color: s.text,
                   marginBottom: '1.5rem'
                 }}>
                   🖨️ Drucker-Einstellungen
@@ -10106,26 +9280,26 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 }}>
                   {/* Brother QL-820MWBc Einstellungen */}
                   <div style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: s.bgCard,
+                    border: `1px solid ${s.accent}22`,
                     padding: '1.5rem',
-                    borderRadius: '16px'
+                    borderRadius: '16px',
+                    boxShadow: s.shadow
                   }}>
                     <h4 style={{
                       marginTop: 0,
                       marginBottom: '1rem',
                       fontSize: '1.1rem',
                       fontWeight: '600',
-                      color: '#ffffff',
-                      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                      color: s.text,
+                      borderBottom: `1px solid ${s.accent}22`,
                       paddingBottom: '0.75rem'
                     }}>
                       Drucker &amp; Format (pro Mandant)
                     </h4>
 
                     <div className="field">
-                      <label style={{ fontSize: '0.9rem', color: '#8fa0c9', marginBottom: '0.5rem', display: 'block' }}>
+                      <label style={{ fontSize: '0.9rem', color: s.muted, marginBottom: '0.5rem', display: 'block' }}>
                         Einstellungen für
                       </label>
                       <select
@@ -10133,10 +9307,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         onChange={(e) => setPrinterSettingsForTenant(e.target.value as TenantId)}
                         style={{
                           padding: '0.75rem',
-                          background: 'rgba(255, 255, 255, 0.1)',
-                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          background: s.bgElevated,
+                          border: `1px solid ${s.accent}33`,
                           borderRadius: '8px',
-                          color: '#ffffff',
+                          color: s.text,
                           fontSize: '0.95rem',
                           width: '100%'
                         }}
@@ -10145,14 +9319,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         <option value="oeffentlich">ök2 (öffentlich)</option>
                         <option value="demo">Demo</option>
                       </select>
-                      <p style={{ fontSize: '0.8rem', color: '#8fa0c9', marginTop: '0.5rem', marginBottom: 0 }}>
+                      <p style={{ fontSize: '0.8rem', color: s.muted, marginTop: '0.5rem', marginBottom: 0 }}>
                         K2, ök2 und Kassabeleg können jeweils eigenen Drucker und Etikettenformat haben.
                       </p>
                     </div>
 
                     <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <div className="field">
-                        <label style={{ fontSize: '0.9rem', color: '#8fa0c9', marginBottom: '0.5rem', display: 'block' }}>
+                        <label style={{ fontSize: '0.9rem', color: s.muted, marginBottom: '0.5rem', display: 'block' }}>
                           IP-Adresse
                         </label>
                         <input
@@ -10166,21 +9340,21 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           placeholder="192.168.1.102"
                           style={{
                             padding: '0.75rem',
-                            background: 'rgba(255, 255, 255, 0.1)',
-                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            background: s.bgElevated,
+                            border: `1px solid ${s.accent}33`,
                             borderRadius: '8px',
-                            color: '#ffffff',
+                            color: s.text,
                             fontSize: '0.95rem',
                             width: '100%'
                           }}
                         />
-                        <p style={{ fontSize: '0.8rem', color: '#8fa0c9', marginTop: '0.5rem', marginBottom: 0 }}>
+                        <p style={{ fontSize: '0.8rem', color: s.muted, marginTop: '0.5rem', marginBottom: 0 }}>
                           Aktuelle IP: 192.168.1.102 (auf mobilem Gerät als zweiter Router)
                         </p>
                       </div>
 
                       <div className="field">
-                        <label style={{ fontSize: '0.9rem', color: '#8fa0c9', marginBottom: '0.5rem', display: 'block' }}>
+                        <label style={{ fontSize: '0.9rem', color: s.muted, marginBottom: '0.5rem', display: 'block' }}>
                           Drucker-Typ
                         </label>
                         <select
@@ -10192,10 +9366,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           }}
                           style={{
                             padding: '0.75rem',
-                            background: 'rgba(255, 255, 255, 0.1)',
-                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            background: s.bgElevated,
+                            border: `1px solid ${s.accent}33`,
                             borderRadius: '8px',
-                            color: '#ffffff',
+                            color: s.text,
                             fontSize: '0.95rem',
                             width: '100%'
                           }}
@@ -10206,7 +9380,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       </div>
 
                       <div className="field">
-                        <label style={{ fontSize: '0.9rem', color: '#8fa0c9', marginBottom: '0.5rem', display: 'block' }}>
+                        <label style={{ fontSize: '0.9rem', color: s.muted, marginBottom: '0.5rem', display: 'block' }}>
                           Etikettenformat (Brother)
                         </label>
                         <input
@@ -10220,21 +9394,21 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           placeholder="29x90,3"
                           style={{
                             padding: '0.75rem',
-                            background: 'rgba(255, 255, 255, 0.1)',
-                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            background: s.bgElevated,
+                            border: `1px solid ${s.accent}33`,
                             borderRadius: '8px',
-                            color: '#ffffff',
+                            color: s.text,
                             fontSize: '0.95rem',
                             width: '100%'
                           }}
                         />
-                        <p style={{ fontSize: '0.8rem', color: '#8fa0c9', marginTop: '0.5rem', marginBottom: 0 }}>
+                        <p style={{ fontSize: '0.8rem', color: s.muted, marginTop: '0.5rem', marginBottom: 0 }}>
                           Breite × Höhe in mm (z. B. 29x90,3). Pro Mandant getrennt; Kassabeleg kann anderes Format nutzen.
                         </p>
                       </div>
 
                       <div className="field">
-                        <label style={{ fontSize: '0.9rem', color: '#8fa0c9', marginBottom: '0.5rem', display: 'block' }}>
+                        <label style={{ fontSize: '0.9rem', color: s.muted, marginBottom: '0.5rem', display: 'block' }}>
                           Print-Server URL (One-Click-Druck)
                         </label>
                         <input
@@ -10248,28 +9422,28 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           placeholder="Am Mac: http://localhost:3847 — Im mobilen LAN (192.168.1.x): z.B. http://192.168.1.1:3847"
                           style={{
                             padding: '0.75rem',
-                            background: 'rgba(255, 255, 255, 0.1)',
-                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            background: s.bgElevated,
+                            border: `1px solid ${s.accent}33`,
                             borderRadius: '8px',
-                            color: '#ffffff',
+                            color: s.text,
                             fontSize: '0.95rem',
                             width: '100%'
                           }}
                         />
-                        <p style={{ fontSize: '0.8rem', color: '#8fa0c9', marginTop: '0.5rem', marginBottom: 0 }}>
+                        <p style={{ fontSize: '0.8rem', color: s.muted, marginTop: '0.5rem', marginBottom: 0 }}>
                           Optional. Wenn gesetzt: „One-Click drucken“ im Etikett-Modal. Bei Fehlermeldung: One-Click-Anwendung im Projektordner starten: <code style={{ fontSize: '0.75rem' }}>npm run print-server</code> oder <code style={{ fontSize: '0.75rem' }}>node scripts/k2-print-server.js</code>
                         </p>
                       </div>
 
                       <div style={{
                         padding: '1rem',
-                        background: 'rgba(95, 251, 241, 0.1)',
-                        border: '1px solid rgba(95, 251, 241, 0.2)',
+                        background: `${s.accent}12`,
+                        border: `1px solid ${s.accent}33`,
                         borderRadius: '12px',
                         fontSize: '0.85rem',
-                        color: '#8fa0c9'
+                        color: s.muted
                       }}>
-                        <strong style={{ color: '#5ffbf1' }}>ℹ️ Info:</strong>
+                        <strong style={{ color: s.accent }}>ℹ️ Info:</strong>
                         <ul style={{ marginTop: '0.5rem', paddingLeft: '1.5rem' }}>
                           <li>Drucker funktioniert bereits auf IP 192.168.1.102</li>
                           <li>Zweiter Router auf mobilem Gerät installiert</li>
@@ -10282,12 +9456,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       <details style={{
                         marginTop: '1rem',
                         padding: '1rem',
-                        background: 'rgba(255, 255, 255, 0.03)',
-                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        background: s.bgElevated,
+                        border: `1px solid ${s.accent}22`,
                         borderRadius: '12px'
                       }}>
-                        <summary style={{ cursor: 'pointer', fontWeight: 600, color: '#5ffbf1' }}>📖 Druck-Anleitung (AirPrint, iPad, Android, One-Click)</summary>
-                        <div style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#8fa0c9', lineHeight: 1.6 }}>
+                        <summary style={{ cursor: 'pointer', fontWeight: 600, color: s.accent }}>📖 Druck-Anleitung (AirPrint, iPad, Android, One-Click)</summary>
+                        <div style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: s.muted, lineHeight: 1.6 }}>
                           <p style={{ marginTop: 0 }}><strong>Mac:</strong> Brother per IP hinzufügen (Systemeinstellungen → Drucker &amp; Scanner).</p>
                           <p><strong>iPad/iPhone:</strong> 1) Druck über Mac („Für iOS freigeben“) oder 2) Etikett teilen → Brother iPrint &amp; Label App.</p>
                           <p><strong>Android:</strong> Etikett teilen/herunterladen → Brother iPrint &amp; Label App (Play Store).</p>
@@ -10306,7 +9480,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         }}
                         style={{
                           padding: '0.75rem 1.5rem',
-                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                          background: s.gradientAccent,
                           border: 'none',
                           borderRadius: '8px',
                           color: '#ffffff',
@@ -10364,9 +9538,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             // Ignoriere Fehler
           }
 
-          // Kategorien
-          const malereiCount = allArtworks.filter((a: any) => a.category === 'malerei').length
-          const keramikCount = allArtworks.filter((a: any) => a.category === 'keramik').length
+          // Kategorien (max 5)
+          const categoryCounts = ARTWORK_CATEGORIES.map((c) => ({ id: c.id, label: c.label, count: allArtworks.filter((a: any) => a.category === c.id).length }))
 
           return (
             <section className="admin-section">
@@ -10410,14 +9583,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ background: '#fff', padding: '1.5rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
                   <h3 style={{ marginTop: 0, color: '#8b6914' }}>Kategorien</h3>
                   <div style={{ marginTop: '1rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span>Bilder:</span>
-                      <strong>{malereiCount}</strong>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>Keramik:</span>
-                      <strong>{keramikCount}</strong>
-                    </div>
+                    {categoryCounts.map(({ id, label, count }) => (
+                      <div key={id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                        <span>{label}:</span>
+                        <strong>{count}</strong>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -10506,30 +9677,28 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
         {/* Marketing (Eventplanung + Außenkommunikation): Events | Dokumente | Öffentlichkeitsarbeit | Flyer etc. */}
         {activeTab === 'eventplan' && (
           <section style={{
-            background: 'rgba(255, 255, 255, 0.05)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: s.bgCard,
+            border: `1px solid ${s.accent}22`,
             borderRadius: '24px',
             padding: 'clamp(2rem, 5vw, 3rem)',
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+            boxShadow: s.shadow,
             marginBottom: 'clamp(2rem, 5vw, 3rem)'
           }}>
             <h2 style={{
               fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
               fontWeight: '700',
-              color: '#ffffff',
+              color: s.text,
               marginBottom: '0.5rem',
               letterSpacing: '-0.01em'
             }}>
               📢 Marketing
             </h2>
-            <p style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '1.5rem', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
-              Außenkommunikation: Eventplanung, Events, Dokumente, Flyer, Öffentlichkeitsarbeit – alles an einem Ort.
+            <p style={{ color: s.muted, marginBottom: '1.5rem', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
+              Außenkommunikation: Eventplanung, Events, Öffentlichkeitsarbeit. Dokumente sind den Events zugeordnet (je Rubrik).
             </p>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
               {[
                 { id: 'events' as const, label: '📅 Events' },
-                { id: 'dokumente' as const, label: '📄 Dokumente' },
                 { id: 'öffentlichkeitsarbeit' as const, label: '📢 Öffentlichkeitsarbeit' }
               ].map((t) => (
                 <button
@@ -10537,10 +9706,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   onClick={() => setEventplanSubTab(t.id)}
                   style={{
                     padding: '0.6rem 1.25rem',
-                    background: eventplanSubTab === t.id ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'rgba(255,255,255,0.08)',
-                    border: '1px solid rgba(255,255,255,0.2)',
+                    background: eventplanSubTab === t.id ? s.gradientAccent : s.bgElevated,
+                    border: `1px solid ${eventplanSubTab === t.id ? s.accent : s.accent + '33'}`,
                     borderRadius: '10px',
-                    color: '#fff',
+                    color: eventplanSubTab === t.id ? '#fff' : s.text,
                     fontSize: '0.95rem',
                     fontWeight: eventplanSubTab === t.id ? 600 : 500,
                     cursor: 'pointer'
@@ -10564,7 +9733,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 onClick={openEventModal}
                 style={{
                   padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: s.gradientAccent,
                   color: '#ffffff',
                   border: 'none',
                   borderRadius: '12px',
@@ -10572,7 +9741,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   fontWeight: '600',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
-                  boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                  boxShadow: s.shadow
                 }}
               >
                 + Event hinzufügen
@@ -10584,33 +9753,35 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               <div style={{
                 textAlign: 'center',
                 padding: 'clamp(3rem, 8vw, 5rem)',
-                color: '#8fa0c9'
+                color: s.muted
               }}>
                 <div style={{ fontSize: 'clamp(3rem, 8vw, 5rem)', marginBottom: '1rem' }}>📅</div>
-                <p style={{ fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', margin: 0 }}>
+                <p style={{ fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', margin: 0, color: s.text }}>
                   Noch keine Events vorhanden
                 </p>
-                <p style={{ fontSize: 'clamp(0.85rem, 2vw, 1rem)', marginTop: '0.5rem', opacity: 0.7 }}>
-                  Klicke auf „Event hinzufügen“ oder stelle das Eröffnungsevent 24.–26. April wieder her.
+                <p style={{ fontSize: 'clamp(0.85rem, 2vw, 1rem)', marginTop: '0.5rem', color: s.muted }}>
+                  {isOeffentlichAdminContext() ? 'Klicke auf „Event hinzufügen“.' : 'Klicke auf „Event hinzufügen“ oder stelle das Eröffnungsevent 24.–26. April wieder her.'}
                 </p>
+                {!isOeffentlichAdminContext() && (
                 <button
                   type="button"
                   onClick={handleCreateEröffnungsevent}
                   style={{
                     marginTop: '1.5rem',
                     padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: s.gradientAccent,
                     color: '#ffffff',
                     border: 'none',
                     borderRadius: '12px',
                     fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
                     fontWeight: '600',
                     cursor: 'pointer',
-                    boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                    boxShadow: s.shadow
                   }}
                 >
                   🎉 Eröffnung 24.–26. April wiederherstellen
                 </button>
+                )}
               </div>
             ) : (
               <div style={{
@@ -10638,8 +9809,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     <div
                       key={event.id}
                       style={{
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        background: s.bgElevated,
+                        border: `1px solid ${s.accent}22`,
                         borderRadius: '16px',
                         padding: 'clamp(1rem, 3vw, 1.5rem)',
                         transition: 'all 0.3s ease'
@@ -10661,15 +9832,15 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           <h3 style={{
                             fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
                             fontWeight: '600',
-                            color: '#ffffff',
+                            color: s.text,
                             margin: '0 0 0.5rem 0'
                           }}>
                             {event.title}
                           </h3>
                           <div style={{
                             fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                            color: '#8fa0c9',
-                            background: 'rgba(102, 126, 234, 0.2)',
+                            color: s.accent,
+                            background: `${s.accent}20`,
                             padding: '0.25rem 0.75rem',
                             borderRadius: '6px',
                             display: 'inline-block',
@@ -10682,7 +9853,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       
                       <div style={{
                         fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
-                        color: '#b8c5e0',
+                        color: s.muted,
                         marginBottom: '0.75rem'
                       }}>
                         <div style={{ marginBottom: '0.25rem' }}>
@@ -10777,82 +9948,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         )}
                       </div>
 
-                      {/* Dokumente – bei Galerieeröffnung immer K2 Galerie Flyer (Druckversion) mit anzeigen */}
-                      {((event.documents && event.documents.length > 0) || event.type === 'galerieeröffnung') && (
-                        <div style={{
-                          marginTop: '1rem',
-                          padding: '0.75rem',
-                          background: 'rgba(255, 255, 255, 0.05)',
-                          borderRadius: '8px',
-                          border: '1px solid rgba(255, 255, 255, 0.1)'
-                        }}>
-                          <div style={{
-                            fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                            fontWeight: '600',
-                            color: '#ffffff',
-                            marginBottom: '0.5rem'
-                          }}>
-                            📎 Dokumente ({event.type === 'galerieeröffnung' ? 1 + (event.documents?.length || 0) : (event.documents?.length || 0)})
-                          </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            {(() => {
-                              const docIcons: Record<string, string> = {
-                                flyer: '📄',
-                                plakat: '🖼️',
-                                presseaussendung: '📰',
-                                sonstiges: '📎'
-                              }
-                              const k2FlyerDoc = event.type === 'galerieeröffnung' ? { id: 'k2-galerie-flyer', name: 'K2 Galerie Flyer (Druckversion)', type: 'flyer', documentUrl: '/flyer-k2-galerie' } : null
-                              const list = k2FlyerDoc ? [k2FlyerDoc, ...(event.documents || [])] : (event.documents || [])
-                              return list.map((doc: any) => (
-                                <div
-                                  key={doc.id}
-                                  style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    padding: '0.5rem',
-                                    background: 'rgba(255, 255, 255, 0.03)',
-                                    borderRadius: '6px'
-                                  }}
-                                >
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
-                                    <span>{docIcons[doc.type] || '📎'}</span>
-                                    <span
-                                      onClick={() => handleViewEventDocument(doc)}
-                                      style={{
-                                        fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
-                                        color: '#5ffbf1',
-                                        cursor: 'pointer',
-                                        textDecoration: 'underline'
-                                      }}
-                                    >
-                                      {doc.name}
-                                    </span>
-                                  </div>
-                                  {!doc.documentUrl && (
-                                    <button
-                                      onClick={() => handleDeleteEventDocument(event.id, doc.id)}
-                                      style={{
-                                        padding: '0.25rem 0.5rem',
-                                        background: 'rgba(255, 100, 100, 0.2)',
-                                        border: '1px solid rgba(255, 100, 100, 0.3)',
-                                        borderRadius: '4px',
-                                        color: '#ff6464',
-                                        cursor: 'pointer',
-                                        fontSize: 'clamp(0.75rem, 2vw, 0.85rem)'
-                                      }}
-                                    >
-                                      ×
-                                    </button>
-                                  )}
-                                </div>
-                              ))
-                            })()}
-                          </div>
-                        </div>
-                      )}
-
                       <div style={{
                         display: 'flex',
                         gap: '0.5rem',
@@ -10875,26 +9970,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           }}
                         >
                           ✏️ Bearbeiten
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedEventForDocument(event.id)
-                            setShowDocumentModal(true)
-                          }}
-                          style={{
-                            flex: 1,
-                            minWidth: '120px',
-                            padding: '0.75rem',
-                            background: 'rgba(95, 251, 241, 0.2)',
-                            border: '1px solid rgba(95, 251, 241, 0.3)',
-                            borderRadius: '8px',
-                            color: '#5ffbf1',
-                            cursor: 'pointer',
-                            fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                            fontWeight: '500'
-                          }}
-                        >
-                          📎 Dokument
                         </button>
                         <button
                           onClick={() => handleDeleteEvent(event.id)}
@@ -10940,8 +10015,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 setEventDailyTimes({})
                 setEventDescription('')
                 setEventLocation('')
-                setEventPRSuggestions(null)
-                setEditingPRType(null)
               }
             }}
             style={{
@@ -10972,7 +10045,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)'
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                 <h2 style={{
                   fontSize: 'clamp(1.5rem, 4vw, 2rem)',
                   fontWeight: '700',
@@ -10995,8 +10068,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     setEventDailyTimes({})
                     setEventDescription('')
                     setEventLocation('')
-                    setEventPRSuggestions(null)
-                    setEditingPRType(null)
                   }}
                   style={{
                     background: 'transparent',
@@ -11015,6 +10086,20 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   ×
                 </button>
               </div>
+              {!editingEvent && (
+                <p style={{
+                  fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
+                  color: '#8fa0c9',
+                  marginBottom: 'clamp(1rem, 2.5vw, 1.25rem)',
+                  lineHeight: 1.5,
+                  padding: '0.75rem 1rem',
+                  background: 'rgba(95, 251, 241, 0.08)',
+                  border: '1px solid rgba(95, 251, 241, 0.2)',
+                  borderRadius: '12px'
+                }}>
+                  💡 <strong>Eckdaten eingeben</strong> – nach dem Speichern erscheint unter <strong>Öffentlichkeitsarbeit</strong> automatisch eine neue Rubrik mit fertigen Werbe-Werkzeugen (Newsletter, Presse, Social Media, PDF).
+                </p>
+              )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div>
@@ -11620,333 +10705,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   />
                 </div>
 
-                {/* PR-Vorschläge als Text anzeigen */}
-                {eventPRSuggestions && (
-                  <div style={{
-                    marginTop: '2rem',
-                    padding: '1.5rem',
-                    background: 'linear-gradient(135deg, rgba(95, 251, 241, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%)',
-                    border: '1px solid rgba(95, 251, 241, 0.2)',
-                    borderRadius: '16px'
-                  }}>
-                    <h3 style={{
-                      fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
-                      fontWeight: '600',
-                      color: '#5ffbf1',
-                      margin: '0 0 1rem 0'
-                    }}>
-                      ✨ PR-Vorschläge
-                    </h3>
-                    
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                      {/* Presseaussendung */}
-                      {eventPRSuggestions.presseaussendung?.content && (
-                        <div style={{
-                          background: 'rgba(255, 255, 255, 0.05)',
-                          border: '1px solid rgba(255, 255, 255, 0.1)',
-                          borderRadius: '12px',
-                          padding: '1rem'
-                        }}>
-                          <button
-                            onClick={() => {
-                              const event = editingEvent || {
-                                id: eventPRSuggestions.eventId,
-                                title: eventPRSuggestions.eventTitle,
-                                date: eventDate,
-                                location: eventLocation
-                              }
-                              // Öffne bearbeitbares PDF-Fenster
-                              generateEditablePresseaussendungPDF(eventPRSuggestions.presseaussendung, event)
-                            }}
-                            style={{
-                              width: '100%',
-                              fontSize: 'clamp(0.9rem, 2vw, 1rem)',
-                              fontWeight: '600',
-                              color: '#5ffbf1',
-                              marginBottom: '0.75rem',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '0.5rem',
-                              background: 'transparent',
-                              border: 'none',
-                              cursor: 'pointer',
-                              padding: '0.5rem',
-                              borderRadius: '8px',
-                              transition: 'all 0.3s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.background = 'rgba(95, 251, 241, 0.1)'
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.background = 'transparent'
-                            }}
-                          >
-                            <span>📰</span>
-                            <span>Presseaussendung</span>
-                            <span style={{ marginLeft: 'auto', fontSize: '0.85rem', opacity: 0.7 }}>→ PDF öffnen</span>
-                          </button>
-                          <div style={{
-                            fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                            color: '#b8c5e0',
-                            lineHeight: '1.8',
-                            whiteSpace: 'pre-wrap',
-                            wordWrap: 'break-word',
-                            fontFamily: 'inherit'
-                          }}>
-                            {(eventPRSuggestions.presseaussendung.content || '').split('\n').map((line: string, idx: number) => (
-                              <div key={idx} style={{ marginBottom: line.trim() ? '0.5rem' : '0.25rem' }}>
-                                {line.trim() || '\u00A0'}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Social Media */}
-                      {eventPRSuggestions.socialMedia && (
-                        <div style={{
-                          background: 'rgba(255, 255, 255, 0.05)',
-                          border: '1px solid rgba(255, 255, 255, 0.1)',
-                          borderRadius: '12px',
-                          padding: '1rem'
-                        }}>
-                          <button
-                            onClick={() => {
-                              const event = editingEvent || {
-                                id: eventPRSuggestions.eventId,
-                                title: eventPRSuggestions.eventTitle,
-                                date: eventDate,
-                                location: eventLocation
-                              }
-                              generateEditableSocialMediaPDF(eventPRSuggestions.socialMedia, event)
-                            }}
-                            style={{
-                              width: '100%',
-                              fontSize: 'clamp(0.9rem, 2vw, 1rem)',
-                              fontWeight: '600',
-                              color: '#5ffbf1',
-                              marginBottom: '0.75rem',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '0.5rem',
-                              background: 'transparent',
-                              border: 'none',
-                              cursor: 'pointer',
-                              padding: '0.5rem',
-                              borderRadius: '8px',
-                              transition: 'all 0.3s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.background = 'rgba(95, 251, 241, 0.1)'
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.background = 'transparent'
-                            }}
-                          >
-                            <span>📱</span>
-                            <span>Social Media</span>
-                            <span style={{ marginLeft: 'auto', fontSize: '0.85rem', opacity: 0.7 }}>→ PDF öffnen</span>
-                          </button>
-                          {eventPRSuggestions.socialMedia.instagram && (
-                            <div style={{ marginBottom: '1rem' }}>
-                              <div style={{
-                                fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
-                                color: '#8fa0c9',
-                                marginBottom: '0.5rem',
-                                fontWeight: '500'
-                              }}>
-                                Instagram:
-                              </div>
-                              <div style={{
-                                fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                                color: '#b8c5e0',
-                                lineHeight: '1.8',
-                                whiteSpace: 'pre-wrap',
-                                wordWrap: 'break-word',
-                                fontFamily: 'inherit'
-                              }}>
-                                {eventPRSuggestions.socialMedia.instagram.split('\n').map((line: string, idx: number) => (
-                                  <div key={idx} style={{ marginBottom: line.trim() ? '0.5rem' : '0.25rem' }}>
-                                    {line.trim() || '\u00A0'}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {eventPRSuggestions.socialMedia.facebook && (
-                            <div>
-                              <div style={{
-                                fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
-                                color: '#8fa0c9',
-                                marginBottom: '0.5rem',
-                                fontWeight: '500'
-                              }}>
-                                Facebook:
-                              </div>
-                              <div style={{
-                                fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                                color: '#b8c5e0',
-                                lineHeight: '1.8',
-                                whiteSpace: 'pre-wrap',
-                                wordWrap: 'break-word',
-                                fontFamily: 'inherit'
-                              }}>
-                                {((eventPRSuggestions.socialMedia.facebook || '')).split('\n').map((line: string, idx: number) => (
-                                  <div key={idx} style={{ marginBottom: line.trim() ? '0.5rem' : '0.25rem' }}>
-                                    {line.trim() || '\u00A0'}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Newsletter */}
-                      {eventPRSuggestions.newsletter && (
-                        <div style={{
-                          background: 'rgba(255, 255, 255, 0.05)',
-                          border: '1px solid rgba(255, 255, 255, 0.1)',
-                          borderRadius: '12px',
-                          padding: '1rem'
-                        }}>
-                          <button
-                            onClick={() => {
-                              const event = editingEvent || {
-                                id: eventPRSuggestions.eventId,
-                                title: eventPRSuggestions.eventTitle,
-                                date: eventDate,
-                                location: eventLocation
-                              }
-                              generateEditableNewsletterPDF(eventPRSuggestions.newsletter, event)
-                            }}
-                            style={{
-                              width: '100%',
-                              fontSize: 'clamp(0.9rem, 2vw, 1rem)',
-                              fontWeight: '600',
-                              color: '#5ffbf1',
-                              marginBottom: '0.75rem',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '0.5rem',
-                              background: 'transparent',
-                              border: 'none',
-                              cursor: 'pointer',
-                              padding: '0.5rem',
-                              borderRadius: '8px',
-                              transition: 'all 0.3s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.background = 'rgba(95, 251, 241, 0.1)'
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.background = 'transparent'
-                            }}
-                          >
-                            <span>📧</span>
-                            <span>Newsletter</span>
-                            <span style={{ marginLeft: 'auto', fontSize: '0.85rem', opacity: 0.7 }}>→ PDF öffnen</span>
-                          </button>
-                          {eventPRSuggestions.newsletter.subject && (
-                            <div style={{
-                              fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                              color: '#b8c5e0',
-                              marginBottom: '0.75rem',
-                              padding: '0.75rem',
-                              background: 'rgba(0, 0, 0, 0.2)',
-                              borderRadius: '8px'
-                            }}>
-                              <strong style={{ color: '#8fa0c9' }}>Betreff:</strong> {eventPRSuggestions.newsletter.subject}
-                            </div>
-                          )}
-                          {eventPRSuggestions.newsletter.body && (
-                            <div style={{
-                              fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                              color: '#b8c5e0',
-                              lineHeight: '1.8',
-                              whiteSpace: 'pre-wrap',
-                              wordWrap: 'break-word',
-                              fontFamily: 'inherit'
-                            }}>
-                              {((eventPRSuggestions.newsletter.body || '')).split('\n').map((line: string, idx: number) => (
-                                <div key={idx} style={{ marginBottom: line.trim() ? '0.5rem' : '0.25rem' }}>
-                                  {line.trim() || '\u00A0'}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* PR-Vorschläge als PDF exportieren */}
-                {eventPRSuggestions && (
-                  <button
-                    onClick={() => generateEditablePRSuggestionsPDF(eventPRSuggestions, editingEvent)}
-                    style={{
-                      width: '100%',
-                      marginTop: '1rem',
-                      padding: 'clamp(0.75rem, 2vw, 1rem)',
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '12px',
-                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
-                    }}
-                  >
-                    📄 PR-Vorschläge als bearbeitbare PDF-Seiten
-                  </button>
-                )}
-
-                {/* Vorschläge neu generieren Button */}
-                {editingEvent && !eventPRSuggestions && (
-                  <button
-                    onClick={() => {
-                      const event = {
-                        id: editingEvent.id,
-                        title: eventTitle,
-                        type: eventType,
-                        date: eventDate,
-                        endDate: eventEndDate,
-                        startTime: eventStartTime,
-                        endTime: eventEndTime,
-                        description: eventDescription,
-                        location: eventLocation
-                      }
-                      const newSuggestions = {
-                        eventId: event.id,
-                        eventTitle: event.title,
-                        generatedAt: new Date().toISOString(),
-                        presseaussendung: generatePresseaussendungContent(event),
-                        socialMedia: generateSocialMediaContent(event),
-                        flyer: generateFlyerContent(event),
-                        newsletter: generateNewsletterContent(event),
-                        plakat: generatePlakatContent(event)
-                      }
-                      setEventPRSuggestions(newSuggestions)
-                    }}
-                    style={{
-                      width: '100%',
-                      marginTop: '1rem',
-                      padding: 'clamp(0.75rem, 2vw, 1rem)',
-                      background: 'linear-gradient(135deg, rgba(95, 251, 241, 0.2) 0%, rgba(102, 126, 234, 0.2) 100%)',
-                      color: '#5ffbf1',
-                      border: '1px solid rgba(95, 251, 241, 0.3)',
-                      borderRadius: '12px',
-                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
-                      fontWeight: '500',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    ✨ PR-Vorschläge generieren
-                  </button>
-                )}
-
                 <div style={{
                   display: 'flex',
                   gap: '1rem',
@@ -11982,8 +10740,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       setEventDailyTimes({})
                       setEventDescription('')
                       setEventLocation('')
-                      setEventPRSuggestions(null)
-                      setEditingPRType(null)
                     }}
                     style={{
                       flex: 1,
@@ -12216,102 +10972,110 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             <h2 style={{
               fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
               fontWeight: '700',
-              color: '#ffffff',
+              color: s.text,
               marginTop: 0,
-              marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
+              marginBottom: '0.75rem',
               letterSpacing: '-0.01em'
             }}>
               📢 Öffentlichkeitsarbeit
             </h2>
+            <p style={{
+              fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+              color: s.muted,
+              marginBottom: '0.75rem',
+              lineHeight: 1.55
+            }}>
+              <strong style={{ color: s.text }}>So geht’s:</strong> Event in der Eventplanung anlegen (Eckdaten) → hier erscheint automatisch eine Rubrik mit allen Werbe-Werkzeugen.
+            </p>
+            <p style={{
+              fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
+              color: s.muted,
+              marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
+              lineHeight: 1.5
+            }}>
+              Pro Rubrik: Druckversionen (Flyer, Presse-Einladung), eigene Dokumente, PR-Vorschläge (Newsletter, Plakat, Presse, Social Media) – aus deinen Stammdaten erzeugt, direkt nutzbar oder als PDF.
+            </p>
 
-            {/* PR-Vorschläge nach Events gruppiert */}
+            {/* Alle Events mit einheitlicher Liste: Druckversionen + Event-Dokumente + Aktionen (PR) */}
             {(() => {
+              void prSuggestionsRefresh // Re-Render auslösen nach PR-Vorschläge generieren
               const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+              const eventsSorted = [...events].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
               
-              // Events mit Vorschlägen zusammenführen
-              const eventsWithSuggestions = events
-                .map(event => {
-                  const suggestion = suggestions.find((s: any) => s.eventId === event.id)
-                  return { event, suggestion }
-                })
-                .filter(item => item.suggestion) // Nur Events mit Vorschlägen
-                .sort((a, b) => new Date(b.event.date).getTime() - new Date(a.event.date).getTime()) // Neueste zuerst
-              
-              if (eventsWithSuggestions.length > 0) {
+              if (eventsSorted.length > 0) {
                 return (
                   <div style={{
                     marginBottom: 'clamp(2rem, 5vw, 3rem)'
                   }}>
-                    <h3 style={{
-                      fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
-                      fontWeight: '600',
-                      color: '#5ffbf1',
-                      margin: '0 0 1.5rem 0'
-                    }}>
-                      📅 PR-Vorschläge nach Events
-                    </h3>
-                    
                     <div style={{
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '1.5rem'
                     }}>
-                      {eventsWithSuggestions.map(({ event, suggestion }: any, idx: number) => (
+                      {eventsSorted.map((event: any) => {
+                        const suggestion = suggestions.find((s: any) => s.eventId === event.id)
+                        const k2FlyerDoc = event.type === 'galerieeröffnung' ? { id: 'k2-galerie-flyer', name: 'K2 Galerie Flyer (Druckversion)', documentUrl: '/flyer-k2-galerie' } : null
+                        const k2PresseDoc = event.type === 'galerieeröffnung' ? { id: 'k2-galerie-presse', name: 'Presse-Einladung (Druckversion)', documentUrl: '/presse-einladung-k2-galerie' } : null
+                        const hiddenIds = event.hiddenDocIds || []
+                        const docList = [k2FlyerDoc, k2PresseDoc, ...(event.documents || [])].filter(Boolean).filter((d: any) => !hiddenIds.includes(d.id))
+                        const prDocsForEvent = (documents || []).filter((d: any) => d.category === 'pr-dokumente' && d.eventId === event.id)
+                        const WERBEMATERIAL_TYPEN = ['qr-plakat', 'newsletter', 'plakat', 'event-flyer', 'presse', 'social'] as const
+                        const byTyp: Record<string, any[]> = {}
+                        WERBEMATERIAL_TYPEN.forEach(t => { byTyp[t] = [] })
+                        prDocsForEvent.forEach((d: any) => { if (d.werbematerialTyp && byTyp[d.werbematerialTyp]) byTyp[d.werbematerialTyp].push(d) })
+                        const listItemStyle = {
+                          padding: '0.5rem 0.75rem',
+                          background: s.bgElevated,
+                          border: `1px solid ${s.accent}22`,
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          fontSize: 'clamp(0.85rem, 2vw, 0.95rem)' as const,
+                          color: s.text,
+                          transition: 'background 0.2s, color 0.2s'
+                        }
+                        return (
                         <div
                           key={event.id}
                           style={{
-                            background: 'linear-gradient(135deg, rgba(95, 251, 241, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%)',
-                            border: '1px solid rgba(95, 251, 241, 0.2)',
+                            background: `${s.accent}0c`,
+                            border: `1px solid ${s.accent}33`,
                             borderRadius: '16px',
-                            padding: 'clamp(1.5rem, 4vw, 2rem)',
+                            padding: 'clamp(1.25rem, 3vw, 1.5rem)',
                             overflow: 'hidden'
                           }}
                         >
-                          {/* Event Header */}
+                          {/* Rubrik = dieses Event/Projekt – Überschrift mit zugehörigen Dokumenten */}
                           <div style={{
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'flex-start',
-                            marginBottom: '1.5rem',
+                            marginBottom: '0.75rem',
                             flexWrap: 'wrap',
-                            gap: '1rem'
+                            gap: '0.75rem',
+                            paddingBottom: '0.75rem',
+                            borderBottom: `1px solid ${s.accent}22`
                           }}>
                             <div style={{ flex: 1 }}>
-                              <h4 style={{
-                                fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
-                                fontWeight: '600',
-                                color: '#ffffff',
-                                margin: '0 0 0.5rem 0'
-                              }}>
+                              <div style={{ fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)', color: s.accent, fontWeight: '600', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
+                                Werbematerial – Dokumente
+                              </div>
+                              <h3 style={{ fontSize: 'clamp(1.1rem, 2.8vw, 1.35rem)', fontWeight: '600', color: s.text, margin: '0 0 0.4rem 0' }}>
                                 {event.title}
-                              </h4>
-                              <div style={{
-                                fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                                color: '#8fa0c9',
-                                display: 'flex',
-                                flexWrap: 'wrap',
-                                gap: '1rem'
-                              }}>
-                                <span>📅 {new Date(event.date).toLocaleDateString('de-DE', {
-                                  day: 'numeric',
-                                  month: 'long',
-                                  year: 'numeric'
-                                })}</span>
+                              </h3>
+                              <div style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: s.muted, display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                                <span>📅 {new Date(event.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                                 {event.location && <span>📍 {event.location}</span>}
                                 {event.type && <span>🏷️ {event.type === 'galerieeröffnung' ? 'Galerieeröffnung' : event.type === 'vernissage' ? 'Vernissage' : event.type === 'finissage' ? 'Finissage' : event.type === 'öffentlichkeitsarbeit' ? 'Öffentlichkeitsarbeit' : 'Sonstiges'}</span>}
                               </div>
                             </div>
                             <button
-                              onClick={() => {
-                                handleEditEvent(event)
-                                setActiveTab('eventplan')
-                              }}
+                              onClick={() => { handleEditEvent(event); setActiveTab('eventplan') }}
                               style={{
-                                padding: '0.4rem 0.75rem',
-                                background: 'rgba(102, 126, 234, 0.3)',
-                                border: '1px solid rgba(102, 126, 234, 0.5)',
+                                padding: '0.35rem 0.65rem',
+                                background: `${s.accent}20`,
+                                border: `1px solid ${s.accent}55`,
                                 borderRadius: '6px',
-                                color: '#ffffff',
+                                color: s.accent,
                                 cursor: 'pointer',
                                 fontSize: 'clamp(0.75rem, 1.8vw, 0.85rem)',
                                 fontWeight: '500',
@@ -12326,14 +11090,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           <div style={{
                             marginBottom: '1.5rem',
                             padding: '1rem',
-                            background: 'rgba(102, 126, 234, 0.1)',
-                            border: '1px solid rgba(102, 126, 234, 0.3)',
+                            background: `${s.accent}12`,
+                            border: `1px solid ${s.accent}33`,
                             borderRadius: '12px'
                           }}>
                             <button
                               onClick={() => {
                                 const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
-                                const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+                                const eventSuggestion = suggestions.find((sug: any) => sug.eventId === event.id)
                                 if (eventSuggestion) {
                                   generateEditablePRSuggestionsPDF(eventSuggestion, event)
                                 } else {
@@ -12343,317 +11107,251 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               style={{
                                 width: '100%',
                                 padding: '0.5rem 0.75rem',
-                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                background: s.gradientAccent,
                                 color: '#ffffff',
                                 border: 'none',
                                 borderRadius: '6px',
                                 fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)',
                                 fontWeight: '600',
                                 cursor: 'pointer',
-                                boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)'
+                                boxShadow: s.shadow
                               }}
                             >
                               📄 Alle PR-Vorschläge als bearbeitbare PDF-Seiten
                             </button>
                           </div>
 
-                          {/* PR-Medien Grid */}
-                          <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                            gap: '1rem'
-                          }}>
-                            {/* Presseaussendung */}
-                            <div
-                              onClick={() => {
-                                const selectedEvent = events.find(e => e.id === event.id)
-                                if (selectedEvent) {
-                                  const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
-                                  const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
-                                  if (eventSuggestion && eventSuggestion.presseaussendung) {
-                                    generateEditablePresseaussendungPDF(eventSuggestion.presseaussendung, selectedEvent)
-                                  } else {
-                                    const presseaussendung = generatePresseaussendungContent(selectedEvent)
-                                    generateEditablePresseaussendungPDF(presseaussendung, selectedEvent)
-                                  }
-                                }
-                              }}
-                              style={{
-                                background: 'rgba(255, 255, 255, 0.05)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                                borderRadius: '10px',
-                                padding: '0.75rem',
-                                cursor: 'pointer',
-                                transition: 'all 0.3s ease',
-                                textAlign: 'center'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-                                e.currentTarget.style.transform = 'translateY(-2px)'
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-                                e.currentTarget.style.transform = 'translateY(0)'
-                              }}
-                            >
-                              <div style={{ fontSize: '1.5rem', marginBottom: '0.4rem' }}>📰</div>
-                              <div style={{
-                                fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)',
-                                fontWeight: '500',
-                                color: '#ffffff',
-                                marginBottom: '0.2rem'
-                              }}>
-                                Presseaussendung
-                              </div>
-                              <div style={{
-                                fontSize: 'clamp(0.7rem, 1.6vw, 0.75rem)',
-                                color: '#8fa0c9'
-                              }}>
-                                Generieren
-                              </div>
-                            </div>
-
-                            {/* Social Media */}
-                            <div
-                              onClick={() => {
-                                const selectedEvent = events.find(e => e.id === event.id)
-                                if (selectedEvent) {
-                                  const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
-                                  const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
-                                  if (eventSuggestion && eventSuggestion.socialMedia) {
-                                    generateEditableSocialMediaPDF(eventSuggestion.socialMedia, selectedEvent)
-                                  } else {
-                                    const socialMedia = generateSocialMediaContent(selectedEvent)
-                                    generateEditableSocialMediaPDF(socialMedia, selectedEvent)
-                                  }
-                                }
-                              }}
-                              style={{
-                                background: 'rgba(255, 255, 255, 0.05)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                                borderRadius: '10px',
-                                padding: '0.75rem',
-                                cursor: 'pointer',
-                                transition: 'all 0.3s ease',
-                                textAlign: 'center'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-                                e.currentTarget.style.transform = 'translateY(-2px)'
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-                                e.currentTarget.style.transform = 'translateY(0)'
-                              }}
-                            >
-                              <div style={{ fontSize: '1.5rem', marginBottom: '0.4rem' }}>📱</div>
-                              <div style={{
-                                fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)',
-                                fontWeight: '500',
-                                color: '#ffffff',
-                                marginBottom: '0.2rem'
-                              }}>
-                                Social Media
-                              </div>
-                              <div style={{
-                                fontSize: 'clamp(0.7rem, 1.6vw, 0.75rem)',
-                                color: '#8fa0c9'
-                              }}>
-                                Instagram & Facebook
-                              </div>
-                            </div>
-
-                            {/* Flyer */}
-                            <div
-                              onClick={() => {
-                                const selectedEvent = events.find(e => e.id === event.id)
-                                if (selectedEvent) {
-                                  const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
-                                  const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
-                                  if (eventSuggestion && eventSuggestion.flyer) {
-                                    generateEditableNewsletterPDF(eventSuggestion.flyer, selectedEvent)
-                                  } else {
-                                    const flyer = generateEventFlyerContent(selectedEvent)
-                                    generateEditableNewsletterPDF(flyer, selectedEvent)
-                                  }
-                                }
-                              }}
-                              style={{
-                                background: 'rgba(255, 255, 255, 0.05)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                                borderRadius: '10px',
-                                padding: '0.75rem',
-                                cursor: 'pointer',
-                                transition: 'all 0.3s ease',
-                                textAlign: 'center'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-                                e.currentTarget.style.transform = 'translateY(-2px)'
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-                                e.currentTarget.style.transform = 'translateY(0)'
-                              }}
-                            >
-                              <div style={{ fontSize: '1.5rem', marginBottom: '0.4rem' }}>📄</div>
-                              <div style={{
-                                fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)',
-                                fontWeight: '500',
-                                color: '#ffffff',
-                                marginBottom: '0.2rem'
-                              }}>
-                                Flyer
-                              </div>
-                              <div style={{
-                                fontSize: 'clamp(0.7rem, 1.6vw, 0.75rem)',
-                                color: '#8fa0c9'
-                              }}>
-                                A4 Format
-                              </div>
-                            </div>
-
-                            {/* Bei Galerieeröffnung: K2-Galerie-Flyer zum Ausdrucken (statische Druckversion) */}
-                            {event.type === 'galerieeröffnung' && (
-                              <div
-                                onClick={() => window.open('/flyer-k2-galerie', '_blank')}
-                                style={{
-                                  background: 'rgba(95, 251, 241, 0.1)',
-                                  border: '1px solid rgba(95, 251, 241, 0.3)',
-                                  borderRadius: '10px',
-                                  padding: '0.75rem',
-                                  cursor: 'pointer',
-                                  transition: 'all 0.3s ease',
-                                  textAlign: 'center'
+                          {/* Zu dieser Rubrik: Druckversionen + Event-Dokumente + Aktionen (PR) */}
+                          <div style={{ marginTop: '0.5rem' }}>
+                            <div style={{ fontSize: 'clamp(0.75rem, 1.8vw, 0.85rem)', color: s.muted, marginBottom: '0.25rem' }}>Dokumente zu dieser Rubrik (zum Anklicken)</div>
+                            <div style={{ fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)', color: s.muted, marginBottom: '0.5rem', fontStyle: 'italic' }}>Aus Stammdaten &amp; Event erzeugt – anklicken oder als PDF exportieren</div>
+                            <ul style={{
+                              listStyle: 'none',
+                              margin: 0,
+                              padding: 0,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '0.35rem'
+                            }}>
+                              {docList.map((doc: any) => (
+                                <li
+                                  key={doc.id || doc.name}
+                                  onClick={() => handleViewEventDocument(doc)}
+                                  style={{
+                                    padding: '0.5rem 0.75rem',
+                                    background: s.bgElevated,
+                                    border: `1px solid ${s.accent}22`,
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                                    color: doc.documentUrl ? s.accent : s.text,
+                                    transition: 'background 0.2s, color 0.2s',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    gap: '0.5rem'
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = `${s.accent}18`
+                                    e.currentTarget.style.color = s.accent
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = s.bgElevated
+                                    e.currentTarget.style.color = doc.documentUrl ? s.accent : s.text
+                                  }}
+                                >
+                                  <span>{doc.documentUrl ? '🖨️ ' : '📎 '}{doc.name || doc.fileName || 'Dokument'}</span>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      if (doc.id === 'k2-galerie-flyer' || doc.id === 'k2-galerie-presse') {
+                                        handleHideFromEventList(event.id, doc.id)
+                                      } else {
+                                        handleDeleteEventDocument(event.id, doc.id)
+                                      }
+                                    }}
+                                    style={{
+                                      padding: '0.2rem 0.5rem',
+                                      background: 'rgba(255, 100, 100, 0.2)',
+                                      border: '1px solid rgba(255, 100, 100, 0.3)',
+                                      borderRadius: '4px',
+                                      color: '#ff6464',
+                                      cursor: 'pointer',
+                                      fontSize: 'clamp(0.75rem, 1.8vw, 0.85rem)'
+                                    }}
+                                    title={doc.id === 'k2-galerie-flyer' || doc.id === 'k2-galerie-presse' ? 'Eintrag aus der Liste entfernen' : 'Eintrag löschen'}
+                                  >
+                                    ×
+                                  </button>
+                                </li>
+                              ))}
+                              <li
+                                onClick={() => {
+                                  setSelectedEventForDocument(event.id)
+                                  setShowDocumentModal(true)
                                 }}
+                                style={listItemStyle}
                                 onMouseEnter={(e) => {
-                                  e.currentTarget.style.background = 'rgba(95, 251, 241, 0.2)'
-                                  e.currentTarget.style.transform = 'translateY(-2px)'
+                                  e.currentTarget.style.background = 'rgba(95, 251, 241, 0.15)'
+                                  e.currentTarget.style.color = '#5ffbf1'
                                 }}
                                 onMouseLeave={(e) => {
-                                  e.currentTarget.style.background = 'rgba(95, 251, 241, 0.1)'
-                                  e.currentTarget.style.transform = 'translateY(0)'
+                                  e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
+                                  e.currentTarget.style.color = '#ffffff'
                                 }}
                               >
-                                <div style={{ fontSize: '1.5rem', marginBottom: '0.4rem' }}>🖨️</div>
-                                <div style={{
-                                  fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)',
-                                  fontWeight: '500',
-                                  color: '#5ffbf1',
-                                  marginBottom: '0.2rem'
-                                }}>
-                                  K2 Galerie Flyer
-                                </div>
-                                <div style={{
-                                  fontSize: 'clamp(0.7rem, 1.6vw, 0.75rem)',
-                                  color: '#8fa0c9'
-                                }}>
-                                  Zum Ausdrucken öffnen
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Newsletter */}
-                            <div
-                              onClick={() => {
-                                const selectedEvent = events.find(e => e.id === event.id)
-                                if (selectedEvent) {
-                                  const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
-                                  const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
-                                  if (eventSuggestion && eventSuggestion.newsletter) {
-                                    generateEditableNewsletterPDF(eventSuggestion.newsletter, selectedEvent)
-                                  } else {
-                                    const newsletter = generateEmailNewsletterContent(selectedEvent)
-                                    generateEditableNewsletterPDF(newsletter, selectedEvent)
-                                  }
-                                }
-                              }}
-                              style={{
-                                background: 'rgba(255, 255, 255, 0.05)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                                borderRadius: '10px',
-                                padding: '0.75rem',
-                                cursor: 'pointer',
-                                transition: 'all 0.3s ease',
-                                textAlign: 'center'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-                                e.currentTarget.style.transform = 'translateY(-2px)'
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-                                e.currentTarget.style.transform = 'translateY(0)'
-                              }}
-                            >
-                              <div style={{ fontSize: '1.5rem', marginBottom: '0.4rem' }}>📧</div>
-                              <div style={{
-                                fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)',
-                                fontWeight: '500',
-                                color: '#ffffff',
-                                marginBottom: '0.2rem'
-                              }}>
-                                Newsletter
-                              </div>
-                              <div style={{
-                                fontSize: 'clamp(0.7rem, 1.6vw, 0.75rem)',
-                                color: '#8fa0c9'
-                              }}>
-                                E-Mail HTML
-                              </div>
-                            </div>
-
-                            {/* Plakat */}
-                            <div
-                              onClick={() => {
-                                console.log('Plakat-Button geklickt für Event:', event)
-                                const selectedEvent = events.find(e => e.id === event.id)
-                                console.log('Gefundenes Event:', selectedEvent)
-                                if (selectedEvent) {
-                                  console.log('Rufe generatePlakatForEvent auf...')
-                                  generatePlakatForEvent(selectedEvent)
-                                } else {
-                                  console.error('Kein Event gefunden für ID:', event.id)
-                                  alert('Fehler: Event nicht gefunden')
-                                }
-                              }}
-                              style={{
-                                background: 'rgba(255, 255, 255, 0.05)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                                borderRadius: '10px',
-                                padding: '0.75rem',
-                                cursor: 'pointer',
-                                transition: 'all 0.3s ease',
-                                textAlign: 'center'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-                                e.currentTarget.style.transform = 'translateY(-2px)'
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-                                e.currentTarget.style.transform = 'translateY(0)'
-                              }}
-                            >
-                              <div style={{ fontSize: '1.5rem', marginBottom: '0.4rem' }}>🖼️</div>
-                              <div style={{
-                                fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)',
-                                fontWeight: '500',
-                                color: '#ffffff',
-                                marginBottom: '0.2rem'
-                              }}>
-                                Plakat
-                              </div>
-                              <div style={{
-                                fontSize: 'clamp(0.7rem, 1.6vw, 0.75rem)',
-                                color: '#8fa0c9'
-                              }}>
-                                A3 Format
-                              </div>
-                            </div>
+                                ➕ Dokument zu dieser Rubrik hinzufügen
+                              </li>
+                              {!suggestion && (
+                                <li
+                                  onClick={() => {
+                                    generateAutomaticSuggestions(event)
+                                    setPrSuggestionsRefresh(r => r + 1)
+                                  }}
+                                  style={listItemStyle}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'rgba(95, 251, 241, 0.15)'
+                                    e.currentTarget.style.color = '#5ffbf1'
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
+                                    e.currentTarget.style.color = '#ffffff'
+                                  }}
+                                >
+                                  ✨ PR-Vorschläge generieren
+                                </li>
+                              )}
+                              {WERBEMATERIAL_TYPEN.map((typ) => {
+                                const zeile = {
+                                  'qr-plakat': { label: '🏛️ QR-Code Plakat', onClick: () => printQRCodePlakat(event) },
+                                  'newsletter': { label: '📧 Newsletter (aus PR-Vorschlag)', onClick: () => {
+                                    const selectedEvent = events.find((e: any) => e.id === event.id)
+                                    if (selectedEvent) {
+                                      const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+                                      if (eventSuggestion && eventSuggestion.newsletter) {
+                                        generateEditableNewsletterPDF(eventSuggestion.newsletter, selectedEvent)
+                                      } else {
+                                        generateEditableNewsletterPDF(generateEmailNewsletterContent(selectedEvent), selectedEvent)
+                                      }
+                                    }
+                                  }},
+                                  'plakat': { label: '🖼️ Plakat (aus PR-Vorschlag)', onClick: () => {
+                                    const selectedEvent = events.find((e: any) => e.id === event.id)
+                                    if (selectedEvent) generatePlakatForEvent(selectedEvent)
+                                  }},
+                                  'event-flyer': { label: '📄 Event-Flyer (aus PR-Vorschlag)', onClick: () => {
+                                    const selectedEvent = events.find((e: any) => e.id === event.id)
+                                    if (selectedEvent) {
+                                      const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+                                      if (eventSuggestion && eventSuggestion.flyer) {
+                                        generateEditableNewsletterPDF(eventSuggestion.flyer, selectedEvent)
+                                      } else {
+                                        generateEditableNewsletterPDF(generateEventFlyerContent(selectedEvent), selectedEvent)
+                                      }
+                                    }
+                                  }},
+                                  'presse': { label: '📰 Presseaussendung (aus PR-Vorschlag)', onClick: () => {
+                                    const selectedEvent = events.find((e: any) => e.id === event.id)
+                                    if (selectedEvent) {
+                                      const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+                                      if (eventSuggestion && eventSuggestion.presseaussendung) {
+                                        generateEditablePresseaussendungPDF(eventSuggestion.presseaussendung, selectedEvent)
+                                      } else {
+                                        generateEditablePresseaussendungPDF(generatePresseaussendungContent(selectedEvent), selectedEvent)
+                                      }
+                                    }
+                                  }},
+                                  'social': { label: '📱 Social Media (aus PR-Vorschlag)', onClick: () => {
+                                    const selectedEvent = events.find((e: any) => e.id === event.id)
+                                    if (selectedEvent) {
+                                      const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+                                      if (eventSuggestion && eventSuggestion.socialMedia) {
+                                        generateEditableSocialMediaPDF(eventSuggestion.socialMedia, selectedEvent)
+                                      } else {
+                                        generateEditableSocialMediaPDF(generateSocialMediaContent(selectedEvent), selectedEvent)
+                                      }
+                                    }
+                                  }}
+                                }[typ]
+                                const vorschlaege = byTyp[typ] || []
+                                return (
+                                  <li key={typ} style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                                    <div style={{ marginTop: '0.75rem', marginBottom: '0.25rem' }}>
+                                      <span style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: '#8fa0c9', fontWeight: '600' }}>{zeile.label}</span>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={zeile.onClick}
+                                      style={{
+                                        ...listItemStyle,
+                                        width: '100%',
+                                        textAlign: 'left',
+                                        marginBottom: '0.35rem'
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = 'rgba(95, 251, 241, 0.15)'
+                                        e.currentTarget.style.color = '#5ffbf1'
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
+                                        e.currentTarget.style.color = '#ffffff'
+                                      }}
+                                    >
+                                      ➕ Vorschlag ausarbeiten
+                                    </button>
+                                    {vorschlaege.length > 0 && (
+                                      <ul style={{ listStyle: 'none', margin: 0, padding: 0, paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                        {vorschlaege.map((doc: any) => (
+                                          <li
+                                            key={doc.id}
+                                            onClick={() => handleViewEventDocument(doc)}
+                                            style={{
+                                              ...listItemStyle,
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              justifyContent: 'space-between',
+                                              gap: '0.5rem',
+                                              fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                              e.currentTarget.style.background = 'rgba(95, 251, 241, 0.15)'
+                                              e.currentTarget.style.color = '#5ffbf1'
+                                            }}
+                                            onMouseLeave={(e) => {
+                                              e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
+                                              e.currentTarget.style.color = '#ffffff'
+                                            }}
+                                          >
+                                            <span title={doc.name}>{doc.name?.length > 42 ? doc.name.slice(0, 39) + '…' : doc.name}</span>
+                                            <button
+                                              type="button"
+                                              onClick={(e) => { e.stopPropagation(); handleDeleteWerbematerialDocument(doc.id) }}
+                                              style={{
+                                                padding: '0.2rem 0.5rem',
+                                                background: 'rgba(255, 100, 100, 0.2)',
+                                                border: '1px solid rgba(255, 100, 100, 0.3)',
+                                                borderRadius: '4px',
+                                                color: '#ff6464',
+                                                cursor: 'pointer',
+                                                fontSize: 'clamp(0.75rem, 1.8vw, 0.85rem)'
+                                              }}
+                                              title="Vorschlag löschen"
+                                            >
+                                              ×
+                                            </button>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    )}
+                                  </li>
+                                )
+                              })}
+                            </ul>
                           </div>
                         </div>
-                      ))}
+                      )
+                      })}
                     </div>
                   </div>
                 )
@@ -12662,75 +11360,32 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{
                   padding: '2rem',
                   textAlign: 'center',
-                  color: '#8fa0c9',
+                  color: s.muted,
                   fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
                 }}>
-                  Noch keine PR-Vorschläge vorhanden. Erstelle ein Event, um automatisch Vorschläge zu generieren.
+                  Noch keine Events vorhanden. Erstelle ein Event in der Eventplanung.
                 </div>
               )
             })()}
 
-            {/* QR-Code Plakat (allgemein, nicht Event-spezifisch) */}
-            <div style={{
-              marginTop: '3rem',
-              padding: '2rem',
-              background: 'rgba(95, 251, 241, 0.1)',
-              border: '1px solid rgba(95, 251, 241, 0.2)',
-              borderRadius: '16px'
-            }}>
-              <h3 style={{
-                fontSize: 'clamp(1.2rem, 3vw, 1.4rem)',
-                fontWeight: '600',
-                color: '#5ffbf1',
-                marginTop: 0,
-                marginBottom: '1rem'
-              }}>
-                🏛️ QR-Code Plakat (Galerie)
-              </h3>
-              <p style={{
-                color: '#b8c5e0',
-                fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
-                marginBottom: '1.5rem',
-                lineHeight: 1.6
-              }}>
-                Erstelle ein Plakat mit QR-Codes für die Homepage und den virtuellen Rundgang. Perfekt zum Aufhängen in der Galerie oder für Veranstaltungen.
-              </p>
-              <button
-                onClick={() => printQRCodePlakat()}
-                style={{
-                  padding: 'clamp(0.5rem, 1.5vw, 0.65rem) clamp(1rem, 2.5vw, 1.25rem)',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.4)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)'
-                }}
-              >
-                🏛️ QR-Code Plakat erstellen
-              </button>
-            </div>
-
-            {/* Fallback: Generische Medien-Generatoren (wenn keine Events vorhanden) */}
+            {/* Leer: Hinweis auf 2-Schritte-Flow */}
             {events.length === 0 && (
               <div style={{
-                padding: '2rem',
+                padding: 'clamp(2rem, 5vw, 3rem)',
                 textAlign: 'center',
-                color: '#8fa0c9',
-                fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
+                background: `${s.accent}0c`,
+                border: `1px dashed ${s.accent}44`,
+                borderRadius: '16px'
               }}>
-                Erstelle zuerst ein Event in der Eventplanung, um PR-Vorschläge zu generieren.
+                <div style={{ fontSize: 'clamp(1.1rem, 2.5vw, 1.25rem)', color: s.accent, fontWeight: '600', marginBottom: '0.75rem' }}>
+                  💡 Noch keine Rubrik?
+                </div>
+                <p style={{ color: s.text, fontSize: 'clamp(0.9rem, 2vw, 1rem)', lineHeight: 1.6, marginBottom: '1rem', maxWidth: '420px', marginLeft: 'auto', marginRight: 'auto' }}>
+                  <strong>Schritt 1:</strong> Gehe zu „Eventplanung“ und klicke auf „Event hinzufügen“. Fülle das Stammblatt (Titel, Datum, Ort, Typ) und speichere.
+                </p>
+                <p style={{ color: s.muted, fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', lineHeight: 1.6 }}>
+                  <strong>Schritt 2:</strong> Hier erscheint dann automatisch eine Rubrik mit Newsletter, Presse, Social Media, PDF – sofort einsatzbereit.
+                </p>
               </div>
             )}
           </section>
@@ -13088,17 +11743,22 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             setArtworkCeramicDescription('')
             setArtworkCeramicType('steingut')
             setArtworkCeramicSurface('mischtechnik')
-            setArtworkTitle('') // Bei Malerei leer
+            setArtworkTitle('')
             setArtworkPaintingWidth('')
             setArtworkPaintingHeight('')
             setArtworkArtist('')
             setArtworkDescription('')
             setArtworkPrice('')
+            setArtworkQuantity('1')
             setSelectedFile(null)
-setPreviewUrl(null)
+            setPreviewUrl(null)
             setPhotoUseFreistellen(true)
             setPhotoBackgroundPreset('hell')
             setIsInShop(true)
+            setArtworkFormVariantOek2('schnell')
+            setArtworkCategoryFree('')
+            setArtworkSubcategoryFree('')
+            setArtworkDimensionsFree('')
           }}
         >
           <div
@@ -13148,11 +11808,16 @@ setPreviewUrl(null)
                   setArtworkArtist('')
                   setArtworkDescription('')
                   setArtworkPrice('')
+                  setArtworkQuantity('1')
                   setSelectedFile(null)
                   setPreviewUrl(null)
                   setPhotoUseFreistellen(true)
                   setPhotoBackgroundPreset('hell')
                   setIsInShop(true)
+                  setArtworkFormVariantOek2('schnell')
+                  setArtworkCategoryFree('')
+                  setArtworkSubcategoryFree('')
+                  setArtworkDimensionsFree('')
                 }}
                 style={{
                   background: 'transparent',
@@ -13348,14 +12013,71 @@ setPreviewUrl(null)
                 </div>
               )}
 
-              {/* Formular - Kompakt Grid */}
+              {isOeffentlichAdminContext() ? (
+                /* ök2 Künstler: Schnellversion oder Ausführliche Version – bei Änderungsarbeit jederzeit umschaltbar */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <button type="button" onClick={() => setArtworkFormVariantOek2('schnell')} style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: artworkFormVariantOek2 === 'schnell' ? 'rgba(95, 251, 241, 0.2)' : 'transparent', color: artworkFormVariantOek2 === 'schnell' ? '#5ffbf1' : '#8fa0c9', fontSize: '0.9rem', cursor: 'pointer' }}>Schnellversion (wenig Felder)</button>
+                    <button type="button" onClick={() => setArtworkFormVariantOek2('ausfuehrlich')} style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: artworkFormVariantOek2 === 'ausfuehrlich' ? 'rgba(95, 251, 241, 0.2)' : 'transparent', color: artworkFormVariantOek2 === 'ausfuehrlich' ? '#5ffbf1' : '#8fa0c9', fontSize: '0.9rem', cursor: 'pointer' }}>Ausführliche Version</button>
+                    {editingArtwork && (
+                      <span style={{ fontSize: '0.8rem', color: 'rgba(143, 160, 201, 0.9)' }}>Bei Änderung: jederzeit in Ausführlich wechseln.</span>
+                    )}
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Titel *</label>
+                    <input type="text" value={artworkTitle} onChange={(e) => setArtworkTitle(e.target.value)} placeholder="z.B. Frühlingslandschaft" style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Kategorie *</label>
+                    <select value={artworkCategory} onChange={(e) => setArtworkCategory(e.target.value as ArtworkCategoryId)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
+                      {ARTWORK_CATEGORIES.map((c) => (
+                        <option key={c.id} value={c.id}>{c.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {artworkFormVariantOek2 === 'ausfuehrlich' && (
+                    <>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Unterkategorie (frei)</label>
+                        <input type="text" value={artworkSubcategoryFree} onChange={(e) => setArtworkSubcategoryFree(e.target.value)} placeholder="z.B. Ölmalerei, Aquarell, Vasen" style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none' }} />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Künstler:in</label>
+                        <input type="text" value={artworkArtist} onChange={(e) => setArtworkArtist(e.target.value)} placeholder="Name der Künstler:in" style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none' }} />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Beschreibung (frei)</label>
+                        <textarea value={artworkDescription} onChange={(e) => setArtworkDescription(e.target.value)} placeholder="Technik, Material, Entstehung …" rows={3} style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', resize: 'vertical' }} />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Maße (frei)</label>
+                        <input type="text" value={artworkDimensionsFree} onChange={(e) => setArtworkDimensionsFree(e.target.value)} placeholder="z.B. 40 × 30 cm oder Höhe 25 cm" style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none' }} />
+                      </div>
+                    </>
+                  )}
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Preis (€) *</label>
+                    <input type="number" min="0" step="0.01" value={artworkPrice} onChange={(e) => setArtworkPrice(e.target.value)} placeholder="0.00" style={{ width: '100%', maxWidth: '140px', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Stückzahl</label>
+                    <input type="number" min={1} max={99} value={artworkQuantity} onChange={(e) => setArtworkQuantity(e.target.value)} style={{ width: '100%', maxWidth: '80px', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none' }} />
+                  </div>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#8fa0c9', cursor: 'pointer' }}>
+                    <input type="checkbox" checked={isInShop} onChange={(e) => setIsInShop(e.target.checked)} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
+                    Im Online-Shop verfügbar
+                  </label>
+                </div>
+              ) : (
+              <>
+              {/* Formular - Kompakt Grid (K2) */}
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: artworkCategory === 'malerei' ? '1fr 140px' : '140px',
+                gridTemplateColumns: artworkCategory !== 'keramik' ? '1fr 140px' : '140px',
                 gap: '0.75rem',
                 alignItems: 'start'
               }}>
-                {artworkCategory === 'malerei' && (
+                {artworkCategory !== 'keramik' && (
                   <div>
                     <label style={{
                       display: 'block',
@@ -13397,9 +12119,9 @@ setPreviewUrl(null)
                   <select
                     value={artworkCategory}
                     onChange={(e) => {
-                      setArtworkCategory(e.target.value as 'malerei' | 'keramik')
-                      if (e.target.value === 'keramik') {
-                        // Setze Titel automatisch basierend auf Unterkategorie
+                      const val = e.target.value as ArtworkCategoryId
+                      setArtworkCategory(val)
+                      if (val === 'keramik') {
                         const subcategoryLabels: Record<string, string> = {
                           'vase': 'Gefäße - Vasen',
                           'teller': 'Schalen - Teller',
@@ -13423,8 +12145,9 @@ setPreviewUrl(null)
                       cursor: 'pointer'
                     }}
                   >
-                    <option value="malerei">Bilder</option>
-                    <option value="keramik">Keramik</option>
+                    {ARTWORK_CATEGORIES.map((c) => (
+                      <option key={c.id} value={c.id}>{c.label}</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -13778,7 +12501,7 @@ setPreviewUrl(null)
               )}
 
               {/* Malerei Bildgröße */}
-              {artworkCategory === 'malerei' && (
+              {artworkCategory !== 'keramik' && (
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: '1fr 1fr',
@@ -13867,7 +12590,7 @@ setPreviewUrl(null)
                     type="text"
                     value={artworkArtist}
                     onChange={(e) => setArtworkArtist(e.target.value)}
-                    placeholder={artworkCategory === 'malerei' ? 'Martina Kreinecker' : 'Georg Kreinecker'}
+                    placeholder={['malerei', 'grafik', 'sonstiges'].includes(artworkCategory) ? 'Martina Kreinecker' : 'Georg Kreinecker'}
                     style={{
                       width: '100%',
                       padding: '0.6rem',
@@ -13899,6 +12622,35 @@ setPreviewUrl(null)
                     placeholder="0.00"
                     style={{
                       width: '100%',
+                      padding: '0.6rem',
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                      borderRadius: '8px',
+                      color: '#ffffff',
+                      fontSize: '0.9rem',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.4rem',
+                    fontSize: '0.8rem',
+                    color: '#8fa0c9',
+                    fontWeight: '500'
+                  }}>
+                    Stückzahl
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={99}
+                    value={artworkQuantity}
+                    onChange={(e) => setArtworkQuantity(e.target.value)}
+                    style={{
+                      width: '100%',
+                      maxWidth: '80px',
                       padding: '0.6rem',
                       background: 'rgba(255, 255, 255, 0.05)',
                       border: '1px solid rgba(255, 255, 255, 0.15)',
@@ -13978,6 +12730,9 @@ setPreviewUrl(null)
                 </label>
               </div>
 
+              </>
+              )}
+
               {/* Aktionen - Kompakt */}
               <div style={{
                 display: 'flex',
@@ -14001,6 +12756,7 @@ setPreviewUrl(null)
                     setArtworkArtist('')
                     setArtworkDescription('')
                     setArtworkPrice('')
+                    setArtworkQuantity('1')
                     setSelectedFile(null)
                     setPreviewUrl(null)
                     setIsInShop(true)
@@ -14026,29 +12782,34 @@ setPreviewUrl(null)
                   Abbrechen
                 </button>
                 <button 
+                  type="button"
+                  disabled={isSavingArtwork}
                   onClick={handleSaveArtwork}
                   style={{
                     padding: '0.6rem 1.25rem',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: isSavingArtwork ? 'rgba(100, 100, 100, 0.6)' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                     border: 'none',
                     borderRadius: '8px',
                     color: '#ffffff',
                     fontSize: '0.9rem',
                     fontWeight: '600',
-                    cursor: 'pointer',
+                    cursor: isSavingArtwork ? 'wait' : 'pointer',
                     transition: 'all 0.2s ease',
-                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
+                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                    opacity: isSavingArtwork ? 0.9 : 1
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.4)'
+                    if (!isSavingArtwork) {
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                      e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.4)'
+                    }
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'translateY(0)'
                     e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)'
                   }}
                 >
-                  💾 Speichern
+                  {isSavingArtwork ? '⏳ Wird gespeichert…' : '💾 Speichern'}
                 </button>
               </div>
             </div>
@@ -14191,7 +12952,7 @@ setPreviewUrl(null)
                           <img src={getQRCodeUrl(savedArtwork.number)} alt="QR" style={{ width: '66px', height: '66px', display: 'block' }} />
                         </div>
                         <div style={{ fontSize: '6px', color: '#999' }}>
-                          {savedArtwork.category === 'malerei' ? 'Bilder' : 'Keramik'} • {(savedArtwork.artist || '').substring(0, 10)}
+                          {getCategoryLabel(savedArtwork.category)} • {(savedArtwork.artist || '').substring(0, 10)}
                         </div>
                       </div>
                     </div>
@@ -14200,7 +12961,7 @@ setPreviewUrl(null)
                 <details style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#666', textAlign: 'left' }}>
                   <summary style={{ cursor: 'pointer' }}>Werk-Details</summary>
                   <div style={{ padding: '0.5rem 0', borderTop: '1px solid #eee', marginTop: '0.25rem' }}>
-                    <p style={{ margin: '0.25rem 0' }}><strong>Kategorie:</strong> {savedArtwork.category === 'malerei' ? 'Bilder' : 'Keramik'}</p>
+                    <p style={{ margin: '0.25rem 0' }}><strong>Kategorie:</strong> {getCategoryLabel(savedArtwork.category)}</p>
                     <p style={{ margin: '0.25rem 0' }}><strong>Künstler:</strong> {savedArtwork.artist}</p>
                     {savedArtwork.category === 'malerei' && savedArtwork.paintingWidth && savedArtwork.paintingHeight && (
                       <p style={{ margin: '0.25rem 0' }}><strong>Größe:</strong> {savedArtwork.paintingWidth} × {savedArtwork.paintingHeight} cm</p>

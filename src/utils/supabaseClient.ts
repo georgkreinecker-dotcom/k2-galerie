@@ -1,12 +1,11 @@
 /**
  * Supabase Client für K2 Galerie
  * Professionelle Datenbank-Integration mit PostgreSQL
- * 
- * Verwendet Edge Functions für API-Zugriff (funktioniert ohne npm install)
+ * Verwendet Edge Functions für API-Zugriff.
+ * Schreibzugriffe (POST/PUT/DELETE) nutzen bei eingeloggtem Admin das Auth-JWT (RLS).
  */
 
-// Optional: Supabase JS Client (wenn installiert)
-// import { createClient } from '@supabase/supabase-js'
+import { getAuthToken } from './supabaseAuth'
 
 // Sicherer Zugriff auf import.meta.env
 let SUPABASE_URL = ''
@@ -126,10 +125,11 @@ export async function saveArtworksToSupabase(artworks: any[]): Promise<boolean> 
       updated_on_mobile: artwork.updatedOnMobile || false,
     }))
 
+    const token = await getAuthToken()
     const response = await fetch(ARTWORKS_API_URL, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Authorization': `Bearer ${token || SUPABASE_ANON_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ artworks: dbArtworks }),
@@ -179,10 +179,11 @@ export async function deleteArtworkFromSupabase(number: string): Promise<boolean
   }
 
   try {
+    const token = await getAuthToken()
     const response = await fetch(ARTWORKS_API_URL, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Authorization': `Bearer ${token || SUPABASE_ANON_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ number }),

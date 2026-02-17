@@ -9,6 +9,21 @@
 
 ---
 
+## „Die letzten Deployments waren vor 2 Tagen“ – nichts kommt mehr an
+
+**Ursache:** Vercel baut nur den **Production Branch**. Wenn du auf einen anderen Branch pushst als den, der in Vercel als Production eingestellt ist, erscheinen keine neuen Production-Deployments.
+
+**Reparieren (nur im Vercel Dashboard, nicht im Repo):**
+
+1. **Vercel Dashboard** → Projekt **k2-galerie** → **Settings** → **Git**.
+2. **Production Branch** ansehen. Steht dort z. B. `main`?
+3. **Entweder:** Auf den Branch stellen, auf den du wirklich pushst (z. B. `main-fresh`), **oder** im Git auf genau diesen Branch wechseln und von dort pushen (z. B. `git push origin main`).
+4. Nach dem nächsten Push sollte ein neues Deployment starten („Building“ → „Ready“).
+
+Der Production-Branch wird **nur** in Vercel gesetzt – nicht im Code. Im Repo kann man das nicht ändern.
+
+---
+
 ## Häufigste Ursache: Falscher Branch = Production wird nicht aktualisiert
 
 **Du pushst auf `main-fresh`, aber Vercel „Production“ baut von Branch `main`.**

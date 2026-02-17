@@ -6,6 +6,9 @@ import {
   deleteCustomer,
   type Customer
 } from '../utils/customers'
+import { WERBEUNTERLAGEN_STIL } from '../config/marketingWerbelinie'
+
+const s = WERBEUNTERLAGEN_STIL
 
 function parseBulkLine(line: string): { name: string; phone?: string; email?: string } {
   const t = line.trim()
@@ -130,85 +133,84 @@ export function KundenTab() {
   }
 
   return (
-    <div className="card">
-      <h2>Galeriekunden</h2>
-      <p className="meta">Kunden für Verkauf, Einladungen und Ausstellungsbetrieb. Beim Verkauf in der Kasse kannst du einen Kunden zuordnen.</p>
+    <div style={{ background: s.bgCard, padding: '1.6rem 1.8rem', borderRadius: 18, boxShadow: s.shadow, border: `1px solid ${s.accent}22` }}>
+      <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700', color: s.text }}>Galeriekunden</h2>
+      <p style={{ margin: '0.5rem 0 1rem', color: s.muted, fontSize: '0.95rem', lineHeight: 1.5 }}>Kunden für Verkauf, Einladungen und Ausstellungsbetrieb. Beim Verkauf in der Kasse kannst du einen Kunden zuordnen.</p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', marginBottom: '1rem' }}>
         <input
           type="text"
           placeholder="Suchen (Name, E-Mail, Telefon, Notizen…)"
-          className="search-input"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          style={{ flex: '1', minWidth: '200px' }}
+          style={{ flex: 1, minWidth: '200px', padding: '0.6rem 0.8rem', borderRadius: 10, border: `1px solid ${s.accent}33`, background: s.bgElevated, color: s.text, fontSize: '0.95rem' }}
         />
-        <button type="button" className="primary-btn" onClick={() => { setShowNewForm(true); setShowBulkForm(false); setEditingId(null); setFormName(''); setFormEmail(''); setFormPhone(''); setFormNotes('') }}>
+        <button type="button" onClick={() => { setShowNewForm(true); setShowBulkForm(false); setEditingId(null); setFormName(''); setFormEmail(''); setFormPhone(''); setFormNotes('') }} style={{ padding: '0.5rem 1rem', background: s.gradientAccent, border: 'none', borderRadius: 10, color: '#fff', fontSize: '0.95rem', fontWeight: '600', cursor: 'pointer' }}>
           + Neuer Kunde
         </button>
-        <button type="button" className="primary-btn" style={{ background: 'rgba(95, 251, 241, 0.2)', border: '1px solid rgba(95, 251, 241, 0.5)', color: '#5ffbf1' }} onClick={() => { setShowBulkForm(!showBulkForm); if (!showBulkForm) setShowNewForm(false) }}>
+        <button type="button" onClick={() => { setShowBulkForm(!showBulkForm); if (!showBulkForm) setShowNewForm(false) }} style={{ padding: '0.5rem 1rem', background: `${s.accent}18`, border: `1px solid ${s.accent}55`, borderRadius: 10, color: s.accent, fontSize: '0.95rem', fontWeight: '600', cursor: 'pointer' }}>
           📋 Aus Liste importieren
         </button>
       </div>
 
       {showBulkForm && (
-        <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'rgba(95, 251, 241, 0.06)', borderRadius: '10px', border: '1px solid rgba(95, 251, 241, 0.25)' }}>
-          <h3 style={{ marginTop: 0, fontSize: '1rem', color: '#5ffbf1' }}>Mehrere Kunden aus Liste (z. B. WhatsApp-Gruppe)</h3>
-          <p className="meta" style={{ marginBottom: '0.75rem' }}>Eine Zeile = ein Kunde. Excel: Spalten in Excel markieren, kopieren, hier einfügen – Tabulator wird erkannt.</p>
-          <textarea value={bulkInput} onChange={(e) => setBulkInput(e.target.value)} placeholder={'Name  Tab  Telefon  Tab  E-Mail\nOder: Max Mustermann\nLisa Beispiel, 0664 1234567'} rows={6} style={{ width: '100%', maxWidth: '600px', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.2)', color: '#fff', fontSize: '0.95rem' }} />
-          <div className="field" style={{ marginTop: '0.75rem', maxWidth: '400px' }}>
-            <label>Gemeinsame Notiz für alle (z. B. „WhatsApp Gruppe Vernissage“)</label>
-            <input type="text" value={bulkNotes} onChange={(e) => setBulkNotes(e.target.value)} placeholder="Optional" style={{ width: '100%' }} />
+        <div style={{ marginBottom: '1.5rem', padding: '1rem', background: `${s.accent}0c`, borderRadius: 10, border: `1px solid ${s.accent}33` }}>
+          <h3 style={{ marginTop: 0, fontSize: '1rem', color: s.accent, fontWeight: '600' }}>Mehrere Kunden aus Liste (z. B. WhatsApp-Gruppe)</h3>
+          <p style={{ marginBottom: '0.75rem', color: s.muted, fontSize: '0.9rem' }}>Eine Zeile = ein Kunde. Excel: Spalten in Excel markieren, kopieren, hier einfügen – Tabulator wird erkannt.</p>
+          <textarea value={bulkInput} onChange={(e) => setBulkInput(e.target.value)} placeholder={'Name  Tab  Telefon  Tab  E-Mail\nOder: Max Mustermann\nLisa Beispiel, 0664 1234567'} rows={6} style={{ width: '100%', maxWidth: '600px', padding: '0.75rem', borderRadius: 8, border: `1px solid ${s.accent}33`, background: s.bgElevated, color: s.text, fontSize: '0.95rem' }} />
+          <div style={{ marginTop: '0.75rem', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            <label style={{ fontSize: '0.85rem', color: s.muted }}>Gemeinsame Notiz für alle (z. B. „WhatsApp Gruppe Vernissage“)</label>
+            <input type="text" value={bulkNotes} onChange={(e) => setBulkNotes(e.target.value)} placeholder="Optional" style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: 10, border: `1px solid ${s.accent}33`, background: s.bgElevated, color: s.text, fontSize: '0.95rem' }} />
           </div>
-          {bulkPreview.length > 0 && <p className="meta" style={{ marginTop: '0.5rem', color: '#5ffbf1' }}>Vorschau: <strong>{bulkPreview.length}</strong> Kunden werden angelegt.</p>}
+          {bulkPreview.length > 0 && <p style={{ marginTop: '0.5rem', color: s.accent, fontSize: '0.9rem' }}>Vorschau: <strong>{bulkPreview.length}</strong> Kunden werden angelegt.</p>}
           <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
-            <button type="button" className="primary-btn" onClick={handleBulkCreate} disabled={bulkPreview.length === 0}>Alle anlegen ({bulkPreview.length})</button>
-            <button type="button" className="ghost-btn" onClick={() => { setShowBulkForm(false); setBulkInput(''); setBulkNotes('') }}>Abbrechen</button>
+            <button type="button" onClick={handleBulkCreate} disabled={bulkPreview.length === 0} style={{ padding: '0.5rem 1rem', background: s.gradientAccent, border: 'none', borderRadius: 10, color: '#fff', fontSize: '0.95rem', fontWeight: '600', cursor: bulkPreview.length === 0 ? 'not-allowed' : 'pointer', opacity: bulkPreview.length === 0 ? 0.6 : 1 }}>Alle anlegen ({bulkPreview.length})</button>
+            <button type="button" onClick={() => { setShowBulkForm(false); setBulkInput(''); setBulkNotes('') }} style={{ padding: '0.5rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}40`, borderRadius: 10, color: s.text, fontSize: '0.95rem', cursor: 'pointer' }}>Abbrechen</button>
           </div>
         </div>
       )}
 
       {showNewForm && (
-        <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'rgba(255,255,255,0.06)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)' }}>
-          <h3 style={{ marginTop: 0, fontSize: '1rem' }}>Neuer Kunde</h3>
-          <div className="form-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
-            <div className="field"><label>Name *</label><input type="text" value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="Name oder Firma" /></div>
-            <div className="field"><label>E-Mail</label><input type="email" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} placeholder="email@beispiel.at" /></div>
-            <div className="field"><label>Telefon</label><input type="text" value={formPhone} onChange={(e) => setFormPhone(e.target.value)} placeholder="0664 123456" /></div>
+        <div style={{ marginBottom: '1.5rem', padding: '1rem', background: s.bgElevated, borderRadius: 10, border: `1px solid ${s.accent}22` }}>
+          <h3 style={{ marginTop: 0, fontSize: '1rem', color: s.text, fontWeight: '600' }}>Neuer Kunde</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginTop: '0.75rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}><label style={{ fontSize: '0.85rem', color: s.muted }}>Name *</label><input type="text" value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="Name oder Firma" style={{ padding: '0.6rem 0.75rem', borderRadius: 10, border: `1px solid ${s.accent}33`, background: s.bgCard, color: s.text, fontSize: '0.95rem' }} /></div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}><label style={{ fontSize: '0.85rem', color: s.muted }}>E-Mail</label><input type="email" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} placeholder="email@beispiel.at" style={{ padding: '0.6rem 0.75rem', borderRadius: 10, border: `1px solid ${s.accent}33`, background: s.bgCard, color: s.text, fontSize: '0.95rem' }} /></div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}><label style={{ fontSize: '0.85rem', color: s.muted }}>Telefon</label><input type="text" value={formPhone} onChange={(e) => setFormPhone(e.target.value)} placeholder="0664 123456" style={{ padding: '0.6rem 0.75rem', borderRadius: 10, border: `1px solid ${s.accent}33`, background: s.bgCard, color: s.text, fontSize: '0.95rem' }} /></div>
           </div>
-          <div className="field"><label>Notizen</label><textarea value={formNotes} onChange={(e) => setFormNotes(e.target.value)} placeholder="Optional" rows={2} /></div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginTop: '0.75rem' }}><label style={{ fontSize: '0.85rem', color: s.muted }}>Notizen</label><textarea value={formNotes} onChange={(e) => setFormNotes(e.target.value)} placeholder="Optional" rows={2} style={{ padding: '0.6rem 0.75rem', borderRadius: 10, border: `1px solid ${s.accent}33`, background: s.bgCard, color: s.text, fontSize: '0.95rem' }} /></div>
           <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
-            <button type="button" className="primary-btn" onClick={handleNew}>Speichern</button>
-            <button type="button" className="ghost-btn" onClick={() => { setShowNewForm(false); cancelEdit() }}>Abbrechen</button>
+            <button type="button" onClick={handleNew} style={{ padding: '0.5rem 1rem', background: s.gradientAccent, border: 'none', borderRadius: 10, color: '#fff', fontSize: '0.95rem', fontWeight: '600', cursor: 'pointer' }}>Speichern</button>
+            <button type="button" onClick={() => { setShowNewForm(false); cancelEdit() }} style={{ padding: '0.5rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}40`, borderRadius: 10, color: s.text, fontSize: '0.95rem', cursor: 'pointer' }}>Abbrechen</button>
           </div>
         </div>
       )}
 
       {filtered.length === 0 ? (
-        <p className="meta">{customers.length === 0 ? 'Noch keine Kunden. Leg einen an – z. B. für Vernissage-Gäste oder Käufer.' : 'Keine Treffer zur Suche.'}</p>
+        <p style={{ color: s.muted, fontSize: '0.95rem' }}>{customers.length === 0 ? 'Noch keine Kunden. Leg einen an – z. B. für Vernissage-Gäste oder Käufer.' : 'Keine Treffer zur Suche.'}</p>
       ) : (
         <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
           {filtered.map((c) => (
-            <li key={c.id} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.75rem 1rem', marginBottom: '0.5rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
+            <li key={c.id} style={{ background: s.bgElevated, border: `1px solid ${s.accent}22`, borderRadius: 10, padding: '0.75rem 1rem', marginBottom: '0.5rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
               {editingId === c.id ? (
                 <>
-                  <div className="form-grid" style={{ flex: '1 1 100%', gridTemplateColumns: '1fr 1fr' }}>
-                    <div className="field"><label>Name</label><input type="text" value={formName} onChange={(e) => setFormName(e.target.value)} /></div>
-                    <div className="field"><label>E-Mail</label><input type="email" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} /></div>
-                    <div className="field"><label>Telefon</label><input type="text" value={formPhone} onChange={(e) => setFormPhone(e.target.value)} /></div>
-                    <div className="field"><label>Notizen</label><input type="text" value={formNotes} onChange={(e) => setFormNotes(e.target.value)} /></div>
+                  <div style={{ flex: '1 1 100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}><label style={{ fontSize: '0.85rem', color: s.muted }}>Name</label><input type="text" value={formName} onChange={(e) => setFormName(e.target.value)} style={{ padding: '0.6rem 0.75rem', borderRadius: 10, border: `1px solid ${s.accent}33`, background: s.bgCard, color: s.text, fontSize: '0.95rem' }} /></div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}><label style={{ fontSize: '0.85rem', color: s.muted }}>E-Mail</label><input type="email" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} style={{ padding: '0.6rem 0.75rem', borderRadius: 10, border: `1px solid ${s.accent}33`, background: s.bgCard, color: s.text, fontSize: '0.95rem' }} /></div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}><label style={{ fontSize: '0.85rem', color: s.muted }}>Telefon</label><input type="text" value={formPhone} onChange={(e) => setFormPhone(e.target.value)} style={{ padding: '0.6rem 0.75rem', borderRadius: 10, border: `1px solid ${s.accent}33`, background: s.bgCard, color: s.text, fontSize: '0.95rem' }} /></div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}><label style={{ fontSize: '0.85rem', color: s.muted }}>Notizen</label><input type="text" value={formNotes} onChange={(e) => setFormNotes(e.target.value)} style={{ padding: '0.6rem 0.75rem', borderRadius: 10, border: `1px solid ${s.accent}33`, background: s.bgCard, color: s.text, fontSize: '0.95rem' }} /></div>
                   </div>
-                  <button type="button" className="primary-btn" onClick={saveEdit}>Speichern</button>
-                  <button type="button" className="ghost-btn" onClick={cancelEdit}>Abbrechen</button>
+                  <button type="button" onClick={saveEdit} style={{ padding: '0.5rem 1rem', background: s.gradientAccent, border: 'none', borderRadius: 10, color: '#fff', fontSize: '0.95rem', fontWeight: '600', cursor: 'pointer' }}>Speichern</button>
+                  <button type="button" onClick={cancelEdit} style={{ padding: '0.5rem 1rem', background: s.bgCard, border: `1px solid ${s.accent}40`, borderRadius: 10, color: s.text, fontSize: '0.95rem', cursor: 'pointer' }}>Abbrechen</button>
                 </>
               ) : (
                 <>
-                  <strong style={{ minWidth: '140px' }}>{c.name}</strong>
-                  {c.email && <span style={{ fontSize: '0.9rem', color: '#8fa0c9' }}>{c.email}</span>}
-                  {c.phone && <span style={{ fontSize: '0.9rem', color: '#8fa0c9' }}>{c.phone}</span>}
-                  {c.notes && <span style={{ fontSize: '0.85rem', color: '#8fa0c9', fontStyle: 'italic' }}>{c.notes}</span>}
+                  <strong style={{ minWidth: '140px', color: s.text }}>{c.name}</strong>
+                  {c.email && <span style={{ fontSize: '0.9rem', color: s.muted }}>{c.email}</span>}
+                  {c.phone && <span style={{ fontSize: '0.9rem', color: s.muted }}>{c.phone}</span>}
+                  {c.notes && <span style={{ fontSize: '0.85rem', color: s.muted, fontStyle: 'italic' }}>{c.notes}</span>}
                   <span style={{ marginLeft: 'auto', display: 'flex', gap: '0.35rem' }}>
-                    <button type="button" className="ghost-btn" style={{ fontSize: '0.85rem' }} onClick={() => startEdit(c)}>Bearbeiten</button>
-                    <button type="button" className="ghost-btn" style={{ fontSize: '0.85rem', color: '#e08888' }} onClick={() => handleDelete(c.id)}>Löschen</button>
+                    <button type="button" style={{ padding: '0.35rem 0.6rem', fontSize: '0.85rem', background: s.bgCard, border: `1px solid ${s.accent}40`, borderRadius: 8, color: s.accent, cursor: 'pointer' }} onClick={() => startEdit(c)}>Bearbeiten</button>
+                    <button type="button" style={{ padding: '0.35rem 0.6rem', fontSize: '0.85rem', background: 'transparent', border: '1px solid #c53030', borderRadius: 8, color: '#c53030', cursor: 'pointer' }} onClick={() => handleDelete(c.id)}>Löschen</button>
                   </span>
                 </>
               )}

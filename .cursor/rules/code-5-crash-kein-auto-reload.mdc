@@ -1,0 +1,29 @@
+---
+description: Code-5-Crash – Ursache oft automatischer Reload/Reload-Loop. NIEMALS wieder einbauen.
+alwaysApply: true
+---
+
+# 🔒 Code 5 / Cursor-Absturz – dieselbe Ursache nicht wiederholen
+
+## Was passiert immer wieder
+
+- **Code 5** = „The window terminated unexpectedly (reason: 'crashed', code: '5')“ – Cursor/Preview-Fenster crasht.
+- **Typische Ursache:** Automatischer Reload (z. B. „Server hat neueren Stand → Seite neu laden“). Nach Reload lädt wieder derselbe alte Bundle → „Server neuer“ → wieder Reload → **Reload-Loop** → Speicher/Prozess kollabiert → Code 5.
+- Georg muss **nicht** verstehen, warum – er muss **dich** zur Lösung führen. Das ist ein Fehler: **ich** muss das Muster erkennen, bevor derselbe Fehler wieder passiert.
+
+## Unveränderliche Regel
+
+- **NIEMALS** in der App einen **automatischen** Reload auslösen (z. B. `setTimeout(() => location.reload(), …)` oder `location.href = …`), nur weil „Server neuer“ oder „build-info neuer“ ist.
+- **Erlaubt:** Badge/Button anzeigen („Neuer Stand – tippen!“). Reload **nur** wenn der Nutzer klickt/tippt.
+- **Grund:** Jede Automatik „wenn X, dann Reload“ kann in Cursor Preview oder bei Cache zu einem Reload-Loop werden → Code 5. Georg verliert Zeit und muss die Ursache selbst andeuten.
+
+## Bei Crash / „Code 5“ / „unexpected 5“
+
+1. **Zuerst prüfen:** Gibt es irgendwo **automatischen** Reload (setTimeout/setInterval + reload oder location.href)?
+2. Wenn ja: **entfernen**. Nur Anzeige + manueller Klick.
+3. **Dann** andere Ursachen prüfen (Event-Loop, setInterval ohne Cleanup, Speicher).
+
+## Kurzfassung
+
+- **Automatischer Reload bei „Server neuer“ = verboten.** Nur Badge, Nutzer tippt.
+- Dasselbe Muster (Reload/Automatik → Loop → Code 5) **sofort** erkennen, nicht erst nach Georgs Hinweis.

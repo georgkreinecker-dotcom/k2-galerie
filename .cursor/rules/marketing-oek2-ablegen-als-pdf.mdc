@@ -1,0 +1,25 @@
+---
+description: "Ablegen in Marketing ök2 = Inhalt auf Marketing-ök2-Seite einfügen (PDF über Drucken)"
+alwaysApply: true
+---
+
+# Ablegen in Marketing ök2 (mök2) = automatisch als PDF-Bereich
+
+**mök2** = Arbeitsplattform für alles, was mit dem Vertrieb von ök2 zu tun hat.
+
+## Regel
+
+Wenn Georg **„ablegen in Marketing ök2“**, **„in Marketing ök2 ablegen“** oder **„als PDF in Marketing ök2“** (oder sinngemäß) schreibt, ist gemeint:
+
+- Den genannten Inhalt **auf der Marketing-ök2-Seite** einfügen, damit er dort sichtbar ist und **mit „Als PDF drucken“** als Teil der Seite ausgegeben werden kann.
+- **Kein** separates PDF in einem Ordner anlegen (es sei denn, Georg verlangt ausdrücklich eine Datei).
+- **Umsetzung:** Inhalt als neue Sektion in `src/pages/MarketingOek2Page.tsx` ergänzen – gleicher Stil wie die bestehenden Sektionen (Überschrift mit `h2`, Listen/Absätze, `section` mit `break-inside: avoid` für sauberen PDF-Umbruch). Die Seite hat bereits einen Button „Als PDF drucken“; alles auf der Seite geht beim Drucken ins PDF.
+
+## Konkret
+
+- **Datei:** `src/pages/MarketingOek2Page.tsx`
+- **Form:** Neue `<section>` mit `h2` und Inhalt (z. B. `ul`/`li` oder `p`), Styling an die bestehenden Sektionen anpassen (z. B. `color: '#5ffbf1'` für Überschriften).
+- **Nummerierung:** Nächste freie Sektionsnummer vergeben (z. B. 7., 8., …).
+- **Footer:** Bei neuem Konzept/Doku-Quelle ggf. im Footer „Quelle: …“ ergänzen.
+
+Kurz: **„Ablegen in Marketing ök2“ = Inhalt in MarketingOek2Page.tsx einbauen, dann ist er im PDF dabei.**

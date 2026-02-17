@@ -14,24 +14,40 @@ alwaysApply: true
 
 ### 1. Keine Vermischung
 
-- Auf **ök2-Routen** (`galerie-oeffentlich`, `galerie-oeffentlich-vorschau`, Admin mit `context=oeffentlich`): **niemals** `k2-artworks`, `k2-stammdaten-*`, `k2-events`, `k2-documents`, `gallery-data.json` (echte Daten) lesen oder schreiben.
+- Auf **ök2-Routen** (`galerie-oeffentlich`, `galerie-oeffentlich-vorschau`, Admin mit `context=oeffentlich`): **niemals** `k2-artworks`, `k2-stammdaten-*`, `k2-events`, `k2-documents`, `k2-page-texts`, `k2-page-content-galerie`, `k2-design-settings`, `gallery-data.json` (echte Daten) lesen oder schreiben.
 - In **K2-Kontext**: echte Keys nutzen; keine Musterdaten für die Galerie-Anzeige verwenden (außer Fallback, wenn bewusst so gewollt).
 
 ### 2. Umsetzung im Code
 
-- **Laden/Anzeigen:** Immer `musterOnly` bzw. `tenantId === 'oeffentlich'` prüfen. Bei true: nur MUSTER_TEXTE, MUSTER_ARTWORKS, TENANT_CONFIGS.oeffentlich, ggf. `k2-oeffentlich-artworks` (Demo-Werke).
-- **Schreiben:** Im ök2-Admin **nur** in `k2-oeffentlich-artworks`, `k2-oeffentlich-events`, `k2-oeffentlich-documents` schreiben. **Nie** in `k2-artworks`, `k2-events`, `k2-documents`, `k2-stammdaten-*`.
+- **Laden/Anzeigen:** Immer `musterOnly` bzw. `tenantId === 'oeffentlich'` prüfen. Bei true: nur MUSTER_TEXTE, MUSTER_ARTWORKS, TENANT_CONFIGS.oeffentlich, **und** `k2-oeffentlich-page-texts`, `k2-oeffentlich-page-content-galerie`, `k2-oeffentlich-design-settings`, ggf. `k2-oeffentlich-artworks` (Demo-Werke).
+- **Seitentexte & Seitengestaltung (PFLICHT):** Auf der ök2-Galerie (`GaleriePage`/`GalerieVorschauPage` mit `musterOnly === true`) **darf nie** `getPageTexts()` oder `getPageContentGalerie()` **ohne** Tenant aufgerufen werden. Immer: `getPageTexts(musterOnly ? 'oeffentlich' : undefined)`, `getPageContentGalerie(musterOnly ? 'oeffentlich' : undefined)`. Sonst werden K2-Texte/Bilder auf der ök2-Seite angezeigt (Vermischung).
+- **Schreiben:** Im ök2-Admin **nur** in `k2-oeffentlich-*` (artworks, events, documents, page-texts, page-content-galerie, design-settings) schreiben. **Nie** in `k2-artworks`, `k2-events`, `k2-documents`, `k2-stammdaten-*`, `k2-page-texts`, `k2-page-content-galerie`, `k2-design-settings`.
 - **Auto-Save / Veröffentlichen:** Nur im K2-Admin aktiv; im ök2-Admin deaktiviert oder ausgeblendet (Hinweis anzeigen).
 
-### 3. Betroffene Stellen (bei Änderungen prüfen)
+### 3. Shop: „Zur Galerie“ und Kontakt (PFLICHT, sonst K2-Telefon auf ök2)
 
-- GaleriePage, GalerieVorschauPage: `musterOnly`-Logik beim Laden der Werke/Stammdaten.
-- ScreenshotExportAdmin: Kontext `oeffentlich` → andere Keys, kein Auto-Save, kein „Veröffentlichen“ für K2.
-- Alle Stellen, die Stammdaten oder Werke aus localStorage/Supabase lesen oder schreiben: Kontext (K2 vs. ök2) berücksichtigen.
+- **ShopPage:** „Zur Galerie“-Link und Kontakt (displayPhone, displayEmail) **immer** aus **fromOeffentlich** ableiten. **fromOeffentlich** = vier Quellen: (1) `location.state.fromOeffentlich`, (2) `sessionStorage['k2-shop-from-oeffentlich'] === '1'`, (3) `sessionStorage['k2-admin-context'] === 'oeffentlich'`, (4) `document.referrer` enthält `galerie-oeffentlich`. Bei true: Link → galerieOeffentlichVorschau, Kontakt aus MUSTER_TEXTE.gallery; sonst K2.
+- **Admin → Kasse:** Link zum Shop muss `state={{ openAsKasse: true, fromOeffentlich: isOeffentlichAdminContext() || undefined }}` übergeben. Beim Öffnen mit fromOeffentlich: `k2-admin-context` = `'oeffentlich'` und `k2-shop-from-oeffentlich` = `'1'` setzen.
 
-### 4. Neue Features
+### 4. Admin: alle Galerie-/Vorschau-Links
+
+- **ScreenshotExportAdmin:** Jeder Link zu Galerie oder Vorschau („Zur Galerie“, „Seite 2 anzeigen“, „So sehen Kunden die Galerie“) muss **isOeffentlichAdminContext()** prüfen: bei true → galerieOeffentlich / galerieOeffentlichVorschau, sonst → galerie / galerieVorschau. **Nie** fest galerieVorschau oder galerie verlinken ohne diese Prüfung.
+
+### 5. Betroffene Stellen (bei Änderungen prüfen)
+
+- **GaleriePage, GalerieVorschauPage:** `musterOnly`-Logik beim Laden von **Werken, Stammdaten, Seitentexten (getPageTexts), Seitengestaltung (getPageContentGalerie), Design.** Jeder Aufruf von `getPageTexts()` / `getPageContentGalerie()` muss den Tenant berücksichtigen (z. B. `getPageTexts(musterOnly ? 'oeffentlich' : undefined)`).
+- **ShopPage:** fromOeffentlich (vier Quellen), galerieLink, displayPhone/displayEmail; Kasse-Link aus Admin mit fromOeffentlich.
+- ScreenshotExportAdmin: Kontext `oeffentlich` → andere Keys, kein Auto-Save, kein „Veröffentlichen“ für K2; **alle** Galerie/Vorschau-Links mit isOeffentlichAdminContext().
+- Alle Stellen, die Werke, Stammdaten, Seitentexte oder Seitengestaltung aus localStorage/Supabase lesen oder schreiben: Kontext (K2 vs. ök2) berücksichtigen.
+
+### 6. Neue Features
 
 - Bei jedem neuen Feature, das Werke/Stammdaten/Events/Dokumente betrifft: **zuerst** klären, ob es in K2, ök2 oder beiden gilt – und dann die passenden Keys/Kontext-Checks einbauen. **Nicht** nachträglich „irgendwo anpassen“.
+
+### 7. Geltungsbereich: K2, ök2 oder beide
+
+- **Regel:** Wenn unklar ist, ob ein Feature nur für K2, nur für ök2 oder für **beide** gilt: **Bestätigung einholen** („gilt für beide“, „nur K2“, „nur ök2“). Nicht still nur für K2 umsetzen, wenn es auch ök2 betreffen könnte.
+- Wenn für **beide**: K2 nutzt K2-Keys (z. B. `k2-stammdaten-galerie`), ök2 nutzt eigene Keys (z. B. `k2-oeffentlich-galerie-settings`, `k2-oeffentlich-sold-artworks`). Gleiche UX, getrennte Speicher.
 
 ## Kurzfassung
 

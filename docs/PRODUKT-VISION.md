@@ -52,10 +52,13 @@
 3. **Onboarding / Ersteinrichtung**  
    Ein klarer Ablauf: „Erste Schritte“ (Werke anlegen, Galerie aktivieren, Link teilen) – dokumentiert und wo sinnvoll im UI angeleitet.
 
-4. **Lizenz- / Preismodell**  
+4. **Licence- / Preismodell**  
    Bestehende Ideen (z. B. LicenseManager: Basic/Pro) beibehalten und an Zielgruppe „Künstler:innen“ anpassen (z. B. „Bis X Werke“, „Eigene Domain“, „Events“).
 
-5. **Rechtliches & Betrieb**  
+5. **Eigener QR-Code pro Licence**  
+   **Sobald jemand eine Licence erworben hat, bekommt er einen eigenen QR-Code** – zentral für seine Marketingarbeit (Flyer, Visitenkarte, Social Media, Ausstellung). Der QR führt auf seine Galerie- oder Willkommens-URL (je nach Setup: eigene Subdomain, Pfad oder Instanz). Technisch: Pro Mandant/Licence eine eindeutige öffentliche Basis-URL; QR-Generierung (z. B. in Admin oder nach Aktivierung) nutzt diese URL. Siehe auch `src/config/tenantConfig.ts` (später optional `publicBaseUrl` pro Tenant) und `src/config/navigation.ts` (BASE_APP_URL / pro Mandant).
+
+6. **Rechtliches & Betrieb**  
    Später: AGB, Datenschutz, Hosting-Modell (SaaS vs. Selbst-Hosting), Haftung – für seriöse Vermarktung nötig.
 
 ---
@@ -64,5 +67,5 @@
 
 - **Route:** `/projects/k2-galerie/produkt-vorschau`
 - **Im Dev-View:** Tab „Produkt-Vorschau“ in der Seitenleiste.
-- **Funktion:** Du siehst zwei Kacheln – „K2 (deine Galerie)“ und „Lizenzversion (Demo)“. Mit „Lizenzversion ansehen“ wechselst du in den Demo-Mandanten; die Galerie zeigt dann „Atelier Muster“, „Lisa & Max Muster“. Zurück zu K2 über „Zu K2 wechseln“ oder die Produkt-Vorschau erneut öffnen und K2 wählen.
+- **Funktion:** Du siehst zwei Kacheln – „K2 (deine Galerie)“ und „Licence-Version (Demo)“. Mit „Licence-Version ansehen“ wechselst du in den Demo-Mandanten; die Galerie zeigt dann „Atelier Muster“, „Lisa & Max Muster“. Zurück zu K2 über „Zu K2 wechseln“ oder die Produkt-Vorschau erneut öffnen und K2 wählen.
 - **Konfiguration:** `src/config/tenantConfig.ts` – dort sind K2 und Demo definiert; weitere Mandanten können ergänzt werden.

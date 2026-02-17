@@ -27,3 +27,4 @@ Nach dem Setup:
 ## 💡 Tipp
 
 Die HTML-Datei (`public/supabase-setup.html`) ist am einfachsten - einfach öffnen und Schritt für Schritt folgen!
+.env

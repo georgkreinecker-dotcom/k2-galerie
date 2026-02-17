@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
+import { getCategoryLabel, MUSTER_TEXTE, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
 import { getCustomers, createCustomer, updateCustomer, type Customer } from '../utils/customers'
+import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import '../App.css'
+
+const s = WERBEUNTERLAGEN_STIL
 
 interface CartItem {
   number: string
@@ -74,12 +78,36 @@ const ShopPage = () => {
     fromStorage ||
     (location.state as { fromGalerieView?: boolean } | null)?.fromGalerieView === true ||
     fromReferrer
+  // Ök2: „Zur Galerie“ und Kontakt (Telefon/E-Mail) immer aus fromOeffentlich. Vier Quellen (robust gegen State-Verlust):
+  // 1) location.state.fromOeffentlich, 2) k2-shop-from-oeffentlich, 3) k2-admin-context === 'oeffentlich' (ök2-Kassa), 4) Referrer von galerie-oeffentlich.
+  const fromOeffentlich =
+    (location.state as { fromOeffentlich?: boolean } | null)?.fromOeffentlich === true ||
+    (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-shop-from-oeffentlich') === '1') ||
+    (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'oeffentlich') ||
+    (typeof document !== 'undefined' && document.referrer.includes('galerie-oeffentlich'))
+  const galerieLink = fromOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerieVorschau
+  const displayPhone = fromOeffentlich ? MUSTER_TEXTE.gallery.phone : galleryPhone
+  const displayEmail = fromOeffentlich ? MUSTER_TEXTE.gallery.email : galleryEmail
+
+  // Ök2-Flag entfernen, wenn Shop von K2/APf aus geöffnet wurde (kein State, Referrer nicht von galerie-oeffentlich). Nicht entfernen wenn ök2-Kassa (k2-admin-context === oeffentlich).
+  useEffect(() => {
+    const stateOeffentlich = (location.state as { fromOeffentlich?: boolean } | null)?.fromOeffentlich === true
+    const referrerOeffentlich = typeof document !== 'undefined' && document.referrer.includes('galerie-oeffentlich')
+    const adminOeffentlich = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'oeffentlich'
+    if (!stateOeffentlich && !referrerOeffentlich && !adminOeffentlich) {
+      try { sessionStorage.removeItem('k2-shop-from-oeffentlich') } catch (_) {}
+    }
+  }, [location.state])
 
   useEffect(() => {
     if (fromGalerieView) {
       try {
         sessionStorage.removeItem('k2-admin-context')
         sessionStorage.removeItem('k2-from-galerie-view')
+        // Von ök2-Vorschau (Referrer) → Flag setzen, damit „Zur Galerie“ und Kontakt auch nach State-Clear ök2 bleiben
+        if (typeof document !== 'undefined' && document.referrer.includes('galerie-oeffentlich')) {
+          sessionStorage.setItem('k2-shop-from-oeffentlich', '1')
+        }
       } catch (_) {}
       if ((location.state as { fromGalerieView?: boolean } | null)?.fromGalerieView === true) {
         navigate(location.pathname, { replace: true, state: {} })
@@ -87,11 +115,14 @@ const ShopPage = () => {
     }
   }, [fromGalerieView, location.state, location.pathname, navigate])
 
-  // Admin: openAsKasse → direkt Kasse öffnen, ein Klick (keine leeren Kilometer)
+  // Admin: openAsKasse → direkt Kasse öffnen. Bei ök2-Admin: Kontext + fromOeffentlich setzen, damit „Zur Galerie“ und Kontakt ök2 bleiben.
   useEffect(() => {
-    const state = location.state as { openAsKasse?: boolean } | null
+    const state = location.state as { openAsKasse?: boolean; fromOeffentlich?: boolean } | null
     if (state?.openAsKasse) {
-      try { sessionStorage.setItem('k2-admin-context', 'k2') } catch (_) {}
+      try {
+        sessionStorage.setItem('k2-admin-context', state.fromOeffentlich ? 'oeffentlich' : 'k2')
+        if (state.fromOeffentlich) sessionStorage.setItem('k2-shop-from-oeffentlich', '1')
+      } catch (_) {}
       setForceKasseOpen(true)
     }
   }, [location.state])
@@ -224,7 +255,7 @@ const ShopPage = () => {
 
     // Prüfe ob bereits im Warenkorb
     if (cart.some(item => item.number === artwork.number)) {
-      alert('Dieses Werk ist bereits in deiner/Ihrer Auswahl.')
+      alert('Dieses Werk ist bereits in deiner Auswahl.')
       return
     }
 
@@ -505,7 +536,7 @@ const ShopPage = () => {
             ${order.items.map((item: CartItem) => `
               <div class="item">
                 <div class="item-title">${item.title || item.number}</div>
-                <div class="item-details">${item.category === 'malerei' ? 'Bilder' : 'Keramik'}${item.artist ? ' • ' + item.artist : ''}</div>
+                <div class="item-details">${getCategoryLabel(item.category)}${item.artist ? ' • ' + item.artist : ''}</div>
                 <div class="item-details" style="font-weight: bold; margin-top: 2px;">Seriennummer: ${item.number}</div>
                 <div class="item-price">€ ${item.price.toFixed(2)}</div>
               </div>
@@ -542,6 +573,7 @@ const ShopPage = () => {
           <div class="footer">
             <div>K2 Galerie</div>
             <div>www.k2-galerie.at</div>
+            <div>${PRODUCT_COPYRIGHT}</div>
           </div>
         </body>
       </html>
@@ -744,7 +776,7 @@ const ShopPage = () => {
               return `
               <div class="item">
                 <div class="item-title">${item.title || item.number}</div>
-                <div class="item-details">${item.category === 'malerei' ? 'Bilder' : 'Keramik'}${item.artist ? ' • ' + item.artist : ''}</div>
+                <div class="item-details">${getCategoryLabel(item.category)}${item.artist ? ' • ' + item.artist : ''}</div>
                 ${sizeInfo ? `<div class="item-details" style="margin-top: 1px;">${sizeInfo}</div>` : ''}
                 <div class="item-details" style="font-weight: bold; margin-top: 2px;">Seriennummer: ${item.number}</div>
                 <div class="item-price">€ ${item.price.toFixed(2)}</div>
@@ -784,6 +816,7 @@ const ShopPage = () => {
             <div><strong>K2 Galerie</strong></div>
             <div>Kunst & Keramik</div>
             <div style="margin-top: 10px;">www.k2-galerie.at</div>
+            <div>${PRODUCT_COPYRIGHT}</div>
           </div>
         </body>
       </html>
@@ -859,6 +892,35 @@ const ShopPage = () => {
       }
     })
 
+    // Stückzahl pro verkauftem Werk um 1 verringern (Kasse nutzt k2-artworks)
+    try {
+      const key = 'k2-artworks'
+      const raw = localStorage.getItem(key)
+      if (raw) {
+        const artworks = JSON.parse(raw)
+        if (Array.isArray(artworks)) {
+          let changed = false
+          cart.forEach((item: { number: string }) => {
+            const idx = artworks.findIndex((a: any) => (a.number || a.id) === item.number)
+            if (idx !== -1) {
+              const a = artworks[idx]
+              const q = a.quantity != null ? Number(a.quantity) : 1
+              if (q > 1) {
+                artworks[idx] = { ...a, quantity: q - 1 }
+                changed = true
+              } else {
+                artworks[idx] = { ...a, quantity: 0, inShop: false }
+                changed = true
+              }
+            }
+          })
+          if (changed) {
+            localStorage.setItem(key, JSON.stringify(artworks))
+          }
+        }
+      }
+    } catch (_) {}
+
     // Event für andere Komponenten
     window.dispatchEvent(new CustomEvent('artworks-updated'))
 
@@ -883,7 +945,7 @@ const ShopPage = () => {
       }
     } else {
       // Besucher: nur Bestätigung, kein Bon
-      alert(`✅ Bestellung aufgenommen!\n\nBetrag: €${total.toFixed(2)}\nZahlung: ${paymentMethodText}\n\nWir melden uns bei Ihnen.`)
+      alert(`✅ Bestellung aufgenommen!\n\nBetrag: €${total.toFixed(2)}\nZahlung: ${paymentMethodText}\n\nWir melden uns bei dir.`)
     }
   }
 
@@ -930,25 +992,26 @@ const ShopPage = () => {
       localStorage.setItem('k2-cart', '[]')
     } catch (_) {}
     window.dispatchEvent(new CustomEvent('cart-updated'))
-    alert(`✅ Reservierung aufgenommen!\n\nWir melden uns bei Ihnen.`)
+    alert(`✅ Reservierung aufgenommen!\n\nWir melden uns bei dir.`)
   }
 
   return (
     <div style={{ 
       minHeight: '-webkit-fill-available',
-      background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 50%, var(--k2-bg-3) 100%)',
-      color: '#ffffff',
+      background: s.bgDark,
+      color: s.text,
       position: 'relative',
-      overflowX: 'hidden'
+      overflowX: 'hidden',
+      fontFamily: s.fontBody
     }}>
-      {/* Animated Background Elements */}
+      <link rel="stylesheet" href={PROMO_FONTS_URL} />
       <div style={{
         position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.15), transparent 50%), radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.1), transparent 50%)',
+        background: `radial-gradient(ellipse 90% 70% at 50% 0%, ${s.accentSoft}, transparent 55%)`,
         pointerEvents: 'none',
         zIndex: 0
       }} />
@@ -971,22 +1034,20 @@ const ShopPage = () => {
             <div>
               <h1 style={{ 
                 margin: 0, 
+                fontFamily: s.fontHeading,
                 fontSize: 'clamp(2rem, 6vw, 3rem)',
                 fontWeight: '700',
-                background: 'linear-gradient(135deg, #ffffff 0%, #b8b8ff 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
+                color: s.accent,
                 letterSpacing: '-0.02em',
                 lineHeight: '1.1'
               }}>
-                {isAdminContext ? 'Kasse' : 'Deine/Ihre Auswahl'}
+                {isAdminContext ? 'Kasse' : 'Deine Auswahl'}
               </h1>
               <p style={{ 
                 margin: '0.75rem 0 0', 
-                color: 'rgba(255, 255, 255, 0.7)', 
+                color: s.muted, 
                 fontSize: 'clamp(1rem, 3vw, 1.2rem)',
-                fontWeight: '300'
+                fontWeight: '400'
               }}>
                 {cart.length > 0 ? `${cart.length} ${cart.length === 1 ? 'Werk' : 'Werke'} • €${total.toFixed(2)}` : 'Auswahl'}
               </p>
@@ -998,29 +1059,29 @@ const ShopPage = () => {
               fontSize: 'clamp(0.85rem, 2.5vw, 1rem)'
             }}>
               <Link 
-                to={PROJECT_ROUTES['k2-galerie'].galerieVorschau} 
+                to={galerieLink} 
                 style={{ 
                   padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)', 
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  color: '#ffffff', 
+                  background: s.bgCard,
+                  border: `1px solid ${s.accent}33`,
+                  color: s.text, 
                   textDecoration: 'none', 
-                  borderRadius: '12px',
+                  borderRadius: s.radius,
                   fontSize: 'inherit',
                   whiteSpace: 'nowrap',
                   fontWeight: '500',
                   transition: 'all 0.3s ease',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.5rem'
+                  gap: '0.5rem',
+                  boxShadow: s.shadow
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                  e.currentTarget.style.background = s.bgElevated
                   e.currentTarget.style.transform = 'translateY(-2px)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                  e.currentTarget.style.background = s.bgCard
                   e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
@@ -1033,15 +1094,16 @@ const ShopPage = () => {
                     try {
                       sessionStorage.setItem('k2-admin-context', 'k2')
                       sessionStorage.removeItem('k2-from-galerie-view')
+                      sessionStorage.removeItem('k2-shop-from-oeffentlich')
                     } catch (_) {}
                     setForceKasseOpen(true)
                   }}
                   style={{
                     padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                    background: 'rgba(95, 251, 241, 0.2)',
-                    border: '1px solid rgba(95, 251, 241, 0.5)',
-                    color: '#5ffbf1',
-                    borderRadius: '12px',
+                    background: `${s.accent}18`,
+                    border: `1px solid ${s.accent}66`,
+                    color: s.accent,
+                    borderRadius: s.radius,
                     fontSize: 'inherit',
                     whiteSpace: 'nowrap',
                     fontWeight: '600',
@@ -1059,26 +1121,26 @@ const ShopPage = () => {
                 to="/admin" 
                 style={{ 
                   padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)', 
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  color: '#ffffff', 
+                  background: s.bgCard,
+                  border: `1px solid ${s.accent}33`,
+                  color: s.text, 
                   textDecoration: 'none', 
-                  borderRadius: '12px',
+                  borderRadius: s.radius,
                   fontSize: 'inherit',
                   whiteSpace: 'nowrap',
                   fontWeight: '500',
                   transition: 'all 0.3s ease',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.5rem'
+                  gap: '0.5rem',
+                  boxShadow: s.shadow
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                  e.currentTarget.style.background = s.bgElevated
                   e.currentTarget.style.transform = 'translateY(-2px)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                  e.currentTarget.style.background = s.bgCard
                   e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
@@ -1099,20 +1161,20 @@ const ShopPage = () => {
             <div style={{
               marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
               padding: 'clamp(1rem, 3vw, 1.25rem) clamp(1.25rem, 3vw, 1.5rem)',
-              background: 'rgba(102, 126, 234, 0.15)',
-              border: '1px solid rgba(102, 126, 234, 0.35)',
-              borderRadius: '16px',
-              color: 'rgba(255, 255, 255, 0.95)',
+              background: `${s.accent}18`,
+              border: `1px solid ${s.accent}44`,
+              borderRadius: s.radius,
+              color: s.text,
               fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
               lineHeight: 1.5
             }}>
-              <strong>Besuchen Sie gern unsere Galerie und vereinbaren Sie einen Termin.</strong>
+              <strong>Besuch gern unsere Galerie und vereinbare einen Termin.</strong>
               {' '}
-              So können Sie die Werke vor Ort erleben. Eine Reservierung ist möglich.
-              {galleryPhone ? (
-                <> – Termin: <a href={`tel:${galleryPhone.replace(/\s/g, '')}`} style={{ color: '#b8b8ff', textDecoration: 'none' }}>{galleryPhone}</a></>
-              ) : galleryEmail ? (
-                <> – <a href={`mailto:${galleryEmail}`} style={{ color: '#b8b8ff', textDecoration: 'none' }}>{galleryEmail}</a></>
+              So kannst du die Werke vor Ort erleben. Eine Reservierung ist möglich.
+              {displayPhone ? (
+                <> – Termin: <a href={`tel:${displayPhone.replace(/\s/g, '')}`} style={{ color: s.accent, textDecoration: 'none' }}>{displayPhone}</a></>
+              ) : displayEmail ? (
+                <> – <a href={`mailto:${displayEmail}`} style={{ color: s.accent, textDecoration: 'none' }}>{displayEmail}</a></>
               ) : (
                 ' (Kontakt siehe Galerie / Impressum).'
               )}.
@@ -1121,18 +1183,17 @@ const ShopPage = () => {
           {/* Nur für Admin: Werk hinzufügen (QR/Seriennummer) – Galerie-Besucher sehen das nicht */}
           {isAdminContext && (
           <section style={{
-            background: 'rgba(255, 255, 255, 0.05)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: s.bgCard,
+            border: `1px solid ${s.accent}22`,
             borderRadius: '20px',
             padding: 'clamp(1.5rem, 4vw, 2.5rem)',
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+            boxShadow: s.shadow,
             marginBottom: 'clamp(2rem, 5vw, 3rem)'
           }}>
           <h3 style={{ 
             fontSize: 'clamp(1.25rem, 3.5vw, 1.5rem)', 
             marginBottom: '1.5rem',
-            color: '#ffffff',
+            color: s.text,
             fontWeight: '600'
           }}>
             Werk hinzufügen
@@ -1145,7 +1206,7 @@ const ShopPage = () => {
                 flex: 1,
                 minWidth: '120px',
                 padding: 'clamp(0.75rem, 2vw, 1rem)',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: s.gradientAccent,
                 color: '#fff',
                 border: 'none',
                 borderRadius: '12px',
@@ -1157,15 +1218,15 @@ const ShopPage = () => {
                 justifyContent: 'center',
                 gap: '0.5rem',
                 transition: 'all 0.3s ease',
-                boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                boxShadow: `0 10px 30px ${s.accent}40`
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-2px)'
-                e.currentTarget.style.boxShadow = '0 15px 40px rgba(102, 126, 234, 0.4)'
+                e.currentTarget.style.boxShadow = `0 15px 40px ${s.accent}66`
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.3)'
+                e.currentTarget.style.boxShadow = `0 10px 30px ${s.accent}40`
               }}
             >
               📷 QR-Code scannen
@@ -1187,12 +1248,12 @@ const ShopPage = () => {
                 flex: 1,
                 minWidth: '200px',
                 padding: 'clamp(0.75rem, 2vw, 1rem)',
-                background: 'rgba(255, 255, 255, 0.1)',
+                background: s.bgElevated,
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
+                border: `1px solid ${s.accent}33`,
                 borderRadius: '12px',
                 fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                color: '#ffffff',
+                color: s.text,
                 outline: 'none'
               }}
             />
@@ -1200,7 +1261,7 @@ const ShopPage = () => {
               onClick={addBySerialNumber}
               style={{
                 padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                background: 'linear-gradient(135deg, #f5576c 0%, #f093fb 100%)',
+                background: s.gradientAccent,
                 color: '#fff',
                 border: 'none',
                 borderRadius: '12px',
@@ -1229,9 +1290,9 @@ const ShopPage = () => {
         {/* Nur für Admin: Bon erneut drucken */}
         {isAdminContext && orders.length > 0 && (
           <section style={{
-            background: 'rgba(255, 255, 255, 0.05)',
+            background: s.bgCard,
             backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: `1px solid ${s.accent}22`,
             borderRadius: '20px',
             padding: 'clamp(1.5rem, 4vw, 2rem)',
             marginBottom: 'clamp(2rem, 5vw, 3rem)'
@@ -1239,7 +1300,7 @@ const ShopPage = () => {
             <h3 style={{ 
               fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', 
               marginBottom: '1rem',
-              color: '#ffffff',
+              color: s.text,
               fontWeight: '600'
             }}>
               📄 Bon erneut drucken
@@ -1253,10 +1314,10 @@ const ShopPage = () => {
                     onClick={() => handleReprintOrder(order)}
                     style={{
                       padding: '0.6rem 1rem',
-                      background: 'rgba(255, 255, 255, 0.08)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      background: s.bgElevated,
+                      border: `1px solid ${s.accent}33`,
                       borderRadius: '10px',
-                      color: '#ffffff',
+                      color: s.text,
                       fontSize: '0.9rem',
                       cursor: 'pointer',
                       display: 'flex',
@@ -1265,17 +1326,17 @@ const ShopPage = () => {
                       transition: 'all 0.2s ease'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'
-                      e.currentTarget.style.borderColor = 'rgba(95, 251, 241, 0.5)'
+                      e.currentTarget.style.background = s.bgElevated
+                      e.currentTarget.style.borderColor = `${s.accent}88`
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
-                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)'
+                      e.currentTarget.style.background = s.bgElevated
+                      e.currentTarget.style.borderColor = `${s.accent}33`
                     }}
                   >
-                    <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>{dateStr}</span>
+                    <span style={{ color: s.muted }}>{dateStr}</span>
                     <span style={{ fontWeight: '600' }}>{order.orderNumber}</span>
-                    <span style={{ color: '#5ffbf1' }}>€{(order.total || 0).toFixed(2)}</span>
+                    <span style={{ color: s.accent }}>€{(order.total || 0).toFixed(2)}</span>
                     <span style={{ fontSize: '0.85rem' }}>🖨️</span>
                   </button>
                 )
@@ -1304,9 +1365,9 @@ const ShopPage = () => {
           onClick={() => setShowScanner(false)}
           >
             <div style={{
-              background: 'rgba(26, 31, 58, 0.95)',
+              background: s.bgCard,
               backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
+              border: `1px solid ${s.accent}33`,
               borderRadius: '20px',
               padding: 'clamp(1.5rem, 4vw, 2.5rem)',
               maxWidth: '500px',
@@ -1316,24 +1377,24 @@ const ShopPage = () => {
             onClick={(e) => e.stopPropagation()}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'clamp(1rem, 3vw, 1.5rem)' }}>
-                <h3 style={{ margin: 0, color: '#ffffff', fontSize: 'clamp(1.25rem, 3.5vw, 1.5rem)', fontWeight: '600' }}>QR-Code scannen</h3>
+                <h3 style={{ margin: 0, color: s.text, fontSize: 'clamp(1.25rem, 3.5vw, 1.5rem)', fontWeight: '600' }}>QR-Code scannen</h3>
                 <button
                   onClick={() => setShowScanner(false)}
                   style={{
-                    background: 'rgba(255, 255, 255, 0.1)',
+                    background: s.bgElevated,
                     border: 'none',
                     borderRadius: '8px',
                     fontSize: '1.5rem',
                     cursor: 'pointer',
                     padding: '0.25rem 0.75rem',
-                    color: '#ffffff',
+                    color: s.text,
                     transition: 'all 0.3s ease'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                    e.currentTarget.style.background = s.bgElevated
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                    e.currentTarget.style.background = s.bgCard
                   }}
                 >
                   ×
@@ -1354,13 +1415,13 @@ const ShopPage = () => {
                 style={{
                   width: '100%',
                   padding: 'clamp(0.75rem, 2vw, 1rem)',
-                  background: 'rgba(255, 255, 255, 0.1)',
+                  background: s.bgElevated,
                   backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  border: `1px solid ${s.accent}33`,
                   borderRadius: '12px',
                   fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
                   marginBottom: 'clamp(1rem, 3vw, 1.5rem)',
-                  color: '#ffffff',
+                  color: s.text,
                   outline: 'none'
                 }}
               />
@@ -1375,7 +1436,7 @@ const ShopPage = () => {
                   style={{
                     flex: 1,
                     padding: 'clamp(0.75rem, 2vw, 1rem)',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: s.gradientAccent,
                     color: '#fff',
                     border: 'none',
                     borderRadius: '12px',
@@ -1383,15 +1444,15 @@ const ShopPage = () => {
                     fontWeight: '600',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
-                    boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                    boxShadow: `0 10px 30px ${s.accent}40`
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 15px 40px rgba(102, 126, 234, 0.4)'
+                    e.currentTarget.style.boxShadow = `0 15px 40px ${s.accent}66`
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.3)'
+                    e.currentTarget.style.boxShadow = `0 10px 30px ${s.accent}40`
                   }}
                 >
                   Hinzufügen
@@ -1400,10 +1461,10 @@ const ShopPage = () => {
                   onClick={() => setShowScanner(false)}
                   style={{
                     padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                    background: 'rgba(255, 255, 255, 0.1)',
+                    background: s.bgElevated,
                     backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    color: '#ffffff',
+                    border: `1px solid ${s.accent}33`,
+                    color: s.text,
                     borderRadius: '12px',
                     fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
                     fontWeight: '600',
@@ -1411,17 +1472,17 @@ const ShopPage = () => {
                     transition: 'all 0.3s ease'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                    e.currentTarget.style.background = s.bgElevated
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                    e.currentTarget.style.background = s.bgCard
                   }}
                 >
                   Abbrechen
                 </button>
               </div>
               
-              <p style={{ fontSize: 'clamp(0.85rem, 2.5vw, 0.95rem)', color: 'rgba(255, 255, 255, 0.6)', marginTop: 'clamp(1rem, 3vw, 1.5rem)', marginBottom: 0 }}>
+              <p style={{ fontSize: 'clamp(0.85rem, 2.5vw, 0.95rem)', color: s.muted, marginTop: 'clamp(1rem, 3vw, 1.5rem)', marginBottom: 0 }}>
                 💡 Tipp: Auf mobilen Geräten kannst du die Kamera-App verwenden, um QR-Codes zu scannen und den Text hier einfügen.
               </p>
             </div>
@@ -1432,30 +1493,30 @@ const ShopPage = () => {
           <div style={{ 
             padding: 'clamp(4rem, 10vw, 6rem)', 
             textAlign: 'center',
-            background: 'rgba(255, 255, 255, 0.05)',
+            background: s.bgCard,
             backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: `1px solid ${s.accent}22`,
             borderRadius: '24px'
           }}>
             <div style={{ fontSize: 'clamp(4rem, 10vw, 6rem)', marginBottom: '2rem' }}>🛒</div>
             <h2 style={{ 
               fontSize: 'clamp(1.75rem, 5vw, 2.5rem)', 
               marginBottom: '1.5rem',
-              color: '#ffffff',
+              color: s.text,
               fontWeight: '700'
             }}>
-              Deine/Ihre Auswahl ist leer
+              Deine Auswahl ist leer
             </h2>
             <p style={{ 
               fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', 
               marginBottom: '1rem',
-              color: 'rgba(255, 255, 255, 0.8)'
+              color: s.text
             }}>
-              Entdecke unsere Kunstwerke und füge sie zu deiner/Ihrer Auswahl hinzu.
+              Entdecke unsere Kunstwerke und füge sie zu deiner Auswahl hinzu.
             </p>
             <p style={{ 
               fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', 
-              color: 'rgba(255, 255, 255, 0.6)', 
+              color: s.muted, 
               marginBottom: orders.length > 0 ? '1rem' : '2rem', 
               fontStyle: 'italic' 
             }}>
@@ -1469,10 +1530,10 @@ const ShopPage = () => {
                   alignItems: 'center',
                   gap: '0.5rem',
                   padding: '0.75rem 1.25rem',
-                  background: 'rgba(95, 251, 241, 0.15)',
-                  border: '1px solid rgba(95, 251, 241, 0.4)',
+                  background: `${s.accent}20`,
+                  border: `1px solid ${s.accent}66`,
                   borderRadius: '12px',
-                  color: '#5ffbf1',
+                  color: s.accent,
                   fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
                   fontWeight: '600',
                   cursor: 'pointer',
@@ -1480,38 +1541,38 @@ const ShopPage = () => {
                   transition: 'all 0.2s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(95, 251, 241, 0.25)'
+                  e.currentTarget.style.background = `${s.accent}35`
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(95, 251, 241, 0.15)'
+                  e.currentTarget.style.background = `${s.accent}20`
                 }}
               >
                 🖨️ Letzten Bon erneut drucken ({orders[0].orderNumber} · €{(orders[0].total || 0).toFixed(2)})
               </button>
             )}
             <Link 
-              to={PROJECT_ROUTES['k2-galerie'].galerieVorschau}
+              to={galerieLink}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.75rem',
                 padding: 'clamp(1rem, 2.5vw, 1.25rem) clamp(2rem, 5vw, 2.5rem)',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: s.gradientAccent,
                 color: '#fff',
                 textDecoration: 'none',
                 borderRadius: '12px',
                 fontSize: 'clamp(1rem, 2.5vw, 1.1rem)',
                 fontWeight: '600',
                 transition: 'all 0.3s ease',
-                boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                boxShadow: `0 10px 30px ${s.accent}40`
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-3px)'
-                e.currentTarget.style.boxShadow = '0 15px 40px rgba(102, 126, 234, 0.4)'
+                e.currentTarget.style.boxShadow = `0 15px 40px ${s.accent}66`
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.3)'
+                e.currentTarget.style.boxShadow = `0 10px 30px ${s.accent}40`
               }}
             >
               Zur Galerie
@@ -1525,7 +1586,7 @@ const ShopPage = () => {
               <h2 style={{ 
                 fontSize: 'clamp(1.5rem, 4vw, 2rem)', 
                 marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
-                color: '#ffffff',
+                color: s.text,
                 fontWeight: '600'
               }}>
                 Auswahl ({cart.length} {cart.length === 1 ? 'Werk' : 'Werke'})
@@ -1538,9 +1599,9 @@ const ShopPage = () => {
               }}>
                 {cart.map((item, index) => (
                   <div key={`${item.number}-${index}`} style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
+                    background: s.bgCard,
                     backdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    border: `1px solid ${s.accent}22`,
                     borderRadius: '20px',
                     padding: 'clamp(1.5rem, 4vw, 2rem)',
                     boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
@@ -1551,11 +1612,11 @@ const ShopPage = () => {
                     transition: 'all 0.3s ease'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+                    e.currentTarget.style.background = s.bgElevated
                     e.currentTarget.style.transform = 'translateY(-4px)'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                    e.currentTarget.style.background = s.bgCard
                     e.currentTarget.style.transform = 'translateY(0)'
                   }}
                   >
@@ -1564,7 +1625,7 @@ const ShopPage = () => {
                       height: 'clamp(80px, 20vw, 120px)',
                       borderRadius: '8px',
                       overflow: 'hidden',
-                      background: 'rgba(255, 255, 255, 0.05)',
+                      background: s.bgCard,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -1607,7 +1668,7 @@ const ShopPage = () => {
                       <h3 style={{ 
                         margin: '0 0 0.75rem', 
                         fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
-                        color: '#ffffff',
+                        color: s.text,
                         fontWeight: '600'
                       }}>
                         {item.title || item.number}
@@ -1615,18 +1676,15 @@ const ShopPage = () => {
                       <p style={{ 
                         margin: '0.25rem 0', 
                         fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', 
-                        color: 'rgba(255, 255, 255, 0.6)' 
+                        color: s.muted 
                       }}>
-                        {item.category === 'malerei' ? 'Bilder' : item.category === 'keramik' ? 'Keramik' : item.category}
+                        {getCategoryLabel(item.category)}
                         {item.artist && ` • ${item.artist}`}
                       </p>
                       <p style={{ 
                         margin: '0.75rem 0 0', 
                         fontWeight: '700', 
-                        background: 'linear-gradient(135deg, #b8b8ff 0%, #ff77c6 100%)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text',
+                        color: s.accent,
                         fontSize: 'clamp(1.1rem, 3vw, 1.3rem)'
                       }}>
                         € {item.price.toFixed(2)}
@@ -1636,7 +1694,7 @@ const ShopPage = () => {
                       onClick={() => removeFromCart(index)}
                       style={{
                         padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                        background: 'linear-gradient(135deg, #f5576c 0%, #f093fb 100%)',
+                        background: s.gradientAccent,
                         color: '#fff',
                         border: 'none',
                         borderRadius: '12px',
@@ -1665,62 +1723,62 @@ const ShopPage = () => {
             {/* Für Galerie-Besucher (ohne Admin): nur Gesamt + Kontakt – keine Kasse */}
             {!isAdminContext && cart.length > 0 && (
               <section style={{
-                background: 'rgba(255, 255, 255, 0.05)',
+                background: s.bgCard,
                 backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: `1px solid ${s.accent}22`,
                 borderRadius: '20px',
                 padding: 'clamp(1.5rem, 4vw, 2rem)',
                 marginBottom: 'clamp(2rem, 5vw, 3rem)'
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <span style={{ fontWeight: '600', color: '#fff' }}>Gesamt:</span>
-                  <span style={{ fontWeight: '700', fontSize: 'clamp(1.2rem, 3.5vw, 1.5rem)', background: 'linear-gradient(135deg, #b8b8ff 0%, #ff77c6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>€ {total.toFixed(2)}</span>
+                  <span style={{ fontWeight: '700', fontSize: 'clamp(1.2rem, 3.5vw, 1.5rem)', color: s.accent }}>€ {total.toFixed(2)}</span>
                 </div>
-                <p style={{ margin: '0 0 1rem', color: 'rgba(255,255,255,0.9)', fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)' }}>
-                  Bei Interesse an diesen Werken kontaktieren Sie uns gerne. Eine Reservierung ist möglich – dazu bitte Ihre Daten angeben.
+                <p style={{ margin: '0 0 1rem', color: s.text, fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)' }}>
+                  Bei Interesse an diesen Werken kontaktiere uns gerne. Eine Reservierung ist möglich – dazu bitte deine Daten angeben.
                 </p>
                 {!showReservationForm ? (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
                     <button
                       onClick={() => setShowReservationForm(true)}
-                      style={{ padding: '0.75rem 1.25rem', background: 'rgba(95, 251, 241, 0.2)', border: '1px solid rgba(95, 251, 241, 0.5)', borderRadius: '12px', color: '#5ffbf1', fontWeight: '600', fontSize: 'clamp(0.95rem, 2.2vw, 1.05rem)', cursor: 'pointer' }}
+                      style={{ padding: '0.75rem 1.25rem', background: `${s.accent}28`, border: `1px solid ${s.accent}88`, borderRadius: '12px', color: s.accent, fontWeight: '600', fontSize: 'clamp(0.95rem, 2.2vw, 1.05rem)', cursor: 'pointer' }}
                     >
                       📌 Reservierung anfragen
                     </button>
                     <button
                       onClick={() => setShowCheckout(true)}
-                      style={{ padding: '0.75rem 1.25rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: '600', fontSize: 'clamp(0.95rem, 2.2vw, 1.05rem)', cursor: 'pointer', boxShadow: '0 4px 14px rgba(102, 126, 234, 0.4)' }}
+                      style={{ padding: '0.75rem 1.25rem', background: s.gradientAccent, border: 'none', borderRadius: '12px', color: '#fff', fontWeight: '600', fontSize: 'clamp(0.95rem, 2.2vw, 1.05rem)', cursor: 'pointer', boxShadow: s.shadow }}
                     >
                       Zur Kasse (Karte / Überweisung)
                     </button>
-                    {galleryEmail && (
-                      <a href={`mailto:${galleryEmail}`} style={{ padding: '0.6rem 1rem', background: 'rgba(102, 126, 234, 0.3)', border: '1px solid rgba(102, 126, 234, 0.5)', borderRadius: '10px', color: '#fff', textDecoration: 'none', fontWeight: '600', fontSize: 'clamp(0.9rem, 2.2vw, 1rem)' }}>E-Mail</a>
+                    {displayEmail && (
+                      <a href={`mailto:${displayEmail}`} style={{ padding: '0.6rem 1rem', background: `${s.accent}40`, border: `1px solid ${s.accent}88`, borderRadius: '10px', color: '#fff', textDecoration: 'none', fontWeight: '600', fontSize: 'clamp(0.9rem, 2.2vw, 1rem)' }}>E-Mail</a>
                     )}
-                    {galleryPhone && (
-                      <a href={`tel:${galleryPhone.replace(/\s/g, '')}`} style={{ padding: '0.6rem 1rem', background: 'rgba(95, 251, 241, 0.2)', border: '1px solid rgba(95, 251, 241, 0.4)', borderRadius: '10px', color: '#5ffbf1', textDecoration: 'none', fontWeight: '600', fontSize: 'clamp(0.9rem, 2.2vw, 1rem)' }}>Anrufen</a>
+                    {displayPhone && (
+                      <a href={`tel:${displayPhone.replace(/\s/g, '')}`} style={{ padding: '0.6rem 1rem', background: `${s.accent}28`, border: `1px solid ${s.accent}66`, borderRadius: '10px', color: s.accent, textDecoration: 'none', fontWeight: '600', fontSize: 'clamp(0.9rem, 2.2vw, 1rem)' }}>Anrufen</a>
                     )}
-                    <Link to={PROJECT_ROUTES['k2-galerie'].galerieVorschau} style={{ padding: '0.6rem 1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', color: '#fff', textDecoration: 'none', fontWeight: '600', fontSize: 'clamp(0.9rem, 2.2vw, 1rem)' }}>Zur Galerie</Link>
+                    <Link to={galerieLink} style={{ padding: '0.6rem 1rem', background: s.bgCard, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, textDecoration: 'none', fontWeight: '600', fontSize: 'clamp(0.9rem, 2.2vw, 1rem)' }}>Zur Galerie</Link>
                   </div>
                 ) : (
                   <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                    <p style={{ margin: '0 0 1rem', fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: 'rgba(255,255,255,0.9)' }}>Ihre Daten (werden in der Kundendatei gespeichert):</p>
+                    <p style={{ margin: '0 0 1rem', fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: s.text }}>Deine Daten (werden in der Kundendatei gespeichert):</p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '360px', marginBottom: '1rem' }}>
                       <div>
-                        <label style={{ display: 'block', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)', marginBottom: '0.25rem' }}>Name *</label>
-                        <input type="text" value={reservationName} onChange={(e) => setReservationName(e.target.value)} placeholder="Vor- und Nachname" style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '0.95rem' }} />
+                        <label style={{ display: 'block', fontSize: '0.85rem', color: s.text, marginBottom: '0.25rem' }}>Name *</label>
+                        <input type="text" value={reservationName} onChange={(e) => setReservationName(e.target.value)} placeholder="Vor- und Nachname" style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '10px', border: `1px solid ${s.accent}44`, background: s.bgElevated, color: s.text, fontSize: '0.95rem' }} />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)', marginBottom: '0.25rem' }}>E-Mail *</label>
-                        <input type="email" value={reservationEmail} onChange={(e) => setReservationEmail(e.target.value)} placeholder="ihre@email.at" style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '0.95rem' }} />
+                        <label style={{ display: 'block', fontSize: '0.85rem', color: s.text, marginBottom: '0.25rem' }}>E-Mail *</label>
+                        <input type="email" value={reservationEmail} onChange={(e) => setReservationEmail(e.target.value)} placeholder="ihre@email.at" style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '10px', border: `1px solid ${s.accent}44`, background: s.bgElevated, color: s.text, fontSize: '0.95rem' }} />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)', marginBottom: '0.25rem' }}>Telefon (optional)</label>
-                        <input type="tel" value={reservationPhone} onChange={(e) => setReservationPhone(e.target.value)} placeholder="+43 …" style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '0.95rem' }} />
+                        <label style={{ display: 'block', fontSize: '0.85rem', color: s.text, marginBottom: '0.25rem' }}>Telefon (optional)</label>
+                        <input type="tel" value={reservationPhone} onChange={(e) => setReservationPhone(e.target.value)} placeholder="+43 …" style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '10px', border: `1px solid ${s.accent}44`, background: s.bgElevated, color: s.text, fontSize: '0.95rem' }} />
                       </div>
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      <button onClick={submitReservation} disabled={!reservationName.trim() || !reservationEmail.trim()} style={{ padding: '0.6rem 1.25rem', background: (!reservationName.trim() || !reservationEmail.trim()) ? 'rgba(255,255,255,0.2)' : 'linear-gradient(135deg, #5ffbf1 0%, #667eea 100%)', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: '600', fontSize: '0.95rem', cursor: (!reservationName.trim() || !reservationEmail.trim()) ? 'not-allowed' : 'pointer', opacity: (!reservationName.trim() || !reservationEmail.trim()) ? 0.7 : 1 }}>Reservierung absenden</button>
-                      <button onClick={() => setShowReservationForm(false)} style={{ padding: '0.6rem 1rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '10px', color: 'rgba(255,255,255,0.9)', fontSize: '0.9rem', cursor: 'pointer' }}>Abbrechen</button>
+                      <button onClick={submitReservation} disabled={!reservationName.trim() || !reservationEmail.trim()} style={{ padding: '0.6rem 1.25rem', background: (!reservationName.trim() || !reservationEmail.trim()) ? s.bgElevated : s.gradientAccent, border: 'none', borderRadius: '10px', color: '#fff', fontWeight: '600', fontSize: '0.95rem', cursor: (!reservationName.trim() || !reservationEmail.trim()) ? 'not-allowed' : 'pointer', opacity: (!reservationName.trim() || !reservationEmail.trim()) ? 0.7 : 1 }}>Reservierung absenden</button>
+                      <button onClick={() => setShowReservationForm(false)} style={{ padding: '0.6rem 1rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '10px', color: s.text, fontSize: '0.9rem', cursor: 'pointer' }}>Abbrechen</button>
                     </div>
                   </div>
                 )}
@@ -1730,16 +1788,16 @@ const ShopPage = () => {
             {/* Nur Admin: Zusammenfassung & Schnellverkauf (Bar/Karte/Überweisung) */}
             {isAdminContext && !showCheckout && (
               <section style={{
-                background: 'rgba(255, 255, 255, 0.05)',
+                background: s.bgCard,
                 backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: `1px solid ${s.accent}22`,
                 borderRadius: '20px',
                 padding: 'clamp(2rem, 5vw, 3rem)',
                 boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
                 marginBottom: 'clamp(2rem, 5vw, 3rem)'
               }}>
                 <div style={{ 
-                  borderBottom: '2px solid rgba(255, 255, 255, 0.1)',
+                  borderBottom: `2px solid ${s.accent}22`,
                   paddingBottom: 'clamp(1rem, 3vw, 1.5rem)',
                   marginBottom: 'clamp(1.5rem, 4vw, 2rem)'
                 }}>
@@ -1748,10 +1806,7 @@ const ShopPage = () => {
                     justifyContent: 'space-between',
                     fontSize: 'clamp(1.5rem, 5vw, 2.25rem)',
                     fontWeight: '700',
-                    background: 'linear-gradient(135deg, #ffffff 0%, #b8b8ff 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
+color: s.accent,
                     marginBottom: '0.75rem'
                   }}>
                     <span>Gesamt:</span>
@@ -1762,7 +1817,7 @@ const ShopPage = () => {
                       display: 'flex', 
                       justifyContent: 'space-between',
                       fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                      color: 'rgba(255, 119, 198, 0.9)'
+                      color: s.accent
                     }}>
                       <span>Rabatt ({discount}%):</span>
                       <span>-€ {discountAmount.toFixed(2)}</span>
@@ -1784,7 +1839,7 @@ const ShopPage = () => {
                     }}
                     style={{
                       padding: 'clamp(1rem, 2.5vw, 1.5rem)',
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      background: s.gradientAccent,
                       color: '#fff',
                       border: 'none',
                       borderRadius: '16px',
@@ -1796,15 +1851,15 @@ const ShopPage = () => {
                       alignItems: 'center',
                       gap: '0.5rem',
                       transition: 'all 0.3s ease',
-                      boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                      boxShadow: `0 10px 30px ${s.accent}40`
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'translateY(-4px)'
-                      e.currentTarget.style.boxShadow = '0 15px 40px rgba(102, 126, 234, 0.4)'
+                      e.currentTarget.style.boxShadow = `0 15px 40px ${s.accent}66`
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.3)'
+                      e.currentTarget.style.boxShadow = `0 10px 30px ${s.accent}40`
                     }}
                   >
                     <span style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)' }}>💵</span>
@@ -1817,7 +1872,7 @@ const ShopPage = () => {
                     }}
                     style={{
                       padding: 'clamp(1rem, 2.5vw, 1.5rem)',
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      background: s.gradientAccent,
                       color: '#fff',
                       border: 'none',
                       borderRadius: '16px',
@@ -1829,15 +1884,15 @@ const ShopPage = () => {
                       alignItems: 'center',
                       gap: '0.5rem',
                       transition: 'all 0.3s ease',
-                      boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                      boxShadow: `0 10px 30px ${s.accent}40`
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'translateY(-4px)'
-                      e.currentTarget.style.boxShadow = '0 15px 40px rgba(102, 126, 234, 0.4)'
+                      e.currentTarget.style.boxShadow = `0 15px 40px ${s.accent}66`
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.3)'
+                      e.currentTarget.style.boxShadow = `0 10px 30px ${s.accent}40`
                     }}
                   >
                     <span style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)' }}>💳</span>
@@ -1850,7 +1905,7 @@ const ShopPage = () => {
                     }}
                     style={{
                       padding: 'clamp(1rem, 2.5vw, 1.5rem)',
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      background: s.gradientAccent,
                       color: '#fff',
                       border: 'none',
                       borderRadius: '16px',
@@ -1862,15 +1917,15 @@ const ShopPage = () => {
                       alignItems: 'center',
                       gap: '0.5rem',
                       transition: 'all 0.3s ease',
-                      boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+                      boxShadow: `0 10px 30px ${s.accent}40`
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'translateY(-4px)'
-                      e.currentTarget.style.boxShadow = '0 15px 40px rgba(102, 126, 234, 0.4)'
+                      e.currentTarget.style.boxShadow = `0 15px 40px ${s.accent}66`
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.3)'
+                      e.currentTarget.style.boxShadow = `0 10px 30px ${s.accent}40`
                     }}
                   >
                     <span style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)' }}>🏦</span>
@@ -1884,10 +1939,10 @@ const ShopPage = () => {
                   style={{
                     width: '100%',
                     padding: 'clamp(0.75rem, 2vw, 1rem)',
-                    background: 'rgba(255, 255, 255, 0.05)',
+                    background: s.bgCard,
                     backdropFilter: 'blur(10px)',
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    color: s.text,
+                    border: `1px solid ${s.accent}33`,
                     borderRadius: '12px',
                     fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
                     cursor: 'pointer',
@@ -1895,10 +1950,10 @@ const ShopPage = () => {
                     transition: 'all 0.3s ease'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                    e.currentTarget.style.background = s.bgCard
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                    e.currentTarget.style.background = s.bgCard
                   }}
                 >
                   Andere Optionen
@@ -1909,27 +1964,27 @@ const ShopPage = () => {
             {/* Checkout für alle: Karte / Überweisung / Bar, Bankverbindung aus Stammdaten */}
             {showCheckout && (
               <section style={{
-                background: 'rgba(255, 255, 255, 0.05)',
+                background: s.bgCard,
                 backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: `1px solid ${s.accent}22`,
                 borderRadius: '20px',
                 padding: 'clamp(2rem, 5vw, 3rem)',
                 boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
                 marginBottom: 'clamp(2rem, 5vw, 3rem)'
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
-                  <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', color: '#ffffff', fontWeight: '600', margin: 0 }}>
+                  <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', color: s.text, fontWeight: '600', margin: 0 }}>
                     Bestellübersicht
                   </h3>
                   <button
                     type="button"
                     onClick={() => setShowCheckout(false)}
-                    style={{ padding: '0.5rem 1rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '10px', color: 'rgba(255,255,255,0.9)', fontSize: '0.9rem', cursor: 'pointer' }}
+                    style={{ padding: '0.5rem 1rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '10px', color: s.text, fontSize: '0.9rem', cursor: 'pointer' }}
                   >
                     ← Zurück zur Auswahl
                   </button>
                 </div>
-                <ul style={{ margin: '0 0 1.25rem', paddingLeft: '1.25rem', color: 'rgba(255,255,255,0.9)', fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', lineHeight: 1.6 }}>
+                <ul style={{ margin: '0 0 1.25rem', paddingLeft: '1.25rem', color: s.text, fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', lineHeight: 1.6 }}>
                   {cart.map((item, idx) => (
                     <li key={`${item.number}-${idx}`}>
                       {item.title || item.number} — € {item.price.toFixed(2)}
@@ -1938,48 +1993,48 @@ const ShopPage = () => {
                 </ul>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.15)' }}>
                   <span style={{ fontWeight: '600', color: '#ffffff' }}>Gesamt:</span>
-                  <span style={{ fontWeight: '700', background: 'linear-gradient(135deg, #b8b8ff 0%, #ff77c6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontSize: 'clamp(1.1rem, 3vw, 1.25rem)' }}>€ {total.toFixed(2)}</span>
+                  <span style={{ fontWeight: '700', color: s.accent, fontSize: 'clamp(1.1rem, 3vw, 1.25rem)' }}>€ {total.toFixed(2)}</span>
                 </div>
 
                 {internetShopNotSetUp && (
-                  <p style={{ margin: '0 0 1.5rem', color: 'rgba(255,255,255,0.85)', fontSize: 'clamp(0.9rem, 2.5vw, 1rem)' }}>
-                    💡 Ein Besuch unserer Galerie und ein Termin sind sinnvoll – Sie können die Werke vor Ort erleben. Bestellung oder Reservierung hier möglich.
+                  <p style={{ margin: '0 0 1.5rem', color: s.text, fontSize: 'clamp(0.9rem, 2.5vw, 1rem)' }}>
+                    💡 Ein Besuch unserer Galerie und ein Termin sind sinnvoll – du kannst die Werke vor Ort erleben. Bestellung oder Reservierung hier möglich.
                   </p>
                 )}
                 {!isAdminContext && (
                   <div style={{ marginBottom: '1.5rem' }}>
-                    <h3 style={{ fontSize: 'clamp(1rem, 2.8vw, 1.2rem)', color: '#ffffff', fontWeight: '600', marginBottom: '1rem' }}>
-                      Ihre Daten (werden in der Kundendatei gespeichert)
+                    <h3 style={{ fontSize: 'clamp(1rem, 2.8vw, 1.2rem)', color: s.text, fontWeight: '600', marginBottom: '1rem' }}>
+                      Deine Daten (werden in der Kundendatei gespeichert)
                     </h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '400px' }}>
                       <div>
-                        <label style={{ display: 'block', fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)', marginBottom: '0.35rem' }}>Name *</label>
+                        <label style={{ display: 'block', fontSize: '0.9rem', color: s.text, marginBottom: '0.35rem' }}>Name *</label>
                         <input
                           type="text"
                           value={guestName}
                           onChange={(e) => setGuestName(e.target.value)}
                           placeholder="Vor- und Nachname"
-                          style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '1rem' }}
+                          style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: `1px solid ${s.accent}44`, background: s.bgElevated, color: s.text, fontSize: '1rem' }}
                         />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)', marginBottom: '0.35rem' }}>E-Mail *</label>
+                        <label style={{ display: 'block', fontSize: '0.9rem', color: s.text, marginBottom: '0.35rem' }}>E-Mail *</label>
                         <input
                           type="email"
                           value={guestEmail}
                           onChange={(e) => setGuestEmail(e.target.value)}
                           placeholder="ihre@email.at"
-                          style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '1rem' }}
+                          style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: `1px solid ${s.accent}44`, background: s.bgElevated, color: s.text, fontSize: '1rem' }}
                         />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)', marginBottom: '0.35rem' }}>Telefon (optional)</label>
+                        <label style={{ display: 'block', fontSize: '0.9rem', color: s.text, marginBottom: '0.35rem' }}>Telefon (optional)</label>
                         <input
                           type="tel"
                           value={guestPhone}
                           onChange={(e) => setGuestPhone(e.target.value)}
                           placeholder="+43 …"
-                          style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '1rem' }}
+                          style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: `1px solid ${s.accent}44`, background: s.bgElevated, color: s.text, fontSize: '1rem' }}
                         />
                       </div>
                     </div>
@@ -1987,7 +2042,7 @@ const ShopPage = () => {
                 )}
                 {isAdminContext && (
                   <div style={{ marginBottom: '1.5rem' }}>
-                    <label style={{ display: 'block', fontSize: 'clamp(0.9rem, 2.5vw, 1rem)', color: 'rgba(255,255,255,0.85)', marginBottom: '0.5rem' }}>
+                    <label style={{ display: 'block', fontSize: 'clamp(0.9rem, 2.5vw, 1rem)', color: s.text, marginBottom: '0.5rem' }}>
                       Kunde zuordnen (optional)
                     </label>
                     <select
@@ -1998,8 +2053,8 @@ const ShopPage = () => {
                         maxWidth: '400px',
                         padding: '0.75rem 1rem',
                         borderRadius: '12px',
-                        border: '1px solid rgba(255,255,255,0.2)',
-                        background: 'rgba(255,255,255,0.08)',
+                        border: `1px solid ${s.accent}33`,
+                        background: s.bgElevated,
                         color: '#fff',
                         fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
                         cursor: 'pointer'
@@ -2010,7 +2065,7 @@ const ShopPage = () => {
                         <option key={c.id} value={c.id}>{c.name}{c.email ? ` · ${c.email}` : ''}</option>
                       ))}
                     </select>
-                    <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.35rem' }}>
+                    <p style={{ fontSize: '0.8rem', color: s.muted, marginTop: '0.35rem' }}>
                       Kunden verwaltest du im Control-Studio unter „Kunden“. Erscheint im Archiv bei „Verkauft an“.
                     </p>
                   </div>
@@ -2019,7 +2074,7 @@ const ShopPage = () => {
                 <h3 style={{ 
                   fontSize: 'clamp(1.25rem, 3.5vw, 1.5rem)', 
                   marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
-                  color: '#ffffff',
+                  color: s.text,
                   fontWeight: '600'
                 }}>
                   Zahlungsmethode
@@ -2032,9 +2087,9 @@ const ShopPage = () => {
                     gap: 'clamp(0.75rem, 2vw, 1rem)', 
                     cursor: 'pointer',
                     padding: 'clamp(1rem, 3vw, 1.5rem)',
-                    border: paymentMethod === 'card' ? '2px solid rgba(102, 126, 234, 0.5)' : '2px solid rgba(255, 255, 255, 0.2)',
+                    border: paymentMethod === 'card' ? `2px solid ${s.accent}` : `2px solid ${s.accent}33`,
                     borderRadius: '16px',
-                    background: paymentMethod === 'card' ? 'rgba(102, 126, 234, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                    background: paymentMethod === 'card' ? `${s.accent}28` : s.bgElevated,
                     transition: 'all 0.3s ease',
                     backdropFilter: 'blur(10px)'
                   }}>
@@ -2054,9 +2109,9 @@ const ShopPage = () => {
                     gap: 'clamp(0.75rem, 2vw, 1rem)', 
                     cursor: 'pointer',
                     padding: 'clamp(1rem, 3vw, 1.5rem)',
-                    border: paymentMethod === 'transfer' ? '2px solid rgba(102, 126, 234, 0.5)' : '2px solid rgba(255, 255, 255, 0.2)',
+                    border: paymentMethod === 'transfer' ? `2px solid ${s.accent}` : `2px solid ${s.accent}33`,
                     borderRadius: '16px',
-                    background: paymentMethod === 'transfer' ? 'rgba(102, 126, 234, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                    background: paymentMethod === 'transfer' ? `${s.accent}28` : s.bgElevated,
                     transition: 'all 0.3s ease',
                     backdropFilter: 'blur(10px)'
                   }}>
@@ -2073,11 +2128,11 @@ const ShopPage = () => {
                   {paymentMethod === 'transfer' && bankverbindung && (
                     <div style={{
                       padding: 'clamp(0.75rem, 2vw, 1rem)',
-                      background: 'rgba(102, 126, 234, 0.15)',
+                      background: `${s.accent}20`,
                       borderRadius: '12px',
-                      border: '1px solid rgba(102, 126, 234, 0.3)',
+                      border: `1px solid ${s.accent}40`,
                       fontSize: 'clamp(0.8rem, 2.2vw, 0.95rem)',
-                      color: 'rgba(255, 255, 255, 0.95)',
+                      color: s.text,
                       lineHeight: 1.4,
                       whiteSpace: 'pre-wrap',
                       wordBreak: 'break-word'
@@ -2092,9 +2147,9 @@ const ShopPage = () => {
                     gap: 'clamp(0.75rem, 2vw, 1rem)', 
                     cursor: 'pointer',
                     padding: 'clamp(1rem, 3vw, 1.5rem)',
-                    border: paymentMethod === 'cash' ? '2px solid rgba(102, 126, 234, 0.5)' : '2px solid rgba(255, 255, 255, 0.2)',
+                    border: paymentMethod === 'cash' ? `2px solid ${s.accent}` : `2px solid ${s.accent}33`,
                     borderRadius: '16px',
-                    background: paymentMethod === 'cash' ? 'rgba(102, 126, 234, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                    background: paymentMethod === 'cash' ? `${s.accent}28` : s.bgElevated,
                     transition: 'all 0.3s ease',
                     backdropFilter: 'blur(10px)'
                   }}>
@@ -2111,7 +2166,7 @@ const ShopPage = () => {
                 </div>
 
                 <div style={{ 
-                  borderTop: '2px solid rgba(255, 255, 255, 0.1)',
+                  borderTop: `2px solid ${s.accent}22`,
                   paddingTop: 'clamp(1rem, 3vw, 1.5rem)',
                   marginBottom: 'clamp(1.5rem, 4vw, 2rem)'
                 }}>
@@ -2120,10 +2175,7 @@ const ShopPage = () => {
                     justifyContent: 'space-between',
                     fontSize: 'clamp(1.3rem, 4vw, 1.8rem)',
                     fontWeight: '700',
-                    background: 'linear-gradient(135deg, #ffffff 0%, #b8b8ff 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text'
+color: s.accent
                   }}>
                     <span>Gesamtbetrag:</span>
                     <span>€ {total.toFixed(2)}</span>
@@ -2137,10 +2189,10 @@ const ShopPage = () => {
                       flex: 1,
                       minWidth: '120px',
                       padding: 'clamp(0.75rem, 2vw, 1rem)',
-                      background: 'rgba(255, 255, 255, 0.1)',
+                      background: s.bgElevated,
                       backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      color: '#ffffff',
+                      border: `1px solid ${s.accent}33`,
+                      color: s.text,
                       borderRadius: '12px',
                       fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
                       fontWeight: '600',
@@ -2148,10 +2200,10 @@ const ShopPage = () => {
                       transition: 'all 0.3s ease'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                      e.currentTarget.style.background = s.bgElevated
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                      e.currentTarget.style.background = s.bgCard
                     }}
                   >
                     Zurück
@@ -2163,7 +2215,7 @@ const ShopPage = () => {
                     style={{
                       flex: 2,
                       padding: 'clamp(0.75rem, 2vw, 1rem)',
-                      background: (!isAdminContext && (!guestName.trim() || !guestEmail.trim())) ? 'rgba(255,255,255,0.2)' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      background: (!isAdminContext && (!guestName.trim() || !guestEmail.trim())) ? s.bgElevated : s.gradientAccent,
                       color: '#fff',
                       border: 'none',
                       borderRadius: '12px',
@@ -2171,18 +2223,18 @@ const ShopPage = () => {
                       fontWeight: '600',
                       cursor: (!isAdminContext && (!guestName.trim() || !guestEmail.trim())) ? 'not-allowed' : 'pointer',
                       transition: 'all 0.3s ease',
-                      boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)',
+                      boxShadow: `0 10px 30px ${s.accent}40`,
                       opacity: (!isAdminContext && (!guestName.trim() || !guestEmail.trim())) ? 0.7 : 1
                     }}
                     onMouseEnter={(e) => {
                       if (isAdminContext || (guestName.trim() && guestEmail.trim())) {
                         e.currentTarget.style.transform = 'translateY(-2px)'
-                        e.currentTarget.style.boxShadow = '0 15px 40px rgba(102, 126, 234, 0.4)'
+                        e.currentTarget.style.boxShadow = `0 15px 40px ${s.accent}66`
                       }
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.3)'
+                      e.currentTarget.style.boxShadow = `0 10px 30px ${s.accent}40`
                     }}
                   >
                     {isAdminContext ? 'Verkauf abschließen' : 'Bestellung abschließen'}

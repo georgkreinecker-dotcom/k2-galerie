@@ -140,7 +140,12 @@ export function buildSystemPrompt(context: ChatContext | null): string {
 - IMMER ZUERST LESEN: Komplette Funktion/Datei lesen bevor Änderungen gemacht werden
 - STRUKTUR VERSTEHEN: Verstehe den Code-Flow bevor du änderst
 - FEHLER VERMEIDEN: Ein Fehler = viele unnötige API-Calls für Fixes
-- EINMAL RICHTIG: Lieber einmal gründlich lesen als mehrmals falsch ändern`
+- EINMAL RICHTIG: Lieber einmal gründlich lesen als mehrmals falsch ändern
+
+### Kunden-Einstieg (Willkommensseite):
+- Willkommensseite: /willkommen – Zugangsbereich mit zwei Wegen.
+- Nur umschauen → galerie-oeffentlich (Demo-Galerie ansehen).
+- Vorschau & Entwurf → optional Name eintragen, dann galerie-oeffentlich-vorschau (mit Entwurf-Flag wenn Name gesetzt).`
 
   if (!context) {
     return basePrompt + '\n\nBei Bildern beschreibe, was du siehst.'

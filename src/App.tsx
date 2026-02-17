@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, lazy, Suspense } from 'react'
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import './App.css'
 import ProjectsPage from './pages/ProjectsPage'
@@ -9,6 +9,9 @@ import ProjectPlanPage from './pages/ProjectPlanPage'
 import K2TeamHandbuchPage from './pages/K2TeamHandbuchPage'
 import MobileConnectPage from './pages/MobileConnectPage'
 import ProduktVorschauPage from './pages/ProduktVorschauPage'
+import MarketingOek2Page from './pages/MarketingOek2Page'
+import WerbeunterlagenPage from './pages/WerbeunterlagenPage'
+import Mok2Layout from './components/Mok2Layout'
 import GaleriePage from './pages/GaleriePage'
 import GalerieVorschauPage from './pages/GalerieVorschauPage'
 import PlatzanordnungPage from './pages/PlatzanordnungPage'
@@ -19,14 +22,21 @@ import DialogStandalonePage from './pages/DialogStandalonePage'
 import KeyPage from './pages/KeyPage'
 import KostenPage from './pages/KostenPage'
 import GitHubTokenPage from './pages/GitHubTokenPage'
+import LicencesPage from './pages/LicencesPage'
+import EmpfehlungstoolPage from './pages/EmpfehlungstoolPage'
+import VerguetungPage from './pages/VerguetungPage'
 import SecondMacPage from './pages/SecondMacPage'
-import ScreenshotExportAdmin from '../components/ScreenshotExportAdmin'
+// Admin-Route lazy, damit Supabase Auth erst bei /admin geladen wird (Crash-Vermeidung)
+const AdminRoute = lazy(() => import('./components/AdminRoute').then(m => ({ default: m.default })))
 import { Ok2ThemeWrapper } from './components/Ok2ThemeWrapper'
 import DevViewPage from './pages/DevViewPage'
 import PlatformStartPage from './pages/PlatformStartPage'
 import FlyerK2GaleriePage from './pages/FlyerK2GaleriePage'
+import PresseEinladungK2GaleriePage from './pages/PresseEinladungK2GaleriePage'
 import KundenPage from './pages/KundenPage'
-import { PLATFORM_ROUTES, PROJECT_ROUTES } from './config/navigation'
+import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUTE } from './config/navigation'
+import WillkommenPage from './pages/WillkommenPage'
+import AGBPage from './pages/AGBPage'
 import { BUILD_LABEL, BUILD_TIMESTAMP } from './buildInfo.generated'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 
@@ -230,24 +240,26 @@ function StandBadgeSync() {
   const isLocal = typeof window !== 'undefined' && /^https?:\/\/localhost|127\.0\.0\.1/i.test(window.location?.origin || '')
 
   // Auf Vercel/Produktion: Stand vom Server holen → Badge zeigt immer aktuellen Stand (auch auf Mac bei gecachtem Bundle)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
   useEffect(() => {
     if (isLocal) return
     const url = '/build-info.json?t=' + Date.now() + '&r=' + Math.random()
     fetch(url, { cache: 'no-store' })
       .then((r) => r.ok ? r.json() : null)
       .then((data: { label?: string; timestamp?: number } | null) => {
-        if (!data) return
+        if (!mountedRef.current || !data) return
         if (data.label) setDisplayLabel(data.label)
         if (data.timestamp && data.timestamp > BUILD_TIMESTAMP) setServerNewer(true)
       })
       .catch(() => {})
   }, [isLocal])
 
-  useEffect(() => {
-    if (!serverNewer) return
-    const t = setTimeout(doHardReload, 1200)
-    return () => clearTimeout(t)
-  }, [serverNewer])
+  // KEIN automatischer Reload bei serverNewer – verursacht in Cursor Preview Reload-Loop (Server neuer → Reload → wieder Server neuer → wieder Reload → Code-5-Crash). Nur Badge anzeigen, Nutzer tippt selbst.
+  // useEffect(() => { if (!serverNewer) return; const t = setTimeout(doHardReload, 1200); return () => clearTimeout(t) }, [serverNewer])  ← entfernt
 
   const isMobile = typeof window !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768)
   const label = serverNewer
@@ -372,12 +384,15 @@ function getApfPageFromPath(pathname: string, search: string): string {
   if (pathname === '/admin') return 'admin'
   if (pathname === PLATFORM_ROUTES.projects) return 'projects'
   if (pathname === PROJECT_ROUTES['k2-galerie'].galerie) return 'galerie'
+  if (pathname === PROJECT_ROUTES['k2-galerie'].galerieOeffentlich) return 'galerie-oeffentlich'
   if (pathname === PROJECT_ROUTES['k2-galerie'].galerieVorschau) return 'galerie-vorschau'
+  if (pathname === PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau) return 'galerie-oeffentlich-vorschau'
   if (pathname === PROJECT_ROUTES['k2-galerie'].platzanordnung) return 'platzanordnung'
   if (pathname === PROJECT_ROUTES['k2-galerie'].shop) return 'shop'
   if (pathname === PROJECT_ROUTES['k2-galerie'].controlStudio) return 'control'
   if (pathname === PROJECT_ROUTES['k2-galerie'].plan) return 'mission'
   if (pathname === PROJECT_ROUTES['k2-galerie'].produktVorschau) return 'produkt-vorschau'
+  if (pathname === PROJECT_ROUTES['k2-galerie'].marketingOek2) return 'marketing-oek2'
   if (pathname.startsWith('/projects/k2-galerie')) return 'galerie' // z. B. Projekt-Start → Galerie
   return 'platform'
 }
@@ -396,8 +411,9 @@ function App() {
   return (
     <AppErrorBoundary>
     <StandBadgeSync />
+    {/* Brand-Button entfernt – bei der Arbeit nicht nötig; bei Bedarf in BrandLogo.tsx wieder einbinden */}
     {/* Von jeder Seite in die APf – gleiche Seite bleibt in der APf geöffnet; Vollbild wird beendet */}
-    {typeof window !== 'undefined' && !isMobileView() && (
+    {typeof window !== 'undefined' && !isMobileView() && !isOnApf && (
       <button
         type="button"
         onClick={() => {
@@ -422,7 +438,6 @@ function App() {
           borderRadius: '10px',
           cursor: 'pointer',
           boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
-          opacity: isOnApf ? 0.85 : 1,
         }}
       >
         APf
@@ -439,6 +454,7 @@ function App() {
       {/* Galerie als separate Route */}
       <Route path="/galerie-home" element={<GaleriePage />} />
       <Route path="/flyer-k2-galerie" element={<FlyerK2GaleriePage />} />
+      <Route path="/presse-einladung-k2-galerie" element={<PresseEinladungK2GaleriePage />} />
       
       {/* Plattform-Routen – auf Mobile sofort Galerie (kein Smart Panel) */}
       <Route path="/platform" element={
@@ -448,10 +464,17 @@ function App() {
       } />
       <Route path={PLATFORM_ROUTES.key} element={<KeyPage />} />
       <Route path={PLATFORM_ROUTES.kosten} element={<KostenPage />} />
+      <Route path={PLATFORM_ROUTES.licences} element={<Navigate to={PROJECT_ROUTES['k2-galerie'].licences} replace />} />
       <Route path="/platform/github-token" element={<GitHubTokenPage />} />
       <Route path={PLATFORM_ROUTES.dialog} element={<DialogStandalonePage />} />
       <Route path="/platform/second-mac" element={<SecondMacPage />} />
       
+      {/* mök2 – eigener Bereich (Vertrieb & Promotion), nur indirekt mit App-Entwicklung verbunden */}
+      <Route path={MOK2_ROUTE} element={<Navigate to={PROJECT_ROUTES['k2-galerie'].marketingOek2} replace />} />
+      {/* Willkommensseite (Werbung/Flyer): Zugangsbereich, Anmelden, Erster Entwurf – mök2-Stil */}
+      <Route path={WILLKOMMEN_ROUTE} element={<WillkommenPage />} />
+      {/* Allgemeine Geschäftsbedingungen – rechtliche Absicherung */}
+      <Route path={AGB_ROUTE} element={<AGBPage />} />
       {/* Projekt-Routen – Galerie zuerst, damit QR-Code /projects/k2-galerie/galerie auf Mobile trifft */}
       <Route path={PLATFORM_ROUTES.projects} element={<ProjectsPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].galerie} element={<GaleriePage />} />
@@ -468,6 +491,11 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].mobileConnect} element={<MobileConnectPage />} />
       <Route path="/projects/k2-galerie/vita/:artistId" element={<VitaPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].produktVorschau} element={<ProduktVorschauPage />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].marketingOek2} element={<Mok2Layout><MarketingOek2Page embeddedInMok2Layout /></Mok2Layout>} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].werbeunterlagen} element={<Mok2Layout><WerbeunterlagenPage embeddedInMok2Layout /></Mok2Layout>} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].licences} element={<Mok2Layout><LicencesPage embeddedInMok2Layout /></Mok2Layout>} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].empfehlungstool} element={<Mok2Layout><EmpfehlungstoolPage /></Mok2Layout>} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].verguetung} element={<Mok2Layout><VerguetungPage /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].platzanordnung} element={<PlatzanordnungPage />} />
       <Route path="/k2team-handbuch" element={<K2TeamHandbuchPage />} />
       
@@ -479,7 +507,9 @@ function App() {
       <Route path="/admin" element={
         <AdminErrorBoundary>
           <AppErrorBoundary>
-            <ScreenshotExportAdmin />
+            <Suspense fallback={<div style={{ minHeight: '100vh', background: '#1a0f0a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Lade …</div>}>
+              <AdminRoute />
+            </Suspense>
           </AppErrorBoundary>
         </AdminErrorBoundary>
       } />

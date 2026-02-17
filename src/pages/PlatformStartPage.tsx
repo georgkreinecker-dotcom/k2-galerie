@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
 import '../App.css'
-import { PLATFORM_ROUTES, PROJECT_ROUTES } from '../config/navigation'
+import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
 // Haupt-Features (wichtigste Funktionen)
@@ -42,6 +42,20 @@ const secondaryFeatures = [
     to: PLATFORM_ROUTES.kosten,
     cta: 'Anzeigen →',
     icon: '💰',
+  },
+  {
+    title: 'mök2 (Marketing & Vertrieb)',
+    description: 'Lizenzen, Empfehlungstool, Vergütung, Werbeunterlagen',
+    to: MOK2_ROUTE,
+    cta: 'In mök2 öffnen →',
+    icon: '📢',
+  },
+  {
+    title: 'Lizenzen',
+    description: 'Konditionen & Lizenzen vergeben (in mök2)',
+    to: PROJECT_ROUTES['k2-galerie'].licences,
+    cta: 'Öffnen →',
+    icon: '💼',
   },
   {
     title: 'GitHub Token',
@@ -433,6 +447,52 @@ export default function PlatformStartPage() {
               }}
             >
               💰 Kosten
+            </Link>
+            <Link 
+              to={MOK2_ROUTE}
+              style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '8px',
+                padding: '0.5rem 1rem',
+                fontSize: '0.85rem',
+                color: '#fff',
+                textDecoration: 'none',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                e.currentTarget.style.borderColor = 'rgba(95, 251, 241, 0.3)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'
+              }}
+            >
+              📢 mök2
+            </Link>
+            <Link 
+              to={PROJECT_ROUTES['k2-galerie'].licences}
+              style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '8px',
+                padding: '0.5rem 1rem',
+                fontSize: '0.85rem',
+                color: '#fff',
+                textDecoration: 'none',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                e.currentTarget.style.borderColor = 'rgba(95, 251, 241, 0.3)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'
+              }}
+            >
+              💼 Lizenzen
             </Link>
             <Link 
               to={PLATFORM_ROUTES.missionControl}

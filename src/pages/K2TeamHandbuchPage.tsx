@@ -20,6 +20,8 @@ export default function K2TeamHandbuchPage() {
     { id: '09-git-vercel', name: 'Git/Vercel Probleme', file: '09-GIT-VERCEL-PROBLEME.md' },
     { id: '10-stabilitaet', name: 'Stabilitäts-Fixes', file: '10-STABILITAET-FIXES.md' },
     { id: '11-backup', name: 'Backup-Zusammenfassung', file: '11-BACKUP-ZUSAMMENFASSUNG.md' },
+    { id: '12-arbeitsplattform', name: 'Arbeitsplattform Verbesserungen', file: '12-ARBEITSPLATTFORM-VERBESSERUNGEN.md' },
+    { id: '13-backup-vollbackup', name: 'Backup & Vollbackup K2 Galerie', file: '13-BACKUP-VOLLBACKUP-K2-GALERIE.md' },
   ]
 
   useEffect(() => {

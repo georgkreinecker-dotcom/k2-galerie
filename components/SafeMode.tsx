@@ -4,11 +4,16 @@ export function checkLocalStorageSize(): { size: number, limit: number, percenta
   const limit = 5 * 1024 * 1024 // 5MB Limit (Browser hat meist 5-10MB)
   
   try {
-    for (let i = 0; i < localStorage.length; i++) {
+    const len = localStorage.length
+    for (let i = 0; i < len; i++) {
       const key = localStorage.key(i)
       if (key) {
-        const value = localStorage.getItem(key) || ''
-        totalSize += key.length + value.length
+        try {
+          const value = localStorage.getItem(key) || ''
+          totalSize += key.length + value.length
+        } catch (_) {
+          totalSize += key.length
+        }
       }
     }
   } catch (e) {
@@ -103,3 +108,20 @@ export function getLocalStorageReport(): string {
   
   return `localStorage: ${sizeMB}MB / ${limitMB}MB (${percentage.toFixed(1)}%)${needsCleanup ? ' ⚠️ BRAUCHT BEREINIGUNG' : ''}`
 }
+
+/** Speicher freigeben bei QuotaExceeded: Vollbackup entfernen (oft mehrere MB). Gibt frei gewordene Bytes zurück. */
+export function tryFreeLocalStorageSpace(): number {
+  let freed = 0
+  try {
+    const backup = localStorage.getItem('k2-full-backup')
+    if (backup) {
+      freed = backup.length
+      localStorage.removeItem('k2-full-backup')
+      console.log('🔓 Speicher freigegeben: Vollbackup entfernt, ca. ' + (freed / 1024).toFixed(0) + ' KB')
+    }
+  } catch (_) {}
+  return freed
+}
+
+/** Einheitliche Meldung bei Speicher voll – Ursache oft Backup/Stammdaten, nicht nur Werke. */
+export const SPEICHER_VOLL_MELDUNG = 'Speicher voll (Browser-Speicherplatz).\n\nOft liegt es nicht an den Werken, sondern am Vollbackup oder großen Bildern in Stammdaten.\n\nTipps:\n• Einstellungen → Backup & Wiederherstellung → „Altes Backup löschen“\n• Oder Browser-Daten für diese Seite löschen\n• Nur wenn nötig: Werke mit kleineren Bildern oder einzelne löschen'

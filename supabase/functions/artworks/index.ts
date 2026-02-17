@@ -12,20 +12,33 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+// Erlaubte Origins (ohne zusätzliche Kosten: nur bekannte App-URLs)
+const ALLOWED_ORIGINS = [
+  'https://k2-galerie.vercel.app',
+  'http://localhost:5177',
+  'http://localhost:5178',
+  'http://127.0.0.1:5177',
+  'http://127.0.0.1:5178',
+]
+
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get('Origin') || ''
+  const allowOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
+  return {
+    'Access-Control-Allow-Origin': allowOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  }
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
   // CORS Preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // Supabase Client erstellen
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')
 
@@ -33,12 +46,20 @@ serve(async (req) => {
       throw new Error('Supabase Umgebungsvariablen fehlen')
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    // Für Schreibzugriffe (POST/PUT/DELETE): User-JWT nutzen, damit RLS greift
+    const authHeader = req.headers.get('Authorization')
+    const token = authHeader?.replace(/^Bearer\s+/i, '')?.trim()
+    const isUserJwt = token && token !== supabaseKey && token.length > 100
+    const supabaseRead = createClient(supabaseUrl, supabaseKey)
+    const supabaseWrite = isUserJwt
+      ? createClient(supabaseUrl, supabaseKey, { global: { headers: { Authorization: `Bearer ${token}` } } })
+      : supabaseRead
+
     const method = req.method
 
-    // GET: Alle Werke laden
+    // GET: Öffentlich lesbar (Anon-Client)
     if (method === 'GET') {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseRead
         .from('artworks')
         .select('*')
         .order('created_at', { ascending: false })
@@ -104,7 +125,7 @@ serve(async (req) => {
           updated_on_mobile: a.updated_on_mobile || a.updatedOnMobile || false,
         }))
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseWrite
           .from('artworks')
           .upsert(validArtworks, { onConflict: 'number' })
           .select()
@@ -148,7 +169,7 @@ serve(async (req) => {
         updated_on_mobile: body.updated_on_mobile || body.updatedOnMobile || false,
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await supabaseWrite
         .from('artworks')
         .upsert(artwork, { onConflict: 'number' })
         .select()
@@ -208,7 +229,7 @@ serve(async (req) => {
         delete updateData.updatedOnMobile
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await supabaseWrite
         .from('artworks')
         .update(updateData)
         .eq('number', identifier)
@@ -242,7 +263,7 @@ serve(async (req) => {
         throw new Error('number oder id ist erforderlich')
       }
 
-      const { error } = await supabase
+      const { error } = await supabaseWrite
         .from('artworks')
         .delete()
         .eq('number', identifier)

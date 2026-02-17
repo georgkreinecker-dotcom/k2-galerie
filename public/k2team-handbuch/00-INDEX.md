@@ -3,7 +3,7 @@
 
 **Version:** 1.0  
 **Erstellt:** 9. Februar 2026  
-**Letzte Aktualisierung:** 9. Februar 2026
+**Letzte Aktualisierung:** 17. Februar 2026
 
 ---
 
@@ -21,6 +21,8 @@
 10. [Stabilitäts-Fixes](#10-stabilitaet-fixes)
 11. **[Backup-Zusammenfassung](#11-backup-zusammenfassung)** 📋 *Zusammengefasste Version des aktuellen AI-Memory-Backups*
 12. [Arbeitsplattform Verbesserungen](#12-arbeitsplattform-verbesserungen)
+13. **[Backup & Vollbackup K2 Galerie](#13-backup-vollbackup-k2-galerie)** 💾 *Speichern, Vollbackup, Hard-Backup auf backupmicro (v001, v002, …)*
+14. **[Sicherheit & Produkt-Label](#14-sicherheit-produkt-label)** 🔒 *Auth, RLS, Vor Veröffentlichung, Checklisten, Regress – wo alles steht*
 
 ---
 

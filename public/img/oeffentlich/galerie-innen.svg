@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" fill="none">
+  <defs>
+    <linearGradient id="wall" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f5f5f0"/><stop offset="100%" stop-color="#e8e8e2"/></linearGradient>
+    <linearGradient id="frame" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#8b7355"/><stop offset="100%" stop-color="#6b5344"/></linearGradient>
+  </defs>
+  <rect width="800" height="400" fill="url(#wall)"/>
+  <!-- Bilder an der Wand -->
+  <rect x="120" y="80" width="140" height="180" rx="4" fill="url(#frame)" stroke="#5a4a3a" stroke-width="2"/>
+  <rect x="130" y="90" width="120" height="160" fill="#c4b8a8"/>
+  <rect x="330" y="60" width="140" height="200" rx="4" fill="url(#frame)" stroke="#5a4a3a" stroke-width="2"/>
+  <rect x="340" y="70" width="120" height="180" fill="#a89888"/>
+  <rect x="540" y="100" width="140" height="160" rx="4" fill="url(#frame)" stroke="#5a4a3a" stroke-width="2"/>
+  <rect x="550" y="110" width="120" height="140" fill="#b8a898"/>
+  <text x="400" y="360" font-family="Arial,sans-serif" font-size="16" fill="#6b9080" text-anchor="middle">Galerie Innenansicht</text>
+</svg>

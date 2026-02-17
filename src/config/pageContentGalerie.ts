@@ -1,10 +1,15 @@
 /**
  * Seitengestaltung: Willkommensseite & Galerie-Vorschau
  * Texte und Bilder für diese Seiten – getrennt von Stammdaten (hochsensibel, streng geschützt).
- * Gespeichert in k2-page-content-galerie, nicht in k2-stammdaten-galerie.
+ * K2: k2-page-content-galerie. ök2: k2-oeffentlich-page-content-galerie.
  */
 
-const STORAGE_KEY = 'k2-page-content-galerie'
+const STORAGE_KEY_K2 = 'k2-page-content-galerie'
+const STORAGE_KEY_OEFFENTLICH = 'k2-oeffentlich-page-content-galerie'
+
+function getStorageKey(tenantId?: 'oeffentlich'): string {
+  return tenantId === 'oeffentlich' ? STORAGE_KEY_OEFFENTLICH : STORAGE_KEY_K2
+}
 
 export interface PageContentGalerie {
   welcomeImage?: string
@@ -15,11 +20,12 @@ export interface PageContentGalerie {
 
 const defaults: PageContentGalerie = {}
 
-/** Einmal-Migration: Bilder aus Stammdaten in Seitengestaltung übernehmen, falls Seitengestaltung leer ist. */
+/** Einmal-Migration (nur K2): Bilder aus Stammdaten in Seitengestaltung übernehmen, falls leer. */
 function migrateFromStammdatenIfNeeded(): void {
   try {
-    const existing = localStorage.getItem(STORAGE_KEY)
-    if (existing && existing.length > 10) return // bereits befüllt
+    const key = getStorageKey(undefined)
+    const existing = localStorage.getItem(key)
+    if (existing && existing.length > 10) return
     const raw = localStorage.getItem('k2-stammdaten-galerie')
     if (!raw) return
     const gallery = JSON.parse(raw) as Record<string, unknown>
@@ -27,17 +33,16 @@ function migrateFromStammdatenIfNeeded(): void {
     if (gallery.welcomeImage && typeof gallery.welcomeImage === 'string') out.welcomeImage = gallery.welcomeImage
     if (gallery.galerieCardImage && typeof gallery.galerieCardImage === 'string') out.galerieCardImage = gallery.galerieCardImage
     if (gallery.virtualTourImage && typeof gallery.virtualTourImage === 'string') out.virtualTourImage = gallery.virtualTourImage
-    if (Object.keys(out).length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(out))
-    }
+    if (Object.keys(out).length > 0) localStorage.setItem(key, JSON.stringify(out))
   } catch (_) {}
 }
 
-/** Liest Seitengestaltung (Bilder + optionale Texte). Führt einmal Migration aus Stammdaten durch, falls leer. */
-export function getPageContentGalerie(): PageContentGalerie {
-  migrateFromStammdatenIfNeeded()
+/** Liest Seitengestaltung (Bilder + optionale Texte). tenantId 'oeffentlich' = ök2. */
+export function getPageContentGalerie(tenantId?: 'oeffentlich'): PageContentGalerie {
+  if (tenantId !== 'oeffentlich') migrateFromStammdatenIfNeeded()
   try {
-    const raw = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
+    const key = getStorageKey(tenantId)
+    const raw = typeof window !== 'undefined' ? localStorage.getItem(key) : null
     if (raw && raw.length < 6 * 1024 * 1024) {
       const parsed = JSON.parse(raw) as Partial<PageContentGalerie>
       return { ...defaults, ...parsed }
@@ -46,13 +51,13 @@ export function getPageContentGalerie(): PageContentGalerie {
   return { ...defaults }
 }
 
-/** Speichert Seitengestaltung (nur dieser Key, Stammdaten werden nicht angetastet). */
-export function setPageContentGalerie(data: Partial<PageContentGalerie>): void {
+/** Speichert Seitengestaltung. tenantId 'oeffentlich' = ök2. */
+export function setPageContentGalerie(data: Partial<PageContentGalerie>, tenantId?: 'oeffentlich'): void {
   try {
     if (typeof window !== 'undefined') {
-      const current = getPageContentGalerie()
+      const current = getPageContentGalerie(tenantId)
       const next = { ...current, ...data }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+      localStorage.setItem(getStorageKey(tenantId), JSON.stringify(next))
     }
   } catch (e) {
     console.warn('Seitengestaltung speichern fehlgeschlagen:', e)

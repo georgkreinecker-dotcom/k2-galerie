@@ -5,12 +5,29 @@
 
 import { PRODUCT_BRAND_NAME } from './tenantConfig'
 
+/** Einstieg Vertriebs-Plattform (mök2) – eigener Bereich, nur indirekt mit App-Entwicklung verbunden */
+export const MOK2_ROUTE = '/mok2'
+
+/** Willkommensseite für Werbung/Flyer: Zugangsbereich (Anmelden / Zur Ansicht / Erster Entwurf) */
+export const WILLKOMMEN_ROUTE = '/willkommen'
+
+/** Allgemeine Geschäftsbedingungen – rechtliche Absicherung */
+export const AGB_ROUTE = '/agb'
+
+/** SessionStorage-Keys von WillkommenPage: Name + Flag „Erster Entwurf“ (in GalerieVorschauPage musterOnly auslesen) */
+export const WILLKOMMEN_NAME_KEY = 'k2-willkommen-name'
+export const WILLKOMMEN_ENTWURF_KEY = 'k2-willkommen-entwurf'
+
+/** Basis-URL der App (für QR/Links auf Flyern – immer Produktion) */
+export const BASE_APP_URL = 'https://k2-galerie.vercel.app'
+
 export const PLATFORM_ROUTES = {
   home: '/',
   projects: '/projects',
   missionControl: '/mission-control',
   key: '/platform/key',
   kosten: '/platform/kosten',
+  licences: '/platform/licences',
   dialog: '/platform/dialog',
   githubToken: '/platform/github-token',
 } as const
@@ -32,6 +49,11 @@ export const PROJECT_ROUTES = {
     mobileConnect: '/projects/k2-galerie/mobile-connect',
     platzanordnung: '/projects/k2-galerie/platzanordnung',
     produktVorschau: '/projects/k2-galerie/produkt-vorschau',
+    marketingOek2: '/projects/k2-galerie/marketing-oek2',
+    werbeunterlagen: '/projects/k2-galerie/werbeunterlagen',
+    licences: '/projects/k2-galerie/licences',
+    empfehlungstool: '/projects/k2-galerie/empfehlungstool',
+    verguetung: '/projects/k2-galerie/verguetung',
     vitaMartina: '/projects/k2-galerie/vita/martina',
     vitaGeorg: '/projects/k2-galerie/vita/georg',
   },

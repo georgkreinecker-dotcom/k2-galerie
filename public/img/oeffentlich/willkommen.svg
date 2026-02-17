@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" fill="none">
+  <defs>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#e8eae6"/><stop offset="100%" stop-color="#d4d6d2"/></linearGradient>
+    <linearGradient id="door" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6b9080"/><stop offset="100%" stop-color="#4a6a5e"/></linearGradient>
+  </defs>
+  <rect width="800" height="400" fill="url(#sky)"/>
+  <!-- Galerie-Eingang (T�r/Bogen) -->
+  <rect x="280" y="120" width="240" height="260" rx="8" fill="url(#door)"/>
+  <rect x="300" y="140" width="200" height="220" fill="#2d2d2a"/>
+  <!-- Menschen (Striche/Silhouetten) -->
+  <ellipse cx="380" cy="320" rx="24" ry="28" fill="#5a7a6e"/>
+  <ellipse cx="420" cy="310" rx="22" ry="26" fill="#5a7a6e"/>
+  <ellipse cx="350" cy="330" rx="20" ry="24" fill="#4a6a5e"/>
+  <text x="400" y="380" font-family="Arial,sans-serif" font-size="18" fill="#4a6a5e" text-anchor="middle">Willkommen</text>
+</svg>

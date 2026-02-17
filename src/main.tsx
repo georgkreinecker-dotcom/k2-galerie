@@ -3,11 +3,9 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
 
-// QR-Scan im mobilen LAN: Einmal Reload mit Cache-Buster, damit die Seite frisch lädt (nicht aus Cache)
-const skipBootstrapForReload =
-  typeof window !== 'undefined' &&
-  (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) &&
-  !/[?&]_=\d+/.test(window.location.href)
+// QR-Scan im mobilen LAN: Einmal Reload mit Cache-Buster. NUR echte Mobile-Geräte (UserAgent), nicht schmale Desktop-Fenster (Cursor/Dev ≤768px) – sonst Endlosschleife/Crash.
+const isMobileDevice = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+const skipBootstrapForReload = isMobileDevice && !/[?&]_=\d+/.test(window.location.href)
 if (skipBootstrapForReload) {
   const url = window.location.href
   const sep = url.includes('?') ? '&' : '?'
@@ -76,7 +74,11 @@ function installCrashHandlers() {
   })
 }
 
-// Installiere Crash Handler SOFORT
+// Crash-Handler SOFORT synchron installieren (bevor async safeMode lädt), damit frühe Fehler nicht crashen
+if (typeof window !== 'undefined') {
+  window.addEventListener('error', (e) => { e.preventDefault(); e.stopPropagation(); return false }, true)
+  window.addEventListener('unhandledrejection', (e) => { e.preventDefault() }, true)
+}
 installCrashHandlers()
 
 // Cursor-spezifischer Crash-Schutz - REDUZIERT MEMORY-NUTZUNG
@@ -119,22 +121,7 @@ if (typeof window !== 'undefined') {
     }
   }
   
-  // Reduziere Memory-Nutzung: Entferne alte Event Listener automatisch
-  setInterval(() => {
-    try {
-      // Bereinige alte Event Listener (nur wenn zu viele vorhanden)
-      const listeners = (window as any).__eventListeners || 0
-      if (listeners > 50) {
-        console.warn('⚠️ Zu viele Event Listener - bereinige...')
-        // Trigger garbage collection (falls verfügbar)
-        if ((window as any).gc) {
-          (window as any).gc()
-        }
-      }
-    } catch (e) {
-      // Ignoriere Fehler
-    }
-  }, 30000) // Alle 30 Sekunden prüfen
+  // Kein setInterval mehr hier – verursachte unnötige Timer und konnte bei HMR/Reload zu Mehrfach-Intervallen führen
 }
 
 // Design-Farben aus Admin sofort anwenden (damit „So sehen Kunden die Galerie“ und alle Seiten die gespeicherten Farben zeigen)
@@ -164,72 +151,55 @@ try {
     throw new Error('Root element nicht gefunden')
   }
   
-  // WICHTIG: Render mit Error-Handling und mehreren Retry-Versuchen
-  let renderAttempts = 0
-  const MAX_RENDER_ATTEMPTS = 3
-  
-  function attemptRender() {
-    if (!rootElement) {
-      console.error('❌ rootElement ist null')
-      return
-    }
-    
-    try {
-      const root = createRoot(rootElement)
-      root.render(
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>,
-      )
-      console.log('✅ App erfolgreich gerendert')
-    } catch (renderError) {
-      renderAttempts++
-      console.error(`FEHLER beim Rendern (Versuch ${renderAttempts}/${MAX_RENDER_ATTEMPTS}):`, renderError)
-      
-      if (renderAttempts < MAX_RENDER_ATTEMPTS) {
-        // Versuche es nochmal nach kurzer Verzögerung
-        setTimeout(() => {
-          attemptRender()
-        }, 1000 * renderAttempts) // Exponentielle Backoff
-      } else {
-        // Zeige Fehlerseite nach allen Versuchen - MIT HINTERGRUND damit keine schwarze Seite
-        if (rootElement) {
-          rootElement.innerHTML = `
-          <div style="padding: 2rem; color: white; background: #1a0f0a; min-height: 100vh; font-family: system-ui; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-            <h1 style="color: #ff6b6b; margin-bottom: 1rem;">⚠️ App konnte nicht gestartet werden</h1>
-            <p style="margin-bottom: 2rem; text-align: center; max-width: 600px;">
-              Bitte versuche:<br />
-              1. Seite neu laden<br />
-              2. Browser-Cache leeren<br />
-              3. Anderen Browser verwenden
-            </p>
-            <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
-              <button onclick="window.location.reload()" style="padding: 0.75rem 1.5rem; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
-                🔃 Seite neu laden
-              </button>
-            </div>
-          </div>
-          `
-        }
-      }
-    }
+  // createRoot nur EINMAL pro Seite – kein Retry mit zweitem createRoot (verursacht Crashes)
+  try {
+    const root = createRoot(rootElement)
+    root.render(
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>,
+    )
+    console.log('✅ App erfolgreich gerendert')
+  } catch (renderError) {
+    console.error('FEHLER beim Rendern:', renderError)
+    rootElement.innerHTML = `
+    <div style="padding: 2rem; color: white; background: #1a0f0a; min-height: 100vh; font-family: system-ui; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <h1 style="color: #ff6b6b; margin-bottom: 1rem;">⚠️ App konnte nicht gestartet werden</h1>
+      <p style="margin-bottom: 2rem; text-align: center; max-width: 600px;">
+        Bitte versuche:<br />
+        1. Seite neu laden<br />
+        2. Browser-Cache leeren<br />
+        3. Anderen Browser verwenden
+      </p>
+      <button onclick="window.location.reload()" style="padding: 0.75rem 1.5rem; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
+        🔃 Seite neu laden
+      </button>
+    </div>
+    `
   }
-  
-  attemptRender()
 } catch (error) {
   console.error('FEHLER beim App-Start:', error)
+  // Escapen für XSS-Schutz: Fehlermeldungen nie ungefiltert in innerHTML
+  const escapeHtml = (s: string) =>
+    String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;')
+  const errMsg = error instanceof Error ? error.message : String(error)
+  const errStack = error instanceof Error ? error.stack : String(error)
+  const isProd = typeof import.meta !== 'undefined' && import.meta.env?.PROD
   const rootElement = document.getElementById('root')
   if (rootElement) {
     rootElement.innerHTML = `
       <div style="padding: 2rem; color: white; background: #1a0f0a; min-height: 100vh; font-family: system-ui; display: flex; flex-direction: column; align-items: center; justify-content: center;">
         <h1 style="color: #ff6b6b; margin-bottom: 1rem;">⚠️ App-Fehler</h1>
-        <p style="margin-bottom: 1rem;">${error instanceof Error ? error.message : String(error)}</p>
-        <details style="background: rgba(0, 0, 0, 0.3); padding: 1rem; border-radius: 4px; margin-bottom: 2rem; max-width: 800px; width: 100%; overflow: auto;">
+        <p style="margin-bottom: 1rem;">${escapeHtml(errMsg)}</p>
+        ${isProd ? '' : `<details style="background: rgba(0, 0, 0, 0.3); padding: 1rem; border-radius: 4px; margin-bottom: 2rem; max-width: 800px; width: 100%; overflow: auto;">
           <summary style="cursor: pointer; margin-bottom: 0.5rem;">Fehler-Details</summary>
-          <pre style="white-space: pre-wrap; word-break: break-word; font-size: 0.875rem; margin-top: 0.5rem;">
-            ${error instanceof Error ? error.stack : String(error)}
-          </pre>
-        </details>
+          <pre style="white-space: pre-wrap; word-break: break-word; font-size: 0.875rem; margin-top: 0.5rem;">${escapeHtml(errStack ?? '')}</pre>
+        </details>`}
         <button onclick="window.location.reload()" style="padding: 0.75rem 1.5rem; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
           🔃 Seite neu laden
         </button>

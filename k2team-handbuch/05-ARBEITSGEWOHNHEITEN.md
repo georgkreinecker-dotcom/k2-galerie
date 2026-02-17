@@ -214,7 +214,7 @@ Immer strukturierte Listen verwenden, nicht nur Text
 
 2. **Multi-Tenant SaaS System** (40% Fortschritt)
    - Authentifizierung ✅
-   - Lizenz-System (60% Fortschritt) 🔄
+   - Licence-System (60% Fortschritt) 🔄
    - Multi-Tenant-Funktionalität ⏳
 
 ---

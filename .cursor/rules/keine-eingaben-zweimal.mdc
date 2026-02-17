@@ -1,0 +1,28 @@
+---
+description: Keine Eingaben zweimal – vorhandene Daten nutzen, das ist smart
+alwaysApply: true
+---
+
+# Keine Eingaben zweimal machen müssen – das ist smart
+
+## Grundsatz
+
+**Der Nutzer soll dieselbe Information nie zweimal eingeben müssen.** Wo immer Daten schon vorhanden sind, sie **verwenden** oder **vorausfüllen** – nicht nochmal abfragen.
+
+## Konkret
+
+- **Stammdaten aus Muster-Galerie:** Hat der Kunde in der Muster-Galerie (ök2) schon Namen, Galerie, Kontakt etc. eingegeben, werden diese Daten **nach dem Lizenz-Erwerb übernommen** (z. B. aus `k2-oeffentlich-stammdaten-*` in die echte Galerie). Kein erneutes Ausfüllen.
+- **Formulare:** Wo möglich aus **localStorage**, **URL-Parametern** oder **bereits gespeicherten** Werten vorausfüllen (z. B. Empfehler-ID aus Link, Name aus Stammdaten).
+- **Wiederkehrende Angaben:** Wenn dieselbe Info an mehreren Stellen gebraucht wird (z. B. E-Mail, Telefon), **eine Quelle** – nicht an jedem Dialog neu erfragen.
+- **Nach Kontextwechsel:** Beim Wechsel von Demo/Muster zur lizenzierten Galerie: **vorhandene Kundendaten übernehmen**, nicht auf leere Formulare zurücksetzen.
+
+- **Werbeunterlagen:** In Flyern, Presse-Einladung, PR-Vorschlägen etc. **ausschließlich** Namen, Kontakt, Adresse, Galerie aus den **Stammdaten** (bzw. im ök2-Kontext aus den Muster-Stammdaten) beziehen – **keine** eigenen Eingabefelder für dieselben Angaben. Werbeunterlagen = Ausgabe aus vorhandenen Daten, nicht erneutes Eintippen.
+
+## Bei neuen Features
+
+- Immer prüfen: **Wurde diese Info woanders schon erfasst?** Wenn ja → lesen und vorausfüllen oder automatisch übernehmen.
+- Keine Doppelabfragen wie „E-Mail hier eingeben“ und „E-Mail nochmal bestätigen“ ohne echten Sicherheitsnutzen.
+
+## Kurzfassung
+
+**Smart = keine doppelten Eingaben.** Vorhandene Stammdaten, Kontext und gespeicherte Werte nutzen – dann muss der Nutzer nicht zweimal dasselbe tun.

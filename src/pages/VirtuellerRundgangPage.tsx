@@ -75,7 +75,7 @@ const VirtuellerRundgangPage = () => {
       
       // Prüfe ob bereits im Warenkorb
       if (Array.isArray(cart) && cart.some((item: any) => item.number === artwork.number)) {
-        alert('Dieses Werk ist bereits in deiner/Ihrer Auswahl.')
+        alert('Dieses Werk ist bereits in deiner Auswahl.')
         return
       }
 

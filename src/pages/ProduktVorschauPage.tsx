@@ -8,7 +8,7 @@ import {
 } from '../config/tenantConfig'
 
 /**
- * Produkt-Vorschau: Parallele Ansicht der Lizenzversion
+ * Produkt-Vorschau: Parallele Ansicht der Lizenz-Version
  * Hier kannst du jederzeit die vermarktbare Version (Demo-Mandant) ansehen.
  */
 export default function ProduktVorschauPage() {
@@ -49,7 +49,7 @@ export default function ProduktVorschauPage() {
         Produkt-Vorschau
       </h1>
       <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '2rem', fontSize: '1rem' }}>
-        Basis: deine K2 Galerie. Hier siehst du die parallele Lizenzversion (Demo-Mandant) und kannst jederzeit vergleichen.
+        Basis: deine K2 Galerie. Hier siehst du die parallele Lizenz-Version (Demo-Mandant) und kannst jederzeit vergleichen.
       </p>
 
       <div
@@ -95,7 +95,7 @@ export default function ProduktVorschauPage() {
           </button>
         </div>
 
-        {/* Demo – Lizenzversion */}
+        {/* Demo – Lizenz-Version */}
         <div
           style={{
             background: tenantId === 'demo' ? 'rgba(234, 179, 8, 0.12)' : 'rgba(255,255,255,0.06)',
@@ -105,7 +105,7 @@ export default function ProduktVorschauPage() {
           }}
         >
           <div style={{ fontSize: '0.85rem', color: '#eab308', marginBottom: '0.5rem' }}>
-            Lizenzversion (Demo)
+            Lizenz-Version (Demo)
           </div>
           <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.35rem' }}>
             {config.galleryName}
@@ -128,13 +128,13 @@ export default function ProduktVorschauPage() {
               fontSize: '0.9rem',
             }}
           >
-            {tenantId === 'demo' ? '✓ Aktiv' : 'Lizenzversion ansehen'}
+            {tenantId === 'demo' ? '✓ Aktiv' : 'Lizenz-Version ansehen'}
           </button>
         </div>
       </div>
 
       <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', marginBottom: '1rem' }}>
-        „Lizenzversion ansehen“ öffnet die Galerie mit Demo-Branding (Atelier Muster, Lisa & Max Muster). 
+        „Lizenz-Version ansehen“ öffnet die Galerie mit Demo-Branding (Atelier Muster, Lisa & Max Muster). 
         Daten (Werke, Events) bleiben deine; nur Anzeige-Namen wechseln für die Vorschau.
       </p>
 

@@ -22,17 +22,15 @@
 
 ---
 
-### 2. Automatisches Vollbackup (ein Slot)
+### 2. Vollbackup – auf Speicherplatte reicht
 
-- Bei jedem 5-Sekunden-Lauf wird zusätzlich ein **Vollbackup** in den localStorage geschrieben (Schlüssel `k2-full-backup`).
-- Es gibt **einen** Backup-Slot: der jeweils letzte Stand überschreibt den vorherigen.
+- **Kein** automatisches Vollbackup mehr im Browser (localStorage). Das spart Speicher und beugt „Speicher voll“ vor.
+- **Empfehlung:** Vollbackup regelmäßig mit **„Vollbackup herunterladen“** erstellen und die Datei sicher aufbewahren (z. B. Ordner „K2 Backups“, backupmicro).
 - Enthält: Stammdaten, Werke, Events, Dokumente, Seitentexte, Design.
 
-**Wofür:** Wenn etwas schiefgeht (z. B. falscher Klick, kaputte Daten), kannst du im Admin auf **„Aus letztem Backup wiederherstellen“** klicken. Die Seite lädt neu und alle Daten kommen aus diesem Backup.
-
 **Wenn Einstellungen, Eventplanung oder Stammdaten (E-Mail, Telefon) „weg“ sind:**
-1. **Zuerst:** Im Admin oben auf **„Einstellungen“** klicken. Direkt darunter: Kasten **„💾 Backup & Wiederherstellung“** → **„Aus letztem Backup wiederherstellen“** klicken. Das Vollbackup enthält **Stammdaten (Martina, Georg, Galerie inkl. E-Mail/Telefon)**, Werke, Events, Dokumente. Nach der Wiederherstellung werden leere Kontaktfelder automatisch aus der Repo-Konfiguration (`K2_STAMMDATEN_DEFAULTS`) gefüllt.
-2. **Falls kein Backup im Browser:** Vollbackup-Datei von backupmicro (oder Ordner „K2 Backups“) verwenden und im Admin „Aus Datei wiederherstellen“ (falls angeboten) nutzen.
+1. **Zuerst:** Vollbackup-Datei von backupmicro (oder „K2 Backups“) verwenden → Admin → **Einstellungen** → **„💾 Backup & Wiederherstellung“** → **„Aus Backup-Datei wiederherstellen“**.
+2. Falls du zuvor im selben Browser **„Aus letztem Backup wiederherstellen“** genutzt hattest (selten): Dann existiert noch ein älteres Backup im Browser – sonst zeigt die App „Kein Backup im Browser“ und verweist auf die Datei-Wiederherstellung.
 3. Zusätzlich sind die K2-Kontaktdaten im Repo hinterlegt (`src/config/tenantConfig.ts` → `K2_STAMMDATEN_DEFAULTS`). Beim Laden und Speichern werden leere Felder nie überschrieben; es wird immer aus diesem Standard aufgefüllt, wenn etwas fehlt.
 
 ---
@@ -47,6 +45,21 @@
 
 - **backupmicro** = externer Speicher (liegt auf Georgs Schreibtisch).
 - Alle Backups (z. B. Projektordner, Vollbackup-Dateien, gallery-data.json) sollen als **Spiegelung** auch auf backupmicro gesichert werden.
+
+### 5. Hard-Backup auf backupmicro (erste vollständige Version + Versionsnummer)
+
+- **Zweck:** Einmalig (und bei Bedarf wiederholt) ein **vollständiges Backup mit Versionsnummer** anlegen – **nur auf backupmicro**, nicht auf dem Mac (Speicher schonen).
+- **Inhalt:** `gallery-data.json` (Stammdaten, Werke, Events, Dokumente, Design, Seitentexte) + MANIFEST mit Version und Datum.
+- **Versionslogik:** Jedes Lauf erzeugt eine neue Version (v001, v002, v003, …). Ordner heißen z. B. `v001--2026-02-15--17-30`.
+- **Wo:** Auf backupmicro unter `K2-Galerie-Backups/`. Auf dem Mac wird nichts zusätzlich gespeichert.
+- **Ausführung (im Terminal am Mac):**
+  ```bash
+  cd /Users/georgkreinecker/k2Galerie
+  bash scripts/hard-backup-to-backupmicro.sh
+  ```
+  Vorher: **BACKUPMICRO** anstecken (externer Speicher, wie auf dem Desktop). Standard-Pfad: `/Volumes/BACKUPMICRO`. Wenn das Laufwerk anders heißt: `BACKUPMICRO=/Volumes/DeinLaufwerk bash scripts/hard-backup-to-backupmicro.sh`
+- **Vor dem ersten Mal:** Einmal im Admin **„Veröffentlichen“** klicken, damit `public/gallery-data.json` existiert. Dann Skript ausführen – das ist deine erste vollständige Version (v001).
+- **Noch vollständiger (optional):** Im Admin **„Vollbackup herunterladen“** (Einstellungen → Backup & Wiederherstellung) klicken, die Datei im Projektordner als `backup/k2-vollbackup-latest.json` speichern. Beim nächsten Skript-Lauf wird diese Datei mit auf backupmicro kopiert (als `k2-vollbackup.json` im Versionsordner). So hast du neben `gallery-data.json` auch den kompletten App-Vollbackup in der Version.
 
 ---
 
@@ -67,5 +80,6 @@
 | „Vollbackup herunterladen“ | JSON-Datei auf deinen Rechner |
 | „Aus letztem Backup wiederherstellen“ | Im Admin: **Einstellungen** → Kasten „Backup & Wiederherstellung“. Lädt den letzten Auto-Backup-Stand (Seite lädt neu). |
 | „Veröffentlichen“ | Schreibt alles in gallery-data.json (inkl. Events, Dokumente) |
+| Hard-Backup auf backupmicro | Im Terminal: `bash scripts/hard-backup-to-backupmicro.sh` → erzeugt v001, v002, … nur auf backupmicro |
 
 Du kannst dich darauf verlassen, dass **alle Änderungen lokal abgespeichert** werden und ein **automatisches Backup-System** (5-Sekunden-Intervall + Vollbackup-Slot + Sofort-Save beim Verlassen) aktiv ist.

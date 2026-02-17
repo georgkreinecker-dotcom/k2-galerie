@@ -7,6 +7,7 @@ import '../App.css'
 import GaleriePage from './GaleriePage'
 import GalerieVorschauPage from './GalerieVorschauPage'
 import ProduktVorschauPage from './ProduktVorschauPage'
+import MarketingOek2Page from './MarketingOek2Page'
 import PlatzanordnungPage from './PlatzanordnungPage'
 import ShopPage from './ShopPage'
 import ControlStudioPage from './ControlStudioPage'
@@ -137,15 +138,15 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
 
   // Bereiche der aktuellen Seite für untere Navigationsleiste
   const getPageSections = (): PageSection[] => {
-    if (currentPage === 'galerie') {
-      // Bereiche der Galerie-Homepage
+    if (currentPage === 'galerie' || currentPage === 'galerie-oeffentlich') {
+      // Bereiche der Galerie-Homepage (K2 bzw. ök2)
       return [
         { id: 'willkommen', name: 'Willkommen', icon: '👋', scrollTo: 'willkommen' },
         { id: 'galerie', name: 'Galerie', icon: '🎨', scrollTo: 'galerie-vorschau' },
         { id: 'kunstschaffende', name: 'Künstler', icon: '👨‍🎨', scrollTo: 'kunstschaffende' },
       ]
     }
-    if (currentPage === 'galerie-vorschau') {
+    if (currentPage === 'galerie-vorschau' || currentPage === 'galerie-oeffentlich-vorschau') {
       // Filter für Galerie-Vorschau
       return [
         { id: 'alle', name: 'Alle', icon: '📋', filter: 'alle' },
@@ -292,6 +293,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       
       const galleryStamm = getItemSafe('k2-stammdaten-galerie', {})
       const pageContent = getPageContentGalerie()
+      const maxList = 100
       const data = {
         martina: getItemSafe('k2-stammdaten-martina', {}),
         georg: getItemSafe('k2-stammdaten-georg', {}),
@@ -302,9 +304,10 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
           virtualTourImage: pageContent.virtualTourImage ?? galleryStamm.virtualTourImage ?? ''
         },
         artworks: allArtworks,
-        events: Array.isArray(events) ? events.slice(0, 20) : [],
-        documents: Array.isArray(documents) ? documents.slice(0, 20) : [],
+        events: Array.isArray(events) ? events.slice(0, maxList) : [],
+        documents: Array.isArray(documents) ? documents.slice(0, maxList) : [],
         designSettings: getItemSafe('k2-design-settings', {}),
+        pageTexts: getItemSafe('k2-page-texts', null),
         version: Date.now(),
         buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
         exportedAt: new Date().toISOString()
@@ -314,7 +317,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       
       if (json.length > 5000000) {
         setIsPublishing(false)
-        alert('⚠️ Daten zu groß (über 5MB). Bitte reduzieren Sie die Anzahl der Werke.')
+        alert('⚠️ Daten zu groß (über 5MB). Bitte reduziere die Anzahl der Werke.')
         return
       }
       
@@ -718,8 +721,11 @@ end tell`
 
   const allPages = [
     { id: 'galerie', name: 'Galerie', component: GaleriePage },
+    { id: 'galerie-oeffentlich', name: 'ök2 Galerie', component: GaleriePage },
     { id: 'galerie-vorschau', name: 'Galerie-Vorschau', component: GalerieVorschauPage },
+    { id: 'galerie-oeffentlich-vorschau', name: 'ök2 Vorschau', component: GalerieVorschauPage },
     { id: 'produkt-vorschau', name: 'Produkt-Vorschau', component: ProduktVorschauPage },
+    { id: 'marketing-oek2', name: 'Marketing ök2', component: MarketingOek2Page },
     { id: 'platzanordnung', name: 'Platzanordnung', component: PlatzanordnungPage },
     { id: 'shop', name: 'Shop', component: ShopPage },
     { id: 'control', name: 'Control Studio', component: ControlStudioPage },
@@ -759,8 +765,25 @@ end tell`
     if (pageToRender === 'galerie') {
       return <GaleriePage key={componentKey} scrollToSection={galerieSection} />
     }
+    // ök2 in der APf nur als leichte Platzhalter (Vollbild-Link) – volle Seite verursacht in Cursor Preview oft Code 5
+    if (pageToRender === 'galerie-oeffentlich') {
+      return (
+        <div key={componentKey} style={{ padding: '2rem', maxWidth: 400, margin: '0 auto', textAlign: 'center' }}>
+          <p style={{ fontSize: '1.1rem', color: 'var(--k2-muted)', marginBottom: '1rem' }}>ök2 Galerie (Muster)</p>
+          <Link to={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich} style={{ display: 'inline-block', padding: '0.75rem 1.5rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>Im Vollbild öffnen</Link>
+        </div>
+      )
+    }
     if (pageToRender === 'galerie-vorschau') {
       return <GalerieVorschauPage key={componentKey} initialFilter={galerieFilter} />
+    }
+    if (pageToRender === 'galerie-oeffentlich-vorschau') {
+      return (
+        <div key={componentKey} style={{ padding: '2rem', maxWidth: 400, margin: '0 auto', textAlign: 'center' }}>
+          <p style={{ fontSize: '1.1rem', color: 'var(--k2-muted)', marginBottom: '1rem' }}>ök2 Vorschau (Muster)</p>
+          <Link to={PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau} style={{ display: 'inline-block', padding: '0.75rem 1.5rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>Im Vollbild öffnen</Link>
+        </div>
+      )
     }
     if (pageToRender === 'platzanordnung') {
       return <PlatzanordnungPage key={componentKey} />
@@ -1115,8 +1138,11 @@ end tell`
         {/* Quick-Actions: Daten veröffentlichen + Code-Update (Git) nebeneinander */}
         <Link
           to={currentPageData.id === 'galerie' ? PROJECT_ROUTES['k2-galerie'].galerie :
+              currentPageData.id === 'galerie-oeffentlich' ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich :
               currentPageData.id === 'galerie-vorschau' ? PROJECT_ROUTES['k2-galerie'].galerieVorschau :
+              currentPageData.id === 'galerie-oeffentlich-vorschau' ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau :
               currentPageData.id === 'produkt-vorschau' ? PROJECT_ROUTES['k2-galerie'].produktVorschau :
+              currentPageData.id === 'marketing-oek2' ? PROJECT_ROUTES['k2-galerie'].marketingOek2 :
               currentPageData.id === 'shop' ? PROJECT_ROUTES['k2-galerie'].shop :
               currentPageData.id === 'control' ? PROJECT_ROUTES['k2-galerie'].controlStudio :
               currentPageData.id === 'mission' ? PROJECT_ROUTES['k2-galerie'].plan :
@@ -1293,7 +1319,7 @@ end tell`
       </div>
 
       {/* Untere Navigationsleiste - zeigt Bereiche der aktuellen Seite */}
-      {(currentPage === 'galerie' || currentPage === 'galerie-vorschau') && (
+      {(currentPage === 'galerie' || currentPage === 'galerie-oeffentlich' || currentPage === 'galerie-vorschau' || currentPage === 'galerie-oeffentlich-vorschau') && (
         <div style={{
           position: 'fixed',
           bottom: 0,
@@ -1317,15 +1343,16 @@ end tell`
               <button
                 key={section.id}
                 onClick={() => {
+                  const isOek2 = currentPage === 'galerie-oeffentlich' || currentPage === 'galerie-oeffentlich-vorschau'
                   if ('filter' in section) {
                     setGalerieFilter(section.filter as 'alle' | 'malerei' | 'keramik')
-                    if (currentPage !== 'galerie-vorschau') {
-                      setCurrentPage('galerie-vorschau')
+                    if (currentPage !== 'galerie-vorschau' && currentPage !== 'galerie-oeffentlich-vorschau') {
+                      setCurrentPage(isOek2 ? 'galerie-oeffentlich-vorschau' : 'galerie-vorschau')
                     }
                   } else if ('scrollTo' in section) {
                     setGalerieSection(section.id)
-                    if (currentPage !== 'galerie') {
-                      setCurrentPage('galerie')
+                    if (currentPage !== 'galerie' && currentPage !== 'galerie-oeffentlich') {
+                      setCurrentPage(isOek2 ? 'galerie-oeffentlich' : 'galerie')
                     }
                     // Scroll zu Bereich (wird von GaleriePage gehandhabt)
                   }
@@ -1355,7 +1382,7 @@ end tell`
       )}
       
       {/* Standard-Navigation für andere Seiten */}
-      {currentPage !== 'galerie' && currentPage !== 'galerie-vorschau' && (
+      {currentPage !== 'galerie' && currentPage !== 'galerie-oeffentlich' && currentPage !== 'galerie-vorschau' && currentPage !== 'galerie-oeffentlich-vorschau' && (
         <div style={{
           position: 'fixed',
           bottom: 0,

@@ -76,11 +76,11 @@
 
 **Meilensteine:**
 - ✅ Authentifizierung (abgeschlossen)
-- 🔄 Lizenz-System (60% Fortschritt)
+- 🔄 Licence-System (60% Fortschritt)
 - ⏳ Multi-Tenant-Funktionalität (ausstehend)
 
 **Nächste Schritte:**
-- Lizenz-Manager finalisieren
+- Licence-Manager finalisieren
 - Multi-Tenant-Tests
 - Beta-Tester-Programm starten
 

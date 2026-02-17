@@ -1,0 +1,22 @@
+---
+description: Nach Code-5/Crash NICHT wieder denselben Check und dieselben Texte – andere Strategie.
+alwaysApply: true
+---
+
+# Code 5 / Crash – keine Wiederholung desselben Spiels
+
+## Problem
+
+Nach jedem Crash macht die KI oft: „Crash-Check“, grep nach reload/setInterval, „kein automatischer Reload gefunden“, „Cleanup abgesichert“, „wenn wieder … dann …“. Beim nächsten Crash dasselbe. Georg sagt: Das ist crazy, immer wieder dieselben Texte.
+
+## Regel
+
+- **NICHT** nach jedem Crash erneut den gleichen Oberflächen-Check (Reload, setInterval, Cleanup) machen und dann **dieselbe Art Antwort** geben („Ich habe geprüft …“, „Abgesichert …“, „Fazit …“).
+- **STATTDESSEN:**
+  - Entweder **eine konkrete, andere Maßnahme** umsetzen (z. B. schwere Ansicht in Cursor/Preview deaktivieren, oder ein klares „Code-5-Minimalmodus“-Flag), **ohne** den gleichen Textblock zu wiederholen.
+  - Oder **kurz** sagen: „Crash notiert. Welche andere Richtung willst du versuchen?“ – und nicht wieder die gleiche Analyse anbieten.
+- **Antworten:** Keine langen, immer gleichen „Crash-Check“-Blöcke. Kurz bleiben. Nicht „leiern“.
+
+## Kurzfassung
+
+Crash ≠ wieder derselbe Check und derselbe Text. Andere Strategie oder kurze Rückfrage – kein Wiederholen.

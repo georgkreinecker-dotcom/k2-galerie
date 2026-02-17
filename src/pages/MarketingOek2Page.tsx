@@ -1,0 +1,571 @@
+/**
+ * Marketing ök2 (mök2) – Arbeitsplattform für alles, was mit dem Vertrieb von ök2 zu tun hat.
+ * Ideen, Konzepte, Werbeunterlagen; klar strukturiert, bearbeitbar. Ausdruckbar als PDF.
+ */
+
+import { useState, useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import { PROJECT_ROUTES, WILLKOMMEN_ROUTE, AGB_ROUTE } from '../config/navigation'
+import { PRODUCT_WERBESLOGAN, PRODUCT_BOTSCHAFT_2, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
+
+const MOK2_SLOGAN_KEY = 'k2-mok2-werbeslogan'
+const MOK2_BOTSCHAFT_KEY = 'k2-mok2-botschaft2'
+const OEF_WELCOME_KEY = 'k2-oeffentlich-welcomeImage'
+const OEF_GALERIE_INNEN_KEY = 'k2-oeffentlich-galerieInnenImage'
+const MAX_DATA_URL_LENGTH = 700_000
+
+function getStoredSlogan(): string {
+  try {
+    const v = localStorage.getItem(MOK2_SLOGAN_KEY)
+    if (v && v.trim()) return v.trim()
+  } catch (_) {}
+  return PRODUCT_WERBESLOGAN
+}
+
+function getStoredBotschaft(): string {
+  try {
+    const v = localStorage.getItem(MOK2_BOTSCHAFT_KEY)
+    if (v && v.trim()) return v.trim()
+  } catch (_) {}
+  return PRODUCT_BOTSCHAFT_2
+}
+
+function getStoredOefImage(key: string): string {
+  try {
+    const v = localStorage.getItem(key)
+    return (v && v.trim()) || ''
+  } catch (_) {}
+  return ''
+}
+
+function compressImageAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      const maxW = 1200
+      const w = img.width
+      const h = img.height
+      const scale = w > maxW ? maxW / w : 1
+      const c = document.createElement('canvas')
+      c.width = Math.round(w * scale)
+      c.height = Math.round(h * scale)
+      const ctx = c.getContext('2d')
+      if (!ctx) {
+        const r = new FileReader()
+        r.onload = () => resolve(String(r.result))
+        r.readAsDataURL(file)
+        return
+      }
+      ctx.drawImage(img, 0, 0, c.width, c.height)
+      let dataUrl = c.toDataURL('image/jpeg', 0.85)
+      if (dataUrl.length > MAX_DATA_URL_LENGTH) dataUrl = c.toDataURL('image/jpeg', 0.7)
+      resolve(dataUrl)
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      const r = new FileReader()
+      r.onload = () => resolve(String(r.result))
+      r.readAsDataURL(file)
+    }
+    img.src = url
+  })
+}
+
+const printStyles = `
+  @media print {
+    .marketing-oek2-no-print { display: none !important; }
+    .marketing-oek2-page { padding: 0; background: #fff; color: #111; }
+    .marketing-oek2-page a { color: #1a0f0a; }
+    .marketing-oek2-page section { break-inside: avoid; }
+    .marketing-oek2-page ul { margin: 0.4em 0; padding-left: 1.2em; }
+    .marketing-oek2-page h1 { font-size: 1.5rem; margin-top: 0; }
+    .marketing-oek2-page h2 { font-size: 1.2rem; margin-top: 1rem; }
+  }
+`
+
+interface MarketingOek2PageProps {
+  /** Im Mok2Layout eingebettet → kein eigener Header/Struktur-Box (Leiste + Panel der APf übernehmen) */
+  embeddedInMok2Layout?: boolean
+}
+
+export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek2PageProps) {
+  const location = useLocation()
+  const [slogan, setSlogan] = useState(getStoredSlogan)
+  const [botschaft, setBotschaft] = useState(getStoredBotschaft)
+  const [oefWelcome, setOefWelcome] = useState(getStoredOefImage(OEF_WELCOME_KEY))
+  const [oefGalerieInnen, setOefGalerieInnen] = useState(getStoredOefImage(OEF_GALERIE_INNEN_KEY))
+  const [dropTarget, setDropTarget] = useState<'welcome' | 'innen' | null>(null)
+  const [oefSaving, setOefSaving] = useState(false)
+
+  useEffect(() => {
+    if (location.pathname === PROJECT_ROUTES['k2-galerie'].marketingOek2) {
+      setSlogan(getStoredSlogan())
+      setBotschaft(getStoredBotschaft())
+      setOefWelcome(getStoredOefImage(OEF_WELCOME_KEY))
+      setOefGalerieInnen(getStoredOefImage(OEF_GALERIE_INNEN_KEY))
+    }
+  }, [location.pathname])
+
+  const saveOefImage = async (key: 'welcome' | 'innen', file: File) => {
+    setOefSaving(true)
+    try {
+      const dataUrl = await compressImageAsDataUrl(file)
+      const storageKey = key === 'welcome' ? OEF_WELCOME_KEY : OEF_GALERIE_INNEN_KEY
+      localStorage.setItem(storageKey, dataUrl)
+      if (key === 'welcome') setOefWelcome(dataUrl)
+      else setOefGalerieInnen(dataUrl)
+      window.dispatchEvent(new Event('k2-oeffentlich-images-updated'))
+    } catch (_) {}
+    setDropTarget(null)
+    setOefSaving(false)
+  }
+
+  const clearOefImage = (key: 'welcome' | 'innen') => {
+    const storageKey = key === 'welcome' ? OEF_WELCOME_KEY : OEF_GALERIE_INNEN_KEY
+    try {
+      localStorage.removeItem(storageKey)
+      if (key === 'welcome') setOefWelcome('')
+      else setOefGalerieInnen('')
+      window.dispatchEvent(new Event('k2-oeffentlich-images-updated'))
+    } catch (_) {}
+  }
+
+  const handleDrop = (e: React.DragEvent, key: 'welcome' | 'innen') => {
+    e.preventDefault()
+    setDropTarget(null)
+    const file = e.dataTransfer?.files?.[0]
+    if (file && file.type.startsWith('image/')) saveOefImage(key, file)
+  }
+
+  const handleFileSelect = (key: 'welcome' | 'innen', e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) saveOefImage(key, file)
+    e.target.value = ''
+  }
+
+  const handlePrint = () => window.print()
+
+  return (
+    <article
+      className="marketing-oek2-page"
+      style={{
+        maxWidth: '800px',
+        margin: embeddedInMok2Layout ? 0 : '0 auto',
+        padding: 'clamp(1.5rem, 4vw, 2.5rem)',
+        background: 'var(--k2-bg-1, #1a0f0a)',
+        color: 'var(--k2-text, #fff5f0)',
+        minHeight: embeddedInMok2Layout ? 'auto' : '100vh',
+      }}
+    >
+      <style>{printStyles}</style>
+
+      {!embeddedInMok2Layout && (
+      <header className="marketing-oek2-no-print" style={{ marginBottom: '2rem' }}>
+        <Link
+          to={PROJECT_ROUTES['k2-galerie'].home}
+          style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '0.95rem' }}
+        >
+          ← Projekt-Start
+        </Link>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginTop: '1rem' }}>
+          <div>
+            <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', margin: 0 }}>Marketing ök2 <span style={{ fontSize: '0.75em', fontWeight: 400, color: 'rgba(255,255,255,0.7)' }}>(mök2)</span></h1>
+            <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', maxWidth: '520px' }}>
+              Arbeitsplattform für alles, was mit dem Vertrieb von ök2 zu tun hat.
+            </p>
+            <p style={{ margin: '0.5rem 0 0', fontSize: '1rem', color: '#5ffbf1', fontStyle: 'italic', maxWidth: '520px' }}>
+              {slogan}
+            </p>
+            <p style={{ margin: '0.35rem 0 0', fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)', maxWidth: '520px' }}>
+              2. {botschaft}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handlePrint}
+            style={{
+              padding: '0.5rem 1rem',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '0.95rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+            }}
+          >
+            📄 Als PDF drucken
+          </button>
+        </div>
+        <p style={{ color: 'rgba(255,255,255,0.7)', marginTop: '0.5rem', fontSize: '0.95rem' }}>
+          Vertrieb von ök2: Ideen, Konzepte, Werbeunterlagen – im Browser „Als PDF drucken“ wählen oder drucken.
+        </p>
+
+        {/* Sichtbare Struktur – alle Sektionen auf einen Blick, mit Sprunglinks */}
+        <div className="marketing-oek2-no-print" style={{ marginTop: '1.5rem', padding: '1rem 1.25rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.35)', borderRadius: '10px' }}>
+          <h3 style={{ fontSize: '1rem', margin: '0 0 0.75rem', color: '#5ffbf1', fontWeight: 600 }}>📋 Struktur der mök2</h3>
+          <ol style={{ margin: 0, paddingLeft: '1.35rem', lineHeight: 1.9, color: 'rgba(255,255,255,0.95)', fontSize: '0.95rem' }}>
+            <li><a href="#mok2-1" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>USPs</strong> (Unique Selling Points)</a></li>
+            <li><a href="#mok2-2" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Marktchancen – Stärken</strong></a></li>
+            <li><a href="#mok2-3" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Marktchancen – Herausforderungen</strong></a></li>
+            <li><a href="#mok2-4" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Fazit & nächste Schritte</strong></a></li>
+            <li><a href="#mok2-5" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Weitere Ideen & Konzepte</strong></a></li>
+            <li><a href="#mok2-6" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Empfehlungs-Programm</strong> (Vertrieb durch Nutzer:innen)</a></li>
+            <li><a href="#mok2-7" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Promotion für alle Medien</strong></a></li>
+            <li><a href="#mok2-8" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>APf-Struktur:</strong> Marketingarbeit organisieren</a></li>
+            <li><a href="#mok2-9" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Werbeunterlagen</strong> (bearbeitbar)</a></li>
+            <li><Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>10. Lizenzen</strong> (Konditionen & Vergebung)</Link></li>
+            <li><Link to={PROJECT_ROUTES['k2-galerie'].empfehlungstool} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Empfehlungstool</strong> (ID + Empfehlungstext an Freund:innen)</Link></li>
+            <li><Link to={WILLKOMMEN_ROUTE} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Willkommensseite</strong> (Zugangsbereich, AGB-Bestätigung)</Link></li>
+            <li><Link to={AGB_ROUTE} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>AGB</strong> (Allgemeine Geschäftsbedingungen)</Link></li>
+            <li><a href="#mok2-11" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>11. Sicherheit & Vor Veröffentlichung</strong> (Checklisten, Auth, RLS – wo alles steht)</a></li>
+            <li><a href="#mok2-12" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>12. Musterbilder für die ök2-Galerie</strong> (zum Einfügen)</a></li>
+          </ol>
+        </div>
+      </header>
+      )}
+
+      {embeddedInMok2Layout && (
+        <div className="marketing-oek2-no-print" style={{ marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(95,251,241,0.25)' }}>
+          <h2 style={{ fontSize: '1.25rem', margin: 0, color: '#5ffbf1' }}>Marketing ök2 (mök2)</h2>
+          <p style={{ margin: '0.35rem 0 0', fontSize: '0.95rem', color: 'rgba(255,255,255,0.85)' }}>{slogan}</p>
+          <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>2. {botschaft}</p>
+        </div>
+      )}
+
+      {/* 1. Markteinschätzung: USPs */}
+      <section id="mok2-1" style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          1. USPs (Unique Selling Points)
+        </h2>
+        <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
+          <li><strong>Alles in einer Oberfläche</strong> – Eine App für Galerie-Webauftritt, Werke, Events, Marketing und Kasse; Admin am Rechner, Galerie und Kassa auf Tablet/Handy (QR, gleicher Stand).</li>
+          <li><strong>Zielgruppe Künstler:innen</strong> – Selbstvermarktung, eigene Werke, Ausstellungen, Webauftritt; Begriffe und Abläufe passen zu Galerien und Ateliers.</li>
+          <li><strong>Marketing aus einem Guss</strong> – PR-Vorschläge aus Stammdaten und Event (Newsletter, Plakat, Presse, Social Media, Event-Flyer im Galerie-Design); mehrere Vorschläge pro Typ; A4/A3/A5; QR-Code-Plakat.</li>
+          <li><strong>Technik ohne Vendor-Lock-in</strong> – Plattformneutral (Windows, Android, macOS, iOS, Browser/PWA); moderner Web-Stack; Konfiguration statt Festverdrahtung.</li>
+          <li><strong>Kassafunktion & Etiketten</strong> – Kasse/Shop für Verkauf vor Ort (z. B. iPad/Handy); Etikettendruck (z. B. Brother QL) mit Werk-Nummer, Titel, QR-Code, WLAN-fähig; Kundenverwaltung (Kunden-Tab) für Erfassung und Tagesgeschäft.</li>
+          <li><strong>Fotostudio</strong> – Professionelle Werkfotos in der App: Objektfreistellung und Pro-Hintergrund direkt im Browser (ohne API-Keys); ideal für Fotos von iPad/iPhone, automatisch aufgewertet beim Hereinladen.</li>
+          <li><strong>Mobile und Stand</strong> – Ein Stand überall nach Deploy; Galerie-Assistent für neue Nutzer.</li>
+          <li><strong>Datensouveränität und Backup</strong> – Lokale Speicherung, Backup & Wiederherstellung; K2 vs. Demo (ök2) strikt getrennt; keine Datenverluste durch Merge-Logik.</li>
+          <li><strong>Professioneller Auftritt</strong> – Deutsche UI, anpassbares Design (Farben, Willkommensbild, Vita, Platzanordnung, Shop).</li>
+        </ul>
+      </section>
+
+      {/* 2. Marktchancen – Stärken */}
+      <section id="mok2-2" style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          2. Marktchancen – Stärken
+        </h2>
+        <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
+          <li>Klare Nische: Künstler:innen und kleine Galerien (Webauftritt + Events + Kasse + Marketing aus einer Hand) sind unterversorgt.</li>
+          <li>PWA + plattformneutral: Keine App-Stores nötig; Nutzung auf Windows und Android ohne Mac.</li>
+          <li>Produktvision und Konfiguration: Codebasis und Doku auf Mehrfachnutzung und Lizenz-Versionen vorbereitet.</li>
+          <li>Echter Einsatz: K2 wird bereits genutzt – echte Anforderungen und Workflows abgebildet.</li>
+        </ul>
+      </section>
+
+      {/* 3. Marktchancen – Herausforderungen */}
+      <section id="mok2-3" style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          3. Marktchancen – Herausforderungen
+        </h2>
+        <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
+          <li>Bekanntheit: Ohne Vertrieb/Marketing erreicht man die Zielgruppe nur begrenzt.</li>
+          <li>Wettbewerb: Differenzierung über „Alles in einer App“ + Galerie-Fokus + PR/Marketing aus einem Guss.</li>
+          <li>Betrieb/Recht: Klares Hosting-/Lizenz-Modell, AGB, Datenschutz, ggf. Support nötig.</li>
+        </ul>
+      </section>
+
+      {/* 4. Fazit & nächste Schritte */}
+      <section id="mok2-4" style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          4. Fazit & nächste Schritte
+        </h2>
+        <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
+          <li>Marktchance: Ja – Zielgruppe definierbar, technisch und konzeptionell gut vorbereitet.</li>
+          <li>Erfolg hängt ab von: Positionierung, einfachem Einstieg (Galerie-Assistent), klarem Nutzen (USPs kommunizieren), Vertrieb/Kommunikation.</li>
+          <li>Nächste Schritte: Konfiguration weiter zentralisieren; Onboarding dokumentieren und im UI führen; Lizenz-/Preismodell konkretisieren; Rechtliches und Betrieb klären.</li>
+        </ul>
+      </section>
+
+      {/* Platzhalter für weitere Ideen/Konzepte */}
+      <section id="mok2-5" style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          5. Weitere Ideen & Konzepte (Sammlung)
+        </h2>
+        <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
+          <li>Optional: KI-Assistent für neue Kunden (Chat/API) – derzeit bewusst ohne externe Funktion.</li>
+          <li>Vermarktbare Version: Eine Instanz pro Künstler:in (eigene URL/Subdomain), später Multi-Tenant möglich.</li>
+        </ul>
+      </section>
+
+      {/* Vermarktungskonzept: Empfehlungs-Programm – als PDF abgelegt */}
+      <section id="mok2-6" style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          6. Vermarktungskonzept: Empfehlungs-Programm (Vertrieb durch Nutzer:innen)
+        </h2>
+        <p style={{ marginBottom: '1rem', lineHeight: 1.6 }}>
+          Nutzer:innen werben weitere Künstler:innen; Empfehler:innen erhalten 50 % der Lizenzgebühr über eine persönliche Empfehler-ID.
+        </p>
+        <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
+          <li><strong>Grundidee:</strong> Vertrieb durch die Nutzer:innen – Künstler:innen empfehlen die K2 Galerie weiter. Wer wirbt, erhält 50 % der Lizenzgebühr des geworbenen Nutzers/der geworbenen Nutzerin. Jede:r hat eine eindeutige Empfehler-ID; trägt ein neuer Nutzer diese ID ein, wird die Gutschrift zugeordnet.</li>
+          <li><strong>Ablauf:</strong> Nutzer:in A erhält in der App eine Empfehler-ID (z. B. Einstellungen → Empfehlungs-Programm), gibt sie an B weiter; B trägt die ID bei Registrierung/Lizenz-Abschluss ein → 50 % der Lizenzgebühr an A.</li>
+          <li><strong>Empfehler-ID:</strong> Eindeutig pro Nutzer:in, gut kommunizierbar (z. B. K2-XXXX-YYYY). Optional: Empfehlungs-Link mit ID als Parameter.</li>
+          <li><strong>Vergütung:</strong> 50 % der Lizenzgebühr an den Empfehler/die Empfehlerin. Bei <strong>jeder</strong> Zahlung, solange der geworbene Nutzer/die geworbene Nutzerin Lizenzgebühren zahlt – nicht nur bei der Erstanmeldung. Ausgestaltung: Gutschrift, Auszahlung oder Gutschein je nach Betriebsmodell.</li>
+          <li><strong>In der App:</strong> ID anzeigen/kopieren (Einstellungen / Empfehlungs-Programm); Eingabe der ID bei Registrierung oder Checkout; bei Speicherung ID prüfen und 50 %-Regel anwenden.</li>
+          <li><strong>Rechtliches:</strong> Transparenz in AGB (Wer, wie, wann); Datenschutz nur für Zuordnung; Missbrauch vermeiden (keine Selbstempfehlung, ID nur gültigen Konten zuordnen).</li>
+        </ul>
+      </section>
+
+      {/* 7. Promotion für alle Medien – ök2 perfekt präsentieren */}
+      <section id="mok2-7" style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          7. Promotion für alle Medien – ök2 perfekt präsentieren
+        </h2>
+        <p style={{ marginBottom: '0.5rem', padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.1)', borderRadius: '8px', borderLeft: '4px solid #5ffbf1', fontSize: '1.05rem', lineHeight: 1.5 }}>
+          <strong>1. Werbeslogan:</strong> {PRODUCT_WERBESLOGAN}
+        </p>
+        <p style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.1)', borderRadius: '8px', borderLeft: '4px solid #5ffbf1', fontSize: '1.05rem', lineHeight: 1.5 }}>
+          <strong>2. Wichtige Botschaft:</strong> {PRODUCT_BOTSCHAFT_2}
+        </p>
+
+        <h3 style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.9)', marginTop: '1rem', marginBottom: '0.5rem' }}>Warum brauchen Künstler:innen das?</h3>
+        <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
+          <li>Künstler:innen wollen <strong>sichtbar sein</strong> – Webauftritt, Werke, Events – ohne IT-Kenntnisse und ohne viele getrennte Tools.</li>
+          <li>Du brauchst <strong>eine zentrale Stelle</strong>: Galerie, Verkauf vor Ort (Kasse), Einladungen, Presse, Social Media – sonst geht Zeit und Konsistenz verloren.</li>
+          <li>Professionelle <strong>Werkfotos und Druckmaterial</strong> (Flyer, Plakat, Newsletter) aus den eigenen Daten – ohne Agentur oder teure Software.</li>
+        </ul>
+
+        <h3 style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.9)', marginTop: '1rem', marginBottom: '0.5rem' }}>Was macht den Unterschied zu Produkten am Markt?</h3>
+        <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
+          <li><strong>Alles in einer App:</strong> Website-Builder, Shops, Event-Tools und Kasse sind sonst getrennt – hier eine Oberfläche, eine Datenbasis, ein Design.</li>
+          <li><strong>Sprache und Begriffe für Künstler:innen:</strong> Werke, Events, Stammdaten, Öffentlichkeitsarbeit – kein abstraktes „CMS“ oder „Items“.</li>
+          <li><strong>Marketing aus einem Guss:</strong> Newsletter, Plakat, Presse, Social Media und QR-Plakat werden aus denselben Stammdaten erzeugt – einheitlich, sofort nutzbar.</li>
+          <li><strong>Plattformneutral:</strong> Windows, Android, Mac, iOS – Browser/PWA, keine App-Store-Pflicht, keine Mac-Pflicht für Kunden.</li>
+          <li><strong>Fotostudio in der App:</strong> Objektfreistellung und Pro-Hintergrund im Browser, ideal für Fotos vom Handy/Tablet – ohne externe Dienste.</li>
+        </ul>
+
+        <h3 style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.9)', marginTop: '1rem', marginBottom: '0.5rem' }}>Wodurch zeichnet sich das Produkt besonders aus?</h3>
+        <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
+          <li><strong>Eine Oberfläche, alle Geräte:</strong> Admin am Rechner, Galerie und Kasse auf Tablet/Handy – gleicher Stand per QR, kein Chaos.</li>
+          <li><strong>PR-Vorschläge aus deinen Daten:</strong> Event anlegen → fertige Texte und Formate für Newsletter, Presse, Social Media, Flyer, Plakat – im Galerie-Design.</li>
+          <li><strong>Kasse & Etiketten:</strong> Verkauf vor Ort direkt aus der App; Etikettendruck (z. B. Brother QL) mit Werk-Nummer, Titel, QR – WLAN-fähig.</li>
+          <li><strong>Datensouveränität:</strong> Lokale Speicherung, Backup & Wiederherstellung – deine Daten bleiben unter deiner Kontrolle.</li>
+          <li><strong>Deutsche UI, seriös:</strong> Keine Anglizismen-Flut; klare, professionelle Oberfläche für Galerien und Ateliers.</li>
+        </ul>
+
+        <h3 style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.9)', marginTop: '1rem', marginBottom: '0.5rem' }}>Welchen Benefit hat der Nutzer?</h3>
+        <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
+          <li><strong>Zeit sparen:</strong> Kein Springen zwischen Website, Kasse, E-Mail-Tool und Social Media – alles an einem Ort.</li>
+          <li><strong>Professioneller Auftritt:</strong> Einheitliche Werbelinie, professionelle Werkfotos, fertige PR-Texte – ohne Agentur.</li>
+          <li><strong>Flexibilität:</strong> Am Rechner planen, unterwegs oder am Stand verkaufen und präsentieren – eine App, überall.</li>
+          <li><strong>Kontrolle:</strong> Eigene Daten, Backup, keine Abhängigkeit von einem einzelnen Gerät oder Anbieter.</li>
+        </ul>
+
+        <p style={{ marginTop: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.8)' }}>
+          <strong>Für alle Medien nutzbar:</strong> Diese Punkte eignen sich für Web-Text, Social-Posts, Pitch, Presse, Flyer und Verkaufsgespräche – einheitliche Botschaft, angepasst an Länge und Kanal.
+        </p>
+      </section>
+
+      {/* 8. APf-Struktur: Marketingarbeit organisieren */}
+      <section id="mok2-8" style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          8. APf-Struktur: Marketingarbeit am besten organisieren
+        </h2>
+        <p style={{ marginBottom: '1rem', lineHeight: 1.6 }}>
+          So behältst du auf der APf den Überblick und arbeitest zielgerichtet – von der Botschaft bis zur Umsetzung in allen Kanälen.
+        </p>
+        <ol style={{ lineHeight: 1.7, paddingLeft: '1.5em', margin: 0 }}>
+          <li><strong>Botschaft & Texte (eine Quelle):</strong> Alle Kernaussagen, USPs und Benefits liegen hier auf <strong>Marketing ök2</strong> (diese Seite). Von hier aus kopierst du für Web, Social, Presse, Pitch – eine Quelle, konsistent.</li>
+          <li><strong>Medien-Kanäle planen:</strong> Web (Landingpage, ök2-Demo), Social (Posts, Stories), Print (Flyer, Plakat), Presse (Einladung, PM), Pitch (Gespräche, Partner). Pro Kanal: Ziel, Zielgruppe, Ton – kurz auf dieser Seite oder in deinen Notizen festhalten.</li>
+          <li><strong>Content-Bausteine ablegen:</strong> Kurzversion (1–2 Sätze), Mittelversion (Absatz), Langversion (wie Sektion 7 oben) – alle hier auf Marketing ök2. Beim Erstellen von Posts oder Presse: passende Länge wählen.</li>
+          <li><strong>Zeitplan & To-dos:</strong> Nutze den <strong>Plan</strong> (Projekt → Plan) für Phasen wie „Slogan & Story“, „Social aktiv“, „Content-Plan“, „Pressepartner“. Offene Punkte dort abhaken.</li>
+          <li><strong>Materialien aus der App:</strong> Flyer, Plakat, Newsletter, Presse – werden in der Galerie-App aus Stammdaten & Events erzeugt (Control-Studio / Öffentlichkeitsarbeit). Nicht doppelt pflegen: Stammdaten aktuell halten, dann Materialien generieren.</li>
+          <li><strong>Empfehlungs-Programm:</strong> Vertrieb durch Nutzer:innen (Sektion 6) – ID-Konzept und 50 %-Regel für Partner und geworbene Künstler:innen kommunizieren.</li>
+          <li><strong>Rückblick:</strong> Regelmäßig prüfen: Welche Kanäle laufen? Was bringt Anfragen? Nächste Schritte im Plan ergänzen und hier auf Marketing ök2 die Botschaften bei Bedarf schärfen.</li>
+        </ol>
+        <p style={{ marginTop: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.8)' }}>
+          <strong>Kurz:</strong> Marketing ök2 = deine zentrale Text- und Strukturquelle auf der APf. Plan = dein Fortschritt. Galerie-App = deine druckfertigen Materialien. So bleibt die Marketingarbeit übersichtlich und wiederverwendbar.
+        </p>
+      </section>
+
+      {/* 9. Werbeunterlagen (mök2) – klar strukturiert, bearbeitbar */}
+      <section id="mok2-9" style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          9. Werbeunterlagen (mök2)
+        </h2>
+        <p style={{ marginBottom: '1rem', lineHeight: 1.6 }}>
+          Präsentationsmappe, Social-Media-Masken und Flyer gehören zu mök2. Dort sind die Texte (Slogan, Botschaft) <strong>bearbeitbar</strong>; Änderungen erscheinen auch hier oben.
+        </p>
+        <ol style={{ lineHeight: 1.7, paddingLeft: '1.5em', margin: '0 0 1rem' }}>
+          <li><strong>Präsentationsmappe</strong> – Deckblatt, Kernbotschaften, USPs (A4, druckbar)</li>
+          <li><strong>Social-Media-Masken</strong> – Instagram Quadrat/Story, Facebook, LinkedIn (Standardformate)</li>
+          <li><strong>Flyer A5</strong> – Produkt-Flyer mit Slogan und Botschaft</li>
+        </ol>
+        <p>
+          <Link to={PROJECT_ROUTES['k2-galerie'].werbeunterlagen} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>
+            📁 Werbeunterlagen öffnen & Texte bearbeiten →
+          </Link>
+        </p>
+      </section>
+
+      {/* 10. Lizenzen (mök2) – Konditionen, Vergebung, Abrechnung Empfehlungs-Programm */}
+      <section id="mok2-10" style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          10. Lizenzen (Konditionen & Vergebung)
+        </h2>
+        <p style={{ marginBottom: '1rem', lineHeight: 1.6 }}>
+          Lizenz-Stufen (Basic, Pro, Enterprise), Preismodelle und die <strong>Vergabe von Lizenzen</strong> gehören zur Vertriebs-Arbeitsplattform. Beim Vergeben kann optional eine <strong>Empfehler-ID</strong> erfasst werden – Grundlage für die automatisierte Abrechnung des Empfehlungs-Programms (Multi-Level-Vergütung). Doku: <code>docs/LICENCE-STRUKTUR.md</code>, <code>docs/ABRECHNUNGSSTRUKTUR-EMPFEHLUNGSPROGRAMM.md</code>.
+        </p>
+        <p>
+          <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>
+            💼 Lizenzen verwalten (Konditionen & Lizenz vergeben) →
+          </Link>
+        </p>
+      </section>
+
+      {/* 11. Sicherheit & Vor Veröffentlichung – alle Infos dokumentiert, jederzeit abrufbar */}
+      <section id="mok2-11" style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          11. Sicherheit & Vor Veröffentlichung
+        </h2>
+        <p style={{ marginBottom: '1rem', lineHeight: 1.6 }}>
+          Alle Infos zu <strong>Sicherheit, Produkt-Label, Admin-Auth und Vor Veröffentlichung</strong> sind im Projekt dokumentiert und jederzeit abrufbar. Einstieg: <strong>HAUS-INDEX.md</strong> (Root) und <strong>docs/00-INDEX.md</strong>.
+        </p>
+        <ul style={{ lineHeight: 1.7, paddingLeft: '1.5em', margin: '0 0 1rem' }}>
+          <li><strong>Vor Veröffentlichung:</strong> <code>docs/VOR-VEROEFFENTLICHUNG.md</code> – Checkliste vor Go-Live (Auth, Migration 002, npm audit, AGB/DSGVO, Deployment). Nicht vergessen.</li>
+          <li><strong>Admin-Auth einrichten:</strong> <code>docs/ADMIN-AUTH-SETUP.md</code> – Nutzer in Supabase anlegen, RLS-Migration anwenden.</li>
+          <li><strong>Produkt-Label / Regress:</strong> <code>docs/PRODUKT-LABEL-SICHERHEIT-ROADMAP.md</code> – Ziele, Maßnahmen, Nachweis für Zahlungen/Vergütung.</li>
+          <li><strong>Stabilität & Einbruch:</strong> <code>docs/SICHERHEIT-STABILITAET-CHECKLISTE.md</code> – 5 Punkte Einsturz, 5 Punkte Einbruch, Skala.</li>
+          <li><strong>Supabase RLS:</strong> <code>docs/SUPABASE-RLS-SICHERHEIT.md</code> – Status, später schärfen.</li>
+        </ul>
+        <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.75)' }}>
+          Beim Drucken dieser mök2-Seite („Als PDF drucken“) ist dieser Verweis mit dabei – so bleibt er griffbereit.
+        </p>
+      </section>
+
+      {/* 12. Musterbilder für die ök2-Galerie – hier liegen sie, zum Einfügen; Link zu Unsplash */}
+      <section id="mok2-12" style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          12. Musterbilder für die ök2-Galerie
+        </h2>
+        <p style={{ marginBottom: '1rem', lineHeight: 1.6 }}>
+          Diese Musterbilder liegen in <strong>mök2</strong> und kannst du in die ök2-Galerie einfügen. So wirkt die Demo für zukünftige Lizenznehmer:innen professionell (oben: Menschen/Galerie-Eingang, unten: Galerie Innenansicht).
+        </p>
+        <p style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.12)', borderRadius: '8px', border: '1px solid rgba(95,251,241,0.4)' }}>
+          <strong style={{ color: '#5ffbf1' }}>📷 Professionelle Fotos holen:</strong>{' '}
+          <a href="https://unsplash.com/s/photos/people-art-gallery" target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', fontWeight: 600 }}>Unsplash – Menschen in Galerie</a>
+          {' · '}
+          <a href="https://unsplash.com/s/photos/gallery-interior" target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', fontWeight: 600 }}>Unsplash – Galerie Innenansicht</a>
+          {' · '}
+          <a href="https://unsplash.com/s/photos/art-gallery" target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', fontWeight: 600 }}>Unsplash – Galerie allgemein</a>
+        </p>
+
+        <p style={{ marginBottom: '0.75rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)' }}><strong>Oben (Willkommen) – Bild hierher ziehen oder auswählen:</strong></p>
+        <div
+          className="marketing-oek2-no-print"
+          onDragOver={(e) => { e.preventDefault(); setDropTarget('welcome') }}
+          onDragLeave={() => setDropTarget(null)}
+          onDrop={(e) => handleDrop(e, 'welcome')}
+          style={{
+            marginBottom: '1.5rem',
+            maxWidth: 600,
+            minHeight: 140,
+            borderRadius: '8px',
+            border: `2px dashed ${dropTarget === 'welcome' ? '#5ffbf1' : 'rgba(95,251,241,0.4)'}`,
+            background: dropTarget === 'welcome' ? 'rgba(95,251,241,0.15)' : 'rgba(95,251,241,0.06)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '0.75rem',
+            padding: '1rem',
+            position: 'relative',
+          }}
+        >
+          {oefWelcome ? (
+            <>
+              <img src={oefWelcome} alt="Willkommen" style={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', borderRadius: 6 }} />
+              <div style={{ width: '100%', display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                <label style={{ cursor: 'pointer', padding: '0.4rem 0.8rem', background: 'rgba(95,251,241,0.3)', borderRadius: 6, fontSize: '0.9rem' }}>
+                  Anderes Bild <input type="file" accept="image/*" hidden onChange={(e) => handleFileSelect('welcome', e)} />
+                </label>
+                <button type="button" onClick={() => clearOefImage('welcome')} style={{ padding: '0.4rem 0.8rem', background: 'rgba(200,80,80,0.4)', border: 'none', borderRadius: 6, color: '#fff', cursor: 'pointer', fontSize: '0.9rem' }}>Entfernen</button>
+              </div>
+            </>
+          ) : (
+            <label style={{ cursor: 'pointer', textAlign: 'center', color: 'rgba(255,255,255,0.9)', fontSize: '0.95rem' }}>
+              Bild aus deinen Fotos hierher ziehen oder <span style={{ color: '#5ffbf1', textDecoration: 'underline' }}>klicken zum Auswählen</span>
+              <input type="file" accept="image/*" hidden onChange={(e) => handleFileSelect('welcome', e)} disabled={oefSaving} />
+            </label>
+          )}
+        </div>
+
+        <p style={{ marginBottom: '0.75rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)' }}><strong>Unten (Galerie Innenansicht) – Bild hierher ziehen oder auswählen:</strong></p>
+        <div
+          className="marketing-oek2-no-print"
+          onDragOver={(e) => { e.preventDefault(); setDropTarget('innen') }}
+          onDragLeave={() => setDropTarget(null)}
+          onDrop={(e) => handleDrop(e, 'innen')}
+          style={{
+            marginBottom: '1.5rem',
+            maxWidth: 600,
+            minHeight: 140,
+            borderRadius: '8px',
+            border: `2px dashed ${dropTarget === 'innen' ? '#5ffbf1' : 'rgba(95,251,241,0.4)'}`,
+            background: dropTarget === 'innen' ? 'rgba(95,251,241,0.15)' : 'rgba(95,251,241,0.06)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '0.75rem',
+            padding: '1rem',
+          }}
+        >
+          {oefGalerieInnen ? (
+            <>
+              <img src={oefGalerieInnen} alt="Galerie Innenansicht" style={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', borderRadius: 6 }} />
+              <div style={{ width: '100%', display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                <label style={{ cursor: 'pointer', padding: '0.4rem 0.8rem', background: 'rgba(95,251,241,0.3)', borderRadius: 6, fontSize: '0.9rem' }}>
+                  Anderes Bild <input type="file" accept="image/*" hidden onChange={(e) => handleFileSelect('innen', e)} />
+                </label>
+                <button type="button" onClick={() => clearOefImage('innen')} style={{ padding: '0.4rem 0.8rem', background: 'rgba(200,80,80,0.4)', border: 'none', borderRadius: 6, color: '#fff', cursor: 'pointer', fontSize: '0.9rem' }}>Entfernen</button>
+              </div>
+            </>
+          ) : (
+            <label style={{ cursor: 'pointer', textAlign: 'center', color: 'rgba(255,255,255,0.9)', fontSize: '0.95rem' }}>
+              Bild aus deinen Fotos hierher ziehen oder <span style={{ color: '#5ffbf1', textDecoration: 'underline' }}>klicken zum Auswählen</span>
+              <input type="file" accept="image/*" hidden onChange={(e) => handleFileSelect('innen', e)} disabled={oefSaving} />
+            </label>
+          )}
+        </div>
+
+        <p style={{ marginBottom: '1rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)' }}>
+          Nach dem Ziehen oder Auswählen erscheinen die Bilder automatisch in der <Link to={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich} style={{ color: '#5ffbf1' }}>ök2-Galerie</Link> (oben bzw. unten).
+        </p>
+
+        <p style={{ marginBottom: '0.75rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)' }}><strong>Muster (falls noch kein eigenes Bild):</strong></p>
+        <div style={{ marginBottom: '1.5rem', maxWidth: '100%', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(95,251,241,0.3)' }}>
+          <img src="/mok2/musterbilder/willkommen.svg" alt="Muster Willkommen" style={{ width: '100%', maxWidth: 600, height: 'auto', display: 'block' }} />
+        </div>
+        <div style={{ marginBottom: '1.5rem', maxWidth: '100%', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(95,251,241,0.3)' }}>
+          <img src="/mok2/musterbilder/galerie-innen.svg" alt="Muster Galerie Innenansicht" style={{ width: '100%', maxWidth: 600, height: 'auto', display: 'block' }} />
+        </div>
+        <div style={{ padding: '1rem 1.25rem', background: 'rgba(95,251,241,0.1)', borderRadius: '8px', borderLeft: '4px solid #5ffbf1' }}>
+          <p style={{ margin: '0 0 0.5rem', fontWeight: 600, color: '#5ffbf1' }}>So funktioniert es:</p>
+          <ol style={{ margin: 0, paddingLeft: '1.25rem', lineHeight: 1.7 }}>
+            <li>Bild aus deinen Fotos (oder von Unsplash) in die gestrichelte Fläche oben <strong>ziehen</strong> oder per Klick <strong>auswählen</strong>.</li>
+            <li>Das Bild wird gespeichert und erscheint sofort in der ök2-Galerie (öffentliche Galerie öffnen zum Prüfen).</li>
+            <li>Zum Entfernen: „Entfernen“ klicken – dann gilt wieder das Musterbild.</li>
+          </ol>
+        </div>
+      </section>
+
+      <footer style={{ marginTop: '2rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>
+        {PRODUCT_COPYRIGHT} · Stand: Februar 2026 · Quelle: USP-UND-MARKTCHANCEN.md, VERMARKTUNGSKONZEPT-EMPFEHLUNGSPROGRAMM.md, Produkt-Vision, Galerie-App Feature-Stand.
+      </footer>
+    </article>
+  )
+}

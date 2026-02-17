@@ -135,46 +135,8 @@ export function startAutoSave(getData: () => AutoSaveData) {
       // Speichere Timestamp
       localStorage.setItem('k2-last-auto-save', new Date().toISOString())
 
-      // Automatisches Vollbackup (ein Slot) – bei Datenverlust wiederherstellbar
-      try {
-        let customers: any[] = []
-        try {
-          const raw = localStorage.getItem('k2-customers')
-          if (raw) customers = JSON.parse(raw)
-          if (!Array.isArray(customers)) customers = []
-        } catch (_) {}
-        let pageContentGalerie: string | null = null
-        try {
-          pageContentGalerie = localStorage.getItem('k2-page-content-galerie')
-        } catch (_) {}
-        const backup = {
-          backupAt: new Date().toISOString(),
-          martina: data.martina,
-          georg: data.georg,
-          gallery: data.gallery,
-          artworks: data.artworks,
-          events: data.events,
-          documents: data.documents,
-          customers,
-          designSettings: data.designSettings,
-          pageTexts: data.pageTexts,
-          pageContentGalerie: pageContentGalerie ?? undefined
-        }
-        const backupJson = JSON.stringify(backup)
-        if (backupJson.length < 4 * 1024 * 1024) {
-          localStorage.setItem('k2-full-backup', backupJson)
-          // Verlauf: letzte 30 Backup-Zeitpunkte speichern
-          const ts = backup.backupAt
-          try {
-            const raw = localStorage.getItem('k2-backup-timestamps')
-            const list: string[] = raw ? JSON.parse(raw) : []
-            const next = [ts, ...list.filter(t => t !== ts)].slice(0, 30)
-            localStorage.setItem('k2-backup-timestamps', JSON.stringify(next))
-          } catch (_) {}
-        }
-      } catch (e) {
-        console.warn('⚠️ Vollbackup übersprungen (Größe oder Fehler)')
-      }
+      // Kein Vollbackup mehr in den localStorage – Vollbackup auf Speicherplatte (z. B. backupmicro) reicht.
+      // Spart Speicherplatz und beugt „Speicher voll“ vor. Bei Bedarf: Einstellungen → Vollbackup herunterladen.
 
       console.log('💾 Auto-Save erfolgreich')
     } catch (error) {
@@ -182,7 +144,7 @@ export function startAutoSave(getData: () => AutoSaveData) {
     }
   }, AUTO_SAVE_INTERVAL)
 
-  console.log('✅ Auto-Save gestartet (alle 5 Sekunden, inkl. Vollbackup)')
+  console.log('✅ Auto-Save gestartet (alle 5 Sekunden, Vollbackup nur auf Speicherplatte)')
 }
 
 /**

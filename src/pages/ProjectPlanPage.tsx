@@ -62,7 +62,7 @@ const phaseDefinitions: Array<{
   },
   {
     id: 'phase5',
-    title: 'Phase 5 · Lizenzierung & Vermarktung',
+    title: 'Phase 5 · Lizenz & Vermarktung',
     noteKey: 'k2-mission-notes-phase5',
     tasks: [
       { key: 'k2-mission-phase5-1', label: 'Lizenz-Modell definiert (SaaS, Einmalzahlung, Abo).' },

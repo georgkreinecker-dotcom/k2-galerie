@@ -1,7 +1,8 @@
 /**
  * Seitentexte – bearbeitbare Texte pro Seite (Basis: "Textversion" der App).
- * Werte aus Einstellungen → Seitentexte; Fallback = diese Defaults.
+ * K2: k2-page-texts. ök2 (Admin Design): k2-oeffentlich-page-texts.
  */
+import { MUSTER_TEXTE, TENANT_CONFIGS } from './tenantConfig'
 
 export type StartCard = { title: string; description: string; cta: string }
 export type QuickLink = { label: string; anchor: string }
@@ -47,6 +48,11 @@ export interface PageTextsConfig {
 }
 
 const STORAGE_KEY = 'k2-page-texts'
+const STORAGE_KEY_OEFFENTLICH = 'k2-oeffentlich-page-texts'
+
+function getStorageKey(tenantId?: 'oeffentlich'): string {
+  return tenantId === 'oeffentlich' ? STORAGE_KEY_OEFFENTLICH : STORAGE_KEY
+}
 
 const defaults: PageTextsConfig = {
   start: {
@@ -85,7 +91,7 @@ const defaults: PageTextsConfig = {
     welcomeIntroText: 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.',
     eventSectionHeading: 'Aktuelles aus den Eventplanungen',
     kunstschaffendeHeading: 'Die Kunstschaffenden',
-    martinaBio: 'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. Ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.',
+    martinaBio: 'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.',
     georgBio: 'Georg verbindet in seiner Keramikarbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail, das Ergebnis von langjähriger Erfahrung.',
     gemeinsamText: '',
   },
@@ -105,27 +111,46 @@ function deepMerge<T>(target: T, source: Partial<T>): T {
   return out
 }
 
-/** Sichere Default-Kopie (für Mobile/localStorage-Fehler immer gültige Struktur). */
-function getSafeDefaults(): PageTextsConfig {
-  return JSON.parse(JSON.stringify(defaults))
+/** Defaults für ök2 (Galerie Muster). */
+function getOeffentlichGalerieDefaults(): GaleriePageTexts {
+  const tc = TENANT_CONFIGS.oeffentlich
+  return {
+    pageTitle: tc.galleryName,
+    heroTitle: tc.galleryName,
+    welcomeHeading: 'Willkommen bei',
+    welcomeSubtext: tc.tagline,
+    welcomeIntroText: MUSTER_TEXTE.welcomeText || defaults.galerie.welcomeIntroText,
+    eventSectionHeading: defaults.galerie.eventSectionHeading,
+    kunstschaffendeHeading: defaults.galerie.kunstschaffendeHeading,
+    martinaBio: MUSTER_TEXTE.artist1Bio,
+    georgBio: MUSTER_TEXTE.artist2Bio,
+    gemeinsamText: MUSTER_TEXTE.gemeinsamText || '',
+  }
 }
 
-/** Liest gespeicherte Seitentexte aus localStorage und merged mit Defaults. Auf Mobile robust (localStorage kann fehlschlagen). */
-export function getPageTexts(): PageTextsConfig {
+/** Sichere Default-Kopie. tenantId 'oeffentlich' = Galerie-Defaults für ök2. */
+function getSafeDefaults(tenantId?: 'oeffentlich'): PageTextsConfig {
+  const base = JSON.parse(JSON.stringify(defaults)) as PageTextsConfig
+  if (tenantId === 'oeffentlich') base.galerie = { ...base.galerie, ...getOeffentlichGalerieDefaults() }
+  return base
+}
+
+/** Liest Seitentexte. tenantId 'oeffentlich' = ök2 (k2-oeffentlich-page-texts). */
+export function getPageTexts(tenantId?: 'oeffentlich'): PageTextsConfig {
+  const key = getStorageKey(tenantId)
+  const d = getSafeDefaults(tenantId)
   let result: PageTextsConfig
   try {
-    const raw = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
+    const raw = typeof window !== 'undefined' ? localStorage.getItem(key) : null
     if (raw && raw.length < 100000) {
       const saved = JSON.parse(raw) as Partial<PageTextsConfig>
-      result = deepMerge(getSafeDefaults(), saved) as PageTextsConfig
+      result = deepMerge(getSafeDefaults(tenantId), saved) as PageTextsConfig
     } else {
-      result = getSafeDefaults()
+      result = getSafeDefaults(tenantId)
     }
   } catch (_) {
-    result = getSafeDefaults()
+    result = getSafeDefaults(tenantId)
   }
-  // Garantiere gültige Struktur (z. B. nach korruptem Save oder Mobile-Einschränkungen)
-  const d = getSafeDefaults()
   if (!result.start || typeof result.start !== 'object') result.start = d.start
   if (!Array.isArray(result.start.cards)) result.start = { ...d.start, ...result.start, cards: d.start.cards }
   if (!Array.isArray(result.start.quickLinks)) result.start = { ...d.start, ...result.start, quickLinks: d.start.quickLinks }
@@ -134,7 +159,6 @@ export function getPageTexts(): PageTextsConfig {
   if (!result.galerie || typeof result.galerie !== 'object') result.galerie = d.galerie
   else {
     result.galerie = { ...d.galerie, ...result.galerie } as GaleriePageTexts
-    // Neue Felder (z. B. welcomeIntroText) bei alten Saves aus Defaults auffüllen
     for (const k of Object.keys(d.galerie) as (keyof GaleriePageTexts)[]) {
       if (result.galerie[k] === undefined || result.galerie[k] === null) (result.galerie as unknown as Record<string, string>)[k] = d.galerie[k]
     }
@@ -142,11 +166,11 @@ export function getPageTexts(): PageTextsConfig {
   return result
 }
 
-/** Speichert Seitentexte in localStorage (wird normalerweise aus den Einstellungen aufgerufen). */
-export function setPageTexts(config: PageTextsConfig) {
+/** Speichert Seitentexte. tenantId 'oeffentlich' = ök2. */
+export function setPageTexts(config: PageTextsConfig, tenantId?: 'oeffentlich') {
   try {
     if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(config))
+      localStorage.setItem(getStorageKey(tenantId), JSON.stringify(config))
     }
   } catch (e) {
     console.warn('Seitentexte speichern fehlgeschlagen:', e)

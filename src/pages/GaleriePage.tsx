@@ -1,16 +1,29 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES } from '../config/navigation'
-import { TENANT_CONFIGS, MUSTER_TEXTE, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME } from '../config/tenantConfig'
+import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY } from '../config/navigation'
+import { TENANT_CONFIGS, MUSTER_TEXTE, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, OEK2_WILLKOMMEN_IMAGES, OEK2_PLACEHOLDER_IMAGE } from '../config/tenantConfig'
 import { getGalerieImages } from '../config/pageContentGalerie'
 import { getPageTexts, type GaleriePageTexts } from '../config/pageTexts'
 import { appendToHistory } from '../utils/artworkHistory'
-import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { buildQrUrlWithBust, useServerBuildTimestamp, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { OK2_THEME } from '../config/ok2Theme'
 import '../App.css'
+
+/** SessionStorage: Willkommens-Fenster auf Galerieseite (QR-Einstieg) schon gesehen */
+const KEY_GALERIE_WELCOME_SEEN = 'k2-galerie-welcome-seen'
 
 /** Fallback-URL für Aktualisierung in anderem Netzwerk (z. B. zuerst Mac-WLAN, dann Mobilfunk) */
 const GALLERY_DATA_PUBLIC_URL = 'https://k2-galerie.vercel.app'
+
+/** Testphase: neue Kunden haben 2 Wochen Admin-Zugang ohne Passwort; danach oder für Wiederkehr Passwort nötig */
+const ADMIN_TESTPHASE_DAYS = 14
+const ADMIN_TESTPHASE_MS = ADMIN_TESTPHASE_DAYS * 24 * 60 * 60 * 1000
+const KEY_FIRST_VISIT_K2 = 'k2-admin-first-visit'
+const KEY_FIRST_VISIT_OEF = 'k2-oeffentlich-admin-first-visit'
+const KEY_OEF_ADMIN_PASSWORD = 'k2-oeffentlich-admin-password'
+const KEY_OEF_ADMIN_EMAIL = 'k2-oeffentlich-admin-email'
+const KEY_OEF_ADMIN_PHONE = 'k2-oeffentlich-admin-phone'
 /** K2 im Internet – gleiche Seite, funktioniert in jedem WLAN/Mobilfunk */
 function getK2PublicPageUrl(): string {
   if (typeof window === 'undefined') return 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
@@ -161,16 +174,43 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
   const tenantConfig = musterOnly ? TENANT_CONFIGS.oeffentlich : TENANT_CONFIGS.k2
   const tenantId = musterOnly ? 'oeffentlich' : 'k2'
   const isVorschauModusEarly = typeof window !== 'undefined' && new URLSearchParams(location.search).get('vorschau') === '1'
-  const defaultGalerieTexts = useMemo(() => getPageTexts().galerie, [])
+  // K2/ök2-Trennung (.cursor/rules/k2-oek2-trennung.mdc): Bei musterOnly NUR getPageTexts('oeffentlich'), nie getPageTexts() ohne Tenant
+  const defaultGalerieTexts = useMemo(() => getPageTexts(musterOnly ? 'oeffentlich' : undefined).galerie, [musterOnly])
   const [vorschauGalerieTexts, setVorschauGalerieTexts] = useState<GaleriePageTexts | null>(null)
   useEffect(() => {
-    if (isVorschauModusEarly) setVorschauGalerieTexts(getPageTexts().galerie)
-  }, [isVorschauModusEarly])
+    if (isVorschauModusEarly) setVorschauGalerieTexts(getPageTexts(musterOnly ? 'oeffentlich' : undefined).galerie)
+  }, [isVorschauModusEarly, musterOnly])
   const galerieTexts = (isVorschauModusEarly && vorschauGalerieTexts) ? vorschauGalerieTexts : defaultGalerieTexts
   const willkommenRef = React.useRef<HTMLDivElement>(null)
   const galerieRef = React.useRef<HTMLDivElement>(null)
   const kunstschaffendeRef = React.useRef<HTMLDivElement>(null)
   const [mobileUrl, setMobileUrl] = React.useState<string>('')
+  // Willkommens-Fenster (nur öffentliche Galerie): nur auf Mobilgeräten (QR-Einstieg). Am Mac/Desktop direkt rein wie lizenzierter Benutzer.
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false)
+  const [welcomeName, setWelcomeName] = useState('')
+  useEffect(() => {
+    if (!musterOnly) return
+    try {
+      const isMobile = window.innerWidth <= 768 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+      if (isMobile && !sessionStorage.getItem(KEY_GALERIE_WELCOME_SEEN)) setShowWelcomeModal(true)
+    } catch (_) {}
+  }, [musterOnly])
+  const closeWelcomeNurUmschauen = () => {
+    try { sessionStorage.setItem(KEY_GALERIE_WELCOME_SEEN, '1') } catch (_) {}
+    setShowWelcomeModal(false)
+  }
+  const goVorschauEntwurf = () => {
+    const n = welcomeName.trim()
+    if (n) {
+      try {
+        sessionStorage.setItem(WILLKOMMEN_NAME_KEY, n)
+        sessionStorage.setItem(WILLKOMMEN_ENTWURF_KEY, '1')
+      } catch (_) {}
+    }
+    try { sessionStorage.setItem(KEY_GALERIE_WELCOME_SEEN, '1') } catch (_) {}
+    setShowWelcomeModal(false)
+    navigate(PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau)
+  }
   // Mobile-Erkennung: Prüfe sowohl Bildschirmbreite als auch User-Agent
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window === 'undefined') return false
@@ -194,6 +234,15 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
   const [vercelQrDataUrl, setVercelQrDataUrl] = useState('')
   // adminPassword wird nur für Initialisierung verwendet, nicht für Login-Validierung
   const [, setAdminPassword] = useState('')
+  // Testphase + Passwort setzen / vergessen
+  const [showSetPassword, setShowSetPassword] = useState(false)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const [setPasswordEmail, setSetPasswordEmail] = useState('')
+  const [setPasswordPhone, setSetPasswordPhone] = useState('')
+  const [setPasswordNew, setSetPasswordNew] = useState('')
+  const [setPasswordConfirm, setSetPasswordConfirm] = useState('')
+  const [forgotEmailOrPhone, setForgotEmailOrPhone] = useState('')
+  const [forgotSent, setForgotSent] = useState(false)
 
   useEffect(() => {
     const handleResize = () => {
@@ -293,6 +342,101 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
     }
   }, [musterOnly])
 
+  // ök2: Zuerst Bilder aus localStorage (von mök2 reinziehen), sonst galleryData / OEK2_WILLKOMMEN_IMAGES
+  const [oefImagesVersion, setOefImagesVersion] = useState(0)
+  useEffect(() => {
+    if (!musterOnly) return
+    const onUpdate = () => setOefImagesVersion((v) => v + 1)
+    window.addEventListener('k2-oeffentlich-images-updated', onUpdate)
+    return () => window.removeEventListener('k2-oeffentlich-images-updated', onUpdate)
+  }, [musterOnly])
+  const displayImages = useMemo(() => {
+    if (musterOnly) {
+      try {
+        const fromStorage = (key: string) => {
+          const v = localStorage.getItem(key)
+          return (v && v.trim()) || ''
+        }
+        return {
+          welcomeImage: fromStorage('k2-oeffentlich-welcomeImage') || (galleryData.welcomeImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.welcomeImage,
+          galerieCardImage: fromStorage('k2-oeffentlich-galerieInnenImage') || (galleryData.galerieCardImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.galerieCardImage,
+          virtualTourImage: fromStorage('k2-oeffentlich-galerieInnenImage') || (galleryData.virtualTourImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.virtualTourImage
+        }
+      } catch (_) {
+        return {
+          welcomeImage: (galleryData.welcomeImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.welcomeImage,
+          galerieCardImage: (galleryData.galerieCardImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.galerieCardImage,
+          virtualTourImage: (galleryData.virtualTourImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.virtualTourImage
+        }
+      }
+    }
+    return getGalerieImages(galleryData)
+  }, [musterOnly, galleryData, oefImagesVersion])
+
+  // ök2: Bei Ladefehler Willkommensbild Fallback anzeigen (kein blaues Fragezeichen)
+  const [welcomeImageFailed, setWelcomeImageFailed] = useState(false)
+  useEffect(() => {
+    if (musterOnly && displayImages.welcomeImage) setWelcomeImageFailed(false)
+  }, [musterOnly, displayImages.welcomeImage])
+
+  // ök2: Bild direkt auf die Galerie ziehen – speichern in localStorage, sofort anzeigen
+  const [galerieDropOver, setGalerieDropOver] = useState(false)
+  const oefDropMountedRef = React.useRef(true)
+  React.useEffect(() => {
+    oefDropMountedRef.current = true
+    return () => { oefDropMountedRef.current = false }
+  }, [])
+  const saveOefWelcomeFromFile = React.useCallback((file: File) => {
+    if (!file.type.startsWith('image/')) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      try {
+        let dataUrl = String(reader.result)
+        if (dataUrl.length > 600_000) {
+          const img = new Image()
+          img.onload = () => {
+            if (!oefDropMountedRef.current) return
+            const c = document.createElement('canvas')
+            const scale = img.width > 1200 ? 1200 / img.width : 1
+            c.width = Math.round(img.width * scale)
+            c.height = Math.round(img.height * scale)
+            const ctx = c.getContext('2d')
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, c.width, c.height)
+              dataUrl = c.toDataURL('image/jpeg', 0.85)
+            }
+            try {
+              localStorage.setItem('k2-oeffentlich-welcomeImage', dataUrl)
+              window.dispatchEvent(new Event('k2-oeffentlich-images-updated'))
+              if (oefDropMountedRef.current) setOefImagesVersion((v) => v + 1)
+            } catch (_) {}
+          }
+          img.src = dataUrl
+        } else {
+          localStorage.setItem('k2-oeffentlich-welcomeImage', dataUrl)
+          window.dispatchEvent(new Event('k2-oeffentlich-images-updated'))
+          if (oefDropMountedRef.current) setOefImagesVersion((v) => v + 1)
+        }
+      } catch (_) {}
+    }
+    reader.readAsDataURL(file)
+  }, [])
+  const handleGalerieDrop = React.useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setGalerieDropOver(false)
+    const file = e.dataTransfer?.files?.[0]
+    if (file) saveOefWelcomeFromFile(file)
+  }, [saveOefWelcomeFromFile])
+  const handleGalerieDragOver = React.useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'copy'
+    setGalerieDropOver(true)
+  }, [])
+  const handleGalerieDragLeave = React.useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) setGalerieDropOver(false)
+  }, [])
+
   // Willkommensseite setzt NICHT das „von Galerie“-Flag – Workflow in der Ausstellung: hier starten → Admin (Passwort) → Kassa oder neue Werke. Flag nur auf Galerie-Vorschau (Werke ansehen).
   // LAN-IP für QR (z. B. 192.168.0.31) – bei localhost per RTCPeerConnection ermitteln
   const [detectedLanIp, setDetectedLanIp] = useState<string>('')
@@ -362,12 +506,41 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
     }
   }, [mobileUrl, mobileUrlMemo])
 
+  // Server-Stand für QR – QR nur mit Server-Stand bauen, sonst zeigt Scan alte Version (Regel stand-qr-niemals-zurueck)
+  const serverBuildTs = useServerBuildTimestamp()
   const qrVersionTs = useQrVersionTimestamp()
-  const vercelGalerieUrl = GALLERY_DATA_PUBLIC_URL + PROJECT_ROUTES['k2-galerie'].galerie
-  // Ein QR für Impressum (Vercel – funktioniert überall)
+  // ök2: QR MUSS auf Muster-Galerie zeigen (galerie-oeffentlich), nie auf K2 – sonst zeigt Scan die echte K2-Seite
+  const vercelGalerieUrl = useMemo(() => {
+    if (musterOnly) {
+      const url = GALLERY_DATA_PUBLIC_URL + PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+      if (!url.includes('galerie-oeffentlich')) return GALLERY_DATA_PUBLIC_URL + '/projects/k2-galerie/galerie-oeffentlich'
+      return url
+    }
+    return GALLERY_DATA_PUBLIC_URL + PROJECT_ROUTES['k2-galerie'].galerie
+  }, [musterOnly])
+  // QR alle 45 s neu bauen mit frischem _= (Cache-Bust), damit Scan am Handy nicht gecachte alte Version lädt
+  const [qrBustTick, setQrBustTick] = useState(0)
   useEffect(() => {
-    QRCode.toDataURL(buildQrUrlWithBust(vercelGalerieUrl, qrVersionTs), { width: 100, margin: 1 }).then(setVercelQrDataUrl).catch(() => setVercelQrDataUrl(''))
-  }, [vercelGalerieUrl, qrVersionTs])
+    const t = setInterval(() => setQrBustTick((k) => k + 1), 45000)
+    return () => clearInterval(t)
+  }, [])
+  useEffect(() => {
+    let cancelled = false
+    if (serverBuildTs == null) {
+      setVercelQrDataUrl('')
+      return
+    }
+    const urlForQr = vercelGalerieUrl
+    if (musterOnly && !urlForQr.includes('galerie-oeffentlich')) {
+      if (!cancelled) setVercelQrDataUrl('')
+      return
+    }
+    const qrUrl = buildQrUrlWithBust(urlForQr, serverBuildTs)
+    QRCode.toDataURL(qrUrl, { width: 100, margin: 1 })
+      .then((url) => { if (!cancelled) setVercelQrDataUrl(url) })
+      .catch(() => { if (!cancelled) setVercelQrDataUrl('') })
+    return () => { cancelled = true }
+  }, [vercelGalerieUrl, serverBuildTs, qrVersionTs, musterOnly, qrBustTick])
 
   // Aktualisieren-Funktion für Mobile-Version - lädt neue Daten ohne Reload
   const [isRefreshing, setIsRefreshing] = React.useState(false)
@@ -1306,13 +1479,18 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
       } catch {}
     }
     
-    const intervalId = setInterval(checkStammdatenUpdate, 2000)
-    loadData()
-    
-    // Ein einziger Cleanup: interval, timeout, controller, isMounted
+    // Crash-Schutz: Erst nach 1 s laden (fetch + viel setState), damit erste Anzeige fertig ist
+    let intervalId: ReturnType<typeof setInterval> | null = null
+    const startId = setTimeout(() => {
+      if (!isMounted) return
+      loadData()
+      intervalId = setInterval(checkStammdatenUpdate, 2000)
+    }, 1000)
+
     return () => {
       isMounted = false
-      clearInterval(intervalId)
+      clearTimeout(startId)
+      if (intervalId) clearInterval(intervalId)
       if (timeoutId) clearTimeout(timeoutId)
       if (controller) controller.abort()
     }
@@ -1337,9 +1515,87 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
     }
   }, [])
 
+  // Testphase: Erstbesuch speichern und prüfen ob innerhalb 2 Wochen
+  const getFirstVisitKey = () => musterOnly ? KEY_FIRST_VISIT_OEF : KEY_FIRST_VISIT_K2
+  const isInTestPhase = (): boolean => {
+    try {
+      const key = getFirstVisitKey()
+      let ts = localStorage.getItem(key)
+      if (!ts) return true // Noch nie → zählt als Testphase-Start
+      const first = parseInt(ts, 10)
+      if (Number.isNaN(first)) return true
+      return (Date.now() - first) <= ADMIN_TESTPHASE_MS
+    } catch { return false }
+  }
+  const setFirstVisitNow = () => {
+    try {
+      const key = getFirstVisitKey()
+      if (!localStorage.getItem(key)) localStorage.setItem(key, String(Date.now()))
+    } catch (_) {}
+  }
+  const testPhaseEndDate = (): string => {
+    try {
+      const key = getFirstVisitKey()
+      const ts = localStorage.getItem(key)
+      if (!ts) return ''
+      const first = parseInt(ts, 10)
+      if (Number.isNaN(first)) return ''
+      const end = new Date(first + ADMIN_TESTPHASE_MS)
+      return end.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })
+    } catch { return '' }
+  }
+  const daysLeftInTestPhase = (): number => {
+    try {
+      const key = getFirstVisitKey()
+      const ts = localStorage.getItem(key)
+      if (!ts) return ADMIN_TESTPHASE_DAYS
+      const first = parseInt(ts, 10)
+      if (Number.isNaN(first)) return ADMIN_TESTPHASE_DAYS
+      const elapsed = Date.now() - first
+      if (elapsed >= ADMIN_TESTPHASE_MS) return 0
+      return Math.ceil((ADMIN_TESTPHASE_MS - elapsed) / (24 * 60 * 60 * 1000))
+    } catch { return 0 }
+  }
+
+  // Aktuelles Admin-Passwort (K2 aus Stammdaten, ök2 aus eigenem Key)
+  const getCurrentAdminPassword = (): string => {
+    if (musterOnly) {
+      try {
+        return localStorage.getItem(KEY_OEF_ADMIN_PASSWORD) || ''
+      } catch { return '' }
+    }
+    try {
+      const galleryStored = localStorage.getItem('k2-stammdaten-galerie')
+      if (galleryStored) {
+        const data = JSON.parse(galleryStored)
+        return data.adminPassword || 'k2Galerie2026'
+      }
+    } catch (_) {}
+    return 'k2Galerie2026'
+  }
+
+  const grantAdminAccess = () => {
+    try {
+      setFirstVisitNow()
+      sessionStorage.setItem('k2-admin-context', musterOnly ? 'oeffentlich' : 'k2')
+      if (rememberAdmin && !musterOnly) {
+        localStorage.setItem('k2-admin-unlocked', 'k2')
+        localStorage.setItem('k2-admin-unlocked-expiry', String(Date.now() + 30 * 24 * 60 * 60 * 1000))
+      } else if (!rememberAdmin) {
+        localStorage.removeItem('k2-admin-unlocked')
+        localStorage.removeItem('k2-admin-unlocked-expiry')
+      }
+    } catch (_) {}
+    navigate(musterOnly ? '/admin?context=oeffentlich' : '/admin')
+    setShowAdminModal(false)
+    setAdminPasswordInput('')
+    setShowSetPassword(false)
+    setShowForgotPassword(false)
+    setForgotSent(false)
+  }
+
   // Admin-Login Funktion
   const handleAdminLogin = () => {
-    // Auf localhost automatisch ohne Passwort
     const isLocalhost = window.location.hostname === 'localhost' || 
                        window.location.hostname === '127.0.0.1' ||
                        window.location.hostname === '192.168.0.31' ||
@@ -1357,18 +1613,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
       return
     }
     
-    // Lade Passwort direkt aus localStorage für aktuelle Validierung
-    let currentPassword = 'k2Galerie2026' // Standard
-    try {
-      const galleryStored = localStorage.getItem('k2-stammdaten-galerie')
-      if (galleryStored) {
-        const data = JSON.parse(galleryStored)
-        currentPassword = data.adminPassword || 'k2Galerie2026'
-      }
-    } catch (error) {
-      // Verwende Standard-Passwort bei Fehler
+    setFirstVisitNow()
+    // Testphase: innerhalb 2 Wochen und noch kein Passwort gesetzt → ohne Passwort rein
+    if (isInTestPhase() && !getCurrentAdminPassword()) {
+      grantAdminAccess()
+      return
     }
     
+    const currentPassword = getCurrentAdminPassword()
     if (adminPasswordInput === currentPassword) {
       try {
         sessionStorage.setItem('k2-admin-context', musterOnly ? 'oeffentlich' : 'k2')
@@ -1389,7 +1641,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
     }
   }
 
-  // Admin-Button Klick Handler (wenn Login bereits gespeichert → direkt zu Admin, auch auf Mobil)
+  // Admin-Button Klick Handler (K2/ök2 strikt getrennt: von ök2-Galerie aus niemals K2-Session nutzen)
   const handleAdminButtonClick = () => {
     const isLocalhost = window.location.hostname === 'localhost' || 
                        window.location.hostname === '127.0.0.1' ||
@@ -1401,7 +1653,23 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
       navigate(musterOnly ? '/admin?context=oeffentlich' : '/admin')
       return
     }
-    // Bereits eingeloggt (Session oder „Passwort merken“)?
+    // Von ök2-Galerie: nur ök2-Zugang – nie K2-Session/k2-admin-unlocked prüfen (sonst käme Gast mit K2-Passwort in K2-Admin)
+    if (musterOnly) {
+      try {
+        if (sessionStorage.getItem('k2-admin-context') === 'oeffentlich') {
+          navigate('/admin?context=oeffentlich')
+          return
+        }
+      } catch (_) {}
+      setFirstVisitNow()
+      if (isInTestPhase() && !getCurrentAdminPassword()) {
+        grantAdminAccess()
+        return
+      }
+      setShowAdminModal(true)
+      return
+    }
+    // K2-Galerie: bestehende K2-Session / „Passwort merken“ nutzen
     try {
       if (sessionStorage.getItem('k2-admin-context') === 'k2') {
         navigate('/admin')
@@ -1415,7 +1683,65 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
         return
       }
     } catch (_) {}
+    setFirstVisitNow()
+    if (isInTestPhase() && !getCurrentAdminPassword()) {
+      grantAdminAccess()
+      return
+    }
     setShowAdminModal(true)
+  }
+
+  // Passwort setzen (ök2: eigener Key; K2: in Stammdaten speichern)
+  const handleSetPassword = () => {
+    if (setPasswordNew.length < 6) {
+      alert('Passwort muss mindestens 6 Zeichen haben.')
+      return
+    }
+    if (setPasswordNew !== setPasswordConfirm) {
+      alert('Passwort und Wiederholung stimmen nicht überein.')
+      return
+    }
+    try {
+      if (musterOnly) {
+        localStorage.setItem(KEY_OEF_ADMIN_PASSWORD, setPasswordNew)
+        if (setPasswordEmail.trim()) localStorage.setItem(KEY_OEF_ADMIN_EMAIL, setPasswordEmail.trim())
+        if (setPasswordPhone.trim()) localStorage.setItem(KEY_OEF_ADMIN_PHONE, setPasswordPhone.trim())
+      } else {
+        const galleryStored = localStorage.getItem('k2-stammdaten-galerie')
+        const data = galleryStored ? JSON.parse(galleryStored) : {}
+        data.adminPassword = setPasswordNew
+        localStorage.setItem('k2-stammdaten-galerie', JSON.stringify(data))
+      }
+      alert('✅ Passwort wurde gespeichert. Du kannst es beim nächsten Mal zum Anmelden nutzen.')
+      setShowSetPassword(false)
+      setSetPasswordNew('')
+      setSetPasswordConfirm('')
+      setSetPasswordEmail('')
+      setSetPasswordPhone('')
+    } catch (e) {
+      alert('Speichern fehlgeschlagen.')
+    }
+  }
+
+  // Passwort vergessen: E-Mail/Tel anfordern → Hinweis (E-Mail-Versand kann später aktiviert werden)
+  const handleForgotPassword = () => {
+    const contact = musterOnly
+      ? (localStorage.getItem(KEY_OEF_ADMIN_EMAIL) || localStorage.getItem(KEY_OEF_ADMIN_PHONE) || '')
+      : (() => {
+          try {
+            const g = localStorage.getItem('k2-stammdaten-galerie')
+            const d = g ? JSON.parse(g) : {}
+            return d.email || d.phone || ''
+          } catch { return '' }
+        })()
+    setForgotSent(true)
+    if (forgotEmailOrPhone.trim()) {
+      // TODO: Backend-Anbindung für E-Mail/SMS – bis dahin Hinweis
+      const msg = contact
+        ? `Falls ein Zugang mit dieser Angabe existiert, wird in Kürze ein Link zum Zurücksetzen gesendet.\n\n(E-Mail-Versand wird aktiviert – bis dahin: Kontakt unter ${contact} für manuellen Reset.)`
+        : 'Falls ein Zugang mit dieser Angabe existiert, wird in Kürze ein Link zum Zurücksetzen gesendet.\n\n(E-Mail-Versand wird aktiviert.)'
+      alert(msg)
+    }
   }
 
   const theme = musterOnly
@@ -1587,6 +1913,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
               if (e.target === e.currentTarget) {
                 setShowAdminModal(false)
                 setAdminPasswordInput('')
+                setShowSetPassword(false)
+                setShowForgotPassword(false)
+                setForgotSent(false)
               }
             }}
           >
@@ -1602,6 +1931,75 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
               }}
               onClick={(e) => e.stopPropagation()}
             >
+              {showForgotPassword ? (
+                <>
+                  <h3 style={{ margin: '0 0 1rem', fontSize: 'clamp(1.1rem, 2.8vw, 1.35rem)', fontWeight: 600, color: '#ffffff', textAlign: 'center' }}>
+                    Passwort zurücksetzen
+                  </h3>
+                  <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)', textAlign: 'center' }}>
+                    E-Mail oder Telefonnummer eingeben – du erhältst einen Link zum Zurücksetzen.
+                  </p>
+                  {!forgotSent ? (
+                    <>
+                      <input
+                        type="text"
+                        value={forgotEmailOrPhone}
+                        onChange={(e) => setForgotEmailOrPhone(e.target.value)}
+                        placeholder="E-Mail oder Telefon"
+                        style={{
+                          width: '100%',
+                          padding: 'clamp(0.75rem, 2vw, 1rem)',
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          borderRadius: 12,
+                          color: '#ffffff',
+                          fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                          marginBottom: '1rem',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleForgotPassword}
+                        style={{
+                          width: '100%',
+                          padding: 'clamp(0.75rem, 2vw, 1rem)',
+                          background: 'linear-gradient(135deg, var(--k2-accent) 0%, #e67a2a 100%)',
+                          border: 'none',
+                          borderRadius: 12,
+                          color: '#ffffff',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          fontSize: '1rem'
+                        }}
+                      >
+                        Link anfordern
+                      </button>
+                    </>
+                  ) : (
+                    <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)' }}>
+                      Falls ein Zugang existiert, wurde ein Hinweis gesendet. Prüfe deine E-Mail bzw. nutze bei Bedarf den Kontakt für manuellen Reset.
+                    </p>
+                  )}
+                  <button type="button" onClick={() => { setShowForgotPassword(false); setForgotSent(false); setForgotEmailOrPhone('') }} style={{ marginTop: '1rem', background: 'none', border: 'none', color: 'var(--k2-accent)', cursor: 'pointer', fontSize: '0.9rem' }}>← Zurück</button>
+                </>
+              ) : showSetPassword ? (
+                <>
+                  <h3 style={{ margin: '0 0 1rem', fontSize: 'clamp(1.1rem, 2.8vw, 1.35rem)', fontWeight: 600, color: '#ffffff', textAlign: 'center' }}>
+                    Passwort setzen
+                  </h3>
+                  <p style={{ margin: '0 0 1rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', textAlign: 'center' }}>
+                    Mindestens 6 Zeichen. E-Mail/Telefon optional – für Passwort-Zurücksetzen falls vergessen.
+                  </p>
+                  <input type="email" value={setPasswordEmail} onChange={(e) => setSetPasswordEmail(e.target.value)} placeholder="E-Mail (optional)" style={{ width: '100%', padding: '0.6rem 0.9rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10, color: '#fff', fontSize: '0.9rem', marginBottom: '0.5rem', boxSizing: 'border-box' }} />
+                  <input type="tel" value={setPasswordPhone} onChange={(e) => setSetPasswordPhone(e.target.value)} placeholder="Telefon (optional)" style={{ width: '100%', padding: '0.6rem 0.9rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10, color: '#fff', fontSize: '0.9rem', marginBottom: '0.5rem', boxSizing: 'border-box' }} />
+                  <input type="password" value={setPasswordNew} onChange={(e) => setSetPasswordNew(e.target.value)} placeholder="Neues Passwort (min. 6 Zeichen)" style={{ width: '100%', padding: '0.6rem 0.9rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10, color: '#fff', fontSize: '0.9rem', marginBottom: '0.5rem', boxSizing: 'border-box' }} />
+                  <input type="password" value={setPasswordConfirm} onChange={(e) => setSetPasswordConfirm(e.target.value)} placeholder="Passwort wiederholen" style={{ width: '100%', padding: '0.6rem 0.9rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10, color: '#fff', fontSize: '0.9rem', marginBottom: '1rem', boxSizing: 'border-box' }} />
+                  <button type="button" onClick={handleSetPassword} style={{ width: '100%', padding: '0.75rem', background: 'linear-gradient(135deg, var(--k2-accent) 0%, #e67a2a 100%)', border: 'none', borderRadius: 12, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '1rem' }}>Passwort speichern</button>
+                  <button type="button" onClick={() => setShowSetPassword(false)} style={{ marginTop: '0.75rem', background: 'none', border: 'none', color: 'var(--k2-accent)', cursor: 'pointer', fontSize: '0.9rem' }}>← Zurück</button>
+                </>
+              ) : (
+                <>
               <h3 style={{
                 margin: '0 0 1.5rem',
                 fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
@@ -1611,6 +2009,11 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
               }}>
                 Admin-Zugang
               </h3>
+              {isInTestPhase() && (
+                <p style={{ margin: '0 0 1rem', padding: '0.75rem', background: 'rgba(255,255,255,0.08)', borderRadius: 10, fontSize: '0.85rem', color: 'rgba(255,255,255,0.9)' }}>
+                  Du bist in der Testphase (noch {daysLeftInTestPhase()} Tage bis {testPhaseEndDate()}). Optional: Passwort setzen, um später wiederzukommen.
+                </p>
+              )}
               <input
                 type="password"
                 value={adminPasswordInput}
@@ -1620,7 +2023,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                     handleAdminLogin()
                   }
                 }}
-                placeholder="Passwort eingeben"
+                placeholder={isInTestPhase() && !getCurrentAdminPassword() ? 'Leer lassen für Testphase oder Passwort eingeben' : 'Passwort eingeben'}
                 style={{
                   width: '100%',
                   padding: 'clamp(0.75rem, 2vw, 1rem)',
@@ -1639,7 +2042,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.5rem',
-                marginBottom: '1.5rem',
+                marginBottom: '1rem',
                 cursor: 'pointer',
                 fontSize: 'clamp(0.85rem, 2.2vw, 0.95rem)',
                 color: 'rgba(255, 255, 255, 0.85)'
@@ -1653,6 +2056,11 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                 Passwort merken (30 Tage, auch auf Mobil)
               </label>
               )}
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <button type="button" onClick={() => setShowSetPassword(true)} style={{ background: 'none', border: 'none', color: 'var(--k2-accent)', cursor: 'pointer', fontSize: '0.85rem', textDecoration: 'underline' }}>Passwort setzen</button>
+                <span style={{ color: 'rgba(255,255,255,0.5)' }}>·</span>
+                <button type="button" onClick={() => setShowForgotPassword(true)} style={{ background: 'none', border: 'none', color: 'var(--k2-accent)', cursor: 'pointer', fontSize: '0.85rem', textDecoration: 'underline' }}>Passwort vergessen?</button>
+              </div>
               <div style={{
                 display: 'flex',
                 gap: '1rem'
@@ -1661,6 +2069,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   onClick={() => {
                     setShowAdminModal(false)
                     setAdminPasswordInput('')
+                    setShowSetPassword(false)
+                    setShowForgotPassword(false)
                   }}
                   style={{
                     flex: 1,
@@ -1709,6 +2119,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   Anmelden
                 </button>
               </div>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -1734,7 +2146,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
               letterSpacing: '-0.02em',
               lineHeight: '1.1'
             }}>
-              {(galerieTexts.heroTitle ?? '').trim() || tenantConfig.galleryName}
+              {musterOnly ? tenantConfig.galleryName : ((galerieTexts.heroTitle ?? '').trim() || tenantConfig.galleryName)}
             </h1>
             <p style={{ 
               margin: '0.75rem 0 0', 
@@ -1743,7 +2155,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
               fontWeight: '300',
               letterSpacing: '0.05em'
             }}>
-              {(galerieTexts.welcomeSubtext ?? '').trim() || tenantConfig.tagline}
+              {musterOnly ? tenantConfig.tagline : ((galerieTexts.welcomeSubtext ?? '').trim() || tenantConfig.tagline)}
             </p>
           </div>
 
@@ -1762,14 +2174,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
               color: 'var(--k2-text)',
               letterSpacing: '-0.02em'
             }}>
-              {(galerieTexts.welcomeHeading ?? 'Willkommen bei').trim() || 'Willkommen bei'} {(galerieTexts.heroTitle ?? '').trim() || tenantConfig.galleryName} –<br />
+              {musterOnly ? 'Willkommen bei' : ((galerieTexts.welcomeHeading ?? 'Willkommen bei').trim() || 'Willkommen bei')} {musterOnly ? tenantConfig.galleryName : ((galerieTexts.heroTitle ?? '').trim() || tenantConfig.galleryName)} –<br />
               <span style={{
                 background: musterOnly ? 'linear-gradient(135deg, var(--k2-accent) 0%, #6b9080 100%)' : 'linear-gradient(135deg, var(--k2-accent) 0%, #e67a2a 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text'
               }}>
-                {(galerieTexts.welcomeSubtext ?? '').trim() || tenantConfig.tagline}
+                {musterOnly ? tenantConfig.tagline : ((galerieTexts.welcomeSubtext ?? '').trim() || tenantConfig.tagline)}
               </span>
             </h2>
             <p style={{ 
@@ -1782,9 +2194,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
             }}>
               {musterOnly ? MUSTER_TEXTE.welcomeText : (galerieTexts.welcomeIntroText?.trim() || 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.')}
             </p>
-            {(function () {
-              const galerieImages = getGalerieImages(galleryData)
-              return galerieImages.welcomeImage && (
+            {displayImages.welcomeImage && (
               <div style={{
                 width: '100%',
                 maxWidth: '100%',
@@ -1795,9 +2205,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 boxSizing: 'border-box'
               }}>
-                <img 
-                  src={galerieImages.welcomeImage} 
-                  alt="Willkommen" 
+                <img
+                  src={musterOnly && welcomeImageFailed ? OEK2_PLACEHOLDER_IMAGE : displayImages.welcomeImage}
+                  alt="Willkommen"
+                  onError={() => { if (musterOnly) setWelcomeImageFailed(true) }}
                   style={{
                     width: '100%',
                     maxWidth: '100%',
@@ -1809,8 +2220,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   }}
                 />
               </div>
-            )
-            })()}
+            )}
             {/* QR-Code ENTFERNT von Willkommensseite - jetzt im Impressum unten */}
           </section>
         </header>
@@ -1936,16 +2346,16 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                     {(musterOnly ? MUSTER_TEXTE.martina.name : ((tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name))).charAt(0)}
                   </div>
                   <div>
-                    <span style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', fontWeight: '600' }}>Bilder</span>
-                    <h4 style={{ margin: '0.25rem 0 0', fontSize: 'clamp(1.2rem, 3.2vw, 1.6rem)', color: '#ffffff', fontWeight: '600' }}>
+                    <span style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', letterSpacing: '0.12em', textTransform: 'uppercase', color: musterOnly ? theme.muted : 'rgba(255,255,255,0.5)', fontWeight: '600' }}>Bilder</span>
+                    <h4 style={{ margin: '0.25rem 0 0', fontSize: 'clamp(1.2rem, 3.2vw, 1.6rem)', color: theme.text, fontWeight: '600' }}>
                       {musterOnly ? MUSTER_TEXTE.martina.name : ((tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name))}
                     </h4>
                   </div>
                 </div>
-                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', margin: 0, lineHeight: '1.7' }}>
-                  {(musterOnly ? (galerieTexts.martinaBio || MUSTER_TEXTE.artist1Bio) : (galerieTexts.martinaBio || 'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. Ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.'))}
+                <p style={{ color: musterOnly ? theme.text : 'rgba(255, 255, 255, 0.8)', fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', margin: 0, lineHeight: '1.7' }}>
+                  {(musterOnly ? (galerieTexts.martinaBio || MUSTER_TEXTE.artist1Bio) : (galerieTexts.martinaBio || 'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.'))}
                 </p>
-                <Link to={PROJECT_ROUTES['k2-galerie'].vitaMartina} style={{ display: 'inline-block', marginTop: '0.75rem', fontSize: '0.85rem', color: 'rgba(184, 184, 255, 0.9)', textDecoration: 'none', fontWeight: 600 }}>Vita</Link>
+                <Link to={PROJECT_ROUTES['k2-galerie'].vitaMartina} style={{ display: 'inline-block', marginTop: '0.75rem', fontSize: '0.85rem', color: theme.accent, textDecoration: 'none', fontWeight: 600 }}>Vita</Link>
               </div>
               
               {/* Georg – Keramik: Karte mit Ton-Akzent, andere Ecke betont */}
@@ -1990,16 +2400,16 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                     {(musterOnly ? MUSTER_TEXTE.georg.name : ((tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name))).charAt(0)}
                   </div>
                   <div>
-                    <span style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', fontWeight: '600' }}>Keramik</span>
-                    <h4 style={{ margin: '0.25rem 0 0', fontSize: 'clamp(1.2rem, 3.2vw, 1.6rem)', color: '#ffffff', fontWeight: '600' }}>
+                    <span style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', letterSpacing: '0.12em', textTransform: 'uppercase', color: musterOnly ? theme.muted : 'rgba(255,255,255,0.5)', fontWeight: '600' }}>Keramik</span>
+                    <h4 style={{ margin: '0.25rem 0 0', fontSize: 'clamp(1.2rem, 3.2vw, 1.6rem)', color: theme.text, fontWeight: '600' }}>
                       {musterOnly ? MUSTER_TEXTE.georg.name : ((tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name))}
                     </h4>
                   </div>
                 </div>
-                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', margin: 0, lineHeight: '1.7' }}>
+                <p style={{ color: musterOnly ? theme.text : 'rgba(255, 255, 255, 0.8)', fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', margin: 0, lineHeight: '1.7' }}>
                   {(musterOnly ? (galerieTexts.georgBio || MUSTER_TEXTE.artist2Bio) : (galerieTexts.georgBio || 'Georg verbindet in seiner Keramikarbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail, das Ergebnis von langjähriger Erfahrung.'))}
                 </p>
-                <Link to={PROJECT_ROUTES['k2-galerie'].vitaGeorg} style={{ display: 'inline-block', marginTop: '0.75rem', fontSize: '0.85rem', color: 'rgba(245, 87, 108, 0.9)', textDecoration: 'none', fontWeight: 600 }}>Vita</Link>
+                <Link to={PROJECT_ROUTES['k2-galerie'].vitaGeorg} style={{ display: 'inline-block', marginTop: '0.75rem', fontSize: '0.85rem', color: theme.accent, textDecoration: 'none', fontWeight: 600 }}>Vita</Link>
               </div>
             </div>
             
@@ -2007,7 +2417,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
               marginTop: 'clamp(2rem, 5vw, 3rem)', 
               fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', 
               lineHeight: '1.7',
-              color: 'rgba(255, 255, 255, 0.8)',
+              color: musterOnly ? theme.text : 'rgba(255, 255, 255, 0.8)',
               textAlign: 'center',
               maxWidth: '800px',
               marginLeft: 'auto',
@@ -2019,15 +2429,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
             </p>
 
             {/* Eingangshalle: zwei Türen – Galerie (mit Shop-Hinweis) und Virtueller Rundgang. Admin = Button oben rechts. */}
-            <p style={{
-              fontSize: 'clamp(0.9rem, 2.2vw, 1rem)',
-              color: musterOnly ? 'var(--k2-muted)' : 'rgba(255, 255, 255, 0.7)',
-              marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
-              textAlign: 'center',
-              letterSpacing: '0.03em'
-            }}>
-              Willkommen in der Eingangshalle – wähle deinen Weg:
-            </p>
             <div style={{
               display: 'grid',
               gridTemplateColumns: musterOnly ? '1fr' : '1.2fr 1fr',
@@ -2054,7 +2455,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   borderRadius: '12px',
                   overflow: 'hidden',
                   marginBottom: 'clamp(1rem, 3vw, 1.5rem)',
-                  background: (() => { const gi = getGalerieImages(galleryData); return gi.galerieCardImage; })() 
+                  background: displayImages.galerieCardImage 
                     ? 'transparent' 
                     : 'linear-gradient(135deg, rgba(255, 140, 66, 0.15) 0%, rgba(230, 122, 42, 0.15) 100%)',
                   display: 'flex',
@@ -2063,10 +2464,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   border: '1px solid rgba(255, 255, 255, 0.1)',
                   boxSizing: 'border-box'
                 }}>
-                  {(function () { const gi = getGalerieImages(galleryData); return gi.galerieCardImage ? (
+                  {displayImages.galerieCardImage ? (
                     <img 
-                      src={gi.galerieCardImage} 
-                      alt="In die Galerie" 
+                      src={displayImages.galerieCardImage} 
+                      alt="Galerie" 
                       style={{
                         width: '100%',
                         maxWidth: '100%',
@@ -2078,25 +2479,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                     />
                   ) : (
                     <div style={{ fontSize: 'clamp(3rem, 8vw, 5rem)', opacity: 0.3 }}>🖼️</div>
-                  );
-                  })()}
+                  )}
                 </div>
-                <h3 style={{
-                  fontSize: 'clamp(1.25rem, 3.5vw, 1.5rem)',
-                  fontWeight: '700',
-                  color: '#ffffff',
-                  marginBottom: 'clamp(0.5rem, 1.5vw, 0.75rem)'
-                }}>
-                  In die Galerie
-                </h3>
-                <p style={{
-                  fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                  color: 'rgba(255, 255, 255, 0.85)',
-                  marginBottom: 'clamp(1rem, 3vw, 1.25rem)',
-                  lineHeight: '1.55'
-                }}>
-                  Wir laden dich/Sie ein, die Galerie zu betreten und die Werke zu entdecken.
-                </p>
                 <Link 
                   to={musterOnly ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerieVorschau}
                   state={musterOnly ? undefined : { fromAdmin: (location.state as { fromAdmin?: boolean } | null)?.fromAdmin === true }}
@@ -2124,7 +2508,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                     e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.35)'
                   }}
                 >
-                  Galerie betreten →
+                  Herzlich willkommen – Galerie betreten →
                 </Link>
                 {!musterOnly && (
                   <p style={{
@@ -2133,7 +2517,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                     color: 'rgba(255, 255, 255, 0.6)',
                     lineHeight: 1.4
                   }}>
-                    In der Galerie findest du/finden Sie auch unseren Shop.
+                    In der Galerie findest du auch unseren Shop.
                   </p>
                 )}
               </div>
@@ -2157,7 +2541,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   borderRadius: '10px',
                   overflow: 'hidden',
                   marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
-                  background: (() => { const gi = getGalerieImages(galleryData); return gi.virtualTourImage; })() 
+                  background: displayImages.virtualTourImage 
                     ? 'transparent' 
                     : 'linear-gradient(135deg, rgba(255, 140, 66, 0.15) 0%, rgba(230, 122, 42, 0.15) 100%)',
                   display: 'flex',
@@ -2166,9 +2550,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                   border: '1px solid rgba(255, 255, 255, 0.08)',
                   boxSizing: 'border-box'
                 }}>
-                  {(function () { const gi = getGalerieImages(galleryData); return gi.virtualTourImage ? (
+                  {displayImages.virtualTourImage ? (
                     <img 
-                      src={gi.virtualTourImage} 
+                      src={displayImages.virtualTourImage} 
                       alt="Virtueller Rundgang" 
                       style={{
                         width: '100%',
@@ -2181,8 +2565,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                     />
                   ) : (
                     <div style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', opacity: 0.25 }}>📸</div>
-                  );
-                  })()}
+                  )}
                 </div>
                 <h3 style={{
                   fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
@@ -2241,17 +2624,17 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
             </p>
           </section>
 
-          {/* Impressum */}
+          {/* Impressum – Schriftfarben aus Theme (lesbar auf hell und dunkel) */}
           <section style={{ 
             marginTop: 'clamp(2rem, 4vw, 2.5rem)',
             paddingTop: 'clamp(1rem, 2vw, 1.5rem)',
-            borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+            borderTop: `1px solid color-mix(in srgb, ${theme.muted} 35%, transparent)`
           }}>
             <div style={{
               maxWidth: '1000px',
               margin: '0 auto',
               fontSize: 'clamp(0.75rem, 1.8vw, 0.85rem)',
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: theme.muted,
               lineHeight: '1.5',
             }}>
               {/* Impressum Layout: Stammdaten links, QR-Code rechts */}
@@ -2267,7 +2650,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                     margin: '0 0 1rem', 
                     fontSize: 'clamp(1rem, 2.5vw, 1.25rem)', 
                     fontWeight: '600', 
-                    color: '#ffffff' 
+                    color: theme.text 
                   }}>
                     {tenantConfig.footerLine}
                   </h4>
@@ -2278,7 +2661,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                       {tenantConfig.galleryName}
                     </p>
                     {(musterOnly ? (MUSTER_TEXTE.gallery.address || (MUSTER_TEXTE.gallery as any).city || (MUSTER_TEXTE.gallery as any).country) : (galleryData.address || galleryData.city || galleryData.country)) && (
-                      <p style={{ margin: '0 0 0.15rem', color: 'rgba(255, 255, 255, 0.7)', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', lineHeight: '1.4' }}>
+                      <p style={{ margin: '0 0 0.15rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', lineHeight: '1.4' }}>
                         {musterOnly
                           ? [MUSTER_TEXTE.gallery.address, (MUSTER_TEXTE.gallery as any).city, (MUSTER_TEXTE.gallery as any).country].filter(Boolean).join(', ')
                           : [galleryData.address, galleryData.city, galleryData.country].filter(Boolean).join(', ')}
@@ -2286,26 +2669,26 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                     )}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.15rem' }}>
                       {(musterOnly ? MUSTER_TEXTE.gallery.phone : galleryData.phone) && (
-                        <span style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
+                        <span style={{ color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
                           📞 {musterOnly ? MUSTER_TEXTE.gallery.phone : galleryData.phone}
                         </span>
                       )}
                       {(musterOnly ? MUSTER_TEXTE.gallery.email : galleryData.email) && (
                         <span style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
-                          ✉️ <a href={`mailto:${musterOnly ? MUSTER_TEXTE.gallery.email : galleryData.email}`} style={{ color: 'var(--k2-accent)', textDecoration: 'none' }}>
+                          ✉️ <a href={`mailto:${musterOnly ? MUSTER_TEXTE.gallery.email : galleryData.email}`} style={{ color: theme.accent, textDecoration: 'none' }}>
                             {musterOnly ? MUSTER_TEXTE.gallery.email : galleryData.email}
                           </a>
                         </span>
                       )}
                       {(musterOnly ? MUSTER_TEXTE.gallery.website : galleryData.website) && (
                         <span style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
-                          🌐 <a href={`https://${(musterOnly ? MUSTER_TEXTE.gallery.website : galleryData.website).replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--k2-accent)', textDecoration: 'none' }}>
+                          🌐 <a href={`https://${(musterOnly ? MUSTER_TEXTE.gallery.website : galleryData.website).replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" style={{ color: theme.accent, textDecoration: 'none' }}>
                             {musterOnly ? MUSTER_TEXTE.gallery.website : galleryData.website}
                           </a>
                         </span>
                       )}
                       {(musterOnly ? (MUSTER_TEXTE.gallery as any).openingHours : galleryData.openingHours) && (
-                        <span style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
+                        <span style={{ color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
                           🕐 {musterOnly ? (MUSTER_TEXTE.gallery as any).openingHours : galleryData.openingHours}
                         </span>
                       )}
@@ -2319,13 +2702,13 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                     </p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                       {(musterOnly ? MUSTER_TEXTE.martina.phone : martinaData.phone) && (
-                        <span style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
+                        <span style={{ color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
                           📞 {musterOnly ? MUSTER_TEXTE.martina.phone : martinaData.phone}
                         </span>
                       )}
                       {(musterOnly ? MUSTER_TEXTE.martina.email : martinaData.email) && (
                         <span style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
-                          ✉️ <a href={`mailto:${musterOnly ? MUSTER_TEXTE.martina.email : martinaData.email}`} style={{ color: 'var(--k2-accent)', textDecoration: 'none' }}>
+                          ✉️ <a href={`mailto:${musterOnly ? MUSTER_TEXTE.martina.email : martinaData.email}`} style={{ color: theme.accent, textDecoration: 'none' }}>
                             {musterOnly ? MUSTER_TEXTE.martina.email : martinaData.email}
                           </a>
                         </span>
@@ -2340,13 +2723,13 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                     </p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                       {(musterOnly ? MUSTER_TEXTE.georg.phone : georgData.phone) && (
-                        <span style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
+                        <span style={{ color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
                           📞 {musterOnly ? MUSTER_TEXTE.georg.phone : georgData.phone}
                         </span>
                       )}
                       {(musterOnly ? MUSTER_TEXTE.georg.email : georgData.email) && (
                         <span style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
-                          ✉️ <a href={`mailto:${musterOnly ? MUSTER_TEXTE.georg.email : georgData.email}`} style={{ color: 'var(--k2-accent)', textDecoration: 'none' }}>
+                          ✉️ <a href={`mailto:${musterOnly ? MUSTER_TEXTE.georg.email : georgData.email}`} style={{ color: theme.accent, textDecoration: 'none' }}>
                             {musterOnly ? MUSTER_TEXTE.georg.email : georgData.email}
                           </a>
                         </span>
@@ -2354,23 +2737,23 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                     </div>
                   </div>
                   
-                  {/* Gewerbe & Haftungsausschluss */}
-                  <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                    <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)' }}>
+                  {/* Gewerbe & Haftungsausschluss – gut lesbar, Theme-Farbe */}
+                  <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: `1px solid color-mix(in srgb, ${theme.muted} 35%, transparent)` }}>
+                    <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', color: theme.text, lineHeight: 1.45 }}>
                       Gewerbe: freie Kunstschaffende
                     </p>
-                    <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)', opacity: 0.6 }}>
+                    <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', color: theme.muted, lineHeight: 1.45 }}>
                       Haftungsausschluss: Die Inhalte wurden mit Sorgfalt erstellt. Für Richtigkeit, Vollständigkeit und Aktualität kann keine Gewähr übernommen werden.
                     </p>
                     {!musterOnly && (
-                    <p style={{ margin: '1rem 0 0', fontSize: 'clamp(0.65rem, 1.5vw, 0.75rem)', opacity: 0.5, fontStyle: 'italic' }}>
+                    <p style={{ margin: '1rem 0 0', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted, fontStyle: 'italic' }}>
                       Website erstellt von Georg Kreinecker
                     </p>
                     )}
                   </div>
                 </div>
                 
-                {/* Rechte Seite: genau ein QR (Vercel – funktioniert überall) */}
+                {/* Rechte Seite: QR mit Bezeichnung der Seite (Kunde sieht Galeriename, kein Vercel) */}
                 {vercelQrDataUrl && (
                     <div style={{
                       textAlign: 'center',
@@ -2380,21 +2763,137 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
                       gap: '0.5rem',
                       alignItems: 'center'
                     }}>
-                      <p style={{ margin: '0 0 0.25rem', fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)', color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>
-                        📱 Für iPad/Handy: QR scannen (immer aktueller Stand)
+                      <p style={{ margin: '0 0 0.25rem', fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)', color: theme.text, fontWeight: 600 }}>
+                        📱 QR scannen → öffnet diese Galerie auf dem Handy
                       </p>
                       <div style={{ background: '#fff', padding: '0.4rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
-                        <img src={vercelQrDataUrl} alt="QR Galerie" style={{ width: 100, height: 100, display: 'block' }} />
+                        <img src={vercelQrDataUrl} alt={`QR-Code: ${tenantConfig.galleryName}`} style={{ width: 100, height: 100, display: 'block' }} />
                       </div>
-                      <p style={{ margin: 0, fontSize: 'clamp(0.55rem, 1.2vw, 0.65rem)', color: 'rgba(255,255,255,0.5)', wordBreak: 'break-all', maxWidth: 140 }}>
-                        k2-galerie.vercel.app
+                      <p style={{ margin: 0, fontSize: 'clamp(0.55rem, 1.2vw, 0.65rem)', color: theme.muted, fontWeight: 500, maxWidth: 140 }}>
+                        {tenantConfig.galleryName}
                       </p>
                     </div>
                 )}
               </div>
+              <p style={{ marginTop: '1.25rem', marginBottom: 0, fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', color: theme.muted }}>
+                {PRODUCT_COPYRIGHT}
+              </p>
             </div>
           </section>
         </main>
+
+        {/* Willkommens-Fenster (nur öffentliche Galerie): Einstieg per QR – Optionen zentriert als Fenster */}
+        {musterOnly && showWelcomeModal && (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 10000,
+              padding: '1rem',
+            }}
+          >
+            <div
+              style={{
+                maxWidth: 440,
+                width: '100%',
+                background: OK2_THEME.cardBg1,
+                borderRadius: '12px',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+                padding: '1.75rem 1.5rem',
+                border: `2px solid ${OK2_THEME.accentColor}40`,
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <p style={{ margin: 0, fontSize: '0.85rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: OK2_THEME.mutedColor }}>Willkommen</p>
+              <h2 style={{ margin: '0.35rem 0 0.75rem', fontSize: '1.35rem', fontWeight: 600, color: OK2_THEME.accentColor }}>{PRODUCT_BRAND_NAME}</h2>
+              <p style={{ margin: '0 0 1.25rem', fontSize: '0.95rem', lineHeight: 1.5, color: OK2_THEME.textColor }}>Wähle deinen Einstieg:</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <button
+                  type="button"
+                  onClick={closeWelcomeNurUmschauen}
+                  style={{
+                    width: '100%',
+                    padding: '0.85rem 1.25rem',
+                    background: OK2_THEME.cardBg2,
+                    color: OK2_THEME.textColor,
+                    border: `1px solid ${OK2_THEME.accentColor}40`,
+                    borderRadius: '10px',
+                    textAlign: 'left',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    fontSize: '0.95rem',
+                  }}
+                >
+                  <span style={{ display: 'block', marginBottom: '0.2rem' }}>Nur umschauen</span>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 400, color: OK2_THEME.mutedColor }}>Galerie ansehen, ohne Anmeldung.</span>
+                </button>
+                <div style={{ padding: '0.75rem', background: OK2_THEME.backgroundColor2, borderRadius: '10px', border: `1px solid ${OK2_THEME.accentColor}30` }}>
+                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', color: OK2_THEME.mutedColor }}>Vorschau & Entwurf (optional Name):</p>
+                  <input
+                    type="text"
+                    value={welcomeName}
+                    onChange={(e) => setWelcomeName(e.target.value)}
+                    placeholder="Galerie- oder Künstlername (optional)"
+                    style={{
+                      width: '100%',
+                      padding: '0.6rem 0.75rem',
+                      border: `1px solid ${OK2_THEME.accentColor}40`,
+                      borderRadius: '8px',
+                      fontFamily: 'inherit',
+                      fontSize: '0.9rem',
+                      background: OK2_THEME.cardBg1,
+                      color: OK2_THEME.textColor,
+                      marginBottom: '0.75rem',
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={goVorschauEntwurf}
+                    style={{
+                      width: '100%',
+                      padding: '0.65rem 1rem',
+                      background: OK2_THEME.accentColor,
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      fontFamily: 'inherit',
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    Vorschau & Entwurf ansehen →
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setShowWelcomeModal(false); handleAdminButtonClick(); }}
+                  style={{
+                    width: '100%',
+                    padding: '0.85rem 1.25rem',
+                    background: OK2_THEME.cardBg2,
+                    color: OK2_THEME.textColor,
+                    border: `1px solid ${OK2_THEME.accentColor}40`,
+                    borderRadius: '10px',
+                    textAlign: 'left',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    fontSize: '0.95rem',
+                  }}
+                >
+                  <span style={{ display: 'block', marginBottom: '0.2rem' }}>Admin-Zugang (Testversion)</span>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 400, color: OK2_THEME.mutedColor }}>Du hast eine Testversion? Hier geht’s in den Zugangsbereich.</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -206,11 +206,11 @@ Dieses Dokument ist eine zusammengefasste Version des aktuellen AI-Memory-Backup
 ### 2. Multi-Tenant SaaS System
 - **Status:** In Arbeit (40% Fortschritt)
 - **Authentifizierung:** ✅ Abgeschlossen
-- **Lizenz-System:** 🔄 In Arbeit (60%)
+- **Licence-System:** 🔄 In Arbeit (60%)
 - **Multi-Tenant-Funktionalität:** ⏳ Ausstehend
 
 **Nächste Schritte:**
-- Lizenz-Manager finalisieren
+- Licence-Manager finalisieren
 - Multi-Tenant-Tests
 - Beta-Tester-Programm starten
 

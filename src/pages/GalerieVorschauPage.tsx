@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { PROJECT_ROUTES } from '../config/navigation'
-import { MUSTER_ARTWORKS } from '../config/tenantConfig'
+import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY } from '../config/navigation'
+import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, type ArtworkCategoryId } from '../config/tenantConfig'
 import { 
   syncMobileToSupabase, 
   checkMobileUpdates, 
@@ -11,16 +11,44 @@ import {
 } from '../utils/supabaseClient'
 import { sortArtworksNewestFirst } from '../utils/artworkSort'
 import { appendToHistory } from '../utils/artworkHistory'
+import { tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from '../../components/SafeMode'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
 import '../App.css'
 
-// Einfache localStorage-Funktion
+// Einfache localStorage-Funktion (K2 = k2-artworks)
 function loadArtworks(): any[] {
   try {
     const stored = localStorage.getItem('k2-artworks')
     return stored ? JSON.parse(stored) : []
   } catch (error) {
     console.error('Fehler beim Laden:', error)
+    return []
+  }
+}
+
+/** Prüft, ob eine URL ein inline SVG-Platzhalter ist (ök2: dann Kategorie-Standardbild nutzen). */
+function isPlaceholderImageUrl(url: string | undefined): boolean {
+  return !url || (typeof url === 'string' && url.startsWith('data:image/svg+xml'))
+}
+
+/** ök2: Werke aus k2-oeffentlich-artworks (Admin-Demo). Ohne Bild/Platzhalter → kategoriepassendes Standardbild. Leer = Fallback auf MUSTER_ARTWORKS. */
+function loadOeffentlichArtworks(): any[] {
+  try {
+    const raw = localStorage.getItem('k2-oeffentlich-artworks')
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed) || parsed.length === 0) return []
+    return parsed.map((a: any) => {
+      const out = { ...a }
+      if (out.imageUrl && out.previewUrl) {
+        if (isPlaceholderImageUrl(out.imageUrl)) out.imageUrl = out.previewUrl
+      } else if (out.previewUrl) {
+        out.imageUrl = out.previewUrl
+      }
+      if (isPlaceholderImageUrl(out.imageUrl)) out.imageUrl = getOek2DefaultArtworkImage(out.category)
+      return out
+    })
+  } catch {
     return []
   }
 }
@@ -57,6 +85,7 @@ function loadBackup(): any[] | null {
 }
 
 function saveArtworks(artworks: any[]): boolean {
+  const json = JSON.stringify(artworks)
   try {
     // KRITISCH: Erstelle Backup VOR dem Speichern (besonders wichtig für Mobile-Werke!)
     const currentArtworks = loadArtworks()
@@ -69,8 +98,6 @@ function saveArtworks(artworks: any[]): boolean {
     if (mobileWorks.length > 0) {
       console.log(`🔒 ${mobileWorks.length} Mobile-Werke werden geschützt beim Speichern`)
     }
-    
-    const json = JSON.stringify(artworks)
     
     // Prüfe Größe
     if (json.length > 5000000) {
@@ -118,17 +145,34 @@ function saveArtworks(artworks: any[]): boolean {
   } catch (error: any) {
     console.error('❌ Fehler beim Speichern:', error)
     
-    // Stelle Backup wieder her bei Fehler
-    const backup = loadBackup()
-    if (backup && backup.length > 0) {
-      console.log('💾 Backup wiederhergestellt nach Fehler')
-      localStorage.setItem('k2-artworks', JSON.stringify(backup))
-    }
-    
-    // Spezifische Fehlerbehandlung
     if (error.name === 'QuotaExceededError') {
-      alert('⚠️ Speicher voll! Bitte einige Werke löschen.')
+      const freed = tryFreeLocalStorageSpace()
+      if (freed > 0) {
+        try {
+          localStorage.setItem('k2-artworks', json)
+          const verify = localStorage.getItem('k2-artworks')
+          if (verify && verify === json) {
+            console.log('✅ Nach Speicher-Freigabe gespeichert')
+            return true
+          }
+        } catch (retryErr: any) {
+          // Fall through to backup restore and alert
+        }
+      }
+      // Stelle Backup wieder her bei Fehler
+      const backup = loadBackup()
+      if (backup && backup.length > 0) {
+        console.log('💾 Backup wiederhergestellt nach Fehler')
+        try { localStorage.setItem('k2-artworks', JSON.stringify(backup)) } catch (_) {}
+      }
+      alert('⚠️ ' + SPEICHER_VOLL_MELDUNG)
     } else {
+      // Stelle Backup wieder her bei Fehler
+      const backup = loadBackup()
+      if (backup && backup.length > 0) {
+        console.log('💾 Backup wiederhergestellt nach Fehler')
+        localStorage.setItem('k2-artworks', JSON.stringify(backup))
+      }
       alert('⚠️ Fehler beim Speichern: ' + (error.message || error))
     }
     
@@ -136,14 +180,18 @@ function saveArtworks(artworks: any[]): boolean {
   }
 }
 
-type Filter = 'alle' | 'malerei' | 'keramik'
+type Filter = 'alle' | ArtworkCategoryId
 
 const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFilter?: Filter; musterOnly?: boolean }) => {
   const navigate = useNavigate()
   
-  // ök2 (musterOnly): nur Musterwerke, keine echten Daten. Sonst: aus localStorage (Supabase async im useEffect)
+  // ök2 (musterOnly): Werke aus k2-oeffentlich-artworks (im Admin hinzugefügt); wenn leer → MUSTER_ARTWORKS. K2: aus localStorage.
   const initialArtworks = (() => {
-    if (musterOnly) return [...MUSTER_ARTWORKS]
+    if (musterOnly) {
+      const oef = loadOeffentlichArtworks()
+      if (oef.length > 0) return oef
+      return [...MUSTER_ARTWORKS]
+    }
     try {
       const stored = localStorage.getItem('k2-artworks')
       if (!stored) return []
@@ -171,9 +219,72 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
   const [filter, setFilter] = useState<Filter>(initialFilter || 'alle')
   const [cartCount, setCartCount] = useState(0)
 
-  // ök2: Bei musterOnly immer nur Musterwerke anzeigen (auch bei Navigation von normaler Vorschau)
+  /** Nur Kategorien anzeigen, die in den aktuellen Werken vorkommen */
+  const categoriesWithArtworks = useMemo(() => {
+    const list = artworks?.length ? artworks : (initialArtworks?.length ? initialArtworks : [])
+    const ids = new Set(
+      list.map((a: any) => a.category).filter(
+        (cat): cat is ArtworkCategoryId => Boolean(cat) && ARTWORK_CATEGORIES.some((c) => c.id === cat)
+      )
+    )
+    return ARTWORK_CATEGORIES.filter((c) => ids.has(c.id))
+  }, [artworks, initialArtworks])
+
+  // Filter auf "alle" zurücksetzen, wenn gewählte Kategorie keine Werke mehr hat
   useEffect(() => {
-    if (musterOnly) setArtworks([...MUSTER_ARTWORKS])
+    if (filter !== 'alle' && !categoriesWithArtworks.some((c) => c.id === filter)) {
+      setFilter('alle')
+    }
+  }, [filter, categoriesWithArtworks])
+
+  // Willkommens-Banner (Erster Entwurf): von WillkommenPage mit Namen → einmalig anzeigen
+  const [willkommenName, setWillkommenName] = useState<string | null>(null)
+  const [willkommenBannerDismissed, setWillkommenBannerDismissed] = useState(false)
+  useEffect(() => {
+    if (!musterOnly) return
+    try {
+      const n = sessionStorage.getItem(WILLKOMMEN_NAME_KEY)
+      const e = sessionStorage.getItem(WILLKOMMEN_ENTWURF_KEY)
+      if (n && n.trim() && e === '1') setWillkommenName(n.trim())
+    } catch (_) {}
+  }, [musterOnly])
+  const dismissWillkommenBanner = () => {
+    setWillkommenBannerDismissed(true)
+    try {
+      sessionStorage.removeItem(WILLKOMMEN_ENTWURF_KEY)
+    } catch (_) {}
+  }
+
+  // ök2: Bei musterOnly Werke aus k2-oeffentlich-artworks anzeigen (im Admin hinzugefügt); wenn leer → Musterwerke
+  useEffect(() => {
+    if (musterOnly) {
+      const oef = loadOeffentlichArtworks()
+      setArtworks(oef.length > 0 ? oef : [...MUSTER_ARTWORKS])
+    }
+  }, [musterOnly])
+
+  // K2 und ök2: Nach Speichern im Admin (artworks-updated) Galerie-Liste aus dem jeweiligen Speicher aktualisieren
+  useEffect(() => {
+    const onUpdated = () => {
+      if (musterOnly) {
+        const oef = loadOeffentlichArtworks()
+        setArtworks(oef.length > 0 ? oef : [...MUSTER_ARTWORKS])
+      } else {
+        const stored = loadArtworks()
+        if (stored && stored.length > 0) {
+          const placeholder = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+          const withImages = stored.map((a: any) => {
+            const out = { ...a }
+            if (!out.imageUrl && out.previewUrl) out.imageUrl = out.previewUrl
+            if (!out.imageUrl && !out.previewUrl) out.imageUrl = placeholder
+            return out
+          })
+          setArtworks(withImages)
+        }
+      }
+    }
+    window.addEventListener('artworks-updated', onUpdated)
+    return () => window.removeEventListener('artworks-updated', onUpdated)
   }, [musterOnly])
 
   // K2-Orange statt altes Blau (wie GaleriePage – gleicher Stand auf allen Geräten)
@@ -248,12 +359,47 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
     } catch (_) {}
   }, [location.state])
 
-  const [lightboxImage, setLightboxImage] = useState<{ src: string; title: string; artwork: any } | null>(null)
+  const [lightboxImage, setLightboxImage] = useState<{ src: string; title: string; artwork: any; allArtworks?: any[]; currentIndex?: number } | null>(null)
   const [imageZoom, setImageZoom] = useState(1)
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [likedArtworks, setLikedArtworks] = useState<Set<string>>(new Set())
+
+  // Lightbox: Vor/Zurück mit Pfeiltasten
+  useEffect(() => {
+    if (!lightboxImage) return
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setLightboxImage(null)
+        setImageZoom(1)
+        setImagePosition({ x: 0, y: 0 })
+        return
+      }
+      const list = lightboxImage.allArtworks
+      const i = lightboxImage.currentIndex
+      if (list == null || i == null) return
+      if (e.key === 'ArrowLeft' && i > 0) {
+        const prev = list[i - 1]
+        const src = prev?.imageUrl || prev?.previewUrl || ''
+        if (src) {
+          setLightboxImage({ src, title: prev?.title || prev?.number || '', artwork: prev, allArtworks: list, currentIndex: i - 1 })
+          setImageZoom(1)
+          setImagePosition({ x: 0, y: 0 })
+        }
+      } else if (e.key === 'ArrowRight' && i < list.length - 1) {
+        const next = list[i + 1]
+        const src = next?.imageUrl || next?.previewUrl || ''
+        if (src) {
+          setLightboxImage({ src, title: next?.title || next?.number || '', artwork: next, allArtworks: list, currentIndex: i + 1 })
+          setImageZoom(1)
+          setImagePosition({ x: 0, y: 0 })
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [lightboxImage])
   const [isLoading, setIsLoading] = useState(false)
   const [loadStatus, setLoadStatus] = useState<{ message: string; success: boolean } | null>(null)
   
@@ -263,7 +409,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
   const [isEditingMode, setIsEditingMode] = useState(false) // Expliziter Flag für Bearbeitungs-Modus
   const [mobilePhoto, setMobilePhoto] = useState<string | null>(null)
   const [mobileTitle, setMobileTitle] = useState('')
-  const [mobileCategory, setMobileCategory] = useState<'malerei' | 'keramik'>('malerei')
+  const [mobileCategory, setMobileCategory] = useState<ArtworkCategoryId>('malerei')
   const [mobilePrice, setMobilePrice] = useState('')
   const [mobileDescription, setMobileDescription] = useState('')
   const [mobileLocationType, setMobileLocationType] = useState<'regal' | 'bildflaeche' | 'sonstig' | ''>('')
@@ -310,7 +456,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
     // Setze alle anderen States
     setMobilePhoto(artwork.imageUrl || artwork.previewUrl || null)
     setMobileTitle(artwork.title || '')
-    setMobileCategory(artwork.category || 'malerei')
+    setMobileCategory(ARTWORK_CATEGORIES.some((x) => x.id === artwork.category) ? (artwork.category as ArtworkCategoryId) : 'malerei')
     setMobilePrice(artwork.price ? String(artwork.price) : '')
     setMobileDescription(artwork.description || '')
     
@@ -1776,7 +1922,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
       const cartData = localStorage.getItem('k2-cart')
       const cart = cartData ? JSON.parse(cartData) : []
       if (cart.some((item: any) => item.number === artwork.number)) {
-        alert('Dieses Werk ist bereits in deiner/Ihrer Auswahl.')
+        alert('Dieses Werk ist bereits in deiner Auswahl.')
         return false
       }
       cart.push(cartItem)
@@ -1819,6 +1965,11 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
   // Diese Prüfung verhinderte die Anzeige der Werke
 
   const isVorschauModus = typeof window !== 'undefined' && new URLSearchParams(location.search).get('vorschau') === '1'
+
+  /** ök2 (musterOnly): Text/Border/Buttons an Theme anpassen; K2-Vorschau: weiß/lila */
+  const galerieTheme = musterOnly
+    ? { text: 'var(--k2-text)', muted: 'var(--k2-muted)', accent: 'var(--k2-accent)', border: 'rgba(0,0,0,0.12)', filterActive: 'linear-gradient(135deg, var(--k2-accent) 0%, #6b9080 100%)', filterInactive: 'rgba(0,0,0,0.06)', priceBg: 'var(--k2-accent)', btnBorder: 'rgba(0,0,0,0.15)' }
+    : { text: '#ffffff', muted: 'rgba(255,255,255,0.7)', accent: '#b8b8ff', border: 'rgba(255,255,255,0.2)', filterActive: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', filterInactive: 'rgba(255,255,255,0.05)', priceBg: 'linear-gradient(135deg, #b8b8ff 0%, #ff77c6 100%)', btnBorder: 'rgba(102,126,234,0.3)' }
 
   return (
     <>
@@ -1913,6 +2064,42 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
       }} />
       
       <div style={{ position: 'relative', zIndex: 1 }}>
+        {/* Erster Entwurf – Willkommens-Banner (nur ök2, wenn von WillkommenPage mit Namen) */}
+        {musterOnly && willkommenName && !willkommenBannerDismissed && (
+          <div
+            style={{
+              background: 'linear-gradient(135deg, rgba(181, 74, 30, 0.95) 0%, rgba(212, 98, 40, 0.95) 100%)',
+              color: '#fff',
+              padding: '0.75rem 1.25rem',
+              textAlign: 'center',
+              fontSize: '0.95rem',
+              position: 'relative',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
+            }}
+          >
+            <span><strong>Dein erster Entwurf</strong> – Willkommen, {willkommenName}! Das ist die Vorschau deiner Galerie.</span>
+            <button
+              type="button"
+              onClick={dismissWillkommenBanner}
+              aria-label="Banner schließen"
+              style={{
+                position: 'absolute',
+                right: '0.75rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'rgba(255,255,255,0.25)',
+                border: 'none',
+                borderRadius: '6px',
+                color: '#fff',
+                padding: '0.35rem 0.6rem',
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+              }}
+            >
+              OK
+            </button>
+          </div>
+        )}
         {/* Mobile-First Admin: Neues Objekt Button (ök2: ausblenden) */}
         {!musterOnly && showMobileAdmin && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) && (
           <button
@@ -1976,7 +2163,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                 <Link 
                   to={PROJECT_ROUTES['k2-galerie'].home}
                   style={{
-                    color: 'rgba(255, 255, 255, 0.8)',
+                    color: galerieTheme.muted,
                     textDecoration: 'none',
                     fontSize: '0.9rem',
                     display: 'inline-flex',
@@ -1984,16 +2171,16 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                     gap: '0.4rem',
                     padding: '0.4rem 0.8rem',
                     borderRadius: '6px',
-                    background: 'rgba(255, 255, 255, 0.1)',
+                    background: galerieTheme.filterInactive,
                     transition: 'all 0.2s ease'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
-                    e.currentTarget.style.color = '#ffffff'
+                    e.currentTarget.style.background = musterOnly ? 'rgba(0,0,0,0.12)' : 'rgba(255, 255, 255, 0.2)'
+                    e.currentTarget.style.color = galerieTheme.text
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'
+                    e.currentTarget.style.background = galerieTheme.filterInactive
+                    e.currentTarget.style.color = galerieTheme.muted
                   }}
                 >
                   <span>←</span>
@@ -2004,10 +2191,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                 margin: 0, 
                 fontSize: 'clamp(2rem, 6vw, 3rem)',
                 fontWeight: '700',
-                background: 'linear-gradient(135deg, #ffffff 0%, #b8b8ff 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
+                color: galerieTheme.text,
                 letterSpacing: '-0.02em',
                 lineHeight: '1.1'
               }}>
@@ -2015,7 +2199,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
               </h1>
               <p style={{ 
                 margin: '0.75rem 0 0', 
-                color: 'rgba(255, 255, 255, 0.7)', 
+                color: galerieTheme.muted, 
                 fontSize: 'clamp(1rem, 3vw, 1.2rem)',
                 fontWeight: '300'
               }}>
@@ -2060,7 +2244,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
               </Link>
               <Link 
                 to={PROJECT_ROUTES['k2-galerie'].shop}
-                state={{ fromGalerieView: true }}
+                state={{ fromGalerieView: true, fromOeffentlich: musterOnly }}
+                onClick={() => { if (musterOnly) try { sessionStorage.setItem('k2-shop-from-oeffentlich', '1') } catch (_) {} }}
                 style={{ 
                   padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)', 
                   background: musterOnly ? 'linear-gradient(135deg, var(--k2-accent) 0%, #6b9080 100%)' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -2122,17 +2307,17 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
           <div style={{
             background: 'rgba(255, 255, 255, 0.05)',
             backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: `1px solid ${galerieTheme.border}`,
             borderRadius: '16px',
             padding: 'clamp(1rem, 3vw, 1.5rem)',
             marginBottom: 'clamp(2rem, 5vw, 3rem)',
             fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)',
-            color: 'rgba(255, 255, 255, 0.9)',
+            color: galerieTheme.text,
             textAlign: 'center',
             lineHeight: '1.6'
           }}>
-            <strong style={{ color: '#ffffff' }}>Alle Werke</strong> sind Teil unserer Ausstellung und in der Online-Galerie sichtbar. 
-            Wenn dir/Ihnen ein Werk gefällt und du/Sie es erwerben möchtest/möchten: <strong style={{ color: '#b8b8ff' }}>"Gefällt mir – möchte ich erwerben"</strong> wählen – du wirst/Sie werden in den Shop weitergeleitet.
+            <strong style={{ color: galerieTheme.text }}>Alle Werke</strong> sind Teil unserer Ausstellung und in der Online-Galerie sichtbar. 
+            Wenn dir ein Werk gefällt und du es erwerben möchtest: <strong style={{ color: galerieTheme.accent }}>"Gefällt mir – möchte ich erwerben"</strong> wählen – du wirst in den Shop weitergeleitet.
           </div>
 
           {/* Filter - Mobile optimiert */}
@@ -2147,12 +2332,10 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
               onClick={() => setFilter('alle')}
               style={{
                 padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                border: filter === 'alle' ? 'none' : '1px solid rgba(255, 255, 255, 0.2)',
-                background: filter === 'alle' 
-                  ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                  : 'rgba(255, 255, 255, 0.05)',
+                border: filter === 'alle' ? 'none' : `1px solid ${galerieTheme.border}`,
+                background: filter === 'alle' ? galerieTheme.filterActive : galerieTheme.filterInactive,
                 backdropFilter: 'blur(10px)',
-                color: '#ffffff',
+                color: galerieTheme.text,
                 borderRadius: '12px',
                 cursor: 'pointer',
                 fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)',
@@ -2163,85 +2346,53 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
               }}
               onMouseEnter={(e) => {
                 if (filter !== 'alle') {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                  e.currentTarget.style.background = musterOnly ? 'rgba(0,0,0,0.1)' : 'rgba(255, 255, 255, 0.1)'
                   e.currentTarget.style.transform = 'translateY(-2px)'
                 }
               }}
               onMouseLeave={(e) => {
                 if (filter !== 'alle') {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                  e.currentTarget.style.background = galerieTheme.filterInactive
                   e.currentTarget.style.transform = 'translateY(0)'
                 }
               }}
             >
               Alle Werke
             </button>
-            <button
-              onClick={() => setFilter('malerei')}
-              style={{
-                padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                border: filter === 'malerei' ? 'none' : '1px solid rgba(255, 255, 255, 0.2)',
-                background: filter === 'malerei' 
-                  ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                  : 'rgba(255, 255, 255, 0.05)',
-                backdropFilter: 'blur(10px)',
-                color: '#ffffff',
-                borderRadius: '12px',
-                cursor: 'pointer',
-                fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)',
-                fontWeight: filter === 'malerei' ? '600' : '500',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.3s ease',
-                boxShadow: filter === 'malerei' ? '0 10px 30px rgba(102, 126, 234, 0.3)' : 'none'
-              }}
-              onMouseEnter={(e) => {
-                if (filter !== 'malerei') {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (filter !== 'malerei') {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-                  e.currentTarget.style.transform = 'translateY(0)'
-                }
-              }}
-            >
-              Bilder
-            </button>
-            <button
-              onClick={() => setFilter('keramik')}
-              style={{
-                padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                border: filter === 'keramik' ? 'none' : '1px solid rgba(255, 255, 255, 0.2)',
-                background: filter === 'keramik' 
-                  ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                  : 'rgba(255, 255, 255, 0.05)',
-                backdropFilter: 'blur(10px)',
-                color: '#ffffff',
-                borderRadius: '12px',
-                cursor: 'pointer',
-                fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)',
-                fontWeight: filter === 'keramik' ? '600' : '500',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.3s ease',
-                boxShadow: filter === 'keramik' ? '0 10px 30px rgba(102, 126, 234, 0.3)' : 'none'
-              }}
-              onMouseEnter={(e) => {
-                if (filter !== 'keramik') {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (filter !== 'keramik') {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-                  e.currentTarget.style.transform = 'translateY(0)'
-                }
-              }}
-            >
-              Keramik
-            </button>
+            {categoriesWithArtworks.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => setFilter(c.id)}
+                style={{
+                  padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                  border: filter === c.id ? 'none' : `1px solid ${galerieTheme.border}`,
+                  background: filter === c.id ? galerieTheme.filterActive : galerieTheme.filterInactive,
+                  backdropFilter: 'blur(10px)',
+                  color: galerieTheme.text,
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)',
+                  fontWeight: filter === c.id ? '600' : '500',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.3s ease',
+                  boxShadow: filter === c.id ? '0 10px 30px rgba(102, 126, 234, 0.3)' : 'none'
+                }}
+                onMouseEnter={(e) => {
+                  if (filter !== c.id) {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (filter !== c.id) {
+                    e.currentTarget.style.background = galerieTheme.filterInactive
+                    e.currentTarget.style.transform = 'translateY(0)'
+                  }
+                }}
+              >
+                {c.label}
+              </button>
+            ))}
           </div>
 
         {(() => {
@@ -2282,17 +2433,57 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
             filter: filter
           })
           
+          // K2: Verkaufte Werke nach soldArtworksDisplayDays ausblenden (0 = sofort in History)
+          let soldDisplayDays = 30
+          let soldMap: Map<string, string> = new Map()
+          if (!musterOnly) {
+            try {
+              const gal = localStorage.getItem('k2-stammdaten-galerie')
+              if (gal) {
+                const g = JSON.parse(gal)
+                if (typeof g.soldArtworksDisplayDays === 'number') soldDisplayDays = g.soldArtworksDisplayDays
+              }
+              const soldRaw = localStorage.getItem('k2-sold-artworks')
+              if (soldRaw) {
+                const arr = JSON.parse(soldRaw)
+                if (Array.isArray(arr)) arr.forEach((a: any) => { if (a?.number != null) soldMap.set(String(a.number), a.soldAt || '') })
+              }
+            } catch (_) {}
+          }
           const filteredArtworks = sortArtworksNewestFirst(
             currentArtworks.filter((artwork) => {
               if (!artwork) return false
-              if (filter === 'alle') return true
+              if (filter === 'alle') {
+                // K2: verkaufte Werke nach Ablauf aus Galerie-Ansicht ausblenden
+                if (!musterOnly && soldMap.size > 0) {
+                  const num = artwork.number != null ? String(artwork.number) : (artwork.id != null ? String(artwork.id) : '')
+                  const soldAt = num ? soldMap.get(num) : null
+                  if (soldAt) {
+                    if (soldDisplayDays === 0) return false
+                    const cutoff = Date.now() - soldDisplayDays * 24 * 60 * 60 * 1000
+                    if (new Date(soldAt).getTime() < cutoff) return false
+                  }
+                }
+                return true
+              }
               // WICHTIG: Prüfe ob artwork.category existiert und mit filter übereinstimmt
-              // Wenn category fehlt, zeige Werk bei Filter "alle" (bereits oben geprüft)
               if (!artwork.category) {
                 console.warn('⚠️ Werk ohne category:', artwork.number || artwork.id)
                 return false
               }
-              return artwork.category === filter
+              let include = artwork.category === filter
+              if (include && !musterOnly && soldMap.size > 0) {
+                const num = artwork.number != null ? String(artwork.number) : (artwork.id != null ? String(artwork.id) : '')
+                const soldAt = num ? soldMap.get(num) : null
+                if (soldAt) {
+                  if (soldDisplayDays === 0) include = false
+                  else {
+                    const cutoff = Date.now() - soldDisplayDays * 24 * 60 * 60 * 1000
+                    if (new Date(soldAt).getTime() < cutoff) include = false
+                  }
+                }
+              }
+              return include
             })
           )
           
@@ -2306,18 +2497,18 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
             <div style={{ 
               padding: 'clamp(3rem, 8vw, 5rem)', 
               textAlign: 'center',
-              background: 'rgba(255, 255, 255, 0.05)',
+              background: galerieTheme.filterInactive,
               backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              border: `1px solid ${galerieTheme.border}`,
               borderRadius: '20px'
             }}>
-              <p style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', color: 'rgba(255, 255, 255, 0.9)' }}>
+              <p style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', color: galerieTheme.text }}>
                 Noch keine Werke in der Galerie
               </p>
               <p style={{ 
                 fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', 
                 marginTop: '1rem',
-                color: 'rgba(255, 255, 255, 0.7)'
+                color: galerieTheme.muted
               }}>
                 Füge im Admin-Bereich neue Werke hinzu und markiere sie als "Teil der Ausstellung".
               </p>
@@ -2328,7 +2519,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
               gridTemplateColumns: 'repeat(auto-fill, minmax(clamp(180px, 40vw, 250px), 1fr))', 
               gap: 'clamp(1.5rem, 4vw, 2rem)'
             }}>
-              {filteredArtworks.map((artwork) => {
+              {filteredArtworks.map((artwork, index) => {
                 if (!artwork) return null
                 
                 // Prüfe ob verkauft
@@ -2347,9 +2538,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
 
                 return (
                   <div key={artwork.number} style={{ 
-                    background: 'rgba(255, 255, 255, 0.05)',
+                    background: galerieTheme.filterInactive,
                     backdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    border: `1px solid ${galerieTheme.border}`,
                     borderRadius: '20px', 
                     padding: 'clamp(1rem, 3vw, 1.5rem)', 
                     boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
@@ -2361,12 +2552,12 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                   onMouseEnter={(e) => {
                     if (!isSold) {
                       e.currentTarget.style.transform = 'translateY(-8px)'
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+                      e.currentTarget.style.background = musterOnly ? 'rgba(0,0,0,0.08)' : 'rgba(255, 255, 255, 0.08)'
                     }
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                    e.currentTarget.style.background = galerieTheme.filterInactive
                   }}
                   >
                     {/* Bearbeiten-Button (ök2: ausblenden) */}
@@ -2425,7 +2616,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                       marginBottom: '0.5rem',
                       position: 'relative',
                       overflow: 'hidden',
-                      background: 'rgba(255, 255, 255, 0.05)',
+                      background: galerieTheme.filterInactive,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
@@ -2448,7 +2639,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                               setLightboxImage({
                                 src: artwork.imageUrl || artwork.previewUrl || '',
                                 title: artwork.title || artwork.number || '',
-                                artwork: artwork
+                                artwork,
+                                allArtworks: filteredArtworks,
+                                currentIndex: index
                               })
                               setImageZoom(1)
                               setImagePosition({ x: 0, y: 0 })
@@ -2504,7 +2697,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                         </>
                       ) : (
                         <div style={{ 
-                          color: 'rgba(255, 255, 255, 0.5)',
+                          color: galerieTheme.muted,
                           fontSize: 'clamp(0.8rem, 2.5vw, 0.9rem)',
                           textAlign: 'center',
                           padding: '1rem'
@@ -2517,7 +2710,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                       margin: '1rem 0 0.5rem', 
                       fontSize: 'clamp(1rem, 3vw, 1.2rem)',
                       lineHeight: '1.3',
-                      color: '#ffffff',
+                      color: galerieTheme.text,
                       fontWeight: '600'
                     }}>
                       {artwork.title || artwork.number}
@@ -2525,7 +2718,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                     <p style={{ 
                       margin: '0.25rem 0', 
                       fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', 
-                      color: 'rgba(255, 255, 255, 0.4)',
+                      color: galerieTheme.muted,
                       lineHeight: '1.3'
                     }}>
                       {artwork.number}
@@ -2533,17 +2726,17 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                     <p style={{ 
                       margin: '0.5rem 0', 
                       fontSize: 'clamp(0.9rem, 2.5vw, 1rem)', 
-                      color: 'rgba(255, 255, 255, 0.6)',
+                      color: galerieTheme.muted,
                       lineHeight: '1.4'
                     }}>
-                      {artwork.category === 'malerei' ? 'Bilder' : artwork.category === 'keramik' ? 'Keramik' : artwork.category}
+                      {getCategoryLabel(artwork.category)}
                       {artwork.artist && ` • ${artwork.artist}`}
                     </p>
                     {artwork.location && (
                       <p style={{ 
                         margin: '0.25rem 0', 
                         fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', 
-                        color: 'rgba(95, 251, 241, 0.8)',
+                        color: galerieTheme.accent,
                         fontWeight: '500'
                       }}>
                         📍 {artwork.location}
@@ -2553,7 +2746,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                     <div style={{ 
                       margin: '0.75rem 0', 
                       fontSize: 'clamp(0.8rem, 2.2vw, 0.9rem)', 
-                      color: 'rgba(255, 255, 255, 0.7)',
+                      color: galerieTheme.muted,
                       lineHeight: '1.5'
                     }}>
                       {artwork.description && (
@@ -2610,10 +2803,15 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                       )}
                     </div>
                     {artwork.price != null && (Number(artwork.price) || 0) > 0 && (
-                      <p style={{ 
+                      <p style={musterOnly ? { 
                         margin: '0.75rem 0 0', 
                         fontWeight: '700', 
-                        background: 'linear-gradient(135deg, #b8b8ff 0%, #ff77c6 100%)',
+                        color: galerieTheme.accent,
+                        fontSize: 'clamp(1.1rem, 3vw, 1.3rem)'
+                      } : { 
+                        margin: '0.75rem 0 0', 
+                        fontWeight: '700', 
+                        background: galerieTheme.priceBg,
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
                         backgroundClip: 'text',
@@ -2627,16 +2825,17 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                       <button
                         onClick={() => {
                           if (addToCart(artwork)) {
-                            navigate(PROJECT_ROUTES['k2-galerie'].shop, { state: { fromGalerieView: true } })
+                            if (musterOnly) try { sessionStorage.setItem('k2-shop-from-oeffentlich', '1') } catch (_) {}
+                            navigate(PROJECT_ROUTES['k2-galerie'].shop, { state: { fromGalerieView: true, fromOeffentlich: musterOnly } })
                           }
                         }}
                         style={{
                           width: '100%',
                           marginTop: '0.75rem',
                           padding: 'clamp(0.5rem, 1.5vw, 0.65rem) clamp(0.75rem, 2vw, 1rem)',
-                          background: 'rgba(102, 126, 234, 0.2)',
-                          color: '#b8b8ff',
-                          border: '1px solid rgba(102, 126, 234, 0.3)',
+                          background: musterOnly ? 'rgba(0,0,0,0.08)' : 'rgba(102, 126, 234, 0.2)',
+                          color: galerieTheme.accent,
+                          border: `1px solid ${galerieTheme.btnBorder}`,
                           borderRadius: '8px',
                           fontSize: 'clamp(0.8rem, 2.2vw, 0.9rem)',
                           fontWeight: '500',
@@ -2644,12 +2843,12 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                           transition: 'all 0.3s ease'
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'rgba(102, 126, 234, 0.3)'
-                          e.currentTarget.style.borderColor = 'rgba(102, 126, 234, 0.5)'
+                          e.currentTarget.style.background = musterOnly ? 'rgba(0,0,0,0.12)' : 'rgba(102, 126, 234, 0.3)'
+                          e.currentTarget.style.borderColor = musterOnly ? 'rgba(0,0,0,0.25)' : 'rgba(102, 126, 234, 0.5)'
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'rgba(102, 126, 234, 0.2)'
-                          e.currentTarget.style.borderColor = 'rgba(102, 126, 234, 0.3)'
+                          e.currentTarget.style.background = musterOnly ? 'rgba(0,0,0,0.08)' : 'rgba(102, 126, 234, 0.2)'
+                          e.currentTarget.style.borderColor = galerieTheme.btnBorder
                         }}
                       >
                         Gefällt mir – möchte ich erwerben
@@ -2661,9 +2860,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                         width: '100%',
                         marginTop: '1rem',
                         padding: 'clamp(0.75rem, 2vw, 1rem)',
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        color: 'rgba(255, 255, 255, 0.6)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        background: galerieTheme.filterInactive,
+                        color: galerieTheme.muted,
+                        border: `1px solid ${galerieTheme.border}`,
                         borderRadius: '12px',
                         fontSize: 'clamp(0.85rem, 2.5vw, 0.95rem)',
                         textAlign: 'center',
@@ -2851,7 +3050,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                 onClick={(e) => {
                   e.stopPropagation()
                   addToCart(lightboxImage.artwork)
-                  navigate(PROJECT_ROUTES['k2-galerie'].shop, { state: { fromGalerieView: true } })
+                  if (musterOnly) try { sessionStorage.setItem('k2-shop-from-oeffentlich', '1') } catch (_) {}
+                  navigate(PROJECT_ROUTES['k2-galerie'].shop, { state: { fromGalerieView: true, fromOeffentlich: musterOnly } })
                   setLightboxImage(null)
                   setImageZoom(1)
                   setImagePosition({ x: 0, y: 0 })
@@ -2916,6 +3116,86 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
               ×
             </button>
           </div>
+
+          {/* Vor/Zurück – Seitenpfeile */}
+          {lightboxImage.allArtworks != null && lightboxImage.currentIndex != null && (
+            <>
+              {lightboxImage.currentIndex > 0 && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    const list = lightboxImage.allArtworks!
+                    const prev = list[lightboxImage.currentIndex! - 1]
+                    const src = prev?.imageUrl || prev?.previewUrl || ''
+                    if (src) {
+                      setLightboxImage({ src, title: prev?.title || prev?.number || '', artwork: prev, allArtworks: list, currentIndex: lightboxImage.currentIndex! - 1 })
+                      setImageZoom(1)
+                      setImagePosition({ x: 0, y: 0 })
+                    }
+                  }}
+                  style={{
+                    position: 'absolute',
+                    left: '1rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    zIndex: 10,
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '50%',
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    border: '1px solid rgba(255, 255, 255, 0.4)',
+                    color: '#fff',
+                    fontSize: '1.5rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  aria-label="Vorheriges Werk"
+                >
+                  ‹
+                </button>
+              )}
+              {lightboxImage.currentIndex < lightboxImage.allArtworks!.length - 1 && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    const list = lightboxImage.allArtworks!
+                    const next = list[lightboxImage.currentIndex! + 1]
+                    const src = next?.imageUrl || next?.previewUrl || ''
+                    if (src) {
+                      setLightboxImage({ src, title: next?.title || next?.number || '', artwork: next, allArtworks: list, currentIndex: lightboxImage.currentIndex! + 1 })
+                      setImageZoom(1)
+                      setImagePosition({ x: 0, y: 0 })
+                    }
+                  }}
+                  style={{
+                    position: 'absolute',
+                    right: '1rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    zIndex: 10,
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '50%',
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    border: '1px solid rgba(255, 255, 255, 0.4)',
+                    color: '#fff',
+                    fontSize: '1.5rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  aria-label="Nächstes Werk"
+                >
+                  ›
+                </button>
+              )}
+            </>
+          )}
 
           {/* Zoom Controls */}
           <div style={{
@@ -3173,7 +3453,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
               </label>
               <select
                 value={mobileCategory}
-                onChange={(e) => setMobileCategory(e.target.value as 'malerei' | 'keramik')}
+                onChange={(e) => setMobileCategory(e.target.value as ArtworkCategoryId)}
                 style={{
                   width: '100%',
                   padding: '0.75rem',
@@ -3184,8 +3464,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                   fontSize: '1rem'
                 }}
               >
-                <option value="malerei">🖼️ Bilder</option>
-                <option value="keramik">🏺 Keramik</option>
+                {ARTWORK_CATEGORIES.map((c) => (
+                  <option key={c.id} value={c.id}>{c.label}</option>
+                ))}
               </select>
             </div>
             
@@ -3533,16 +3814,14 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                   } else {
                     // NEU: Erstelle neues Objekt
                     // WICHTIG: Finde maximale Nummer aus ALLEN artworks der GLEICHEN Kategorie (auch Supabase)
-                    // Kategorie-basiert: K für Keramik, M für Malerei
-                    // WICHTIG: Unterstützt auch alte Nummern ohne K/M Präfix
-                    const prefix = mobileCategory === 'keramik' ? 'K' : 'M'
+                    // Kategorie-basiert: M/K/G/S/O (max 5 Kategorien)
+                    const prefix = getCategoryPrefixLetter(mobileCategory)
                     const categoryPrefix = `K2-${prefix}-`
                     
                     let maxNumber = 0
                     artworks.forEach((a: any) => {
                       if (!a.number) return
                       
-                      // Prüfe ob neue Nummer mit K/M Präfix
                       if (a.number.startsWith(categoryPrefix)) {
                         const numStr = a.number.replace(categoryPrefix, '').replace(/[^0-9]/g, '')
                         const num = parseInt(numStr || '0')
@@ -3550,8 +3829,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
                           maxNumber = num
                         }
                       }
-                      // Prüfe ob alte Nummer ohne Präfix (z.B. "K2-0001")
-                      else if (a.number.startsWith('K2-') && !a.number.includes('-K-') && !a.number.includes('-M-')) {
+                      else if (a.number.startsWith('K2-') && !a.number.includes('-K-') && !a.number.includes('-M-') && !a.number.includes('-G-') && !a.number.includes('-S-') && !a.number.includes('-O-')) {
                         const numStr = a.number.replace('K2-', '').replace(/[^0-9]/g, '')
                         const num = parseInt(numStr || '0')
                         if (num > maxNumber) {
