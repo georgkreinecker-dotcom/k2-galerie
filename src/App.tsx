@@ -4,7 +4,6 @@ import './App.css'
 import ProjectsPage from './pages/ProjectsPage'
 import ProjectStartPage from './pages/ProjectStartPage'
 import ControlStudioPage from './pages/ControlStudioPage'
-import MissionControlPage from './pages/MissionControlPage'
 import ProjectPlanPage from './pages/ProjectPlanPage'
 import K2TeamHandbuchPage from './pages/K2TeamHandbuchPage'
 import MobileConnectPage from './pages/MobileConnectPage'
@@ -504,6 +503,8 @@ function App() {
       <Route path="/kosten" element={<Navigate to={PLATFORM_ROUTES.kosten} replace />} />
       <Route path="/dialog" element={<Navigate to={PLATFORM_ROUTES.dialog} replace />} />
       <Route path="/galerie" element={<GaleriePage />} />
+      {/* /admin/login → sofort zur Galerie (keine AdminLoginPage-Route, um Crash-Risiko zu vermeiden) */}
+      <Route path="/admin/login" element={<Navigate to={PROJECT_ROUTES['k2-galerie'].galerie} replace />} />
       <Route path="/admin" element={
         <AdminErrorBoundary>
           <AppErrorBoundary>
@@ -514,7 +515,7 @@ function App() {
         </AdminErrorBoundary>
       } />
       <Route path="/control-studio" element={<Navigate to={PROJECT_ROUTES['k2-galerie'].controlStudio} replace />} />
-      <Route path={PLATFORM_ROUTES.missionControl} element={<MissionControlPage />} />
+      <Route path={PLATFORM_ROUTES.missionControl} element={<Navigate to={PLATFORM_ROUTES.projects} replace />} />
       <Route path="/mobile-connect" element={<Navigate to={PROJECT_ROUTES['k2-galerie'].mobileConnect} replace />} />
       
       {/* Dev-Tool für parallele Ansichten – auf Mobile → Galerie (keine 4 Seiten/Smart Panel) */}
