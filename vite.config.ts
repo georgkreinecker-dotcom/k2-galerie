@@ -3,6 +3,26 @@ import react from '@vitejs/plugin-react'
 import fs from 'fs'
 import path from 'path'
 
+// .env aus Projektroot lesen (Vite lädt sie sonst nicht in die Server-Middleware)
+function loadEnvFromFile(projectRoot: string): { GITHUB_TOKEN?: string; GITHUB_REPO?: string; GITHUB_BRANCH?: string } {
+  const envPath = path.join(projectRoot, '.env')
+  if (!fs.existsSync(envPath)) return {}
+  let content = fs.readFileSync(envPath, 'utf8')
+  content = content.replace(/^\uFEFF/, '') // BOM entfernen
+  const out: Record<string, string> = {}
+  for (const line of content.split(/\r?\n/)) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+    const eq = trimmed.indexOf('=')
+    if (eq <= 0) continue
+    const key = trimmed.slice(0, eq).trim()
+    let value = trimmed.slice(eq + 1).trim()
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) value = value.slice(1, -1)
+    if (key === 'GITHUB_TOKEN' || key === 'GITHUB_REPO' || key === 'GITHUB_BRANCH') out[key] = value
+  }
+  return out
+}
+
 // Plugin: Prüfe auf doppelte Exports BEVOR Build startet
 const checkDuplicateExportsPlugin = () => {
   return {
@@ -435,6 +455,179 @@ const writeGalleryDataMiddleware = () => {
           next()
         }
       })
+
+      // Ein-Klick einrichten: GitHub-Token in .env speichern (kein manuelles Bearbeiten der Datei nötig)
+      server.middlewares.use('/api/save-github-env', async (req: any, res: any, next: any) => {
+        if (req.method !== 'POST') {
+          next()
+          return
+        }
+        const projectRoot = path.resolve(__dirname)
+        const envPath = path.join(projectRoot, '.env')
+        const send = (status: number, body: object) => {
+          res.writeHead(status, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify(body))
+        }
+        const body = await new Promise<string>((resolve, reject) => {
+          const chunks: Buffer[] = []
+          req.on('data', (chunk: Buffer) => chunks.push(chunk))
+          req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
+          req.on('error', reject)
+        })
+        try {
+          const data = JSON.parse(body || '{}') as { token?: string; repo?: string; branch?: string }
+          const token = (data.token || '').trim()
+          const repo = (data.repo || 'georgkreinecker-dotcom/k2-galerie').trim()
+          const branch = (data.branch || 'main').trim()
+          if (!token) {
+            send(200, { success: false, error: 'Token fehlt. Bitte GitHub-Token einfügen.' })
+            return
+          }
+          let envContent = ''
+          if (fs.existsSync(envPath)) {
+            envContent = fs.readFileSync(envPath, 'utf8')
+          }
+          const lines = envContent.split(/\r?\n/)
+          const out: string[] = []
+          let hadToken = false
+          let hadRepo = false
+          let hadBranch = false
+          for (const line of lines) {
+            if (/^\s*GITHUB_TOKEN\s*=/.test(line)) {
+              out.push(`GITHUB_TOKEN=${token}`)
+              hadToken = true
+              continue
+            }
+            if (/^\s*GITHUB_REPO\s*=/.test(line)) {
+              out.push(`GITHUB_REPO=${repo}`)
+              hadRepo = true
+              continue
+            }
+            if (/^\s*GITHUB_BRANCH\s*=/.test(line)) {
+              out.push(`GITHUB_BRANCH=${branch}`)
+              hadBranch = true
+              continue
+            }
+            out.push(line)
+          }
+          if (!hadToken) out.push(`GITHUB_TOKEN=${token}`)
+          if (!hadRepo) out.push(`GITHUB_REPO=${repo}`)
+          if (!hadBranch) out.push(`GITHUB_BRANCH=${branch}`)
+          fs.writeFileSync(envPath, out.join('\n') + '\n', 'utf8')
+          send(200, { success: true, message: 'Gespeichert. Bitte Dev-Server neu starten (Cursor-Terminal: Strg+C, dann npm run dev).' })
+        } catch (e: any) {
+          send(200, { success: false, error: e?.message || 'Speichern fehlgeschlagen' })
+        }
+      })
+
+      // Token-Status (nur ob gesetzt, kein Wert) – damit du siehst ob Ein-Klick geht
+      server.middlewares.use('/api/github-token-status', (req: any, res: any, next: any) => {
+        if (req.method !== 'GET') { next(); return }
+        const projectRoot = path.resolve(__dirname)
+        const envFile = loadEnvFromFile(projectRoot)
+        const token = process.env.GITHUB_TOKEN || envFile.GITHUB_TOKEN
+        const ok = !!(token && String(token).trim().length > 0)
+        res.writeHead(200, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({
+          ok,
+          message: ok ? 'Token aktiv – Ein-Klick möglich.' : 'Token fehlt. 🔑 Ein-Klick einrichten → Token eintragen → Speichern → Dev-Server neu starten (Strg+C, npm run dev).'
+        }))
+      })
+
+      // Code-Update (Git): Ein Klick – mit GitHub-Token per API (kein Terminal nötig)
+      server.middlewares.use('/api/run-git-push-gallery-data', async (req: any, res: any, next: any) => {
+        if (req.method !== 'POST') {
+          next()
+          return
+        }
+        const projectRoot = path.resolve(__dirname)
+        const outputFile = path.join(projectRoot, 'public', 'gallery-data.json')
+        const send = (status: number, body: object) => {
+          res.writeHead(status, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify(body))
+        }
+        if (!fs.existsSync(outputFile)) {
+          send(200, { success: false, error: 'gallery-data.json fehlt. Zuerst „Code-Update (Git)“ klicken (schreibt zuerst die Datei).' })
+          return
+        }
+        const envFile = loadEnvFromFile(projectRoot)
+        const token = process.env.GITHUB_TOKEN || envFile.GITHUB_TOKEN
+        const repo = process.env.GITHUB_REPO || envFile.GITHUB_REPO || 'georgkreinecker-dotcom/k2-galerie'
+        const branch = process.env.GITHUB_BRANCH || envFile.GITHUB_BRANCH || 'main'
+        if (token && repo) {
+          try {
+            const fileContent = fs.readFileSync(outputFile, 'utf8')
+            const contentBase64 = Buffer.from(fileContent, 'utf8').toString('base64')
+            const [owner, repoName] = repo.split('/')
+            if (!owner || !repoName) {
+              send(200, { success: false, error: 'GITHUB_REPO muss „owner/repo“ sein (z. B. georgkreinecker/k2Galerie).' })
+              return
+            }
+            const opts = {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+              }
+            }
+            const getUrl = `https://api.github.com/repos/${owner}/${repoName}/contents/public/gallery-data.json?ref=${branch}`
+            const getRes = await fetch(getUrl, opts)
+            let sha: string | undefined
+            if (getRes.ok) {
+              const data = (await getRes.json()) as { sha?: string }
+              sha = data.sha
+            }
+            const putRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/public/gallery-data.json`, {
+              method: 'PUT',
+              ...opts,
+              body: JSON.stringify({
+                message: `Update gallery-data.json (Stand ${new Date().toLocaleString('de-AT', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })})`,
+                content: contentBase64,
+                sha: sha || undefined,
+                branch
+              })
+            })
+            if (!putRes.ok) {
+              const errBody = await putRes.text()
+              send(200, { success: false, error: `GitHub API: ${putRes.status}`, output: errBody.substring(0, 800) })
+              return
+            }
+            send(200, { success: true, message: 'Push ausgeführt', output: 'Datei per GitHub-API hochgeladen. Vercel baut in 1–2 Min.' })
+            return
+          } catch (e: any) {
+            send(200, { success: false, error: e?.message || 'GitHub-API fehlgeschlagen', output: String(e).substring(0, 500) })
+            return
+          }
+        }
+        // Fallback: Script (wenn kein Token gesetzt)
+        const gitScript = path.resolve(projectRoot, 'scripts', 'git-push-gallery-data.sh')
+        if (!fs.existsSync(gitScript)) {
+          send(200, { success: false, error: 'Git-Script nicht gefunden. Für Ein-Klick: GITHUB_TOKEN und GITHUB_REPO in .env setzen.' })
+          return
+        }
+        try {
+          const { execSync } = require('child_process')
+          const gitOutput = execSync(`bash -l -c '"${gitScript}"'`, {
+            cwd: projectRoot,
+            timeout: 45000,
+            maxBuffer: 1024 * 1024 * 10,
+            encoding: 'utf8',
+            stdio: ['pipe', 'pipe', 'pipe'],
+            env: { ...process.env }
+          }) as string
+          const stripAnsi = (s: string) => s.replace(/\x1b\[[0-9;]*m/g, '').replace(/\r/g, '')
+          send(200, { success: true, message: 'Push ausgeführt', output: stripAnsi(gitOutput).substring(0, 3000) })
+        } catch (e: any) {
+          const rawOut = (e.stdout != null ? String(e.stdout) : '') || (e.stderr != null ? String(e.stderr) : '') || ''
+          const out = (rawOut || e.message || '').replace(/\x1b\[[0-9;]*m/g, '').replace(/\r/g, '').substring(0, 3500)
+          send(200, {
+            success: false,
+            error: (e.message || 'Push fehlgeschlagen').substring(0, 500),
+            output: out,
+            scriptPath: gitScript
+          })
+        }
+      })
     }
   }
 }
@@ -442,7 +635,7 @@ const writeGalleryDataMiddleware = () => {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    react(), 
+    react(), // fastRefresh: false war in dieser Vite-Version nicht typisiert – Build braucht gültige Optionen
     checkDuplicateExportsPlugin(), // PRÜFT DOPPELTE EXPORTS BEVOR BUILD STARTET
     writeGalleryDataPlugin(), 
     writeGalleryDataMiddleware(),

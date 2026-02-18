@@ -29,26 +29,42 @@ export function urlWithBuildVersion(url: string): string {
   return \`\${url}\${sep}v=\${BUILD_TIMESTAMP}\`
 }
 `
-fs.writeFileSync(outPath, content, 'utf8')
+// Nur schreiben wenn sich Inhalt geändert hat – verhindert HMR-Stoß / Crash direkt nach "Fertig"-Meldung
+let tsChanged = true
+try {
+  const existing = fs.readFileSync(outPath, 'utf8')
+  if (existing === content) tsChanged = false
+} catch (_) {}
+if (tsChanged) fs.writeFileSync(outPath, content, 'utf8')
 
 // build-info.json für Abruf im Browser (Cache-Check, immer no-cache)
 const publicPath = path.join(__dirname, '..', 'public', 'build-info.json')
-fs.writeFileSync(publicPath, JSON.stringify({ label, timestamp: now.getTime() }), 'utf8')
+const jsonContent = JSON.stringify({ label, timestamp: now.getTime() })
+let jsonChanged = true
+try {
+  if (fs.readFileSync(publicPath, 'utf8') === jsonContent) jsonChanged = false
+} catch (_) {}
+if (jsonChanged) fs.writeFileSync(publicPath, jsonContent, 'utf8')
 
 // Beim Build (--inject-html): Build-Check in index.html injizieren – JEDEN Build aktueller Timestamp (Seite öffnen = Update)
 if (process.argv.includes('--inject-html')) {
   const ts = now.getTime()
-  const injectScript = '<script>(function(){var b=' + ts + ';var o=location.origin;var p=location.pathname;var q=location.search||"";var sep=q?"&":"?";if(Date.now()-b>120000){try{var k2="k2_stale";if(!sessionStorage.getItem(k2)){sessionStorage.setItem(k2,"1");location.replace(o+p+q+sep+"_="+Date.now());}}catch(e){}return;}var bust="v="+Date.now();var url=o+"/build-info.json?t="+Date.now()+"&r="+Math.random();fetch(url,{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b)location.replace(o+p+sep+bust)}).catch(function(){try{var k="k2_noreload";if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,"1");location.replace(o+p+q+sep+"_="+Date.now())}}catch(e){}});})();</script>'
+  // Im iframe (Cursor Preview) KEIN location.replace – verhindert Reload-Schleifen und Totalabsturz
+const injectScript = '<script>(function(){if(window.self!==window.top)return;var b=' + ts + ';var o=location.origin;var p=location.pathname;var q=location.search||"";var sep=q?"&":"?";if(Date.now()-b>120000){try{var k2="k2_stale";if(!sessionStorage.getItem(k2)){sessionStorage.setItem(k2,"1");location.replace(o+p+q+sep+"_="+Date.now());}}catch(e){}return;}var bust="v="+Date.now();var url=o+"/build-info.json?t="+Date.now()+"&r="+Math.random();fetch(url,{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b)location.replace(o+p+sep+bust)}).catch(function(){try{var k="k2_noreload";if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,"1");location.replace(o+p+q+sep+"_="+Date.now())}}catch(e){}});})();</script>'
   const indexPath = path.join(__dirname, '..', 'index.html')
   let indexHtml = fs.readFileSync(indexPath, 'utf8')
   if (indexHtml.includes('<!-- BUILD_TS_INJECT -->')) {
     indexHtml = indexHtml.replace('<!-- BUILD_TS_INJECT -->', injectScript)
   } else {
     // Fallback: bereits injiziertes Script komplett durch neues ersetzen (var b=alterTimestamp → aktueller Build)
-    const oldScriptRe = /<script>\(function\(\)\{var b=\d+;[^<]*\}\);<\/script>/
+    const oldScriptRe = /<script>\(function\(\)\{\s*(?:if\(window\.self!==window\.top\)return;)?\s*var b=\d+;[^<]*\}\);<\/script>/
     if (oldScriptRe.test(indexHtml)) indexHtml = indexHtml.replace(oldScriptRe, injectScript)
   }
   fs.writeFileSync(indexPath, indexHtml, 'utf8')
 }
 
-console.log('✅ Build-Info geschrieben:', label)
+if (tsChanged || jsonChanged) {
+  console.log('✅ Build-Info geschrieben:', label)
+} else {
+  console.log('✅ Build-Info unverändert (kein Schreiben → kein HMR-Stoß):', label)
+}

@@ -1,7 +1,12 @@
 # Warum das Handy nach QR-Scan noch Stand 9:24 zeigt
 
+**→ Damit es immer funktioniert: Ein Branch (main). Siehe `docs/DEPLOYMENT-EIN-BRANCH.md`.**
+
+---
+
 ## ✅ Damit der Stand überall stimmt (Checkliste – unbedingt einhalten)
 
+- **Ein Branch:** Nur **main** verwenden. Vercel Production Branch = **main**. Immer auf main pushen. Details: **`docs/DEPLOYMENT-EIN-BRANCH.md`**.
 - **vercel.json:** Gültiges JSON, **keine** überzählige `}` am Ende (sonst Vercel: „Invalid vercel.json“ → Build Failed).
 - **Push:** `git push origin main` → Vercel baut. In Vercel Deployments prüfen: neues Deployment **Ready** und **Current**.
 - **QR scannen** erst, wenn Vercel **Ready** ist (oder auf dem Mac „Bereit für Mobile“ angezeigt wird). Siehst du am Handy noch alte Zeit → **unten links auf „Stand“ tippen** (lädt neu).
@@ -32,30 +37,11 @@ Der Production-Branch wird **nur** in Vercel gesetzt – nicht im Code. Im Repo 
 - Die **normale Vercel-URL** (die der QR-Code nutzt) = **Production** = letzter Stand von **main**.
 - Wenn auf **main** seit Tagen nichts gepusht wurde, bleibt Production bei Stand 9:24.
 
-## Lösung 1: Production-Branch in Vercel auf main-fresh stellen (empfohlen)
+## Einmalig: Production-Branch = main (empfohlen)
 
-1. **Vercel Dashboard** öffnen → dein Projekt (z. B. k2-galerie / georgs-projects-…).
-2. **Settings** → **Git**.
-3. Unter **Production Branch** steht vermutlich `main`.
-4. Auf **main-fresh** ändern und speichern.
-5. Einmal **Redeploy** der letzten Deployment von **main-fresh** auslösen (Deployments → bei dem neuesten von main-fresh „⋯” → Redeploy).
-
-Danach: QR-Code neu scannen → Handy sollte den neuesten Stand zeigen.
-
-## Lösung 2: Stattdessen auf main pushen
-
-Wenn du Production bei `main` lassen willst:
-
-- Änderungen von **main-fresh** nach **main** mergen und **main** pushen.
-- Dann baut Vercel Production von dem neuen main-Stand.
-
-Beispiel (im Cursor-Terminal, wenn main der Production-Branch ist):
-
-```bash
-git checkout main
-git merge main-fresh
-git push origin main
-```
+1. **Vercel Dashboard** → Projekt **k2-galerie** → **Settings** → **Git**.
+2. **Production Branch** = **main** setzen und speichern.
+3. Ab dann: **nur auf main** arbeiten und pushen. Siehe **`docs/DEPLOYMENT-EIN-BRANCH.md`**.
 
 ## Schnell-Check: Was liefert Vercel wirklich?
 

@@ -115,51 +115,75 @@ fi
 echo ""
 echo "${CYAN}🔍 Prüfe Datei-Inhalt...${NC}"
 if command -v python3 &> /dev/null; then
-    # Prüfe mit Python ob JSON gültig ist und Werke enthält
-    ARTWORKS_COUNT=$(python3 -c "
+    # Prüfe mit Python: Werke-Anzahl und ob Bilddaten (imageUrl) enthalten sind
+    ARTWORKS_CHECK=$(python3 -c "
 import json
 import sys
 try:
     with open('public/gallery-data.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
     artworks = data.get('artworks', [])
-    print(len(artworks))
+    count = len(artworks)
+    with_images = sum(1 for a in artworks if (a.get('imageUrl') or a.get('previewUrl')) and len(str(a.get('imageUrl') or a.get('previewUrl') or '')) > 50)
+    gallery = data.get('gallery', {})
+    has_gallery_images = bool(gallery.get('welcomeImage') or gallery.get('galerieCardImage') or gallery.get('virtualTourImage'))
+    print(count, with_images, 1 if has_gallery_images else 0)
 except Exception as e:
-    print('0')
+    print('0', '0', '0')
     sys.exit(1)
-" 2>/dev/null || echo "0")
+" 2>/dev/null || echo "0 0 0")
+    ARTWORKS_COUNT=$(echo "$ARTWORKS_CHECK" | cut -d' ' -f1)
+    WITH_IMAGES=$(echo "$ARTWORKS_CHECK" | cut -d' ' -f2)
+    HAS_GALLERY_IMAGES=$(echo "$ARTWORKS_CHECK" | cut -d' ' -f3)
     
     if [ "$ARTWORKS_COUNT" = "0" ]; then
         echo ""
         echo "${RED}❌ WARNUNG: Datei enthält keine Werke!${NC}"
-        echo "${YELLOW}💡 Datei wurde geschrieben aber ist leer oder ungültig${NC}"
-        echo "${YELLOW}💡 Bitte Werk speichern und erneut veröffentlichen${NC}"
+        echo "${YELLOW}💡 Bitte zuerst „Daten veröffentlichen“ klicken${NC}"
         exit 1
-    else
-        echo "${GREEN}✅ Datei enthält ${ARTWORKS_COUNT} Werke${NC}"
     fi
+    if [ "$WITH_IMAGES" = "0" ] && [ "$HAS_GALLERY_IMAGES" = "0" ]; then
+        echo ""
+        echo "${RED}❌ WARNUNG: Keine Bilddaten in der Datei!${NC}"
+        echo "${YELLOW}💡 Damit Bilder (Werke, Willkommen) auf Vercel/Handy ankommen:${NC}"
+        echo "${YELLOW}   Zuerst „📁 Daten veröffentlichen“ klicken, dann erneut Code-Update.${NC}"
+        exit 1
+    fi
+    echo "${GREEN}✅ ${ARTWORKS_COUNT} Werke, davon ${WITH_IMAGES} mit Bilddaten${NC}"
 elif command -v node &> /dev/null; then
-    # Prüfe mit Node.js ob JSON gültig ist und Werke enthält
-    ARTWORKS_COUNT=$(node -e "
+    ARTWORKS_CHECK=$(node -e "
 try {
     const fs = require('fs');
     const data = JSON.parse(fs.readFileSync('public/gallery-data.json', 'utf8'));
     const artworks = data.artworks || [];
-    console.log(artworks.length);
+    const withImages = artworks.filter(a => {
+        const url = a.imageUrl || a.previewUrl || '';
+        return url.length > 50;
+    }).length;
+    const g = data.gallery || {};
+    const hasGalleryImages = !!(g.welcomeImage || g.galerieCardImage || g.virtualTourImage);
+    console.log(artworks.length, withImages, hasGalleryImages ? 1 : 0);
 } catch(e) {
-    console.log('0');
+    console.log('0', '0', '0');
     process.exit(1);
-}" 2>/dev/null || echo "0")
+}" 2>/dev/null || echo "0 0 0")
+    ARTWORKS_COUNT=$(echo "$ARTWORKS_CHECK" | cut -d' ' -f1)
+    WITH_IMAGES=$(echo "$ARTWORKS_CHECK" | cut -d' ' -f2)
+    HAS_GALLERY_IMAGES=$(echo "$ARTWORKS_CHECK" | cut -d' ' -f3)
     
     if [ "$ARTWORKS_COUNT" = "0" ]; then
         echo ""
         echo "${RED}❌ WARNUNG: Datei enthält keine Werke!${NC}"
-        echo "${YELLOW}💡 Datei wurde geschrieben aber ist leer oder ungültig${NC}"
-        echo "${YELLOW}💡 Bitte Werk speichern und erneut veröffentlichen${NC}"
+        echo "${YELLOW}💡 Bitte zuerst „Daten veröffentlichen“ klicken${NC}"
         exit 1
-    else
-        echo "${GREEN}✅ Datei enthält ${ARTWORKS_COUNT} Werke${NC}"
     fi
+    if [ "$WITH_IMAGES" = "0" ] && [ "$HAS_GALLERY_IMAGES" = "0" ]; then
+        echo ""
+        echo "${RED}❌ WARNUNG: Keine Bilddaten in der Datei!${NC}"
+        echo "${YELLOW}💡 Zuerst „📁 Daten veröffentlichen“ klicken, dann erneut Code-Update.${NC}"
+        exit 1
+    fi
+    echo "${GREEN}✅ ${ARTWORKS_COUNT} Werke, davon ${WITH_IMAGES} mit Bilddaten${NC}"
 else
     echo "${YELLOW}⚠️  Kann Datei-Inhalt nicht prüfen (Python/Node nicht verfügbar)${NC}"
     echo "${CYAN}💡 Datei wird trotzdem gepusht...${NC}"
@@ -245,7 +269,8 @@ echo ""
 echo "${CYAN}Aktueller Branch:${NC} ${CURRENT_BRANCH}"
 
 # WICHTIG: Wenn wir auf main-fresh sind, müssen wir zu main pushen
-# Aber die Datei muss auf main-fresh committed werden, dann zu main pushen
+# set +e damit wir bei Fehlern die Meldung ausgeben können (nicht sofort mit set -e beenden)
+set +e
 if [ "$CURRENT_BRANCH" = "main-fresh" ]; then
     echo ""
     echo "${YELLOW}ℹ️  Wir sind auf main-fresh${NC}"
@@ -253,7 +278,6 @@ if [ "$CURRENT_BRANCH" = "main-fresh" ]; then
     show_progress 5 5 "🔄 Merge zu main..."
     
     # Uncommitted Änderungen (z.B. buildInfo.generated.ts) zwischenspeichern
-    # Sonst blockiert "git checkout main" bei lokalen Änderungen
     STASHED=0
     if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
         echo ""
@@ -261,27 +285,38 @@ if [ "$CURRENT_BRANCH" = "main-fresh" ]; then
         git stash push -m "gallery-push-temp" 2>/dev/null && STASHED=1 || true
     fi
     
-    # Stelle sicher dass main Branch existiert
     if ! git show-ref --verify --quiet refs/heads/main; then
         echo "${CYAN}Erstelle main Branch von main-fresh...${NC}"
         git checkout -b main 2>/dev/null || git checkout main
         git reset --hard main-fresh
     else
-        # Wechsle zu main und merge main-fresh
-        git checkout main
-        git merge main-fresh --no-edit
+        git checkout main 2>&1
+        CHECKOUT_OK=$?
+        if [ $CHECKOUT_OK -ne 0 ]; then
+            echo ""
+            echo "${RED}❌ git checkout main fehlgeschlagen.${NC}"
+            echo "${YELLOW}💡 Im Mac-Terminal ausführen: cd $(pwd) && bash scripts/git-push-gallery-data.sh${NC}"
+            set -e
+            exit 1
+        fi
+        git merge main-fresh --no-edit 2>&1
+        MERGE_OK=$?
+        if [ $MERGE_OK -ne 0 ]; then
+            echo ""
+            echo "${RED}❌ git merge fehlgeschlagen.${NC}"
+            echo "${YELLOW}💡 Im Mac-Terminal ausführen: cd $(pwd) && bash scripts/git-push-gallery-data.sh${NC}"
+            git checkout main-fresh 2>/dev/null || true
+            set -e
+            exit 1
+        fi
     fi
     
-    # Pushe zu origin/main
     echo ""
     echo "${CYAN}📡 Pushe zu origin/main...${NC}"
     PUSH_OUTPUT=$(git push origin main --force-with-lease 2>&1)
     PUSH_STATUS=$?
     
-    # Zurück zu main-fresh
-    git checkout main-fresh
-    
-    # Stash wiederherstellen falls wir einen gemacht haben
+    # Auf main bleiben (nicht zurück zu main-fresh) – ein Branch, dann funktioniert es immer
     if [ "$STASHED" = "1" ]; then
         echo ""
         echo "${CYAN}📦 Stelle lokale Änderungen wieder her...${NC}"
@@ -303,6 +338,7 @@ else
     PUSH_OUTPUT=$(git push origin main 2>&1)
     PUSH_STATUS=$?
 fi
+set -e
 
 # Prüfe ob Datei nach Push noch existiert UND Werke enthält
 echo ""
@@ -367,10 +403,10 @@ else
         echo "${GREEN}✅ Datei wiederhergestellt${NC}"
         # Stelle sicher dass wir auf dem richtigen Branch sind
         CURRENT_BRANCH_AFTER=$(git branch --show-current)
-        if [ "$CURRENT_BRANCH_AFTER" != "main-fresh" ] && [ "$CURRENT_BRANCH_AFTER" != "main" ]; then
-            echo "${YELLOW}⚠️  Unerwarteter Branch nach Push: ${CURRENT_BRANCH_AFTER}${NC}"
-            echo "${CYAN}Wechsle zurück zu main-fresh...${NC}"
-            git checkout main-fresh 2>/dev/null || true
+        if [ "$CURRENT_BRANCH_AFTER" != "main" ]; then
+            echo "${YELLOW}⚠️  Branch nach Push: ${CURRENT_BRANCH_AFTER}${NC}"
+            echo "${CYAN}Wechsle zu main (einziger Production-Branch)...${NC}"
+            git checkout main 2>/dev/null || true
         fi
     else
         echo "${RED}❌ Wiederherstellung fehlgeschlagen${NC}"
@@ -384,6 +420,10 @@ if [ $PUSH_STATUS -eq 0 ]; then
     echo "${GREEN}✅✅✅ Git Push erfolgreich!${NC}"
     echo "${BLUE}═══════════════════════════════════════════════════════════${NC}"
     echo ""
+    if [ "$CURRENT_BRANCH" = "main-fresh" ]; then
+        echo "${GREEN}💚 Du bist jetzt auf main. Nur main verwenden – dann stimmt der Stand immer.${NC}"
+        echo ""
+    fi
     echo "${CYAN}⏳ Vercel Deployment startet automatisch (1-2 Minuten)${NC}"
     echo "${CYAN}📱 Mobile: Nach Deployment QR-Code neu scannen${NC}"
     echo ""
@@ -401,11 +441,10 @@ else
     echo "${YELLOW}💡 Bitte manuell pushen:${NC}"
     echo "   ${CYAN}git add public/gallery-data.json${NC}"
     echo "   ${CYAN}git commit -m 'Update gallery-data.json'${NC}"
-    if [ "$CURRENT_BRANCH" = "main-fresh" ]; then
+    if [ "$CURRENT_BRANCH" != "main" ]; then
         echo "   ${CYAN}git checkout main${NC}"
-        echo "   ${CYAN}git merge main-fresh${NC}"
+        echo "   ${CYAN}git merge ${CURRENT_BRANCH}${NC}"
         echo "   ${CYAN}git push origin main${NC}"
-        echo "   ${CYAN}git checkout main-fresh${NC}"
     else
         echo "   ${CYAN}git push origin main${NC}"
     fi
