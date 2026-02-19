@@ -1,0 +1,30 @@
+---
+description: "Struktur für unser Handeln – AGB in mök2, Handbuch = alle wichtigen Sachen; Quellen immer prüfen"
+alwaysApply: true
+---
+
+# Struktur für unser Handeln – Quellen verbindlich
+
+**Gilt für alle Kontexte:** K2, ök2, VK2, Tom (VK2-Mitglied). Es gibt keine unterschiedlichen Regeln pro Kontext – dieselbe Struktur, dieselben Quellen für alle.
+
+Georg und das Team haben eine **klare Struktur** entwickelt. Diese Quellen sind **verbindlich** und müssen immer aktuell zur Verfügung stehen. Bei der Arbeit im Projekt (Cursor/AI) diese Struktur einhalten und nicht „vergessen“.
+
+## Wo was liegt
+
+| Thema | Quelle | Dateien / Orte |
+|--------|--------|------------------|
+| **AGB (Allgemeine Geschäftsbedingungen)** | **mök2** (Marketing ök2) | AGB-Link und Rechtliches in mök2; AGB-Seite in der App: `/agb`, `src/pages/AGBPage.tsx`. Für K2, ök2, VK2, Tom gleich. |
+| **Handbuch (alle wichtigen Sachen)** | **k2team-handbuch** | `k2team-handbuch/00-INDEX.md` = Inhaltsverzeichnis. Für alle Kontexte dieselbe Ablage. Spiegel in `public/k2team-handbuch/` für die App. |
+| **Projekt-Doku (technisch)** | **docs/** | `docs/00-INDEX.md` = Liste aller Docs. K2/ök2, Vercel, Supabase, Crash, Deployment. |
+| **Projekt-Übersicht (wo liegt was)** | **HAUS-INDEX** | `HAUS-INDEX.md` (Root). Enthält den Abschnitt „Struktur für unser Handeln“ mit dieser Tabelle. |
+
+## Regel für AI / Cursor
+
+- **Bei Kontexten K2, ök2, VK2, Tom:** Dieselben Quellen und Regeln verwenden – nicht mit anderen Regeln pro Kontext arbeiten.
+- **Bei Fragen zu AGB, Recht, Vertrieb, „wo haben wir X abgelegt?“:** Zuerst **mök2** (Marketing ök2) und **k2team-handbuch** (00-INDEX) sowie **HAUS-INDEX.md** und **docs/00-INDEX.md** prüfen. Nicht behaupten, etwas „liegt nur im Code“ oder „gibt es nicht“, ohne diese Quellen gecheckt zu haben.
+- **Bei „wichtige Sachen“, Abläufe, Checklisten:** **k2team-handbuch** ist die zentrale Ablage. Dort nachsehen und ggf. darauf verweisen oder dort ergänzen.
+- **Aktualität:** Wenn neue wichtige Entscheidungen, Abläufe oder Rechtstexte (AGB, Datenschutz, Impressum) dazukommen: in **mök2** (für AGB/Vertrieb) bzw. **k2team-handbuch** (für Abläufe/Team) oder **docs/** (für Technik) eintragen, damit die Information „hier immer aktuell zur Verfügung steht“.
+
+## Kurzfassung
+
+**AGB = mök2. Handbuch = k2team-handbuch (alle wichtigen Sachen). Einstieg = HAUS-INDEX.md, docs/00-INDEX.md, k2team-handbuch/00-INDEX.md.** Diese Struktur gilt **einheitlich für K2, ök2, VK2 und Tom** – nicht mit anderen Regeln pro Kontext arbeiten. Bei Unsicherheit zuerst in diesen Quellen nachsehen.

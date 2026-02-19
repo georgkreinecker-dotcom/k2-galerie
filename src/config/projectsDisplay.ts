@@ -12,8 +12,7 @@ import { PROJECT_ROUTES, getAllProjectIds, type ProjectId } from './navigation'
 export const PROJECT_COLORS: Record<string, string> = {
   'k2-galerie': '#5ffbf1',
   'k2-galerie-oeffentlich': '#b8b8ff',
-  // Neue Projekte hier eintragen mit eigener Farbe, z. B.:
-  // 'projekt-2': '#22c55e',
+  vk2: '#5a7a6e',
 }
 
 /** Fallback-Palette für Projekte ohne Eintrag in PROJECT_COLORS */
@@ -42,11 +41,13 @@ export function getProjectCards(): ProjectCard[] {
   const cards: ProjectCard[] = ids.map((id, index) => {
     const route = PROJECT_ROUTES[id]
     const color = PROJECT_COLORS[id] ?? PROJECT_PALETTE[index % PROJECT_PALETTE.length]
+    // VK2: direkt zur Galerie (nicht home), damit man nicht auf K2 landet
+    const to = id === 'vk2' ? route.galerie : route.home
     return {
       id: `${id}-projekt`,
       title: route.name,
       description: getDefaultDescription(id),
-      to: route.home,
+      to,
       color,
       status: 'in-progress',
     }
@@ -70,6 +71,7 @@ export function getProjectCards(): ProjectCard[] {
 function getDefaultDescription(projectId: ProjectId): string {
   const descriptions: Partial<Record<ProjectId, string>> = {
     'k2-galerie': 'Projekt-Start, Control-Studio, Plan, Mobile-Connect – Steuerung und Inhalte.',
+    vk2: 'Vereinsplattform – Künstler:innen, Mitglieder, Admin.',
   }
   return descriptions[projectId] ?? 'Projekt öffnen.'
 }

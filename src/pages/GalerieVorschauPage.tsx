@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY } from '../config/navigation'
-import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, type ArtworkCategoryId } from '../config/tenantConfig'
+import { MUSTER_ARTWORKS, SEED_VK2_ARTISTS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, type ArtworkCategoryId } from '../config/tenantConfig'
 import { 
   syncMobileToSupabase, 
   checkMobileUpdates, 
@@ -45,6 +45,24 @@ function loadOeffentlichArtworks(): any[] {
       } else if (out.previewUrl) {
         out.imageUrl = out.previewUrl
       }
+      if (isPlaceholderImageUrl(out.imageUrl)) out.imageUrl = getOek2DefaultArtworkImage(out.category)
+      return out
+    })
+  } catch {
+    return []
+  }
+}
+
+/** VK2: Werke aus k2-vk2-artworks (Vereinsplattform). Leer = SEED_VK2_ARTISTS. */
+function loadVk2Artworks(): any[] {
+  try {
+    const raw = localStorage.getItem('k2-vk2-artworks')
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed) || parsed.length === 0) return []
+    return parsed.map((a: any) => {
+      const out = { ...a }
+      if (isPlaceholderImageUrl(out.imageUrl) && out.previewUrl) out.imageUrl = out.previewUrl
       if (isPlaceholderImageUrl(out.imageUrl)) out.imageUrl = getOek2DefaultArtworkImage(out.category)
       return out
     })
@@ -182,11 +200,16 @@ function saveArtworks(artworks: any[]): boolean {
 
 type Filter = 'alle' | ArtworkCategoryId
 
-const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFilter?: Filter; musterOnly?: boolean }) => {
+const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }: { initialFilter?: Filter; musterOnly?: boolean; vk2?: boolean }) => {
   const navigate = useNavigate()
   
-  // ök2 (musterOnly): Werke aus k2-oeffentlich-artworks (im Admin hinzugefügt); wenn leer → MUSTER_ARTWORKS. K2: aus localStorage.
+  // ök2 (musterOnly): k2-oeffentlich-artworks; VK2 (vk2): k2-vk2-artworks; K2: k2-artworks
   const initialArtworks = (() => {
+    if (vk2) {
+      const v = loadVk2Artworks()
+      if (v.length > 0) return v
+      return [...SEED_VK2_ARTISTS]
+    }
     if (musterOnly) {
       const oef = loadOeffentlichArtworks()
       if (oef.length > 0) return oef
@@ -255,21 +278,33 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false }: { initialFil
     } catch (_) {}
   }
 
-  // ök2: Bei musterOnly Werke aus k2-oeffentlich-artworks anzeigen (im Admin hinzugefügt); wenn leer → Musterwerke
+  // ök2 / VK2: Werke aus dem jeweiligen Speicher anzeigen
   useEffect(() => {
+    if (vk2) {
+      const v = loadVk2Artworks()
+      setArtworks(v.length > 0 ? v : [...SEED_VK2_ARTISTS])
+      return
+    }
     if (musterOnly) {
       const oef = loadOeffentlichArtworks()
       setArtworks(oef.length > 0 ? oef : [...MUSTER_ARTWORKS])
     }
-  }, [musterOnly])
+  }, [musterOnly, vk2])
 
-  // K2 und ök2: Nach Speichern im Admin (artworks-updated) Galerie-Liste aus dem jeweiligen Speicher aktualisieren
+  // K2 / ök2 / VK2: Nach Speichern im Admin (artworks-updated) Galerie-Liste aus dem jeweiligen Speicher aktualisieren
   useEffect(() => {
     const onUpdated = () => {
+      if (vk2) {
+        const v = loadVk2Artworks()
+        setArtworks(v.length > 0 ? v : [...SEED_VK2_ARTISTS])
+        return
+      }
       if (musterOnly) {
         const oef = loadOeffentlichArtworks()
         setArtworks(oef.length > 0 ? oef : [...MUSTER_ARTWORKS])
-      } else {
+        return
+      }
+      {
         const stored = loadArtworks()
         if (stored && stored.length > 0) {
           const placeholder = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'

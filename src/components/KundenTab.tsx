@@ -4,7 +4,8 @@ import {
   createCustomer,
   updateCustomer,
   deleteCustomer,
-  type Customer
+  type Customer,
+  type CustomersScope
 } from '../utils/customers'
 import { WERBEUNTERLAGEN_STIL } from '../config/marketingWerbelinie'
 
@@ -36,7 +37,8 @@ function parseBulkLine(line: string): { name: string; phone?: string; email?: st
   return { name: t }
 }
 
-export function KundenTab() {
+export function KundenTab(props: { scope?: CustomersScope }) {
+  const scope = props.scope ?? 'k2'
   const [customers, setCustomers] = useState<Customer[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -49,14 +51,14 @@ export function KundenTab() {
   const [bulkNotes, setBulkNotes] = useState('')
   const [showBulkForm, setShowBulkForm] = useState(false)
 
-  const loadCustomers = () => setCustomers(getCustomers())
+  const loadCustomers = () => setCustomers(getCustomers(scope))
 
   useEffect(() => {
     loadCustomers()
     const onUpdate = () => loadCustomers()
     window.addEventListener('customers-updated', onUpdate)
     return () => window.removeEventListener('customers-updated', onUpdate)
-  }, [])
+  }, [scope])
 
   const filtered = useMemo(() => {
     if (!searchQuery.trim()) return customers
@@ -77,12 +79,13 @@ export function KundenTab() {
   const handleBulkCreate = () => {
     if (bulkPreview.length === 0) return
     const notes = bulkNotes.trim() || undefined
-    bulkPreview.forEach(({ name, phone, email }) => createCustomer({ name, phone, email, notes }))
+    bulkPreview.forEach(({ name, phone, email }) => createCustomer({ name, phone, email, notes }, scope))
     setBulkInput('')
     setBulkNotes('')
     setShowBulkForm(false)
     loadCustomers()
-    alert(`${bulkPreview.length} Kunden angelegt.${notes ? ` Notiz: ${notes}` : ''}`)
+    const label = scope === 'vk2' ? 'Mitglieder' : 'Kunden'
+    alert(`${bulkPreview.length} ${label} angelegt.${notes ? ` Notiz: ${notes}` : ''}`)
   }
 
   const startEdit = (c: Customer) => {
@@ -96,7 +99,7 @@ export function KundenTab() {
 
   const saveEdit = () => {
     if (!editingId) return
-    updateCustomer(editingId, { name: formName, email: formEmail || undefined, phone: formPhone || undefined, notes: formNotes || undefined })
+    updateCustomer(editingId, { name: formName, email: formEmail || undefined, phone: formPhone || undefined, notes: formNotes || undefined }, scope)
     setEditingId(null)
     setFormName('')
     setFormEmail('')
@@ -116,7 +119,7 @@ export function KundenTab() {
 
   const handleNew = () => {
     if (!formName.trim()) { alert('Bitte mindestens einen Namen eingeben.'); return }
-    createCustomer({ name: formName, email: formEmail || undefined, phone: formPhone || undefined, notes: formNotes || undefined })
+    createCustomer({ name: formName, email: formEmail || undefined, phone: formPhone || undefined, notes: formNotes || undefined }, scope)
     setFormName('')
     setFormEmail('')
     setFormPhone('')
@@ -126,16 +129,24 @@ export function KundenTab() {
   }
 
   const handleDelete = (id: string) => {
-    if (!confirm('Kunde wirklich löschen?')) return
-    deleteCustomer(id)
+    const label = scope === 'vk2' ? 'Mitglied' : 'Kunde'
+    if (!confirm(`${label} wirklich löschen?`)) return
+    deleteCustomer(id, scope)
     loadCustomers()
     if (editingId === id) cancelEdit()
   }
 
+  const labelKunden = scope === 'vk2' ? 'Mitglieder' : 'Kunden'
+  const labelKunde = scope === 'vk2' ? 'Mitglied' : 'Kunde'
+  const labelNeuer = scope === 'vk2' ? 'Neues Mitglied' : 'Neuer Kunde'
+  const introText = scope === 'vk2'
+    ? 'Vereinsmitglieder – Künstler:innen und Kontakte. Ein Mitglied mit „Vollversion“ hat Admin-Zugang.'
+    : 'Kunden für Verkauf, Einladungen und Ausstellungsbetrieb. Beim Verkauf in der Kasse kannst du einen Kunden zuordnen.'
+
   return (
     <div style={{ background: s.bgCard, padding: '1.6rem 1.8rem', borderRadius: 18, boxShadow: s.shadow, border: `1px solid ${s.accent}22` }}>
-      <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700', color: s.text }}>Galeriekunden</h2>
-      <p style={{ margin: '0.5rem 0 1rem', color: s.muted, fontSize: '0.95rem', lineHeight: 1.5 }}>Kunden für Verkauf, Einladungen und Ausstellungsbetrieb. Beim Verkauf in der Kasse kannst du einen Kunden zuordnen.</p>
+      <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700', color: s.text }}>{scope === 'vk2' ? 'Vereinsmitglieder' : 'Galeriekunden'}</h2>
+      <p style={{ margin: '0.5rem 0 1rem', color: s.muted, fontSize: '0.95rem', lineHeight: 1.5 }}>{introText}</p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', marginBottom: '1rem' }}>
         <input
           type="text"
@@ -145,7 +156,7 @@ export function KundenTab() {
           style={{ flex: 1, minWidth: '200px', padding: '0.6rem 0.8rem', borderRadius: 10, border: `1px solid ${s.accent}33`, background: s.bgElevated, color: s.text, fontSize: '0.95rem' }}
         />
         <button type="button" onClick={() => { setShowNewForm(true); setShowBulkForm(false); setEditingId(null); setFormName(''); setFormEmail(''); setFormPhone(''); setFormNotes('') }} style={{ padding: '0.5rem 1rem', background: s.gradientAccent, border: 'none', borderRadius: 10, color: '#fff', fontSize: '0.95rem', fontWeight: '600', cursor: 'pointer' }}>
-          + Neuer Kunde
+          + {labelNeuer}
         </button>
         <button type="button" onClick={() => { setShowBulkForm(!showBulkForm); if (!showBulkForm) setShowNewForm(false) }} style={{ padding: '0.5rem 1rem', background: `${s.accent}18`, border: `1px solid ${s.accent}55`, borderRadius: 10, color: s.accent, fontSize: '0.95rem', fontWeight: '600', cursor: 'pointer' }}>
           📋 Aus Liste importieren
@@ -161,7 +172,7 @@ export function KundenTab() {
             <label style={{ fontSize: '0.85rem', color: s.muted }}>Gemeinsame Notiz für alle (z. B. „WhatsApp Gruppe Vernissage“)</label>
             <input type="text" value={bulkNotes} onChange={(e) => setBulkNotes(e.target.value)} placeholder="Optional" style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: 10, border: `1px solid ${s.accent}33`, background: s.bgElevated, color: s.text, fontSize: '0.95rem' }} />
           </div>
-          {bulkPreview.length > 0 && <p style={{ marginTop: '0.5rem', color: s.accent, fontSize: '0.9rem' }}>Vorschau: <strong>{bulkPreview.length}</strong> Kunden werden angelegt.</p>}
+          {bulkPreview.length > 0 && <p style={{ marginTop: '0.5rem', color: s.accent, fontSize: '0.9rem' }}>Vorschau: <strong>{bulkPreview.length}</strong> {labelKunden} werden angelegt.</p>}
           <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
             <button type="button" onClick={handleBulkCreate} disabled={bulkPreview.length === 0} style={{ padding: '0.5rem 1rem', background: s.gradientAccent, border: 'none', borderRadius: 10, color: '#fff', fontSize: '0.95rem', fontWeight: '600', cursor: bulkPreview.length === 0 ? 'not-allowed' : 'pointer', opacity: bulkPreview.length === 0 ? 0.6 : 1 }}>Alle anlegen ({bulkPreview.length})</button>
             <button type="button" onClick={() => { setShowBulkForm(false); setBulkInput(''); setBulkNotes('') }} style={{ padding: '0.5rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}40`, borderRadius: 10, color: s.text, fontSize: '0.95rem', cursor: 'pointer' }}>Abbrechen</button>
@@ -171,7 +182,7 @@ export function KundenTab() {
 
       {showNewForm && (
         <div style={{ marginBottom: '1.5rem', padding: '1rem', background: s.bgElevated, borderRadius: 10, border: `1px solid ${s.accent}22` }}>
-          <h3 style={{ marginTop: 0, fontSize: '1rem', color: s.text, fontWeight: '600' }}>Neuer Kunde</h3>
+          <h3 style={{ marginTop: 0, fontSize: '1rem', color: s.text, fontWeight: '600' }}>{labelNeuer}</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginTop: '0.75rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}><label style={{ fontSize: '0.85rem', color: s.muted }}>Name *</label><input type="text" value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="Name oder Firma" style={{ padding: '0.6rem 0.75rem', borderRadius: 10, border: `1px solid ${s.accent}33`, background: s.bgCard, color: s.text, fontSize: '0.95rem' }} /></div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}><label style={{ fontSize: '0.85rem', color: s.muted }}>E-Mail</label><input type="email" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} placeholder="email@beispiel.at" style={{ padding: '0.6rem 0.75rem', borderRadius: 10, border: `1px solid ${s.accent}33`, background: s.bgCard, color: s.text, fontSize: '0.95rem' }} /></div>
@@ -186,7 +197,7 @@ export function KundenTab() {
       )}
 
       {filtered.length === 0 ? (
-        <p style={{ color: s.muted, fontSize: '0.95rem' }}>{customers.length === 0 ? 'Noch keine Kunden. Leg einen an – z. B. für Vernissage-Gäste oder Käufer.' : 'Keine Treffer zur Suche.'}</p>
+        <p style={{ color: s.muted, fontSize: '0.95rem' }}>{customers.length === 0 ? (scope === 'vk2' ? 'Noch keine Mitglieder. Leg das erste an.' : 'Noch keine Kunden. Leg einen an – z. B. für Vernissage-Gäste oder Käufer.') : 'Keine Treffer zur Suche.'}</p>
       ) : (
         <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
           {filtered.map((c) => (

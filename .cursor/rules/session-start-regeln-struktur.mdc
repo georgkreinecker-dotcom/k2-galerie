@@ -1,0 +1,32 @@
+---
+description: "Session-Start: Alle Regeln und Struktur in den Kontext holen – damit Georg sich darauf verlassen kann"
+alwaysApply: true
+---
+
+# Session-Start – Regeln und Struktur in Erinnerung rufen
+
+Georg hat sich an klare Regeln und Strukturen angepasst und erwartet, dass die AI **alles, was wir als Regel und Struktur entwickelt haben, merkt und in der Arbeit umsetzt**.
+
+## Pflicht zu Sessionbeginn
+
+**Zu Beginn einer Session (neue Konversation)** die vereinbarten Regeln und Strukturen in den Kontext holen, damit von der ersten Antwort an mit denselben Regeln und Strukturen gearbeitet wird.
+
+### So setzt du es um
+
+1. **Beim ersten Nutzer-Message in dieser Konversation:** Bevor du inhaltlich antwortest, die folgenden zentralen Quellen **lesen** (Read-Tool), damit sie im Kontext sind:
+   - **HAUS-INDEX.md** (Root) – mindestens den Abschnitt **„Struktur für unser Handeln (verbindlich)“**
+   - **k2team-handbuch/00-INDEX.md** – Inhaltsverzeichnis und Einleitung (wo was liegt)
+   - **docs/STRUKTUR-HANDELN-QUELLEN.md** – Kurzreferenz Quellen und Regel
+
+2. **Regeln:** Alle Dateien unter **.cursor/rules/*.mdc** mit `alwaysApply: true` werden vom System geladen. Zusätzlich die obigen Projekt-Dateien einlesen, damit **Struktur** (AGB = mök2, Handbuch = wichtige Sachen, einheitlich für K2/ök2/VK2/Tom) und **Orientierung** (HAUS-INDEX, Handbuch-Index, docs) aktiv sind.
+
+3. **Kurz bestätigen:** In der ersten Antwort optional einen kurzen Satz wie „Regeln und Struktur (HAUS-INDEX, Handbuch, mök2) sind berücksichtigt“ – dann mit der eigentlichen Aufgabe fortfahren. Kein langer Block, nur signalisieren, dass die Basis geladen ist.
+
+### Warum
+
+- Georg soll sich **darauf verlassen können**, dass du alle unsere Regeln und Strukturen kennst und anwendest.
+- Ohne explizites Einlesen zu Sessionbeginn kann die AI „vergessen“ oder nur Teil der Regeln sehen. Mit dieser Pflicht startest du jede Session mit der vollen vereinbarten Basis.
+
+### Kurzfassung
+
+**Session-Start = zentrale Quellen (HAUS-INDEX Struktur, Handbuch 00-INDEX, STRUKTUR-HANDELN-QUELLEN) einlesen, dann arbeiten. Gilt für jede neue Konversation.**

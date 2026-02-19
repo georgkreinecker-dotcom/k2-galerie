@@ -1,0 +1,23 @@
+---
+description: Fotos und Filme – überall maximale Komprimierung anstreben (Regel für alle Stellen).
+alwaysApply: true
+---
+
+# 🔒 Komprimierung: Fotos & Filme – maximale Komprimierung überall
+
+## Grundsatz
+
+- **Fotos und Filme:** Überall im Projekt **maximale Komprimierung** anstreben.
+- **Besonders mobil:** Werke, die per Aufnahme am Handy/iPad entstehen, müssen **schnell speicherbar** sein und **klein** bleiben – lange Wartezeiten bis zur Speicherung sind inakzeptabel.
+- Diese Regel gilt **überall**: Speichern neuer Werke, Export (gallery-data.json), Vorschau, Upload, Sync.
+
+## Konkret
+
+- **Beim Speichern (Admin, mobil):** Bilder vor dem Speichern aggressiv komprimieren (z. B. max. Breite 600–800 px, JPEG-Qualität 0.5–0.65). Keine unnötig großen Rohdaten in localStorage/Sync.
+- **Beim Export:** Bereits umgesetzt (compressArtworksForExport, compressGalleryImageForExport). Große Bilder vor Export verkleinern.
+- **Neue Features:** Jede Stelle, die Fotos oder Videos lädt, speichert oder überträgt: Komprimierung einplanen. Keine „Originalgröße behalten“ ohne guten Grund.
+- **Wartezeit mobil:** Wenn das Speichern nach Foto-Aufnahme lange dauert → Ursache oft große Bilddaten. Komprimierung **vor** dem Schreiben verschärfen (kleinere max. Breite, niedrigere Qualität), nicht erst nachträglich.
+
+## Kurzfassung
+
+**Maximale Komprimierung bei Fotos/Filmen überall. Mobil erstellte Werke: besonders stark komprimieren, damit Speicherung schnell ist.**

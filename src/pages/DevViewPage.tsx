@@ -736,16 +736,19 @@ end tell`
   ]
 
   // Auf Mobile: "Plattform Start" Tab ausblenden (nur für Mac)
+  // Bei context=vk2: Shop-Tab ausblenden (Vereinsplattform hat keine Kasse)
+  const contextVk2 = searchParams.get('context') === 'vk2'
   const pages = isMobileDevice 
     ? allPages.filter(p => p.id !== 'platform')
     : allPages
+  const pagesFiltered = contextVk2 ? pages.filter(p => p.id !== 'shop') : pages
 
   // Wenn aktueller Tab "platform" auf Mobile ist → automatisch zu "galerie" wechseln
   const effectiveCurrentPage = isMobileDevice && currentPage === 'platform' 
     ? 'galerie' 
     : currentPage
 
-  const currentPageData = pages.find(p => p.id === effectiveCurrentPage) || pages[0]
+  const currentPageData = pagesFiltered.find(p => p.id === effectiveCurrentPage) || pagesFiltered[0]
   const CurrentComponent = currentPageData.component
   
   // Render-Komponente mit Props für GaleriePage
@@ -1130,7 +1133,7 @@ end tell`
             fontSize: '0.9rem'
           }}
         >
-          {pages.map(page => (
+          {pagesFiltered.map(page => (
             <option key={page.id} value={page.id}>{page.name}</option>
           ))}
         </select>

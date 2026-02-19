@@ -1,0 +1,61 @@
+---
+description: Während Georg schreibt und AI programmiert – Abstürze vermeiden. Jede Session muss das einhalten (schon oft besprochen).
+alwaysApply: true
+---
+
+# 🔒 CRASH BEIM PROGRAMMIEREN – NIEMALS WIEDER (kritisch für Georg)
+
+## Was passiert immer wieder
+
+- **Absturz während des Programmierens:** Georg schreibt, die AI ändert Code → Cursor/Preview stürzt ab (z. B. Code 5). Das passiert **nicht** beim normalen Nutzen der App im Browser/Handy.
+- **Wichtig:** Es trifft **nicht nur** den Preview-Dialog – **der ganze Host (Cursor/Rechner) kann mit abstürzen.** Also: Preview wirklich schließen, App nur im Browser nutzen.
+- **Ursache:** Entwicklungs-Umgebung (Cursor Preview, Vite HMR beim Speichern), nicht der produktive App-Betrieb.
+- Georg hat das **schon hundertmal** besprochen – es darf **nicht** wieder vergessen werden.
+
+## 🔥 DAS PROBLEM LIEGT TIEFER (Cursor Preview, nicht nur App-Code)
+
+Die Crashes kommen von der **Cursor-Preview-Umgebung** (iframe/Electron, begrenzter Speicher, HMR). Wenn die volle App im iframe läuft, kann **der ganze Host mit abstürzen** – nicht nur das Preview-Fenster. App-Code-Entlastung hilft etwas, reicht aber oft nicht – **das Problem liegt tiefer** in der Host-Umgebung. **Abhilfe:** In iframe lädt die App nicht mehr (nur Hinweis „Im Browser öffnen“), damit der Host stabil bleibt.
+
+**Pragmatischer Ausweg:** **Preview in Cursor schließen, App nur im Browser.**
+- Dev-Server: `npm run dev`
+- **Chrome oder Safari** öffnen → **http://localhost:5177** (bzw. angezeigter Port). Dort die App nutzen.
+- **Cursor-Preview schließen** (Panel/Tab wirklich schließen, nicht nur minimieren). Sonst crasht die Preview weiter und unterbricht Cursor (Editor, Chat) – Zeitverlust.
+- In Cursor nur Editor + Terminal; die laufende App nur im Browser. So wird die Arbeit nicht ständig unterbrochen.
+
+So umgehst du die instabile Umgebung, ohne dass wir das Rad in Cursor/Electron drehen können.
+
+## BEI ABSTURZ: ZUERST DIESE RICHTUNG (dann ggf. Browser-Workaround)
+
+**Wenn wieder ein Absturz gemeldet wird:** Ursache ist die **Entwicklungs-Umgebung** (Cursor Preview), nicht die App auf Handy/Vercel. Erst: Checkliste (iframe, Timer, Cleanup). Wenn Crashes trotzdem oft kommen: **Entwicklung in den externen Browser verlegen** (siehe oben).
+
+## Unveränderliche Regeln (bei JEDER Code-Änderung prüfen)
+
+### 1. Kein automatischer Reload
+- **NIEMALS** automatischen Reload einbauen („Server neuer“ → reload). Nur Badge/Button, Nutzer tippt. Siehe `code-5-crash-kein-auto-reload.mdc`.
+
+### 2. Cursor Preview / Iframe
+- **NIEMALS** `location.replace` / `location.reload` / `location.href` ausführen, wenn die App in einem **iframe** läuft (z. B. Cursor Preview). Prüfung: `window.self !== window.top`. In iframe = **kein** Redirect, **kein** Reload – sonst Loop/Crash.
+
+### 3. HMR-sicherer Code
+- **useEffect:** Immer Cleanup (return-Funktion): removeEventListener, clearTimeout, clearInterval. Kein setState nach Unmount (isMounted-Check oder Abbruch in Cleanup).
+- **Event-Listener:** Nur einmal pro Komponente registrieren, im Cleanup entfernen. Keine Listener, die sich gegenseitig oder HMR mehrfach triggern.
+- **Keine schweren Lasten beim Speichern:** Keine großen Sync-Operationen oder viele Re-Renders direkt beim Datei-Speichern (HMR).
+
+### 4. Cursor Preview (iframe) entlasten
+- **Admin:** In DevViewPage wird ScreenshotExportAdmin **lazy** geladen (nur beim Öffnen des Admin-Tabs). Nicht wieder auf direkten Import umstellen – reduziert Cursor-Crashes.
+- **GaleriePage:** In iframe **kein** Stammdaten-Intervall (nur einmal loadData). Sonst Crashes alle paar Min.
+- **main.tsx:** In iframe MAX_LOGS **15** (stark reduziert).
+- **DevViewPage:** In iframe **kein** Mobile-Update-Intervall; Token-Check erst nach 3 s.
+
+### 5. Bestehende Schutzmaßnahmen nicht entfernen
+- `main.tsx`: Mobile-Reload nur bei echtem Mobile-UserAgent; **nie** in iframe. Crash-Handler, Console-Throttling (MAX_LOGS), kein doppeltes createRoot.
+- StrictMode bleibt aus (doppeltes Mounten → Crashes).
+
+## Bei neuen Features oder Refactorings
+
+- Bevor Code geändert wird: **Kurz prüfen** – könnte das in Cursor Preview bei HMR crashen? (Listener ohne Cleanup? Reload/Redirect? iframe?)
+- Wenn ja: zuerst absichern (iframe-Check, Cleanup, kein Auto-Reload), dann Feature.
+
+## Kurzfassung
+
+**Crash beim Programmieren = Cursor/HMR, nicht Browser-Betrieb. Regel: kein Auto-Reload, kein Redirect in iframe, immer Cleanup bei Listenern/Timern, bestehende Schutzmaßnahmen beibehalten. Jede Session einhalten.**

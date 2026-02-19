@@ -6,7 +6,7 @@ import { PROJECT_ROUTES, AGB_ROUTE } from '../src/config/navigation'
 
 /** Feste Galerie-URL für Etiketten-QR (unabhängig vom Router/WLAN) – gleiche Basis wie Mobile Connect */
 const GALERIE_QR_BASE = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
-import { MUSTER_TEXTE, MUSTER_ARTWORKS, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, type TenantId, type ArtworkCategoryId } from '../src/config/tenantConfig'
+import { MUSTER_TEXTE, MUSTER_ARTWORKS, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, SEED_VK2_ARTISTS, VK2_KUNSTBEREICHE, type TenantId, type ArtworkCategoryId } from '../src/config/tenantConfig'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
@@ -16,7 +16,6 @@ import '../src/App.css'
 const ADMIN_CONTEXT_KEY = 'k2-admin-context'
 function isOeffentlichAdminContext(): boolean {
   try {
-    // URL hat Vorrang: /admin?context=oeffentlich (von ök2-Willkommensseite)
     if (typeof window !== 'undefined' && window.location.search) {
       const params = new URLSearchParams(window.location.search)
       if (params.get('context') === 'oeffentlich') return true
@@ -26,15 +25,29 @@ function isOeffentlichAdminContext(): boolean {
     return false
   }
 }
+function isVk2AdminContext(): boolean {
+  try {
+    if (typeof window !== 'undefined' && window.location.search) {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('context') === 'vk2') return true
+    }
+    return typeof sessionStorage !== 'undefined' && sessionStorage.getItem(ADMIN_CONTEXT_KEY) === 'vk2'
+  } catch {
+    return false
+  }
+}
 
-// KRITISCH: Getrennte Storage-Keys für K2 vs. ök2 – niemals K2-Daten in ök2-Kontext lesen/schreiben
+// KRITISCH: Getrennte Storage-Keys für K2 vs. ök2 vs. VK2 – niemals Daten vermischen
 function getArtworksKey(): string {
+  if (isVk2AdminContext()) return 'k2-vk2-artworks'
   return isOeffentlichAdminContext() ? 'k2-oeffentlich-artworks' : 'k2-artworks'
 }
 function getEventsKey(): string {
+  if (isVk2AdminContext()) return 'k2-vk2-events'
   return isOeffentlichAdminContext() ? 'k2-oeffentlich-events' : 'k2-events'
 }
 function getDocumentsKey(): string {
+  if (isVk2AdminContext()) return 'k2-vk2-documents'
   return isOeffentlichAdminContext() ? 'k2-oeffentlich-documents' : 'k2-documents'
 }
 const KEY_OEF_ADMIN_PASSWORD = 'k2-oeffentlich-admin-password'
@@ -134,8 +147,10 @@ function loadArtworks(): any[] {
     const key = getArtworksKey()
     const stored = localStorage.getItem(key)
     // ök2: Wenn noch keine Daten, Musterwerke als Ausgangsbasis (K2-artworks nie anrühren)
+    // VK2: Wenn noch keine Daten, Seed-Künstler:innen (ein Platzhalter pro Kunstbereich)
     if (!stored || stored === '[]') {
       if (isOeffentlichAdminContext()) return [...MUSTER_ARTWORKS]
+      if (isVk2AdminContext()) return [...SEED_VK2_ARTISTS]
       return []
     }
     // SAFE MODE: Prüfe Größe bevor Parsen
@@ -1020,11 +1035,13 @@ function ScreenshotExportAdmin() {
     setPageContent(getPageContentGalerie(isOeffentlichAdminContext() ? 'oeffentlich' : undefined))
   }, [])
 
-  // URL-Parameter context=oeffentlich in sessionStorage übernehmen (ök2-Admin von Willkommensseite)
+  // URL-Parameter context (oeffentlich / vk2) in sessionStorage übernehmen
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search)
-      if (params.get('context') === 'oeffentlich') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'oeffentlich')
+      const ctx = params.get('context')
+      if (ctx === 'oeffentlich') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'oeffentlich')
+      else if (ctx === 'vk2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'vk2')
     } catch (_) {}
   }, [])
 
@@ -7295,7 +7312,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               alignItems: 'center'
             }}>
               <Link 
-                to={isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerie}
+                to={isVk2AdminContext() ? PROJECT_ROUTES.vk2.galerieVorschau : isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerie}
                 state={{ fromAdmin: true }}
                 style={{
                   padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
@@ -7323,6 +7340,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               >
                 Zur Galerie
               </Link>
+              {!isVk2AdminContext() && (
               <Link 
                 to={PROJECT_ROUTES['k2-galerie'].shop}
                 state={{ openAsKasse: true, fromOeffentlich: isOeffentlichAdminContext() || undefined }}
@@ -7351,8 +7369,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               >
                 💰 Kasse
               </Link>
+              )}
               <Link 
-                to={PROJECT_ROUTES['k2-galerie'].kunden} 
+                to={isVk2AdminContext() ? PROJECT_ROUTES.vk2.kunden : PROJECT_ROUTES['k2-galerie'].kunden} 
                 style={{
                   padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
                   background: s.bgCard,
@@ -7377,7 +7396,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
-                👥 Kunden
+                {isVk2AdminContext() ? '👥 Mitglieder' : '👥 Kunden'}
               </Link>
               <span style={{
                 display: 'inline-flex',
@@ -7407,7 +7426,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         localStorage.removeItem('k2-admin-unlocked')
                         localStorage.removeItem('k2-admin-unlocked-expiry')
                       } catch (_) {}
-                      navigate(isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerie)
+                      if (isVk2AdminContext()) navigate(PROJECT_ROUTES.vk2.galerie)
+                      else navigate(PROJECT_ROUTES['k2-galerie'].galerie)
                     }}
                     style={{
                       padding: 'clamp(0.5rem, 1.5vw, 0.6rem) clamp(0.75rem, 2vw, 1rem)',

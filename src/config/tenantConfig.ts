@@ -15,7 +15,7 @@ export const PRODUCT_WERBESLOGAN = 'K2 Galerie – in 5 Minuten zu deiner eigene
 /** Zweite Kernbotschaft: Empfehlungs-Programm – kostenlose Nutzung und Einkommen durch Weiterempfehlung */
 export const PRODUCT_BOTSCHAFT_2 = 'Durch Weiterempfehlung: kostenlose Nutzung und Einkommen erzielen'
 
-export type TenantId = 'k2' | 'demo' | 'oeffentlich'
+export type TenantId = 'k2' | 'demo' | 'oeffentlich' | 'vk2'
 
 export interface TenantConfig {
   id: TenantId
@@ -96,6 +96,14 @@ export const TENANT_CONFIGS: Record<TenantId, TenantConfig> = {
     tagline: 'Bilder & Skulptur',
     footerLine: 'Galerie Muster | Künstlerin & Künstler Muster',
   },
+  vk2: {
+    id: 'vk2',
+    galleryName: 'Vereinsplattform',
+    artist1Name: 'Künstler:in',
+    artist2Name: 'Künstler:in',
+    tagline: 'Kunstverein',
+    footerLine: 'Vereinsplattform | Künstler:innen',
+  },
 }
 
 /** Platzhalter-Bild für Musterwerke und ök2-Seiten (keine echten Fotos). Exportiert für Fallback bei Ladefehler. */
@@ -171,6 +179,29 @@ export const ARTWORK_CATEGORIES = [
 
 export type ArtworkCategoryId = typeof ARTWORK_CATEGORIES[number]['id']
 
+/** VK2: Kunstbereiche (ein „Werk“ = ein Künstler:innen-Profil im Verein) */
+export const VK2_KUNSTBEREICHE = [
+  { id: 'malerei', label: 'Malerei' },
+  { id: 'keramik', label: 'Keramik' },
+  { id: 'grafik', label: 'Grafik' },
+  { id: 'skulptur', label: 'Skulptur' },
+  { id: 'fotografie', label: 'Fotografie' },
+  { id: 'textil', label: 'Textil' },
+  { id: 'sonstiges', label: 'Sonstiges' },
+] as const
+
+/** VK2: Seed-Künstler:innen (ein Platzhalter pro Kunstbereich), wenn k2-vk2-artworks leer */
+const _vk2SeedTs = new Date().toISOString()
+export const SEED_VK2_ARTISTS = [
+  { id: 'vk2-seed-malerei', number: 'VK2-M1', title: 'Malerei', category: 'malerei', description: 'Künstler:in Malerei.', imageUrl: OEK2_DEFAULT_ARTWORK_IMAGES.malerei || OEK2_PLACEHOLDER_IMAGE, price: 0, inShop: false, inExhibition: true, createdAt: _vk2SeedTs, addedToGalleryAt: _vk2SeedTs },
+  { id: 'vk2-seed-keramik', number: 'VK2-K1', title: 'Keramik', category: 'keramik', description: 'Künstler:in Keramik.', imageUrl: OEK2_DEFAULT_ARTWORK_IMAGES.keramik || OEK2_PLACEHOLDER_IMAGE, price: 0, inShop: false, inExhibition: true, createdAt: _vk2SeedTs, addedToGalleryAt: _vk2SeedTs },
+  { id: 'vk2-seed-grafik', number: 'VK2-G1', title: 'Grafik', category: 'grafik', description: 'Künstler:in Grafik.', imageUrl: OEK2_DEFAULT_ARTWORK_IMAGES.grafik || OEK2_PLACEHOLDER_IMAGE, price: 0, inShop: false, inExhibition: true, createdAt: _vk2SeedTs, addedToGalleryAt: _vk2SeedTs },
+  { id: 'vk2-seed-skulptur', number: 'VK2-S1', title: 'Skulptur', category: 'skulptur', description: 'Künstler:in Skulptur.', imageUrl: OEK2_DEFAULT_ARTWORK_IMAGES.skulptur || OEK2_PLACEHOLDER_IMAGE, price: 0, inShop: false, inExhibition: true, createdAt: _vk2SeedTs, addedToGalleryAt: _vk2SeedTs },
+  { id: 'vk2-seed-fotografie', number: 'VK2-F1', title: 'Fotografie', category: 'fotografie', description: 'Künstler:in Fotografie.', imageUrl: OEK2_DEFAULT_ARTWORK_IMAGES.sonstiges || OEK2_PLACEHOLDER_IMAGE, price: 0, inShop: false, inExhibition: true, createdAt: _vk2SeedTs, addedToGalleryAt: _vk2SeedTs },
+  { id: 'vk2-seed-textil', number: 'VK2-T1', title: 'Textil', category: 'textil', description: 'Künstler:in Textil.', imageUrl: OEK2_DEFAULT_ARTWORK_IMAGES.sonstiges || OEK2_PLACEHOLDER_IMAGE, price: 0, inShop: false, inExhibition: true, createdAt: _vk2SeedTs, addedToGalleryAt: _vk2SeedTs },
+  { id: 'vk2-seed-sonstiges', number: 'VK2-O1', title: 'Sonstiges', category: 'sonstiges', description: 'Künstler:in Sonstiges.', imageUrl: OEK2_DEFAULT_ARTWORK_IMAGES.sonstiges || OEK2_PLACEHOLDER_IMAGE, price: 0, inShop: false, inExhibition: true, createdAt: _vk2SeedTs, addedToGalleryAt: _vk2SeedTs },
+]
+
 /** Kategorie-ID → Anzeigetext (für Kassa, History, Admin) */
 export function getCategoryLabel(categoryId: string | undefined): string {
   if (!categoryId) return ''
@@ -200,7 +231,7 @@ export function getCurrentTenantId(): TenantId {
   if (typeof window === 'undefined') return 'k2'
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored === 'demo' || stored === 'k2' || stored === 'oeffentlich') return stored as TenantId
+    if (stored === 'demo' || stored === 'k2' || stored === 'oeffentlich' || stored === 'vk2') return stored as TenantId
   } catch (_) {}
   return 'k2'
 }

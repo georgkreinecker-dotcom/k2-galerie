@@ -1,0 +1,23 @@
+# Externe Verbindungen – nur zentral (kritisch für Skalierung)
+
+## Warum
+
+Bei 100 oder 10.000 Lizenzen dürfen keine unkontrollierten Verbindungen nach außen dazukommen. Jede neue URL = Abhängigkeit, evtl. DSGVO/Limits/Ausfall.
+
+## Regel
+
+- **Keine neuen hardcoded externen URLs** im Code (z. B. `https://api.irgendwas.com`, `https://k2-galerie.vercel.app/...`).
+- **Alle betrieblichen URLs** gehören in:
+  - **`src/config/externalUrls.ts`** (Basis-URLs für App, Build-Info, QR-API, Fonts, Unsplash), oder
+  - **Env** (`VITE_APP_BASE_URL`, `VITE_SUPABASE_URL` etc.).
+- **Dokumentation:** Neue externe Verbindung nur nach Eintrag in **`docs/EXTERNE-VERBINDUNGEN.md`** und Entscheidung (nötig? ersetzbar?).
+
+## Konkret bei Code-Änderungen
+
+- Neue `fetch('https://...')` oder `src="https://..."` für **Betrieb** (nicht nur Link in UI-Text): URL aus `externalUrls.ts` oder Env verwenden.
+- Beim Refactoring: bestehende hardcoded URLs schrittweise in `externalUrls.ts` auslagern und hier importieren.
+
+## Referenz
+
+- **Liste aller Verbindungen:** `docs/EXTERNE-VERBINDUNGEN.md`
+- **Zentrale Config:** `src/config/externalUrls.ts`

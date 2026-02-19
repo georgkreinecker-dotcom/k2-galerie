@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY } from '../config/navigation'
-import { TENANT_CONFIGS, MUSTER_TEXTE, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, OEK2_WILLKOMMEN_IMAGES, OEK2_PLACEHOLDER_IMAGE } from '../config/tenantConfig'
+import { TENANT_CONFIGS, MUSTER_TEXTE, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, OEK2_WILLKOMMEN_IMAGES, OEK2_PLACEHOLDER_IMAGE, SEED_VK2_ARTISTS } from '../config/tenantConfig'
 import { getGalerieImages } from '../config/pageContentGalerie'
 import { getPageTexts, type GaleriePageTexts } from '../config/pageTexts'
 import { appendToHistory } from '../utils/artworkHistory'
@@ -36,13 +36,51 @@ function isLocalOrPrivateOrigin(): boolean {
   return h === 'localhost' || h === '127.0.0.1' || h.startsWith('192.168.') || h.startsWith('10.')
 }
 
-/** Verhindert Absturz bei kaputtem localStorage (z. B. nach Druck/Teilen). */
-function safeParseArtworks(): any[] {
+/** Artworks-Key je nach Kontext (K2, ök2, VK2). */
+function getArtworksStorageKey(musterOnly: boolean, vk2: boolean): string {
+  if (vk2) return 'k2-vk2-artworks'
+  if (musterOnly) return 'k2-oeffentlich-artworks'
+  return 'k2-artworks'
+}
+
+/** Erkennt VK2-Werke (aus Vereinsplattform/Mitgliederverzeichnis) – gehören nicht in K2-Galerie. */
+function isVk2Artwork(a: any): boolean {
+  if (!a) return false
+  const num = a.number != null ? String(a.number) : ''
+  const id = a.id != null ? String(a.id) : ''
+  return num.startsWith('VK2-') || id.startsWith('vk2-seed-')
+}
+
+/** Entfernt VK2-Werke aus einer Liste (nur für k2-artworks). */
+function filterK2ArtworksOnly(artworks: any[]): any[] {
+  if (!Array.isArray(artworks)) return []
+  return artworks.filter((a: any) => !isVk2Artwork(a))
+}
+
+/** Liste für Speichern in k2-artworks: VK2-Werke rausfiltern, sonst unverändert. */
+function artworksToSave(key: string, list: any[]): any[] {
+  return key === 'k2-artworks' ? filterK2ArtworksOnly(list) : list
+}
+
+/** Verhindert Absturz bei kaputtem localStorage (z. B. nach Druck/Teilen). K2: filtert VK2-Werke raus. */
+function safeParseArtworks(storageKey: string = 'k2-artworks'): any[] {
   try {
-    const raw = localStorage.getItem('k2-artworks')
+    const raw = localStorage.getItem(storageKey)
     if (!raw) return []
     const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : []
+    const list = Array.isArray(parsed) ? parsed : []
+    if (storageKey === 'k2-artworks') {
+      const filtered = filterK2ArtworksOnly(list)
+      if (filtered.length < list.length) {
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(filtered))
+          window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: filtered.length, fromGaleriePage: true } }))
+        } catch (_) {}
+        return filtered
+      }
+      return filtered
+    }
+    return list
   } catch {
     return []
   }
@@ -167,12 +205,13 @@ function applyDesignToDocument(design: Record<string, string> | null | undefined
   } catch (_) {}
 }
 
-const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?: string; musterOnly?: boolean }) => {
+const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scrollToSection?: string; musterOnly?: boolean; vk2?: boolean }) => {
   const navigate = useNavigate()
   const location = useLocation()
-  // K2-Galerie-Route: immer echte K2-Daten (Impressum, Willkommen). Keine Vermischung mit ök2 auch wenn k2-tenant mal auf oeffentlich steht.
-  const tenantConfig = musterOnly ? TENANT_CONFIGS.oeffentlich : TENANT_CONFIGS.k2
-  const tenantId = musterOnly ? 'oeffentlich' : 'k2'
+  const artworksKey = getArtworksStorageKey(musterOnly, vk2)
+  // K2 / ök2 / VK2: getrennte Daten, keine Vermischung
+  const tenantConfig = vk2 ? TENANT_CONFIGS.vk2 : musterOnly ? TENANT_CONFIGS.oeffentlich : TENANT_CONFIGS.k2
+  const tenantId = vk2 ? 'vk2' : musterOnly ? 'oeffentlich' : 'k2'
   const isVorschauModusEarly = typeof window !== 'undefined' && new URLSearchParams(location.search).get('vorschau') === '1'
   // K2/ök2-Trennung (.cursor/rules/k2-oek2-trennung.mdc): Bei musterOnly NUR getPageTexts('oeffentlich'), nie getPageTexts() ohne Tenant
   const defaultGalerieTexts = useMemo(() => getPageTexts(musterOnly ? 'oeffentlich' : undefined).galerie, [musterOnly])
@@ -661,7 +700,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
         }
         
         // KRITISCH: Lade ZUERST lokale Werke um sicherzustellen dass Mobile-Werke NICHT verloren gehen!
-        const localArtworks = safeParseArtworks()
+        const localArtworks = safeParseArtworks(artworksKey)
         const mobileWorks = localArtworks.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
         
         if (mobileWorks.length > 0) {
@@ -734,7 +773,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
             console.log('📋 Gemergte Nummern:', merged.map((a: any) => a.number || a.id).join(', '))
             
             // KRITISCH: Speichere merged Liste - Mobile-Werke sind geschützt!
-            localStorage.setItem('k2-artworks', JSON.stringify(merged))
+            localStorage.setItem(artworksKey, JSON.stringify(artworksToSave(artworksKey, merged)))
             
             // ZUSÄTZLICH: Prüfe ob neue Mobile-Werke vom Server geladen wurden
             const newMobileWorks = merged.filter((a: any) => 
@@ -755,7 +794,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
             console.warn('⚠️ Werke zu groß für localStorage:', e)
             // Bei Fehler: Behalte lokale Werke!
             console.log('🔒 Fehler beim Merge - behalte lokale Werke:', localArtworks.length)
-            localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
+            localStorage.setItem(artworksKey, JSON.stringify(artworksToSave(artworksKey, localArtworks)))
           }
         } else {
           // KEINE Server-Daten - behalte ALLE lokalen Werke!
@@ -763,7 +802,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
           if (localArtworks.length > 0) {
             console.log('🔒 Lokale Werke bleiben erhalten:', localArtworks.map((a: any) => a.number || a.id).join(', '))
             // Stelle sicher dass lokale Werke gespeichert bleiben
-            localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
+            localStorage.setItem(artworksKey, JSON.stringify(artworksToSave(artworksKey, localArtworks)))
             window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: localArtworks.length, fromGaleriePage: true, localOnly: true } }))
           }
         }
@@ -962,7 +1001,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
       console.log(`📱 Mobile-Werk-Synchronisation erkannt: ${artwork.number || artwork.id}`)
       
       // Lade aktuelle Werke
-      const localArtworks = safeParseArtworks()
+      const localArtworks = safeParseArtworks(artworksKey)
       
       // Prüfe ob Werk bereits vorhanden
       const exists = localArtworks.some((a: any) => 
@@ -974,7 +1013,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
         console.log(`✅ Neues Mobile-Werk synchronisiert: ${artwork.number || artwork.id}`)
         // Füge Werk hinzu
         localArtworks.push(artwork)
-        localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
+        localStorage.setItem(artworksKey, JSON.stringify(artworksToSave(artworksKey, localArtworks)))
         
         // Trigger Event für UI-Update
         window.dispatchEvent(new CustomEvent('artworks-updated', { 
@@ -992,6 +1031,24 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
   
   React.useEffect(() => {
     if (musterOnly) return () => {} // Öffentliches Projekt: keine echten Daten laden
+    if (vk2) {
+      // VK2: nur localStorage (k2-vk2-artworks), kein gallery-data.json
+      const loadVk2 = () => {
+        try {
+          const raw = localStorage.getItem(artworksKey)
+          const list = raw ? JSON.parse(raw) : []
+          const artworks = Array.isArray(list) ? list : []
+          if (artworks.length === 0) {
+            localStorage.setItem(artworksKey, JSON.stringify(SEED_VK2_ARTISTS))
+            window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: SEED_VK2_ARTISTS.length, fromGaleriePage: true } }))
+          } else {
+            window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: artworks.length, fromGaleriePage: true } }))
+          }
+        } catch (_) {}
+      }
+      const t = setTimeout(loadVk2, 100)
+      return () => clearTimeout(t)
+    }
     // Lade Daten: Zuerst aus JSON-Datei (für Mobile-Version auf Vercel), dann localStorage (für lokale Entwicklung)
     let isMounted = true
     let timeoutId: ReturnType<typeof setTimeout> | null = null
@@ -1106,7 +1163,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
           // Lade auch Werke - SERVER = QUELLE DER WAHRHEIT (wie handleRefresh)
           if (data.artworks && Array.isArray(data.artworks)) {
             try {
-              const localArtworks = safeParseArtworks()
+              const localArtworks = safeParseArtworks(artworksKey)
               const serverArtworks = data.artworks
               
               const serverMap = new Map<string, any>()
@@ -1148,7 +1205,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
               
               if (toHistory.length > 0) appendToHistory(toHistory)
               
-              localStorage.setItem('k2-artworks', JSON.stringify(merged))
+              localStorage.setItem(artworksKey, JSON.stringify(artworksToSave(artworksKey, merged)))
               console.log('✅ Werke gemergt beim Initial-Load (Server = Quelle):', merged.length, 'Gesamt,', toHistory.length, 'in History')
               console.log('📋 Lokale Nummern:', localArtworks.map((a: any) => a.number || a.id).join(', '))
               console.log('📋 Server Nummern:', serverArtworks.map((a: any) => a.number || a.id).join(', '))
@@ -1158,20 +1215,20 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
             } catch (e) {
               console.warn('⚠️ Werke zu groß für localStorage:', e)
               // Bei Fehler: Behalte lokale Werke!
-              const localArtworks = safeParseArtworks()
+              const localArtworks = safeParseArtworks(artworksKey)
               if (localArtworks.length > 0) {
                 console.log('🔒 Fehler beim Merge beim Initial-Load - behalte lokale Werke:', localArtworks.length)
-                localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
+                localStorage.setItem(artworksKey, JSON.stringify(artworksToSave(artworksKey, localArtworks)))
               }
             }
           } else {
             // KEINE Server-Daten - behalte ALLE lokalen Werke!
-            const localArtworks = safeParseArtworks()
+            const localArtworks = safeParseArtworks(artworksKey)
             if (localArtworks.length > 0) {
               console.warn('⚠️ Keine Werke in gallery-data.json gefunden beim Initial-Load - behalte lokale Werke:', localArtworks.length)
               console.log('🔒 Lokale Werke bleiben erhalten beim Initial-Load:', localArtworks.map((a: any) => a.number || a.id).join(', '))
               // Stelle sicher dass lokale Werke gespeichert bleiben
-              localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
+              localStorage.setItem(artworksKey, JSON.stringify(artworksToSave(artworksKey, localArtworks)))
               window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: localArtworks.length, fromGaleriePage: true, localOnly: true, initialLoad: true } }))
             }
           }
@@ -1494,7 +1551,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false }: { scrollToSection?
       if (timeoutId) clearTimeout(timeoutId)
       if (controller) controller.abort()
     }
-  }, [musterOnly])
+  }, [musterOnly, vk2, artworksKey])
 
   // Scroll zu Bereich wenn scrollToSection sich ändert
   useEffect(() => {

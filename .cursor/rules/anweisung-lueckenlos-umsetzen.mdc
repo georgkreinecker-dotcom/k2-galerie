@@ -1,0 +1,19 @@
+---
+description: Anweisungen von Georg lückenlos umsetzen – auch nach Crash zu Ende führen.
+alwaysApply: true
+---
+
+# Anweisung lückenlos umsetzen
+
+## Regel
+
+**Georgs Anweisungen werden lückenlos umgesetzt. Auch wenn es einen Crash gegeben hat, wird die Umsetzung zu Ende geführt.**
+
+- Eine Anweisung = alle dazu nötigen Schritte erledigen (nicht nur den ersten oder einen Teil).
+- Wenn eine Anweisung mehrere Teile hat (z. B. „Bilder komprimieren überall“ → Werke, Export, Events, mobil, …): **alle** Teile umsetzen, nicht bei einem aufhören.
+- **Nach einem Crash:** Zuerst `docs/WEITERARBEITEN-NACH-ABSTURZ.md` lesen. Dort prüfen: War eine Anweisung in Arbeit? Welche Schritte fehlen noch? Diese Schritte **sofort** abarbeiten und die Anweisung zu Ende bringen.
+- Kein „Teil erledigt, Rest später“. Kein Vergessen von Teilen wegen Crash. Die Anweisung ist erst fertig, wenn alles umgesetzt ist.
+
+## Kurzfassung
+
+**Anweisung = lückenlos umsetzen. Bei Crash: WEITERARBEITEN-NACH-ABSTURZ.md prüfen und die Anweisung zu Ende führen.**

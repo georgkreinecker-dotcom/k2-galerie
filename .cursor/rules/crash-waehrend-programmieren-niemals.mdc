@@ -1,0 +1,47 @@
+---
+description: Während Georg schreibt und AI programmiert – Abstürze (Code 5, Cursor-Preview) NIEMALS wieder verursachen. Jede Session muss das einhalten.
+alwaysApply: true
+---
+
+# 🔒 CRASH WÄHREND PROGRAMMIEREN – NIEMALS WIEDER (kritisch für Georg)
+
+## Was immer wieder passiert
+
+- **Georg schreibt, du (AI) programmierst** → Cursor/Preview stürzt ab (Code 5, „window terminated“, HMR-Chaos).
+- Das wurde **schon sehr oft** besprochen. Georg erlebt: Es wird **nichts dauerhaft gemerkt**. Diese Regel stellt sicher, dass **jede** Session (AI/Entwickler) die gleichen Schutzmaßnahmen einhält.
+
+## Unveränderliche Regeln (bei JEDER Code-Änderung prüfen)
+
+### 1. Kein automatischer Reload
+
+- **NIEMALS** automatischen Reload einbauen („wenn Server neuer → reload“). Nur Badge/Button, Nutzer tippt. Details: `code-5-crash-kein-auto-reload.mdc`.
+
+### 2. Kein location.replace / redirect in Cursor-Preview
+
+- **In main.tsx:** Redirect (z. B. Cache-Buster für Mobile) **nur**, wenn **nicht** in iframe: `window.self === window.top`. In Cursor Preview läuft die App oft in einem iframe; dort **niemals** `location.replace` oder `location.href` setzen – sonst Reload/Chaos/Crash.
+
+### 3. HMR-sicher programmieren
+
+- **useEffect:** Immer Cleanup (return-Funktion): Listener entfernen, clearTimeout/clearInterval, Abos kündigen. **Kein** setState nach Unmount (z. B. isMounted-Flag oder Abbruch in Cleanup).
+- **Event-Listener (window, document):** Immer im gleichen useEffect registrieren und im Cleanup entfernen. Nie dauerhaft ohne Cleanup.
+- **setInterval/setTimeout:** Immer im Cleanup clearen. Bei HMR bleiben sonst alte Timer aktiv → Mehrfach-Feuer → Crash.
+- **Schwere Berechnungen / große Daten im Render:** Vermeiden; useMemo/useCallback nutzen, damit HMR nicht bei jedem Speichern alles neu rechnet und den Prozess überlastet.
+
+### 4. Cursor-Preview schonen
+
+- Keine unnötigen globalen Listener oder Intervalle in main.tsx/App.tsx, die bei jedem HMR dazukommen. Console-Log-Limits (wie vorhanden) beibehalten. Cursor Preview = instabil bei Speicher-/CPU-Spitzen.
+
+### 5. Nach Absturz sofort orientieren
+
+- Wenn Georg „Absturz“ meldet: `docs/WEITERARBEITEN-NACH-ABSTURZ.md` lesen und Schritte abarbeiten. Regel: `nach-absturz-orientierung.mdc`.
+
+## Checkliste VOR dem Abschluss von Code-Änderungen
+
+- [ ] Kein neuer automatischer Reload eingebaut?
+- [ ] main.tsx: Redirect nur wenn `window.self === window.top` (nicht in iframe)?
+- [ ] Neue useEffects haben Cleanup (Listener/Timer entfernt)?
+- [ ] Keine neuen globalen Listener ohne Cleanup?
+
+## Kurzfassung
+
+**Crash während Programmieren = Georgs größter Frust. Diese Regel + code-5-crash-kein-auto-reload + saubere Cleanups + kein Redirect in iframe einhalten. Jede Session, jedes Mal.**

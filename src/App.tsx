@@ -474,13 +474,19 @@ function App() {
       <Route path={WILLKOMMEN_ROUTE} element={<WillkommenPage />} />
       {/* Allgemeine Geschäftsbedingungen – rechtliche Absicherung */}
       <Route path={AGB_ROUTE} element={<AGBPage />} />
-      {/* Projekt-Routen – Galerie zuerst, damit QR-Code /projects/k2-galerie/galerie auf Mobile trifft */}
+      {/* Projekt-Routen – spezifische Pfade VOR /projects/:projectId, damit VK2 nicht abgefangen wird */}
       <Route path={PLATFORM_ROUTES.projects} element={<ProjectsPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].galerie} element={<GaleriePage />} />
-      <Route path="/projects/:projectId" element={<ProjectStartPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich} element={<Ok2ThemeWrapper><GaleriePage musterOnly /></Ok2ThemeWrapper>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau} element={<Ok2ThemeWrapper><GalerieVorschauPage musterOnly /></Ok2ThemeWrapper>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].galerieVorschau} element={<GalerieVorschauPage />} />
+      {/* VK2 Vereinsplattform – muss vor /projects/:projectId stehen */}
+      <Route path={PROJECT_ROUTES.vk2.home} element={<Navigate to={PROJECT_ROUTES.vk2.galerie} replace />} />
+      <Route path={PROJECT_ROUTES.vk2.galerie} element={<GaleriePage vk2 />} />
+      <Route path={PROJECT_ROUTES.vk2.galerieVorschau} element={<GalerieVorschauPage vk2 />} />
+      <Route path={PROJECT_ROUTES.vk2.kunden} element={<KundenPage vk2 />} />
+      <Route path={PROJECT_ROUTES.vk2.vollversion} element={<Navigate to="/admin?context=vk2" replace />} />
+      <Route path="/projects/:projectId" element={<ProjectStartPage />} />
             <Route path={PROJECT_ROUTES['k2-galerie'].platzanordnung} element={<PlatzanordnungPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].shop} element={<ShopPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].virtuellerRundgang} element={<VirtuellerRundgangPage />} />

@@ -99,6 +99,41 @@ export default function SmartPanel({ currentPage }: SmartPanelProps) {
         🎨 K2 Galerie
       </Link>
 
+      {/* VK2 Vereinsplattform */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <Link
+          to={PROJECT_ROUTES.vk2.galerie}
+          style={{
+            display: 'block',
+            padding: '0.85rem 1rem',
+            background: 'linear-gradient(135deg, rgba(90, 122, 110, 0.2), rgba(90, 122, 110, 0.1))',
+            border: '1px solid rgba(90, 122, 110, 0.4)',
+            borderRadius: '8px',
+            color: '#5a7a6e',
+            fontWeight: 600,
+            fontSize: '1rem',
+            textAlign: 'center',
+            textDecoration: 'none',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(90, 122, 110, 0.3), rgba(90, 122, 110, 0.2))'
+            e.currentTarget.style.borderColor = 'rgba(90, 122, 110, 0.6)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(90, 122, 110, 0.2), rgba(90, 122, 110, 0.1))'
+            e.currentTarget.style.borderColor = 'rgba(90, 122, 110, 0.4)'
+          }}
+        >
+          🎨 VK2 Vereinsplattform
+        </Link>
+        <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+          <Link to={PROJECT_ROUTES.vk2.kunden} style={{ flex: 1, minWidth: '80px', padding: '0.5rem 0.6rem', fontSize: '0.85rem', background: 'rgba(90, 122, 110, 0.15)', border: '1px solid rgba(90, 122, 110, 0.3)', borderRadius: 6, color: '#5a7a6e', textDecoration: 'none', textAlign: 'center' }}>Mitglieder</Link>
+          <Link to={PROJECT_ROUTES.vk2.galerieVorschau} style={{ flex: 1, minWidth: '80px', padding: '0.5rem 0.6rem', fontSize: '0.85rem', background: 'rgba(90, 122, 110, 0.15)', border: '1px solid rgba(90, 122, 110, 0.3)', borderRadius: 6, color: '#5a7a6e', textDecoration: 'none', textAlign: 'center' }}>Künstler</Link>
+          <Link to={PROJECT_ROUTES.vk2.vollversion} style={{ flex: 1, minWidth: '80px', padding: '0.5rem 0.6rem', fontSize: '0.85rem', background: 'rgba(90, 122, 110, 0.25)', border: '1px solid rgba(90, 122, 110, 0.4)', borderRadius: 6, color: '#5a7a6e', textDecoration: 'none', textAlign: 'center', fontWeight: 600 }}>Admin</Link>
+        </div>
+      </div>
+
       {/* Schnellzugriff */}
       <div>
         <h4 style={{

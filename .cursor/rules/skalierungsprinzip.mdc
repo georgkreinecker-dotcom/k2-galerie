@@ -1,0 +1,42 @@
+---
+description: Skalierungsprinzip als absolute Regel – jede Funktion skalierbar, einfach, smart, One-Click.
+alwaysApply: true
+---
+
+# Skalierungsprinzip – absolute Regel
+
+## Grundsatz
+
+**Jede Funktion muss auf Skalierung ausgelegt sein.** Das K2-Konzept beruht auf diesem Prinzip; ohne es gibt es kein beliebiges Skalieren und keine Grundvoraussetzung für Erfolg.
+
+## Konkret
+
+### 1. Skalierung
+
+- **Eine Struktur, viele Instanzen:** Gleiche Architektur (z. B. Willkommensseite, Galerie, Admin) für K2, ök2, VK2-Mitglieder, künftige Lizenznehmer. Kein Sonderbau pro Kunde.
+- **Kontext/Mandant** steuert nur: welche Daten, welches Design, welche Rechte – nicht einen anderen Ablauf oder eine andere UX.
+- **Neue Galerie / neues Mitglied** = neuer Kontext, gleiche Oberfläche und gleicher Ablauf. Keine Ausnahmen, die „nur für einen“ gebaut werden.
+
+### 2. Einfach und smart
+
+- Keine Umwege: direkte Wege vom Ziel („Galerie bearbeiten“, „Veröffentlichen“, „Kasse“) zur Erledigung.
+- Keine doppelten Eingaben (bereits vorhandene Daten nutzen, Stammdaten übernehmen).
+- Klar und minimal: eine Hauptaktion pro Situation.
+
+### 3. One-Click-Regel
+
+- **Eine Aufgabe = ein Klick.** Ein Klick „Kasse“ → Kassa ist offen. Ein Klick „Admin“ → Admin ist offen. Keine Zwischenseiten, keine zusätzlichen Klicks für dieselbe Aufgabe.
+- Keine „leeren Kilometer“: Buttons führen unmittelbar zum Ziel.
+- Erfolgsmeldungen: keine technischen Schritte vorschreiben („einfach OK drücken“), wenn damit die Sache erledigt ist.
+
+## Bei neuen Features
+
+Vor dem Umsetzen prüfen:
+
+- [ ] Ist die Funktion **skalierbar** (Kontext/Mandant, keine Einmal-Logik)?
+- [ ] Ist sie **einfach und ohne Umwege**?
+- [ ] Erfüllt sie die **One-Click-Regel** (eine Aktion = Ziel erreicht)?
+
+## Kurzfassung
+
+**Skalierungsgesetz:** Jede Funktion skalierbar, einfach, smart, ohne Umwege, One-Click. Keine Ausnahme.

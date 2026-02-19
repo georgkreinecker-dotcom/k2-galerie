@@ -57,6 +57,33 @@ export const PROJECT_ROUTES = {
     vitaMartina: '/projects/k2-galerie/vita/martina',
     vitaGeorg: '/projects/k2-galerie/vita/georg',
   },
+  vk2: {
+    id: 'vk2',
+    name: 'VK2 Vereinsplattform',
+    home: '/projects/vk2',
+    galerie: '/projects/vk2/galerie',
+    galerieVorschau: '/projects/vk2/galerie-vorschau',
+    kunden: '/projects/vk2/kunden',
+    /** Vollversion = Admin-Zugang für Verein; leitet auf Admin mit context=vk2 */
+    vollversion: '/projects/vk2/vollversion',
+    // Rest: für TypeScript-Kompatibilität (getProjectRoutes); VK2 nutzt nur galerie, galerieVorschau, kunden, vollversion
+    galerieOeffentlich: '/projects/k2-galerie/galerie-oeffentlich',
+    galerieOeffentlichVorschau: '/projects/k2-galerie/galerie-oeffentlich-vorschau',
+    shop: '/projects/k2-galerie/shop',
+    virtuellerRundgang: '/projects/k2-galerie/virtueller-rundgang',
+    controlStudio: '/projects/k2-galerie/control-studio',
+    plan: '/projects/k2-galerie/plan',
+    mobileConnect: '/projects/k2-galerie/mobile-connect',
+    platzanordnung: '/projects/k2-galerie/platzanordnung',
+    produktVorschau: '/projects/k2-galerie/produkt-vorschau',
+    marketingOek2: '/projects/k2-galerie/marketing-oek2',
+    werbeunterlagen: '/projects/k2-galerie/werbeunterlagen',
+    licences: '/projects/k2-galerie/licences',
+    empfehlungstool: '/projects/k2-galerie/empfehlungstool',
+    verguetung: '/projects/k2-galerie/verguetung',
+    vitaMartina: '/projects/k2-galerie/vita/martina',
+    vitaGeorg: '/projects/k2-galerie/vita/georg',
+  },
   // Weitere Projekte hier hinzufügen:
   // 'projekt-2': {
   //   id: 'projekt-2',

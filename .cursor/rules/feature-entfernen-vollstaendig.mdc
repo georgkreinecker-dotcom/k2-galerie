@@ -1,0 +1,38 @@
+---
+description: Beim Entfernen einer Funktion/Komponente ALLES in einem Zug entfernen und committen – keine halben Sachen.
+alwaysApply: true
+---
+
+# 🔒 Feature/Komponente entfernen = vollständig, dann committen
+
+## Was schiefgelaufen ist (Zweite Tür / AdminLoginPage, 18.02.26)
+
+- **Ziel:** Supabase-Admin-Login („zweite Tür“) entfernen, nur Galerie-Passwort behalten.
+- **Gemacht:** Route geändert (App.tsx), AdminLoginPage.tsx gelöscht, AdminRoute vereinfacht.
+- **Problem:** Änderungen teils nur lokal, teils nicht alle Stellen:
+  - App.tsx (Navigate) → irgendwann committed.
+  - AdminLoginPage.tsx **löschen** → erst spät committed (Datei blieb auf main).
+  - **AdminRoute.tsx** (kein Import von AdminLoginPage, kein Supabase-Check) → **nie committed**. Auf main stand weiter die alte Version mit `import AdminLoginPage` und `if (!session) return <AdminLoginPage />`.
+- **Folge:** Vercel-Build von main schlug fehl: „Cannot find module '../pages/AdminLoginPage'“. Production blieb alt, „nichts kommt“.
+
+## Regel (unveränderlich)
+
+**Wenn du eine Komponente, einen Ablauf oder ein „Feature“ (z. B. eine „Tür“/Login-Ebene) entfernst:**
+
+1. **Alle Stellen in einem Zug anpassen:**
+   - Die Komponente/Datei löschen oder ersetzen.
+   - **Jede Datei**, die die Komponente **importiert** oder **verwendet**, sofort anpassen (Import raus, Verwendung raus). Nicht nur die Route in App.tsx – auch z. B. AdminRoute, Lazy-Wrapper, Guards.
+2. **Alles committen:** Alle geänderten und gelöschten Dateien in **einem** Commit (oder klar nacheinander), damit auf dem Branch **keine** alte Referenz mehr steht.
+3. **Nicht annehmen „Code ist korrekt“:** Der **Build** läuft gegen den Stand von **main** (bzw. dem Deploy-Branch). Ungespeicherte oder uncommittete Änderungen sind für Production wertlos. Nach dem Entfernen: `git status` prüfen, ob wirklich alle betroffenen Dateien committed sind.
+
+## Checkliste „Feature entfernen“
+
+- [ ] Komponente/Datei entfernt (oder durch Stub ersetzt).
+- [ ] Alle Imports und Verwendungen der Komponente gesucht (`grep` nach Dateiname/Import) und entfernt.
+- [ ] Lokal `npm run build` – erfolgreich.
+- [ ] Alle geänderten Dateien committed (inkl. Löschung).
+- [ ] Push auf den Deploy-Branch (main), dann Deployment prüfen.
+
+## Kurzfassung
+
+**Etwas entfernen = alle Referenzen in einem Zug entfernen + alles committen. Keine halben Sachen – sonst baut Production weiter mit der alten Referenz und schlägt fehl.**

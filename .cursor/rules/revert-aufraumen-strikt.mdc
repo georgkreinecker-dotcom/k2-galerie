@@ -1,0 +1,29 @@
+---
+description: Bei Rücknahme/Revert oder Umbau einer Funktion ALLES aufräumen – strenger Befehl.
+alwaysApply: true
+---
+
+# 🔒 Revert / Umbau = sofort vollständig aufräumen (streng)
+
+## Problem
+
+Nach Crashes oder Rücknahmen bleibt oft Müll liegen: orphanierte `catch`/`finally`, tote API-Aufrufe, doppelte Blöcke, alte Imports. Das Problem verschwindet unter dem Müll und wird immer schwerer zu finden.
+
+## Strenge Regel (unverhandelbar)
+
+**Wenn du eine Funktion zurücknimmst, eine API entfernst oder einen Ablauf änderst:**
+
+1. **In einem Zug entfernen:** Alles, was dazugehört – nicht nur „die eine Zeile“.
+   - API/Endpoint entfernt → **sofort** alle Aufrufer (fetch, Button-Logik) und **alle** zugehörigen Blöcke (try/catch/finally, State, Erfolgs-/Fehlermeldungen) mit entfernen oder anpassen.
+   - Kein „catch/finally lassen wir mal stehen“ – gehört der try weg, gehört der ganze try-catch-finally weg oder wird sauber ersetzt.
+2. **Keine Halbheiten:** Kein toter Code, keine doppelten catch, keine Kommentare wie „war mal für API X“. Entweder funktional oder weg.
+3. **Nach dem Ändern:** Build prüfen (`npm run build`). Wenn Fehler (z. B. TS „expected“ oder orphaned block) → sofort beheben, nicht „später aufräumen“.
+
+## Konkret bei Revert
+
+- Feature/API raus → Aufruf raus, zugehöriger **gesamter** try/catch/finally raus oder durch einen einzigen, gültigen Block ersetzen.
+- Neuer Ablauf (z. B. nur noch Zwischenablage) → nur noch **einen** klaren Ablauf im Code, keine Reste des alten Ablaufs.
+
+## Kurzfassung
+
+**Revert/Umbau = sofort vollständig aufräumen. Kein Müll liegen lassen. Strenger Befehl – sonst verschwindet das echte Problem unter dem Müll.**

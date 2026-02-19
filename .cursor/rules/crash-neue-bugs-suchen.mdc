@@ -1,0 +1,22 @@
+---
+description: Bei Crash nicht von vorne suchen – zuerst Protokoll lesen, nur neue Bugs suchen. Strenge Regel.
+alwaysApply: true
+---
+
+# 🔒 CRASH: Nur neue Bugs suchen (strenge Regel)
+
+## Regel
+
+**Bei jedem neuen Crash:**
+
+1. **Zuerst lesen:** `docs/CRASH-BEREITS-GEPRUEFT.md`
+   - Dort stehen **bereits geprüfte Stellen** und **bereits behobene Bugs**.
+2. **Nicht** dieselben Stellen wieder von vorne durchsuchen (main.tsx iframe, GaleriePage Intervalle, ScreenshotExportAdmin Syntax, etc.).
+3. **Nur neue Ursachen** suchen: andere Dateien, andere useEffects/Listener, letzte Änderungen, HMR-relevante Codepfade.
+4. **Nach der Untersuchung:** `docs/CRASH-BEREITS-GEPRUEFT.md` ergänzen (neue Zeile unter „Bereits geprüft“ / „Bereits behoben“, Datum setzen).
+
+So muss nicht bei jedem Crash wieder von vorne gesucht werden – die Liste wächst und die nächste Session kann gezielt weitermachen.
+
+## Kurzfassung
+
+**Crash gemeldet → CRASH-BEREITS-GEPRUEFT.md lesen → nur neue Bugs suchen → Protokoll aktualisieren.**
