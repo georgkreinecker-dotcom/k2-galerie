@@ -4,7 +4,7 @@ import QRCode from 'qrcode'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY } from '../config/navigation'
 import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, OEK2_WILLKOMMEN_IMAGES, OEK2_PLACEHOLDER_IMAGE } from '../config/tenantConfig'
 import { buildVitaDocumentHtml } from '../utils/vitaDocument'
-import { getGalerieImages } from '../config/pageContentGalerie'
+import { getGalerieImages, getPageContentGalerie } from '../config/pageContentGalerie'
 import { getPageTexts, type GaleriePageTexts } from '../config/pageTexts'
 import { appendToHistory } from '../utils/artworkHistory'
 import { buildQrUrlWithBust, useServerBuildTimestamp, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
@@ -506,15 +506,13 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   }, [musterOnly])
   const displayImages = useMemo(() => {
     if (musterOnly) {
+      // ök2: Bilder aus k2-oeffentlich-page-content-galerie laden (gleicher Key wie Admin-Speichern)
       try {
-        const fromStorage = (key: string) => {
-          const v = localStorage.getItem(key)
-          return (v && v.trim()) || ''
-        }
+        const pageContent = getPageContentGalerie('oeffentlich')
         return {
-          welcomeImage: fromStorage('k2-oeffentlich-welcomeImage') || (galleryData.welcomeImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.welcomeImage,
-          galerieCardImage: fromStorage('k2-oeffentlich-galerieInnenImage') || (galleryData.galerieCardImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.galerieCardImage,
-          virtualTourImage: fromStorage('k2-oeffentlich-galerieInnenImage') || (galleryData.virtualTourImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.virtualTourImage
+          welcomeImage: pageContent.welcomeImage || (galleryData.welcomeImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.welcomeImage,
+          galerieCardImage: pageContent.galerieCardImage || (galleryData.galerieCardImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.galerieCardImage,
+          virtualTourImage: pageContent.virtualTourImage || (galleryData.virtualTourImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.virtualTourImage
         }
       } catch (_) {
         return {

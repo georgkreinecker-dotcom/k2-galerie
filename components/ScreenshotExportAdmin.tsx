@@ -9146,7 +9146,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         </div>
                       )
                     })}
-                    <p style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', margin: 0 }}>Änderungen gelten erst nach „Speichern“ (Vorschau-Tab).</p>
+
                     <button type="button" onClick={() => setDesignSettings({ ...(isOeffentlichAdminContext() ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN) })} style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: 'transparent', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer', marginTop: '0.5rem' }}>↩ Zum Originalzustand</button>
                     <h3 style={{ fontSize: '1rem', color: 'var(--k2-accent)', marginBottom: '0.5rem', marginTop: '0.5rem' }}>Varianten</h3>
                     <p style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', margin: '0 0 0.5rem' }}>Zum Experimentieren: aktuellen Stand als A oder B speichern, später anwenden. Die aktuelle Einstellung gilt – jederzeit änderbar.</p>
