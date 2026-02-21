@@ -29,9 +29,12 @@ function loadArtworks(): any[] {
 /** Nummern der Seed-Musterwerke (ök2) – dürfen nie in K2-Galerie oder Backup landen. */
 const MUSTER_NUMMERN = new Set(['M1', 'M2', 'M3', 'M4', 'M5', 'G1', 'S1', 'O1'])
 
-/** Musterwerke (id muster-*, Muster-Nummern) und VK2 – gehören nicht in K2. */
+/** Musterwerke (id muster-*, Muster-Nummern) und VK2 – gehören nicht in K2.
+ *  AUSNAHME: _isMuster=true = bewusst geladene K2-Test-Muster → behalten. */
 function isMusterOrVk2Artwork(a: any): boolean {
   if (!a) return false
+  // Bewusst geladene K2-Test-Muster immer behalten
+  if ((a as any)._isMuster === true) return false
   const num = (a.number != null ? String(a.number).trim() : '').toUpperCase()
   const id = a.id != null ? String(a.id) : ''
   if (id.startsWith('muster-')) return true

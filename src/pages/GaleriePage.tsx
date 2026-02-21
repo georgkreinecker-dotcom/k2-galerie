@@ -52,9 +52,11 @@ function isVk2Artwork(a: any): boolean {
   return num.startsWith('VK2-') || id.startsWith('vk2-seed-')
 }
 
-/** Erkennt Musterwerke (nur an id muster-*) – nur für ök2. Nicht nach Nummer filtern, sonst gehen echte Werke verloren. */
+/** Erkennt Musterwerke (nur an id muster-*) – nur für ök2.
+ *  AUSNAHME: _isMuster=true = bewusst geladene K2-Test-Muster → behalten. */
 function isMusterArtwork(a: any): boolean {
   if (!a) return false
+  if ((a as any)._isMuster === true) return false
   const id = a.id != null ? String(a.id) : ''
   return id.startsWith('muster-')
 }
