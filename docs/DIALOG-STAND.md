@@ -11,10 +11,10 @@
 | Feld | Inhalt |
 |------|--------|
 | **Datum** | 21.02.26 |
-| **Thema** | Crash-Check: 2 neue Crash-Risiken gefunden und behoben |
-| **Was war zuletzt dran** | ✅ GaleriePage Mobile-Polling (useEffect): notInIframe-Check ergänzt. ✅ ScreenshotExportAdmin: 2× Backup-Reload nur noch außerhalb iframe. Stand: 21.02.26 16:49. |
-| **Nächster konkreter Schritt** | ök2 Aussehen testen: Fotos einfügen → Speichern → „So sehen Kunden" – Fotos müssen jetzt sofort sichtbar sein. |
-| **Wo nachlesen** | `components/ScreenshotExportAdmin.tsx`, `src/pages/GaleriePage.tsx`, `docs/CRASH-BEREITS-GEPRUEFT.md` |
+| **Thema** | Video-Upload Virtueller Rundgang – fix und fertig |
+| **Was war zuletzt dran** | ✅ Video-Upload: sofort lokal in setPageContentGalerie speichern (war vorher nur blob im State, ging verloren). ✅ Keine alert()-Dialoge mehr beim Upload – stattdessen Status-Anzeige direkt unter dem Button. ✅ ök2: Video wird ebenfalls gespeichert (Demo-Vorschau). ✅ Max-Größe auf 100 MB erhöht. Stand: 21.02.26 16:56. |
+| **Nächster konkreter Schritt** | Video im Virtuellen Rundgang testen: Admin → Seitengestaltung → Video aufnehmen oder wählen → muss sofort im Admin und in „So sehen Kunden" sichtbar sein. |
+| **Wo nachlesen** | `components/ScreenshotExportAdmin.tsx` (~Zeile 9130), `src/pages/GaleriePage.tsx` (displayImages.virtualTourVideo) |
 
 ---
 
