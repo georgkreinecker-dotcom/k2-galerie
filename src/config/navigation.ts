@@ -37,6 +37,7 @@ export const PROJECT_ROUTES = {
     id: 'k2-galerie',
     name: PRODUCT_BRAND_NAME,
     home: '/projects/k2-galerie',
+    seitengestaltung: '/projects/k2-galerie/seitengestaltung',
     galerie: '/projects/k2-galerie/galerie',
     galerieOeffentlich: '/projects/k2-galerie/galerie-oeffentlich',
     galerieOeffentlichVorschau: '/projects/k2-galerie/galerie-oeffentlich-vorschau',

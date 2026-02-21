@@ -2494,104 +2494,158 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           </header>
         ) : (
         <>
-        {/* Hero Section (K2 / ök2) */}
-        <header style={{ 
-          padding: 'clamp(2rem, 6vw, 4rem) clamp(1.5rem, 4vw, 3rem)',
-          paddingTop: 'clamp(3rem, 8vw, 5rem)',
+        {/* Hero Section (K2 / ök2) – Bild zuerst, dann Titel: sofortiger visueller Eindruck */}
+        <header style={{
           maxWidth: '1400px',
-          margin: '0 auto'
+          margin: '0 auto',
+          paddingBottom: 'clamp(2rem, 5vw, 3rem)'
         }}>
-          <div style={{ 
-            marginBottom: 'clamp(3rem, 8vw, 5rem)'
-          }}>
-            <h1 style={{ 
-              margin: 0, 
-              fontSize: 'clamp(2.5rem, 8vw, 4.5rem)',
-              fontWeight: '700',
-              background: musterOnly ? 'linear-gradient(135deg, var(--k2-text) 0%, var(--k2-accent) 100%)' : 'linear-gradient(135deg, var(--k2-text) 0%, var(--k2-accent) 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              letterSpacing: '-0.02em',
-              lineHeight: '1.1'
+          {/* Bild ganz oben – volle Breite, dominant. SVG-Musterbilder = kein echtes Foto → Text-Hero stattdessen */}
+          {displayImages.welcomeImage && !displayImages.welcomeImage.endsWith('.svg') && !displayImages.welcomeImage.startsWith('data:image/svg') && (
+            <div style={{
+              width: '100%',
+              height: 'clamp(220px, 40vw, 520px)',
+              overflow: 'hidden',
+              position: 'relative',
+              marginBottom: 0,
             }}>
-              {musterOnly ? tenantConfig.galleryName : ((galerieTexts.heroTitle ?? '').trim() || tenantConfig.galleryName)}
-            </h1>
-            <p style={{ 
-              margin: '0.75rem 0 0', 
-              color: musterOnly ? 'var(--k2-muted)' : 'rgba(255, 255, 255, 0.7)', 
-              fontSize: 'clamp(1rem, 3vw, 1.25rem)',
-              fontWeight: '300',
-              letterSpacing: '0.05em'
-            }}>
-              {musterOnly ? tenantConfig.tagline : ((galerieTexts.welcomeSubtext ?? '').trim() || tenantConfig.tagline)}
-            </p>
-          </div>
+              <img
+                src={musterOnly && welcomeImageFailed ? OEK2_PLACEHOLDER_IMAGE : displayImages.welcomeImage}
+                alt={musterOnly ? tenantConfig.galleryName : ((galerieTexts.heroTitle ?? '').trim() || tenantConfig.galleryName)}
+                onError={() => { if (musterOnly) setWelcomeImageFailed(true) }}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block',
+                }}
+              />
+              {/* Dunkler Gradient unten – Titel lesbar */}
+              <div style={{
+                position: 'absolute',
+                bottom: 0, left: 0, right: 0,
+                height: '55%',
+                background: musterOnly
+                  ? 'linear-gradient(to top, rgba(240,237,232,0.97) 0%, rgba(240,237,232,0.6) 60%, transparent 100%)'
+                  : 'linear-gradient(to top, rgba(14,12,10,0.96) 0%, rgba(14,12,10,0.55) 60%, transparent 100%)',
+                pointerEvents: 'none',
+              }} />
+              {/* Titel über dem Bild */}
+              <div style={{
+                position: 'absolute',
+                bottom: 'clamp(1.25rem, 4vw, 2.5rem)',
+                left: 'clamp(1.25rem, 4vw, 3rem)',
+                right: 'clamp(1.25rem, 4vw, 3rem)',
+              }}>
+                <p style={{
+                  margin: '0 0 0.3rem',
+                  fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)',
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  color: musterOnly ? 'var(--k2-muted)' : 'rgba(255,255,255,0.6)',
+                  fontWeight: 500,
+                }}>
+                  {musterOnly ? 'Willkommen bei' : ((galerieTexts.welcomeHeading ?? 'Willkommen bei').trim() || 'Willkommen bei')}
+                </p>
+                <h1 style={{
+                  margin: 0,
+                  fontSize: 'clamp(1.8rem, 5vw, 3.5rem)',
+                  fontWeight: 700,
+                  lineHeight: 1.1,
+                  letterSpacing: '-0.02em',
+                  color: musterOnly ? 'var(--k2-text)' : '#fff',
+                }}>
+                  {musterOnly ? tenantConfig.galleryName : ((galerieTexts.heroTitle ?? '').trim() || tenantConfig.galleryName)}
+                </h1>
+                <p style={{
+                  margin: '0.5rem 0 0',
+                  fontSize: 'clamp(0.95rem, 2.5vw, 1.2rem)',
+                  fontWeight: 300,
+                  color: musterOnly ? 'var(--k2-accent)' : 'rgba(255,255,255,0.75)',
+                  letterSpacing: '0.02em',
+                }}>
+                  {musterOnly ? tenantConfig.tagline : ((galerieTexts.welcomeSubtext ?? '').trim() || tenantConfig.tagline)}
+                </p>
+              </div>
+            </div>
+          )}
 
-          {/* Hero Content */}
-          <section ref={willkommenRef} id="willkommen" style={{ 
-            marginBottom: 'clamp(4rem, 10vw, 6rem)',
-            maxWidth: '800px',
-            width: '100%',
-            overflow: 'hidden'
-          }}>
-            <h2 style={{ 
-              fontSize: 'clamp(2rem, 6vw, 3.5rem)', 
-              marginBottom: '1.5rem',
-              fontWeight: '700',
-              lineHeight: '1.2',
-              color: 'var(--k2-text)',
-              letterSpacing: '-0.02em'
+          {/* Kein echtes Foto: klassischer Text-Hero */}
+          {(!displayImages.welcomeImage || displayImages.welcomeImage.endsWith('.svg') || displayImages.welcomeImage.startsWith('data:image/svg')) && (
+            <div style={{
+              padding: 'clamp(2.5rem, 7vw, 4.5rem) clamp(1.5rem, 4vw, 3rem) clamp(1.5rem, 4vw, 2.5rem)',
+              borderBottom: musterOnly ? '1px solid rgba(90,122,110,0.15)' : '1px solid rgba(255,255,255,0.08)',
             }}>
-              {musterOnly ? 'Willkommen bei' : ((galerieTexts.welcomeHeading ?? 'Willkommen bei').trim() || 'Willkommen bei')} {musterOnly ? tenantConfig.galleryName : ((galerieTexts.heroTitle ?? '').trim() || tenantConfig.galleryName)} –<br />
-              <span style={{
-                background: musterOnly ? 'linear-gradient(135deg, var(--k2-accent) 0%, #6b9080 100%)' : 'linear-gradient(135deg, var(--k2-accent) 0%, #e67a2a 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
+              <p style={{
+                margin: '0 0 0.5rem',
+                fontSize: 'clamp(0.7rem, 1.8vw, 0.82rem)',
+                letterSpacing: '0.2em',
+                textTransform: 'uppercase',
+                color: musterOnly ? 'var(--k2-accent)' : 'rgba(255,255,255,0.45)',
+                fontWeight: 600,
+              }}>
+                {musterOnly ? 'Willkommen bei' : ((galerieTexts.welcomeHeading ?? 'Willkommen bei').trim() || 'Willkommen bei')}
+              </p>
+              <h1 style={{
+                margin: '0 0 0.6rem',
+                fontSize: 'clamp(2.8rem, 9vw, 5rem)',
+                fontWeight: 800,
+                lineHeight: 1.05,
+                letterSpacing: '-0.03em',
+                color: musterOnly ? 'var(--k2-text)' : '#fff',
+              }}>
+                {musterOnly ? tenantConfig.galleryName : ((galerieTexts.heroTitle ?? '').trim() || tenantConfig.galleryName)}
+              </h1>
+              {/* Dekorative Linie */}
+              <div style={{
+                width: 'clamp(2.5rem, 6vw, 4rem)',
+                height: '3px',
+                background: musterOnly ? 'var(--k2-accent)' : 'var(--k2-accent)',
+                borderRadius: '2px',
+                margin: '0.9rem 0 1rem',
+              }} />
+              <p style={{
+                margin: '0 0 1.1rem',
+                fontSize: 'clamp(1.05rem, 3vw, 1.35rem)',
+                fontWeight: 300,
+                color: musterOnly ? 'var(--k2-accent)' : 'rgba(255,255,255,0.7)',
+                letterSpacing: '0.02em',
+                fontStyle: 'italic',
               }}>
                 {musterOnly ? tenantConfig.tagline : ((galerieTexts.welcomeSubtext ?? '').trim() || tenantConfig.tagline)}
-              </span>
-            </h2>
-            <p style={{ 
-              fontSize: 'clamp(1.1rem, 3vw, 1.4rem)', 
-              color: musterOnly ? 'var(--k2-muted)' : 'rgba(255, 255, 255, 0.8)',
-              lineHeight: '1.6',
-              fontWeight: '300',
-              maxWidth: '600px',
-              marginBottom: 'clamp(2rem, 5vw, 3rem)'
+              </p>
+              <p style={{
+                margin: 0,
+                fontSize: 'clamp(0.95rem, 2.4vw, 1.1rem)',
+                color: musterOnly ? 'var(--k2-muted)' : 'rgba(255,255,255,0.7)',
+                lineHeight: 1.75,
+                fontWeight: 300,
+                maxWidth: '620px',
+              }}>
+                {musterOnly ? MUSTER_TEXTE.welcomeText : (galerieTexts.welcomeIntroText?.trim() || 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.')}
+              </p>
+            </div>
+          )}
+
+          {/* Willkommens-Text + Anker (nur wenn echtes Bild vorhanden – Text dann separat unter Bild) */}
+          {displayImages.welcomeImage && !displayImages.welcomeImage.endsWith('.svg') && !displayImages.welcomeImage.startsWith('data:image/svg') && (
+          <section ref={willkommenRef} id="willkommen" style={{
+            padding: 'clamp(1.5rem, 4vw, 2.5rem) clamp(1.25rem, 4vw, 3rem) 0',
+            maxWidth: '720px',
+          }}>
+            <p style={{
+              fontSize: 'clamp(1rem, 2.5vw, 1.2rem)',
+              color: musterOnly ? 'var(--k2-muted)' : 'rgba(255,255,255,0.75)',
+              lineHeight: 1.75,
+              fontWeight: 300,
+              margin: 0,
             }}>
               {musterOnly ? MUSTER_TEXTE.welcomeText : (galerieTexts.welcomeIntroText?.trim() || 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.')}
             </p>
-            {displayImages.welcomeImage && (
-              <div style={{
-                width: '100%',
-                maxWidth: '100%',
-                marginTop: 'clamp(1.5rem, 4vw, 2.5rem)',
-                borderRadius: '20px',
-                overflow: 'hidden',
-                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                boxSizing: 'border-box'
-              }}>
-                <img
-                  src={musterOnly && welcomeImageFailed ? OEK2_PLACEHOLDER_IMAGE : displayImages.welcomeImage}
-                  alt="Willkommen"
-                  onError={() => { if (musterOnly) setWelcomeImageFailed(true) }}
-                  style={{
-                    width: '100%',
-                    maxWidth: '100%',
-                    height: 'auto',
-                    display: 'block',
-                    maxHeight: '500px',
-                    objectFit: 'cover',
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-            )}
-            {/* QR-Code ENTFERNT von Willkommensseite - jetzt im Impressum unten */}
           </section>
+          )}
+          {/* Anker auch ohne Bild */}
+          <span ref={willkommenRef} id="willkommen" />
         </header>
 
         <main style={{
@@ -2612,7 +2666,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               borderLeft: musterOnly ? '4px solid #6b9080' : vk2 ? '4px solid var(--k2-accent)' : '4px solid rgba(184, 184, 255, 0.6)'
             }}>
               <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', letterSpacing: '0.08em', textTransform: 'uppercase', color: musterOnly ? 'var(--k2-muted)' : vk2 ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.6)', fontWeight: '600' }}>
-                {galerieTexts.eventSectionHeading || 'Aktuelles aus den Eventplanungen'}
+                {galerieTexts.eventSectionHeading || 'Demnächst bei uns'}
               </p>
               <ul style={{ margin: 0, paddingLeft: '1.25rem', color: musterOnly ? 'var(--k2-text)' : '#ffffff', fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', lineHeight: 1.6 }}>
                 {(musterOnly ? upcomingEventsOeffentlich : vk2 ? vk2UpcomingEvents : upcomingEvents).map((ev: any) => (
@@ -2845,12 +2899,15 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                   marginBottom: 'clamp(1rem, 3vw, 1.5rem)',
                   background: displayImages.galerieCardImage 
                     ? 'transparent' 
-                    : 'linear-gradient(135deg, rgba(255, 140, 66, 0.15) 0%, rgba(230, 122, 42, 0.15) 100%)',
+                    : musterOnly
+                      ? 'linear-gradient(160deg, #e8e2d8 0%, #d4cfc5 100%)'
+                      : 'linear-gradient(135deg, rgba(255, 140, 66, 0.12) 0%, rgba(14,12,10,0.6) 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  boxSizing: 'border-box'
+                  border: musterOnly ? '1px solid rgba(90,122,110,0.18)' : '1px solid rgba(255, 255, 255, 0.1)',
+                  boxSizing: 'border-box',
+                  position: 'relative',
                 }}>
                   {displayImages.galerieCardImage ? (
                     <img 
@@ -2866,7 +2923,18 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                       }}
                     />
                   ) : (
-                    <div style={{ fontSize: 'clamp(3rem, 8vw, 5rem)', opacity: 0.3 }}>🖼️</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', opacity: 0.45 }}>
+                      <svg width="64" height="48" viewBox="0 0 64 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="4" y="16" width="56" height="30" rx="2" fill={musterOnly ? '#5a7a6e' : '#ff8c42'} fillOpacity="0.25" stroke={musterOnly ? '#5a7a6e' : '#ff8c42'} strokeOpacity="0.5" strokeWidth="1.5"/>
+                        <rect x="10" y="22" width="16" height="18" rx="1" fill={musterOnly ? '#5a7a6e' : '#ff8c42'} fillOpacity="0.35"/>
+                        <rect x="30" y="22" width="16" height="18" rx="1" fill={musterOnly ? '#5a7a6e' : '#ff8c42'} fillOpacity="0.35"/>
+                        <path d="M4 16 L32 4 L60 16" stroke={musterOnly ? '#5a7a6e' : '#ff8c42'} strokeOpacity="0.6" strokeWidth="1.5" fill="none"/>
+                        <line x1="32" y1="4" x2="32" y2="16" stroke={musterOnly ? '#5a7a6e' : '#ff8c42'} strokeOpacity="0.4" strokeWidth="1"/>
+                      </svg>
+                      <span style={{ fontSize: '0.75rem', color: musterOnly ? '#5a7a6e' : 'rgba(255,140,66,0.7)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500 }}>
+                        {musterOnly ? 'Ihr Galeriebild hier' : 'Galerie'}
+                      </span>
+                    </div>
                   )}
                 </div>
                 <Link 
@@ -3001,15 +3069,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               </div>
               )}
             </div>
-            <p style={{
-              fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
-              color: musterOnly ? 'var(--k2-muted)' : 'rgba(255, 255, 255, 0.5)',
-              textAlign: 'center',
-              marginTop: '-1rem',
-              marginBottom: '0.5rem'
-            }}>
-              Admin-Bereich: oben rechts über den Button „Admin“ (mit Passwort).
-            </p>
           </section>
 
           {/* Impressum – Schriftfarben aus Theme (lesbar auf hell und dunkel) */}

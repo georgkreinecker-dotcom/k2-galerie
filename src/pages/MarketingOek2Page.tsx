@@ -741,6 +741,33 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </div>
       </section>
 
+      {/* Sektion: WillkommenPage Varianten */}
+      <section id="willkommen-varianten" style={{ marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(95,251,241,0.2)' }}>
+        <h2 style={{ color: '#5ffbf1', marginBottom: '0.5rem' }}>8. WillkommenPage – Varianten zum Vergleich</h2>
+        <p style={{ color: 'rgba(255,255,255,0.75)', marginBottom: '1.25rem', lineHeight: 1.6 }}>
+          Zwei Designrichtungen für die Einstiegsseite (Erstkontakt, QR-Scan). Georg entscheidet, welche Variante Stil und Atmosphäre der Galerie am besten trifft.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginBottom: '1.25rem' }}>
+          <div style={{ background: 'rgba(95,251,241,0.07)', border: '1px solid rgba(95,251,241,0.25)', borderRadius: '10px', padding: '1.25rem' }}>
+            <p style={{ fontWeight: 700, color: '#5ffbf1', marginBottom: '0.4rem' }}>Variante A – Warm & einladend (Atelier)</p>
+            <p style={{ color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, margin: '0 0 0.75rem', fontSize: '0.95rem' }}>
+              Warme Terrakotta-Töne, cremig-leinene Karten, herzliche Sprache. Vermittelt Handwerk und Persönlichkeit – wie ein echter Atelierbesuch.
+            </p>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', margin: 0 }}>URL: <code style={{ color: '#5ffbf1' }}>/?variant=a</code></p>
+          </div>
+          <div style={{ background: 'rgba(95,251,241,0.07)', border: '1px solid rgba(95,251,241,0.25)', borderRadius: '10px', padding: '1.25rem' }}>
+            <p style={{ fontWeight: 700, color: '#5ffbf1', marginBottom: '0.4rem' }}>Variante C – Modern & lebendig</p>
+            <p style={{ color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, margin: '0 0 0.75rem', fontSize: '0.95rem' }}>
+              Dunkler Hero-Bereich, K2-Orange als Akzent, klare Aktionsführung. Wirkt sofort und holt den Besucher direkt ab – zeitgemäß und professionell.
+            </p>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', margin: 0 }}>URL: <code style={{ color: '#5ffbf1' }}>/ (ohne Parameter)</code></p>
+          </div>
+        </div>
+        <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.9rem' }}>
+          Nächster Schritt: Variante auswählen → als Standard festlegen und <code>?variant</code>-Parameter entfernen.
+        </p>
+      </section>
+
       <footer style={{ marginTop: '2rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>
         <ProductCopyright /> · Stand: Februar 2026 · Quelle: USP-UND-MARKTCHANCEN.md, VERMARKTUNGSKONZEPT-EMPFEHLUNGSPROGRAMM.md, Produkt-Vision, Galerie-App Feature-Stand.
       </footer>

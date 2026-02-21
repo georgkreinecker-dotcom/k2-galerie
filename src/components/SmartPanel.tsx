@@ -99,6 +99,41 @@ export default function SmartPanel({ currentPage }: SmartPanelProps) {
         </p>
       </div>
 
+      {/* Grafiker-Tisch – prominent ganz oben */}
+      <Link
+        to={PROJECT_ROUTES['k2-galerie'].seitengestaltung}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '0.5rem',
+          padding: '0.9rem 1rem',
+          background: 'linear-gradient(135deg, rgba(255,140,66,0.35), rgba(255,100,20,0.25))',
+          border: '2px solid rgba(255,140,66,0.7)',
+          borderRadius: '10px',
+          color: '#ff8c42',
+          fontWeight: 700,
+          fontSize: '1rem',
+          textAlign: 'center',
+          textDecoration: 'none',
+          letterSpacing: '0.02em',
+          boxShadow: '0 2px 12px rgba(255,140,66,0.18)',
+          transition: 'all 0.2s ease',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,140,66,0.5), rgba(255,100,20,0.4))'
+          e.currentTarget.style.borderColor = '#ff8c42'
+          e.currentTarget.style.boxShadow = '0 4px 20px rgba(255,140,66,0.35)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,140,66,0.35), rgba(255,100,20,0.25))'
+          e.currentTarget.style.borderColor = 'rgba(255,140,66,0.7)'
+          e.currentTarget.style.boxShadow = '0 2px 12px rgba(255,140,66,0.18)'
+        }}
+      >
+        🎨 Grafiker-Tisch öffnen
+      </Link>
+
       {/* K2-Balken – echte Galerie (K2 Galerie Kunst&Keramik) */}
       <Link
         to={PROJECT_ROUTES['k2-galerie'].galerie}

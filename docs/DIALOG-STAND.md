@@ -11,10 +11,10 @@
 | Feld | Inhalt |
 |------|--------|
 | **Datum** | 21.02.26 |
-| **Thema** | WillkommenPage + Admin-Umbau abgeschlossen |
-| **Was war zuletzt dran** | ✅ WillkommenPage komplett neu: 3 klare Optionen (🖼️ Galerie ansehen / ✏️ Meine Galerie ausprobieren / 📩 Eigene Galerie kaufen), dynamischer Button-Text mit eingegebenem Namen, AGB-Modal vereinfacht. ✅ Admin: Dashboard, Header, Einstellungen, Eventplan, Sammeldruck – alles committed & gepusht. Build: 21.02.26 07:10. |
-| **Nächster konkreter Schritt** | Am Handy testen: Stand-Badge tippen → neue Version laden → WillkommenPage aufrufen. Nächste Baustelle nach Feedback. |
-| **Wo nachlesen** | `src/pages/WillkommenPage.tsx`, `components/ScreenshotExportAdmin.tsx` |
+| **Thema** | Seitengestaltung-Tool gebaut + GaleriePage Hero-Redesign |
+| **Was war zuletzt dran** | ✅ Neues Tool „Seitengestaltung" in APf: Live-Vorschau aller Galerie-Seiten direkt in APf (Handy/Tablet/Desktop-Ansicht wählbar, Seite auswählen, Reload). Karte auf Projektseite. ✅ GaleriePage Hero: SVG-Platzhalter erkannt → Text-Hero mit Galerienamen groß, Tagline kursiv, Dekorative Linie. ✅ Admin-Hinweis entfernt. Build: 21.02.26 08:42. |
+| **Nächster konkreter Schritt** | Im Browser: `http://localhost:5177/projects/k2-galerie/seitengestaltung` öffnen → „📝 Notizen" klicken → Wünsche eintragen. Commit + push zu Vercel. |
+| **Wo nachlesen** | `src/pages/SeitengestaltungPage.tsx`, `docs/GRAFIKER-TISCH-NOTIZEN.md`, `.cursor/rules/session-start-regeln-struktur.mdc` |
 
 ---
 

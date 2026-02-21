@@ -53,8 +53,16 @@ export function getProjectCards(): ProjectCard[] {
     }
   })
 
-  // Zusatzeintrag: Öffentliche Galerie K2 (umgewidmet von Demo)
+  // Zusatzeinträge
   const extraCards: ProjectCard[] = [
+    {
+      id: 'k2-galerie-seitengestaltung',
+      title: '🎨 Seitengestaltung',
+      description: 'Live-Vorschau: Galerie-Seiten direkt ansehen und besprechen.',
+      to: PROJECT_ROUTES['k2-galerie'].seitengestaltung,
+      color: '#ff8c42',
+      status: 'in-progress',
+    },
     {
       id: 'k2-galerie-oeffentlich',
       title: 'Öffentliche Galerie K2',

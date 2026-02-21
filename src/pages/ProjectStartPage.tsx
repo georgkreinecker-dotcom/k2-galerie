@@ -90,7 +90,7 @@ export default function ProjectStartPage() {
             <div className="card" key={card.title}>
               <h2>{card.title}</h2>
               <p>{card.description}</p>
-              <Link className="btn" to={routes[card.routeKey]}>
+              <Link className="btn" to={(routes as Record<string, string>)[card.routeKey] ?? routes.galerie}>
                 {card.cta}
               </Link>
             </div>

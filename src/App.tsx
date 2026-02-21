@@ -36,6 +36,7 @@ import KundenPage from './pages/KundenPage'
 import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUTE } from './config/navigation'
 import WillkommenPage from './pages/WillkommenPage'
 import AGBPage from './pages/AGBPage'
+import SeitengestaltungPage from './pages/SeitengestaltungPage'
 import { BUILD_LABEL, BUILD_TIMESTAMP } from './buildInfo.generated'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 
@@ -507,6 +508,7 @@ function App() {
             <Route path={PROJECT_ROUTES['k2-galerie'].platzanordnung} element={<PlatzanordnungPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].shop} element={<ShopPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].virtuellerRundgang} element={<VirtuellerRundgangPage />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].seitengestaltung} element={<SeitengestaltungPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].controlStudio} element={<ControlStudioPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].kunden} element={<KundenPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].plan} element={<ProjectPlanPage />} />
