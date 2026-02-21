@@ -34,13 +34,18 @@ function mergeStammdatenPerson(incoming: any, existing: any, defaults: { name: s
   }
 }
 
-/** Muster (nur id muster-*) und VK2 – nie in k2-artworks. Nicht nach Nummer filtern, sonst gehen echte Werke verloren. */
+/** Muster (nur ök2-Kontext: id muster-* ohne _isMuster) und VK2 – nie in k2-artworks.
+ *  K2-Test-Muster (_isMuster=true) werden behalten – sie wurden bewusst geladen.
+ */
 export function filterK2ArtworksOnly(artworks: any[]): any[] {
   if (!Array.isArray(artworks)) return []
   return artworks.filter((a: any) => {
     if (!a) return false
     const num = a.number != null ? String(a.number).trim() : ''
     const id = a.id != null ? String(a.id) : ''
+    // Musterwerke mit _isMuster=true wurden bewusst in K2 geladen (Test) → behalten
+    if ((a as any)._isMuster === true) return true
+    // Echte ök2-Muster (id startet mit muster-) ohne _isMuster → rausfiltern
     if (id.startsWith('muster-')) return false
     if (num.startsWith('VK2-') || id.startsWith('vk2-seed-')) return false
     return true
