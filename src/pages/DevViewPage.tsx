@@ -209,6 +209,25 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   const [panelMinimized, setPanelMinimized] = useState(false) // Immer sichtbar beim Start
   const [grafikerTischOpen, setGrafikerTischOpen] = useState(false)
   const [grafikerReloadKey, setGrafikerReloadKey] = useState(0)
+  const [grafikerNotizOpen, setGrafikerNotizOpen] = useState(false)
+  const [grafikerNotizText, setGrafikerNotizText] = useState(() => {
+    try { return localStorage.getItem('grafiker-notiz-entwurf') || '' } catch { return '' }
+  })
+  const [grafikerNotizGespeichert, setGrafikerNotizGespeichert] = useState(false)
+
+  const grafikerNotizSpeichern = () => {
+    if (!grafikerNotizText.trim()) return
+    const datum = new Date().toLocaleDateString('de-AT', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
+    const eintrag = `- [${datum}] ${grafikerNotizText.trim()}`
+    // In localStorage für nächste Session merken
+    const bisherige = (() => { try { return localStorage.getItem('grafiker-notizen-offen') || '' } catch { return '' } })()
+    const neu = bisherige ? bisherige + '\n' + eintrag : eintrag
+    try { localStorage.setItem('grafiker-notizen-offen', neu) } catch { /* ignore */ }
+    try { localStorage.setItem('grafiker-notiz-entwurf', '') } catch { /* ignore */ }
+    setGrafikerNotizText('')
+    setGrafikerNotizGespeichert(true)
+    setTimeout(() => setGrafikerNotizGespeichert(false), 2500)
+  }
   
   // Speichere Panel-Status in localStorage (optional)
   useEffect(() => {
@@ -769,6 +788,10 @@ end tell`
     { id: 'galerie-oeffentlich', name: 'Öffentliche Galerie K2', component: GaleriePage },
     { id: 'galerie-vorschau', name: 'Galerie-Vorschau', component: GalerieVorschauPage },
     { id: 'galerie-oeffentlich-vorschau', name: 'Öffentliche Galerie K2 Vorschau', component: GalerieVorschauPage },
+    { id: 'vk2', name: 'VK2 Vereinsplattform', component: GaleriePage },
+    { id: 'vk2-kunden', name: 'VK2 Mitglieder', component: GalerieVorschauPage },
+    { id: 'vk2-vorschau', name: 'VK2 Künstler-Vorschau', component: GalerieVorschauPage },
+    { id: 'vk2-admin', name: 'VK2 Admin', component: ScreenshotExportAdmin },
     { id: 'produkt-vorschau', name: 'Produkt-Vorschau', component: ProduktVorschauPage },
     { id: 'marketing-oek2', name: 'mök2 (Marketing)', component: MarketingOek2Page },
     { id: 'platzanordnung', name: 'Platzanordnung', component: PlatzanordnungPage },
@@ -778,6 +801,8 @@ end tell`
     { id: 'admin', name: 'Admin', component: ScreenshotExportAdmin },
     { id: 'projects', name: 'Projekte', component: ProjectsPage },
     { id: 'platform', name: 'Plattform Start', component: PlatformStartPage },
+    { id: 'mok2', name: 'mök2 – Vertrieb', component: MarketingOek2Page },
+    { id: 'handbuch', name: 'Handbuch', component: PlatformStartPage },
   ]
 
   // Auf Mobile: "Plattform Start" Tab ausblenden (nur für Mac)
@@ -813,25 +838,49 @@ end tell`
     if (pageToRender === 'galerie') {
       return <GaleriePage key={componentKey} scrollToSection={galerieSection} />
     }
-    // ök2 in der APf nur als leichte Platzhalter (Vollbild-Link) – volle Seite verursacht in Cursor Preview oft Code 5
+    // ök2: Im Cursor Preview (iframe) Platzhalter – im Browser echte Seite
     if (pageToRender === 'galerie-oeffentlich') {
-      return (
-        <div key={componentKey} style={{ padding: '2rem', maxWidth: 400, margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ fontSize: '1.1rem', color: 'var(--k2-muted)', marginBottom: '1rem' }}>Öffentliche Galerie K2</p>
-          <Link to={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich} style={{ display: 'inline-block', padding: '0.75rem 1.5rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>Im Vollbild öffnen</Link>
-        </div>
-      )
+      const inCursorPreview = window.self !== window.top
+      if (inCursorPreview) {
+        return (
+          <div key={componentKey} style={{ padding: '2rem', maxWidth: 400, margin: '0 auto', textAlign: 'center' }}>
+            <p style={{ fontSize: '1.1rem', color: 'var(--k2-muted)', marginBottom: '1rem' }}>Öffentliche Galerie K2</p>
+            <Link to={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich} style={{ display: 'inline-block', padding: '0.75rem 1.5rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>Im Vollbild öffnen</Link>
+          </div>
+        )
+      }
+      return <GaleriePage key={componentKey} musterOnly={true} />
     }
     if (pageToRender === 'galerie-vorschau') {
       return <GalerieVorschauPage key={componentKey} initialFilter={galerieFilter} />
     }
     if (pageToRender === 'galerie-oeffentlich-vorschau') {
-      return (
-        <div key={componentKey} style={{ padding: '2rem', maxWidth: 400, margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ fontSize: '1.1rem', color: 'var(--k2-muted)', marginBottom: '1rem' }}>Öffentliche Galerie K2 Vorschau</p>
-          <Link to={PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau} style={{ display: 'inline-block', padding: '0.75rem 1.5rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>Im Vollbild öffnen</Link>
-        </div>
-      )
+      const inCursorPreview = window.self !== window.top
+      if (inCursorPreview) {
+        return (
+          <div key={componentKey} style={{ padding: '2rem', maxWidth: 400, margin: '0 auto', textAlign: 'center' }}>
+            <p style={{ fontSize: '1.1rem', color: 'var(--k2-muted)', marginBottom: '1rem' }}>Öffentliche Galerie K2 Vorschau</p>
+            <Link to={PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau} style={{ display: 'inline-block', padding: '0.75rem 1.5rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>Im Vollbild öffnen</Link>
+          </div>
+        )
+      }
+      return <GalerieVorschauPage key={componentKey} musterOnly={true} initialFilter={galerieFilter} />
+    }
+    // VK2 Seiten
+    if (pageToRender === 'vk2') {
+      return <GaleriePage key={componentKey} vk2={true} />
+    }
+    if (pageToRender === 'vk2-kunden') {
+      return <GalerieVorschauPage key={componentKey} vk2={true} initialFilter={galerieFilter} />
+    }
+    if (pageToRender === 'vk2-vorschau') {
+      return <GalerieVorschauPage key={componentKey} vk2={true} initialFilter={galerieFilter} />
+    }
+    if (pageToRender === 'vk2-admin') {
+      return <ScreenshotExportAdmin key="vk2-admin-singleton" />
+    }
+    if (pageToRender === 'mok2') {
+      return <MarketingOek2Page key={componentKey} />
     }
     if (pageToRender === 'platzanordnung') {
       return <PlatzanordnungPage key={componentKey} />
@@ -839,7 +888,6 @@ end tell`
     
     // Admin-Komponente: Nur einmal rendern - IMMER gleicher Key verhindert doppeltes Mounten
     if (pageToRender === 'admin') {
-      // WICHTIG: Gleicher Key für alle Render-Modi verhindert doppeltes Mounten
       return <ScreenshotExportAdmin key="admin-singleton" />
     }
     
@@ -1215,6 +1263,12 @@ end tell`
               currentPageData.id === 'galerie-oeffentlich' ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich :
               currentPageData.id === 'galerie-vorschau' ? PROJECT_ROUTES['k2-galerie'].galerieVorschau :
               currentPageData.id === 'galerie-oeffentlich-vorschau' ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau :
+              currentPageData.id === 'vk2' ? PROJECT_ROUTES.vk2.galerie :
+              currentPageData.id === 'vk2-kunden' ? PROJECT_ROUTES.vk2.kunden :
+              currentPageData.id === 'vk2-vorschau' ? PROJECT_ROUTES.vk2.galerieVorschau :
+              currentPageData.id === 'vk2-admin' ? PROJECT_ROUTES.vk2.vollversion :
+              currentPageData.id === 'mok2' ? PROJECT_ROUTES['k2-galerie'].marketingOek2 :
+              currentPageData.id === 'handbuch' ? '/k2team-handbuch' :
               currentPageData.id === 'produkt-vorschau' ? PROJECT_ROUTES['k2-galerie'].produktVorschau :
               currentPageData.id === 'marketing-oek2' ? PROJECT_ROUTES['k2-galerie'].marketingOek2 :
               currentPageData.id === 'shop' ? PROJECT_ROUTES['k2-galerie'].shop :
@@ -1637,7 +1691,7 @@ end tell`
                 )}
               </button>
             </div>
-            <SmartPanel currentPage={currentPage} />
+            <SmartPanel currentPage={currentPage} onNavigate={setCurrentPage} />
           </>
         )}
       </div>
@@ -1675,6 +1729,10 @@ end tell`
               onClick={() => setGrafikerReloadKey(k => k + 1)}
               style={{ padding: '0.3rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: '0.78rem', fontFamily: 'inherit' }}
             >🔄 Neu laden</button>
+            <button
+              onClick={() => setGrafikerNotizOpen(o => !o)}
+              style={{ padding: '0.3rem 0.6rem', borderRadius: '6px', border: `1px solid ${grafikerNotizOpen ? 'rgba(95,251,241,0.5)' : 'rgba(255,255,255,0.12)'}`, background: grafikerNotizOpen ? 'rgba(95,251,241,0.12)' : 'rgba(255,255,255,0.04)', color: grafikerNotizOpen ? '#5ffbf1' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: '0.78rem', fontFamily: 'inherit', fontWeight: grafikerNotizOpen ? 700 : 400 }}
+            >📝 Notiz an KI</button>
             <a
               href={getGrafikerUrl()}
               target="_blank"
@@ -1686,6 +1744,81 @@ end tell`
               style={{ padding: '0.3rem 0.65rem', borderRadius: '6px', border: '1px solid rgba(255,80,80,0.35)', background: 'rgba(255,80,80,0.08)', color: 'rgba(255,120,120,0.8)', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 700, fontFamily: 'inherit' }}
             >✕ Schließen</button>
           </div>
+
+          {/* Notiz-Dialogfeld – Kommunikation mit KI */}
+          {grafikerNotizOpen && (
+            <div style={{
+              background: '#1a1410',
+              borderBottom: '1px solid rgba(95,251,241,0.2)',
+              padding: '0.75rem 1rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.5rem',
+              flexShrink: 0,
+            }}>
+              <div style={{ fontSize: '0.78rem', color: 'rgba(95,251,241,0.7)', marginBottom: '0.1rem' }}>
+                📝 Schreib mir was du ändern möchtest – ich setze es beim nächsten Mal um:
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                <textarea
+                  value={grafikerNotizText}
+                  onChange={(e) => {
+                    setGrafikerNotizText(e.target.value)
+                    try { localStorage.setItem('grafiker-notiz-entwurf', e.target.value) } catch { /* ignore */ }
+                  }}
+                  placeholder="z.B. 'Der Titel soll groesser sein' oder 'Die Farbe gefaellt mir nicht'"
+                  rows={3}
+                  style={{
+                    flex: 1,
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(95,251,241,0.25)',
+                    borderRadius: '6px',
+                    color: '#fff5f0',
+                    padding: '0.5rem 0.75rem',
+                    fontSize: '0.82rem',
+                    fontFamily: 'inherit',
+                    resize: 'vertical',
+                    outline: 'none',
+                  }}
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <button
+                    onClick={grafikerNotizSpeichern}
+                    disabled={!grafikerNotizText.trim()}
+                    style={{
+                      padding: '0.5rem 0.85rem',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(95,251,241,0.4)',
+                      background: grafikerNotizText.trim() ? 'rgba(95,251,241,0.15)' : 'rgba(255,255,255,0.04)',
+                      color: grafikerNotizText.trim() ? '#5ffbf1' : 'rgba(255,255,255,0.3)',
+                      cursor: grafikerNotizText.trim() ? 'pointer' : 'default',
+                      fontSize: '0.82rem',
+                      fontFamily: 'inherit',
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >{grafikerNotizGespeichert ? '✅ Gespeichert!' : '💾 Speichern'}</button>
+                </div>
+              </div>
+              {/* Gespeicherte Notizen anzeigen */}
+              {(() => {
+                const gespeichert = (() => { try { return localStorage.getItem('grafiker-notizen-offen') || '' } catch { return '' } })()
+                if (!gespeichert) return null
+                return (
+                  <div style={{ marginTop: '0.25rem' }}>
+                    <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', marginBottom: '0.3rem' }}>Bereits notiert (für KI beim nächsten Session-Start):</div>
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,200,100,0.7)', whiteSpace: 'pre-wrap', background: 'rgba(255,200,100,0.05)', padding: '0.4rem 0.6rem', borderRadius: '4px', border: '1px solid rgba(255,200,100,0.1)' }}>
+                      {gespeichert}
+                    </div>
+                    <button
+                      onClick={() => { try { localStorage.removeItem('grafiker-notizen-offen') } catch { /* ignore */ }; setGrafikerNotizGespeichert(o => !o) }}
+                      style={{ marginTop: '0.3rem', fontSize: '0.7rem', color: 'rgba(255,100,100,0.5)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                    >✕ Liste leeren</button>
+                  </div>
+                )
+              })()}
+            </div>
+          )}
 
           {/* iframe – aktive Seite */}
           <iframe

@@ -1,8 +1,40 @@
-import { Link } from 'react-router-dom'
-import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE } from '../config/navigation'
+import { useState, useRef } from 'react'
+import { PROJECT_ROUTES, MOK2_ROUTE } from '../config/navigation'
 
 /** VK2 immer per Voll-Navigation öffnen – verhindert, dass K2/Router-Zustand bleibt */
 const VK2_GALERIE_URL = '/projects/vk2/galerie'
+
+const PANEL_ORDER_KEY = 'smartpanel-reihenfolge'
+
+type PanelItem = {
+  id: string
+  label: string
+  page: string
+  url: string
+  color: string
+  border: string
+  direct?: boolean  // true = immer per window.location.href, nie über onNavigate
+}
+
+const DEFAULT_ITEMS: PanelItem[] = [
+  { id: 'k2', label: '🎨 K2 Galerie Kunst&Keramik', page: 'galerie', url: PROJECT_ROUTES['k2-galerie'].galerie, color: 'linear-gradient(135deg, rgba(255,140,66,0.2), rgba(230,122,42,0.15))', border: 'rgba(255,140,66,0.4)' },
+  { id: 'oek2', label: '🌐 Öffentliche Galerie K2', page: 'galerie-oeffentlich', url: PROJECT_ROUTES['k2-galerie'].galerieOeffentlich, color: 'linear-gradient(135deg, rgba(95,251,241,0.12), rgba(60,200,190,0.08))', border: 'rgba(95,251,241,0.3)' },
+  { id: 'vk2', label: '🎨 VK2 Vereinsplattform', page: 'vk2', url: VK2_GALERIE_URL, color: 'linear-gradient(135deg, rgba(230,122,42,0.2), rgba(255,140,66,0.15))', border: 'rgba(255,140,66,0.4)' },
+  { id: 'mok2', label: '📋 mök2 – Vertrieb & Promotion', page: 'mok2', url: MOK2_ROUTE, color: 'linear-gradient(135deg, rgba(251,191,36,0.12), rgba(245,158,11,0.08))', border: 'rgba(251,191,36,0.3)' },
+  { id: 'handbuch', label: '🧠 Handbuch', page: 'handbuch', url: '/k2team-handbuch', color: 'rgba(95,251,241,0.08)', border: 'rgba(95,251,241,0.2)', direct: true },
+]
+
+function loadOrder(): string[] {
+  try {
+    const saved = localStorage.getItem(PANEL_ORDER_KEY)
+    if (saved) return JSON.parse(saved)
+  } catch { /* ignore */ }
+  return DEFAULT_ITEMS.map(i => i.id)
+}
+
+function saveOrder(order: string[]) {
+  try { localStorage.setItem(PANEL_ORDER_KEY, JSON.stringify(order)) } catch { /* ignore */ }
+}
 
 /** Deine To-dos – Vermarktung & Strategie (zum Abarbeiten). Links führen direkt zur Stelle. */
 const MEINE_TODOS = [
@@ -18,53 +50,55 @@ const MEINE_TODOS = [
 
 interface SmartPanelProps {
   currentPage?: string
+  onNavigate?: (page: string) => void
 }
 
-export default function SmartPanel({ currentPage }: SmartPanelProps) {
-  const quickActions = [
+export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps) {
+  // Im APf-Kontext: Seite im Frame wechseln. Außerhalb: normale Navigation.
+  const nav = (page: string, url: string) => {
+    if (onNavigate) {
+      onNavigate(page)
+    } else {
+      window.location.href = url
+    }
+  }
+
+  // Sortierbare Hauptbuttons
+  const [itemOrder, setItemOrder] = useState<string[]>(loadOrder)
+  const [editMode, setEditMode] = useState(false)
+  const dragId = useRef<string | null>(null)
+  const dragOverId = useRef<string | null>(null)
+
+  const sortedItems = itemOrder
+    .map(id => DEFAULT_ITEMS.find(i => i.id === id))
+    .filter(Boolean) as PanelItem[]
+
+  const handleDragStart = (id: string) => { dragId.current = id }
+  const handleDragOver = (e: React.DragEvent, id: string) => {
+    e.preventDefault()
+    dragOverId.current = id
+  }
+  const handleDrop = () => {
+    if (!dragId.current || !dragOverId.current || dragId.current === dragOverId.current) return
+    const newOrder = [...itemOrder]
+    const fromIdx = newOrder.indexOf(dragId.current)
+    const toIdx = newOrder.indexOf(dragOverId.current)
+    newOrder.splice(fromIdx, 1)
+    newOrder.splice(toIdx, 0, dragId.current)
+    setItemOrder(newOrder)
+    saveOrder(newOrder)
+    dragId.current = null
+    dragOverId.current = null
+  }
+
+  // Nur noch besondere Aktionen die nicht in den Hauptbuttons sind
+  const extraActions = [
     {
       label: '📌 Zentrale Themen',
-      action: () => {
-        window.location.href = '/k2team-handbuch?doc=16-ZENTRALE-THEMEN-FUER-NUTZER.md'
-      },
-      hint: 'Was Nutzer wissen sollten – Übersicht (Handbuch-Kapitel 16)',
+      action: () => nav('handbuch', '/k2team-handbuch?doc=16-ZENTRALE-THEMEN-FUER-NUTZER.md'),
+      hint: 'Was Nutzer wissen sollten – Übersicht',
       highlight: true
     },
-    {
-      label: '📊 Mission Control',
-      action: () => {
-        window.location.href = PLATFORM_ROUTES.missionControl
-      },
-      hint: 'Projekt-Übersicht'
-    },
-    {
-      label: '📁 Projekte',
-      action: () => {
-        window.location.href = PLATFORM_ROUTES.projects
-      },
-      hint: 'Alle Projekte'
-    },
-    {
-      label: '🌐 Öffentliche Galerie K2',
-      action: () => {
-        window.location.href = PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
-      },
-      hint: 'Öffentliche Ansicht der K2 Galerie'
-    },
-    {
-      label: '📋 mök2 – Vertrieb & Promotion',
-      action: () => {
-        window.location.href = MOK2_ROUTE
-      },
-      hint: 'Eigener Bereich – nur indirekt mit App-Entwicklung verbunden'
-    },
-    {
-      label: '🧠 Handbuch',
-      action: () => {
-        window.location.href = '/k2team-handbuch'
-      },
-      hint: 'K2Team Handbuch – Zusammenarbeit, Backup, Sicherheit'
-    }
   ]
 
   return (
@@ -99,149 +133,54 @@ export default function SmartPanel({ currentPage }: SmartPanelProps) {
         </p>
       </div>
 
-      {/* Grafiker-Tisch – prominent ganz oben */}
-      <Link
-        to={PROJECT_ROUTES['k2-galerie'].seitengestaltung}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '0.5rem',
-          padding: '0.9rem 1rem',
-          background: 'linear-gradient(135deg, rgba(95,251,241,0.18), rgba(60,200,190,0.12))',
-          border: '2px solid rgba(95,251,241,0.6)',
-          borderRadius: '10px',
-          color: '#5ffbf1',
-          fontWeight: 700,
-          fontSize: '1rem',
-          textAlign: 'center',
-          textDecoration: 'none',
-          letterSpacing: '0.02em',
-          boxShadow: '0 2px 12px rgba(95,251,241,0.15)',
-          transition: 'all 0.2s ease',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(95,251,241,0.3), rgba(60,200,190,0.22))'
-          e.currentTarget.style.borderColor = '#5ffbf1'
-          e.currentTarget.style.boxShadow = '0 4px 20px rgba(95,251,241,0.28)'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(95,251,241,0.18), rgba(60,200,190,0.12))'
-          e.currentTarget.style.borderColor = 'rgba(95,251,241,0.6)'
-          e.currentTarget.style.boxShadow = '0 2px 12px rgba(95,251,241,0.15)'
-        }}
-      >
-        🎨 Grafiker-Tisch öffnen
-      </Link>
-
-      {/* K2-Balken – echte Galerie (K2 Galerie Kunst&Keramik) */}
-      <Link
-        to={PROJECT_ROUTES['k2-galerie'].galerie}
-        style={{
-          display: 'block',
-          padding: '0.85rem 1rem',
-          background: 'linear-gradient(135deg, rgba(255, 140, 66, 0.2), rgba(230, 122, 42, 0.15))',
-          border: '1px solid rgba(255, 140, 66, 0.4)',
-          borderRadius: '8px',
-          color: '#ff8c42',
-          fontWeight: 600,
-          fontSize: '1rem',
-          textAlign: 'center',
-          textDecoration: 'none',
-          transition: 'all 0.2s ease'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 140, 66, 0.3), rgba(230, 122, 42, 0.25))'
-          e.currentTarget.style.borderColor = 'rgba(255, 140, 66, 0.6)'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 140, 66, 0.2), rgba(230, 122, 42, 0.15))'
-          e.currentTarget.style.borderColor = 'rgba(255, 140, 66, 0.4)'
-        }}
-      >
-        🎨 K2 Galerie Kunst&Keramik
-      </Link>
-
-      {/* VK2 Vereinsplattform – K2-Familie (Hausherr): gleiche Designsprache wie K2 */}
+      {/* Sortierbare Hauptbuttons – wie iPhone: Bearbeiten → Ziehen */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        <button
-          type="button"
-          onClick={() => { window.location.href = VK2_GALERIE_URL }}
-          style={{
-            display: 'block',
-            width: '100%',
-            padding: '0.85rem 1rem',
-            background: 'linear-gradient(135deg, rgba(230, 122, 42, 0.2), rgba(255, 140, 66, 0.15))',
-            border: '1px solid rgba(255, 140, 66, 0.4)',
-            borderRadius: '8px',
-            color: '#ff8c42',
-            fontWeight: 600,
-            fontSize: '1rem',
-            textAlign: 'center',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            fontFamily: 'inherit'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(230, 122, 42, 0.3), rgba(255, 140, 66, 0.25))'
-            e.currentTarget.style.borderColor = 'rgba(255, 140, 66, 0.6)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(230, 122, 42, 0.2), rgba(255, 140, 66, 0.15))'
-            e.currentTarget.style.borderColor = 'rgba(255, 140, 66, 0.4)'
-          }}
-        >
-          🎨 VK2 Vereinsplattform
-        </button>
-        <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-          <Link to={PROJECT_ROUTES.vk2.kunden} style={{ flex: 1, minWidth: '80px', padding: '0.5rem 0.6rem', fontSize: '0.85rem', background: 'rgba(255, 140, 66, 0.15)', border: '1px solid rgba(255, 140, 66, 0.3)', borderRadius: 6, color: '#ff8c42', textDecoration: 'none', textAlign: 'center' }}>Mitglieder</Link>
-          <Link to={PROJECT_ROUTES.vk2.galerieVorschau} style={{ flex: 1, minWidth: '80px', padding: '0.5rem 0.6rem', fontSize: '0.85rem', background: 'rgba(255, 140, 66, 0.15)', border: '1px solid rgba(255, 140, 66, 0.3)', borderRadius: 6, color: '#ff8c42', textDecoration: 'none', textAlign: 'center' }}>Künstler</Link>
-          <Link to={PROJECT_ROUTES.vk2.vollversion} style={{ flex: 1, minWidth: '80px', padding: '0.5rem 0.6rem', fontSize: '0.85rem', background: 'rgba(255, 140, 66, 0.25)', border: '1px solid rgba(255, 140, 66, 0.4)', borderRadius: 6, color: '#ff8c42', textDecoration: 'none', textAlign: 'center', fontWeight: 600 }}>Admin</Link>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)' }}>
+            {editMode ? '↕ Ziehen zum Verschieben' : ''}
+          </span>
+          <button
+            type="button"
+            onClick={() => setEditMode(m => !m)}
+            style={{ fontSize: '0.72rem', color: editMode ? '#5ffbf1' : 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.1rem 0.3rem', fontFamily: 'inherit' }}
+          >{editMode ? '✅ Fertig' : '✏️ Anordnen'}</button>
         </div>
-      </div>
 
-      {/* Admin-Bereich – Überblick über User/Mandanten */}
-      <div>
-        <h4 style={{
-          margin: '0 0 0.5rem 0',
-          fontSize: '0.9rem',
-          color: '#5ffbf1',
-          fontWeight: 600
-        }}>
-          👤 Admin-Bereich
-        </h4>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <Link
-            to="/admin"
-            style={{
-              padding: '0.75rem',
-              background: 'rgba(95, 251, 241, 0.1)',
-              border: '1px solid rgba(95, 251, 241, 0.2)',
-              borderRadius: '6px',
-              color: '#5ffbf1',
-              cursor: 'pointer',
-              fontSize: '0.85rem',
-              textAlign: 'left',
-              textDecoration: 'none',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(95, 251, 241, 0.15)'
-              e.currentTarget.style.borderColor = 'rgba(95, 251, 241, 0.3)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(95, 251, 241, 0.1)'
-              e.currentTarget.style.borderColor = 'rgba(95, 251, 241, 0.2)'
-            }}
-            title="Übersicht deiner User und Mandanten"
+        {sortedItems.map(item => (
+          <div
+            key={item.id}
+            draggable={editMode}
+            onDragStart={() => handleDragStart(item.id)}
+            onDragOver={(e) => handleDragOver(e, item.id)}
+            onDrop={handleDrop}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', opacity: 1 }}
           >
-            <span>👥 Meine User</span>
-            <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>→</span>
-          </Link>
-        </div>
+            {editMode && (
+              <span style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.3)', cursor: 'grab', userSelect: 'none', flexShrink: 0 }}>☰</span>
+            )}
+            <button
+              type="button"
+              onClick={() => { if (editMode) return; if (item.direct) window.location.href = item.url; else nav(item.page, item.url) }}
+              style={{
+                flex: 1,
+                padding: '0.85rem 1rem',
+                background: item.color,
+                border: `1px solid ${item.border}`,
+                borderRadius: '8px',
+                color: item.id === 'oek2' || item.id === 'admin' || item.id === 'handbuch' ? '#5ffbf1' : item.id === 'mok2' ? '#fbbf24' : '#ff8c42',
+                fontWeight: 600,
+                fontSize: '0.95rem',
+                textAlign: 'center',
+                cursor: editMode ? 'grab' : 'pointer',
+                fontFamily: 'inherit',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {item.label}
+            </button>
+          </div>
+        ))}
+
       </div>
 
       {/* Deine To-dos – Vermarktung & Strategie */}
@@ -273,72 +212,35 @@ export default function SmartPanel({ currentPage }: SmartPanelProps) {
         </ul>
       </div>
 
-      {/* Schnellzugriff */}
+      {/* APf-Navigation – Mission Control, Projekte, Zentrale Themen */}
       <div>
-        <h4 style={{
-          margin: '0 0 0.5rem 0',
-          fontSize: '0.9rem',
-          color: '#5ffbf1',
-          fontWeight: 600
-        }}>
-          ⚡ Schnellzugriff
-        </h4>
-        <style>{`
-          @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-          }
-        `}</style>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.5rem'
-        }}>
-          {quickActions.map((action, i) => {
-            const isHighlighted = (action as any).highlight
+        <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }`}</style>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          {extraActions.map((action, i) => {
+            const isHighlighted = action.highlight
             return (
               <button
                 key={i}
                 onClick={action.action}
                 style={{
-                  padding: '0.75rem',
-                  background: isHighlighted 
-                    ? 'rgba(34, 197, 94, 0.15)' 
-                    : 'rgba(95, 251, 241, 0.1)',
-                  border: `1px solid ${isHighlighted 
-                    ? 'rgba(34, 197, 94, 0.4)' 
-                    : 'rgba(95, 251, 241, 0.2)'}`,
+                  padding: '0.6rem 0.75rem',
+                  background: isHighlighted ? 'rgba(34,197,94,0.15)' : 'rgba(95,251,241,0.08)',
+                  border: `1px solid ${isHighlighted ? 'rgba(34,197,94,0.4)' : 'rgba(95,251,241,0.15)'}`,
                   borderRadius: '6px',
                   color: isHighlighted ? '#86efac' : '#5ffbf1',
                   cursor: 'pointer',
-                  fontSize: '0.85rem',
+                  fontSize: '0.82rem',
                   textAlign: 'left',
-                  transition: 'all 0.2s ease',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
+                  fontFamily: 'inherit',
                   animation: isHighlighted ? 'pulse 2s infinite' : 'none'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = isHighlighted 
-                    ? 'rgba(34, 197, 94, 0.2)' 
-                    : 'rgba(95, 251, 241, 0.15)'
-                  e.currentTarget.style.borderColor = isHighlighted 
-                    ? 'rgba(34, 197, 94, 0.5)' 
-                    : 'rgba(95, 251, 241, 0.3)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = isHighlighted 
-                    ? 'rgba(34, 197, 94, 0.15)' 
-                    : 'rgba(95, 251, 241, 0.1)'
-                  e.currentTarget.style.borderColor = isHighlighted 
-                    ? 'rgba(34, 197, 94, 0.4)' 
-                    : 'rgba(95, 251, 241, 0.2)'
                 }}
                 title={action.hint}
               >
                 <span>{action.label}</span>
-                <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>→</span>
+                <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>→</span>
               </button>
             )
           })}
