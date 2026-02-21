@@ -57,8 +57,15 @@ const injectScript = '<script>(function(){if(window.self!==window.top)return;var
     indexHtml = indexHtml.replace('<!-- BUILD_TS_INJECT -->', injectScript)
   } else {
     // Fallback: bereits injiziertes Script komplett durch neues ersetzen (var b=alterTimestamp → aktueller Build)
-    const oldScriptRe = /<script>\(function\(\)\{\s*(?:if\(window\.self!==window\.top\)return;)?\s*var b=\d+;[^<]*\}\);<\/script>/
-    if (oldScriptRe.test(indexHtml)) indexHtml = indexHtml.replace(oldScriptRe, injectScript)
+    // Breiter Regex: erkennt jedes Script das mit (function(){ beginnt und var b=<zahl> enthält
+    const oldScriptRe = /<script>\(function\(\)\{[^<]*var b=\d+;[^<]*\}\);?<\/script>/
+    if (oldScriptRe.test(indexHtml)) {
+      indexHtml = indexHtml.replace(oldScriptRe, injectScript)
+    } else {
+      // Noch breiter: alles zwischen <script>(function und </script> das var b= enthält
+      const broadRe = /<script>\(function[^<]*var b=\d+[^<]*<\/script>/
+      if (broadRe.test(indexHtml)) indexHtml = indexHtml.replace(broadRe, injectScript)
+    }
   }
   fs.writeFileSync(indexPath, indexHtml, 'utf8')
 }
