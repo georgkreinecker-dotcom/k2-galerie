@@ -7,7 +7,7 @@
 export const PRODUCT_BRAND_NAME = 'K2 Galerie'
 
 /** Copyright-Zeile mit K2-Brand – an Footer/Impressum/AGB etc. verwenden */
-export const PRODUCT_COPYRIGHT = '© 2026 K2 Galerie · Alle Rechte vorbehalten · Design und Entwicklung: Georg Kreinecker'
+export const PRODUCT_COPYRIGHT = '© 2026 K2 Galerie · Alle Rechte vorbehalten · Design und Entwicklung: kgm solution (G. Kreinecker)'
 
 /** Werbeslogan für Promotion (Web, Social, Print, Pitch) – einheitlich nutzbar */
 export const PRODUCT_WERBESLOGAN = 'K2 Galerie – in 5 Minuten zu deiner eigenen Galerie in deinem Atelier und im Netz'

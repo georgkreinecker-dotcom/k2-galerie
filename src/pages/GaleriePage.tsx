@@ -2890,6 +2890,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 display: 'flex',
                 flexDirection: 'column'
               }}>
+                <h3 style={{ fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', fontWeight: '700', color: 'rgba(255,255,255,0.9)', marginBottom: 'clamp(0.5rem, 1.5vw, 0.75rem)' }}>
+                  {galerieTexts.galerieButtonText || 'In die Galerie'}
+                </h3>
                 <div style={{
                   width: '100%',
                   maxWidth: '100%',
@@ -3029,7 +3032,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                   color: 'rgba(255, 255, 255, 0.9)',
                   marginBottom: 'clamp(0.35rem, 1vw, 0.5rem)'
                 }}>
-                  Virtueller Rundgang
+                  {galerieTexts.virtualTourButtonText || 'Virtueller Rundgang'}
                 </h3>
                 <p style={{
                   fontSize: 'clamp(0.8rem, 2vw, 0.85rem)',
@@ -3192,11 +3195,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                     <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', color: theme.muted, lineHeight: 1.45 }}>
                       Haftungsausschluss: Die Inhalte wurden mit Sorgfalt erstellt. Für Richtigkeit, Vollständigkeit und Aktualität kann keine Gewähr übernommen werden.
                     </p>
-                    {!musterOnly && (
-                    <p style={{ margin: '1rem 0 0', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted, fontStyle: 'italic' }}>
-                      Website erstellt von Georg Kreinecker
-                    </p>
-                    )}
                   </div>
                 </div>
                 

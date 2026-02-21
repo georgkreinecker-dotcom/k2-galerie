@@ -1528,15 +1528,10 @@ end tell`
           transition: 'left 0.3s ease'
         }}>
           {pageSections.map(section => (
-            <Link
+            <button
               key={section.id}
-              to={'path' in section ? section.path : '#'}
-              onClick={(e) => {
-                e.preventDefault()
-                if ('path' in section && section.path) {
-                  setCurrentPage(section.id)
-                }
-              }}
+              type="button"
+              onClick={() => { if ('path' in section && section.path) setCurrentPage(section.id) }}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -1545,16 +1540,18 @@ end tell`
                 padding: '0.5rem 0.75rem',
                 background: currentPage === section.id ? 'var(--k2-accent)' : '#444',
                 color: currentPage === section.id ? '#000' : '#fff',
-                textDecoration: 'none',
+                border: 'none',
                 borderRadius: '8px',
                 fontSize: '0.75rem',
                 minWidth: '60px',
-                transition: 'all 0.2s ease'
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                fontFamily: 'inherit',
               }}
             >
               <span style={{ fontSize: '1.2rem' }}>{section.icon}</span>
               <span style={{ fontWeight: currentPage === section.id ? 'bold' : 'normal' }}>{section.name}</span>
-            </Link>
+            </button>
           ))}
         </div>
       )}

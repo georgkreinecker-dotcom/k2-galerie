@@ -39,6 +39,10 @@ export interface GaleriePageTexts {
   georgBio: string
   /** Absatz unter den Kunstschaffenden (z. B. „Gemeinsam eröffnen …“). Leer = wird aus Namen + Galeriename erzeugt. */
   gemeinsamText: string
+  /** Button-Text Eingangshalle links (Standard: In die Galerie) */
+  galerieButtonText: string
+  /** Button-Text Eingangshalle rechts (Standard: Virtueller Rundgang) */
+  virtualTourButtonText: string
 }
 
 export interface PageTextsConfig {
@@ -99,6 +103,8 @@ const defaults: PageTextsConfig = {
     martinaBio: 'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.',
     georgBio: 'Georg verbindet in seiner Keramikarbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail, das Ergebnis von langjähriger Erfahrung.',
     gemeinsamText: '',
+    galerieButtonText: 'In die Galerie',
+    virtualTourButtonText: 'Virtueller Rundgang',
   },
 }
 
@@ -130,6 +136,8 @@ function getOeffentlichGalerieDefaults(): GaleriePageTexts {
     martinaBio: MUSTER_TEXTE.artist1Bio,
     georgBio: MUSTER_TEXTE.artist2Bio,
     gemeinsamText: MUSTER_TEXTE.gemeinsamText || '',
+    galerieButtonText: 'In die Galerie',
+    virtualTourButtonText: 'Virtueller Rundgang',
   }
 }
 
