@@ -1,57 +1,36 @@
 /**
  * Willkommensseite – Einstieg von Werbung/Flyer/QR.
- * mök2-Stil. Zugangsbereich: Anmelden, Nur zur Ansicht, Erster Entwurf (Daten eingeben).
- * Vor Eintritt ist die Bestätigung der AGB erforderlich (üblich).
+ * Zwei Varianten: ?variant=a (Warm/Atelier) | ?variant=c (Modern/Lebendig, Standard)
  */
 
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, AGB_ROUTE } from '../config/navigation'
-import { PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
+import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
-import { OK2_THEME } from '../config/ok2Theme'
 
-/** Willkommensseite nutzt immer Design ök2 (hell, Creme, Sage) – klar getrennt von K2. */
-const WILLKOMMEN_THEME = {
-  bg: `linear-gradient(135deg, ${OK2_THEME.backgroundColor1} 0%, ${OK2_THEME.backgroundColor2} 50%, ${OK2_THEME.backgroundColor3} 100%)`,
-  bgCard: OK2_THEME.cardBg1,
-  bgElevated: OK2_THEME.cardBg2,
-  text: OK2_THEME.textColor,
-  muted: OK2_THEME.mutedColor,
-  accent: OK2_THEME.accentColor,
-  accentSoft: 'rgba(90, 122, 110, 0.2)',
-  gradientAccent: `linear-gradient(135deg, ${OK2_THEME.accentColor} 0%, #4a6a5e 100%)`,
-  textOnAccent: '#fff',
-  radius: '12px',
-  shadow: '0 16px 48px rgba(0,0,0,0.10)',
-  fontHeading: WERBEUNTERLAGEN_STIL.fontHeading,
-  fontBody: WERBEUNTERLAGEN_STIL.fontBody,
-} as const
-
-const MOK2_SLOGAN_KEY = 'k2-mok2-werbeslogan'
 const AGB_ACCEPTED_KEY = 'k2-agb-accepted'
+const MOK2_SLOGAN_KEY = 'k2-mok2-werbeslogan'
+const DEFAULT_SLOGAN = 'In 5 Minuten zu deiner eigenen Galerie – im Atelier und im Netz.'
 
 function loadSlogan(): string {
   try {
     const v = localStorage.getItem(MOK2_SLOGAN_KEY)
     if (v && v.trim()) return v.trim()
   } catch (_) {}
-  return PRODUCT_WERBESLOGAN
+  return DEFAULT_SLOGAN
 }
 
 function getAgbAccepted(): boolean {
-  try {
-    return sessionStorage.getItem(AGB_ACCEPTED_KEY) === '1'
-  } catch (_) {}
-  return false
+  try { return sessionStorage.getItem(AGB_ACCEPTED_KEY) === '1' } catch (_) { return false }
 }
 
-type PendingAction = 'ansicht' | 'vorschau' | 'entwurf' | null
+type PendingAction = 'ansicht' | 'entwurf' | null
 
 export default function WillkommenPage() {
-  const t = WILLKOMMEN_THEME
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+  const variant = searchParams.get('variant') === 'a' ? 'a' : 'c'
   const slogan = loadSlogan()
   const [name, setName] = useState('')
   const [agbAccepted, setAgbAccepted] = useState(getAgbAccepted)
@@ -59,368 +38,317 @@ export default function WillkommenPage() {
   const [pendingAction, setPendingAction] = useState<PendingAction>(null)
   const [agbCheckbox, setAgbCheckbox] = useState(false)
 
-  useEffect(() => {
-    setAgbAccepted(getAgbAccepted())
-  }, [showAgbModal])
+  useEffect(() => { setAgbAccepted(getAgbAccepted()) }, [showAgbModal])
 
-  // Externe Links: ?assistent=ansicht|vorschau|entwurf → entsprechende Aktion auslösen
   useEffect(() => {
     const a = searchParams.get('assistent')
     if (a === 'ansicht' || a === 'vorschau' || a === 'entwurf') {
       setSearchParams({}, { replace: true })
-      startEntry(a)
+      startEntry(a === 'vorschau' ? 'ansicht' : a as PendingAction)
     }
   }, [searchParams])
 
-  const handleErsterEntwurf = () => {
-    const n = name.trim()
-    if (n) {
-      try {
-        sessionStorage.setItem(WILLKOMMEN_NAME_KEY, n)
-        sessionStorage.setItem(WILLKOMMEN_ENTWURF_KEY, '1')
-      } catch (_) {}
-    }
-    navigate(PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau)
-  }
-
-  const goTo = (action: PendingAction) => {
+  const doNavigate = (action: PendingAction) => {
     if (!action) return
-    try {
-      sessionStorage.setItem(AGB_ACCEPTED_KEY, '1')
-    } catch (_) {}
+    try { sessionStorage.setItem(AGB_ACCEPTED_KEY, '1') } catch (_) {}
     setAgbAccepted(true)
     setShowAgbModal(false)
     setPendingAction(null)
     setAgbCheckbox(false)
     if (action === 'ansicht') navigate(PROJECT_ROUTES['k2-galerie'].galerieOeffentlich)
-    else if (action === 'vorschau') navigate(PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau)
-    else if (action === 'entwurf') handleErsterEntwurf()
-  }
-
-  const startEntry = (action: PendingAction) => {
-    if (agbAccepted) {
-      if (action === 'entwurf') handleErsterEntwurf()
-      else if (action === 'ansicht') navigate(PROJECT_ROUTES['k2-galerie'].galerieOeffentlich)
-      else if (action === 'vorschau') navigate(PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau)
-    } else {
-      setPendingAction(action)
-      setShowAgbModal(true)
-      setAgbCheckbox(false)
+    else if (action === 'entwurf') {
+      const n = name.trim()
+      if (n) {
+        try {
+          sessionStorage.setItem(WILLKOMMEN_NAME_KEY, n)
+          sessionStorage.setItem(WILLKOMMEN_ENTWURF_KEY, '1')
+        } catch (_) {}
+      }
+      navigate(PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau)
     }
   }
 
+  const startEntry = (action: PendingAction) => {
+    if (agbAccepted) doNavigate(action)
+    else { setPendingAction(action); setShowAgbModal(true); setAgbCheckbox(false) }
+  }
+
+  return variant === 'a'
+    ? <VariantA name={name} setName={setName} slogan={slogan} startEntry={startEntry} showAgbModal={showAgbModal} setShowAgbModal={setShowAgbModal} agbCheckbox={agbCheckbox} setAgbCheckbox={setAgbCheckbox} pendingAction={pendingAction} setPendingAction={setPendingAction} doNavigate={doNavigate} />
+    : <VariantC name={name} setName={setName} slogan={slogan} startEntry={startEntry} showAgbModal={showAgbModal} setShowAgbModal={setShowAgbModal} agbCheckbox={agbCheckbox} setAgbCheckbox={setAgbCheckbox} pendingAction={pendingAction} setPendingAction={setPendingAction} doNavigate={doNavigate} />
+}
+
+// ─── Gemeinsame Props ──────────────────────────────────────────────────────────
+interface VariantProps {
+  name: string
+  setName: (v: string) => void
+  slogan: string
+  startEntry: (a: PendingAction) => void
+  showAgbModal: boolean
+  setShowAgbModal: (v: boolean) => void
+  agbCheckbox: boolean
+  setAgbCheckbox: (v: boolean) => void
+  pendingAction: PendingAction
+  setPendingAction: (v: PendingAction) => void
+  doNavigate: (a: PendingAction) => void
+}
+
+// ─── AGB-Modal (geteilt) ───────────────────────────────────────────────────────
+function AgbModal({ agbCheckbox, setAgbCheckbox, pendingAction, setPendingAction, setShowAgbModal, doNavigate, bg, text, accent, muted, accentSoft, fontHeading, fontBody, shadow }: {
+  agbCheckbox: boolean, setAgbCheckbox: (v: boolean) => void
+  pendingAction: PendingAction, setPendingAction: (v: PendingAction) => void
+  setShowAgbModal: (v: boolean) => void, doNavigate: (a: PendingAction) => void
+  bg: string, text: string, accent: string, muted: string, accentSoft: string
+  fontHeading: string, fontBody: string, shadow: string
+}) {
+  const close = () => { setShowAgbModal(false); setPendingAction(null); setAgbCheckbox(false) }
   return (
-    <div
-      style={{
-        background: t.bg,
-        minHeight: '100vh',
-        color: t.text,
-        fontFamily: t.fontBody,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '2rem 1rem',
-      }}
-    >
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '1rem' }} onClick={close}>
+      <div style={{ background: bg, borderRadius: '16px', boxShadow: shadow, maxWidth: 400, width: '100%', padding: '1.75rem', border: `1px solid ${accentSoft}`, fontFamily: fontBody }} onClick={e => e.stopPropagation()}>
+        <h3 style={{ fontFamily: fontHeading, fontSize: '1.1rem', color: accent, margin: '0 0 0.6rem', fontWeight: 700 }}>Kurz bestätigen</h3>
+        <p style={{ margin: '0 0 0.75rem', fontSize: '0.88rem', lineHeight: 1.6, color: text }}>Bevor du eintrittst, bitte kurz die Nutzungsbedingungen bestätigen.</p>
+        <a href={AGB_ROUTE} target="_blank" rel="noopener noreferrer" style={{ color: accent, fontWeight: 600, fontSize: '0.88rem', display: 'block', marginBottom: '1rem' }}>AGB lesen →</a>
+        <label style={{ display: 'flex', gap: '0.6rem', cursor: 'pointer', fontSize: '0.88rem', color: text, marginBottom: '1.25rem', alignItems: 'flex-start' }}>
+          <input type="checkbox" checked={agbCheckbox} onChange={e => setAgbCheckbox(e.target.checked)} style={{ marginTop: '0.2rem', accentColor: accent }} />
+          <span>Ich habe die AGB gelesen und stimme zu.</span>
+        </label>
+        <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'flex-end' }}>
+          <button type="button" onClick={close} style={{ padding: '0.6rem 1rem', background: 'transparent', color: muted, border: `1px solid ${accentSoft}`, borderRadius: '8px', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.88rem' }}>Abbrechen</button>
+          <button type="button" disabled={!agbCheckbox} onClick={() => pendingAction && doNavigate(pendingAction)} style={{ padding: '0.6rem 1.25rem', background: agbCheckbox ? accent : '#ccc', color: '#fff', border: 'none', borderRadius: '8px', cursor: agbCheckbox ? 'pointer' : 'not-allowed', fontFamily: fontBody, fontSize: '0.88rem', fontWeight: 700 }}>
+            OK – weiter →
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// VARIANTE A – Warm & einladend wie ein Atelier
+// Holzwarme Töne, große Headline, Bild-Andeutung, Herzlichkeit
+// ═══════════════════════════════════════════════════════════════════════════════
+function VariantA({ name, setName, slogan, startEntry, showAgbModal, setShowAgbModal, agbCheckbox, setAgbCheckbox, pendingAction, setPendingAction, doNavigate }: VariantProps) {
+  const accent = '#b54a1e'       // warmes Terrakotta
+  const accentLight = '#d4622a'
+  const bg = '#faf7f2'           // cremiges Leinen
+  const bgWarm = '#f2ede4'
+  const bgCard = '#fffefb'
+  const text = '#2a1f14'        // dunkles Braun
+  const muted = '#7a6a58'
+  const fontHeading = WERBEUNTERLAGEN_STIL.fontHeading
+  const fontBody = WERBEUNTERLAGEN_STIL.fontBody
+
+  return (
+    <div style={{ background: bg, minHeight: '100vh', fontFamily: fontBody, color: text, display: 'flex', flexDirection: 'column' }}>
       <link rel="stylesheet" href={PROMO_FONTS_URL} />
 
-      {/* Haupt-Karte */}
-      <div
-        style={{
-          maxWidth: 480,
-          width: '100%',
-          background: t.bgCard,
-          borderRadius: '20px',
-          boxShadow: t.shadow,
-          padding: 'clamp(2rem, 5vw, 3rem)',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        {/* Dezenter Akzent-Hintergrund oben */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0, left: 0, right: 0,
-            height: '35%',
-            background: `radial-gradient(ellipse 90% 70% at 50% 0%, ${t.accentSoft}, transparent 65%)`,
-            pointerEvents: 'none',
-          }}
-        />
+      {/* Warmer Banner oben */}
+      <div style={{ background: `linear-gradient(135deg, #3d1f0f 0%, #5c2d14 50%, #3d1f0f 100%)`, padding: 'clamp(2.5rem, 6vw, 4rem) clamp(1.5rem, 5vw, 4rem)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+        {/* Dekorative Kreise */}
+        <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: 200, height: 200, borderRadius: '50%', background: `${accent}22`, pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: '-60px', left: '-30px', width: 280, height: 280, borderRadius: '50%', background: `${accent}18`, pointerEvents: 'none' }} />
 
-        <div style={{ position: 'relative', zIndex: 1 }}>
+        <p style={{ fontFamily: fontHeading, fontSize: '0.8rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#d4a574', margin: '0 0 0.75rem', position: 'relative' }}>
+          Herzlich willkommen
+        </p>
+        <h1 style={{ fontFamily: fontHeading, fontSize: 'clamp(2.2rem, 6vw, 3.5rem)', fontWeight: 600, color: '#fff5ee', margin: '0 0 1rem', lineHeight: 1.15, position: 'relative', letterSpacing: '-0.01em' }}>
+          {PRODUCT_BRAND_NAME}
+        </h1>
+        <div style={{ width: 60, height: 3, background: `linear-gradient(90deg, ${accent}, ${accentLight})`, borderRadius: 2, marginBottom: '1.25rem', position: 'relative' }} />
+        <p style={{ fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', lineHeight: 1.7, color: '#e8d5c0', maxWidth: 480, margin: 0, position: 'relative' }}>
+          {slogan}
+        </p>
+      </div>
 
-          {/* Logo / Marke */}
-          <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
-            <p style={{
-              fontFamily: t.fontHeading,
-              fontSize: '0.78rem',
-              letterSpacing: '0.22em',
-              textTransform: 'uppercase',
-              color: t.muted,
-              margin: '0 0 0.4rem',
-            }}>
-              Willkommen bei
-            </p>
-            <h1 style={{
-              fontFamily: t.fontHeading,
-              fontSize: 'clamp(1.8rem, 5vw, 2.4rem)',
-              fontWeight: 700,
-              margin: '0 0 0.75rem',
-              color: t.accent,
-              letterSpacing: '-0.01em',
-            }}>
-              {PRODUCT_BRAND_NAME}
-            </h1>
-            <div style={{ width: 48, height: 3, background: t.gradientAccent, borderRadius: 2, margin: '0 auto 1rem' }} />
-            <p style={{ fontSize: '1rem', lineHeight: 1.65, color: t.text, margin: 0, maxWidth: 360, marginLeft: 'auto', marginRight: 'auto' }}>
-              {slogan}
-            </p>
-          </div>
+      {/* Hauptinhalt */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 'clamp(2rem, 5vw, 3rem) clamp(1rem, 4vw, 2rem)' }}>
+        <div style={{ maxWidth: 520, width: '100%' }}>
 
-          {/* Was möchtest du tun? – drei klare Optionen */}
-          <p style={{ fontSize: '0.8rem', fontWeight: 600, color: t.muted, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 0.75rem' }}>
-            Was möchtest du tun?
+          {/* Einladungstext */}
+          <p style={{ fontSize: '1.05rem', color: muted, textAlign: 'center', marginBottom: '2rem', lineHeight: 1.7 }}>
+            Schau dich um – oder probiere gleich aus, wie die Galerie mit deinem Namen aussieht.
           </p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {/* Galerie ansehen */}
+          <button type="button" onClick={() => startEntry('ansicht')} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '1.25rem', padding: '1.25rem 1.5rem', background: bgCard, border: `1px solid #e0d5c5`, borderRadius: '14px', cursor: 'pointer', fontFamily: fontBody, textAlign: 'left', marginBottom: '1rem', boxShadow: '0 2px 12px rgba(60,30,10,0.06)', transition: 'all 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = accent; e.currentTarget.style.boxShadow = '0 6px 24px rgba(181,74,30,0.12)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#e0d5c5'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(60,30,10,0.06)'; e.currentTarget.style.transform = 'translateY(0)' }}
+          >
+            <span style={{ width: 52, height: 52, borderRadius: '12px', background: bgWarm, border: `1px solid #e0d5c5`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', flexShrink: 0 }}>🖼️</span>
+            <span>
+              <span style={{ display: 'block', fontWeight: 700, fontSize: '1.05rem', color: text, marginBottom: '0.2rem' }}>Galerie ansehen</span>
+              <span style={{ fontSize: '0.85rem', color: muted }}>Einfach reinschauen – ganz ohne Anmeldung</span>
+            </span>
+          </button>
 
-            {/* Option 1: Galerie ansehen */}
-            <button
-              type="button"
-              onClick={() => startEntry('ansicht')}
-              style={{
-                width: '100%',
-                padding: '1rem 1.25rem',
-                background: t.bgElevated,
-                color: t.text,
-                borderRadius: t.radius,
-                textAlign: 'left',
-                border: `1px solid ${t.accentSoft}`,
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                fontSize: '0.95rem',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.9rem',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = t.accent; e.currentTarget.style.background = t.bgCard }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = t.accentSoft; e.currentTarget.style.background = t.bgElevated }}
-            >
-              <span style={{ fontSize: '1.6rem', flexShrink: 0 }}>🖼️</span>
+          {/* Eigene Galerie ausprobieren */}
+          <div style={{ background: bgCard, border: `2px solid ${accent}`, borderRadius: '14px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(181,74,30,0.10)', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', marginBottom: '1.1rem' }}>
+              <span style={{ width: 52, height: 52, borderRadius: '12px', background: `${accent}15`, border: `1px solid ${accent}33`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', flexShrink: 0 }}>✏️</span>
               <span>
-                <span style={{ display: 'block', fontWeight: 600, marginBottom: '0.15rem' }}>Galerie ansehen</span>
-                <span style={{ fontSize: '0.82rem', color: t.muted }}>Einfach reinschauen – ohne Anmeldung</span>
+                <span style={{ display: 'block', fontWeight: 700, fontSize: '1.05rem', color: text, marginBottom: '0.2rem' }}>Meine Galerie ausprobieren</span>
+                <span style={{ fontSize: '0.85rem', color: muted, lineHeight: 1.5 }}>Gib deinen Namen ein – und sieh sofort, wie deine eigene Galerie aussehen würde.</span>
               </span>
-            </button>
-
-            {/* Option 2: Eigenen Entwurf erstellen */}
-            <div style={{
-              background: t.bgElevated,
-              borderRadius: t.radius,
-              border: `2px solid ${t.accent}`,
-              padding: '1rem 1.25rem',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.75rem',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.9rem' }}>
-                <span style={{ fontSize: '1.6rem', flexShrink: 0, marginTop: '0.1rem' }}>✏️</span>
-                <span>
-                  <span style={{ display: 'block', fontWeight: 700, fontSize: '0.95rem', color: t.text, marginBottom: '0.15rem' }}>
-                    Meine Galerie ausprobieren
-                  </span>
-                  <span style={{ fontSize: '0.82rem', color: t.muted, lineHeight: 1.5 }}>
-                    Gib deinen Namen ein – die Galerie zeigt sofort wie sie mit deinem Namen aussieht.
-                  </span>
-                </span>
-              </div>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') startEntry(name.trim() ? 'entwurf' : 'vorschau') }}
-                placeholder="Dein Galerie- oder Künstlername"
-                style={{
-                  width: '100%',
-                  padding: '0.7rem 0.9rem',
-                  border: `1px solid ${t.accentSoft}`,
-                  borderRadius: '8px',
-                  fontFamily: 'inherit',
-                  fontSize: '0.95rem',
-                  background: t.bgCard,
-                  color: t.text,
-                  boxSizing: 'border-box',
-                  outline: 'none',
-                }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = t.accent }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = t.accentSoft }}
-              />
-              <button
-                type="button"
-                onClick={() => startEntry(name.trim() ? 'entwurf' : 'vorschau')}
-                style={{
-                  width: '100%',
-                  padding: '0.85rem 1rem',
-                  background: t.gradientAccent,
-                  color: t.textOnAccent,
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  fontSize: '0.95rem',
-                  letterSpacing: '0.01em',
-                }}
-              >
-                {name.trim() ? `„${name.trim()}" – Galerie starten →` : 'Galerie ausprobieren →'}
-              </button>
             </div>
-
+            <input
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') startEntry('entwurf') }}
+              placeholder="Dein Künstler- oder Galeriename"
+              style={{ width: '100%', padding: '0.8rem 1rem', border: `1px solid #e0d5c5`, borderRadius: '10px', fontFamily: fontBody, fontSize: '0.98rem', background: bgWarm, color: text, marginBottom: '0.9rem', boxSizing: 'border-box', outline: 'none' }}
+              onFocus={e => { e.currentTarget.style.borderColor = accent }}
+              onBlur={e => { e.currentTarget.style.borderColor = '#e0d5c5' }}
+            />
+            <button type="button" onClick={() => startEntry('entwurf')} style={{ width: '100%', padding: '0.9rem 1rem', background: `linear-gradient(135deg, ${accent} 0%, ${accentLight} 100%)`, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: '1rem', letterSpacing: '0.01em' }}>
+              {name.trim() ? `„${name.trim()}" – Galerie starten →` : 'Galerie starten →'}
+            </button>
           </div>
 
-          {/* Trennlinie */}
-          <div style={{ height: 1, background: `${t.accent}20`, margin: '1.5rem 0' }} />
-
-          {/* Lizenz anfragen – für wen der kaufen möchte */}
-          <a
-            href={`mailto:${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_EMAIL)}?subject=${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_BETREFF)}`}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              padding: '0.85rem 1.25rem',
-              background: t.accentSoft,
-              color: t.accent,
-              borderRadius: t.radius,
-              textDecoration: 'none',
-              fontWeight: 600,
-              fontFamily: 'inherit',
-              fontSize: '0.9rem',
-              border: `1px solid ${t.accent}44`,
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = `${t.accent}30` }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = t.accentSoft }}
+          {/* Lizenz anfragen */}
+          <a href={`mailto:${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_EMAIL)}?subject=${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_BETREFF)}`}
+            style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', background: bgWarm, border: `1px solid #e0d5c5`, borderRadius: '12px', textDecoration: 'none', transition: 'all 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = accent }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#e0d5c5' }}
           >
-            <span style={{ fontSize: '1.3rem' }}>📩</span>
+            <span style={{ fontSize: '1.5rem' }}>📩</span>
             <span>
-              <span style={{ display: 'block', marginBottom: '0.1rem' }}>Eigene Galerie kaufen</span>
-              <span style={{ fontSize: '0.78rem', fontWeight: 400, color: t.muted }}>Lizenz anfragen – wir melden uns</span>
+              <span style={{ display: 'block', fontWeight: 700, fontSize: '0.95rem', color: text }}>Eigene Galerie kaufen</span>
+              <span style={{ fontSize: '0.8rem', color: muted }}>Lizenz anfragen – wir melden uns</span>
             </span>
           </a>
 
+          {/* Fußzeile */}
+          <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.75rem', color: muted, lineHeight: 2 }}>
+            <Link to={AGB_ROUTE} style={{ color: muted, textDecoration: 'none' }}>AGB</Link>
+            {' · '}
+            {PRODUCT_COPYRIGHT}
+            {' · '}
+            <Link to={MOK2_ROUTE} style={{ color: muted, textDecoration: 'none' }}>mök2</Link>
+          </p>
         </div>
       </div>
 
-      {/* Fußzeile – dezent, nur das Nötige */}
-      <p style={{ marginTop: '1.5rem', fontSize: '0.75rem', color: t.muted, textAlign: 'center', lineHeight: 2 }}>
-        <Link to={AGB_ROUTE} style={{ color: t.accent, textDecoration: 'none' }}>AGB</Link>
-        {' · '}
-        {PRODUCT_COPYRIGHT}
-        {' · '}
-        <Link to={MOK2_ROUTE} style={{ color: t.muted, textDecoration: 'none' }}>mök2</Link>
-      </p>
+      {showAgbModal && <AgbModal agbCheckbox={agbCheckbox} setAgbCheckbox={setAgbCheckbox} pendingAction={pendingAction} setPendingAction={setPendingAction} setShowAgbModal={setShowAgbModal} doNavigate={doNavigate} bg={bgCard} text={text} accent={accent} muted={muted} accentSoft={`${accent}28`} fontHeading={fontHeading} fontBody={fontBody} shadow="0 16px 48px rgba(60,30,10,0.14)" />}
+    </div>
+  )
+}
 
-      {/* Modal: AGB bestätigen vor Eintritt – einmal pro Session */}
-      {showAgbModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.45)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 10000,
-            padding: '1rem',
-          }}
-          onClick={() => {
-            setShowAgbModal(false)
-            setPendingAction(null)
-            setAgbCheckbox(false)
-          }}
-        >
-          <div
-            style={{
-              background: t.bgCard,
-              borderRadius: '16px',
-              boxShadow: t.shadow,
-              maxWidth: 420,
-              width: '100%',
-              padding: '1.75rem',
-              border: `1px solid ${t.accentSoft}`,
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 style={{ fontFamily: t.fontHeading, fontSize: '1.15rem', color: t.accent, margin: '0 0 0.6rem', fontWeight: 700 }}>
-              Kurz bestätigen
-            </h3>
-            <p style={{ margin: '0 0 0.5rem', fontSize: '0.88rem', lineHeight: 1.6, color: t.text }}>
-              Bevor du eintrittst, bitte kurz die Nutzungsbedingungen bestätigen.
-            </p>
-            <a
-              href={AGB_ROUTE}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ display: 'inline-block', marginBottom: '1rem', color: t.accent, fontWeight: 600, fontSize: '0.88rem' }}
-            >
-              AGB lesen →
-            </a>
-            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', cursor: 'pointer', fontSize: '0.88rem', color: t.text, marginBottom: '1.25rem' }}>
-              <input
-                type="checkbox"
-                checked={agbCheckbox}
-                onChange={(e) => setAgbCheckbox(e.target.checked)}
-                style={{ marginTop: '0.2rem', accentColor: t.accent }}
-              />
-              <span>Ich habe die AGB gelesen und stimme zu.</span>
-            </label>
-            <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'flex-end' }}>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowAgbModal(false)
-                  setPendingAction(null)
-                  setAgbCheckbox(false)
-                }}
-                style={{
-                  padding: '0.6rem 1.1rem',
-                  background: 'transparent',
-                  color: t.muted,
-                  border: `1px solid ${t.accentSoft}`,
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  fontSize: '0.88rem',
-                }}
-              >
-                Abbrechen
-              </button>
-              <button
-                type="button"
-                disabled={!agbCheckbox}
-                onClick={() => pendingAction && goTo(pendingAction)}
-                style={{
-                  padding: '0.6rem 1.25rem',
-                  background: agbCheckbox ? t.gradientAccent : t.bgElevated,
-                  color: agbCheckbox ? t.textOnAccent : t.muted,
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: agbCheckbox ? 'pointer' : 'not-allowed',
-                  fontFamily: 'inherit',
-                  fontSize: '0.88rem',
-                  fontWeight: 700,
-                }}
-              >
-                OK – weiter →
-              </button>
-            </div>
+// ═══════════════════════════════════════════════════════════════════════════════
+// VARIANTE C – Modern & lebendig: sofortiger Eindruck, Farbe, Energie
+// Dunkler Hero-Bereich mit Akzentfarbe, klare visuelle Hierarchie
+// ═══════════════════════════════════════════════════════════════════════════════
+function VariantC({ name, setName, slogan, startEntry, showAgbModal, setShowAgbModal, agbCheckbox, setAgbCheckbox, pendingAction, setPendingAction, doNavigate }: VariantProps) {
+  const accent = '#ff8c42'        // K2-Orange
+  const accentDeep = '#b54a1e'
+  const bgDark = '#1a0f0a'
+  const bgMid = '#2d1a14'
+  const bgLight = '#f6f0e8'
+  const bgCard = '#fffefb'
+  const text = '#2a1f14'
+  const textLight = '#fff5ee'
+  const muted = '#7a6a58'
+  const fontHeading = WERBEUNTERLAGEN_STIL.fontHeading
+  const fontBody = WERBEUNTERLAGEN_STIL.fontBody
+
+  return (
+    <div style={{ background: bgLight, minHeight: '100vh', fontFamily: fontBody, color: text, display: 'flex', flexDirection: 'column' }}>
+      <link rel="stylesheet" href={PROMO_FONTS_URL} />
+
+      {/* Hero – dunkel, markant, lebendig */}
+      <div style={{ background: `linear-gradient(160deg, ${bgDark} 0%, ${bgMid} 60%, ${accentDeep}44 100%)`, minHeight: 'clamp(280px, 45vw, 400px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: 'clamp(3rem, 7vw, 5rem) clamp(1.5rem, 5vw, 4rem)', position: 'relative', overflow: 'hidden' }}>
+
+        {/* Leuchtender Akzent-Spot */}
+        <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)', width: '60%', height: '60%', background: `radial-gradient(ellipse, ${accent}25 0%, transparent 70%)`, pointerEvents: 'none' }} />
+
+        {/* Dezente Linien-Deko */}
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 39px, ${accent}08 39px, ${accent}08 40px)`, pointerEvents: 'none' }} />
+
+        <div style={{ position: 'relative', maxWidth: 560 }}>
+          <div style={{ display: 'inline-block', padding: '0.3rem 0.9rem', background: `${accent}28`, border: `1px solid ${accent}55`, borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, color: accent, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '1.25rem' }}>
+            Jetzt kostenlos ausprobieren
           </div>
+          <h1 style={{ fontFamily: fontHeading, fontSize: 'clamp(2.4rem, 6vw, 3.8rem)', fontWeight: 700, color: textLight, margin: '0 0 1rem', lineHeight: 1.1, letterSpacing: '-0.02em' }}>
+            {PRODUCT_BRAND_NAME}
+          </h1>
+          <p style={{ fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', color: '#d4a574', lineHeight: 1.65, margin: 0, maxWidth: 440, marginLeft: 'auto', marginRight: 'auto' }}>
+            {slogan}
+          </p>
         </div>
-      )}
+      </div>
+
+      {/* Aktions-Bereich – hell, auf hellem Grund */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 'clamp(2rem, 5vw, 3rem) clamp(1rem, 4vw, 2rem)' }}>
+        <div style={{ maxWidth: 520, width: '100%' }}>
+
+          {/* Haupt-CTA: Name eingeben + starten */}
+          <div style={{ background: bgCard, border: `2px solid ${accent}`, borderRadius: '16px', padding: 'clamp(1.5rem, 4vw, 2rem)', boxShadow: `0 8px 32px ${accent}22`, marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
+              <span style={{ width: 36, height: 36, borderRadius: '50%', background: `${accent}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0 }}>✏️</span>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '1.05rem', color: text }}>Meine Galerie ausprobieren</div>
+                <div style={{ fontSize: '0.82rem', color: muted }}>Name eingeben – sofort deine Galerie sehen</div>
+              </div>
+            </div>
+            <input
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') startEntry('entwurf') }}
+              placeholder="Dein Künstler- oder Galeriename"
+              style={{ width: '100%', padding: '0.85rem 1rem', border: `1.5px solid ${accent}44`, borderRadius: '10px', fontFamily: fontBody, fontSize: '1rem', background: bgLight, color: text, marginBottom: '0.85rem', boxSizing: 'border-box', outline: 'none', transition: 'border-color 0.2s' }}
+              onFocus={e => { e.currentTarget.style.borderColor = accent }}
+              onBlur={e => { e.currentTarget.style.borderColor = `${accent}44` }}
+            />
+            <button type="button" onClick={() => startEntry('entwurf')}
+              style={{ width: '100%', padding: '1rem 1rem', background: `linear-gradient(135deg, ${accent} 0%, ${accentDeep} 100%)`, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: '1.05rem', letterSpacing: '0.01em', boxShadow: `0 4px 16px ${accent}44`, transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = `0 8px 24px ${accent}55` }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = `0 4px 16px ${accent}44` }}
+            >
+              {name.trim() ? `„${name.trim()}" – Galerie starten →` : 'Galerie starten →'}
+            </button>
+          </div>
+
+          {/* Sekundär: Galerie ansehen */}
+          <button type="button" onClick={() => startEntry('ansicht')}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', background: bgCard, border: `1px solid #e8ddd0`, borderRadius: '12px', cursor: 'pointer', fontFamily: fontBody, textAlign: 'left', marginBottom: '1rem', transition: 'all 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = `${accent}66`; e.currentTarget.style.background = bgLight }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#e8ddd0'; e.currentTarget.style.background = bgCard }}
+          >
+            <span style={{ fontSize: '1.5rem' }}>🖼️</span>
+            <span>
+              <span style={{ display: 'block', fontWeight: 600, fontSize: '0.95rem', color: text }}>Galerie ansehen</span>
+              <span style={{ fontSize: '0.8rem', color: muted }}>Einfach reinschauen – ohne Anmeldung</span>
+            </span>
+            <span style={{ marginLeft: 'auto', color: muted, fontSize: '1.1rem' }}>→</span>
+          </button>
+
+          {/* Lizenz anfragen */}
+          <a href={`mailto:${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_EMAIL)}?subject=${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_BETREFF)}`}
+            style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', background: bgLight, border: `1px solid #e8ddd0`, borderRadius: '12px', textDecoration: 'none', transition: 'all 0.2s', marginBottom: '1.5rem' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = `${accent}66` }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#e8ddd0' }}
+          >
+            <span style={{ fontSize: '1.5rem' }}>📩</span>
+            <span>
+              <span style={{ display: 'block', fontWeight: 600, fontSize: '0.95rem', color: text }}>Eigene Galerie kaufen</span>
+              <span style={{ fontSize: '0.8rem', color: muted }}>Lizenz anfragen – wir melden uns</span>
+            </span>
+            <span style={{ marginLeft: 'auto', color: muted, fontSize: '1.1rem' }}>→</span>
+          </a>
+
+          {/* Fußzeile */}
+          <p style={{ textAlign: 'center', fontSize: '0.75rem', color: muted, lineHeight: 2 }}>
+            <Link to={AGB_ROUTE} style={{ color: muted, textDecoration: 'none' }}>AGB</Link>
+            {' · '}
+            {PRODUCT_COPYRIGHT}
+            {' · '}
+            <Link to={MOK2_ROUTE} style={{ color: muted, textDecoration: 'none' }}>mök2</Link>
+          </p>
+        </div>
+      </div>
+
+      {showAgbModal && <AgbModal agbCheckbox={agbCheckbox} setAgbCheckbox={setAgbCheckbox} pendingAction={pendingAction} setPendingAction={setPendingAction} setShowAgbModal={setShowAgbModal} doNavigate={doNavigate} bg={bgCard} text={text} accent={accent} muted={muted} accentSoft={`${accent}28`} fontHeading={fontHeading} fontBody={fontBody} shadow={`0 16px 48px ${accent}22`} />}
     </div>
   )
 }

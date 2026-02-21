@@ -11,10 +11,10 @@
 | Feld | Inhalt |
 |------|--------|
 | **Datum** | 21.02.26 |
-| **Thema** | Admin-Bereich Umbau – aus einem Guss |
-| **Was war zuletzt dran** | ✅ Sammeldruck selbsterklärend: Button „Etiketten drucken (X ausgewählt)", Hinweis „→ Hakerl bei Werken setzen, dann hier drucken" wenn nichts ausgewählt. ✅ Haken-Label bei Werken: „Zum Sammeldruck" → „🖨️ Etikett drucken". Build: 21.02.26 07:06. |
-| **Nächster konkreter Schritt** | Im Browser testen (npm run dev → http://localhost:5177 → Admin). Wenn OK: commit + push zu Vercel. Dann weiter: **WillkommenPage** (`src/pages/WillkommenPage.tsx`) auf Nutzer-Logik prüfen. |
-| **Wo nachlesen** | `components/ScreenshotExportAdmin.tsx`, `.cursor/rules/ux-user-first-logik.mdc` |
+| **Thema** | WillkommenPage + Admin-Umbau abgeschlossen |
+| **Was war zuletzt dran** | ✅ WillkommenPage komplett neu: 3 klare Optionen (🖼️ Galerie ansehen / ✏️ Meine Galerie ausprobieren / 📩 Eigene Galerie kaufen), dynamischer Button-Text mit eingegebenem Namen, AGB-Modal vereinfacht. ✅ Admin: Dashboard, Header, Einstellungen, Eventplan, Sammeldruck – alles committed & gepusht. Build: 21.02.26 07:10. |
+| **Nächster konkreter Schritt** | Am Handy testen: Stand-Badge tippen → neue Version laden → WillkommenPage aufrufen. Nächste Baustelle nach Feedback. |
+| **Wo nachlesen** | `src/pages/WillkommenPage.tsx`, `components/ScreenshotExportAdmin.tsx` |
 
 ---
 
