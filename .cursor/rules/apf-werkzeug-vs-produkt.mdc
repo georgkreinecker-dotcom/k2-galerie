@@ -1,0 +1,106 @@
+---
+description: "APf = Werkzeug (nur Mac) vs. Galerie = Produkt (Vercel, überall) – essenzielle Überlebensfrage"
+alwaysApply: true
+---
+
+# 🔒 APf = Werkzeug | Galerie = Produkt (UNVERÄNDERLICH)
+
+## Die Grundregel – nie vergessen
+
+> **APf ist das Werkzeug. Die Galerie ist das Produkt.**
+> Diese Trennung ist die essenzielle Überlebensfrage des Projekts.
+> Wer sie verwischt, baut falsch – egal wie gut die Idee klingt.
+
+---
+
+## Was ist was
+
+### 🖥️ APf = Werkzeug (nur Mac + backupmicro)
+
+Alles was Georg **zum Arbeiten** braucht – nur am Mac, nie auf dem Handy eines Besuchers:
+
+| Bereich | Dateien / Routen |
+|---------|-----------------|
+| **APf** (Arbeitsplattform) | DevViewPage, SmartPanel, DevView-Toolbar |
+| **Grafiker-Tisch** | SeitengestaltungPage, Grafiker-Tisch-Panel in DevView |
+| **Admin** | /admin, ScreenshotExportAdmin |
+| **mök2** (Vertrieb) | MarketingOek2Page, WerbeunterlagenPage, /mok2 |
+| **Handbuch** | K2TeamHandbuchPage, /k2team-handbuch |
+| **Control Studio** | ControlStudioPage |
+| **Mission Control** | PlatformStartPage, /mission-control |
+| **Plan** | ProjectPlanPage |
+| **Mobile Connect** | MobileConnectPage |
+| **Notizen / Doku** | docs/GRAFIKER-TISCH-NOTIZEN.md, docs/*, k2team-handbuch/* |
+| **Einstellungen** | Backup, Drucker, Stammdaten-Admin |
+
+**Speicherort:** Mac (localStorage, Repo) + **backupmicro** (Spiegelung). Vercel baut es technisch mit – das ist unvermeidbar – aber der **Zugang** ist auf Mac beschränkt.
+
+---
+
+### 🌐 Galerie = Produkt (Vercel, überall sichtbar)
+
+Alles was **Besucher, Käufer, Kunden** sehen – auf jedem Gerät, in jedem Netz:
+
+| Bereich | Dateien / Routen |
+|---------|-----------------|
+| **K2 Galerie** (echt) | GaleriePage (/galerie), GalerieVorschauPage |
+| **ök2 Demo** (öffentlich) | GaleriePage (/galerie-oeffentlich), GalerieVorschauPage (/galerie-oeffentlich-vorschau) |
+| **VK2 Vereinsplattform** | VK2-Galerie, VK2-Vorschau |
+| **Shop / Kassa** | ShopPage |
+| **Virtueller Rundgang** | VirtuellerRundgangPage |
+| **Willkommensseite** | WillkommenPage (/willkommen) |
+| **Vita** | VitaPage |
+| **AGB** | AGBPage |
+| **build-info.json** | Stand-Synchronisation Mac ↔ Handy |
+
+**Speicherort:** Vercel (immer aktuell, immer erreichbar). Backup: gallery-data.json im Repo.
+
+---
+
+## Regeln für neue Features
+
+### Vor jedem neuen Feature fragen:
+
+**„Ist das ein Werkzeug (nur Georg am Mac) oder ein Produkt (Besucher sehen es)?"**
+
+| Werkzeug → | Produkt → |
+|-----------|----------|
+| In APf / Admin / mök2 einbauen | In Galerie / Shop / Willkommen einbauen |
+| Kein Mobilzugang nötig | Muss auf Handy, Tablet, Windows funktionieren |
+| Mac-spezifische Features OK | Nur plattformübergreifende Features |
+| localStorage als Speicher OK | Vercel/Supabase als Speicher nötig |
+| backupmicro für Sicherung | gallery-data.json + Git für Sicherung |
+
+### Verboten (vermischt Werkzeug und Produkt):
+- ❌ Admin-Funktionen auf der öffentlichen Galerie-Seite anzeigen
+- ❌ APf-Navigationsleisten auf Besucher-Seiten
+- ❌ Werkzeug-Features so bauen dass sie Mobilzugang brauchen
+- ❌ Produkt-Daten (echte Werke, Stammdaten) in Werkzeug-Speicher schreiben
+
+### Pflicht bei Werkzeug-Features:
+- ✅ Auf Mobilgeräten ausblenden oder zur Galerie umleiten
+- ✅ Backup auf backupmicro einplanen
+- ✅ In APf-Kontext (DevViewPage / Admin) eingebaut, nicht als eigene Vercel-Seite
+
+---
+
+## Speicher-Hierarchie
+
+```
+Mac (primär)           backupmicro (Spiegel)     Vercel (Produkt)
+─────────────          ─────────────────────     ────────────────
+localStorage           Vollbackup-JSON           gallery-data.json
+Repo (Git)             Repo-Spiegel              build-info.json
+docs/, handbuch/       docs/, handbuch/           dist/ (Build)
+.cursor/rules/         .cursor/rules/             –
+```
+
+**Regel:** Werkzeug-Daten leben auf Mac + backupmicro. Produkt-Daten leben auf Vercel. Nie vermischen.
+
+---
+
+## Kurzfassung (immer im Kopf behalten)
+
+**APf = Werkzeug = Mac + backupmicro.**
+**Galerie = Produkt = Vercel + überall.**
+**Neue Features: zuerst fragen „Werkzeug oder Produkt?" – dann erst bauen.**
