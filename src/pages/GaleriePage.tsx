@@ -3054,8 +3054,13 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 }}>
                   Galerie auch bei geschlossener Tür erkunden
                 </p>
-                <Link
-                  to={PROJECT_ROUTES['k2-galerie'].virtuellerRundgang}
+                <button
+                  onClick={() => {
+                    const videoSrc = displayImages.virtualTourVideo || (window.location.hostname.includes('vercel.app') ? '/img/k2/virtual-tour.mp4' : '')
+                    const imgSrc = displayImages.virtualTourImage
+                    if (videoSrc) setFullscreenMedia({ type: 'video', src: videoSrc })
+                    else if (imgSrc) setFullscreenMedia({ type: 'image', src: imgSrc })
+                  }}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -3064,23 +3069,18 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                     background: 'transparent',
                     border: '1px solid rgba(255, 255, 255, 0.25)',
                     color: 'rgba(255, 255, 255, 0.9)',
-                    textDecoration: 'none',
                     borderRadius: '6px',
                     fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
                     fontWeight: '500',
-                    transition: 'all 0.2s ease'
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    fontFamily: 'inherit'
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.35)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent'
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)'
-                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)' }}
                 >
                   Rundgang starten →
-                </Link>
+                </button>
               </div>
               )}
             </div>
