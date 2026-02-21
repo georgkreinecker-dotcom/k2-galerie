@@ -2502,7 +2502,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           {displayImages.welcomeImage && !displayImages.welcomeImage.endsWith('.svg') && !displayImages.welcomeImage.startsWith('data:image/svg') && (
             <div style={{
               width: '100%',
-              height: 'clamp(220px, 40vw, 520px)',
               overflow: 'hidden',
               position: 'relative',
               marginBottom: 0,
@@ -2513,9 +2512,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 onError={() => { if (musterOnly) setWelcomeImageFailed(true) }}
                 style={{
                   width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
+                  height: 'auto',
                   display: 'block',
+                  maxHeight: '90vh',
                 }}
               />
               {/* Dunkler Gradient unten – Titel lesbar */}

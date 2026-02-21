@@ -11,10 +11,10 @@
 | Feld | Inhalt |
 |------|--------|
 | **Datum** | 21.02.26 |
-| **Thema** | Seitengestaltung-Tool gebaut + GaleriePage Hero-Redesign |
-| **Was war zuletzt dran** | ✅ Neues Tool „Seitengestaltung" in APf: Live-Vorschau aller Galerie-Seiten direkt in APf (Handy/Tablet/Desktop-Ansicht wählbar, Seite auswählen, Reload). Karte auf Projektseite. ✅ GaleriePage Hero: SVG-Platzhalter erkannt → Text-Hero mit Galerienamen groß, Tagline kursiv, Dekorative Linie. ✅ Admin-Hinweis entfernt. Build: 21.02.26 08:42. |
-| **Nächster konkreter Schritt** | Im Browser: `http://localhost:5177/projects/k2-galerie/seitengestaltung` öffnen → „📝 Notizen" klicken → Wünsche eintragen. Commit + push zu Vercel. |
-| **Wo nachlesen** | `src/pages/SeitengestaltungPage.tsx`, `docs/GRAFIKER-TISCH-NOTIZEN.md`, `.cursor/rules/session-start-regeln-struktur.mdc` |
+| **Thema** | UX-Verbesserungen: Speichern = fertig, nutzerfreundliche Meldungen, ök2-Bilder-Bug behoben |
+| **Was war zuletzt dran** | ✅ Speichern-Button löst jetzt automatisch Veröffentlichen + Git Push aus – kein zweiter Schritt. ✅ Alle technischen Fehlermeldungen (Terminal, git push, etc.) durch einfache Nutzer-Texte ersetzt. ✅ Bug behoben: ök2-Galerie las Bilder aus falschem Key → jetzt korrekt aus k2-oeffentlich-page-content-galerie. Stand: 21.02.26 11:33. |
+| **Nächster konkreter Schritt** | ök2 Aussehen testen: Fotos einfügen → Speichern → „So sehen Kunden" – Fotos müssen jetzt sofort sichtbar sein. |
+| **Wo nachlesen** | `components/ScreenshotExportAdmin.tsx`, `src/pages/GaleriePage.tsx`, `src/config/pageContentGalerie.ts` |
 
 ---
 
