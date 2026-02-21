@@ -8892,7 +8892,36 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--k2-muted)' }}
                           onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.borderColor = 'var(--k2-muted)'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, welcomeImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined) } catch (_) { alert('Fehler beim Bild') } } }}
                         >
-                          <input id="welcome-image-input" ref={welcomeImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, welcomeImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                          <input id="welcome-image-input" ref={welcomeImageInputRef} type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={async (e) => {
+                            const f = e.target.files?.[0]
+                            if (f) {
+                              try {
+                                const img = await compressImage(f, 800, 0.6)
+                                const next = { ...pageContent, welcomeImage: img }
+                                setPageContent(next)
+                                setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
+                                // K2: Bild sofort via GitHub hochladen → überall sichtbar
+                                if (!isOeffentlichAdminContext()) {
+                                  try {
+                                    const { uploadImageToGitHub } = await import('../src/utils/githubImageUpload')
+                                    setDesignSaveFeedback(null)
+                                    const url = await uploadImageToGitHub(f, 'willkommen.jpg', (msg) => console.log(msg))
+                                    // gallery-data.json updaten mit neuer URL
+                                    const next2 = { ...next, welcomeImage: url }
+                                    setPageContent(next2)
+                                    setPageContentGalerie(next2, undefined)
+                                    localStorage.removeItem('k2-last-publish-signature')
+                                    setDesignSaveFeedback('ok')
+                                    alert('✅ Foto hochgeladen!\n\nIn ca. 2 Minuten ist es auf allen Geräten sichtbar.')
+                                  } catch (uploadErr: any) {
+                                    console.warn('GitHub Upload fehlgeschlagen:', uploadErr)
+                                    // Kein Fehler zeigen – Bild ist lokal gespeichert, Speichern-Button veröffentlicht es
+                                  }
+                                }
+                              } catch (_) { alert('Fehler beim Bild') }
+                            }
+                            e.target.value = ''
+                          }} />
                           {pageContent.welcomeImage ? (
                             <img src={pageContent.welcomeImage} alt="Willkommen" style={{ width: '100%', height: 'auto', display: 'block', maxHeight: 480, objectFit: 'cover', boxSizing: 'border-box' }} />
                           ) : (
