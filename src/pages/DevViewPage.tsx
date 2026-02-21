@@ -181,10 +181,34 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   const pageSections = getPageSections()
   const [galerieFilter, setGalerieFilter] = useState<'alle' | 'malerei' | 'keramik'>('alle')
   const [galerieSection, setGalerieSection] = useState<string>('willkommen')
+
+  // Grafiker-Tisch: aktive Seite → iframe-URL
+  const getGrafikerUrl = (): string => {
+    switch (currentPage) {
+      case 'galerie': return PROJECT_ROUTES['k2-galerie'].galerie
+      case 'galerie-oeffentlich': return PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+      case 'galerie-vorschau': return PROJECT_ROUTES['k2-galerie'].galerieVorschau
+      case 'galerie-oeffentlich-vorschau': return PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau
+      case 'willkommen': return '/willkommen'
+      default: return PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+    }
+  }
+  const getGrafikerLabel = (): string => {
+    switch (currentPage) {
+      case 'galerie': return '🏛️ K2 Galerie (echt)'
+      case 'galerie-oeffentlich': return '🖼️ Galerie ök2'
+      case 'galerie-vorschau': return '🎨 Werke-Vorschau K2'
+      case 'galerie-oeffentlich-vorschau': return '🎨 Werke-Vorschau ök2'
+      case 'willkommen': return '👋 Willkommensseite'
+      default: return '🖼️ Galerie'
+    }
+  }
   const [gitPushing, setGitPushing] = useState(false)
   // Smart Panel standardmäßig geöffnet (false = nicht minimiert)
   // WICHTIG: Standardmäßig NICHT minimiert damit es sichtbar ist
   const [panelMinimized, setPanelMinimized] = useState(false) // Immer sichtbar beim Start
+  const [grafikerTischOpen, setGrafikerTischOpen] = useState(false)
+  const [grafikerReloadKey, setGrafikerReloadKey] = useState(0)
   
   // Speichere Panel-Status in localStorage (optional)
   useEffect(() => {
@@ -1578,9 +1602,104 @@ end tell`
         
         {/* Smart Panel Content */}
         {!panelMinimized && (
-          <SmartPanel currentPage={currentPage} />
+          <>
+            {/* Grafiker-Tisch Button – prominent im SmartPanel, kontextsensitiv */}
+            <div style={{ padding: '0.75rem 1rem 0', flexShrink: 0 }}>
+              <button
+                onClick={() => { setGrafikerTischOpen(o => !o); setGrafikerReloadKey(k => k + 1) }}
+                style={{
+                  width: '100%',
+                  padding: '0.8rem 1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  background: grafikerTischOpen
+                    ? 'linear-gradient(135deg, rgba(95,251,241,0.25), rgba(60,200,190,0.18))'
+                    : 'linear-gradient(135deg, rgba(95,251,241,0.12), rgba(60,200,190,0.08))',
+                  border: grafikerTischOpen ? '2px solid #5ffbf1' : '2px solid rgba(95,251,241,0.45)',
+                  borderRadius: '10px',
+                  color: '#5ffbf1',
+                  fontWeight: 700,
+                  fontSize: '0.92rem',
+                  cursor: 'pointer',
+                  letterSpacing: '0.02em',
+                  boxShadow: grafikerTischOpen ? '0 0 16px rgba(95,251,241,0.2)' : 'none',
+                  transition: 'all 0.2s ease',
+                  fontFamily: 'inherit',
+                }}
+              >
+                🎨 Grafiker-Tisch
+                {grafikerTischOpen && (
+                  <span style={{ fontSize: '0.72rem', opacity: 0.7, fontWeight: 400 }}>
+                    → {getGrafikerLabel()}
+                  </span>
+                )}
+              </button>
+            </div>
+            <SmartPanel currentPage={currentPage} />
+          </>
         )}
       </div>
+
+      {/* ── GRAFIKER-TISCH – rechtes Panel, kontextsensitiv ── */}
+      {grafikerTischOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          width: 'calc(100vw - 400px)',
+          height: '100vh',
+          background: '#0e0c0a',
+          zIndex: 10003,
+          display: 'flex',
+          flexDirection: 'column',
+          borderLeft: '2px solid rgba(95,251,241,0.3)',
+          boxShadow: '-8px 0 32px rgba(0,0,0,0.6)',
+        }}>
+          {/* Header */}
+          <div style={{
+            background: '#1a1410',
+            borderBottom: '1px solid rgba(95,251,241,0.2)',
+            padding: '0.6rem 1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            flexShrink: 0,
+          }}>
+            <span style={{ fontWeight: 800, color: '#5ffbf1', fontSize: '0.9rem' }}>🎨 Grafiker-Tisch</span>
+            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', flex: 1 }}>
+              {getGrafikerLabel()} – du siehst die Seite wie ein Besucher
+            </span>
+            <button
+              onClick={() => setGrafikerReloadKey(k => k + 1)}
+              style={{ padding: '0.3rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: '0.78rem', fontFamily: 'inherit' }}
+            >🔄 Neu laden</button>
+            <a
+              href={getGrafikerUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ padding: '0.3rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', textDecoration: 'none', fontSize: '0.78rem' }}
+            >↗ Vollbild</a>
+            <button
+              onClick={() => setGrafikerTischOpen(false)}
+              style={{ padding: '0.3rem 0.65rem', borderRadius: '6px', border: '1px solid rgba(255,80,80,0.35)', background: 'rgba(255,80,80,0.08)', color: 'rgba(255,120,120,0.8)', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 700, fontFamily: 'inherit' }}
+            >✕ Schließen</button>
+          </div>
+
+          {/* iframe – aktive Seite */}
+          <iframe
+            key={grafikerReloadKey}
+            src={getGrafikerUrl()}
+            style={{
+              flex: 1,
+              border: 'none',
+              background: '#fff',
+            }}
+            title={getGrafikerLabel()}
+          />
+        </div>
+      )}
     </div>
   )
 }
