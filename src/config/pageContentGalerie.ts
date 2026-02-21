@@ -72,7 +72,8 @@ export function setPageContentGalerie(data: Partial<PageContentGalerie>, tenantI
   }
 }
 
-/** Liefert die anzuzeigenden Bilder: zuerst aus Seitengestaltung, Fallback Stammdaten (für Abwärtskompatibilität). */
+/** Liefert die anzuzeigenden Bilder: zuerst aus Seitengestaltung, Fallback Stammdaten, dann Vercel-Pfade.
+ *  Vercel-Pfade greifen auf jedem Gerät (Mac, Handy, iPad) – localStorage ist geräte-spezifisch. */
 export function getGalerieImages(stammdatenGallery?: { welcomeImage?: string; galerieCardImage?: string; virtualTourImage?: string }): {
   welcomeImage: string
   galerieCardImage: string
@@ -80,14 +81,11 @@ export function getGalerieImages(stammdatenGallery?: { welcomeImage?: string; ga
   virtualTourVideo: string
 } {
   const page = getPageContentGalerie()
-  // Wenn kein Video im localStorage → Vercel-Pfad als Fallback (z.B. am Mac nach Handy-Upload)
-  const videoFallback = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')
-    ? '/img/k2/virtual-tour.mp4'
-    : ''
+  // Vercel-Pfade als letzter Fallback – funktionieren auf allen Geräten nach GitHub-Upload
   return {
-    welcomeImage: page.welcomeImage || stammdatenGallery?.welcomeImage || '',
-    galerieCardImage: page.galerieCardImage || stammdatenGallery?.galerieCardImage || '',
-    virtualTourImage: page.virtualTourImage || stammdatenGallery?.virtualTourImage || '',
-    virtualTourVideo: page.virtualTourVideo || videoFallback
+    welcomeImage: page.welcomeImage || stammdatenGallery?.welcomeImage || '/img/k2/willkommen.jpg',
+    galerieCardImage: page.galerieCardImage || stammdatenGallery?.galerieCardImage || '/img/k2/galerie-card.jpg',
+    virtualTourImage: page.virtualTourImage || stammdatenGallery?.virtualTourImage || '/img/k2/virtual-tour.jpg',
+    virtualTourVideo: page.virtualTourVideo || '/img/k2/virtual-tour.mp4'
   }
 }
