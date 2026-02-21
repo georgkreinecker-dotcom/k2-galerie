@@ -527,6 +527,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   React.useEffect(() => {
     publishMobileRef.current = publishMobile
   }, [publishMobile])
+
   
   // Prüfe regelmäßig ob es neue Mobile-Daten gibt (nur auf Mac)
   useEffect(() => {
@@ -569,21 +570,30 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       }, 1000) // 1 Sekunde warten damit localStorage sicher gespeichert ist
     }
     
-    // WICHTIG: Automatischer Git Push nach Veröffentlichung
-    const handleGalleryDataPublished = (event: Event) => {
-      const customEvent = event as CustomEvent
-      console.log('📦 gallery-data.json wurde veröffentlicht - Git Push nötig!')
-      
-      // Zeige Hinweis dass Git Push nötig ist
-      console.log('💡 Hinweis: Bitte "📦 Code-Update (Git)" klicken damit Datei auf Vercel verfügbar ist')
+    // Nach Veröffentlichung: automatischer Git Push (silently im Hintergrund)
+    const handleGalleryDataPublished = (_event: Event) => {
+      console.log('📦 gallery-data.json veröffentlicht – automatischer Git Push...')
+      window.dispatchEvent(new CustomEvent('k2-auto-git-push'))
     }
     
+    // Automatisches Veröffentlichen nach Design-Speichern (Aussehen-Tab)
+    const handleDesignSavedPublish = () => {
+      setTimeout(() => {
+        if (publishMobileRef.current) {
+          publishMobileRef.current()
+          // Git Push folgt automatisch via 'gallery-data-published' → 'k2-auto-git-push'
+        }
+      }, 500)
+    }
+
     window.addEventListener('artwork-saved-needs-publish', handleArtworkSaved)
     window.addEventListener('gallery-data-published', handleGalleryDataPublished)
+    window.addEventListener('k2-design-saved-publish', handleDesignSavedPublish)
     
     return () => {
       window.removeEventListener('artwork-saved-needs-publish', handleArtworkSaved)
       window.removeEventListener('gallery-data-published', handleGalleryDataPublished)
+      window.removeEventListener('k2-design-saved-publish', handleDesignSavedPublish)
     }
   }, [])
   
@@ -780,6 +790,13 @@ end tell`
       setTimeout(() => setGitPushing(false), 2000)
     }
   }
+
+  // Automatischer Git Push nach gallery-data-published (über k2-auto-git-push Event)
+  useEffect(() => {
+    const onAutoGitPush = () => { handleGitPush() }
+    window.addEventListener('k2-auto-git-push', onAutoGitPush)
+    return () => window.removeEventListener('k2-auto-git-push', onAutoGitPush)
+  }, [])
 
   // Mobile-Erkennung für Tab-Filterung
   const isMobileDevice = typeof window !== 'undefined' && (

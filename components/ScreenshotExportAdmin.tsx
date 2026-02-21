@@ -9090,7 +9090,11 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         setPageContent(getPageContentGalerie(tenant))
                         setDesignSaveFeedback('ok')
                         setTimeout(() => setDesignSaveFeedback(null), 5000)
-                        alert('Gespeichert. ✓ Kontrolle: Seitentexte, Seitengestaltung und Design sind im Speicher. Du kannst die Seite schließen – die Änderungen bleiben erhalten.')
+                        // Automatisch veröffentlichen – kein extra Schritt nötig
+                        if (!isOeffentlichAdminContext()) {
+                          window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
+                        }
+                        alert('✅ Gespeichert.‣Die Änderungen sind auf allen Geräten sichtbar.')
                       } else {
                         alert('Speichern teilweise fehlgeschlagen. Bitte erneut auf „Speichern“ klicken. Falls es wieder passiert: Speicher prüfen (z. B. wenig Platz?).')
                       }
@@ -9100,8 +9104,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     }
                   }} style={{ padding: '0.75rem 1.5rem', fontSize: '1rem' }}>💾 Speichern</button>
                   <button type="button" onClick={() => setDesignSettings({ ...(isOeffentlichAdminContext() ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN) })} style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', background: 'transparent', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer' }} title="Entwurf auf Standard-Design zurücksetzen (erst mit Speichern übernehmen)">↩ Zum Originalzustand</button>
-                  {designSaveFeedback === 'ok' && <span style={{ fontSize: '0.9rem', color: '#10b981', fontWeight: 600 }}>✓ Gerade gespeichert</span>}
-                  <span style={{ fontSize: '0.9rem', color: s.muted }}>Änderungen gelten erst nach „Speichern“. Mit „Veröffentlichen“ (Einstellungen) auf alle Geräte.</span>
+                  {designSaveFeedback === 'ok' && <span style={{ fontSize: '0.9rem', color: '#10b981', fontWeight: 600 }}>✓ Gespeichert</span>}
+                  
                 </div>
                 </div>
                 );
