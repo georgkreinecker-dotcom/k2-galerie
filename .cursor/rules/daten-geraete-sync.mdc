@@ -1,0 +1,45 @@
+---
+description: Daten-Sync zwischen Geräten – localStorage ist geräte-spezifisch
+alwaysApply: true
+---
+
+# 🔒 Daten zwischen Geräten – immer vorausdenken
+
+## Grundregel (unveränderlich)
+
+**localStorage ist geräte-spezifisch.** Was am Handy gespeichert wird, kommt NIE automatisch am Mac an – und umgekehrt.
+
+## Bei JEDEM neuen Feature das Daten/Bilder/Videos speichert – sofort 3 Fragen:
+
+1. **Wo wird gespeichert?**
+   - localStorage → nur auf diesem Gerät
+   - GitHub → Vercel → überall ✅
+
+2. **Wie kommt es auf andere Geräte?**
+   - Einziger zuverlässiger Weg: **GitHub Upload → Vercel-Pfad**
+   - Base64 im localStorage: nie auf anderen Geräten sichtbar
+   - blob:-URLs: nur solange die Session läuft, dann weg
+
+3. **Greift der Fallback auf ALLEN Geräten?**
+   - Nicht nur auf `vercel.app` prüfen – auch `localhost` und andere Geräte
+   - Immer absolute Vercel-Pfade als Fallback: `/img/k2/dateiname.jpg`
+
+## Konkret für Bilder und Videos:
+
+| Gespeichert als | Sichtbar wo | Lösung |
+|---|---|---|
+| `data:image/...` (Base64) | Nur dieses Gerät | → GitHub Upload → `/img/k2/name.jpg` |
+| `blob:http://...` | Nur diese Session | → GitHub Upload → `/img/k2/name.mp4` |
+| `/img/k2/name.jpg` | Überall ✅ | Fertig |
+
+## Pflicht beim Speichern von Bildern/Videos:
+
+1. Sofort lokal speichern (für sofortige Vorschau) ✅
+2. **Parallel** GitHub Upload starten
+3. Nach Upload: localStorage mit Vercel-Pfad (`/img/k2/...`) **überschreiben**
+4. Beim Lesen: Base64/blob automatisch durch Vercel-Pfad ersetzen (Migration)
+
+## index.html Timestamp:
+
+`node scripts/write-build-info.js` aktualisiert **IMMER** index.html (nicht nur bei `--inject-html`).
+Ohne aktuellen Timestamp lädt der Mac/das Handy nie automatisch neu.
