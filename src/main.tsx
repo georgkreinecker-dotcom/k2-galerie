@@ -21,6 +21,13 @@ if (typeof window !== 'undefined') {
   console.log('🔨 Build-Version:', BUILD_VERSION)
 }
 
+// Safari Drag & Drop Fix: Verhindert dass Safari Dateien als neue Seite öffnet
+// Muss global gesetzt sein, sonst öffnet Safari beim Drop die Datei im Browser-Fenster
+if (typeof window !== 'undefined') {
+  document.addEventListener('dragover', (e) => e.preventDefault(), false)
+  document.addEventListener('drop', (e) => e.preventDefault(), false)
+}
+
 // StrictMode DEAKTIVIERT: Verursacht doppeltes Mounten und Crashes (Code 5)
 // Im Development werden Komponenten doppelt gemountet → doppelte Event-Listener → Crashes
 
