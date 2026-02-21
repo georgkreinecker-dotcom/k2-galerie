@@ -426,7 +426,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       internetadresse: K2_STAMMDATEN_DEFAULTS.gallery.internetadresse || '',
       openingHours: K2_STAMMDATEN_DEFAULTS.gallery.openingHours,
       adminPassword: 'k2Galerie2026',
-      welcomeImage: '',
+      welcomeImage: '/img/k2/willkommen.jpg',
       virtualTourImage: '',
       galerieCardImage: ''
     }
