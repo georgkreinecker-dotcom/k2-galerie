@@ -9125,8 +9125,12 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             </label>
                           )}
                           <p style={{ fontSize: '0.85rem', color: 'var(--k2-text)', margin: '0 0 8px' }}>Virtueller Rundgang</p>
-                          {/* Video-Upload Button */}
+                          {/* Foto- und Video-Buttons */}
                           <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+                            <label htmlFor="virtual-tour-image-input-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-card-bg-2, #e8e4dd)', color: 'var(--k2-text)', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600', border: '1px solid var(--k2-muted)' }}>
+                              📸 Foto aufnehmen oder wählen
+                              <input id="virtual-tour-image-input-btn" type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                            </label>
                             <label htmlFor="virtual-tour-video-input" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}>
                               📹 Video aufnehmen oder wählen
                               <input id="virtual-tour-video-input" type="file" accept="video/*" capture="environment" style={{ display: 'none' }} onChange={async (e) => {
