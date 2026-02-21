@@ -72,8 +72,8 @@ export function getGalerieImages(stammdatenGallery?: { welcomeImage?: string; ga
 } {
   const page = getPageContentGalerie()
   return {
-    welcomeImage: page.welcomeImage ?? stammdatenGallery?.welcomeImage ?? '',
-    galerieCardImage: page.galerieCardImage ?? stammdatenGallery?.galerieCardImage ?? '',
-    virtualTourImage: page.virtualTourImage ?? stammdatenGallery?.virtualTourImage ?? ''
+    welcomeImage: page.welcomeImage || stammdatenGallery?.welcomeImage || '',
+    galerieCardImage: page.galerieCardImage || stammdatenGallery?.galerieCardImage || '',
+    virtualTourImage: page.virtualTourImage || stammdatenGallery?.virtualTourImage || ''
   }
 }
