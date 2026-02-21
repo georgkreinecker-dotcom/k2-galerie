@@ -108,27 +108,27 @@ export default function SmartPanel({ currentPage }: SmartPanelProps) {
           justifyContent: 'center',
           gap: '0.5rem',
           padding: '0.9rem 1rem',
-          background: 'linear-gradient(135deg, rgba(255,140,66,0.35), rgba(255,100,20,0.25))',
-          border: '2px solid rgba(255,140,66,0.7)',
+          background: 'linear-gradient(135deg, rgba(95,251,241,0.18), rgba(60,200,190,0.12))',
+          border: '2px solid rgba(95,251,241,0.6)',
           borderRadius: '10px',
-          color: '#ff8c42',
+          color: '#5ffbf1',
           fontWeight: 700,
           fontSize: '1rem',
           textAlign: 'center',
           textDecoration: 'none',
           letterSpacing: '0.02em',
-          boxShadow: '0 2px 12px rgba(255,140,66,0.18)',
+          boxShadow: '0 2px 12px rgba(95,251,241,0.15)',
           transition: 'all 0.2s ease',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,140,66,0.5), rgba(255,100,20,0.4))'
-          e.currentTarget.style.borderColor = '#ff8c42'
-          e.currentTarget.style.boxShadow = '0 4px 20px rgba(255,140,66,0.35)'
+          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(95,251,241,0.3), rgba(60,200,190,0.22))'
+          e.currentTarget.style.borderColor = '#5ffbf1'
+          e.currentTarget.style.boxShadow = '0 4px 20px rgba(95,251,241,0.28)'
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,140,66,0.35), rgba(255,100,20,0.25))'
-          e.currentTarget.style.borderColor = 'rgba(255,140,66,0.7)'
-          e.currentTarget.style.boxShadow = '0 2px 12px rgba(255,140,66,0.18)'
+          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(95,251,241,0.18), rgba(60,200,190,0.12))'
+          e.currentTarget.style.borderColor = 'rgba(95,251,241,0.6)'
+          e.currentTarget.style.boxShadow = '0 2px 12px rgba(95,251,241,0.15)'
         }}
       >
         🎨 Grafiker-Tisch öffnen
