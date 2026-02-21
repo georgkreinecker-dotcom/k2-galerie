@@ -46,8 +46,8 @@ try {
 } catch (_) {}
 if (jsonChanged) fs.writeFileSync(publicPath, jsonContent, 'utf8')
 
-// Beim Build (--inject-html): Build-Check in index.html injizieren – JEDEN Build aktueller Timestamp (Seite öffnen = Update)
-if (process.argv.includes('--inject-html')) {
+// index.html IMMER aktualisieren (nicht nur beim --inject-html Flag) – sonst bleibt alter Timestamp drin und Mac lädt nie neu
+{
   const ts = now.getTime()
   // Im iframe (Cursor Preview) KEIN location.replace – verhindert Reload-Schleifen und Totalabsturz
 const injectScript = '<script>(function(){if(window.self!==window.top)return;var b=' + ts + ';var o=location.origin;var p=location.pathname;var bust="v="+Date.now();var url=o+"/build-info.json?t="+Date.now()+"&r="+Math.random();fetch(url,{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b){try{var k="k2_updated";if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,"1");location.replace(o+p+"?"+bust);}}catch(e){}}}).catch(function(){});})();</script>'
