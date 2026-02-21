@@ -9055,6 +9055,49 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             ) : (
                               <h3 role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-virtualTourButtonText')} style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--k2-text)', marginBottom: 4, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.virtualTourButtonText ?? defaultPageTexts.galerie.virtualTourButtonText) || 'Virtueller Rundgang'}</h3>
                             )}
+                            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 8 }}>
+                              <label htmlFor="virtual-tour-video-input-p1" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}>
+                                📹 Video wählen oder aufnehmen
+                                <input id="virtual-tour-video-input-p1" type="file" accept="video/*" style={{ display: 'none' }} onChange={async (e) => {
+                                  const f = e.target.files?.[0]
+                                  if (!f) { e.target.value = ''; return }
+                                  if (f.size > 100 * 1024 * 1024) { setVideoUploadMsg('Video ist zu groß (max. 100 MB).'); setVideoUploadStatus('error'); e.target.value = ''; return }
+                                  try {
+                                    const localUrl = URL.createObjectURL(f)
+                                    const tenantId = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
+                                    const nextLocal = { ...pageContent, virtualTourVideo: localUrl }
+                                    setPageContent(nextLocal)
+                                    setPageContentGalerie(nextLocal, tenantId)
+                                    if (!isOeffentlichAdminContext()) {
+                                      setVideoUploadStatus('uploading')
+                                      setVideoUploadMsg('Video wird hochgeladen… Bitte warten.')
+                                      try {
+                                        const { uploadVideoToGitHub } = await import('../src/utils/githubImageUpload')
+                                        const url = await uploadVideoToGitHub(f, 'virtual-tour.mp4', (msg) => setVideoUploadMsg(msg))
+                                        const nextVercel = { ...nextLocal, virtualTourVideo: url }
+                                        setPageContent(nextVercel)
+                                        setPageContentGalerie(nextVercel, undefined)
+                                        localStorage.removeItem('k2-last-publish-signature')
+                                        setVideoUploadStatus('done')
+                                        setVideoUploadMsg('✅ Video hochgeladen – in ca. 2 Min. überall sichtbar.')
+                                      } catch {
+                                        setVideoUploadStatus('error')
+                                        setVideoUploadMsg('Upload fehlgeschlagen – Video nur auf diesem Gerät sichtbar.')
+                                      }
+                                    } else {
+                                      setVideoUploadStatus('done')
+                                      setVideoUploadMsg('✅ Video gespeichert.')
+                                    }
+                                  } catch { setVideoUploadStatus('error'); setVideoUploadMsg('Fehler beim Laden des Videos.') }
+                                  e.target.value = ''
+                                }} />
+                              </label>
+                            </div>
+                            {videoUploadStatus !== 'idle' && videoUploadMsg && (
+                              <p style={{ margin: '6px 0 0', fontSize: '0.82rem', color: videoUploadStatus === 'error' ? '#e05c5c' : videoUploadStatus === 'uploading' ? 'var(--k2-accent)' : '#4caf50', textAlign: 'center' }}>
+                                {videoUploadStatus === 'uploading' && '⏳ '}{videoUploadMsg}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </section>
