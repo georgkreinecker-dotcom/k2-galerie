@@ -254,7 +254,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       const parsed = JSON.parse(stored)
       if (!Array.isArray(parsed)) return []
       const filtered = filterK2ArtworksOnly(parsed)
-      if (filtered.length < parsed.length) {
+      // Nur zurückschreiben wenn echte ök2-Muster (ohne _isMuster) entfernt wurden
+      const realMusterRemoved = parsed.some((a: any) => !a._isMuster && String(a.id || '').startsWith('muster-'))
+      if (realMusterRemoved) {
         try {
           localStorage.setItem('k2-artworks', JSON.stringify(filtered))
           window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: filtered.length, musterRemoved: true } }))
