@@ -46,11 +46,21 @@ export function getPageContentGalerie(tenantId?: 'oeffentlich'): PageContentGale
     const raw = typeof window !== 'undefined' ? localStorage.getItem(key) : null
     if (raw && raw.length < 6 * 1024 * 1024) {
       const parsed = JSON.parse(raw) as Partial<PageContentGalerie>
-      // blob:-URLs sind geräte-spezifisch (z.B. vom Handy) – am Mac/anderen Gerät ungültig.
-      // Automatisch durch die Vercel-URL ersetzen und im Storage korrigieren.
+      let changed = false
+      // blob:-URLs und Base64 sind geräte-spezifisch → durch Vercel-Pfade ersetzen
       if (parsed.virtualTourVideo?.startsWith('blob:')) {
-        const fixed = '/img/k2/virtual-tour.mp4'
-        parsed.virtualTourVideo = fixed
+        parsed.virtualTourVideo = '/img/k2/virtual-tour.mp4'; changed = true
+      }
+      if (parsed.welcomeImage?.startsWith('data:')) {
+        parsed.welcomeImage = '/img/k2/willkommen.jpg'; changed = true
+      }
+      if (parsed.galerieCardImage?.startsWith('data:')) {
+        parsed.galerieCardImage = '/img/k2/galerie-card.jpg'; changed = true
+      }
+      if (parsed.virtualTourImage?.startsWith('data:')) {
+        parsed.virtualTourImage = '/img/k2/virtual-tour.jpg'; changed = true
+      }
+      if (changed) {
         try { localStorage.setItem(key, JSON.stringify({ ...parsed })) } catch (_) {}
       }
       return { ...defaults, ...parsed }
