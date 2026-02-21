@@ -46,6 +46,13 @@ export function getPageContentGalerie(tenantId?: 'oeffentlich'): PageContentGale
     const raw = typeof window !== 'undefined' ? localStorage.getItem(key) : null
     if (raw && raw.length < 6 * 1024 * 1024) {
       const parsed = JSON.parse(raw) as Partial<PageContentGalerie>
+      // blob:-URLs sind geräte-spezifisch (z.B. vom Handy) – am Mac/anderen Gerät ungültig.
+      // Automatisch durch die Vercel-URL ersetzen und im Storage korrigieren.
+      if (parsed.virtualTourVideo?.startsWith('blob:')) {
+        const fixed = '/img/k2/virtual-tour.mp4'
+        parsed.virtualTourVideo = fixed
+        try { localStorage.setItem(key, JSON.stringify({ ...parsed })) } catch (_) {}
+      }
       return { ...defaults, ...parsed }
     }
   } catch (_) {}
