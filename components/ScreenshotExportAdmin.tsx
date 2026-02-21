@@ -9231,10 +9231,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 <button
                   type="button"
                   onClick={() => {
+                    // Immer frisch laden: alte Muster raus, neue rein
                     const existing = (() => { try { return JSON.parse(localStorage.getItem('k2-artworks') || '[]') } catch { return [] } })()
-                    const alreadyHasMuster = existing.some((a: any) => String(a.id || '').startsWith('muster-') || (a as any)._isMuster)
-                    if (alreadyHasMuster) { alert('Musterdaten sind bereits geladen.\n\nZum Werke-Tab wechseln – die Musterwerke sind dort sichtbar.'); return }
-                    const withMuster = [...MUSTER_ARTWORKS.map(a => ({ ...a, _isMuster: true })), ...existing]
+                    const ohneAlteMuster = existing.filter((a: any) => !String(a.id || '').startsWith('muster-') && !(a as any)._isMuster)
+                    const withMuster = [...MUSTER_ARTWORKS.map(a => ({ ...a, _isMuster: true })), ...ohneAlteMuster]
                     localStorage.setItem('k2-artworks', JSON.stringify(withMuster))
                     // Musterstammdaten nur wenn leer
                     const gallStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}') } catch { return {} } })()
@@ -9243,9 +9243,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     if (!martinaStamm.name) localStorage.setItem('k2-stammdaten-martina', JSON.stringify({ ...MUSTER_TEXTE.martina, _isMuster: true }))
                     const georgStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}') } catch { return {} } })()
                     if (!georgStamm.name) localStorage.setItem('k2-stammdaten-georg', JSON.stringify({ ...MUSTER_TEXTE.georg, _isMuster: true }))
-                    // State aktualisieren statt Reload (iframe-sicher)
+                    // State direkt aktualisieren + Tab wechseln (iframe-sicher, kein Reload)
                     setAllArtworks(withMuster)
-                    alert('✅ Musterwerke geladen!\n\nJetzt zum Tab „Werke" wechseln – die 5 Musterwerke sind dort sichtbar.')
+                    setActiveTab('werke')
                   }}
                   style={{ padding: '0.65rem 1.25rem', background: s.accent, color: '#1a1d24', border: 'none', borderRadius: 10, fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer' }}
                 >
