@@ -9220,6 +9220,66 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               ⚙️ Einstellungen
             </h2>
 
+            {/* Musterdaten laden / löschen – nur K2 */}
+            {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
+            <div style={{ marginBottom: '2rem', padding: '1.25rem', background: 'rgba(95,251,241,0.07)', border: '1px solid rgba(95,251,241,0.25)', borderRadius: '16px' }}>
+              <h3 style={{ fontSize: '1.1rem', color: s.accent, marginBottom: '0.5rem' }}>🧪 Musterdaten</h3>
+              <p style={{ color: s.muted, fontSize: '0.85rem', marginBottom: '1rem' }}>
+                Zum Testen und Ausprobieren: Musterwerke und Musterdaten aus ök2 laden. Eigene Daten werden dabei <strong>nicht gelöscht</strong> – du kannst die Musterdaten jederzeit wieder entfernen.
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const existing = (() => { try { return JSON.parse(localStorage.getItem('k2-artworks') || '[]') } catch { return [] } })()
+                    const alreadyHasMuster = existing.some((a: any) => String(a.id || '').startsWith('muster-'))
+                    if (alreadyHasMuster) { alert('Musterdaten sind bereits geladen.'); return }
+                    const withMuster = [...MUSTER_ARTWORKS.map(a => ({ ...a, id: a.id, _isMuster: true })), ...existing]
+                    localStorage.setItem('k2-artworks', JSON.stringify(withMuster))
+                    // Musterstammdaten nur wenn leer
+                    const gallStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}') } catch { return {} } })()
+                    if (!gallStamm.name) {
+                      localStorage.setItem('k2-stammdaten-galerie', JSON.stringify({ ...MUSTER_TEXTE.gallery, _isMuster: true }))
+                    }
+                    const martinaStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}') } catch { return {} } })()
+                    if (!martinaStamm.name) {
+                      localStorage.setItem('k2-stammdaten-martina', JSON.stringify({ ...MUSTER_TEXTE.martina, _isMuster: true }))
+                    }
+                    const georgStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}') } catch { return {} } })()
+                    if (!georgStamm.name) {
+                      localStorage.setItem('k2-stammdaten-georg', JSON.stringify({ ...MUSTER_TEXTE.georg, _isMuster: true }))
+                    }
+                    window.location.reload()
+                  }}
+                  style={{ padding: '0.65rem 1.25rem', background: s.accent, color: '#1a1d24', border: 'none', borderRadius: 10, fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  🧪 Musterdaten laden
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const existing = (() => { try { return JSON.parse(localStorage.getItem('k2-artworks') || '[]') } catch { return [] } })()
+                    const ohne = existing.filter((a: any) => !String(a.id || '').startsWith('muster-') && !(a as any)._isMuster)
+                    if (ohne.length === existing.length) { alert('Keine Musterdaten gefunden – nichts zu löschen.'); return }
+                    localStorage.setItem('k2-artworks', JSON.stringify(ohne))
+                    // Stammdaten löschen wenn sie als Muster markiert sind
+                    const gallStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}') } catch { return {} } })()
+                    if ((gallStamm as any)._isMuster) localStorage.removeItem('k2-stammdaten-galerie')
+                    const martinaStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}') } catch { return {} } })()
+                    if ((martinaStamm as any)._isMuster) localStorage.removeItem('k2-stammdaten-martina')
+                    const georgStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}') } catch { return {} } })()
+                    if ((georgStamm as any)._isMuster) localStorage.removeItem('k2-stammdaten-georg')
+                    alert('✅ Musterdaten entfernt. Eigene Daten sind unberührt.')
+                    window.location.reload()
+                  }}
+                  style={{ padding: '0.65rem 1.25rem', background: 'transparent', color: '#f87171', border: '1px solid #f87171', borderRadius: 10, fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  🗑️ Musterdaten löschen
+                </button>
+              </div>
+            </div>
+            )}
+
             {/* Veröffentlichung – nur K2 (ök2 und VK2 brauchen das nicht) */}
             {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
             <div style={{
