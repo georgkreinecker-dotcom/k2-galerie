@@ -514,13 +514,15 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
         return {
           welcomeImage: pageContent.welcomeImage || (galleryData.welcomeImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.welcomeImage,
           galerieCardImage: pageContent.galerieCardImage || (galleryData.galerieCardImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.galerieCardImage,
-          virtualTourImage: pageContent.virtualTourImage || (galleryData.virtualTourImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.virtualTourImage
+          virtualTourImage: pageContent.virtualTourImage || (galleryData.virtualTourImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.virtualTourImage,
+          virtualTourVideo: pageContent.virtualTourVideo || ''
         }
       } catch (_) {
         return {
           welcomeImage: (galleryData.welcomeImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.welcomeImage,
           galerieCardImage: (galleryData.galerieCardImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.galerieCardImage,
-          virtualTourImage: (galleryData.virtualTourImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.virtualTourImage
+          virtualTourImage: (galleryData.virtualTourImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.virtualTourImage,
+          virtualTourVideo: ''
         }
       }
     }
@@ -1088,9 +1090,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   React.useEffect(() => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
     const isVercel = window.location.hostname.includes('vercel.app')
+    const notInIframe = window.self === window.top
     
-    // Nur auf Mobile-Geräten die auf Dev-Server zugreifen (nicht Vercel)
-    if (isMobile && !isVercel) {
+    // Nur auf Mobile-Geräten die auf Dev-Server zugreifen (nicht Vercel) – und nicht im iframe (Cursor Preview)
+    if (isMobile && !isVercel && notInIframe) {
       console.log('✅ Automatisches Mobile-Polling aktiviert (alle 10 Sekunden)')
       console.log('📱 Mobile-Werke werden automatisch synchronisiert - kein manuelles Speichern nötig!')
       
@@ -3008,7 +3011,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                   border: '1px solid rgba(255, 255, 255, 0.08)',
                   boxSizing: 'border-box'
                 }}>
-                  {displayImages.virtualTourImage ? (
+                  {displayImages.virtualTourVideo ? (
+                    <video
+                      src={displayImages.virtualTourVideo}
+                      controls
+                      playsInline
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', boxSizing: 'border-box' }}
+                    />
+                  ) : displayImages.virtualTourImage ? (
                     <img 
                       src={displayImages.virtualTourImage} 
                       alt="Virtueller Rundgang" 
@@ -3022,7 +3032,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                       }}
                     />
                   ) : (
-                    <div style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', opacity: 0.25 }}>📸</div>
+                    <div style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', opacity: 0.25 }}>📹</div>
                   )}
                 </div>
                 <h3 style={{

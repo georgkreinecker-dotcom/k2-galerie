@@ -130,4 +130,7 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 **Geprüft:** location.reload / location.replace / location.href im gesamten Repo. main.tsx: Replace nur bei !inIframe ✓. ScreenshotExportAdmin Backup-Reloads bereits mit window.self === window.top ✓.  
 **Behoben:** Nutzer-Reloads in ErrorBoundary (handleReload), App.tsx (Reset & neu laden, Nur neu laden, AdminErrorBoundary „Seite neu laden“), GaleriePage (Pull-to-Refresh) – alle nur noch wenn window.self === window.top.
 
-*Zuletzt ergänzt: 20.02.26 (Crash-Check: App.tsx Reset-Button, GalerieVorschauPage Polling im iframe abgesichert)*
+| 21.02.26 | GaleriePage Mobile-Polling | useEffect Zeile ~1090: isMobile && !isVercel → `notInIframe` (window.self===window.top) ergänzt. Sonst startet Polling auch in Cursor Preview. |
+| 21.02.26 | ScreenshotExportAdmin Backup-Reload | Zeilen ~9521 + ~9609: Beide `setTimeout(reload)` nach Backup-Wiederherstellung mit `window.self===window.top` abgesichert (waren nicht gechekt). |
+
+*Zuletzt ergänzt: 21.02.26 (Crash-Check: GaleriePage Mobile-Polling + ScreenshotExportAdmin Backup-Reload iframe-gesichert)*

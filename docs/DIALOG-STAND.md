@@ -11,10 +11,10 @@
 | Feld | Inhalt |
 |------|--------|
 | **Datum** | 21.02.26 |
-| **Thema** | UX-Verbesserungen: Speichern = fertig, nutzerfreundliche Meldungen, ök2-Bilder-Bug behoben |
-| **Was war zuletzt dran** | ✅ Speichern-Button löst jetzt automatisch Veröffentlichen + Git Push aus – kein zweiter Schritt. ✅ Alle technischen Fehlermeldungen (Terminal, git push, etc.) durch einfache Nutzer-Texte ersetzt. ✅ Bug behoben: ök2-Galerie las Bilder aus falschem Key → jetzt korrekt aus k2-oeffentlich-page-content-galerie. Stand: 21.02.26 11:33. |
+| **Thema** | Crash-Check: 2 neue Crash-Risiken gefunden und behoben |
+| **Was war zuletzt dran** | ✅ GaleriePage Mobile-Polling (useEffect): notInIframe-Check ergänzt. ✅ ScreenshotExportAdmin: 2× Backup-Reload nur noch außerhalb iframe. Stand: 21.02.26 16:49. |
 | **Nächster konkreter Schritt** | ök2 Aussehen testen: Fotos einfügen → Speichern → „So sehen Kunden" – Fotos müssen jetzt sofort sichtbar sein. |
-| **Wo nachlesen** | `components/ScreenshotExportAdmin.tsx`, `src/pages/GaleriePage.tsx`, `src/config/pageContentGalerie.ts` |
+| **Wo nachlesen** | `components/ScreenshotExportAdmin.tsx`, `src/pages/GaleriePage.tsx`, `docs/CRASH-BEREITS-GEPRUEFT.md` |
 
 ---
 

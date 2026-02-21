@@ -15,6 +15,7 @@ export interface PageContentGalerie {
   welcomeImage?: string
   galerieCardImage?: string
   virtualTourImage?: string
+  virtualTourVideo?: string
   welcomeIntroText?: string
 }
 
@@ -69,11 +70,13 @@ export function getGalerieImages(stammdatenGallery?: { welcomeImage?: string; ga
   welcomeImage: string
   galerieCardImage: string
   virtualTourImage: string
+  virtualTourVideo: string
 } {
   const page = getPageContentGalerie()
   return {
     welcomeImage: page.welcomeImage || stammdatenGallery?.welcomeImage || '',
     galerieCardImage: page.galerieCardImage || stammdatenGallery?.galerieCardImage || '',
-    virtualTourImage: page.virtualTourImage || stammdatenGallery?.virtualTourImage || ''
+    virtualTourImage: page.virtualTourImage || stammdatenGallery?.virtualTourImage || '',
+    virtualTourVideo: page.virtualTourVideo || ''
   }
 }

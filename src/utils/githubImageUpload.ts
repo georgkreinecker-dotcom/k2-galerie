@@ -76,6 +76,61 @@ export async function uploadImageToGitHub(
   return `/img/k2/${filename}`
 }
 
+/** Lädt ein Video (File-Objekt) via GitHub API hoch. Gibt die öffentliche URL zurück. */
+export async function uploadVideoToGitHub(
+  file: File,
+  filename: string = 'virtual-tour.mp4',
+  onStatus?: (msg: string) => void
+): Promise<string> {
+  const token = getToken()
+  if (!token) throw new Error('Kein GitHub Token konfiguriert')
+
+  onStatus?.('Video wird vorbereitet…')
+
+  // Video als Base64 lesen (keine Komprimierung – Browser kann Videos nicht einfach komprimieren)
+  const base64 = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const result = e.target?.result as string
+      // Data-URL Prefix entfernen
+      resolve(result.split(',')[1] || '')
+    }
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+
+  const path = `public/img/k2/${filename}`
+
+  onStatus?.('Prüfe vorhandene Datei…')
+  const sha = await getFileSha(path, token)
+
+  onStatus?.('Video wird hochgeladen…')
+  const body: any = {
+    message: `Video aktualisiert: ${filename}`,
+    content: base64,
+    branch: BRANCH
+  }
+  if (sha) body.sha = sha
+
+  const res = await fetch(`${GITHUB_API}/repos/${REPO}/contents/${path}`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `token ${token}`,
+      'Accept': 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.message || `Upload fehlgeschlagen (${res.status})`)
+  }
+
+  onStatus?.('✅ Hochgeladen – Vercel deployt (~2 Min)')
+  return `/img/k2/${filename}`
+}
+
 /** Komprimiert ein Bild auf maxWidth px und JPEG-Qualität quality */
 function compressImage(file: File, maxWidth: number, quality: number): Promise<string> {
   return new Promise((resolve, reject) => {
