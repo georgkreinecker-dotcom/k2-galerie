@@ -1841,7 +1841,7 @@ function ScreenshotExportAdmin() {
             const timeoutId = setTimeout(() => {
               controller.abort()
               if (isMountedRef.current) setIsDeploying(false)
-              alert('⚠️ API-Timeout:\n\nDie Anfrage dauerte zu lange (über 30 Sekunden).\n\n📋 Bitte manuell:\n1. Terminal öffnen\n2. cd /Users/georgkreinecker/k2Galerie\n3. Prüfe ob public/gallery-data.json existiert\n4. Falls ja: git add/commit/push manuell')
+              alert('⚠️ Speichern dauert gerade zu lange.\n\nBitte kurz warten und nochmal auf „Speichern“ klicken.\nFalls es wieder passiert: Bitte dem Assistenten Bescheid geben.')
             }, 30000)
             
             let timeoutCleared = false
@@ -1920,7 +1920,7 @@ function ScreenshotExportAdmin() {
                   })
                   
                   // Zeige Fehlermeldung mit Kopier-Button (für Mobile: an Cursor schicken)
-                  const msg = `GIT PUSH FEHLGESCHLAGEN\n\nDatei geschrieben: public/gallery-data.json\nGröße: ${(result.size / 1024).toFixed(1)} KB\nWerke: ${result.artworksCount || 0}\n\nFEHLER-DETAILS:\n${fullErrorMsg.substring(0, 3000)}\n\n---\nManuell pushen:\n1. Terminal: cd /Users/georgkreinecker/k2Galerie\n2. git add public/gallery-data.json\n3. git commit -m "Update gallery-data.json"\n4. git push origin main`
+                  const msg = `⚠️ Galerie konnte nicht veröffentlicht werden.\n\nBitte nochmal auf Speichern klicken. Falls es wieder nicht klappt: Bitte dem Assistenten Bescheid geben.`
                   setPublishErrorMsg(msg)
                   return
                 }
@@ -1965,7 +1965,7 @@ function ScreenshotExportAdmin() {
                     exitCode: gitExitCode
                   })
                   
-                  const msg = `GIT PUSH FEHLGESCHLAGEN\n\nDatei geschrieben: public/gallery-data.json\nGröße: ${(result.size / 1024).toFixed(1)} KB\nWerke: ${result.artworksCount || 0}\n\nFEHLER-DETAILS:\n${fullErrorMsg.substring(0, 3000)}\n\n---\nManuell pushen:\n1. Terminal: cd /Users/georgkreinecker/k2Galerie\n2. git add public/gallery-data.json\n3. git commit -m "Update gallery-data.json"\n4. git push origin main`
+                  const msg = `⚠️ Galerie konnte nicht veröffentlicht werden.\n\nBitte nochmal auf Speichern klicken. Falls es wieder nicht klappt: Bitte dem Assistenten Bescheid geben.`
                   setPublishErrorMsg(msg)
                   return
                 }
@@ -1989,7 +1989,7 @@ function ScreenshotExportAdmin() {
                     gitError
                   })
                   
-                  const msg = `Git Push Status unklar\n\nDatei: public/gallery-data.json\nGröße: ${(result.size / 1024).toFixed(1)} KB\nWerke: ${result.artworksCount || 0}\n\nOUTPUT:\n${gitOutput.substring(0, 2000)}\n\nManuell prüfen: git status, git add/commit/push`
+                  const msg = `⚠️ Speichern möglicherweise nicht abgeschlossen.\n\nBitte Seite neu laden und nochmal auf Speichern klicken.`
                   setPublishErrorMsg(msg)
                 }
               } else {
@@ -2007,7 +2007,7 @@ function ScreenshotExportAdmin() {
               
               // Prüfe ob es ein Timeout war
               if (error.name === 'AbortError') {
-                alert('⚠️ API-Timeout:\n\nDie Anfrage dauerte zu lange.\n\n📋 Bitte manuell:\n1. Terminal öffnen\n2. cd /Users/georgkreinecker/k2Galerie\n3. Prüfe ob public/gallery-data.json existiert\n4. Falls ja: git add/commit/push manuell')
+                alert('⚠️ Speichern dauert zu lange.\n\nBitte kurz warten und nochmal auf „Speichern“ klicken.')
                 return
               }
               
@@ -2030,7 +2030,7 @@ function ScreenshotExportAdmin() {
                     document.body.removeChild(link)
                     URL.revokeObjectURL(url)
                   } catch {}
-                  alert('✅ gallery-data.json wurde heruntergeladen!\n\n📁 Nächste Schritte:\n1. Datei in "public" Ordner kopieren (im Projektordner)\n2. Terminal öffnen und ausführen:\n   git add public/gallery-data.json\n   git commit -m "Update"\n   git push\n3. Auf Vercel warten bis Deployment fertig\n4. Mobile: Seite neu laden\n\n💡 Tipp: Falls Dev-Server läuft, wird die Datei automatisch geschrieben!')
+                  alert('⚠️ Automatisches Speichern nicht möglich (Server nicht aktiv).\n\nBitte dem Assistenten Bescheid geben – einmalige Einrichtung nötig.')
                 }, 100)
               } catch (downloadError) {
                 if (isMountedRef.current) setIsDeploying(false)
@@ -13063,121 +13063,33 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
         </div>
       )}
 
-      {/* Modal: Fehlermeldung Veröffentlichen – mit Kopieren-Button für Mobile → Cursor schicken */}
+      {/* Modal: Fehlermeldung Speichern – einfach, klar, kein Techniker-Jargon */}
       {publishErrorMsg && (
         <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.8)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 99998,
-            padding: '1rem'
-          }}
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99998, padding: '1rem' }}
           onClick={() => setPublishErrorMsg(null)}
         >
           <div
-            style={{
-              background: '#1a1d24',
-              borderRadius: '16px',
-              maxWidth: '500px',
-              width: '100%',
-              maxHeight: '80vh',
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-              border: '1px solid rgba(255,255,255,0.1)'
-            }}
+            style={{ background: '#1a1d24', borderRadius: '16px', maxWidth: '400px', width: '100%', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', border: '1px solid rgba(255,200,0,0.3)' }}
             onClick={e => e.stopPropagation()}
           >
-            <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '1.1rem', fontWeight: 600, color: '#f59e0b' }}>
-              ⚠️ Veröffentlichen fehlgeschlagen
+            <div style={{ fontSize: '2rem', textAlign: 'center' }}>⚠️</div>
+            <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f59e0b', textAlign: 'center' }}>Speichern nicht möglich</div>
+            <div style={{ fontSize: '1rem', color: '#e2e8f0', lineHeight: 1.6, textAlign: 'center' }}>
+              Bitte nochmal auf <strong>„Speichern“</strong> klicken.<br/>
+              Falls es wieder nicht klappt: Dem Assistenten kurz Bescheid geben.
             </div>
-            <div style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', color: '#94a3b8' }}>
-              Text antippen → halten → „Kopieren“ wählen (funktioniert auf iPad/iPhone)
-            </div>
-            <textarea
-              readOnly
-              value={publishErrorMsg}
-              style={{
-                flex: 1,
-                minHeight: '120px',
-                overflow: 'auto',
-                padding: '1rem 1.25rem',
-                margin: '0 1rem',
-                fontSize: '0.85rem',
-                color: '#e2e8f0',
-                background: '#0f1114',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '8px',
-                resize: 'none',
-                fontFamily: 'monospace'
-              }}
-              onClick={e => e.stopPropagation()}
-            />
-            <div style={{ padding: '1rem 1.25rem', display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-              <button
-                onClick={() => {
-                  const doCopy = () => {
-                    const ta = document.createElement('textarea')
-                    ta.value = publishErrorMsg
-                    ta.style.position = 'fixed'
-                    ta.style.left = '-9999px'
-                    document.body.appendChild(ta)
-                    ta.select()
-                    try {
-                      document.execCommand('copy')
-                      alert('✅ Kopiert! In Cursor einfügen und an den Assistenten schicken.')
-                    } catch {
-                      alert('Text antippen, halten, dann „Kopieren“ wählen.')
-                    }
-                    document.body.removeChild(ta)
-                  }
-                  if (navigator.clipboard?.writeText) {
-                    navigator.clipboard.writeText(publishErrorMsg).then(() => alert('✅ Kopiert! In Cursor einfügen und an den Assistenten schicken.')).catch(doCopy)
-                  } else {
-                    doCopy()
-                  }
-                }}
-                style={{
-                  padding: '0.6rem 1.2rem',
-                  background: '#3b82f6',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                  fontWeight: 600,
-                  cursor: 'pointer'
-                }}
-              >
-                📋 Kopieren (an Cursor schicken)
-              </button>
-              <button
-                onClick={() => setPublishErrorMsg(null)}
-                style={{
-                  padding: '0.6rem 1.2rem',
-                  background: 'rgba(255,255,255,0.15)',
-                  color: '#fff',
-                  border: '1px solid rgba(255,255,255,0.3)',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                  cursor: 'pointer'
-                }}
-              >
-                OK
-              </button>
-            </div>
+            <button
+              onClick={() => setPublishErrorMsg(null)}
+              style={{ padding: '0.75rem 2rem', background: '#f59e0b', color: '#1a1d24', border: 'none', borderRadius: '10px', fontSize: '1rem', fontWeight: 700, cursor: 'pointer', alignSelf: 'center' }}
+            >
+              OK
+            </button>
           </div>
         </div>
       )}
 
-      {/* Modal: Neues Werk hinzufügen - z-index hoch damit es über allem liegt */}
+            {/* Modal: Neues Werk hinzufügen - z-index hoch damit es über allem liegt */}
       {showAddModal && (
         <div 
           style={{

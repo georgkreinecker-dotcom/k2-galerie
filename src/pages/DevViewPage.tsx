@@ -425,7 +425,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       const timeoutId = setTimeout(() => {
         controller.abort()
         setIsPublishing(false)
-        alert('⚠️ API-Timeout:\n\nDie Anfrage dauerte zu lange.\n\n📋 Bitte prüfen:\n1. Terminal öffnen\n2. cd /Users/georgkreinecker/k2Galerie\n3. Prüfe ob public/gallery-data.json existiert')
+        alert('⚠️ Speichern dauert zu lange.\n\nBitte kurz warten und nochmal auf „Speichern" klicken.')
       }, 5000)
       
       fetch('/api/write-gallery-data', {
@@ -465,7 +465,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
           
           setPublishStatus({
             success: true,
-            message: `📁 Daten veröffentlicht\n\n✅ Datei geschrieben. Backup: ${backupLabel}\n\nNächster Schritt: "📦 Code-Update (Git)" klicken\nODER Terminal: bash scripts/git-push-gallery-data.sh\n\n→ Dann sind alle Werke öffentlich sichtbar – in jedem Netz.\n\n📱 Mobile: Danach (1-2 Min) QR neu scannen`,
+            message: `✅ Gespeichert (${backupLabel})\n\nAlle Änderungen werden jetzt auf alle Geräte übertragen.`,
             artworksCount,
             size: result.size
           })
@@ -489,7 +489,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
           setIsPublishing(false)
           setPublishStatus({
             success: false,
-            message: '⚠️ API-Timeout - Bitte manuell prüfen'
+            message: '⚠️ Speichern dauert zu lange. Bitte nochmal versuchen.'
           })
           setTimeout(() => setPublishStatus(null), 5000)
           return
@@ -511,7 +511,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
               document.body.removeChild(link)
               URL.revokeObjectURL(url)
             } catch {}
-            alert('✅ gallery-data.json wurde heruntergeladen!\n\n📁 Nächste Schritte:\n1. Datei in "public" Ordner kopieren\n2. Terminal öffnen und ausführen:\n   git add public/gallery-data.json\n   git commit -m "Update"\n   git push\n3. Mobile: Seite neu laden')
+            alert('⚠️ Automatisches Speichern nicht möglich (Server nicht aktiv).\n\nBitte dem Assistenten Bescheid geben – einmalige Einrichtung nötig.')
           }, 100)
         } catch (downloadError) {
           alert('❌ Fehler:\n\nAPI nicht verfügbar UND Download fehlgeschlagen\n\n' + (error instanceof Error ? error.message : String(error)))
@@ -1075,16 +1075,16 @@ end tell`
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 'bold', fontSize: '0.95rem', color: 'var(--k2-accent)', marginBottom: '0.25rem' }}>
-                {syncStatus.step === 'published' && 'Veröffentlichung erfolgreich'}
-                {syncStatus.step === 'git-push' && 'Code-Update (Git) läuft...'}
-                {syncStatus.step === 'vercel-deploy' && 'Warte auf Vercel Deployment...'}
-                {syncStatus.step === 'ready' && '✅ Bereit für Mobile!'}
+                {syncStatus.step === 'published' && 'Gespeichert ✓'}
+                {syncStatus.step === 'git-push' && 'Wird veröffentlicht…'}
+                {syncStatus.step === 'vercel-deploy' && 'Wird übertragen – bitte kurz warten…'}
+                {syncStatus.step === 'ready' && '✅ Fertig – auf allen Geräten sichtbar!'}
               </div>
               <div style={{ fontSize: '0.8rem', color: '#8fa0c9' }}>
-                {syncStatus.step === 'published' && 'Datei wurde gespeichert'}
-                {syncStatus.step === 'git-push' && 'Terminal öffnen und Code-Update ausführen'}
-                {syncStatus.step === 'vercel-deploy' && 'Prüfe alle 10 s – erst bei „Bereit“ QR scannen'}
-                {syncStatus.step === 'ready' && 'Jetzt QR scannen. Siehst du einen älteren Stand auf dem Handy? → Unten links auf „Stand“ tippen (lädt neu).'}
+                {syncStatus.step === 'published' && 'Wird jetzt auf alle Geräte übertragen…'}
+                {syncStatus.step === 'git-push' && 'Änderungen werden hochgeladen…'}
+                {syncStatus.step === 'vercel-deploy' && 'In 1–2 Minuten auf dem Handy sichtbar'}
+                {syncStatus.step === 'ready' && 'Auf dem Handy QR-Code neu scannen oder Seite neu laden.'}
               </div>
             </div>
             {syncStatus.step === 'ready' && (
