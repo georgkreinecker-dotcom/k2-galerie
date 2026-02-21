@@ -9232,24 +9232,20 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   type="button"
                   onClick={() => {
                     const existing = (() => { try { return JSON.parse(localStorage.getItem('k2-artworks') || '[]') } catch { return [] } })()
-                    const alreadyHasMuster = existing.some((a: any) => String(a.id || '').startsWith('muster-'))
-                    if (alreadyHasMuster) { alert('Musterdaten sind bereits geladen.'); return }
-                    const withMuster = [...MUSTER_ARTWORKS.map(a => ({ ...a, id: a.id, _isMuster: true })), ...existing]
+                    const alreadyHasMuster = existing.some((a: any) => String(a.id || '').startsWith('muster-') || (a as any)._isMuster)
+                    if (alreadyHasMuster) { alert('Musterdaten sind bereits geladen.\n\nZum Werke-Tab wechseln – die Musterwerke sind dort sichtbar.'); return }
+                    const withMuster = [...MUSTER_ARTWORKS.map(a => ({ ...a, _isMuster: true })), ...existing]
                     localStorage.setItem('k2-artworks', JSON.stringify(withMuster))
                     // Musterstammdaten nur wenn leer
                     const gallStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}') } catch { return {} } })()
-                    if (!gallStamm.name) {
-                      localStorage.setItem('k2-stammdaten-galerie', JSON.stringify({ ...MUSTER_TEXTE.gallery, _isMuster: true }))
-                    }
+                    if (!gallStamm.name) localStorage.setItem('k2-stammdaten-galerie', JSON.stringify({ ...MUSTER_TEXTE.gallery, _isMuster: true }))
                     const martinaStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}') } catch { return {} } })()
-                    if (!martinaStamm.name) {
-                      localStorage.setItem('k2-stammdaten-martina', JSON.stringify({ ...MUSTER_TEXTE.martina, _isMuster: true }))
-                    }
+                    if (!martinaStamm.name) localStorage.setItem('k2-stammdaten-martina', JSON.stringify({ ...MUSTER_TEXTE.martina, _isMuster: true }))
                     const georgStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}') } catch { return {} } })()
-                    if (!georgStamm.name) {
-                      localStorage.setItem('k2-stammdaten-georg', JSON.stringify({ ...MUSTER_TEXTE.georg, _isMuster: true }))
-                    }
-                    window.location.reload()
+                    if (!georgStamm.name) localStorage.setItem('k2-stammdaten-georg', JSON.stringify({ ...MUSTER_TEXTE.georg, _isMuster: true }))
+                    // State aktualisieren statt Reload (iframe-sicher)
+                    setAllArtworks(withMuster)
+                    alert('✅ Musterwerke geladen!\n\nJetzt zum Tab „Werke" wechseln – die 5 Musterwerke sind dort sichtbar.')
                   }}
                   style={{ padding: '0.65rem 1.25rem', background: s.accent, color: '#1a1d24', border: 'none', borderRadius: 10, fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer' }}
                 >
@@ -9262,15 +9258,15 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     const ohne = existing.filter((a: any) => !String(a.id || '').startsWith('muster-') && !(a as any)._isMuster)
                     if (ohne.length === existing.length) { alert('Keine Musterdaten gefunden – nichts zu löschen.'); return }
                     localStorage.setItem('k2-artworks', JSON.stringify(ohne))
-                    // Stammdaten löschen wenn sie als Muster markiert sind
                     const gallStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}') } catch { return {} } })()
                     if ((gallStamm as any)._isMuster) localStorage.removeItem('k2-stammdaten-galerie')
                     const martinaStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}') } catch { return {} } })()
                     if ((martinaStamm as any)._isMuster) localStorage.removeItem('k2-stammdaten-martina')
                     const georgStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}') } catch { return {} } })()
                     if ((georgStamm as any)._isMuster) localStorage.removeItem('k2-stammdaten-georg')
-                    alert('✅ Musterdaten entfernt. Eigene Daten sind unberührt.')
-                    window.location.reload()
+                    // State aktualisieren statt Reload (iframe-sicher)
+                    setAllArtworks(ohne)
+                    alert('✅ Musterdaten entfernt.\n\nEigene Werke und Daten sind unberührt.')
                   }}
                   style={{ padding: '0.65rem 1.25rem', background: 'transparent', color: '#f87171', border: '1px solid #f87171', borderRadius: 10, fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer' }}
                 >
