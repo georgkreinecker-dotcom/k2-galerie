@@ -11,10 +11,10 @@
 | Feld | Inhalt |
 |------|--------|
 | **Datum** | 21.02.26 |
-| **Thema** | Video-Upload Virtueller Rundgang – fix und fertig |
-| **Was war zuletzt dran** | ✅ Video-Upload: sofort lokal in setPageContentGalerie speichern (war vorher nur blob im State, ging verloren). ✅ Keine alert()-Dialoge mehr beim Upload – stattdessen Status-Anzeige direkt unter dem Button. ✅ ök2: Video wird ebenfalls gespeichert (Demo-Vorschau). ✅ Max-Größe auf 100 MB erhöht. Stand: 21.02.26 16:56. |
-| **Nächster konkreter Schritt** | Video im Virtuellen Rundgang testen: Admin → Seitengestaltung → Video aufnehmen oder wählen → muss sofort im Admin und in „So sehen Kunden" sichtbar sein. |
-| **Wo nachlesen** | `components/ScreenshotExportAdmin.tsx` (~Zeile 9130), `src/pages/GaleriePage.tsx` (displayImages.virtualTourVideo) |
+| **Thema** | Virtueller Rundgang komplett: Video, Vollbild, Bilder-Sync Mac↔Handy |
+| **Was war zuletzt dran** | ✅ Video-Upload funktioniert (Handy → GitHub → Vercel → überall). ✅ Vollbild beim Tippen auf Video/Bild. ✅ Bilder/Video am Mac sichtbar (Vercel-Fallback). ✅ Stand-Badge fix: index.html Timestamp immer aktuell. ✅ „Rundgang starten" öffnet Vollbild statt eigener Seite. Letzter Stand: 21.02.26 17:53. |
+| **Nächster konkreter Schritt** | Neues Foto Galerie-Innenansicht testen: Handy → Admin → Seitengestaltung → Galerie-Foto ersetzen → nach ~2 Min am Mac sichtbar? Dann ist Sync vollständig. |
+| **Wo nachlesen** | `components/ScreenshotExportAdmin.tsx`, `src/config/pageContentGalerie.ts`, `k2team-handbuch/15-SESSION-21-02-26.md`, `.cursor/rules/daten-geraete-sync.mdc` |
 
 ---
 
