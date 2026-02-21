@@ -1189,7 +1189,25 @@ function ScreenshotExportAdmin() {
   // Seitengestaltung (Willkommensseite & Galerie-Vorschau) – K2 vs. ök2 getrennt
   const [pageContent, setPageContent] = useState<PageContentGalerie>(() => getPageContentGalerie(isOeffentlichAdminContext() ? 'oeffentlich' : undefined))
   useEffect(() => {
-    setPageContent(getPageContentGalerie(isOeffentlichAdminContext() ? 'oeffentlich' : undefined))
+    const pc = getPageContentGalerie(isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
+    // Wenn kein Bild im localStorage: aus gallery-data.json nachladen
+    if (!pc.welcomeImage && !isOeffentlichAdminContext()) {
+      fetch(`/gallery-data.json?_=${Date.now()}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data?.gallery?.welcomeImage) {
+            setPageContent(prev => ({
+              ...prev,
+              welcomeImage: prev.welcomeImage || data.gallery.welcomeImage,
+              galerieCardImage: prev.galerieCardImage || data.gallery.galerieCardImage || '',
+              virtualTourImage: prev.virtualTourImage || data.gallery.virtualTourImage || '',
+            }))
+          }
+        })
+        .catch(() => {})
+    } else {
+      setPageContent(pc)
+    }
   }, [])
 
   // Design-Vorschau = immer aktuelle gespeicherte Seite anzeigen (keine alten Daten)
