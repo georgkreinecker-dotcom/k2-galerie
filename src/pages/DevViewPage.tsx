@@ -389,7 +389,11 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
         gal: JSON.stringify(data.gallery),
         e: data.events.length,
         d: data.documents.length,
-        design: JSON.stringify(data.designSettings)
+        design: JSON.stringify(data.designSettings),
+        // Bilder explizit in Signatur – damit Bild-Änderungen immer erkannt werden
+        imgW: (data.gallery.welcomeImage || '').length,
+        imgG: (data.gallery.galerieCardImage || '').length,
+        imgV: (data.gallery.virtualTourImage || '').length,
       }
       const simpleHash = (str: string) => {
         let h = 0
