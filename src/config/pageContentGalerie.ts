@@ -80,10 +80,14 @@ export function getGalerieImages(stammdatenGallery?: { welcomeImage?: string; ga
   virtualTourVideo: string
 } {
   const page = getPageContentGalerie()
+  // Wenn kein Video im localStorage → Vercel-Pfad als Fallback (z.B. am Mac nach Handy-Upload)
+  const videoFallback = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')
+    ? '/img/k2/virtual-tour.mp4'
+    : ''
   return {
     welcomeImage: page.welcomeImage || stammdatenGallery?.welcomeImage || '',
     galerieCardImage: page.galerieCardImage || stammdatenGallery?.galerieCardImage || '',
     virtualTourImage: page.virtualTourImage || stammdatenGallery?.virtualTourImage || '',
-    virtualTourVideo: page.virtualTourVideo || ''
+    virtualTourVideo: page.virtualTourVideo || videoFallback
   }
 }

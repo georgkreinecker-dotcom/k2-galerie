@@ -355,6 +355,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   const [setPasswordConfirm, setSetPasswordConfirm] = useState('')
   const [forgotEmailOrPhone, setForgotEmailOrPhone] = useState('')
   const [forgotSent, setForgotSent] = useState(false)
+  const [fullscreenMedia, setFullscreenMedia] = useState<{ type: 'video' | 'image', src: string } | null>(null)
 
   useEffect(() => {
     const handleResize = () => {
@@ -3011,29 +3012,31 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                   border: '1px solid rgba(255, 255, 255, 0.08)',
                   boxSizing: 'border-box'
                 }}>
-                  {displayImages.virtualTourVideo ? (
-                    <video
-                      src={displayImages.virtualTourVideo}
-                      controls
-                      playsInline
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', boxSizing: 'border-box' }}
-                    />
-                  ) : displayImages.virtualTourImage ? (
-                    <img 
-                      src={displayImages.virtualTourImage} 
-                      alt="Virtueller Rundgang" 
-                      style={{
-                        width: '100%',
-                        maxWidth: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        display: 'block',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                  ) : (
-                    <div style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', opacity: 0.25 }}>📹</div>
-                  )}
+                  {(() => {
+                    // Mac-Fallback: wenn kein lokales Video/Bild → Vercel-Pfad versuchen
+                    const videoSrc = displayImages.virtualTourVideo || '/img/k2/virtual-tour.mp4'
+                    const imgSrc = displayImages.virtualTourImage
+                    const hasVideo = !!displayImages.virtualTourVideo
+                    const hasImg = !!imgSrc
+                    if (hasVideo) return (
+                      <video
+                        src={videoSrc}
+                        controls
+                        playsInline
+                        onClick={() => setFullscreenMedia({ type: 'video', src: videoSrc })}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', boxSizing: 'border-box', cursor: 'pointer' }}
+                      />
+                    )
+                    if (hasImg) return (
+                      <img
+                        src={imgSrc}
+                        alt="Virtueller Rundgang"
+                        onClick={() => setFullscreenMedia({ type: 'image', src: imgSrc })}
+                        style={{ width: '100%', maxWidth: '100%', height: '100%', objectFit: 'cover', display: 'block', boxSizing: 'border-box', cursor: 'pointer' }}
+                      />
+                    )
+                    return <div style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', opacity: 0.25 }}>📹</div>
+                  })()}
                 </div>
                 <h3 style={{
                   fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
@@ -3348,6 +3351,36 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 </button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Vollbild-Modal: Video oder Bild (Virtueller Rundgang) */}
+        {fullscreenMedia && (
+          <div
+            onClick={() => setFullscreenMedia(null)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out' }}
+          >
+            <button
+              onClick={() => setFullscreenMedia(null)}
+              style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: 44, height: 44, fontSize: '1.4rem', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}
+            >✕</button>
+            {fullscreenMedia.type === 'video' ? (
+              <video
+                src={fullscreenMedia.src}
+                controls
+                autoPlay
+                playsInline
+                onClick={(e) => e.stopPropagation()}
+                style={{ maxWidth: '100%', maxHeight: '100%', width: '100%', height: '100%', objectFit: 'contain' }}
+              />
+            ) : (
+              <img
+                src={fullscreenMedia.src}
+                alt="Virtueller Rundgang"
+                onClick={(e) => e.stopPropagation()}
+                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+              />
+            )}
           </div>
         )}
       </div>
