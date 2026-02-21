@@ -5,8 +5,9 @@
 
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { PROJECT_ROUTES, WILLKOMMEN_ROUTE, AGB_ROUTE } from '../config/navigation'
-import { PRODUCT_WERBESLOGAN, PRODUCT_BOTSCHAFT_2, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
+import { PROJECT_ROUTES, WILLKOMMEN_ROUTE, AGB_ROUTE, BASE_APP_URL } from '../config/navigation'
+import { PRODUCT_WERBESLOGAN, PRODUCT_BOTSCHAFT_2, PRODUCT_ZIELGRUPPE } from '../config/tenantConfig'
+import ProductCopyright from '../components/ProductCopyright'
 
 const MOK2_SLOGAN_KEY = 'k2-mok2-werbeslogan'
 const MOK2_BOTSCHAFT_KEY = 'k2-mok2-botschaft2'
@@ -217,6 +218,8 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             <li><a href="#mok2-8" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>APf-Struktur:</strong> Marketingarbeit organisieren</a></li>
             <li><a href="#mok2-9" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Werbeunterlagen</strong> (bearbeitbar)</a></li>
             <li><Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>10. Lizenzen</strong> (Konditionen & Vergebung)</Link></li>
+            <li><a href="#mok2-lizenz-pakete-aussen" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Lizenz-Pakete für Außen</strong> (Werbung, Pitch, Flyer)</a></li>
+            <li><a href="#mok2-10b-vk2-lizenz" style={{ color: 'var(--k2-accent)', textDecoration: 'none' }}><strong>Lizenzstruktur VK2</strong> (Vereinsplattform – K2-Familie)</a></li>
             <li><Link to={PROJECT_ROUTES['k2-galerie'].empfehlungstool} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Empfehlungstool</strong> (ID + Empfehlungstext an Freund:innen)</Link></li>
             <li><Link to={WILLKOMMEN_ROUTE} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Willkommensseite</strong> (Zugangsbereich, AGB-Bestätigung)</Link></li>
             <li><Link to={AGB_ROUTE} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>AGB</strong> (Allgemeine Geschäftsbedingungen)</Link></li>
@@ -241,6 +244,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           1. USPs (Unique Selling Points)
         </h2>
         <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
+          <li><strong>Nicht nur eine App – multifunktional am PC/Mac:</strong> Die K2 Galerie ist eine <strong>Arbeitsplattform am Rechner</strong> (Planung, Veröffentlichen, Werbeunterlagen, alle Geräte im Blick) plus Galerie & Kassa auf Tablet/Handy. Diese Kombination – volle Multifunktion am Desktop, gleicher Stand überall – ist in diesem Feld <strong>einzigartig</strong> und zentral für Werbung und Marketing.</li>
           <li><strong>Alles in einer Oberfläche</strong> – Eine App für Galerie-Webauftritt, Werke, Events, Marketing und Kasse; Admin am Rechner, Galerie und Kassa auf Tablet/Handy (QR, gleicher Stand).</li>
           <li><strong>Zielgruppe Künstler:innen</strong> – Selbstvermarktung, eigene Werke, Ausstellungen, Webauftritt; Begriffe und Abläufe passen zu Galerien und Ateliers.</li>
           <li><strong>Marketing aus einem Guss</strong> – PR-Vorschläge aus Stammdaten und Event (Newsletter, Plakat, Presse, Social Media, Event-Flyer im Galerie-Design); mehrere Vorschläge pro Typ; A4/A3/A5; QR-Code-Plakat.</li>
@@ -290,6 +294,61 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </ul>
       </section>
 
+      {/* 4a. Kanäle 2026 – kurze Liste zum Ausfüllen und Prüfen */}
+      <section id="mok2-kanale-2026" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Kanäle 2026
+        </h2>
+        <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
+          Drei Kanäle – hier eintragen und einmal pro Quartal prüfen. So bleibt die Vermarktung fokussiert.
+        </p>
+        <ol style={{ lineHeight: 1.7, paddingLeft: '1.5em', margin: 0 }}>
+          <li>
+            <strong>Empfehlungs-Programm</strong> – Nutzer:innen werben mit Empfehler-ID; 50 % der Lizenzgebühr an Empfehler:in. <a href="#mok2-so-empfiehlst-du" style={{ color: '#5ffbf1', textDecoration: 'none' }}>Kurz-Anleitung „So empfiehlst du“</a>. Details: <a href="#mok2-6" style={{ color: '#5ffbf1', textDecoration: 'none' }}>Sektion 6</a>.
+          </li>
+          <li>
+            <strong>Kooperation (Ziel eintragen):</strong> z. B. Kunstverein / Verband (VK2), Messe, Atelier-Netzwerk. <em style={{ color: 'rgba(255,255,255,0.7)' }}>→ Hier konkreten Namen oder Ziel eintragen, ersten Kontakt planen.</em>
+          </li>
+          <li>
+            <strong>Landing / CTA:</strong> Eine klare Einstiegs-URL für alle Texte (Flyer, Social, E-Mail-Signatur).{' '}
+            <a href={`${BASE_APP_URL}${WILLKOMMEN_ROUTE}`} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', fontWeight: 600 }}>
+              {BASE_APP_URL}{WILLKOMMEN_ROUTE}
+            </a>
+            {' '}(Willkommensseite – Demo, Vorschau, Lizenz anfragen).
+          </li>
+        </ol>
+      </section>
+
+      {/* 4b. Was wir gemeinsam verbessern können – Vorschlag (Vermarktung & Strategie) */}
+      <section id="mok2-verbesserungen" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#22c55e', marginBottom: '0.75rem', borderBottom: '1px solid rgba(34,197,94,0.4)', paddingBottom: '0.35rem' }}>
+          Was wir gemeinsam verbessern können
+        </h2>
+        <p style={{ marginBottom: '1rem', lineHeight: 1.6 }}>
+          Konkreter Vorschlag für Vermarktung und Strategie: Zielgruppe schärfen, Kanäle festlegen, Customer Journey und Trust schrittweise ausbauen. Priorisierte Liste mit nächsten Schritten – zum gemeinsamen Abarbeiten.
+        </p>
+        <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', marginBottom: '1rem' }}>
+          <li><strong>Priorität 1:</strong> Zielgruppe in einem Satz festhalten; klarer „Nächster Schritt“ nach der Demo (z. B. „Lizenz anfragen“); „Kanäle 2026“ in mök2 eintragen.</li>
+          <li><strong>Priorität 2:</strong> Lizenz-Pakete nach außen sichtbar; Kurz-Anleitung „So empfiehlst du die K2 Galerie“; Trust-Checkliste (AGB, Datenschutz, Support).</li>
+          <li><strong>Priorität 3:</strong> Eine konkrete Kooperation anvisieren; Customer Journey ausformulieren; Erfolg messbar machen.</li>
+        </ul>
+        <p style={{ padding: '0.75rem 1rem', background: 'rgba(34, 197, 94, 0.12)', borderRadius: '8px', borderLeft: '4px solid #22c55e', fontSize: '0.95rem', lineHeight: 1.5 }}>
+          <strong>Vollständiger Vorschlag (zum Lesen & Abhaken):</strong>{' '}
+          <code style={{ color: '#22c55e' }}>docs/VERBESSERUNGEN-VERMARKTUNG-GEMEINSAM.md</code>
+          {' '}– dort: Vermarktungsstrategie 1.0 (Zielgruppe, Kanäle, Customer Journey, Trust) + priorisierte Verbesserungspunkte.
+        </p>
+        <p style={{ padding: '0.75rem 1rem', background: 'rgba(95, 251, 241, 0.1)', borderRadius: '8px', borderLeft: '4px solid #5ffbf1', fontSize: '0.95rem', lineHeight: 1.5, marginTop: '0.75rem' }}>
+          <strong>Feature-Ideen Abhebung:</strong>{' '}
+          <code style={{ color: '#5ffbf1' }}>docs/FEATURES-ABHEBUNG-ZIELGRUPPE.md</code>
+          {' '}– welche Features die Zielgruppe noch mehr ansprechen (Belege/Kasse, Teilen-Link, Käufer:innen-Liste, Präsentationsmodus …); Priorität & Aufwand, Reihenfolge zum Einbauen.
+        </p>
+        <p style={{ padding: '0.75rem 1rem', background: 'rgba(34, 197, 94, 0.12)', borderRadius: '8px', borderLeft: '4px solid #22c55e', fontSize: '0.95rem', lineHeight: 1.5, marginTop: '0.75rem' }}>
+          <strong>Schritt-für-Schritt-Plan:</strong>{' '}
+          <code style={{ color: '#22c55e' }}>docs/PLAN-SCHRITT-FUER-SCHRITT.md</code>
+          {' '}– gemeinsamer Plan zum Abarbeiten (Basis abhaken → ein Feature wählen → Pilot-Verein → Onboarding). Ein Schritt nach dem anderen.
+        </p>
+      </section>
+
       {/* Platzhalter für weitere Ideen/Konzepte */}
       <section id="mok2-5" style={{ marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
@@ -319,6 +378,29 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </ul>
       </section>
 
+      {/* 6a. Kurz-Anleitung: So empfiehlst du die K2 Galerie (für Nutzer:innen) */}
+      <section id="mok2-so-empfiehlst-du" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          So empfiehlst du die K2 Galerie (Kurz-Anleitung)
+        </h2>
+        <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.5 }}>
+          Für Nutzer:innen – in 3 Schritten: ID/Link holen, teilen, Geworbene nutzt Link. Du erhältst 50 % der Lizenzgebühr, wenn die Person deine Empfehlung annimmt.
+        </p>
+        <ol style={{ lineHeight: 1.7, paddingLeft: '1.5em', margin: '0 0 1rem' }}>
+          <li><strong>Wo finde ich meine Empfehler-ID?</strong> In der App: <strong>Einstellungen → Empfehlungs-Programm</strong> (oder über mök2: <strong>Empfehlungstool</strong>). Dort siehst du deine ID und einen <strong>Empfehlungs-Link</strong> – Link kopieren oder „E-Mail öffnen“ / „WhatsApp teilen“.</li>
+          <li><strong>Wem gebe ich den Link?</strong> Freund:innen, anderen Künstler:innen, Galerien – allen, die eine eigene Galerie-Webseite + Kasse + Werbung aus einer Hand suchen.</li>
+          <li><strong>Was passiert bei der Person?</strong> Sie öffnet den Link → Willkommensseite (Demo, Vorschau, „Lizenz anfragen“). Wenn sie eine Lizenz abschließt und deine Empfehlung annimmt (der Link enthält deine ID), erhältst du <strong>50 % der Lizenzgebühr</strong> – bei jeder Zahlung, solange sie Kunde bleibt.</li>
+        </ol>
+        <p style={{ padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.1)', borderRadius: '8px', borderLeft: '4px solid #5ffbf1', fontSize: '0.9rem', lineHeight: 1.5 }}>
+          <strong>Kurz:</strong> Link im Empfehlungstool kopieren → per E-Mail oder WhatsApp teilen → Geworbene nutzt Link und kann beim Lizenzabschluss deine Empfehlung annehmen. Fertig.
+        </p>
+        <p style={{ marginTop: '0.75rem' }}>
+          <Link to={PROJECT_ROUTES['k2-galerie'].empfehlungstool} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>
+            → Empfehlungstool öffnen (ID + Link + vorgefertigter Text)
+          </Link>
+        </p>
+      </section>
+
       {/* 7. Promotion für alle Medien – ök2 perfekt präsentieren */}
       <section id="mok2-7" style={{ marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
@@ -330,6 +412,12 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <p style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.1)', borderRadius: '8px', borderLeft: '4px solid #5ffbf1', fontSize: '1.05rem', lineHeight: 1.5 }}>
           <strong>2. Wichtige Botschaft:</strong> {PRODUCT_BOTSCHAFT_2}
         </p>
+        <p style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(34, 197, 94, 0.12)', borderRadius: '8px', borderLeft: '4px solid #22c55e', fontSize: '1.05rem', lineHeight: 1.5 }}>
+          <strong>3. Zentrale Information für Außenkommunikation (Werbung, Marketing, Presse):</strong> Es handelt sich hier <strong>nicht um eine normale App</strong>, sondern um eine <strong>multifunktionale Arbeitsplattform am PC/Mac</strong> – mit Galerie, Kassa, Veröffentlichen, Planung und Werbeunterlagen aus einer Hand. Mobil: Galerie und Kassa, gleicher Stand. In dieser Kombination sind wir in diesem Feld <strong>einzigartig</strong> – das soll in der Kommunikation nach außen klar werden.
+        </p>
+        <p style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(139, 92, 246, 0.12)', borderRadius: '8px', borderLeft: '4px solid #8b5cf6', fontSize: '1.05rem', lineHeight: 1.5 }}>
+          <strong>4. Unsere Zielgruppe (ein Satz):</strong> {PRODUCT_ZIELGRUPPE}
+        </p>
 
         <h3 style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.9)', marginTop: '1rem', marginBottom: '0.5rem' }}>Warum brauchen Künstler:innen das?</h3>
         <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
@@ -340,6 +428,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
 
         <h3 style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.9)', marginTop: '1rem', marginBottom: '0.5rem' }}>Was macht den Unterschied zu Produkten am Markt?</h3>
         <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
+          <li><strong>Nicht nur App – multifunktional am PC/Mac:</strong> Volle Arbeitsplattform am Rechner (Planung, Veröffentlichen, Werbeunterlagen), dazu Galerie & Kassa mobil – gleicher Stand überall. In dieser Form einzigartig.</li>
           <li><strong>Alles in einer App:</strong> Website-Builder, Shops, Event-Tools und Kasse sind sonst getrennt – hier eine Oberfläche, eine Datenbasis, ein Design.</li>
           <li><strong>Sprache und Begriffe für Künstler:innen:</strong> Werke, Events, Stammdaten, Öffentlichkeitsarbeit – kein abstraktes „CMS“ oder „Items“.</li>
           <li><strong>Marketing aus einem Guss:</strong> Newsletter, Plakat, Presse, Social Media und QR-Plakat werden aus denselben Stammdaten erzeugt – einheitlich, sofort nutzbar.</li>
@@ -423,6 +512,95 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>
             💼 Lizenzen verwalten (Konditionen & Lizenz vergeben) →
           </Link>
+        </p>
+      </section>
+
+      {/* 10a. Lizenz-Pakete für Außen – kompakt für Werbung, Pitch, Flyer (nach außen sichtbar) */}
+      <section id="mok2-lizenz-pakete-aussen" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Lizenz-Pakete für Außen (Werbung, Pitch, Flyer)
+        </h2>
+        <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
+          Kurzüberblick für Interessent:innen – hier prüfen und anpassen; dann in Werbeunterlagen und bei Anfragen nutzen.
+        </p>
+        <table style={{ width: '100%', maxWidth: 560, borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '2px solid rgba(95,251,241,0.4)' }}>
+              <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: '#5ffbf1' }}>Paket</th>
+              <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: '#5ffbf1' }}>Nutzen</th>
+              <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: '#5ffbf1' }}>Preis</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600 }}>Basic</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>Galerie-Webauftritt, Werke, einfacher Shop</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>auf Anfrage</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600 }}>Pro</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>Alles in Basic + Events, Kasse, Etiketten, Marketing aus einem Guss</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>auf Anfrage</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600 }}>VK2 (Verein)</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>Pro für Kunstvereine; ab 10 Mitgliedern kostenfrei, Lizenzmitglieder 50 %</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>auf Anfrage</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>
+          Preise konkretisieren und hier eintragen (oder „auf Anfrage“ beibehalten). Dann in Präsentationsmappe und bei „Lizenz anfragen“ nutzen.
+        </p>
+        <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>
+          <strong>Marktcheck:</strong> Was Nutzer zahlen würden &amp; was Vergleichsprodukte kosten → <code>docs/MARKTCHECK-PREISE-BASIC-PRO-VERGLEICH.md</code> (Orientierung: Basic 10–15 €/Monat, Pro 25–35 €/Monat).
+        </p>
+      </section>
+
+      {/* 10b. Lizenzstruktur VK2 (Vereinsplattform) – eigener Bereich, in mök2 festgelegt */}
+      <section id="mok2-10b-vk2-lizenz" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: 'var(--k2-accent)', marginBottom: '0.75rem', borderBottom: '1px solid rgba(255, 140, 66, 0.5)', paddingBottom: '0.35rem' }}>
+          Lizenzstruktur VK2 (Vereinsplattform)
+        </h2>
+        <p style={{ marginBottom: '1rem', lineHeight: 1.6 }}>
+          <strong>VK2</strong> = Plattform für <strong>Künstlervereine</strong>. Dritte Lizenzvariante neben Einzelkünstler und (später) größere Galerie.
+        </p>
+        <ul style={{ marginBottom: '1rem', paddingLeft: '1.5em', lineHeight: 1.7 }}>
+          <li>Der <strong>Verein</strong> muss die <strong>Pro-Version</strong> erwerben und wird <strong>ab 10 registrierten Mitgliedern</strong> kostenfrei gestellt.</li>
+          <li><strong>Lizenzmitglieder</strong> (registrierte Mitglieder) zahlen <strong>50 % der normalen Lizenzgebühr</strong>, haben keinen eigenen Bonusanspruch, aber die Möglichkeit zu updaten.</li>
+          <li><strong>Nicht registrierte Mitglieder</strong> können vom Verein aufgenommen werden (obliegt dem Verein); sie werden <strong>im System erfasst</strong> (Datenschutz/Dokumentation).</li>
+        </ul>
+        <table style={{ width: '100%', maxWidth: 560, borderCollapse: 'collapse', marginBottom: '1rem', fontSize: '0.95rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '2px solid rgba(90,122,110,0.5)' }}>
+              <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: 'var(--k2-accent)' }}>Rolle</th>
+              <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: 'var(--k2-accent)' }}>Bedingung</th>
+              <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: 'var(--k2-accent)' }}>Lizenz / Nutzen</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid rgba(90,122,110,0.25)' }}>
+              <td style={{ padding: '0.5rem 0.75rem' }}><strong>Verein</strong></td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>Pro-Version; ≥ 10 registrierte Mitglieder</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>Plattformnutzung dann <strong>kostenfrei</strong></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid rgba(90,122,110,0.25)' }}>
+              <td style={{ padding: '0.5rem 0.75rem' }}><strong>Lizenzmitglied (registriert)</strong></td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>zahlt 50 % Lizenz</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>Kein eigener Bonus; Update möglich</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid rgba(90,122,110,0.25)' }}>
+              <td style={{ padding: '0.5rem 0.75rem' }}><strong>Nicht registriertes Mitglied</strong></td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>Aufnahme obliegt dem Verein</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>Im System erfasst (Datenschutz)</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style={{ padding: '0.75rem 1rem', background: 'rgba(255, 140, 66, 0.12)', borderRadius: '8px', borderLeft: '4px solid var(--k2-accent)', fontSize: '0.95rem', lineHeight: 1.5, marginBottom: '1rem' }}>
+          <strong>Kunstvereine = Multiplikatoren:</strong> Ein Verein entscheidet → viele Mitglieder sichtbar. Eindruckvolles Angebot lohnt sich doppelt (Referenz, Weiterempfehlung). <strong>Kernbotschaft:</strong> „Eine Plattform für Ihren Verein: alle Mitglieder sichtbar, eine Galerie, ein Auftritt – ab 10 Mitgliedern für den Verein kostenfrei.“ Nächste Schritte: Pilot-Verein, Onboarding „Verein in 3 Schritten“. → <code style={{ color: 'var(--k2-accent)' }}>docs/KUNSTVEREINE-MULTIPLIKATOREN.md</code>
+        </p>
+        <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.75)' }}>
+          Quelle: <code>docs/VK2-VEREINSPLATTFORM.md</code>. Beim Drucken dieser mök2-Seite („Als PDF drucken“) ist die VK2-Lizenzstruktur mit dabei.
         </p>
       </section>
 
@@ -564,7 +742,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
       </section>
 
       <footer style={{ marginTop: '2rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>
-        {PRODUCT_COPYRIGHT} · Stand: Februar 2026 · Quelle: USP-UND-MARKTCHANCEN.md, VERMARKTUNGSKONZEPT-EMPFEHLUNGSPROGRAMM.md, Produkt-Vision, Galerie-App Feature-Stand.
+        <ProductCopyright /> · Stand: Februar 2026 · Quelle: USP-UND-MARKTCHANCEN.md, VERMARKTUNGSKONZEPT-EMPFEHLUNGSPROGRAMM.md, Produkt-Vision, Galerie-App Feature-Stand.
       </footer>
     </article>
   )

@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { ProjectNavButton } from '../components/Navigation'
 
+const HANDBUCH_DOC_PARAM = 'doc'
+
 export default function K2TeamHandbuchPage() {
+  const [searchParams] = useSearchParams()
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null)
   const [docContent, setDocContent] = useState<string>('')
   const [loading, setLoading] = useState(false)
@@ -22,14 +25,18 @@ export default function K2TeamHandbuchPage() {
     { id: '11-backup', name: 'Backup-Zusammenfassung', file: '11-BACKUP-ZUSAMMENFASSUNG.md' },
     { id: '12-arbeitsplattform', name: 'Arbeitsplattform Verbesserungen', file: '12-ARBEITSPLATTFORM-VERBESSERUNGEN.md' },
     { id: '13-backup-vollbackup', name: 'Backup & Vollbackup K2 Galerie', file: '13-BACKUP-VOLLBACKUP-K2-GALERIE.md' },
+    { id: '16-zentrale-themen', name: 'Zentrale Themen für Nutzer', file: '16-ZENTRALE-THEMEN-FUER-NUTZER.md', stand: '20.02.2026' },
   ]
 
   useEffect(() => {
-    // Lade erstes Dokument automatisch
-    if (!selectedDoc && documents.length > 0) {
-      loadDocument(documents[0].file)
+    const docFromUrl = searchParams.get(HANDBUCH_DOC_PARAM)
+    const fileToLoad = docFromUrl && documents.some((d) => d.file === docFromUrl)
+      ? docFromUrl
+      : documents[0].file
+    if (documents.length > 0) {
+      loadDocument(fileToLoad)
     }
-  }, [])
+  }, [searchParams])
 
   const loadDocument = async (filename: string) => {
     setLoading(true)

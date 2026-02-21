@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { PROJECT_ROUTES, PLATFORM_ROUTES, getAllProjectIds } from '../config/navigation'
 import { usePersistentBoolean } from '../hooks/usePersistentState'
 import { checkMobileUpdates } from '../utils/supabaseClient'
+import { filterK2ArtworksOnly } from '../utils/autoSave'
 import '../App.css'
 import GaleriePage from './GaleriePage'
 import GalerieVorschauPage from './GalerieVorschauPage'
@@ -106,22 +107,35 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
     window.location.hostname === '192.168.0.27'
   )
   
+  const APF_LAST_PAGE_KEY = 'k2-apf-last-page'
+
   // Standardmäßig Desktop-Ansicht für optimale Arbeitsansicht
   const [viewMode, setViewMode] = useState<ViewMode>(isLocalhost ? 'desktop' : 'desktop')
-  // Starte mit 'galerie' - lazy loading sollte jetzt helfen
-  const [currentPage, setCurrentPage] = useState(pageFromUrl || (isLocalhost ? 'galerie' : defaultPage) || 'mission')
+  // Beim Zurückkehren zur APf immer die zuletzt bearbeitete Seite anzeigen (aus URL oder localStorage)
+  const [currentPage, setCurrentPage] = useState(() => {
+    if (pageFromUrl) return pageFromUrl
+    if (typeof window !== 'undefined') {
+      const last = localStorage.getItem(APF_LAST_PAGE_KEY)
+      if (last) return last
+    }
+    return (isLocalhost ? 'galerie' : defaultPage) || 'mission'
+  })
   const [mobileZoom, setMobileZoom] = useState(1)
   const [desktopZoom, setDesktopZoom] = useState(1)
-  
-  // Update currentPage wenn URL-Parameter sich ändert
+
+  // Aktuelle Seite in localStorage merken – beim nächsten „Zurück zur APf“ wieder anzeigen
+  useEffect(() => {
+    if (currentPage && typeof window !== 'undefined') {
+      localStorage.setItem(APF_LAST_PAGE_KEY, currentPage)
+    }
+  }, [currentPage])
+
+  // Update currentPage wenn URL-Parameter sich ändert (z. B. Link „APf“ mit ?page=admin)
   useEffect(() => {
     if (pageFromUrl) {
       setCurrentPage(pageFromUrl)
-    } else if (isLocalhost && !pageFromUrl) {
-      // Auf localhost automatisch Galerie-Seite zeigen
-      setCurrentPage('galerie')
     }
-  }, [pageFromUrl, isLocalhost])
+  }, [pageFromUrl])
 
   // Auf Mobile: "platform" Tab automatisch zu "galerie" umleiten
   useEffect(() => {
@@ -182,6 +196,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   }, [panelMinimized])
   const [publishStatus, setPublishStatus] = useState<{ success: boolean; message: string; artworksCount?: number; size?: number } | null>(null)
   const [syncStatus, setSyncStatus] = useState<{ step: 'published' | 'git-push' | 'vercel-deploy' | 'ready' | null; progress: number }>({ step: null, progress: 0 })
+  const [lastPublishedTime, setLastPublishedTime] = useState<string | null>(() => localStorage.getItem('k2-last-published-time'))
   const [mobileSyncAvailable, setMobileSyncAvailable] = useState(false)
   
   // publishMobile Funktion - außerhalb des onClick Handlers definiert
@@ -264,11 +279,12 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
           })
           
           if (merged.length > localArtworks.length) {
-            console.log(`✅ ${merged.length - localArtworks.length} Mobile-Werke zu Veröffentlichung hinzugefügt`)
-            artworks = merged
-            // Speichere auch lokal für nächste Veröffentlichung
+            const toSave = filterK2ArtworksOnly(merged)
+            console.log(`✅ ${toSave.length - localArtworks.length} Mobile-Werke zu Veröffentlichung hinzugefügt`)
+            artworks = toSave
+            // Speichere auch lokal für nächste Veröffentlichung (nur echte K2-Werke)
             try {
-              localStorage.setItem('k2-artworks', JSON.stringify(merged))
+              localStorage.setItem('k2-artworks', JSON.stringify(toSave))
             } catch (e) {
               console.warn('⚠️ Konnte merged Werke nicht speichern:', e)
             }
@@ -396,9 +412,13 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
           
           // Klar als "Daten veröffentlicht" kennzeichnen (nicht Code-Update)
           const backupLabel = new Date(backupTime).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })
+          const nowLabel = new Date().toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })
+          localStorage.setItem('k2-last-published-time', nowLabel)
+          setLastPublishedTime(nowLabel)
+          
           setPublishStatus({
             success: true,
-            message: `📁 Daten veröffentlicht\n\n✅ Datei geschrieben. Backup: ${backupLabel}\n\nNächster Schritt: "📦 Code-Update (Git)" klicken\nODER Terminal: bash scripts/git-push-gallery-data.sh\n\n📱 Mobile: Danach (1-2 Min) QR neu scannen`,
+            message: `📁 Daten veröffentlicht\n\n✅ Datei geschrieben. Backup: ${backupLabel}\n\nNächster Schritt: "📦 Code-Update (Git)" klicken\nODER Terminal: bash scripts/git-push-gallery-data.sh\n\n→ Dann sind alle Werke öffentlich sichtbar – in jedem Netz.\n\n📱 Mobile: Danach (1-2 Min) QR neu scannen`,
             artworksCount,
             size: result.size
           })
@@ -525,21 +545,22 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
     try {
       const { hasUpdates, artworks } = await checkMobileUpdates()
       if (hasUpdates && artworks) {
-        // Speichere in localStorage
-        localStorage.setItem('k2-artworks', JSON.stringify(artworks))
+        const toSave = filterK2ArtworksOnly(artworks)
+        // Speichere in localStorage (nur echte K2-Werke)
+        localStorage.setItem('k2-artworks', JSON.stringify(toSave))
         localStorage.setItem('k2-last-load-time', Date.now().toString())
         
         // Update Hash für bessere Update-Erkennung
-        const hash = artworks.map((a: any) => a.number || a.id).sort().join(',')
+        const hash = toSave.map((a: any) => a.number || a.id).sort().join(',')
         localStorage.setItem('k2-artworks-hash', hash)
         
         // Event für andere Komponenten
         window.dispatchEvent(new CustomEvent('artworks-updated', { 
-          detail: { count: artworks.length, manualSync: true } 
+          detail: { count: toSave.length, manualSync: true } 
         }))
         
         setMobileSyncAvailable(false)
-        alert(`✅ ${artworks.length} Werke von Mobile synchronisiert!`)
+        alert(`✅ ${toSave.length} Werke von Mobile synchronisiert!`)
       } else {
         alert('ℹ️ Keine neuen Mobile-Daten gefunden')
       }
@@ -721,11 +742,11 @@ end tell`
 
   const allPages = [
     { id: 'galerie', name: 'Galerie', component: GaleriePage },
-    { id: 'galerie-oeffentlich', name: 'ök2 Galerie', component: GaleriePage },
+    { id: 'galerie-oeffentlich', name: 'Öffentliche Galerie K2', component: GaleriePage },
     { id: 'galerie-vorschau', name: 'Galerie-Vorschau', component: GalerieVorschauPage },
-    { id: 'galerie-oeffentlich-vorschau', name: 'ök2 Vorschau', component: GalerieVorschauPage },
+    { id: 'galerie-oeffentlich-vorschau', name: 'Öffentliche Galerie K2 Vorschau', component: GalerieVorschauPage },
     { id: 'produkt-vorschau', name: 'Produkt-Vorschau', component: ProduktVorschauPage },
-    { id: 'marketing-oek2', name: 'Marketing ök2', component: MarketingOek2Page },
+    { id: 'marketing-oek2', name: 'mök2 (Marketing)', component: MarketingOek2Page },
     { id: 'platzanordnung', name: 'Platzanordnung', component: PlatzanordnungPage },
     { id: 'shop', name: 'Shop', component: ShopPage },
     { id: 'control', name: 'Control Studio', component: ControlStudioPage },
@@ -772,7 +793,7 @@ end tell`
     if (pageToRender === 'galerie-oeffentlich') {
       return (
         <div key={componentKey} style={{ padding: '2rem', maxWidth: 400, margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ fontSize: '1.1rem', color: 'var(--k2-muted)', marginBottom: '1rem' }}>ök2 Galerie (Muster)</p>
+          <p style={{ fontSize: '1.1rem', color: 'var(--k2-muted)', marginBottom: '1rem' }}>Öffentliche Galerie K2</p>
           <Link to={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich} style={{ display: 'inline-block', padding: '0.75rem 1.5rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>Im Vollbild öffnen</Link>
         </div>
       )
@@ -783,7 +804,7 @@ end tell`
     if (pageToRender === 'galerie-oeffentlich-vorschau') {
       return (
         <div key={componentKey} style={{ padding: '2rem', maxWidth: 400, margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ fontSize: '1.1rem', color: 'var(--k2-muted)', marginBottom: '1rem' }}>ök2 Vorschau (Muster)</p>
+          <p style={{ fontSize: '1.1rem', color: 'var(--k2-muted)', marginBottom: '1rem' }}>Öffentliche Galerie K2 Vorschau</p>
           <Link to={PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau} style={{ display: 'inline-block', padding: '0.75rem 1.5rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>Im Vollbild öffnen</Link>
         </div>
       )
@@ -813,6 +834,32 @@ end tell`
       transition: 'padding-left 0.3s ease',
       position: 'relative'
     }}>
+      {/* Dauerhafter Veröffentlicht-Badge – immer sichtbar */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.6rem',
+        marginBottom: '1rem',
+        padding: '0.6rem 1rem',
+        background: lastPublishedTime ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)',
+        border: `1px solid ${lastPublishedTime ? 'rgba(16,185,129,0.35)' : 'rgba(245,158,11,0.35)'}`,
+        borderRadius: '10px',
+        fontSize: 'clamp(0.82rem, 1.8vw, 0.9rem)',
+        color: lastPublishedTime ? '#6ee7b7' : '#fcd34d'
+      }}>
+        <span style={{ fontSize: '1.1rem' }}>{lastPublishedTime ? '✅' : '⚠️'}</span>
+        <span style={{ fontWeight: '600' }}>
+          {lastPublishedTime
+            ? `Zuletzt veröffentlicht: ${lastPublishedTime}`
+            : 'Noch nicht veröffentlicht – Daten sind nur lokal gespeichert'}
+        </span>
+        {lastPublishedTime && (
+          <span style={{ marginLeft: 'auto', opacity: 0.7, fontSize: '0.78rem' }}>
+            Galerie auf Handy: aktuell
+          </span>
+        )}
+      </div>
+
       {/* Projekt-Info ist jetzt im Smart Panel */}
       
       {/* Status-Banner nach Veröffentlichen - NICHT blockierend */}

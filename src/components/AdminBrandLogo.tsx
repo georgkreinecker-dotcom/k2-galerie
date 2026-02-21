@@ -13,9 +13,11 @@ interface AdminBrandLogoProps {
   logoSrc?: string
   /** Alt-Text für das Logo-Bild */
   logoAlt?: string
+  /** Optional: Überschrift statt Produktname (z. B. "VK2 Vereinsplattform" im VK2-Admin). */
+  title?: string
 }
 
-export default function AdminBrandLogo({ logoSrc, logoAlt = 'Admin' }: AdminBrandLogoProps) {
+export default function AdminBrandLogo({ logoSrc, logoAlt = 'Admin', title }: AdminBrandLogoProps) {
   if (logoSrc) {
     return (
       <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -45,7 +47,7 @@ export default function AdminBrandLogo({ logoSrc, logoAlt = 'Admin' }: AdminBran
           lineHeight: 1.1,
         }}
       >
-        {PRODUCT_BRAND_NAME}
+        {title ?? PRODUCT_BRAND_NAME}
       </span>
       <span
         style={{

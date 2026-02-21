@@ -2,6 +2,8 @@
 
 **Zweck:** Nach Code-5 oder Neustart sofort weiterarbeiten, ohne auf einen Befehl zu warten. Georgs Anweisungen sollen **lückenlos** umgesetzt werden – auch nach Crash die begonnene Umsetzung zu Ende führen. Diese Datei gibt den Stand und die nächsten Schritte.
 
+**💬 Wo im Dialog?** Wenn du nach einem Absturz wieder **genau dort weiterarbeiten** willst, wo ihr im Gespräch aufgehört habt (z. B. Marketingkonzept, Plan): **`docs/DIALOG-STAND.md`** – dort steht immer der letzte Dialog-Stand und der nächste Schritt. Sag einfach „weiter nach Absturz“, dann liest die KI diese eine Datei und macht dort weiter.
+
 ---
 
 ## 🔒 WICHTIG: Crash während Programmieren ≠ App-Fehler (nicht im Kreis drehen)
@@ -57,6 +59,10 @@ Diese Klarstellung gilt dauerhaft, damit in zukünftigen Sessions nicht wieder A
 - **externalUrls.ts:** Alle betrieblichen Basis-URLs (APP_BASE_URL, BUILD_INFO_URL, GALLERY_DATA_BASE_URL) aus einer Datei; Env `VITE_APP_BASE_URL` für Self-Host.
 - **navigation.ts, GaleriePage, MobileConnectPage, GalerieVorschauPage, DevViewPage:** Hardcoded `k2-galerie.vercel.app` durch Import aus `externalUrls` ersetzt.
 - **Doku:** `docs/EXTERNE-VERBINDUNGEN.md`, Regel `.cursor/rules/externe-verbindungen-nur-zentral.mdc`.
+
+### Crash-Check (20.02.26)
+- **App.tsx:** Button „Reset & neu laden“ im iframe abgesichert (nur setState, kein location.reload).
+- **GalerieVorschauPage:** Beide Polling-Intervalle (Mac Mobile-Updates, Mobile-zu-Mobile) nur wenn nicht im iframe (notInIframe). Doku: `docs/CRASH-BEREITS-GEPRUEFT.md` ergänzt.
 
 ---
 

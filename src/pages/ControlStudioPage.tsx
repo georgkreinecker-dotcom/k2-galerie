@@ -325,7 +325,7 @@ const ControlStudioPage = () => {
               {tab === 'galerie' && 'Galerie'}
               {tab === 'verkaufe' && 'Verkäufe'}
               {tab === 'archiv' && 'Archiv'}
-              {tab === 'kunden' && 'Kunden'}
+              {tab === 'kunden' && 'Kundendaten'}
               {tab === 'events' && 'Events'}
               {tab === 'einstellungen' && 'Einstellungen'}
             </button>

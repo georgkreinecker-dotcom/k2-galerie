@@ -15,6 +15,16 @@ export const PRODUCT_WERBESLOGAN = 'K2 Galerie – in 5 Minuten zu deiner eigene
 /** Zweite Kernbotschaft: Empfehlungs-Programm – kostenlose Nutzung und Einkommen durch Weiterempfehlung */
 export const PRODUCT_BOTSCHAFT_2 = 'Durch Weiterempfehlung: kostenlose Nutzung und Einkommen erzielen'
 
+/** Zielgruppe in einem Satz – für Werbung, mök2, alle Kanäle (eine Quelle). */
+export const PRODUCT_ZIELGRUPPE =
+  'Künstler:innen mit Verkauf – Atelier, Ausstellungen, Märkte – die Webauftritt, Kasse und Werbung aus einer Hand wollen.'
+
+/** E-Mail für „Lizenz anfragen“ (CTA nach Demo). mailto: wird damit gebaut. */
+export const PRODUCT_LIZENZ_ANFRAGE_EMAIL = 'info@kgm.at'
+
+/** Betreff für Lizenz-Anfrage-E-Mail (kurz, erkennbar). */
+export const PRODUCT_LIZENZ_ANFRAGE_BETREFF = 'K2 Galerie – Lizenz anfragen'
+
 export type TenantId = 'k2' | 'demo' | 'oeffentlich' | 'vk2'
 
 export interface TenantConfig {
@@ -57,7 +67,7 @@ export const K2_STAMMDATEN_DEFAULTS = {
     website: '',
   },
   gallery: {
-    name: 'K2 Galerie',
+    name: 'K2 Galerie Kunst&Keramik',
     address: '',
     city: '',
     country: '',
@@ -74,11 +84,11 @@ export const K2_STAMMDATEN_DEFAULTS = {
 export const TENANT_CONFIGS: Record<TenantId, TenantConfig> = {
   k2: {
     id: 'k2',
-    galleryName: 'K2 Galerie',
+    galleryName: 'K2 Galerie Kunst&Keramik',
     artist1Name: 'Martina Kreinecker',
     artist2Name: 'Georg Kreinecker',
     tagline: 'Kunst & Keramik',
-    footerLine: 'K2 Galerie | Martina & Georg Kreinecker',
+    footerLine: 'K2 Galerie Kunst&Keramik | Martina & Georg Kreinecker',
   },
   demo: {
     id: 'demo',
@@ -88,13 +98,14 @@ export const TENANT_CONFIGS: Record<TenantId, TenantConfig> = {
     tagline: 'Bilder & Skulptur',
     footerLine: 'Atelier Muster | Lisa & Max Muster',
   },
+  /** Öffentliche Galerie K2 – nur Platzhalter, keine echten Namen (Impressum = Ausnahme) */
   oeffentlich: {
     id: 'oeffentlich',
     galleryName: 'Galerie Muster',
     artist1Name: 'Künstlerin Muster',
     artist2Name: 'Künstler Muster',
-    tagline: 'Bilder & Skulptur',
-    footerLine: 'Galerie Muster | Künstlerin & Künstler Muster',
+    tagline: 'Kunst & Keramik',
+    footerLine: 'Galerie Muster | Kunst & Keramik',
   },
   vk2: {
     id: 'vk2',
@@ -104,6 +115,109 @@ export const TENANT_CONFIGS: Record<TenantId, TenantConfig> = {
     tagline: 'Kunstverein',
     footerLine: 'Vereinsplattform | Künstler:innen',
   },
+}
+
+/** Ein registriertes VK2-Mitglied (User mit K2-Account) – volle Stammdaten inkl. Adresse, Geburtstag, Eintritt */
+export interface Vk2Mitglied {
+  name: string
+  email?: string
+  lizenz?: string
+  /** Kunstrichtung / Kategorie (z. B. Malerei, Keramik) */
+  typ?: string
+  /** Foto vom Mitglied (Porträt) – z. B. in Listen als kleines Rundbild */
+  mitgliedFotoUrl?: string
+  /** Werkfoto – erscheint als Bild in der Mitgliedergalerie (Kartenansicht) */
+  imageUrl?: string
+  phone?: string
+  website?: string
+  /** Straße und Hausnummer */
+  strasse?: string
+  plz?: string
+  ort?: string
+  land?: string
+  /** Geburtsdatum (z. B. DD.MM.YYYY) */
+  geburtsdatum?: string
+  /** Eintrittsdatum in den Verein (kann lange zurückliegen bei bestehenden Vereinen) */
+  eintrittsdatum?: string
+  /** Eintrittsdatum / „Seit“ – Alias, wird bei Anzeige genutzt */
+  seit?: string
+  /** Auf der Karte / öffentlich sichtbar (Hakerl). false = gesperrt, nicht auf der öffentlichen Karte */
+  oeffentlichSichtbar?: boolean
+  /** Bankverbindung – für Mitglieder, die am Bonussystem teilnehmen */
+  bankKontoinhaber?: string
+  bankIban?: string
+  bankBic?: string
+  bankName?: string
+}
+
+/** VK2-Stammdaten: Verein mit Vorstand, Beirat, Mitgliedern (K2-Familie: gleiche Struktur, eigene Keys) */
+export interface Vk2Stammdaten {
+  verein: {
+    name: string
+    address: string
+    city: string
+    country: string
+    vereinsnummer: string
+    email: string
+    website: string
+  }
+  vorstand: { name: string }
+  vize: { name: string }
+  kassier: { name: string }
+  schriftfuehrer: { name: string }
+  beisitzer?: { name: string }
+  /** Registrierte Mitglieder (User mit K2-Account/Lizenz). Ab 10 wird der Verein kostenfrei. Volle Daten. */
+  mitglieder: Vk2Mitglied[]
+  /** Nicht registrierte Mitglieder (ohne K2-Account). Obliegt dem Verein; werden im System erfasst (Datenschutz). */
+  mitgliederNichtRegistriert: string[]
+}
+
+/** Registrierungs-Config: Lizenztyp, Vereinsmitgliedschaft, Bonussystem-Option (für K2/ök2/VK2) */
+export interface RegistrierungConfig {
+  /** Basis = reduzierte Version, Pro = alle Features */
+  lizenztyp: 'basis' | 'pro'
+  /** Nutzer ist Vereinsmitglied (z. B. VK2-Verein) */
+  vereinsmitglied: boolean
+  /** Nur relevant wenn vereinsmitglied: true. false = 50 % Bonus (kein Bonussystem), true = Vollpreis (Bonussystem nutzen) */
+  vollpreisFuerEmpfehlung: boolean
+  /** Kostenlose Lizenz (Präfix KF) – das System kann kostenlose Lizenzen vergeben */
+  kostenfrei: boolean
+  /** Lizenznummer, die das K2-System vergibt. Präfix: B=Basis, P=Pro, VB=Verein+50 %, VP=Verein+Bonussystem, KF=Kostenfrei (vom Bonussystem ausgeschlossen) */
+  lizenznummer: string
+}
+
+export const REGISTRIERUNG_CONFIG_DEFAULTS: RegistrierungConfig = {
+  lizenztyp: 'pro',
+  vereinsmitglied: false,
+  vollpreisFuerEmpfehlung: false,
+  kostenfrei: false,
+  lizenznummer: '',
+}
+
+/** Ermittelt das Präfix der Lizenznummer aus der Registrierungs-Config: B, P, VB, VP, KF */
+export function getLizenznummerPraefix(c: RegistrierungConfig): string {
+  if (c.kostenfrei) return 'KF'
+  if (c.vereinsmitglied) return c.vollpreisFuerEmpfehlung ? 'VP' : 'VB'
+  return c.lizenztyp === 'pro' ? 'P' : 'B'
+}
+
+export const VK2_STAMMDATEN_DEFAULTS: Vk2Stammdaten = {
+  verein: {
+    name: '',
+    address: '',
+    city: '',
+    country: '',
+    vereinsnummer: '',
+    email: '',
+    website: '',
+  },
+  vorstand: { name: '' },
+  vize: { name: '' },
+  kassier: { name: '' },
+  schriftfuehrer: { name: '' },
+  beisitzer: { name: '' },
+  mitglieder: [],
+  mitgliederNichtRegistriert: [],
 }
 
 /** Platzhalter-Bild für Musterwerke und ök2-Seiten (keine echten Fotos). Exportiert für Fallback bei Ladefehler. */
@@ -132,19 +246,23 @@ export function getOek2DefaultArtworkImage(categoryId: string | undefined): stri
   return OEK2_DEFAULT_ARTWORK_IMAGES[id] || OEK2_DEFAULT_ARTWORK_IMAGES.sonstiges
 }
 
-/** Mustertexte für Öffentliches Projekt (ök2) – keine echten personenbezogenen Daten, vollständige Basis für Impressum/Shop/Demo */
+/** Mustertexte für Öffentliches Projekt (ök2) – keine echten personenbezogenen Daten, vollständige Basis für Impressum/Shop/Demo. Zwei Künstler:innen mit Namen und Gesicht (Demo-Fotos). */
 export const MUSTER_TEXTE = {
   martina: {
-    name: 'Künstlerin Muster',
+    name: 'Lena Berg',
     email: 'kontakt-bilder@galerie-muster.example',
     phone: '+43 1 234 5678',
     website: 'www.kuenstlerin-muster.example',
+    /** Profilfoto für Demo (Unsplash, lizenzfrei). */
+    photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=85',
   },
   georg: {
-    name: 'Künstler Muster',
+    name: 'Paul Weber',
     email: 'kontakt-skulptur@galerie-muster.example',
     phone: '+43 1 234 5679',
     website: 'www.kuenstler-muster.example',
+    /** Profilfoto für Demo (Unsplash, lizenzfrei). */
+    photoUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=85',
   },
   gallery: {
     address: 'Musterstraße 1',
@@ -163,10 +281,74 @@ export const MUSTER_TEXTE = {
     galerieCardImage: OEK2_WILLKOMMEN_IMAGES.galerieCardImage,
   },
   welcomeText: 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Bildern und Skulptur in einem Raum, wo Kunst zum Leben erwacht.',
-  artist1Bio: 'Künstlerin Muster bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. ihre Werke spiegeln Jahre des Lernens und der Leidenschaft für die Bilder wider.',
-  artist2Bio: 'Künstler Muster verbindet in seiner Arbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail.',
-  gemeinsamText: 'Gemeinsam eröffnen Künstlerin und Künstler Muster die Galerie Muster – ein Raum, wo Bilder und Skulptur verschmelzen und Kunst zum Leben erwacht.',
+  artist1Bio: 'Lena Berg arbeitet in Malerei, Grafik und Mischtechnik. Studium der Bildenden Kunst, seit über zwanzig Jahren freischaffend. Ihre Werke – oft Landschaften und Atelierblicke – leben von kräftigen Farben und reduzierten Formen. Ausstellungen im In- und Ausland, Arbeiten in privaten Sammlungen.',
+  artist2Bio: 'Paul Weber widmet sich vor allem Keramik und Skulptur. Ausbildung zum Keramiker, langjährige Erfahrung mit Aufbau und Brand. Seine Objekte und Skulpturen verbinden handwerkliche Präzision mit klaren, zeitgenössischen Formen. Regelmäßige Teilnahme an Kunstmärkten und Gruppenausstellungen.',
+  gemeinsamText: 'Gemeinsam eröffnen Lena Berg und Paul Weber die Galerie Muster – ein Raum, wo Bilder und Skulptur verschmelzen und Kunst zum Leben erwacht.',
 }
+
+/** Dummy-Vita für Künstler:in 1 (Malerei/Grafik), ~50 Zeilen – für Einstellungen, Außenkommunikation, Galeriegestaltung. */
+export const MUSTER_VITA_MARTINA = `Lena Berg
+Malerei · Grafik · Mischtechnik
+
+Geboren in Wien. Seit früher Jugend Auseinandersetzung mit Zeichnung und Farbe.
+
+1998–2003 Studium der Bildenden Kunst, Schwerpunkt Malerei und Grafik. Diplom mit Auszeichnung.
+
+2003–2006 Atelier in Wien; erste Einzelausstellungen; Teilnahme an Kunstmessen.
+
+2006 Umzug nach Niederösterreich. Atelier in einem ehemaligen Gutshof – Licht und Landschaft prägen die Arbeit.
+
+2008 Stipendium Künstlerhaus; Arbeitsaufenthalt in der Toskana. Serie „Tagebücher der Landschaft“.
+
+2010–2015 Lehrtätigkeit Zeichen und Malerei (Kunstschule, Workshops). Zahlreiche Gruppenausstellungen im In- und Ausland.
+
+2015 Fokus auf großformatige Malerei; Reduktion der Palette, stärkere Betonung von Struktur und Fläche.
+
+2018 Einzelausstellung Galerie Musterstadt; Katalog „Zwischenräume“.
+
+2020 Serie „Fenster“ – Innen und Außen, Linolschnitte und Monotypien. Auflage 15.
+
+2022 Beteiligung Kunst am Bau (öffentlicher Raum); Arbeiten in privaten und institutionellen Sammlungen.
+
+2024 Gründung der Galerie Muster gemeinsam mit Paul Weber. Malerei und Grafik im Dialog mit Keramik und Skulptur.
+
+Arbeitsweise: Acryl, Öl, Tusche, Linolschnitt, Mischtechnik. Themen: Landschaft, Atelier, Erinnerung, Reduktion. Arbeiten in privaten Sammlungen in Österreich, Deutschland, Schweiz.
+
+Kontakt und aktuelle Werke über die Galerie.`
+
+/** Dummy-Vita für Künstler:in 2 (Keramik/Skulptur), ~50 Zeilen. */
+export const MUSTER_VITA_GEORG = `Paul Weber
+Keramik · Skulptur
+
+Geboren in Graz. Ursprünglich Ausbildung im technischen Bereich; Wechsel zur Keramik Mitte der 1990er Jahre.
+
+1995–1999 Lehre und Praxis in Keramikwerkstätten; Schwerpunkt Aufbau, Drehen, Brand.
+
+1999 Eigenes Atelier; erste Ausstellungen mit Gebrauchskeramik und Objekten.
+
+2002 Umstellung auf oxidierenden und reduzierenden Brand; Experimente mit Glasuren und Engoben.
+
+2005 Teilnahme an Keramiksymposien; Austausch mit Bildhauer:innen und Keramiker:innen in Österreich und Tschechien.
+
+2008 Erste skulpturale Serien; Verbindung von Gefäß und Figur. Ausstellung „Grenzgänge“.
+
+2010–2016 Regelmäßige Teilnahme an Kunstmärkten und Messen; Verkauf in Galerien und direkt aus dem Atelier.
+
+2016 Serie „Stehende Formen“ – abstrakte Skulptur, handgeformt, oxidierend gebrannt. Einzelstücke.
+
+2018 Kooperation mit Architekturbüro (Kunst am Bau); großformatige Wandobjekte.
+
+2020 Fokus auf Reduktion: wenige Formen, klare Linien, Oberflächen im Wechsel von matt und glasiert.
+
+2022 Einzelausstellung „Ton und Zeit“; Katalog mit Texten zur Arbeitsweise.
+
+2024 Mitgründung der Galerie Muster. Keramik und Skulptur im Zusammenspiel mit Malerei und Grafik.
+
+Arbeitsweise: Handaufbau, Drehen, Modellieren. Brennverfahren: Oxidation, Reduktion, Raku. Material: Steinzeug, Porzellan, Engoben. Themen: Form, Balance, Reduktion, Serie und Einzelstück.
+
+Arbeiten in privaten Sammlungen und im öffentlichen Raum.
+
+Kontakt und aktuelle Werke über die Galerie.`
 
 /** Max. 5 Werk-Kategorien – einheitlich für Werke-Verwaltung, History und Kassa */
 export const ARTWORK_CATEGORIES = [
@@ -215,15 +397,49 @@ export function getCategoryPrefixLetter(cat: string | undefined): string {
   return (cat && CATEGORY_PREFIX_LETTER[cat]) || 'M'
 }
 
-/** Musterwerke für ök2 – mit kategoriepassenden Standardbildern (OEK2_DEFAULT_ARTWORK_IMAGES); alle 5 Kategorien abgedeckt. */
+/** Musterwerke für ök2 – zwei vielseitige Künstler:innen, je ein Werk pro Kategorie; mit Beschreibung und Kategoriebild. */
+const _musterTs = new Date().toISOString()
 export const MUSTER_ARTWORKS = [
-  { id: 'muster-1', number: 'M1', title: 'Musterwerk Bilder 1', category: 'malerei', imageUrl: getOek2DefaultArtworkImage('malerei'), price: '', description: 'Beispiel Bilder.', inExhibition: true },
-  { id: 'muster-2', number: 'M2', title: 'Musterwerk Bilder 2', category: 'malerei', imageUrl: getOek2DefaultArtworkImage('malerei'), price: '', description: 'Beispiel Bilder.', inExhibition: true },
-  { id: 'muster-3', number: 'M3', title: 'Musterwerk Keramik 1', category: 'keramik', imageUrl: getOek2DefaultArtworkImage('keramik'), price: '', description: 'Beispiel Keramik.', inExhibition: true },
-  { id: 'muster-4', number: 'M4', title: 'Musterwerk Keramik 2', category: 'keramik', imageUrl: getOek2DefaultArtworkImage('keramik'), price: '', description: 'Beispiel Keramik.', inExhibition: true },
-  { id: 'muster-5', number: 'G1', title: 'Musterwerk Grafik', category: 'grafik', imageUrl: getOek2DefaultArtworkImage('grafik'), price: '', description: 'Beispiel Grafik.', inExhibition: true },
-  { id: 'muster-6', number: 'S1', title: 'Musterwerk Skulptur', category: 'skulptur', imageUrl: getOek2DefaultArtworkImage('skulptur'), price: '', description: 'Beispiel Skulptur.', inExhibition: true },
-  { id: 'muster-7', number: 'O1', title: 'Musterwerk Sonstiges', category: 'sonstiges', imageUrl: getOek2DefaultArtworkImage('sonstiges'), price: '', description: 'Beispiel Sonstiges.', inExhibition: true },
+  { id: 'muster-1', number: 'M1', title: 'Morgenlicht über den Hügeln', category: 'malerei', artist: 'Lena Berg', imageUrl: getOek2DefaultArtworkImage('malerei'), price: 480, description: 'Acryl auf Leinwand, 80 × 60 cm. Weite Landschaft im ersten Licht – kräftige Farben, reduzierter Stil. Aus der Serie „Tageszeiten“.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs },
+  { id: 'muster-2', number: 'K1', title: 'Vase „Herbstlaub“', category: 'keramik', artist: 'Paul Weber', imageUrl: getOek2DefaultArtworkImage('keramik'), price: 320, description: 'Steingut, handgeformt, Engobe in Erdtönen, 28 cm hoch. Inspiriert von herbstlichen Wäldern – matt glasiert, haptisch.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs },
+  { id: 'muster-3', number: 'G1', title: 'Durch das Fenster', category: 'grafik', artist: 'Lena Berg', imageUrl: getOek2DefaultArtworkImage('grafik'), price: 180, description: 'Linolschnitt, Auflage 15, 30 × 40 cm. Innen und Außen – Blick aus dem Atelier. Klare Linien, starke Kontraste.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs },
+  { id: 'muster-4', number: 'S1', title: 'Stehende Form', category: 'skulptur', artist: 'Paul Weber', imageUrl: getOek2DefaultArtworkImage('skulptur'), price: 1200, description: 'Keramik, oxidierend gebrannt, 45 cm. Abstrakte Figur – Balance und Bewegung. Einzelstück.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs },
+  { id: 'muster-5', number: 'O1', title: 'Kleines Feld', category: 'sonstiges', artist: 'Lena Berg', imageUrl: getOek2DefaultArtworkImage('sonstiges'), price: 95, description: 'Mischtechnik auf Papier, 25 × 25 cm. Farbige Flächen und Strukturen – experimentell, spielerisch.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs },
+]
+
+/** Einladung Vernissage – HTML aus MUSTER_TEXTE (Stammdaten), für Demo/ök2. */
+function getMusterEinladungDataUrl(): string {
+  const g = MUSTER_TEXTE.gallery
+  const m = MUSTER_TEXTE.martina.name
+  const p = MUSTER_TEXTE.georg.name
+  const adresse = [g.address, g.city, g.country].filter(Boolean).join(', ')
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Einladung Vernissage</title><style>body{font-family:Georgia,serif;max-width:560px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#222}h1{font-size:1.5rem;border-bottom:2px solid #6b9080;padding-bottom:.5rem}p{margin:.75rem 0}.meta{color:#555;font-size:.95rem}</style></head><body><h1>Einladung zur Vernissage</h1><p><strong>Galerie Muster</strong> – Malerei, Keramik, Grafik &amp; Skulptur</p><p class="meta">Samstag, 15. März 2026, 18 Uhr</p><p>${adresse || 'Musterstraße 1, 12345 Musterstadt'}</p><p>Wir freuen uns auf Ihren Besuch. ${m} und ${p} präsentieren neue Arbeiten aus allen Sparten.</p><p>Um Anmeldung wird gebeten: ${g.email || 'info@galerie-muster.example'}</p></body></html>`
+  return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
+}
+
+/** Presse-Text Vernissage – HTML aus MUSTER_TEXTE, für Öffentlichkeitsarbeit. */
+function getMusterPresseDataUrl(): string {
+  const g = MUSTER_TEXTE.gallery
+  const m = MUSTER_TEXTE.martina.name
+  const p = MUSTER_TEXTE.georg.name
+  const adresse = [g.address, g.city, g.country].filter(Boolean).join(', ')
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Presse Vernissage</title><style>body{font-family:Georgia,serif;max-width:600px;margin:2rem auto;padding:0 1rem;line-height:1.65;color:#222}h1{font-size:1.35rem;border-bottom:2px solid #6b9080;padding-bottom:.4rem}p{margin:.6rem 0}.meta{color:#555;font-size:.9rem}</style></head><body><h1>Presseinformation – Vernissage</h1><p><strong>Galerie Muster</strong> lädt zur Eröffnung der Ausstellung „Neue Arbeiten“ ein.</p><p class="meta">Samstag, 15. März 2026, 18 Uhr<br>${adresse || 'Musterstraße 1, 12345 Musterstadt'}</p><p>${m} (Malerei, Grafik) und ${p} (Keramik, Skulptur) zeigen aktuelle Werke in Malerei, Keramik, Grafik und Skulptur. Die Ausstellung ist im Anschluss zu den Öffnungszeiten zu sehen.</p><p>Kontakt: ${g.email || 'info@galerie-muster.example'}, ${g.phone || ''}</p></body></html>`
+  return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
+}
+
+/** Muster-Events für ök2 (Vernissage mit Einladung + Presse). Wenn k2-oeffentlich-events leer ist, werden diese angezeigt. */
+export const MUSTER_EVENTS = [
+  {
+    id: 'muster-event-1',
+    title: 'Vernissage – Neue Arbeiten',
+    date: '2026-03-15',
+    endDate: '2026-03-15',
+    description: 'Eröffnung der Ausstellung mit Malerei, Keramik, Grafik und Skulptur von Lena Berg und Paul Weber.',
+    documents: [
+      { id: 'muster-doc-1', name: 'Einladung zur Vernissage', fileName: 'einladung-vernissage.html', fileType: 'text/html', fileData: getMusterEinladungDataUrl() },
+      { id: 'muster-doc-2', name: 'Presseinformation Vernissage', fileName: 'presse-vernissage.html', fileType: 'text/html', fileData: getMusterPresseDataUrl() },
+    ],
+  },
 ]
 
 /** Aktuellen Mandanten lesen (localStorage, Default: k2). Wirft nie – auch bei leerem Cache/Privatmodus. */

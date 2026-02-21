@@ -2,7 +2,7 @@
 
 **Erstellt:** 9. Februar 2026  
 **Version:** 1.3.0  
-**Letzte Aktualisierung:** 9. Februar 2026, 16:00 Uhr
+**Letzte Aktualisierung:** 20. Februar 2026
 
 ---
 
@@ -23,7 +23,8 @@ Dieses Dokument ist eine zusammengefasste Version des aktuellen AI-Memory-Backup
 
 ## 🎨 PROJEKT
 
-**Name:** K2 Galerie  
+**Name:** K2 Galerie (Plattform)  
+**Unsere Galerie:** K2 Galerie Kunst&Keramik  
 **Typ:** Multi-Tenant SaaS  
 **Beschreibung:** Galerie für Kunst & Keramik von Martina und Georg Kreinecker  
 **Tech-Stack:** React, TypeScript, Tailwind, Vite, Supabase
@@ -369,7 +370,7 @@ Dieses Dokument ist eine zusammengefasste Version des aktuellen AI-Memory-Backup
 ## 📅 VERSION & UPDATES
 
 **Version:** 1.3.0  
-**Letzte Aktualisierung:** 9. Februar 2026, 16:00 Uhr  
+**Letzte Aktualisierung:** 20. Februar 2026  
 **Nächste Überprüfung:** Bei wichtigen Änderungen
 
 ---

@@ -2,7 +2,7 @@
 
 **Version:** 1.0  
 **Erstellt:** 9. Februar 2026  
-**Letzte Aktualisierung:** 9. Februar 2026
+**Letzte Aktualisierung:** 20. Februar 2026
 
 ---
 

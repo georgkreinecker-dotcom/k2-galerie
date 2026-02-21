@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY } from '../config/navigation'
-import { MUSTER_ARTWORKS, SEED_VK2_ARTISTS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, type ArtworkCategoryId } from '../config/tenantConfig'
+import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, SEED_VK2_ARTISTS, type ArtworkCategoryId } from '../config/tenantConfig'
 import { 
   syncMobileToSupabase, 
   checkMobileUpdates, 
@@ -26,6 +26,26 @@ function loadArtworks(): any[] {
   }
 }
 
+/** Nummern der Seed-Musterwerke (ök2) – dürfen nie in K2-Galerie oder Backup landen. */
+const MUSTER_NUMMERN = new Set(['M1', 'M2', 'M3', 'M4', 'M5', 'G1', 'S1', 'O1'])
+
+/** Musterwerke (id muster-*, Muster-Nummern) und VK2 – gehören nicht in K2. */
+function isMusterOrVk2Artwork(a: any): boolean {
+  if (!a) return false
+  const num = (a.number != null ? String(a.number).trim() : '').toUpperCase()
+  const id = a.id != null ? String(a.id) : ''
+  if (id.startsWith('muster-')) return true
+  if (num.startsWith('VK2-') || id.startsWith('vk2-seed-')) return true
+  if (MUSTER_NUMMERN.has(num)) return true
+  return false
+}
+
+/** Für K2: Nur echte Werke anzeigen/speichern – Muster und VK2 entfernen. */
+function filterK2ArtworksOnly(artworks: any[]): any[] {
+  if (!Array.isArray(artworks)) return []
+  return artworks.filter((a: any) => !isMusterOrVk2Artwork(a))
+}
+
 /** Prüft, ob eine URL ein inline SVG-Platzhalter ist (ök2: dann Kategorie-Standardbild nutzen). */
 function isPlaceholderImageUrl(url: string | undefined): boolean {
   return !url || (typeof url === 'string' && url.startsWith('data:image/svg+xml'))
@@ -45,7 +65,7 @@ function loadOeffentlichArtworks(): any[] {
       } else if (out.previewUrl) {
         out.imageUrl = out.previewUrl
       }
-      if (isPlaceholderImageUrl(out.imageUrl)) out.imageUrl = getOek2DefaultArtworkImage(out.category)
+      if (!out.imageUrl || isPlaceholderImageUrl(out.imageUrl)) out.imageUrl = getOek2DefaultArtworkImage(out.category)
       return out
     })
   } catch {
@@ -53,7 +73,7 @@ function loadOeffentlichArtworks(): any[] {
   }
 }
 
-/** VK2: Werke aus k2-vk2-artworks (Vereinsplattform). Leer = SEED_VK2_ARTISTS. */
+/** VK2: Werke aus k2-vk2-artworks (Vereinsplattform). Leer = leere Liste. */
 function loadVk2Artworks(): any[] {
   try {
     const raw = localStorage.getItem('k2-vk2-artworks')
@@ -71,14 +91,15 @@ function loadVk2Artworks(): any[] {
   }
 }
 
-// KRITISCH: Backup-System für Mobile-Werke
+// KRITISCH: Backup-System für Mobile-Werke. K2: Nur echte Werke ins Backup (keine Muster/VK2).
 function createBackup(artworks: any[]): void {
   try {
+    const toSave = filterK2ArtworksOnly(artworks)
     const backup = {
       timestamp: new Date().toISOString(),
-      artworks: artworks,
-      count: artworks.length,
-      mobileWorks: artworks.filter((a: any) => a.createdOnMobile || a.updatedOnMobile).length
+      artworks: toSave,
+      count: toSave.length,
+      mobileWorks: toSave.filter((a: any) => a.createdOnMobile || a.updatedOnMobile).length
     }
     localStorage.setItem('k2-artworks-backup', JSON.stringify(backup))
     console.log('💾 Backup erstellt:', backup.count, 'Werke,', backup.mobileWorks, 'Mobile-Werke')
@@ -87,14 +108,25 @@ function createBackup(artworks: any[]): void {
   }
 }
 
-// KRITISCH: Lade Backup falls vorhanden
+// KRITISCH: Lade Backup – K2: immer gefiltert (Muster/VK2 + Muster-Nummern raus). Wenn nur Muster drin waren: Backup leeren.
 function loadBackup(): any[] | null {
   try {
     const backupData = localStorage.getItem('k2-artworks-backup')
     if (backupData) {
       const backup = JSON.parse(backupData)
-      console.log('💾 Backup gefunden:', backup.count, 'Werke,', backup.mobileWorks, 'Mobile-Werke')
-      return backup.artworks || null
+      const list = Array.isArray(backup.artworks) ? backup.artworks : []
+      const filtered = filterK2ArtworksOnly(list)
+      if (filtered.length > 0) {
+        console.log('💾 Backup gefunden:', filtered.length, 'Werke (nach Filter Muster/VK2)')
+        return filtered
+      }
+      if (list.length > 0) {
+        try {
+          localStorage.setItem('k2-artworks-backup', JSON.stringify({ timestamp: new Date().toISOString(), artworks: [], count: 0, mobileWorks: 0 }))
+          console.log('🔒 Backup enthielt nur Musterwerke – Backup geleert')
+        } catch (_) {}
+      }
+      return null
     }
   } catch (error) {
     console.warn('⚠️ Backup konnte nicht geladen werden:', error)
@@ -103,7 +135,9 @@ function loadBackup(): any[] | null {
 }
 
 function saveArtworks(artworks: any[]): boolean {
-  const json = JSON.stringify(artworks)
+  // K2: Nur echte Werke speichern – Muster/VK2 nie in k2-artworks schreiben
+  const toSave = filterK2ArtworksOnly(artworks)
+  const json = JSON.stringify(toSave)
   try {
     // KRITISCH: Erstelle Backup VOR dem Speichern (besonders wichtig für Mobile-Werke!)
     const currentArtworks = loadArtworks()
@@ -112,7 +146,7 @@ function saveArtworks(artworks: any[]): boolean {
     }
     
     // KRITISCH: Prüfe ob Mobile-Werke vorhanden sind
-    const mobileWorks = artworks.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
+    const mobileWorks = toSave.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
     if (mobileWorks.length > 0) {
       console.log(`🔒 ${mobileWorks.length} Mobile-Werke werden geschützt beim Speichern`)
     }
@@ -125,7 +159,7 @@ function saveArtworks(artworks: any[]): boolean {
     }
     
     // KRITISCH: Prüfe ob wir versehentlich alle Werke löschen wollen
-    if (artworks.length === 0 && currentArtworks && currentArtworks.length > 0) {
+    if (toSave.length === 0 && currentArtworks && currentArtworks.length > 0) {
       console.error('❌ KRITISCH: Versuch alle Werke zu löschen!')
       console.error('Aktuelle Werke:', currentArtworks.length)
       console.error('Mobile-Werke:', currentArtworks.filter((a: any) => a.createdOnMobile || a.updatedOnMobile).length)
@@ -144,7 +178,7 @@ function saveArtworks(artworks: any[]): boolean {
     }
     
     localStorage.setItem('k2-artworks', json)
-    console.log('✅ Gespeichert:', artworks.length, 'Werke, Größe:', json.length, 'Bytes')
+    console.log('✅ Gespeichert:', toSave.length, 'Werke, Größe:', json.length, 'Bytes', toSave.length < artworks.length ? '(Muster/VK2 entfernt)' : '')
     
     // Verifiziere Speicherung
     const verify = localStorage.getItem('k2-artworks')
@@ -207,8 +241,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   const initialArtworks = (() => {
     if (vk2) {
       const v = loadVk2Artworks()
-      if (v.length > 0) return v
-      return [...SEED_VK2_ARTISTS]
+      return v
     }
     if (musterOnly) {
       const oef = loadOeffentlichArtworks()
@@ -219,9 +252,18 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       const stored = localStorage.getItem('k2-artworks')
       if (!stored) return []
       const parsed = JSON.parse(stored)
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        console.log('✅ Initiale Werke aus localStorage geladen:', parsed.length, 'Nummern:', parsed.map((a: any) => a.number || a.id))
-        return parsed.map((a: any) => {
+      if (!Array.isArray(parsed)) return []
+      const filtered = filterK2ArtworksOnly(parsed)
+      if (filtered.length < parsed.length) {
+        try {
+          localStorage.setItem('k2-artworks', JSON.stringify(filtered))
+          window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: filtered.length, musterRemoved: true } }))
+        } catch (_) {}
+      }
+      const list = filtered.length > 0 ? filtered : []
+      if (list.length > 0) {
+        console.log('✅ Initiale Werke aus localStorage geladen:', list.length, 'Nummern:', list.map((a: any) => a.number || a.id))
+        return list.map((a: any) => {
           if (!a.imageUrl && a.previewUrl) {
             a.imageUrl = a.previewUrl
           }
@@ -400,6 +442,31 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [likedArtworks, setLikedArtworks] = useState<Set<string>>(new Set())
+  const [shareLinkCopied, setShareLinkCopied] = useState(false)
+  const hasOpenedFromHash = useRef(false)
+
+  // Beim Laden: Wenn URL-Hash #werk=XXX vorhanden, Lightbox auf dieses Werk öffnen (einmalig)
+  useEffect(() => {
+    const hash = typeof window !== 'undefined' ? window.location.hash : ''
+    const m = hash.match(/^#werk=(.+)$/)
+    if (!m || !artworks.length || hasOpenedFromHash.current) return
+    hasOpenedFromHash.current = true
+    const idOrNum = decodeURIComponent(m[1].trim())
+    const idx = artworks.findIndex((a: any) =>
+      (a.number != null && String(a.number) === idOrNum) || (a.id != null && String(a.id) === idOrNum)
+    )
+    if (idx < 0) return
+    const a = artworks[idx]
+    const src = a.imageUrl || a.previewUrl || ''
+    if (!src) return
+    setLightboxImage({
+      src,
+      title: a.title || a.number || '',
+      artwork: a,
+      allArtworks: artworks,
+      currentIndex: idx
+    })
+  }, [artworks])
 
   // Lightbox: Vor/Zurück mit Pfeiltasten
   useEffect(() => {
@@ -696,11 +763,19 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     if (musterOnly) return () => {}
     let isMounted = true
     
-    // KRITISCH: Erstelle Backup beim ersten Laden
-    const currentArtworks = loadArtworks()
-    if (currentArtworks && currentArtworks.length > 0) {
-      createBackup(currentArtworks)
-      console.log('💾 Initiales Backup erstellt:', currentArtworks.length, 'Werke')
+    // KRITISCH: Backup nur aus gefilterter Liste – sonst kommen die 5 Musterwerke immer wieder
+    const rawOnMount = loadArtworks()
+    const filteredOnMount = rawOnMount && rawOnMount.length > 0 ? filterK2ArtworksOnly(rawOnMount) : []
+    if (filteredOnMount.length > 0) {
+      createBackup(filteredOnMount)
+      console.log('💾 Initiales Backup erstellt:', filteredOnMount.length, 'Werke (gefiltert)')
+    }
+    if (filteredOnMount.length < (rawOnMount?.length ?? 0)) {
+      try {
+        localStorage.setItem('k2-artworks', JSON.stringify(filteredOnMount))
+        localStorage.setItem('k2-artworks-backup', JSON.stringify({ timestamp: new Date().toISOString(), artworks: filteredOnMount, count: filteredOnMount.length, mobileWorks: filteredOnMount.filter((a: any) => a.createdOnMobile || a.updatedOnMobile).length }))
+        console.log('🔒 Musterwerke beim Start entfernt, Backup überschrieben:', filteredOnMount.length, 'Werke')
+      } catch (_) {}
     }
     
     const loadArtworksData = async () => {
@@ -737,9 +812,14 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
             ])
             
             if (isMounted && supabaseArtworks && supabaseArtworks.length > 0) {
-              console.log(`✅ ${supabaseArtworks.length} Werke aus Supabase geladen`)
-              setArtworks(supabaseArtworks)
-              setLoadStatus({ message: `✅ ${supabaseArtworks.length} Werke geladen`, success: true })
+              const filteredSupabase = filterK2ArtworksOnly(supabaseArtworks)
+              if (filteredSupabase.length < supabaseArtworks.length) {
+                console.log(`🔒 Muster/VK2 aus Supabase entfernt: ${filteredSupabase.length} Werke`)
+              }
+              console.log(`✅ ${filteredSupabase.length} Werke aus Supabase geladen`)
+              setArtworks(filteredSupabase)
+              try { localStorage.setItem('k2-artworks', JSON.stringify(filteredSupabase)) } catch (_) {}
+              setLoadStatus({ message: `✅ ${filteredSupabase.length} Werke geladen`, success: true })
               setTimeout(() => setLoadStatus(null), 2000)
               setIsLoading(false)
               return
@@ -753,8 +833,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 console.log('✅ Migration erfolgreich - lade erneut aus Supabase')
                 const migratedArtworks = await loadArtworksFromSupabase()
                 if (migratedArtworks && migratedArtworks.length > 0) {
-                  setArtworks(migratedArtworks)
-                  setLoadStatus({ message: `✅ ${migratedArtworks.length} Werke migriert und geladen`, success: true })
+                  const filteredMigrated = filterK2ArtworksOnly(migratedArtworks)
+                  setArtworks(filteredMigrated)
+                  setLoadStatus({ message: `✅ ${filteredMigrated.length} Werke migriert und geladen`, success: true })
                   setTimeout(() => setLoadStatus(null), 2000)
                   setIsLoading(false)
                   return
@@ -772,9 +853,17 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         // initialArtworks wurde beim ersten Render erstellt und könnte veraltet sein
         // KRITISCH: Lokale Werke haben IMMER Priorität - sie wurden gerade erstellt/bearbeitet!
         if (isMounted) {
-          // Lade IMMER direkt aus localStorage um neueste Daten zu bekommen
-          const stored = loadArtworks()
-          if (stored && stored.length > 0) {
+          // Lade IMMER direkt aus localStorage; K2: nur echte Werke (Muster/VK2 raus), sonst kommen sie immer wieder
+          const raw = loadArtworks()
+          const stored = raw && raw.length > 0 ? filterK2ArtworksOnly(raw) : []
+          if (stored.length > 0) {
+            if (stored.length < (raw?.length ?? 0)) {
+              try {
+                localStorage.setItem('k2-artworks', JSON.stringify(stored))
+                createBackup(stored)
+                console.log('🔒 Muster/VK2 aus localStorage entfernt, Backup überschrieben,', stored.length, 'Werke verbleiben')
+              } catch (_) {}
+            }
             const nummern = stored.map((a: any) => a.number || a.id).join(', ')
             const mobileWorks = stored.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
             console.log('💾 Gefunden in localStorage:', stored.length, 'Werke, Nummern:', nummern)
@@ -805,10 +894,10 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         // Keine Daten gefunden
         if (isMounted) {
           console.log('ℹ️ Keine Werke gefunden')
-          // KRITISCH: Prüfe Backup bevor wir leeren!
+          // KRITISCH: Prüfe Backup bevor wir leeren! (loadBackup liefert bereits gefilterte Liste)
           const backup = loadBackup()
           if (backup && backup.length > 0) {
-            console.log('💾 Backup gefunden - verwende Backup statt leeren:', backup.length, 'Werke')
+            console.log('💾 Backup gefunden - verwende Backup statt leeren:', backup.length, 'Werke (gefiltert)')
             setArtworks(backup)
             localStorage.setItem('k2-artworks', JSON.stringify(backup))
           } else {
@@ -829,25 +918,31 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     
     loadArtworksData()
     
-    // PROFESSIONELL: Automatisches Polling für Mobile-Updates (nur auf Mac)
+    // PROFESSIONELL: Automatisches Polling für Mobile-Updates (nur auf Mac, nicht im iframe/Cursor Preview – Crash-Schutz)
     const isMac = !/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && window.innerWidth > 768
+    const notInIframe = typeof window !== 'undefined' && window.self === window.top
     let pollingInterval: ReturnType<typeof setInterval> | null = null
     let initialCheckTimeoutId: ReturnType<typeof setTimeout> | null = null
     
-    if (isMac && isSupabaseConfigured()) {
+    if (isMac && isSupabaseConfigured() && notInIframe) {
       const checkForMobileUpdates = async () => {
         try {
           const { hasUpdates, artworks } = await checkMobileUpdates()
           if (hasUpdates && artworks && isMounted) {
-            console.log(`🔄 Automatisch ${artworks.length} neue Mobile-Daten gefunden und synchronisiert`)
-            setArtworks(artworks)
+            const filtered = filterK2ArtworksOnly(artworks)
+            if (filtered.length < artworks.length) {
+              console.log(`🔒 Muster/VK2 bei Mobile-Sync entfernt: ${filtered.length} Werke`)
+            }
+            console.log(`🔄 Automatisch ${filtered.length} neue Mobile-Daten gefunden und synchronisiert`)
+            setArtworks(filtered)
+            try { localStorage.setItem('k2-artworks', JSON.stringify(filtered)) } catch (_) {}
             // Update Hash für nächsten Check
-            const hash = artworks.map((a: any) => a.number || a.id).sort().join(',')
+            const hash = filtered.map((a: any) => a.number || a.id).sort().join(',')
             localStorage.setItem('k2-artworks-hash', hash)
             localStorage.setItem('k2-last-load-time', Date.now().toString())
             // Event für andere Komponenten
             window.dispatchEvent(new CustomEvent('artworks-updated', { 
-              detail: { count: artworks.length, autoSync: true } 
+              detail: { count: filtered.length, autoSync: true } 
             }))
           }
         } catch (error) {
@@ -865,12 +960,12 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     }
     
     // WICHTIG: Automatisches Polling für Mobile-zu-Mobile Sync im Admin-Bereich
-    // (nur wenn nicht auf Vercel und auf Mobile-Gerät)
+    // (nur wenn nicht auf Vercel und auf Mobile-Gerät, nicht im iframe/Cursor Preview – Crash-Schutz)
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
     const isVercel = window.location.hostname.includes('vercel.app')
     let mobilePollingInterval: ReturnType<typeof setInterval> | null = null
     
-    if (isMobile && !isVercel && isMounted) {
+    if (isMobile && !isVercel && isMounted && notInIframe) {
       console.log('✅ Automatisches Mobile-Polling im Admin-Bereich aktiviert (alle 10 Sekunden)')
       
       const syncFromGalleryData = async () => {
@@ -914,8 +1009,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               // Starte MIT ALLEN lokalen Werken (haben Priorität!)
               const merged: any[] = [...localArtworks]
               
-              // Füge Server-Werke hinzu die NICHT lokal sind
+              // Füge Server-Werke hinzu die NICHT lokal sind (keine Muster/VK2 in K2)
               data.artworks.forEach((server: any) => {
+                if (isMusterOrVk2Artwork(server)) return
                 const key = server.number || server.id
                 if (key && !localMap.has(key)) {
                   merged.push(server)
@@ -948,30 +1044,32 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               const newHash = merged.map((a: any) => a.number || a.id).sort().join(',')
               
               if (currentHash !== newHash && isMounted) {
-                console.log(`🔄 Admin-Bereich: ${merged.length} Werke synchronisiert (${localArtworks.length} lokal + ${merged.length - localArtworks.length} Server)`)
+                const toSave = filterK2ArtworksOnly(merged)
+                console.log(`🔄 Admin-Bereich: ${toSave.length} Werke synchronisiert (${localArtworks.length} lokal + ${toSave.length - localArtworks.length} Server, Muster/VK2 entfernt)`)
                 console.log(`🔒 Lokale Werke geschützt: ${localArtworks.length} Werke bleiben erhalten`)
-                // KRITISCH: Speichere merged Liste in localStorage
-                localStorage.setItem('k2-artworks', JSON.stringify(merged))
-                setArtworks(merged)
+                localStorage.setItem('k2-artworks', JSON.stringify(toSave))
+                setArtworks(toSave)
                 window.dispatchEvent(new CustomEvent('artworks-updated', { 
-                  detail: { count: merged.length, autoSync: true, fromAdmin: true } 
+                  detail: { count: toSave.length, autoSync: true, fromAdmin: true } 
                 }))
               }
             } else {
-              // Keine Server-Werke - behalte lokale Werke
+              // Keine Server-Werke - behalte lokale Werke (gefiltert)
               if (localArtworks.length > 0 && isMounted) {
-                console.log(`🔒 Keine Server-Daten - behalte ${localArtworks.length} lokale Werke`)
-                localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
+                const toKeep = filterK2ArtworksOnly(localArtworks)
+                console.log(`🔒 Keine Server-Daten - behalte ${toKeep.length} lokale Werke`)
+                localStorage.setItem('k2-artworks', JSON.stringify(toKeep))
                 if (artworks.length !== localArtworks.length) {
                   setArtworks(localArtworks)
                 }
               }
             }
           } else {
-            // Server nicht erreichbar - behalte lokale Werke
+            // Server nicht erreichbar - behalte lokale Werke (gefiltert)
             if (localArtworks.length > 0 && isMounted) {
-              console.log(`🔒 Server nicht erreichbar - behalte ${localArtworks.length} lokale Werke`)
-              localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
+              const toKeep = filterK2ArtworksOnly(localArtworks)
+              console.log(`🔒 Server nicht erreichbar - behalte ${toKeep.length} lokale Werke`)
+              localStorage.setItem('k2-artworks', JSON.stringify(toKeep))
               if (artworks.length !== localArtworks.length) {
                 setArtworks(localArtworks)
               }
@@ -1156,6 +1254,10 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     const loadData = async (forceLocalStorage = false) => {
       setIsLoading(true)
       setLoadStatus({ message: '🔄 Lade Werke...', success: false })
+      // Sicherheit: Status nach 12 s immer ausblenden, falls Fetch hängt
+      const fallbackClear = setTimeout(() => {
+        setLoadStatus((prev) => (prev?.message.includes('Lade') ? null : prev))
+      }, 12000)
       
       let stored: any[] = []
       
@@ -1196,7 +1298,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         
         // Nur wenn wirklich keine Werke vorhanden sind, lade vom Server
         console.log('🔄 Keine Werke vorhanden - lade vom Server...')
-        setLoadStatus({ message: '🔄 Synchronisiere mit Vercel...', success: false })
+        setLoadStatus({ message: 'Lade Werke...', success: false })
         
         try {
             const timestamp = Date.now()
@@ -1287,9 +1389,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 localStorage.setItem('k2-last-load-time', String(Date.now()))
                 
                 // WICHTIG: Merge-Logik - Lokale Werke IMMER behalten!
-                // Lade ZUERST lokale Werke BEVOR wir Server-Daten verwenden
+                // K2: Muster/VK2 vom Server nicht übernehmen
                 const existingArtworks = loadArtworks()
-                const serverArtworks = data.artworks
+                const serverArtworks = filterK2ArtworksOnly(Array.isArray(data.artworks) ? data.artworks : [])
                 
                 console.log('🔄 Merge startet:', {
                   lokaleWerke: existingArtworks.length,
@@ -1391,27 +1493,27 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 console.log(`🔄 Merge abgeschlossen: ${serverArtworks.length} Server (Quelle) → ${mergedArtworks.length} Gesamt, ${toHistory.length} in History`)
                 console.log('📊 Finale Nummern:', mergedArtworks.map((a: any) => a.number || a.id))
                 
-                // WICHTIG: Speichere gemergte Liste UND synchronisiere zu Supabase (falls Mobile)
+                // K2: Muster/VK2-Werke nicht in k2-artworks speichern
+                const toSaveMerge = filterK2ArtworksOnly(mergedArtworks)
                 try {
-                  localStorage.setItem('k2-artworks', JSON.stringify(mergedArtworks))
-                  console.log('✅ Gemergte Werke gespeichert:', mergedArtworks.length)
+                  localStorage.setItem('k2-artworks', JSON.stringify(toSaveMerge))
+                  console.log('✅ Gemergte Werke gespeichert:', toSaveMerge.length, toSaveMerge.length < mergedArtworks.length ? '(Muster/VK2 entfernt)' : '')
                   
                   // Mobile: Synchronisiere gemergte Liste zu Supabase
                   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
-                  if (isMobile && mergedArtworks.length > 0) {
+                  if (isMobile && toSaveMerge.length > 0) {
                     try {
-                      await saveArtworksToSupabase(mergedArtworks)
+                      await saveArtworksToSupabase(toSaveMerge)
                       console.log('✅ Gemergte Werke zu Supabase synchronisiert')
                     } catch (syncError) {
                       console.warn('⚠️ Supabase-Sync fehlgeschlagen:', syncError)
                     }
                   }
                   
-                  stored = mergedArtworks
+                  stored = toSaveMerge
                   
-                  // KRITISCH: Setze artworks SOFORT nach Merge
-                  // Stelle sicher dass ALLE Werke angezeigt werden
-                  const exhibitionArtworks = mergedArtworks.map((a: any) => {
+                  // KRITISCH: Setze artworks SOFORT nach Merge (ohne Muster/VK2)
+                  const exhibitionArtworks = toSaveMerge.map((a: any) => {
                     if (!a.imageUrl && a.previewUrl) {
                       a.imageUrl = a.previewUrl
                     }
@@ -1640,6 +1742,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         }
         setTimeout(() => setLoadStatus(null), 3000)
       } finally {
+        clearTimeout(fallbackClear)
         setIsLoading(false)
       }
     }
@@ -1650,17 +1753,24 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       loadData(true)
       return
     }
-    // Nur wenn wirklich keine Werke vorhanden sind, lade vom Server
-    if ((!initialArtworks || initialArtworks.length === 0) && (!artworks || artworks.length === 0)) {
-      loadData()
-    }
-  }, [artworks, initialArtworks])
+    // Erst nach kurzer Verzögerung prüfen: sucht neue Werke, die ein Mobilgerät möglicherweise eingespielt hat (Server/gallery-data).
+    // Haupt-Load (erster useEffect) soll zuerst aus localStorage/Supabase laden; sonst bleibt der rote „Lade Werke…“-Balken hängen.
+    const timer = setTimeout(() => {
+      const current = loadArtworks()
+      const filtered = filterK2ArtworksOnly(current)
+      if (filtered.length === 0) {
+        loadData()
+      }
+    }, 2800)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- nur einmal beim Mount ausführen
+  }, [])
   
   // Manuelle Refresh-Funktion - lädt IMMER neu vom Server
   // KRITISCH: Mobile-Werke haben ABSOLUTE PRIORITÄT - sie dürfen NIEMALS gelöscht werden!
   const handleRefresh = async () => {
     setIsLoading(true)
-    setLoadStatus({ message: '🔄 Synchronisiere mit Server...', success: false })
+    setLoadStatus({ message: 'Lade Werke...', success: false })
     
     // KRITISCH: Lade ZUERST lokale Werke um Mobile-Werke zu schützen! (außerhalb try-catch für Scope)
     const localArtworks = loadArtworks()
@@ -1742,17 +1852,15 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           localStorage.setItem('k2-last-load-time', String(Date.now())) // WICHTIG: Load-Time speichern
           
           // KRITISCH: Merge-Logik - Mobile-Werke haben ABSOLUTE PRIORITÄT!
-          // WICHTIG: Lokale Werke wurden oben bereits geladen und gesichert!
-          const serverArtworks = data.artworks
+          // K2: Muster/VK2 vom Server nicht in K2 übernehmen
+          const serverArtworks = filterK2ArtworksOnly(data.artworks)
           
-          // Erstelle Map für schnelle Suche
           const serverMap = new Map<string, any>()
           serverArtworks.forEach((a: any) => {
             const key = a.number || a.id
             if (key) serverMap.set(key, a)
           })
           
-          // SERVER = QUELLE DER WAHRHEIT (wie Initial-Load)
           const mergedArtworks: any[] = [...serverArtworks]
           const toHistory: any[] = []
           
@@ -1785,15 +1893,14 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           })
           
           if (toHistory.length > 0) appendToHistory(toHistory)
-          console.log(`🔒 Server = Quelle: ${mergedArtworks.length} Werke, ${toHistory.length} in History`)
+          const toSaveServer = filterK2ArtworksOnly(mergedArtworks)
+          console.log(`🔒 Server = Quelle: ${toSaveServer.length} Werke, ${toHistory.length} in History`, toSaveServer.length < mergedArtworks.length ? '(Muster/VK2 entfernt)' : '')
           
-          // Speichere gemergte Liste
           try {
-            localStorage.setItem('k2-artworks', JSON.stringify(mergedArtworks))
-            console.log('✅ Gemergte Werke geladen:', mergedArtworks.length, 'Version:', data.version, `(${serverArtworks.length} Server + ${mergedArtworks.length - serverArtworks.length} Mobile)`)
+            localStorage.setItem('k2-artworks', JSON.stringify(toSaveServer))
+            console.log('✅ Gemergte Werke geladen:', toSaveServer.length, 'Version:', data.version, `(${serverArtworks.length} Server + ${toSaveServer.length - serverArtworks.length} Mobile)`)
             
-            // WICHTIG: Zeige ALLE Werke - auch ohne Bild (für Debugging)
-            const exhibitionArtworks = mergedArtworks
+            const exhibitionArtworks = toSaveServer
               .map((a: any) => {
                 if (!a) return null
                 // Stelle sicher, dass imageUrl korrekt gesetzt ist
@@ -2595,6 +2702,49 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                     e.currentTarget.style.background = galerieTheme.filterInactive
                   }}
                   >
+                    {/* Warn-Badge: Foto oder Preis fehlt (nur im Admin-Modus sichtbar) */}
+                    {!musterOnly && showMobileAdmin && (() => {
+                      const fehltFoto = !artwork.imageUrl && !artwork.previewUrl
+                      const fehltPreis = !artwork.price || Number(artwork.price) === 0
+                      if (!fehltFoto && !fehltPreis) return null
+                      return (
+                        <div style={{
+                          position: 'absolute',
+                          top: '0.5rem',
+                          right: '0.5rem',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.2rem',
+                          zIndex: 3
+                        }}>
+                          {fehltFoto && (
+                            <div style={{
+                              background: 'rgba(220,38,38,0.9)',
+                              color: '#fff',
+                              fontSize: '0.7rem',
+                              fontWeight: '700',
+                              padding: '0.2rem 0.45rem',
+                              borderRadius: '5px',
+                              lineHeight: 1.2,
+                              backdropFilter: 'blur(4px)'
+                            }}>📷 Foto fehlt</div>
+                          )}
+                          {fehltPreis && (
+                            <div style={{
+                              background: 'rgba(245,158,11,0.9)',
+                              color: '#fff',
+                              fontSize: '0.7rem',
+                              fontWeight: '700',
+                              padding: '0.2rem 0.45rem',
+                              borderRadius: '5px',
+                              lineHeight: 1.2,
+                              backdropFilter: 'blur(4px)'
+                            }}>€ Preis fehlt</div>
+                          )}
+                        </div>
+                      )
+                    })()}
+
                     {/* Bearbeiten-Button (ök2: ausblenden) */}
                     {!musterOnly && showMobileAdmin && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) && (
                       <button
@@ -2656,10 +2806,15 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}>
-                      {(artwork.imageUrl || artwork.previewUrl) ? (
+                      {(() => {
+                        const rawSrc = artwork.imageUrl || artwork.previewUrl || ''
+                        const displaySrc = musterOnly && (!rawSrc || isPlaceholderImageUrl(rawSrc))
+                          ? getOek2DefaultArtworkImage(artwork.category)
+                          : rawSrc
+                        return displaySrc ? (
                         <>
                           <img 
-                            src={artwork.imageUrl || artwork.previewUrl} 
+                            src={displaySrc} 
                             alt={artwork.title || artwork.number}
                             style={{ 
                               width: '100%', 
@@ -2671,8 +2826,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                             }}
                             loading="lazy"
                             onClick={() => {
+                              const lbSrc = artwork.imageUrl || artwork.previewUrl || (musterOnly ? getOek2DefaultArtworkImage(artwork.category) : '')
                               setLightboxImage({
-                                src: artwork.imageUrl || artwork.previewUrl || '',
+                                src: lbSrc,
                                 title: artwork.title || artwork.number || '',
                                 artwork,
                                 allArtworks: filteredArtworks,
@@ -2682,8 +2838,11 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                               setImagePosition({ x: 0, y: 0 })
                             }}
                           onError={(e) => {
-                            // Bei Fehler: Bild ausblenden und Platzhalter zeigen
                             const target = e.target as HTMLImageElement
+                            if (musterOnly && target.src !== OEK2_PLACEHOLDER_IMAGE) {
+                              target.src = OEK2_PLACEHOLDER_IMAGE
+                              return
+                            }
                             target.style.display = 'none'
                             const parent = target.parentElement
                             if (parent) {
@@ -2739,7 +2898,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                         }}>
                           {artwork.number || 'Kein Bild'}
                         </div>
-                      )}
+                      )
+                    })()}
                     </div>
                     <h4 style={{ 
                       margin: '1rem 0 0.5rem', 
@@ -3038,6 +3198,49 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 }}
               >
                 {likedArtworks.has(lightboxImage.artwork.number || lightboxImage.artwork.id) ? '❤️' : '🤍'}
+              </button>
+            )}
+
+            {/* Teilen: Link kopieren – direkter Link zu diesem Werk */}
+            {lightboxImage.artwork && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  const idOrNum = lightboxImage.artwork.number ?? lightboxImage.artwork.id ?? ''
+                  const url = `${window.location.origin}${window.location.pathname}#werk=${encodeURIComponent(String(idOrNum))}`
+                  navigator.clipboard.writeText(url).then(() => {
+                    setShareLinkCopied(true)
+                    setTimeout(() => setShareLinkCopied(false), 2500)
+                  }).catch(() => {
+                    try {
+                      const ta = document.createElement('textarea')
+                      ta.value = url
+                      document.body.appendChild(ta)
+                      ta.select()
+                      document.execCommand('copy')
+                      document.body.removeChild(ta)
+                      setShareLinkCopied(true)
+                      setTimeout(() => setShareLinkCopied(false), 2500)
+                    } catch (_) {}
+                  })
+                }}
+                title="Link zu diesem Werk kopieren (zum Teilen per Mail, Social, Flyer)"
+                style={{
+                  background: shareLinkCopied ? 'rgba(34, 197, 94, 0.4)' : 'rgba(255, 255, 255, 0.2)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  color: '#ffffff',
+                  fontSize: 'clamp(0.8rem, 2vw, 0.95rem)',
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  fontWeight: 600,
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {shareLinkCopied ? '✓ Link kopiert!' : '🔗 Link kopieren'}
               </button>
             )}
 

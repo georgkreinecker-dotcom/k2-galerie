@@ -12,7 +12,7 @@ import { WERBEUNTERLAGEN_STIL } from '../config/marketingWerbelinie'
 const s = WERBEUNTERLAGEN_STIL
 
 export type AdminTab = 'werke' | 'eventplan' | 'design' | 'einstellungen'
-export type SettingsSubTab = 'stammdaten' | 'drucker' | 'sicherheit' | 'lager'
+export type SettingsSubTab = 'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager'
 export type EventplanSubTab = 'events' | 'öffentlichkeitsarbeit'
 
 export interface GalerieAssistentProps {

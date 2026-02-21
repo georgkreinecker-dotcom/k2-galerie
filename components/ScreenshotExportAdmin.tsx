@@ -6,7 +6,8 @@ import { PROJECT_ROUTES, AGB_ROUTE } from '../src/config/navigation'
 
 /** Feste Galerie-URL für Etiketten-QR (unabhängig vom Router/WLAN) – gleiche Basis wie Mobile Connect */
 const GALERIE_QR_BASE = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
-import { MUSTER_TEXTE, MUSTER_ARTWORKS, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, SEED_VK2_ARTISTS, VK2_KUNSTBEREICHE, type TenantId, type ArtworkCategoryId } from '../src/config/tenantConfig'
+import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, type TenantId, type ArtworkCategoryId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
+import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
@@ -57,6 +58,109 @@ const KEY_OEF_ADMIN_PHONE = 'k2-oeffentlich-admin-phone'
 const KEY_OEF_DESIGN = 'k2-oeffentlich-design-settings'
 /** Stammdaten in der Muster-Galerie (ök2) – werden nach Lizenz-Erwerb in K2 übernommen */
 const KEY_OEF_STAMMDATEN_MARTINA = 'k2-oeffentlich-stammdaten-martina'
+/** VK2-Stammdaten: Verein, Vorstand, Beirat, Mitglieder */
+const KEY_VK2_STAMMDATEN = 'k2-vk2-stammdaten'
+/** Registrierung: Lizenztyp, Vereinsmitglied, Empfehlungsoption (K2/ök2/VK2 getrennt) */
+const KEY_REGISTRIERUNG = 'k2-registrierung'
+const KEY_OEF_REGISTRIERUNG = 'k2-oeffentlich-registrierung'
+const KEY_VK2_REGISTRIERUNG = 'k2-vk2-registrierung'
+/** Unsplash-Porträts für Mustermitglieder (Avatar/Bild), w=200&h=200&fit=crop */
+const MUSTER_MITGLIEDER_BILDER = [
+  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop',
+  'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop',
+  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop',
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop'
+]
+/** Werkfotos für Muster-Mitglieder (erscheinen in der Mitgliedergalerie) */
+const MUSTER_WERKFOTO_BILDER = [
+  'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1561214115-f2f134cc4912?w=400&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1515405295579-ba7b45403062?w=400&h=300&fit=crop'
+]
+/** User mit vollen Daten aus der Übersicht „Meine User“ – in VK2 als registrierte Mitglieder übernehmbar */
+const USER_LISTE_FUER_MITGLIEDER: Vk2Mitglied[] = [
+  { name: 'Lisa Muster', email: 'lisa.muster@beispiel.at', lizenz: 'P-2026-1001', typ: 'Malerei', mitgliedFotoUrl: MUSTER_MITGLIEDER_BILDER[0], imageUrl: MUSTER_WERKFOTO_BILDER[0], phone: '+43 664 123 4501', website: 'https://lisa-muster.at', strasse: 'Musterstraße 1', plz: '4020', ort: 'Linz', land: 'Österreich', geburtsdatum: '15.03.1985', eintrittsdatum: '15.01.2026', seit: '15.01.2026' },
+  { name: 'Max Kunst', email: 'max@atelier-kunst.at', lizenz: 'VB-2026-1002', typ: 'Keramik', mitgliedFotoUrl: MUSTER_MITGLIEDER_BILDER[1], imageUrl: MUSTER_WERKFOTO_BILDER[1], phone: '+43 676 987 6543', website: 'https://atelier-kunst.at', strasse: 'Kunstgasse 12', plz: '1010', ort: 'Wien', land: 'Österreich', geburtsdatum: '22.07.1978', eintrittsdatum: '22.01.2026', seit: '22.01.2026' },
+  { name: 'Anna Galerie', email: 'anna@galerie-anna.at', lizenz: 'B-2026-1003', typ: 'Grafik', mitgliedFotoUrl: MUSTER_MITGLIEDER_BILDER[2], imageUrl: MUSTER_WERKFOTO_BILDER[2], phone: '+43 650 555 1234', website: 'https://galerie-anna.at', strasse: 'Galerieplatz 3', plz: '5020', ort: 'Salzburg', land: 'Österreich', geburtsdatum: '10.11.1990', eintrittsdatum: '28.01.2026', seit: '28.01.2026' },
+  { name: 'Kunstverein Musterstadt', email: 'vorstand@kv-musterstadt.at', lizenz: 'VP-2026-1004', typ: 'Skulptur', mitgliedFotoUrl: MUSTER_MITGLIEDER_BILDER[3], imageUrl: MUSTER_WERKFOTO_BILDER[3], phone: '+43 732 771 000', website: 'https://kv-musterstadt.at', strasse: 'Vereinsweg 7', plz: '8010', ort: 'Graz', land: 'Österreich', geburtsdatum: '01.05.1970', eintrittsdatum: '05.02.2026', seit: '05.02.2026' },
+  { name: 'Test Nutzer', email: 'test@beispiel.at', lizenz: 'KF-2026-1005', typ: 'Fotografie', mitgliedFotoUrl: MUSTER_MITGLIEDER_BILDER[4], imageUrl: MUSTER_WERKFOTO_BILDER[4], phone: '+43 699 000 9999', website: '', strasse: 'Testweg 99', plz: '6020', ort: 'Innsbruck', land: 'Österreich', geburtsdatum: '20.12.1982', eintrittsdatum: '12.02.2026', seit: '12.02.2026' }
+]
+const EMPTY_MEMBER_FORM = { name: '', email: '', lizenz: '', typ: '', strasse: '', plz: '', ort: '', land: '', geburtsdatum: '', eintrittsdatum: '', phone: '', website: '', mitgliedFotoUrl: '', imageUrl: '', bankKontoinhaber: '', bankIban: '', bankBic: '', bankName: '' }
+function memberToForm(m: Vk2Mitglied) {
+  return { name: m.name ?? '', email: m.email ?? '', lizenz: m.lizenz ?? '', typ: m.typ ?? '', strasse: m.strasse ?? '', plz: m.plz ?? '', ort: m.ort ?? '', land: m.land ?? '', geburtsdatum: m.geburtsdatum ?? '', eintrittsdatum: m.eintrittsdatum ?? m.seit ?? '', phone: m.phone ?? '', website: m.website ?? '', mitgliedFotoUrl: m.mitgliedFotoUrl ?? '', imageUrl: m.imageUrl ?? '', bankKontoinhaber: m.bankKontoinhaber ?? '', bankIban: m.bankIban ?? '', bankBic: m.bankBic ?? '', bankName: m.bankName ?? '' }
+}
+/** CSV-Header (versch. Schreibweisen) → Vk2Mitglied-Feld */
+const CSV_HEADER_MAP: Record<string, keyof Vk2Mitglied> = {
+  name: 'name', namen: 'name', name_name: 'name',
+  email: 'email', 'e-mail': 'email', mail: 'email',
+  strasse: 'strasse', straße: 'strasse', adresse: 'strasse',
+  plz: 'plz', postleitzahl: 'plz',
+  ort: 'ort',
+  land: 'land',
+  geburtsdatum: 'geburtsdatum', geburtstag: 'geburtsdatum',
+  eintrittsdatum: 'eintrittsdatum', eintritt: 'eintrittsdatum', seit: 'eintrittsdatum',
+  typ: 'typ', kunstrichtung: 'typ', kategorie: 'typ',
+  phone: 'phone', telefon: 'phone', tel: 'phone',
+  website: 'website', web: 'website',
+  lizenz: 'lizenz',
+  mitgliedfotourl: 'mitgliedFotoUrl', porträt: 'mitgliedFotoUrl', portrait: 'mitgliedFotoUrl',
+  imageurl: 'imageUrl', werkfoto: 'imageUrl', werk: 'imageUrl',
+  bankkontoinhaber: 'bankKontoinhaber', kontoinhaber: 'bankKontoinhaber',
+  bankiban: 'bankIban', iban: 'bankIban',
+  bankbic: 'bankBic', bic: 'bankBic', swift: 'bankBic',
+  bankname: 'bankName', bank: 'bankName', kreditinstitut: 'bankName'
+}
+function parseCsvToMitglieder(csvText: string): Vk2Mitglied[] {
+  const lines = csvText.split(/\r?\n/).map(l => l.trim()).filter(Boolean)
+  if (lines.length < 2) return []
+  const sep = lines[0].includes(';') ? ';' : ','
+  const headers = lines[0].split(sep).map(h => h.trim().toLowerCase().replace(/\s+/g, '_'))
+  const rows = lines.slice(1)
+  const result: Vk2Mitglied[] = []
+  for (const row of rows) {
+    const values = row.split(sep).map(v => v.trim().replace(/^["']|["']$/g, ''))
+    const obj: Record<string, string> = {}
+    headers.forEach((h, i) => { obj[h] = values[i] ?? '' })
+    const name = obj['name'] || obj['namen'] || obj['name_name'] || values[0] || ''
+    if (!name) continue
+    const m: Vk2Mitglied = { name }
+    const set = (key: keyof Vk2Mitglied, val: string) => { if (val) (m as any)[key] = val }
+    headers.forEach((h, i) => {
+      const field = CSV_HEADER_MAP[h] || CSV_HEADER_MAP[h.replace(/_/g, '')]
+      if (field && values[i]) set(field, values[i])
+    })
+    if (m.eintrittsdatum) m.seit = m.eintrittsdatum
+    result.push(m)
+  }
+  return result
+}
+/** Gibt die Vorstandsrolle für ein Mitglied zurück (Name-Abgleich mit Stammdaten), sonst null. Für Anzeige & Sortierung. */
+function getVorstandRole(stammdaten: Vk2Stammdaten, memberName: string): string | null {
+  const n = (s: string | undefined) => (s ?? '').trim().toLowerCase()
+  const name = n(memberName)
+  if (!name) return null
+  if (n(stammdaten.vorstand?.name) === name) return 'Vorsitzende:r / Präsident:in'
+  if (n(stammdaten.vize?.name) === name) return 'Stellv. Vorsitzende:r'
+  if (n(stammdaten.kassier?.name) === name) return 'Kassier:in'
+  if (n(stammdaten.schriftfuehrer?.name) === name) return 'Schriftführer:in'
+  if (n(stammdaten.beisitzer?.name) === name) return 'Beisitzer:in'
+  return null
+}
+/** Sortierrang für Vorstand (kleiner = zuerst). 0–4 Vorstand, 5 übrige. */
+function getVorstandSortKey(stammdaten: Vk2Stammdaten, memberName: string): number {
+  const n = (s: string | undefined) => (s ?? '').trim().toLowerCase()
+  const name = n(memberName)
+  if (!name) return 5
+  if (n(stammdaten.vorstand?.name) === name) return 0
+  if (n(stammdaten.vize?.name) === name) return 1
+  if (n(stammdaten.kassier?.name) === name) return 2
+  if (n(stammdaten.schriftfuehrer?.name) === name) return 3
+  if (n(stammdaten.beisitzer?.name) === name) return 4
+  return 5
+}
 const KEY_OEF_STAMMDATEN_GEORG = 'k2-oeffentlich-stammdaten-georg'
 const KEY_OEF_STAMMDATEN_GALERIE = 'k2-oeffentlich-stammdaten-galerie'
 const OEF_DESIGN_DEFAULT = {
@@ -147,10 +251,10 @@ function loadArtworks(): any[] {
     const key = getArtworksKey()
     const stored = localStorage.getItem(key)
     // ök2: Wenn noch keine Daten, Musterwerke als Ausgangsbasis (K2-artworks nie anrühren)
-    // VK2: Wenn noch keine Daten, Seed-Künstler:innen (ein Platzhalter pro Kunstbereich)
+    // VK2: Kein Seed mehr – leer bleibt leer (Platzhalter wurden entfernt)
     if (!stored || stored === '[]') {
       if (isOeffentlichAdminContext()) return [...MUSTER_ARTWORKS]
-      if (isVk2AdminContext()) return [...SEED_VK2_ARTISTS]
+      if (isVk2AdminContext()) return []
       return []
     }
     // SAFE MODE: Prüfe Größe bevor Parsen
@@ -159,6 +263,17 @@ function loadArtworks(): any[] {
       return []
     }
     let artworks = JSON.parse(stored)
+    
+    // VK2: Alte Seed-Platzhalter einmalig aus Speicher entfernen (nur vk2-seed-* / VK2-M1 etc.)
+    if (isVk2AdminContext() && Array.isArray(artworks) && artworks.length > 0) {
+      const onlySeed = artworks.every((a: any) => a?.id && String(a.id).startsWith('vk2-seed-'))
+      if (onlySeed) {
+        try {
+          localStorage.setItem(key, '[]')
+        } catch (_) {}
+        return []
+      }
+    }
     
     // KRITISCH: Im ök2-Kontext nur echte K2-Galerie-Werke entfernen (K2-M-, K2-K-, … bzw. K2-0001), nicht ök2-eigene (K2-W-*)
     if (isOeffentlichAdminContext()) {
@@ -323,8 +438,13 @@ function saveEvents(events: any[]): void {
 
 function loadEvents(): any[] {
   try {
-    const stored = localStorage.getItem(getEventsKey())
-    return stored ? JSON.parse(stored) : []
+    const key = getEventsKey()
+    const stored = localStorage.getItem(key)
+    if (!stored || stored === '[]') {
+      if (isOeffentlichAdminContext()) return JSON.parse(JSON.stringify(MUSTER_EVENTS))
+      return []
+    }
+    return JSON.parse(stored)
   } catch (error) {
     console.error('Fehler beim Laden der Events:', error)
     return []
@@ -507,11 +627,15 @@ function ScreenshotExportAdmin() {
   // Klare Admin-Struktur: Werke | Eventplanung | Design | Einstellungen. Kasse = ein Button im Header, öffnet direkt den Shop.
   const [activeTab, setActiveTab] = useState<'werke' | 'eventplan' | 'design' | 'einstellungen' | 'assistent'>('werke')
   const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>('events')
-  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'drucker' | 'sicherheit' | 'lager'>('stammdaten')
+  const [pastEventsExpanded, setPastEventsExpanded] = useState(false) // kleine Leiste „Vergangenheit“, bei Klick aufklappen
+  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager'>('stammdaten')
   const [designSubTab, setDesignSubTab] = useState<'vorschau' | 'farben'>('vorschau')
   const [designPreviewEdit, setDesignPreviewEdit] = useState<string | null>(null) // z. B. 'p1-title' | 'p2-martinaBio' – alles auf der Seite klickbar
   const [previewContainerWidth, setPreviewContainerWidth] = useState(412) // für bildausfüllende Skalierung
   const [previewFullscreenPage, setPreviewFullscreenPage] = useState<1 | 2>(1) // welche Seite in der Vorschau (immer nur eine)
+  const [designPreviewHeightPx, setDesignPreviewHeightPx] = useState(560) // Vorschau-Höhe – per Ziehen anpassbar
+  const [designPreviewScale, setDesignPreviewScale] = useState(1) // 1 = 100%, manuell vergrößerbar
+  const designPreviewResizeStart = useRef<{ y: number; height: number } | null>(null)
   const previewContainerRef = React.useRef<HTMLDivElement>(null)
   const welcomeImageInputRef = React.useRef<HTMLInputElement>(null)
   const galerieImageInputRef = React.useRef<HTMLInputElement>(null)
@@ -524,6 +648,8 @@ function ScreenshotExportAdmin() {
   const [adminNewPwConfirm, setAdminNewPwConfirm] = useState('')
   const [adminContactEmail, setAdminContactEmail] = useState('')
   const [adminContactPhone, setAdminContactPhone] = useState('')
+  const [vk2Stammdaten, setVk2Stammdaten] = useState<Vk2Stammdaten>(VK2_STAMMDATEN_DEFAULTS)
+  const [registrierungConfig, setRegistrierungConfig] = useState<RegistrierungConfig>(REGISTRIERUNG_CONFIG_DEFAULTS)
 
   // Bei laufender Wiederherstellung automatisch aufklappen, damit der Balkenverlauf sichtbar ist
   useEffect(() => {
@@ -547,6 +673,29 @@ function ScreenshotExportAdmin() {
     if (el.offsetWidth > 0) setPreviewContainerWidth(el.offsetWidth)
     return () => ro.disconnect()
   }, [designSubTab])
+
+  // Design-Vorschau: Ziehen am unteren Rand zum Vergrößern/Verkleinern (Maus + Touch)
+  useEffect(() => {
+    const onMove = (clientY: number) => {
+      const start = designPreviewResizeStart.current
+      if (!start) return
+      const delta = clientY - start.y
+      setDesignPreviewHeightPx((h) => Math.min(1200, Math.max(320, start.height + delta)))
+    }
+    const onMouseMove = (e: MouseEvent) => onMove(e.clientY)
+    const onTouchMove = (e: TouchEvent) => { if (e.touches.length === 1) onMove(e.touches[0].clientY) }
+    const onUp = () => { designPreviewResizeStart.current = null }
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onUp)
+    document.addEventListener('touchmove', onTouchMove, { passive: true })
+    document.addEventListener('touchend', onUp)
+    return () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onUp)
+      document.removeEventListener('touchmove', onTouchMove)
+      document.removeEventListener('touchend', onUp)
+    }
+  }, [])
 
   // Brother-Etikettengröße parsen (Format "29x90.3" → { width: 29, height: 90.3 })
   const parseLabelSize = (s: string) => {
@@ -687,6 +836,12 @@ function ScreenshotExportAdmin() {
   })
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingArtwork, setEditingArtwork] = useState<any | null>(null)
+  /** VK2: Index in vk2Stammdaten.mitglieder beim Bearbeiten; null = neues Mitglied */
+  const [editingMemberIndex, setEditingMemberIndex] = useState<number | null>(null)
+  /** VK2: Vollständige Mitglieder-Stammdaten im Modal */
+  const [memberForm, setMemberForm] = useState<{ name: string; email: string; lizenz: string; typ: string; strasse: string; plz: string; ort: string; land: string; geburtsdatum: string; eintrittsdatum: string; phone: string; website: string; mitgliedFotoUrl: string; imageUrl: string; bankKontoinhaber: string; bankIban: string; bankBic: string; bankName: string }>({ ...EMPTY_MEMBER_FORM })
+  /** VK2: Drag-over für CSV-Import */
+  const [csvDragOver, setCsvDragOver] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   // Nur im Admin: Foto freistellen (mit Pro-Hintergrund) oder Original unverändert benutzen
@@ -694,7 +849,7 @@ function ScreenshotExportAdmin() {
   // Hintergrund-Variante bei Freistellung: hell | weiss | warm | kuehl | dunkel
   const [photoBackgroundPreset, setPhotoBackgroundPreset] = useState<'hell' | 'weiss' | 'warm' | 'kuehl' | 'dunkel'>('hell')
   const [artworkTitle, setArtworkTitle] = useState('')
-  const [artworkCategory, setArtworkCategory] = useState<ArtworkCategoryId>('malerei')
+  const [artworkCategory, setArtworkCategory] = useState<string>('malerei')
   const [artworkCeramicSubcategory, setArtworkCeramicSubcategory] = useState<'vase' | 'teller' | 'skulptur' | 'sonstig'>('vase')
   const [artworkCeramicHeight, setArtworkCeramicHeight] = useState<string>('10')
   const [artworkCeramicDiameter, setArtworkCeramicDiameter] = useState<string>('10')
@@ -963,26 +1118,28 @@ function ScreenshotExportAdmin() {
   // Stammdaten – bei ök2-Kontext nur Musterdaten (keine Vermischung mit K2); K2 nutzt K2_STAMMDATEN_DEFAULTS
   const [martinaData, setMartinaData] = useState(() =>
     isOeffentlichAdminContext()
-      ? { name: MUSTER_TEXTE.martina.name, email: MUSTER_TEXTE.martina.email || '', phone: MUSTER_TEXTE.martina.phone || '', category: 'malerei' as const, bio: MUSTER_TEXTE.artist1Bio, website: MUSTER_TEXTE.martina.website || '' }
+      ? { name: MUSTER_TEXTE.martina.name, email: MUSTER_TEXTE.martina.email || '', phone: MUSTER_TEXTE.martina.phone || '', category: 'malerei' as const, bio: MUSTER_TEXTE.artist1Bio, website: MUSTER_TEXTE.martina.website || '', vita: MUSTER_VITA_MARTINA }
       : {
           name: K2_STAMMDATEN_DEFAULTS.martina.name,
           category: 'malerei',
           bio: 'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.',
           email: K2_STAMMDATEN_DEFAULTS.martina.email,
           phone: K2_STAMMDATEN_DEFAULTS.martina.phone,
-          website: K2_STAMMDATEN_DEFAULTS.martina.website || ''
+          website: K2_STAMMDATEN_DEFAULTS.martina.website || '',
+          vita: ''
         }
   )
   const [georgData, setGeorgData] = useState(() =>
     isOeffentlichAdminContext()
-      ? { name: MUSTER_TEXTE.georg.name, email: MUSTER_TEXTE.georg.email || '', phone: MUSTER_TEXTE.georg.phone || '', category: 'keramik' as const, bio: MUSTER_TEXTE.artist2Bio, website: MUSTER_TEXTE.georg.website || '' }
+      ? { name: MUSTER_TEXTE.georg.name, email: MUSTER_TEXTE.georg.email || '', phone: MUSTER_TEXTE.georg.phone || '', category: 'keramik' as const, bio: MUSTER_TEXTE.artist2Bio, website: MUSTER_TEXTE.georg.website || '', vita: MUSTER_VITA_GEORG }
       : {
           name: K2_STAMMDATEN_DEFAULTS.georg.name,
           category: 'keramik',
           bio: 'Georg verbindet in seiner Keramikarbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail, das Ergebnis von jahrzehntelanger Erfahrung.',
           email: K2_STAMMDATEN_DEFAULTS.georg.email,
           phone: K2_STAMMDATEN_DEFAULTS.georg.phone,
-          website: K2_STAMMDATEN_DEFAULTS.georg.website || ''
+          website: K2_STAMMDATEN_DEFAULTS.georg.website || '',
+          vita: ''
         }
   )
   const [galleryData, setGalleryData] = useState<any>(() =>
@@ -1035,6 +1192,39 @@ function ScreenshotExportAdmin() {
     setPageContent(getPageContentGalerie(isOeffentlichAdminContext() ? 'oeffentlich' : undefined))
   }, [])
 
+  // Design-Vorschau = immer aktuelle gespeicherte Seite anzeigen (keine alten Daten)
+  // Beim Wechsel in den Design-Tab: Seitentexte, Seitengestaltung und Design aus Speicher nachladen
+  useEffect(() => {
+    if (activeTab !== 'design') return
+    const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
+    setPageTextsState(getPageTexts(tenant))
+    setPageContent(getPageContentGalerie(tenant))
+    try {
+      const key = getDesignStorageKey()
+      const stored = localStorage.getItem(key)
+      if (stored && stored.length > 0 && stored.length < 50000) {
+        const parsed = JSON.parse(stored)
+        if (parsed && typeof parsed === 'object' && (parsed.accentColor || parsed.backgroundColor1)) {
+          const defaults = isOeffentlichAdminContext() ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN
+          if (!isOeffentlichAdminContext() && isOldBlueDesign(parsed)) {
+            setDesignSettings(K2_ORANGE_DESIGN)
+          } else {
+            setDesignSettings({
+              accentColor: parsed.accentColor ?? (defaults as Record<string, string>).accentColor,
+              backgroundColor1: parsed.backgroundColor1 ?? (defaults as Record<string, string>).backgroundColor1,
+              backgroundColor2: parsed.backgroundColor2 ?? (defaults as Record<string, string>).backgroundColor2,
+              backgroundColor3: parsed.backgroundColor3 ?? (defaults as Record<string, string>).backgroundColor3,
+              textColor: parsed.textColor ?? (defaults as Record<string, string>).textColor,
+              mutedColor: parsed.mutedColor ?? (defaults as Record<string, string>).mutedColor,
+              cardBg1: parsed.cardBg1 ?? (defaults as Record<string, string>).cardBg1,
+              cardBg2: parsed.cardBg2 ?? (defaults as Record<string, string>).cardBg2
+            })
+          }
+        }
+      }
+    } catch (_) {}
+  }, [activeTab])
+
   // URL-Parameter context (oeffentlich / vk2) in sessionStorage übernehmen
   useEffect(() => {
     try {
@@ -1045,9 +1235,10 @@ function ScreenshotExportAdmin() {
     } catch (_) {}
   }, [])
 
-  // ök2: Lager-Tab nicht verfügbar – bei Lager-Auswahl auf Stammdaten wechseln
+  // ök2: Lager-Tab nicht verfügbar. VK2: Sicherheit und Lager nicht – auf Stammdaten wechseln
   useEffect(() => {
     if (isOeffentlichAdminContext() && settingsSubTab === 'lager') setSettingsSubTab('stammdaten')
+    if (isVk2AdminContext() && (settingsSubTab === 'lager' || settingsSubTab === 'sicherheit')) setSettingsSubTab('stammdaten')
   }, [settingsSubTab])
 
   // ök2: Verkaufte-Werke-Anzeige (Tage) aus k2-oeffentlich-galerie-settings laden
@@ -1062,9 +1253,10 @@ function ScreenshotExportAdmin() {
     } catch (_) {}
   }, [])
 
-  // Stammdaten aus localStorage laden – bei ök2-Kontext aus k2-oeffentlich-stammdaten-* (siehe separater Effect)
+  // Stammdaten aus localStorage laden – bei ök2-Kontext aus k2-oeffentlich-stammdaten-*; bei VK2 aus k2-vk2-stammdaten
   useEffect(() => {
     if (isOeffentlichAdminContext()) return
+    if (isVk2AdminContext()) return // VK2 lädt in separatem Effect
     let isMounted = true
     
     const timeoutId = setTimeout(() => {
@@ -1096,8 +1288,11 @@ function ScreenshotExportAdmin() {
             phone: (parsed.phone && String(parsed.phone).trim()) ? parsed.phone : d.phone,
             website: (parsed.website && String(parsed.website).trim()) ? parsed.website : (d.website || '')
           }
+          if (!mergedMartina.vita || typeof mergedMartina.vita !== 'string' || !mergedMartina.vita.trim()) {
+            mergedMartina.vita = MUSTER_VITA_MARTINA
+          }
         } else {
-          mergedMartina = { name: d.name, email: d.email, phone: d.phone, website: d.website || '', category: 'malerei', bio: '' }
+          mergedMartina = { name: d.name, email: d.email, phone: d.phone, website: d.website || '', category: 'malerei', bio: '', vita: MUSTER_VITA_MARTINA }
         }
         if (isMounted) setMartinaData(mergedMartina)
         // Nur Kontaktfelder reparieren – niemals komplette Stammdaten überschreiben (sonst gehen Adresse, Bio, Bilder verloren)
@@ -1127,8 +1322,11 @@ function ScreenshotExportAdmin() {
             phone: (parsed.phone && String(parsed.phone).trim()) ? parsed.phone : d.phone,
             website: (parsed.website && String(parsed.website).trim()) ? parsed.website : (d.website || '')
           }
+          if (!mergedGeorg.vita || typeof mergedGeorg.vita !== 'string' || !mergedGeorg.vita.trim()) {
+            mergedGeorg.vita = MUSTER_VITA_GEORG
+          }
         } else {
-          mergedGeorg = { name: d.name, email: d.email, phone: d.phone, website: d.website || '', category: 'keramik', bio: '' }
+          mergedGeorg = { name: d.name, email: d.email, phone: d.phone, website: d.website || '', category: 'keramik', bio: '', vita: MUSTER_VITA_GEORG }
         }
         if (isMounted) setGeorgData(mergedGeorg)
         if (storedGeorg && storedGeorg.length < 100000) {
@@ -1223,11 +1421,72 @@ function ScreenshotExportAdmin() {
     }
   }, [])
 
-  /** Speichert alle aktuellen Admin-Daten in localStorage (K2/ök2-Key), damit „Seiten prüfen“ die neuesten Änderungen anzeigt. Design wird hier nicht mitgeschrieben – nur über „Speichern“ im Design-Tab. */
+  // VK2-Stammdaten aus localStorage laden (nur bei VK2-Kontext)
+  useEffect(() => {
+    if (!isVk2AdminContext()) return
+    let isMounted = true
+    const t = setTimeout(() => {
+      if (!isMounted) return
+      try {
+        const raw = localStorage.getItem(KEY_VK2_STAMMDATEN)
+        if (raw && raw.length < 500000) {
+          const parsed = JSON.parse(raw) as Partial<Vk2Stammdaten>
+          const merged: Vk2Stammdaten = {
+            verein: { ...VK2_STAMMDATEN_DEFAULTS.verein, ...parsed.verein },
+            vorstand: { ...VK2_STAMMDATEN_DEFAULTS.vorstand, ...parsed.vorstand },
+            vize: { ...VK2_STAMMDATEN_DEFAULTS.vize, ...parsed.vize },
+            kassier: { ...VK2_STAMMDATEN_DEFAULTS.kassier, ...parsed.kassier },
+            schriftfuehrer: { ...VK2_STAMMDATEN_DEFAULTS.schriftfuehrer, ...parsed.schriftfuehrer },
+            beisitzer: parsed.beisitzer ? { ...VK2_STAMMDATEN_DEFAULTS.beisitzer!, ...parsed.beisitzer } : undefined,
+            mitglieder: Array.isArray(parsed.mitglieder) ? parsed.mitglieder.map((m: any) => typeof m === 'string' ? { name: m, oeffentlichSichtbar: true } : { name: m?.name ?? '', email: m?.email, lizenz: m?.lizenz, typ: m?.typ, mitgliedFotoUrl: m?.mitgliedFotoUrl, imageUrl: m?.imageUrl, phone: m?.phone, website: m?.website, seit: m?.seit, strasse: m?.strasse, plz: m?.plz, ort: m?.ort, land: m?.land, geburtsdatum: m?.geburtsdatum, eintrittsdatum: m?.eintrittsdatum ?? m?.seit, oeffentlichSichtbar: m?.oeffentlichSichtbar !== false, bankKontoinhaber: m?.bankKontoinhaber, bankIban: m?.bankIban, bankBic: m?.bankBic, bankName: m?.bankName }) : [],
+            mitgliederNichtRegistriert: Array.isArray(parsed.mitgliederNichtRegistriert) ? parsed.mitgliederNichtRegistriert : [],
+          }
+          setVk2Stammdaten(merged)
+        }
+      } catch (_) {}
+    }, 300)
+    return () => { isMounted = false; clearTimeout(t) }
+  }, [])
+
+  // Registrierungs-Config (Lizenztyp, Vereinsmitglied, Empfehlung) aus localStorage laden
+  useEffect(() => {
+    let isMounted = true
+    const t = setTimeout(() => {
+      if (!isMounted) return
+      try {
+        const key = isVk2AdminContext() ? KEY_VK2_REGISTRIERUNG : isOeffentlichAdminContext() ? KEY_OEF_REGISTRIERUNG : KEY_REGISTRIERUNG
+        const raw = localStorage.getItem(key)
+        if (raw && raw.length < 5000) {
+          const parsed = JSON.parse(raw) as Partial<RegistrierungConfig>
+          const migrated = { ...REGISTRIERUNG_CONFIG_DEFAULTS, ...parsed }
+          if ((parsed as { lizenztyp?: string }).lizenztyp === 'vollversion') migrated.lizenztyp = 'pro'
+          setRegistrierungConfig(migrated)
+        }
+      } catch (_) {}
+    }, 200)
+    return () => { isMounted = false; clearTimeout(t) }
+  }, [])
+
+  const saveRegistrierungConfig = () => {
+    let cfg = { ...registrierungConfig }
+    const praefix = getLizenznummerPraefix(cfg)
+    const match = cfg.lizenznummer?.match(/^(B|P|VB|VP|KF)-(\d{4})-(\d{4})$/)
+    const needsNew = !match || match[1] !== praefix
+    // Lizenznummer beim ersten Speichern oder bei Präfix-Änderung vom K2-System vergeben
+    if (needsNew) {
+      cfg = { ...cfg, lizenznummer: `${praefix}-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}` }
+      setRegistrierungConfig(cfg)
+    }
+    const key = isVk2AdminContext() ? KEY_VK2_REGISTRIERUNG : isOeffentlichAdminContext() ? KEY_OEF_REGISTRIERUNG : KEY_REGISTRIERUNG
+    localStorage.setItem(key, JSON.stringify(cfg))
+  }
+
+  /** Speichert alle aktuellen Admin-Daten in localStorage (K2/ök2/VK2-Key), damit „Seiten prüfen“ die neuesten Änderungen anzeigt. Design wird hier nicht mitgeschrieben – nur über „Speichern“ im Design-Tab. */
   const saveAllForVorschau = () => {
     try {
-      // Stammdaten nur in K2 schreiben (ök2 = nur Muster)
-      if (!isOeffentlichAdminContext()) {
+      if (isVk2AdminContext()) {
+        localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify(vk2Stammdaten))
+      } else if (!isOeffentlichAdminContext()) {
         const martinaStr = JSON.stringify(martinaData)
         const georgStr = JSON.stringify(georgData)
         const galleryStr = JSON.stringify(galleryData)
@@ -1247,12 +1506,21 @@ function ScreenshotExportAdmin() {
     }
   }
 
-  // Stammdaten speichern - bei ök2-Kontext nicht in echte K2-Daten schreiben
+  // Stammdaten speichern - bei ök2-Kontext nicht in echte K2-Daten schreiben; bei VK2 in k2-vk2-stammdaten
   const saveStammdaten = () => {
     return new Promise<void>((resolve, reject) => {
       if (isOeffentlichAdminContext()) {
         alert('Demo-Modus (ök2): Es werden keine echten Daten gespeichert. Wechsle zur K2-Galerie für echte Stammdaten.')
         resolve()
+        return
+      }
+      if (isVk2AdminContext()) {
+        try {
+          localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify(vk2Stammdaten))
+          resolve()
+        } catch (e) {
+          reject(e)
+        }
         return
       }
       const timeoutId = setTimeout(() => {
@@ -2187,84 +2455,139 @@ function ScreenshotExportAdmin() {
       öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
       sonstiges: 'Veranstaltung'
     }
-    
+    const evType = eventTypeLabels[event.type] || 'Veranstaltung'
+    const evDate = formatEventDates(event)
+    const ort = event.location || galleryData.address || ''
+    const desc = event.description || 'Malerei, Keramik und Skulptur in einem außergewöhnlichen Galerieraum.'
+    const mName = martinaData?.name || 'Martina Kreinecker'
+    const pName = georgData?.name || 'Georg Kreinecker'
+    const mBio = martinaData?.bio || 'Malerei und Grafik – großformatige Arbeiten zwischen Abstraktion und Figuration.'
+    const pBio = georgData?.bio || 'Keramik und Skulptur – handgeformte Objekte mit starker plastischer Präsenz.'
+    const gName = galleryData.name || 'K2 Galerie'
+    const adresse = [galleryData.address, galleryData.city].filter(Boolean).join(', ')
     return {
-      title: `PRESSEAUSSENDUNG: ${event.title}`,
-      content: `
-${event.title.toUpperCase()}
-
-EVENT-TYP: ${eventTypeLabels[event.type] || 'Veranstaltung'}
-
-TERMINDATEN:
-${formatEventDates(event)}
-
-ORT:
-${event.location || galleryData.address || ''}
-
-${galleryData.name || 'K2 Galerie'}
-${galleryData.address || ''}
-${galleryData.phone ? `Tel: ${galleryData.phone}` : ''}
-${galleryData.email ? `E-Mail: ${galleryData.email}` : ''}
-
-BESCHREIBUNG:
-${event.description || 'Wir laden dich herzlich zu unserer Veranstaltung ein.'}
-
-KÜNSTLER:
-${martinaData.name}: ${martinaData.bio}
-${georgData.name}: ${georgData.bio}
-
-Für weitere Informationen kontaktiere uns bitte:
-${galleryData.email || ''}
-${galleryData.phone || ''}
-      `.trim()
+      title: `PRESSEAUSSENDUNG – ${event.title} | ${gName}`,
+      content: [
+        `PRESSEAUSSENDUNG`,
+        `Zur sofortigen Veröffentlichung`,
+        ``,
+        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+        `${event.title.toUpperCase()}`,
+        `${evType} · ${gName}`,
+        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+        ``,
+        `TERMIN:   ${evDate}`,
+        `ORT:      ${ort || adresse}`,
+        `EINTRITT: frei`,
+        ``,
+        `───────────────────────────────────────`,
+        `ZUR AUSSTELLUNG`,
+        `───────────────────────────────────────`,
+        ``,
+        desc,
+        ``,
+        `Die ${gName} präsentiert mit dieser ${evType} eine Zusammenschau`,
+        `zweier künstlerischer Positionen, die in Dialog miteinander treten.`,
+        `${mName} und ${pName} schaffen Werke, die sich gegenseitig`,
+        `spiegeln und bereichern – zwischen Fläche und Raum, zwischen`,
+        `malerischer Setzung und plastischer Form.`,
+        ``,
+        `───────────────────────────────────────`,
+        `DIE KÜNSTLER:INNEN`,
+        `───────────────────────────────────────`,
+        ``,
+        `${mName.toUpperCase()}`,
+        mBio,
+        ``,
+        `${pName.toUpperCase()}`,
+        pBio,
+        ``,
+        `───────────────────────────────────────`,
+        `KONTAKT & BILDMATERIAL`,
+        `───────────────────────────────────────`,
+        ``,
+        `Für Rückfragen, Interviewanfragen und Bildmaterial:`,
+        ``,
+        galleryData.email ? `E-Mail:  ${galleryData.email}` : '',
+        galleryData.phone ? `Telefon: ${galleryData.phone}` : '',
+        adresse ? `Adresse: ${adresse}` : '',
+        galleryData.openingHours ? `Öffnungszeiten: ${galleryData.openingHours}` : '',
+        ``,
+        `www.k2-galerie.at`,
+        ``,
+        `– Ende der Presseaussendung –`,
+      ].filter(l => l !== null && l !== undefined).join('\n')
     }
   }
 
   const generateSocialMediaContent = (event: any) => {
-    const eventTypeLabels: Record<string, string> = {
-      galerieeröffnung: '#Galerieeröffnung #Kunst',
-      vernissage: '#Vernissage #Kunstausstellung',
-      finissage: '#Finissage #Kunst',
-      öffentlichkeitsarbeit: '#Kunst #Galerie',
-      sonstiges: '#Kunst #Event'
+    const hashtagMap: Record<string, string> = {
+      galerieeröffnung: '#Galerieeröffnung #Galerieöffnung #Kunsthaus',
+      vernissage: '#Vernissage #Ausstellungseröffnung #Kunstausstellung',
+      finissage: '#Finissage #LetzteChance #Kunst',
+      öffentlichkeitsarbeit: '#Kunst #Galerie #Öffentlichkeitsarbeit',
+      sonstiges: '#Kunst #Event #Galerie'
     }
-    
-    const eventTypeNames: Record<string, string> = {
-      galerieeröffnung: 'Galerieeröffnung',
-      vernissage: 'Vernissage',
-      finissage: 'Finissage',
-      öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
-      sonstiges: 'Veranstaltung'
+    const typeNameMap: Record<string, string> = {
+      galerieeröffnung: 'Galerieeröffnung', vernissage: 'Vernissage',
+      finissage: 'Finissage', öffentlichkeitsarbeit: 'Veranstaltung', sonstiges: 'Veranstaltung'
     }
-    
-    // Formatierte Termindaten für Social Media
     const datesFormatted = formatEventDates(event)
-    
+    const ort = event.location || galleryData.address || ''
+    const desc = event.description || 'Wir freuen uns auf deinen Besuch!'
+    const mName = martinaData?.name || 'Martina Kreinecker'
+    const pName = georgData?.name || 'Georg Kreinecker'
+    const gName = galleryData.name || 'K2 Galerie'
+    const typeName = typeNameMap[event.type] || 'Veranstaltung'
+    const hashtags = hashtagMap[event.type] || '#Kunst #Galerie'
+    const baseHashtags = `#K2Galerie #KunstInÖsterreich #Malerei #Keramik`
     return {
-      instagram: `
-🎨 ${event.title}
-
-📅 ${datesFormatted}
-
-📍 ${event.location || galleryData.address || ''}
-
-${event.description || 'Wir freuen uns auf deinen Besuch!'}
-
-${eventTypeLabels[event.type] || '#Kunst #Galerie'} #K2Galerie #KunstUndKeramik
-      `.trim(),
-      facebook: `
-${event.title}
-
-Wir laden dich herzlich ein zu unserer ${eventTypeNames[event.type] || 'Veranstaltung'}!
-
-📅 ${datesFormatted}
-
-📍 ${event.location || galleryData.address || ''}
-
-${event.description || 'Besuch uns auch online!'}
-
-Wir freuen uns auf deinen Besuch!
-      `.trim()
+      instagram: [
+        `✦ ${event.title}`,
+        ``,
+        `${desc}`,
+        ``,
+        `📅 ${datesFormatted}`,
+        ort ? `📍 ${ort}` : '',
+        ``,
+        `${mName} trifft ${pName} –`,
+        `Malerei, Grafik & Keramik in einem Raum.`,
+        ``,
+        `Eintritt frei. Wir freuen uns auf euch! 🎨`,
+        ``,
+        `${hashtags} ${baseHashtags} #Vernissage #Kunstliebe`,
+      ].filter(Boolean).join('\n'),
+      facebook: [
+        `🎨 ${event.title} – ${typeName} in der ${gName}`,
+        ``,
+        `Wir laden herzlich ein!`,
+        ``,
+        desc,
+        ``,
+        `${mName} und ${pName} zeigen neue Werke:`,
+        `Malerei, Grafik, Keramik und Skulptur – zwei Handschriften, ein Raum.`,
+        ``,
+        `📅 ${datesFormatted}`,
+        ort ? `📍 ${ort}` : '',
+        galleryData.openingHours ? `🕒 ${galleryData.openingHours}` : '',
+        ``,
+        `Eintritt frei. Bitte meldet euch gerne an:`,
+        galleryData.email ? `✉ ${galleryData.email}` : '',
+        galleryData.phone ? `☎ ${galleryData.phone}` : '',
+        ``,
+        `Wir freuen uns auf euren Besuch! 💚`,
+      ].filter(Boolean).join('\n'),
+      whatsapp: [
+        `✦ *${event.title}*`,
+        `📅 ${datesFormatted}`,
+        ort ? `📍 ${ort}` : '',
+        ``,
+        desc,
+        ``,
+        `_${mName} & ${pName} – ${gName}_`,
+        galleryData.email ? `✉ ${galleryData.email}` : '',
+        `👉 www.k2-galerie.at`,
+      ].filter(Boolean).join('\n'),
     }
   }
 
@@ -2704,6 +3027,12 @@ ${'='.repeat(60)}
       <label>Facebook Text</label>
       <textarea id="facebook-post" rows="18">${((socialMedia?.facebook || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
     </div>
+    
+    <h2>WhatsApp / Kurznachricht</h2>
+    <div class="field-group">
+      <label>WhatsApp Text (kompakt, mit Emojis)</label>
+      <textarea id="whatsapp-post" rows="10">${((socialMedia?.whatsapp || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+    </div>
     </div>
   </div>
 
@@ -2848,15 +3177,110 @@ ${'='.repeat(60)}
     }
   }
 
-  // Platzhalter-Funktionen für Event-Flyer und Newsletter-Content
-  const generateEventFlyerContent = (event: any): string => {
-    // TODO: Implementiere Flyer-Generierung
-    return ''
+  const generateEventFlyerContent = (event: any): { subject?: string; body?: string } => {
+    const g = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
+    const m = JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}')
+    const p = JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}')
+    const gName = g.name || 'K2 Galerie'
+    const mName = m.name || 'Martina Kreinecker'
+    const pName = p.name || 'Georg Kreinecker'
+    const adresse = [g.address, g.city].filter(Boolean).join(', ') || ''
+    const eventDate = event?.date ? new Date(event.date).toLocaleDateString('de-AT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + (event?.startTime ? ` · ${event.startTime} Uhr` : ', 18 Uhr') : 'Termin folgt'
+    const title = event?.title || 'Vernissage'
+    const desc = event?.description || 'Malerei, Keramik und Skulptur in einem außergewöhnlichen Galerieraum.'
+    return {
+      subject: `✦ ${title} – Event-Flyer | ${gName}`,
+      body: [
+        `═══════════════════════════════════════`,
+        `  ${title.toUpperCase()}`,
+        `  ${gName}`,
+        `═══════════════════════════════════════`,
+        ``,
+        `📅  ${eventDate}`,
+        adresse ? `📍  ${adresse}` : '',
+        ``,
+        `───────────────────────────────────────`,
+        `ÜBER DIE AUSSTELLUNG`,
+        `───────────────────────────────────────`,
+        ``,
+        desc,
+        ``,
+        `Die Ausstellung zeigt neue Arbeiten von ${mName} und ${pName} –`,
+        `zwei künstlerische Handschriften, die sich in einem gemeinsamen`,
+        `Raum begegnen und ergänzen.`,
+        ``,
+        `───────────────────────────────────────`,
+        `DIE KÜNSTLER:INNEN`,
+        `───────────────────────────────────────`,
+        ``,
+        `${mName}`,
+        (m.bio || 'Malerei & Grafik – großformatige Arbeiten zwischen Abstraktion und Figuration.'),
+        ``,
+        `${pName}`,
+        (p.bio || 'Keramik & Skulptur – handgeformte Objekte mit starker plastischer Wirkung.'),
+        ``,
+        `───────────────────────────────────────`,
+        `KONTAKT & INFORMATION`,
+        `───────────────────────────────────────`,
+        ``,
+        g.email ? `✉  ${g.email}` : '',
+        g.phone ? `☎  ${g.phone}` : '',
+        adresse ? `🏛  ${adresse}` : '',
+        g.openingHours ? `🕒  Öffnungszeiten: ${g.openingHours}` : '',
+        ``,
+        `www.k2-galerie.at`,
+      ].filter(line => line !== null && line !== undefined).join('\n')
+    }
   }
 
-  const generateEmailNewsletterContent = (event: any): string => {
-    // TODO: Implementiere Newsletter-Generierung
-    return ''
+  const generateEmailNewsletterContent = (event: any): { subject?: string; body?: string } => {
+    const g = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
+    const m = JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}')
+    const p = JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}')
+    const gName = g.name || 'K2 Galerie'
+    const mName = m.name || 'Martina Kreinecker'
+    const pName = p.name || 'Georg Kreinecker'
+    const adresse = [g.address, g.city].filter(Boolean).join(', ') || ''
+    const eventDate = event?.date ? new Date(event.date).toLocaleDateString('de-AT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + (event?.startTime ? ` · ${event.startTime} Uhr` : ', 18 Uhr') : 'Termin folgt'
+    const title = event?.title || 'Vernissage'
+    const desc = event?.description || 'Malerei, Keramik und Skulptur in einer einzigartigen Galerieatmosphäre.'
+    return {
+      subject: `Einladung: ${title} – ${gName}`,
+      body: [
+        `Liebe Kunstfreundinnen und Kunstfreunde,`,
+        ``,
+        `wir freuen uns, Sie persönlich zu unserer Veranstaltung einladen zu dürfen:`,
+        ``,
+        `  ✦  ${title.toUpperCase()}`,
+        `  📅  ${eventDate}`,
+        adresse ? `  📍  ${adresse}` : '',
+        ``,
+        `─────────────────────────────────────────`,
+        ``,
+        desc,
+        ``,
+        `${mName} und ${pName} zeigen neue Arbeiten, die in den vergangenen`,
+        `Monaten entstanden sind. Malerei, Grafik, Keramik und Skulptur –`,
+        `jedes Werk trägt eine persönliche Handschrift und lädt zum Innehalten,`,
+        `Entdecken und Gespräch ein.`,
+        ``,
+        `Wir würden uns sehr freuen, Sie an diesem Abend begrüßen zu dürfen.`,
+        `Für Getränke und eine herzliche Atmosphäre ist gesorgt.`,
+        ``,
+        `─────────────────────────────────────────`,
+        ``,
+        g.openingHours ? `Öffnungszeiten: ${g.openingHours}` : '',
+        g.email ? `Anmeldung erwünscht: ${g.email}` : '',
+        g.phone ? `Telefon: ${g.phone}` : '',
+        ``,
+        `Mit herzlichen Grüßen`,
+        `${mName} & ${pName}`,
+        `${gName}`,
+        adresse ? adresse : '',
+        ``,
+        `www.k2-galerie.at`,
+      ].filter(line => line !== null && line !== undefined).join('\n')
+    }
   }
 
   const generateEditableNewsletterPDF = (newsletter: any, event: any) => {
@@ -5110,19 +5534,63 @@ ${'='.repeat(60)}
     saveEvents(updatedEvents)
   }
 
+  // Fertiges Dummy-Dokument zum Absenden: Nutzer-Design + Stammdaten + Foto (wie versprochen).
+  const buildReadyToSendDocumentHtml = (docKind: 'einladung' | 'presse', eventTitle: string, eventDate: string): string => {
+    const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    const d = designSettings || OEF_DESIGN_DEFAULT
+    const g = galleryData || { address: MUSTER_TEXTE.gallery.address, city: MUSTER_TEXTE.gallery.city, country: MUSTER_TEXTE.gallery.country, email: MUSTER_TEXTE.gallery.email, phone: MUSTER_TEXTE.gallery.phone, openingHours: MUSTER_TEXTE.gallery.openingHours, name: 'Galerie Muster' }
+    const m = martinaData?.name || MUSTER_TEXTE.martina.name
+    const p = georgData?.name || MUSTER_TEXTE.georg.name
+    const adresse = [g.address, g.city, g.country].filter(Boolean).join(', ') || 'Musterstraße 1, 12345 Musterstadt'
+    const imageUrl = (pageContent?.welcomeImage && pageContent.welcomeImage.startsWith('data:')) ? pageContent.welcomeImage : (allArtworks?.[0]?.imageUrl && allArtworks[0].imageUrl.startsWith('data:')) ? allArtworks[0].imageUrl : (pageContent?.welcomeImage || allArtworks?.[0]?.imageUrl || '')
+    const accent = d.accentColor || '#5a7a6e'
+    const bg = d.backgroundColor1 || '#f6f4f0'
+    const text = d.textColor || '#2d2d2a'
+    const muted = d.mutedColor || '#5c5c57'
+    const imgBlock = imageUrl ? `<div style="margin-bottom:1.5rem;"><img src="${imageUrl.replace(/"/g, '&quot;')}" alt="" style="width:100%; max-width:560px; height:auto; display:block; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.12);" /></div>` : ''
+    if (docKind === 'einladung') {
+      return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Einladung zur Vernissage</title><style>body{font-family:Georgia,serif;max-width:600px;margin:0 auto;padding:2rem 1.5rem;line-height:1.65;color:${text};background:${bg}}h1{font-size:1.6rem;border-bottom:3px solid ${accent};padding-bottom:.5rem;margin-top:0}p{margin:.75rem 0}.meta{color:${muted};font-size:.95rem}@media print{body{background:#fff;color:#111}h1{border-color:#333}.meta{color:#555}}</style></head><body>${imgBlock}<h1>Einladung zur Vernissage</h1><p><strong>${esc(g.name || 'Galerie Muster')}</strong> – Malerei, Keramik, Grafik &amp; Skulptur</p><p class="meta">${esc(eventDate)}</p><p>${esc(adresse)}</p><p>Sehr geehrte Damen und Herren,</p><p>wir laden Sie herzlich zur Eröffnung unserer Ausstellung ein. ${esc(m)} und ${esc(p)} präsentieren neue Arbeiten aus allen Sparten: Malerei und Grafik, Keramik und Skulptur. Die Vernissage bietet Gelegenheit, die Künstler:innen kennenzulernen und die Werke in entspannter Atmosphäre zu entdecken.</p><p>Für Getränke und einen kleinen Imbiss ist gesorgt. Wir freuen uns auf Ihren Besuch und anregende Gespräche.</p><p>Um Anmeldung wird gebeten: ${esc(g.email || '')}</p><p class="meta" style="margin-top:2rem;">Öffnungszeiten: ${esc(g.openingHours || '')}</p><p class="meta">Mit freundlichen Grüßen<br>${esc(g.name || 'Galerie Muster')}</p></body></html>`
+    }
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Presseinformation</title><style>body{font-family:Georgia,serif;max-width:600px;margin:0 auto;padding:2rem 1.5rem;line-height:1.65;color:${text};background:${bg}}h1{font-size:1.4rem;border-bottom:3px solid ${accent};padding-bottom:.4rem;margin-top:0}p{margin:.6rem 0}.meta{color:${muted};font-size:.9rem}@media print{body{background:#fff;color:#111}h1{border-color:#333}.meta{color:#555}}</style></head><body>${imgBlock}<h1>Presseinformation – Vernissage</h1><p><strong>${esc(g.name || 'Galerie Muster')}</strong> lädt zur Eröffnung der Ausstellung ein.</p><p class="meta">${esc(eventDate)}<br>${esc(adresse)}</p><p>${esc(m)} (Malerei, Grafik) und ${esc(p)} (Keramik, Skulptur) zeigen aktuelle Werke in einer gemeinsamen Schau. Die Ausstellung spannt einen Bogen von großformatigen Bildern über grafische Arbeiten bis zu keramischen Objekten und Skulptur – ein Querschnitt durch das aktuelle Schaffen beider Künstler:innen.</p><p>Die Vernissage am Eröffnungsabend bietet Presse und Gästen die Möglichkeit, die Werke in Anwesenheit der Künstler:innen zu sehen und mit ihnen ins Gespräch zu kommen. Im Anschluss ist die Ausstellung zu den regulären Öffnungszeiten der Galerie zugänglich.</p><p>Für Rückfragen, Bildmaterial oder Interviewwünsche stehen wir gern zur Verfügung.</p><p>Kontakt: ${esc(g.email || '')}${g.phone ? ', ' + esc(g.phone) : ''}</p><p class="meta" style="margin-top:1.5rem;">Öffnungszeiten: ${esc(g.openingHours || '')}</p></body></html>`
+  }
+
   // Dokument öffnen/anschauen (documentUrl = Link zum Projekt-Flyer, z. B. K2 Galerie Flyer). Unterstützt auch data/fileData aus globalem Speicher.
-  const handleViewEventDocument = (document: any) => {
+  // Bei Einladung/Presse: Fertiges Dummy-Dokument im Nutzer-Design mit Stammdaten + Foto (zum Absenden bereit).
+  const handleViewEventDocument = (document: any, event?: any) => {
     if (document.documentUrl) {
       window.open(document.documentUrl, '_blank')
       return
     }
-    const fileData = document.fileData || document.data
     const fileType = document.fileType || document.type || ''
+    const eventTitle = event?.title || 'Vernissage – Neue Arbeiten'
+    const eventDate = (event?.date ? new Date(event.date).toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + (event?.startTime ? ', ' + event.startTime + ' Uhr' : ', 18 Uhr') : 'Samstag, 15. März 2026, 18 Uhr')
+    const isEinladung = document.name && String(document.name).toLowerCase().includes('einladung')
+    const isPresse = document.name && String(document.name).toLowerCase().includes('presse')
+    if (isEinladung || isPresse) {
+      const html = buildReadyToSendDocumentHtml(isEinladung ? 'einladung' : 'presse', eventTitle, eventDate)
+      try {
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+        const url = URL.createObjectURL(blob)
+        const opened = window.open(url, '_blank')
+        if (!opened) {
+          alert('Pop-up wurde blockiert. Bitte erlaube Fenster für diese Seite, dann erneut auf das Dokument klicken.')
+        }
+        setTimeout(() => URL.revokeObjectURL(url), 5000)
+      } catch (e) {
+        const newWindow = window.open()
+        if (newWindow) {
+          newWindow.document.write(html)
+          newWindow.document.close()
+        }
+      }
+      return
+    }
+    const fileData = document.fileData || document.data
     const newWindow = window.open()
     if (newWindow && fileData) {
       newWindow.document.write(`
         <html>
-          <head><title>${document.name}</title></head>
+          <head><title>${(document.name || '').replace(/</g, '&lt;')}</title></head>
           <body style="margin:0; padding:20px; background:#f5f5f5;">
             ${fileType?.includes('pdf')
               ? `<iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe>`
@@ -5130,11 +5598,39 @@ ${'='.repeat(60)}
               ? `<img src="${fileData}" style="max-width:100%; height:auto;" />`
               : fileType?.includes('html')
               ? `<iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe>`
-              : `<a href="${fileData}" download="${document.fileName || document.name}">Download: ${document.name}</a>`
+              : `<a href="${fileData}" download="${(document.fileName || document.name || '').replace(/</g, '&lt;')}">Download: ${(document.name || '').replace(/</g, '&lt;')}</a>`
             }
           </body>
         </html>
       `)
+    }
+  }
+
+  // Vita als Dokument öffnen (gleiches Design wie Einladung/Presse) – für Außenkommunikation, Druck/PDF
+  const openVitaDocument = (personId: 'martina' | 'georg') => {
+    const person = personId === 'martina' ? martinaData : georgData
+    const design = designSettings || OEF_DESIGN_DEFAULT
+    const html = buildVitaDocumentHtml(personId, {
+      name: person?.name || '',
+      email: person?.email,
+      phone: person?.phone,
+      website: person?.website,
+      vita: person?.vita || (personId === 'martina' ? MUSTER_VITA_MARTINA : MUSTER_VITA_GEORG)
+    }, {
+      accentColor: design.accentColor,
+      backgroundColor1: design.backgroundColor1,
+      textColor: design.textColor,
+      mutedColor: design.mutedColor
+    }, galleryData?.name)
+    try {
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const opened = window.open(url, '_blank')
+      if (!opened) alert('Pop-up wurde blockiert. Bitte Fenster erlauben und erneut klicken.')
+      setTimeout(() => URL.revokeObjectURL(url), 5000)
+    } catch (e) {
+      const w = window.open()
+      if (w) { w.document.write(html); w.document.close() }
     }
   }
 
@@ -5179,6 +5675,36 @@ ${'='.repeat(60)}
     setEvents(updated)
     saveEvents(updated)
     alert('✅ Eröffnungsevent 24.–26. April wieder angelegt!\n\nDokumente zu diesem Event: Marketing → Öffentlichkeitsarbeit → Rubrik dieses Events → „Dokument zu dieser Rubrik hinzufügen“. Danach „Veröffentlichen“.')
+  }
+
+  // Beispiel: Ateliersbesichtigung bei Paul Weber (vor 1 Woche) mit Einladung + Presse – für Vergangenheit-Demo
+  const handleCreateAteliersbesichtigungPaulWeber = () => {
+    const oneWeekAgo = new Date()
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+    const dateStr = oneWeekAgo.toISOString().slice(0, 10)
+    const eventId = `event-atelier-paul-weber-${Date.now()}`
+    const newEvent = {
+      id: eventId,
+      title: 'Ateliersbesichtigung bei Paul Weber',
+      type: 'vernissage' as const,
+      date: dateStr,
+      endDate: dateStr,
+      startTime: '14:00',
+      endTime: '18:00',
+      dailyTimes: {} as Record<string, { start: string; end: string }>,
+      description: 'Besichtigung des Ateliers von Paul Weber mit Werken und Gespräch.',
+      location: [galleryData.address, galleryData.city, galleryData.country].filter(Boolean).join(', ') || '',
+      documents: [
+        { id: `${eventId}-einladung`, name: 'Einladung – Ateliersbesichtigung Paul Weber', category: 'pr-dokumente', eventId, werbematerialTyp: 'flyer' },
+        { id: `${eventId}-presse`, name: 'Presse – Ateliersbesichtigung Paul Weber', category: 'pr-dokumente', eventId, werbematerialTyp: 'presse' }
+      ] as any[],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+    const updated = [...events, newEvent].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    setEvents(updated)
+    saveEvents(updated)
+    alert('✅ Ateliersbesichtigung bei Paul Weber angelegt (Datum vor 1 Woche). Sie erscheint unter „Veranstaltungen der Vergangenheit“ mit Einladung und Presse – anklicken zum Ansehen.')
   }
 
   // Event-Modal öffnen
@@ -5417,13 +5943,14 @@ ${'='.repeat(60)}
   }
 
   // Laufende Nummer generieren - WICHTIG: Finde maximale Nummer aus ALLEN artworks
-  // K2: Kategorie-basiert (M/K/G/S/O). ök2: ein Präfix W (Werk)
-  const generateArtworkNumber = async (category: ArtworkCategoryId = 'malerei') => {
+  // K2: Kategorie-basiert (M/K/G/S/O). ök2: W (Werk). VK2: VK2-M1, VK2-F1 usw. (7 Kunstbereiche)
+  const generateArtworkNumber = async (category: string = 'malerei') => {
+    const forVk2 = isVk2AdminContext()
     const forOek2 = isOeffentlichAdminContext()
     const letter = getCategoryPrefixLetter(category)
-    const categoryPrefix = forOek2 ? 'K2-W-' : `K2-${letter}-`
+    const categoryPrefix = forVk2 ? `VK2-${letter}` : forOek2 ? 'K2-W-' : `K2-${letter}-`
     const prefix = forOek2 ? 'W' : letter
-    
+
     // Lade alle artworks (lokal)
     const localArtworks = loadArtworks()
     
@@ -5451,24 +5978,19 @@ ${'='.repeat(60)}
     let maxNumber = 0
     const usedNumbers = new Set<string>()
     
-    // ZUERST Server-Nummern prüfen (höchste Priorität - synchronisiert über gallery-data.json)
-    if (serverArtworks && Array.isArray(serverArtworks)) {
+    // ZUERST Server-Nummern prüfen (nur K2/ök2; VK2 nutzt nur lokale k2-vk2-artworks)
+    if (!forVk2 && serverArtworks && Array.isArray(serverArtworks)) {
       serverArtworks.forEach((a: any) => {
         if (!a.number) return
         usedNumbers.add(a.number)
-        
         if (a.number.startsWith(categoryPrefix)) {
           const numStr = a.number.replace(categoryPrefix, '').replace(/[^0-9]/g, '')
           const num = parseInt(numStr || '0')
-          if (num > maxNumber) {
-            maxNumber = num
-          }
+          if (num > maxNumber) maxNumber = num
         } else if (a.number.startsWith('K2-') && !a.number.includes('-K-') && !a.number.includes('-M-') && !a.number.includes('-G-') && !a.number.includes('-S-') && !a.number.includes('-O-') && !a.number.includes('-W-')) {
           const numStr = a.number.replace('K2-', '').replace(/[^0-9]/g, '')
           const num = parseInt(numStr || '0')
-          if (num > maxNumber) {
-            maxNumber = num
-          }
+          if (num > maxNumber) maxNumber = num
         }
       })
     }
@@ -5500,24 +6022,24 @@ ${'='.repeat(60)}
     
     // Die nächste Nummer ist maxNumber + 1
     let nextNumber = maxNumber + 1
-    let formattedNumber = `${categoryPrefix}${String(nextNumber).padStart(4, '0')}`
-    
+    const pad = forVk2 ? (n: number) => String(n) : (n: number) => String(n).padStart(4, '0')
+    let formattedNumber = `${categoryPrefix}${pad(nextNumber)}`
+
     // KRITISCH: Prüfe auf Konflikte und erhöhe bis eindeutig
-    // Dies verhindert doppelte Nummern bei gleichzeitiger Erstellung auf mehreren Geräten
     let attempts = 0
     while (usedNumbers.has(formattedNumber) && attempts < 100) {
       nextNumber++
-      formattedNumber = `${categoryPrefix}${String(nextNumber).padStart(4, '0')}`
+      formattedNumber = `${categoryPrefix}${pad(nextNumber)}`
       attempts++
     }
-    
+
     // Falls immer noch Konflikt: Verwende Timestamp + Device-ID für eindeutige Nummer
     if (usedNumbers.has(formattedNumber)) {
       const deviceId = localStorage.getItem('k2-device-id') || `device-${Date.now()}-${Math.random().toString(36).substring(7)}`
       if (!localStorage.getItem('k2-device-id')) {
         localStorage.setItem('k2-device-id', deviceId)
       }
-      const timestamp = Date.now().toString().slice(-6) // Letzte 6 Ziffern
+      const timestamp = Date.now().toString().slice(-6)
       const deviceHash = deviceId.split('-').pop()?.substring(0, 2) || Math.floor(Math.random() * 100).toString().padStart(2, '0')
       formattedNumber = `${categoryPrefix}${timestamp}${deviceHash}`
       console.warn('⚠️ Konflikt erkannt - verwende eindeutige Device+Timestamp-Nummer:', formattedNumber)
@@ -7289,163 +7811,143 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
       
       <div style={{ position: 'relative', zIndex: 1 }}>
         <header style={{
-          padding: 'clamp(1.5rem, 4vw, 2.5rem) clamp(1.5rem, 4vw, 3rem)',
-          paddingTop: 'clamp(2rem, 5vw, 3rem)',
+          padding: 'clamp(1rem, 3vw, 1.5rem) clamp(1.5rem, 4vw, 3rem)',
           maxWidth: '1600px',
           margin: '0 auto',
-          marginBottom: 'clamp(2rem, 5vw, 3rem)'
+          marginBottom: 'clamp(1.5rem, 4vw, 2.5rem)',
+          borderBottom: `1px solid ${s.accent}18`
         }}>
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: '1.5rem'
+            gap: '1rem'
           }}>
-            <div>
-              <AdminBrandLogo />
+            {/* Logo + Admin-Badge */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <AdminBrandLogo title={isVk2AdminContext() ? 'VK2 Vereinsplattform' : undefined} />
+              <span style={{
+                padding: '0.25rem 0.65rem',
+                background: `${s.accent}18`,
+                border: `1px solid ${s.accent}33`,
+                borderRadius: '20px',
+                fontSize: '0.75rem',
+                color: s.accent,
+                fontWeight: 600,
+                letterSpacing: '0.03em'
+              }}>
+                ADMIN
+              </span>
             </div>
-            <nav style={{
-              display: 'flex',
-              gap: 'clamp(0.75rem, 2vw, 1rem)',
-              flexWrap: 'wrap',
-              alignItems: 'center'
-            }}>
-              <Link 
+
+            {/* Schnell-Aktionen – das was man täglich braucht */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+
+              {/* Galerie ansehen */}
+              <Link
                 to={isVk2AdminContext() ? PROJECT_ROUTES.vk2.galerieVorschau : isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerie}
                 state={{ fromAdmin: true }}
                 style={{
-                  padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                  padding: '0.5rem 1rem',
                   background: s.bgCard,
-                  border: `1px solid ${s.accent}33`,
+                  border: `1px solid ${s.accent}28`,
                   color: s.text,
                   textDecoration: 'none',
-                  borderRadius: s.radius,
-                  fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
-                  fontWeight: '500',
-                  transition: 'all 0.3s ease',
+                  borderRadius: '10px',
+                  fontSize: '0.88rem',
+                  fontWeight: 500,
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.5rem',
-                  boxShadow: s.shadow
+                  gap: '0.4rem',
+                  transition: 'all 0.2s'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = s.bgElevated
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = s.bgCard
-                  e.currentTarget.style.transform = 'translateY(0)'
-                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.background = s.bgElevated }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}28`; e.currentTarget.style.background = s.bgCard }}
               >
-                Zur Galerie
+                🖼️ Galerie ansehen
               </Link>
+
+              {/* Kasse – primäre Aktion, deutlich hervorgehoben */}
               {!isVk2AdminContext() && (
-              <Link 
-                to={PROJECT_ROUTES['k2-galerie'].shop}
-                state={{ openAsKasse: true, fromOeffentlich: isOeffentlichAdminContext() || undefined }}
-                style={{
-                  padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                  background: s.gradientAccent,
-                  color: '#ffffff',
-                  textDecoration: 'none',
-                  borderRadius: s.radius,
-                  fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
-                  fontWeight: '600',
-                  transition: 'all 0.3s ease',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  boxShadow: s.shadow
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                  e.currentTarget.style.boxShadow = '0 16px 44px rgba(181, 74, 30, 0.25)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = s.shadow
-                }}
-              >
-                💰 Kasse
-              </Link>
+                <Link
+                  to={PROJECT_ROUTES['k2-galerie'].shop}
+                  state={{ openAsKasse: true, fromOeffentlich: isOeffentlichAdminContext() || undefined }}
+                  style={{
+                    padding: '0.55rem 1.1rem',
+                    background: s.gradientAccent,
+                    color: '#ffffff',
+                    textDecoration: 'none',
+                    borderRadius: '10px',
+                    fontSize: '0.9rem',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    boxShadow: '0 2px 8px rgba(181,74,30,0.18)',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(181,74,30,0.28)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(181,74,30,0.18)' }}
+                >
+                  💰 Kasse öffnen
+                </Link>
               )}
-              <Link 
-                to={isVk2AdminContext() ? PROJECT_ROUTES.vk2.kunden : PROJECT_ROUTES['k2-galerie'].kunden} 
+
+              {/* Kundendaten */}
+              <Link
+                to={isVk2AdminContext() ? PROJECT_ROUTES.vk2.kunden : PROJECT_ROUTES['k2-galerie'].kunden}
                 style={{
-                  padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                  padding: '0.5rem 1rem',
                   background: s.bgCard,
-                  border: `1px solid ${s.accent}40`,
-                  color: s.accent,
+                  border: `1px solid ${s.accent}28`,
+                  color: s.text,
                   textDecoration: 'none',
-                  borderRadius: s.radius,
-                  fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
-                  fontWeight: '600',
-                  transition: 'all 0.3s ease',
+                  borderRadius: '10px',
+                  fontSize: '0.88rem',
+                  fontWeight: 500,
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.5rem',
-                  boxShadow: s.shadow
+                  gap: '0.4rem',
+                  transition: 'all 0.2s'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = s.bgElevated
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = s.bgCard
-                  e.currentTarget.style.transform = 'translateY(0)'
-                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.background = s.bgElevated }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}28`; e.currentTarget.style.background = s.bgCard }}
               >
                 {isVk2AdminContext() ? '👥 Mitglieder' : '👥 Kunden'}
               </Link>
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 'clamp(0.5rem, 1.5vw, 0.75rem)'
-              }}>
-                <span style={{
-                  padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                  background: `${s.accent}18`,
-                  border: `1px solid ${s.accent}40`,
-                  borderRadius: s.radius,
-                  fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                  color: s.accent,
-                  fontWeight: '500',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}>
-                  <span>✓</span> Admin-Modus
-                </span>
-                {!isOeffentlichAdminContext() && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      try {
-                        sessionStorage.removeItem(ADMIN_CONTEXT_KEY)
-                        localStorage.removeItem('k2-admin-unlocked')
-                        localStorage.removeItem('k2-admin-unlocked-expiry')
-                      } catch (_) {}
-                      if (isVk2AdminContext()) navigate(PROJECT_ROUTES.vk2.galerie)
-                      else navigate(PROJECT_ROUTES['k2-galerie'].galerie)
-                    }}
-                    style={{
-                      padding: 'clamp(0.5rem, 1.5vw, 0.6rem) clamp(0.75rem, 2vw, 1rem)',
-                      background: 'transparent',
-                      border: `1px solid ${s.muted}66`,
-                      color: s.muted,
-                      borderRadius: s.radius,
-                      fontSize: 'clamp(0.7rem, 1.8vw, 0.8rem)',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                    title="Admin-Login auf diesem Gerät beenden"
-                  >
-                    Abmelden
-                  </button>
-                )}
-              </span>
-            </nav>
+
+              {/* Abmelden – klein und zurückhaltend */}
+              {!isOeffentlichAdminContext() && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    try {
+                      sessionStorage.removeItem(ADMIN_CONTEXT_KEY)
+                      localStorage.removeItem('k2-admin-unlocked')
+                      localStorage.removeItem('k2-admin-unlocked-expiry')
+                    } catch (_) {}
+                    if (isVk2AdminContext()) navigate(PROJECT_ROUTES.vk2.galerie)
+                    else navigate(PROJECT_ROUTES['k2-galerie'].galerie)
+                  }}
+                  style={{
+                    padding: '0.4rem 0.8rem',
+                    background: 'transparent',
+                    border: `1px solid ${s.muted}44`,
+                    color: s.muted,
+                    borderRadius: '8px',
+                    fontSize: '0.78rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  title="Admin-Login auf diesem Gerät beenden"
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.muted}88`; e.currentTarget.style.color = s.text }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.muted}44`; e.currentTarget.style.color = s.muted }}
+                >
+                  Abmelden
+                </button>
+              )}
+            </div>
           </div>
         </header>
 
@@ -7455,59 +7957,132 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
           maxWidth: '1600px',
           margin: '0 auto'
         }}>
-          {/* Admin Tabs – Klare Struktur: Kasse | Werke | Eventplanung | Design | Einstellungen */}
-          <div style={{
-            display: 'flex',
-            gap: 'clamp(0.5rem, 2vw, 1rem)',
-            flexWrap: 'wrap',
-            marginBottom: 'clamp(2rem, 5vw, 3rem)',
-            background: s.bgCard,
-            border: `1px solid ${s.accent}22`,
-            borderRadius: '16px',
-            padding: 'clamp(0.75rem, 2vw, 1rem)',
-            boxShadow: s.shadow
-          }}>
-            {[
-              { id: 'assistent' as const, label: '🤖 Assistent', desc: 'Galerie einrichten – Schritt für Schritt' },
-              { id: 'werke' as const, label: '🎨 Werke verwalten', desc: 'Neue Werke hinzufügen' },
-              { id: 'eventplan' as const, label: '📢 Marketing', desc: 'Eventplanung, Außenkommunikation, Flyer, Dokumente' },
-              { id: 'design' as const, label: '✨ Design', desc: 'Aussehen ändern' },
-              { id: 'einstellungen' as const, label: '⚙️ Einstellungen', desc: 'Stammdaten, Sicherheit, Lager' }
-            ].map((tab) => (
+          {/* Admin-Dashboard: "Was willst du heute tun?" – große Karten statt Tab-Reihe */}
+          {activeTab !== 'assistent' && (
+          <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 2.5rem)' }}>
+
+            {/* Zurück-Link wenn in einem Bereich */}
+            {activeTab !== 'werke' && (
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                title={tab.desc}
-                style={{
-                  padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                  border: 'none',
-                  borderRadius: s.radius,
-                  fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
-                  fontWeight: activeTab === tab.id ? '600' : '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  background: activeTab === tab.id ? s.gradientAccent : s.bgElevated,
-                  color: activeTab === tab.id ? '#ffffff' : s.text,
-                  boxShadow: activeTab === tab.id ? s.shadow : 'none'
-                }}
-                onMouseEnter={(e) => {
-                  if (activeTab !== tab.id) e.currentTarget.style.background = `${s.accent}14`
-                }}
-                onMouseLeave={(e) => {
-                  if (activeTab !== tab.id) e.currentTarget.style.background = s.bgElevated
-                }}
+                type="button"
+                onClick={() => setActiveTab('werke')}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: s.muted, fontSize: '0.9rem', padding: '0 0 1rem 0', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
               >
-                {tab.label}
+                ← Zurück zur Übersicht
               </button>
-            ))}
+            )}
+
+            {/* Haupt-Dashboard: nur wenn kein Bereich aktiv (werke = Startseite) */}
+            {activeTab === 'werke' && (
+              <div>
+                {/* Begrüßung */}
+                <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
+                  <h2 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', fontWeight: 700, color: s.text, margin: '0 0 0.35rem' }}>
+                    Was möchtest du heute tun?
+                  </h2>
+                  <p style={{ color: s.muted, margin: 0, fontSize: '0.95rem' }}>
+                    Wähle einen Bereich – alles ist einen Klick entfernt.
+                  </p>
+                </div>
+
+                {/* Karten-Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(1rem, 2.5vw, 1.5rem)' }}>
+
+                  {/* Werke */}
+                  <button type="button" onClick={() => {/* bleibt auf werke, scrollt runter */}} style={{ textAlign: 'left', cursor: 'default', background: s.bgCard, border: `2px solid ${s.accent}33`, borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease' }}>
+                    <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>🎨</div>
+                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>
+                      {isVk2AdminContext() ? 'Vereinsmitglieder' : 'Meine Werke'}
+                    </div>
+                    <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
+                      {isVk2AdminContext() ? 'Mitglieder hinzufügen, bearbeiten, verwalten' : 'Werke hinzufügen, bearbeiten, veröffentlichen'}
+                    </div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>↓ Direkt hier unten</div>
+                  </button>
+
+                  {/* Eventplanung */}
+                  <button type="button" onClick={() => setActiveTab('eventplan')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: `2px solid ${s.accent}22`, borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.transform = 'translateY(-2px)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}22`; e.currentTarget.style.transform = 'translateY(0)' }}
+                  >
+                    <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📢</div>
+                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Veranstaltungen & Werbung</div>
+                    <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
+                      Events planen, Einladungen und Flyer erstellen, Presse, Social Media
+                    </div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Öffnen →</div>
+                  </button>
+
+                  {/* Design */}
+                  <button type="button" onClick={() => setActiveTab('design')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: `2px solid ${s.accent}22`, borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.transform = 'translateY(-2px)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}22`; e.currentTarget.style.transform = 'translateY(0)' }}
+                  >
+                    <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>✨</div>
+                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Aussehen der Galerie</div>
+                    <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
+                      Farben, Texte und Bilder der Galerie anpassen – sofort sichtbar
+                    </div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Öffnen →</div>
+                  </button>
+
+                  {/* Einstellungen */}
+                  <button type="button" onClick={() => setActiveTab('einstellungen')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: `2px solid ${s.accent}22`, borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.transform = 'translateY(-2px)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}22`; e.currentTarget.style.transform = 'translateY(0)' }}
+                  >
+                    <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>⚙️</div>
+                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Einstellungen</div>
+                    <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
+                      Meine Daten (Name, Kontakt, Adresse), Drucker, Sicherheit, Backup
+                    </div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Öffnen →</div>
+                  </button>
+
+                  {/* Assistent */}
+                  <button type="button" onClick={() => setActiveTab('assistent')} style={{ textAlign: 'left', cursor: 'pointer', background: `linear-gradient(135deg, ${s.accent}12, ${s.accent}06)`, border: `2px solid ${s.accent}44`, borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}88`; e.currentTarget.style.transform = 'translateY(-2px)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}44`; e.currentTarget.style.transform = 'translateY(0)' }}
+                  >
+                    <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>🤖</div>
+                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.accent, marginBottom: '0.35rem' }}>Schritt-für-Schritt-Hilfe</div>
+                    <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
+                      Neu hier? Der Assistent führt dich durch die Einrichtung
+                    </div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Öffnen →</div>
+                  </button>
+
+                </div>
+
+                {/* Trennlinie vor Werke-Inhalt */}
+                <div style={{ margin: 'clamp(2rem, 5vw, 3rem) 0 clamp(1rem, 3vw, 1.5rem)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ flex: 1, height: 1, background: `${s.accent}22` }} />
+                  <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>🎨 {isVk2AdminContext() ? 'Vereinsmitglieder' : 'Meine Werke'}</span>
+                  <div style={{ flex: 1, height: 1, background: `${s.accent}22` }} />
+                </div>
+              </div>
+            )}
+
+            {/* Bereichs-Kopf wenn in Eventplan/Design/Einstellungen */}
+            {activeTab !== 'werke' && (
+              <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
+                <h2 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', fontWeight: 700, color: s.text, margin: 0 }}>
+                  {activeTab === 'eventplan' && '📢 Veranstaltungen & Werbung'}
+                  {activeTab === 'design' && '✨ Aussehen der Galerie'}
+                  {activeTab === 'einstellungen' && '⚙️ Einstellungen'}
+                </h2>
+              </div>
+            )}
+
           </div>
+          )}
 
           {/* Galerie-Assistent: neue Kunden Schritt für Schritt zur eigenen Galerie führen */}
           {activeTab === 'assistent' && (
             <GalerieAssistent
               onGoToStep={(tab, subTab) => {
                 setActiveTab(tab)
-                if (subTab && tab === 'einstellungen') setSettingsSubTab(subTab as 'stammdaten' | 'drucker' | 'sicherheit' | 'lager')
+                if (subTab && tab === 'einstellungen') setSettingsSubTab(subTab as 'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager')
                 if (subTab && tab === 'eventplan') setEventplanSubTab(subTab as 'events' | 'öffentlichkeitsarbeit')
               }}
             />
@@ -7530,153 +8105,75 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
                 letterSpacing: '-0.01em'
               }}>
-                Werke verwalten
+                {isVk2AdminContext() ? 'Vereinsmitglieder' : 'Werke verwalten'}
               </h2>
-              <div style={{
-                display: 'flex',
-                gap: 'clamp(0.75rem, 2vw, 1rem)',
-                flexWrap: 'wrap',
-                marginBottom: 'clamp(2rem, 5vw, 3rem)'
-              }}>
-                <button 
-                  onClick={() => {
-                    setEditingArtwork(null)
-                    setShowAddModal(true)
-                  }}
-                  style={{
-                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                    background: s.gradientAccent,
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '12px',
-                    fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: s.shadow
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 16px 44px rgba(181, 74, 30, 0.25)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = s.shadow
-                  }}
-                >
-                  + Neues Werk hinzufügen
-                </button>
-                <button 
-                  type="button"
-                  onClick={() => {
-                    if (selectedForBatchPrint.size > 0) {
-                      handleBatchPrintEtiketten()
-                    } else {
-                      alert('Bitte bei den Werken unten „Zum Sammeldruck“ ankreuzen. Dann hier erneut auf „Sammeldruck“ klicken.')
-                    }
-                  }}
-                  style={{
-                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                    background: s.gradientSecondary,
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '12px',
-                    fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 4px 14px rgba(28, 26, 24, 0.12)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(28, 26, 24, 0.18)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = '0 4px 14px rgba(28, 26, 24, 0.12)'
-                  }}
-                >
-                  🖨️ Sammeldruck
-                </button>
-                {!isOeffentlichAdminContext() && (
-                <button 
-                  onClick={() => {
-                    navigate(PROJECT_ROUTES['k2-galerie'].platzanordnung)
-                  }}
-                  style={{
-                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '12px',
-                    fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 10px 30px rgba(16, 185, 129, 0.3)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 15px 40px rgba(16, 185, 129, 0.4)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = '0 10px 30px rgba(16, 185, 129, 0.3)'
-                  }}
-                >
-                  📍 Platzanordnung
-                </button>
+              {isVk2AdminContext() && (
+                <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted }}>
+                  <button type="button" onClick={() => { setActiveTab('einstellungen'); setSettingsSubTab('stammdaten') }} style={{ background: 'none', border: 'none', padding: 0, color: s.accent, textDecoration: 'underline', cursor: 'pointer', fontSize: 'inherit' }}>Stammdaten (Verein, Vorstand, Mitglieder) bearbeiten → Einstellungen</button>
+                </p>
+              )}
+              {/* Werke-Aktionen: Primär klar, Sekundär zurückhaltend */}
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
+                {!isVk2AdminContext() && (
+                  <button
+                    onClick={() => { setEditingArtwork(null); setShowAddModal(true) }}
+                    style={{
+                      padding: '0.7rem 1.4rem',
+                      background: s.gradientAccent,
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '10px',
+                      fontSize: '0.95rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      boxShadow: '0 2px 8px rgba(181,74,30,0.18)',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(181,74,30,0.28)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(181,74,30,0.18)' }}
+                  >
+                    + Neues Werk
+                  </button>
                 )}
-            </div>
-            {/* K2 + ök2: Verkaufte Werke in Galerie anzeigen – K2 = k2-stammdaten-galerie, ök2 = k2-oeffentlich-galerie-settings */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1rem', marginBottom: 'clamp(1.5rem, 4vw, 2rem)', padding: '1rem', background: s.bgElevated, borderRadius: '12px', border: `1px solid ${s.accent}22` }}>
-              <span style={{ fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: s.text, fontWeight: '500' }}>Verkaufte Werke in Galerie anzeigen</span>
-              <select
-                value={isOeffentlichAdminContext()
-                  ? soldArtworksDisplayDaysOek2
-                  : (typeof galleryData.soldArtworksDisplayDays === 'number' ? galleryData.soldArtworksDisplayDays : 30)}
-                onChange={(e) => {
-                  const days = Number(e.target.value)
-                  if (isOeffentlichAdminContext()) {
-                    setSoldArtworksDisplayDaysOek2(days)
-                    try {
-                      const raw = localStorage.getItem('k2-oeffentlich-galerie-settings')
-                      const current = raw ? JSON.parse(raw) : {}
-                      localStorage.setItem('k2-oeffentlich-galerie-settings', JSON.stringify({ ...current, soldArtworksDisplayDays: days }))
-                    } catch (_) {}
-                  } else {
-                    setGalleryData((prev: any) => ({ ...prev, soldArtworksDisplayDays: days }))
-                    try {
-                      const raw = localStorage.getItem('k2-stammdaten-galerie')
-                      const current = raw ? JSON.parse(raw) : {}
-                      localStorage.setItem('k2-stammdaten-galerie', JSON.stringify({ ...current, soldArtworksDisplayDays: days }))
-                    } catch (_) {}
-                  }
-                }}
-                style={{
-                  padding: '0.5rem 0.75rem',
-                  background: s.bgCard,
-                  border: `1px solid ${s.accent}33`,
-                  borderRadius: s.radius,
-                  fontSize: 'clamp(0.9rem, 2.2vw, 1rem)',
-                  color: s.text,
-                  cursor: 'pointer',
-                  minWidth: '200px'
-                }}
-              >
-                <option value={0}>Sofort in History (nicht in Galerie)</option>
-                <option value={7}>1 Woche</option>
-                <option value={14}>2 Wochen</option>
-                <option value={28}>4 Wochen</option>
-                <option value={30}>ca. 1 Monat</option>
-                <option value={56}>8 Wochen</option>
-                <option value={84}>12 Wochen</option>
-              </select>
-              <span style={{ fontSize: '0.85rem', color: s.muted }}>Danach erscheinen verkaufte Werke nur noch in der History.</span>
-            </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (selectedForBatchPrint.size > 0) {
+                        handleBatchPrintEtiketten()
+                      } else {
+                        alert('Hakerl bei den Werken setzen („Etikett drucken“), dann auf diesen Button klicken.')
+                      }
+                    }}
+                    style={{
+                      padding: '0.7rem 1.2rem',
+                      background: selectedForBatchPrint.size > 0 ? s.bgElevated : 'transparent',
+                      color: selectedForBatchPrint.size > 0 ? s.text : s.muted,
+                      border: `1px solid ${selectedForBatchPrint.size > 0 ? s.accent + '44' : s.muted + '44'}`,
+                      borderRadius: '10px',
+                      fontSize: '0.88rem',
+                      fontWeight: selectedForBatchPrint.size > 0 ? 600 : 400,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66` }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = selectedForBatchPrint.size > 0 ? `${s.accent}44` : `${s.muted}44` }}
+                  >
+                    🖨️ Etiketten drucken{selectedForBatchPrint.size > 0 ? ` (${selectedForBatchPrint.size} ausgewählt)` : ''}
+                  </button>
+                  {selectedForBatchPrint.size === 0 && (
+                    <span style={{ fontSize: '0.72rem', color: s.muted, paddingLeft: '0.2rem' }}>
+                      → Hakerl bei Werken setzen, dann hier drucken
+                    </span>
+                  )}
+                </div>
+              </div>
               <div style={{
                 display: 'flex',
                 gap: 'clamp(1rem, 3vw, 1.5rem)',
@@ -7688,7 +8185,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   <span style={{ fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: s.muted, whiteSpace: 'nowrap' }}>Suchen</span>
                   <input 
                     type="text" 
-                    placeholder="Titel oder Nummer…" 
+                    placeholder={isVk2AdminContext() ? 'Name, E-Mail, Lizenz…' : 'Titel oder Nummer…'} 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     style={{
@@ -7710,6 +8207,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     }}
                   />
                 </label>
+                {!isVk2AdminContext() && (
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <span style={{ fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: s.muted, whiteSpace: 'nowrap' }}>Kategorie</span>
                   <select 
@@ -7732,8 +8230,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     ))}
                   </select>
                 </label>
+                )}
               </div>
-              {selectedForBatchPrint.size > 0 && (
+              {!isVk2AdminContext() && selectedForBatchPrint.size > 0 && (
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -7787,6 +8286,105 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 gap: 'clamp(1rem, 3vw, 1.5rem)'
               }}>
               {(() => {
+                /* VK2: Liste der registrierten Mitglieder (Anmeldedaten) mit Bearbeiten – Vorstand zuerst und prominent */
+                if (isVk2AdminContext()) {
+                  const mitglieder = vk2Stammdaten.mitglieder || []
+                  const such = searchQuery.trim().toLowerCase()
+                  const gefiltert = such ? mitglieder.filter(m => (m.name?.toLowerCase().includes(such)) || (m.email?.toLowerCase().includes(such)) || (m.lizenz?.toLowerCase().includes(such)) || (m.typ?.toLowerCase().includes(such))) : mitglieder
+                  const sorted = [...gefiltert].sort((a, b) => getVorstandSortKey(vk2Stammdaten, a.name) - getVorstandSortKey(vk2Stammdaten, b.name))
+                  const vorstandCount = sorted.filter(m => getVorstandRole(vk2Stammdaten, m.name) !== null).length
+                  if (sorted.length === 0) {
+                    return (
+                      <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: 'clamp(3rem, 8vw, 5rem)', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '20px', boxShadow: s.shadow }}>
+                        <p style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', color: s.text }}>
+                          {mitglieder.length === 0 ? 'Noch keine Mitglieder vorhanden' : 'Keine Treffer zur Suche'}
+                        </p>
+                        <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', marginTop: '1rem', color: s.muted }}>
+                          {mitglieder.length === 0 ? 'Klicke auf "+ Mitglied hinzufügen" und trage Anmeldedaten (Name, E-Mail, Lizenz, Typ) ein.' : 'Anderen Suchbegriff eingeben oder "+ Mitglied hinzufügen".'}
+                        </p>
+                      </div>
+                    )
+                  }
+                  return (
+                    <>
+                      {vorstandCount > 0 && (
+                        <div style={{ gridColumn: '1 / -1', marginTop: '0.5rem', marginBottom: '0.25rem' }}>
+                          <h3 style={{ fontSize: '1rem', color: s.accent, margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>⭐ Vorstand</h3>
+                          <p style={{ fontSize: '0.85rem', color: s.muted, margin: '0.25rem 0 0' }}>Anerkennung für das Engagement – sichtbar in Galerie, Vorschau und hier.</p>
+                        </div>
+                      )}
+                      {sorted.slice(0, vorstandCount).map((m) => {
+                    const indexInFull = mitglieder.indexOf(m)
+                    const nameNorm = (s: string | undefined) => (s ?? '').trim().toLowerCase()
+                    const muster = USER_LISTE_FUER_MITGLIEDER.find(u => nameNorm(u.name) === nameNorm(m.name))
+                    const has = (v: string | undefined) => (v ?? '').trim().length > 0
+                    const d = muster ? { name: m.name, email: has(m.email) ? m.email : (muster.email ?? '–'), lizenz: has(m.lizenz) ? m.lizenz : (muster.lizenz ?? '–'), typ: has(m.typ) ? m.typ : (muster.typ ?? '–'), mitgliedFotoUrl: m.mitgliedFotoUrl ?? muster.mitgliedFotoUrl, imageUrl: m.imageUrl ?? muster.imageUrl, phone: has(m.phone) ? m.phone : muster.phone, seit: has(m.seit) ? m.seit : muster.seit } : { ...m, mitgliedFotoUrl: m.mitgliedFotoUrl, imageUrl: m.imageUrl, email: m.email || '–', lizenz: m.lizenz || '–', typ: m.typ || '–' }
+                    const avatarUrl = d.mitgliedFotoUrl || d.imageUrl
+                    const aufKarte = m.oeffentlichSichtbar !== false
+                    const vorstandRole = getVorstandRole(vk2Stammdaten, m.name)
+                    const isVorstand = vorstandRole !== null
+                    return (
+                      <div key={indexInFull} style={{ background: isVorstand ? s.accent + '0d' : s.bgCard, border: isVorstand ? `2px solid ${s.accent}` : `1px solid ${s.accent}22`, borderRadius: '20px', padding: 'clamp(1rem, 3vw, 1.5rem)', display: 'flex', flexDirection: 'column', gap: '0.75rem', opacity: aufKarte ? 1 : 0.85, boxShadow: isVorstand ? s.shadow : undefined }}>
+                        {isVorstand && <div style={{ fontSize: '0.8rem', fontWeight: 700, color: s.accent, background: s.accent + '22', padding: '0.35rem 0.6rem', borderRadius: '8px', alignSelf: 'flex-start', marginBottom: '0.25rem' }}>⭐ {vorstandRole}</div>}
+                        {!aufKarte && <span style={{ fontSize: '0.75rem', color: s.muted, background: s.bgElevated, padding: '0.25rem 0.5rem', borderRadius: 6, alignSelf: 'flex-start' }}>🔒 Nicht auf Karte (gesperrt)</span>}
+                        {d.imageUrl ? <img src={d.imageUrl} alt="" style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: '12px', marginBottom: '0.25rem' }} /> : null}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          {avatarUrl ? (
+                            <img src={avatarUrl} alt="" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                          ) : (
+                            <div style={{ width: 48, height: 48, borderRadius: '50%', background: s.accent + '33', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', color: s.accent, flexShrink: 0 }}>👤</div>
+                          )}
+                          <div style={{ fontWeight: 600, fontSize: isVorstand ? '1.1rem' : '1.05rem', color: s.text }}>{d.name}</div>
+                        </div>
+                        <div style={{ fontSize: '0.9rem', color: s.muted }}>{d.email || '–'}</div>
+                        {d.phone && <div style={{ fontSize: '0.85rem', color: s.text }}>📞 {d.phone}</div>}
+                        <div style={{ fontSize: '0.85rem', fontFamily: 'monospace', color: s.accent }}>{d.lizenz || '–'}</div>
+                        <div style={{ fontSize: '0.9rem', color: s.text }}>{d.typ || '–'}</div>
+                        {d.seit && <div style={{ fontSize: '0.8rem', color: s.muted }}>Seit {d.seit}</div>}
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                          <button type="button" onClick={() => { setEditingMemberIndex(indexInFull); setMemberForm(memberToForm(m)); setShowAddModal(true) }} style={{ padding: '0.5rem 1rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: '8px', color: s.accent, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>Bearbeiten</button>
+                          <button type="button" onClick={() => { const neu = mitglieder.filter((_, j) => j !== indexInFull); setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }); try { localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify({ ...vk2Stammdaten, mitglieder: neu })) } catch (_) {} }} style={{ padding: '0.5rem', background: 'transparent', border: 'none', color: s.muted, cursor: 'pointer', fontSize: '1.2rem' }} title="Entfernen">×</button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                      {vorstandCount > 0 && vorstandCount < sorted.length && (
+                        <div style={{ gridColumn: '1 / -1', marginTop: '1rem', marginBottom: '0.25rem' }}>
+                          <h3 style={{ fontSize: '0.95rem', color: s.text, margin: 0 }}>Weitere Mitglieder</h3>
+                        </div>
+                      )}
+                      {sorted.slice(vorstandCount).map((m) => {
+                    const indexInFull = mitglieder.indexOf(m)
+                    const nameNorm = (s: string | undefined) => (s ?? '').trim().toLowerCase()
+                    const muster = USER_LISTE_FUER_MITGLIEDER.find(u => nameNorm(u.name) === nameNorm(m.name))
+                    const has = (v: string | undefined) => (v ?? '').trim().length > 0
+                    const d = muster ? { name: m.name, email: has(m.email) ? m.email : (muster.email ?? '–'), lizenz: has(m.lizenz) ? m.lizenz : (muster.lizenz ?? '–'), typ: has(m.typ) ? m.typ : (muster.typ ?? '–'), mitgliedFotoUrl: m.mitgliedFotoUrl ?? muster.mitgliedFotoUrl, imageUrl: m.imageUrl ?? muster.imageUrl, phone: has(m.phone) ? m.phone : muster.phone, seit: has(m.seit) ? m.seit : muster.seit } : { ...m, mitgliedFotoUrl: m.mitgliedFotoUrl, imageUrl: m.imageUrl, email: m.email || '–', lizenz: m.lizenz || '–', typ: m.typ || '–' }
+                    const avatarUrl = d.mitgliedFotoUrl || d.imageUrl
+                    const aufKarte = m.oeffentlichSichtbar !== false
+                    return (
+                      <div key={indexInFull} style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '20px', padding: 'clamp(1rem, 3vw, 1.5rem)', display: 'flex', flexDirection: 'column', gap: '0.75rem', opacity: aufKarte ? 1 : 0.85 }}>
+                        {!aufKarte && <span style={{ fontSize: '0.75rem', color: s.muted, background: s.bgElevated, padding: '0.25rem 0.5rem', borderRadius: 6, alignSelf: 'flex-start' }}>🔒 Nicht auf Karte (gesperrt)</span>}
+                        {d.imageUrl ? <img src={d.imageUrl} alt="" style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: '12px', marginBottom: '0.25rem' }} /> : null}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          {avatarUrl ? <img src={avatarUrl} alt="" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} /> : <div style={{ width: 48, height: 48, borderRadius: '50%', background: s.accent + '33', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', color: s.accent, flexShrink: 0 }}>👤</div>}
+                          <div style={{ fontWeight: 600, fontSize: '1.05rem', color: s.text }}>{d.name}</div>
+                        </div>
+                        <div style={{ fontSize: '0.9rem', color: s.muted }}>{d.email || '–'}</div>
+                        {d.phone && <div style={{ fontSize: '0.85rem', color: s.text }}>📞 {d.phone}</div>}
+                        <div style={{ fontSize: '0.85rem', fontFamily: 'monospace', color: s.accent }}>{d.lizenz || '–'}</div>
+                        <div style={{ fontSize: '0.9rem', color: s.text }}>{d.typ || '–'}</div>
+                        {d.seit && <div style={{ fontSize: '0.8rem', color: s.muted }}>Seit {d.seit}</div>}
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                          <button type="button" onClick={() => { setEditingMemberIndex(indexInFull); setMemberForm(memberToForm(m)); setShowAddModal(true) }} style={{ padding: '0.5rem 1rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: '8px', color: s.accent, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>Bearbeiten</button>
+                          <button type="button" onClick={() => { const neu = mitglieder.filter((_, j) => j !== indexInFull); setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }); try { localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify({ ...vk2Stammdaten, mitglieder: neu })) } catch (_) {} }} style={{ padding: '0.5rem', background: 'transparent', border: 'none', color: s.muted, cursor: 'pointer', fontSize: '1.2rem' }} title="Entfernen">×</button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                    </>
+                  )
+                }
+
                 const filtered = sortArtworksNewestFirst(
                   allArtworks.filter((artwork) => {
                     if (!artwork) return false
@@ -7819,8 +8417,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 }
 
                 return filtered.map((artwork) => {
-                  const imageSrc = artwork.imageUrl || artwork.previewUrl
-                  
+                  const rawSrc = artwork.imageUrl || artwork.previewUrl
+                  const isPlaceholder = !rawSrc || (typeof rawSrc === 'string' && rawSrc.startsWith('data:image/svg'))
+                  const imageSrc = (isOeffentlichAdminContext() && isPlaceholder) ? getOek2DefaultArtworkImage(artwork.category) : rawSrc
                   return (
                   <div 
                     key={artwork.number || artwork.id} 
@@ -7849,6 +8448,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           style={{ width: '100%', height: 'clamp(180px, 30vw, 220px)', objectFit: 'cover', borderRadius: '12px' }}
                           onError={(e) => {
                             const target = e.target as HTMLImageElement
+                            if (isOeffentlichAdminContext() && target.src !== OEK2_PLACEHOLDER_IMAGE) {
+                              target.src = OEK2_PLACEHOLDER_IMAGE
+                              return
+                            }
                             target.style.display = 'none'
                             const placeholder = document.createElement('div')
                             placeholder.textContent = '🖼️'
@@ -7977,7 +8580,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         }}
                         style={{ cursor: 'pointer', accentColor: s.accent }}
                       />
-                      Zum Sammeldruck
+                      🖨️ Etikett drucken
                     </label>
                     <div style={{
                       display: 'flex',
@@ -7991,7 +8594,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           
                           if (isOeffentlichAdminContext()) {
                             setArtworkTitle(artwork.title || '')
-                            setArtworkCategory(ARTWORK_CATEGORIES.some((c) => c.id === artwork.category) ? (artwork.category as ArtworkCategoryId) : 'malerei')
+                            setArtworkCategory((ARTWORK_CATEGORIES.some((c) => c.id === artwork.category) || VK2_KUNSTBEREICHE.some((c) => c.id === artwork.category)) ? (artwork.category || 'malerei') : 'malerei')
                             setArtworkSubcategoryFree(artwork.subcategoryFree || artwork.ceramicSubcategory || '')
                             setArtworkDimensionsFree(artwork.dimensionsFree || (artwork.paintingWidth && artwork.paintingHeight ? `${artwork.paintingWidth} × ${artwork.paintingHeight} cm` : '') || '')
                             setArtworkArtist(artwork.artist || '')
@@ -8006,9 +8609,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             return
                           }
                           
-                          const category = ARTWORK_CATEGORIES.some((c) => c.id === artwork.category) ? (artwork.category as ArtworkCategoryId) : 'malerei'
+                          const category = (ARTWORK_CATEGORIES.some((c) => c.id === artwork.category) || VK2_KUNSTBEREICHE.some((c) => c.id === artwork.category)) ? (artwork.category || 'malerei') : 'malerei'
                           setArtworkCategory(category)
-                          if (category === 'keramik') {
+                          if (!isVk2AdminContext() && category === 'keramik') {
                             const subcategory = artwork.ceramicSubcategory || 'vase'
                             setArtworkCeramicSubcategory(subcategory as 'vase' | 'teller' | 'skulptur' | 'sonstig')
                             const subcategoryLabels: Record<string, string> = {
@@ -8188,24 +8791,28 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             {/* Nur bei Farben: Titel + Zurück zur Vorschau */}
             {designSubTab === 'farben' && (
               <>
-                <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: '700', color: s.text, marginBottom: 'clamp(1.5rem, 4vw, 2rem)', letterSpacing: '-0.01em' }}>✨ Design</h2>
-                <p style={{ color: s.muted, marginBottom: '1.5rem' }}>Farben und Themes anpassen.</p>
+                <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: '700', color: s.text, marginBottom: 'clamp(1.5rem, 4vw, 2rem)', letterSpacing: '-0.01em' }}>✨ Neugestaltung: Farbe und Text Galerie</h2>
+                <p style={{ color: s.muted, marginBottom: '1.5rem' }}>Farben und Texte der Galerie anpassen.</p>
                 <button type="button" onClick={() => setDesignSubTab('vorschau')} style={{ padding: '0.75rem 1.5rem', marginBottom: '2rem', border: `1px solid ${s.accent}33`, borderRadius: 8, fontSize: '1rem', background: s.bgElevated, color: s.text, cursor: 'pointer' }}>← Zur Vorschau</button>
               </>
             )}
 
             {/* Vorschau – wie in K2: Seite 1 / Seite 2 / Farben, für K2 und ök2 gleich */}
             {designSubTab === 'vorschau' && (
-              <div ref={previewContainerRef} style={{ width: '100%', minHeight: 'calc(100vh - 180px)', background: WERBEUNTERLAGEN_STIL.bgDark }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', padding: '0.5rem 1rem', marginBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              <div ref={previewContainerRef} style={{ width: '100%', minHeight: 'calc(100vh - 180px)', background: WERBEUNTERLAGEN_STIL.bgDark, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', padding: '0.5rem 1rem', marginBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                   <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                     <button type="button" onClick={() => setPreviewFullscreenPage(1)} style={{ padding: '0.4rem 0.9rem', fontSize: '0.9rem', background: previewFullscreenPage === 1 ? 'rgba(95, 251, 241, 0.25)' : 'transparent', border: '1px solid ' + (previewFullscreenPage === 1 ? 'var(--k2-accent)' : 'rgba(255,255,255,0.2)'), borderRadius: 6, color: previewFullscreenPage === 1 ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>Seite 1</button>
                     <button type="button" onClick={() => setPreviewFullscreenPage(2)} style={{ padding: '0.4rem 0.9rem', fontSize: '0.9rem', background: previewFullscreenPage === 2 ? 'rgba(95, 251, 241, 0.25)' : 'transparent', border: '1px solid ' + (previewFullscreenPage === 2 ? 'var(--k2-accent)' : 'rgba(255,255,255,0.2)'), borderRadius: 6, color: previewFullscreenPage === 2 ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>Seite 2</button>
                     <a href={isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie} target="_blank" rel="noopener noreferrer" style={{ padding: '0.5rem 1rem', fontSize: '0.95rem', background: 'rgba(16, 185, 129, 0.25)', border: '1px solid #10b981', borderRadius: 6, color: '#10b981', textDecoration: 'none', fontWeight: 600 }} title="Öffnet die Galerie – genau wie Kunden sie sehen">So sehen Kunden die Galerie →</a>
+                    <span style={{ color: 'var(--k2-muted)', fontSize: '0.85rem', marginLeft: '0.5rem' }}>Größe:</span>
+                    {([1, 1.25, 1.5, 2] as const).map((s) => (
+                      <button key={s} type="button" onClick={() => setDesignPreviewScale(s)} style={{ padding: '0.35rem 0.6rem', fontSize: '0.85rem', background: designPreviewScale === s ? 'rgba(95, 251, 241, 0.25)' : 'transparent', border: '1px solid ' + (designPreviewScale === s ? 'var(--k2-accent)' : 'rgba(255,255,255,0.2)'), borderRadius: 6, color: designPreviewScale === s ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>{Math.round(s * 100)}%</button>
+                    ))}
                   </div>
                   <button type="button" onClick={() => setDesignSubTab('farben')} style={{ padding: '0.4rem 0.9rem', fontSize: '0.9rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6, color: 'var(--k2-muted)', cursor: 'pointer' }}>🎨 Farben</button>
                 </div>
-                <p style={{ margin: '0 1rem 0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)' }}>Am Handy: Seite 1 oder 2 wählen – dann ist die ganze Seite sichtbar, Texte zum Bearbeiten antippen.</p>
+                <p style={{ flexShrink: 0, margin: '0 1rem 0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)' }}>Vorschau: Größe mit 100% / 125% / 150% / 200% wählen. Unteren Rand nach unten ziehen = Bereich vergrößern, nach oben = verkleinern. Inhalt scrollbar.</p>
                 <input type="file" accept="image/*" ref={welcomeImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { setPageContent({ ...pageContent, welcomeImage: await compressImage(f, 1200, 0.7) }) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                 <input type="file" accept="image/*" ref={galerieImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { setPageContent({ ...pageContent, galerieCardImage: await compressImage(f, 1200, 0.7) }) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                 <input type="file" accept="image/*" ref={virtualTourImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { setPageContent({ ...pageContent, virtualTourImage: await compressImage(f, 1200, 0.7) }) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
@@ -8216,12 +8823,13 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   const welcomeIntroDefault = defaultPageTexts.galerie.welcomeIntroText || 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.'
                   return (
                 <>
-                {/* Bildausfüllend: 412px-Layout mit scale() auf Container-Breite skaliert */}
+                {/* Design-Vorschau: manuelle Größe (Ziehen) + Zoom 100%–200% */}
                 {(() => {
-                  const scale = Math.max(0.5, Math.min(2.5, previewContainerWidth / 412))
+                  const scale = designPreviewScale
+                  const scaledContentMinHeight = Math.ceil(2800 * scale)
                   return (
-                <div style={{ overflow: 'auto', marginBottom: '1rem', width: '100%', minHeight: '100%' }}>
-                <div style={{ width: 412 * scale, minWidth: Math.min(412, previewContainerWidth), maxWidth: '100%', margin: '0 auto', boxSizing: 'border-box', overflow: 'hidden' }}>
+                <div style={{ overflow: 'auto', width: '100%', flex: '1 1 0', minHeight: 0, maxHeight: `${designPreviewHeightPx}px`, WebkitOverflowScrolling: 'touch' }}>
+                <div style={{ width: 412 * scale, minHeight: scaledContentMinHeight, margin: '0 auto', boxSizing: 'border-box', overflow: 'hidden' }}>
                 <div style={{ width: 412, transform: `scale(${scale})`, transformOrigin: 'top left', boxSizing: 'border-box' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 0, boxSizing: 'border-box' }}>
                   {previewFullscreenPage === 1 && (
@@ -8269,6 +8877,94 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           )}
                         </div>
                       </section>
+                      {/* Aktuelles aus den Eventplanungen – wie auf der echten ersten Seite */}
+                      {(() => {
+                        const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
+                        const getEventEnd = (e: any) => { const d = e.endDate ? new Date(e.endDate) : new Date(e.date); d.setHours(23, 59, 59, 999); return d }
+                        const upcoming = events.filter((e: any) => e && e.date && getEventEnd(e) >= todayStart).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0, 5)
+                        if (upcoming.length === 0) return null
+                        const eventHeading = pageTexts.galerie?.eventSectionHeading ?? defaultPageTexts.galerie.eventSectionHeading ?? 'Aktuelles aus den Eventplanungen'
+                        const formatDate = (d: string, end?: string) => {
+                          if (!d) return ''
+                          const start = new Date(d); const endD = end ? new Date(end) : null
+                          return endD && endD.getTime() !== start.getTime() ? `${start.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })} – ${endD.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })}` : start.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })
+                        }
+                        return (
+                          <section style={{ marginTop: 28, padding: '1rem 0', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                            {designPreviewEdit === 'p1-eventHeading' ? (
+                              <input autoFocus value={pageTexts.galerie?.eventSectionHeading ?? eventHeading} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, eventSectionHeading: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.4rem', fontSize: '0.75rem', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: '600', color: 'var(--k2-muted)', background: 'rgba(0,0,0,0.12)', border: '2px solid var(--k2-accent)', borderRadius: 6, marginBottom: '0.5rem', boxSizing: 'border-box' }} />
+                            ) : (
+                              <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-eventHeading')} style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--k2-muted)', fontWeight: '600', cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.eventSectionHeading ?? eventHeading).trim() || 'Aktuelles aus den Eventplanungen'}</p>
+                            )}
+                            <ul style={{ margin: 0, paddingLeft: '1.25rem', color: 'var(--k2-text)', fontSize: '1rem', lineHeight: 1.6 }}>
+                              {upcoming.map((ev: any) => (
+                                <li key={ev.id || ev.date} style={{ marginBottom: ev.documents?.length ? '0.5rem' : 0 }}>
+                                  <strong>{ev.title}</strong>
+                                  {ev.date && <span style={{ color: 'var(--k2-muted)', fontWeight: '400' }}> — {formatDate(ev.date, ev.endDate)}</span>}
+                                  {ev.documents && ev.documents.length > 0 && (
+                                    <ul style={{ margin: '0.25rem 0 0 1rem', paddingLeft: '0.75rem', listStyle: 'none', fontSize: '0.95em' }}>
+                                      {ev.documents.map((doc: any) => (
+                                        <li key={doc.id || doc.name}>
+                                          <button type="button" onClick={() => handleViewEventDocument(doc, ev)} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--k2-accent)', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }}>📎 {doc.name || doc.fileName || 'Dokument'}</button>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          </section>
+                        )
+                      })()}
+                      {/* Die Kunstschaffenden – wie auf der echten ersten Seite */}
+                      <section style={{ marginTop: 32 }}>
+                        {designPreviewEdit === 'p2-kunstschaffendeHeading' ? (
+                          <input autoFocus value={pageTexts.galerie?.kunstschaffendeHeading ?? defaultPageTexts.galerie.kunstschaffendeHeading ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, kunstschaffendeHeading: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '1.5rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, marginBottom: 24, textAlign: 'center', boxSizing: 'border-box' }} />
+                        ) : (
+                          <h3 role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-kunstschaffendeHeading')} style={{ fontSize: '1.5rem', marginBottom: 24, fontWeight: '700', color: 'var(--k2-text)', textAlign: 'center', letterSpacing: '-0.02em', cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.kunstschaffendeHeading ?? defaultPageTexts.galerie.kunstschaffendeHeading) || 'Die Kunstschaffenden'}</h3>
+                        )}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+                          <div style={{ position: 'relative', background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: '16px 16px 8px 16px', padding: 20, overflow: 'hidden' }}>
+                            <div style={{ position: 'absolute', top: 0, left: 0, width: 4, height: '60%', background: 'linear-gradient(180deg, var(--k2-accent) 0%, #e67a2a 100%)', borderRadius: '0 4px 4px 0' }} />
+                            {designPreviewEdit === 'p2-martinaBio' ? (
+                              <textarea autoFocus rows={4} value={pageTexts.galerie?.martinaBio ?? defaultPageTexts.galerie.martinaBio ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, martinaBio: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '0.9rem', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
+                            ) : (
+                              <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-martinaBio')} style={{ color: 'var(--k2-text)', fontSize: '0.9rem', margin: 0, lineHeight: 1.7, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.martinaBio ?? defaultPageTexts.galerie.martinaBio) || 'Kurzbio Künstler:in 1 (z. B. Martina)'}</p>
+                            )}
+                          </div>
+                          <div style={{ position: 'relative', background: 'var(--k2-card-bg-2)', border: '1px solid var(--k2-muted)', borderRadius: '16px 16px 16px 8px', padding: 20, overflow: 'hidden' }}>
+                            <div style={{ position: 'absolute', top: 0, right: 0, width: 4, height: '60%', background: 'var(--k2-accent)', borderRadius: '4px 0 0 4px' }} />
+                            {designPreviewEdit === 'p2-georgBio' ? (
+                              <textarea autoFocus rows={4} value={pageTexts.galerie?.georgBio ?? defaultPageTexts.galerie.georgBio ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, georgBio: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '0.9rem', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
+                            ) : (
+                              <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-georgBio')} style={{ color: 'var(--k2-text)', fontSize: '0.9rem', margin: 0, lineHeight: 1.7, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.georgBio ?? defaultPageTexts.galerie.georgBio) || 'Kurzbio Künstler:in 2 (z. B. Georg)'}</p>
+                            )}
+                          </div>
+                        </div>
+                        {designPreviewEdit === 'p2-gemeinsamText' ? (
+                          <textarea autoFocus rows={2} value={pageTexts.galerie?.gemeinsamText ?? defaultPageTexts.galerie.gemeinsamText ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, gemeinsamText: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} placeholder="Leer = wird aus Namen erzeugt" style={{ width: '100%', margin: '0 auto 16px', display: 'block', padding: '0.6rem', fontSize: '1rem', color: 'var(--k2-text)', lineHeight: 1.7, textAlign: 'center', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
+                        ) : (
+                          <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-gemeinsamText')} style={{ marginTop: 8, fontSize: '1rem', lineHeight: 1.7, color: 'var(--k2-text)', textAlign: 'center', marginBottom: 16, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.gemeinsamText ?? defaultPageTexts.galerie.gemeinsamText)?.trim() || 'Gemeinsam eröffnen … (leer = automatisch)'}</p>
+                        )}
+                      </section>
+                      {/* Eingangshalle: untere Bilder – wie auf der echten ersten Seite */}
+                      <section style={{ marginTop: 28, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--k2-muted)', marginBottom: 16, textAlign: 'center' }}>Willkommen in der Eingangshalle – wähle deinen Weg:</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 14, alignItems: 'stretch' }}>
+                          <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 16, padding: 16, textAlign: 'center' }}>
+                            <div role="button" tabIndex={0} onClick={() => galerieImageInputRef.current?.click()} onKeyDown={(e) => e.key === 'Enter' && galerieImageInputRef.current?.click()} style={{ cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.galerieCardImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-accent)', boxSizing: 'border-box' }} title="Klicken: Bild ändern">
+                              {pageContent.galerieCardImage ? <img src={pageContent.galerieCardImage} alt="In die Galerie" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem' }}>Klicken: Bild „In die Galerie“</div>}
+                            </div>
+                            <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--k2-text)', marginBottom: 4 }}>In die Galerie</h3>
+                          </div>
+                          <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 16, padding: 16, textAlign: 'center' }}>
+                            <div role="button" tabIndex={0} onClick={() => virtualTourImageInputRef.current?.click()} onKeyDown={(e) => e.key === 'Enter' && virtualTourImageInputRef.current?.click()} style={{ cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box' }} title="Klicken: Bild ändern">
+                              {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem' }}>Klicken: Bild Virtueller Rundgang</div>}
+                            </div>
+                            <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--k2-text)', marginBottom: 4 }}>Virtueller Rundgang</h3>
+                          </div>
+                        </div>
+                      </section>
                     </header>
                   </div>
                   )}
@@ -8305,22 +9001,22 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         {designPreviewEdit === 'p2-gemeinsamText' ? (
                           <textarea autoFocus rows={3} value={pageTexts.galerie?.gemeinsamText ?? defaultPageTexts.galerie.gemeinsamText ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, gemeinsamText: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} placeholder="Leer = wird aus Namen erzeugt" style={{ width: '100%', margin: '0 auto 28px', display: 'block', padding: '0.6rem', fontSize: '1.05rem', color: 'var(--k2-text)', lineHeight: 1.7, textAlign: 'center', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
                         ) : (
-                          <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-gemeinsamText')} style={{ marginTop: 24, fontSize: '1.05rem', lineHeight: 1.7, color: 'var(--k2-text)', textAlign: 'center', marginLeft: 'auto', marginRight: 'auto', marginBottom: 28, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.gemeinsamText ?? defaultPageTexts.galerie.gemeinsamText) || 'Gemeinsam eröffnen … (leer = automatisch)'}</p>
+                          <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-gemeinsamText')} style={{ marginTop: 24, fontSize: '1.05rem', lineHeight: 1.7, color: 'var(--k2-text)', textAlign: 'center', marginLeft: 'auto', marginRight: 'auto', marginBottom: 20, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.gemeinsamText ?? defaultPageTexts.galerie.gemeinsamText) || 'Gemeinsam eröffnen … (leer = automatisch)'}</p>
                         )}
-                        <p style={{ fontSize: '0.9rem', color: 'var(--k2-muted)', marginBottom: 16, textAlign: 'center' }}>Willkommen in der Eingangshalle – wähle deinen Weg:</p>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 14, alignItems: 'stretch' }}>
-                          <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 16, padding: 16, textAlign: 'center' }}>
-                            <div role="button" tabIndex={0} onClick={() => galerieImageInputRef.current?.click()} style={{ cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.galerieCardImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)' }}>
-                              {pageContent.galerieCardImage ? <img src={pageContent.galerieCardImage} alt="In die Galerie" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem' }}>Klicken: Bild „In die Galerie“</div>}
-                            </div>
-                            <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--k2-text)', marginBottom: 4 }}>In die Galerie</h3>
+                        {/* Ein Bild: Galerie Innenansicht – klickbar zum Ändern, wie auf der echten Seite */}
+                        <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 16, padding: 16, textAlign: 'center', marginBottom: 12 }}>
+                          <div role="button" tabIndex={0} onClick={() => galerieImageInputRef.current?.click()} onKeyDown={(e) => e.key === 'Enter' && galerieImageInputRef.current?.click()} style={{ cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.galerieCardImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-accent)', boxSizing: 'border-box' }} title="Klicken: Bild ändern">
+                            {pageContent.galerieCardImage ? <img src={pageContent.galerieCardImage} alt="Galerie Innenansicht" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span>Klicken: Bild wählen</span><span style={{ fontSize: '0.8rem', color: 'var(--k2-accent)' }}>Galerie Innenansicht</span></div>}
                           </div>
-                          <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 16, padding: 16, textAlign: 'center' }}>
-                            <div role="button" tabIndex={0} onClick={() => virtualTourImageInputRef.current?.click()} style={{ cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)' }}>
-                              {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem' }}>Klicken: Bild Virtueller Rundgang</div>}
-                            </div>
-                            <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--k2-text)', marginBottom: 4 }}>Virtueller Rundgang</h3>
+                          <p style={{ fontSize: '0.9rem', color: 'var(--k2-accent)', margin: 0, fontWeight: '500' }}>Galerie Innenansicht</p>
+                          <p style={{ fontSize: '0.75rem', color: 'var(--k2-muted)', margin: '2px 0 0', lineHeight: 1.3 }}>Klicken zum Bearbeiten · ein Bild</p>
+                        </div>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: 12, textAlign: 'center' }}>Optional: Virtueller Rundgang (zweites Bild)</p>
+                        <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 12, padding: 12, textAlign: 'center' }}>
+                          <div role="button" tabIndex={0} onClick={() => virtualTourImageInputRef.current?.click()} onKeyDown={(e) => e.key === 'Enter' && virtualTourImageInputRef.current?.click()} style={{ cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 8, overflow: 'hidden', marginBottom: 6, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box' }} title="Klicken: Bild ändern">
+                            {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.85rem' }}>Klicken: Bild Virtueller Rundgang</div>}
                           </div>
+                          <p style={{ fontSize: '0.85rem', color: 'var(--k2-text)', margin: 0 }}>Virtueller Rundgang</p>
                         </div>
                       </section>
                     </main>
@@ -8329,12 +9025,18 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 </div>
                 </div>
                 </div>
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onMouseDown={(e) => { e.preventDefault(); designPreviewResizeStart.current = { y: e.clientY, height: designPreviewHeightPx } }}
+                  onTouchStart={(e) => { if (e.touches.length === 1) designPreviewResizeStart.current = { y: e.touches[0].clientY, height: designPreviewHeightPx } }}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.preventDefault() }}
+                  style={{ height: 20, marginTop: 12, marginBottom: 8, cursor: 'ns-resize', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.06)', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: 8, color: 'var(--k2-muted)', fontSize: '0.8rem', userSelect: 'none', touchAction: 'none' }}
+                  title="Nach unten ziehen = Bereich vergrößern, nach oben = verkleinern"
+                >
+                  ⋮⋮ Ziehen zum Vergrößern / Verkleinern
                 </div>
-                );
-                })()}
-                </>
-                  ); })()}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
                   <button type="button" className="btn-primary" onClick={() => {
                     try {
                       setPageContentGalerie(pageContent, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
@@ -8351,6 +9053,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       const designStored = localStorage.getItem(getDesignStorageKey())
                       const designOk = !designSettings || Object.keys(designSettings).length === 0 || (designStored != null && designStored.length > 0)
                       if (pageTextsOk && pageContentOk && designOk) {
+                        const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
+                        setPageTextsState(getPageTexts(tenant))
+                        setPageContent(getPageContentGalerie(tenant))
                         setDesignSaveFeedback('ok')
                         setTimeout(() => setDesignSaveFeedback(null), 5000)
                         alert('Gespeichert. ✓ Kontrolle: Seitentexte, Seitengestaltung und Design sind im Speicher. Du kannst die Seite schließen – die Änderungen bleiben erhalten.')
@@ -8366,6 +9071,11 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   {designSaveFeedback === 'ok' && <span style={{ fontSize: '0.9rem', color: '#10b981', fontWeight: 600 }}>✓ Gerade gespeichert</span>}
                   <span style={{ fontSize: '0.9rem', color: s.muted }}>Änderungen gelten erst nach „Speichern“. Mit „Veröffentlichen“ (Einstellungen) auf alle Geräte.</span>
                 </div>
+                </div>
+                );
+                })()}
+                </>
+                  ); })()}
               </div>
             )}
 
@@ -8411,16 +9121,16 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       <button type="button" onClick={() => loadDesignVariant('b')} style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer' }}>Variante B anwenden</button>
                     </div>
                   </div>
-                  {/* Rechte Spalte: echte Galerie-Seite (Willkommen) als Vorschau */}
+                  {/* Rechte Spalte: echte Galerie-Seite in Kundengröße (wie „So sehen Kunden die Galerie“) */}
                   <div style={{ flex: '1 1 280px', minWidth: 280, position: 'sticky', top: '1rem' }}>
-                    <h3 style={{ fontSize: '1rem', color: 'var(--k2-accent)', marginBottom: '0.75rem' }}>Vorschau</h3>
-                    <div style={{ overflow: 'auto', maxHeight: 'min(70vh, 520px)', borderRadius: 16, border: '2px solid var(--k2-accent)', background: 'var(--k2-bg-1)' }}>
+                    <h3 style={{ fontSize: '1rem', color: 'var(--k2-accent)', marginBottom: '0.75rem' }}>Vorschau (Kundengröße)</h3>
+                    <div style={{ overflow: 'auto', maxHeight: 'min(85vh, 640px)', borderRadius: 16, border: '2px solid var(--k2-accent)', background: 'var(--k2-bg-1)' }}>
                       {(() => {
                         const tc = isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich : TENANT_CONFIGS.k2
                         const galleryName = tc.galleryName
                         const tagline = tc.tagline
                         const welcomeIntroDefault = defaultPageTexts.galerie.welcomeIntroText || 'Ein Neuanfang mit Leidenschaft …'
-                        const scale = 0.68
+                        const scale = 1
                         return (
                           <div style={{ width: 412 * scale, overflow: 'hidden', margin: '0 auto' }}>
                             <div style={{ width: 412, transform: `scale(${scale})`, transformOrigin: 'top left', background: 'linear-gradient(135deg, var(--k2-bg-1), var(--k2-bg-2))', padding: '24px 18px 24px', paddingTop: 44 }}>
@@ -8471,8 +9181,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               ⚙️ Einstellungen
             </h2>
 
-            {/* Veröffentlichung – nur K2 (ök2 braucht das nicht) */}
-            {!isOeffentlichAdminContext() && (
+            {/* Veröffentlichung – nur K2 (ök2 und VK2 brauchen das nicht) */}
+            {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
             <div style={{
               marginBottom: '2rem',
               padding: '1.25rem',
@@ -8547,8 +9257,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             </div>
             )}
 
-            {/* Lager (Backup) – nur K2 (ök2 braucht kein Vollbackup) */}
-            {settingsSubTab === 'lager' && !isOeffentlichAdminContext() && (
+            {/* Lager (Backup) – nur K2 (ök2 und VK2 brauchen kein Vollbackup) */}
+            {settingsSubTab === 'lager' && !isOeffentlichAdminContext() && !isVk2AdminContext() && (
             <div style={{
               marginBottom: '2rem',
               background: `${s.accent}12`,
@@ -8580,7 +9290,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               {!backupPanelMinimized && (
                 <div style={{ padding: '0 1.25rem 1.25rem', borderTop: `1px solid ${s.accent}22` }}>
               <p style={{ color: s.muted, fontSize: '0.9rem', marginTop: '0.75rem', marginBottom: '1rem' }}>
-                Vollbackup auf der Speicherplatte (z. B. backupmicro) reicht. Hier: Vollbackup herunterladen und sicher aufbewahren, bei Bedarf aus Backup-Datei wiederherstellen.
+                Vollbackup auf der Speicherplatte (z. B. backupmicro) reicht. Hier: Vollbackup herunterladen und sicher aufbewahren (z. B. auf backupmicro für Prototyp-Archiv), bei Bedarf aus Backup-Datei wiederherstellen.
               </p>
               <input
                 ref={backupFileInputRef}
@@ -8769,7 +9479,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             </div>
             )}
 
-            {/* PDFs & Speicherdaten */}
+            {/* PDFs & Speicherdaten – nur K2 und ök2 (VK2 braucht das nicht) */}
+            {!isVk2AdminContext() && (
             <div style={{
               marginBottom: '2rem',
               padding: '1.25rem',
@@ -8880,99 +9591,314 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 )}
               </div>
             </div>
+            )}
 
-            {/* Sub-Tabs für Stammdaten und Design */}
-            <div style={{
-              display: 'flex',
-              gap: '1rem',
-              marginBottom: '2rem',
-              borderBottom: `1px solid ${s.accent}22`,
-              paddingBottom: '1rem'
-            }}>
-              <button
-                onClick={() => setSettingsSubTab('stammdaten')}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                  fontWeight: settingsSubTab === 'stammdaten' ? '600' : '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  background: settingsSubTab === 'stammdaten' ? s.gradientAccent : s.bgElevated,
-                  color: settingsSubTab === 'stammdaten' ? '#ffffff' : s.text
-                }}
+            {/* Einstellungen: Karten statt Sub-Tab-Leiste */}
+            {!settingsSubTab || settingsSubTab === 'stammdaten' ? null : null /* subtab aktiv = kein Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', marginBottom: '2rem' }}>
+              <button type="button" onClick={() => setSettingsSubTab('stammdaten')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'stammdaten' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'stammdaten' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'stammdaten' ? s.accent : `${s.accent}22` }}
               >
-                👥 Stammdaten
+                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>👥</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Meine Daten</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Name, Kontakt, Adresse, Öffnungszeiten</div>
               </button>
-              <button
-                onClick={() => setSettingsSubTab('sicherheit')}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                  fontWeight: settingsSubTab === 'sicherheit' ? '600' : '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  background: settingsSubTab === 'sicherheit' ? s.gradientAccent : s.bgElevated,
-                  color: settingsSubTab === 'sicherheit' ? '#ffffff' : s.text
-                }}
+              <button type="button" onClick={() => setSettingsSubTab('registrierung')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'registrierung' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'registrierung' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'registrierung' ? s.accent : `${s.accent}22` }}
               >
-                🔒 Sicherheit
+                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📝</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Anmeldung</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Wie melden sich Nutzer an?</div>
               </button>
-              {!isOeffentlichAdminContext() && (
-              <button
-                onClick={() => setSettingsSubTab('lager')}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                  fontWeight: settingsSubTab === 'lager' ? '600' : '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  background: settingsSubTab === 'lager' ? s.gradientAccent : s.bgElevated,
-                  color: settingsSubTab === 'lager' ? '#ffffff' : s.text
-                }}
+              {!isVk2AdminContext() && (
+              <button type="button" onClick={() => setSettingsSubTab('sicherheit')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'sicherheit' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'sicherheit' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'sicherheit' ? s.accent : `${s.accent}22` }}
               >
-                📦 Lager
+                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>🔒</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Passwort & Sicherheit</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Admin-Passwort ändern</div>
               </button>
               )}
-              <button
-                onClick={() => setSettingsSubTab('drucker')}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                  fontWeight: settingsSubTab === 'drucker' ? '600' : '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  background: settingsSubTab === 'drucker' ? s.gradientAccent : s.bgElevated,
-                  color: settingsSubTab === 'drucker' ? '#ffffff' : s.text
-                }}
+              {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
+              <button type="button" onClick={() => setSettingsSubTab('lager')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'lager' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'lager' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'lager' ? s.accent : `${s.accent}22` }}
               >
-                🖨️ Drucker
+                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📦</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Backup & Lager</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Sicherheitskopie, Speicherverwaltung</div>
+              </button>
+              )}
+              <button type="button" onClick={() => setSettingsSubTab('drucker')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'drucker' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'drucker' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'drucker' ? s.accent : `${s.accent}22` }}
+              >
+                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>🖨️</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Drucker</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Etikettendrucker einrichten</div>
               </button>
             </div>
 
             {/* Stammdaten Sub-Tab */}
             {settingsSubTab === 'stammdaten' && (
               <div>
-                {isOeffentlichAdminContext() && (
-                  <div style={{
-                    padding: '0.75rem 1rem',
-                    marginBottom: '1rem',
-                    background: 'rgba(184, 184, 255, 0.15)',
-                    border: '1px solid rgba(184, 184, 255, 0.4)',
-                    borderRadius: '8px',
-                    color: '#b8b8ff',
-                    fontSize: '0.9rem'
-                  }}>
-                    🔒 Demo-Modus (ök2): Nur Musterdaten – Speichern schreibt keine echten K2-Daten.
+                {isVk2AdminContext() ? (
+                  /* VK2: Verein, Vorstand, Beirat, Mitglieder */
+                  <div>
+                    <div style={{ padding: '0.75rem 1rem', marginBottom: '1rem', background: s.bgCard, border: `1px solid ${s.accent}33`, borderRadius: s.radius, color: s.text, fontSize: '0.9rem' }}>
+                      <strong>VK2 Stammdaten:</strong> Verein mit Adresse, Vorstand und Mitgliedern. Alle Felder optional – nur Name ausfüllen wo bekannt.
+                    </div>
+                    {/* Verein */}
+                    <div style={{ marginBottom: '1.5rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
+                      <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>🏛️ Verein</h3>
+                      <div className="admin-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Vereinsname</label>
+                          <input type="text" value={vk2Stammdaten.verein.name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, name: e.target.value } })} placeholder="z. B. Kunstverein Musterstadt" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Vereinsnummer</label>
+                          <input type="text" value={vk2Stammdaten.verein.vereinsnummer} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, vereinsnummer: e.target.value } })} placeholder="z. B. ZVR 1234567" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field" style={{ gridColumn: '1 / -1' }}>
+                          <label style={{ fontSize: '0.85rem' }}>Adresse (Straße, Hausnummer)</label>
+                          <input type="text" value={vk2Stammdaten.verein.address} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, address: e.target.value } })} placeholder="z. B. Hauptstraße 12" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Ort (PLZ und Ortsname)</label>
+                          <input type="text" value={vk2Stammdaten.verein.city} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, city: e.target.value } })} placeholder="z. B. 1010 Wien" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Land</label>
+                          <input type="text" value={vk2Stammdaten.verein.country} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, country: e.target.value } })} placeholder="z. B. Österreich" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>E-Mail</label>
+                          <input type="email" value={vk2Stammdaten.verein.email} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, email: e.target.value } })} placeholder="info@verein.example" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Website</label>
+                          <input type="url" value={vk2Stammdaten.verein.website} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, website: e.target.value } })} placeholder="https://..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                      </div>
+                    </div>
+                    {/* Vorstand & Beirat – gegendert; Vollzugang nur Vorsitzende:r + Kassier:in (siehe docs/VK2-ZUGANG-ROLLEN.md) */}
+                    <div style={{ marginBottom: '1.5rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
+                      <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>👥 Vorstand & Beirat</h3>
+                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: s.muted }}>Vollzugang zum VK2-Admin haben nur Vorsitzende:r (Präsident:in) und Kassier:in. Vereinsmitglieder haben beschränkten Zugang (nur eigene Daten und Mitgliederlisten).</p>
+                      <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.accent }}>⭐ Wer hier eingetragen ist und zugleich in „Registrierte Mitglieder“ vorkommt (gleicher Name), wird in Galerie, Vorschau und Mitgliederkartei als Vorstand hervorgehoben – Anerkennung sichtbar.</p>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Vorsitzende:r / Präsident:in</label>
+                          <input type="text" value={vk2Stammdaten.vorstand.name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, vorstand: { name: e.target.value } })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Stellv. Vorsitzende:r</label>
+                          <input type="text" value={vk2Stammdaten.vize.name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, vize: { name: e.target.value } })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Kassier:in</label>
+                          <input type="text" value={vk2Stammdaten.kassier.name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, kassier: { name: e.target.value } })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Schriftführer:in</label>
+                          <input type="text" value={vk2Stammdaten.schriftfuehrer.name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, schriftfuehrer: { name: e.target.value } })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Beisitzer:in (optional)</label>
+                          <input type="text" value={vk2Stammdaten.beisitzer?.name || ''} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, beisitzer: { name: e.target.value } })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                      </div>
+                    </div>
+                    {/* Registrierte Mitglieder – eine Wartung: Profil anlegen, User übernehmen, Bearbeiten (Vereinsgalerie). */}
+                    <div style={{ marginBottom: '1rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
+                      <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>📋 Registrierte Mitglieder</h3>
+                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted }}>Profile für die Vereinsgalerie. <strong>Ab 10 registrierten Mitgliedern</strong> wird der Verein kostenfrei (Pro-Version).</p>
+                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: s.accent, fontStyle: 'italic' }}>💡 Was du hier siehst (Name, E-Mail, Kunstrichtung, Bild), erscheint auf den Karten in der Vereinsgalerie – öffentlich sichtbar.</p>
+                      <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}><strong>Auf Karte:</strong> Hakerl = auf der Karte öffentlich sichtbar. Kein Hakerl = gesperrt, erscheint nicht auf der öffentlichen Karte.</p>
+                      <div style={{ marginBottom: '0.75rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+                        <button
+                          type="button"
+                          onClick={() => { setEditingMemberIndex(null); setMemberForm(EMPTY_MEMBER_FORM); setShowAddModal(true) }}
+                          style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: s.gradientAccent, border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer' }}
+                        >
+                          + Profil für Vereinsgalerie anlegen
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const bestehend = vk2Stammdaten.mitglieder || []
+                            const namenBereits = new Set(bestehend.map(m => m.name))
+                            const neue = USER_LISTE_FUER_MITGLIEDER.filter(u => !namenBereits.has(u.name))
+                            setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: [...bestehend, ...neue] })
+                          }}
+                          style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: 8, color: s.accent, fontWeight: 600, cursor: 'pointer' }}
+                        >
+                          👥 User aus „Meine User“ übernehmen
+                        </button>
+                        <span style={{ fontSize: '0.8rem', color: s.muted }}>Fügt User mit allen Daten hinzu (ohne Doppel).</span>
+                      </div>
+                      {/* CSV-Import: Drag & Drop oder Datei wählen */}
+                      <div
+                        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setCsvDragOver(true) }}
+                        onDragLeave={() => setCsvDragOver(false)}
+                        onDrop={(e) => {
+                          e.preventDefault(); e.stopPropagation(); setCsvDragOver(false)
+                          const file = e.dataTransfer?.files?.[0]
+                          if (!file || (!file.name.toLowerCase().endsWith('.csv') && file.type !== 'text/csv' && file.type !== 'text/plain')) return
+                          const reader = new FileReader()
+                          reader.onload = () => {
+                            const text = typeof reader.result === 'string' ? reader.result : ''
+                            const neu = parseCsvToMitglieder(text)
+                            if (neu.length === 0) return
+                            const bestehend = vk2Stammdaten.mitglieder || []
+                            const byName = new Map(bestehend.map(m => [m.name?.trim().toLowerCase(), m]))
+                            neu.forEach(n => {
+                              const key = n.name?.trim().toLowerCase()
+                              if (byName.has(key)) {
+                                const old = byName.get(key)!
+                                byName.set(key, { ...old, ...n, mitgliedFotoUrl: old.mitgliedFotoUrl || n.mitgliedFotoUrl, imageUrl: old.imageUrl || n.imageUrl, oeffentlichSichtbar: old.oeffentlichSichtbar })
+                              } else byName.set(key, { ...n, oeffentlichSichtbar: n.oeffentlichSichtbar !== false })
+                            })
+                            const merged = Array.from(byName.values())
+                            setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: merged })
+                            try { localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify({ ...vk2Stammdaten, mitglieder: merged })) } catch (_) {}
+                          }
+                          reader.readAsText(file, 'utf-8')
+                        }}
+                        style={{
+                          marginBottom: '0.75rem', padding: '1rem', border: `2px dashed ${csvDragOver ? s.accent : s.accent + '44'}`, borderRadius: 12, background: csvDragOver ? s.accent + '11' : s.bgElevated, textAlign: 'center', cursor: 'pointer'
+                        }}
+                      >
+                        <label style={{ cursor: 'pointer', display: 'block' }}>
+                          <input
+                            type="file"
+                            accept=".csv,.txt,text/csv,text/plain"
+                            style={{ display: 'none' }}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (!file) return
+                              const reader = new FileReader()
+                              reader.onload = () => {
+                                const text = typeof reader.result === 'string' ? reader.result : ''
+                                const neu = parseCsvToMitglieder(text)
+                                if (neu.length === 0) return
+                                const bestehend = vk2Stammdaten.mitglieder || []
+                                const byName = new Map(bestehend.map(m => [m.name?.trim().toLowerCase(), m]))
+                                neu.forEach(n => { const key = n.name?.trim().toLowerCase(); if (byName.has(key)) { const old = byName.get(key)!; byName.set(key, { ...old, ...n, mitgliedFotoUrl: old.mitgliedFotoUrl || n.mitgliedFotoUrl, imageUrl: old.imageUrl || n.imageUrl, oeffentlichSichtbar: old.oeffentlichSichtbar }) } else byName.set(key, { ...n, oeffentlichSichtbar: n.oeffentlichSichtbar !== false }) })
+                                const merged = Array.from(byName.values())
+                                setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: merged })
+                                try { localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify({ ...vk2Stammdaten, mitglieder: merged })) } catch (_) {}
+                              }
+                              reader.readAsText(file, 'utf-8')
+                              e.target.value = ''
+                            }}
+                          />
+                          <span style={{ color: s.accent, fontWeight: 600 }}>📂 CSV oder Tabelle importieren</span>
+                          <span style={{ color: s.muted, fontSize: '0.9rem' }}> – Datei hierher ziehen (Drag & Drop) oder klicken zum Auswählen</span>
+                        </label>
+                        <p style={{ margin: '0.5rem 0 0', fontSize: '0.8rem', color: s.muted }}>Erste Zeile = Kopfzeile (z. B. Name, E-Mail, Straße, PLZ, Ort, Land, Geburtsdatum, Eintrittsdatum, Kunstrichtung, Telefon, Website). Trennzeichen: Komma oder Semikolon.</p>
+                      </div>
+                      <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                          <thead>
+                            <tr style={{ borderBottom: `2px solid ${s.accent}44` }}>
+                              <th style={{ width: 44, padding: '0.5rem 0.75rem' }}></th>
+                              <th style={{ width: 48, padding: '0.5rem 0.75rem', textAlign: 'center', color: s.accent }} title="Hakerl = auf Karte öffentlich sichtbar">Auf Karte</th>
+                              <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: s.accent }}>Name</th>
+                              <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: s.accent }}>Rolle</th>
+                              <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: s.accent }}>E-Mail</th>
+                              <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: s.accent }}>Lizenz</th>
+                              <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: s.accent }}>Kunstrichtung</th>
+                              <th style={{ width: 60 }}></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {([...(vk2Stammdaten.mitglieder || [])].sort((a, b) => getVorstandSortKey(vk2Stammdaten, a.name) - getVorstandSortKey(vk2Stammdaten, b.name)).map((m, sortedIndex) => {
+                              const i = (vk2Stammdaten.mitglieder || []).indexOf(m)
+                              const nameNorm = (s: string | undefined) => (s ?? '').trim().toLowerCase()
+                              const muster = USER_LISTE_FUER_MITGLIEDER.find(u => nameNorm(u.name) === nameNorm(m.name))
+                              const has = (v: string | undefined) => (v ?? '').trim().length > 0
+                              const d = muster ? {
+                                name: m.name,
+                                email: has(m.email) ? m.email : (muster.email ?? '–'),
+                                lizenz: has(m.lizenz) ? m.lizenz : (muster.lizenz ?? '–'),
+                                typ: has(m.typ) ? m.typ : (muster.typ ?? '–'),
+                                mitgliedFotoUrl: m.mitgliedFotoUrl ?? muster.mitgliedFotoUrl,
+                                imageUrl: m.imageUrl ?? muster.imageUrl,
+                                phone: has(m.phone) ? m.phone : muster.phone,
+                                seit: has(m.seit) ? m.seit : muster.seit
+                              } : { ...m, mitgliedFotoUrl: m.mitgliedFotoUrl, imageUrl: m.imageUrl, email: m.email || '–', lizenz: m.lizenz || '–', typ: m.typ || '–' }
+                              const avatarUrl = d.mitgliedFotoUrl || d.imageUrl
+                              const aufKarte = m.oeffentlichSichtbar !== false
+                              const vorstandRole = getVorstandRole(vk2Stammdaten, m.name)
+                              const toggleAufKarte = () => {
+                                const neu = (vk2Stammdaten.mitglieder || []).map((mm, j) => j === i ? { ...mm, oeffentlichSichtbar: !aufKarte } : mm)
+                                setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu })
+                                try { localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify({ ...vk2Stammdaten, mitglieder: neu })) } catch (_) {}
+                              }
+                              return (
+                                <tr key={i} style={{ borderBottom: `1px solid ${s.accent}22`, opacity: aufKarte ? 1 : 0.75, background: vorstandRole ? s.accent + '0a' : undefined }}>
+                                <td style={{ padding: '0.5rem 0.75rem', verticalAlign: 'middle' }}>
+                                  {avatarUrl ? <img src={avatarUrl} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} /> : <span style={{ color: s.muted }}>👤</span>}
+                                </td>
+                                <td style={{ padding: '0.5rem 0.75rem', verticalAlign: 'middle', textAlign: 'center' }}>
+                                  <label style={{ cursor: 'pointer', display: 'inline-block' }} title={aufKarte ? 'Auf Karte sichtbar (öffentlich)' : 'Gesperrt – nicht auf Karte'}>
+                                    <input type="checkbox" checked={aufKarte} onChange={toggleAufKarte} style={{ width: 18, height: 18, accentColor: s.accent }} />
+                                  </label>
+                                </td>
+                                <td style={{ padding: '0.5rem 0.75rem', color: s.text, fontWeight: vorstandRole ? 600 : undefined }}>{d.name}</td>
+                                <td style={{ padding: '0.5rem 0.75rem' }}>{vorstandRole ? <span style={{ fontSize: '0.8rem', color: s.accent, fontWeight: 600 }}>⭐ {vorstandRole}</span> : <span style={{ color: s.muted }}>–</span>}</td>
+                                <td style={{ padding: '0.5rem 0.75rem', color: s.text }}>{d.email}</td>
+                                <td style={{ padding: '0.5rem 0.75rem', fontFamily: 'monospace', color: s.accent }}>{d.lizenz}</td>
+                                <td style={{ padding: '0.5rem 0.75rem', color: s.text }}>{d.typ}</td>
+                                <td style={{ padding: '0.5rem', display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
+                                  <button type="button" onClick={() => { setEditingMemberIndex(i); setMemberForm(memberToForm(m)); setShowAddModal(true) }} style={{ padding: '0.35rem 0.6rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: 6, color: s.accent, fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>Bearbeiten</button>
+                                  <button type="button" onClick={() => { const neu = (vk2Stammdaten.mitglieder || []).filter((_, j) => j !== i); setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }); try { localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify({ ...vk2Stammdaten, mitglieder: neu })) } catch (_) {} }} style={{ background: 'none', border: 'none', color: s.muted, cursor: 'pointer', fontSize: '1.1rem' }} title="Entfernen">×</button>
+                                </td>
+                              </tr>
+                            ); })) }
+                          </tbody>
+                        </table>
+                        {(vk2Stammdaten.mitglieder?.length ?? 0) === 0 && (
+                          <p style={{ padding: '1rem', color: s.muted, fontSize: '0.9rem' }}>Noch keine registrierten Mitglieder. „+ Profil anlegen“ oder „User aus „Meine User“ übernehmen“.</p>
+                        )}
+                      </div>
+                    </div>
+                    {/* Nicht registrierte Mitglieder – im System erfasst (Datenschutz) */}
+                    <div style={{ marginBottom: '1.5rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
+                      <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>📋 Nicht registrierte Mitglieder</h3>
+                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted }}>Mitglieder ohne K2-Account – Aufnahme obliegt dem Verein. Ein Name pro Zeile. <strong>Werden im System erfasst</strong> (Datenschutz/Dokumentation).</p>
+                      <textarea
+                        value={(vk2Stammdaten.mitgliederNichtRegistriert ?? []).join('\n')}
+                        onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, mitgliederNichtRegistriert: e.target.value.split('\n').map(s => s.trim()).filter(Boolean) })}
+                        placeholder="Name ohne K2-Account&#10;…"
+                        rows={4}
+                        style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '8px', resize: 'vertical', fontFamily: 'inherit' }}
+                      />
+                    </div>
+                    <button className="btn-primary" onClick={saveStammdaten} style={{ padding: '0.75rem 1.5rem', fontSize: '1rem' }}>
+                      💾 Stammdaten speichern
+                    </button>
                   </div>
-                )}
+                ) : (
+                  <>
+                    {isOeffentlichAdminContext() && (
+                      <div style={{
+                        padding: '0.75rem 1rem',
+                        marginBottom: '1rem',
+                        background: 'rgba(184, 184, 255, 0.15)',
+                        border: '1px solid rgba(184, 184, 255, 0.4)',
+                        borderRadius: '8px',
+                        color: '#b8b8ff',
+                        fontSize: '0.9rem'
+                      }}>
+                        🔒 Demo-Modus (ök2): Nur Musterdaten – Speichern schreibt keine echten K2-Daten.
+                      </div>
+                    )}
                 <div style={{
                   padding: '0.75rem 1rem',
                   marginBottom: '1.25rem',
@@ -9034,6 +9960,19 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Vita (für Außenkommunikation &amp; Galerie)</label>
+                        <textarea
+                          value={martinaData.vita || ''}
+                          onChange={(e) => setMartinaData({ ...martinaData, vita: e.target.value })}
+                          placeholder="Vita-Text (Werdegang, Ausstellungen, Arbeitsweise …)"
+                          rows={8}
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box', resize: 'vertical' }}
+                        />
+                        <button type="button" onClick={() => openVitaDocument('martina')} style={{ marginTop: '0.5rem', padding: '0.4rem 0.75rem', background: s.accent, color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: '0.85rem' }}>
+                          📄 Vita als Dokument öffnen
+                        </button>
+                      </div>
                     </div>
                   </div>
 
@@ -9082,6 +10021,19 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           placeholder="+43 ..."
                           style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
+                      </div>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Vita (für Außenkommunikation &amp; Galerie)</label>
+                        <textarea
+                          value={georgData.vita || ''}
+                          onChange={(e) => setGeorgData({ ...georgData, vita: e.target.value })}
+                          placeholder="Vita-Text (Werdegang, Ausstellungen, Arbeitsweise …)"
+                          rows={8}
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box', resize: 'vertical' }}
+                        />
+                        <button type="button" onClick={() => openVitaDocument('georg')} style={{ marginTop: '0.5rem', padding: '0.4rem 0.75rem', background: s.accent, color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: '0.85rem' }}>
+                          📄 Vita als Dokument öffnen
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -9220,11 +10172,218 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     💾 Stammdaten speichern
                   </button>
                 </div>
+                  </>
+                )}
               </div>
             )}
 
-            {/* Sicherheit Sub-Tab */}
-            {settingsSubTab === 'sicherheit' && (
+            {/* Registrierung Sub-Tab – Lizenznummer + Lizenz/Verein + Stammdaten, keine doppelten Eingaben */}
+            {settingsSubTab === 'registrierung' && (
+              <div>
+                <h3 style={{ fontSize: '1.1rem', color: s.accent, marginBottom: '0.5rem' }}>📝 Registrierung</h3>
+                <p style={{ color: s.muted, marginBottom: '1.25rem', fontSize: '0.9rem' }}>
+                  Grundinfo für zukünftige User. Lizenz und Vereinsmitgliedschaft festlegen – Daten kommen aus Stammdaten, Änderungen werden beim Speichern übernommen.
+                </p>
+                {/* Lizenznummer – prominent, vom K2-System vergeben; Präfix: B, P, VB, VP, KF=Kostenfrei */}
+                <div style={{ padding: '1.25rem', background: s.bgCard, border: `2px solid ${s.accent}66`, borderRadius: '12px', marginBottom: '1rem', textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.85rem', color: s.muted, marginBottom: '0.5rem' }}>Lizenznummer (K2-System)</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: s.accent, letterSpacing: '0.1em', fontFamily: 'monospace' }}>
+                    {registrierungConfig.lizenznummer || (
+                      <span style={{ color: s.muted, fontSize: '1rem' }}>— wird beim Speichern vergeben —</span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: s.muted, marginTop: '0.5rem' }}>
+                    Präfix: B=Basis · P=Pro · VB=Verein+50 % · VP=Verein+Bonussystem · KF=Kostenfrei
+                  </div>
+                </div>
+                {/* Lizenztyp & Vereinsmitgliedschaft – für alle Kontexte (K2/ök2/VK2) */}
+                <div style={{ padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}33`, borderRadius: '12px', marginBottom: '1rem' }}>
+                  <h4 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text }}>💼 Lizenz & Vereinsmitgliedschaft</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.95rem' }}>
+                        <input type="checkbox" checked={registrierungConfig.kostenfrei ?? false} onChange={(e) => setRegistrierungConfig({ ...registrierungConfig, kostenfrei: e.target.checked })} />
+                        Kostenlose Lizenz (KF) – vom System vergeben
+                      </label>
+                    </div>
+                    <div style={{ opacity: registrierungConfig.kostenfrei ? 0.6 : 1 }}>
+                      <div>
+                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.35rem', color: s.muted }}>Lizenzversion</label>
+                      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.95rem' }}>
+                          <input type="radio" checked={registrierungConfig.lizenztyp === 'basis'} onChange={() => setRegistrierungConfig({ ...registrierungConfig, lizenztyp: 'basis' })} />
+                          Basis
+                        </label>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.95rem' }}>
+                          <input type="radio" checked={registrierungConfig.lizenztyp === 'pro'} onChange={() => setRegistrierungConfig({ ...registrierungConfig, lizenztyp: 'pro' })} />
+                          Pro
+                        </label>
+                      </div>
+                      </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.35rem', color: s.muted }}>Vereinsmitglied?</label>
+                      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.95rem' }}>
+                          <input type="radio" checked={!registrierungConfig.vereinsmitglied} onChange={() => setRegistrierungConfig({ ...registrierungConfig, vereinsmitglied: false, vollpreisFuerEmpfehlung: false })} />
+                          Nein
+                        </label>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.95rem' }}>
+                          <input type="radio" checked={registrierungConfig.vereinsmitglied} onChange={() => setRegistrierungConfig({ ...registrierungConfig, vereinsmitglied: true })} />
+                          Ja
+                        </label>
+                      </div>
+                    </div>
+                    {registrierungConfig.vereinsmitglied && (
+                      <div style={{ marginLeft: '1rem', paddingLeft: '1rem', borderLeft: `3px solid ${s.accent}66` }}>
+                        <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.35rem', color: s.muted }}>Als Vereinsmitglied:</label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' }}>
+                            <input type="radio" checked={!registrierungConfig.vollpreisFuerEmpfehlung} onChange={() => setRegistrierungConfig({ ...registrierungConfig, vollpreisFuerEmpfehlung: false })} />
+                            50 % Bonus (kein Bonussystem)
+                          </label>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' }}>
+                            <input type="radio" checked={registrierungConfig.vollpreisFuerEmpfehlung} onChange={() => setRegistrierungConfig({ ...registrierungConfig, vollpreisFuerEmpfehlung: true })} />
+                            Vollpreis – Bonussystem nutzen
+                          </label>
+                        </div>
+                      </div>
+                    )}
+                    <div style={{ marginTop: '0.5rem', padding: '0.75rem', background: s.bgElevated, borderRadius: '8px', fontSize: '0.85rem', color: s.muted, border: `1px solid ${s.accent}22` }}>
+                      <strong>Regeln:</strong> Registrierte Vereinsmitglieder können untereinander das Bonussystem nicht nutzen. Kostenlose Lizenzen (KF) sind vom Bonussystem ausgeschlossen.
+                    </div>
+                    </div>
+                  </div>
+                </div>
+                {isVk2AdminContext() ? (
+                  /* VK2: Verein, Vorstand, Beirat, Mitglieder – gleiche Daten wie Stammdaten */
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
+                      <h4 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text }}>🏛️ Verein</h4>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Vereinsname</label>
+                          <input type="text" value={vk2Stammdaten.verein.name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, name: e.target.value } })} placeholder="z. B. Kunstverein Musterstadt" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Vereinsnummer</label>
+                          <input type="text" value={vk2Stammdaten.verein.vereinsnummer} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, vereinsnummer: e.target.value } })} placeholder="z. B. ZVR 1234567" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Straße</label>
+                          <input type="text" value={vk2Stammdaten.verein.address} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, address: e.target.value } })} placeholder="Straße, Hausnummer" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Ort (PLZ Ort)</label>
+                          <input type="text" value={vk2Stammdaten.verein.city} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, city: e.target.value } })} placeholder="1010 Wien" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Land</label>
+                          <input type="text" value={vk2Stammdaten.verein.country} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, country: e.target.value } })} placeholder="Österreich" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>E-Mail</label>
+                          <input type="email" value={vk2Stammdaten.verein.email} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, email: e.target.value } })} placeholder="info@verein.example" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Website</label>
+                          <input type="url" value={vk2Stammdaten.verein.website} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, website: e.target.value } })} placeholder="https://..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
+                      <h4 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text }}>👥 Vorstand & Beirat</h4>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
+                        {(['vorstand', 'vize', 'kassier', 'schriftfuehrer'] as const).map((role) => (
+                          <div key={role} className="field">
+                            <label style={{ fontSize: '0.85rem' }}>{role === 'vorstand' ? 'Vorsitzende:r / Präsident:in' : role === 'vize' ? 'Stellv. Vorsitzende:r' : role === 'kassier' ? 'Kassier:in' : 'Schriftführer:in'}</label>
+                            <input type="text" value={vk2Stammdaten[role].name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, [role]: { name: e.target.value } })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          </div>
+                        ))}
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Beisitzer:in</label>
+                          <input type="text" value={vk2Stammdaten.beisitzer?.name || ''} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, beisitzer: { name: e.target.value } })} placeholder="Name (optional)" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                      </div>
+                    </div>
+                    <button className="btn-primary" onClick={() => { saveRegistrierungConfig(); saveStammdaten(); }} style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', alignSelf: 'flex-start' }}>
+                      💾 Speichern (Lizenz + Stammdaten)
+                    </button>
+                  </div>
+                ) : (
+                  /* K2/ök2: Galerie + Kontaktpersonen – gleiche Daten wie Stammdaten */
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
+                      <h4 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text }}>🏛️ Galerie / Atelier</h4>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Name</label>
+                          <input type="text" value={galleryData.name || ''} onChange={(e) => setGalleryData({ ...galleryData, name: e.target.value })} placeholder="Galerie-Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Straße</label>
+                          <input type="text" value={galleryData.address || ''} onChange={(e) => setGalleryData({ ...galleryData, address: e.target.value })} placeholder="Straße, Hausnummer" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Ort (PLZ Ort)</label>
+                          <input type="text" value={galleryData.city || ''} onChange={(e) => setGalleryData({ ...galleryData, city: e.target.value })} placeholder="1010 Wien" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Land</label>
+                          <input type="text" value={galleryData.country || ''} onChange={(e) => setGalleryData({ ...galleryData, country: e.target.value })} placeholder="Österreich" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>E-Mail</label>
+                          <input type="email" value={galleryData.email || ''} onChange={(e) => setGalleryData({ ...galleryData, email: e.target.value })} placeholder="info@galerie.at" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Telefon</label>
+                          <input type="tel" value={galleryData.phone || ''} onChange={(e) => setGalleryData({ ...galleryData, phone: e.target.value })} placeholder="+43 ..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Website</label>
+                          <input type="url" value={galleryData.website || ''} onChange={(e) => setGalleryData({ ...galleryData, website: e.target.value })} placeholder="https://..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
+                      <h4 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text }}>👤 Kontaktpersonen</h4>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Person 1 (Name)</label>
+                          <input type="text" value={martinaData.name || ''} onChange={(e) => setMartinaData({ ...martinaData, name: e.target.value })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Person 1 (E-Mail)</label>
+                          <input type="email" value={martinaData.email || ''} onChange={(e) => setMartinaData({ ...martinaData, email: e.target.value })} placeholder="E-Mail" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Person 1 (Telefon)</label>
+                          <input type="tel" value={martinaData.phone || ''} onChange={(e) => setMartinaData({ ...martinaData, phone: e.target.value })} placeholder="+43 ..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Person 2 (Name)</label>
+                          <input type="text" value={georgData.name || ''} onChange={(e) => setGeorgData({ ...georgData, name: e.target.value })} placeholder="Name (optional)" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Person 2 (E-Mail)</label>
+                          <input type="email" value={georgData.email || ''} onChange={(e) => setGeorgData({ ...georgData, email: e.target.value })} placeholder="E-Mail" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Person 2 (Telefon)</label>
+                          <input type="tel" value={georgData.phone || ''} onChange={(e) => setGeorgData({ ...georgData, phone: e.target.value })} placeholder="+43 ..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                        </div>
+                      </div>
+                    </div>
+                    <button className="btn-primary" onClick={() => { saveRegistrierungConfig(); saveStammdaten(); }} style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', alignSelf: 'flex-start' }}>
+                      💾 Speichern (Lizenz + Stammdaten)
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Sicherheit Sub-Tab – nur K2 und ök2 (VK2 braucht das nicht) */}
+            {settingsSubTab === 'sicherheit' && !isVk2AdminContext() && (
               <div>
                 <h3 style={{ fontSize: '1.1rem', color: s.accent, marginBottom: '1rem' }}>🔒 Sicherheitsabteilung</h3>
                 <p style={{ color: s.muted, marginBottom: '1rem' }}>
@@ -9711,33 +10870,28 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               marginBottom: '0.5rem',
               letterSpacing: '-0.01em'
             }}>
-              📢 Marketing
+              📢 Öffentlichkeitsarbeit & Eventplanung
             </h2>
             <p style={{ color: s.muted, marginBottom: '1.5rem', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
-              Außenkommunikation: Eventplanung, Events, Öffentlichkeitsarbeit. Dokumente sind den Events zugeordnet (je Rubrik).
+              Außenkommunikation: Eventplanung, Events, Flyer & Werbedokumente. Dokumente sind den Events zugeordnet (je Rubrik).
             </p>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
-              {[
-                { id: 'events' as const, label: '📅 Events' },
-                { id: 'öffentlichkeitsarbeit' as const, label: '📢 Öffentlichkeitsarbeit' }
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => setEventplanSubTab(t.id)}
-                  style={{
-                    padding: '0.6rem 1.25rem',
-                    background: eventplanSubTab === t.id ? s.gradientAccent : s.bgElevated,
-                    border: `1px solid ${eventplanSubTab === t.id ? s.accent : s.accent + '33'}`,
-                    borderRadius: '10px',
-                    color: eventplanSubTab === t.id ? '#fff' : s.text,
-                    fontSize: '0.95rem',
-                    fontWeight: eventplanSubTab === t.id ? 600 : 500,
-                    cursor: 'pointer'
-                  }}
-                >
-                  {t.label}
-                </button>
-              ))}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem', marginBottom: '1.5rem' }}>
+              <button type="button" onClick={() => setEventplanSubTab('events')} style={{ textAlign: 'left', cursor: 'pointer', background: eventplanSubTab === 'events' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${eventplanSubTab === 'events' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem 1.25rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = eventplanSubTab === 'events' ? s.accent : `${s.accent}22` }}
+              >
+                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📅</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Veranstaltungen</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Events anlegen, bearbeiten, Termine verwalten</div>
+              </button>
+              <button type="button" onClick={() => setEventplanSubTab('öffentlichkeitsarbeit')} style={{ textAlign: 'left', cursor: 'pointer', background: eventplanSubTab === 'öffentlichkeitsarbeit' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${eventplanSubTab === 'öffentlichkeitsarbeit' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem 1.25rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = eventplanSubTab === 'öffentlichkeitsarbeit' ? s.accent : `${s.accent}22` }}
+              >
+                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📢</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Flyer & Werbematerial</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Einladungen, Flyer, Presse, Social Media – ansehen & drucken</div>
+              </button>
             </div>
             {eventplanSubTab === 'events' && (
             <>
@@ -9804,215 +10958,290 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 )}
               </div>
             ) : (
-              <div style={{
-                display: 'grid',
-                gap: 'clamp(1rem, 3vw, 1.5rem)',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'
-              }}>
-                {events.map((event) => {
-                  const eventIcons: Record<string, string> = {
-                    galerieeröffnung: '🎉',
-                    vernissage: '🍷',
-                    finissage: '👋',
-                    öffentlichkeitsarbeit: '📢',
-                    sonstiges: '📌'
-                  }
-                  const eventLabels: Record<string, string> = {
-                    galerieeröffnung: 'Galerieeröffnung',
-                    vernissage: 'Vernissage',
-                    finissage: 'Finissage',
-                    öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
-                    sonstiges: 'Sonstiges'
-                  }
-                  
-                  return (
-                    <div
-                      key={event.id}
-                      style={{
-                        background: s.bgElevated,
-                        border: `1px solid ${s.accent}22`,
-                        borderRadius: '16px',
-                        padding: 'clamp(1rem, 3vw, 1.5rem)',
-                        transition: 'all 0.3s ease'
-                      }}
-                    >
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        marginBottom: '1rem'
-                      }}>
-                        <div>
-                          <div style={{
-                            fontSize: 'clamp(1.5rem, 4vw, 2rem)',
-                            marginBottom: '0.5rem'
-                          }}>
-                            {eventIcons[event.type] || '📌'}
-                          </div>
-                          <h3 style={{
-                            fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
-                            fontWeight: '600',
-                            color: s.text,
-                            margin: '0 0 0.5rem 0'
-                          }}>
-                            {event.title}
-                          </h3>
-                          <div style={{
-                            fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                            color: s.accent,
-                            background: `${s.accent}20`,
-                            padding: '0.25rem 0.75rem',
-                            borderRadius: '6px',
-                            display: 'inline-block',
-                            marginBottom: '0.5rem'
-                          }}>
-                            {eventLabels[event.type] || event.type}
-                          </div>
+              (() => {
+                const todayStart = new Date()
+                todayStart.setHours(0, 0, 0, 0)
+                const getEventEnd = (e: any) => {
+                  const d = e.endDate ? new Date(e.endDate) : new Date(e.date)
+                  d.setHours(23, 59, 59, 999)
+                  return d
+                }
+                const upcomingEvents = events.filter((e: any) => getEventEnd(e) >= todayStart)
+                const pastEvents = events.filter((e: any) => getEventEnd(e) < todayStart)
+                const eventIcons: Record<string, string> = {
+                  galerieeröffnung: '🎉',
+                  vernissage: '🍷',
+                  finissage: '👋',
+                  öffentlichkeitsarbeit: '📢',
+                  sonstiges: '📌'
+                }
+                const eventLabels: Record<string, string> = {
+                  galerieeröffnung: 'Galerieeröffnung',
+                  vernissage: 'Vernissage',
+                  finissage: 'Finissage',
+                  öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
+                  sonstiges: 'Sonstiges'
+                }
+                const renderEventCard = (event: any) => (
+                  <div
+                    key={event.id}
+                    style={{
+                      background: s.bgElevated,
+                      border: `1px solid ${s.accent}22`,
+                      borderRadius: '16px',
+                      padding: 'clamp(1rem, 3vw, 1.5rem)',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      marginBottom: '1rem'
+                    }}>
+                      <div>
+                        <div style={{
+                          fontSize: 'clamp(1.5rem, 4vw, 2rem)',
+                          marginBottom: '0.5rem'
+                        }}>
+                          {eventIcons[event.type] || '📌'}
                         </div>
-                      </div>
-                      
-                      <div style={{
-                        fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
-                        color: s.muted,
-                        marginBottom: '0.75rem'
-                      }}>
-                        <div style={{ marginBottom: '0.25rem' }}>
-                          <strong>📅 Datum:</strong> {
-                            event.endDate && event.endDate !== event.date
-                              ? `${new Date(event.date).toLocaleDateString('de-DE', {
-                                  day: 'numeric',
-                                  month: 'long',
-                                  year: 'numeric'
-                                })} - ${new Date(event.endDate).toLocaleDateString('de-DE', {
-                                  day: 'numeric',
-                                  month: 'long',
-                                  year: 'numeric'
-                                })}`
-                              : new Date(event.date).toLocaleDateString('de-DE', {
-                                  weekday: 'long',
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric'
-                                })
-                          }
+                        <h3 style={{
+                          fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                          fontWeight: '600',
+                          color: s.text,
+                          margin: '0 0 0.5rem 0'
+                        }}>
+                          {event.title}
+                        </h3>
+                        <div style={{
+                          fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                          color: s.accent,
+                          background: `${s.accent}20`,
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '6px',
+                          display: 'inline-block',
+                          marginBottom: '0.5rem'
+                        }}>
+                          {eventLabels[event.type] || event.type}
                         </div>
-                        {(event.startTime || event.endTime || event.time || (event.dailyTimes && Object.keys(event.dailyTimes).length > 0)) && (
-                          <div style={{ marginBottom: '0.25rem' }}>
-                            <strong>🕐 Uhrzeit:</strong> {
-                              (() => {
-                                const startTime = event.startTime || event.time || ''
-                                const endTime = event.endTime || ''
-                                const isMultiDay = event.endDate && event.endDate !== event.date
-                                const hasDailyTimes = event.dailyTimes && Object.keys(event.dailyTimes).length > 0
-                                
-                                if (hasDailyTimes && isMultiDay) {
-                                  // Zeige tägliche Zeiten
-                                  const days = getEventDays(event.date, event.endDate)
-                                  return (
-                                    <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                      {days.map((day) => {
-                                        const dayTime = event.dailyTimes[day]
-                                        if (!dayTime) return null
-                                        const dayLabel = new Date(day).toLocaleDateString('de-DE', {
-                                          weekday: 'short',
-                                          day: 'numeric',
-                                          month: 'short'
-                                        })
-                                        let timeDisplay = ''
-                                        if (typeof dayTime === 'string') {
-                                          // Altes Format (nur Startzeit)
-                                          timeDisplay = `${dayTime} Uhr`
-                                        } else if (dayTime.start || dayTime.end) {
-                                          // Neues Format (Start- und Endzeit)
-                                          timeDisplay = dayTime.start 
-                                            ? (dayTime.end ? `${dayTime.start} - ${dayTime.end} Uhr` : `${dayTime.start} Uhr`)
-                                            : (dayTime.end ? `bis ${dayTime.end} Uhr` : '')
-                                        }
-                                        if (!timeDisplay) return null
-                                        return (
-                                          <div key={day} style={{ fontSize: 'clamp(0.85rem, 2vw, 0.95rem)' }}>
-                                            {dayLabel}: {timeDisplay}
-                                          </div>
-                                        )
-                                      })}
-                                    </div>
-                                  )
-                                } else if (isMultiDay) {
-                                  // Mehrere Tage ohne tägliche Zeiten: Zeige Startzeit für ersten Tag und Endzeit für letzten Tag
-                                  return startTime && endTime 
-                                    ? `${startTime} Uhr (${new Date(event.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })}) - ${endTime} Uhr (${new Date(event.endDate).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })})`
-                                    : startTime 
-                                    ? `${startTime} Uhr (${new Date(event.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })})`
-                                    : ''
-                                } else {
-                                  // Ein Tag: Zeige Start- und Endzeit
-                                  return startTime && endTime 
-                                    ? `${startTime} - ${endTime} Uhr`
-                                    : startTime 
-                                    ? `${startTime} Uhr`
-                                    : ''
-                                }
-                              })()
-                            }
-                          </div>
-                        )}
-                        {event.location && (
-                          <div style={{ marginBottom: '0.25rem' }}>
-                            <strong>📍 Ort:</strong> {event.location}
-                          </div>
-                        )}
-                        {event.description && (
-                          <div style={{ marginTop: '0.75rem', fontSize: 'clamp(0.85rem, 2vw, 0.95rem)' }}>
-                            {event.description}
-                          </div>
-                        )}
-                      </div>
-
-                      <div style={{
-                        display: 'flex',
-                        gap: '0.5rem',
-                        marginTop: '1rem',
-                        flexWrap: 'wrap'
-                      }}>
-                        <button
-                          onClick={() => handleEditEvent(event)}
-                          style={{
-                            flex: 1,
-                            minWidth: '120px',
-                            padding: '0.75rem',
-                            background: 'rgba(102, 126, 234, 0.2)',
-                            border: '1px solid rgba(102, 126, 234, 0.3)',
-                            borderRadius: '8px',
-                            color: '#ffffff',
-                            cursor: 'pointer',
-                            fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                            fontWeight: '500'
-                          }}
-                        >
-                          ✏️ Bearbeiten
-                        </button>
-                        <button
-                          onClick={() => handleDeleteEvent(event.id)}
-                          style={{
-                            flex: 1,
-                            minWidth: '120px',
-                            padding: '0.75rem',
-                            background: 'rgba(255, 100, 100, 0.2)',
-                            border: '1px solid rgba(255, 100, 100, 0.3)',
-                            borderRadius: '8px',
-                            color: '#ff6464',
-                            cursor: 'pointer',
-                            fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                            fontWeight: '500'
-                          }}
-                        >
-                          🗑️ Löschen
-                        </button>
                       </div>
                     </div>
-                  )
-                })}
-              </div>
+                    <div style={{
+                      fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
+                      color: s.muted,
+                      marginBottom: '0.75rem'
+                    }}>
+                      <div style={{ marginBottom: '0.25rem' }}>
+                        <strong>📅 Datum:</strong> {
+                          event.endDate && event.endDate !== event.date
+                            ? `${new Date(event.date).toLocaleDateString('de-DE', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric'
+                              })} - ${new Date(event.endDate).toLocaleDateString('de-DE', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric'
+                              })}`
+                            : new Date(event.date).toLocaleDateString('de-DE', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })
+                        }
+                      </div>
+                      {(event.startTime || event.endTime || event.time || (event.dailyTimes && Object.keys(event.dailyTimes).length > 0)) && (
+                        <div style={{ marginBottom: '0.25rem' }}>
+                          <strong>🕐 Uhrzeit:</strong> {
+                            (() => {
+                              const startTime = event.startTime || event.time || ''
+                              const endTime = event.endTime || ''
+                              const isMultiDay = event.endDate && event.endDate !== event.date
+                              const hasDailyTimes = event.dailyTimes && Object.keys(event.dailyTimes).length > 0
+                              if (hasDailyTimes && isMultiDay) {
+                                const days = getEventDays(event.date, event.endDate)
+                                return (
+                                  <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                    {days.map((day: string) => {
+                                      const dayTime = event.dailyTimes[day]
+                                      if (!dayTime) return null
+                                      const dayLabel = new Date(day).toLocaleDateString('de-DE', {
+                                        weekday: 'short',
+                                        day: 'numeric',
+                                        month: 'short'
+                                      })
+                                      let timeDisplay = ''
+                                      if (typeof dayTime === 'string') {
+                                        timeDisplay = dayTime
+                                      } else if (dayTime && typeof dayTime === 'object' && 'start' in dayTime && 'end' in dayTime) {
+                                        timeDisplay = `${(dayTime as any).start || ''} - ${(dayTime as any).end || ''}`
+                                      }
+                                      return <div key={day}>{dayLabel}: {timeDisplay}</div>
+                                    })}
+                                  </div>
+                                )
+                              }
+                              if (isMultiDay) {
+                                return startTime && endTime
+                                  ? `${startTime} Uhr (${new Date(event.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })}) - ${endTime} Uhr (${new Date(event.endDate).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })})`
+                                  : startTime
+                                  ? `${startTime} Uhr (${new Date(event.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })})`
+                                  : ''
+                              }
+                              return startTime && endTime ? `${startTime} - ${endTime} Uhr` : startTime ? `${startTime} Uhr` : ''
+                            })()
+                          }
+                        </div>
+                      )}
+                      {event.location && (
+                        <div style={{ marginBottom: '0.25rem' }}>
+                          <strong>📍 Ort:</strong> {event.location}
+                        </div>
+                      )}
+                      {event.description && (
+                        <div style={{ marginTop: '0.75rem', fontSize: 'clamp(0.85rem, 2vw, 0.95rem)' }}>
+                          {event.description}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      gap: '0.5rem',
+                      marginTop: '1rem',
+                      flexWrap: 'wrap'
+                    }}>
+                      <button
+                        onClick={() => handleEditEvent(event)}
+                        style={{
+                          flex: 1,
+                          minWidth: '120px',
+                          padding: '0.75rem',
+                          background: 'rgba(102, 126, 234, 0.2)',
+                          border: '1px solid rgba(102, 126, 234, 0.3)',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          cursor: 'pointer',
+                          fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                          fontWeight: '500'
+                        }}
+                      >
+                        ✏️ Bearbeiten
+                      </button>
+                      <button
+                        onClick={() => handleDeleteEvent(event.id)}
+                        style={{
+                          flex: 1,
+                          minWidth: '120px',
+                          padding: '0.75rem',
+                          background: 'rgba(255, 100, 100, 0.2)',
+                          border: '1px solid rgba(255, 100, 100, 0.3)',
+                          borderRadius: '8px',
+                          color: '#ff6464',
+                          cursor: 'pointer',
+                          fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                          fontWeight: '500'
+                        }}
+                      >
+                        🗑️ Löschen
+                      </button>
+                    </div>
+                  </div>
+                )
+                return (
+                  <>
+                    {upcomingEvents.length > 0 && (
+                      <div style={{ marginBottom: '2rem' }}>
+                        <h3 style={{ fontSize: 'clamp(1.1rem, 2.5vw, 1.3rem)', fontWeight: '600', color: s.text, marginBottom: '1rem' }}>
+                          📅 Aktuelle und geplante Veranstaltungen
+                        </h3>
+                        <div style={{
+                          display: 'grid',
+                          gap: 'clamp(1rem, 3vw, 1.5rem)',
+                          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'
+                        }}>
+                          {upcomingEvents.map((event: any) => renderEventCard(event))}
+                        </div>
+                      </div>
+                    )}
+                    <div style={{ marginTop: pastEvents.length > 0 || upcomingEvents.length > 0 ? '1.5rem' : '0', borderTop: pastEvents.length > 0 || upcomingEvents.length > 0 ? `1px solid ${s.accent}22` : 'none' }}>
+                      <button
+                        type="button"
+                        onClick={() => setPastEventsExpanded((v) => !v)}
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '0.75rem',
+                          padding: '0.65rem 1rem',
+                          marginTop: '0.75rem',
+                          background: `${s.accent}12`,
+                          border: `1px solid ${s.accent}33`,
+                          borderRadius: '10px',
+                          color: s.text,
+                          fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          textAlign: 'left'
+                        }}
+                      >
+                        <span>📁 Veranstaltungen der Vergangenheit{pastEvents.length > 0 ? ` (${pastEvents.length})` : ''}</span>
+                        <span style={{ color: s.muted, fontSize: '1.1rem' }}>{pastEventsExpanded ? '▼' : '▶'}</span>
+                      </button>
+                      {pastEventsExpanded && (
+                        <div style={{ paddingTop: '1rem', paddingBottom: '0.5rem' }}>
+                          <p style={{ fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', color: s.muted, marginBottom: '1rem', lineHeight: 1.5 }}>
+                            Events mit Datum in der Vergangenheit – Bearbeiten, Löschen oder unter „Flyer & Werbedokumente“ die Dokumente ansehen.
+                          </p>
+                          {pastEvents.length > 0 ? (
+                            <div style={{
+                              display: 'grid',
+                              gap: 'clamp(1rem, 3vw, 1.5rem)',
+                              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'
+                            }}>
+                              {pastEvents.map((event: any) => renderEventCard(event))}
+                            </div>
+                          ) : (
+                            <div style={{
+                              padding: '1.25rem 1.5rem',
+                              background: `${s.accent}0c`,
+                              border: `1px dashed ${s.accent}44`,
+                              borderRadius: '12px',
+                              color: s.muted,
+                              fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                              lineHeight: 1.5
+                            }}>
+                              <p style={{ margin: '0 0 1rem 0' }}>
+                                Noch keine vergangenen Veranstaltungen. Sobald ein Event vorbei ist, erscheint es hier.
+                              </p>
+                              {!isOeffentlichAdminContext() && (
+                                <button
+                                  type="button"
+                                  onClick={handleCreateAteliersbesichtigungPaulWeber}
+                                  style={{
+                                    padding: '0.5rem 1rem',
+                                    background: `${s.accent}22`,
+                                    border: `1px solid ${s.accent}66`,
+                                    borderRadius: '8px',
+                                    color: s.accent,
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    fontSize: 'clamp(0.85rem, 2vw, 0.95rem)'
+                                  }}
+                                >
+                                  📁 Beispiel anlegen: Ateliersbesichtigung bei Paul Weber (vor 1 Woche, mit Einladung und Presse)
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )
+              })()
             )}
             </>
             )}
@@ -10997,7 +12226,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               marginBottom: '0.75rem',
               letterSpacing: '-0.01em'
             }}>
-              📢 Öffentlichkeitsarbeit
+              📢 Hier sind deine Flyer und Werbedokumente – ansehen, bearbeiten …
             </h2>
             <p style={{
               fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
@@ -11016,23 +12245,34 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               Pro Rubrik: Druckversionen (Flyer, Presse-Einladung), eigene Dokumente, PR-Vorschläge (Newsletter, Plakat, Presse, Social Media) – aus deinen Stammdaten erzeugt, direkt nutzbar oder als PDF.
             </p>
 
-            {/* Alle Events mit einheitlicher Liste: Druckversionen + Event-Dokumente + Aktionen (PR) */}
+            {/* Alle Events: zuerst aktuell/geplant, dann Ordner „Veranstaltungen der Vergangenheit“ (Dokumente als Muster) */}
             {(() => {
               void prSuggestionsRefresh // Re-Render auslösen nach PR-Vorschläge generieren
               const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+              const todayStart = new Date()
+              todayStart.setHours(0, 0, 0, 0)
+              const getEventEnd = (e: any) => {
+                const d = e.endDate ? new Date(e.endDate) : new Date(e.date)
+                d.setHours(23, 59, 59, 999)
+                return d
+              }
               const eventsSorted = [...events].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-              
+              const upcomingEvents = eventsSorted.filter((e: any) => getEventEnd(e) >= todayStart)
+              const pastEvents = eventsSorted.filter((e: any) => getEventEnd(e) < todayStart)
+
               if (eventsSorted.length > 0) {
                 return (
                   <div style={{
                     marginBottom: 'clamp(2rem, 5vw, 3rem)'
                   }}>
-                    <div style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '1.5rem'
-                    }}>
-                      {eventsSorted.map((event: any) => {
+                    {/* Aktuelle und geplante Veranstaltungen */}
+                    {upcomingEvents.length > 0 && (
+                      <div style={{ marginBottom: '2rem' }}>
+                        <h3 style={{ fontSize: 'clamp(1.1rem, 2.5vw, 1.3rem)', fontWeight: '600', color: s.text, marginBottom: '1rem' }}>
+                          📅 Aktuelle und geplante Veranstaltungen
+                        </h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                      {upcomingEvents.map((event: any) => {
                         const suggestion = suggestions.find((s: any) => s.eventId === event.id)
                         const k2FlyerDoc = event.type === 'galerieeröffnung' ? { id: 'k2-galerie-flyer', name: 'K2 Galerie Flyer (Druckversion)', documentUrl: '/flyer-k2-galerie' } : null
                         const k2PresseDoc = event.type === 'galerieeröffnung' ? { id: 'k2-galerie-presse', name: 'Presse-Einladung (Druckversion)', documentUrl: '/presse-einladung-k2-galerie' } : null
@@ -11106,272 +12346,437 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             </button>
                           </div>
 
-                          {/* PR-Vorschläge als PDF Button */}
-                          <div style={{
-                            marginBottom: '1.5rem',
-                            padding: '1rem',
-                            background: `${s.accent}12`,
-                            border: `1px solid ${s.accent}33`,
-                            borderRadius: '12px'
-                          }}>
-                            <button
-                              onClick={() => {
-                                const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
-                                const eventSuggestion = suggestions.find((sug: any) => sug.eventId === event.id)
-                                if (eventSuggestion) {
-                                  generateEditablePRSuggestionsPDF(eventSuggestion, event)
-                                } else {
-                                  alert('Keine PR-Vorschläge für dieses Event gefunden.')
+                          {/* ═══ KÜNSTLER-FREUNDLICHE DOKUMENT-ÜBERSICHT ═══ */}
+                          {(() => {
+                            // Alle Dokument-Karten definieren
+                            const DOKUMENT_KARTEN = [
+                              {
+                                typ: 'druckversion' as const,
+                                icon: '🖨️',
+                                titel: 'Druckfertige Dokumente',
+                                beschreibung: 'Flyer & Presse-Einladung',
+                                docs: docList,
+                                onOpen: (doc: any) => handleViewEventDocument(doc, event),
+                                onDelete: (doc: any) => {
+                                  if (doc.id === 'k2-galerie-flyer' || doc.id === 'k2-galerie-presse') handleHideFromEventList(event.id, doc.id)
+                                  else handleDeleteEventDocument(event.id, doc.id)
+                                },
+                                onErstellen: null as null | (() => void)
+                              },
+                              {
+                                typ: 'qr-plakat' as const,
+                                icon: '🏛️',
+                                titel: 'QR-Code Plakat',
+                                beschreibung: 'Zum Aufhängen – Besucher scannen',
+                                docs: byTyp['qr-plakat'] || [],
+                                onOpen: (doc: any) => handleViewEventDocument(doc),
+                                onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
+                                onErstellen: () => printQRCodePlakat(event)
+                              },
+                              {
+                                typ: 'newsletter' as const,
+                                icon: '📧',
+                                titel: 'Newsletter',
+                                beschreibung: 'E-Mail an Stammkunden',
+                                docs: byTyp['newsletter'] || [],
+                                onOpen: (doc: any) => handleViewEventDocument(doc),
+                                onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
+                                onErstellen: () => {
+                                  const ev = events.find((e: any) => e.id === event.id)
+                                  if (!ev) return
+                                  const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
+                                  generateEditableNewsletterPDF(evSug?.newsletter || generateEmailNewsletterContent(ev), ev)
                                 }
-                              }}
-                              style={{
-                                width: '100%',
-                                padding: '0.5rem 0.75rem',
-                                background: s.gradientAccent,
-                                color: '#ffffff',
-                                border: 'none',
-                                borderRadius: '6px',
-                                fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                boxShadow: s.shadow
-                              }}
-                            >
-                              📄 Alle PR-Vorschläge als bearbeitbare PDF-Seiten
-                            </button>
-                          </div>
+                              },
+                              {
+                                typ: 'plakat' as const,
+                                icon: '🖼️',
+                                titel: 'Plakat',
+                                beschreibung: 'A3/A2 für Schaufenster & Wände',
+                                docs: byTyp['plakat'] || [],
+                                onOpen: (doc: any) => handleViewEventDocument(doc),
+                                onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
+                                onErstellen: () => {
+                                  const ev = events.find((e: any) => e.id === event.id)
+                                  if (ev) generatePlakatForEvent(ev)
+                                }
+                              },
+                              {
+                                typ: 'event-flyer' as const,
+                                icon: '📄',
+                                titel: 'Event-Flyer',
+                                beschreibung: 'Handzettel für persönliche Einladung',
+                                docs: byTyp['event-flyer'] || [],
+                                onOpen: (doc: any) => handleViewEventDocument(doc),
+                                onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
+                                onErstellen: () => {
+                                  const ev = events.find((e: any) => e.id === event.id)
+                                  if (!ev) return
+                                  const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
+                                  generateEditableNewsletterPDF(evSug?.flyer || generateEventFlyerContent(ev), ev)
+                                }
+                              },
+                              {
+                                typ: 'presse' as const,
+                                icon: '📰',
+                                titel: 'Presseaussendung',
+                                beschreibung: 'Für Zeitungen & Medien',
+                                docs: byTyp['presse'] || [],
+                                onOpen: (doc: any) => handleViewEventDocument(doc),
+                                onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
+                                onErstellen: () => {
+                                  const ev = events.find((e: any) => e.id === event.id)
+                                  if (!ev) return
+                                  const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
+                                  generateEditablePresseaussendungPDF(evSug?.presseaussendung || generatePresseaussendungContent(ev), ev)
+                                }
+                              },
+                              {
+                                typ: 'social' as const,
+                                icon: '📱',
+                                titel: 'Social Media',
+                                beschreibung: 'Instagram, Facebook, WhatsApp',
+                                docs: byTyp['social'] || [],
+                                onOpen: (doc: any) => handleViewEventDocument(doc),
+                                onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
+                                onErstellen: () => {
+                                  const ev = events.find((e: any) => e.id === event.id)
+                                  if (!ev) return
+                                  const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
+                                  generateEditableSocialMediaPDF(evSug?.socialMedia || generateSocialMediaContent(ev), ev)
+                                }
+                              }
+                            ]
 
-                          {/* Zu dieser Rubrik: Druckversionen + Event-Dokumente + Aktionen (PR) */}
-                          <div style={{ marginTop: '0.5rem' }}>
-                            <div style={{ fontSize: 'clamp(0.75rem, 1.8vw, 0.85rem)', color: s.muted, marginBottom: '0.25rem' }}>Dokumente zu dieser Rubrik (zum Anklicken)</div>
-                            <div style={{ fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)', color: s.muted, marginBottom: '0.5rem', fontStyle: 'italic' }}>Aus Stammdaten &amp; Event erzeugt – anklicken oder als PDF exportieren</div>
-                            <ul style={{
-                              listStyle: 'none',
-                              margin: 0,
-                              padding: 0,
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '0.35rem'
-                            }}>
-                              {docList.map((doc: any) => (
-                                <li
-                                  key={doc.id || doc.name}
-                                  onClick={() => handleViewEventDocument(doc)}
-                                  style={{
-                                    padding: '0.5rem 0.75rem',
-                                    background: s.bgElevated,
-                                    border: `1px solid ${s.accent}22`,
-                                    borderRadius: '8px',
-                                    cursor: 'pointer',
-                                    fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                                    color: doc.documentUrl ? s.accent : s.text,
-                                    transition: 'background 0.2s, color 0.2s',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    gap: '0.5rem'
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = `${s.accent}18`
-                                    e.currentTarget.style.color = s.accent
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = s.bgElevated
-                                    e.currentTarget.style.color = doc.documentUrl ? s.accent : s.text
-                                  }}
-                                >
-                                  <span>{doc.documentUrl ? '🖨️ ' : '📎 '}{doc.name || doc.fileName || 'Dokument'}</span>
+                            const fertigAnzahl = DOKUMENT_KARTEN.filter(k => k.docs.length > 0).length
+                            const gesamtAnzahl = DOKUMENT_KARTEN.length
+
+                            return (
+                              <div>
+                                {/* STATUS-BALKEN: Auf einen Blick */}
+                                <div style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  background: fertigAnzahl === gesamtAnzahl ? 'rgba(34,197,94,0.12)' : `${s.accent}10`,
+                                  border: `1px solid ${fertigAnzahl === gesamtAnzahl ? 'rgba(34,197,94,0.4)' : s.accent + '33'}`,
+                                  borderRadius: '10px',
+                                  padding: '0.75rem 1rem',
+                                  marginBottom: '1rem',
+                                  flexWrap: 'wrap',
+                                  gap: '0.5rem'
+                                }}>
+                                  <div>
+                                    <div style={{ fontSize: 'clamp(0.9rem, 2vw, 1rem)', fontWeight: '700', color: s.text }}>
+                                      {fertigAnzahl === gesamtAnzahl ? '✅ Alle Dokumente bereit!' : `📋 ${fertigAnzahl} von ${gesamtAnzahl} Dokumenten erstellt`}
+                                    </div>
+                                    <div style={{ fontSize: 'clamp(0.75rem, 1.6vw, 0.82rem)', color: s.muted, marginTop: '0.2rem' }}>
+                                      {fertigAnzahl === gesamtAnzahl ? 'Alle Unterlagen für dieses Event sind vorhanden.' : 'Klicke auf einen roten Button um das Dokument sofort zu erstellen.'}
+                                    </div>
+                                  </div>
+                                  {/* Fortschrittsbalken */}
+                                  <div style={{ display: 'flex', gap: 4 }}>
+                                    {DOKUMENT_KARTEN.map(k => (
+                                      <div key={k.typ} style={{ width: 10, height: 10, borderRadius: '50%', background: k.docs.length > 0 ? 'rgba(34,197,94,0.8)' : 'rgba(181,74,30,0.4)', border: `1px solid ${k.docs.length > 0 ? 'rgba(34,197,94,1)' : s.accent}` }} title={k.titel} />
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {/* DOKUMENT-KARTEN: Eine Karte pro Dokument-Typ */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                                  {DOKUMENT_KARTEN.map(karte => {
+                                    const hatDokumente = karte.docs.length > 0
+                                    return (
+                                      <div key={karte.typ} style={{
+                                        background: hatDokumente ? 'rgba(34,197,94,0.07)' : s.bgElevated,
+                                        border: `1.5px solid ${hatDokumente ? 'rgba(34,197,94,0.35)' : s.accent + '22'}`,
+                                        borderRadius: '10px',
+                                        padding: '0.75rem 1rem',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '0.5rem'
+                                      }}>
+                                        {/* Kopfzeile: Icon + Titel + Status */}
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
+                                            <span style={{ fontSize: '1.2rem' }}>{karte.icon}</span>
+                                            <div>
+                                              <div style={{ fontSize: 'clamp(0.9rem, 2vw, 1rem)', fontWeight: '700', color: s.text, lineHeight: 1.2 }}>{karte.titel}</div>
+                                              <div style={{ fontSize: 'clamp(0.72rem, 1.5vw, 0.8rem)', color: s.muted }}>{karte.beschreibung}</div>
+                                            </div>
+                                          </div>
+                                          <div style={{
+                                            fontSize: 'clamp(0.72rem, 1.5vw, 0.8rem)',
+                                            fontWeight: '700',
+                                            padding: '0.2rem 0.55rem',
+                                            borderRadius: '20px',
+                                            background: hatDokumente ? 'rgba(34,197,94,0.15)' : 'rgba(181,74,30,0.12)',
+                                            color: hatDokumente ? '#16a34a' : s.accent,
+                                            border: `1px solid ${hatDokumente ? 'rgba(34,197,94,0.4)' : s.accent + '44'}`,
+                                            whiteSpace: 'nowrap'
+                                          }}>
+                                            {hatDokumente ? `✅ ${karte.docs.length} vorhanden` : '○ Noch nicht erstellt'}
+                                          </div>
+                                        </div>
+
+                                        {/* Vorhandene Dokumente anzeigen */}
+                                        {hatDokumente && (
+                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', paddingLeft: '0.25rem' }}>
+                                            {karte.docs.map((doc: any) => (
+                                              <div key={doc.id || doc.name} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => karte.onOpen(doc)}
+                                                  style={{
+                                                    flex: 1,
+                                                    textAlign: 'left',
+                                                    padding: '0.4rem 0.7rem',
+                                                    background: '#fff',
+                                                    border: '1px solid rgba(34,197,94,0.3)',
+                                                    borderRadius: '6px',
+                                                    cursor: 'pointer',
+                                                    fontSize: 'clamp(0.82rem, 1.8vw, 0.9rem)',
+                                                    color: '#15803d',
+                                                    fontWeight: '600',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '0.4rem'
+                                                  }}
+                                                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(34,197,94,0.1)' }}
+                                                  onMouseLeave={(e) => { e.currentTarget.style.background = '#fff' }}
+                                                >
+                                                  🔍 {doc.name?.length > 45 ? doc.name.slice(0, 42) + '…' : (doc.name || doc.fileName || 'Dokument öffnen')}
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => karte.onDelete(doc)}
+                                                  style={{
+                                                    padding: '0.4rem 0.6rem',
+                                                    background: 'rgba(220,38,38,0.08)',
+                                                    border: '1px solid rgba(220,38,38,0.25)',
+                                                    borderRadius: '6px',
+                                                    color: '#dc2626',
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.85rem',
+                                                    lineHeight: 1
+                                                  }}
+                                                  title="Löschen"
+                                                >
+                                                  ×
+                                                </button>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
+
+                                        {/* Erstellen-Button */}
+                                        {karte.onErstellen && (
+                                          <button
+                                            type="button"
+                                            onClick={karte.onErstellen}
+                                            style={{
+                                              padding: '0.55rem 1rem',
+                                              background: hatDokumente ? s.bgCard : '#b54a1e',
+                                              border: `1.5px solid ${hatDokumente ? s.accent + '44' : '#8f3a16'}`,
+                                              borderRadius: '8px',
+                                              cursor: 'pointer',
+                                              fontSize: 'clamp(0.85rem, 2vw, 0.92rem)',
+                                              color: hatDokumente ? s.accent : '#ffffff',
+                                              fontWeight: '700',
+                                              textAlign: 'left',
+                                              transition: 'background 0.15s'
+                                            }}
+                                            onMouseEnter={(e) => { e.currentTarget.style.background = hatDokumente ? `${s.accent}18` : '#d4622a' }}
+                                            onMouseLeave={(e) => { e.currentTarget.style.background = hatDokumente ? s.bgCard : '#b54a1e' }}
+                                          >
+                                            {hatDokumente ? `↩ Neu erstellen` : `➕ Jetzt erstellen – sofort fertig`}
+                                          </button>
+                                        )}
+                                        {/* Druckversionen: extra Dokument hinzufügen */}
+                                        {karte.typ === 'druckversion' && (
+                                          <button
+                                            type="button"
+                                            onClick={() => { setSelectedEventForDocument(event.id); setShowDocumentModal(true) }}
+                                            style={{
+                                              padding: '0.4rem 0.75rem',
+                                              background: s.bgCard,
+                                              border: `1px solid ${s.accent}44`,
+                                              borderRadius: '8px',
+                                              cursor: 'pointer',
+                                              fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)',
+                                              color: s.accent,
+                                              fontWeight: '600',
+                                              textAlign: 'left'
+                                            }}
+                                          >
+                                            ➕ Weiteres Dokument hinzufügen
+                                          </button>
+                                        )}
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+
+                                {/* ALLES ALS PDF – ganz unten */}
+                                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: `1px solid ${s.accent}22` }}>
                                   <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      if (doc.id === 'k2-galerie-flyer' || doc.id === 'k2-galerie-presse') {
-                                        handleHideFromEventList(event.id, doc.id)
+                                    onClick={() => {
+                                      const sug = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+                                      const evSug = sug.find((sg: any) => sg.eventId === event.id)
+                                      if (evSug) {
+                                        generateEditablePRSuggestionsPDF(evSug, event)
                                       } else {
-                                        handleDeleteEventDocument(event.id, doc.id)
+                                        alert('Keine PR-Vorschläge für dieses Event gefunden.')
                                       }
                                     }}
                                     style={{
-                                      padding: '0.2rem 0.5rem',
-                                      background: 'rgba(255, 100, 100, 0.2)',
-                                      border: '1px solid rgba(255, 100, 100, 0.3)',
-                                      borderRadius: '4px',
-                                      color: '#ff6464',
-                                      cursor: 'pointer',
-                                      fontSize: 'clamp(0.75rem, 1.8vw, 0.85rem)'
+                                      width: '100%',
+                                      padding: '0.6rem 1rem',
+                                      background: s.gradientAccent,
+                                      color: '#ffffff',
+                                      border: 'none',
+                                      borderRadius: '8px',
+                                      fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                                      fontWeight: '700',
+                                      cursor: 'pointer'
                                     }}
-                                    title={doc.id === 'k2-galerie-flyer' || doc.id === 'k2-galerie-presse' ? 'Eintrag aus der Liste entfernen' : 'Eintrag löschen'}
                                   >
-                                    ×
+                                    📄 Alle PR-Dokumente auf einen Blick (PDF)
                                   </button>
-                                </li>
-                              ))}
-                              <li
-                                onClick={() => {
-                                  setSelectedEventForDocument(event.id)
-                                  setShowDocumentModal(true)
-                                }}
-                                style={listItemStyle}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.background = 'rgba(95, 251, 241, 0.15)'
-                                  e.currentTarget.style.color = '#5ffbf1'
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
-                                  e.currentTarget.style.color = '#ffffff'
-                                }}
-                              >
-                                ➕ Dokument zu dieser Rubrik hinzufügen
-                              </li>
-                              {!suggestion && (
-                                <li
-                                  onClick={() => {
-                                    generateAutomaticSuggestions(event)
-                                    setPrSuggestionsRefresh(r => r + 1)
-                                  }}
-                                  style={listItemStyle}
-                                  onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = 'rgba(95, 251, 241, 0.15)'
-                                    e.currentTarget.style.color = '#5ffbf1'
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
-                                    e.currentTarget.style.color = '#ffffff'
-                                  }}
-                                >
-                                  ✨ PR-Vorschläge generieren
-                                </li>
-                              )}
-                              {WERBEMATERIAL_TYPEN.map((typ) => {
-                                const zeile = {
-                                  'qr-plakat': { label: '🏛️ QR-Code Plakat', onClick: () => printQRCodePlakat(event) },
-                                  'newsletter': { label: '📧 Newsletter (aus PR-Vorschlag)', onClick: () => {
-                                    const selectedEvent = events.find((e: any) => e.id === event.id)
-                                    if (selectedEvent) {
-                                      const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
-                                      if (eventSuggestion && eventSuggestion.newsletter) {
-                                        generateEditableNewsletterPDF(eventSuggestion.newsletter, selectedEvent)
-                                      } else {
-                                        generateEditableNewsletterPDF(generateEmailNewsletterContent(selectedEvent), selectedEvent)
-                                      }
-                                    }
-                                  }},
-                                  'plakat': { label: '🖼️ Plakat (aus PR-Vorschlag)', onClick: () => {
-                                    const selectedEvent = events.find((e: any) => e.id === event.id)
-                                    if (selectedEvent) generatePlakatForEvent(selectedEvent)
-                                  }},
-                                  'event-flyer': { label: '📄 Event-Flyer (aus PR-Vorschlag)', onClick: () => {
-                                    const selectedEvent = events.find((e: any) => e.id === event.id)
-                                    if (selectedEvent) {
-                                      const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
-                                      if (eventSuggestion && eventSuggestion.flyer) {
-                                        generateEditableNewsletterPDF(eventSuggestion.flyer, selectedEvent)
-                                      } else {
-                                        generateEditableNewsletterPDF(generateEventFlyerContent(selectedEvent), selectedEvent)
-                                      }
-                                    }
-                                  }},
-                                  'presse': { label: '📰 Presseaussendung (aus PR-Vorschlag)', onClick: () => {
-                                    const selectedEvent = events.find((e: any) => e.id === event.id)
-                                    if (selectedEvent) {
-                                      const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
-                                      if (eventSuggestion && eventSuggestion.presseaussendung) {
-                                        generateEditablePresseaussendungPDF(eventSuggestion.presseaussendung, selectedEvent)
-                                      } else {
-                                        generateEditablePresseaussendungPDF(generatePresseaussendungContent(selectedEvent), selectedEvent)
-                                      }
-                                    }
-                                  }},
-                                  'social': { label: '📱 Social Media (aus PR-Vorschlag)', onClick: () => {
-                                    const selectedEvent = events.find((e: any) => e.id === event.id)
-                                    if (selectedEvent) {
-                                      const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
-                                      if (eventSuggestion && eventSuggestion.socialMedia) {
-                                        generateEditableSocialMediaPDF(eventSuggestion.socialMedia, selectedEvent)
-                                      } else {
-                                        generateEditableSocialMediaPDF(generateSocialMediaContent(selectedEvent), selectedEvent)
-                                      }
-                                    }
-                                  }}
-                                }[typ]
-                                const vorschlaege = byTyp[typ] || []
-                                return (
-                                  <li key={typ} style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-                                    <div style={{ marginTop: '0.75rem', marginBottom: '0.25rem' }}>
-                                      <span style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: '#8fa0c9', fontWeight: '600' }}>{zeile.label}</span>
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={zeile.onClick}
-                                      style={{
-                                        ...listItemStyle,
-                                        width: '100%',
-                                        textAlign: 'left',
-                                        marginBottom: '0.35rem'
-                                      }}
-                                      onMouseEnter={(e) => {
-                                        e.currentTarget.style.background = 'rgba(95, 251, 241, 0.15)'
-                                        e.currentTarget.style.color = '#5ffbf1'
-                                      }}
-                                      onMouseLeave={(e) => {
-                                        e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
-                                        e.currentTarget.style.color = '#ffffff'
-                                      }}
-                                    >
-                                      ➕ Vorschlag ausarbeiten
-                                    </button>
-                                    {vorschlaege.length > 0 && (
-                                      <ul style={{ listStyle: 'none', margin: 0, padding: 0, paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                        {vorschlaege.map((doc: any) => (
-                                          <li
-                                            key={doc.id}
-                                            onClick={() => handleViewEventDocument(doc)}
-                                            style={{
-                                              ...listItemStyle,
-                                              display: 'flex',
-                                              alignItems: 'center',
-                                              justifyContent: 'space-between',
-                                              gap: '0.5rem',
-                                              fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)'
-                                            }}
-                                            onMouseEnter={(e) => {
-                                              e.currentTarget.style.background = 'rgba(95, 251, 241, 0.15)'
-                                              e.currentTarget.style.color = '#5ffbf1'
-                                            }}
-                                            onMouseLeave={(e) => {
-                                              e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
-                                              e.currentTarget.style.color = '#ffffff'
-                                            }}
-                                          >
-                                            <span title={doc.name}>{doc.name?.length > 42 ? doc.name.slice(0, 39) + '…' : doc.name}</span>
-                                            <button
-                                              type="button"
-                                              onClick={(e) => { e.stopPropagation(); handleDeleteWerbematerialDocument(doc.id) }}
-                                              style={{
-                                                padding: '0.2rem 0.5rem',
-                                                background: 'rgba(255, 100, 100, 0.2)',
-                                                border: '1px solid rgba(255, 100, 100, 0.3)',
-                                                borderRadius: '4px',
-                                                color: '#ff6464',
-                                                cursor: 'pointer',
-                                                fontSize: 'clamp(0.75rem, 1.8vw, 0.85rem)'
-                                              }}
-                                              title="Vorschlag löschen"
-                                            >
-                                              ×
-                                            </button>
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    )}
-                                  </li>
-                                )
-                              })}
-                            </ul>
-                          </div>
+                                </div>
+                              </div>
+                            )
+                          })()}
+
                         </div>
                       )
                       })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Veranstaltungen der Vergangenheit – kleine Leiste, bei Klick aufklappen */}
+                    <div style={{ marginTop: '1.5rem', paddingTop: '0.75rem', borderTop: `1px solid ${s.accent}22` }}>
+                      <button
+                        type="button"
+                        onClick={() => setPastEventsExpanded((v) => !v)}
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '0.75rem',
+                          padding: '0.65rem 1rem',
+                          background: `${s.accent}12`,
+                          border: `1px solid ${s.accent}33`,
+                          borderRadius: '10px',
+                          color: s.text,
+                          fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          textAlign: 'left'
+                        }}
+                      >
+                        <span>📁 Veranstaltungen der Vergangenheit{pastEvents.length > 0 ? ` (${pastEvents.length})` : ''}</span>
+                        <span style={{ color: s.muted, fontSize: '1.1rem' }}>{pastEventsExpanded ? '▼' : '▶'}</span>
+                      </button>
+                      {pastEventsExpanded && (
+                        <div style={{ paddingTop: '1rem', paddingBottom: '0.5rem' }}>
+                          <p style={{ fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', color: s.muted, marginBottom: '1rem', lineHeight: 1.5 }}>
+                            Sobald ein Event vorbei ist, erscheint es hier mit allen Dokumenten – ansehen und als Muster für neue Aktionen nutzen.
+                          </p>
+                          {pastEvents.length > 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                              {pastEvents.map((event: any) => {
+                                const k2FlyerDoc = event.type === 'galerieeröffnung' ? { id: 'k2-galerie-flyer', name: 'K2 Galerie Flyer (Druckversion)', documentUrl: '/flyer-k2-galerie' } : null
+                                const k2PresseDoc = event.type === 'galerieeröffnung' ? { id: 'k2-galerie-presse', name: 'Presse-Einladung (Druckversion)', documentUrl: '/presse-einladung-k2-galerie' } : null
+                                const hiddenIds = event.hiddenDocIds || []
+                                const docList = [k2FlyerDoc, k2PresseDoc, ...(event.documents || [])].filter(Boolean).filter((d: any) => !hiddenIds.includes(d.id))
+                                return (
+                                  <div
+                                    key={event.id}
+                                    style={{
+                                      background: `${s.accent}08`,
+                                      border: `1px solid ${s.accent}22`,
+                                      borderRadius: '12px',
+                                      padding: 'clamp(1rem, 2.5vw, 1.25rem)',
+                                      overflow: 'hidden'
+                                    }}
+                                  >
+                                    <div style={{ marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: `1px solid ${s.accent}22` }}>
+                                      <h4 style={{ fontSize: 'clamp(1rem, 2.2vw, 1.15rem)', fontWeight: '600', color: s.text, margin: '0 0 0.35rem 0' }}>
+                                        {event.title}
+                                      </h4>
+                                      <div style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: s.muted, display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                        <span>📅 {new Date(event.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                        {event.type && <span>🏷️ {event.type === 'galerieeröffnung' ? 'Galerieeröffnung' : event.type === 'vernissage' ? 'Vernissage' : event.type === 'finissage' ? 'Finissage' : event.type === 'öffentlichkeitsarbeit' ? 'Öffentlichkeitsarbeit' : 'Sonstiges'}</span>}
+                                      </div>
+                                    </div>
+                                    <div style={{ fontSize: 'clamp(0.75rem, 1.6vw, 0.85rem)', color: s.muted, marginBottom: '0.5rem' }}>
+                                      Dokumente (anklicken = ansehen / als Vorlage nutzen):
+                                    </div>
+                                    <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                                      {docList.map((doc: any) => (
+                                        <li
+                                          key={doc.id || doc.name}
+                                          onClick={() => handleViewEventDocument(doc, event)}
+                                          style={{
+                                            padding: '0.5rem 0.75rem',
+                                            background: s.bgElevated,
+                                            border: `1px solid ${s.accent}22`,
+                                            borderRadius: '8px',
+                                            cursor: 'pointer',
+                                            fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                                            color: doc.documentUrl ? s.accent : s.text,
+                                            transition: 'background 0.2s, color 0.2s'
+                                          }}
+                                          onMouseEnter={(e) => { e.currentTarget.style.background = `${s.accent}18`; e.currentTarget.style.color = s.accent }}
+                                          onMouseLeave={(e) => { e.currentTarget.style.background = s.bgElevated; e.currentTarget.style.color = doc.documentUrl ? s.accent : s.text }}
+                                        >
+                                          {doc.documentUrl ? '🖨️ ' : '📎 '}{doc.name || doc.fileName || 'Dokument'}
+                                        </li>
+                                      ))}
+                                      {docList.length === 0 && (
+                                        <li style={{ padding: '0.5rem', color: s.muted, fontSize: '0.9rem' }}>Keine Dokumente zu dieser Veranstaltung.</li>
+                                      )}
+                                    </ul>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          ) : (
+                            <div style={{
+                              padding: '1.25rem 1.5rem',
+                              background: `${s.accent}0c`,
+                              border: `1px dashed ${s.accent}44`,
+                              borderRadius: '12px',
+                              color: s.muted,
+                              fontSize: 'clamp(0.9rem, 2vw, 1rem)',
+                              lineHeight: 1.5
+                            }}>
+                              <p style={{ margin: '0 0 1rem 0' }}>
+                                Noch keine vergangenen Veranstaltungen. Events mit Datum in der Vergangenheit erscheinen hier automatisch – inkl. aller Flyer und Dokumente zum Ansehen und als Vorlage.
+                              </p>
+                              <button
+                                type="button"
+                                onClick={handleCreateAteliersbesichtigungPaulWeber}
+                                style={{
+                                  padding: '0.5rem 1rem',
+                                  background: `${s.accent}22`,
+                                  border: `1px solid ${s.accent}66`,
+                                  borderRadius: '8px',
+                                  color: s.accent,
+                                  fontWeight: '600',
+                                  cursor: 'pointer',
+                                  fontSize: 'clamp(0.85rem, 2vw, 0.95rem)'
+                                }}
+                              >
+                                📁 Beispiel anlegen: Ateliersbesichtigung bei Paul Weber (vor 1 Woche, mit Einladung und Presse)
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )
@@ -11756,6 +13161,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
           onClick={() => {
             setShowAddModal(false)
             setEditingArtwork(null)
+            setEditingMemberIndex(null)
+            setMemberForm({ ...EMPTY_MEMBER_FORM })
             setArtworkCategory('malerei')
             setArtworkCeramicSubcategory('vase')
             setArtworkCeramicHeight('10')
@@ -11811,12 +13218,14 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 fontWeight: '600',
                 color: '#ffffff'
               }}>
-                {editingArtwork ? 'Werk bearbeiten' : 'Neues Werk'}
+                {isVk2AdminContext() ? (editingMemberIndex !== null ? 'Profil für Vereinsgalerie bearbeiten' : 'Profil für Vereinsgalerie anlegen') : (editingArtwork ? 'Werk bearbeiten' : 'Neues Werk')}
               </h2>
               <button 
                 onClick={() => {
                   setShowAddModal(false)
                   setEditingArtwork(null)
+                  setEditingMemberIndex(null)
+                  setMemberForm({ ...EMPTY_MEMBER_FORM })
                   setArtworkTitle('')
                   setArtworkCategory('malerei')
                   setArtworkCeramicSubcategory('vase')
@@ -11873,6 +13282,98 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               flexDirection: 'column',
               gap: '1rem'
             }}>
+              {/* VK2: Angaben für die Vereinsgalerie (Name, E-Mail, Kunstrichtung) – kein Werk-Formular */}
+              {isVk2AdminContext() ? (
+                <>
+                  <p style={{ margin: 0, fontSize: '0.9rem', color: s.muted }}>Angaben für die Darstellung in der Vereinsgalerie.</p>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.accent, fontWeight: 600 }}>Name *</label>
+                    <input
+                      type="text"
+                      value={memberForm.name}
+                      onChange={(e) => setMemberForm(f => ({ ...f, name: e.target.value }))}
+                      placeholder="z.B. Anna Beispiel"
+                      style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.95rem', outline: 'none' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.accent, fontWeight: 600 }}>E-Mail</label>
+                    <input
+                      type="email"
+                      value={memberForm.email}
+                      onChange={(e) => setMemberForm(f => ({ ...f, email: e.target.value }))}
+                      placeholder="z.B. anna@beispiel.at"
+                      style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.95rem', outline: 'none' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.accent, fontWeight: 600 }}>Kunstrichtung / Kategorie</label>
+                    <select
+                      value={memberForm.typ}
+                      onChange={(e) => setMemberForm(f => ({ ...f, typ: e.target.value }))}
+                      style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.95rem', outline: 'none', cursor: 'pointer' }}
+                    >
+                      <option value="">– Bitte wählen –</option>
+                      {VK2_KUNSTBEREICHE.map((k) => (
+                        <option key={k.id} value={k.label}>{k.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div style={{ borderTop: `1px solid ${s.accent}22`, paddingTop: '0.75rem', marginTop: '0.25rem' }}>
+                    <div style={{ fontSize: '0.85rem', color: s.accent, fontWeight: 600, marginBottom: '0.5rem' }}>Bankverbindung (für Bonussystem)</div>
+                    <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Nur für Mitglieder, die am Bonussystem teilnehmen.</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.8rem', color: s.muted }}>Kontoinhaber</label>
+                        <input type="text" value={memberForm.bankKontoinhaber} onChange={(e) => setMemberForm(f => ({ ...f, bankKontoinhaber: e.target.value }))} placeholder="z.B. Lisa Muster" style={{ width: '100%', padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', color: s.text, fontSize: '0.9rem', outline: 'none' }} />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.8rem', color: s.muted }}>IBAN</label>
+                        <input type="text" value={memberForm.bankIban} onChange={(e) => setMemberForm(f => ({ ...f, bankIban: e.target.value }))} placeholder="z.B. AT61 1904 3002 3457 3201" style={{ width: '100%', padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', color: s.text, fontSize: '0.9rem', outline: 'none' }} />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.8rem', color: s.muted }}>BIC/SWIFT</label>
+                        <input type="text" value={memberForm.bankBic} onChange={(e) => setMemberForm(f => ({ ...f, bankBic: e.target.value }))} placeholder="z.B. RZOOAT2L" style={{ width: '100%', padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', color: s.text, fontSize: '0.9rem', outline: 'none' }} />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.8rem', color: s.muted }}>Bank / Kreditinstitut</label>
+                        <input type="text" value={memberForm.bankName} onChange={(e) => setMemberForm(f => ({ ...f, bankName: e.target.value }))} placeholder="z.B. Raiffeisen Bank" style={{ width: '100%', padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', color: s.text, fontSize: '0.9rem', outline: 'none' }} />
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: `1px solid ${s.accent}22` }}>
+                    <button
+                      type="button"
+                      onClick={() => { setShowAddModal(false); setEditingMemberIndex(null); setMemberForm({ ...EMPTY_MEMBER_FORM }) }}
+                      style={{ padding: '0.6rem 1.25rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}
+                    >
+                      Abbrechen
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!memberForm.name.trim()) { alert('Bitte Name eintragen.'); return }
+                        const mitglieder = [...(vk2Stammdaten.mitglieder || [])]
+                        const neu: Vk2Mitglied = { name: memberForm.name.trim(), email: memberForm.email.trim() || undefined, lizenz: memberForm.lizenz.trim() || undefined, typ: memberForm.typ || undefined }
+                        if (editingMemberIndex !== null) {
+                          mitglieder[editingMemberIndex] = neu
+                        } else {
+                          mitglieder.push(neu)
+                        }
+                        setVk2Stammdaten({ ...vk2Stammdaten, mitglieder })
+                        try { localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify({ ...vk2Stammdaten, mitglieder })) } catch (_) {}
+                        setShowAddModal(false)
+                        setEditingMemberIndex(null)
+                        setMemberForm({ ...EMPTY_MEMBER_FORM })
+                      }}
+                      style={{ padding: '0.6rem 1.25rem', background: s.gradientAccent, border: 'none', borderRadius: '8px', color: '#fff', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', boxShadow: s.shadow }}
+                    >
+                      💾 Speichern
+                    </button>
+                  </div>
+                </>
+              ) : (
+              <>
               {/* Bild-Upload - Sehr kompakt */}
               {previewUrl ? (
                 <div style={{
@@ -12049,8 +13550,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   </div>
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Kategorie *</label>
-                    <select value={artworkCategory} onChange={(e) => setArtworkCategory(e.target.value as ArtworkCategoryId)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
-                      {ARTWORK_CATEGORIES.map((c) => (
+                    <select value={artworkCategory} onChange={(e) => setArtworkCategory(e.target.value)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
+                      {(isVk2AdminContext() ? VK2_KUNSTBEREICHE : ARTWORK_CATEGORIES).map((c) => (
                         <option key={c.id} value={c.id}>{c.label}</option>
                       ))}
                     </select>
@@ -12090,14 +13591,14 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 </div>
               ) : (
               <>
-              {/* Formular - Kompakt Grid (K2) */}
+              {/* Formular - Kompakt Grid (K2); VK2: immer Titel + Kategorie (7 Kunstbereiche) */}
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: artworkCategory !== 'keramik' ? '1fr 140px' : '140px',
+                gridTemplateColumns: (isVk2AdminContext() || artworkCategory !== 'keramik') ? '1fr 140px' : '140px',
                 gap: '0.75rem',
                 alignItems: 'start'
               }}>
-                {artworkCategory !== 'keramik' && (
+                {(isVk2AdminContext() || artworkCategory !== 'keramik') && (
                   <div>
                     <label style={{
                       display: 'block',
@@ -12139,9 +13640,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   <select
                     value={artworkCategory}
                     onChange={(e) => {
-                      const val = e.target.value as ArtworkCategoryId
+                      const val = e.target.value
                       setArtworkCategory(val)
-                      if (val === 'keramik') {
+                      if (!isVk2AdminContext() && val === 'keramik') {
                         const subcategoryLabels: Record<string, string> = {
                           'vase': 'Gefäße - Vasen',
                           'teller': 'Schalen - Teller',
@@ -12165,14 +13666,14 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       cursor: 'pointer'
                     }}
                   >
-                    {ARTWORK_CATEGORIES.map((c) => (
+                    {(isVk2AdminContext() ? VK2_KUNSTBEREICHE : ARTWORK_CATEGORIES).map((c) => (
                       <option key={c.id} value={c.id}>{c.label}</option>
                     ))}
                   </select>
                 </div>
               </div>
-              {/* Keramik-Unterkategorie */}
-              {artworkCategory === 'keramik' && (
+              {/* Keramik-Unterkategorie (nur K2, nicht VK2) */}
+              {!isVk2AdminContext() && artworkCategory === 'keramik' && (
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
@@ -12287,8 +13788,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   </div>
                 </div>
               )}
-              {/* Keramik-Maße */}
-              {artworkCategory === 'keramik' && (
+              {/* Keramik-Maße (nur K2, nicht VK2) */}
+              {!isVk2AdminContext() && artworkCategory === 'keramik' && (
                 <>
                   {(artworkCeramicSubcategory === 'vase' || artworkCeramicSubcategory === 'skulptur') && (
                     <div style={{ minWidth: '120px' }}>
@@ -12832,6 +14333,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   {isSavingArtwork ? '⏳ Wird gespeichert…' : '💾 Speichern'}
                 </button>
               </div>
+              </>
+              )}
             </div>
           </div>
         </div>

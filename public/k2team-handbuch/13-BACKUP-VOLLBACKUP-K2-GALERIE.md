@@ -1,7 +1,10 @@
 # Backup & Vollbackup K2 Galerie
 
 **Erstellt:** 15. Februar 2026  
+**Letzte Aktualisierung:** 20. Februar 2026  
 **Zweck:** Dokumentation des Speicherns, Backups und des Hard-Backups auf backupmicro (erste Version / Versionsnummern).
+
+**Gilt für:** K2 Galerie Kunst&Keramik (K2-Daten). Namensanpassung/Umzug: docs/UMZUG-K2-GALERIE-KUNST-KERAMIK.md.
 
 ---
 

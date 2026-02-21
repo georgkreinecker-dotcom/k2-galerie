@@ -1,0 +1,59 @@
+---
+description: UX-Grundprinzip – Nutzer-Logik vor Entwickler-Logik (gilt für alle Seiten und alle Zusammenarbeit)
+alwaysApply: true
+---
+
+# 🔒 UX-Grundprinzip: Nutzer-Logik zuerst (unveränderlich)
+
+## Die Kernfrage bei JEDER UI-Entscheidung
+
+> **„Versteht jemand ohne Computerkenntnisse das auf den ersten Blick – ohne Erklärung?"**
+
+Wenn die Antwort „Nein" oder „Vielleicht" ist: **neu denken**, bevor Code geschrieben wird.
+
+## Was das konkret bedeutet
+
+### ❌ Entwickler-Logik (verboten als Standard)
+- Listeneinträge die alle gleich aussehen – man sieht nicht was wichtig ist
+- Buttons mit technischen Begriffen (z. B. „Vorschlag ausarbeiten", „PR generieren")
+- Kein sichtbarer Status: Ist etwas fertig? Was fehlt noch?
+- Gleiches Design für „fertig" und „fehlt noch"
+- Viele Optionen auf einmal – User weiß nicht wo anfangen
+
+### ✅ Nutzer-Logik (Pflicht)
+- **Status auf einen Blick:** Was ist fertig (✅ grün)? Was fehlt noch (○ rot/orange)?
+- **Eine klare Aktion pro Situation:** Roter Button = „das musst du noch tun". Grüner Bereich = „erledigt, kein Handlungsbedarf"
+- **Ampel-Prinzip:** Grün = gut, Orange/Rot = Handlung nötig – überall einheitlich
+- **Beschriftungen in Alltagssprache:** „Jetzt erstellen – sofort fertig" statt „Vorschlag ausarbeiten"
+- **Fortschrittsanzeige:** „3 von 7 erledigt" ist besser als eine unkommentierte Liste
+
+## Das Vorher/Nachher-Beispiel (Maßstab für alle Seiten)
+
+**Vorher (Entwickler-Logik):**
+Liste mit 7 gleichaussehenden Einträgen. Alle hatten denselben „Vorschlag ausarbeiten"-Button.
+→ User denkt: „Was muss ich tun? Was ist schon fertig?"
+
+**Nachher (Nutzer-Logik):**
+- Status-Balken: „3 von 7 Dokumenten erstellt"
+- Grüne Karte = vorhanden, öffnen möglich
+- Rote Karte + roter Button = noch nicht erstellt, ein Klick genügt
+→ User sieht sofort: Was ist fertig, was fehlt, was tun.
+
+## Gilt auch für unsere Zusammenarbeit (Georg = normaler User)
+
+- Georg ist der Maßstab: Wenn er fragen muss „wo ist X?" oder „was muss ich jetzt tun?" → ist die UX falsch
+- Keine Fachbegriffe ohne Erklärung in UI-Texten
+- Keine Anleitung nötig = Ziel erreicht
+- Wenn Georg sagt „das ist nicht klar" → das ist immer richtig, keine Diskussion
+
+## Checkliste vor JEDER neuen UI-Komponente oder Seite
+
+- [ ] Kann ein Künstler/Nicht-Techniker auf einen Blick erkennen, was fertig ist?
+- [ ] Kann er auf einen Blick erkennen, was er noch tun muss?
+- [ ] Ist die nächste Aktion offensichtlich (kein Suchen nötig)?
+- [ ] Sind alle Texte in Alltagssprache (kein IT-Jargon)?
+- [ ] Gibt es eine visuelle Unterscheidung zwischen „fertig" und „offen"?
+
+## Kurzfassung
+
+**Jede Seite muss ohne Erklärung funktionieren. Der User sieht sofort: was ist fertig, was fehlt, was tun. Ampel-Prinzip (grün/rot), klare Sprache, ein Klick pro Aufgabe.**

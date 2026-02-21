@@ -8,13 +8,14 @@ interface PricingPlan {
   period: 'monatlich' | 'jährlich' | 'einmalig'
   features: string[]
   popular?: boolean
+  /** Wenn gesetzt: wird statt €price/period angezeigt (z. B. VK2-Konditionen) */
+  priceLabel?: string
 }
 
 const LicenseManager = () => {
   const [pricingModel, setPricingModel] = usePersistentString('k2-license-model', 'saas')
   const [basicPrice, setBasicPrice] = usePersistentString('k2-license-basic-price', '49')
   const [proPrice, setProPrice] = usePersistentString('k2-license-pro-price', '99')
-  const [enterprisePrice, setEnterprisePrice] = usePersistentString('k2-license-enterprise-price', '299')
 
   const pricingPlans: PricingPlan[] = [
     {
@@ -47,18 +48,17 @@ const LicenseManager = () => {
       ]
     },
     {
-      id: 'enterprise',
-      name: 'Enterprise',
-      price: enterprisePrice,
+      id: 'vk2',
+      name: 'Kunstvereine',
+      price: '0',
       period: 'monatlich',
+      priceLabel: 'Verein nutzt Pro; ab 10 registrierten Mitgliedern kostenfrei',
       features: [
-        'Alles aus Pro',
-        'White-Label Option',
-        'API-Zugang',
-        'Dedicated Support',
-        'Custom Features',
-        'SLA-Garantie',
-        'Onboarding & Training'
+        'Vereinsplattform (VK2) – alle Künstler:innen des Vereins',
+        'Verein erwirbt Pro-Version; ab 10 registrierten Mitgliedern kostenfrei',
+        'Lizenzmitglied: 50 % Lizenzgebühr, Update möglich',
+        'Nicht registrierte Mitglieder können aufgenommen werden (im System erfasst, Datenschutz)',
+        'Gleiche App, eigener Kontext (Verein vs. Einzelkünstler)'
       ]
     }
   ]
@@ -156,19 +156,23 @@ const LicenseManager = () => {
               {plan.name}
             </h4>
             <div style={{
-              fontSize: '2rem',
+              fontSize: plan.priceLabel ? '1rem' : '2rem',
               fontWeight: '700',
               color: '#5ffbf1',
               marginBottom: '1rem'
             }}>
-              €{plan.price}
-              <span style={{
-                fontSize: '0.9rem',
-                color: '#8fa0c9',
-                fontWeight: '400'
-              }}>
-                /{plan.period === 'monatlich' ? 'Monat' : plan.period === 'jährlich' ? 'Jahr' : 'einmalig'}
-              </span>
+              {plan.priceLabel ?? (
+                <>
+                  €{plan.price}
+                  <span style={{
+                    fontSize: '0.9rem',
+                    color: '#8fa0c9',
+                    fontWeight: '400'
+                  }}>
+                    /{plan.period === 'monatlich' ? 'Monat' : plan.period === 'jährlich' ? 'Jahr' : 'einmalig'}
+                  </span>
+                </>
+              )}
             </div>
             <ul style={{
               listStyle: 'none',
@@ -261,29 +265,9 @@ const LicenseManager = () => {
               }}
             />
           </div>
-          <div>
-            <label style={{
-              display: 'block',
-              fontSize: '0.85rem',
-              color: '#8fa0c9',
-              marginBottom: '0.25rem'
-            }}>
-              Enterprise (€)
-            </label>
-            <input
-              type="number"
-              value={enterprisePrice}
-              onChange={(e) => setEnterprisePrice(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '6px',
-                color: '#ffffff',
-                fontSize: '0.9rem'
-              }}
-            />
+          <div style={{ fontSize: '0.85rem', color: '#8fa0c9' }}>
+            <span style={{ display: 'block', marginBottom: '0.25rem' }}>Kunstvereine (VK2)</span>
+            <span style={{ color: 'var(--k2-accent)' }}>Verein nutzt Pro; ab 10 registrierten Mitgliedern kostenfrei. Nicht registrierte Mitglieder können aufgenommen werden (im System erfasst, Datenschutz). Siehe mök2 → Lizenzstruktur VK2.</span>
           </div>
         </div>
       </div>

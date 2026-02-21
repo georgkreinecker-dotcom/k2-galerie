@@ -49,9 +49,14 @@ export interface PageTextsConfig {
 
 const STORAGE_KEY = 'k2-page-texts'
 const STORAGE_KEY_OEFFENTLICH = 'k2-oeffentlich-page-texts'
+const STORAGE_KEY_VK2 = 'k2-vk2-page-texts'
 
-function getStorageKey(tenantId?: 'oeffentlich'): string {
-  return tenantId === 'oeffentlich' ? STORAGE_KEY_OEFFENTLICH : STORAGE_KEY
+export type PageTextsTenantId = 'oeffentlich' | 'vk2' | undefined
+
+function getStorageKey(tenantId?: PageTextsTenantId): string {
+  if (tenantId === 'oeffentlich') return STORAGE_KEY_OEFFENTLICH
+  if (tenantId === 'vk2') return STORAGE_KEY_VK2
+  return STORAGE_KEY
 }
 
 const defaults: PageTextsConfig = {
@@ -128,15 +133,15 @@ function getOeffentlichGalerieDefaults(): GaleriePageTexts {
   }
 }
 
-/** Sichere Default-Kopie. tenantId 'oeffentlich' = Galerie-Defaults für ök2. */
-function getSafeDefaults(tenantId?: 'oeffentlich'): PageTextsConfig {
+/** Sichere Default-Kopie. tenantId 'oeffentlich' = Galerie-Defaults für ök2; 'vk2' = VK2. */
+function getSafeDefaults(tenantId?: PageTextsTenantId): PageTextsConfig {
   const base = JSON.parse(JSON.stringify(defaults)) as PageTextsConfig
   if (tenantId === 'oeffentlich') base.galerie = { ...base.galerie, ...getOeffentlichGalerieDefaults() }
   return base
 }
 
-/** Liest Seitentexte. tenantId 'oeffentlich' = ök2 (k2-oeffentlich-page-texts). */
-export function getPageTexts(tenantId?: 'oeffentlich'): PageTextsConfig {
+/** Liest Seitentexte. tenantId 'oeffentlich' = ök2 (k2-oeffentlich-page-texts); 'vk2' = VK2. */
+export function getPageTexts(tenantId?: PageTextsTenantId): PageTextsConfig {
   const key = getStorageKey(tenantId)
   const d = getSafeDefaults(tenantId)
   let result: PageTextsConfig
@@ -166,8 +171,8 @@ export function getPageTexts(tenantId?: 'oeffentlich'): PageTextsConfig {
   return result
 }
 
-/** Speichert Seitentexte. tenantId 'oeffentlich' = ök2. */
-export function setPageTexts(config: PageTextsConfig, tenantId?: 'oeffentlich') {
+/** Speichert Seitentexte. tenantId 'oeffentlich' = ök2; 'vk2' = VK2. */
+export function setPageTexts(config: PageTextsConfig, tenantId?: PageTextsTenantId) {
   try {
     if (typeof window !== 'undefined') {
       localStorage.setItem(getStorageKey(tenantId), JSON.stringify(config))

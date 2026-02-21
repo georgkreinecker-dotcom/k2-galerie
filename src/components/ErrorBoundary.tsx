@@ -61,6 +61,11 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   handleReload = () => {
+    // Im iframe (Cursor Preview) kein Reload – verhindert Loop/Crash; nur State zurücksetzen oder Hinweis
+    if (typeof window !== 'undefined' && window.self !== window.top) {
+      this.handleReset()
+      return
+    }
     window.location.reload()
   }
 

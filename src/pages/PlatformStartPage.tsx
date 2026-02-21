@@ -30,43 +30,43 @@ const mainFeatures = [
 // Sekundäre Features (wichtige Tools)
 const secondaryFeatures = [
   {
-    title: 'API-Key',
-    description: 'OpenAI API-Key verwalten',
+    title: 'KI-Verbindung',
+    description: 'Zugang für den AI-Assistenten einrichten',
     to: PLATFORM_ROUTES.key,
-    cta: 'Verwalten →',
+    cta: 'Einrichten →',
     icon: '🔑',
   },
   {
-    title: 'Kosten',
-    description: 'OpenAI-Nutzung & Kosten',
+    title: 'Nutzungskosten',
+    description: 'Was kostet der AI-Assistent bisher?',
     to: PLATFORM_ROUTES.kosten,
     cta: 'Anzeigen →',
     icon: '💰',
   },
   {
-    title: 'mök2 (Marketing & Vertrieb)',
-    description: 'Lizenzen, Empfehlungstool, Vergütung, Werbeunterlagen',
+    title: 'mök2 – Vertrieb & Promotion',
+    description: 'Lizenzen, Empfehlungen, Vergütung, Werbeunterlagen',
     to: MOK2_ROUTE,
-    cta: 'In mök2 öffnen →',
+    cta: 'Öffnen →',
     icon: '📢',
   },
   {
     title: 'Lizenzen',
-    description: 'Konditionen & Lizenzen vergeben (in mök2)',
+    description: 'Wer nutzt die App? Lizenzen verwalten',
     to: PROJECT_ROUTES['k2-galerie'].licences,
     cta: 'Öffnen →',
     icon: '💼',
   },
   {
-    title: 'GitHub Token',
-    description: 'Token für Git Push',
+    title: 'Code-Verbindung',
+    description: 'Für automatisches Speichern des Codes auf GitHub',
     to: PLATFORM_ROUTES.githubToken,
-    cta: 'Token →',
+    cta: 'Einrichten →',
     icon: '🔐',
   },
   {
-    title: 'Mission Control',
-    description: 'Übergeordnete Projekt-Übersicht',
+    title: 'Projekt-Übersicht',
+    description: 'Alle Projekte auf einen Blick',
     to: PLATFORM_ROUTES.missionControl,
     cta: 'Öffnen →',
     icon: '🚀',
@@ -81,6 +81,13 @@ export default function PlatformStartPage() {
   const [isStandalone, setIsStandalone] = useState(false)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [apiKeySet, setApiKeySet] = useState(false)
+  const [githubTokenSet, setGithubTokenSet] = useState(false)
+
+  useEffect(() => {
+    setApiKeySet(!!(localStorage.getItem('k2-openai-api-key') || localStorage.getItem('openai-api-key') || localStorage.getItem('k2-api-key')))
+    setGithubTokenSet(!!localStorage.getItem('k2-github-token'))
+  }, [])
 
   // Prüfe ob iOS und ob bereits installiert
   useEffect(() => {
@@ -164,10 +171,10 @@ export default function PlatformStartPage() {
               fontSize: '2.5rem',
               marginBottom: '0.5rem'
             }}>
-              K2 Mission Deck
+              K2 Galerie – Arbeitsplattform
             </h1>
             <div className="meta" style={{ fontSize: '1rem', marginTop: '0.25rem', opacity: 0.8 }}>
-              APf für Galerie & Projekte
+              Dein Einstieg – Galerie, Projekte & alle Werkzeuge
             </div>
           </div>
         </header>
@@ -250,34 +257,40 @@ export default function PlatformStartPage() {
             textTransform: 'uppercase',
             letterSpacing: '0.05em'
           }}>
-            Tools & Einstellungen
+            Werkzeuge & Einstellungen
           </div>
           <div style={{ 
             display: 'grid', 
             gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', 
             gap: '1rem'
           }}>
-            {secondaryFeatures.map((feature) => (
+            {secondaryFeatures.map((feature) => {
+              const isApiKey = feature.title === 'API-Key'
+              const isGithub = feature.title === 'GitHub Token'
+              const isSet = isApiKey ? apiKeySet : isGithub ? githubTokenSet : null
+              const needsAction = isSet === false
+              return (
               <Link 
                 to={feature.to} 
                 key={feature.title} 
                 style={{ textDecoration: 'none' }}
               >
                 <div style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: needsAction ? 'rgba(245,158,11,0.08)' : 'rgba(255, 255, 255, 0.05)',
+                  border: needsAction ? '1px solid rgba(245,158,11,0.4)' : '1px solid rgba(255, 255, 255, 0.1)',
                   borderRadius: '12px',
                   padding: '1.25rem',
                   transition: 'all 0.2s ease',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  position: 'relative'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
                   e.currentTarget.style.borderColor = 'rgba(95, 251, 241, 0.3)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'
+                  e.currentTarget.style.background = needsAction ? 'rgba(245,158,11,0.08)' : 'rgba(255, 255, 255, 0.05)'
+                  e.currentTarget.style.borderColor = needsAction ? 'rgba(245,158,11,0.4)' : 'rgba(255, 255, 255, 0.1)'
                 }}
                 >
                   <div style={{ 
@@ -291,10 +304,17 @@ export default function PlatformStartPage() {
                       margin: 0, 
                       fontSize: '1.1rem',
                       fontWeight: '600',
-                      color: '#fff'
+                      color: '#fff',
+                      flex: 1
                     }}>
                       {feature.title}
                     </h3>
+                    {isSet === true && (
+                      <span style={{ fontSize: '0.75rem', background: 'rgba(16,185,129,0.2)', color: '#6ee7b7', border: '1px solid rgba(16,185,129,0.4)', borderRadius: '20px', padding: '0.15rem 0.5rem', fontWeight: '700', whiteSpace: 'nowrap' }}>✅ Gesetzt</span>
+                    )}
+                    {isSet === false && (
+                      <span style={{ fontSize: '0.75rem', background: 'rgba(245,158,11,0.2)', color: '#fcd34d', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '20px', padding: '0.15rem 0.5rem', fontWeight: '700', whiteSpace: 'nowrap' }}>⚠️ Fehlt</span>
+                    )}
                   </div>
                   <p style={{ 
                     margin: '0 0 0.5rem 0', 
@@ -302,18 +322,19 @@ export default function PlatformStartPage() {
                     color: '#8fa0c9',
                     lineHeight: '1.4'
                   }}>
-                    {feature.description}
+                    {needsAction ? <span style={{ color: '#fcd34d' }}>Bitte eintragen – wird für den Betrieb benötigt</span> : feature.description}
                   </p>
                   <div style={{
                     fontSize: '0.85rem',
-                    color: 'var(--k2-accent)',
-                    fontWeight: '500'
+                    color: needsAction ? '#fcd34d' : 'var(--k2-accent)',
+                    fontWeight: '600'
                   }}>
-                    {feature.cta}
+                    {needsAction ? '→ Jetzt eintragen' : feature.cta}
                   </div>
                 </div>
               </Link>
-            ))}
+              )
+            })}
           </div>
         </div>
 
@@ -543,7 +564,7 @@ export default function PlatformStartPage() {
               }}
             >
               <span style={{ fontSize: '1.8rem' }}>🎨</span>
-              <span>K2 Galerie öffnen</span>
+              <span>K2 Galerie Kunst&Keramik öffnen</span>
             </Link>
             
             {showInstallPrompt && (

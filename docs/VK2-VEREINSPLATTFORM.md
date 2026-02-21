@@ -5,8 +5,9 @@
 **VK2** = Plattform für **Künstlervereine**. Dritte Form der Lizenz neben Einzelkünstler und (später) größere Galerie.
 
 - Viele Künstler:innen sind in **Vereinen** organisiert.
-- Der **Verein** nutzt die Plattform **kostenlos**, wenn er **mindestens 10 zahlende Lizenzmitglieder** hat (nicht die Anzahl der Künstler:innen in der Galerie).
-- **Lizenzmitglieder** zahlen **50 % der normalen Lizenzgebühr**, haben keinen eigenen Bonusanspruch, aber die Möglichkeit zu updaten. Ob ein Künstler eine Lizenznummer hat (weil er/sie auch ök2 nutzt), ist für die Vereinskostenfreiheit unerheblich – der Verein muss nur die Mindestzahl zahlender Lizenzmitglieder erreichen.
+- Der **Verein** muss die **Pro-Version** erwerben und wird **ab 10 registrierten Mitgliedern** kostenfrei gestellt.
+- **Registrierte Mitglieder** (Lizenzmitglieder) zahlen **50 % der normalen Lizenzgebühr**, haben keinen eigenen Bonusanspruch, aber die Möglichkeit zu updaten.
+- **Nicht registrierte Mitglieder** können vom Verein aufgenommen werden (obliegt dem Verein); sie werden **im System erfasst** (Datenschutz/Dokumentation).
 
 ---
 
@@ -23,8 +24,9 @@
 
 | Rolle            | Bedingung                    | Lizenz / Nutzen                    |
 |------------------|-----------------------------|------------------------------------|
-| **Verein**       | ≥ 10 zahlende Lizenzmitglieder | Plattformnutzung **kostenlos**     |
-| **Lizenzmitglied** | zahlt 50 % Lizenz           | Kein eigener Bonus; Update möglich |
+| **Verein**       | Pro-Version; ≥ 10 registrierte Mitglieder | Plattformnutzung dann **kostenfrei** |
+| **Lizenzmitglied (registriert)** | zahlt 50 % Lizenz | Kein eigener Bonus; Update möglich |
+| **Nicht registriertes Mitglied** | Aufnahme obliegt dem Verein | Im System erfasst (Datenschutz) |
 
 ---
 
@@ -58,12 +60,12 @@ Siehe Implementierung: `src/components/SmartPanel.tsx` – VK2-Block mit diesen 
 2. **KundenPage unter VK2:** Unter `/projects/vk2/kunden` Mitgliederverzeichnis aus eigenem Key (z. B. `k2-vk2-customers` oder weiter Kunden-Key mit VK2-Kontext) laden, Label „Mitglieder“.
 3. **Stammdaten Verein:** Admin Einstellungen bei `context=vk2` – Verein (Name, Kontakt, Adresse) in `k2-vk2-stammdaten-galerie` speichern/laden; optional „Kunstbereiche“ dort pflegbar.
 4. **Werke = Künstler + Vita:** Ein „Werk“ im VK2 = ein Mitglied mit Vita-Eintrag (wie bestehende Vita); Anzeige in Galerie = Künstlerprofile; Mitgliederverzeichnis liefert die Basis, Vita den Text/Bild.
-5. **Lizenz-Prüfung** – Backend/Abonnements: „Verein kostenlos bei ≥ 10 zahlenden Lizenzmitgliedern“, „Lizenzmitglied: 50 % Lizenz“. Künstler mit/ohne Lizenznummer (ök2) ist für die Vereinskostenfreiheit unerheblich.
+5. **Lizenz-Prüfung** – Backend/Abonnements: Verein erwirbt Pro; „Verein kostenfrei bei ≥ 10 registrierten Mitgliedern“, „Lizenzmitglied: 50 % Lizenz“. Nicht registrierte Mitglieder können aufgenommen werden, werden im System erfasst (Datenschutz).
 
 ---
 
 ## Kurzfassung
 
 - **VK2** = Vereinsplattform, Kunden = Mitglieder, Werke = Künstler.
-- Verein kostenlos bei ≥ 10 zahlenden Lizenzmitgliedern; Lizenzmitglied: 50 % Lizenz, Update, kein Bonus. Künstler:innen können eine Lizenznummer haben (ök2) – für den Verein zählt nur die Anzahl der zahlenden Lizenzmitglieder.
+- Verein nutzt Pro; ab 10 registrierten Mitgliedern kostenfrei. Lizenzmitglied: 50 % Lizenz, Update, kein Bonus. Nicht registrierte Mitglieder können aufgenommen werden (obliegt dem Verein), werden im System erfasst (Datenschutz).
 - **Smart Panel:** VK2 als eigener Bereich, Schnellzugriff auf Mitglieder, Künstler, Control Studio – alles vom Panel aus organisierbar.

@@ -2,7 +2,8 @@ import React, { useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY } from '../config/navigation'
-import { TENANT_CONFIGS, MUSTER_TEXTE, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, OEK2_WILLKOMMEN_IMAGES, OEK2_PLACEHOLDER_IMAGE, SEED_VK2_ARTISTS } from '../config/tenantConfig'
+import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, OEK2_WILLKOMMEN_IMAGES, OEK2_PLACEHOLDER_IMAGE } from '../config/tenantConfig'
+import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages } from '../config/pageContentGalerie'
 import { getPageTexts, type GaleriePageTexts } from '../config/pageTexts'
 import { appendToHistory } from '../utils/artworkHistory'
@@ -51,10 +52,17 @@ function isVk2Artwork(a: any): boolean {
   return num.startsWith('VK2-') || id.startsWith('vk2-seed-')
 }
 
-/** Entfernt VK2-Werke aus einer Liste (nur für k2-artworks). */
+/** Erkennt Musterwerke (nur an id muster-*) – nur für ök2. Nicht nach Nummer filtern, sonst gehen echte Werke verloren. */
+function isMusterArtwork(a: any): boolean {
+  if (!a) return false
+  const id = a.id != null ? String(a.id) : ''
+  return id.startsWith('muster-')
+}
+
+/** Entfernt VK2- und Musterwerke aus einer Liste (nur für k2-artworks). */
 function filterK2ArtworksOnly(artworks: any[]): any[] {
   if (!Array.isArray(artworks)) return []
-  return artworks.filter((a: any) => !isVk2Artwork(a))
+  return artworks.filter((a: any) => !isVk2Artwork(a) && !isMusterArtwork(a))
 }
 
 /** Liste für Speichern in k2-artworks: VK2-Werke rausfiltern, sonst unverändert. */
@@ -108,6 +116,62 @@ function getUpcomingEvents(): any[] {
   }
 }
 
+/** ök2: Nächste Events aus k2-oeffentlich-events; wenn leer, MUSTER_EVENTS (Vernissage etc.). */
+function getUpcomingEventsOeffentlich(): any[] {
+  try {
+    const raw = typeof window !== 'undefined' ? localStorage.getItem('k2-oeffentlich-events') : null
+    if (raw && raw.trim()) {
+      const list = JSON.parse(raw)
+      if (Array.isArray(list) && list.length > 0) {
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        const upcoming = list.filter((e: any) => {
+          if (!e || !e.date) return false
+          const end = e.endDate ? new Date(e.endDate) : new Date(e.date)
+          end.setHours(23, 59, 59, 999)
+          return end >= today
+        })
+        upcoming.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        return upcoming.slice(0, 5)
+      }
+    }
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const fromMuster = MUSTER_EVENTS.filter((e: any) => {
+      if (!e || !e.date) return false
+      const end = e.endDate ? new Date(e.endDate) : new Date(e.date)
+      end.setHours(23, 59, 59, 999)
+      return end >= today
+    })
+    fromMuster.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    return fromMuster.slice(0, 5)
+  } catch {
+    return MUSTER_EVENTS.slice(0, 5)
+  }
+}
+
+/** VK2: Events aus k2-vk2-events, fallback k2-events. */
+function getUpcomingEventsVk2(): any[] {
+  try {
+    const raw = localStorage.getItem('k2-vk2-events') || localStorage.getItem('k2-events')
+    if (!raw) return []
+    const list = JSON.parse(raw)
+    if (!Array.isArray(list)) return []
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const upcoming = list.filter((e: any) => {
+      if (!e || !e.date) return false
+      const end = e.endDate ? new Date(e.endDate) : new Date(e.date)
+      end.setHours(23, 59, 59, 999)
+      return end >= today
+    })
+    upcoming.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    return upcoming.slice(0, 8)
+  } catch {
+    return []
+  }
+}
+
 /** Event-Datum für Anzeige formatieren (z. B. "24. April 2025" oder "24.–26. April 2025") */
 function formatEventDateRange(dateStr: string, endDateStr?: string): string {
   try {
@@ -124,17 +188,23 @@ function formatEventDateRange(dateStr: string, endDateStr?: string): string {
   }
 }
 
-/** Event-Dokument in neuem Fenster öffnen (PDF/Bild/Download) */
+/** Event-Dokument in neuem Fenster öffnen (PDF/Bild/HTML/Download) */
 function openEventDocument(doc: { name?: string; fileData?: string; fileName?: string; fileType?: string }) {
   if (!doc?.fileData) return
   const w = window.open()
   if (!w) return
   const isPdf = doc.fileType?.includes('pdf')
   const isImage = doc.fileType?.includes('image')
+  const isHtml = doc.fileType?.includes('html') || (typeof doc.fileData === 'string' && doc.fileData.startsWith('data:text/html'))
+  const safeTitle = (doc.name || doc.fileName || 'Dokument').replace(/</g, '&lt;')
+  if (isHtml) {
+    w.location.href = doc.fileData
+    return
+  }
   w.document.write(`
-    <!DOCTYPE html><html><head><title>${(doc.name || doc.fileName || 'Dokument').replace(/</g, '&lt;')}</title></head>
+    <!DOCTYPE html><html><head><title>${safeTitle}</title></head>
     <body style="margin:0;padding:20px;background:#f5f5f5;">
-      ${isPdf ? `<iframe src="${doc.fileData}" style="width:100%;height:100vh;border:none;"></iframe>` : isImage ? `<img src="${doc.fileData}" alt="" style="max-width:100%;height:auto;" />` : `<a href="${doc.fileData}" download="${(doc.fileName || '').replace(/</g, '&lt;')}">Download: ${(doc.name || doc.fileName || 'Dokument').replace(/</g, '&lt;')}</a>`}
+      ${isPdf ? `<iframe src="${doc.fileData}" style="width:100%;height:100vh;border:none;"></iframe>` : isImage ? `<img src="${doc.fileData}" alt="" style="max-width:100%;height:auto;" />` : `<a href="${doc.fileData}" download="${(doc.fileName || '').replace(/</g, '&lt;')}">Download: ${safeTitle}</a>`}
     </body></html>
   `)
   w.document.close()
@@ -213,12 +283,13 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   const tenantConfig = vk2 ? TENANT_CONFIGS.vk2 : musterOnly ? TENANT_CONFIGS.oeffentlich : TENANT_CONFIGS.k2
   const tenantId = vk2 ? 'vk2' : musterOnly ? 'oeffentlich' : 'k2'
   const isVorschauModusEarly = typeof window !== 'undefined' && new URLSearchParams(location.search).get('vorschau') === '1'
-  // K2/ök2-Trennung (.cursor/rules/k2-oek2-trennung.mdc): Bei musterOnly NUR getPageTexts('oeffentlich'), nie getPageTexts() ohne Tenant
-  const defaultGalerieTexts = useMemo(() => getPageTexts(musterOnly ? 'oeffentlich' : undefined).galerie, [musterOnly])
+  // K2/ök2/VK2: Immer mit Tenant – nie K2-Texte auf ök2 oder VK2
+  const pageTextsTenant = vk2 ? 'vk2' : musterOnly ? 'oeffentlich' : undefined
+  const defaultGalerieTexts = useMemo(() => getPageTexts(pageTextsTenant).galerie, [pageTextsTenant])
   const [vorschauGalerieTexts, setVorschauGalerieTexts] = useState<GaleriePageTexts | null>(null)
   useEffect(() => {
-    if (isVorschauModusEarly) setVorschauGalerieTexts(getPageTexts(musterOnly ? 'oeffentlich' : undefined).galerie)
-  }, [isVorschauModusEarly, musterOnly])
+    if (isVorschauModusEarly) setVorschauGalerieTexts(getPageTexts(pageTextsTenant).galerie)
+  }, [isVorschauModusEarly, pageTextsTenant])
   const galerieTexts = (isVorschauModusEarly && vorschauGalerieTexts) ? vorschauGalerieTexts : defaultGalerieTexts
   const willkommenRef = React.useRef<HTMLDivElement>(null)
   const galerieRef = React.useRef<HTMLDivElement>(null)
@@ -371,6 +442,50 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       window.removeEventListener('k2-events-updated', load)
     }
   }, [])
+
+  // ök2: Events aus k2-oeffentlich-events oder MUSTER_EVENTS (Vernissage mit Einladung)
+  const [upcomingEventsOeffentlich, setUpcomingEventsOeffentlich] = useState<any[]>(() => getUpcomingEventsOeffentlich())
+  useEffect(() => {
+    if (!musterOnly) return
+    const load = () => setUpcomingEventsOeffentlich(getUpcomingEventsOeffentlich())
+    load()
+    window.addEventListener('storage', load)
+    window.addEventListener('k2-events-updated', load)
+    return () => {
+      window.removeEventListener('storage', load)
+      window.removeEventListener('k2-events-updated', load)
+    }
+  }, [musterOnly])
+
+  // VK2: Events (k2-vk2-events) und Willkommensbild (k2-vk2-welcomeImage)
+  const [vk2UpcomingEvents, setVk2UpcomingEvents] = useState<any[]>(() => getUpcomingEventsVk2())
+  const [vk2WelcomeImage, setVk2WelcomeImage] = useState(() => {
+    try {
+      const v = typeof window !== 'undefined' ? localStorage.getItem('k2-vk2-welcomeImage') : null
+      return (v && v.trim()) || ''
+    } catch { return '' }
+  })
+  useEffect(() => {
+    if (!vk2) return
+    const loadEvents = () => setVk2UpcomingEvents(getUpcomingEventsVk2())
+    loadEvents()
+    window.addEventListener('storage', loadEvents)
+    window.addEventListener('k2-events-updated', loadEvents)
+    const loadImage = () => {
+      try {
+        const v = localStorage.getItem('k2-vk2-welcomeImage')
+        setVk2WelcomeImage((v && v.trim()) || '')
+      } catch (_) {}
+    }
+    loadImage()
+    const onStorageImage = (e: StorageEvent) => { if (e.key === 'k2-vk2-welcomeImage') loadImage() }
+    window.addEventListener('storage', onStorageImage)
+    return () => {
+      window.removeEventListener('storage', loadEvents)
+      window.removeEventListener('k2-events-updated', loadEvents)
+      window.removeEventListener('storage', onStorageImage)
+    }
+  }, [vk2])
 
   // ök2: Stammdaten immer auf Musterdaten halten (auch bei Navigation von normaler Galerie)
   React.useEffect(() => {
@@ -938,8 +1053,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       // Reset Transform
       document.body.style.transform = ''
       
-      // Wenn weit genug nach unten gezogen wurde → Reload
-      if (pullDistance > 80 && window.scrollY === 0) {
+      // Wenn weit genug nach unten gezogen wurde → Reload (nur außerhalb iframe – Cursor Preview sonst Crash/Loop)
+      if (pullDistance > 80 && window.scrollY === 0 && window.self === window.top) {
         console.log('🔄 Pull-to-Refresh: Lade Seite neu...')
         // Kompletter Cache-Clear
         if ('caches' in window) {
@@ -1038,12 +1153,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           const raw = localStorage.getItem(artworksKey)
           const list = raw ? JSON.parse(raw) : []
           const artworks = Array.isArray(list) ? list : []
-          if (artworks.length === 0) {
-            localStorage.setItem(artworksKey, JSON.stringify(SEED_VK2_ARTISTS))
-            window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: SEED_VK2_ARTISTS.length, fromGaleriePage: true } }))
-          } else {
-            window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: artworks.length, fromGaleriePage: true } }))
-          }
+          // VK2: Kein Seed mehr – leer bleibt leer
+          window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: artworks.length, fromGaleriePage: true } }))
         } catch (_) {}
       }
       const t = setTimeout(loadVk2, 100)
@@ -1698,8 +1809,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     }
   }
 
-  // Admin-Button Klick Handler (K2/ök2 strikt getrennt: von ök2-Galerie aus niemals K2-Session nutzen)
+  // Admin-Button Klick Handler (K2/ök2/VK2 strikt getrennt)
   const handleAdminButtonClick = () => {
+    // VK2-Galerie: immer in VK2-Admin (Mitglieder, Werke), nie K2-Admin
+    if (vk2) {
+      try { sessionStorage.setItem('k2-admin-context', 'vk2') } catch (_) {}
+      navigate('/admin?context=vk2')
+      return
+    }
     const isLocalhost = window.location.hostname === 'localhost' || 
                        window.location.hostname === '127.0.0.1' ||
                        window.location.hostname === '192.168.0.31' ||
@@ -1805,12 +1922,57 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     ? { text: 'var(--k2-text)', muted: 'var(--k2-muted)', accent: 'var(--k2-accent)', accentGradient: 'linear-gradient(135deg, var(--k2-accent) 0%, #6b9080 100%)', cardBg: 'var(--k2-card-bg-1)' }
     : { text: 'var(--k2-text)', muted: 'var(--k2-muted)', accent: 'var(--k2-accent)', accentGradient: 'linear-gradient(135deg, var(--k2-accent) 0%, #e67a2a 100%)', cardBg: 'var(--k2-card-bg-1)' }
 
+  // Vita im Nutzer-Design öffnen (gleiches Layout wie Einladung/Presse)
+  const openVita = (personId: 'martina' | 'georg') => {
+    try {
+      const designStored = typeof window !== 'undefined' ? localStorage.getItem('k2-design-settings') : null
+      const design = designStored ? (JSON.parse(designStored) as Record<string, string>) : {}
+      const designForVita = {
+        accentColor: design.accentColor || OK2_THEME.accentColor,
+        backgroundColor1: design.backgroundColor1 || OK2_THEME.backgroundColor1,
+        textColor: design.textColor || OK2_THEME.textColor,
+        mutedColor: design.mutedColor || OK2_THEME.mutedColor
+      }
+      let data: { name: string; email?: string; phone?: string; website?: string; vita: string }
+      let galleryName: string | undefined
+      if (musterOnly) {
+        const m = personId === 'martina' ? MUSTER_TEXTE.martina : MUSTER_TEXTE.georg
+        data = { name: m.name, email: m.email, phone: m.phone, website: m.website, vita: personId === 'martina' ? MUSTER_VITA_MARTINA : MUSTER_VITA_GEORG }
+        galleryName = 'Galerie Muster'
+      } else {
+        const key = personId === 'martina' ? 'k2-stammdaten-martina' : 'k2-stammdaten-georg'
+        const raw = localStorage.getItem(key)
+        const parsed = raw ? JSON.parse(raw) : {}
+        data = {
+          name: parsed.name || (personId === 'martina' ? K2_STAMMDATEN_DEFAULTS.martina.name : K2_STAMMDATEN_DEFAULTS.georg.name),
+          email: parsed.email,
+          phone: parsed.phone,
+          website: parsed.website,
+          vita: (parsed.vita && String(parsed.vita).trim()) ? parsed.vita : (personId === 'martina' ? MUSTER_VITA_MARTINA : MUSTER_VITA_GEORG)
+        }
+        const g = localStorage.getItem('k2-stammdaten-galerie')
+        const gParsed = g ? JSON.parse(g) : {}
+        galleryName = gParsed.name
+      }
+      const html = buildVitaDocumentHtml(personId, data, designForVita, galleryName)
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const opened = window.open(url, '_blank')
+      if (!opened) alert('Pop-up wurde blockiert. Bitte Fenster erlauben und erneut tippen.')
+      setTimeout(() => URL.revokeObjectURL(url), 5000)
+    } catch (e) {
+      alert('Vita konnte nicht geöffnet werden.')
+    }
+  }
+
   const isVorschauModus = typeof window !== 'undefined' && new URLSearchParams(location.search).get('vorschau') === '1'
 
   return (
     <div style={{ 
       minHeight: '-webkit-fill-available',
-      background: musterOnly
+      background: vk2
+        ? 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 50%, var(--k2-bg-3) 100%)'
+        : musterOnly
         ? 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 50%, var(--k2-bg-3) 100%)'
         : 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 50%, var(--k2-bg-3) 100%)',
       color: 'var(--k2-text)',
@@ -1838,7 +2000,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
         }}>
           <button
             type="button"
-            onClick={() => navigate('/admin')}
+            onClick={() => navigate(vk2 ? '/admin?context=vk2' : '/admin')}
             style={{ background: 'rgba(0,0,0,0.2)', border: 'none', color: 'inherit', padding: '0.4rem 0.8rem', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}
           >
             ← Zurück zu Einstellungen
@@ -1846,14 +2008,16 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           <span style={{ opacity: 0.9 }}>Vorschau – hier siehst du deine gespeicherten Änderungen</span>
         </div>
       )}
-      {/* Animated Background Elements (ök2: dezent für Wohlbefinden) */}
+      {/* Animated Background Elements – VK2/K2: Orange (Hausherr), ök2: dezent */}
       <div style={{
         position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        background: musterOnly
+        background: vk2
+          ? 'radial-gradient(circle at 20% 50%, rgba(255, 140, 66, 0.12), transparent 50%), radial-gradient(circle at 80% 80%, rgba(212, 165, 116, 0.08), transparent 50%)'
+          : musterOnly
           ? 'radial-gradient(circle at 30% 40%, rgba(90, 122, 110, 0.08), transparent 50%), radial-gradient(circle at 70% 70%, rgba(90, 122, 110, 0.05), transparent 50%)'
           : 'radial-gradient(circle at 20% 50%, rgba(255, 140, 66, 0.12), transparent 50%), radial-gradient(circle at 80% 80%, rgba(212, 165, 116, 0.08), transparent 50%)',
         pointerEvents: 'none',
@@ -1880,7 +2044,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             </a>
           </div>
         )}
-        {/* Brand linkes oberes Eck – nur „K2 Galerie“, keine Tagline */}
+        {/* Brand linkes oberes Eck – VK2 klar erkennbar, sonst K2 Galerie */}
         <div
           style={{
             position: 'fixed',
@@ -1898,10 +2062,50 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             lineHeight: 1.25,
             textShadow: musterOnly ? 'none' : '0 1px 2px rgba(0,0,0,0.2)'
           }}>
-            {PRODUCT_BRAND_NAME}
+            {vk2 ? 'VK2 Vereinsplattform' : PRODUCT_BRAND_NAME}
           </div>
         </div>
-        {/* Admin Button – auf normaler Galerie und auf ök2-Willkommensseite (eigener Admin-Zugang) */}
+        {/* VK2: deutlicher Balken, damit klar ist: das ist die Vereinsplattform-Galerie, nicht K2 */}
+        {vk2 && (
+          <div style={{
+            position: 'sticky',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 99,
+            padding: '0.6rem 1rem',
+            background: 'linear-gradient(135deg, rgba(255, 140, 66, 0.25), rgba(230, 122, 42, 0.2))',
+            color: '#fff',
+            fontSize: '1rem',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '1rem',
+            border: '1px solid rgba(255, 140, 66, 0.3)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+            marginBottom: '1rem'
+          }}>
+            <span>VK2 Vereinsplattform – Galerie</span>
+            <button
+              type="button"
+              onClick={handleAdminButtonClick}
+              style={{
+                padding: '0.35rem 0.75rem',
+                background: 'rgba(255,255,255,0.25)',
+                border: '1px solid rgba(255,255,255,0.5)',
+                borderRadius: '8px',
+                color: '#fff',
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Admin
+            </button>
+          </div>
+        )}
+        {/* Admin Button – auf normaler Galerie, ök2 und VK2 (VK2: K2-Familie Orange) */}
         {/* iPhone: safe-area-inset-top + größerer Abstand, damit Button unter Notch sichtbar bleibt */}
         <button
           onClick={handleAdminButtonClick}
@@ -1909,37 +2113,35 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             position: 'fixed',
             top: 'max(clamp(1rem, 2vw, 1.5rem), calc(env(safe-area-inset-top, 0px) + 1rem))',
             right: 'clamp(1rem, 2vw, 1.5rem)',
-            background: musterOnly ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.05)',
+            background: vk2 ? 'linear-gradient(135deg, rgba(255, 140, 66, 0.35), rgba(230, 122, 42, 0.3))' : musterOnly ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.05)',
             backdropFilter: 'blur(10px)',
-            border: musterOnly ? '1px solid rgba(45, 45, 42, 0.2)' : '1px solid rgba(255, 255, 255, 0.1)',
-            color: musterOnly ? 'var(--k2-text)' : 'rgba(255, 255, 255, 0.5)',
+            border: vk2 ? '1px solid rgba(255, 140, 66, 0.4)' : musterOnly ? '1px solid rgba(45, 45, 42, 0.2)' : '1px solid rgba(255, 255, 255, 0.1)',
+            color: musterOnly ? 'var(--k2-text)' : 'rgba(255, 255, 255, 0.9)',
             padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem)',
             borderRadius: '8px',
             fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)',
             cursor: 'pointer',
             zIndex: 1000,
             transition: 'all 0.3s ease',
-            opacity: (isMobileDevice || isMobile) ? 0.9 : 0.6,
+            opacity: vk2 ? 1 : (isMobileDevice || isMobile) ? 0.9 : 0.6,
             touchAction: 'manipulation',
             minWidth: '44px',
-            minHeight: '44px'
+            minHeight: '44px',
+            boxShadow: vk2 ? '0 4px 12px rgba(0,0,0,0.25)' : undefined
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.opacity = '1'
-            e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)'
+            if (vk2) { e.currentTarget.style.opacity = '1'; e.currentTarget.style.filter = 'brightness(1.1)' } else { e.currentTarget.style.opacity = '1'; e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)' }
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.opacity = (isMobileDevice || isMobile) ? '0.9' : '0.6'
-            e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.05)'
+            if (vk2) { e.currentTarget.style.opacity = '1'; e.currentTarget.style.filter = 'none' } else { e.currentTarget.style.opacity = (isMobileDevice || isMobile) ? '0.9' : '0.6'; e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.05)' }
           }}
           onTouchStart={(e) => {
             e.currentTarget.style.opacity = '1'
-            e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.15)'
+            if (vk2) e.currentTarget.style.filter = 'brightness(1.1)'; else e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.15)'
           }}
           onTouchEnd={(e) => {
             setTimeout(() => {
-              e.currentTarget.style.opacity = (isMobileDevice || isMobile) ? '0.9' : '0.6'
-              e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.05)'
+              if (vk2) { e.currentTarget.style.opacity = '1'; e.currentTarget.style.filter = 'none' } else { e.currentTarget.style.opacity = (isMobileDevice || isMobile) ? '0.9' : '0.6'; e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.05)' }
             }, 200)
           }}
         >
@@ -2182,7 +2384,117 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           </div>
         )}
 
-        {/* Hero Section */}
+        {/* Hero Section – VK2: eigener, schlanker Block (nicht K2-Kopie) */}
+        {vk2 ? (
+          <header style={{
+            padding: 'clamp(1.5rem, 4vw, 2.5rem) clamp(1.5rem, 4vw, 3rem)',
+            paddingTop: 'clamp(2rem, 6vw, 3.5rem)',
+            maxWidth: '1200px',
+            margin: '0 auto'
+          }}>
+            {/* Foto oben */}
+            {vk2WelcomeImage && (
+              <div style={{
+                width: '100%',
+                maxWidth: '100%',
+                marginBottom: 'clamp(1.5rem, 4vw, 2.5rem)',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
+              }}>
+                <img
+                  src={vk2WelcomeImage}
+                  alt="VK2 Vereinsplattform"
+                  style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover', maxHeight: 'min(50vh, 360px)' }}
+                />
+              </div>
+            )}
+            <h1 style={{
+              margin: 0,
+              fontSize: 'clamp(2rem, 6vw, 3.5rem)',
+              fontWeight: '700',
+              color: '#fff',
+              letterSpacing: '-0.02em',
+              lineHeight: '1.15'
+            }}>
+              VK2 Vereinsplattform
+            </h1>
+            <p style={{
+              margin: '0.5rem 0 0',
+              color: 'rgba(255,255,255,0.9)',
+              fontSize: 'clamp(1rem, 2.5vw, 1.2rem)',
+              fontWeight: '400'
+            }}>
+              Künstler:innen & Werke des Vereins
+            </p>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
+              gap: 'clamp(1.5rem, 4vw, 2.5rem)',
+              alignItems: 'start',
+              marginTop: 'clamp(1.5rem, 4vw, 2.5rem)'
+            }}>
+              <div>
+                <p style={{
+                  margin: 0,
+                  color: 'rgba(255,255,255,0.88)',
+                  fontSize: 'clamp(1rem, 2.5vw, 1.15rem)',
+                  lineHeight: 1.6,
+                  fontWeight: '300'
+                }}>
+                  {(galerieTexts.welcomeIntroText ?? '').trim() || 'Künstler:innen und Werke der Vereinsplattform.'}
+                </p>
+                <Link
+                  to={PROJECT_ROUTES.vk2.galerieVorschau}
+                  style={{
+                    display: 'inline-block',
+                    marginTop: 'clamp(1.25rem, 3vw, 1.75rem)',
+                    padding: 'clamp(0.85rem, 2vw, 1rem) clamp(1.75rem, 4vw, 2.25rem)',
+                    background: 'linear-gradient(135deg, var(--k2-accent) 0%, #e67a2a 100%)',
+                    color: '#fff',
+                    textDecoration: 'none',
+                    borderRadius: '12px',
+                    fontSize: 'clamp(1rem, 2.5vw, 1.1rem)',
+                    fontWeight: '600',
+                    boxShadow: '0 8px 24px rgba(255, 140, 66, 0.4)'
+                  }}
+                >
+                  Werke ansehen →
+                </Link>
+              </div>
+              <div style={{
+                background: 'rgba(255,255,255,0.08)',
+                borderRadius: '12px',
+                padding: '1rem 1.25rem',
+                borderLeft: '4px solid rgba(255, 140, 66, 0.5)'
+              }}>
+                <p style={{ margin: '0 0 0.75rem', fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.75)', fontWeight: '600' }}>
+                  {galerieTexts.eventSectionHeading || 'Termine & Events'}
+                </p>
+                {vk2UpcomingEvents.length === 0 ? (
+                  <p style={{ margin: 0, color: 'rgba(255,255,255,0.7)', fontSize: 'clamp(0.95rem, 2vw, 1.05rem)' }}>
+                    Derzeit keine anstehenden Termine.
+                  </p>
+                ) : (
+                  <ul style={{ margin: 0, paddingLeft: '1.25rem', color: '#fff', fontSize: 'clamp(0.95rem, 2vw, 1.05rem)', lineHeight: 1.6 }}>
+                    {vk2UpcomingEvents.map((ev: any) => (
+                      <li key={ev.id || ev.date} style={{ marginBottom: '0.5rem' }}>
+                        <strong>{ev.title}</strong>
+                        {ev.date && (
+                          <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: '400' }}>
+                            {' — '}{formatEventDateRange(ev.date, ev.endDate)}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </header>
+        ) : (
+        <>
+        {/* Hero Section (K2 / ök2) */}
         <header style={{ 
           padding: 'clamp(2rem, 6vw, 4rem) clamp(1.5rem, 4vw, 3rem)',
           paddingTop: 'clamp(3rem, 8vw, 5rem)',
@@ -2289,25 +2601,25 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           margin: '0 auto'
         }}>
 
-          {/* Aktuelles aus den Eventplanungen – zwischen Foto und Kunstschaffende */}
-          {!musterOnly && upcomingEvents.length > 0 && (
+          {/* Aktuelles aus den Eventplanungen – zwischen Foto und Kunstschaffende (K2, ök2, VK2) */}
+          {((musterOnly && upcomingEventsOeffentlich.length > 0) || (!musterOnly && !vk2 && upcomingEvents.length > 0) || (vk2 && vk2UpcomingEvents.length > 0)) && (
             <section style={{
               marginTop: 'clamp(2rem, 5vw, 3rem)',
               padding: 'clamp(1rem, 3vw, 1.5rem) clamp(1.25rem, 3vw, 1.75rem)',
-              background: 'rgba(184, 184, 255, 0.08)',
-              border: '1px solid rgba(184, 184, 255, 0.2)',
+              background: musterOnly ? 'rgba(107, 144, 128, 0.12)' : vk2 ? 'rgba(255, 140, 66, 0.1)' : 'rgba(184, 184, 255, 0.08)',
+              border: musterOnly ? '1px solid rgba(107, 144, 128, 0.3)' : vk2 ? '1px solid rgba(255, 140, 66, 0.25)' : '1px solid rgba(184, 184, 255, 0.2)',
               borderRadius: '16px',
-              borderLeft: '4px solid rgba(184, 184, 255, 0.6)'
+              borderLeft: musterOnly ? '4px solid #6b9080' : vk2 ? '4px solid var(--k2-accent)' : '4px solid rgba(184, 184, 255, 0.6)'
             }}>
-              <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', fontWeight: '600' }}>
+              <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', letterSpacing: '0.08em', textTransform: 'uppercase', color: musterOnly ? 'var(--k2-muted)' : vk2 ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.6)', fontWeight: '600' }}>
                 {galerieTexts.eventSectionHeading || 'Aktuelles aus den Eventplanungen'}
               </p>
-              <ul style={{ margin: 0, paddingLeft: '1.25rem', color: '#ffffff', fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', lineHeight: 1.6 }}>
-                {upcomingEvents.map((ev: any) => (
+              <ul style={{ margin: 0, paddingLeft: '1.25rem', color: musterOnly ? 'var(--k2-text)' : '#ffffff', fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', lineHeight: 1.6 }}>
+                {(musterOnly ? upcomingEventsOeffentlich : vk2 ? vk2UpcomingEvents : upcomingEvents).map((ev: any) => (
                   <li key={ev.id || ev.date} style={{ marginBottom: ev.documents?.length ? '0.5rem' : 0 }}>
                     <strong>{ev.title}</strong>
                     {ev.date && (
-                      <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: '400' }}>
+                      <span style={{ color: musterOnly ? 'var(--k2-muted)' : vk2 ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.85)', fontWeight: '400' }}>
                         {' — '}{formatEventDateRange(ev.date, ev.endDate)}
                       </span>
                     )}
@@ -2322,7 +2634,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                                 background: 'none',
                                 border: 'none',
                                 padding: 0,
-                                color: 'rgba(184, 184, 255, 0.95)',
+                                color: musterOnly ? '#6b9080' : vk2 ? 'var(--k2-accent)' : 'rgba(184, 184, 255, 0.95)',
                                 textDecoration: 'underline',
                                 cursor: 'pointer',
                                 font: 'inherit'
@@ -2387,21 +2699,36 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               >
                 <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '60%', background: 'linear-gradient(180deg, var(--k2-accent) 0%, #e67a2a 100%)', borderRadius: '0 4px 4px 0' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
-                  <div style={{
-                    width: 'clamp(64px, 10vw, 80px)',
-                    height: 'clamp(64px, 10vw, 80px)',
-                    borderRadius: '50%',
-                    background: theme.accentGradient,
-                    color: theme.text,
-                    display: 'grid',
-                    placeItems: 'center',
-                    fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
-                    fontWeight: '700',
-                    boxShadow: '0 8px 24px rgba(102, 126, 234, 0.4)',
-                    flexShrink: 0
-                  }}>
-                    {(musterOnly ? MUSTER_TEXTE.martina.name : ((tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name))).charAt(0)}
-                  </div>
+                  {musterOnly && (MUSTER_TEXTE.martina as { photoUrl?: string }).photoUrl ? (
+                    <img
+                      src={(MUSTER_TEXTE.martina as { photoUrl?: string }).photoUrl}
+                      alt=""
+                      style={{
+                        width: 'clamp(64px, 10vw, 80px)',
+                        height: 'clamp(64px, 10vw, 80px)',
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        boxShadow: '0 8px 24px rgba(102, 126, 234, 0.4)',
+                        flexShrink: 0
+                      }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: 'clamp(64px, 10vw, 80px)',
+                      height: 'clamp(64px, 10vw, 80px)',
+                      borderRadius: '50%',
+                      background: theme.accentGradient,
+                      color: theme.text,
+                      display: 'grid',
+                      placeItems: 'center',
+                      fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
+                      fontWeight: '700',
+                      boxShadow: '0 8px 24px rgba(102, 126, 234, 0.4)',
+                      flexShrink: 0
+                    }}>
+                      {(musterOnly ? MUSTER_TEXTE.martina.name : ((tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name))).charAt(0)}
+                    </div>
+                  )}
                   <div>
                     <span style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', letterSpacing: '0.12em', textTransform: 'uppercase', color: musterOnly ? theme.muted : 'rgba(255,255,255,0.5)', fontWeight: '600' }}>Bilder</span>
                     <h4 style={{ margin: '0.25rem 0 0', fontSize: 'clamp(1.2rem, 3.2vw, 1.6rem)', color: theme.text, fontWeight: '600' }}>
@@ -2412,7 +2739,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 <p style={{ color: musterOnly ? theme.text : 'rgba(255, 255, 255, 0.8)', fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', margin: 0, lineHeight: '1.7' }}>
                   {(musterOnly ? (galerieTexts.martinaBio || MUSTER_TEXTE.artist1Bio) : (galerieTexts.martinaBio || 'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.'))}
                 </p>
-                <Link to={PROJECT_ROUTES['k2-galerie'].vitaMartina} style={{ display: 'inline-block', marginTop: '0.75rem', fontSize: '0.85rem', color: theme.accent, textDecoration: 'none', fontWeight: 600 }}>Vita</Link>
+                <button type="button" onClick={() => openVita('martina')} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.75rem', fontSize: '0.85rem', color: theme.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, padding: 0, textDecoration: 'none' }} title="Vita öffnen">
+                  <span aria-hidden>📄</span> Vita
+                </button>
               </div>
               
               {/* Georg – Keramik: Karte mit Ton-Akzent, andere Ecke betont */}
@@ -2466,7 +2795,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 <p style={{ color: musterOnly ? theme.text : 'rgba(255, 255, 255, 0.8)', fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', margin: 0, lineHeight: '1.7' }}>
                   {(musterOnly ? (galerieTexts.georgBio || MUSTER_TEXTE.artist2Bio) : (galerieTexts.georgBio || 'Georg verbindet in seiner Keramikarbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail, das Ergebnis von langjähriger Erfahrung.'))}
                 </p>
-                <Link to={PROJECT_ROUTES['k2-galerie'].vitaGeorg} style={{ display: 'inline-block', marginTop: '0.75rem', fontSize: '0.85rem', color: theme.accent, textDecoration: 'none', fontWeight: 600 }}>Vita</Link>
+                <button type="button" onClick={() => openVita('georg')} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.75rem', fontSize: '0.85rem', color: theme.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, padding: 0, textDecoration: 'none' }} title="Vita öffnen">
+                  <span aria-hidden>📄</span> Vita
+                </button>
               </div>
             </div>
             
@@ -2838,6 +3169,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             </div>
           </section>
         </main>
+        </>
+        )}
 
         {/* Willkommens-Fenster (nur öffentliche Galerie): Einstieg per QR – Optionen zentriert als Fenster */}
         {musterOnly && showWelcomeModal && (

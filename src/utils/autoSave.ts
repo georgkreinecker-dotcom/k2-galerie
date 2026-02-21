@@ -3,7 +3,7 @@
  * Verhindert Datenverlust bei Cursor-Crashes
  */
 
-import { K2_STAMMDATEN_DEFAULTS } from '../config/tenantConfig'
+import { K2_STAMMDATEN_DEFAULTS, MUSTER_TEXTE } from '../config/tenantConfig'
 
 // Auto-Save alle 5 Sekunden
 const AUTO_SAVE_INTERVAL = 5000
@@ -34,6 +34,19 @@ function mergeStammdatenPerson(incoming: any, existing: any, defaults: { name: s
   }
 }
 
+/** Muster (nur id muster-*) und VK2 – nie in k2-artworks. Nicht nach Nummer filtern, sonst gehen echte Werke verloren. */
+export function filterK2ArtworksOnly(artworks: any[]): any[] {
+  if (!Array.isArray(artworks)) return []
+  return artworks.filter((a: any) => {
+    if (!a) return false
+    const num = a.number != null ? String(a.number).trim() : ''
+    const id = a.id != null ? String(a.id) : ''
+    if (id.startsWith('muster-')) return false
+    if (num.startsWith('VK2-') || id.startsWith('vk2-seed-')) return false
+    return true
+  })
+}
+
 function mergeStammdatenGallery(incoming: any, existing: any, defaults: typeof K2_STAMMDATEN_DEFAULTS.gallery) {
   const e = existing && typeof existing === 'object' ? existing : {}
   return {
@@ -47,7 +60,8 @@ function mergeStammdatenGallery(incoming: any, existing: any, defaults: typeof K
     website: (incoming?.website != null && String(incoming.website).trim()) ? incoming.website : (e.website || defaults.website || ''),
     internetadresse: (incoming?.internetadresse != null && String(incoming.internetadresse).trim()) ? incoming.internetadresse : (e.internetadresse || defaults.internetadresse || ''),
     openingHours: (incoming?.openingHours != null && String(incoming.openingHours).trim()) ? incoming.openingHours : ((e as any)?.openingHours || defaults.openingHours || ''),
-    bankverbindung: (incoming?.bankverbindung != null && String(incoming.bankverbindung).trim()) ? incoming.bankverbindung : (e.bankverbindung || defaults.bankverbindung || '')
+    bankverbindung: (incoming?.bankverbindung != null && String(incoming.bankverbindung).trim()) ? incoming.bankverbindung : (e.bankverbindung || defaults.bankverbindung || ''),
+    gewerbebezeichnung: (incoming?.gewerbebezeichnung != null && String(incoming.gewerbebezeichnung).trim()) ? incoming.gewerbebezeichnung : ((e as any)?.gewerbebezeichnung || (defaults as any)?.gewerbebezeichnung || 'freie Kunstschaffende')
   }
 }
 
@@ -86,7 +100,8 @@ export function startAutoSave(getData: () => AutoSaveData) {
       }
       if (data.artworks) {
         try {
-          localStorage.setItem('k2-artworks', JSON.stringify(data.artworks))
+          const toSave = filterK2ArtworksOnly(data.artworks)
+          localStorage.setItem('k2-artworks', JSON.stringify(toSave))
         } catch (e) {
           console.warn('⚠️ Artworks zu groß für Auto-Save')
         }
@@ -185,7 +200,8 @@ export function saveNow(getData: () => AutoSaveData) {
     }
     if (data.artworks) {
       try {
-        localStorage.setItem('k2-artworks', JSON.stringify(data.artworks))
+        const toSave = filterK2ArtworksOnly(data.artworks)
+        localStorage.setItem('k2-artworks', JSON.stringify(toSave))
       } catch (e) {
         console.warn('⚠️ Artworks zu groß für Sofort-Save')
       }
@@ -288,14 +304,20 @@ export function restoreFromBackup(): boolean {
       localStorage.setItem('k2-stammdaten-georg', JSON.stringify(g))
     }
     if (backup.gallery) {
-      const gal = { ...backup.gallery }
-      if (!gal.phone?.trim()) gal.phone = dgal.phone
-      if (!gal.email?.trim()) gal.email = dgal.email
-      if (!gal.name?.trim()) gal.name = dgal.name
+      const merged = mergeStammdatenGallery(backup.gallery, {}, dgal)
+      const gal = { ...backup.gallery, ...merged }
       localStorage.setItem('k2-stammdaten-galerie', JSON.stringify(gal))
     }
+    // Nur echte K2-Werke wiederherstellen – niemals VK2-Werke in k2-artworks schreiben
     if (Array.isArray(backup.artworks)) {
-      localStorage.setItem('k2-artworks', JSON.stringify(backup.artworks))
+      const looksLikeVk2 = backup.artworks.some((a: any) =>
+        (a?.id && String(a.id).startsWith('vk2-seed-')) || (a?.number && String(a.number).startsWith('VK2-'))
+      )
+      if (!looksLikeVk2) {
+        localStorage.setItem('k2-artworks', JSON.stringify(backup.artworks))
+      } else {
+        console.warn('⚠️ Backup enthält VK2-Werke – k2-artworks wurde nicht überschrieben (K2/VK2-Trennung).')
+      }
     }
     if (Array.isArray(backup.events)) {
       localStorage.setItem('k2-events', JSON.stringify(backup.events))
@@ -362,14 +384,20 @@ export function restoreFromBackupFile(backup: {
       localStorage.setItem('k2-stammdaten-georg', JSON.stringify(g))
     }
     if (backup.gallery && typeof backup.gallery === 'object') {
-      const gal = { ...backup.gallery }
-      if (!gal.phone?.trim()) gal.phone = dgal.phone
-      if (!gal.email?.trim()) gal.email = dgal.email
-      if (!gal.name?.trim()) gal.name = dgal.name
+      const merged = mergeStammdatenGallery(backup.gallery, {}, dgal)
+      const gal = { ...backup.gallery, ...merged }
       localStorage.setItem('k2-stammdaten-galerie', JSON.stringify(gal))
     }
+    // Nur echte K2-Werke wiederherstellen – niemals VK2-Werke in k2-artworks schreiben
     if (Array.isArray(backup.artworks)) {
-      localStorage.setItem('k2-artworks', JSON.stringify(backup.artworks))
+      const looksLikeVk2 = backup.artworks.some((a: any) =>
+        (a?.id && String(a.id).startsWith('vk2-seed-')) || (a?.number && String(a.number).startsWith('VK2-'))
+      )
+      if (!looksLikeVk2) {
+        localStorage.setItem('k2-artworks', JSON.stringify(backup.artworks))
+      } else {
+        console.warn('⚠️ Backup-Datei enthält VK2-Werke – k2-artworks wurde nicht überschrieben (K2/VK2-Trennung).')
+      }
     }
     if (Array.isArray(backup.events)) {
       localStorage.setItem('k2-events', JSON.stringify(backup.events))
@@ -447,3 +475,96 @@ export function getBackupTimestamps(): string[] {
     return []
   }
 }
+/**
+ * Setzt K2- und ök2-Stammdaten auf den Repo-Stand (Zustand vor Tom/VK2-Überschreibung).
+ * Schreibt k2-stammdaten-* und k2-oeffentlich-stammdaten-* mit allen Feldern (Öffnungszeiten etc.).
+ * Keine Änderung an Werken, Events, VK2-Mitgliedern.
+ */
+export function restoreK2AndOek2StammdatenFromRepo(): void {
+  const km = K2_STAMMDATEN_DEFAULTS.martina
+  const kg = K2_STAMMDATEN_DEFAULTS.georg
+  const kGal = K2_STAMMDATEN_DEFAULTS.gallery
+
+  localStorage.setItem('k2-stammdaten-martina', JSON.stringify({
+    name: km.name,
+    email: km.email,
+    phone: km.phone,
+    website: km.website ?? '',
+    category: 'malerei',
+    bio: '',
+  }))
+  localStorage.setItem('k2-stammdaten-georg', JSON.stringify({
+    name: kg.name,
+    email: kg.email,
+    phone: kg.phone,
+    website: kg.website ?? '',
+    category: 'keramik',
+    bio: '',
+  }))
+  localStorage.setItem('k2-stammdaten-galerie', JSON.stringify({
+    name: kGal.name,
+    address: kGal.address ?? '',
+    city: kGal.city ?? '',
+    country: kGal.country ?? '',
+    phone: kGal.phone ?? '',
+    email: kGal.email ?? '',
+    website: kGal.website ?? '',
+    internetadresse: kGal.internetadresse ?? '',
+    openingHours: kGal.openingHours ?? '',
+    openingHoursWeek: (kGal as { openingHoursWeek?: Record<string, string> }).openingHoursWeek ?? {},
+    bankverbindung: kGal.bankverbindung ?? '',
+    gewerbebezeichnung: (kGal as { gewerbebezeichnung?: string }).gewerbebezeichnung ?? 'freie Kunstschaffende',
+    welcomeImage: '',
+    virtualTourImage: '',
+    galerieCardImage: '',
+    soldArtworksDisplayDays: 30,
+    internetShopNotSetUp: true,
+  }))
+
+  const om = MUSTER_TEXTE.martina
+  const og = MUSTER_TEXTE.georg
+  const oGal = MUSTER_TEXTE.gallery
+
+  localStorage.setItem('k2-oeffentlich-stammdaten-martina', JSON.stringify({
+    name: om.name,
+    email: om.email,
+    phone: om.phone,
+    website: om.website ?? '',
+    category: 'malerei',
+    bio: '',
+  }))
+  localStorage.setItem('k2-oeffentlich-stammdaten-georg', JSON.stringify({
+    name: og.name,
+    email: og.email,
+    phone: og.phone,
+    website: og.website ?? '',
+    category: 'keramik',
+    bio: '',
+  }))
+  localStorage.setItem('k2-oeffentlich-stammdaten-galerie', JSON.stringify({
+    name: 'Galerie Muster',
+    address: oGal.address ?? '',
+    city: oGal.city ?? '',
+    country: oGal.country ?? '',
+    phone: oGal.phone ?? '',
+    email: oGal.email ?? '',
+    website: oGal.website ?? '',
+    internetadresse: oGal.internetadresse ?? '',
+    openingHours: oGal.openingHours ?? '',
+    openingHoursWeek: (oGal as { openingHoursWeek?: Record<string, string> }).openingHoursWeek ?? {},
+    bankverbindung: oGal.bankverbindung ?? '',
+    gewerbebezeichnung: (oGal as { gewerbebezeichnung?: string }).gewerbebezeichnung ?? 'freie Kunstschaffende',
+    welcomeImage: oGal.welcomeImage ?? '',
+    virtualTourImage: oGal.virtualTourImage ?? '',
+    galerieCardImage: oGal.galerieCardImage ?? '',
+    soldArtworksDisplayDays: 30,
+    internetShopNotSetUp: true,
+  }))
+
+  try {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('k2-oek2-stammdaten-restored'))
+    }
+  } catch (_) {}
+}
+

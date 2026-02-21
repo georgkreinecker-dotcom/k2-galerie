@@ -15,9 +15,12 @@ const mok2Sections = [
   { id: 'mok2-2', label: '2. Marktchancen – Stärken' },
   { id: 'mok2-3', label: '3. Marktchancen – Herausforderungen' },
   { id: 'mok2-4', label: '4. Fazit & nächste Schritte' },
+  { id: 'mok2-kanale-2026', label: 'Kanäle 2026' },
+  { id: 'mok2-verbesserungen', label: 'Was wir gemeinsam verbessern' },
   { id: 'mok2-5', label: '5. Weitere Ideen & Konzepte' },
   { id: 'mok2-6', label: '6. Empfehlungs-Programm' },
-  { id: 'mok2-7', label: '7. Promotion für alle Medien' },
+  { id: 'mok2-so-empfiehlst-du', label: 'So empfiehlst du (Kurz-Anleitung)' },
+  { id: 'mok2-7', label: '7. Promotion für alle Medien (inkl. Zielgruppe)' },
   { id: 'mok2-8', label: '8. APf-Struktur' },
   { id: 'mok2-9', label: '9. Werbeunterlagen' },
 ] as const

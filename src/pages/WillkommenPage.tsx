@@ -7,7 +7,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, AGB_ROUTE } from '../config/navigation'
-import { PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
+import { PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import { OK2_THEME } from '../config/ok2Theme'
 
@@ -261,6 +261,30 @@ export default function WillkommenPage() {
               </div>
             </div>
           </div>
+
+          {/* CTA: Lizenz anfragen – klarer nächster Schritt nach der Demo */}
+          <p style={{ marginTop: '1.25rem', fontSize: '0.9rem', color: t.muted, textAlign: 'center' }}>
+            Bereits überzeugt? Lizenz für deine eigene Galerie anfragen:
+          </p>
+          <a
+            href={`mailto:${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_EMAIL)}?subject=${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_BETREFF)}`}
+            style={{
+              display: 'block',
+              marginTop: '0.5rem',
+              padding: '0.75rem 1.25rem',
+              background: t.accentSoft,
+              color: t.accent,
+              borderRadius: t.radius,
+              textAlign: 'center',
+              fontWeight: 600,
+              textDecoration: 'none',
+              fontFamily: 'inherit',
+              fontSize: '0.95rem',
+              border: `1px solid ${t.accent}`,
+            }}
+          >
+            Lizenz anfragen →
+          </a>
         </div>
       </div>
 

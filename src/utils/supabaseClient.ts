@@ -6,6 +6,7 @@
  */
 
 import { getAuthToken } from './supabaseAuth'
+import { filterK2ArtworksOnly } from './autoSave'
 
 // Sicherer Zugriff auf import.meta.env
 let SUPABASE_URL = ''
@@ -79,9 +80,10 @@ export async function loadArtworksFromSupabase(): Promise<any[]> {
 
     console.log(`✅ ${artworks.length} Werke aus Supabase geladen`)
     
-    // Backup in localStorage
+    // Backup in localStorage – nur echte K2-Werke (Muster/VK2 raus)
     try {
-      localStorage.setItem('k2-artworks', JSON.stringify(artworks))
+      const toStore = filterK2ArtworksOnly(artworks)
+      localStorage.setItem('k2-artworks', JSON.stringify(toStore))
     } catch (e) {
       console.warn('⚠️ localStorage Backup fehlgeschlagen:', e)
     }
@@ -146,9 +148,10 @@ export async function saveArtworksToSupabase(artworks: any[]): Promise<boolean> 
     const data = await response.json()
     console.log(`✅ ${data.count || artworks.length} Werke in Supabase gespeichert`)
     
-    // Backup in localStorage
+    // Backup in localStorage – nur echte K2-Werke
     try {
-      localStorage.setItem('k2-artworks', JSON.stringify(artworks))
+      const toStore = filterK2ArtworksOnly(artworks)
+      localStorage.setItem('k2-artworks', JSON.stringify(toStore))
     } catch (e) {
       console.warn('⚠️ localStorage Backup fehlgeschlagen:', e)
     }
@@ -353,7 +356,8 @@ function loadFromLocalStorage(): any[] {
 
 function saveToLocalStorage(artworks: any[]): boolean {
   try {
-    localStorage.setItem('k2-artworks', JSON.stringify(artworks))
+    const toSave = filterK2ArtworksOnly(artworks)
+    localStorage.setItem('k2-artworks', JSON.stringify(toSave))
     return true
   } catch (error) {
     console.error('❌ localStorage save error:', error)

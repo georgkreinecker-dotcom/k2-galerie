@@ -60,7 +60,7 @@ export default function ProjectsPage() {
           </p>
           <div className="card" style={{ borderLeft: '4px solid #5ffbf1', maxWidth: '400px' }}>
             <h2 style={{ margin: '0 0 0.35rem', fontSize: '1.1rem' }}>mök2 – Vertrieb & Promotion</h2>
-            <p style={{ margin: 0, fontSize: '0.9rem', opacity: 0.9 }}>Marketing ök2, Werbeunterlagen, USPs, Empfehlungs-Programm. Eigenständige Arbeitsplattform.</p>
+            <p style={{ margin: 0, fontSize: '0.9rem', opacity: 0.9 }}>Marketing K2 Galerie, Werbeunterlagen, USPs, Empfehlungs-Programm. Eigenständige Arbeitsplattform.</p>
             <Link className="btn" to={MOK2_ROUTE} style={{ marginTop: '0.75rem', display: 'inline-block' }}>
               mök2 öffnen →
             </Link>

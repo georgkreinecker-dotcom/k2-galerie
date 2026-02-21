@@ -1,78 +1,16 @@
-# K2TEAM HANDBUCH
-## Handbuch unserer Zusammenarbeit
+# K2Team Handbuch
 
-**Version:** 1.0  
-**Erstellt:** 9. Februar 2026  
-**Letzte Aktualisierung:** 17. Februar 2026
+Kurzreferenz für Zusammenarbeit und Betrieb der K2 Galerie. Stand: Februar 2026.
 
 ---
 
-## 📚 Inhaltsverzeichnis
+## Inhaltsverzeichnis
 
-1. [Team-Grundlagen](#01-team-grundlagen)
-2. [Team-Werte & Arbeitsprinzipien](#02-team-werte)
-3. [Proaktive Zusammenarbeit](#03-proaktive-zusammenarbeit)
-4. [Vision & Strategie](#04-vision-strategie)
-5. [Arbeitsgewohnheiten & Muster](#05-arbeitsgewohnheiten)
-6. [Aktueller Stand & Status](#06-aktueller-stand)
-7. [Entscheidungs-Framework](#07-entscheidungs-framework)
-8. [Feedback & Verbesserung](#08-feedback)
-9. [Git/Vercel Probleme](#09-git-vercel-probleme)
-10. [Stabilitäts-Fixes](#10-stabilitaet-fixes)
-11. **[Backup-Zusammenfassung](#11-backup-zusammenfassung)** 📋 *Zusammengefasste Version des aktuellen AI-Memory-Backups*
-12. [Arbeitsplattform Verbesserungen](#12-arbeitsplattform-verbesserungen)
-13. **[Backup & Vollbackup K2 Galerie](#13-backup-vollbackup-k2-galerie)** 💾 *Speichern, Vollbackup, Hard-Backup auf backupmicro (v001, v002, …)*
-14. **[Sicherheit & Produkt-Label](#14-sicherheit-produkt-label)** 🔒 *Auth, RLS, Vor Veröffentlichung, Checklisten, Regress – wo alles steht*
+| Nr. | Thema | Inhalt |
+|-----|--------|--------|
+| 1 | [Team-Grundlagen](01-TEAM-GRUNDLAGEN.md) | Team, Projekt, Prinzipien |
+| 2 | [Team-Werte](02-TEAM-WERTE.md) | Werte in Kürze |
+| 3 | [Backup & Vollbackup](13-BACKUP-VOLLBACKUP-K2-GALERIE.md) | Speichern, Vollbackup, backupmicro |
+| 4 | [Sicherheit & Vor Veröffentlichung](14-SICHERHEIT-PRODUKT-LABEL.md) | Auth, RLS, Checkliste |
 
----
-
-## 🎯 Zweck dieses Handbuchs
-
-Dieses Handbuch dokumentiert:
-- **Unsere Team-Werte** und Arbeitsprinzipien
-- **Unsere Arbeitsweise** und erkannte Muster
-- **Unsere Vision** und Strategie
-- **Aktuellen Stand** und Fortschritt
-- **Entscheidungs-Framework** für konsistente Entscheidungen
-- **Backup-Zusammenfassung** - Aktueller Stand aller wichtigen Informationen
-
-**Für wen:**
-- Georg Kreinecker (Team-Lead)
-- AI-Assistent (Team-Mitglied)
-- Spätere Generationen (Nachvollziehbarkeit)
-- Neue Teammitglieder (Onboarding)
-
----
-
-## 📖 Wie dieses Handbuch nutzen
-
-1. **Regelmäßig aktualisieren:** Nach wichtigen Entscheidungen oder Meilensteinen
-2. **Als Referenz nutzen:** Bei Unsicherheit oder Fragen
-3. **Als Basis nutzen:** Für neue Teammitglieder oder Übergaben
-4. **Als Dokumentation:** Für spätere Generationen
-
----
-
-## 🔄 Aktualisierungs-Prozess
-
-- **Nach wichtigen Entscheidungen:** Dokumentation aktualisieren
-- **Nach Meilensteinen:** Status aktualisieren
-- **Monatlich:** Überprüfung und Anpassung
-- **Bei Änderungen:** Sofort aktualisieren
-
----
-
-## 📝 Dokument-Struktur
-
-Jedes Dokument enthält:
-- **Übersicht:** Was ist das?
-- **Details:** Konkrete Inhalte
-- **Anwendung:** Wie nutzen wir es?
-- **Beispiele:** Praktische Beispiele
-
----
-
-**Nächste Schritte:**
-- Dokumente regelmäßig aktualisieren
-- PDF-Versionen erstellen für Archivierung
-- Bei wichtigen Änderungen Version erhöhen
+**Weitere Kapitel** (bei Bedarf): [Proaktive Zusammenarbeit](03-PROAKTIVE-ZUSAMMENARBEIT.md) · [Vision](04-VISION-STRATEGIE.md) · [Arbeitsgewohnheiten](05-ARBEITSGEWOHNHEITEN.md) · [Aktueller Stand](06-AKTUELLER-STAND.md) · [Entscheidungen](07-ENTSCHEIDUNGS-FRAMEWORK.md) · [Feedback](08-FEEDBACK.md) · [Git/Vercel](09-GIT-VERCEL-PROBLEME.md) · [Stabilität](10-STABILITAET-FIXES.md) · [Backup-Zusammenfassung](11-BACKUP-ZUSAMMENFASSUNG.md) · [APf-Verbesserungen](12-ARBEITSPLATTFORM-VERBESSERUNGEN.md)

@@ -10,15 +10,15 @@ export interface LicenceGrant {
   id: string
   name: string
   email: string
-  licenseType: 'basic' | 'pro' | 'enterprise'
+  licenseType: 'basic' | 'pro' | 'vk2'
   empfehlerId?: string
   createdAt: string
 }
 
-const LICENCE_TYPES: { id: 'basic' | 'pro' | 'enterprise'; name: string; price: string; summary: string }[] = [
-  { id: 'basic', name: 'Basic', price: '49 €/Monat', summary: 'Bis 30 Werke, 1 Galerie, Events, Kasse, Etiketten, Standard-URL' },
-  { id: 'pro', name: 'Pro', price: '99 €/Monat', summary: 'Unbegrenzte Werke, Custom Domain, volles Marketing' },
-  { id: 'enterprise', name: 'Enterprise', price: 'nach Vereinbarung', summary: 'Alles aus Pro, White-Label, API, Dedicated Support' },
+const LICENCE_TYPES: { id: 'basic' | 'pro' | 'vk2'; name: string; price: string; summary: string; icon: string }[] = [
+  { id: 'basic', name: 'Basic', price: '49 €/Monat', summary: 'Bis 30 Werke, 1 Galerie, Events, Kasse, Etiketten, Standard-URL', icon: '🎨' },
+  { id: 'pro', name: 'Pro', price: '99 €/Monat', summary: 'Unbegrenzte Werke, Custom Domain, volles Marketing', icon: '⭐' },
+  { id: 'vk2', name: 'Kunstvereine (VK2)', price: 'Verein ab 10 Mitgliedern kostenfrei', summary: 'Verein nutzt Pro; Vereinsmitglieder 50 % Rabatt; nicht registrierte Mitglieder im System erfasst', icon: '🏛️' },
 ]
 
 function loadGrants(): LicenceGrant[] {
@@ -43,7 +43,6 @@ function saveGrants(grants: LicenceGrant[]) {
 }
 
 interface LicencesPageProps {
-  /** Im Mok2Layout eingebettet → Back-Link zu mök2, kompakter Header */
   embeddedInMok2Layout?: boolean
 }
 
@@ -54,6 +53,7 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
   const [licenseType, setLicenseType] = useState<LicenceGrant['licenseType']>('pro')
   const [empfehlerId, setEmpfehlerId] = useState('')
   const [message, setMessage] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   useEffect(() => {
     setGrants(loadGrants())
@@ -83,7 +83,14 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
     setEmail('')
     setLicenseType('pro')
     setEmpfehlerId('')
-    setMessage({ type: 'ok', text: 'Lizenz erfasst. Bei echtem Betrieb: Abrechnungsstruktur nutzen (Empfehler-ID wird für Vergütung verwendet).' })
+    setMessage({ type: 'ok', text: '✅ Lizenz erfasst.' })
+  }
+
+  const handleDelete = (id: string) => {
+    const next = grants.filter(g => g.id !== id)
+    setGrants(next)
+    saveGrants(next)
+    setDeleteId(null)
   }
 
   return (
@@ -102,195 +109,118 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
 
         <h1 style={{ marginBottom: '0.5rem' }}>💼 Lizenzen</h1>
         <p style={{ color: 'var(--k2-muted)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
-          Konditionen einsehen und Lizenzen vergeben. Optional Empfehler-ID für das Empfehlungs-Programm (Vergütung/Abrechnung).
+          Lizenzstufen auf einen Blick – und neue Lizenzen vergeben.
         </p>
 
-        {/* Lizenz-Konditionen (Übersicht) */}
-        <section style={{
-          background: 'rgba(255,255,255,0.05)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: '12px',
-          padding: '1.25rem',
-          marginBottom: '1.5rem'
+        {/* STATUS-BALKEN */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem',
+          background: grants.length > 0 ? 'rgba(95,251,241,0.08)' : 'rgba(255,255,255,0.04)',
+          border: `1px solid ${grants.length > 0 ? 'rgba(95,251,241,0.3)' : 'rgba(255,255,255,0.1)'}`,
+          borderRadius: '12px', padding: '1rem 1.25rem', marginBottom: '1.5rem'
         }}>
-          <h2 style={{ fontSize: '1.1rem', margin: '0 0 1rem 0', color: 'var(--k2-text)' }}>
-            1. Lizenz-Konditionen (Stufen)
-          </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-            {LICENCE_TYPES.map((t) => (
-              <div key={t.id} style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '8px',
-                padding: '1rem'
-              }}>
-                <strong style={{ color: 'var(--k2-accent)' }}>{t.name}</strong>
-                <div style={{ fontSize: '0.9rem', color: 'var(--k2-muted)', marginTop: '0.25rem' }}>{t.price}</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', marginTop: '0.5rem', lineHeight: 1.4 }}>{t.summary}</div>
-              </div>
-            ))}
+          <div>
+            <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--k2-text)' }}>
+              {grants.length === 0 ? '○ Noch keine Lizenzen vergeben' : `✅ ${grants.length} Lizenz${grants.length > 1 ? 'en' : ''} aktiv`}
+            </div>
+            <div style={{ fontSize: '0.82rem', color: 'var(--k2-muted)', marginTop: '0.2rem' }}>
+              {grants.length === 0 ? 'Erste Lizenz unten erfassen.' : 'Alle aktiven Lizenzen unten aufgelistet.'}
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {LICENCE_TYPES.map(lt => {
+              const count = grants.filter(g => g.licenseType === lt.id).length
+              return (
+                <div key={lt.id} title={`${lt.name}: ${count}`} style={{
+                  padding: '0.25rem 0.6rem', borderRadius: 20, fontSize: '0.78rem', fontWeight: 600,
+                  background: count > 0 ? 'rgba(95,251,241,0.15)' : 'rgba(255,255,255,0.06)',
+                  color: count > 0 ? 'var(--k2-accent)' : 'var(--k2-muted)',
+                  border: `1px solid ${count > 0 ? 'rgba(95,251,241,0.3)' : 'rgba(255,255,255,0.1)'}`
+                }}>
+                  {lt.icon} {lt.name.split(' ')[0]}: {count}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* LIZENZSTUFEN-KARTEN */}
+        <section style={{ marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem', color: 'var(--k2-text)' }}>Lizenzstufen</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
+            {LICENCE_TYPES.map((lt) => {
+              const count = grants.filter(g => g.licenseType === lt.id).length
+              return (
+                <div key={lt.id} style={{
+                  background: count > 0 ? 'rgba(95,251,241,0.06)' : 'rgba(255,255,255,0.03)',
+                  border: `1.5px solid ${count > 0 ? 'rgba(95,251,241,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                  borderRadius: '10px', padding: '1rem'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                    <strong style={{ color: 'var(--k2-accent)', fontSize: '1rem' }}>{lt.icon} {lt.name}</strong>
+                    <span style={{
+                      fontSize: '0.75rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: 20,
+                      background: count > 0 ? 'rgba(95,251,241,0.15)' : 'rgba(255,255,255,0.06)',
+                      color: count > 0 ? 'var(--k2-accent)' : 'var(--k2-muted)',
+                    }}>
+                      {count > 0 ? `✅ ${count} aktiv` : '○ keine'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--k2-accent)', fontWeight: 600, marginBottom: '0.3rem' }}>{lt.price}</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', lineHeight: 1.4 }}>{lt.summary}</div>
+                </div>
+              )
+            })}
           </div>
         </section>
 
-        {/* Lizenzmodell im Detail – wie für Kunden (volle Info für Entscheidung) */}
+        {/* DETAIL-INFO */}
         <section style={{
-          background: 'rgba(255,255,255,0.05)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: '12px',
-          padding: '1.25rem',
-          marginBottom: '1.5rem'
+          background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: '12px', padding: '1rem 1.25rem', marginBottom: '1.5rem'
         }}>
-          <h2 style={{ fontSize: '1.1rem', margin: '0 0 0.75rem 0', color: 'var(--k2-accent)' }}>
-            2. Lizenzmodell im Detail (wie für Kunden – volle Info für die Entscheidung)
-          </h2>
-          <p style={{ fontSize: '0.9rem', color: 'var(--k2-muted)', marginBottom: '1rem' }}>
-            Alle Stufen nutzen dieselbe App; der Umfang wird über Limits und freigeschaltete Features gesteuert.
-          </p>
-
-          {/* Überblick */}
-          <h3 style={{ fontSize: '1rem', margin: '0 0 0.5rem', color: 'var(--k2-text)' }}>Überblick</h3>
-          <div style={{ overflowX: 'auto', marginBottom: '1.25rem' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.15)' }}>
-                  <th style={{ textAlign: 'left', padding: '0.5rem', color: 'var(--k2-accent)' }}>Stufe</th>
-                  <th style={{ textAlign: 'left', padding: '0.5rem', color: 'var(--k2-muted)' }}>Zielgruppe</th>
-                  <th style={{ textAlign: 'left', padding: '0.5rem', color: 'var(--k2-muted)' }}>Preis</th>
-                  <th style={{ textAlign: 'left', padding: '0.5rem', color: 'var(--k2-muted)' }}>Kerndifferenzierung</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}><td style={{ padding: '0.5rem' }}><strong>Basic</strong></td><td style={{ padding: '0.5rem' }}>Einstieg, erste Schritte</td><td style={{ padding: '0.5rem' }}>49 €/Monat</td><td style={{ padding: '0.5rem' }}>Begrenzte Werke, eine Galerie, <TermWithExplanation term="Standard-URL" /></td></tr>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}><td style={{ padding: '0.5rem' }}><strong>Pro</strong></td><td style={{ padding: '0.5rem' }}>Aktive Künstler:innen</td><td style={{ padding: '0.5rem' }}>99 €/Monat</td><td style={{ padding: '0.5rem' }}>Mehr Werke, <TermWithExplanation term="Custom Domain" />, volles Marketing</td></tr>
-                <tr><td style={{ padding: '0.5rem' }}><strong>Enterprise</strong></td><td style={{ padding: '0.5rem' }}>Galerien, <TermWithExplanation term="White-Label" /></td><td style={{ padding: '0.5rem' }}>nach Vereinbarung</td><td style={{ padding: '0.5rem' }}>Unbegrenzt, <TermWithExplanation term="API" />, eigenes Branding, <TermWithExplanation term="Dedicated Support" /></td></tr>
-              </tbody>
-            </table>
+          <h2 style={{ fontSize: '1rem', margin: '0 0 0.75rem', color: 'var(--k2-muted)' }}>Details im Überblick</h2>
+          <div style={{ fontSize: '0.88rem', color: 'var(--k2-muted)', lineHeight: 1.7 }}>
+            <p style={{ margin: '0 0 0.5rem' }}><strong style={{ color: 'var(--k2-text)' }}>🎨 Basic</strong> – Bis 30 Werke, 1 Galerie, Events, Kasse, Etiketten, Marketing (Basis), <TermWithExplanation term="Standard-URL" />. 49 €/Monat.</p>
+            <p style={{ margin: '0 0 0.5rem' }}><strong style={{ color: 'var(--k2-text)' }}>⭐ Pro</strong> – Alles aus Basic + unbegrenzte Werke, <TermWithExplanation term="Custom Domain" />, volles Marketing (Flyer, Presse, Social Media, Plakat). 99 €/Monat.</p>
+            <p style={{ margin: 0 }}><strong style={{ color: 'var(--k2-text)' }}>🏛️ Kunstvereine (VK2)</strong> – Verein nutzt Pro; ab 10 registrierten Mitgliedern kostenfrei. Vereinsmitglieder: 50 % Rabatt. Nicht registrierte Mitglieder werden im System erfasst (Datenschutz beachten).</p>
           </div>
-
-          {/* Basic */}
-          <h3 style={{ fontSize: '1rem', margin: '0 0 0.5rem', color: 'var(--k2-text)' }}>Basic (Einstieg)</h3>
-          <p style={{ fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.5rem' }}>Schneller Einstieg, ideal zum Ausprobieren und für kleine Portfolios.</p>
-          <ul style={{ margin: '0 0 1rem 1.25rem', padding: 0, fontSize: '0.9rem', lineHeight: 1.7 }}>
-            <li><strong>Werke:</strong> bis 30 Werke</li>
-            <li><strong>Galerie:</strong> 1 Galerie (eine öffentliche URL)</li>
-            <li>Events, Stammdaten & Design, Kasse, Etiketten, Marketing (Basis), Backup, Standard-URL + QR, Support (Doku, E-Mail)</li>
-            <li><em>Nicht enthalten:</em> <TermWithExplanation term="Custom Domain" />, unbegrenzte Werke, <TermWithExplanation term="White-Label" />, <TermWithExplanation term="API" /></li>
-          </ul>
-
-          {/* Pro */}
-          <h3 style={{ fontSize: '1rem', margin: '0 0 0.5rem', color: 'var(--k2-text)' }}>Pro (Aktive Künstler:innen)</h3>
-          <p style={{ fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.5rem' }}>Professioneller Dauerbetrieb mit eigenem Auftritt.</p>
-          <ul style={{ margin: '0 0 1rem 1.25rem', padding: 0, fontSize: '0.9rem', lineHeight: 1.7 }}>
-            <li><strong>Werke:</strong> unbegrenzt</li>
-            <li><strong>Galerie:</strong> 1 Galerie</li>
-            <li>Alles aus Basic, dazu: <strong><TermWithExplanation term="Custom Domain" /></strong> (eigene Domain), <strong>Marketing voll</strong> (Flyer, Presse, Newsletter, Plakat, Social Media, Event-Flyer), priorisierter Support</li>
-          </ul>
-
-          {/* Enterprise */}
-          <h3 style={{ fontSize: '1rem', margin: '0 0 0.5rem', color: 'var(--k2-text)' }}>Enterprise (Galerien / Mehrbedarf)</h3>
-          <p style={{ fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.5rem' }}>Galerien, Agenturen – eigenes Branding, technische Anbindung.</p>
-          <ul style={{ margin: '0 0 1rem 1.25rem', padding: 0, fontSize: '0.9rem', lineHeight: 1.7 }}>
-            <li>Alles aus Pro, dazu: <strong><TermWithExplanation term="White-Label" /></strong> (eigenes Logo/Name), <strong><TermWithExplanation term="API" />-Zugang</strong>, <strong><TermWithExplanation term="Dedicated Support" /></strong>, ggf. mehrere Galerien/Instanzen. Preis nach Vereinbarung.</li>
-          </ul>
-
-          {/* Feature-Matrix */}
-          <h3 style={{ fontSize: '1rem', margin: '0 0 0.5rem', color: 'var(--k2-text)' }}>Kurzvergleich (Feature-Matrix)</h3>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.15)' }}>
-                  <th style={{ textAlign: 'left', padding: '0.4rem', color: 'var(--k2-muted)' }}>Feature / Limit</th>
-                  <th style={{ textAlign: 'center', padding: '0.4rem', color: 'var(--k2-accent)' }}>Basic</th>
-                  <th style={{ textAlign: 'center', padding: '0.4rem', color: 'var(--k2-accent)' }}>Pro</th>
-                  <th style={{ textAlign: 'center', padding: '0.4rem', color: 'var(--k2-accent)' }}>Enterprise</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}><td style={{ padding: '0.4rem' }}>Werke</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>bis 30</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>unbegrenzt</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>unbegrenzt</td></tr>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}><td style={{ padding: '0.4rem' }}>Galerien</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>1</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>1</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>1 oder mehr</td></tr>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}><td style={{ padding: '0.4rem' }}>Events, Stammdaten, Design, Kasse, Etiketten</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>ja</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>ja</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>ja</td></tr>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}><td style={{ padding: '0.4rem' }}>Marketing (Basis)</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>ja</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>ja</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>ja</td></tr>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}><td style={{ padding: '0.4rem' }}>Marketing (voll)</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>nein</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>ja</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>ja</td></tr>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}><td style={{ padding: '0.4rem' }}>Standard-URL + QR</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>ja</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>ja</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>ja</td></tr>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}><td style={{ padding: '0.4rem' }}><TermWithExplanation term="Custom Domain" /></td><td style={{ padding: '0.4rem', textAlign: 'center' }}>nein</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>ja</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>ja</td></tr>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}><td style={{ padding: '0.4rem' }}><TermWithExplanation term="White-Label" /> / <TermWithExplanation term="API" /></td><td style={{ padding: '0.4rem', textAlign: 'center' }}>nein</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>nein</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>ja</td></tr>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}><td style={{ padding: '0.4rem' }}>Support</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>Standard</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>priorisiert</td><td style={{ padding: '0.4rem', textAlign: 'center' }}><TermWithExplanation term="Dedicated Support" /></td></tr>
-                <tr><td style={{ padding: '0.4rem' }}>Preis</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>49 €/Monat</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>99 €/Monat</td><td style={{ padding: '0.4rem', textAlign: 'center' }}>nach Vereinbarung</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          {/* Aufstufung */}
-          <h3 style={{ fontSize: '1rem', margin: '1rem 0 0.5rem', color: 'var(--k2-text)' }}>Aufstufung</h3>
-          <p style={{ fontSize: '0.9rem', color: 'var(--k2-muted)', margin: 0, lineHeight: 1.6 }}>
-            Du kannst jederzeit auf eine höhere Stufe wechseln: <strong>Basic → Pro</strong> oder <strong>Pro → Enterprise</strong>. 
-            Die Differenz wird anteilig auf die laufende Abrechnungsperiode berechnet; ab der nächsten Periode gilt der neue Preis. 
-            Deine Daten und Einstellungen bleiben erhalten.
+          <p style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', marginTop: '0.75rem', marginBottom: 0 }}>
+            Aufstufung jederzeit möglich: Basic → Pro → Kunstvereine (VK2). Daten bleiben erhalten.
           </p>
         </section>
 
-        {/* Lizenz vergeben */}
+        {/* LIZENZ VERGEBEN */}
         <section style={{
-          background: 'rgba(255,255,255,0.05)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: '12px',
-          padding: '1.25rem',
-          marginBottom: '1.5rem'
+          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: '12px', padding: '1.25rem', marginBottom: '1.5rem'
         }}>
-          <h2 style={{ fontSize: '1.1rem', margin: '0 0 1rem 0', color: 'var(--k2-text)' }}>
-            3. Lizenz vergeben
+          <h2 style={{ fontSize: '1.05rem', margin: '0 0 1rem', color: 'var(--k2-text)' }}>
+            ➕ Neue Lizenz vergeben
           </h2>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '400px' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', maxWidth: '400px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.25rem' }}>Name *</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="input"
-                placeholder="Name des Lizenz-Inhabers"
-              />
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="input" placeholder="Name der lizenzierten Person" />
             </div>
             <div>
               <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.25rem' }}>E-Mail *</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input"
-                placeholder="E-Mail"
-              />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="input" placeholder="E-Mail" />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.25rem' }}>Lizenz-Typ</label>
-              <select
-                value={licenseType}
-                onChange={(e) => setLicenseType(e.target.value as LicenceGrant['licenseType'])}
-                className="input"
-              >
-                {LICENCE_TYPES.map((t) => (
-                  <option key={t.id} value={t.id}>{t.name} – {t.price}</option>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.25rem' }}>Lizenzstufe</label>
+              <select value={licenseType} onChange={(e) => setLicenseType(e.target.value as LicenceGrant['licenseType'])} className="input">
+                {LICENCE_TYPES.map((lt) => (
+                  <option key={lt.id} value={lt.id}>{lt.icon} {lt.name} – {lt.price}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.25rem' }}>
-                Empfehler-ID (optional, für Abrechnung)
-              </label>
-              <input
-                type="text"
-                value={empfehlerId}
-                onChange={(e) => setEmpfehlerId(e.target.value)}
-                className="input"
-                placeholder="z. B. Partner-ID oder E-Mail des Empfehlers"
-              />
+              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.25rem' }}>Empfehler-ID (optional)</label>
+              <input type="text" value={empfehlerId} onChange={(e) => setEmpfehlerId(e.target.value)} className="input" placeholder="ID des Empfehlers (für Vergütung)" />
             </div>
             {message && (
-              <p style={{
-                fontSize: '0.9rem',
-                color: message.type === 'ok' ? 'var(--k2-accent)' : '#f87171',
-                margin: 0
-              }}>
+              <p style={{ fontSize: '0.9rem', color: message.type === 'ok' ? 'var(--k2-accent)' : '#f87171', margin: 0 }}>
                 {message.text}
               </p>
             )}
@@ -298,40 +228,46 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
           </form>
         </section>
 
-        {/* Liste vergebener Lizenzen (lokal) */}
+        {/* AKTIVE LIZENZEN */}
         {grants.length > 0 && (
-          <section style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '12px',
-            padding: '1.25rem'
-          }}>
-            <h2 style={{ fontSize: '1.1rem', margin: '0 0 1rem 0', color: 'var(--k2-text)' }}>
-              4. Vergebene Lizenzen (lokal gespeichert)
+          <section style={{ marginBottom: '1.5rem' }}>
+            <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.75rem', color: 'var(--k2-text)' }}>
+              ✅ Aktive Lizenzen ({grants.length})
             </h2>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {grants.map((g) => (
-                <li key={g.id} style={{
-                  padding: '0.75rem 0',
-                  borderBottom: '1px solid rgba(255,255,255,0.06)',
-                  fontSize: '0.9rem',
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '0.5rem',
-                  alignItems: 'center'
-                }}>
-                  <span style={{ color: 'var(--k2-text)' }}>{g.name ?? ''}</span>
-                  <span style={{ color: 'var(--k2-muted)' }}>{g.email ?? ''}</span>
-                  <span style={{ textTransform: 'capitalize', color: 'var(--k2-accent)' }}>{g.licenseType ?? 'pro'}</span>
-                  {g.empfehlerId && (
-                    <span style={{ fontSize: '0.8rem', color: 'var(--k2-muted)' }}>Empfehler: {g.empfehlerId}</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-            <p style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', marginTop: '1rem', marginBottom: 0 }}>
-              Speicher: localStorage. Für Produktion: Backend/Supabase und Abrechnungsstruktur anbinden.
-            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {grants.map((g) => {
+                const lt = LICENCE_TYPES.find(x => x.id === g.licenseType)
+                return (
+                  <div key={g.id} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem',
+                    background: 'rgba(95,251,241,0.06)', border: '1px solid rgba(95,251,241,0.2)',
+                    borderRadius: '10px', padding: '0.75rem 1rem'
+                  }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+                      <span style={{ fontWeight: 700, color: 'var(--k2-text)', fontSize: '0.95rem' }}>{g.name}</span>
+                      <span style={{ fontSize: '0.82rem', color: 'var(--k2-muted)' }}>{g.email}</span>
+                      {g.empfehlerId && <span style={{ fontSize: '0.78rem', color: 'var(--k2-muted)' }}>Empfehler: {g.empfehlerId}</span>}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{
+                        fontSize: '0.82rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: 20,
+                        background: 'rgba(95,251,241,0.15)', color: 'var(--k2-accent)', border: '1px solid rgba(95,251,241,0.3)'
+                      }}>
+                        {lt?.icon} {lt?.name ?? g.licenseType}
+                      </span>
+                      {deleteId === g.id ? (
+                        <div style={{ display: 'flex', gap: '0.4rem' }}>
+                          <button type="button" onClick={() => handleDelete(g.id)} style={{ padding: '0.25rem 0.6rem', background: '#dc2626', color: '#fff', border: 'none', borderRadius: 6, fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600 }}>Löschen</button>
+                          <button type="button" onClick={() => setDeleteId(null)} style={{ padding: '0.25rem 0.6rem', background: 'rgba(255,255,255,0.1)', color: 'var(--k2-muted)', border: 'none', borderRadius: 6, fontSize: '0.8rem', cursor: 'pointer' }}>Abbrechen</button>
+                        </div>
+                      ) : (
+                        <button type="button" onClick={() => setDeleteId(g.id)} style={{ padding: '0.25rem 0.5rem', background: 'rgba(220,38,38,0.1)', color: '#f87171', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 6, fontSize: '0.8rem', cursor: 'pointer' }}>✕</button>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </section>
         )}
       </div>

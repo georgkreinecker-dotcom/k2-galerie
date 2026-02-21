@@ -31,7 +31,8 @@
 
 ## 🎨 Projekt-Kontext
 
-**Projekt:** K2 Galerie  
+**Projekt:** K2 Galerie (Plattform)  
+**Unsere Galerie:** K2 Galerie Kunst&Keramik  
 **Typ:** Multi-Tenant SaaS  
 **Beschreibung:** Galerie für Kunst & Keramik von Martina und Georg Kreinecker
 

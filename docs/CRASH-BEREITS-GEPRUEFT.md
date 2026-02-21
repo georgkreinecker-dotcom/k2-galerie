@@ -16,6 +16,10 @@
 | 18.02.26 | ScreenshotExportAdmin | Kein Auto-Sync beim Admin-Start, Syntax (replace /</g) behoben |
 | 18.02.26 | index.html / write-build-info.js | Build-Info-Script: im iframe kein location.replace (Reload-Schleife → Totalabsturz) |
 | 18.02.26 | App.tsx | /admin/login nur mit Navigate, keine AdminLoginPage-Route (Host-Crash nach AdminLoginPage-Einbindung) |
+| 19.02.26 | location.reload / location.href | Alle nutzergetriggerten Reloads: ErrorBoundary, App.tsx (Reset/Neu laden, AdminErrorBoundary), GaleriePage (Pull-to-Refresh) – nur ausführen wenn window.self === window.top (kein Reload im iframe) |
+| 19.02.26 | ScreenshotExportAdmin | Kontext-Effect [location.search]: nur setState, kein Reload/Redirect; isMounted-Check + Cleanup ergänzt (kein setState nach Unmount) |
+| 19.02.26 | Crash-Check (neu) | location.reload/replace: main.tsx, appBootstrap nur bei !inIframe ✓. Vk2GaleriePage, VirtuellerRundgangPage: Listener-Cleanup ✓. DevViewPage: iframe-Check vor Intervall, Listener-Cleanup ✓. |
+| 20.02.26 | App.tsx, GalerieVorschauPage | App.tsx: „Reset & neu laden“ hatte keinen iframe-Check → ergänzt (im iframe nur setState, kein reload). GalerieVorschauPage: Beide Polling-Intervalle (Mac Mobile-Updates, Mobile-zu-Mobile) nur wenn notInIframe (wie DevViewPage). |
 
 ---
 
@@ -29,6 +33,14 @@
 | Stammdaten-Intervall in iframe | stammdatenIntervalMs = inIframe ? 0 : 2000 |
 | Doppelte createRoot / StrictMode | StrictMode aus; createRoot nur einmal; kein Retry mit zweitem createRoot |
 | Reload-Schleife im iframe (Build-Info-Script) | Am Anfang des Inject-Scripts: if(window.self!==window.top)return; – kein location.replace in Cursor Preview |
+| Reload nach Backup-Wiederherstellung im iframe | Beide setTimeout(… reload, 800) nur ausführen wenn window.self === window.top |
+| Reload in ErrorBoundary / App.tsx / GaleriePage Pull-to-Refresh | 19.02.26: Alle nur wenn window.self === window.top (kein Reload in Cursor Preview) |
+| Vk2MemberAdminPage setTimeout ohne Cleanup | 19.02.26: savedTimeoutRef + clearTimeout im useEffect-Cleanup (kein setState nach Unmount) |
+| Redirect/Reload im iframe (main, GaleriePage, ErrorBoundary) | main: skipBootstrapForReload nur wenn notInIframe; GaleriePage Pull-to-Refresh: location.href nur wenn window.self===window.top; ErrorBoundary: handleReload im iframe nur handleReset(), kein reload() |
+| App.tsx Reload-Buttons im iframe | AppErrorBoundary + AdminErrorBoundary: „Reset & neu laden“, „Nur neu laden“, „Seite neu laden“ im iframe nur setState(hasError: false), kein location.reload() (20.02.26) |
+| DevViewPage Mobile-Intervall im iframe | setInterval(checkForMobileUpdates) startet nicht, wenn window.self !== window.top (20.02.26) |
+| App.tsx „Reset & neu laden“ im iframe | 20.02.26: iframe-Check ergänzt – im iframe nur setState(hasError: false), kein location.reload() |
+| GalerieVorschauPage Polling im iframe | 20.02.26: Beide Intervalle (checkForMobileUpdates, syncFromGalleryData) nur wenn notInIframe |
 
 ---
 
@@ -58,6 +70,8 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 
 | 18.02.26 | App.tsx / AdminLoginPage | Route `/admin/login` hatte kurzzeitig `<AdminLoginPage />` mit `useEffect` + `window.location.replace` → danach Crash (auch Host). **Fix:** Route wieder nur `<Navigate to={...} replace />`, AdminLoginPage wird **nicht** aus den Routen geladen (Crash-Risiko vermeiden). |
 | 18.02.26 | vite.config.ts | `react({ fastRefresh: false })` → TS2353 „fastRefresh does not exist in type 'Options'“. **Fix:** Option entfernt (in dieser Vite-Version nicht typisiert), Build läuft wieder. |
+| 19.02.26 | main.tsx, GaleriePage, ErrorBoundary | Reload/Redirect nur außerhalb iframe: main.tsx `location.replace` nur wenn `window.self === window.top`; GaleriePage Pull-to-Refresh nur wenn `window.self === window.top`; ErrorBoundary `handleReload` im iframe nur State-Reset, kein `location.reload()`. |
+| 20.02.26 | App.tsx, DevViewPage | App.tsx: AppErrorBoundary + AdminErrorBoundary – Reload-Buttons im iframe abgesichert (nur `setState({ hasError: false })`, kein `location.reload()`). DevViewPage: Mobile-Update-Intervall im iframe deaktiviert (`window.self !== window.top` → return). |
 
 ---
 
@@ -102,4 +116,18 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 
 **Empfehlung:** Workaround wie oben (Browser-Tab mit localhost schließen vor Cursor-Schließen; nach Cursor-Öffnen zuerst `npm run dev`, dann Browser). Bei Vercel: nach Crash Deployment-Status prüfen und bei Bedarf erneut pushen.
 
-*Zuletzt ergänzt: 18.02.26*
+---
+
+## Crash-Check (18.02.26, Session-Ende)
+
+**Geprüft:** main.tsx (location.replace nur bei !inIframe ✓), Vk2GaleriePage (useEffect mit Cleanup ✓), ScreenshotExportAdmin (VK2 Design-Block: nur State/inputs, kein neuer useEffect/Reload ✓).  
+**Behoben:** Zwei Reloads nach Backup-Wiederherstellung – nur noch ausführen wenn `window.self === window.top` (kein Reload in Cursor Preview).
+
+---
+
+## Crash-Check 19.02.26
+
+**Geprüft:** location.reload / location.replace / location.href im gesamten Repo. main.tsx: Replace nur bei !inIframe ✓. ScreenshotExportAdmin Backup-Reloads bereits mit window.self === window.top ✓.  
+**Behoben:** Nutzer-Reloads in ErrorBoundary (handleReload), App.tsx (Reset & neu laden, Nur neu laden, AdminErrorBoundary „Seite neu laden“), GaleriePage (Pull-to-Refresh) – alle nur noch wenn window.self === window.top.
+
+*Zuletzt ergänzt: 20.02.26 (Crash-Check: App.tsx Reset-Button, GalerieVorschauPage Polling im iframe abgesichert)*

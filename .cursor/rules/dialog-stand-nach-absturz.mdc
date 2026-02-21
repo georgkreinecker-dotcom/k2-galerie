@@ -1,0 +1,45 @@
+---
+description: "DIALOG-STAND.md: nach Absturz lesen, nach JEDER Aufgabe aktualisieren – automatisch, ohne Ausnahme."
+alwaysApply: true
+---
+
+# Dialog-Stand – Pflicht-Anker für jede Session
+
+## Das Problem (passiert immer wieder)
+
+Georg muss sich selbst merken wo wir aufgehört haben. Das ist sein Job nicht – das ist meiner.
+**Wenn Georg sagt „wo waren wir" oder „weiter", ist das ein Zeichen dass ich meine Pflicht nicht erfüllt habe.**
+
+## Regel 1: ZUERST lesen (bei Absturz / „weiter" / „wo waren wir")
+
+Wenn Georg sagt: Absturz, weiter, wo waren wir, Gedächtnis verloren, wo stehengeblieben – oder sinngemäß:
+
+1. **Sofort lesen:** `docs/DIALOG-STAND.md`
+2. **Direkt weitermachen** – nicht fragen „Woran soll ich weiterarbeiten?" Die Datei sagt es.
+3. **Kurz bestätigen:** „Dialog-Stand gelesen – wir waren bei [X], ich mache weiter."
+
+## Regel 2: ZULETZT schreiben (nach JEDER Aufgabe – KEINE AUSNAHME)
+
+**Nach JEDER abgeschlossenen Aufgabe** – egal wie klein – als **absolut letzten Schritt** vor der Antwort:
+
+1. `docs/DIALOG-STAND.md` aktualisieren (Write-Tool).
+2. Inhalt: Datum, Thema, was zuletzt gemacht, **nächster konkreter Schritt** (so präzise dass ich nach Crash sofort weitermachen kann, ohne Georg zu fragen).
+3. **Dann** erst die Antwort an Georg schreiben.
+
+**Vergessen = schwerer Mangel.** Georg muss sich das nicht merken – das ist automatisch mein Job.
+
+## Was in DIALOG-STAND.md stehen muss
+
+| Feld | Beispiel |
+|------|---------|
+| Datum | 21.02.26 |
+| Thema | UX-Nutzer-Logik auf allen Seiten |
+| Was zuletzt | LicencesPage fertig: enterprise → VK2, Ampel-Karten, Build ✅ |
+| Nächster Schritt | WillkommenPage.tsx prüfen – AGB-Modal + 3 Buttons auf Nutzer-Logik |
+| Wo nachlesen | src/pages/WillkommenPage.tsx, .cursor/rules/ux-user-first-logik.mdc |
+
+## Kurzfassung
+
+- **Absturz/weiter** → DIALOG-STAND.md lesen → sofort weitermachen.
+- **Aufgabe fertig** → DIALOG-STAND.md schreiben → dann Antwort.
+- **Keine Ausnahme. Georg soll sich nie merken müssen wo wir waren.**

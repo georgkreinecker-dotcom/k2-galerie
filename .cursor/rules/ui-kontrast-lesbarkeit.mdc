@@ -1,0 +1,49 @@
+---
+description: UI-Kontrast und Lesbarkeit – Farbkombinationen die immer funktionieren
+alwaysApply: true
+---
+
+# 🔒 UI-Kontrast – Keine unlesbaren Farben (kritisch für Georg)
+
+## Das Problem
+
+Der Admin-Bereich hat einen **hellen, warmen Hintergrund** (`WERBEUNTERLAGEN_STIL`):
+- `bgDark`: `#f6f4f0` (hellbeige)
+- `bgCard`: `#fffefb` (fast weiß)
+- `bgElevated`: `#ebe8e2` (beige)
+
+Auf diesen Hintergründen sind folgende Farben **UNLESERLICH**:
+- ❌ Türkis / Cyan (`#5ffbf1`, `rgba(95,251,241,...)`) → kaum sichtbar auf hell
+- ❌ Weiß (`#ffffff`) → unsichtbar auf hellem Beige
+- ❌ Bläuliches Grau (`#8fa0c9`) → zu wenig Kontrast auf hellem Hintergrund
+
+## Regel: Welche Farben wo verwenden
+
+### Auf hellem Hintergrund (Admin-Bereich, WERBEUNTERLAGEN_STIL)
+
+| Zweck | Farbe | Hex |
+|-------|-------|-----|
+| **Button (Primär)** | Dunkelrot + weißer Text | `background: #b54a1e; color: #fff` |
+| **Button (Hover)** | Hellorange + weißer Text | `background: #d4622a; color: #fff` |
+| **Normaler Text** | Fast schwarz | `color: #1c1a18` |
+| **Gedämpfter Text** | Dunkelgrau | `color: #5c5650` |
+| **Labels / Überschriften** | Fast schwarz oder Dunkelrot | `color: #1c1a18` oder `color: #b54a1e` |
+| **Rahmen** | Transparentes Dunkelrot | `border: 1px solid #b54a1e` |
+
+### Auf dunklem Hintergrund (Galerie, Preview, dunkle Panels)
+
+| Zweck | Farbe |
+|-------|-------|
+| Buttons / Akzente | Türkis `#5ffbf1` ✅ |
+| Text | Weiß `#ffffff` ✅ |
+
+## Kurzregel
+
+**Türkis / Weiß = nur auf dunklem Hintergrund.**
+**Auf hellem Hintergrund = dunkle Farben (`#1c1a18`, `#b54a1e`, `#5c5650`).**
+
+## Vor jeder UI-Änderung prüfen
+
+- [ ] Welche Hintergrundfarbe hat der Bereich? (hell oder dunkel?)
+- [ ] Textfarbe / Button-Farbe dazu passend? (heller Hintergrund → dunkle Farben; dunkler Hintergrund → helle Farben)
+- [ ] Türkis / Weiß nur auf dunklem Hintergrund verwenden

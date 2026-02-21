@@ -98,8 +98,13 @@ ${name}`
       <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 1.85rem)', margin: '0 0 0.5rem', color: t.accent }}>
         Empfehlungstool
       </h1>
-      <p style={{ margin: '0 0 1.5rem', color: t.muted, fontSize: '1rem' }}>
+      <p style={{ margin: '0 0 0.5rem', color: t.muted, fontSize: '1rem' }}>
         Lade Freund:innen ein, die K2 Galerie als Muster anzuschauen – und weise sie auf kostenlose Nutzung oder Zuverdienst durch Weiterempfehlung hin.
+      </p>
+      <p style={{ margin: '0 0 1.5rem', fontSize: '0.9rem' }}>
+        <Link to={`${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-so-empfiehlst-du`} style={{ color: t.accent, textDecoration: 'none' }}>
+          → So empfiehlst du die K2 Galerie (Kurz-Anleitung in mök2)
+        </Link>
       </p>
 
       {/* Empfehler-ID */}

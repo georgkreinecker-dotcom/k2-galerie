@@ -62,7 +62,7 @@ Vor dem echten Veröffentlichen **immer** durchgehen:
 ### 5. Stabilität & Einbruch (Checklisten)
 
 - **Einsturzsicher:** Error Boundaries, try/catch, Timeouts, keine Auto-Reloads, Admin-Start entlastet.
-- **Einbruchsicher:** Secrets nicht im Repo, XSS reduziert (Escape, Stack nur in Dev), CORS eingeschränkt, K2/ök2 getrennt.
+- **Einbruchsicher:** Secrets nicht im Repo, XSS reduziert (Escape, Stack nur in Dev), CORS eingeschränkt, K2/Kreinecker getrennt.
 - Skala (nach Optimierung): von außen ca. 6–6,5/10, von innen ca. 7,5–8/10.
 
 **Details:** `docs/SICHERHEIT-STABILITAET-CHECKLISTE.md`, `docs/VERBESSERUNGEN-OHNE-MEHRKOSTEN.md`
@@ -97,9 +97,9 @@ Vor dem echten Veröffentlichen **immer** durchgehen:
 | **Produkt-Label / Regress** | docs/PRODUKT-LABEL-SICHERHEIT-ROADMAP.md |
 | **Checklisten (Einsturz/Einbruch)** | docs/SICHERHEIT-STABILITAET-CHECKLISTE.md |
 | **Supabase RLS** | docs/SUPABASE-RLS-SICHERHEIT.md |
-| **K2 vs. ök2** | docs/K2-OEK2-DATENTRENNUNG.md |
+| **K2 vs. Kreinecker (Datentrennung)** | docs/K2-OEK2-DATENTRENNUNG.md |
 | **Crash-Fixes** | docs/CRASH-FIXES-STAND-17-02-26.md |
-| **mök2 (Marketing ök2)** | Sektion 11 „Sicherheit & Vor Veröffentlichung“ (Verweise auf alle oben) |
+| **mök2 (Marketing K2 Galerie)** | Sektion 11 „Sicherheit & Vor Veröffentlichung“ (Verweise auf alle oben) |
 
 ---
 

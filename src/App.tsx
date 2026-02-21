@@ -110,6 +110,11 @@ class AppErrorBoundary extends Component<{ children: ReactNode }, { hasError: bo
                   keys.forEach(k => localStorage.removeItem(k))
                   sessionStorage.clear()
                 } catch (_) {}
+                // Im iframe (Cursor Preview) kein Reload – verhindert Loop/Crash
+                if (typeof window !== 'undefined' && window.self !== window.top) {
+                  this.setState({ hasError: false })
+                  return
+                }
                 window.location.reload()
               }}
               style={{
@@ -125,7 +130,13 @@ class AppErrorBoundary extends Component<{ children: ReactNode }, { hasError: bo
               Reset &amp; neu laden
             </button>
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => {
+                if (typeof window !== 'undefined' && window.self !== window.top) {
+                  this.setState({ hasError: false })
+                  return
+                }
+                window.location.reload()
+              }}
               style={{
                 padding: '0.75rem 1.5rem',
                 background: '#667eea',
@@ -204,7 +215,13 @@ class AdminErrorBoundary extends Component<{ children: ReactNode }, { hasError: 
             )}
           </div>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              if (typeof window !== 'undefined' && window.self !== window.top) {
+                this.setState({ hasError: false })
+                return
+              }
+              window.location.reload()
+            }}
             style={{
               padding: '0.75rem 1.5rem',
               background: '#667eea',

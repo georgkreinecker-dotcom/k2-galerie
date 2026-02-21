@@ -1,6 +1,19 @@
 import { Link } from 'react-router-dom'
 import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE } from '../config/navigation'
 
+/** VK2 immer per Voll-Navigation öffnen – verhindert, dass K2/Router-Zustand bleibt */
+const VK2_GALERIE_URL = '/projects/vk2/galerie'
+
+/** Deine To-dos – Vermarktung & Strategie (zum Abarbeiten). Links führen direkt zur Stelle. */
+const MEINE_TODOS = [
+  { text: 'Kooperation in mök2 „Kanäle 2026“ eintragen (Name/Ziel)', href: `${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-kanale-2026` },
+  { text: 'Lizenz-Pakete (Basic/Pro/VK2) für Außen sichtbar prüfen', href: `${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-lizenz-pakete-aussen` },
+  { text: 'Trust: AGB-Link, Datenschutz, Support prüfen', href: PROJECT_ROUTES['k2-galerie'].marketingOek2 },
+  { text: 'Quartal: Kanäle 2026 in mök2 prüfen und anpassen', href: `${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-kanale-2026` },
+  { text: 'Optional: Eine Kooperation anvisieren (Erstgespräch/Pilot)', href: `${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-kanale-2026` },
+  { text: 'Optional: Kurz-Anleitung „So empfiehlst du“ nutzen', href: `${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-6` },
+]
+
 // Smart Panel (SP) – K2-Balken & Schnellzugriff (schlank, mök2-Links nur in mök2)
 
 interface SmartPanelProps {
@@ -9,6 +22,14 @@ interface SmartPanelProps {
 
 export default function SmartPanel({ currentPage }: SmartPanelProps) {
   const quickActions = [
+    {
+      label: '📌 Zentrale Themen',
+      action: () => {
+        window.location.href = '/k2team-handbuch?doc=16-ZENTRALE-THEMEN-FUER-NUTZER.md'
+      },
+      hint: 'Was Nutzer wissen sollten – Übersicht (Handbuch-Kapitel 16)',
+      highlight: true
+    },
     {
       label: '📊 Mission Control',
       action: () => {
@@ -24,11 +45,11 @@ export default function SmartPanel({ currentPage }: SmartPanelProps) {
       hint: 'Alle Projekte'
     },
     {
-      label: '🌐 ök2',
+      label: '🌐 Öffentliche Galerie K2',
       action: () => {
         window.location.href = PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
       },
-      hint: 'Öffentliche K2 Galerie (nur Muster)'
+      hint: 'Öffentliche Ansicht der K2 Galerie'
     },
     {
       label: '📋 mök2 – Vertrieb & Promotion',
@@ -36,6 +57,13 @@ export default function SmartPanel({ currentPage }: SmartPanelProps) {
         window.location.href = MOK2_ROUTE
       },
       hint: 'Eigener Bereich – nur indirekt mit App-Entwicklung verbunden'
+    },
+    {
+      label: '🧠 Handbuch',
+      action: () => {
+        window.location.href = '/k2team-handbuch'
+      },
+      hint: 'K2Team Handbuch – Zusammenarbeit, Backup, Sicherheit'
     }
   ]
 
@@ -71,7 +99,7 @@ export default function SmartPanel({ currentPage }: SmartPanelProps) {
         </p>
       </div>
 
-      {/* K2-Balken – echte Galerie (Martina & Georg) */}
+      {/* K2-Balken – echte Galerie (K2 Galerie Kunst&Keramik) */}
       <Link
         to={PROJECT_ROUTES['k2-galerie'].galerie}
         style={{
@@ -96,42 +124,118 @@ export default function SmartPanel({ currentPage }: SmartPanelProps) {
           e.currentTarget.style.borderColor = 'rgba(255, 140, 66, 0.4)'
         }}
       >
-        🎨 K2 Galerie
+        🎨 K2 Galerie Kunst&Keramik
       </Link>
 
-      {/* VK2 Vereinsplattform */}
+      {/* VK2 Vereinsplattform – K2-Familie (Hausherr): gleiche Designsprache wie K2 */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        <Link
-          to={PROJECT_ROUTES.vk2.galerie}
+        <button
+          type="button"
+          onClick={() => { window.location.href = VK2_GALERIE_URL }}
           style={{
             display: 'block',
+            width: '100%',
             padding: '0.85rem 1rem',
-            background: 'linear-gradient(135deg, rgba(90, 122, 110, 0.2), rgba(90, 122, 110, 0.1))',
-            border: '1px solid rgba(90, 122, 110, 0.4)',
+            background: 'linear-gradient(135deg, rgba(230, 122, 42, 0.2), rgba(255, 140, 66, 0.15))',
+            border: '1px solid rgba(255, 140, 66, 0.4)',
             borderRadius: '8px',
-            color: '#5a7a6e',
+            color: '#ff8c42',
             fontWeight: 600,
             fontSize: '1rem',
             textAlign: 'center',
-            textDecoration: 'none',
-            transition: 'all 0.2s ease'
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            fontFamily: 'inherit'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(90, 122, 110, 0.3), rgba(90, 122, 110, 0.2))'
-            e.currentTarget.style.borderColor = 'rgba(90, 122, 110, 0.6)'
+            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(230, 122, 42, 0.3), rgba(255, 140, 66, 0.25))'
+            e.currentTarget.style.borderColor = 'rgba(255, 140, 66, 0.6)'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(90, 122, 110, 0.2), rgba(90, 122, 110, 0.1))'
-            e.currentTarget.style.borderColor = 'rgba(90, 122, 110, 0.4)'
+            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(230, 122, 42, 0.2), rgba(255, 140, 66, 0.15))'
+            e.currentTarget.style.borderColor = 'rgba(255, 140, 66, 0.4)'
           }}
         >
           🎨 VK2 Vereinsplattform
-        </Link>
+        </button>
         <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-          <Link to={PROJECT_ROUTES.vk2.kunden} style={{ flex: 1, minWidth: '80px', padding: '0.5rem 0.6rem', fontSize: '0.85rem', background: 'rgba(90, 122, 110, 0.15)', border: '1px solid rgba(90, 122, 110, 0.3)', borderRadius: 6, color: '#5a7a6e', textDecoration: 'none', textAlign: 'center' }}>Mitglieder</Link>
-          <Link to={PROJECT_ROUTES.vk2.galerieVorschau} style={{ flex: 1, minWidth: '80px', padding: '0.5rem 0.6rem', fontSize: '0.85rem', background: 'rgba(90, 122, 110, 0.15)', border: '1px solid rgba(90, 122, 110, 0.3)', borderRadius: 6, color: '#5a7a6e', textDecoration: 'none', textAlign: 'center' }}>Künstler</Link>
-          <Link to={PROJECT_ROUTES.vk2.vollversion} style={{ flex: 1, minWidth: '80px', padding: '0.5rem 0.6rem', fontSize: '0.85rem', background: 'rgba(90, 122, 110, 0.25)', border: '1px solid rgba(90, 122, 110, 0.4)', borderRadius: 6, color: '#5a7a6e', textDecoration: 'none', textAlign: 'center', fontWeight: 600 }}>Admin</Link>
+          <Link to={PROJECT_ROUTES.vk2.kunden} style={{ flex: 1, minWidth: '80px', padding: '0.5rem 0.6rem', fontSize: '0.85rem', background: 'rgba(255, 140, 66, 0.15)', border: '1px solid rgba(255, 140, 66, 0.3)', borderRadius: 6, color: '#ff8c42', textDecoration: 'none', textAlign: 'center' }}>Mitglieder</Link>
+          <Link to={PROJECT_ROUTES.vk2.galerieVorschau} style={{ flex: 1, minWidth: '80px', padding: '0.5rem 0.6rem', fontSize: '0.85rem', background: 'rgba(255, 140, 66, 0.15)', border: '1px solid rgba(255, 140, 66, 0.3)', borderRadius: 6, color: '#ff8c42', textDecoration: 'none', textAlign: 'center' }}>Künstler</Link>
+          <Link to={PROJECT_ROUTES.vk2.vollversion} style={{ flex: 1, minWidth: '80px', padding: '0.5rem 0.6rem', fontSize: '0.85rem', background: 'rgba(255, 140, 66, 0.25)', border: '1px solid rgba(255, 140, 66, 0.4)', borderRadius: 6, color: '#ff8c42', textDecoration: 'none', textAlign: 'center', fontWeight: 600 }}>Admin</Link>
         </div>
+      </div>
+
+      {/* Admin-Bereich – Überblick über User/Mandanten */}
+      <div>
+        <h4 style={{
+          margin: '0 0 0.5rem 0',
+          fontSize: '0.9rem',
+          color: '#5ffbf1',
+          fontWeight: 600
+        }}>
+          👤 Admin-Bereich
+        </h4>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <Link
+            to="/admin"
+            style={{
+              padding: '0.75rem',
+              background: 'rgba(95, 251, 241, 0.1)',
+              border: '1px solid rgba(95, 251, 241, 0.2)',
+              borderRadius: '6px',
+              color: '#5ffbf1',
+              cursor: 'pointer',
+              fontSize: '0.85rem',
+              textAlign: 'left',
+              textDecoration: 'none',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(95, 251, 241, 0.15)'
+              e.currentTarget.style.borderColor = 'rgba(95, 251, 241, 0.3)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(95, 251, 241, 0.1)'
+              e.currentTarget.style.borderColor = 'rgba(95, 251, 241, 0.2)'
+            }}
+            title="Übersicht deiner User und Mandanten"
+          >
+            <span>👥 Meine User</span>
+            <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>→</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Deine To-dos – Vermarktung & Strategie */}
+      <div>
+        <h4 style={{
+          margin: '0 0 0.5rem 0',
+          fontSize: '0.9rem',
+          color: '#fbbf24',
+          fontWeight: 600
+        }}>
+          📋 Deine To-dos
+        </h4>
+        <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.75rem', color: '#8fa0c9' }}>
+          Vermarktung & Strategie – Klick führt zur Stelle
+        </p>
+        <ul style={{ margin: 0, paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+          {MEINE_TODOS.map((todo, i) => (
+            <li key={i} style={{ fontSize: '0.8rem', lineHeight: 1.35 }}>
+              <a
+                href={todo.href}
+                style={{ color: '#fbbf24', textDecoration: 'none' }}
+                onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline' }}
+                onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none' }}
+              >
+                {todo.text}
+              </a>
+            </li>
+          ))}
+        </ul>
       </div>
 
       {/* Schnellzugriff */}

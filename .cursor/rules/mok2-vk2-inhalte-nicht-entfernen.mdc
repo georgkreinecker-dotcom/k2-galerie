@@ -1,0 +1,31 @@
+---
+description: "mök2 und VK2-Lizenz-Inhalte sind geschützte Bereiche – nicht ohne explizite Anweisung entfernen oder überschreiben"
+alwaysApply: true
+---
+
+# mök2 & VK2-Lizenz – Inhalte nicht entfernen (geschützte Bereiche)
+
+## Warum diese Regel
+
+Georg hat in **mök2** (Marketing ök2) und in den **Lizenzen** eigene Strukturen festgelegt (z. B. **Lizenzstruktur VK2**, **Kunstvereine** als dritte Stufe statt Enterprise). Diese lagen in **eigenen** Bereichen, die mit VK2-Routen/Code nur indirekt zu tun haben. Trotzdem wurden sie bei Refactors oder „Aufräumen“ entfernt oder überschrieben – obwohl die Aufgabe nichts mit mök2/VK2-Inhalten zu tun hatte. Das verstößt gegen die Abmachung: **mök2 = eigener Bereich; was dort festgelegt ist, bleibt.**
+
+## Unveränderliche Regeln
+
+### 1. mök2-Inhalte nicht „nebenbei“ löschen
+
+- **MarketingOek2Page.tsx:** Enthält Sektionen wie USPs, Marktchancen, Lizenzen, **Lizenzstruktur VK2**, Sicherheit, Musterbilder, etc. **Keine** dieser Sektionen entfernen oder durch leere/generische Inhalte ersetzen, es sei denn, Georg fordert es **ausdrücklich** (z. B. „Sektion X in mök2 löschen“).
+- **Mok2Layout.tsx:** Die Struktur-Liste (mok2Sections) muss alle von Georg genutzten Sektionen enthalten, inkl. **Lizenzstruktur VK2 (Vereinsplattform)**. Beim Hinzufügen neuer Sektionen in MarketingOek2Page die Sidebar (mok2Sections) mit anpassen – beim Entfernen von Sektionen **nur** die explizit genannte entfernen, keine anderen.
+
+### 2. Lizenzen: Kunstvereine (VK2) = dritte Stufe
+
+- **LicenseManager:** Die dritte Lizenzstufe heißt **Kunstvereine** (VK2), mit Konditionen „Verein nutzt Pro; ab 10 registrierten Mitgliedern kostenfrei“, „Lizenzmitglied 50 % Lizenz“, „Nicht registrierte Mitglieder im System erfasst (Datenschutz)“. **Nicht** wieder auf „Enterprise“ umstellen ohne ausdrückliche Anweisung von Georg.
+- **LicencesPage:** Lizenztypen = Basic, Pro, **VK2 (Verein)**. So beibehalten.
+
+### 3. Bei Refactors und Feature-Entfernen
+
+- Bevor in **MarketingOek2Page.tsx**, **Mok2Layout.tsx**, **LicenseManager.tsx** oder **LicencesPage.tsx** etwas gelöscht oder vereinfacht wird: **Prüfen**, ob dadurch mök2-Sektionen (insbesondere Lizenzstruktur VK2) oder die Kunstvereine-Stufe in den Lizenzen betroffen sind. Wenn ja: **nur** den explizit gewünschten Teil ändern; Rest unberührt lassen.
+- Siehe auch: **feature-entfernen-vollstaendig.mdc** (nur die genannte Sache entfernen, alle Referenzen; keine anderen Bereiche mitschneiden).
+
+## Kurzfassung
+
+**mök2 und VK2-Lizenz-Inhalte = geschützt.** Nicht entfernen oder überschreiben, wenn die aktuelle Aufgabe nichts damit zu tun hat. Doku: **docs/MOK2-VK2-BEREICHE-SCHUETZEN.md**.

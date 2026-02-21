@@ -12,7 +12,7 @@ import { PROJECT_ROUTES, getAllProjectIds, type ProjectId } from './navigation'
 export const PROJECT_COLORS: Record<string, string> = {
   'k2-galerie': '#5ffbf1',
   'k2-galerie-oeffentlich': '#b8b8ff',
-  vk2: '#5a7a6e',
+  vk2: '#e67a2a', // K2-Familie: Orange (Hausherr) – VK2 = Mieter nutzt K2-Design
 }
 
 /** Fallback-Palette für Projekte ohne Eintrag in PROJECT_COLORS */
@@ -53,12 +53,12 @@ export function getProjectCards(): ProjectCard[] {
     }
   })
 
-  // Feste Zusatzeinträge: Öffentliche Seite nur mit Mustertexten (keine echten Daten) – Abkürzung: ök2
+  // Zusatzeintrag: Öffentliche Galerie K2 (umgewidmet von Demo)
   const extraCards: ProjectCard[] = [
     {
       id: 'k2-galerie-oeffentlich',
-      title: 'ök2 – Öffentliche K2 Galerie',
-      description: 'Galerie-Vorschau nur mit Mustertexten – keine persönlichen Daten.',
+      title: 'Öffentliche Galerie K2',
+      description: 'Öffentliche Ansicht der K2 Galerie.',
       to: PROJECT_ROUTES['k2-galerie'].galerieOeffentlich,
       color: PROJECT_COLORS['k2-galerie-oeffentlich'] ?? PROJECT_PALETTE[1],
       status: 'in-progress',
