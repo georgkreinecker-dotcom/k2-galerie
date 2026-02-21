@@ -6751,23 +6751,24 @@ ${'='.repeat(60)}
         console.warn('⚠️ Nummer-Index fehlgeschlagen:', e)
       }
       
-      // Optional: Versuche Supabase-Sync (falls konfiguriert)
-      try {
-        const { isSupabaseConfigured, saveArtworkToSupabase, autoSyncMobileToSupabase } = await import('../src/utils/supabaseClient')
-        if (isSupabaseConfigured()) {
-          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
-          
-          if (isMobile) {
-            await autoSyncMobileToSupabase()
-            console.log('✅ Mobile-Sync erfolgreich - Nummer synchronisiert:', artworkData.number)
-          } else {
-            await saveArtworkToSupabase(artworkData)
-            console.log('✅ Desktop-Sync erfolgreich - Nummer synchronisiert:', artworkData.number)
-          }
+      // K2: Werk-Bild automatisch via GitHub hochladen → überall sichtbar
+      if (!forOek2 && selectedFile && imageDataUrl) {
+        try {
+          const { uploadImageToGitHub } = await import('../src/utils/githubImageUpload')
+          const safeNumber = (artworkData.number || artworkData.id || 'werk').replace(/[^a-zA-Z0-9-]/g, '-')
+          const filename = `werk-${safeNumber}.jpg`
+          const url = await uploadImageToGitHub(selectedFile, filename, (msg) => console.log(msg))
+          // Werk mit URL statt Base64 aktualisieren
+          artworkData.imageUrl = url
+          const updatedArtworks = loadArtworks().map((a: any) =>
+            (a.id === artworkData.id || a.number === artworkData.number) ? { ...a, imageUrl: url } : a
+          )
+          saveArtworks(updatedArtworks)
+          setAllArtworks(updatedArtworks)
+          console.log('✅ Werk-Bild auf GitHub hochgeladen:', url)
+        } catch (uploadErr) {
+          console.warn('GitHub Upload für Werk fehlgeschlagen (Bild bleibt lokal):', uploadErr)
         }
-      } catch (syncError) {
-        // Nicht kritisch - Supabase ist optional
-        console.log('ℹ️ Supabase nicht konfiguriert oder Sync fehlgeschlagen (optional)')
       }
       
       // KRITISCH: Aktualisiere lokale Liste SOFORT
