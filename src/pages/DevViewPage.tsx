@@ -358,9 +358,10 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
         georg: getItemSafe('k2-stammdaten-georg', {}),
         gallery: {
           ...galleryStamm,
-          welcomeImage: pageContent.welcomeImage ?? galleryStamm.welcomeImage ?? '',
-          galerieCardImage: pageContent.galerieCardImage ?? galleryStamm.galerieCardImage ?? '',
-          virtualTourImage: pageContent.virtualTourImage ?? galleryStamm.virtualTourImage ?? ''
+          // pageContent hat Priorität (Admin-Upload) – || statt ?? weil '' kein Fallback auslöst bei ??
+          welcomeImage: pageContent.welcomeImage || galleryStamm.welcomeImage || '',
+          galerieCardImage: pageContent.galerieCardImage || galleryStamm.galerieCardImage || '',
+          virtualTourImage: pageContent.virtualTourImage || galleryStamm.virtualTourImage || ''
         },
         artworks: allArtworks,
         events: Array.isArray(events) ? events.slice(0, maxList) : [],

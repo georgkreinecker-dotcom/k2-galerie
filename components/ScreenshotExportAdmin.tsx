@@ -1779,9 +1779,10 @@ function ScreenshotExportAdmin() {
         const galleryMerged = { ...galleryStamm, ...(galleryData || {}) }
         const galleryExport = {
           ...galleryMerged,
-          welcomeImage: (galleryData?.welcomeImage ?? pageContent.welcomeImage ?? galleryStamm.welcomeImage ?? '') || galleryMerged.welcomeImage || '',
-          galerieCardImage: (galleryData?.galerieCardImage ?? pageContent.galerieCardImage ?? galleryStamm.galerieCardImage ?? '') || galleryMerged.galerieCardImage || '',
-          virtualTourImage: (galleryData?.virtualTourImage ?? pageContent.virtualTourImage ?? galleryStamm.virtualTourImage ?? '') || galleryMerged.virtualTourImage || ''
+          // pageContent hat Priorität – dort landen die per Admin hochgeladenen Bilder
+          welcomeImage: pageContent.welcomeImage || galleryData?.welcomeImage || galleryStamm.welcomeImage || '',
+          galerieCardImage: pageContent.galerieCardImage || galleryData?.galerieCardImage || galleryStamm.galerieCardImage || '',
+          virtualTourImage: pageContent.virtualTourImage || galleryData?.virtualTourImage || galleryStamm.virtualTourImage || ''
         }
         const designExport = (designSettings && typeof designSettings === 'object' && Object.keys(designSettings).length > 0) ? designSettings : designStored
         const pageTextsExport = (pageTexts != null && typeof pageTexts === 'object') ? pageTexts : pageTextsStored
@@ -9090,6 +9091,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         setPageContent(getPageContentGalerie(tenant))
                         setDesignSaveFeedback('ok')
                         setTimeout(() => setDesignSaveFeedback(null), 5000)
+                        // Signatur invalidieren damit Publish bei Bild-Änderungen sicher ausgeführt wird
+                        localStorage.removeItem('k2-last-publish-signature')
                         // Automatisch veröffentlichen – kein extra Schritt nötig
                         if (!isOeffentlichAdminContext()) {
                           window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
