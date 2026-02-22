@@ -6,28 +6,28 @@ import { getCustomers, createCustomer, updateCustomer, type Customer } from '../
 import { PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import '../App.css'
 
-// Eigener Kassa-Stil – heller, moderner Look mit Galerie-Farben (Orange/Terracotta)
+// Kassa-Stil – ruhig, edel, dezentes Terracotta als Akzent
 const s = {
-  bgDark: '#faf8f5',          // Warmes Weiß (heller als Beige, frischer)
+  bgDark: '#f8f7f5',          // Neutrales Warmweiß
   bgCard: '#ffffff',          // Reines Weiß für Karten
-  bgElevated: '#f3ede6',     // Leichtes Terracotta-Weiß für Hover
-  accent: '#b54a1e',         // Terracotta-Orange (Galerie-Farbe)
-  accentSoft: 'rgba(181, 74, 30, 0.08)',
-  accentGreen: '#2d7a3a',   // Grün für Erfolg
+  bgElevated: '#f0eeeb',     // Leichtes Grau für Hover
+  accent: '#7a3b1e',         // Gedämpftes Dunkelbraun-Terracotta (weniger Orange)
+  accentSoft: 'rgba(122, 59, 30, 0.07)',
+  accentGreen: '#2d7a3a',
   accentGreenSoft: 'rgba(45, 122, 58, 0.1)',
-  text: '#1a1208',           // Fast schwarz, warm
-  muted: '#6b5a4e',          // Warmes Grau-Braun
-  gradientAccent: 'linear-gradient(135deg, #b54a1e 0%, #d96b35 100%)',
+  text: '#1c1a17',           // Fast schwarz, warm
+  muted: '#7a6f66',          // Warmes Mittelgrau
+  gradientAccent: 'linear-gradient(135deg, #7a3b1e 0%, #9e4e28 100%)',
   gradientGreen: 'linear-gradient(135deg, #2d7a3a 0%, #3d9e4e 100%)',
   fontHeading: "'Playfair Display', Georgia, serif",
   fontBody: "'Source Sans 3', -apple-system, sans-serif",
   radius: '14px',
   radiusSm: '10px',
-  shadow: '0 4px 20px rgba(181, 74, 30, 0.08)',
-  shadowMd: '0 8px 32px rgba(181, 74, 30, 0.12)',
-  shadowLg: '0 16px 48px rgba(181, 74, 30, 0.15)',
-  border: '1px solid rgba(181, 74, 30, 0.15)',
-  borderStrong: '1px solid rgba(181, 74, 30, 0.3)',
+  shadow: '0 2px 12px rgba(0, 0, 0, 0.06)',
+  shadowMd: '0 4px 20px rgba(0, 0, 0, 0.08)',
+  shadowLg: '0 8px 32px rgba(0, 0, 0, 0.12)',
+  border: '1px solid rgba(0, 0, 0, 0.08)',
+  borderStrong: '1px solid rgba(122, 59, 30, 0.25)',
 }
 
 interface CartItem {
@@ -1030,14 +1030,14 @@ const ShopPage = () => {
 
       {/* Dunkler Top-Streifen mit Galerie-Branding */}
       <div style={{
-        background: '#1a1208',
+        background: '#2a2520',
         padding: '0.6rem clamp(1.5rem, 4vw, 3rem)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         gap: '1rem'
       }}>
-        <span style={{ fontFamily: s.fontHeading, color: '#d96b35', fontSize: '0.95rem', fontWeight: '600', letterSpacing: '0.04em' }}>
+        <span style={{ fontFamily: s.fontHeading, color: '#c8a882', fontSize: '0.95rem', fontWeight: '600', letterSpacing: '0.04em' }}>
           K2 Galerie
         </span>
         {cart.length > 0 && (
@@ -1842,20 +1842,20 @@ const ShopPage = () => {
               }}>
                 {/* Gesamt-Zeile oben – dunkel und auffällig */}
                 <div style={{ 
-                  background: '#1a1208',
+                  background: '#2a2520',
                   padding: '1.25rem 1.5rem',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center'
                 }}>
-                  <span style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  <span style={{ color: 'rgba(255,255,255,0.5)', fontWeight: '600', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                     Zu bezahlen
                   </span>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ 
                       fontSize: '2rem',
                       fontWeight: '800',
-                      color: '#d96b35',
+                      color: '#c8a882',
                       fontFamily: s.fontHeading,
                       lineHeight: 1
                     }}>

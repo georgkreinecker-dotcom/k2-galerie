@@ -1,28 +1,9 @@
-# Dialog-Stand – nach Absturz hier weiter
-
-**Zweck:** Nach Crash verliert die KI den Chat-Verlauf. Diese **eine** Datei ist der Anker: Du öffnest sie (oder sagst „weiter nach Absturz"), die KI liest sie und arbeitet genau hier weiter – ohne dass du lange im Konzept suchen musst.
-
-**Regel für die KI:** Bei „Absturz", „weiter", „wo waren wir", „Gedächtnis verloren" **zuerst diese Datei lesen**. Bei jedem natürlichen Pause oder Ende einer Aufgabe **diese Datei aktualisieren** (Datum, Thema, was zuletzt, nächster Schritt).
-
----
-
-## Letzte Session (zuletzt aktualisiert)
+# Dialog-Stand – Letzter Arbeitsschritt
 
 | Feld | Inhalt |
-|------|--------|
-| **Datum** | 21.02.26 |
-| **Thema** | Virtueller Rundgang komplett: Video, Vollbild, Bilder-Sync Mac↔Handy |
-| **Was war zuletzt dran** | ✅ Video-Upload funktioniert (Handy → GitHub → Vercel → überall). ✅ Vollbild beim Tippen auf Video/Bild. ✅ Bilder/Video am Mac sichtbar (Vercel-Fallback). ✅ Stand-Badge fix: index.html Timestamp immer aktuell. ✅ „Rundgang starten" öffnet Vollbild statt eigener Seite. Letzter Stand: 21.02.26 17:53. |
-| **Nächster konkreter Schritt** | Neues Foto Galerie-Innenansicht testen: Handy → Admin → Seitengestaltung → Galerie-Foto ersetzen → nach ~2 Min am Mac sichtbar? Dann ist Sync vollständig. |
-| **Wo nachlesen** | `components/ScreenshotExportAdmin.tsx`, `src/config/pageContentGalerie.ts`, `k2team-handbuch/15-SESSION-21-02-26.md`, `.cursor/rules/daten-geraete-sync.mdc` |
-
----
-
-## So nutzt du das
-
-- **Nach Absturz:** Sag z. B. „weiter nach Absturz" oder „wo waren wir" – die KI liest diese Datei und macht beim nächsten Schritt weiter.
-- **Oder:** Öffne diese Datei selbst – oben steht immer der letzte Stand und der nächste Schritt.
-
----
-
-*Eine Datei, ein Anker. Kein Suchen im Konzept.*
+|---|---|
+| **Datum** | 22.02.26 |
+| **Thema** | Kassa-Design renoviert |
+| **Was war zuletzt dran** | ✅ Kassa komplett renoviert: eigener KASSA_STIL (warmes Weiß + Terracotta-Orange), dunkler Top-Streifen mit K2-Branding, kompakte Warenkorb-Karten (Bild links, Info rechts), auffällige Kassensumme (dunkel mit großer orangener Zahl), schlanke Schnellverkauf-Buttons Bar/Karte/Überweisung. Build ✅, Push ✅. Stand: 22.02.26 06:19 |
+| **Nächster konkreter Schritt** | Kassa am Handy testen – nach ~2 Min Stand-Badge tippen und prüfen ob das neue Design erscheint. Dann: Gibt es weitere Seiten die renoviert gehören? |
+| **Wo nachlesen** | `src/pages/ShopPage.tsx` (KASSA_STIL ab Zeile 9) |
