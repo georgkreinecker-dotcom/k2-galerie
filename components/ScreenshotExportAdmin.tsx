@@ -1083,6 +1083,7 @@ function ScreenshotExportAdmin() {
   }
 
   const [designSaveFeedback, setDesignSaveFeedback] = useState<'ok' | null>(null)
+  const [imageUploadStatus, setImageUploadStatus] = useState<string | null>(null)
 
   const DESIGN_VARIANT_KEYS = isOeffentlichAdminContext()
     ? { a: 'k2-oeffentlich-design-variant-a', b: 'k2-oeffentlich-design-variant-b' } as const
@@ -8962,18 +8963,25 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 setPageContent(next)
                                 setPageContentGalerie(next, tenant)
                                 setDesignSaveFeedback('ok')
-                                setTimeout(() => setDesignSaveFeedback(null), 6000)
-                                // K2: sofort auf GitHub hochladen damit Galerie das neue Bild zeigt
+                                setImageUploadStatus('✓ Foto gespeichert – in Galerie ansehen sofort sichtbar')
+                                setTimeout(() => setDesignSaveFeedback(null), 8000)
+                                setTimeout(() => setImageUploadStatus(null), 8000)
+                                // K2: zusätzlich auf GitHub hochladen (für alle Geräte dauerhaft)
                                 if (!isOeffentlichAdminContext()) {
                                   try {
+                                    setImageUploadStatus('⏳ Foto wird hochgeladen (für alle Geräte)…')
                                     const { uploadImageToGitHub } = await import('../src/utils/githubImageUpload')
-                                    const url = await uploadImageToGitHub(f, 'willkommen.jpg', (msg) => console.log(msg))
+                                    const url = await uploadImageToGitHub(f, 'willkommen.jpg', (msg) => setImageUploadStatus(msg))
                                     const next2 = { ...next, welcomeImage: url }
                                     setPageContent(next2)
                                     setPageContentGalerie(next2, undefined)
                                     localStorage.removeItem('k2-last-publish-signature')
+                                    setImageUploadStatus('✅ Hochgeladen – in ~2 Min. auf allen Geräten sichtbar')
+                                    setTimeout(() => setImageUploadStatus(null), 8000)
                                   } catch (uploadErr) {
-                                    console.warn('GitHub Upload fehlgeschlagen (Bild lokal gespeichert):', uploadErr)
+                                    setImageUploadStatus('✓ Foto lokal gespeichert (Upload nicht möglich)')
+                                    setTimeout(() => setImageUploadStatus(null), 6000)
+                                    console.warn('GitHub Upload fehlgeschlagen:', uploadErr)
                                   }
                                 }
                               } catch (_) { alert('Fehler beim Bild') }
@@ -8988,22 +8996,26 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 const next = { ...pageContent, welcomeImage: img }
                                 setPageContent(next)
                                 setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
+                                setDesignSaveFeedback('ok')
+                                setImageUploadStatus('✓ Foto gespeichert – in Galerie ansehen sofort sichtbar')
+                                setTimeout(() => setDesignSaveFeedback(null), 8000)
+                                setTimeout(() => setImageUploadStatus(null), 8000)
                                 // K2: Bild sofort via GitHub hochladen → überall sichtbar
                                 if (!isOeffentlichAdminContext()) {
                                   try {
+                                    setImageUploadStatus('⏳ Foto wird hochgeladen (für alle Geräte)…')
                                     const { uploadImageToGitHub } = await import('../src/utils/githubImageUpload')
-                                    setDesignSaveFeedback(null)
-                                    const url = await uploadImageToGitHub(f, 'willkommen.jpg', (msg) => console.log(msg))
-                                    // gallery-data.json updaten mit neuer URL
+                                    const url = await uploadImageToGitHub(f, 'willkommen.jpg', (msg) => setImageUploadStatus(msg))
                                     const next2 = { ...next, welcomeImage: url }
                                     setPageContent(next2)
                                     setPageContentGalerie(next2, undefined)
                                     localStorage.removeItem('k2-last-publish-signature')
-                                    setDesignSaveFeedback('ok')
-                                    alert('✅ Foto hochgeladen!\n\nIn ca. 2 Minuten ist es auf allen Geräten sichtbar.')
+                                    setImageUploadStatus('✅ Hochgeladen – in ~2 Min. auf allen Geräten sichtbar')
+                                    setTimeout(() => setImageUploadStatus(null), 8000)
                                   } catch (uploadErr: any) {
+                                    setImageUploadStatus('✓ Foto lokal gespeichert (Upload nicht möglich)')
+                                    setTimeout(() => setImageUploadStatus(null), 6000)
                                     console.warn('GitHub Upload fehlgeschlagen:', uploadErr)
-                                    // Kein Fehler zeigen – Bild ist lokal gespeichert, Speichern-Button veröffentlicht es
                                   }
                                 }
                               } catch (_) { alert('Fehler beim Bild') }
@@ -9016,6 +9028,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             <div style={{ width: '100%', minHeight: 200, background: 'rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: 'var(--k2-muted)', fontSize: '1rem' }}><span style={{ fontSize: '2rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>
                           )}
                         </label>
+                        {imageUploadStatus && (
+                          <div style={{ marginTop: '0.5rem', padding: '0.5rem 0.75rem', background: imageUploadStatus.startsWith('✅') ? 'rgba(16,185,129,0.1)' : imageUploadStatus.startsWith('⏳') ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)', border: `1px solid ${imageUploadStatus.startsWith('✅') ? '#10b981' : imageUploadStatus.startsWith('⏳') ? '#f59e0b' : '#10b981'}44`, borderRadius: 8, fontSize: '0.88rem', color: imageUploadStatus.startsWith('✅') ? '#10b981' : imageUploadStatus.startsWith('⏳') ? '#d97706' : '#10b981', fontWeight: 500 }}>
+                            {imageUploadStatus}
+                          </div>
+                        )}
                       </section>
                       {/* Aktuelles aus den Eventplanungen – wie auf der echten ersten Seite */}
                       {(() => {

@@ -90,8 +90,10 @@ export function setPageContentGalerie(data: Partial<PageContentGalerie>, tenantI
       const current = getPageContentGalerie(tenantId)
       const next = { ...current, ...data }
       localStorage.setItem(getStorageKey(tenantId), JSON.stringify(next))
-      // Event feuern damit GaleriePage (gleicher Tab) sofort aktualisiert
+      // Events feuern damit GaleriePage (gleicher Tab) sofort aktualisiert – beide Events für K2 und ök2
       window.dispatchEvent(new CustomEvent('k2-oeffentlich-images-updated'))
+      window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
+      window.dispatchEvent(new CustomEvent('k2-page-content-updated'))
     }
   } catch (e) {
     console.warn('Seitengestaltung speichern fehlgeschlagen:', e)

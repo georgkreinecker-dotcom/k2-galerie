@@ -521,10 +521,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     window.addEventListener('storage', onStorage)
     window.addEventListener('k2-oeffentlich-images-updated', onUpdate)
     window.addEventListener('k2-design-saved-publish', onUpdate)
+    window.addEventListener('k2-page-content-updated', onUpdate)
     return () => {
       window.removeEventListener('storage', onStorage)
       window.removeEventListener('k2-oeffentlich-images-updated', onUpdate)
       window.removeEventListener('k2-design-saved-publish', onUpdate)
+      window.removeEventListener('k2-page-content-updated', onUpdate)
     }
   }, [])
   const displayImages = useMemo(() => {
@@ -547,7 +549,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
         }
       }
     }
-    return getGalerieImages(galleryData)
+    // K2: frisch aus localStorage lesen (damit neues Foto sofort sichtbar ist)
+    const pc = getPageContentGalerie(undefined)
+    return {
+      welcomeImage: pc.welcomeImage || galleryData.welcomeImage?.trim() || '/img/k2/willkommen.jpg',
+      galerieCardImage: pc.galerieCardImage || galleryData.galerieCardImage?.trim() || '/img/k2/galerie-card.jpg',
+      virtualTourImage: pc.virtualTourImage || galleryData.virtualTourImage?.trim() || '/img/k2/virtual-tour.jpg',
+      virtualTourVideo: pc.virtualTourVideo || '/img/k2/virtual-tour.mp4'
+    }
   }, [musterOnly, galleryData, pageContentVersion])
 
   // ök2: Bei Ladefehler Willkommensbild Fallback anzeigen (kein blaues Fragezeichen)
