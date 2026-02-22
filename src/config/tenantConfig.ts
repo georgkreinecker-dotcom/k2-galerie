@@ -235,9 +235,10 @@ export const OEK2_DEFAULT_ARTWORK_IMAGES: Record<string, string> = {
 
 /** ök2: Lokale Bilder – oben Menschen/Galerie-Eingang, unten Galerie Innenansicht. Liegen in public/img/oeffentlich/ (ersetzbar durch eigene Fotos). */
 export const OEK2_WILLKOMMEN_IMAGES = {
-  welcomeImage: '/img/oeffentlich/willkommen.svg',
-  virtualTourImage: '/img/oeffentlich/galerie-innen.svg',
-  galerieCardImage: '/img/oeffentlich/galerie-innen.svg',
+  // Unsplash-Fotos (lizenzfrei, Galerie-Atmosphäre) – Fallback wenn kein eigenes Foto hochgeladen
+  welcomeImage: 'https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=1200&q=80&fit=crop',   // Galerie-Eingang / Besucher
+  virtualTourImage: 'https://images.unsplash.com/photo-1536924940846-227afb31e2a5?w=1200&q=80&fit=crop', // Galerie-Innenraum mit Bildern
+  galerieCardImage: 'https://images.unsplash.com/photo-1565060169194-19fabf63012c?w=800&q=80&fit=crop',  // Moderne Galerie-Karte
 }
 
 /** Liefert das Standard-Werkbild für ök2 für eine Kategorie (Fallback: sonstiges). */
