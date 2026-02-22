@@ -46,9 +46,28 @@ export function getPageContentGalerie(tenantId?: 'oeffentlich'): PageContentGale
     const raw = typeof window !== 'undefined' ? localStorage.getItem(key) : null
     if (raw && raw.length < 6 * 1024 * 1024) {
       const parsed = JSON.parse(raw) as Partial<PageContentGalerie>
-      // blob:-URLs und Base64 sind geräte-spezifisch → NUR für K2 durch Vercel-Pfade ersetzen
-      // ök2 bekommt keine K2-Bilder als Fallback!
-      if (tenantId !== 'oeffentlich') {
+
+      if (tenantId === 'oeffentlich') {
+        // ök2: K2-Pfade die durch alten Bug hereingekommen sind → bereinigen
+        let changed = false
+        const k2Paths = ['/img/k2/', 'blob:', 'data:']
+        if (k2Paths.some(p => parsed.welcomeImage?.startsWith(p))) {
+          delete parsed.welcomeImage; changed = true
+        }
+        if (k2Paths.some(p => parsed.galerieCardImage?.startsWith(p))) {
+          delete parsed.galerieCardImage; changed = true
+        }
+        if (k2Paths.some(p => parsed.virtualTourImage?.startsWith(p))) {
+          delete parsed.virtualTourImage; changed = true
+        }
+        if (k2Paths.some(p => parsed.virtualTourVideo?.startsWith(p))) {
+          delete parsed.virtualTourVideo; changed = true
+        }
+        if (changed) {
+          try { localStorage.setItem(key, JSON.stringify({ ...parsed })) } catch (_) {}
+        }
+      } else {
+        // K2: blob:-URLs und Base64 durch Vercel-Pfade ersetzen
         let changed = false
         if (parsed.virtualTourVideo?.startsWith('blob:')) {
           parsed.virtualTourVideo = '/img/k2/virtual-tour.mp4'; changed = true
