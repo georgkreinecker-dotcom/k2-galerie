@@ -2,29 +2,30 @@
 
 ## Datum: 22.02.26
 
-## Thema: Werkkatalog – Filter, Tabelle, Drucken, neue Felder Technik/Maße
+## Thema: Werkkatalog – Werkkarte (Klick + Drucken)
 
-## Was zuletzt gemacht (Commit 8e10987):
+## Was zuletzt gemacht (Commit af9ce2b):
 
-### Werkkatalog – neuer Tab im Admin
-- Neuer Tab "📋 Werkkatalog" im Admin-Hauptmenü
-- Filter: Status (alle/Galerie/Verkauft/Lager), Kategorie, Suchtext, Preis von–bis, Datum von–bis
-- Spalten frei wählbar per Checkbox: Nr., Titel, Kategorie, Künstler:in, Maße, Technik, Preis, Status, Erstellt, Käufer:in, Verkauft am, Standort
-- Drucken als PDF (A4 quer, Tabelle mit Kopfzeile, gefilterte Werke)
-- Sold-Status aus k2-sold-artworks automatisch eingemischt (buyer, soldAt, soldPrice)
+### Werkkarte beim Klick auf ein Werk
+- Klick auf eine Tabellenzeile im Werkkatalog → Modal öffnet sich
+- Zeigt: Foto, Titel, Künstler:in, Status-Badge, alle Metadaten (Maße, Technik, Preis, Kategorie, Erstellt, Verkauft am, Käufer:in)
+- Beschreibungstext wenn vorhanden
+- Schließen per ✕-Button, Klick außerhalb oder "Schließen"-Button
 
-### Neue Felder beim Werk-Bearbeiten
-- Technik / Material (z.B. "Acryl auf Leinwand") → frei eingebbar
-- Maße (z.B. "60×80 cm") → frei eingebbar
-- Beide Felder werden beim Speichern im Werk gespeichert
-- Beide Felder beim Bearbeiten vorgeladen
-- updatedAt wird beim Speichern gesetzt
+### Werkkarte drucken (A5)
+- Button "🖨️ Werkkarte drucken" im Modal
+- Druckt als A5 (Querformat optional), inkl. Galerienamen oben, Foto, alle Felder, Fußzeile mit Datum
+- Leer-Felder (z.B. kein Käufer) werden ausgelassen
+
+### Vorher (Commit 8e10987):
+- Werkkatalog mit Filter, Tabelle, Spalten-Auswahl, Drucken Gesamtliste
+- Neue Felder Technik/Material + Maße beim Werk anlegen/bearbeiten
 
 ## Nächster Schritt:
-- Werkkatalog auf Handy/Vercel testen: Admin → Werkkatalog aufrufen
-- Felder Technik/Maße bei bestehenden Werken nachtragen (beim Bearbeiten)
-- Optional: Käufer-Feld beim "Als verkauft markieren"-Dialog eintragen
+- Auf Vercel testen: Admin → Werkkatalog → Werk anklicken → Werkkarte drucken
+- Felder Technik/Maße bei bestehenden Werken nachtragen
+- Optional: Käufer-Name beim "Als verkauft markieren"-Dialog eingeben
 
 ## Offenes (optional):
-- Käufer-Name beim Verkauf-Dialog eingeben (heute: soldAt wird gesetzt, buyer noch nicht)
-- Export als CSV (optional, für Buchhaltung)
+- Käufer-Name beim Verkauf-Dialog eingeben (buyer-Feld)
+- Export als CSV (für Buchhaltung)

@@ -225,6 +225,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             <li><Link to={AGB_ROUTE} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>AGB</strong> (Allgemeine Geschäftsbedingungen)</Link></li>
             <li><a href="#mok2-11" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>11. Sicherheit & Vor Veröffentlichung</strong> (Checklisten, Auth, RLS – wo alles steht)</a></li>
             <li><a href="#mok2-12" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>12. Musterbilder für die ök2-Galerie</strong> (zum Einfügen)</a></li>
+            <li><a href="#mok2-13" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>13. Werkkatalog &amp; Werkkarte</strong> – USP &amp; Verkaufsargumente</a></li>
           </ol>
         </div>
       </header>
@@ -765,6 +766,51 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </div>
         <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.9rem' }}>
           Nächster Schritt: Variante auswählen → als Standard festlegen und <code>?variant</code>-Parameter entfernen.
+        </p>
+      </section>
+
+      {/* 13. Werkkatalog & Werkkarte – USP für Marketing */}
+      <section id="mok2-13" style={{ marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(95,251,241,0.2)', pageBreakInside: 'avoid' as const }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          13. Werkkatalog & Werkkarte – starke Verkaufsargumente
+        </h2>
+        <p style={{ lineHeight: 1.7, marginBottom: '1rem' }}>
+          K2 Galerie bietet als einzige Galerie-App einen <strong style={{ color: '#5ffbf1' }}>vollständigen, druckbaren Werkkatalog</strong> direkt im Admin – ohne Excel, ohne Fremd-Software, ohne Aufwand.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
+          <div style={{ background: 'rgba(95,251,241,0.07)', border: '1px solid rgba(95,251,241,0.25)', borderRadius: '10px', padding: '1.25rem' }}>
+            <p style={{ fontWeight: 700, color: '#5ffbf1', marginBottom: '0.5rem' }}>📋 Werkkatalog – Filter & Tabelle</p>
+            <ul style={{ margin: 0, paddingLeft: '1.2rem', lineHeight: 1.8, color: 'rgba(255,255,255,0.85)', fontSize: '0.95rem' }}>
+              <li>Alle Werke auf einen Blick – filterbar nach Status, Kategorie, Preis, Datum</li>
+              <li>Vollfreitext-Suche über Titel, Nr., Beschreibung, Technik</li>
+              <li>Spalten frei wählbar: Maße, Technik/Material, Käufer:in, Verkaufsdatum u. v. m.</li>
+              <li>Ein Klick → Gesamtliste als PDF (A4 quer) drucken – fertig für Steuerberater oder Versicherung</li>
+            </ul>
+          </div>
+          <div style={{ background: 'rgba(95,251,241,0.07)', border: '1px solid rgba(95,251,241,0.25)', borderRadius: '10px', padding: '1.25rem' }}>
+            <p style={{ fontWeight: 700, color: '#5ffbf1', marginBottom: '0.5rem' }}>🖼️ Werkkarte – ein Werk, druckfertig</p>
+            <ul style={{ margin: 0, paddingLeft: '1.2rem', lineHeight: 1.8, color: 'rgba(255,255,255,0.85)', fontSize: '0.95rem' }}>
+              <li>Klick auf ein Werk → Werkkarte öffnet sich sofort</li>
+              <li>Zeigt Foto, Titel, Künstler:in, Status, alle Felder übersichtlich</li>
+              <li>„Werkkarte drucken" → A5-Blatt, professionell wie im Museum</li>
+              <li>Ideal für Ausstellungen, Bewerbungen, Versicherungsunterlagen, Verkaufsgespräche</li>
+            </ul>
+          </div>
+        </div>
+
+        <p style={{ fontWeight: 700, color: '#22c55e', marginBottom: '0.5rem' }}>✅ Was das für Künstler:innen bedeutet:</p>
+        <ul style={{ margin: '0 0 1rem', paddingLeft: '1.2rem', lineHeight: 1.8, color: 'rgba(255,255,255,0.85)' }}>
+          <li><strong>Kein Aufwand:</strong> Alle Felder werden beim Anlegen eines Werks erfasst – Katalog entsteht automatisch</li>
+          <li><strong>Vollständige Werkgeschichte:</strong> Erstellt, in Galerie, verkauft, Käufer:in – alles in einer Ansicht</li>
+          <li><strong>Druckfertig in Sekunden:</strong> Ob Einzelwerk oder Gesamtliste – ein Klick reicht</li>
+          <li><strong>Kein Excel, kein Zusatz-Tool:</strong> Alles direkt in K2 Galerie, auch am Handy nutzbar</li>
+          <li><strong>Professioneller Auftritt:</strong> Werkkarte im Museumsformat – bei Ausstellungen, Verkaufsgesprächen, Bewerbungen</li>
+        </ul>
+
+        <p style={{ padding: '0.75rem 1rem', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '8px', lineHeight: 1.7, fontSize: '0.95rem' }}>
+          <strong style={{ color: '#22c55e' }}>💬 Formulierung für Gespräche und Unterlagen:</strong><br />
+          „Mit K2 Galerie haben Sie jederzeit einen druckfertigen Werkkatalog – vom ersten Pinselstrich bis zum Verkauf. Eine Werkkarte pro Bild, gefilterte Listen für den Steuerberater, die Versicherung oder Ausstellungsorganisatoren – ohne Zusatz-Software, direkt aus der App."
         </p>
       </section>
 
