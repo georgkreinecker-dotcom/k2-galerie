@@ -2992,8 +2992,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 )}
               </div>
 
-              {/* Tür: Virtueller Rundgang – für virtuelle Besucher, dezenter */}
-              {!musterOnly && (
+              {/* Tür: Virtueller Rundgang – auch für ök2 anzeigen */}
+              {(
               <div style={{
                 background: 'rgba(255, 255, 255, 0.04)',
                 backdropFilter: 'blur(16px)',
@@ -3011,20 +3011,24 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                   borderRadius: '10px',
                   overflow: 'hidden',
                   marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
-                  background: displayImages.virtualTourImage 
-                    ? 'transparent' 
-                    : 'linear-gradient(135deg, rgba(255, 140, 66, 0.15) 0%, rgba(230, 122, 42, 0.15) 100%)',
+                  background: displayImages.virtualTourImage
+                    ? 'transparent'
+                    : musterOnly
+                      ? 'linear-gradient(160deg, #e8e2d8 0%, #d4cfc5 100%)'
+                      : 'linear-gradient(135deg, rgba(255, 140, 66, 0.15) 0%, rgba(230, 122, 42, 0.15) 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  border: musterOnly ? '1px solid rgba(90,122,110,0.18)' : '1px solid rgba(255, 255, 255, 0.08)',
                   boxSizing: 'border-box'
                 }}>
                   {(() => {
-                    // Mac-Fallback: wenn kein lokales Video/Bild → Vercel-Pfad versuchen
-                    const videoSrc = displayImages.virtualTourVideo || '/img/k2/virtual-tour.mp4'
+                    // ök2: kein K2-Video-Fallback, nur eigenes Bild/Video
+                    const videoSrc = musterOnly
+                      ? (displayImages.virtualTourVideo || '')
+                      : (displayImages.virtualTourVideo || '/img/k2/virtual-tour.mp4')
                     const imgSrc = displayImages.virtualTourImage
-                    const hasVideo = !!displayImages.virtualTourVideo
+                    const hasVideo = !!videoSrc
                     const hasImg = !!imgSrc
                     if (hasVideo) return (
                       <video
@@ -3043,7 +3047,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                         style={{ width: '100%', maxWidth: '100%', height: '100%', objectFit: 'cover', display: 'block', boxSizing: 'border-box', cursor: 'pointer' }}
                       />
                     )
-                    return <div style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', opacity: 0.25 }}>📹</div>
+                    return <div style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', opacity: 0.25 }}>{musterOnly ? '🖼️' : '📹'}</div>
                   })()}
                 </div>
                 <h3 style={{
@@ -3060,11 +3064,13 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                   marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
                   lineHeight: '1.4'
                 }}>
-                  Galerie auch bei geschlossener Tür erkunden
+                  {musterOnly ? 'Galerie virtuell erkunden' : 'Galerie auch bei geschlossener Tür erkunden'}
                 </p>
                 <button
                   onClick={() => {
-                    const videoSrc = displayImages.virtualTourVideo || (window.location.hostname.includes('vercel.app') ? '/img/k2/virtual-tour.mp4' : '')
+                    const videoSrc = musterOnly
+                      ? (displayImages.virtualTourVideo || '')
+                      : (displayImages.virtualTourVideo || (window.location.hostname.includes('vercel.app') ? '/img/k2/virtual-tour.mp4' : ''))
                     const imgSrc = displayImages.virtualTourImage
                     if (videoSrc) setFullscreenMedia({ type: 'video', src: videoSrc })
                     else if (imgSrc) setFullscreenMedia({ type: 'image', src: imgSrc })
@@ -3093,6 +3099,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               )}
             </div>
           </section>
+
 
           {/* Impressum – Schriftfarben aus Theme (lesbar auf hell und dunkel) */}
           <section style={{ 
