@@ -1084,6 +1084,7 @@ function ScreenshotExportAdmin() {
 
   const [designSaveFeedback, setDesignSaveFeedback] = useState<'ok' | null>(null)
   const [imageUploadStatus, setImageUploadStatus] = useState<string | null>(null)
+  const pendingWelcomeFileRef = React.useRef<File | null>(null)
 
   const DESIGN_VARIANT_KEYS = isOeffentlichAdminContext()
     ? { a: 'k2-oeffentlich-design-variant-a', b: 'k2-oeffentlich-design-variant-b' } as const
@@ -8865,7 +8866,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       <button type="button" onClick={() => setDesignSubTab('farben')} style={{ padding: '0.5rem 1rem', fontSize: '0.95rem', fontWeight: 600, background: `${s.accent}18`, border: `1px solid ${s.accent}66`, borderRadius: 10, color: s.accent, cursor: 'pointer' }}>🎨 Farbe ändern</button>
                       {designSaveFeedback === 'ok'
                         ? <span style={{ fontSize: '1rem', color: '#10b981', fontWeight: 700, padding: '0.5rem 1.1rem', background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: 10 }}>✅ Gespeichert!</span>
-                        : <button type="button" className="btn-primary" onClick={() => {
+                        : <button type="button" className="btn-primary" onClick={async () => {
                             try {
                               const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
                               setPageContentGalerie(pageContent, tenant)
@@ -8878,6 +8879,24 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               if (!isOeffentlichAdminContext()) window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
                               setDesignSaveFeedback('ok')
                               setTimeout(() => setDesignSaveFeedback(null), 6000)
+                              // Jetzt erst auf GitHub hochladen (erst nach Speichern-Klick)
+                              if (!isOeffentlichAdminContext() && pendingWelcomeFileRef.current) {
+                                const fileToUpload = pendingWelcomeFileRef.current
+                                pendingWelcomeFileRef.current = null
+                                setImageUploadStatus('⏳ Foto wird hochgeladen (für alle Geräte)…')
+                                try {
+                                  const { uploadImageToGitHub } = await import('../src/utils/githubImageUpload')
+                                  const url = await uploadImageToGitHub(fileToUpload, 'willkommen.jpg', (msg) => setImageUploadStatus(msg))
+                                  const next2 = { ...pageContent, welcomeImage: url }
+                                  setPageContent(next2)
+                                  setPageContentGalerie(next2, undefined)
+                                  setImageUploadStatus('✅ Hochgeladen – in ~2 Min. auf allen Geräten sichtbar')
+                                  setTimeout(() => setImageUploadStatus(null), 8000)
+                                } catch (_) {
+                                  setImageUploadStatus('✓ Lokal gespeichert (Upload fehlgeschlagen)')
+                                  setTimeout(() => setImageUploadStatus(null), 6000)
+                                }
+                              }
                             } catch (e) {
                               alert('Fehler beim Speichern: ' + (e instanceof Error ? e.message : String(e)))
                             }
@@ -8964,28 +8983,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 const next = { ...pageContent, welcomeImage: img }
                                 setPageContent(next)
                                 setPageContentGalerie(next, tenant)
-                                setDesignSaveFeedback('ok')
-                                setImageUploadStatus('✓ Foto gespeichert – in Galerie ansehen sofort sichtbar')
-                                setTimeout(() => setDesignSaveFeedback(null), 8000)
-                                setTimeout(() => setImageUploadStatus(null), 8000)
-                                // K2: zusätzlich auf GitHub hochladen (für alle Geräte dauerhaft)
-                                if (!isOeffentlichAdminContext()) {
-                                  try {
-                                    setImageUploadStatus('⏳ Foto wird hochgeladen (für alle Geräte)…')
-                                    const { uploadImageToGitHub } = await import('../src/utils/githubImageUpload')
-                                    const url = await uploadImageToGitHub(f, 'willkommen.jpg', (msg) => setImageUploadStatus(msg))
-                                    const next2 = { ...next, welcomeImage: url }
-                                    setPageContent(next2)
-                                    setPageContentGalerie(next2, undefined)
-                                    localStorage.removeItem('k2-last-publish-signature')
-                                    setImageUploadStatus('✅ Hochgeladen – in ~2 Min. auf allen Geräten sichtbar')
-                                    setTimeout(() => setImageUploadStatus(null), 8000)
-                                  } catch (uploadErr) {
-                                    setImageUploadStatus('✓ Foto lokal gespeichert (Upload nicht möglich)')
-                                    setTimeout(() => setImageUploadStatus(null), 6000)
-                                    console.warn('GitHub Upload fehlgeschlagen:', uploadErr)
-                                  }
-                                }
+                                // Datei für späteren Upload beim Speichern merken
+                                if (!isOeffentlichAdminContext()) pendingWelcomeFileRef.current = f
+                                setImageUploadStatus('✓ Foto bereit – erst ansehen, dann Speichern')
+                                setTimeout(() => setImageUploadStatus(null), 6000)
                               } catch (_) { alert('Fehler beim Bild') }
                             }
                           }}
@@ -8998,28 +8999,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 const next = { ...pageContent, welcomeImage: img }
                                 setPageContent(next)
                                 setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
-                                setDesignSaveFeedback('ok')
-                                setImageUploadStatus('✓ Foto gespeichert – in Galerie ansehen sofort sichtbar')
-                                setTimeout(() => setDesignSaveFeedback(null), 8000)
-                                setTimeout(() => setImageUploadStatus(null), 8000)
-                                // K2: Bild sofort via GitHub hochladen → überall sichtbar
-                                if (!isOeffentlichAdminContext()) {
-                                  try {
-                                    setImageUploadStatus('⏳ Foto wird hochgeladen (für alle Geräte)…')
-                                    const { uploadImageToGitHub } = await import('../src/utils/githubImageUpload')
-                                    const url = await uploadImageToGitHub(f, 'willkommen.jpg', (msg) => setImageUploadStatus(msg))
-                                    const next2 = { ...next, welcomeImage: url }
-                                    setPageContent(next2)
-                                    setPageContentGalerie(next2, undefined)
-                                    localStorage.removeItem('k2-last-publish-signature')
-                                    setImageUploadStatus('✅ Hochgeladen – in ~2 Min. auf allen Geräten sichtbar')
-                                    setTimeout(() => setImageUploadStatus(null), 8000)
-                                  } catch (uploadErr: any) {
-                                    setImageUploadStatus('✓ Foto lokal gespeichert (Upload nicht möglich)')
-                                    setTimeout(() => setImageUploadStatus(null), 6000)
-                                    console.warn('GitHub Upload fehlgeschlagen:', uploadErr)
-                                  }
-                                }
+                                // Datei für späteren Upload beim Speichern merken
+                                if (!isOeffentlichAdminContext()) pendingWelcomeFileRef.current = f
+                                setImageUploadStatus('✓ Foto bereit – erst ansehen, dann Speichern')
+                                setTimeout(() => setImageUploadStatus(null), 6000)
                               } catch (_) { alert('Fehler beim Bild') }
                             }
                             e.target.value = ''
