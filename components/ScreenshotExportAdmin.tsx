@@ -8822,12 +8822,12 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
         {activeTab === 'design' && (
           <section style={{
             background: 'rgba(255, 255, 255, 0.05)',
-            backdropFilter: 'blur(20px)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             borderRadius: '24px',
             padding: designSubTab === 'vorschau' ? '0' : 'clamp(2rem, 5vw, 3rem)',
             boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-            marginBottom: 'clamp(2rem, 5vw, 3rem)'
+            marginBottom: 'clamp(2rem, 5vw, 3rem)',
+            overflow: 'visible'
           }}>
             <div style={designDraftCssVars}>
             {/* Nur bei Farben: Titel + Zurück zur Vorschau */}
@@ -8883,7 +8883,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '1.1rem' }}>🎨</span>
                     <span style={{ fontSize: '0.9rem', fontWeight: 700, color: s.text }}>Design-Werkzeug</span>
-                    <span style={{ fontSize: '0.82rem', color: s.muted }}>— Bilder & Texte anklicken zum Ändern · Farben & Theme wählen · Vorschau vor dem Speichern</span>
+                    <span style={{ fontSize: '0.82rem', color: s.muted }}>— Foto reinziehen oder klicken · 👁 Galerie ansehen zum Prüfen · dann 💾 Speichern</span>
                   </div>
                   {/* Zeile 2: Aktions-Buttons */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -8898,6 +8898,38 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                       <button type="button" onClick={() => setDesignSubTab('farben')} style={{ padding: '0.5rem 1.1rem', fontSize: '0.95rem', fontWeight: 700, background: `linear-gradient(135deg, ${s.accent}22 0%, ${s.accent}11 100%)`, border: `1.5px solid ${s.accent}88`, borderRadius: 8, color: s.accent, cursor: 'pointer' }}>🎨 Farben & Theme</button>
+                      {designSaveFeedback === 'ok'
+                        ? <span style={{ fontSize: '0.95rem', color: '#10b981', fontWeight: 700, padding: '0.5rem 1rem', background: 'rgba(16,185,129,0.1)', border: '1px solid #10b981', borderRadius: 8 }}>✅ Gespeichert!</span>
+                        : <button type="button" className="btn-primary" onClick={() => {
+                            try {
+                              setPageContentGalerie(pageContent, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
+                              setPageTexts(pageTexts, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
+                              if (designSettings && Object.keys(designSettings).length > 0) {
+                                const ds = JSON.stringify(designSettings)
+                                if (ds.length < 50000) localStorage.setItem(getDesignStorageKey(), ds)
+                              }
+                              const pageTextsKey = isOeffentlichAdminContext() ? 'k2-oeffentlich-page-texts' : 'k2-page-texts'
+                              const pageContentKey = isOeffentlichAdminContext() ? 'k2-oeffentlich-page-content-galerie' : 'k2-page-content-galerie'
+                              const pageTextsOk = (localStorage.getItem(pageTextsKey)?.length ?? 0) > 0
+                              const pageContentOk = localStorage.getItem(pageContentKey) != null
+                              const designStored = localStorage.getItem(getDesignStorageKey())
+                              const designOk = !designSettings || Object.keys(designSettings).length === 0 || (designStored != null && designStored.length > 0)
+                              if (pageTextsOk && pageContentOk && designOk) {
+                                const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
+                                setPageTextsState(getPageTexts(tenant))
+                                setPageContent(getPageContentGalerie(tenant))
+                                setDesignSaveFeedback('ok')
+                                setTimeout(() => setDesignSaveFeedback(null), 5000)
+                                localStorage.removeItem('k2-last-publish-signature')
+                                if (!isOeffentlichAdminContext()) window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
+                              } else {
+                                alert('Speichern fehlgeschlagen. Bitte erneut versuchen.')
+                              }
+                            } catch (e) {
+                              alert('Fehler: ' + (e instanceof Error ? e.message : String(e)))
+                            }
+                          }} style={{ padding: '0.5rem 1.25rem', fontSize: '0.95rem', fontWeight: 700 }}>💾 Speichern</button>
+                      }
                     </div>
                   </div>
                 </div>
@@ -8961,7 +8993,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--k2-muted)' }}
                           onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.borderColor = 'var(--k2-muted)'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, welcomeImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined) } catch (_) { alert('Fehler beim Bild') } } }}
                         >
-                          <input id="welcome-image-input" ref={welcomeImageInputRef} type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={async (e) => {
+                          <input id="welcome-image-input" ref={welcomeImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => {
                             const f = e.target.files?.[0]
                             if (f) {
                               try {
