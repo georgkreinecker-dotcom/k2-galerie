@@ -8063,7 +8063,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>✨</div>
                     <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Aussehen der Galerie</div>
                     <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
-                      Farben, Texte und Bilder der Galerie anpassen – sofort sichtbar
+                      Nach meinen Wünschen anpassen – Farben, Texte, Bilder, Theme
                     </div>
                     <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Öffnen →</div>
                   </button>
@@ -8110,7 +8110,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
                 <h2 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', fontWeight: 700, color: s.text, margin: 0 }}>
                   {activeTab === 'eventplan' && '📢 Veranstaltungen & Werbung'}
-                  {activeTab === 'design' && '✨ Aussehen der Galerie'}
+                  {activeTab === 'design' && '✨ Aussehen der Galerie – nach meinen Wünschen anpassen'}
                   {activeTab === 'einstellungen' && '⚙️ Einstellungen'}
                 </h2>
               </div>
