@@ -2,27 +2,25 @@
 
 ## Datum: 22.02.26
 
-## Thema: Design-Tab ök2 zeigt K2-Fotos – Root-Cause definitiv gefunden
+## Thema: ök2 Design-Tab – Fotos laden nicht in Vorschau
 
-## Was der echte Bug war (Race Condition):
-- `syncAdminContextFromUrl()` lief NACH den `useState`-Initialisierungen (in einem useEffect)
-- Beim ersten Render: sessionStorage noch nicht gesetzt → `isOeffentlichAdminContext() = false`
-- → `pageContent` wird mit K2-Keys initialisiert → K2-Bilder geladen
-- → ök2-Admin zeigt K2-Fotos von Georg und Martina
+## Was der Bug war:
+- `pageContentGalerie.ts` hat ALLE `data:` (Base64) Bilder für ök2 sofort wieder gelöscht
+- Das war falsch: `data:` Bilder sind vom User hochgeladen – kein K2-spezifischer Inhalt
+- Nur echte K2-Serverpfade (`/img/k2/`, `/img/` außer `/img/oeffentlich/`) sind gefährlich
+- Ergebnis: Foto reinziehen → kurz im State sichtbar → beim nächsten Lesen aus localStorage weg
 
-## Was gefixt wurde (Commit f83c510):
-- Neue Funktion `syncAdminContextFromUrl()` – setzt sessionStorage synchron aus URL
-- Wird als ERSTES in `ScreenshotExportAdmin()` aufgerufen – vor allen useState
-- Jetzt ist `isOeffentlichAdminContext()` beim ersten useState-Aufruf bereits korrekt
-- Bei K2-Admin (kein ?context=): sessionStorage wird SOFORT gelöscht (kein "hängenbleiben")
+## Was gefixt wurde (Commit 88fd0c4):
+- `pageContentGalerie.ts`: Nur `/img/k2/` und `/img/` (außer `/img/oeffentlich/`) Pfade löschen
+- `data:` Bilder NICHT löschen (User-Upload, harmlos für ök2)
+- `blob:` URLs weiterhin löschen (session-gebunden, nach Reload ungültig)
 
-## Nächster Schritt:
-- Nach Vercel-Deployment (~2 Min): testen
-- ök2-Admin öffnen (/admin?context=oeffentlich)
-- Design-Tab → Foto einladen → sollte ök2-Fotos sehen, NICHT K2-Fotos
-- Galerie ansehen → neues Foto sichtbar
+## Nächster Schritt nach Vercel-Deployment (~2 Min):
+- ök2-Admin → Design-Tab öffnen
+- Foto reinziehen → muss SOFORT in der Vorschau sichtbar sein
+- "Galerie ansehen" → Foto muss auch dort erscheinen
 - Zurückgehen → Foto noch da
 
 ## Wo nachlesen:
+- `src/config/pageContentGalerie.ts` → `getPageContentGalerie` (isK2ServerMedia)
 - `components/ScreenshotExportAdmin.tsx` → `syncAdminContextFromUrl()` (Zeile ~17)
-- `components/ScreenshotExportAdmin.tsx` → Anfang von `ScreenshotExportAdmin()` (Zeile ~596)

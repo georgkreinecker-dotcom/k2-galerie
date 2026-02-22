@@ -2144,7 +2144,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         }}>
           <button
             type="button"
-            onClick={() => navigate('/admin')}
+            onClick={() => navigate(musterOnly ? '/admin?context=oeffentlich' : '/admin')}
             style={{ background: 'rgba(0,0,0,0.2)', border: 'none', color: 'inherit', padding: '0.4rem 0.8rem', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}
           >
             ← Zurück zu Einstellungen
