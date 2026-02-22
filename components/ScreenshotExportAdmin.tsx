@@ -653,7 +653,7 @@ function ScreenshotExportAdmin() {
   }, [])
 
   // Klare Admin-Struktur: Werke | Eventplanung | Design | Einstellungen. Kasse = ein Button im Header, öffnet direkt den Shop.
-  const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'eventplan' | 'design' | 'einstellungen' | 'assistent'>('werke')
+  const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'eventplan' | 'design' | 'einstellungen' | 'assistent'>('werke')
   const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>('events')
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false) // kleine Leiste „Vergangenheit“, bei Klick aufklappen
   const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager'>('stammdaten')
@@ -681,7 +681,7 @@ function ScreenshotExportAdmin() {
 
   // Werkkatalog – Filter und Ansicht
   const [katalogFilter, setKatalogFilter] = useState<{
-    status: 'alle' | 'galerie' | 'verkauft' | 'lager'
+    status: 'alle' | 'galerie' | 'verkauft' | 'reserviert' | 'lager'
     kategorie: string
     artist: string
     vonDatum: string
@@ -931,6 +931,10 @@ function ScreenshotExportAdmin() {
   const [showSaleModal, setShowSaleModal] = useState(false)
   const [saleInput, setSaleInput] = useState('')
   const [saleMethod, setSaleMethod] = useState<'scan' | 'manual'>('scan')
+  const [showReserveModal, setShowReserveModal] = useState(false)
+  const [reserveInput, setReserveInput] = useState('')
+  const [reserveMethod, setReserveMethod] = useState<'scan' | 'manual'>('scan')
+  const [reserveName, setReserveName] = useState('')
   const [allArtworks, setAllArtworks] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string>('alle')
@@ -6203,6 +6207,27 @@ ${'='.repeat(60)}
     setSaleMethod('scan')
   }
 
+  // Werk reservieren / Reservierung aufheben
+  const handleMarkAsReserved = (artworkNumber: string, name: string) => {
+    const reserved = JSON.parse(localStorage.getItem('k2-reserved-artworks') || '[]')
+    const existing = reserved.find((a: any) => a.number === artworkNumber)
+    if (existing) {
+      // Reservierung aufheben
+      const updated = reserved.filter((a: any) => a.number !== artworkNumber)
+      localStorage.setItem('k2-reserved-artworks', JSON.stringify(updated))
+      alert(`✅ Reservierung für Werk ${artworkNumber} aufgehoben.`)
+    } else {
+      reserved.push({ number: artworkNumber, reservedAt: new Date().toISOString(), reservedFor: name.trim() })
+      localStorage.setItem('k2-reserved-artworks', JSON.stringify(reserved))
+      alert(`✅ Werk ${artworkNumber} ist reserviert${name.trim() ? ` für ${name.trim()}` : ''}.`)
+    }
+    setAllArtworks(loadArtworks())
+    window.dispatchEvent(new CustomEvent('artworks-updated'))
+    setShowReserveModal(false)
+    setReserveInput('')
+    setReserveName('')
+    setReserveMethod('scan')
+  }
 
   // Datei auswählen (funktioniert für Datei-Upload und Kamera)
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -7969,6 +7994,17 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </Link>
               )}
 
+              {/* Reservieren */}
+              {!isOeffentlichAdminContext() && (
+                <button type="button" onClick={() => setShowReserveModal(true)}
+                  style={{ padding: '0.5rem 1rem', background: s.bgCard, border: `1px solid #d9770688`, color: '#d97706', borderRadius: '10px', fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#fef3c7' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = s.bgCard }}
+                >
+                  🔶 Reservieren
+                </button>
+              )}
+
               {/* Kundendaten */}
               <Link
                 to={isVk2AdminContext() ? PROJECT_ROUTES.vk2.kunden : PROJECT_ROUTES['k2-galerie'].kunden}
@@ -8088,6 +8124,21 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Öffnen →</div>
                   </button>
 
+                  {/* Statistik */}
+                  {!isOeffentlichAdminContext() && (
+                  <button type="button" onClick={() => setActiveTab('statistik')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: `2px solid ${s.accent}22`, borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.transform = 'translateY(-2px)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}22`; e.currentTarget.style.transform = 'translateY(0)' }}
+                  >
+                    <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📊</div>
+                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Verkaufsstatistik</div>
+                    <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
+                      Umsatz, meistverkaufte Werke, Kategorien, Zeitraum-Auswertung
+                    </div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Öffnen →</div>
+                  </button>
+                  )}
+
                   {/* Eventplanung */}
                   <button type="button" onClick={() => setActiveTab('eventplan')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: `2px solid ${s.accent}22`, borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit' }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.transform = 'translateY(-2px)' }}
@@ -8156,6 +8207,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
                 <h2 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', fontWeight: 700, color: s.text, margin: 0 }}>
                   {activeTab === 'katalog' && '📋 Werkkatalog'}
+                  {activeTab === 'statistik' && '📊 Verkaufsstatistik'}
                   {activeTab === 'eventplan' && '📢 Veranstaltungen & Werbung'}
                   {activeTab === 'design' && '✨ Aussehen der Galerie – nach deinen Wünschen anpassen'}
                   {activeTab === 'einstellungen' && '⚙️ Einstellungen'}
@@ -8177,27 +8229,274 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             />
           )}
 
+          {/* ===== VERKAUFSSTATISTIK ===== */}
+          {activeTab === 'statistik' && (() => {
+            // Daten aufbereiten
+            let soldEntries: any[] = []
+            try { soldEntries = JSON.parse(localStorage.getItem('k2-sold-artworks') || '[]') } catch (_) {}
+            let reservedEntries: any[] = []
+            try { reservedEntries = JSON.parse(localStorage.getItem('k2-reserved-artworks') || '[]') } catch (_) {}
+
+            const soldNumbers = new Set(soldEntries.map((e: any) => e.number))
+            const soldWerke = allArtworks.filter((a: any) => soldNumbers.has(a.number || a.id))
+            const gesamtWerke = allArtworks.length
+            const inGalerie = allArtworks.filter((a: any) => a.inExhibition).length
+            const reserviert = reservedEntries.length
+
+            // Umsatz
+            const umsatzGesamt = soldEntries.reduce((sum: number, e: any) => {
+              const werk = allArtworks.find((a: any) => (a.number || a.id) === e.number)
+              return sum + (e.soldPrice || werk?.price || 0)
+            }, 0)
+
+            // Nach Kategorie
+            const katMap: Record<string, { count: number; umsatz: number }> = {}
+            soldWerke.forEach((a: any) => {
+              const kat = getCategoryLabel(a.category)
+              const soldEntry = soldEntries.find((e: any) => e.number === (a.number || a.id))
+              const preis = soldEntry?.soldPrice || a.price || 0
+              if (!katMap[kat]) katMap[kat] = { count: 0, umsatz: 0 }
+              katMap[kat].count++
+              katMap[kat].umsatz += preis
+            })
+            const katSorted = Object.entries(katMap).sort((a, b) => b[1].umsatz - a[1].umsatz)
+
+            // Letzte 5 Verkäufe
+            const letzteFuenf = [...soldEntries]
+              .sort((a, b) => (b.soldAt || '').localeCompare(a.soldAt || ''))
+              .slice(0, 5)
+              .map((e: any) => ({ ...e, werk: allArtworks.find((a: any) => (a.number || a.id) === e.number) }))
+
+            // Preisspanne
+            const preise = soldWerke.map((a: any) => a.price || 0).filter((p: number) => p > 0)
+            const preisMin = preise.length ? Math.min(...preise) : 0
+            const preisMax = preise.length ? Math.max(...preise) : 0
+            const preisDurch = preise.length ? preise.reduce((a: number, b: number) => a + b, 0) / preise.length : 0
+
+            const kachelStyle = { background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: 16, padding: '1.25rem', boxShadow: s.shadow }
+
+            return (
+            <section style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: 24, padding: 'clamp(1.5rem, 4vw, 2.5rem)', marginBottom: '2rem' }}>
+
+              {/* Kennzahlen-Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+                <div style={{ ...kachelStyle, textAlign: 'center' }}>
+                  <div style={{ fontSize: '2rem', fontWeight: 800, color: s.accent }}>{soldWerke.length}</div>
+                  <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4 }}>Verkaufte Werke</div>
+                </div>
+                <div style={{ ...kachelStyle, textAlign: 'center' }}>
+                  <div style={{ fontSize: '2rem', fontWeight: 800, color: '#15803d' }}>€ {umsatzGesamt.toFixed(0)}</div>
+                  <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4 }}>Gesamtumsatz</div>
+                </div>
+                <div style={{ ...kachelStyle, textAlign: 'center' }}>
+                  <div style={{ fontSize: '2rem', fontWeight: 800, color: s.text }}>{gesamtWerke}</div>
+                  <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4 }}>Werke gesamt</div>
+                </div>
+                <div style={{ ...kachelStyle, textAlign: 'center' }}>
+                  <div style={{ fontSize: '2rem', fontWeight: 800, color: '#2563eb' }}>{inGalerie}</div>
+                  <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4 }}>In Galerie</div>
+                </div>
+                <div style={{ ...kachelStyle, textAlign: 'center' }}>
+                  <div style={{ fontSize: '2rem', fontWeight: 800, color: '#d97706' }}>{reserviert}</div>
+                  <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4 }}>Reserviert</div>
+                </div>
+                {preise.length > 0 && (
+                  <div style={{ ...kachelStyle, textAlign: 'center' }}>
+                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: s.text }}>€ {preisDurch.toFixed(0)}</div>
+                    <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4 }}>Ø Verkaufspreis</div>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+
+                {/* Nach Kategorie */}
+                <div style={kachelStyle}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, marginBottom: '1rem', margin: '0 0 1rem' }}>📂 Umsatz nach Kategorie</h3>
+                  {katSorted.length === 0 ? (
+                    <div style={{ color: s.muted, fontSize: '0.9rem' }}>Noch keine Verkäufe</div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                      {katSorted.map(([kat, data]) => {
+                        const pct = umsatzGesamt > 0 ? (data.umsatz / umsatzGesamt) * 100 : 0
+                        return (
+                          <div key={kat}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', marginBottom: 4 }}>
+                              <span style={{ color: s.text, fontWeight: 600 }}>{kat}</span>
+                              <span style={{ color: s.muted }}>{data.count}× · € {data.umsatz.toFixed(0)}</span>
+                            </div>
+                            <div style={{ height: 8, background: s.bgElevated, borderRadius: 4, overflow: 'hidden' }}>
+                              <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${s.accent}, #d96b35)`, borderRadius: 4, transition: 'width 0.5s' }} />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Letzte Verkäufe */}
+                <div style={kachelStyle}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: '0 0 1rem' }}>🕐 Letzte Verkäufe</h3>
+                  {letzteFuenf.length === 0 ? (
+                    <div style={{ color: s.muted, fontSize: '0.9rem' }}>Noch keine Verkäufe</div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      {letzteFuenf.map((e: any, i: number) => (
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.5rem', borderBottom: i < letzteFuenf.length - 1 ? `1px solid ${s.accent}18` : 'none' }}>
+                          <div>
+                            <div style={{ fontSize: '0.9rem', fontWeight: 600, color: s.text }}>{e.werk?.title || e.number}</div>
+                            <div style={{ fontSize: '0.78rem', color: s.muted }}>{e.soldAt ? new Date(e.soldAt).toLocaleDateString('de-DE') : '–'} · {e.number}</div>
+                          </div>
+                          <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#15803d' }}>
+                            € {(e.soldPrice || e.werk?.price || 0).toFixed(0)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Preisspanne */}
+                {preise.length > 0 && (
+                  <div style={kachelStyle}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: '0 0 1rem' }}>💰 Preisspanne (verkaufte Werke)</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', textAlign: 'center' }}>
+                      <div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: s.text }}>€ {preisMin.toFixed(0)}</div>
+                        <div style={{ fontSize: '0.78rem', color: s.muted }}>Minimum</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: s.accent }}>€ {preisDurch.toFixed(0)}</div>
+                        <div style={{ fontSize: '0.78rem', color: s.muted }}>Durchschnitt</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: s.text }}>€ {preisMax.toFixed(0)}</div>
+                        <div style={{ fontSize: '0.78rem', color: s.muted }}>Maximum</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Reservierte Werke */}
+                {reservedEntries.length > 0 && (
+                  <div style={kachelStyle}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: '0 0 1rem' }}>🔶 Reservierungen</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                      {reservedEntries.map((e: any, i: number) => {
+                        const werk = allArtworks.find((a: any) => (a.number || a.id) === e.number)
+                        return (
+                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.5rem', borderBottom: i < reservedEntries.length - 1 ? `1px solid ${s.accent}18` : 'none' }}>
+                            <div>
+                              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: s.text }}>{werk?.title || e.number}</div>
+                              <div style={{ fontSize: '0.78rem', color: s.muted }}>{e.reservedFor ? `für ${e.reservedFor} · ` : ''}{e.reservedAt ? new Date(e.reservedAt).toLocaleDateString('de-DE') : ''}</div>
+                            </div>
+                            <button type="button"
+                              onClick={() => { handleMarkAsReserved(e.number, ''); }}
+                              style={{ padding: '0.3rem 0.6rem', background: 'none', border: `1px solid ${s.muted}44`, borderRadius: 6, color: s.muted, fontSize: '0.78rem', cursor: 'pointer' }}>
+                              Aufheben
+                            </button>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              {/* Anfragen-Inbox */}
+              {(() => {
+                let anfragen: any[] = []
+                try { anfragen = JSON.parse(localStorage.getItem('k2-anfragen') || '[]') } catch (_) {}
+                const neueAnfragen = anfragen.filter((a: any) => a.status === 'neu')
+                return anfragen.length > 0 ? (
+                  <div style={{ ...kachelStyle, gridColumn: '1 / -1' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                      <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: 0 }}>
+                        ✉️ Anfragen
+                        {neueAnfragen.length > 0 && <span style={{ marginLeft: 8, background: '#ef4444', color: '#fff', borderRadius: 20, padding: '2px 8px', fontSize: '0.78rem', fontWeight: 700 }}>{neueAnfragen.length} neu</span>}
+                      </h3>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      {anfragen.map((a: any, i: number) => (
+                        <div key={a.id || i} style={{ padding: '0.75rem', background: a.status === 'neu' ? `${s.accent}10` : s.bgElevated, borderRadius: 10, border: a.status === 'neu' ? `1px solid ${s.accent}44` : `1px solid ${s.accent}18` }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 700, color: s.text, fontSize: '0.9rem' }}>{a.name} <span style={{ color: s.muted, fontWeight: 400 }}>– {a.email}</span></div>
+                              <div style={{ fontSize: '0.82rem', color: s.accent, marginTop: 2 }}>Werk: {a.artworkTitle || a.artworkNumber}{a.artworkPrice ? ` · € ${Number(a.artworkPrice).toFixed(0)}` : ''}</div>
+                              {a.nachricht && <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4, fontStyle: 'italic' }}>„{a.nachricht}"</div>}
+                              <div style={{ fontSize: '0.75rem', color: s.muted, marginTop: 4 }}>{a.createdAt ? new Date(a.createdAt).toLocaleString('de-DE') : ''}</div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
+                              {a.status === 'neu' && (
+                                <button type="button" onClick={() => {
+                                  try {
+                                    const all = JSON.parse(localStorage.getItem('k2-anfragen') || '[]')
+                                    const idx = all.findIndex((x: any) => x.id === a.id)
+                                    if (idx !== -1) { all[idx] = { ...all[idx], status: 'gelesen' }; localStorage.setItem('k2-anfragen', JSON.stringify(all)) }
+                                  } catch (_) {}
+                                  setAllArtworks(loadArtworks()) // re-render trigger
+                                }} style={{ padding: '0.3rem 0.6rem', background: s.accent, color: '#fff', border: 'none', borderRadius: 6, fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}>
+                                  ✓ Gelesen
+                                </button>
+                              )}
+                              <button type="button" onClick={() => {
+                                try {
+                                  const all = JSON.parse(localStorage.getItem('k2-anfragen') || '[]')
+                                  localStorage.setItem('k2-anfragen', JSON.stringify(all.filter((x: any) => x.id !== a.id)))
+                                } catch (_) {}
+                                setAllArtworks(loadArtworks())
+                              }} style={{ padding: '0.3rem 0.6rem', background: 'none', border: `1px solid ${s.muted}44`, borderRadius: 6, color: s.muted, fontSize: '0.75rem', cursor: 'pointer' }}>
+                                Löschen
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null
+              })()}
+
+              </div>
+
+            </section>
+            )
+          })()}
+
           {/* ===== WERKKATALOG ===== */}
           {activeTab === 'katalog' && (() => {
-            // Sold-Status aus separatem Key holen und ins Werk mergen
+            // Sold-Status + Reservierung aus separaten Keys holen
             const soldMap = new Map<string, any>()
             try {
               const soldRaw = localStorage.getItem('k2-sold-artworks')
               if (soldRaw) JSON.parse(soldRaw).forEach((s: any) => soldMap.set(s.number, s))
             } catch (_) {}
+            const reservedMap = new Map<string, any>()
+            try {
+              const resRaw = localStorage.getItem('k2-reserved-artworks')
+              if (resRaw) JSON.parse(resRaw).forEach((r: any) => reservedMap.set(r.number, r))
+            } catch (_) {}
 
-            // Werke anreichern: sold, soldAt, soldPrice, buyer aus separatem Key
+            // Werke anreichern: sold, soldAt, soldPrice, buyer, reserved, reservedFor
             const enriched = allArtworks.map((a: any) => {
               const soldEntry = soldMap.get(a.number || a.id)
-              return soldEntry
-                ? { ...a, sold: true, soldAt: soldEntry.soldAt || '', soldPrice: soldEntry.soldPrice || a.price, buyer: soldEntry.buyer || '' }
-                : { ...a, sold: false }
+              const resEntry = reservedMap.get(a.number || a.id)
+              return {
+                ...a,
+                sold: !!soldEntry,
+                soldAt: soldEntry?.soldAt || '',
+                soldPrice: soldEntry?.soldPrice || a.price,
+                buyer: soldEntry?.buyer || '',
+                reserved: !!resEntry,
+                reservedFor: resEntry?.reservedFor || '',
+                reservedAt: resEntry?.reservedAt || '',
+              }
             })
 
             // Filter anwenden
             const filtered = enriched.filter((a: any) => {
               if (katalogFilter.status === 'galerie' && !a.inExhibition) return false
               if (katalogFilter.status === 'verkauft' && !a.sold) return false
+              if (katalogFilter.status === 'reserviert' && !a.reserved) return false
               if (katalogFilter.status === 'lager' && (a.inExhibition || a.sold)) return false
               if (katalogFilter.kategorie && a.category !== katalogFilter.kategorie) return false
               if (katalogFilter.artist && !(a.artist || '').toLowerCase().includes(katalogFilter.artist.toLowerCase())) return false
@@ -8232,7 +8531,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     case 'masse': return `<td>${a.dimensions || '–'}</td>`
                     case 'technik': return `<td>${a.technik || '–'}</td>`
                     case 'preis': return `<td style="text-align:right">${a.price ? `€ ${Number(a.price).toFixed(2)}` : '–'}</td>`
-                    case 'status': return `<td>${a.sold ? `<span style="color:#b91c1c;font-weight:700">Verkauft</span>` : a.inExhibition ? '<span style="color:#15803d">Galerie</span>' : 'Lager'}</td>`
+                    case 'status': return `<td>${a.sold ? `<span style="color:#b91c1c;font-weight:700">Verkauft</span>` : a.reserved ? `<span style="color:#d97706;font-weight:700">Reserviert${a.reservedFor ? ' – ' + a.reservedFor : ''}</span>` : a.inExhibition ? '<span style="color:#15803d">Galerie</span>' : 'Lager'}</td>`
                     case 'datum': return `<td>${a.createdAt ? new Date(a.createdAt).toLocaleDateString('de-DE') : '–'}</td>`
                     case 'kaeufer': return `<td>${a.buyer || '–'}</td>`
                     case 'verkauftam': return `<td>${a.soldAt ? new Date(a.soldAt).toLocaleDateString('de-DE') : '–'}</td>`
@@ -8300,6 +8599,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     <option value="alle">Alle</option>
                     <option value="galerie">In Galerie</option>
                     <option value="verkauft">Verkauft</option>
+                    <option value="reserviert">🔶 Reserviert</option>
                     <option value="lager">Lager</option>
                   </select>
                 </div>
@@ -8401,6 +8701,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           {katalogSpalten.includes('preis') && <td style={{ padding: '7px 10px', color: s.text, textAlign: 'right', borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.price ? `€ ${Number(a.price).toFixed(2)}` : '–'}</td>}
                           {katalogSpalten.includes('status') && <td style={{ padding: '7px 10px', borderBottom: `1px solid ${s.accent}18` }}>
                             {a.sold ? <span style={{ color: '#b91c1c', fontWeight: 700, fontSize: '0.82rem' }}>● Verkauft</span>
+                              : a.reserved ? <span style={{ color: '#d97706', fontWeight: 700, fontSize: '0.82rem' }} title={a.reservedFor ? `Reserviert für ${a.reservedFor}` : ''}>🔶 Reserviert{a.reservedFor ? ` – ${a.reservedFor}` : ''}</span>
                               : a.inExhibition ? <span style={{ color: '#15803d', fontWeight: 600, fontSize: '0.82rem' }}>● Galerie</span>
                               : <span style={{ color: s.muted, fontSize: '0.82rem' }}>○ Lager</span>}
                           </td>}
@@ -8426,8 +8727,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               {/* ===== WERKKARTE MODAL ===== */}
               {katalogSelectedWork && (() => {
                 const w = katalogSelectedWork
-                const statusLabel = w.sold ? 'Verkauft' : w.inExhibition ? 'In Galerie' : 'Lager'
-                const statusColor = w.sold ? '#b91c1c' : w.inExhibition ? '#15803d' : '#6b7280'
+                const statusLabel = w.sold ? 'Verkauft' : w.reserved ? `🔶 Reserviert${w.reservedFor ? ` – ${w.reservedFor}` : ''}` : w.inExhibition ? 'In Galerie' : 'Lager'
+                const statusColor = w.sold ? '#b91c1c' : w.reserved ? '#d97706' : w.inExhibition ? '#15803d' : '#6b7280'
 
                 const druckeWerkkarte = () => {
                   const pw = window.open('', '_blank')
@@ -8448,7 +8749,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; font-size: 12px; margin-bottom: 14px; }
                       .meta-item label { color: #888; display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1px; }
                       .meta-item span { color: #111; font-weight: 500; }
-                      .status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; background: ${w.sold ? '#fef2f2' : w.inExhibition ? '#f0fdf4' : '#f9fafb'}; color: ${statusColor}; border: 1px solid ${statusColor}44; margin-bottom: 14px; }
+                      .status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; background: ${w.sold ? '#fef2f2' : w.reserved ? '#fffbeb' : w.inExhibition ? '#f0fdf4' : '#f9fafb'}; color: ${statusColor}; border: 1px solid ${statusColor}44; margin-bottom: 14px; }
                       .beschreibung { font-size: 12px; color: #444; line-height: 1.6; border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: 6px; }
                       .footer { margin-top: 16px; border-top: 1px solid #e5e7eb; padding-top: 8px; font-size: 10px; color: #999; display: flex; justify-content: space-between; }
                     </style></head><body>
@@ -8505,7 +8806,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       {w.artist && <div style={{ fontSize: '0.95rem', color: s.muted, fontStyle: 'italic', marginBottom: '0.75rem' }}>{w.artist}</div>}
 
                       {/* Status-Badge */}
-                      <div style={{ display: 'inline-block', padding: '3px 12px', borderRadius: 20, fontSize: '0.82rem', fontWeight: 700, background: w.sold ? '#fef2f2' : w.inExhibition ? '#f0fdf4' : s.bgElevated, color: statusColor, border: `1px solid ${statusColor}55`, marginBottom: '1.25rem' }}>
+                      <div style={{ display: 'inline-block', padding: '3px 12px', borderRadius: 20, fontSize: '0.82rem', fontWeight: 700, background: w.sold ? '#fef2f2' : w.reserved ? '#fffbeb' : w.inExhibition ? '#f0fdf4' : s.bgElevated, color: statusColor, border: `1px solid ${statusColor}55`, marginBottom: '1.25rem' }}>
                         {statusLabel}
                       </div>
 
@@ -15371,6 +15672,74 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 {saleMethod === 'manual' && saleInput.trim() && (
                   <button className="btn-primary" onClick={() => handleMarkAsSold(saleInput.trim())}>
                     Als verkauft markieren
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reservierungs-Modal */}
+      {showReserveModal && (
+        <div className="admin-modal-overlay" onClick={() => setShowReserveModal(false)}>
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="admin-modal-header">
+              <h2>🔶 Werk reservieren</h2>
+              <button className="admin-modal-close" onClick={() => setShowReserveModal(false)}>×</button>
+            </div>
+            <div className="admin-modal-content">
+              <div className="field" style={{ marginBottom: '1.5rem' }}>
+                <label>Methode</label>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <button className={reserveMethod === 'scan' ? 'btn-primary' : 'btn-secondary'} onClick={() => setReserveMethod('scan')} style={{ flex: 1 }}>📷 QR-Code scannen</button>
+                  <button className={reserveMethod === 'manual' ? 'btn-primary' : 'btn-secondary'} onClick={() => setReserveMethod('manual')} style={{ flex: 1 }}>⌨️ Seriennummer eingeben</button>
+                </div>
+              </div>
+
+              {reserveMethod === 'scan' && (
+                <div className="scan-area">
+                  <div className="upload-placeholder" style={{ padding: '2rem' }}>
+                    <div className="upload-icon">📷</div>
+                    <p>QR-Code mit Kamera scannen</p>
+                    <input type="file" accept="image/*" capture="environment"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          const qrText = await readQRCodeFromImage(file)
+                          if (qrText) {
+                            const match = qrText.match(/K2-\d{4}/) || qrText.match(/werk=([^&]+)/)
+                            if (match) { handleMarkAsReserved(match[1] || match[0], reserveName) }
+                            else { alert('QR-Code nicht lesbar. Bitte manuell eingeben.'); setReserveMethod('manual') }
+                          } else { setReserveMethod('manual') }
+                        }
+                      }}
+                      style={{ display: 'none' }} id="qr-reserve-input" />
+                    <label htmlFor="qr-reserve-input" className="btn-primary" style={{ marginTop: '1rem', cursor: 'pointer' }}>📷 Kamera öffnen</label>
+                  </div>
+                </div>
+              )}
+
+              {reserveMethod === 'manual' && (
+                <div className="field">
+                  <label>Seriennummer</label>
+                  <input type="text" value={reserveInput} onChange={(e) => setReserveInput(e.target.value.toUpperCase())}
+                    placeholder="z.B. K2-0001" style={{ fontSize: '1.2rem', textAlign: 'center', letterSpacing: '0.1em' }}
+                    onKeyPress={(e) => { if (e.key === 'Enter' && reserveInput.trim()) handleMarkAsReserved(reserveInput.trim(), reserveName) }} />
+                </div>
+              )}
+
+              <div className="field" style={{ marginTop: '1rem' }}>
+                <label>Reserviert für (optional)</label>
+                <input type="text" value={reserveName} onChange={(e) => setReserveName(e.target.value)}
+                  placeholder="Name des Interessenten" />
+              </div>
+
+              <div className="admin-modal-actions">
+                <button className="btn-secondary" onClick={() => { setShowReserveModal(false); setReserveInput(''); setReserveName(''); setReserveMethod('scan') }}>Abbrechen</button>
+                {reserveMethod === 'manual' && reserveInput.trim() && (
+                  <button className="btn-primary" style={{ background: '#d97706' }} onClick={() => handleMarkAsReserved(reserveInput.trim(), reserveName)}>
+                    🔶 Reservieren
                   </button>
                 )}
               </div>

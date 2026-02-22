@@ -518,6 +518,11 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   const [mobileTitle, setMobileTitle] = useState('')
   const [mobileCategory, setMobileCategory] = useState<ArtworkCategoryId>('malerei')
   const [mobilePrice, setMobilePrice] = useState('')
+  const [anfrageArtwork, setAnfrageArtwork] = useState<any>(null) // Werk für das eine Anfrage gestellt wird
+  const [anfrageName, setAnfrageName] = useState('')
+  const [anfrageEmail, setAnfrageEmail] = useState('')
+  const [anfrageNachricht, setAnfrageNachricht] = useState('')
+  const [anfrageSent, setAnfrageSent] = useState(false)
   const [mobileDescription, setMobileDescription] = useState('')
   const [mobileLocationType, setMobileLocationType] = useState<'regal' | 'bildflaeche' | 'sonstig' | ''>('')
   const [mobileLocationNumber, setMobileLocationNumber] = useState('')
@@ -2623,6 +2628,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 
                 // Prüfe ob verkauft
                 let isSold = false
+                let isReserved = false
+                let reservedFor = ''
                 try {
                   const soldData = localStorage.getItem('k2-sold-artworks')
                   if (soldData) {
@@ -2634,6 +2641,16 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 } catch (error) {
                   // Ignoriere Fehler
                 }
+                try {
+                  const resData = localStorage.getItem('k2-reserved-artworks')
+                  if (resData) {
+                    const resArtworks = JSON.parse(resData)
+                    if (Array.isArray(resArtworks)) {
+                      const resEntry = resArtworks.find((a: any) => a && a.number === artwork.number)
+                      if (resEntry) { isReserved = true; reservedFor = resEntry.reservedFor || '' }
+                    }
+                  }
+                } catch (_) {}
 
                 return (
                   <div key={artwork.number} style={{ 
@@ -2748,6 +2765,23 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                         boxShadow: '0 4px 12px rgba(245, 87, 108, 0.4)'
                       }}>
                         Verkauft
+                      </div>
+                    )}
+                    {!isSold && isReserved && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '0.75rem',
+                        right: '0.75rem',
+                        background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
+                        color: '#fff',
+                        padding: 'clamp(0.4rem, 1.5vw, 0.5rem) clamp(0.75rem, 2vw, 1rem)',
+                        borderRadius: '8px',
+                        fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
+                        fontWeight: '600',
+                        zIndex: 1,
+                        boxShadow: '0 4px 12px rgba(245, 158, 11, 0.4)'
+                      }}>
+                        🔶 Reserviert{reservedFor ? ` – ${reservedFor}` : ''}
                       </div>
                     )}
                     {/* Bild immer anzeigen - robuster Fallback */}
@@ -3004,6 +3038,29 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                         }}
                       >
                         Gefällt mir – möchte ich erwerben
+                      </button>
+                    )}
+                    {/* Anfrage stellen – immer möglich (auch bei reserviert/nur Ausstellung) */}
+                    {!isSold && !musterOnly && (
+                      <button
+                        type="button"
+                        onClick={() => { setAnfrageArtwork(artwork); setAnfrageSent(false); setAnfrageName(''); setAnfrageEmail(''); setAnfrageNachricht('') }}
+                        style={{
+                          width: '100%',
+                          marginTop: '0.5rem',
+                          padding: 'clamp(0.4rem, 1.5vw, 0.55rem) clamp(0.75rem, 2vw, 1rem)',
+                          background: 'transparent',
+                          color: galerieTheme.muted,
+                          border: `1px solid ${galerieTheme.border}`,
+                          borderRadius: '8px',
+                          fontSize: 'clamp(0.78rem, 2vw, 0.85rem)',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = galerieTheme.accent; e.currentTarget.style.color = galerieTheme.accent }}
+                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = galerieTheme.border; e.currentTarget.style.color = galerieTheme.muted }}
+                      >
+                        ✉️ Anfrage stellen
                       </button>
                     )}
                     {/* Info wenn Werk explizit nur für Ausstellung markiert */}
@@ -4589,6 +4646,82 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 ✓ OK – weiter
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Anfrage-Modal */}
+      {anfrageArtwork && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 40000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setAnfrageArtwork(null) }}>
+          <div style={{ background: '#1a1a2e', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 20, padding: '2rem', width: '100%', maxWidth: 460, maxHeight: '90vh', overflowY: 'auto' }}>
+            {!anfrageSent ? (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                  <h2 style={{ margin: 0, color: '#5ffbf1', fontSize: '1.1rem' }}>✉️ Anfrage zu diesem Werk</h2>
+                  <button type="button" onClick={() => setAnfrageArtwork(null)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '1.4rem', cursor: 'pointer' }}>✕</button>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: '0.75rem', marginBottom: '1.25rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)' }}>
+                  <strong style={{ color: '#fff' }}>{anfrageArtwork.title}</strong>
+                  {anfrageArtwork.price ? <span style={{ marginLeft: 8, color: '#5ffbf1' }}>€ {Number(anfrageArtwork.price).toFixed(0)}</span> : null}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>Ihr Name *</label>
+                    <input type="text" value={anfrageName} onChange={e => setAnfrageName(e.target.value)}
+                      placeholder="Vorname Nachname"
+                      style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>E-Mail *</label>
+                    <input type="email" value={anfrageEmail} onChange={e => setAnfrageEmail(e.target.value)}
+                      placeholder="ihre@email.at"
+                      style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>Nachricht (optional)</label>
+                    <textarea value={anfrageNachricht} onChange={e => setAnfrageNachricht(e.target.value)}
+                      placeholder="Ihre Frage oder Interesse an diesem Werk …"
+                      rows={3}
+                      style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                  </div>
+                  <button type="button"
+                    disabled={!anfrageName.trim() || !anfrageEmail.trim()}
+                    onClick={() => {
+                      if (!anfrageName.trim() || !anfrageEmail.trim()) return
+                      try {
+                        const anfragen = JSON.parse(localStorage.getItem('k2-anfragen') || '[]')
+                        anfragen.unshift({
+                          id: `anf-${Date.now()}`,
+                          artworkNumber: anfrageArtwork.number || anfrageArtwork.id,
+                          artworkTitle: anfrageArtwork.title,
+                          artworkPrice: anfrageArtwork.price,
+                          name: anfrageName.trim(),
+                          email: anfrageEmail.trim(),
+                          nachricht: anfrageNachricht.trim(),
+                          createdAt: new Date().toISOString(),
+                          status: 'neu'
+                        })
+                        localStorage.setItem('k2-anfragen', JSON.stringify(anfragen))
+                        window.dispatchEvent(new CustomEvent('anfrage-eingegangen'))
+                      } catch (_) {}
+                      setAnfrageSent(true)
+                    }}
+                    style={{ padding: '0.75rem', background: anfrageName.trim() && anfrageEmail.trim() ? 'linear-gradient(135deg, #5ffbf1, #0ea5e9)' : 'rgba(255,255,255,0.1)', color: anfrageName.trim() && anfrageEmail.trim() ? '#0a0a1a' : 'rgba(255,255,255,0.4)', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: '1rem', cursor: anfrageName.trim() && anfrageEmail.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.2s' }}>
+                    ✉️ Anfrage senden
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>💚</div>
+                <h2 style={{ color: '#5ffbf1', marginBottom: '0.5rem' }}>Danke für Ihr Interesse!</h2>
+                <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '1.5rem' }}>Ihre Anfrage zu „{anfrageArtwork.title}" wurde gespeichert. Wir melden uns bald bei Ihnen.</p>
+                <button type="button" onClick={() => setAnfrageArtwork(null)}
+                  style={{ padding: '0.6rem 1.5rem', background: 'rgba(95,251,241,0.15)', border: '1px solid rgba(95,251,241,0.4)', borderRadius: 10, color: '#5ffbf1', fontWeight: 600, cursor: 'pointer' }}>
+                  OK
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
