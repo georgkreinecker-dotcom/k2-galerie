@@ -8236,6 +8236,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     case 'datum': return `<td>${a.createdAt ? new Date(a.createdAt).toLocaleDateString('de-DE') : '–'}</td>`
                     case 'kaeufer': return `<td>${a.buyer || '–'}</td>`
                     case 'verkauftam': return `<td>${a.soldAt ? new Date(a.soldAt).toLocaleDateString('de-DE') : '–'}</td>`
+                    case 'stueck': return `<td style="text-align:right;font-weight:${a.quantity > 1 ? 700 : 400}">${a.quantity ?? 1}</td>`
                     case 'standort': return `<td>${a.location || '–'}</td>`
                     default: return '<td>–</td>'
                   }
@@ -8246,7 +8247,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               const colHeaders: Record<string, string> = {
                 nummer: 'Nr.', titel: 'Titel', kategorie: 'Kategorie', kuenstler: 'Künstler:in',
                 masse: 'Maße', technik: 'Technik/Material', preis: 'Preis', status: 'Status',
-                datum: 'Erstellt', kaeufer: 'Käufer:in', verkauftam: 'Verkauft am', standort: 'Standort'
+                datum: 'Erstellt', kaeufer: 'Käufer:in', verkauftam: 'Verkauft am', stueck: 'Stück', standort: 'Standort'
               }
               const thead = cols.map(c => `<th style="text-align:left;padding:6px 8px;border-bottom:2px solid #8b6914;white-space:nowrap">${colHeaders[c] || c}</th>`).join('')
 
@@ -8276,7 +8277,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               { id: 'masse', label: 'Maße' }, { id: 'technik', label: 'Technik/Material' },
               { id: 'preis', label: 'Preis' }, { id: 'status', label: 'Status' },
               { id: 'datum', label: 'Erstellt' }, { id: 'kaeufer', label: 'Käufer:in' },
-              { id: 'verkauftam', label: 'Verkauft am' }, { id: 'standort', label: 'Standort' },
+              { id: 'verkauftam', label: 'Verkauft am' }, { id: 'stueck', label: 'Stück' }, { id: 'standort', label: 'Standort' },
             ]
 
             return (
@@ -8379,6 +8380,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         {katalogSpalten.includes('datum') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33`, whiteSpace: 'nowrap' }}>Erstellt</th>}
                         {katalogSpalten.includes('kaeufer') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Käufer:in</th>}
                         {katalogSpalten.includes('verkauftam') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33`, whiteSpace: 'nowrap' }}>Verkauft am</th>}
+                        {katalogSpalten.includes('stueck') && <th style={{ padding: '8px 10px', textAlign: 'right', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Stück</th>}
                         {katalogSpalten.includes('standort') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Standort</th>}
                       </tr>
                     </thead>
@@ -8405,6 +8407,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           {katalogSpalten.includes('datum') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.createdAt ? new Date(a.createdAt).toLocaleDateString('de-DE') : '–'}</td>}
                           {katalogSpalten.includes('kaeufer') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.buyer || '–'}</td>}
                           {katalogSpalten.includes('verkauftam') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.soldAt ? new Date(a.soldAt).toLocaleDateString('de-DE') : '–'}</td>}
+                          {katalogSpalten.includes('stueck') && <td style={{ padding: '7px 10px', color: s.text, textAlign: 'right', fontWeight: a.quantity > 1 ? 700 : 400, borderBottom: `1px solid ${s.accent}18` }}>{a.quantity ?? 1}</td>}
                           {katalogSpalten.includes('standort') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.location || '–'}</td>}
                         </tr>
                       ))}
@@ -8462,6 +8465,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       ${w.technik ? `<div class="meta-item"><label>Technik / Material</label><span>${w.technik}</span></div>` : ''}
                       ${w.category ? `<div class="meta-item"><label>Kategorie</label><span>${getCategoryLabel(w.category)}</span></div>` : ''}
                       ${w.price ? `<div class="meta-item"><label>Preis</label><span>€ ${Number(w.price).toFixed(2)}</span></div>` : ''}
+                      ${(w.quantity != null && Number(w.quantity) > 1) ? `<div class="meta-item"><label>Stückzahl</label><span>${w.quantity} Exemplare</span></div>` : ''}
                       ${w.createdAt ? `<div class="meta-item"><label>Erstellt</label><span>${new Date(w.createdAt).toLocaleDateString('de-DE')}</span></div>` : ''}
                       ${w.soldAt ? `<div class="meta-item"><label>Verkauft am</label><span>${new Date(w.soldAt).toLocaleDateString('de-DE')}</span></div>` : ''}
                       ${w.buyer ? `<div class="meta-item"><label>Käufer:in</label><span>${w.buyer}</span></div>` : ''}
@@ -8541,6 +8545,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}>
                             <div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Verkauft am</div>
                             <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#b91c1c' }}>{new Date(w.soldAt).toLocaleDateString('de-DE')}</div>
+                          </div>
+                        )}
+                        {w.quantity != null && Number(w.quantity) > 1 && (
+                          <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}>
+                            <div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Stückzahl</div>
+                            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: s.text }}>{w.quantity} Exemplare</div>
                           </div>
                         )}
                         {w.buyer && (
