@@ -524,6 +524,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   const [isSaving, setIsSaving] = useState(false)
   const [showQRScanner, setShowQRScanner] = useState(false)
   const [showLocationQR, setShowLocationQR] = useState(false)
+  const [showEtikettModal, setShowEtikettModal] = useState(false)
+  const [etikettArtwork, setEtikettArtwork] = useState<any>(null)
+  const [etikettQrUrl, setEtikettQrUrl] = useState<string | null>(null)
   const qrScannerVideoRef = useRef<HTMLVideoElement>(null)
   const qrScannerCanvasRef = useRef<HTMLCanvasElement>(null)
   
@@ -4254,9 +4257,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                           const isVercel = window.location.hostname.includes('vercel.app')
                           
                           if (isVercel) {
-                            console.warn('⚠️ Auf Vercel: Automatische Veröffentlichung nicht möglich')
-                            console.warn('💡 Mobile-Werke müssen über Dev-Server erstellt werden')
-                            alert('⚠️ Auf Vercel: Werk wurde gespeichert, aber automatische Veröffentlichung nicht möglich.\n\n💡 Für Mobile → Mac/iPad Sync:\n1. Handy auf lokalem Dev-Server verwenden\n2. Oder: Mac muss Git Push ausführen')
+                            // Supabase übernimmt die Sync – kein Alert nötig
+                            console.log('ℹ️ Auf Vercel: Supabase-Sync läuft, gallery-data.json nicht nötig')
                           } else {
                             const response = await fetch('/api/write-gallery-data', {
                               method: 'POST',
@@ -4297,7 +4299,10 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                     }))
                     
                     console.log('✅ Neues Objekt gespeichert und angezeigt:', newNumber)
-                    alert(`✅ Werk gespeichert!\n\nNummer: ${newNumber}\nTitel: ${mobileTitle}\n\nAnzahl Werke: ${exhibitionArtworks.length}\n\n📱 Wird automatisch für Mobile-Geräte veröffentlicht...`)
+                    // Etikett-Modal öffnen statt Alert
+                    const savedNewArtwork = { number: newNumber, title: mobileTitle, category: mobileCategory, price: mobilePrice ? parseFloat(mobilePrice) : undefined }
+                    setEtikettArtwork(savedNewArtwork)
+                    setShowEtikettModal(true)
                   }
                   
                   // Zurücksetzen
@@ -4563,9 +4568,101 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           </div>
         </div>
       )}
+
+      {/* Etikett-Modal nach Speichern eines neuen Werks am iPad */}
+      {showEtikettModal && etikettArtwork && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.85)', zIndex: 30000,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          padding: '1.5rem'
+        }}>
+          <div style={{
+            background: '#1a1a2e', borderRadius: '20px', padding: '2rem',
+            maxWidth: '360px', width: '100%', textAlign: 'center',
+            border: '2px solid rgba(95,251,241,0.4)', boxShadow: '0 8px 32px rgba(0,0,0,0.6)'
+          }}>
+            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✅</div>
+            <h2 style={{ color: '#5ffbf1', margin: '0 0 0.25rem', fontSize: '1.3rem' }}>Werk gespeichert!</h2>
+            <div style={{ color: '#fff', fontSize: '1.5rem', fontWeight: 700, margin: '0.5rem 0' }}>
+              {etikettArtwork.number}
+            </div>
+            <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1rem', marginBottom: '0.25rem' }}>
+              {etikettArtwork.title}
+            </div>
+            {etikettArtwork.price && (
+              <div style={{ color: '#10b981', fontWeight: 700, marginBottom: '0.5rem' }}>
+                € {etikettArtwork.price}
+              </div>
+            )}
+
+            {/* QR-Code für Kassa-Scan */}
+            <div style={{ margin: '1.25rem 0', background: '#fff', borderRadius: '12px', padding: '0.75rem', display: 'inline-block' }}>
+              <EtikettQrCode nummer={etikettArtwork.number} />
+            </div>
+
+            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', margin: '0 0 1.25rem' }}>
+              QR-Code für Kassa-Scan – Screenshot oder am Mac Etikett drucken
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {/* Screenshot-Hinweis */}
+              <button
+                onClick={async () => {
+                  // Teilen via Web Share API (iPad/iPhone)
+                  if (navigator.share) {
+                    try {
+                      await navigator.share({
+                        title: `Etikett ${etikettArtwork.number}`,
+                        text: `Werk: ${etikettArtwork.title}\nNummer: ${etikettArtwork.number}${etikettArtwork.price ? `\nPreis: € ${etikettArtwork.price}` : ''}`
+                      })
+                    } catch (_) {}
+                  } else {
+                    alert(`Werksnummer: ${etikettArtwork.number}\nTitel: ${etikettArtwork.title}${etikettArtwork.price ? `\nPreis: € ${etikettArtwork.price}` : ''}`)
+                  }
+                }}
+                style={{
+                  background: 'rgba(95,251,241,0.15)', border: '1.5px solid #5ffbf1',
+                  color: '#5ffbf1', borderRadius: '10px', padding: '0.75rem',
+                  fontSize: '1rem', fontWeight: 700, cursor: 'pointer'
+                }}
+              >
+                📤 Teilen / Notieren
+              </button>
+              <button
+                onClick={() => { setShowEtikettModal(false); setEtikettArtwork(null) }}
+                style={{
+                  background: 'linear-gradient(120deg, #10b981, #059669)', border: 'none',
+                  color: '#fff', borderRadius: '10px', padding: '0.75rem',
+                  fontSize: '1rem', fontWeight: 700, cursor: 'pointer'
+                }}
+              >
+                ✓ OK – weiter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
     </>
   )
+}
+
+// Kleiner QR-Code-Generator für das Etikett-Modal (inline, kein Import nötig)
+function EtikettQrCode({ nummer }: { nummer: string }) {
+  const [qrSrc, setQrSrc] = React.useState<string | null>(null)
+  React.useEffect(() => {
+    let cancelled = false
+    import('qrcode').then(QRCode => {
+      const url = `https://k2-galerie.vercel.app/projects/k2-galerie/galerie-vorschau?q=${encodeURIComponent(nummer)}`
+      QRCode.default.toDataURL(url, { width: 180, margin: 1, color: { dark: '#000000', light: '#ffffff' } })
+        .then(dataUrl => { if (!cancelled) setQrSrc(dataUrl) })
+        .catch(() => {})
+    })
+    return () => { cancelled = true }
+  }, [nummer])
+  if (!qrSrc) return <div style={{ width: 180, height: 180, background: '#eee', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999', fontSize: '0.8rem' }}>Lädt…</div>
+  return <img src={qrSrc} alt={`QR ${nummer}`} style={{ width: 180, height: 180, display: 'block' }} />
 }
 
 export default GalerieVorschauPage
