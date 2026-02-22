@@ -367,15 +367,20 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Design-Farben aus Admin anwenden – altes Blau-Theme wird automatisch auf K2-Orange umgestellt und migriert
+  // Design-Farben aus Admin anwenden – NUR für K2 (nicht für ök2/musterOnly!)
+  // ök2 hat eigene Design-Einstellungen unter k2-oeffentlich-design-settings
   const applyDesignFromStorage = React.useCallback(() => {
     try {
-      const stored = localStorage.getItem('k2-design-settings')
-      if (!stored || stored.length > 50000) return
+      const designKey = musterOnly ? 'k2-oeffentlich-design-settings' : 'k2-design-settings'
+      const stored = localStorage.getItem(designKey)
+      if (!stored || stored.length > 50000) {
+        // ök2 ohne eigenes Design: kein K2-Fallback, einfach Default-CSS-Variablen behalten
+        return
+      }
       const design = JSON.parse(stored) as Record<string, string>
       const root = document.documentElement
       let use = design
-      if (isOldBlueTheme(design)) {
+      if (!musterOnly && isOldBlueTheme(design)) {
         use = K2_ORANGE
         localStorage.setItem('k2-design-settings', JSON.stringify(K2_ORANGE))
       }
@@ -387,7 +392,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       if (use.mutedColor) root.style.setProperty('--k2-muted', use.mutedColor)
       if (use.cardBg1) root.style.setProperty('--k2-card-bg-1', use.cardBg1)
       if (use.cardBg2) root.style.setProperty('--k2-card-bg-2', use.cardBg2)
-      if (isDocumentStillBlue()) {
+      if (!musterOnly && isDocumentStillBlue()) {
         root.style.setProperty('--k2-accent', K2_ORANGE.accentColor)
         root.style.setProperty('--k2-bg-1', K2_ORANGE.backgroundColor1)
         root.style.setProperty('--k2-bg-2', K2_ORANGE.backgroundColor2)
@@ -398,15 +403,16 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
         root.style.setProperty('--k2-card-bg-2', K2_ORANGE.cardBg2)
       }
     } catch (_) {}
-  }, [])
+  }, [musterOnly])
   useEffect(() => {
     applyDesignFromStorage()
+    const designKey = musterOnly ? 'k2-oeffentlich-design-settings' : 'k2-design-settings'
     const onStorage = (e: StorageEvent) => {
-      if (e.key === 'k2-design-settings') applyDesignFromStorage()
+      if (e.key === designKey) applyDesignFromStorage()
     }
     window.addEventListener('storage', onStorage)
     return () => window.removeEventListener('storage', onStorage)
-  }, [applyDesignFromStorage])
+  }, [applyDesignFromStorage, musterOnly])
 
   
   // Stammdaten laden (bei musterOnly nur Mustertexte; K2 nutzt K2_STAMMDATEN_DEFAULTS bis localStorage geladen ist)
@@ -703,6 +709,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   const [isRefreshing, setIsRefreshing] = React.useState(false)
   
   const handleRefresh = React.useCallback(async () => {
+    // ök2 lädt niemals K2-Daten aus gallery-data.json
+    if (musterOnly) { setIsRefreshing(false); return }
     setIsRefreshing(true)
     try {
       // KRITISCH: Kompletter Cache-Clear für Mobile

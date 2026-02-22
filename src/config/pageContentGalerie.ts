@@ -46,22 +46,25 @@ export function getPageContentGalerie(tenantId?: 'oeffentlich'): PageContentGale
     const raw = typeof window !== 'undefined' ? localStorage.getItem(key) : null
     if (raw && raw.length < 6 * 1024 * 1024) {
       const parsed = JSON.parse(raw) as Partial<PageContentGalerie>
-      let changed = false
-      // blob:-URLs und Base64 sind geräte-spezifisch → durch Vercel-Pfade ersetzen
-      if (parsed.virtualTourVideo?.startsWith('blob:')) {
-        parsed.virtualTourVideo = '/img/k2/virtual-tour.mp4'; changed = true
-      }
-      if (parsed.welcomeImage?.startsWith('data:')) {
-        parsed.welcomeImage = '/img/k2/willkommen.jpg'; changed = true
-      }
-      if (parsed.galerieCardImage?.startsWith('data:')) {
-        parsed.galerieCardImage = '/img/k2/galerie-card.jpg'; changed = true
-      }
-      if (parsed.virtualTourImage?.startsWith('data:')) {
-        parsed.virtualTourImage = '/img/k2/virtual-tour.jpg'; changed = true
-      }
-      if (changed) {
-        try { localStorage.setItem(key, JSON.stringify({ ...parsed })) } catch (_) {}
+      // blob:-URLs und Base64 sind geräte-spezifisch → NUR für K2 durch Vercel-Pfade ersetzen
+      // ök2 bekommt keine K2-Bilder als Fallback!
+      if (tenantId !== 'oeffentlich') {
+        let changed = false
+        if (parsed.virtualTourVideo?.startsWith('blob:')) {
+          parsed.virtualTourVideo = '/img/k2/virtual-tour.mp4'; changed = true
+        }
+        if (parsed.welcomeImage?.startsWith('data:')) {
+          parsed.welcomeImage = '/img/k2/willkommen.jpg'; changed = true
+        }
+        if (parsed.galerieCardImage?.startsWith('data:')) {
+          parsed.galerieCardImage = '/img/k2/galerie-card.jpg'; changed = true
+        }
+        if (parsed.virtualTourImage?.startsWith('data:')) {
+          parsed.virtualTourImage = '/img/k2/virtual-tour.jpg'; changed = true
+        }
+        if (changed) {
+          try { localStorage.setItem(key, JSON.stringify({ ...parsed })) } catch (_) {}
+        }
       }
       return { ...defaults, ...parsed }
     }
@@ -83,15 +86,28 @@ export function setPageContentGalerie(data: Partial<PageContentGalerie>, tenantI
 }
 
 /** Liefert die anzuzeigenden Bilder: zuerst aus Seitengestaltung, Fallback Stammdaten, dann Vercel-Pfade.
- *  Vercel-Pfade greifen auf jedem Gerät (Mac, Handy, iPad) – localStorage ist geräte-spezifisch. */
-export function getGalerieImages(stammdatenGallery?: { welcomeImage?: string; galerieCardImage?: string; virtualTourImage?: string }): {
+ *  Vercel-Pfade greifen auf jedem Gerät (Mac, Handy, iPad) – localStorage ist geräte-spezifisch.
+ *  tenantId 'oeffentlich' = ök2 → NUR ök2-eigene Bilder, KEINE K2-Vercel-Fallbacks! */
+export function getGalerieImages(
+  stammdatenGallery?: { welcomeImage?: string; galerieCardImage?: string; virtualTourImage?: string },
+  tenantId?: 'oeffentlich'
+): {
   welcomeImage: string
   galerieCardImage: string
   virtualTourImage: string
   virtualTourVideo: string
 } {
-  const page = getPageContentGalerie()
-  // Vercel-Pfade als letzter Fallback – funktionieren auf allen Geräten nach GitHub-Upload
+  const page = getPageContentGalerie(tenantId)
+  if (tenantId === 'oeffentlich') {
+    // ök2: nur eigene Bilder – kein Fallback auf K2-Vercel-Pfade
+    return {
+      welcomeImage: page.welcomeImage || stammdatenGallery?.welcomeImage || '',
+      galerieCardImage: page.galerieCardImage || stammdatenGallery?.galerieCardImage || '',
+      virtualTourImage: page.virtualTourImage || stammdatenGallery?.virtualTourImage || '',
+      virtualTourVideo: page.virtualTourVideo || ''
+    }
+  }
+  // K2: Vercel-Pfade als letzter Fallback – funktionieren auf allen Geräten nach GitHub-Upload
   return {
     welcomeImage: page.welcomeImage || stammdatenGallery?.welcomeImage || '/img/k2/willkommen.jpg',
     galerieCardImage: page.galerieCardImage || stammdatenGallery?.galerieCardImage || '/img/k2/galerie-card.jpg',
