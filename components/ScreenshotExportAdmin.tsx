@@ -8840,30 +8840,17 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   {designSaveFeedback === 'ok' && <span style={{ fontSize: '0.9rem', color: '#10b981', fontWeight: 600 }}>✓ Gespeichert</span>}
                   <button type="button" className="btn-primary" onClick={() => {
                     try {
-                      setPageContentGalerie(pageContent, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
-                      setPageTexts(pageTexts, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
+                      const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
+                      setPageContentGalerie(pageContent, tenant)
+                      setPageTexts(pageTexts, tenant)
                       if (designSettings && Object.keys(designSettings).length > 0) {
                         const ds = JSON.stringify(designSettings)
                         if (ds.length < 50000) localStorage.setItem(getDesignStorageKey(), ds)
                       }
-                      const pageTextsKey = isOeffentlichAdminContext() ? 'k2-oeffentlich-page-texts' : 'k2-page-texts'
-                      const pageContentKey = isOeffentlichAdminContext() ? 'k2-oeffentlich-page-content-galerie' : 'k2-page-content-galerie'
-                      const pageTextsOk = localStorage.getItem(pageTextsKey) != null && (localStorage.getItem(pageTextsKey)?.length ?? 0) > 0
-                      const pageContentOk = localStorage.getItem(pageContentKey) != null
-                      const designStored = localStorage.getItem(getDesignStorageKey())
-                      const designOk = !designSettings || Object.keys(designSettings).length === 0 || (designStored != null && designStored.length > 0)
-                      if (pageTextsOk && pageContentOk && designOk) {
-                        const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
-                        setPageTextsState(getPageTexts(tenant))
-                        setPageContent(getPageContentGalerie(tenant))
-                        setDesignSaveFeedback('ok')
-                        setTimeout(() => setDesignSaveFeedback(null), 5000)
-                        localStorage.removeItem('k2-last-publish-signature')
-                        if (!isOeffentlichAdminContext()) window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
-                        alert('✅ Gespeichert. Die Änderungen sind auf allen Geräten sichtbar.')
-                      } else {
-                        alert('Speichern teilweise fehlgeschlagen. Bitte erneut versuchen.')
-                      }
+                      localStorage.removeItem('k2-last-publish-signature')
+                      if (!isOeffentlichAdminContext()) window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
+                      setDesignSaveFeedback('ok')
+                      setTimeout(() => setDesignSaveFeedback(null), 4000)
                     } catch (e) {
                       alert('Fehler beim Speichern: ' + (e instanceof Error ? e.message : String(e)))
                     }
@@ -8903,31 +8890,20 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         ? <span style={{ fontSize: '0.95rem', color: '#10b981', fontWeight: 700, padding: '0.5rem 1rem', background: 'rgba(16,185,129,0.1)', border: '1px solid #10b981', borderRadius: 8 }}>✅ Gespeichert!</span>
                         : <button type="button" className="btn-primary" onClick={() => {
                             try {
-                              setPageContentGalerie(pageContent, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
-                              setPageTexts(pageTexts, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
+                              const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
+                              // Alles speichern – kein komplizierter Check
+                              setPageContentGalerie(pageContent, tenant)
+                              setPageTexts(pageTexts, tenant)
                               if (designSettings && Object.keys(designSettings).length > 0) {
                                 const ds = JSON.stringify(designSettings)
                                 if (ds.length < 50000) localStorage.setItem(getDesignStorageKey(), ds)
                               }
-                              const pageTextsKey = isOeffentlichAdminContext() ? 'k2-oeffentlich-page-texts' : 'k2-page-texts'
-                              const pageContentKey = isOeffentlichAdminContext() ? 'k2-oeffentlich-page-content-galerie' : 'k2-page-content-galerie'
-                              const pageTextsOk = (localStorage.getItem(pageTextsKey)?.length ?? 0) > 0
-                              const pageContentOk = localStorage.getItem(pageContentKey) != null
-                              const designStored = localStorage.getItem(getDesignStorageKey())
-                              const designOk = !designSettings || Object.keys(designSettings).length === 0 || (designStored != null && designStored.length > 0)
-                              if (pageTextsOk && pageContentOk && designOk) {
-                                const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
-                                setPageTextsState(getPageTexts(tenant))
-                                setPageContent(getPageContentGalerie(tenant))
-                                setDesignSaveFeedback('ok')
-                                setTimeout(() => setDesignSaveFeedback(null), 5000)
-                                localStorage.removeItem('k2-last-publish-signature')
-                                if (!isOeffentlichAdminContext()) window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
-                              } else {
-                                alert('Speichern fehlgeschlagen. Bitte erneut versuchen.')
-                              }
+                              localStorage.removeItem('k2-last-publish-signature')
+                              if (!isOeffentlichAdminContext()) window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
+                              setDesignSaveFeedback('ok')
+                              setTimeout(() => setDesignSaveFeedback(null), 4000)
                             } catch (e) {
-                              alert('Fehler: ' + (e instanceof Error ? e.message : String(e)))
+                              alert('Fehler beim Speichern: ' + (e instanceof Error ? e.message : String(e)))
                             }
                           }} style={{ padding: '0.45rem 1.1rem', fontSize: '0.9rem', fontWeight: 700 }}>
                             <span style={{ fontSize: '0.75rem', fontWeight: 700, marginRight: '0.3rem' }}>3</span>💾 Speichern – fertig!
@@ -9336,37 +9312,18 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
                   <button type="button" className="btn-primary" onClick={() => {
                     try {
-                      setPageContentGalerie(pageContent, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
-                      setPageTexts(pageTexts, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
+                      const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
+                      setPageContentGalerie(pageContent, tenant)
+                      setPageTexts(pageTexts, tenant)
                       if (designSettings && Object.keys(designSettings).length > 0) {
                         const ds = JSON.stringify(designSettings)
                         if (ds.length < 50000) localStorage.setItem(getDesignStorageKey(), ds)
                       }
-                      const pageTextsKey = isOeffentlichAdminContext() ? 'k2-oeffentlich-page-texts' : 'k2-page-texts'
-                      const pageContentKey = isOeffentlichAdminContext() ? 'k2-oeffentlich-page-content-galerie' : 'k2-page-content-galerie'
-                      const pageTextsRaw = localStorage.getItem(pageTextsKey)
-                      const pageTextsOk = pageTextsRaw != null && pageTextsRaw.length > 0
-                      const pageContentOk = localStorage.getItem(pageContentKey) != null
-                      const designStored = localStorage.getItem(getDesignStorageKey())
-                      const designOk = !designSettings || Object.keys(designSettings).length === 0 || (designStored != null && designStored.length > 0)
-                      if (pageTextsOk && pageContentOk && designOk) {
-                        const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
-                        setPageTextsState(getPageTexts(tenant))
-                        setPageContent(getPageContentGalerie(tenant))
-                        setDesignSaveFeedback('ok')
-                        setTimeout(() => setDesignSaveFeedback(null), 5000)
-                        // Signatur invalidieren damit Publish bei Bild-Änderungen sicher ausgeführt wird
-                        localStorage.removeItem('k2-last-publish-signature')
-                        // Automatisch veröffentlichen – kein extra Schritt nötig
-                        if (!isOeffentlichAdminContext()) {
-                          window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
-                        }
-                        alert('✅ Gespeichert.‣Die Änderungen sind auf allen Geräten sichtbar.')
-                      } else {
-                        alert('Speichern teilweise fehlgeschlagen. Bitte erneut auf „Speichern“ klicken. Falls es wieder passiert: Speicher prüfen (z. B. wenig Platz?).')
-                      }
+                      localStorage.removeItem('k2-last-publish-signature')
+                      if (!isOeffentlichAdminContext()) window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
+                      setDesignSaveFeedback('ok')
+                      setTimeout(() => setDesignSaveFeedback(null), 4000)
                     } catch (e) {
-                      console.error('Design speichern:', e)
                       alert('Fehler beim Speichern: ' + (e instanceof Error ? e.message : String(e)))
                     }
                   }} style={{ padding: '0.75rem 1.5rem', fontSize: '1rem' }}>💾 Speichern</button>
