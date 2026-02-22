@@ -7865,19 +7865,33 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
           }}>
             {/* Logo + Admin-Badge */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <AdminBrandLogo title={isVk2AdminContext() ? 'VK2 Vereinsplattform' : undefined} />
-              <span style={{
-                padding: '0.25rem 0.65rem',
-                background: `${s.accent}18`,
-                border: `1px solid ${s.accent}33`,
-                borderRadius: '20px',
-                fontSize: '0.75rem',
-                color: s.accent,
-                fontWeight: 600,
-                letterSpacing: '0.03em'
-              }}>
-                ADMIN
-              </span>
+              {isOeffentlichAdminContext() ? (
+                // ök2: Kein K2-Logo – nur Kontext-Badge damit klar ist wo man ist
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <span style={{ fontFamily: s.fontHeading, fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 700, color: s.accent, letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+                    ök2
+                  </span>
+                  <span style={{ marginTop: '0.2rem', display: 'block', color: s.muted, fontSize: '0.8rem', fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    Muster-Galerie
+                  </span>
+                </div>
+              ) : (
+                <AdminBrandLogo title={isVk2AdminContext() ? 'VK2 Vereinsplattform' : undefined} />
+              )}
+              {!isOeffentlichAdminContext() && (
+                <span style={{
+                  padding: '0.25rem 0.65rem',
+                  background: `${s.accent}18`,
+                  border: `1px solid ${s.accent}33`,
+                  borderRadius: '20px',
+                  fontSize: '0.75rem',
+                  color: s.accent,
+                  fontWeight: 600,
+                  letterSpacing: '0.03em'
+                }}>
+                  ADMIN
+                </span>
+              )}
             </div>
 
             {/* Schnell-Aktionen – das was man täglich braucht */}
