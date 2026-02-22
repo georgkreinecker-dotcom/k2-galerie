@@ -8874,24 +8874,31 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0,0,0,0.06)', border: `1px solid ${s.accent}33`, borderRadius: 10, padding: '0.45rem 1rem' }}>
                       <span style={{ fontSize: '0.9rem', fontWeight: 700, color: s.accent }}>1</span>
                       <span style={{ fontSize: '0.95rem', color: s.muted }}>Foto / Video reinziehen oder Text anklicken</span>
+                      {pageContent.welcomeImage && <span style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 700 }}>✓ Foto bereit</span>}
                     </div>
                     <span style={{ color: s.muted, fontSize: '1.2rem' }}>→</span>
-                    {/* Schritt 2: Galerie ansehen */}
-                    <a href={isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie} target="_blank" rel="noopener noreferrer"
-                      style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1.1rem', fontSize: '1rem', fontWeight: 700, background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: 10, color: '#10b981', textDecoration: 'none' }}
-                      title="Galerie öffnen – genau wie Besucher sie sehen">
+                    {/* Schritt 2: Galerie ansehen – erst Bild in localStorage speichern, dann öffnen */}
+                    <button type="button" onClick={() => {
+                      // Erst alles in localStorage sichern, dann Galerie öffnen
+                      const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
+                      setPageContentGalerie(pageContent, tenant)
+                      setPageTexts(pageTexts, tenant)
+                      const url = isOeffentlichAdminContext()
+                        ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+                        : PROJECT_ROUTES['k2-galerie'].galerie
+                      window.open(url, '_blank')
+                    }} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1.1rem', fontSize: '1rem', fontWeight: 700, background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: 10, color: '#10b981', cursor: 'pointer', fontFamily: 'inherit' }}>
                       <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>2</span> 👁 Galerie ansehen – gefällt es?
-                    </a>
+                    </button>
                     <span style={{ color: s.muted, fontSize: '1.2rem' }}>→</span>
                     {/* Schritt 3: Speichern */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <button type="button" onClick={() => setDesignSubTab('farben')} style={{ padding: '0.5rem 1rem', fontSize: '0.95rem', fontWeight: 600, background: `${s.accent}18`, border: `1px solid ${s.accent}66`, borderRadius: 10, color: s.accent, cursor: 'pointer' }}>🎨 Farbe ändern</button>
                       {designSaveFeedback === 'ok'
-                        ? <span style={{ fontSize: '0.95rem', color: '#10b981', fontWeight: 700, padding: '0.5rem 1rem', background: 'rgba(16,185,129,0.1)', border: '1px solid #10b981', borderRadius: 8 }}>✅ Gespeichert!</span>
+                        ? <span style={{ fontSize: '1rem', color: '#10b981', fontWeight: 700, padding: '0.5rem 1.1rem', background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: 10 }}>✅ Gespeichert!</span>
                         : <button type="button" className="btn-primary" onClick={() => {
                             try {
                               const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
-                              // Alles speichern – kein komplizierter Check
                               setPageContentGalerie(pageContent, tenant)
                               setPageTexts(pageTexts, tenant)
                               if (designSettings && Object.keys(designSettings).length > 0) {
@@ -8901,11 +8908,11 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                               localStorage.removeItem('k2-last-publish-signature')
                               if (!isOeffentlichAdminContext()) window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
                               setDesignSaveFeedback('ok')
-                              setTimeout(() => setDesignSaveFeedback(null), 4000)
+                              setTimeout(() => setDesignSaveFeedback(null), 6000)
                             } catch (e) {
                               alert('Fehler beim Speichern: ' + (e instanceof Error ? e.message : String(e)))
                             }
-                          }} style={{ padding: '0.5rem 1.25rem', fontSize: '1rem', fontWeight: 700 }}>
+                          }} style={{ padding: '0.5rem 1.25rem', fontSize: '1rem', fontWeight: 700, borderRadius: 10 }}>
                             <span style={{ fontSize: '0.85rem', fontWeight: 700, marginRight: '0.35rem' }}>3</span>💾 Speichern – fertig!
                           </button>
                       }
@@ -8977,7 +8984,22 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         <label htmlFor="welcome-image-input" style={{ display: 'block', cursor: 'pointer', width: '100%', marginTop: 20, overflow: 'hidden', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'border-color 0.2s' }}
                           onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.borderColor = 'var(--k2-accent)' }}
                           onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--k2-muted)' }}
-                          onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.borderColor = 'var(--k2-muted)'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, welcomeImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined) } catch (_) { alert('Fehler beim Bild') } } }}
+                          onDrop={async (e) => {
+                            e.preventDefault()
+                            ;(e.currentTarget as HTMLElement).style.borderColor = 'var(--k2-muted)'
+                            const f = e.dataTransfer.files?.[0]
+                            if (f && f.type.startsWith('image/')) {
+                              try {
+                                const img = await compressImage(f, 800, 0.6)
+                                const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
+                                const next = { ...pageContent, welcomeImage: img }
+                                setPageContent(next)
+                                setPageContentGalerie(next, tenant)
+                                setDesignSaveFeedback('ok')
+                                setTimeout(() => setDesignSaveFeedback(null), 6000)
+                              } catch (_) { alert('Fehler beim Bild') }
+                            }
+                          }}
                         >
                           <input id="welcome-image-input" ref={welcomeImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => {
                             const f = e.target.files?.[0]

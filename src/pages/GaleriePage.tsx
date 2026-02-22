@@ -505,24 +505,38 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     }
   }, [musterOnly])
 
-  // ök2: Zuerst Bilder aus localStorage (von mök2 reinziehen), sonst galleryData / OEK2_WILLKOMMEN_IMAGES
-  const [oefImagesVersion, setOefImagesVersion] = useState(0)
+  // Bilder: immer frisch aus localStorage lesen (pageContentVersion triggert bei Storage-Events)
+  const [pageContentVersion, setPageContentVersion] = useState(0)
   useEffect(() => {
-    if (!musterOnly) return
-    const onUpdate = () => setOefImagesVersion((v) => v + 1)
+    const onStorage = (e: StorageEvent) => {
+      if (
+        e.key === 'k2-oeffentlich-page-content-galerie' ||
+        e.key === 'k2-page-content-galerie' ||
+        e.key === 'k2-oeffentlich-images-updated'
+      ) {
+        setPageContentVersion((v) => v + 1)
+      }
+    }
+    const onUpdate = () => setPageContentVersion((v) => v + 1)
+    window.addEventListener('storage', onStorage)
     window.addEventListener('k2-oeffentlich-images-updated', onUpdate)
-    return () => window.removeEventListener('k2-oeffentlich-images-updated', onUpdate)
-  }, [musterOnly])
+    window.addEventListener('k2-design-saved-publish', onUpdate)
+    return () => {
+      window.removeEventListener('storage', onStorage)
+      window.removeEventListener('k2-oeffentlich-images-updated', onUpdate)
+      window.removeEventListener('k2-design-saved-publish', onUpdate)
+    }
+  }, [])
   const displayImages = useMemo(() => {
     if (musterOnly) {
-      // ök2: Bilder aus k2-oeffentlich-page-content-galerie laden (gleicher Key wie Admin-Speichern)
+      // ök2: immer frisch aus localStorage lesen
       try {
-        const pageContent = getPageContentGalerie('oeffentlich')
+        const pc = getPageContentGalerie('oeffentlich')
         return {
-          welcomeImage: pageContent.welcomeImage || (galleryData.welcomeImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.welcomeImage,
-          galerieCardImage: pageContent.galerieCardImage || (galleryData.galerieCardImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.galerieCardImage,
-          virtualTourImage: pageContent.virtualTourImage || (galleryData.virtualTourImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.virtualTourImage,
-          virtualTourVideo: pageContent.virtualTourVideo || ''
+          welcomeImage: pc.welcomeImage || (galleryData.welcomeImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.welcomeImage,
+          galerieCardImage: pc.galerieCardImage || (galleryData.galerieCardImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.galerieCardImage,
+          virtualTourImage: pc.virtualTourImage || (galleryData.virtualTourImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.virtualTourImage,
+          virtualTourVideo: pc.virtualTourVideo || ''
         }
       } catch (_) {
         return {
@@ -534,7 +548,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       }
     }
     return getGalerieImages(galleryData)
-  }, [musterOnly, galleryData, oefImagesVersion])
+  }, [musterOnly, galleryData, pageContentVersion])
 
   // ök2: Bei Ladefehler Willkommensbild Fallback anzeigen (kein blaues Fragezeichen)
   const [welcomeImageFailed, setWelcomeImageFailed] = useState(false)
@@ -571,14 +585,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             try {
               localStorage.setItem('k2-oeffentlich-welcomeImage', dataUrl)
               window.dispatchEvent(new Event('k2-oeffentlich-images-updated'))
-              if (oefDropMountedRef.current) setOefImagesVersion((v) => v + 1)
+              if (oefDropMountedRef.current) setPageContentVersion((v) => v + 1)
             } catch (_) {}
           }
           img.src = dataUrl
         } else {
           localStorage.setItem('k2-oeffentlich-welcomeImage', dataUrl)
           window.dispatchEvent(new Event('k2-oeffentlich-images-updated'))
-          if (oefDropMountedRef.current) setOefImagesVersion((v) => v + 1)
+          if (oefDropMountedRef.current) setPageContentVersion((v) => v + 1)
         }
       } catch (_) {}
     }

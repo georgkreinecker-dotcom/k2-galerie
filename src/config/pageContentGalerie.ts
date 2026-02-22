@@ -98,6 +98,8 @@ export function setPageContentGalerie(data: Partial<PageContentGalerie>, tenantI
       const current = getPageContentGalerie(tenantId)
       const next = { ...current, ...data }
       localStorage.setItem(getStorageKey(tenantId), JSON.stringify(next))
+      // Event feuern damit GaleriePage (gleicher Tab) sofort aktualisiert
+      window.dispatchEvent(new CustomEvent('k2-oeffentlich-images-updated'))
     }
   } catch (e) {
     console.warn('Seitengestaltung speichern fehlgeschlagen:', e)
