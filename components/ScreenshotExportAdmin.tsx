@@ -6999,7 +6999,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
     }
   }
 
-  /** Sammeldruck: Alle ausgewählten Werke als Etiketten in einem Druckvorgang. */
+  /** Sammeldruck: Alle ausgewählten Werke als Etiketten – über Teilen (funktioniert mit allen Druckern). */
   const handleBatchPrintEtiketten = async () => {
     const ids = Array.from(selectedForBatchPrint)
     if (ids.length === 0) return
@@ -7008,75 +7008,32 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
       return n && ids.includes(n)
     })
     if (toPrint.length === 0) return
-    const win = window.open('', '_blank', 'width=400,height=500')
-    if (!win) {
-      alert('Pop-up blockiert. Bitte erlaube Fenster für diese Seite und versuche erneut.')
-      return
-    }
-    win.document.write('<html><body style="margin:0;padding:2rem;font-family:system-ui;text-align:center;">Etiketten werden vorbereitet …</body></html>')
     const activeTenant = getCurrentTenantId()
     const settings = loadPrinterSettingsForTenant(activeTenant)
     const lm = parseLabelSize(settings.labelSize)
-    const urls: string[] = []
     try {
+      // Jedes Werk einzeln über Teilen → Drucker (gleicher Weg wie Einzeletikett)
       for (const artwork of toPrint) {
         const blob = await getEtikettBlobForArtwork(artwork, lm.width, lm.height)
-        const url = URL.createObjectURL(blob)
-        const q = Math.min(99, Math.max(1, Number(artwork.quantity) || 1))
-        for (let i = 0; i < q; i++) urls.push(url)
+        const file = new File([blob], `etikett-${artwork.number || artwork.id}.png`, { type: 'image/png' })
+        if (isMobile) {
+          shareFallbackBlobRef.current = blob
+          setShareFallbackImageUrl(URL.createObjectURL(blob))
+          setShowShareFallbackOverlay(true)
+          // Bei mehreren Werken: nacheinander – User schließt Teilen-Dialog und nächstes öffnet sich
+          await new Promise(resolve => setTimeout(resolve, 500))
+        } else if (typeof navigator !== 'undefined' && navigator.share) {
+          try {
+            await navigator.share({ title: `Etikett ${artwork.number || artwork.id}`, text: `${artwork.title || ''} – K2 Galerie`, files: [file] })
+          } catch (_) {}
+        } else {
+          const blobUrl = URL.createObjectURL(blob)
+          window.open(blobUrl, '_blank')
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+        }
       }
-      const w = lm.width
-      const h = lm.height
-      const pw = Math.round(w * (300 / 25.4))
-      const ph = Math.round(h * (300 / 25.4))
-      /* Pro Seite: gleiche Struktur wie Einzeletikett – feste mm-Größe, Bild füllt mit 100% damit das ganze Etikett sichtbar ist */
-      const pagesHtml = urls.map((url) => `
-        <div class="etikett-page" style="width:${w}mm;height:${h}mm;page-break-after:always;overflow:hidden;display:block;">
-          <div class="etikett-wrap" style="width:100%;height:100%;display:block;overflow:hidden;">
-            <img src="${url}" alt="Etikett" width="${pw}" height="${ph}" style="width:100%;height:100%;display:block;object-fit:contain;object-position:center;" />
-          </div>
-        </div>`).join('')
-      win.document.write(`
-<!DOCTYPE html><html><head><meta charset="utf-8"><title>Etiketten (${toPrint.length})</title>
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-@page { size: ${w}mm ${h}mm; margin: 0; }
-html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-.etikett-page { overflow: hidden; }
-.etikett-page:last-child { page-break-after: auto; }
-.etikett-wrap img { width: 100%; height: 100%; object-fit: contain; object-position: center; }
-</style></head>
-<body>${pagesHtml}</body></html>`)
-      win.document.close()
-      const cleanup = () => {
-        urls.forEach((u) => URL.revokeObjectURL(u))
-        setBatchPrintUrls(null)
-        setSelectedForBatchPrint(new Set())
-      }
-      const doPrint = () => {
-        win.print()
-        win.addEventListener('afterprint', () => {
-          win.close()
-          cleanup()
-        }, { once: true })
-      }
-      const imgs = win.document.querySelectorAll('img')
-      const total = imgs.length
-      let loaded = 0
-      const check = () => {
-        loaded++
-        if (loaded >= total) setTimeout(doPrint, 150)
-      }
-      imgs.forEach((img) => {
-        if ((img as HTMLImageElement).complete) check()
-        else img.addEventListener('load', check, { once: true })
-      })
-      if (total === 0) {
-        doPrint()
-      }
+      setSelectedForBatchPrint(new Set())
     } catch (e) {
-      urls.forEach((u) => URL.revokeObjectURL(u))
-      win.close()
       console.error('Sammeldruck fehlgeschlagen:', e)
       alert((e as Error)?.message || 'Etiketten konnten nicht erzeugt werden. Bitte erneut versuchen.')
     }
@@ -14603,7 +14560,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 <div style={{ fontSize: isMobile ? '0.9rem' : '1rem', fontWeight: 'bold', color: '#8b6914', marginBottom: isMobile ? '0.5rem' : '0.75rem' }}>
                   {savedArtwork.number}
                 </div>
-                {/* Ein Button – der funktionierende Weg über Teilen → Drucker */}
+                {/* Ein Button – universeller Weg für alle Drucker */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: isMobile ? '1rem' : '1.5rem' }}>
                   <button
                     type="button"
@@ -14623,9 +14580,12 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   >
                     🖨️ Etikett drucken
                   </button>
-                  <p style={{ fontSize: '0.8rem', color: '#666', margin: 0 }}>
-                    Teilen-Menü öffnet sich → Brother iPrint&amp;Label oder Drucker wählen
-                  </p>
+                  <div style={{ fontSize: '0.82rem', color: '#555', background: '#f8f7f5', borderRadius: 8, padding: '0.6rem 0.75rem', lineHeight: 1.6 }}>
+                    <strong>Teilen-Menü öffnet sich</strong> – dann:<br />
+                    • <strong>Etikettendrucker</strong> (Brother, Dymo, …) → Drucker-App wählen<br />
+                    • <strong>WLAN-Drucker</strong> (AirPrint) → Drucker direkt wählen<br />
+                    • <strong>Speichern</strong> → Bild in Foto-App → von dort drucken
+                  </div>
                   <button type="button" className="btn-secondary" onClick={() => setShowPrintModal(false)}>
                     Später drucken
                   </button>
