@@ -8878,25 +8878,27 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             {designSubTab === 'vorschau' && (
               <div ref={previewContainerRef} style={{ width: '100%', minHeight: 'calc(100vh - 180px)', background: WERBEUNTERLAGEN_STIL.bgDark, display: 'flex', flexDirection: 'column' }}>
                 {/* Design-Toolbar – sticky, immer sichtbar */}
-                <div style={{ flexShrink: 0, position: 'sticky', top: 0, zIndex: 20, background: WERBEUNTERLAGEN_STIL.bgDark, borderBottom: `2px solid ${s.accent}33`, padding: '0.6rem 1rem' }}>
-                  {/* Zeile 1: Was kann man hier machen */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '1.25rem', fontWeight: 800, color: s.text }}>✨ Meine Galerie gestalten</span>
-                    <span style={{ fontSize: '0.85rem', color: s.muted }}>Foto reinziehen · Text anklicken zum Ändern · dann Galerie ansehen und Speichern</span>
-                  </div>
-                  {/* Zeile 2: Aktions-Buttons */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                      <button type="button" onClick={() => setPreviewFullscreenPage(1)} style={{ padding: '0.4rem 0.9rem', fontSize: '0.9rem', background: previewFullscreenPage === 1 ? 'rgba(95, 251, 241, 0.25)' : 'transparent', border: '1px solid ' + (previewFullscreenPage === 1 ? 'var(--k2-accent)' : 'rgba(255,255,255,0.2)'), borderRadius: 6, color: previewFullscreenPage === 1 ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>Seite 1</button>
-                      <button type="button" onClick={() => setPreviewFullscreenPage(2)} style={{ padding: '0.4rem 0.9rem', fontSize: '0.9rem', background: previewFullscreenPage === 2 ? 'rgba(95, 251, 241, 0.25)' : 'transparent', border: '1px solid ' + (previewFullscreenPage === 2 ? 'var(--k2-accent)' : 'rgba(255,255,255,0.2)'), borderRadius: 6, color: previewFullscreenPage === 2 ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>Seite 2</button>
-                      <a href={isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie} target="_blank" rel="noopener noreferrer" style={{ padding: '0.4rem 0.9rem', fontSize: '0.85rem', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid #10b981', borderRadius: 6, color: '#10b981', textDecoration: 'none', fontWeight: 600 }} title="Öffnet die Galerie – genau wie Kunden sie sehen">👁 Galerie ansehen</a>
-                      <span style={{ color: 'var(--k2-muted)', fontSize: '0.82rem' }}>Zoom:</span>
-                      {([1, 1.25, 1.5, 2] as const).map((sc) => (
-                        <button key={sc} type="button" onClick={() => setDesignPreviewScale(sc)} style={{ padding: '0.3rem 0.55rem', fontSize: '0.82rem', background: designPreviewScale === sc ? 'rgba(95, 251, 241, 0.25)' : 'transparent', border: '1px solid ' + (designPreviewScale === sc ? 'var(--k2-accent)' : 'rgba(255,255,255,0.2)'), borderRadius: 6, color: designPreviewScale === sc ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>{Math.round(sc * 100)}%</button>
-                      ))}
+                <div style={{ flexShrink: 0, position: 'sticky', top: 0, zIndex: 20, background: WERBEUNTERLAGEN_STIL.bgDark, borderBottom: `2px solid ${s.accent}33`, padding: '0.75rem 1rem' }}>
+                  {/* Titel */}
+                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: s.text, marginBottom: '0.6rem' }}>✨ Meine Galerie gestalten</div>
+                  {/* 3-Schritt-Workflow */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                    {/* Schritt 1 */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(0,0,0,0.06)', border: `1px solid ${s.accent}33`, borderRadius: 8, padding: '0.3rem 0.7rem' }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 700, color: s.accent }}>1</span>
+                      <span style={{ fontSize: '0.82rem', color: s.muted }}>Foto reinziehen oder Text anklicken</span>
                     </div>
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                      <button type="button" onClick={() => setDesignSubTab('farben')} style={{ padding: '0.5rem 1.1rem', fontSize: '0.95rem', fontWeight: 700, background: `linear-gradient(135deg, ${s.accent}22 0%, ${s.accent}11 100%)`, border: `1.5px solid ${s.accent}88`, borderRadius: 8, color: s.accent, cursor: 'pointer' }}>🎨 Hintergrundfarbe ändern</button>
+                    <span style={{ color: s.muted, fontSize: '1rem' }}>→</span>
+                    {/* Schritt 2: Galerie ansehen */}
+                    <a href={isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie} target="_blank" rel="noopener noreferrer"
+                      style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.9rem', fontSize: '0.9rem', fontWeight: 700, background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: 8, color: '#10b981', textDecoration: 'none' }}
+                      title="Galerie öffnen – genau wie Besucher sie sehen">
+                      <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>2</span> 👁 Galerie ansehen – gefällt es?
+                    </a>
+                    <span style={{ color: s.muted, fontSize: '1rem' }}>→</span>
+                    {/* Schritt 3: Speichern */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <button type="button" onClick={() => setDesignSubTab('farben')} style={{ padding: '0.4rem 0.85rem', fontSize: '0.85rem', fontWeight: 600, background: `${s.accent}18`, border: `1px solid ${s.accent}66`, borderRadius: 8, color: s.accent, cursor: 'pointer' }}>🎨 Farbe ändern</button>
                       {designSaveFeedback === 'ok'
                         ? <span style={{ fontSize: '0.95rem', color: '#10b981', fontWeight: 700, padding: '0.5rem 1rem', background: 'rgba(16,185,129,0.1)', border: '1px solid #10b981', borderRadius: 8 }}>✅ Gespeichert!</span>
                         : <button type="button" className="btn-primary" onClick={() => {
@@ -8927,8 +8929,17 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             } catch (e) {
                               alert('Fehler: ' + (e instanceof Error ? e.message : String(e)))
                             }
-                          }} style={{ padding: '0.5rem 1.25rem', fontSize: '0.95rem', fontWeight: 700 }}>💾 Speichern</button>
+                          }} style={{ padding: '0.45rem 1.1rem', fontSize: '0.9rem', fontWeight: 700 }}>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 700, marginRight: '0.3rem' }}>3</span>💾 Speichern – fertig!
+                          </button>
                       }
+                    </div>
+                    {/* Zoom-Buttons klein, am Ende */}
+                    <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', marginLeft: 'auto' }}>
+                      <span style={{ color: 'var(--k2-muted)', fontSize: '0.78rem' }}>Zoom:</span>
+                      {([1, 1.25, 1.5, 2] as const).map((sc) => (
+                        <button key={sc} type="button" onClick={() => setDesignPreviewScale(sc)} style={{ padding: '0.25rem 0.45rem', fontSize: '0.75rem', background: designPreviewScale === sc ? 'rgba(95,251,241,0.2)' : 'transparent', border: '1px solid ' + (designPreviewScale === sc ? 'var(--k2-accent)' : 'rgba(255,255,255,0.15)'), borderRadius: 5, color: designPreviewScale === sc ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>{Math.round(sc * 100)}%</button>
+                      ))}
                     </div>
                   </div>
                 </div>
