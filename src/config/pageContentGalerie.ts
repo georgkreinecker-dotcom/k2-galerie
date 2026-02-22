@@ -48,21 +48,21 @@ export function getPageContentGalerie(tenantId?: 'oeffentlich'): PageContentGale
       const parsed = JSON.parse(raw) as Partial<PageContentGalerie>
 
       if (tenantId === 'oeffentlich') {
-        // ök2: K2-Pfade die durch alten Bug hereingekommen sind → bereinigen
+        // ök2: K2-Inhalte die durch alten Kontext-Bug hereingekommen sind → bereinigen
         let changed = false
-        const k2Paths = ['/img/k2/', 'blob:', 'data:']
-        if (k2Paths.some(p => parsed.welcomeImage?.startsWith(p))) {
-          delete parsed.welcomeImage; changed = true
-        }
-        if (k2Paths.some(p => parsed.galerieCardImage?.startsWith(p))) {
-          delete parsed.galerieCardImage; changed = true
-        }
-        if (k2Paths.some(p => parsed.virtualTourImage?.startsWith(p))) {
-          delete parsed.virtualTourImage; changed = true
-        }
-        if (k2Paths.some(p => parsed.virtualTourVideo?.startsWith(p))) {
-          delete parsed.virtualTourVideo; changed = true
-        }
+        // Alle Pfade die auf K2-eigene Medien zeigen – nie auf ök2
+        const isK2Media = (v?: string) => !!(v && (
+          v.startsWith('/img/k2/') ||
+          v.startsWith('blob:') ||
+          v.startsWith('data:') ||
+          v.includes('virtual-tour') ||
+          v.includes('willkommen') ||
+          v.includes('galerie-card')
+        ))
+        if (isK2Media(parsed.welcomeImage)) { delete parsed.welcomeImage; changed = true }
+        if (isK2Media(parsed.galerieCardImage)) { delete parsed.galerieCardImage; changed = true }
+        if (isK2Media(parsed.virtualTourImage)) { delete parsed.virtualTourImage; changed = true }
+        if (isK2Media(parsed.virtualTourVideo)) { delete parsed.virtualTourVideo; changed = true }
         if (changed) {
           try { localStorage.setItem(key, JSON.stringify({ ...parsed })) } catch (_) {}
         }
