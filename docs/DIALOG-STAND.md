@@ -2,31 +2,35 @@
 
 ## Datum: 22.02.26
 
-## Thema: ök2 vs K2 Admin – visuelle Unterscheidung + Zurück-Button Fix
+## Thema: Mehrere Fixes – Mobile-Werk-Verlust, Foto-Upload, ök2-Header, Zurück-Button
 
-## Was gefixt wurde (Commit 9a222fc):
-1. **ök2-Admin Header**: Kein "K2 Galerie" Logo mehr – zeigt jetzt "ök2 / Muster-Galerie"
-2. **ADMIN-Badge**: Nur noch bei K2 und VK2, nicht bei ök2
-3. **Zurück-Button** (gelber Balken in Vorschau): Navigiert jetzt korrekt zurück
-   - ök2-Vorschau → zurück zu `/admin?context=oeffentlich` ✅
-   - K2-Vorschau → zurück zu `/admin` ✅
-   - (GaleriePage + GalerieVorschauPage beide gefixt)
+## Fixes heute (chronologisch):
 
-## Davor gefixt (Commit 88fd0c4):
-- ök2: data:-Bilder (Base64 User-Uploads) werden nicht mehr gelöscht
-- Fotos im Design-Tab erscheinen jetzt in der Vorschau
+### Commit ee384de – Foto-Upload beim Speichern immer
+- Beim "Speichern – fertig!" wird das Foto IMMER zu GitHub hochgeladen
+- Auch wenn Base64 schon im localStorage liegt (frühere Session)
 
-## Davor gefixt (Commit f83c510):
-- Race Condition: syncAdminContextFromUrl() vor useState → ök2 zeigt keine K2-Fotos mehr
+### Commit 9a222fc – ök2-Admin Header
+- ök2-Admin zeigt "ök2 / Muster-Galerie" statt "K2 Galerie"
+- Kein ADMIN-Badge bei ök2
+
+### Commit bfcd622 – Zurück-Button Fix (gelber Balken)
+- Von ök2-Vorschau → zurück zu /admin?context=oeffentlich (nicht K2)
+
+### Commit 88fd0c4 – data:-Bilder nicht löschen bei ök2
+- Fotos die per Drag&Drop hochgeladen werden, bleiben jetzt in ök2 sichtbar
+
+### Commit f83c510 – Race Condition syncAdminContextFromUrl()
+- ök2-Admin zeigte K2-Fotos weil Kontext zu spät gesetzt
+
+### Commit 0ee5229 – Mobile-Werke 7 Tage behalten (AKTUELL)
+- Werke vom iPad/iPhone werden 7 Tage im localStorage gehalten (vorher: 10 Min!)
+- Verhindert: Werk erstellt → Seite reload → Werk weg
 
 ## Nächster Schritt:
-- Nach Vercel-Deployment (~2 Min) testen:
-  - ök2-Admin öffnen → Header zeigt "ök2 / Muster-Galerie" (nicht K2)
-  - Design-Tab → Foto einladen → sichtbar in Vorschau
-  - "Galerie ansehen" → Foto auch dort sichtbar
-  - Zurück (gelber Balken) → landet im ök2-Admin (nicht K2)
+- iPad: Werk nochmal anlegen → Seite neu laden → Werk muss noch da sein ✅
+- Das verlorene Werk von heute muss manuell nochmal angelegt werden
 
-## Wo nachlesen:
-- `components/ScreenshotExportAdmin.tsx` → Header-Bereich (Logo, ~Zeile 7867)
-- `src/pages/GaleriePage.tsx` → isVorschauModus Zurück-Button (~Zeile 2038)
-- `src/pages/GalerieVorschauPage.tsx` → isVorschauModus Zurück-Button (~Zeile 2147)
+## Offenes Problem:
+- Verlorenes Werk (heute) ist weg – muss nochmal am iPad angelegt werden
+- Zukünftig: Werke bleiben 7 Tage, bis sie vom Mac veröffentlicht werden

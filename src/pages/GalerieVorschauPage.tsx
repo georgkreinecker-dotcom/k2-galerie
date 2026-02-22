@@ -1396,115 +1396,59 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 if (data.buildId) localStorage.setItem('k2-last-build-id', data.buildId)
                 localStorage.setItem('k2-last-load-time', String(Date.now()))
                 
-                // WICHTIG: Merge-Logik - Lokale Werke IMMER behalten!
-                // K2: Muster/VK2 vom Server nicht übernehmen
+                // MERGE-REGEL: Neuester Timestamp gewinnt – egal von welchem Gerät
+                // Kein "Server ist Quelle der Wahrheit", kein "Mobile hat Priorität"
+                // Mac, iPad, iPhone: letzte Änderung ist immer richtig
                 const existingArtworks = loadArtworks()
                 const serverArtworks = filterK2ArtworksOnly(Array.isArray(data.artworks) ? data.artworks : [])
                 
-                console.log('🔄 Merge startet:', {
-                  lokaleWerke: existingArtworks.length,
-                  serverWerke: serverArtworks.length,
-                  lokaleNummern: existingArtworks.map((a: any) => a.number || a.id)
+                console.log('🔄 Merge (neuester Timestamp gewinnt):', {
+                  lokal: existingArtworks.length,
+                  server: serverArtworks.length,
                 })
-                
-                // Erstelle Map für schnelle Suche nach Nummern (unterstützt verschiedene Formate)
-                const serverMap = new Map<string, any>()
+
+                // Hilfsfunktion: Effektiven Timestamp eines Werks ermitteln
+                const getTs = (a: any): number => {
+                  const upd = a.updatedAt ? new Date(a.updatedAt).getTime() : 0
+                  const cre = a.createdAt ? new Date(a.createdAt).getTime() : 0
+                  return Math.max(upd, cre)
+                }
+
+                // Alle Werke in eine Map – Schlüssel ist Werk-Nummer/ID
+                const mergeMap = new Map<string, any>()
+
+                // 1. Zuerst Server-Werke eintragen
                 serverArtworks.forEach((a: any) => {
                   const key = a.number || a.id
-                  if (key) {
-                    serverMap.set(key, a)
-                    // Auch ohne K/M Präfix prüfen (für alte Nummern)
-                    if (key.includes('-K-') || key.includes('-M-')) {
-                      const oldFormat = key.replace('-K-', '-').replace('-M-', '-')
-                      if (oldFormat !== key) {
-                        serverMap.set(oldFormat, a)
-                      }
-                    }
-                  }
+                  if (key) mergeMap.set(key, a)
                 })
-                
-                // SERVER = QUELLE DER WAHRHEIT nach Veröffentlichung
-                // Lokale Werke die nicht auf Server sind = wurden woanders gelöscht → History, nicht Galerie
-                const mergedArtworks = [...serverArtworks]
-                const toHistory: any[] = []
-                
+
+                // 2. Lokale Werke: gewinnen wenn ihr Timestamp >= Server-Timestamp
+                //    Neue lokale Werke (nicht auf Server) werden IMMER übernommen
                 existingArtworks.forEach((localArtwork: any) => {
                   const key = localArtwork.number || localArtwork.id
                   if (!key) return
-                  
-                  const serverArtwork = serverMap.get(key)
-                  
-                  // Mobile-Werke die noch nicht auf dem Server sind → IMMER behalten
-                  // (bis sie vom Mac aus veröffentlicht wurden, kann das Tage dauern)
-                  const isMobileWork = localArtwork.createdOnMobile || localArtwork.updatedOnMobile
-                  const createdAt = localArtwork.createdAt ? new Date(localArtwork.createdAt).getTime() : 0
-                  const isRecentEnough = createdAt > Date.now() - 7 * 24 * 3600000 // 7 Tage
-                  
-                  if (!serverArtwork) {
-                    if (isMobileWork && isRecentEnough) {
-                      // Mobile-Werk, noch nicht veröffentlicht → BEHALTEN (bis zu 7 Tage)
-                      console.log('💾 Behalte Mobile-Werk (noch nicht auf Server, max. 7 Tage):', key)
-                      mergedArtworks.push(localArtwork)
-                    } else if (isMobileWork) {
-                      // Mobile-Werk älter als 7 Tage ohne Server-Eintrag → History
-                      console.log('📜 Altes Mobile-Werk nicht auf Server → History:', key)
-                      toHistory.push(localArtwork)
-                    } else {
-                      // Normales Werk nicht auf Server → wurde woanders gelöscht
-                      console.log('📜 Werk nicht auf Server → History:', key)
-                      toHistory.push(localArtwork)
-                    }
+                  const existing = mergeMap.get(key)
+                  if (!existing) {
+                    // Nur lokal vorhanden → immer behalten (noch nicht veröffentlicht)
+                    console.log('💾 Nur lokal (neu):', key)
+                    mergeMap.set(key, localArtwork)
                   } else {
-                    // Werk existiert auf beiden → prüfe Mobile-Marker ZUERST
-                    if (isMobileWork) {
-                      // Mobile-Werk → IMMER lokale Version behalten
-                      console.log('💾 Behalte Mobile-Werk (immer lokale Version):', key)
-                      const index = mergedArtworks.findIndex((a: any) => (a.number || a.id) === key)
-                      if (index >= 0) {
-                        mergedArtworks[index] = localArtwork
-                      } else {
-                        mergedArtworks.push(localArtwork)
-                      }
+                    // Auf beiden → neuester Timestamp gewinnt
+                    const localTs = getTs(localArtwork)
+                    const serverTs = getTs(existing)
+                    if (localTs >= serverTs) {
+                      console.log('💾 Lokal neuer → lokal gewinnt:', key, new Date(localTs).toISOString(), '>', new Date(serverTs).toISOString())
+                      mergeMap.set(key, localArtwork)
                     } else {
-                      // Prüfe Timestamps
-                      const localCreated = localArtwork.createdAt ? new Date(localArtwork.createdAt).getTime() : 0
-                      const serverCreated = serverArtwork.createdAt ? new Date(serverArtwork.createdAt).getTime() : 0
-                      const localUpdated = localArtwork.updatedAt ? new Date(localArtwork.updatedAt).getTime() : 0
-                      const serverUpdated = serverArtwork.updatedAt ? new Date(serverArtwork.updatedAt).getTime() : 0
-                      
-                      // Wenn lokales Werk neuer ist ODER kein Timestamp hat → behalte lokale Version
-                      const isLocalNewer = localUpdated > serverUpdated || (localUpdated === 0 && localCreated > serverCreated)
-                      const hasNoTimestamps = localCreated === 0 && serverCreated === 0
-                      
-                      if (isLocalNewer || hasNoTimestamps) {
-                        console.log('💾 Behalte lokales Werk (neuer oder ohne Timestamp):', key)
-                        const index = mergedArtworks.findIndex((a: any) => (a.number || a.id) === key)
-                        if (index >= 0) {
-                          mergedArtworks[index] = localArtwork
-                        } else {
-                          mergedArtworks.push(localArtwork)
-                        }
-                      } else {
-                        // Prüfe ob lokales Werk sehr neu ist (< 1 Stunde alt) → behalte es trotzdem
-                        const oneHourAgo = Date.now() - 3600000
-                        if (localCreated > oneHourAgo) {
-                          console.log('💾 Behalte lokales Werk (sehr neu, < 1 Stunde):', key)
-                          const index = mergedArtworks.findIndex((a: any) => (a.number || a.id) === key)
-                          if (index >= 0) {
-                            mergedArtworks[index] = localArtwork
-                          } else {
-                            mergedArtworks.push(localArtwork)
-                          }
-                        }
-                      }
+                      console.log('🌐 Server neuer → server gewinnt:', key)
                     }
                   }
                 })
-                
-                if (toHistory.length > 0) appendToHistory(toHistory)
-                
-                console.log(`🔄 Merge abgeschlossen: ${serverArtworks.length} Server (Quelle) → ${mergedArtworks.length} Gesamt, ${toHistory.length} in History`)
-                console.log('📊 Finale Nummern:', mergedArtworks.map((a: any) => a.number || a.id))
+
+                const mergedArtworks = Array.from(mergeMap.values())
+                console.log(`✅ Merge fertig: ${mergedArtworks.length} Werke gesamt`)
+                console.log('📊 Nummern:', mergedArtworks.map((a: any) => a.number || a.id))
                 
                 // K2: Muster/VK2-Werke nicht in k2-artworks speichern
                 const toSaveMerge = filterK2ArtworksOnly(mergedArtworks)
