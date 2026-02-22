@@ -157,6 +157,20 @@ export function getPageTexts(tenantId?: PageTextsTenantId): PageTextsConfig {
     const raw = typeof window !== 'undefined' ? localStorage.getItem(key) : null
     if (raw && raw.length < 100000) {
       const saved = JSON.parse(raw) as Partial<PageTextsConfig>
+      // ök2: K2-Echtnamen die durch alten Kontext-Bug hereingekommen sind → bereinigen
+      if (tenantId === 'oeffentlich' && saved.galerie) {
+        const oefDefaults = getOeffentlichGalerieDefaults()
+        const k2Names = ['K2 Galerie', 'Martina Kreinecker', 'Georg Kreinecker', 'Kunst & Keramik – Martina und Georg Kreinecker']
+        if (saved.galerie.heroTitle && k2Names.includes(saved.galerie.heroTitle)) {
+          saved.galerie.heroTitle = oefDefaults.heroTitle
+          saved.galerie.pageTitle = oefDefaults.pageTitle
+          try { localStorage.setItem(key, JSON.stringify(saved)) } catch (_) {}
+        }
+        if (saved.galerie.welcomeSubtext && k2Names.includes(saved.galerie.welcomeSubtext)) {
+          saved.galerie.welcomeSubtext = oefDefaults.welcomeSubtext
+          try { localStorage.setItem(key, JSON.stringify(saved)) } catch (_) {}
+        }
+      }
       result = deepMerge(getSafeDefaults(tenantId), saved) as PageTextsConfig
     } else {
       result = getSafeDefaults(tenantId)
