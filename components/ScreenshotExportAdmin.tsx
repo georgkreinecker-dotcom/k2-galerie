@@ -8880,10 +8880,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 {/* Design-Toolbar – sticky, immer sichtbar */}
                 <div style={{ flexShrink: 0, position: 'sticky', top: 0, zIndex: 20, background: WERBEUNTERLAGEN_STIL.bgDark, borderBottom: `2px solid ${s.accent}33`, padding: '0.6rem 1rem' }}>
                   {/* Zeile 1: Was kann man hier machen */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '1.1rem' }}>🎨</span>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 700, color: s.text }}>Design-Werkzeug</span>
-                    <span style={{ fontSize: '0.82rem', color: s.muted }}>— Foto reinziehen oder klicken · 👁 Galerie ansehen zum Prüfen · dann 💾 Speichern</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '1.25rem', fontWeight: 800, color: s.text }}>✨ Meine Galerie gestalten</span>
+                    <span style={{ fontSize: '0.85rem', color: s.muted }}>Foto reinziehen · Text anklicken zum Ändern · dann Galerie ansehen und Speichern</span>
                   </div>
                   {/* Zeile 2: Aktions-Buttons */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -8897,7 +8896,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       ))}
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                      <button type="button" onClick={() => setDesignSubTab('farben')} style={{ padding: '0.5rem 1.1rem', fontSize: '0.95rem', fontWeight: 700, background: `linear-gradient(135deg, ${s.accent}22 0%, ${s.accent}11 100%)`, border: `1.5px solid ${s.accent}88`, borderRadius: 8, color: s.accent, cursor: 'pointer' }}>🎨 Farben & Theme</button>
+                      <button type="button" onClick={() => setDesignSubTab('farben')} style={{ padding: '0.5rem 1.1rem', fontSize: '0.95rem', fontWeight: 700, background: `linear-gradient(135deg, ${s.accent}22 0%, ${s.accent}11 100%)`, border: `1.5px solid ${s.accent}88`, borderRadius: 8, color: s.accent, cursor: 'pointer' }}>🎨 Hintergrundfarbe ändern</button>
                       {designSaveFeedback === 'ok'
                         ? <span style={{ fontSize: '0.95rem', color: '#10b981', fontWeight: 700, padding: '0.5rem 1rem', background: 'rgba(16,185,129,0.1)', border: '1px solid #10b981', borderRadius: 8 }}>✅ Gespeichert!</span>
                         : <button type="button" className="btn-primary" onClick={() => {
