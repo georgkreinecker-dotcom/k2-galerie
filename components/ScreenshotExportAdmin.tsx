@@ -653,7 +653,7 @@ function ScreenshotExportAdmin() {
   }, [])
 
   // Klare Admin-Struktur: Werke | Eventplanung | Design | Einstellungen. Kasse = ein Button im Header, öffnet direkt den Shop.
-  const [activeTab, setActiveTab] = useState<'werke' | 'eventplan' | 'design' | 'einstellungen' | 'assistent'>('werke')
+  const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'eventplan' | 'design' | 'einstellungen' | 'assistent'>('werke')
   const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>('events')
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false) // kleine Leiste „Vergangenheit“, bei Klick aufklappen
   const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager'>('stammdaten')
@@ -678,6 +678,20 @@ function ScreenshotExportAdmin() {
   const [adminContactPhone, setAdminContactPhone] = useState('')
   const [vk2Stammdaten, setVk2Stammdaten] = useState<Vk2Stammdaten>(VK2_STAMMDATEN_DEFAULTS)
   const [registrierungConfig, setRegistrierungConfig] = useState<RegistrierungConfig>(REGISTRIERUNG_CONFIG_DEFAULTS)
+
+  // Werkkatalog – Filter und Ansicht
+  const [katalogFilter, setKatalogFilter] = useState<{
+    status: 'alle' | 'galerie' | 'verkauft' | 'lager'
+    kategorie: string
+    artist: string
+    vonDatum: string
+    bisDatum: string
+    vonPreis: string
+    bisPreis: string
+    suchtext: string
+  }>({ status: 'alle', kategorie: '', artist: '', vonDatum: '', bisDatum: '', vonPreis: '', bisPreis: '', suchtext: '' })
+  const [katalogAnsicht, setKatalogAnsicht] = useState<'tabelle' | 'karten'>('tabelle')
+  const [katalogSpalten, setKatalogSpalten] = useState<string[]>(['nummer', 'titel', 'kategorie', 'kuenstler', 'masse', 'technik', 'preis', 'status', 'datum', 'kaeufer'])
 
   // Bei laufender Wiederherstellung automatisch aufklappen, damit der Balkenverlauf sichtbar ist
   useEffect(() => {
@@ -888,6 +902,8 @@ function ScreenshotExportAdmin() {
   const [artworkPaintingHeight, setArtworkPaintingHeight] = useState<string>('')
   const [artworkArtist, setArtworkArtist] = useState<string>('')
   const [artworkDescription, setArtworkDescription] = useState('')
+  const [artworkTechnik, setArtworkTechnik] = useState<string>('') // z.B. "Acryl auf Leinwand"
+  const [artworkDimensions, setArtworkDimensions] = useState<string>('') // z.B. "60×80 cm"
   const [artworkPrice, setArtworkPrice] = useState<string>('')
   // Sichtbarkeit-Einstellungen:
   // - inExhibition: Werke in der Galerie-Vorschau sichtbar (immer true)
@@ -6537,6 +6553,8 @@ ${'='.repeat(60)}
       category: artworkCategory,
       artist: artworkArtist,
       description: artworkDescription,
+      technik: artworkTechnik.trim() || undefined,
+      dimensions: artworkDimensions.trim() || undefined,
       price: parseFloat(artworkPrice) || 0,
       quantity: quantityNum,
       inExhibition: isInExhibition,
@@ -6544,6 +6562,7 @@ ${'='.repeat(60)}
       imageUrl: imageDataUrl,
       createdAt: new Date().toISOString(),
       addedToGalleryAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       createdOnMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
       deviceId: localStorage.getItem('k2-device-id') || `device-${Date.now()}-${Math.random().toString(36).substring(7)}`
     }
@@ -6875,6 +6894,8 @@ ${'='.repeat(60)}
       setArtworkPaintingHeight('')
       setArtworkArtist('')
       setArtworkDescription('')
+      setArtworkTechnik('')
+      setArtworkDimensions('')
       setArtworkPrice('')
       setArtworkQuantity('1')
       setIsInShop(true)
@@ -8053,6 +8074,19 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>↓ Direkt hier unten</div>
                   </button>
 
+                  {/* Werkkatalog */}
+                  <button type="button" onClick={() => setActiveTab('katalog')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: `2px solid ${s.accent}22`, borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.transform = 'translateY(-2px)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}22`; e.currentTarget.style.transform = 'translateY(0)' }}
+                  >
+                    <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📋</div>
+                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Werkkatalog</div>
+                    <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
+                      Alle Werke filtern, suchen, drucken – nach Status, Kategorie, Datum, Preis
+                    </div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Öffnen →</div>
+                  </button>
+
                   {/* Eventplanung */}
                   <button type="button" onClick={() => setActiveTab('eventplan')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: `2px solid ${s.accent}22`, borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit' }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.transform = 'translateY(-2px)' }}
@@ -8120,6 +8154,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             {activeTab !== 'werke' && (
               <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
                 <h2 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', fontWeight: 700, color: s.text, margin: 0 }}>
+                  {activeTab === 'katalog' && '📋 Werkkatalog'}
                   {activeTab === 'eventplan' && '📢 Veranstaltungen & Werbung'}
                   {activeTab === 'design' && '✨ Aussehen der Galerie – nach deinen Wünschen anpassen'}
                   {activeTab === 'einstellungen' && '⚙️ Einstellungen'}
@@ -8140,6 +8175,247 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               }}
             />
           )}
+
+          {/* ===== WERKKATALOG ===== */}
+          {activeTab === 'katalog' && (() => {
+            // Sold-Status aus separatem Key holen und ins Werk mergen
+            const soldMap = new Map<string, any>()
+            try {
+              const soldRaw = localStorage.getItem('k2-sold-artworks')
+              if (soldRaw) JSON.parse(soldRaw).forEach((s: any) => soldMap.set(s.number, s))
+            } catch (_) {}
+
+            // Werke anreichern: sold, soldAt, soldPrice, buyer aus separatem Key
+            const enriched = allArtworks.map((a: any) => {
+              const soldEntry = soldMap.get(a.number || a.id)
+              return soldEntry
+                ? { ...a, sold: true, soldAt: soldEntry.soldAt || '', soldPrice: soldEntry.soldPrice || a.price, buyer: soldEntry.buyer || '' }
+                : { ...a, sold: false }
+            })
+
+            // Filter anwenden
+            const filtered = enriched.filter((a: any) => {
+              if (katalogFilter.status === 'galerie' && !a.inExhibition) return false
+              if (katalogFilter.status === 'verkauft' && !a.sold) return false
+              if (katalogFilter.status === 'lager' && (a.inExhibition || a.sold)) return false
+              if (katalogFilter.kategorie && a.category !== katalogFilter.kategorie) return false
+              if (katalogFilter.artist && !(a.artist || '').toLowerCase().includes(katalogFilter.artist.toLowerCase())) return false
+              if (katalogFilter.suchtext) {
+                const q = katalogFilter.suchtext.toLowerCase()
+                const hay = `${a.number || ''} ${a.title || ''} ${a.description || ''} ${a.technik || ''} ${a.buyer || ''}`.toLowerCase()
+                if (!hay.includes(q)) return false
+              }
+              if (katalogFilter.vonPreis && a.price < parseFloat(katalogFilter.vonPreis)) return false
+              if (katalogFilter.bisPreis && a.price > parseFloat(katalogFilter.bisPreis)) return false
+              if (katalogFilter.vonDatum && a.createdAt && a.createdAt < katalogFilter.vonDatum) return false
+              if (katalogFilter.bisDatum && a.createdAt && a.createdAt > katalogFilter.bisDatum + 'T23:59:59') return false
+              return true
+            })
+
+            // Druckfunktion Werkkatalog
+            const druckeKatalog = () => {
+              const pw = window.open('', '_blank')
+              if (!pw) { alert('Pop-up blockiert – bitte erlauben.'); return }
+              const galName = galleryData.name || 'K2 Galerie'
+              const datum = new Date().toLocaleDateString('de-DE')
+              const statusLabel = katalogFilter.status === 'galerie' ? 'In Galerie' : katalogFilter.status === 'verkauft' ? 'Verkauft' : katalogFilter.status === 'lager' ? 'Lager' : 'Alle'
+              const cols = katalogSpalten
+
+              const rows = filtered.map((a: any) => {
+                const cells = cols.map(col => {
+                  switch (col) {
+                    case 'nummer': return `<td>${a.number || a.id || '–'}</td>`
+                    case 'titel': return `<td><strong>${a.title || '–'}</strong></td>`
+                    case 'kategorie': return `<td>${getCategoryLabel(a.category)}</td>`
+                    case 'kuenstler': return `<td>${a.artist || '–'}</td>`
+                    case 'masse': return `<td>${a.dimensions || '–'}</td>`
+                    case 'technik': return `<td>${a.technik || '–'}</td>`
+                    case 'preis': return `<td style="text-align:right">${a.price ? `€ ${Number(a.price).toFixed(2)}` : '–'}</td>`
+                    case 'status': return `<td>${a.sold ? `<span style="color:#b91c1c;font-weight:700">Verkauft</span>` : a.inExhibition ? '<span style="color:#15803d">Galerie</span>' : 'Lager'}</td>`
+                    case 'datum': return `<td>${a.createdAt ? new Date(a.createdAt).toLocaleDateString('de-DE') : '–'}</td>`
+                    case 'kaeufer': return `<td>${a.buyer || '–'}</td>`
+                    case 'verkauftam': return `<td>${a.soldAt ? new Date(a.soldAt).toLocaleDateString('de-DE') : '–'}</td>`
+                    case 'standort': return `<td>${a.location || '–'}</td>`
+                    default: return '<td>–</td>'
+                  }
+                }).join('')
+                return `<tr>${cells}</tr>`
+              }).join('')
+
+              const colHeaders: Record<string, string> = {
+                nummer: 'Nr.', titel: 'Titel', kategorie: 'Kategorie', kuenstler: 'Künstler:in',
+                masse: 'Maße', technik: 'Technik/Material', preis: 'Preis', status: 'Status',
+                datum: 'Erstellt', kaeufer: 'Käufer:in', verkauftam: 'Verkauft am', standort: 'Standort'
+              }
+              const thead = cols.map(c => `<th style="text-align:left;padding:6px 8px;border-bottom:2px solid #8b6914;white-space:nowrap">${colHeaders[c] || c}</th>`).join('')
+
+              pw.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
+                <title>Werkkatalog – ${galName}</title>
+                <style>
+                  @media print { @page { size: A4 landscape; margin: 12mm; } }
+                  body { font-family: Arial, sans-serif; font-size: 10px; color: #111; }
+                  h1 { font-size: 18px; color: #8b6914; margin: 0 0 4px; }
+                  .meta { font-size: 11px; color: #666; margin-bottom: 16px; }
+                  table { width: 100%; border-collapse: collapse; }
+                  th { background: #f9f3e8; color: #5c3d0e; }
+                  tr:nth-child(even) td { background: #fafafa; }
+                  td { padding: 5px 8px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+                </style></head><body>
+                <h1>📋 Werkkatalog – ${galName}</h1>
+                <div class="meta">Stand: ${datum} · Filter: ${statusLabel} · ${filtered.length} Werke</div>
+                <table><thead><tr>${thead}</tr></thead><tbody>${rows}</tbody></table>
+                <script>window.onload=()=>window.print()</script>
+              </body></html>`)
+              pw.document.close()
+            }
+
+            const ALLE_SPALTEN = [
+              { id: 'nummer', label: 'Nr.' }, { id: 'titel', label: 'Titel' },
+              { id: 'kategorie', label: 'Kategorie' }, { id: 'kuenstler', label: 'Künstler:in' },
+              { id: 'masse', label: 'Maße' }, { id: 'technik', label: 'Technik/Material' },
+              { id: 'preis', label: 'Preis' }, { id: 'status', label: 'Status' },
+              { id: 'datum', label: 'Erstellt' }, { id: 'kaeufer', label: 'Käufer:in' },
+              { id: 'verkauftam', label: 'Verkauft am' }, { id: 'standort', label: 'Standort' },
+            ]
+
+            return (
+            <section style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: 24, padding: 'clamp(1.5rem, 4vw, 2.5rem)', marginBottom: '2rem' }}>
+
+              {/* Filter-Zeile */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '1.25rem', alignItems: 'flex-end' }}>
+                {/* Suchtext */}
+                <div style={{ flex: '1 1 180px' }}>
+                  <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>Suche (Nr., Titel, Beschreibung …)</div>
+                  <input value={katalogFilter.suchtext} onChange={e => setKatalogFilter(f => ({ ...f, suchtext: e.target.value }))}
+                    placeholder="z. B. M0042 oder Landschaft …"
+                    style={{ width: '100%', padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem', boxSizing: 'border-box' }} />
+                </div>
+                {/* Status */}
+                <div>
+                  <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>Status</div>
+                  <select value={katalogFilter.status} onChange={e => setKatalogFilter(f => ({ ...f, status: e.target.value as any }))}
+                    style={{ padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }}>
+                    <option value="alle">Alle</option>
+                    <option value="galerie">In Galerie</option>
+                    <option value="verkauft">Verkauft</option>
+                    <option value="lager">Lager</option>
+                  </select>
+                </div>
+                {/* Kategorie */}
+                <div>
+                  <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>Kategorie</div>
+                  <select value={katalogFilter.kategorie} onChange={e => setKatalogFilter(f => ({ ...f, kategorie: e.target.value }))}
+                    style={{ padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }}>
+                    <option value="">Alle</option>
+                    {ARTWORK_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                  </select>
+                </div>
+                {/* Preis von–bis */}
+                <div>
+                  <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>Preis von</div>
+                  <input type="number" value={katalogFilter.vonPreis} onChange={e => setKatalogFilter(f => ({ ...f, vonPreis: e.target.value }))}
+                    placeholder="€" style={{ width: 80, padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>bis</div>
+                  <input type="number" value={katalogFilter.bisPreis} onChange={e => setKatalogFilter(f => ({ ...f, bisPreis: e.target.value }))}
+                    placeholder="€" style={{ width: 80, padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }} />
+                </div>
+                {/* Datum von–bis */}
+                <div>
+                  <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>Erstellt von</div>
+                  <input type="date" value={katalogFilter.vonDatum} onChange={e => setKatalogFilter(f => ({ ...f, vonDatum: e.target.value }))}
+                    style={{ padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>bis</div>
+                  <input type="date" value={katalogFilter.bisDatum} onChange={e => setKatalogFilter(f => ({ ...f, bisDatum: e.target.value }))}
+                    style={{ padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }} />
+                </div>
+                {/* Filter zurücksetzen */}
+                <button type="button" onClick={() => setKatalogFilter({ status: 'alle', kategorie: '', artist: '', vonDatum: '', bisDatum: '', vonPreis: '', bisPreis: '', suchtext: '' })}
+                  style={{ padding: '0.5rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.muted, fontSize: '0.9rem', cursor: 'pointer', alignSelf: 'flex-end' }}>
+                  ✕ Zurücksetzen
+                </button>
+              </div>
+
+              {/* Spalten-Auswahl + Drucken */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center', marginBottom: '1rem', padding: '0.75rem', background: s.bgElevated, borderRadius: 10 }}>
+                <span style={{ fontSize: '0.82rem', color: s.muted, marginRight: 4 }}>Spalten:</span>
+                {ALLE_SPALTEN.map(col => (
+                  <label key={col.id} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.82rem', color: katalogSpalten.includes(col.id) ? s.text : s.muted, cursor: 'pointer' }}>
+                    <input type="checkbox" checked={katalogSpalten.includes(col.id)}
+                      onChange={e => setKatalogSpalten(prev => e.target.checked ? [...prev, col.id] : prev.filter(c => c !== col.id))}
+                      style={{ accentColor: s.accent }} />
+                    {col.label}
+                  </label>
+                ))}
+                <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.82rem', color: s.muted, alignSelf: 'center' }}>{filtered.length} Werke</span>
+                  <button type="button" onClick={druckeKatalog}
+                    style={{ padding: '0.5rem 1.25rem', background: s.accent, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}>
+                    🖨️ Drucken / PDF
+                  </button>
+                </div>
+              </div>
+
+              {/* Tabelle */}
+              {filtered.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '2rem', color: s.muted }}>Keine Werke mit diesen Kriterien gefunden.</div>
+              ) : (
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
+                    <thead>
+                      <tr style={{ background: s.bgElevated }}>
+                        {katalogSpalten.includes('nummer') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33`, whiteSpace: 'nowrap' }}>Nr.</th>}
+                        {katalogSpalten.includes('titel') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Titel</th>}
+                        {katalogSpalten.includes('kategorie') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Kategorie</th>}
+                        {katalogSpalten.includes('kuenstler') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Künstler:in</th>}
+                        {katalogSpalten.includes('masse') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Maße</th>}
+                        {katalogSpalten.includes('technik') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Technik</th>}
+                        {katalogSpalten.includes('preis') && <th style={{ padding: '8px 10px', textAlign: 'right', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Preis</th>}
+                        {katalogSpalten.includes('status') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Status</th>}
+                        {katalogSpalten.includes('datum') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33`, whiteSpace: 'nowrap' }}>Erstellt</th>}
+                        {katalogSpalten.includes('kaeufer') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Käufer:in</th>}
+                        {katalogSpalten.includes('verkauftam') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33`, whiteSpace: 'nowrap' }}>Verkauft am</th>}
+                        {katalogSpalten.includes('standort') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Standort</th>}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((a: any, i: number) => (
+                        <tr key={a.id || a.number || i} style={{ background: i % 2 === 0 ? 'transparent' : `${s.accent}06` }}>
+                          {katalogSpalten.includes('nummer') && <td style={{ padding: '7px 10px', color: s.accent, fontWeight: 700, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.number || a.id || '–'}</td>}
+                          {katalogSpalten.includes('titel') && <td style={{ padding: '7px 10px', color: s.text, fontWeight: 600, borderBottom: `1px solid ${s.accent}18` }}>{a.title || '–'}</td>}
+                          {katalogSpalten.includes('kategorie') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{getCategoryLabel(a.category)}</td>}
+                          {katalogSpalten.includes('kuenstler') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.artist || '–'}</td>}
+                          {katalogSpalten.includes('masse') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.dimensions || '–'}</td>}
+                          {katalogSpalten.includes('technik') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.technik || '–'}</td>}
+                          {katalogSpalten.includes('preis') && <td style={{ padding: '7px 10px', color: s.text, textAlign: 'right', borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.price ? `€ ${Number(a.price).toFixed(2)}` : '–'}</td>}
+                          {katalogSpalten.includes('status') && <td style={{ padding: '7px 10px', borderBottom: `1px solid ${s.accent}18` }}>
+                            {a.sold ? <span style={{ color: '#b91c1c', fontWeight: 700, fontSize: '0.82rem' }}>● Verkauft</span>
+                              : a.inExhibition ? <span style={{ color: '#15803d', fontWeight: 600, fontSize: '0.82rem' }}>● Galerie</span>
+                              : <span style={{ color: s.muted, fontSize: '0.82rem' }}>○ Lager</span>}
+                          </td>}
+                          {katalogSpalten.includes('datum') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.createdAt ? new Date(a.createdAt).toLocaleDateString('de-DE') : '–'}</td>}
+                          {katalogSpalten.includes('kaeufer') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.buyer || '–'}</td>}
+                          {katalogSpalten.includes('verkauftam') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.soldAt ? new Date(a.soldAt).toLocaleDateString('de-DE') : '–'}</td>}
+                          {katalogSpalten.includes('standort') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.location || '–'}</td>}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Fehlende Felder Hinweis */}
+              {filtered.some((a: any) => !a.dimensions && !a.technik) && (
+                <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', background: `${s.accent}10`, border: `1px solid ${s.accent}33`, borderRadius: 8, fontSize: '0.85rem', color: s.muted }}>
+                  💡 Tipp: Maße und Technik/Material kannst du beim Bearbeiten eines Werks eintragen – danach erscheinen sie hier und im Ausdruck.
+                </div>
+              )}
+            </section>
+            )
+          })()}
 
           {/* Werke verwalten – Kasse = ein Button im Header, öffnet direkt den Shop */}
           {activeTab === 'werke' && (
@@ -8652,6 +8928,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             setArtworkDimensionsFree(artwork.dimensionsFree || (artwork.paintingWidth && artwork.paintingHeight ? `${artwork.paintingWidth} × ${artwork.paintingHeight} cm` : '') || '')
                             setArtworkArtist(artwork.artist || '')
                             setArtworkDescription(artwork.description || '')
+                            setArtworkTechnik(artwork.technik || '')
+                            setArtworkDimensions(artwork.dimensions || '')
                             setArtworkPrice(String(artwork.price || ''))
                             setArtworkQuantity(String(artwork.quantity ?? 1))
                             setIsInShop(artwork.inShop !== undefined ? artwork.inShop : true)
@@ -8692,6 +8970,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           }
                           setArtworkArtist(artwork.artist || '')
                           setArtworkDescription(artwork.description || '')
+                          setArtworkTechnik(artwork.technik || '')
+                          setArtworkDimensions(artwork.dimensions || (artwork.paintingWidth && artwork.paintingHeight ? `${artwork.paintingWidth}×${artwork.paintingHeight} cm` : ''))
                           setArtworkPrice(String(artwork.price || ''))
                           setArtworkQuantity(String(artwork.quantity ?? 1))
                           setIsInShop(artwork.inShop !== undefined ? artwork.inShop : true)
@@ -13450,6 +13730,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             setArtworkPaintingHeight('')
             setArtworkArtist('')
             setArtworkDescription('')
+            setArtworkTechnik('')
+            setArtworkDimensions('')
             setArtworkPrice('')
             setArtworkQuantity('1')
             setSelectedFile(null)
@@ -14364,6 +14646,26 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   </div>
                 </div>
               )}
+
+              {/* Technik/Material + Maße */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>
+                    Technik / Material
+                  </label>
+                  <input type="text" value={artworkTechnik} onChange={e => setArtworkTechnik(e.target.value)}
+                    placeholder="z.B. Acryl auf Leinwand"
+                    style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>
+                    Maße (z.B. 60×80 cm)
+                  </label>
+                  <input type="text" value={artworkDimensions} onChange={e => setArtworkDimensions(e.target.value)}
+                    placeholder="Breite × Höhe cm"
+                    style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+              </div>
 
               {/* Weitere Felder - Kompakt Grid */}
               <div style={{
