@@ -2,25 +2,27 @@
 
 ## Datum: 22.02.26
 
-## Thema: Design-Tab Bilder – Root-Cause gefunden und gefixt
+## Thema: Design-Tab ök2 zeigt K2-Fotos – Root-Cause definitiv gefunden
 
-## Was der echte Bug war:
-- sessionStorage behielt `k2-admin-context = 'oeffentlich'` nach ök2-Admin-Besuch
-- Beim nächsten K2-Admin-Aufruf (ohne ?context=) dachte Code: "ich bin im ök2-Kontext"
-- → Bilder wurden in ök2-Keys gespeichert (k2-oeffentlich-page-content-galerie)
-- → K2-Galerie las aus K2-Keys (k2-page-content-galerie) → leer → altes Bild
-- → Beim Zurückgehen lud Admin neu → las aus K2-Keys → auch leer → Foto weg
+## Was der echte Bug war (Race Condition):
+- `syncAdminContextFromUrl()` lief NACH den `useState`-Initialisierungen (in einem useEffect)
+- Beim ersten Render: sessionStorage noch nicht gesetzt → `isOeffentlichAdminContext() = false`
+- → `pageContent` wird mit K2-Keys initialisiert → K2-Bilder geladen
+- → ök2-Admin zeigt K2-Fotos von Georg und Martina
 
-## Was gefixt wurde (MIT Commit-Hash):
-- K2-Admin löscht beim Start sessionStorage-Kontext wenn kein ?context= Parameter – Commit: 94b52ae ✅
-- pageContentGalerie: 6MB-Limit-Check entfernt (raw.length > 0 statt < 6MB) – Commit: 94b52ae ✅
+## Was gefixt wurde (Commit f83c510):
+- Neue Funktion `syncAdminContextFromUrl()` – setzt sessionStorage synchron aus URL
+- Wird als ERSTES in `ScreenshotExportAdmin()` aufgerufen – vor allen useState
+- Jetzt ist `isOeffentlichAdminContext()` beim ersten useState-Aufruf bereits korrekt
+- Bei K2-Admin (kein ?context=): sessionStorage wird SOFORT gelöscht (kein "hängenbleiben")
 
 ## Nächster Schritt:
-- Nach Vercel-Deployment (~2 Min): Design-Tab testen
-- WICHTIG: Einmal den Browser-Tab komplett neu laden (damit sessionStorage sauber ist)
-- Dann Foto reinziehen → Galerie ansehen → Foto muss sichtbar sein
-- Beim Zurückgehen → Foto muss noch da sein
+- Nach Vercel-Deployment (~2 Min): testen
+- ök2-Admin öffnen (/admin?context=oeffentlich)
+- Design-Tab → Foto einladen → sollte ök2-Fotos sehen, NICHT K2-Fotos
+- Galerie ansehen → neues Foto sichtbar
+- Zurückgehen → Foto noch da
 
 ## Wo nachlesen:
-- `components/ScreenshotExportAdmin.tsx` → useEffect URL-Parameter context (Zeile ~1250)
-- `src/config/pageContentGalerie.ts` → getPageContentGalerie
+- `components/ScreenshotExportAdmin.tsx` → `syncAdminContextFromUrl()` (Zeile ~17)
+- `components/ScreenshotExportAdmin.tsx` → Anfang von `ScreenshotExportAdmin()` (Zeile ~596)

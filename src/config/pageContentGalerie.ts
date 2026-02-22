@@ -48,21 +48,22 @@ export function getPageContentGalerie(tenantId?: 'oeffentlich'): PageContentGale
       const parsed = JSON.parse(raw) as Partial<PageContentGalerie>
 
       if (tenantId === 'oeffentlich') {
-        // ök2: K2-Inhalte die durch alten Kontext-Bug hereingekommen sind → bereinigen
+        // ök2: Nur echte K2-Medienpfade entfernen (wurden durch Kontext-Bug hereingekommen)
+        // data: (Base64) und blob: gehören zum User-Upload → NICHT löschen!
         let changed = false
-        // Alle Pfade die auf K2-eigene Medien zeigen – nie auf ök2
-        const isK2Media = (v?: string) => !!(v && (
+        const isK2ServerMedia = (v?: string) => !!(v && (
           v.startsWith('/img/k2/') ||
-          v.startsWith('blob:') ||
-          v.startsWith('data:') ||
-          v.includes('virtual-tour') ||
-          v.includes('willkommen') ||
-          v.includes('galerie-card')
+          (v.startsWith('/img/') && !v.startsWith('/img/oeffentlich/'))
         ))
-        if (isK2Media(parsed.welcomeImage)) { delete parsed.welcomeImage; changed = true }
-        if (isK2Media(parsed.galerieCardImage)) { delete parsed.galerieCardImage; changed = true }
-        if (isK2Media(parsed.virtualTourImage)) { delete parsed.virtualTourImage; changed = true }
-        if (isK2Media(parsed.virtualTourVideo)) { delete parsed.virtualTourVideo; changed = true }
+        if (isK2ServerMedia(parsed.welcomeImage)) { delete parsed.welcomeImage; changed = true }
+        if (isK2ServerMedia(parsed.galerieCardImage)) { delete parsed.galerieCardImage; changed = true }
+        if (isK2ServerMedia(parsed.virtualTourImage)) { delete parsed.virtualTourImage; changed = true }
+        if (isK2ServerMedia(parsed.virtualTourVideo)) { delete parsed.virtualTourVideo; changed = true }
+        // blob: URLs sind session-gebunden → nach Reload ungültig → löschen
+        if (parsed.welcomeImage?.startsWith('blob:')) { delete parsed.welcomeImage; changed = true }
+        if (parsed.galerieCardImage?.startsWith('blob:')) { delete parsed.galerieCardImage; changed = true }
+        if (parsed.virtualTourImage?.startsWith('blob:')) { delete parsed.virtualTourImage; changed = true }
+        if (parsed.virtualTourVideo?.startsWith('blob:')) { delete parsed.virtualTourVideo; changed = true }
         if (changed) {
           try { localStorage.setItem(key, JSON.stringify({ ...parsed })) } catch (_) {}
         }
