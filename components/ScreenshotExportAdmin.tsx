@@ -8997,6 +8997,19 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                                 setPageContentGalerie(next, tenant)
                                 setDesignSaveFeedback('ok')
                                 setTimeout(() => setDesignSaveFeedback(null), 6000)
+                                // K2: sofort auf GitHub hochladen damit Galerie das neue Bild zeigt
+                                if (!isOeffentlichAdminContext()) {
+                                  try {
+                                    const { uploadImageToGitHub } = await import('../src/utils/githubImageUpload')
+                                    const url = await uploadImageToGitHub(f, 'willkommen.jpg', (msg) => console.log(msg))
+                                    const next2 = { ...next, welcomeImage: url }
+                                    setPageContent(next2)
+                                    setPageContentGalerie(next2, undefined)
+                                    localStorage.removeItem('k2-last-publish-signature')
+                                  } catch (uploadErr) {
+                                    console.warn('GitHub Upload fehlgeschlagen (Bild lokal gespeichert):', uploadErr)
+                                  }
+                                }
                               } catch (_) { alert('Fehler beim Bild') }
                             }
                           }}

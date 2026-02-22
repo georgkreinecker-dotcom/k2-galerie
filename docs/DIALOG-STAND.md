@@ -3,7 +3,7 @@
 | Feld | Inhalt |
 |---|---|
 | **Datum** | 22.02.26 |
-| **Thema** | Design-Tab: Speichern-Logik vereinfacht – funktioniert jetzt zuverlässig |
-| **Was war zuletzt dran** | ✅ Root-Ursache behoben: Alle 3 Speichern-Buttons (Vorschau-Toolbar, Farben-Tab oben, Farben-Tab unten) hatten einen fehlerhaften Validierungs-Check der bei erstmaliger Nutzung „Speichern fehlgeschlagen" zeigte. Jetzt direkt speichern ohne Check – funktioniert immer. Build ✅, Push ✅. Stand: 22.02.26 07:02 |
-| **Nächster konkreter Schritt** | In ~2 Min Stand-Badge tippen, dann: Design-Tab → Foto reinziehen → Schritt 2 „Galerie ansehen" → Schritt 3 „Speichern – fertig!" testen |
-| **Wo nachlesen** | `components/ScreenshotExportAdmin.tsx` Zeile ~8841, ~8904, ~9312 (Speichern-Buttons) |
+| **Thema** | iPad Speichern: Etikett-Modal nach neuem Werk |
+| **Was war zuletzt dran** | ✅ Nach Speichern am iPad: kein störender Alert mehr. Stattdessen Etikett-Modal mit Werksnummer, Titel, Preis und QR-Code. QR zeigt auf Galerie-URL mit Werksnummer (für Kassa-Scan). „Teilen"-Button via Web Share API. Build ✅, Push ✅. Stand: 22.02.26 10:43 |
+| **Nächster konkreter Schritt** | Am iPad testen: Neues Werk fotografieren → Speichern → Etikett-Modal erscheint mit QR? Dann: Etikett am Mac drucken (Brother QL-820MWBc) testen |
+| **Wo nachlesen** | `src/pages/GalerieVorschauPage.tsx` am Ende (EtikettQrCode-Komponente + showEtikettModal State) |
