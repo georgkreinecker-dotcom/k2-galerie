@@ -8865,27 +8865,27 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             {designSubTab === 'vorschau' && (
               <div ref={previewContainerRef} style={{ width: '100%', minHeight: 'calc(100vh - 180px)', background: WERBEUNTERLAGEN_STIL.bgDark, display: 'flex', flexDirection: 'column' }}>
                 {/* Design-Toolbar – sticky, immer sichtbar */}
-                <div style={{ flexShrink: 0, position: 'sticky', top: 0, zIndex: 20, background: WERBEUNTERLAGEN_STIL.bgDark, borderBottom: `2px solid ${s.accent}33`, padding: '0.75rem 1rem' }}>
+                <div style={{ flexShrink: 0, position: 'sticky', top: 0, zIndex: 20, background: WERBEUNTERLAGEN_STIL.bgDark, borderBottom: `2px solid ${s.accent}33`, padding: '1rem 1.25rem' }}>
                   {/* Titel */}
-                  <div style={{ fontWeight: 800, fontSize: '1.25rem', color: s.text, marginBottom: '0.6rem' }}>✨ Deine Galerie gestalten</div>
+                  <div style={{ fontWeight: 800, fontSize: '1.4rem', color: s.text, marginBottom: '0.75rem' }}>✨ Deine Galerie gestalten</div>
                   {/* 3-Schritt-Workflow */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                     {/* Schritt 1 */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(0,0,0,0.06)', border: `1px solid ${s.accent}33`, borderRadius: 8, padding: '0.3rem 0.7rem' }}>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 700, color: s.accent }}>1</span>
-                      <span style={{ fontSize: '0.82rem', color: s.muted }}>Foto reinziehen oder Text anklicken</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0,0,0,0.06)', border: `1px solid ${s.accent}33`, borderRadius: 10, padding: '0.45rem 1rem' }}>
+                      <span style={{ fontSize: '0.9rem', fontWeight: 700, color: s.accent }}>1</span>
+                      <span style={{ fontSize: '0.95rem', color: s.muted }}>Foto / Video reinziehen oder Text anklicken</span>
                     </div>
-                    <span style={{ color: s.muted, fontSize: '1rem' }}>→</span>
+                    <span style={{ color: s.muted, fontSize: '1.2rem' }}>→</span>
                     {/* Schritt 2: Galerie ansehen */}
                     <a href={isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie} target="_blank" rel="noopener noreferrer"
-                      style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.9rem', fontSize: '0.9rem', fontWeight: 700, background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: 8, color: '#10b981', textDecoration: 'none' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1.1rem', fontSize: '1rem', fontWeight: 700, background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: 10, color: '#10b981', textDecoration: 'none' }}
                       title="Galerie öffnen – genau wie Besucher sie sehen">
-                      <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>2</span> 👁 Galerie ansehen – gefällt es?
+                      <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>2</span> 👁 Galerie ansehen – gefällt es?
                     </a>
-                    <span style={{ color: s.muted, fontSize: '1rem' }}>→</span>
+                    <span style={{ color: s.muted, fontSize: '1.2rem' }}>→</span>
                     {/* Schritt 3: Speichern */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <button type="button" onClick={() => setDesignSubTab('farben')} style={{ padding: '0.4rem 0.85rem', fontSize: '0.85rem', fontWeight: 600, background: `${s.accent}18`, border: `1px solid ${s.accent}66`, borderRadius: 8, color: s.accent, cursor: 'pointer' }}>🎨 Farbe ändern</button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <button type="button" onClick={() => setDesignSubTab('farben')} style={{ padding: '0.5rem 1rem', fontSize: '0.95rem', fontWeight: 600, background: `${s.accent}18`, border: `1px solid ${s.accent}66`, borderRadius: 10, color: s.accent, cursor: 'pointer' }}>🎨 Farbe ändern</button>
                       {designSaveFeedback === 'ok'
                         ? <span style={{ fontSize: '0.95rem', color: '#10b981', fontWeight: 700, padding: '0.5rem 1rem', background: 'rgba(16,185,129,0.1)', border: '1px solid #10b981', borderRadius: 8 }}>✅ Gespeichert!</span>
                         : <button type="button" className="btn-primary" onClick={() => {
@@ -8905,16 +8905,16 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             } catch (e) {
                               alert('Fehler beim Speichern: ' + (e instanceof Error ? e.message : String(e)))
                             }
-                          }} style={{ padding: '0.45rem 1.1rem', fontSize: '0.9rem', fontWeight: 700 }}>
-                            <span style={{ fontSize: '0.75rem', fontWeight: 700, marginRight: '0.3rem' }}>3</span>💾 Speichern – fertig!
+                          }} style={{ padding: '0.5rem 1.25rem', fontSize: '1rem', fontWeight: 700 }}>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 700, marginRight: '0.35rem' }}>3</span>💾 Speichern – fertig!
                           </button>
                       }
                     </div>
-                    {/* Zoom-Buttons klein, am Ende */}
-                    <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', marginLeft: 'auto' }}>
-                      <span style={{ color: 'var(--k2-muted)', fontSize: '0.78rem' }}>Zoom:</span>
+                    {/* Zoom-Buttons, am Ende */}
+                    <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', marginLeft: 'auto' }}>
+                      <span style={{ color: 'var(--k2-muted)', fontSize: '0.85rem' }}>Zoom:</span>
                       {([1, 1.25, 1.5, 2] as const).map((sc) => (
-                        <button key={sc} type="button" onClick={() => setDesignPreviewScale(sc)} style={{ padding: '0.25rem 0.45rem', fontSize: '0.75rem', background: designPreviewScale === sc ? 'rgba(95,251,241,0.2)' : 'transparent', border: '1px solid ' + (designPreviewScale === sc ? 'var(--k2-accent)' : 'rgba(255,255,255,0.15)'), borderRadius: 5, color: designPreviewScale === sc ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>{Math.round(sc * 100)}%</button>
+                        <button key={sc} type="button" onClick={() => setDesignPreviewScale(sc)} style={{ padding: '0.3rem 0.55rem', fontSize: '0.85rem', background: designPreviewScale === sc ? 'rgba(95,251,241,0.2)' : 'transparent', border: '1px solid ' + (designPreviewScale === sc ? 'var(--k2-accent)' : 'rgba(255,255,255,0.15)'), borderRadius: 6, color: designPreviewScale === sc ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>{Math.round(sc * 100)}%</button>
                       ))}
                     </div>
                   </div>
