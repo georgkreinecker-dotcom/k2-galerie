@@ -9309,28 +9309,6 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 >
                   ⋮⋮ Ziehen zum Vergrößern / Verkleinern
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
-                  <button type="button" className="btn-primary" onClick={() => {
-                    try {
-                      const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
-                      setPageContentGalerie(pageContent, tenant)
-                      setPageTexts(pageTexts, tenant)
-                      if (designSettings && Object.keys(designSettings).length > 0) {
-                        const ds = JSON.stringify(designSettings)
-                        if (ds.length < 50000) localStorage.setItem(getDesignStorageKey(), ds)
-                      }
-                      localStorage.removeItem('k2-last-publish-signature')
-                      if (!isOeffentlichAdminContext()) window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
-                      setDesignSaveFeedback('ok')
-                      setTimeout(() => setDesignSaveFeedback(null), 4000)
-                    } catch (e) {
-                      alert('Fehler beim Speichern: ' + (e instanceof Error ? e.message : String(e)))
-                    }
-                  }} style={{ padding: '0.75rem 1.5rem', fontSize: '1rem' }}>💾 Speichern</button>
-                  <button type="button" onClick={() => setDesignSettings({ ...(isOeffentlichAdminContext() ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN) })} style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', background: 'transparent', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer' }} title="Entwurf auf Standard-Design zurücksetzen (erst mit Speichern übernehmen)">↩ Zum Originalzustand</button>
-                  {designSaveFeedback === 'ok' && <span style={{ fontSize: '0.9rem', color: '#10b981', fontWeight: 600 }}>✓ Gespeichert</span>}
-                  
-                </div>
                 </div>
                 );
                 })()}
