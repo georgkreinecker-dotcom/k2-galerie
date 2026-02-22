@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
+import jsQR from 'jsqr'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { getCategoryLabel, MUSTER_TEXTE, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
 import { getCustomers, createCustomer, updateCustomer, type Customer } from '../utils/customers'
@@ -244,8 +245,8 @@ const ShopPage = () => {
   }
 
   // Werk per Seriennummer finden und zum Warenkorb hinzufügen
-  const addBySerialNumber = () => {
-    const serial = serialInput.trim().toUpperCase()
+  const addBySerialNumber = (overrideSerial?: string) => {
+    const serial = (overrideSerial ?? serialInput).trim().toUpperCase()
     if (!serial) {
       alert('Bitte Seriennummer eingeben')
       return
@@ -357,7 +358,14 @@ const ShopPage = () => {
               const codes = await detector.detect(canvas)
               if (codes.length > 0 && codes[0].rawValue) {
                 processQRCode(codes[0].rawValue)
+                return
               }
+            }
+            // Fallback: jsQR – funktioniert auf allen Geräten/Browsern
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+            const result = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' })
+            if (result?.data) {
+              processQRCode(result.data)
             }
           } catch (_) {}
         }, 300)
@@ -379,25 +387,23 @@ const ShopPage = () => {
     if (!qrData || !qrData.trim()) return
 
     const data = qrData.trim()
+    let serial = data.toUpperCase()
     
     try {
-      // Versuche URL zu parsen
+      // Versuche URL zu parsen – ?werk=K2-001 oder ähnlich
       const url = new URL(data)
       const werkParam = url.searchParams.get('werk')
       if (werkParam) {
-        setSerialInput(werkParam.toUpperCase())
-        setTimeout(() => addBySerialNumber(), 100)
-        setShowScanner(false)
-        return
+        serial = werkParam.toUpperCase()
       }
-    } catch (error) {
-      // Keine URL, versuche direkt als Seriennummer
+    } catch (_) {
+      // Keine URL – direkt als Seriennummer
     }
     
-    // Direkt als Seriennummer verwenden
-    setSerialInput(data.toUpperCase())
-    setTimeout(() => addBySerialNumber(), 100)
     setShowScanner(false)
+    setSerialInput(serial)
+    // Direkt mit dem gescannten Wert aufrufen (nicht auf State-Update warten)
+    addBySerialNumber(serial)
   }
 
   // Artikel aus Warenkorb entfernen
@@ -1321,7 +1327,7 @@ const ShopPage = () => {
               }}
             />
             <button
-              onClick={addBySerialNumber}
+              onClick={() => addBySerialNumber()}
               style={{
                 padding: '0.75rem 1.5rem',
                 background: s.gradientAccent,

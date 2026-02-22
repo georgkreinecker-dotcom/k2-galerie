@@ -23,6 +23,7 @@
     "@imgly/background-removal": "^1.7.0",
     "@supabase/supabase-js": "^2.95.3",
     "ipp": "^1.1.0",
+    "jsqr": "^1.4.0",
     "onnxruntime-web": "^1.21.0",
     "png-dpi-reader-writer": "^0.2.4",
     "qrcode": "^1.5.4",

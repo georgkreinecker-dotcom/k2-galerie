@@ -1,9 +1,18 @@
-# Dialog-Stand – Letzter Arbeitsschritt
+# Dialog-Stand
 
-| Feld | Inhalt |
-|---|---|
-| **Datum** | 22.02.26 |
-| **Thema** | Kassa QR-Scanner + Etikett-Fixes |
-| **Was war zuletzt dran** | ✅ Kassa: „📷 QR-Code scannen" öffnet jetzt sofort die echte Rückkamera mit Zielrahmen + automatischem Scan (BarcodeDetector). Fallback: manuelle Texteingabe. Etikett: Zeilenumbruch wenn Künstlername >12 Zeichen (Martina Kreinecker → zwei Zeilen). Build ✅, Push ✅. Stand: 22.02.26 11:05 |
-| **Nächster konkreter Schritt** | Kassa testen: QR-Scan Button → Kamera öffnet → QR-Code halten → Werk wird direkt gefunden. Etikett testen: Martina Kreinecker auf zwei Zeilen |
-| **Wo nachlesen** | `src/pages/ShopPage.tsx` (scannerVideoRef, showScanner useEffect), `components/ScreenshotExportAdmin.tsx` Zeile ~7180 (Footer Zeilenumbruch) |
+## Datum: 22.02.26
+
+## Thema: Etikettendruck – Anhaken-Weg gefixt
+
+## Was zuletzt gemacht:
+- `handleBatchPrintEtiketten` (Anhaken → Etikett drucken) komplett umgeschrieben
+- Vorher: direktes `window.open + win.print()` → funktionierte nicht (3 Etiketten-Problem)
+- Jetzt: gleicher Weg wie Einzeletikett → Teilen-Dialog → Drucker-App wählen
+- Build ✅ – gepusht auf main
+
+## Nächster Schritt:
+- Testen: Werk anhaken → „Etiketten drucken" → Teilen-Menü erscheint → Drucker wählen
+- Bei Bedarf: weitere Verfeinerungen am Etikett-Design
+
+## Wo nachlesen:
+- `components/ScreenshotExportAdmin.tsx` → `handleBatchPrintEtiketten`
