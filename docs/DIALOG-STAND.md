@@ -2,25 +2,31 @@
 
 ## Datum: 22.02.26
 
-## Thema: ök2 Design-Tab – Fotos laden nicht in Vorschau
+## Thema: ök2 vs K2 Admin – visuelle Unterscheidung + Zurück-Button Fix
 
-## Was der Bug war:
-- `pageContentGalerie.ts` hat ALLE `data:` (Base64) Bilder für ök2 sofort wieder gelöscht
-- Das war falsch: `data:` Bilder sind vom User hochgeladen – kein K2-spezifischer Inhalt
-- Nur echte K2-Serverpfade (`/img/k2/`, `/img/` außer `/img/oeffentlich/`) sind gefährlich
-- Ergebnis: Foto reinziehen → kurz im State sichtbar → beim nächsten Lesen aus localStorage weg
+## Was gefixt wurde (Commit 9a222fc):
+1. **ök2-Admin Header**: Kein "K2 Galerie" Logo mehr – zeigt jetzt "ök2 / Muster-Galerie"
+2. **ADMIN-Badge**: Nur noch bei K2 und VK2, nicht bei ök2
+3. **Zurück-Button** (gelber Balken in Vorschau): Navigiert jetzt korrekt zurück
+   - ök2-Vorschau → zurück zu `/admin?context=oeffentlich` ✅
+   - K2-Vorschau → zurück zu `/admin` ✅
+   - (GaleriePage + GalerieVorschauPage beide gefixt)
 
-## Was gefixt wurde (Commit 88fd0c4):
-- `pageContentGalerie.ts`: Nur `/img/k2/` und `/img/` (außer `/img/oeffentlich/`) Pfade löschen
-- `data:` Bilder NICHT löschen (User-Upload, harmlos für ök2)
-- `blob:` URLs weiterhin löschen (session-gebunden, nach Reload ungültig)
+## Davor gefixt (Commit 88fd0c4):
+- ök2: data:-Bilder (Base64 User-Uploads) werden nicht mehr gelöscht
+- Fotos im Design-Tab erscheinen jetzt in der Vorschau
 
-## Nächster Schritt nach Vercel-Deployment (~2 Min):
-- ök2-Admin → Design-Tab öffnen
-- Foto reinziehen → muss SOFORT in der Vorschau sichtbar sein
-- "Galerie ansehen" → Foto muss auch dort erscheinen
-- Zurückgehen → Foto noch da
+## Davor gefixt (Commit f83c510):
+- Race Condition: syncAdminContextFromUrl() vor useState → ök2 zeigt keine K2-Fotos mehr
+
+## Nächster Schritt:
+- Nach Vercel-Deployment (~2 Min) testen:
+  - ök2-Admin öffnen → Header zeigt "ök2 / Muster-Galerie" (nicht K2)
+  - Design-Tab → Foto einladen → sichtbar in Vorschau
+  - "Galerie ansehen" → Foto auch dort sichtbar
+  - Zurück (gelber Balken) → landet im ök2-Admin (nicht K2)
 
 ## Wo nachlesen:
-- `src/config/pageContentGalerie.ts` → `getPageContentGalerie` (isK2ServerMedia)
-- `components/ScreenshotExportAdmin.tsx` → `syncAdminContextFromUrl()` (Zeile ~17)
+- `components/ScreenshotExportAdmin.tsx` → Header-Bereich (Logo, ~Zeile 7867)
+- `src/pages/GaleriePage.tsx` → isVorschauModus Zurück-Button (~Zeile 2038)
+- `src/pages/GalerieVorschauPage.tsx` → isVorschauModus Zurück-Button (~Zeile 2147)

@@ -8921,22 +8921,46 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               if (!isOeffentlichAdminContext()) window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
                               setDesignSaveFeedback('ok')
                               setTimeout(() => setDesignSaveFeedback(null), 6000)
-                              // Jetzt erst auf GitHub hochladen (erst nach Speichern-Klick)
-                              if (!isOeffentlichAdminContext() && pendingWelcomeFileRef.current) {
+                              // Foto auf GitHub hochladen – damit es auf ALLEN Geräten sichtbar ist
+                              // Entweder neues File-Objekt (pendingWelcomeFileRef) oder vorhandenes Base64 aus pageContent
+                              if (!isOeffentlichAdminContext()) {
                                 const fileToUpload = pendingWelcomeFileRef.current
+                                const base64Image = pageContent.welcomeImage
                                 pendingWelcomeFileRef.current = null
-                                setImageUploadStatus('⏳ Foto wird hochgeladen (für alle Geräte)…')
-                                try {
-                                  const { uploadImageToGitHub } = await import('../src/utils/githubImageUpload')
-                                  const url = await uploadImageToGitHub(fileToUpload, 'willkommen.jpg', (msg) => setImageUploadStatus(msg))
-                                  const next2 = { ...pageContent, welcomeImage: url }
-                                  setPageContent(next2)
-                                  setPageContentGalerie(next2, undefined)
-                                  setImageUploadStatus('✅ Hochgeladen – in ~2 Min. auf allen Geräten sichtbar')
-                                  setTimeout(() => setImageUploadStatus(null), 8000)
-                                } catch (_) {
-                                  setImageUploadStatus('✓ Lokal gespeichert (Upload fehlgeschlagen)')
-                                  setTimeout(() => setImageUploadStatus(null), 6000)
+
+                                if (fileToUpload) {
+                                  // Neues Foto: direkt als File hochladen
+                                  setImageUploadStatus('⏳ Foto wird für alle Geräte gespeichert…')
+                                  try {
+                                    const { uploadImageToGitHub } = await import('../src/utils/githubImageUpload')
+                                    const url = await uploadImageToGitHub(fileToUpload, 'willkommen.jpg', () => {})
+                                    const next2 = { ...pageContent, welcomeImage: url }
+                                    setPageContent(next2)
+                                    setPageContentGalerie(next2, undefined)
+                                    setImageUploadStatus('✅ Auf allen Geräten sichtbar')
+                                    setTimeout(() => setImageUploadStatus(null), 6000)
+                                  } catch (_) {
+                                    setImageUploadStatus('⚠️ Nur am Mac gespeichert – Handy sieht noch altes Foto')
+                                    setTimeout(() => setImageUploadStatus(null), 8000)
+                                  }
+                                } else if (base64Image && base64Image.startsWith('data:')) {
+                                  // Altes Base64-Foto: als Blob konvertieren und hochladen
+                                  setImageUploadStatus('⏳ Foto wird für alle Geräte gespeichert…')
+                                  try {
+                                    const { uploadImageToGitHub } = await import('../src/utils/githubImageUpload')
+                                    const res = await fetch(base64Image)
+                                    const blob = await res.blob()
+                                    const file = new File([blob], 'willkommen.jpg', { type: blob.type })
+                                    const url = await uploadImageToGitHub(file, 'willkommen.jpg', () => {})
+                                    const next2 = { ...pageContent, welcomeImage: url }
+                                    setPageContent(next2)
+                                    setPageContentGalerie(next2, undefined)
+                                    setImageUploadStatus('✅ Auf allen Geräten sichtbar')
+                                    setTimeout(() => setImageUploadStatus(null), 6000)
+                                  } catch (_) {
+                                    setImageUploadStatus('⚠️ Nur am Mac gespeichert – Handy sieht noch altes Foto')
+                                    setTimeout(() => setImageUploadStatus(null), 8000)
+                                  }
                                 }
                               }
                             } catch (e) {
