@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { getCategoryLabel, MUSTER_TEXTE, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
@@ -57,6 +57,10 @@ const ShopPage = () => {
   const [discount, setDiscount] = useState(0)
   const [showScanner, setShowScanner] = useState(false)
   const [serialInput, setSerialInput] = useState('')
+  const scannerVideoRef = useRef<HTMLVideoElement>(null)
+  const scannerCanvasRef = useRef<HTMLCanvasElement>(null)
+  const scannerStreamRef = useRef<MediaStream | null>(null)
+  const scannerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [allArtworks, setAllArtworks] = useState<any[]>([])
   const [orders, setOrders] = useState<any[]>([])
   const [bankverbindung, setBankverbindung] = useState('')
@@ -318,30 +322,56 @@ const ShopPage = () => {
     alert(`✅ "${artwork.title || artwork.number}" wurde zur Auswahl hinzugefügt.`)
   }
 
-  // QR-Code scannen (für mobile Geräte)
-  const handleQRScan = () => {
-    // Prüfe ob auf mobilem Gerät
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-    
-    if (isMobile) {
-      // Auf Mobile: Öffne Kamera für QR-Scan
-      const input = document.createElement('input')
-      input.type = 'file'
-      input.accept = 'image/*'
-      input.capture = 'environment'
-      input.onchange = (e) => {
-        const file = (e.target as HTMLInputElement).files?.[0]
-        if (file) {
-          // Hier könnte man eine QR-Code-Library verwenden
-          // Für jetzt: Einfach Input-Feld öffnen
-          setShowScanner(true)
-        }
-      }
-      input.click()
-    } else {
-      // Auf Desktop: Einfach Input-Feld öffnen
-      setShowScanner(true)
+  // QR-Code Scanner: Kamera starten wenn Modal öffnet
+  useEffect(() => {
+    if (!showScanner) {
+      // Kamera stoppen
+      if (scannerIntervalRef.current) { clearInterval(scannerIntervalRef.current); scannerIntervalRef.current = null }
+      if (scannerStreamRef.current) { scannerStreamRef.current.getTracks().forEach(t => t.stop()); scannerStreamRef.current = null }
+      return
     }
+    let cancelled = false
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        if (cancelled) { stream.getTracks().forEach(t => t.stop()); return }
+        scannerStreamRef.current = stream
+        if (scannerVideoRef.current) {
+          scannerVideoRef.current.srcObject = stream
+          scannerVideoRef.current.play()
+        }
+        // QR-Code alle 300ms scannen
+        scannerIntervalRef.current = setInterval(async () => {
+          const video = scannerVideoRef.current
+          const canvas = scannerCanvasRef.current
+          if (!video || !canvas || video.readyState < 2) return
+          canvas.width = video.videoWidth
+          canvas.height = video.videoHeight
+          const ctx = canvas.getContext('2d')
+          if (!ctx) return
+          ctx.drawImage(video, 0, 0)
+          try {
+            // BarcodeDetector API (Chrome/Safari iOS 17+)
+            if ('BarcodeDetector' in window) {
+              const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] })
+              const codes = await detector.detect(canvas)
+              if (codes.length > 0 && codes[0].rawValue) {
+                processQRCode(codes[0].rawValue)
+              }
+            }
+          } catch (_) {}
+        }, 300)
+      } catch (err) {
+        console.warn('Kamera nicht verfügbar:', err)
+      }
+    }
+    startCamera()
+    return () => { cancelled = true }
+  }, [showScanner])
+
+  // QR-Code scannen – Modal öffnen (Kamera startet automatisch via useEffect)
+  const handleQRScan = () => {
+    setShowScanner(true)
   }
 
   // QR-Code aus URL oder Text verarbeiten
@@ -1409,115 +1439,45 @@ const ShopPage = () => {
             }}
             onClick={(e) => e.stopPropagation()}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'clamp(1rem, 3vw, 1.5rem)' }}>
-                <h3 style={{ margin: 0, color: s.text, fontSize: 'clamp(1.25rem, 3.5vw, 1.5rem)', fontWeight: '600' }}>QR-Code scannen</h3>
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3 style={{ margin: 0, color: s.text, fontSize: '1.3rem', fontWeight: 700 }}>📷 QR-Code scannen</h3>
+                <button onClick={() => setShowScanner(false)} style={{ background: s.bgElevated, border: 'none', borderRadius: '8px', fontSize: '1.5rem', cursor: 'pointer', padding: '0.25rem 0.75rem', color: s.text }}>×</button>
+              </div>
+
+              {/* Kamera-Vorschau */}
+              <div style={{ position: 'relative', width: '100%', borderRadius: 12, overflow: 'hidden', background: '#000', marginBottom: '1rem', aspectRatio: '4/3' }}>
+                <video ref={scannerVideoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                <canvas ref={scannerCanvasRef} style={{ display: 'none' }} />
+                {/* Zielrahmen */}
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                  <div style={{ width: '60%', aspectRatio: '1', border: '3px solid rgba(95,251,241,0.8)', borderRadius: 12, boxShadow: '0 0 0 2000px rgba(0,0,0,0.3)' }} />
+                </div>
+                <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, textAlign: 'center', color: 'rgba(255,255,255,0.8)', fontSize: '0.8rem' }}>
+                  QR-Code in den Rahmen halten
+                </div>
+              </div>
+
+              {/* Fallback: manuelle Eingabe */}
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <input
+                  type="text"
+                  placeholder="Seriennummer manuell (z.B. K2-M-0001)"
+                  value={serialInput}
+                  onChange={(e) => setSerialInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && serialInput.trim()) processQRCode(serialInput.trim()) }}
+                  style={{ flex: 1, padding: '0.65rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 10, fontSize: '0.95rem', color: s.text, outline: 'none' }}
+                />
                 <button
-                  onClick={() => setShowScanner(false)}
-                  style={{
-                    background: s.bgElevated,
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '1.5rem',
-                    cursor: 'pointer',
-                    padding: '0.25rem 0.75rem',
-                    color: s.text,
-                    transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = s.bgElevated
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = s.bgCard
-                  }}
+                  onClick={() => { if (serialInput.trim()) processQRCode(serialInput.trim()) }}
+                  style={{ padding: '0.65rem 1.2rem', background: s.gradientAccent, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}
                 >
-                  ×
+                  OK
                 </button>
               </div>
-              
-              <input
-                type="text"
-                placeholder="QR-Code Text hier einfügen oder Seriennummer eingeben (z.B. K2-0001)"
-                autoFocus
-                value={serialInput}
-                onChange={(e) => setSerialInput(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && serialInput.trim()) {
-                    processQRCode(serialInput.trim())
-                  }
-                }}
-                style={{
-                  width: '100%',
-                  padding: 'clamp(0.75rem, 2vw, 1rem)',
-                  background: s.bgElevated,
-                  backdropFilter: 'blur(10px)',
-                  border: `1px solid ${s.accent}33`,
-                  borderRadius: '12px',
-                  fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                  marginBottom: 'clamp(1rem, 3vw, 1.5rem)',
-                  color: s.text,
-                  outline: 'none'
-                }}
-              />
-              
-              <div style={{ display: 'flex', gap: 'clamp(0.75rem, 2vw, 1rem)' }}>
-                <button
-                  onClick={() => {
-                    if (serialInput.trim()) {
-                      processQRCode(serialInput.trim())
-                    }
-                  }}
-                  style={{
-                    flex: 1,
-                    padding: 'clamp(0.75rem, 2vw, 1rem)',
-                    background: s.gradientAccent,
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '12px',
-                    fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: `0 10px 30px ${s.accent}40`
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = `0 15px 40px ${s.accent}66`
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = `0 10px 30px ${s.accent}40`
-                  }}
-                >
-                  Hinzufügen
-                </button>
-                <button
-                  onClick={() => setShowScanner(false)}
-                  style={{
-                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                    background: s.bgElevated,
-                    backdropFilter: 'blur(10px)',
-                    border: `1px solid ${s.accent}33`,
-                    color: s.text,
-                    borderRadius: '12px',
-                    fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = s.bgElevated
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = s.bgCard
-                  }}
-                >
-                  Abbrechen
-                </button>
-              </div>
-              
-              <p style={{ fontSize: 'clamp(0.85rem, 2.5vw, 0.95rem)', color: s.muted, marginTop: 'clamp(1rem, 3vw, 1.5rem)', marginBottom: 0 }}>
-                💡 Tipp: Auf mobilen Geräten kannst du die Kamera-App verwenden, um QR-Codes zu scannen und den Text hier einfügen.
-              </p>
+              <button onClick={() => setShowScanner(false)} style={{ width: '100%', padding: '0.65rem', background: s.bgElevated, border: `1px solid ${s.accent}22`, color: s.text, borderRadius: 10, fontSize: '0.95rem', cursor: 'pointer' }}>
+                Abbrechen
+              </button>
             </div>
           </div>
         )}

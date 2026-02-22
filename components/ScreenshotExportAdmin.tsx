@@ -7175,10 +7175,18 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
         img.crossOrigin = 'anonymous'
         img.onload = () => {
           ctx.drawImage(img, qrX, qrY, qrSize, qrSize)
-          ctx.fillStyle = '#999'
-          ctx.font = `${fs4}px Arial,sans-serif`
-          const footer = `${getCategoryLabel(savedArtwork.category)} • ${(savedArtwork.artist || '').substring(0, 15)}`
-          ctx.fillText(footer, w / 2, h - pad - fs4)
+      ctx.fillStyle = '#999'
+      ctx.font = `${fs4}px Arial,sans-serif`
+      const artistName = savedArtwork.artist || ''
+      const categoryText = getCategoryLabel(savedArtwork.category)
+      // Zeilenumbruch wenn Name zu lang (>12 Zeichen)
+      if (artistName.length > 12) {
+        ctx.fillText(categoryText, w / 2, h - pad - fs4 * 2.2)
+        ctx.fillText(artistName, w / 2, h - pad - fs4 * 0.8)
+      } else {
+        const footer = artistName ? `${categoryText} • ${artistName}` : categoryText
+        ctx.fillText(footer, w / 2, h - pad - fs4)
+      }
           canvas.toBlob((b) => {
             if (!b) { reject(new Error('Blob fehlgeschlagen')); return }
             b.arrayBuffer().then((ab) => {
