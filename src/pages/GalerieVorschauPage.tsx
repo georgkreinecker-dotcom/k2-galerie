@@ -1434,18 +1434,23 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                   
                   const serverArtwork = serverMap.get(key)
                   
-                  // WICHTIG: Mobile-Werke die < 10 Min alt sind → evtl. noch nicht veröffentlicht, behalten
+                  // Mobile-Werke die noch nicht auf dem Server sind → IMMER behalten
+                  // (bis sie vom Mac aus veröffentlicht wurden, kann das Tage dauern)
                   const isMobileWork = localArtwork.createdOnMobile || localArtwork.updatedOnMobile
                   const createdAt = localArtwork.createdAt ? new Date(localArtwork.createdAt).getTime() : 0
-                  const isVeryNew = createdAt > Date.now() - 600000 // 10 Min
+                  const isRecentEnough = createdAt > Date.now() - 7 * 24 * 3600000 // 7 Tage
                   
                   if (!serverArtwork) {
-                    if (isMobileWork && isVeryNew) {
-                      // Sehr neues Mobile-Werk, noch nicht veröffentlicht
-                      console.log('💾 Behalte sehr neues Mobile-Werk (noch nicht auf Server):', key)
+                    if (isMobileWork && isRecentEnough) {
+                      // Mobile-Werk, noch nicht veröffentlicht → BEHALTEN (bis zu 7 Tage)
+                      console.log('💾 Behalte Mobile-Werk (noch nicht auf Server, max. 7 Tage):', key)
                       mergedArtworks.push(localArtwork)
+                    } else if (isMobileWork) {
+                      // Mobile-Werk älter als 7 Tage ohne Server-Eintrag → History
+                      console.log('📜 Altes Mobile-Werk nicht auf Server → History:', key)
+                      toHistory.push(localArtwork)
                     } else {
-                      // Wurde woanders gelöscht und veröffentlicht → nur in History
+                      // Normales Werk nicht auf Server → wurde woanders gelöscht
                       console.log('📜 Werk nicht auf Server → History:', key)
                       toHistory.push(localArtwork)
                     }
