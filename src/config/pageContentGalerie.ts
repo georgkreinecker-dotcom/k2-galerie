@@ -67,19 +67,11 @@ export function getPageContentGalerie(tenantId?: 'oeffentlich'): PageContentGale
           try { localStorage.setItem(key, JSON.stringify({ ...parsed })) } catch (_) {}
         }
       } else {
-        // K2: blob:-URLs und Base64 durch Vercel-Pfade ersetzen
+        // K2: nur blob:-URLs ersetzen (session-gebunden, nach Reload ungültig)
+        // Base64-Bilder NICHT ersetzen – sie sind im selben Browser sichtbar (Vorschau!)
         let changed = false
         if (parsed.virtualTourVideo?.startsWith('blob:')) {
           parsed.virtualTourVideo = '/img/k2/virtual-tour.mp4'; changed = true
-        }
-        if (parsed.welcomeImage?.startsWith('data:')) {
-          parsed.welcomeImage = '/img/k2/willkommen.jpg'; changed = true
-        }
-        if (parsed.galerieCardImage?.startsWith('data:')) {
-          parsed.galerieCardImage = '/img/k2/galerie-card.jpg'; changed = true
-        }
-        if (parsed.virtualTourImage?.startsWith('data:')) {
-          parsed.virtualTourImage = '/img/k2/virtual-tour.jpg'; changed = true
         }
         if (changed) {
           try { localStorage.setItem(key, JSON.stringify({ ...parsed })) } catch (_) {}
