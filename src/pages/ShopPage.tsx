@@ -3,10 +3,32 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { getCategoryLabel, MUSTER_TEXTE, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
 import { getCustomers, createCustomer, updateCustomer, type Customer } from '../utils/customers'
-import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
+import { PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import '../App.css'
 
-const s = WERBEUNTERLAGEN_STIL
+// Eigener Kassa-Stil – heller, moderner Look mit Galerie-Farben (Orange/Terracotta)
+const s = {
+  bgDark: '#faf8f5',          // Warmes Weiß (heller als Beige, frischer)
+  bgCard: '#ffffff',          // Reines Weiß für Karten
+  bgElevated: '#f3ede6',     // Leichtes Terracotta-Weiß für Hover
+  accent: '#b54a1e',         // Terracotta-Orange (Galerie-Farbe)
+  accentSoft: 'rgba(181, 74, 30, 0.08)',
+  accentGreen: '#2d7a3a',   // Grün für Erfolg
+  accentGreenSoft: 'rgba(45, 122, 58, 0.1)',
+  text: '#1a1208',           // Fast schwarz, warm
+  muted: '#6b5a4e',          // Warmes Grau-Braun
+  gradientAccent: 'linear-gradient(135deg, #b54a1e 0%, #d96b35 100%)',
+  gradientGreen: 'linear-gradient(135deg, #2d7a3a 0%, #3d9e4e 100%)',
+  fontHeading: "'Playfair Display', Georgia, serif",
+  fontBody: "'Source Sans 3', -apple-system, sans-serif",
+  radius: '14px',
+  radiusSm: '10px',
+  shadow: '0 4px 20px rgba(181, 74, 30, 0.08)',
+  shadowMd: '0 8px 32px rgba(181, 74, 30, 0.12)',
+  shadowLg: '0 16px 48px rgba(181, 74, 30, 0.15)',
+  border: '1px solid rgba(181, 74, 30, 0.15)',
+  borderStrong: '1px solid rgba(181, 74, 30, 0.3)',
+}
 
 interface CartItem {
   number: string
@@ -1005,84 +1027,93 @@ const ShopPage = () => {
       fontFamily: s.fontBody
     }}>
       <link rel="stylesheet" href={PROMO_FONTS_URL} />
+
+      {/* Dunkler Top-Streifen mit Galerie-Branding */}
       <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: `radial-gradient(ellipse 90% 70% at 50% 0%, ${s.accentSoft}, transparent 55%)`,
-        pointerEvents: 'none',
-        zIndex: 0
-      }} />
-      
+        background: '#1a1208',
+        padding: '0.6rem clamp(1.5rem, 4vw, 3rem)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '1rem'
+      }}>
+        <span style={{ fontFamily: s.fontHeading, color: '#d96b35', fontSize: '0.95rem', fontWeight: '600', letterSpacing: '0.04em' }}>
+          K2 Galerie
+        </span>
+        {cart.length > 0 && (
+          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem' }}>
+            {cart.length} {cart.length === 1 ? 'Werk' : 'Werke'} · € {total.toFixed(2)}
+          </span>
+        )}
+      </div>
+
       <div style={{ position: 'relative', zIndex: 1 }}>
         <header style={{ 
-          padding: 'clamp(2rem, 6vw, 4rem) clamp(1.5rem, 4vw, 3rem)',
-          paddingTop: 'clamp(3rem, 8vw, 5rem)',
-          maxWidth: '1400px',
+          padding: 'clamp(1.5rem, 4vw, 2.5rem) clamp(1.5rem, 4vw, 3rem)',
+          maxWidth: '960px',
           margin: '0 auto',
-          marginBottom: 'clamp(2rem, 5vw, 3rem)'
+          marginBottom: '0'
         }}>
           <div style={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
             alignItems: 'center', 
             flexWrap: 'wrap', 
-            gap: '1.5rem' 
+            gap: '1rem' 
           }}>
             <div>
               <h1 style={{ 
                 margin: 0, 
                 fontFamily: s.fontHeading,
-                fontSize: 'clamp(2rem, 6vw, 3rem)',
+                fontSize: 'clamp(1.75rem, 5vw, 2.5rem)',
                 fontWeight: '700',
                 color: s.accent,
-                letterSpacing: '-0.02em',
+                letterSpacing: '-0.01em',
                 lineHeight: '1.1'
               }}>
-                {isAdminContext ? 'Kasse' : 'Deine Auswahl'}
+                {isAdminContext ? '🧾 Kasse' : 'Deine Auswahl'}
               </h1>
-              <p style={{ 
-                margin: '0.75rem 0 0', 
-                color: s.muted, 
-                fontSize: 'clamp(1rem, 3vw, 1.2rem)',
-                fontWeight: '400'
-              }}>
-                {cart.length > 0 ? `${cart.length} ${cart.length === 1 ? 'Werk' : 'Werke'} • €${total.toFixed(2)}` : 'Auswahl'}
-              </p>
+              {cart.length > 0 && (
+                <p style={{ 
+                  margin: '0.4rem 0 0', 
+                  color: s.muted, 
+                  fontSize: '1rem',
+                  fontWeight: '400'
+                }}>
+                  {cart.length} {cart.length === 1 ? 'Werk' : 'Werke'} · € {total.toFixed(2)}
+                </p>
+              )}
             </div>
             <nav style={{ 
               display: 'flex', 
-              gap: '0.75rem', 
+              gap: '0.6rem', 
               flexWrap: 'wrap',
-              fontSize: 'clamp(0.85rem, 2.5vw, 1rem)'
+              fontSize: '0.95rem'
             }}>
               <Link 
                 to={galerieLink} 
                 style={{ 
-                  padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)', 
+                  padding: '0.6rem 1.25rem', 
                   background: s.bgCard,
-                  border: `1px solid ${s.accent}33`,
+                  border: s.border,
                   color: s.text, 
                   textDecoration: 'none', 
-                  borderRadius: s.radius,
-                  fontSize: 'inherit',
+                  borderRadius: s.radiusSm,
                   whiteSpace: 'nowrap',
                   fontWeight: '500',
-                  transition: 'all 0.3s ease',
+                  transition: 'all 0.2s ease',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.5rem',
+                  gap: '0.4rem',
                   boxShadow: s.shadow
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = s.bgElevated
-                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.borderColor = s.accent
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = s.bgCard
-                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.borderColor = 'rgba(181, 74, 30, 0.15)'
                 }}
               >
                 ← Zur Galerie
@@ -1099,18 +1130,18 @@ const ShopPage = () => {
                     setForceKasseOpen(true)
                   }}
                   style={{
-                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                    background: `${s.accent}18`,
-                    border: `1px solid ${s.accent}66`,
+                    padding: '0.6rem 1.25rem',
+                    background: s.accentSoft,
+                    border: s.borderStrong,
                     color: s.accent,
-                    borderRadius: s.radius,
-                    fontSize: 'inherit',
+                    borderRadius: s.radiusSm,
+                    fontSize: '0.95rem',
                     whiteSpace: 'nowrap',
                     fontWeight: '600',
                     cursor: 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '0.5rem'
+                    gap: '0.4rem'
                   }}
                 >
                   🧾 Als Kasse öffnen
@@ -1120,28 +1151,25 @@ const ShopPage = () => {
               <Link 
                 to="/admin" 
                 style={{ 
-                  padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)', 
+                  padding: '0.6rem 1.25rem', 
                   background: s.bgCard,
-                  border: `1px solid ${s.accent}33`,
+                  border: s.border,
                   color: s.text, 
                   textDecoration: 'none', 
-                  borderRadius: s.radius,
-                  fontSize: 'inherit',
+                  borderRadius: s.radiusSm,
                   whiteSpace: 'nowrap',
                   fontWeight: '500',
-                  transition: 'all 0.3s ease',
+                  transition: 'all 0.2s ease',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.5rem',
+                  gap: '0.4rem',
                   boxShadow: s.shadow
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = s.bgElevated
-                  e.currentTarget.style.transform = 'translateY(-2px)'
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = s.bgCard
-                  e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
                 ⚙️ Admin
@@ -1151,21 +1179,25 @@ const ShopPage = () => {
           </div>
         </header>
 
+        {/* Trennlinie unter Header */}
+        <div style={{ borderBottom: `2px solid ${s.accent}15`, maxWidth: '960px', margin: '0 auto 1.5rem' }} />
+
         <main style={{
           padding: '0 clamp(1.5rem, 4vw, 3rem)',
           paddingBottom: 'clamp(4rem, 10vw, 6rem)',
-          maxWidth: '1400px',
+          maxWidth: '960px',
           margin: '0 auto'
         }}>
           {internetShopNotSetUp && (
             <div style={{
-              marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
-              padding: 'clamp(1rem, 3vw, 1.25rem) clamp(1.25rem, 3vw, 1.5rem)',
-              background: `${s.accent}18`,
-              border: `1px solid ${s.accent}44`,
-              borderRadius: s.radius,
-              color: s.text,
-              fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+              marginBottom: '1.25rem',
+              padding: '0.9rem 1.25rem',
+              background: `${s.accent}08`,
+              border: s.border,
+              borderLeft: `3px solid ${s.accent}`,
+              borderRadius: s.radiusSm,
+              color: s.muted,
+              fontSize: '0.95rem',
               lineHeight: 1.5
             }}>
               <strong>Besuch gern unsere Galerie und vereinbare einen Termin.</strong>
@@ -1184,49 +1216,51 @@ const ShopPage = () => {
           {isAdminContext && (
           <section style={{
             background: s.bgCard,
-            border: `1px solid ${s.accent}22`,
-            borderRadius: '20px',
-            padding: 'clamp(1.5rem, 4vw, 2.5rem)',
+            border: s.border,
+            borderRadius: s.radius,
+            padding: '1.25rem 1.5rem',
             boxShadow: s.shadow,
-            marginBottom: 'clamp(2rem, 5vw, 3rem)'
+            marginBottom: '1.5rem'
           }}>
           <h3 style={{ 
-            fontSize: 'clamp(1.25rem, 3.5vw, 1.5rem)', 
-            marginBottom: '1.5rem',
-            color: s.text,
-            fontWeight: '600'
+            fontSize: '0.8rem', 
+            marginBottom: '0.875rem',
+            color: s.muted,
+            fontWeight: '600',
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em'
           }}>
             Werk hinzufügen
           </h3>
           
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.625rem' }}>
             <button
               onClick={handleQRScan}
               style={{
                 flex: 1,
                 minWidth: '120px',
-                padding: 'clamp(0.75rem, 2vw, 1rem)',
+                padding: '0.8rem 1rem',
                 background: s.gradientAccent,
                 color: '#fff',
                 border: 'none',
-                borderRadius: '12px',
-                fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                fontWeight: '600',
+                borderRadius: s.radiusSm,
+                fontSize: '0.95rem',
+                fontWeight: '700',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '0.5rem',
-                transition: 'all 0.3s ease',
-                boxShadow: `0 10px 30px ${s.accent}40`
+                transition: 'all 0.2s ease',
+                boxShadow: s.shadowMd
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)'
-                e.currentTarget.style.boxShadow = `0 15px 40px ${s.accent}66`
+                e.currentTarget.style.transform = 'translateY(-1px)'
+                e.currentTarget.style.boxShadow = s.shadowLg
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = `0 10px 30px ${s.accent}40`
+                e.currentTarget.style.boxShadow = s.shadowMd
               }}
             >
               📷 QR-Code scannen
@@ -1247,12 +1281,11 @@ const ShopPage = () => {
               style={{
                 flex: 1,
                 minWidth: '200px',
-                padding: 'clamp(0.75rem, 2vw, 1rem)',
+                padding: '0.75rem 1rem',
                 background: s.bgElevated,
-                backdropFilter: 'blur(10px)',
-                border: `1px solid ${s.accent}33`,
-                borderRadius: '12px',
-                fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                border: s.border,
+                borderRadius: s.radiusSm,
+                fontSize: '0.95rem',
                 color: s.text,
                 outline: 'none'
               }}
@@ -1260,25 +1293,25 @@ const ShopPage = () => {
             <button
               onClick={addBySerialNumber}
               style={{
-                padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
+                padding: '0.75rem 1.5rem',
                 background: s.gradientAccent,
                 color: '#fff',
                 border: 'none',
-                borderRadius: '12px',
-                fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                fontWeight: '600',
+                borderRadius: s.radiusSm,
+                fontSize: '0.95rem',
+                fontWeight: '700',
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 10px 30px rgba(245, 87, 108, 0.3)'
+                transition: 'all 0.2s ease',
+                boxShadow: s.shadowMd
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)'
-                e.currentTarget.style.boxShadow = '0 15px 40px rgba(245, 87, 108, 0.4)'
+                e.currentTarget.style.transform = 'translateY(-1px)'
+                e.currentTarget.style.boxShadow = s.shadowLg
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = '0 10px 30px rgba(245, 87, 108, 0.3)'
+                e.currentTarget.style.boxShadow = s.shadowMd
               }}
             >
               Hinzufügen
@@ -1584,52 +1617,54 @@ const ShopPage = () => {
             {/* Warenkorb */}
             <section style={{ marginBottom: 'clamp(2rem, 5vw, 3rem)' }}>
               <h2 style={{ 
-                fontSize: 'clamp(1.5rem, 4vw, 2rem)', 
-                marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
-                color: s.text,
-                fontWeight: '600'
+                fontSize: '0.8rem', 
+                marginBottom: '0.875rem',
+                color: s.muted,
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em'
               }}>
-                Auswahl ({cart.length} {cart.length === 1 ? 'Werk' : 'Werke'})
+                Auswahl · {cart.length} {cart.length === 1 ? 'Werk' : 'Werke'}
               </h2>
               
               <div style={{ 
                 display: 'flex', 
                 flexDirection: 'column', 
-                gap: 'clamp(1rem, 3vw, 1.5rem)' 
+                gap: '0.625rem' 
               }}>
                 {cart.map((item, index) => (
                   <div key={`${item.number}-${index}`} style={{
                     background: s.bgCard,
-                    backdropFilter: 'blur(20px)',
-                    border: `1px solid ${s.accent}22`,
-                    borderRadius: '20px',
-                    padding: 'clamp(1.5rem, 4vw, 2rem)',
-                    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+                    border: s.border,
+                    borderRadius: s.radius,
+                    padding: '1rem 1.25rem',
+                    boxShadow: s.shadow,
                     display: 'flex',
-                    gap: 'clamp(1rem, 3vw, 1.5rem)',
-                    flexWrap: 'wrap',
+                    gap: '1rem',
                     alignItems: 'center',
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.2s ease'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = s.bgElevated
-                    e.currentTarget.style.transform = 'translateY(-4px)'
+                    e.currentTarget.style.borderColor = 'rgba(181, 74, 30, 0.3)'
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = s.bgCard
-                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.borderColor = 'rgba(181, 74, 30, 0.15)'
                   }}
                   >
+                    {/* Werk-Bild */}
                     <div style={{
-                      width: 'clamp(80px, 20vw, 120px)',
-                      height: 'clamp(80px, 20vw, 120px)',
+                      width: '72px',
+                      height: '72px',
                       borderRadius: '8px',
                       overflow: 'hidden',
-                      background: s.bgCard,
+                      background: s.bgElevated,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      flexShrink: 0
+                      flexShrink: 0,
+                      border: s.border
                     }}>
                       {(item.imageUrl || item.previewUrl) ? (
                         <img 
@@ -1648,7 +1683,7 @@ const ShopPage = () => {
                             if (parent && !parent.querySelector('.shop-placeholder')) {
                               const placeholder = document.createElement('div')
                               placeholder.className = 'shop-placeholder'
-                              placeholder.style.cssText = 'width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.5); font-size: 0.8rem'
+                              placeholder.style.cssText = `width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: ${s.muted}; font-size: 0.75rem`
                               placeholder.textContent = item.number || '?'
                               parent.appendChild(placeholder)
                             }
@@ -1656,65 +1691,74 @@ const ShopPage = () => {
                         />
                       ) : (
                         <div style={{
-                          color: 'rgba(255, 255, 255, 0.5)',
-                          fontSize: '0.8rem',
-                          textAlign: 'center'
+                          color: s.muted,
+                          fontSize: '0.75rem',
+                          textAlign: 'center',
+                          padding: '0.25rem'
                         }}>
                           {item.number || '?'}
                         </div>
                       )}
                     </div>
-                    <div style={{ flex: 1, minWidth: '200px' }}>
-                      <h3 style={{ 
-                        margin: '0 0 0.75rem', 
-                        fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
+                    {/* Werk-Info */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ 
+                        fontWeight: '600',
+                        fontSize: '1rem',
                         color: s.text,
-                        fontWeight: '600'
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
                       }}>
                         {item.title || item.number}
-                      </h3>
-                      <p style={{ 
-                        margin: '0.25rem 0', 
-                        fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', 
-                        color: s.muted 
+                      </div>
+                      <div style={{ 
+                        fontSize: '0.85rem',
+                        color: s.muted,
+                        marginTop: '0.15rem'
                       }}>
                         {getCategoryLabel(item.category)}
-                        {item.artist && ` • ${item.artist}`}
-                      </p>
-                      <p style={{ 
-                        margin: '0.75rem 0 0', 
+                        {item.artist && ` · ${item.artist}`}
+                      </div>
+                    </div>
+                    {/* Preis + Entfernen */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
+                      <span style={{ 
                         fontWeight: '700', 
                         color: s.accent,
-                        fontSize: 'clamp(1.1rem, 3vw, 1.3rem)'
+                        fontSize: '1.1rem',
+                        whiteSpace: 'nowrap'
                       }}>
                         € {item.price.toFixed(2)}
-                      </p>
+                      </span>
+                      <button
+                        onClick={() => removeFromCart(index)}
+                        style={{
+                          padding: '0.4rem 0.875rem',
+                          background: 'transparent',
+                          color: s.muted,
+                          border: s.border,
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          fontSize: '0.85rem',
+                          fontWeight: '600',
+                          transition: 'all 0.2s ease',
+                          whiteSpace: 'nowrap'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#fef2ef'
+                          e.currentTarget.style.color = s.accent
+                          e.currentTarget.style.borderColor = s.accent
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'transparent'
+                          e.currentTarget.style.color = s.muted
+                          e.currentTarget.style.borderColor = 'rgba(181, 74, 30, 0.15)'
+                        }}
+                      >
+                        Entfernen
+                      </button>
                     </div>
-                    <button
-                      onClick={() => removeFromCart(index)}
-                      style={{
-                        padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem)',
-                        background: s.gradientAccent,
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '12px',
-                        cursor: 'pointer',
-                        fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                        fontWeight: '600',
-                        transition: 'all 0.3s ease',
-                        boxShadow: '0 10px 30px rgba(245, 87, 108, 0.3)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-2px)'
-                        e.currentTarget.style.boxShadow = '0 15px 40px rgba(245, 87, 108, 0.4)'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)'
-                        e.currentTarget.style.boxShadow = '0 10px 30px rgba(245, 87, 108, 0.3)'
-                      }}
-                    >
-                      Entfernen
-                    </button>
                   </div>
                 ))}
               </div>
@@ -1731,7 +1775,7 @@ const ShopPage = () => {
                 marginBottom: 'clamp(2rem, 5vw, 3rem)'
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  <span style={{ fontWeight: '600', color: '#fff' }}>Gesamt:</span>
+                  <span style={{ fontWeight: '600', color: s.text }}>Gesamt:</span>
                   <span style={{ fontWeight: '700', fontSize: 'clamp(1.2rem, 3.5vw, 1.5rem)', color: s.accent }}>€ {total.toFixed(2)}</span>
                 </div>
                 <p style={{ margin: '0 0 1rem', color: s.text, fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)' }}>
@@ -1760,7 +1804,7 @@ const ShopPage = () => {
                     <Link to={galerieLink} style={{ padding: '0.6rem 1rem', background: s.bgCard, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, textDecoration: 'none', fontWeight: '600', fontSize: 'clamp(0.9rem, 2.2vw, 1rem)' }}>Zur Galerie</Link>
                   </div>
                 ) : (
-                  <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                  <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: `1px solid ${s.accent}15` }}>
                     <p style={{ margin: '0 0 1rem', fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: s.text }}>Deine Daten (werden in der Kundendatei gespeichert):</p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '360px', marginBottom: '1rem' }}>
                       <div>
@@ -1785,179 +1829,133 @@ const ShopPage = () => {
               </section>
             )}
 
-            {/* Nur Admin: Zusammenfassung & Schnellverkauf (Bar/Karte/Überweisung) */}
+            {/* Nur Admin: Kassensumme & Schnellverkauf (Bar/Karte/Überweisung) */}
             {isAdminContext && !showCheckout && (
               <section style={{
                 background: s.bgCard,
-                backdropFilter: 'blur(20px)',
-                border: `1px solid ${s.accent}22`,
-                borderRadius: '20px',
-                padding: 'clamp(2rem, 5vw, 3rem)',
-                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-                marginBottom: 'clamp(2rem, 5vw, 3rem)'
+                border: s.border,
+                borderRadius: s.radius,
+                overflow: 'hidden',
+                boxShadow: s.shadowMd,
+                marginTop: '1.5rem',
+                marginBottom: '1.5rem'
               }}>
+                {/* Gesamt-Zeile oben – dunkel und auffällig */}
                 <div style={{ 
-                  borderBottom: `2px solid ${s.accent}22`,
-                  paddingBottom: 'clamp(1rem, 3vw, 1.5rem)',
-                  marginBottom: 'clamp(1.5rem, 4vw, 2rem)'
+                  background: '#1a1208',
+                  padding: '1.25rem 1.5rem',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
                 }}>
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between',
-                    fontSize: 'clamp(1.5rem, 5vw, 2.25rem)',
-                    fontWeight: '700',
-color: s.accent,
-                    marginBottom: '0.75rem'
-                  }}>
-                    <span>Gesamt:</span>
-                    <span>€ {total.toFixed(2)}</span>
-                  </div>
-                  {discount > 0 && (
+                  <span style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '600', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    Zu bezahlen
+                  </span>
+                  <div style={{ textAlign: 'right' }}>
                     <div style={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between',
-                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                      color: s.accent
+                      fontSize: '2rem',
+                      fontWeight: '800',
+                      color: '#d96b35',
+                      fontFamily: s.fontHeading,
+                      lineHeight: 1
                     }}>
-                      <span>Rabatt ({discount}%):</span>
-                      <span>-€ {discountAmount.toFixed(2)}</span>
+                      € {total.toFixed(2)}
                     </div>
-                  )}
+                    {discount > 0 && (
+                      <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.2rem' }}>
+                        inkl. {discount}% Rabatt (−€ {discountAmount.toFixed(2)})
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Schnellverkauf-Buttons */}
-                <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(3, 1fr)', 
-                  gap: 'clamp(0.75rem, 2vw, 1rem)',
-                  marginBottom: 'clamp(1rem, 3vw, 1.5rem)'
-                }}>
+                <div style={{ padding: '1.25rem 1.5rem' }}>
+                  <div style={{ 
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
+                    color: s.muted,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.06em',
+                    marginBottom: '0.75rem'
+                  }}>
+                    Zahlungsart – direkt abschließen
+                  </div>
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(3, 1fr)', 
+                    gap: '0.625rem',
+                    marginBottom: '0.75rem'
+                  }}>
+                    {([
+                      { method: 'cash' as const, icon: '💵', label: 'Bar' },
+                      { method: 'card' as const, icon: '💳', label: 'Karte' },
+                      { method: 'transfer' as const, icon: '🏦', label: 'Überweisung' },
+                    ] as { method: 'cash' | 'card' | 'transfer', icon: string, label: string }[]).map(({ method, icon, label }) => (
+                      <button
+                        key={method}
+                        onClick={() => {
+                          setPaymentMethod(method)
+                          quickSale(method)
+                        }}
+                        style={{
+                          padding: '1rem 0.5rem',
+                          background: s.gradientAccent,
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: s.radiusSm,
+                          fontSize: '0.95rem',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          transition: 'all 0.2s ease',
+                          boxShadow: s.shadowMd
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-2px)'
+                          e.currentTarget.style.boxShadow = s.shadowLg
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)'
+                          e.currentTarget.style.boxShadow = s.shadowMd
+                        }}
+                      >
+                        <span style={{ fontSize: '1.5rem' }}>{icon}</span>
+                        <span>{label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Option: Detail-Checkout */}
                   <button
-                    onClick={() => {
-                      setPaymentMethod('cash')
-                      quickSale('cash')
-                    }}
+                    onClick={() => setShowCheckout(true)}
                     style={{
-                      padding: 'clamp(1rem, 2.5vw, 1.5rem)',
-                      background: s.gradientAccent,
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '16px',
-                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                      fontWeight: '600',
+                      width: '100%',
+                      padding: '0.7rem',
+                      background: 'transparent',
+                      color: s.muted,
+                      border: s.border,
+                      borderRadius: s.radiusSm,
+                      fontSize: '0.875rem',
                       cursor: 'pointer',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      transition: 'all 0.3s ease',
-                      boxShadow: `0 10px 30px ${s.accent}40`
+                      fontWeight: '500',
+                      transition: 'all 0.2s ease'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-4px)'
-                      e.currentTarget.style.boxShadow = `0 15px 40px ${s.accent}66`
+                      e.currentTarget.style.background = s.bgElevated
+                      e.currentTarget.style.color = s.text
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = `0 10px 30px ${s.accent}40`
+                      e.currentTarget.style.background = 'transparent'
+                      e.currentTarget.style.color = s.muted
                     }}
                   >
-                    <span style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)' }}>💵</span>
-                    <span>Bar</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setPaymentMethod('card')
-                      quickSale('card')
-                    }}
-                    style={{
-                      padding: 'clamp(1rem, 2.5vw, 1.5rem)',
-                      background: s.gradientAccent,
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '16px',
-                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      transition: 'all 0.3s ease',
-                      boxShadow: `0 10px 30px ${s.accent}40`
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-4px)'
-                      e.currentTarget.style.boxShadow = `0 15px 40px ${s.accent}66`
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = `0 10px 30px ${s.accent}40`
-                    }}
-                  >
-                    <span style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)' }}>💳</span>
-                    <span>Karte</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setPaymentMethod('transfer')
-                      quickSale('transfer')
-                    }}
-                    style={{
-                      padding: 'clamp(1rem, 2.5vw, 1.5rem)',
-                      background: s.gradientAccent,
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '16px',
-                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      transition: 'all 0.3s ease',
-                      boxShadow: `0 10px 30px ${s.accent}40`
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-4px)'
-                      e.currentTarget.style.boxShadow = `0 15px 40px ${s.accent}66`
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = `0 10px 30px ${s.accent}40`
-                    }}
-                  >
-                    <span style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)' }}>🏦</span>
-                    <span>Überweisung</span>
+                    Weitere Optionen (Rabatt, Kundendaten) →
                   </button>
                 </div>
-
-                {/* Option: Andere Zahlungsmethode */}
-                <button
-                  onClick={() => setShowCheckout(true)}
-                  style={{
-                    width: '100%',
-                    padding: 'clamp(0.75rem, 2vw, 1rem)',
-                    background: s.bgCard,
-                    backdropFilter: 'blur(10px)',
-                    color: s.text,
-                    border: `1px solid ${s.accent}33`,
-                    borderRadius: '12px',
-                    fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = s.bgCard
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = s.bgCard
-                  }}
-                >
-                  Andere Optionen
-                </button>
               </section>
             )}
 
@@ -1991,8 +1989,8 @@ color: s.accent,
                     </li>
                   ))}
                 </ul>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.15)' }}>
-                  <span style={{ fontWeight: '600', color: '#ffffff' }}>Gesamt:</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: `1px solid ${s.accent}15` }}>
+                  <span style={{ fontWeight: '600', color: s.text }}>Gesamt:</span>
                   <span style={{ fontWeight: '700', color: s.accent, fontSize: 'clamp(1.1rem, 3vw, 1.25rem)' }}>€ {total.toFixed(2)}</span>
                 </div>
 
@@ -2055,7 +2053,7 @@ color: s.accent,
                         borderRadius: '12px',
                         border: `1px solid ${s.accent}33`,
                         background: s.bgElevated,
-                        color: '#fff',
+                        color: s.text,
                         fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
                         cursor: 'pointer'
                       }}
@@ -2101,7 +2099,7 @@ color: s.accent,
                       onChange={() => setPaymentMethod('card')}
                       style={{ width: '24px', height: '24px', cursor: 'pointer' }}
                     />
-                    <span style={{ fontSize: 'clamp(1rem, 3vw, 1.1rem)', fontWeight: paymentMethod === 'card' ? '600' : '400', color: '#ffffff' }}>💳 Karte</span>
+                    <span style={{ fontSize: 'clamp(1rem, 3vw, 1.1rem)', fontWeight: paymentMethod === 'card' ? '600' : '400', color: s.text }}>💳 Karte</span>
                   </label>
                   <label style={{ 
                     display: 'flex', 
@@ -2123,7 +2121,7 @@ color: s.accent,
                       onChange={() => setPaymentMethod('transfer')}
                       style={{ width: '24px', height: '24px', cursor: 'pointer' }}
                     />
-                    <span style={{ fontSize: 'clamp(1rem, 3vw, 1.1rem)', fontWeight: paymentMethod === 'transfer' ? '600' : '400', color: '#ffffff' }}>🏦 Überweisung</span>
+                    <span style={{ fontSize: 'clamp(1rem, 3vw, 1.1rem)', fontWeight: paymentMethod === 'transfer' ? '600' : '400', color: s.text }}>🏦 Überweisung</span>
                   </label>
                   {paymentMethod === 'transfer' && bankverbindung && (
                     <div style={{
@@ -2161,7 +2159,7 @@ color: s.accent,
                       onChange={() => setPaymentMethod('cash')}
                       style={{ width: '24px', height: '24px', cursor: 'pointer' }}
                     />
-                    <span style={{ fontSize: 'clamp(1rem, 3vw, 1.1rem)', fontWeight: paymentMethod === 'cash' ? '600' : '400', color: '#ffffff' }}>💵 Bar</span>
+                    <span style={{ fontSize: 'clamp(1rem, 3vw, 1.1rem)', fontWeight: paymentMethod === 'cash' ? '600' : '400', color: s.text }}>💵 Bar</span>
                   </label>
                 </div>
 
