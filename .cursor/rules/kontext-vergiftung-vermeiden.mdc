@@ -1,0 +1,47 @@
+---
+description: Kontext-Vergiftung vermeiden – wenn Schutzregeln zu Sperren werden
+alwaysApply: true
+---
+
+# 🔒 KONTEXT-VERGIFTUNG – größerer Zusammenhang beim Absichern
+
+## Was passiert ist (Lehre aus 22.02.26)
+
+Wir haben die K2 vs. ök2 Datentrennung sehr streng abgesichert:
+- ök2 darf keine K2-Daten sehen
+- K2-Pfade (`data:`, `/img/k2/`) werden im ök2-Kontext gelöscht
+- Kontext wird in sessionStorage gespeichert
+
+**Das Problem:** sessionStorage ist browser-session-weit. Nach ök2-Admin-Besuch blieb `k2-admin-context = 'oeffentlich'` erhalten. Beim nächsten K2-Admin-Aufruf **ohne** `?context=` Parameter: Code dachte er ist im ök2-Kontext → K2-Fotos wurden in ök2-Keys gespeichert → K2-Galerie sah nie die neuen Bilder.
+
+**Kurzform:** Eine Schutzregel hat sich selbst gegen den Benutzer gewendet.
+
+## Die übergeordnete Regel
+
+**Beim Absichern immer den größeren Zusammenhang fragen:**
+
+> „Was passiert wenn jemand zwischen den Kontexten wechselt?"
+> „Was passiert wenn der Schutz sich im falschen Moment aktiviert?"
+> „Kann diese Regel den normalen Betrieb blockieren?"
+
+## Konkrete Checkliste bei JEDER neuen Schutz-/Trennungsregel
+
+- [ ] **Kontext-Persistenz:** Wo wird der Kontext gespeichert? localStorage / sessionStorage / URL? Was passiert beim Wechsel?
+- [ ] **Reset-Pfad:** Gibt es immer einen klaren Weg zurück in den Normalzustand? (z.B. `sessionStorage.removeItem` beim normalen Aufruf)
+- [ ] **Stille Fehler:** Wird bei Regelverstoß etwas gelöscht/ignoriert ohne Meldung? Dann ist das schwer zu debuggen.
+- [ ] **Beide Richtungen testen:** Nicht nur "ök2 darf keine K2-Daten sehen" – auch "K2 funktioniert noch nachdem ök2 besucht wurde"
+- [ ] **Fallback sichtbar machen:** Wenn eine Schutzregel greift (z.B. Bild wird gelöscht), zumindest in der Konsole loggen warum
+
+## Muster das immer wieder auftaucht
+
+```
+Schutzregel A: "X darf nicht in Kontext Y"
+Vergessene Frage: "Was passiert wenn man von Y zurück nach X wechselt?"
+Ergebnis: X funktioniert nicht mehr, Ursache völlig unklar
+```
+
+## Kurzfassung
+
+**Beim Absichern nicht nur "was darf nicht passieren" denken – auch "was muss danach noch funktionieren" und "wie kommt man wieder heraus".**
+
+Georgs Instinkt: "Das habt ihr so versperrt dass ihr selbst nicht mehr reinkommt" = die wichtigste Frage bei jeder Schutzregel.

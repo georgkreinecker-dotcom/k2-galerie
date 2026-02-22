@@ -2,24 +2,25 @@
 
 ## Datum: 22.02.26
 
-## Thema: Design-Tab Bildeinfügen – endlich wirklich gefixt
+## Thema: Design-Tab Bilder – Root-Cause gefunden und gefixt
 
-## Was das Problem war:
-- `GaleriePage.tsx` hat für K2 `getGalerieImages(galleryData)` aufgerufen – las das Bild aus galleryData, NICHT aus localStorage
-- `setPageContentGalerie` hat nur das ök2-Event gefeuert, NICHT für K2
-- Deshalb: Bild wurde gespeichert, aber Galerie-Vorschau hat es nie geladen
+## Was der echte Bug war:
+- sessionStorage behielt `k2-admin-context = 'oeffentlich'` nach ök2-Admin-Besuch
+- Beim nächsten K2-Admin-Aufruf (ohne ?context=) dachte Code: "ich bin im ök2-Kontext"
+- → Bilder wurden in ök2-Keys gespeichert (k2-oeffentlich-page-content-galerie)
+- → K2-Galerie las aus K2-Keys (k2-page-content-galerie) → leer → altes Bild
+- → Beim Zurückgehen lud Admin neu → las aus K2-Keys → auch leer → Foto weg
 
-## Was zuletzt gemacht (MIT Commit-Hash = wirklich auf GitHub):
-- `pageContentGalerie.ts`: setPageContentGalerie feuert jetzt BEIDE Events (k2 + ök2) – Commit: 88ee193 ✅
-- `GaleriePage.tsx`: K2 displayImages liest jetzt direkt aus getPageContentGalerie() (localStorage), nicht aus galleryData – Commit: 88ee193 ✅
-- Upload-Status-Anzeige: User sieht jetzt ob Upload läuft/fertig/fehlgeschlagen – Commit: 88ee193 ✅
+## Was gefixt wurde (MIT Commit-Hash):
+- K2-Admin löscht beim Start sessionStorage-Kontext wenn kein ?context= Parameter – Commit: 94b52ae ✅
+- pageContentGalerie: 6MB-Limit-Check entfernt (raw.length > 0 statt < 6MB) – Commit: 94b52ae ✅
 
 ## Nächster Schritt:
 - Nach Vercel-Deployment (~2 Min): Design-Tab testen
-- Foto reinziehen oder anklicken → "✓ Foto gespeichert" erscheint
-- Dann "Galerie ansehen" → neues Foto sofort sichtbar
+- WICHTIG: Einmal den Browser-Tab komplett neu laden (damit sessionStorage sauber ist)
+- Dann Foto reinziehen → Galerie ansehen → Foto muss sichtbar sein
+- Beim Zurückgehen → Foto muss noch da sein
 
 ## Wo nachlesen:
-- `src/config/pageContentGalerie.ts` → setPageContentGalerie (Events)
-- `src/pages/GaleriePage.tsx` → displayImages useMemo (K2-Zweig)
-- `components/ScreenshotExportAdmin.tsx` → onDrop + onChange welcomeImage
+- `components/ScreenshotExportAdmin.tsx` → useEffect URL-Parameter context (Zeile ~1250)
+- `src/config/pageContentGalerie.ts` → getPageContentGalerie
