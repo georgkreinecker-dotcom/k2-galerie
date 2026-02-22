@@ -2,35 +2,29 @@
 
 ## Datum: 22.02.26
 
-## Thema: Mehrere Fixes – Mobile-Werk-Verlust, Foto-Upload, ök2-Header, Zurück-Button
+## Thema: Werkkatalog – Filter, Tabelle, Drucken, neue Felder Technik/Maße
 
-## Fixes heute (chronologisch):
+## Was zuletzt gemacht (Commit 8e10987):
 
-### Commit ee384de – Foto-Upload beim Speichern immer
-- Beim "Speichern – fertig!" wird das Foto IMMER zu GitHub hochgeladen
-- Auch wenn Base64 schon im localStorage liegt (frühere Session)
+### Werkkatalog – neuer Tab im Admin
+- Neuer Tab "📋 Werkkatalog" im Admin-Hauptmenü
+- Filter: Status (alle/Galerie/Verkauft/Lager), Kategorie, Suchtext, Preis von–bis, Datum von–bis
+- Spalten frei wählbar per Checkbox: Nr., Titel, Kategorie, Künstler:in, Maße, Technik, Preis, Status, Erstellt, Käufer:in, Verkauft am, Standort
+- Drucken als PDF (A4 quer, Tabelle mit Kopfzeile, gefilterte Werke)
+- Sold-Status aus k2-sold-artworks automatisch eingemischt (buyer, soldAt, soldPrice)
 
-### Commit 9a222fc – ök2-Admin Header
-- ök2-Admin zeigt "ök2 / Muster-Galerie" statt "K2 Galerie"
-- Kein ADMIN-Badge bei ök2
-
-### Commit bfcd622 – Zurück-Button Fix (gelber Balken)
-- Von ök2-Vorschau → zurück zu /admin?context=oeffentlich (nicht K2)
-
-### Commit 88fd0c4 – data:-Bilder nicht löschen bei ök2
-- Fotos die per Drag&Drop hochgeladen werden, bleiben jetzt in ök2 sichtbar
-
-### Commit f83c510 – Race Condition syncAdminContextFromUrl()
-- ök2-Admin zeigte K2-Fotos weil Kontext zu spät gesetzt
-
-### Commit 0ee5229 – Mobile-Werke 7 Tage behalten (AKTUELL)
-- Werke vom iPad/iPhone werden 7 Tage im localStorage gehalten (vorher: 10 Min!)
-- Verhindert: Werk erstellt → Seite reload → Werk weg
+### Neue Felder beim Werk-Bearbeiten
+- Technik / Material (z.B. "Acryl auf Leinwand") → frei eingebbar
+- Maße (z.B. "60×80 cm") → frei eingebbar
+- Beide Felder werden beim Speichern im Werk gespeichert
+- Beide Felder beim Bearbeiten vorgeladen
+- updatedAt wird beim Speichern gesetzt
 
 ## Nächster Schritt:
-- iPad: Werk nochmal anlegen → Seite neu laden → Werk muss noch da sein ✅
-- Das verlorene Werk von heute muss manuell nochmal angelegt werden
+- Werkkatalog auf Handy/Vercel testen: Admin → Werkkatalog aufrufen
+- Felder Technik/Maße bei bestehenden Werken nachtragen (beim Bearbeiten)
+- Optional: Käufer-Feld beim "Als verkauft markieren"-Dialog eintragen
 
-## Offenes Problem:
-- Verlorenes Werk (heute) ist weg – muss nochmal am iPad angelegt werden
-- Zukünftig: Werke bleiben 7 Tage, bis sie vom Mac veröffentlicht werden
+## Offenes (optional):
+- Käufer-Name beim Verkauf-Dialog eingeben (heute: soldAt wird gesetzt, buyer noch nicht)
+- Export als CSV (optional, für Buchhaltung)

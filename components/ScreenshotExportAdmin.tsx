@@ -692,6 +692,7 @@ function ScreenshotExportAdmin() {
   }>({ status: 'alle', kategorie: '', artist: '', vonDatum: '', bisDatum: '', vonPreis: '', bisPreis: '', suchtext: '' })
   const [katalogAnsicht, setKatalogAnsicht] = useState<'tabelle' | 'karten'>('tabelle')
   const [katalogSpalten, setKatalogSpalten] = useState<string[]>(['nummer', 'titel', 'kategorie', 'kuenstler', 'masse', 'technik', 'preis', 'status', 'datum', 'kaeufer'])
+  const [katalogSelectedWork, setKatalogSelectedWork] = useState<any>(null)
 
   // Bei laufender Wiederherstellung automatisch aufklappen, damit der Balkenverlauf sichtbar ist
   useEffect(() => {
@@ -8383,7 +8384,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     </thead>
                     <tbody>
                       {filtered.map((a: any, i: number) => (
-                        <tr key={a.id || a.number || i} style={{ background: i % 2 === 0 ? 'transparent' : `${s.accent}06` }}>
+                        <tr key={a.id || a.number || i}
+                          onClick={() => setKatalogSelectedWork(a)}
+                          style={{ background: i % 2 === 0 ? 'transparent' : `${s.accent}06`, cursor: 'pointer', transition: 'background 0.15s' }}
+                          onMouseEnter={e => (e.currentTarget.style.background = `${s.accent}14`)}
+                          onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? 'transparent' : `${s.accent}06`)}
+                        >
                           {katalogSpalten.includes('nummer') && <td style={{ padding: '7px 10px', color: s.accent, fontWeight: 700, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.number || a.id || '–'}</td>}
                           {katalogSpalten.includes('titel') && <td style={{ padding: '7px 10px', color: s.text, fontWeight: 600, borderBottom: `1px solid ${s.accent}18` }}>{a.title || '–'}</td>}
                           {katalogSpalten.includes('kategorie') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{getCategoryLabel(a.category)}</td>}
@@ -8413,6 +8419,160 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   💡 Tipp: Maße und Technik/Material kannst du beim Bearbeiten eines Werks eintragen – danach erscheinen sie hier und im Ausdruck.
                 </div>
               )}
+
+              {/* ===== WERKKARTE MODAL ===== */}
+              {katalogSelectedWork && (() => {
+                const w = katalogSelectedWork
+                const statusLabel = w.sold ? 'Verkauft' : w.inExhibition ? 'In Galerie' : 'Lager'
+                const statusColor = w.sold ? '#b91c1c' : w.inExhibition ? '#15803d' : '#6b7280'
+
+                const druckeWerkkarte = () => {
+                  const pw = window.open('', '_blank')
+                  if (!pw) { alert('Pop-up blockiert – bitte erlauben.'); return }
+                  const galName = galleryData.name || 'K2 Galerie'
+                  const datum = new Date().toLocaleDateString('de-DE')
+                  pw.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
+                    <title>Werkkarte – ${w.number || w.id}</title>
+                    <style>
+                      @media print { @page { size: A5; margin: 10mm; } }
+                      body { font-family: Georgia, serif; color: #111; margin: 0; padding: 20px; max-width: 148mm; }
+                      .header { border-bottom: 3px solid #8b6914; padding-bottom: 10px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; }
+                      .header h1 { margin: 0; font-size: 14px; color: #8b6914; font-family: Arial, sans-serif; }
+                      .header .nr { font-size: 22px; font-weight: bold; color: #111; font-family: Arial, sans-serif; }
+                      .werk-img { width: 100%; max-height: 160px; object-fit: contain; border-radius: 6px; margin-bottom: 14px; background: #f5f0e8; }
+                      .titel { font-size: 22px; font-weight: bold; margin: 0 0 4px; color: #111; }
+                      .kuenstler { font-size: 13px; color: #555; margin: 0 0 14px; font-style: italic; }
+                      .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; font-size: 12px; margin-bottom: 14px; }
+                      .meta-item label { color: #888; display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1px; }
+                      .meta-item span { color: #111; font-weight: 500; }
+                      .status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; background: ${w.sold ? '#fef2f2' : w.inExhibition ? '#f0fdf4' : '#f9fafb'}; color: ${statusColor}; border: 1px solid ${statusColor}44; margin-bottom: 14px; }
+                      .beschreibung { font-size: 12px; color: #444; line-height: 1.6; border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: 6px; }
+                      .footer { margin-top: 16px; border-top: 1px solid #e5e7eb; padding-top: 8px; font-size: 10px; color: #999; display: flex; justify-content: space-between; }
+                    </style></head><body>
+                    <div class="header">
+                      <h1>${galName}</h1>
+                      <div class="nr">${w.number || w.id || ''}</div>
+                    </div>
+                    ${w.imageUrl ? `<img class="werk-img" src="${w.imageUrl}" alt="${w.title || ''}" />` : ''}
+                    <div class="titel">${w.title || '–'}</div>
+                    <div class="kuenstler">${w.artist || ''}</div>
+                    <div class="status-badge">${statusLabel}</div>
+                    <div class="meta">
+                      ${w.dimensions ? `<div class="meta-item"><label>Maße</label><span>${w.dimensions}</span></div>` : ''}
+                      ${w.technik ? `<div class="meta-item"><label>Technik / Material</label><span>${w.technik}</span></div>` : ''}
+                      ${w.category ? `<div class="meta-item"><label>Kategorie</label><span>${getCategoryLabel(w.category)}</span></div>` : ''}
+                      ${w.price ? `<div class="meta-item"><label>Preis</label><span>€ ${Number(w.price).toFixed(2)}</span></div>` : ''}
+                      ${w.createdAt ? `<div class="meta-item"><label>Erstellt</label><span>${new Date(w.createdAt).toLocaleDateString('de-DE')}</span></div>` : ''}
+                      ${w.soldAt ? `<div class="meta-item"><label>Verkauft am</label><span>${new Date(w.soldAt).toLocaleDateString('de-DE')}</span></div>` : ''}
+                      ${w.buyer ? `<div class="meta-item"><label>Käufer:in</label><span>${w.buyer}</span></div>` : ''}
+                      ${w.soldPrice && w.soldPrice !== w.price ? `<div class="meta-item"><label>Verkaufspreis</label><span>€ ${Number(w.soldPrice).toFixed(2)}</span></div>` : ''}
+                    </div>
+                    ${w.description ? `<div class="beschreibung">${w.description}</div>` : ''}
+                    <div class="footer"><span>${galName}</span><span>Werkkarte · ${datum}</span></div>
+                    <script>window.onload=()=>window.print()</script>
+                  </body></html>`)
+                  pw.document.close()
+                }
+
+                return (
+                  <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+                    onClick={e => { if (e.target === e.currentTarget) setKatalogSelectedWork(null) }}>
+                    <div style={{ background: s.bgCard, borderRadius: 20, boxShadow: '0 24px 64px rgba(0,0,0,0.35)', width: '100%', maxWidth: 540, maxHeight: '90vh', overflowY: 'auto', padding: '2rem' }}>
+
+                      {/* Kopfzeile */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+                        <div>
+                          <div style={{ fontSize: '0.82rem', color: s.muted, marginBottom: 2 }}>{galleryData.name || 'K2 Galerie'}</div>
+                          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: s.accent }}>{w.number || w.id || ''}</div>
+                        </div>
+                        <button type="button" onClick={() => setKatalogSelectedWork(null)}
+                          style={{ background: 'none', border: 'none', fontSize: '1.5rem', color: s.muted, cursor: 'pointer', lineHeight: 1, padding: '0.25rem' }}>✕</button>
+                      </div>
+
+                      {/* Foto */}
+                      {w.imageUrl && (
+                        <div style={{ marginBottom: '1.25rem', borderRadius: 12, overflow: 'hidden', background: s.bgElevated, display: 'flex', justifyContent: 'center' }}>
+                          <img src={w.imageUrl} alt={w.title || ''} style={{ maxWidth: '100%', maxHeight: 240, objectFit: 'contain' }} />
+                        </div>
+                      )}
+
+                      {/* Titel + Künstler */}
+                      <div style={{ fontSize: '1.4rem', fontWeight: 700, color: s.text, marginBottom: 4 }}>{w.title || '–'}</div>
+                      {w.artist && <div style={{ fontSize: '0.95rem', color: s.muted, fontStyle: 'italic', marginBottom: '0.75rem' }}>{w.artist}</div>}
+
+                      {/* Status-Badge */}
+                      <div style={{ display: 'inline-block', padding: '3px 12px', borderRadius: 20, fontSize: '0.82rem', fontWeight: 700, background: w.sold ? '#fef2f2' : w.inExhibition ? '#f0fdf4' : s.bgElevated, color: statusColor, border: `1px solid ${statusColor}55`, marginBottom: '1.25rem' }}>
+                        {statusLabel}
+                      </div>
+
+                      {/* Metadaten-Grid */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                        {w.dimensions && (
+                          <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}>
+                            <div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Maße</div>
+                            <div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>{w.dimensions}</div>
+                          </div>
+                        )}
+                        {w.technik && (
+                          <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}>
+                            <div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Technik / Material</div>
+                            <div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>{w.technik}</div>
+                          </div>
+                        )}
+                        {w.price ? (
+                          <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}>
+                            <div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Preis</div>
+                            <div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>€ {Number(w.price).toFixed(2)}</div>
+                          </div>
+                        ) : null}
+                        {w.category && (
+                          <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}>
+                            <div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Kategorie</div>
+                            <div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>{getCategoryLabel(w.category)}</div>
+                          </div>
+                        )}
+                        {w.createdAt && (
+                          <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}>
+                            <div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Erstellt</div>
+                            <div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>{new Date(w.createdAt).toLocaleDateString('de-DE')}</div>
+                          </div>
+                        )}
+                        {w.soldAt && (
+                          <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}>
+                            <div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Verkauft am</div>
+                            <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#b91c1c' }}>{new Date(w.soldAt).toLocaleDateString('de-DE')}</div>
+                          </div>
+                        )}
+                        {w.buyer && (
+                          <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem', gridColumn: 'span 2' }}>
+                            <div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Käufer:in</div>
+                            <div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>{w.buyer}</div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Beschreibung */}
+                      {w.description && (
+                        <div style={{ fontSize: '0.9rem', color: s.muted, lineHeight: 1.7, borderTop: `1px solid ${s.accent}22`, paddingTop: '0.85rem', marginBottom: '1.25rem' }}>
+                          {w.description}
+                        </div>
+                      )}
+
+                      {/* Aktionen */}
+                      <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                        <button type="button" onClick={() => setKatalogSelectedWork(null)}
+                          style={{ padding: '0.6rem 1.2rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 10, color: s.muted, fontSize: '0.9rem', cursor: 'pointer' }}>
+                          Schließen
+                        </button>
+                        <button type="button" onClick={druckeWerkkarte}
+                          style={{ padding: '0.6rem 1.4rem', background: s.accent, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}>
+                          🖨️ Werkkarte drucken
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })()}
             </section>
             )
           })()}
