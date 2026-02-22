@@ -8879,14 +8879,15 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     <span style={{ color: s.muted, fontSize: '1.2rem' }}>→</span>
                     {/* Schritt 2: Galerie ansehen – erst Bild in localStorage speichern, dann öffnen */}
                     <button type="button" onClick={() => {
-                      // Erst alles in localStorage sichern, dann Galerie öffnen
+                      // Erst alles in localStorage sichern, dann Galerie im gleichen Tab öffnen
+                      // (gleicher Tab = localStorage sofort lesbar, neues Foto wird sofort angezeigt)
                       const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
                       setPageContentGalerie(pageContent, tenant)
                       setPageTexts(pageTexts, tenant)
-                      const url = isOeffentlichAdminContext()
+                      const route = isOeffentlichAdminContext()
                         ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
                         : PROJECT_ROUTES['k2-galerie'].galerie
-                      window.open(url, '_blank')
+                      navigate(route + '?vorschau=1')
                     }} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1.1rem', fontSize: '1rem', fontWeight: 700, background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: 10, color: '#10b981', cursor: 'pointer', fontFamily: 'inherit' }}>
                       <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>2</span> 👁 Galerie ansehen – gefällt es?
                     </button>
