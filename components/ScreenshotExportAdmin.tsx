@@ -15,11 +15,35 @@ import { getWerbeliniePrDocCss, WERBELINIE_FONTS_URL, WERBEUNTERLAGEN_STIL, PROM
 import '../src/App.css'
 
 const ADMIN_CONTEXT_KEY = 'k2-admin-context'
+
+/**
+ * Setzt den Admin-Kontext SOFORT synchron aus der URL – muss am Anfang aufgerufen werden.
+ * Dadurch ist isOeffentlichAdminContext() von Beginn an korrekt (auch beim useState-Init).
+ */
+function syncAdminContextFromUrl(): void {
+  try {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const ctx = params.get('context')
+    if (ctx === 'oeffentlich') {
+      sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'oeffentlich')
+    } else if (ctx === 'vk2') {
+      sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'vk2')
+    } else {
+      // Kein context-Parameter oder anderer Wert → K2-Admin → alten Kontext löschen
+      // (verhindert: nach ök2-Admin-Besuch bleibt 'oeffentlich' im sessionStorage hängen)
+      sessionStorage.removeItem(ADMIN_CONTEXT_KEY)
+    }
+  } catch (_) {}
+}
+
 function isOeffentlichAdminContext(): boolean {
   try {
     if (typeof window !== 'undefined' && window.location.search) {
       const params = new URLSearchParams(window.location.search)
       if (params.get('context') === 'oeffentlich') return true
+      // Wenn ein anderer context explizit gesetzt ist → definitiv nicht ök2
+      if (params.get('context') === 'vk2' || params.get('context') === 'k2') return false
     }
     return typeof sessionStorage !== 'undefined' && sessionStorage.getItem(ADMIN_CONTEXT_KEY) === 'oeffentlich'
   } catch {
@@ -570,6 +594,10 @@ let globalAdminInstance: any = null
 let globalMountCount = 0
 
 function ScreenshotExportAdmin() {
+  // KRITISCH: Kontext sofort aus URL synchronisieren – muss vor jedem useState stehen
+  // Dadurch ist isOeffentlichAdminContext() beim ersten useState-Aufruf bereits korrekt
+  syncAdminContextFromUrl()
+
   const navigate = useNavigate()
   // Singleton-Check: Verhindere doppeltes Mounten - KRITISCH gegen Crashes
   const mountId = React.useRef(`admin-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`)
