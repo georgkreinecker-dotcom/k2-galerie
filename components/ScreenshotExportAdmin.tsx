@@ -14603,93 +14603,33 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 <div style={{ fontSize: isMobile ? '0.9rem' : '1rem', fontWeight: 'bold', color: '#8b6914', marginBottom: isMobile ? '0.5rem' : '0.75rem' }}>
                   {savedArtwork.number}
                 </div>
-                {/* Mobil: Zuverlässige Methode zuerst – Speichern → iPrint&Label. Safari-AirPrint oft falsche Skalierung. */}
-                <div className="admin-modal-actions" style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'stretch', marginBottom: isMobile ? '1rem' : '1.5rem' }}>
-                  {isMobile ? (
-                    <>
-                      <p style={{ fontSize: '0.85rem', color: '#166534', fontWeight: 600, margin: '0 0 0.5rem 0' }}>
-                        Auf dem iPad: So passt die Größe garantiert
-                      </p>
-                      <button
-                        type="button"
-                        onClick={handleDownloadEtikettDirect}
-                        style={{
-                          padding: '1.25rem 1.5rem',
-                          fontSize: '1.2rem',
-                          fontWeight: 700,
-                          background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                          border: 'none',
-                          borderRadius: '12px',
-                          color: '#fff',
-                          cursor: 'pointer',
-                          boxShadow: '0 4px 14px rgba(34, 197, 94, 0.4)',
-                          touchAction: 'manipulation'
-                        }}
-                      >
-                        📥 Etikett speichern → in Brother iPrint&amp;Label drucken
-                      </button>
-                      <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.35rem 0 0 0' }}>
-                        Teilen-Menü öffnet sich → „In Fotos speichern“ oder <strong>Brother iPrint&amp;Label</strong> wählen → Drucken.
-                      </p>
-                      <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.5rem' }}>
-                        Wenn „Daten können nicht freigegeben werden“ erscheint: <button type="button" onClick={async () => { try { const b = await getEtikettBlob(); const u = URL.createObjectURL(b); window.open(u, '_blank'); setTimeout(() => URL.revokeObjectURL(u), 60000); } catch (e) { alert((e as Error)?.message || 'Etikett konnte nicht erzeugt werden.'); } }} style={{ background: 'none', border: 'none', color: '#16a34a', textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 'inherit' }}>Etikett in neuem Tab öffnen</button> → im Tab langes Drücken auf das Bild → „Bild speichern“. Dann in iPrint&amp;Label öffnen.
-                      </p>
-                      <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.75rem' }}>
-                        Oder direkt über Safari:
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => { handlePrint(); setShowPrintModal(false); }}
-                        style={{ padding: '0.75rem 1rem', fontSize: '0.95rem', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '10px', color: '#475569', cursor: 'pointer' }}
-                      >
-                        🖨️ Jetzt drucken (Safari – Skalierung kann abweichen)
-                      </button>
-                      <button className="btn-secondary" onClick={() => setShowPrintModal(false)} style={{ marginTop: '0.5rem' }}>
-                        Später drucken
-                      </button>
-                      <details style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#888' }}>
-                        <summary style={{ cursor: 'pointer' }}>Optional: One-Click (nur wenn Print-Server vor Ort läuft)</summary>
-                        <p style={{ margin: '0.35rem 0 0 0' }}>Braucht ein Gerät im gleichen WLAN wie Tablet und Drucker mit laufendem Print-Server.</p>
-                        <button
-                          type="button"
-                          disabled={oneClickPrinting}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            const url = (loadPrinterSettingsForTenant(getCurrentTenantId()).printServerUrl || '').trim()
-                            if (url) handleOneClickPrint()
-                            else alert('Einstellungen → Drucker → Print-Server URL eintragen (IP des Geräts vor Ort, z. B. http://192.168.1.1:3847)')
-                          }}
-                          style={{ marginTop: '0.5rem', padding: '0.5rem 0.75rem', fontSize: '0.85rem', background: 'rgba(34, 197, 94, 0.2)', border: '1px solid #22c55e', borderRadius: '8px', color: '#16a34a', cursor: oneClickPrinting ? 'wait' : 'pointer' }}
-                        >
-                          {oneClickPrinting ? '⏳ Wird gesendet …' : '⚡ One-Click drucken'}
-                        </button>
-                      </details>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        disabled={oneClickPrinting}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          const url = (loadPrinterSettingsForTenant(getCurrentTenantId()).printServerUrl || '').trim()
-                          if (url) handleOneClickPrint()
-                          else alert('Einstellungen → Drucker → Print-Server URL eintragen (z. B. http://localhost:3847)')
-                        }}
-                        style={{ padding: '0.6rem 1rem', fontWeight: 600, background: oneClickPrinting ? 'rgba(34, 197, 94, 0.6)' : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', border: 'none', borderRadius: '8px', color: '#fff', cursor: oneClickPrinting ? 'wait' : 'pointer' }}
-                      >
-                        {oneClickPrinting ? '⏳ Wird gesendet …' : '⚡ One-Click drucken'}
-                      </button>
-                      <button type="button" onClick={handleShareLabel} style={{ padding: '0.6rem 1rem', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', border: '1px solid #16a34a', borderRadius: '8px', color: '#fff', fontWeight: 600, cursor: 'pointer' }}>
-                        📤 Etikett teilen
-                      </button>
-                      <button type="button" onClick={handleDownloadEtikettDirect} className="btn-secondary">⬇️ Herunterladen</button>
-                      <button className="btn-primary" onClick={handlePrint}>🖨️ Jetzt drucken</button>
-                      <button className="btn-secondary" onClick={() => setShowPrintModal(false)}>Später drucken</button>
-                    </>
-                  )}
+                {/* Ein Button – der funktionierende Weg über Teilen → Drucker */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: isMobile ? '1rem' : '1.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => { handleShareLabel(); setShowPrintModal(false) }}
+                    style={{
+                      padding: '1.1rem 1.5rem',
+                      fontSize: isMobile ? '1.15rem' : '1rem',
+                      fontWeight: 700,
+                      background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                      border: 'none',
+                      borderRadius: '12px',
+                      color: '#fff',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 14px rgba(34,197,94,0.4)',
+                      touchAction: 'manipulation'
+                    }}
+                  >
+                    🖨️ Etikett drucken
+                  </button>
+                  <p style={{ fontSize: '0.8rem', color: '#666', margin: 0 }}>
+                    Teilen-Menü öffnet sich → Brother iPrint&amp;Label oder Drucker wählen
+                  </p>
+                  <button type="button" className="btn-secondary" onClick={() => setShowPrintModal(false)}>
+                    Später drucken
+                  </button>
                 </div>
-                {/* Vorschau kompakt */}
                 {(() => {
                   const printTenant = getCurrentTenantId()
                   const previewSettings = loadPrinterSettingsForTenant(printTenant)
