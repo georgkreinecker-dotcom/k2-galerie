@@ -1585,7 +1585,7 @@ end tell`
           left: panelMinimized ? '-380px' : '0',
           width: '400px',
           height: '100vh',
-          background: 'linear-gradient(180deg, var(--k2-bg-2, #2d1a14), var(--k2-bg-1, #1a0f0a))',
+          background: 'linear-gradient(180deg, #2d1a14, #1a0f0a)',
           backdropFilter: 'blur(20px)',
           borderRight: '1px solid rgba(255, 140, 66, 0.2)',
           boxShadow: '8px 0 32px rgba(0, 0, 0, 0.5)',
