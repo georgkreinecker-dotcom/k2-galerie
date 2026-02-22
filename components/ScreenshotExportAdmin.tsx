@@ -1247,12 +1247,14 @@ function ScreenshotExportAdmin() {
   }, [activeTab])
 
   // URL-Parameter context (oeffentlich / vk2) in sessionStorage übernehmen
+  // WICHTIG: Wenn kein context-Parameter → K2-Admin → sessionStorage löschen (verhindert "hängenbleiben" im ök2-Kontext)
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search)
       const ctx = params.get('context')
       if (ctx === 'oeffentlich') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'oeffentlich')
       else if (ctx === 'vk2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'vk2')
+      else sessionStorage.removeItem(ADMIN_CONTEXT_KEY) // Kein context = K2, alten Kontext löschen
     } catch (_) {}
   }, [])
 

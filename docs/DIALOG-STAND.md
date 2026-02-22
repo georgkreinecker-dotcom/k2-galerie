@@ -2,19 +2,24 @@
 
 ## Datum: 22.02.26
 
-## Thema: QR-Scanner Kassa + Etikettendruck Anhaken
+## Thema: Design-Tab Bildeinfügen – endlich wirklich gefixt
+
+## Was das Problem war:
+- `GaleriePage.tsx` hat für K2 `getGalerieImages(galleryData)` aufgerufen – las das Bild aus galleryData, NICHT aus localStorage
+- `setPageContentGalerie` hat nur das ök2-Event gefeuert, NICHT für K2
+- Deshalb: Bild wurde gespeichert, aber Galerie-Vorschau hat es nie geladen
 
 ## Was zuletzt gemacht (MIT Commit-Hash = wirklich auf GitHub):
-- Etikettendruck beim Anhaken: Teilen-Weg statt direktem Drucken – Commit: 7e7e469 ✅
-- Kassa QR-Scanner: jsQR installiert, funktioniert auf ALLEN Browsern – Commit: 4e3e428 ✅
-  - jsQR als Fallback wenn BarcodeDetector nicht vorhanden (iPad Safari, Firefox etc.)
-  - addBySerialNumber bekommt Wert direkt – kein React-State-Timing-Problem
-- Neue Regel angelegt: fertig-heisst-getestet-committed.mdc
+- `pageContentGalerie.ts`: setPageContentGalerie feuert jetzt BEIDE Events (k2 + ök2) – Commit: 88ee193 ✅
+- `GaleriePage.tsx`: K2 displayImages liest jetzt direkt aus getPageContentGalerie() (localStorage), nicht aus galleryData – Commit: 88ee193 ✅
+- Upload-Status-Anzeige: User sieht jetzt ob Upload läuft/fertig/fehlgeschlagen – Commit: 88ee193 ✅
 
 ## Nächster Schritt:
-- Testen: Kassa QR-Scanner am iPad/iPhone → QR-Code eines Werks scannen
-- Testen: Werk anhaken → "Etiketten drucken" → Teilen-Menü erscheint
+- Nach Vercel-Deployment (~2 Min): Design-Tab testen
+- Foto reinziehen oder anklicken → "✓ Foto gespeichert" erscheint
+- Dann "Galerie ansehen" → neues Foto sofort sichtbar
 
 ## Wo nachlesen:
-- `src/pages/ShopPage.tsx` → processQRCode, addBySerialNumber, Scanner-useEffect
-- `components/ScreenshotExportAdmin.tsx` → handleBatchPrintEtiketten
+- `src/config/pageContentGalerie.ts` → setPageContentGalerie (Events)
+- `src/pages/GaleriePage.tsx` → displayImages useMemo (K2-Zweig)
+- `components/ScreenshotExportAdmin.tsx` → onDrop + onChange welcomeImage

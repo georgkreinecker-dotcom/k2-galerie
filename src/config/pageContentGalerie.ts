@@ -44,7 +44,7 @@ export function getPageContentGalerie(tenantId?: 'oeffentlich'): PageContentGale
   try {
     const key = getStorageKey(tenantId)
     const raw = typeof window !== 'undefined' ? localStorage.getItem(key) : null
-    if (raw && raw.length < 6 * 1024 * 1024) {
+    if (raw && raw.length > 0) {
       const parsed = JSON.parse(raw) as Partial<PageContentGalerie>
 
       if (tenantId === 'oeffentlich') {
