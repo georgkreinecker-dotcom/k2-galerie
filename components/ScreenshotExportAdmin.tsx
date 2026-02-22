@@ -8833,28 +8833,74 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             {/* Nur bei Farben: Titel + Zurück zur Vorschau */}
             {designSubTab === 'farben' && (
               <>
-                <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: '700', color: s.text, marginBottom: 'clamp(1.5rem, 4vw, 2rem)', letterSpacing: '-0.01em' }}>✨ Neugestaltung: Farbe und Text Galerie</h2>
-                <p style={{ color: s.muted, marginBottom: '1.5rem' }}>Farben und Texte der Galerie anpassen.</p>
-                <button type="button" onClick={() => setDesignSubTab('vorschau')} style={{ padding: '0.75rem 1.5rem', marginBottom: '2rem', border: `1px solid ${s.accent}33`, borderRadius: 8, fontSize: '1rem', background: s.bgElevated, color: s.text, cursor: 'pointer' }}>← Zur Vorschau</button>
+                {/* Sticky Toolbar im Farben-Tab */}
+                <div style={{ position: 'sticky', top: 0, zIndex: 20, background: s.bgDark, borderBottom: `2px solid ${s.accent}33`, padding: '0.75rem 1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <button type="button" onClick={() => setDesignSubTab('vorschau')} style={{ padding: '0.5rem 1rem', border: `1px solid ${s.accent}44`, borderRadius: 8, fontSize: '0.95rem', background: s.bgElevated, color: s.text, cursor: 'pointer', fontWeight: 600 }}>← Vorschau</button>
+                  <span style={{ fontSize: '0.85rem', color: s.muted, flex: 1 }}>Farben & Theme wählen – Vorschau live · dann Speichern</span>
+                  {designSaveFeedback === 'ok' && <span style={{ fontSize: '0.9rem', color: '#10b981', fontWeight: 600 }}>✓ Gespeichert</span>}
+                  <button type="button" className="btn-primary" onClick={() => {
+                    try {
+                      setPageContentGalerie(pageContent, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
+                      setPageTexts(pageTexts, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
+                      if (designSettings && Object.keys(designSettings).length > 0) {
+                        const ds = JSON.stringify(designSettings)
+                        if (ds.length < 50000) localStorage.setItem(getDesignStorageKey(), ds)
+                      }
+                      const pageTextsKey = isOeffentlichAdminContext() ? 'k2-oeffentlich-page-texts' : 'k2-page-texts'
+                      const pageContentKey = isOeffentlichAdminContext() ? 'k2-oeffentlich-page-content-galerie' : 'k2-page-content-galerie'
+                      const pageTextsOk = localStorage.getItem(pageTextsKey) != null && (localStorage.getItem(pageTextsKey)?.length ?? 0) > 0
+                      const pageContentOk = localStorage.getItem(pageContentKey) != null
+                      const designStored = localStorage.getItem(getDesignStorageKey())
+                      const designOk = !designSettings || Object.keys(designSettings).length === 0 || (designStored != null && designStored.length > 0)
+                      if (pageTextsOk && pageContentOk && designOk) {
+                        const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
+                        setPageTextsState(getPageTexts(tenant))
+                        setPageContent(getPageContentGalerie(tenant))
+                        setDesignSaveFeedback('ok')
+                        setTimeout(() => setDesignSaveFeedback(null), 5000)
+                        localStorage.removeItem('k2-last-publish-signature')
+                        if (!isOeffentlichAdminContext()) window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
+                        alert('✅ Gespeichert. Die Änderungen sind auf allen Geräten sichtbar.')
+                      } else {
+                        alert('Speichern teilweise fehlgeschlagen. Bitte erneut versuchen.')
+                      }
+                    } catch (e) {
+                      alert('Fehler beim Speichern: ' + (e instanceof Error ? e.message : String(e)))
+                    }
+                  }} style={{ padding: '0.5rem 1.25rem', fontSize: '0.95rem', fontWeight: 700 }}>💾 Speichern</button>
+                </div>
+                <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: '700', color: s.text, marginBottom: '0.5rem', letterSpacing: '-0.01em' }}>✨ Farben & Theme</h2>
+                <p style={{ color: s.muted, marginBottom: '1.5rem' }}>Galerie-Farben, Hintergrund und Akzent wählen. Ändere Texte direkt in der Vorschau (auf Text klicken).</p>
               </>
             )}
 
             {/* Vorschau – wie in K2: Seite 1 / Seite 2 / Farben, für K2 und ök2 gleich */}
             {designSubTab === 'vorschau' && (
               <div ref={previewContainerRef} style={{ width: '100%', minHeight: 'calc(100vh - 180px)', background: WERBEUNTERLAGEN_STIL.bgDark, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', padding: '0.5rem 1rem', marginBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <button type="button" onClick={() => setPreviewFullscreenPage(1)} style={{ padding: '0.4rem 0.9rem', fontSize: '0.9rem', background: previewFullscreenPage === 1 ? 'rgba(95, 251, 241, 0.25)' : 'transparent', border: '1px solid ' + (previewFullscreenPage === 1 ? 'var(--k2-accent)' : 'rgba(255,255,255,0.2)'), borderRadius: 6, color: previewFullscreenPage === 1 ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>Seite 1</button>
-                    <button type="button" onClick={() => setPreviewFullscreenPage(2)} style={{ padding: '0.4rem 0.9rem', fontSize: '0.9rem', background: previewFullscreenPage === 2 ? 'rgba(95, 251, 241, 0.25)' : 'transparent', border: '1px solid ' + (previewFullscreenPage === 2 ? 'var(--k2-accent)' : 'rgba(255,255,255,0.2)'), borderRadius: 6, color: previewFullscreenPage === 2 ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>Seite 2</button>
-                    <a href={isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie} target="_blank" rel="noopener noreferrer" style={{ padding: '0.5rem 1rem', fontSize: '0.95rem', background: 'rgba(16, 185, 129, 0.25)', border: '1px solid #10b981', borderRadius: 6, color: '#10b981', textDecoration: 'none', fontWeight: 600 }} title="Öffnet die Galerie – genau wie Kunden sie sehen">So sehen Kunden die Galerie →</a>
-                    <span style={{ color: 'var(--k2-muted)', fontSize: '0.85rem', marginLeft: '0.5rem' }}>Größe:</span>
-                    {([1, 1.25, 1.5, 2] as const).map((s) => (
-                      <button key={s} type="button" onClick={() => setDesignPreviewScale(s)} style={{ padding: '0.35rem 0.6rem', fontSize: '0.85rem', background: designPreviewScale === s ? 'rgba(95, 251, 241, 0.25)' : 'transparent', border: '1px solid ' + (designPreviewScale === s ? 'var(--k2-accent)' : 'rgba(255,255,255,0.2)'), borderRadius: 6, color: designPreviewScale === s ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>{Math.round(s * 100)}%</button>
-                    ))}
+                {/* Design-Toolbar – sticky, immer sichtbar */}
+                <div style={{ flexShrink: 0, position: 'sticky', top: 0, zIndex: 20, background: WERBEUNTERLAGEN_STIL.bgDark, borderBottom: `2px solid ${s.accent}33`, padding: '0.6rem 1rem' }}>
+                  {/* Zeile 1: Was kann man hier machen */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '1.1rem' }}>🎨</span>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 700, color: s.text }}>Design-Werkzeug</span>
+                    <span style={{ fontSize: '0.82rem', color: s.muted }}>— Bilder & Texte anklicken zum Ändern · Farben & Theme wählen · Vorschau vor dem Speichern</span>
                   </div>
-                  <button type="button" onClick={() => setDesignSubTab('farben')} style={{ padding: '0.4rem 0.9rem', fontSize: '0.9rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6, color: 'var(--k2-muted)', cursor: 'pointer' }}>🎨 Farben</button>
+                  {/* Zeile 2: Aktions-Buttons */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <button type="button" onClick={() => setPreviewFullscreenPage(1)} style={{ padding: '0.4rem 0.9rem', fontSize: '0.9rem', background: previewFullscreenPage === 1 ? 'rgba(95, 251, 241, 0.25)' : 'transparent', border: '1px solid ' + (previewFullscreenPage === 1 ? 'var(--k2-accent)' : 'rgba(255,255,255,0.2)'), borderRadius: 6, color: previewFullscreenPage === 1 ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>Seite 1</button>
+                      <button type="button" onClick={() => setPreviewFullscreenPage(2)} style={{ padding: '0.4rem 0.9rem', fontSize: '0.9rem', background: previewFullscreenPage === 2 ? 'rgba(95, 251, 241, 0.25)' : 'transparent', border: '1px solid ' + (previewFullscreenPage === 2 ? 'var(--k2-accent)' : 'rgba(255,255,255,0.2)'), borderRadius: 6, color: previewFullscreenPage === 2 ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>Seite 2</button>
+                      <a href={isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie} target="_blank" rel="noopener noreferrer" style={{ padding: '0.4rem 0.9rem', fontSize: '0.85rem', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid #10b981', borderRadius: 6, color: '#10b981', textDecoration: 'none', fontWeight: 600 }} title="Öffnet die Galerie – genau wie Kunden sie sehen">👁 Galerie ansehen</a>
+                      <span style={{ color: 'var(--k2-muted)', fontSize: '0.82rem' }}>Zoom:</span>
+                      {([1, 1.25, 1.5, 2] as const).map((sc) => (
+                        <button key={sc} type="button" onClick={() => setDesignPreviewScale(sc)} style={{ padding: '0.3rem 0.55rem', fontSize: '0.82rem', background: designPreviewScale === sc ? 'rgba(95, 251, 241, 0.25)' : 'transparent', border: '1px solid ' + (designPreviewScale === sc ? 'var(--k2-accent)' : 'rgba(255,255,255,0.2)'), borderRadius: 6, color: designPreviewScale === sc ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>{Math.round(sc * 100)}%</button>
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <button type="button" onClick={() => setDesignSubTab('farben')} style={{ padding: '0.5rem 1.1rem', fontSize: '0.95rem', fontWeight: 700, background: `linear-gradient(135deg, ${s.accent}22 0%, ${s.accent}11 100%)`, border: `1.5px solid ${s.accent}88`, borderRadius: 8, color: s.accent, cursor: 'pointer' }}>🎨 Farben & Theme</button>
+                    </div>
+                  </div>
                 </div>
-                <p style={{ flexShrink: 0, margin: '0 1rem 0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)' }}>Vorschau: Größe mit 100% / 125% / 150% / 200% wählen. Unteren Rand nach unten ziehen = Bereich vergrößern, nach oben = verkleinern. Inhalt scrollbar.</p>
                 <input type="file" accept="image/*" ref={galerieImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                 <input type="file" accept="image/*" ref={virtualTourImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                 {(() => {

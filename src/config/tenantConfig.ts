@@ -235,10 +235,10 @@ export const OEK2_DEFAULT_ARTWORK_IMAGES: Record<string, string> = {
 
 /** ök2: Lokale Bilder – oben Menschen/Galerie-Eingang, unten Galerie Innenansicht. Liegen in public/img/oeffentlich/ (ersetzbar durch eigene Fotos). */
 export const OEK2_WILLKOMMEN_IMAGES = {
-  // Unsplash-Fotos (lizenzfrei, Galerie-Atmosphäre) – Fallback wenn kein eigenes Foto hochgeladen
-  welcomeImage: 'https://images.unsplash.com/photo-1594909122845-11baa439b7bf?auto=format&w=1200&q=80',   // Galerie-Eingang / Besucher
-  virtualTourImage: 'https://images.unsplash.com/photo-1536924940846-227afb31e2a5?auto=format&w=1200&q=80', // Galerie-Innenraum mit Bildern
-  galerieCardImage: 'https://images.unsplash.com/photo-1565060169194-19fabf63012c?auto=format&w=800&q=80',  // Moderne Galerie-Karte
+  // Eigene Fotos aus public/img/oeffentlich/ – von Vercel direkt serviert, keine CORS-Probleme
+  welcomeImage: '/img/oeffentlich/willkommen.jpg',
+  virtualTourImage: '/img/oeffentlich/galerie-innen.jpg',   // TODO: Foto noch hineinziehen
+  galerieCardImage: '/img/oeffentlich/galerie-karte.jpg',   // TODO: Foto noch hineinziehen
 }
 
 /** Liefert das Standard-Werkbild für ök2 für eine Kategorie (Fallback: sonstiges). */
