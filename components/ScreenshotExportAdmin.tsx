@@ -653,7 +653,7 @@ function ScreenshotExportAdmin() {
   }, [])
 
   // Klare Admin-Struktur: Werke | Eventplanung | Design | Einstellungen. Kasse = ein Button im Header, öffnet direkt den Shop.
-  const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'eventplan' | 'design' | 'einstellungen' | 'assistent'>('werke')
+  const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'design' | 'einstellungen' | 'assistent'>('werke')
   const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>('events')
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false) // kleine Leiste „Vergangenheit“, bei Klick aufklappen
   const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager'>('stammdaten')
@@ -935,6 +935,15 @@ function ScreenshotExportAdmin() {
   const [reserveInput, setReserveInput] = useState('')
   const [reserveMethod, setReserveMethod] = useState<'scan' | 'manual'>('scan')
   const [reserveName, setReserveName] = useState('')
+  // Newsletter-Kontakte
+  const [nlKontakte, setNlKontakte] = useState<any[]>(() => { try { return JSON.parse(localStorage.getItem('k2-newsletter-kontakte') || '[]') } catch (_) { return [] } })
+  const [nlName, setNlName] = useState('')
+  const [nlEmail, setNlEmail] = useState('')
+  const [nlKategorie, setNlKategorie] = useState('allgemein')
+  const [nlMsg, setNlMsg] = useState('')
+  // Pressemappe
+  const [pmFreitext, setPmFreitext] = useState('')
+  const [pmWerkeIds, setPmWerkeIds] = useState<string[]>([])
   const [allArtworks, setAllArtworks] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string>('alle')
@@ -8139,6 +8148,54 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   </button>
                   )}
 
+                  {/* Echtheitszertifikat */}
+                  {!isOeffentlichAdminContext() && (
+                  <button type="button" onClick={() => setActiveTab('zertifikat')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: '2px solid rgba(251,191,36,0.35)', borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit', position: 'relative' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.7)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.35)'; e.currentTarget.style.transform = 'translateY(0)' }}
+                  >
+                    <div style={{ position: 'absolute', top: -10, right: 14, background: 'linear-gradient(90deg,#f59e0b,#fbbf24)', color: '#1a1a00', fontSize: '0.68rem', fontWeight: 800, padding: '2px 9px', borderRadius: 20 }}>EXCELLENT</div>
+                    <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>🔏</div>
+                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Echtheitszertifikate</div>
+                    <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
+                      PDF-Zertifikat pro Werk – mit Foto, Galeriedaten, Unterschrift
+                    </div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#fbbf24' }}>Öffnen →</div>
+                  </button>
+                  )}
+
+                  {/* Newsletter */}
+                  {!isOeffentlichAdminContext() && (
+                  <button type="button" onClick={() => setActiveTab('newsletter')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: '2px solid rgba(251,191,36,0.35)', borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit', position: 'relative' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.7)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.35)'; e.currentTarget.style.transform = 'translateY(0)' }}
+                  >
+                    <div style={{ position: 'absolute', top: -10, right: 14, background: 'linear-gradient(90deg,#f59e0b,#fbbf24)', color: '#1a1a00', fontSize: '0.68rem', fontWeight: 800, padding: '2px 9px', borderRadius: 20 }}>EXCELLENT</div>
+                    <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📬</div>
+                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Newsletter & Einladungen</div>
+                    <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
+                      Kontaktliste für Vernissagen, Einladungen und Neuigkeiten
+                    </div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#fbbf24' }}>Öffnen →</div>
+                  </button>
+                  )}
+
+                  {/* Pressemappe */}
+                  {!isOeffentlichAdminContext() && (
+                  <button type="button" onClick={() => setActiveTab('pressemappe')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: '2px solid rgba(251,191,36,0.35)', borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit', position: 'relative' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.7)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.35)'; e.currentTarget.style.transform = 'translateY(0)' }}
+                  >
+                    <div style={{ position: 'absolute', top: -10, right: 14, background: 'linear-gradient(90deg,#f59e0b,#fbbf24)', color: '#1a1a00', fontSize: '0.68rem', fontWeight: 800, padding: '2px 9px', borderRadius: 20 }}>EXCELLENT</div>
+                    <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📰</div>
+                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Pressemappe</div>
+                    <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
+                      Automatisch generiertes PDF aus Stammdaten, Vita und ausgewählten Werken
+                    </div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#fbbf24' }}>Öffnen →</div>
+                  </button>
+                  )}
+
                   {/* Eventplanung */}
                   <button type="button" onClick={() => setActiveTab('eventplan')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: `2px solid ${s.accent}22`, borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit' }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.transform = 'translateY(-2px)' }}
@@ -8208,6 +8265,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <h2 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', fontWeight: 700, color: s.text, margin: 0 }}>
                   {activeTab === 'katalog' && '📋 Werkkatalog'}
                   {activeTab === 'statistik' && '📊 Verkaufsstatistik'}
+                  {activeTab === 'zertifikat' && '🔏 Echtheitszertifikate'}
+                  {activeTab === 'newsletter' && '📬 Newsletter & Einladungen'}
+                  {activeTab === 'pressemappe' && '📰 Pressemappe'}
                   {activeTab === 'eventplan' && '📢 Veranstaltungen & Werbung'}
                   {activeTab === 'design' && '✨ Aussehen der Galerie – nach deinen Wünschen anpassen'}
                   {activeTab === 'einstellungen' && '⚙️ Einstellungen'}
@@ -8459,6 +8519,411 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               </div>
 
             </section>
+            )
+          })()}
+
+          {/* ===== ECHTHEITSZERTIFIKAT ===== */}
+          {activeTab === 'zertifikat' && (() => {
+            const allArtworks: any[] = (() => {
+              try { return JSON.parse(localStorage.getItem('k2-artworks') || '[]') } catch (_) { return [] }
+            })()
+            const galStammdaten: any = (() => {
+              try { return JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}') } catch (_) { return {} }
+            })()
+            const personStammdaten: any = (() => {
+              try { return JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}') } catch (_) { return {} }
+            })()
+            const gName = galStammdaten.name || 'K2 Galerie'
+            const gCity = galStammdaten.city || ''
+            const artistName = personStammdaten.name || 'Martina Kreinecker'
+
+            const druckeZertifikat = (artwork: any) => {
+              const win = window.open('', '_blank')
+              if (!win) return
+              const imgHtml = artwork.image
+                ? `<div style="text-align:center;margin-bottom:20px"><img src="${artwork.image}" style="max-width:260px;max-height:220px;object-fit:contain;border:1px solid #ccc;border-radius:4px" /></div>`
+                : '<div style="width:260px;height:180px;border:1px dashed #ccc;border-radius:4px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;color:#999;font-size:0.9rem">Kein Foto</div>'
+              const certDate = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: 'long', year: 'numeric' })
+              const fields = [
+                { label: 'Werknummer', value: artwork.number || '–' },
+                { label: 'Titel', value: artwork.title || '–' },
+                { label: 'Künstler:in', value: artistName },
+                { label: 'Technik / Material', value: artwork.technik || '–' },
+                { label: 'Maße', value: artwork.dimensions || '–' },
+                { label: 'Erstellt', value: artwork.date ? new Date(artwork.date).toLocaleDateString('de-DE') : '–' },
+                { label: 'Kategorie', value: artwork.category || '–' },
+                ...(artwork.quantity > 1 ? [{ label: 'Auflage', value: `${artwork.quantity} Exemplare` }] : []),
+                { label: 'Galerie', value: gName + (gCity ? `, ${gCity}` : '') },
+                { label: 'Zertifikat ausgestellt', value: certDate },
+              ]
+              win.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Echtheitszertifikat – ${artwork.title || artwork.number}</title>
+<style>
+  body { font-family: 'Georgia', serif; background: #fff; color: #1a1a1a; margin: 0; padding: 0; }
+  .page { width: 148mm; min-height: 210mm; padding: 18mm 16mm; box-sizing: border-box; margin: 0 auto; border: 2px solid #b8a060; position: relative; }
+  .gold { color: #8a6800; }
+  h1 { font-size: 1.3rem; text-align: center; letter-spacing: 2px; color: #8a6800; margin: 0 0 6px; text-transform: uppercase; }
+  .subtitle { text-align: center; font-size: 0.8rem; color: #888; letter-spacing: 1px; margin-bottom: 18px; text-transform: uppercase; }
+  .divider { border: none; border-top: 1px solid #c8a840; margin: 14px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  td { padding: 5px 4px; vertical-align: top; }
+  td:first-child { color: #888; font-size: 0.78rem; width: 38%; padding-right: 8px; }
+  td:last-child { font-weight: 600; color: #1a1a1a; }
+  .signature { margin-top: 28px; text-align: center; }
+  .sig-line { display: inline-block; width: 180px; border-top: 1px solid #1a1a1a; margin-top: 38px; padding-top: 6px; font-size: 0.78rem; color: #555; }
+  .footer { position: absolute; bottom: 10mm; left: 16mm; right: 16mm; font-size: 0.7rem; color: #aaa; text-align: center; }
+  .corner { position: absolute; width: 18px; height: 18px; border-color: #b8a060; border-style: solid; }
+  .tl { top: 6px; left: 6px; border-width: 2px 0 0 2px; }
+  .tr { top: 6px; right: 6px; border-width: 2px 2px 0 0; }
+  .bl { bottom: 6px; left: 6px; border-width: 0 0 2px 2px; }
+  .br { bottom: 6px; right: 6px; border-width: 0 2px 2px 0; }
+  @media print { body { margin: 0; } .page { border: 2px solid #b8a060; } }
+</style></head><body>
+<div class="page">
+  <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+  <h1>Echtheitszertifikat</h1>
+  <p class="subtitle">${gName}</p>
+  <hr class="divider" />
+  ${imgHtml}
+  <table>${fields.map(f => `<tr><td>${f.label}</td><td>${f.value}</td></tr>`).join('')}</table>
+  <hr class="divider" style="margin-top:18px" />
+  <div class="signature">
+    <div style="font-size:0.82rem;color:#555;margin-bottom:4px">Hiermit wird bestätigt, dass dieses Werk ein Original der oben genannten Künstlerin ist.</div>
+    <div class="sig-line">Datum &amp; Unterschrift</div>
+  </div>
+  <div class="footer">${gName}${gCity ? ` · ${gCity}` : ''} · ${certDate}</div>
+</div>
+<script>window.onload=()=>{window.print();window.onafterprint=()=>window.close()}</script>
+</body></html>`)
+              win.document.close()
+            }
+
+            return (
+              <section style={{ padding: 'clamp(1rem, 3vw, 2rem)' }}>
+                <div style={{ marginBottom: '1.5rem', padding: '1rem 1.25rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 12 }}>
+                  <p style={{ margin: 0, color: s.muted, fontSize: '0.9rem', lineHeight: 1.6 }}>
+                    🔏 <strong style={{ color: '#fbbf24' }}>Echtheitszertifikat</strong> – Wähle ein Werk aus, um ein professionelles PDF-Zertifikat zu drucken.
+                    Enthält Foto, Künstlerin, Galeriedaten, Maße, Technik und Unterschriften-Feld.
+                  </p>
+                </div>
+
+                {allArtworks.length === 0 ? (
+                  <p style={{ color: s.muted, fontSize: '0.9rem' }}>Noch keine Werke erfasst.</p>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                    {allArtworks.map((aw: any) => (
+                      <div key={aw.id || aw.number} style={{ background: s.bgCard, border: `1px solid rgba(251,191,36,0.25)`, borderRadius: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                        {aw.image && (
+                          <img src={aw.image} alt={aw.title} style={{ width: '100%', height: 140, objectFit: 'cover' }} />
+                        )}
+                        {!aw.image && (
+                          <div style={{ width: '100%', height: 100, background: s.bgElevated, display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.muted, fontSize: '0.8rem' }}>Kein Foto</div>
+                        )}
+                        <div style={{ padding: '0.75rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                          <div style={{ fontWeight: 700, fontSize: '0.9rem', color: s.text, lineHeight: 1.3 }}>{aw.title || `Werk ${aw.number}`}</div>
+                          <div style={{ fontSize: '0.78rem', color: s.muted }}>Nr. {aw.number}{aw.dimensions ? ` · ${aw.dimensions}` : ''}</div>
+                          {aw.technik && <div style={{ fontSize: '0.78rem', color: s.muted }}>{aw.technik}</div>}
+                          <button
+                            type="button"
+                            onClick={() => druckeZertifikat(aw)}
+                            style={{ marginTop: 'auto', padding: '0.45rem 0.75rem', background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 8, color: '#fbbf24', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}
+                          >
+                            🖨️ Zertifikat drucken
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
+                  <button type="button" onClick={() => setActiveTab('werke')} style={{ padding: '0.5rem 1.25rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: 8, color: s.muted, fontSize: '0.85rem', cursor: 'pointer' }}>
+                    ← Zurück zur Übersicht
+                  </button>
+                </div>
+              </section>
+            )
+          })()}
+
+          {/* ===== NEWSLETTER & EINLADUNGEN ===== */}
+          {activeTab === 'newsletter' && (() => {
+            const NEWSLETTER_KEY = 'k2-newsletter-kontakte'
+
+            const saveKontakte = (list: any[]) => {
+              try { localStorage.setItem(NEWSLETTER_KEY, JSON.stringify(list)) } catch (_) {}
+            }
+
+            const addKontakt = () => {
+              const nm = nlName.trim()
+              const em = nlEmail.trim()
+              if (!nm || !em) { setNlMsg('Name und E-Mail sind Pflicht.'); return }
+              const exists = nlKontakte.some((k: any) => k.email.toLowerCase() === em.toLowerCase())
+              if (exists) { setNlMsg('Diese E-Mail ist bereits in der Liste.'); return }
+              const updated = [...nlKontakte, { id: `nl-${Date.now()}`, name: nm, email: em, kategorie: nlKategorie, createdAt: new Date().toISOString() }]
+              setNlKontakte(updated)
+              saveKontakte(updated)
+              setNlName('')
+              setNlEmail('')
+              setNlMsg('✅ Hinzugefügt.')
+            }
+
+            const removeKontakt = (id: string) => {
+              const updated = nlKontakte.filter((k: any) => k.id !== id)
+              setNlKontakte(updated)
+              saveKontakte(updated)
+            }
+
+            const exportCsv = () => {
+              const rows = [['Name', 'E-Mail', 'Kategorie', 'Hinzugefügt'], ...nlKontakte.map((k: any) => [k.name, k.email, k.kategorie, k.createdAt ? new Date(k.createdAt).toLocaleDateString('de-DE') : ''])]
+              const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n')
+              const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' })
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url; a.download = 'einladungsliste.csv'; a.click()
+              URL.revokeObjectURL(url)
+            }
+
+            const druckeAdressliste = () => {
+              const win = window.open('', '_blank')
+              if (!win) return
+              const rows = nlKontakte.map((k: any, i: number) => `<tr><td style="padding:6px 10px;border-bottom:1px solid #eee">${i + 1}.</td><td style="padding:6px 10px;border-bottom:1px solid #eee;font-weight:600">${k.name}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;color:#555">${k.email}</td><td style="padding:6px 10px;border-bottom:1px solid #eee;color:#888;font-size:0.85rem">${k.kategorie}</td></tr>`).join('')
+              win.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Einladungsliste</title>
+<style>body{font-family:sans-serif;padding:20mm 20mm;color:#1a1a1a}h1{font-size:1.3rem;margin-bottom:4px}p{color:#888;font-size:0.85rem;margin-bottom:16px}table{width:100%;border-collapse:collapse}th{text-align:left;padding:6px 10px;border-bottom:2px solid #333;font-size:0.85rem;color:#555}</style></head>
+<body><h1>📬 Einladungsliste</h1><p>Stand: ${new Date().toLocaleDateString('de-DE')} · ${nlKontakte.length} Kontakte</p>
+<table><thead><tr><th>#</th><th>Name</th><th>E-Mail</th><th>Kategorie</th></tr></thead><tbody>${rows}</tbody></table>
+<script>window.onload=()=>{window.print();window.onafterprint=()=>window.close()}</script></body></html>`)
+              win.document.close()
+            }
+
+            const kategorien = ['allgemein', 'vernissage', 'presse', 'sammler', 'freunde']
+
+            return (
+              <section style={{ padding: 'clamp(1rem, 3vw, 2rem)' }}>
+                <div style={{ marginBottom: '1.5rem', padding: '1rem 1.25rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 12 }}>
+                  <p style={{ margin: 0, color: s.muted, fontSize: '0.9rem', lineHeight: 1.6 }}>
+                    📬 <strong style={{ color: '#fbbf24' }}>Einladungsliste</strong> – Kontakte für Vernissagen, Newsletter und Einladungskarten.
+                    Als CSV exportieren oder Adressliste drucken.
+                  </p>
+                </div>
+
+                {/* Neuer Kontakt */}
+                <div style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: 12, padding: '1.25rem', marginBottom: '1.5rem' }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: '0 0 1rem' }}>➕ Kontakt hinzufügen</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                    <div>
+                      <label style={{ fontSize: '0.8rem', color: s.muted, display: 'block', marginBottom: 4 }}>Name *</label>
+                      <input value={nlName} onChange={(e: any) => setNlName(e.target.value)} placeholder="Vorname Nachname" className="input" style={{ width: '100%', boxSizing: 'border-box' }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '0.8rem', color: s.muted, display: 'block', marginBottom: 4 }}>E-Mail *</label>
+                      <input type="email" value={nlEmail} onChange={(e: any) => setNlEmail(e.target.value)} placeholder="email@beispiel.at" className="input" style={{ width: '100%', boxSizing: 'border-box' }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '0.8rem', color: s.muted, display: 'block', marginBottom: 4 }}>Kategorie</label>
+                      <select value={nlKategorie} onChange={(e: any) => setNlKategorie(e.target.value)} className="input" style={{ width: '100%', boxSizing: 'border-box' }}>
+                        {kategorien.map(k => <option key={k} value={k}>{k.charAt(0).toUpperCase() + k.slice(1)}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <button type="button" onClick={addKontakt} style={{ padding: '0.5rem 1.25rem', background: 'rgba(251,191,36,0.2)', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 8, color: '#fbbf24', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}>
+                      Hinzufügen
+                    </button>
+                    {nlMsg && <span style={{ fontSize: '0.85rem', color: nlMsg.startsWith('✅') ? '#22c55e' : '#f87171' }}>{nlMsg}</span>}
+                  </div>
+                </div>
+
+                {/* Kontaktliste */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: 0 }}>
+                    Kontakte ({nlKontakte.length})
+                  </h3>
+                  {nlKontakte.length > 0 && (
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button type="button" onClick={druckeAdressliste} style={{ padding: '0.4rem 1rem', background: `${s.accent}18`, border: `1px solid ${s.accent}44`, borderRadius: 8, color: s.accent, fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600 }}>🖨️ Liste drucken</button>
+                      <button type="button" onClick={exportCsv} style={{ padding: '0.4rem 1rem', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.4)', borderRadius: 8, color: '#fbbf24', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600 }}>⬇️ CSV Export</button>
+                    </div>
+                  )}
+                </div>
+
+                {nlKontakte.length === 0 ? (
+                  <p style={{ color: s.muted, fontSize: '0.88rem' }}>Noch keine Kontakte. Ersten Kontakt oben hinzufügen.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {nlKontakte.map((k: any) => (
+                      <div key={k.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', padding: '0.65rem 1rem', background: s.bgCard, border: `1px solid ${s.accent}18`, borderRadius: 10, flexWrap: 'wrap' }}>
+                        <div>
+                          <span style={{ fontWeight: 700, color: s.text, fontSize: '0.9rem' }}>{k.name}</span>
+                          <span style={{ color: s.muted, fontSize: '0.85rem', marginLeft: 10 }}>{k.email}</span>
+                          <span style={{ fontSize: '0.75rem', background: `${s.accent}15`, color: s.accent, borderRadius: 20, padding: '2px 8px', marginLeft: 8 }}>{k.kategorie}</span>
+                        </div>
+                        <button type="button" onClick={() => removeKontakt(k.id)} style={{ padding: '0.2rem 0.5rem', background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 6, color: '#f87171', fontSize: '0.8rem', cursor: 'pointer' }}>✕</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
+                  <button type="button" onClick={() => setActiveTab('werke')} style={{ padding: '0.5rem 1.25rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: 8, color: s.muted, fontSize: '0.85rem', cursor: 'pointer' }}>
+                    ← Zurück zur Übersicht
+                  </button>
+                </div>
+              </section>
+            )
+          })()}
+
+          {/* ===== PRESSEMAPPE ===== */}
+          {activeTab === 'pressemappe' && (() => {
+            const galStammdaten: any = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}') } catch (_) { return {} } })()
+            const personStammdaten: any = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}') } catch (_) { return {} } })()
+            const pmAllArtworks: any[] = (() => { try { return JSON.parse(localStorage.getItem('k2-artworks') || '[]') } catch (_) { return [] } })()
+
+            const gName = galStammdaten.name || 'K2 Galerie'
+            const gCity = galStammdaten.city || ''
+            const gAddress = galStammdaten.address || ''
+            const gEmail = galStammdaten.email || ''
+            const gPhone = galStammdaten.phone || ''
+            const gWebsite = galStammdaten.website || ''
+            const gHours = galStammdaten.openingHours || ''
+            const artistName = personStammdaten.name || 'Martina Kreinecker'
+            const vita = personStammdaten.vita || personStammdaten.bio || ''
+
+            // pmWerkeIds ist aus dem Haupt-State; beim ersten Öffnen mit den ersten 5 Werken befüllen
+            const pmWerke = pmWerkeIds.length > 0 ? pmWerkeIds : pmAllArtworks.slice(0, 5).map((a: any) => a.id || a.number)
+
+            const selectedWerke = pmAllArtworks.filter((a: any) => pmWerke.includes(a.id || a.number))
+
+            const toggleWerk = (id: string) => {
+              const current = pmWerkeIds.length > 0 ? pmWerkeIds : pmAllArtworks.slice(0, 5).map((a: any) => a.id || a.number)
+              setPmWerkeIds(current.includes(id) ? current.filter((x: string) => x !== id) : current.length < 6 ? [...current, id] : current)
+            }
+
+            const druckePressemappe = () => {
+              const win = window.open('', '_blank')
+              if (!win) return
+              const werkHtml = selectedWerke.map((aw: any) => `
+                <div style="display:inline-block;width:160px;margin:8px;vertical-align:top;text-align:center">
+                  ${aw.image ? `<img src="${aw.image}" style="width:160px;height:120px;object-fit:cover;border-radius:4px;border:1px solid #ddd" />` : '<div style="width:160px;height:100px;background:#f0f0f0;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:0.8rem">Kein Foto</div>'}
+                  <div style="font-weight:600;font-size:0.85rem;margin-top:6px">${aw.title || `Werk ${aw.number}`}</div>
+                  <div style="font-size:0.78rem;color:#777">${aw.technik || ''}${aw.dimensions ? ' · ' + aw.dimensions : ''}</div>
+                  ${aw.price ? `<div style="font-size:0.8rem;color:#555;font-weight:600">€ ${Number(aw.price).toLocaleString('de-AT')}</div>` : ''}
+                </div>`).join('')
+              const today = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: 'long', year: 'numeric' })
+              win.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Pressemappe – ${gName}</title>
+<style>
+  body{font-family:'Helvetica Neue',sans-serif;color:#1a1a1a;margin:0;padding:0}
+  .page{max-width:210mm;margin:0 auto;padding:20mm 18mm;box-sizing:border-box}
+  h1{font-size:2rem;margin:0 0 4px;color:#1a1a1a}
+  .subtitle{font-size:0.9rem;color:#888;margin-bottom:20px;letter-spacing:1px;text-transform:uppercase}
+  .divider{border:none;border-top:2px solid #1a1a1a;margin:18px 0}
+  h2{font-size:1.15rem;color:#333;margin:18px 0 8px}
+  p{line-height:1.7;font-size:0.92rem;color:#333}
+  .kontakt-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:0.88rem;color:#555;margin-bottom:8px}
+  .werk-box{text-align:center}
+  .footer{margin-top:32px;font-size:0.75rem;color:#aaa;border-top:1px solid #ddd;padding-top:10px;text-align:center}
+  @media print{body{margin:0}}
+</style></head><body>
+<div class="page">
+  <h1>${gName}</h1>
+  <p class="subtitle">Pressemappe · ${today}</p>
+  <hr class="divider" />
+
+  <h2>Über die Galerie</h2>
+  <div class="kontakt-grid">
+    ${gAddress ? `<div>📍 ${gAddress}${gCity ? ', ' + gCity : ''}</div>` : ''}
+    ${gPhone ? `<div>📞 ${gPhone}</div>` : ''}
+    ${gEmail ? `<div>✉️ ${gEmail}</div>` : ''}
+    ${gWebsite ? `<div>🌐 ${gWebsite}</div>` : ''}
+    ${gHours ? `<div>🕐 ${gHours}</div>` : ''}
+  </div>
+  ${pmFreitext ? `<p>${pmFreitext}</p>` : ''}
+
+  <h2>Künstlerin: ${artistName}</h2>
+  ${vita ? `<p>${vita}</p>` : '<p><em>Vita wird in den Stammdaten gepflegt.</em></p>'}
+
+  <h2>Ausgewählte Werke</h2>
+  <div>${werkHtml || '<p><em>Keine Werke ausgewählt.</em></p>'}</div>
+
+  <div class="footer">${gName} · Pressemappe · Stand ${today}</div>
+</div>
+<script>window.onload=()=>{window.print();window.onafterprint=()=>window.close()}</script>
+</body></html>`)
+              win.document.close()
+            }
+
+            return (
+              <section style={{ padding: 'clamp(1rem, 3vw, 2rem)' }}>
+                <div style={{ marginBottom: '1.5rem', padding: '1rem 1.25rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 12 }}>
+                  <p style={{ margin: 0, color: s.muted, fontSize: '0.9rem', lineHeight: 1.6 }}>
+                    📰 <strong style={{ color: '#fbbf24' }}>Pressemappe</strong> – Automatisch aus deinen Stammdaten und ausgewählten Werken erstellt.
+                    Wähle bis zu 6 Werke, ergänze optional einen Einleitungstext und drucke die fertige Pressemappe (A4).
+                  </p>
+                </div>
+
+                {/* Werke auswählen */}
+                <div style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: 12, padding: '1.25rem', marginBottom: '1.25rem' }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: '0 0 0.75rem' }}>
+                    🖼️ Werke auswählen (max. 6, ausgewählt: {pmWerke.length})
+                  </h3>
+                  {pmAllArtworks.length === 0 ? (
+                    <p style={{ color: s.muted, fontSize: '0.88rem', margin: 0 }}>Noch keine Werke erfasst.</p>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '0.65rem' }}>
+                      {pmAllArtworks.map((aw: any) => {
+                        const awId = aw.id || aw.number
+                        const selected = pmWerke.includes(awId)
+                        return (
+                          <div key={awId} onClick={() => toggleWerk(awId)} style={{ cursor: 'pointer', border: `2px solid ${selected ? 'rgba(251,191,36,0.7)' : s.accent + '22'}`, borderRadius: 10, overflow: 'hidden', opacity: !selected && pmWerke.length >= 6 ? 0.5 : 1, background: selected ? 'rgba(251,191,36,0.08)' : s.bgElevated }}>
+                            {aw.image ? <img src={aw.image} alt={aw.title} style={{ width: '100%', height: 85, objectFit: 'cover' }} /> : <div style={{ height: 70, background: s.bgCard, display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.muted, fontSize: '0.75rem' }}>Kein Foto</div>}
+                            <div style={{ padding: '0.4rem 0.5rem', fontSize: '0.78rem', color: s.text, fontWeight: selected ? 700 : 400 }}>{aw.title || `Nr. ${aw.number}`}</div>
+                            {selected && <div style={{ padding: '0 0.5rem 0.4rem', fontSize: '0.72rem', color: '#fbbf24', fontWeight: 700 }}>✓ Ausgewählt</div>}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Freitext */}
+                <div style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: 12, padding: '1.25rem', marginBottom: '1.25rem' }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: '0 0 0.5rem' }}>📝 Einleitungstext (optional)</h3>
+                  <textarea
+                    value={pmFreitext}
+                    onChange={(e: any) => setPmFreitext(e.target.value)}
+                    placeholder="Kurze Beschreibung der Galerie oder des aktuellen Anlasses (erscheint in der Pressemappe unter 'Über die Galerie')..."
+                    rows={4}
+                    className="input"
+                    style={{ width: '100%', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit' }}
+                  />
+                </div>
+
+                {/* Datenvorschau */}
+                <div style={{ background: s.bgCard, border: `1px solid ${s.accent}18`, borderRadius: 10, padding: '1rem', marginBottom: '1.25rem', fontSize: '0.85rem', color: s.muted }}>
+                  <strong style={{ color: s.text }}>Daten aus Stammdaten:</strong>
+                  <div style={{ marginTop: '0.5rem', lineHeight: 1.8 }}>
+                    📛 <strong style={{ color: s.text }}>{gName}</strong>{gCity ? ` · ${gCity}` : ''}
+                    {gAddress && <> · {gAddress}</>}
+                    {gEmail && <> · {gEmail}</>}
+                    {gPhone && <> · {gPhone}</>}
+                    <br />👤 Künstlerin: <strong style={{ color: s.text }}>{artistName}</strong>
+                    {vita && <div style={{ marginTop: '0.25rem', fontStyle: 'italic' }}>{vita.substring(0, 200)}{vita.length > 200 ? '…' : ''}</div>}
+                  </div>
+                  <p style={{ margin: '0.5rem 0 0', fontSize: '0.8rem' }}>Diese Daten werden in den Stammdaten (Einstellungen → Stammdaten) gepflegt.</p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={druckePressemappe}
+                  style={{ width: '100%', padding: '0.85rem', background: 'linear-gradient(135deg,rgba(251,191,36,0.25),rgba(245,158,11,0.15))', border: '2px solid rgba(251,191,36,0.5)', borderRadius: 12, color: '#fbbf24', fontSize: '1rem', fontWeight: 800, cursor: 'pointer', letterSpacing: '0.3px' }}
+                >
+                  🖨️ Pressemappe als PDF drucken
+                </button>
+
+                <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
+                  <button type="button" onClick={() => setActiveTab('werke')} style={{ padding: '0.5rem 1.25rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: 8, color: s.muted, fontSize: '0.85rem', cursor: 'pointer' }}>
+                    ← Zurück zur Übersicht
+                  </button>
+                </div>
+              </section>
             )
           })()}
 

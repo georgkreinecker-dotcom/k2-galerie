@@ -814,6 +814,60 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </p>
       </section>
 
+      <section id="mok2-14" style={{ marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(251,191,36,0.4)', pageBreakInside: 'avoid' as const }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#fbbf24', marginBottom: '0.5rem', borderBottom: '1px solid rgba(251,191,36,0.4)', paddingBottom: '0.35rem' }}>
+          14. 💎 Excellent-Lizenz – das Premium-Paket für professionelle Künstler:innen
+        </h2>
+        <p style={{ lineHeight: 1.7, marginBottom: '1rem', color: 'rgba(255,255,255,0.85)' }}>
+          Neben Basic (49 €), Pro (99 €) und Kunstvereine (VK2) gibt es ab sofort die <strong style={{ color: '#fbbf24' }}>Excellent-Lizenz (149 €/Monat)</strong> – das Rundum-Paket für professionelle Galerien und Künstler:innen mit gehobenem Anspruch.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.35)', borderRadius: '10px', padding: '1.25rem' }}>
+            <p style={{ fontWeight: 700, color: '#fbbf24', marginBottom: '0.5rem' }}>🔏 Echtheitszertifikat</p>
+            <ul style={{ margin: 0, paddingLeft: '1.2rem', lineHeight: 1.8, color: 'rgba(255,255,255,0.85)', fontSize: '0.92rem' }}>
+              <li>PDF pro Werk – automatisch generiert</li>
+              <li>Enthält: Foto, Titel, Künstler:in, Maße, Technik, Erstellungsdatum, Galerie-Signatur</li>
+              <li>QR-Code auf dem Zertifikat → verifizierbar in der Galerie-App</li>
+              <li>Professioneller Druck möglich (A5 oder A4)</li>
+              <li><em style={{ color: 'rgba(255,255,255,0.6)' }}>Hebt den Wert jedes Originals – besonders für den Weiterverkauf</em></li>
+            </ul>
+          </div>
+          <div style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.35)', borderRadius: '10px', padding: '1.25rem' }}>
+            <p style={{ fontWeight: 700, color: '#fbbf24', marginBottom: '0.5rem' }}>📬 Newsletter & Einladungsliste</p>
+            <ul style={{ margin: 0, paddingLeft: '1.2rem', lineHeight: 1.8, color: 'rgba(255,255,255,0.85)', fontSize: '0.92rem' }}>
+              <li>Kontakte direkt in der App verwalten (Name, E-Mail, Kategorie)</li>
+              <li>Einladungsliste für Vernissagen, Events, Vorankündigungen</li>
+              <li>Druckfertige Adressliste für Briefe/Einladungskarten</li>
+              <li>Export als CSV für externe Newsletter-Tools</li>
+              <li><em style={{ color: 'rgba(255,255,255,0.6)' }}>Eigene Community aufbauen – ohne externe Adressen-Dienste</em></li>
+            </ul>
+          </div>
+          <div style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.35)', borderRadius: '10px', padding: '1.25rem' }}>
+            <p style={{ fontWeight: 700, color: '#fbbf24', marginBottom: '0.5rem' }}>📰 Pressemappe PDF</p>
+            <ul style={{ margin: 0, paddingLeft: '1.2rem', lineHeight: 1.8, color: 'rgba(255,255,255,0.85)', fontSize: '0.92rem' }}>
+              <li>Automatisch generiert aus Stammdaten + ausgewählten Werken</li>
+              <li>Enthält: Vita, Ausstellungshistorie, Galeriedaten, 3–5 Musterwerke</li>
+              <li>Professionelles Layout, sofort für Medien und Presse nutzbar</li>
+              <li>Auch als Bewerbungsmappe für Ausstellungen einsetzbar</li>
+              <li><em style={{ color: 'rgba(255,255,255,0.6)' }}>Spart Stunden – bisher war das immer manuelle Arbeit</em></li>
+            </ul>
+          </div>
+        </div>
+
+        <p style={{ fontWeight: 700, color: '#22c55e', marginBottom: '0.5rem' }}>✅ Warum Excellent – der Unterschied zu Pro:</p>
+        <ul style={{ margin: '0 0 1.25rem', paddingLeft: '1.2rem', lineHeight: 1.8, color: 'rgba(255,255,255,0.85)' }}>
+          <li><strong>Pro:</strong> Unbegrenzte Werke, Custom Domain, volles Marketing – ideal für aktive Galerien</li>
+          <li><strong>Excellent:</strong> Alles aus Pro, plus Werkzeuge für <em>professionellen Betrieb mit Außenwirkung</em> – Zertifikate, eigene Kontaktliste, Pressematerial, Anfragen-Inbox, Verkaufsstatistik mit Zeitraumanalyse, Priority Support</li>
+          <li><strong>Zielgruppe Excellent:</strong> Künstler:innen, die regelmäßig ausstellen, Medien- und Pressearbeit betreiben, und ihren Werken einen nachvollziehbaren Wert geben wollen</li>
+        </ul>
+
+        <p style={{ padding: '0.75rem 1rem', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.4)', borderRadius: '8px', lineHeight: 1.7, fontSize: '0.95rem' }}>
+          <strong style={{ color: '#fbbf24' }}>💬 Formulierung für Gespräche und Unterlagen:</strong><br />
+          „Mit K2 Galerie Excellent haben Sie nicht nur eine digitale Galerie – Sie haben ein vollständiges Werk-Archiv mit Echtheitszertifikaten, eine eigene Einladungsliste für Vernissagen, eine fertige Pressemappe und direkte Anfragen von Interessenten. Alles in einer App, ohne Zusatz-Software."
+        </p>
+      </section>
+
       <footer style={{ marginTop: '2rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>
         <ProductCopyright /> · Stand: Februar 2026 · Quelle: USP-UND-MARKTCHANCEN.md, VERMARKTUNGSKONZEPT-EMPFEHLUNGSPROGRAMM.md, Produkt-Vision, Galerie-App Feature-Stand.
       </footer>

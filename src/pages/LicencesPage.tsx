@@ -10,15 +10,16 @@ export interface LicenceGrant {
   id: string
   name: string
   email: string
-  licenseType: 'basic' | 'pro' | 'vk2'
+  licenseType: 'basic' | 'pro' | 'excellent' | 'vk2'
   empfehlerId?: string
   createdAt: string
 }
 
-const LICENCE_TYPES: { id: 'basic' | 'pro' | 'vk2'; name: string; price: string; summary: string; icon: string }[] = [
-  { id: 'basic', name: 'Basic', price: '49 €/Monat', summary: 'Bis 30 Werke, 1 Galerie, Events, Kasse, Etiketten, Standard-URL', icon: '🎨' },
-  { id: 'pro', name: 'Pro', price: '99 €/Monat', summary: 'Unbegrenzte Werke, Custom Domain, volles Marketing', icon: '⭐' },
-  { id: 'vk2', name: 'Kunstvereine (VK2)', price: 'Verein ab 10 Mitgliedern kostenfrei', summary: 'Verein nutzt Pro; Vereinsmitglieder 50 % Rabatt; nicht registrierte Mitglieder im System erfasst', icon: '🏛️' },
+const LICENCE_TYPES: { id: 'basic' | 'pro' | 'excellent' | 'vk2'; name: string; price: string; summary: string; icon: string; highlight?: boolean }[] = [
+  { id: 'basic',     name: 'Basic',              price: '49 €/Monat',                           icon: '🎨',  summary: 'Bis 30 Werke, 1 Galerie, Events, Kasse, Etiketten, Standard-URL' },
+  { id: 'pro',       name: 'Pro',                price: '99 €/Monat',                           icon: '⭐',  summary: 'Unbegrenzte Werke, Custom Domain, volles Marketing (Flyer, Presse, Social Media)' },
+  { id: 'excellent', name: 'Excellent',          price: '149 €/Monat',                          icon: '💎',  summary: 'Alles aus Pro + Anfragen-Inbox, Echtheitszertifikat, Newsletter, Verkaufsstatistik, Pressemappe, Priority Support', highlight: true },
+  { id: 'vk2',       name: 'Kunstvereine (VK2)', price: 'ab 10 Mitgliedern kostenfrei',         icon: '🏛️', summary: 'Verein nutzt Pro; Vereinsmitglieder 50 % Rabatt; nicht registrierte Mitglieder im System erfasst' },
 ]
 
 function loadGrants(): LicenceGrant[] {
@@ -50,7 +51,7 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
   const [grants, setGrants] = useState<LicenceGrant[]>([])
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [licenseType, setLicenseType] = useState<LicenceGrant['licenseType']>('pro')
+  const [licenseType, setLicenseType] = useState<LicenceGrant['licenseType']>('excellent')
   const [empfehlerId, setEmpfehlerId] = useState('')
   const [message, setMessage] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -150,14 +151,23 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
             {LICENCE_TYPES.map((lt) => {
               const count = grants.filter(g => g.licenseType === lt.id).length
+              const isExcellent = lt.id === 'excellent'
               return (
                 <div key={lt.id} style={{
-                  background: count > 0 ? 'rgba(95,251,241,0.06)' : 'rgba(255,255,255,0.03)',
-                  border: `1.5px solid ${count > 0 ? 'rgba(95,251,241,0.3)' : 'rgba(255,255,255,0.1)'}`,
-                  borderRadius: '10px', padding: '1rem'
+                  background: isExcellent
+                    ? 'linear-gradient(135deg, rgba(251,191,36,0.12) 0%, rgba(245,158,11,0.06) 100%)'
+                    : count > 0 ? 'rgba(95,251,241,0.06)' : 'rgba(255,255,255,0.03)',
+                  border: `1.5px solid ${isExcellent ? 'rgba(251,191,36,0.5)' : count > 0 ? 'rgba(95,251,241,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                  borderRadius: '10px', padding: '1rem',
+                  position: 'relative'
                 }}>
+                  {isExcellent && (
+                    <div style={{ position: 'absolute', top: -10, right: 12, background: 'linear-gradient(90deg, #f59e0b, #fbbf24)', color: '#1a1a00', fontSize: '0.7rem', fontWeight: 800, padding: '2px 10px', borderRadius: 20, letterSpacing: '0.5px' }}>
+                      EMPFOHLEN
+                    </div>
+                  )}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                    <strong style={{ color: 'var(--k2-accent)', fontSize: '1rem' }}>{lt.icon} {lt.name}</strong>
+                    <strong style={{ color: isExcellent ? '#fbbf24' : 'var(--k2-accent)', fontSize: '1rem' }}>{lt.icon} {lt.name}</strong>
                     <span style={{
                       fontSize: '0.75rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: 20,
                       background: count > 0 ? 'rgba(95,251,241,0.15)' : 'rgba(255,255,255,0.06)',
@@ -166,7 +176,7 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
                       {count > 0 ? `✅ ${count} aktiv` : '○ keine'}
                     </span>
                   </div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--k2-accent)', fontWeight: 600, marginBottom: '0.3rem' }}>{lt.price}</div>
+                  <div style={{ fontSize: '0.85rem', color: isExcellent ? '#fbbf24' : 'var(--k2-accent)', fontWeight: 600, marginBottom: '0.3rem' }}>{lt.price}</div>
                   <div style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', lineHeight: 1.4 }}>{lt.summary}</div>
                 </div>
               )
@@ -183,10 +193,13 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
           <div style={{ fontSize: '0.88rem', color: 'var(--k2-muted)', lineHeight: 1.7 }}>
             <p style={{ margin: '0 0 0.5rem' }}><strong style={{ color: 'var(--k2-text)' }}>🎨 Basic</strong> – Bis 30 Werke, 1 Galerie, Events, Kasse, Etiketten, Marketing (Basis), <TermWithExplanation term="Standard-URL" />. 49 €/Monat.</p>
             <p style={{ margin: '0 0 0.5rem' }}><strong style={{ color: 'var(--k2-text)' }}>⭐ Pro</strong> – Alles aus Basic + unbegrenzte Werke, <TermWithExplanation term="Custom Domain" />, volles Marketing (Flyer, Presse, Social Media, Plakat). 99 €/Monat.</p>
+            <p style={{ margin: '0 0 0.5rem', padding: '0.6rem 0.85rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 8 }}>
+              <strong style={{ color: '#fbbf24' }}>💎 Excellent</strong> – Alles aus Pro + <strong style={{ color: 'var(--k2-text)' }}>Anfragen-Inbox</strong> (Besucher stellen Anfragen direkt in der Galerie), <strong style={{ color: 'var(--k2-text)' }}>Echtheitszertifikat</strong> (PDF pro Werk), <strong style={{ color: 'var(--k2-text)' }}>Newsletter & Einladungsliste</strong> (Kontakte für Vernissagen), <strong style={{ color: 'var(--k2-text)' }}>Verkaufsstatistik</strong> (Umsatz, Kategorien, Zeitraum), <strong style={{ color: 'var(--k2-text)' }}>Pressemappe PDF</strong> (automatisch generiert), Priority Support. 149 €/Monat.
+            </p>
             <p style={{ margin: 0 }}><strong style={{ color: 'var(--k2-text)' }}>🏛️ Kunstvereine (VK2)</strong> – Verein nutzt Pro; ab 10 registrierten Mitgliedern kostenfrei. Vereinsmitglieder: 50 % Rabatt. Nicht registrierte Mitglieder werden im System erfasst (Datenschutz beachten).</p>
           </div>
           <p style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', marginTop: '0.75rem', marginBottom: 0 }}>
-            Aufstufung jederzeit möglich: Basic → Pro → Kunstvereine (VK2). Daten bleiben erhalten.
+            Aufstufung jederzeit möglich: Basic → Pro → Excellent → Kunstvereine (VK2). Daten bleiben erhalten.
           </p>
         </section>
 
