@@ -1,0 +1,42 @@
+---
+description: Fertig = getestet + committed (nicht nur "umgesetzt")
+alwaysApply: true
+---
+
+# 🔒 FERTIG = GETESTET + COMMITTED (unveränderlich)
+
+## Das Problem
+
+Die Session-Zusammenfassung beschreibt Dinge als "fertig" oder "implementiert", obwohl:
+- Der Code nur lokal war (nicht committed)
+- Oder nur teilweise umgesetzt war (z.B. Kamera ohne jsQR-Fallback)
+- Oder die Umsetzung nicht getestet wurde
+
+Beim nächsten Session-Start liest die AI die Zusammenfassung und glaubt: "das ist erledigt" – obwohl es nicht wirklich funktioniert.
+
+## Unveränderliche Regel
+
+**Eine Aufgabe gilt als FERTIG wenn und nur wenn:**
+
+1. ✅ Der Code **committed und gepusht** ist (auf GitHub sichtbar)
+2. ✅ Der Build erfolgreich war (`npm run build`)
+3. ✅ Die Funktion **auf dem Gerät** wo sie gebraucht wird **getestet** wurde – oder zumindest der Weg beschrieben ist
+
+## Was das konkret bedeutet
+
+- **Niemals** in der Zusammenfassung oder im DIALOG-STAND.md schreiben "X wurde implementiert / fertig" wenn der Code nicht committed ist.
+- **DIALOG-STAND.md** muss nach jeder Aufgabe den **genauen Git-Commit-Hash** enthalten, damit beim nächsten Session-Start überprüft werden kann ob der Stand wirklich auf GitHub ist.
+- Bei Session-Start: **Nicht** blind der Zusammenfassung vertrauen. Den letzten Commit mit `git log --oneline -5` prüfen und mit dem DIALOG-STAND vergleichen.
+
+## Format für DIALOG-STAND.md
+
+```
+## Was zuletzt gemacht:
+- [Beschreibung] – Commit: abc1234 ✅ auf GitHub
+- NICHT: "X wurde implementiert" ohne Commit-Hash
+```
+
+## Kurzfassung
+
+**Fertig = committed + auf GitHub. Alles andere ist "in Arbeit".**
+Zusammenfassung und DIALOG-STAND ohne Commit-Hash = "unklar ob wirklich fertig".
