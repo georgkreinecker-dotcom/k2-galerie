@@ -8063,9 +8063,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>✨</div>
                     <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Aussehen der Galerie</div>
                     <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
-                      Nach meinen Wünschen anpassen – Farben, Texte, Bilder, Theme
+                      Nach deinen Wünschen anpassen – Farben, Texte, Bilder, Theme
                     </div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Öffnen →</div>
+                    <div style={{ padding: '0.5rem 1rem', background: `linear-gradient(135deg, ${s.accent} 0%, #d96b35 100%)`, color: '#fff', borderRadius: 8, fontSize: '0.9rem', fontWeight: 700 }}>✨ Jetzt gestalten →</div>
                   </button>
 
                   {/* Einstellungen */}
@@ -8110,7 +8110,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
                 <h2 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', fontWeight: 700, color: s.text, margin: 0 }}>
                   {activeTab === 'eventplan' && '📢 Veranstaltungen & Werbung'}
-                  {activeTab === 'design' && '✨ Aussehen der Galerie – nach meinen Wünschen anpassen'}
+                  {activeTab === 'design' && '✨ Aussehen der Galerie – nach deinen Wünschen anpassen'}
                   {activeTab === 'einstellungen' && '⚙️ Einstellungen'}
                 </h2>
               </div>
@@ -8867,7 +8867,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 {/* Design-Toolbar – sticky, immer sichtbar */}
                 <div style={{ flexShrink: 0, position: 'sticky', top: 0, zIndex: 20, background: WERBEUNTERLAGEN_STIL.bgDark, borderBottom: `2px solid ${s.accent}33`, padding: '0.75rem 1rem' }}>
                   {/* Titel */}
-                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: s.text, marginBottom: '0.6rem' }}>✨ Meine Galerie gestalten</div>
+                  <div style={{ fontWeight: 800, fontSize: '1.25rem', color: s.text, marginBottom: '0.6rem' }}>✨ Deine Galerie gestalten</div>
                   {/* 3-Schritt-Workflow */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                     {/* Schritt 1 */}
