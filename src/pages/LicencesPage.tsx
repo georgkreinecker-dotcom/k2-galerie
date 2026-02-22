@@ -163,7 +163,7 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
                 }}>
                   {isExcellent && (
                     <div style={{ position: 'absolute', top: -10, right: 12, background: 'linear-gradient(90deg, #f59e0b, #fbbf24)', color: '#1a1a00', fontSize: '0.7rem', fontWeight: 800, padding: '2px 10px', borderRadius: 20, letterSpacing: '0.5px' }}>
-                      EMPFOHLEN
+                      PREMIUM
                     </div>
                   )}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>

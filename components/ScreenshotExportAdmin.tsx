@@ -8154,7 +8154,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.7)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.35)'; e.currentTarget.style.transform = 'translateY(0)' }}
                   >
-                    <div style={{ position: 'absolute', top: -10, right: 14, background: 'linear-gradient(90deg,#f59e0b,#fbbf24)', color: '#1a1a00', fontSize: '0.68rem', fontWeight: 800, padding: '2px 9px', borderRadius: 20 }}>EXCELLENT</div>
+                    <div style={{ position: 'absolute', top: -10, right: 14, background: 'linear-gradient(90deg,#f59e0b,#fbbf24)', color: '#1a1a00', fontSize: '0.68rem', fontWeight: 800, padding: '2px 9px', borderRadius: 20 }}>💎 PREMIUM</div>
                     <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>🔏</div>
                     <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Echtheitszertifikate</div>
                     <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
@@ -8170,7 +8170,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.7)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.35)'; e.currentTarget.style.transform = 'translateY(0)' }}
                   >
-                    <div style={{ position: 'absolute', top: -10, right: 14, background: 'linear-gradient(90deg,#f59e0b,#fbbf24)', color: '#1a1a00', fontSize: '0.68rem', fontWeight: 800, padding: '2px 9px', borderRadius: 20 }}>EXCELLENT</div>
+                    <div style={{ position: 'absolute', top: -10, right: 14, background: 'linear-gradient(90deg,#f59e0b,#fbbf24)', color: '#1a1a00', fontSize: '0.68rem', fontWeight: 800, padding: '2px 9px', borderRadius: 20 }}>💎 PREMIUM</div>
                     <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📬</div>
                     <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Newsletter & Einladungen</div>
                     <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
@@ -8186,7 +8186,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.7)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.35)'; e.currentTarget.style.transform = 'translateY(0)' }}
                   >
-                    <div style={{ position: 'absolute', top: -10, right: 14, background: 'linear-gradient(90deg,#f59e0b,#fbbf24)', color: '#1a1a00', fontSize: '0.68rem', fontWeight: 800, padding: '2px 9px', borderRadius: 20 }}>EXCELLENT</div>
+                    <div style={{ position: 'absolute', top: -10, right: 14, background: 'linear-gradient(90deg,#f59e0b,#fbbf24)', color: '#1a1a00', fontSize: '0.68rem', fontWeight: 800, padding: '2px 9px', borderRadius: 20 }}>💎 PREMIUM</div>
                     <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📰</div>
                     <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Pressemappe</div>
                     <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
