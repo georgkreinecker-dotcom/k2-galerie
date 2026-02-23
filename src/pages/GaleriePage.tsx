@@ -3816,7 +3816,7 @@ function baueKarten(pfad: GuidePfad, a: GuideAntworten, name?: string): { sofort
   }
 }
 
-function ErgebnisKarten({ pfad, antworten, name, aufgeklappt, onAufklappen, onWeiter, onFuehrung }: { pfad: GuidePfad; antworten: GuideAntworten; name?: string; aufgeklappt: boolean; onAufklappen: () => void; onWeiter: () => void; onFuehrung: () => void }) {
+function ErgebnisKarten({ pfad, antworten, name, aufgeklappt, onAufklappen, onWeiter, onFuehrung, onLink }: { pfad: GuidePfad; antworten: GuideAntworten; name?: string; aufgeklappt: boolean; onAufklappen: () => void; onWeiter: () => void; onFuehrung: () => void; onLink?: (href: string) => void }) {
   const karten = baueKarten(pfad, antworten, name)
 
   const statusFarbe = (s: ErgebnisKarte['status']) => {
@@ -3842,9 +3842,9 @@ function ErgebnisKarten({ pfad, antworten, name, aufgeklappt, onAufklappen, onWe
                 </div>
                 <div style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.4, marginTop: '0.15rem' }}>{k.beschreibung}</div>
                 {k.link && (
-                  <a href={k.link} style={{ display: 'inline-block', marginTop: '0.4rem', fontSize: '0.75rem', color: f.badge, fontWeight: 600, textDecoration: 'none', padding: '0.25rem 0.6rem', background: `${f.badge}18`, border: `1px solid ${f.badge}44`, borderRadius: '6px' }}>
+                  <button type="button" onClick={() => onLink ? onLink(k.link!) : (window.location.href = k.link!)} style={{ display: 'inline-block', marginTop: '0.4rem', fontSize: '0.75rem', color: f.badge, fontWeight: 600, cursor: 'pointer', padding: '0.25rem 0.6rem', background: `${f.badge}18`, border: `1px solid ${f.badge}44`, borderRadius: '6px', fontFamily: 'inherit' }}>
                     {k.linkLabel ?? 'Öffnen →'}
-                  </a>
+                  </button>
                 )}
               </div>
             </div>
@@ -3869,9 +3869,9 @@ function ErgebnisKarten({ pfad, antworten, name, aufgeklappt, onAufklappen, onWe
                 <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff8f0', marginBottom: '0.15rem' }}>{k.titel}</div>
                 <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.35 }}>{k.beschreibung}</div>
                 {k.link && (
-                  <a href={k.link} style={{ display: 'inline-block', marginTop: '0.4rem', fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', fontWeight: 600, textDecoration: 'none', padding: '0.2rem 0.5rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '5px' }}>
+                  <button type="button" onClick={() => onLink ? onLink(k.link!) : (window.location.href = k.link!)} style={{ display: 'inline-block', marginTop: '0.4rem', fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', fontWeight: 600, cursor: 'pointer', padding: '0.2rem 0.5rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '5px', fontFamily: 'inherit' }}>
                     {k.linkLabel ?? 'Öffnen →'}
-                  </a>
+                  </button>
                 )}
               </div>
             )
@@ -3943,11 +3943,11 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
     abschluss:  baueDynamischenAbschluss(name, antworten),
     vorhang: '',
     // Tour-Schritte
-    tour_galerie:   `Das hier ist deine Galerie. 🎨\n\nDeine Werke – professionell präsentiert,\nauf jedem Gerät sichtbar.\nQR-Code scannen → sofort online.`,
-    tour_werke:     `Jedes Werk bekommt seinen Platz. 🖼️\n\nMit Foto, Titel, Preis,\nMaterial, Größe und Zertifikat.\nAlles auf einem Blick.`,
-    tour_kontakt:   `Interessenten erreichen dich direkt. 📬\n\nKein Umweg über Social Media –\ndirekt in deine Galerie,\ndirekt zu dir.`,
-    tour_events:    `Ausstellungen planen leicht gemacht. 🎟️\n\nEinladungen versenden, Gästeliste,\nQR-Code für die Vernissage –\nalles an einem Ort.`,
-    tour_dokumente: `Deine Dokumente – sofort druckfertig. 📄\n\nVita, Pressemappe, Werkverzeichnis –\nmit deinen Daten vorbefüllt.\nEin Klick und fertig.`,
+    tour_galerie:   `🎨 Deine Galerie ist live.\n\nJetzt ist sie bereit für deine Werke –\nprofessionell, auf jedem Gerät.\nIm Admin kannst du gleich loslegen.`,
+    tour_werke:     `🖼️ Meine Werke – das Herzstück.\n\nFoto hochladen, Titel, Preis, Material –\njedes Werk hat seinen eigenen Platz.\nMit einem Klick veröffentlicht.`,
+    tour_kontakt:   `📬 Dein Kontakt – direkt erreichbar.\n\nName, E-Mail, Telefon –\nInteressenten schreiben dich direkt an.\nKein Umweg nötig.`,
+    tour_events:    `🎟️ Ausstellungen & Events.\n\nVernissagen planen, Einladungen versenden,\nGästeliste führen – alles an einem Ort.\nQR-Code für die Eröffnung inklusive.`,
+    tour_dokumente: `📄 Dokumente – sofort druckfertig.\n\nDeine Vita, Pressemappe, Werkverzeichnis –\naus deinen Daten vorbefüllt.\nEin Klick und es ist fertig.`,
     empfehlung: `Noch eine letzte Frage, ${name} –\n\nKennst du jemanden dem das\nauch helfen würde?\n\nWenn du jemanden einlädst –\nnutzt ihr beide die Galerie\nohne Kosten.`,
   }
 
@@ -4066,6 +4066,16 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
 
   const schliessen = () => { setSichtbar(false); setTimeout(onDismiss, 350) }
 
+  // Alle Wege führen in den Admin – mit Vorname + Pfad damit das Banner ihn willkommen heißt
+  const geheZuAdmin = () => {
+    setSichtbar(false)
+    const vornamePart = name ? `&vorname=${encodeURIComponent(name)}` : ''
+    const pfadPart = antworten.pfad ? `&pfad=${antworten.pfad}` : ''
+    setTimeout(() => {
+      window.location.href = `/admin?context=oeffentlich${vornamePart}${pfadPart}`
+    }, 300)
+  }
+
   if (!sichtbar) return null
 
   const aktuelleOptionen = optionen[schritt] ?? []
@@ -4151,22 +4161,30 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
             name={name}
             aufgeklappt={kartenAufgeklappt}
             onAufklappen={() => setKartenAufgeklappt(v => !v)}
-            onWeiter={schliessen}
+            onWeiter={geheZuAdmin}
             onFuehrung={() => setSchritt('tour_galerie')}
+            onLink={(href) => { setSichtbar(false); setTimeout(() => { window.location.href = href }, 300) }}
           />
         )}
 
         {/* Tour-Schritte: Weiter-Button */}
         {istFertig && TOUR_SCHRITTE.includes(schritt) && (
           <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.45rem', marginTop: '0.5rem' }}>
-            <button type="button" onClick={() => setSchritt(naechsterSchritt(schritt, antworten))}
-              style={{ width: '100%', padding: '0.75rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit', boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }}>
-              {schritt === 'tour_dokumente' ? '✨ Fertig – ich erkunde selbst →' : 'Weiter →'}
-            </button>
+            {schritt === 'tour_dokumente' ? (
+              <button type="button" onClick={geheZuAdmin}
+                style={{ width: '100%', padding: '0.75rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit', boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }}>
+                🚀 Los – bring mich in die Zentrale →
+              </button>
+            ) : (
+              <button type="button" onClick={() => setSchritt(naechsterSchritt(schritt, antworten))}
+                style={{ width: '100%', padding: '0.75rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit', boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }}>
+                Weiter →
+              </button>
+            )}
             {schritt !== 'tour_dokumente' && (
-              <button type="button" onClick={schliessen}
-                style={{ width: '100%', padding: '0.55rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'inherit' }}>
-                Danke – ich erkunde selbst
+              <button type="button" onClick={geheZuAdmin}
+                style={{ width: '100%', padding: '0.55rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'inherit' }}>
+                Direkt in die Zentrale →
               </button>
             )}
           </div>
@@ -4178,14 +4196,14 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
             <button type="button"
               onClick={() => {
                 try { localStorage.setItem('k2-empfehlung-offen', '1') } catch (_) {}
-                schliessen()
+                geheZuAdmin()
               }}
               style={{ width: '100%', padding: '0.8rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.92rem', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(255,140,66,0.3)' }}>
               Ja, ich kenne jemanden →
             </button>
-            <button type="button" onClick={schliessen}
+            <button type="button" onClick={geheZuAdmin}
               style={{ width: '100%', padding: '0.65rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', color: 'rgba(255,255,255,0.35)', cursor: 'pointer', fontSize: '0.82rem', fontFamily: 'inherit' }}>
-              Vielleicht später
+              Weiter in die Zentrale →
             </button>
           </div>
         )}
