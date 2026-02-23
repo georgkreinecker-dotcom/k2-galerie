@@ -796,19 +796,17 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     if (musterOnly) return () => {}
     let isMounted = true
     
-    // KRITISCH: Backup nur aus gefilterter Liste – sonst kommen die 5 Musterwerke immer wieder
+    // Backup beim Start erstellen – NUR LESEN, nie still filtern/zurückschreiben
+    // 🔒 REGEL: Kein automatisches Löschen von Kundendaten – nur warnen wenn Muster-Nummern gefunden
     const rawOnMount = loadArtworks()
-    const filteredOnMount = rawOnMount && rawOnMount.length > 0 ? filterK2ArtworksOnly(rawOnMount) : []
-    if (filteredOnMount.length > 0) {
-      createBackup(filteredOnMount)
-      console.log('💾 Initiales Backup erstellt:', filteredOnMount.length, 'Werke (gefiltert)')
-    }
-    if (filteredOnMount.length < (rawOnMount?.length ?? 0)) {
-      try {
-        localStorage.setItem('k2-artworks', JSON.stringify(filteredOnMount))
-        localStorage.setItem('k2-artworks-backup', JSON.stringify({ timestamp: new Date().toISOString(), artworks: filteredOnMount, count: filteredOnMount.length, mobileWorks: filteredOnMount.filter((a: any) => a.createdOnMobile || a.updatedOnMobile).length }))
-        console.log('🔒 Musterwerke beim Start entfernt, Backup überschrieben:', filteredOnMount.length, 'Werke')
-      } catch (_) {}
+    if (rawOnMount && rawOnMount.length > 0) {
+      createBackup(rawOnMount)
+      console.log('💾 Initiales Backup erstellt:', rawOnMount.length, 'Werke')
+      const verdaechtig = rawOnMount.filter((a: any) => isMusterOrVk2Artwork(a))
+      if (verdaechtig.length > 0) {
+        console.warn('⚠️ Verdächtige Einträge in k2-artworks gefunden (Muster-Nummern?):', verdaechtig.map((a: any) => a.number || a.id))
+        // NICHT automatisch löschen – nur warnen. User entscheidet.
+      }
     }
     
     const loadArtworksData = async () => {
@@ -962,20 +960,26 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         try {
           const { hasUpdates, artworks } = await checkMobileUpdates()
           if (hasUpdates && artworks && isMounted) {
-            const filtered = filterK2ArtworksOnly(artworks)
-            if (filtered.length < artworks.length) {
-              console.log(`🔒 Muster/VK2 bei Mobile-Sync entfernt: ${filtered.length} Werke`)
+            // 🔒 SICHERHEIT: Nie mit leerer/kleinerer Liste überschreiben
+            const lokalAnzahl = loadArtworks()?.length ?? 0
+            if (artworks.length === 0) {
+              console.warn('⚠️ Mobile-Sync: Server lieferte leere Liste – lokale Daten bleiben erhalten')
+              return
             }
-            console.log(`🔄 Automatisch ${filtered.length} neue Mobile-Daten gefunden und synchronisiert`)
-            setArtworks(filtered)
-            try { localStorage.setItem('k2-artworks', JSON.stringify(filtered)) } catch (_) {}
+            if (artworks.length < lokalAnzahl * 0.5) {
+              console.warn(`⚠️ Mobile-Sync: Server lieferte nur ${artworks.length} Werke, lokal sind ${lokalAnzahl} – Sync übersprungen (zu großer Unterschied)`)
+              return
+            }
+            console.log(`🔄 Automatisch ${artworks.length} neue Mobile-Daten synchronisiert`)
+            setArtworks(artworks)
+            try { localStorage.setItem('k2-artworks', JSON.stringify(artworks)) } catch (_) {}
             // Update Hash für nächsten Check
-            const hash = filtered.map((a: any) => a.number || a.id).sort().join(',')
+            const hash = artworks.map((a: any) => a.number || a.id).sort().join(',')
             localStorage.setItem('k2-artworks-hash', hash)
             localStorage.setItem('k2-last-load-time', Date.now().toString())
             // Event für andere Komponenten
-            window.dispatchEvent(new CustomEvent('artworks-updated', { 
-              detail: { count: filtered.length, autoSync: true } 
+            window.dispatchEvent(new CustomEvent('artworks-updated', {
+              detail: { count: artworks.length, autoSync: true }
             }))
           }
         } catch (error) {

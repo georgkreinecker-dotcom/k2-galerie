@@ -105,12 +105,17 @@ class AppErrorBoundary extends Component<{ children: ReactNode }, { hasError: bo
             <button
               onClick={() => {
                 try {
-                  const keys: string[] = []
-                  for (let i = 0; i < localStorage.length; i++) {
-                    const k = localStorage.key(i)
-                    if (k && k.startsWith('k2-')) keys.push(k)
-                  }
-                  keys.forEach(k => localStorage.removeItem(k))
+                  // 🔒 NIEMALS Kundendaten löschen – nur Session/UI-Keys entfernen
+                  // Echte Daten (Werke, Stammdaten, Events) bleiben IMMER erhalten
+                  const SAFE_TO_DELETE = [
+                    'k2-admin-unlocked', 'k2-admin-unlocked-expiry',
+                    'k2-last-loaded-timestamp', 'k2-last-loaded-version',
+                    'k2-last-build-id', 'k2-last-load-time', 'k2-artworks-hash',
+                    'k2-guide-flow', 'k2-hub-from', 'k2-shop-from-oeffentlich',
+                    'grafiker-notiz-entwurf', 'grafiker-notizen-offen',
+                    'devview-panel-minimized',
+                  ]
+                  SAFE_TO_DELETE.forEach(k => { try { localStorage.removeItem(k) } catch (_) {} })
                   sessionStorage.clear()
                 } catch (_) {}
                 // Im iframe (Cursor Preview) kein Reload – verhindert Loop/Crash

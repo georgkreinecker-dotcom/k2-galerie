@@ -73,7 +73,8 @@ function artworksToSave(key: string, list: any[]): any[] {
   return key === 'k2-artworks' ? filterK2ArtworksOnly(list) : list
 }
 
-/** Verhindert Absturz bei kaputtem localStorage (z. B. nach Druck/Teilen). K2: filtert VK2-Werke raus. */
+/** Liest Werke aus localStorage – NUR LESEN, nie still filtern oder zurückschreiben.
+ * 🔒 REGEL: Kein automatisches Löschen von Kundendaten beim Laden. */
 function safeParseArtworks(storageKey: string = 'k2-artworks'): any[] {
   try {
     const raw = localStorage.getItem(storageKey)
@@ -81,15 +82,11 @@ function safeParseArtworks(storageKey: string = 'k2-artworks'): any[] {
     const parsed = JSON.parse(raw)
     const list = Array.isArray(parsed) ? parsed : []
     if (storageKey === 'k2-artworks') {
-      const filtered = filterK2ArtworksOnly(list)
-      if (filtered.length < list.length) {
-        try {
-          localStorage.setItem(storageKey, JSON.stringify(filtered))
-          window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: filtered.length, fromGaleriePage: true } }))
-        } catch (_) {}
-        return filtered
+      // Nur warnen – niemals still löschen
+      const verdaechtig = list.filter((a: any) => isMusterArtwork(a))
+      if (verdaechtig.length > 0) {
+        console.warn('⚠️ Verdächtige Muster-Einträge in k2-artworks:', verdaechtig.map((a: any) => a.number || a.id))
       }
-      return filtered
     }
     return list
   } catch {
