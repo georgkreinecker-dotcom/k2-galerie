@@ -10827,31 +10827,31 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       <div className="admin-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Vereinsname</label>
-                          <input type="text" value={vk2Stammdaten.verein.name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, name: e.target.value } })} placeholder="z. B. Kunstverein Musterstadt" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={vk2Stammdaten.verein.name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, name: e.target.value } })} placeholder="z. B. Kunstverein Musterstadt" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Vereinsnummer</label>
-                          <input type="text" value={vk2Stammdaten.verein.vereinsnummer} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, vereinsnummer: e.target.value } })} placeholder="z. B. ZVR 1234567" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={vk2Stammdaten.verein.vereinsnummer} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, vereinsnummer: e.target.value } })} placeholder="z. B. ZVR 1234567" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field" style={{ gridColumn: '1 / -1' }}>
                           <label style={{ fontSize: '0.85rem' }}>Adresse (Straße, Hausnummer)</label>
-                          <input type="text" value={vk2Stammdaten.verein.address} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, address: e.target.value } })} placeholder="z. B. Hauptstraße 12" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={vk2Stammdaten.verein.address} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, address: e.target.value } })} placeholder="z. B. Hauptstraße 12" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Ort (PLZ und Ortsname)</label>
-                          <input type="text" value={vk2Stammdaten.verein.city} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, city: e.target.value } })} placeholder="z. B. 1010 Wien" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={vk2Stammdaten.verein.city} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, city: e.target.value } })} placeholder="z. B. 1010 Wien" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Land</label>
-                          <input type="text" value={vk2Stammdaten.verein.country} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, country: e.target.value } })} placeholder="z. B. Österreich" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={vk2Stammdaten.verein.country} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, country: e.target.value } })} placeholder="z. B. Österreich" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>E-Mail</label>
-                          <input type="email" value={vk2Stammdaten.verein.email} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, email: e.target.value } })} placeholder="info@verein.example" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="email" value={vk2Stammdaten.verein.email} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, email: e.target.value } })} placeholder="info@verein.example" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Website</label>
-                          <input type="url" value={vk2Stammdaten.verein.website} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, website: e.target.value } })} placeholder="https://..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="url" value={vk2Stammdaten.verein.website} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, website: e.target.value } })} placeholder="https://..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                       </div>
                     </div>
@@ -10863,23 +10863,23 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Vorsitzende:r / Präsident:in</label>
-                          <input type="text" value={vk2Stammdaten.vorstand.name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, vorstand: { name: e.target.value } })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={vk2Stammdaten.vorstand.name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, vorstand: { name: e.target.value } })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Stellv. Vorsitzende:r</label>
-                          <input type="text" value={vk2Stammdaten.vize.name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, vize: { name: e.target.value } })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={vk2Stammdaten.vize.name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, vize: { name: e.target.value } })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Kassier:in</label>
-                          <input type="text" value={vk2Stammdaten.kassier.name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, kassier: { name: e.target.value } })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={vk2Stammdaten.kassier.name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, kassier: { name: e.target.value } })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Schriftführer:in</label>
-                          <input type="text" value={vk2Stammdaten.schriftfuehrer.name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, schriftfuehrer: { name: e.target.value } })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={vk2Stammdaten.schriftfuehrer.name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, schriftfuehrer: { name: e.target.value } })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Beisitzer:in (optional)</label>
-                          <input type="text" value={vk2Stammdaten.beisitzer?.name || ''} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, beisitzer: { name: e.target.value } })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={vk2Stammdaten.beisitzer?.name || ''} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, beisitzer: { name: e.target.value } })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                       </div>
                     </div>
@@ -11432,31 +11432,31 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Vereinsname</label>
-                          <input type="text" value={vk2Stammdaten.verein.name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, name: e.target.value } })} placeholder="z. B. Kunstverein Musterstadt" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={vk2Stammdaten.verein.name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, name: e.target.value } })} placeholder="z. B. Kunstverein Musterstadt" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Vereinsnummer</label>
-                          <input type="text" value={vk2Stammdaten.verein.vereinsnummer} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, vereinsnummer: e.target.value } })} placeholder="z. B. ZVR 1234567" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={vk2Stammdaten.verein.vereinsnummer} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, vereinsnummer: e.target.value } })} placeholder="z. B. ZVR 1234567" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Straße</label>
-                          <input type="text" value={vk2Stammdaten.verein.address} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, address: e.target.value } })} placeholder="Straße, Hausnummer" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={vk2Stammdaten.verein.address} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, address: e.target.value } })} placeholder="Straße, Hausnummer" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Ort (PLZ Ort)</label>
-                          <input type="text" value={vk2Stammdaten.verein.city} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, city: e.target.value } })} placeholder="1010 Wien" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={vk2Stammdaten.verein.city} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, city: e.target.value } })} placeholder="1010 Wien" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Land</label>
-                          <input type="text" value={vk2Stammdaten.verein.country} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, country: e.target.value } })} placeholder="Österreich" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={vk2Stammdaten.verein.country} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, country: e.target.value } })} placeholder="Österreich" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>E-Mail</label>
-                          <input type="email" value={vk2Stammdaten.verein.email} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, email: e.target.value } })} placeholder="info@verein.example" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="email" value={vk2Stammdaten.verein.email} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, email: e.target.value } })} placeholder="info@verein.example" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Website</label>
-                          <input type="url" value={vk2Stammdaten.verein.website} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, website: e.target.value } })} placeholder="https://..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="url" value={vk2Stammdaten.verein.website} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, website: e.target.value } })} placeholder="https://..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                       </div>
                     </div>
@@ -11466,12 +11466,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         {(['vorstand', 'vize', 'kassier', 'schriftfuehrer'] as const).map((role) => (
                           <div key={role} className="field">
                             <label style={{ fontSize: '0.85rem' }}>{role === 'vorstand' ? 'Vorsitzende:r / Präsident:in' : role === 'vize' ? 'Stellv. Vorsitzende:r' : role === 'kassier' ? 'Kassier:in' : 'Schriftführer:in'}</label>
-                            <input type="text" value={vk2Stammdaten[role].name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, [role]: { name: e.target.value } })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                            <input type="text" value={vk2Stammdaten[role].name} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, [role]: { name: e.target.value } })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                           </div>
                         ))}
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Beisitzer:in</label>
-                          <input type="text" value={vk2Stammdaten.beisitzer?.name || ''} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, beisitzer: { name: e.target.value } })} placeholder="Name (optional)" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={vk2Stammdaten.beisitzer?.name || ''} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, beisitzer: { name: e.target.value } })} placeholder="Name (optional)" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                       </div>
                     </div>
@@ -11487,31 +11487,31 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Name</label>
-                          <input type="text" value={galleryData.name || ''} onChange={(e) => setGalleryData({ ...galleryData, name: e.target.value })} placeholder="Galerie-Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={galleryData.name || ''} onChange={(e) => setGalleryData({ ...galleryData, name: e.target.value })} placeholder="Galerie-Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Straße</label>
-                          <input type="text" value={galleryData.address || ''} onChange={(e) => setGalleryData({ ...galleryData, address: e.target.value })} placeholder="Straße, Hausnummer" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={galleryData.address || ''} onChange={(e) => setGalleryData({ ...galleryData, address: e.target.value })} placeholder="Straße, Hausnummer" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Ort (PLZ Ort)</label>
-                          <input type="text" value={galleryData.city || ''} onChange={(e) => setGalleryData({ ...galleryData, city: e.target.value })} placeholder="1010 Wien" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={galleryData.city || ''} onChange={(e) => setGalleryData({ ...galleryData, city: e.target.value })} placeholder="1010 Wien" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Land</label>
-                          <input type="text" value={galleryData.country || ''} onChange={(e) => setGalleryData({ ...galleryData, country: e.target.value })} placeholder="Österreich" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={galleryData.country || ''} onChange={(e) => setGalleryData({ ...galleryData, country: e.target.value })} placeholder="Österreich" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>E-Mail</label>
-                          <input type="email" value={galleryData.email || ''} onChange={(e) => setGalleryData({ ...galleryData, email: e.target.value })} placeholder="info@galerie.at" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="email" value={galleryData.email || ''} onChange={(e) => setGalleryData({ ...galleryData, email: e.target.value })} placeholder="info@galerie.at" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Telefon</label>
-                          <input type="tel" value={galleryData.phone || ''} onChange={(e) => setGalleryData({ ...galleryData, phone: e.target.value })} placeholder="+43 ..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="tel" value={galleryData.phone || ''} onChange={(e) => setGalleryData({ ...galleryData, phone: e.target.value })} placeholder="+43 ..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Website</label>
-                          <input type="url" value={galleryData.website || ''} onChange={(e) => setGalleryData({ ...galleryData, website: e.target.value })} placeholder="https://..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="url" value={galleryData.website || ''} onChange={(e) => setGalleryData({ ...galleryData, website: e.target.value })} placeholder="https://..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                       </div>
                     </div>
@@ -11520,27 +11520,27 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Person 1 (Name)</label>
-                          <input type="text" value={martinaData.name || ''} onChange={(e) => setMartinaData({ ...martinaData, name: e.target.value })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={martinaData.name || ''} onChange={(e) => setMartinaData({ ...martinaData, name: e.target.value })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Person 1 (E-Mail)</label>
-                          <input type="email" value={martinaData.email || ''} onChange={(e) => setMartinaData({ ...martinaData, email: e.target.value })} placeholder="E-Mail" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="email" value={martinaData.email || ''} onChange={(e) => setMartinaData({ ...martinaData, email: e.target.value })} placeholder="E-Mail" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Person 1 (Telefon)</label>
-                          <input type="tel" value={martinaData.phone || ''} onChange={(e) => setMartinaData({ ...martinaData, phone: e.target.value })} placeholder="+43 ..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="tel" value={martinaData.phone || ''} onChange={(e) => setMartinaData({ ...martinaData, phone: e.target.value })} placeholder="+43 ..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Person 2 (Name)</label>
-                          <input type="text" value={georgData.name || ''} onChange={(e) => setGeorgData({ ...georgData, name: e.target.value })} placeholder="Name (optional)" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="text" value={georgData.name || ''} onChange={(e) => setGeorgData({ ...georgData, name: e.target.value })} placeholder="Name (optional)" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Person 2 (E-Mail)</label>
-                          <input type="email" value={georgData.email || ''} onChange={(e) => setGeorgData({ ...georgData, email: e.target.value })} placeholder="E-Mail" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="email" value={georgData.email || ''} onChange={(e) => setGeorgData({ ...georgData, email: e.target.value })} placeholder="E-Mail" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Person 2 (Telefon)</label>
-                          <input type="tel" value={georgData.phone || ''} onChange={(e) => setGeorgData({ ...georgData, phone: e.target.value })} placeholder="+43 ..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          <input type="tel" value={georgData.phone || ''} onChange={(e) => setGeorgData({ ...georgData, phone: e.target.value })} placeholder="+43 ..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                       </div>
                     </div>
