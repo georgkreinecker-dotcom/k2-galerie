@@ -3721,6 +3721,8 @@ interface ErgebnisKarte {
   beschreibung: string
   status: 'sofort' | 'bereit' | 'mehr' | 'lizenz'
   statusLabel: string
+  link?: string        // direkte Route zur Seite
+  linkLabel?: string   // Button-Text
 }
 
 function baueKarten(pfad: GuidePfad, a: GuideAntworten): { sofort: ErgebnisKarte[]; system: ErgebnisKarte[]; lizenz: ErgebnisKarte } {
@@ -3738,18 +3740,23 @@ function baueKarten(pfad: GuidePfad, a: GuideAntworten): { sofort: ErgebnisKarte
     statusLabel: 'Wenn du mehr willst →',
   }
 
+  const ADMIN = '/admin?context=oeffentlich'
+  const GALERIE = '/projects/k2-galerie/galerie-oeffentlich'
+  const VITA = '/projects/k2-galerie/vita/martina'
+  const SHOP = '/projects/k2-galerie/shop'
+
   if (pfad === 'gemeinschaft') {
     return {
       sofort: [
-        { emoji: '🏛️', titel: 'Eure Gemeinschafts-Galerie', beschreibung: 'Alle Werke unter einem Dach – jedes Mitglied mit eigenem Bereich', status: 'sofort', statusLabel: '✅ Sofort da' },
-        { emoji: '👤', titel: 'Mitglieder-Profile', beschreibung: 'Jede:r zeigt die eigenen Werke – mit Name, Foto, Kontakt', status: 'bereit', statusLabel: '🔓 Bereit' },
-        { emoji: '🎟️', titel: 'Events & Einladungen', beschreibung: 'Ausstellungen planen, Einladungen versenden, QR-Code für Gäste', status: 'bereit', statusLabel: '🔓 Bereit' },
+        { emoji: '🏛️', titel: 'Eure Gemeinschafts-Galerie', beschreibung: 'Alle Werke unter einem Dach – jedes Mitglied mit eigenem Bereich', status: 'sofort', statusLabel: '✅ Sofort da', link: GALERIE, linkLabel: 'Galerie ansehen →' },
+        { emoji: '👤', titel: 'Mitglieder & Stammdaten', beschreibung: 'Namen, Kontakt, Foto – alles an einem Ort verwalten', status: 'bereit', statusLabel: '🔓 Bereit', link: ADMIN + '#stammdaten', linkLabel: 'Einrichten →' },
+        { emoji: '🎟️', titel: 'Events & Einladungen', beschreibung: 'Ausstellungen planen, Einladungen versenden, QR-Code für Gäste', status: 'bereit', statusLabel: '🔓 Bereit', link: ADMIN + '#events', linkLabel: 'Events öffnen →' },
       ],
       system: [
-        { emoji: '📄', titel: 'Presse & Dokumente', beschreibung: 'Pressemappe, Vita, Werkverzeichnis – für den Verein und jedes Mitglied', status: 'mehr', statusLabel: '📦 Im System' },
+        { emoji: '📄', titel: 'Presse & Dokumente', beschreibung: 'Pressemappe, Vita – für den Verein und jedes Mitglied', status: 'mehr', statusLabel: '📦 Im System', link: VITA, linkLabel: 'Dokumente →' },
         { emoji: '📱', titel: 'Auf jedem Gerät', beschreibung: 'Mac, Handy, Tablet – QR-Code für Besucher, immer aktuell', status: 'mehr', statusLabel: '📦 Im System' },
-        { emoji: '🔒', titel: 'Ihr entscheidet', beschreibung: 'Wer sieht was – öffentlich, nur für Mitglieder oder privat', status: 'mehr', statusLabel: '📦 Im System' },
-        { emoji: '🗂️', titel: 'Werkverzeichnis', beschreibung: 'Alle Werke mit Preis, Zertifikat, Provenienz – für jeden Verkauf', status: 'mehr', statusLabel: '📦 Im System' },
+        { emoji: '🗂️', titel: 'Werkverzeichnis', beschreibung: 'Alle Werke mit Preis, Zertifikat, Provenienz', status: 'mehr', statusLabel: '📦 Im System', link: ADMIN + '#werke', linkLabel: 'Werke →' },
+        { emoji: '💰', titel: 'Kassa & Verkauf', beschreibung: 'Verkauf direkt in der Galerie – Beleg, Kassa, Übersicht', status: 'mehr', statusLabel: '📦 Im System', link: SHOP, linkLabel: 'Kassa →' },
       ],
       lizenz: lizenzKarte,
     }
@@ -3759,15 +3766,15 @@ function baueKarten(pfad: GuidePfad, a: GuideAntworten): { sofort: ErgebnisKarte
     const gemeinsam = a.atelier_struktur === 'gemeinsam' || a.atelier_struktur === 'beides'
     return {
       sofort: [
-        { emoji: '🏢', titel: gemeinsam ? 'Studio-Galerie für alle' : 'Individuelle Galerien', beschreibung: gemeinsam ? 'Eine gemeinsame Plattform, jede:r mit eigenem Profil' : 'Jede:r hat die eigene Galerie – unabhängig, professionell', status: 'sofort', statusLabel: '✅ Sofort da' },
-        { emoji: '📦', titel: 'Werkverzeichnis & Inventar', beschreibung: 'Alle Werke erfasst – mit Preis, Status, Provenienz, Zertifikat', status: 'bereit', statusLabel: '🔓 Bereit' },
-        { emoji: '📄', titel: 'Presse & Dokumente', beschreibung: 'Pressemappe, Vita, Werkverzeichnis – mit einem Klick drucken', status: 'bereit', statusLabel: '🔓 Bereit' },
+        { emoji: '🏢', titel: gemeinsam ? 'Studio-Galerie für alle' : 'Individuelle Galerien', beschreibung: gemeinsam ? 'Eine gemeinsame Plattform, jede:r mit eigenem Profil' : 'Jede:r hat die eigene Galerie – unabhängig, professionell', status: 'sofort', statusLabel: '✅ Sofort da', link: GALERIE, linkLabel: 'Galerie ansehen →' },
+        { emoji: '📦', titel: 'Werkverzeichnis & Inventar', beschreibung: 'Alle Werke erfasst – mit Preis, Status, Provenienz, Zertifikat', status: 'bereit', statusLabel: '🔓 Bereit', link: ADMIN + '#werke', linkLabel: 'Werke verwalten →' },
+        { emoji: '📄', titel: 'Presse & Dokumente', beschreibung: 'Pressemappe, Vita – mit einem Klick drucken', status: 'bereit', statusLabel: '🔓 Bereit', link: VITA, linkLabel: 'Dokumente →' },
       ],
       system: [
-        { emoji: '🎟️', titel: 'Events & Ausstellungen', beschreibung: 'Events planen, Einladungen versenden, Gästeliste, QR-Code', status: 'mehr', statusLabel: '📦 Im System' },
+        { emoji: '🎟️', titel: 'Events & Ausstellungen', beschreibung: 'Events planen, Einladungen versenden, Gästeliste, QR-Code', status: 'mehr', statusLabel: '📦 Im System', link: ADMIN + '#events', linkLabel: 'Events →' },
         { emoji: '📱', titel: 'Auf jedem Gerät', beschreibung: 'Mac, Handy, Tablet – QR-Code für Besucher, immer aktuell', status: 'mehr', statusLabel: '📦 Im System' },
-        { emoji: '🔒', titel: 'Datenschutz & Kontrolle', beschreibung: 'Wer sieht was – öffentlich, nur Studio-intern oder privat', status: 'mehr', statusLabel: '📦 Im System' },
-        { emoji: '💰', titel: 'Kassa & Verkauf', beschreibung: 'Verkauf direkt in der Galerie – Beleg, Kassa, Übersicht', status: 'mehr', statusLabel: '📦 Im System' },
+        { emoji: '🔒', titel: 'Datenschutz & Kontrolle', beschreibung: 'Wer sieht was – öffentlich, nur Studio-intern oder privat', status: 'mehr', statusLabel: '📦 Im System', link: ADMIN, linkLabel: 'Einstellungen →' },
+        { emoji: '💰', titel: 'Kassa & Verkauf', beschreibung: 'Verkauf direkt in der Galerie – Beleg, Kassa, Übersicht', status: 'mehr', statusLabel: '📦 Im System', link: SHOP, linkLabel: 'Kassa →' },
       ],
       lizenz: lizenzKarte,
     }
@@ -3776,32 +3783,32 @@ function baueKarten(pfad: GuidePfad, a: GuideAntworten): { sofort: ErgebnisKarte
   if (pfad === 'entdecker') {
     return {
       sofort: [
-        { emoji: '🎨', titel: 'Deine Galerie', beschreibung: 'Ein Platz für alles was du schaffst – so wie du es willst', status: 'sofort', statusLabel: '✅ Sofort da' },
-        { emoji: '📱', titel: 'Auf jedem Gerät', beschreibung: 'Zeig deinen QR-Code – andere sehen deine Galerie sofort', status: 'bereit', statusLabel: '🔓 Bereit' },
+        { emoji: '🎨', titel: 'Deine Galerie', beschreibung: 'Ein Platz für alles was du schaffst – so wie du es willst', status: 'sofort', statusLabel: '✅ Sofort da', link: GALERIE, linkLabel: 'Galerie ansehen →' },
+        { emoji: '📱', titel: 'Auf jedem Gerät', beschreibung: 'Zeig deinen QR-Code – andere sehen deine Galerie sofort', status: 'bereit', statusLabel: '🔓 Bereit', link: ADMIN, linkLabel: 'Admin öffnen →' },
       ],
       system: [
-        { emoji: '📄', titel: 'Vita & Dokumente', beschreibung: 'Wenn du sie brauchst – ein Klick und alles ist bereit', status: 'mehr', statusLabel: '📦 Wartet auf dich' },
-        { emoji: '🎟️', titel: 'Events & Einladungen', beschreibung: 'Wenn du mal ausstellen willst – das System kann das', status: 'mehr', statusLabel: '📦 Wartet auf dich' },
-        { emoji: '🗂️', titel: 'Werkverzeichnis', beschreibung: 'Alle Werke sauber erfasst – wenn du bereit bist', status: 'mehr', statusLabel: '📦 Wartet auf dich' },
+        { emoji: '📄', titel: 'Vita & Dokumente', beschreibung: 'Wenn du sie brauchst – ein Klick und alles ist bereit', status: 'mehr', statusLabel: '📦 Wartet auf dich', link: VITA, linkLabel: 'Dokumente →' },
+        { emoji: '🎟️', titel: 'Events & Einladungen', beschreibung: 'Wenn du mal ausstellen willst – das System kann das', status: 'mehr', statusLabel: '📦 Wartet auf dich', link: ADMIN + '#events', linkLabel: 'Events →' },
+        { emoji: '🗂️', titel: 'Werkverzeichnis', beschreibung: 'Alle Werke sauber erfasst – wenn du bereit bist', status: 'mehr', statusLabel: '📦 Wartet auf dich', link: ADMIN + '#werke', linkLabel: 'Werke →' },
       ],
       lizenz: lizenzKarte,
     }
   }
 
-  // Pfad Künstler:in – Standard + spezifisch nach Ziel
+  // Pfad Künstler:in
   const ziel = a.ziel_kuenstler ?? ''
   const erfahrung = a.erfahrung ?? ''
   return {
     sofort: [
-      { emoji: '🎨', titel: 'Deine Galerie', beschreibung: 'Professionell, sofort fertig – auf jedem Gerät sichtbar', status: 'sofort', statusLabel: '✅ Sofort da' },
-      { emoji: '📄', titel: 'Deine Vita', beschreibung: erfahrung === 'etabliert' ? 'Mit Ausstellungs-Geschichte, Referenzen, Presse' : 'Dein künstlerischer Weg – ein Klick und druckfertig', status: 'bereit', statusLabel: '🔓 Bereit' },
-      { emoji: '📰', titel: 'Deine Pressemappe', beschreibung: 'Mit deinen Angaben vorbefüllt – für Galerien, Medien, Veranstalter', status: 'bereit', statusLabel: '🔓 Bereit' },
+      { emoji: '🎨', titel: 'Deine Galerie', beschreibung: 'Professionell, sofort fertig – auf jedem Gerät sichtbar', status: 'sofort', statusLabel: '✅ Sofort da', link: GALERIE, linkLabel: 'Galerie ansehen →' },
+      { emoji: '📄', titel: 'Deine Vita', beschreibung: erfahrung === 'etabliert' ? 'Mit Ausstellungs-Geschichte, Referenzen, Presse' : 'Dein künstlerischer Weg – ein Klick und druckfertig', status: 'bereit', statusLabel: '🔓 Bereit', link: VITA, linkLabel: 'Vita öffnen →' },
+      { emoji: '📰', titel: 'Deine Pressemappe', beschreibung: 'Mit deinen Angaben vorbefüllt – für Galerien, Medien, Veranstalter', status: 'bereit', statusLabel: '🔓 Bereit', link: ADMIN + '#dokumente', linkLabel: 'Pressemappe →' },
     ],
     system: [
-      { emoji: '🗂️', titel: 'Werkverzeichnis', beschreibung: ziel === 'verkauf' ? 'Alle Werke mit Preis, Status, Zertifikat – Verkauf sofort möglich' : 'Alle Werke erfasst – mit Preis, Provenienz, Zertifikat', status: 'mehr', statusLabel: '📦 Im System' },
-      { emoji: '🎟️', titel: 'Events & Einladungen', beschreibung: 'Ausstellungen planen, Einladungen versenden, QR-Code für Gäste', status: 'mehr', statusLabel: '📦 Im System' },
-      { emoji: '📱', titel: 'Auf jedem Gerät', beschreibung: 'Mac, Handy, Tablet – QR-Code scannen und sofort in der Galerie', status: 'mehr', statusLabel: '📦 Im System' },
-      { emoji: '🔒', titel: 'Du entscheidest', beschreibung: 'Wer sieht was – öffentlich, nur für Interessenten oder privat', status: 'mehr', statusLabel: '📦 Im System' },
+      { emoji: '🗂️', titel: 'Werkverzeichnis', beschreibung: ziel === 'verkauf' ? 'Alle Werke mit Preis, Status, Zertifikat – Verkauf sofort möglich' : 'Alle Werke erfasst – mit Preis, Provenienz, Zertifikat', status: 'mehr', statusLabel: '📦 Im System', link: ADMIN + '#werke', linkLabel: 'Werke →' },
+      { emoji: '🎟️', titel: 'Events & Einladungen', beschreibung: 'Ausstellungen planen, Einladungen versenden, QR-Code für Gäste', status: 'mehr', statusLabel: '📦 Im System', link: ADMIN + '#events', linkLabel: 'Events →' },
+      { emoji: '💰', titel: 'Kassa & Verkauf', beschreibung: 'Verkauf direkt in der Galerie – Beleg, Kassa, Übersicht', status: 'mehr', statusLabel: '📦 Im System', link: SHOP, linkLabel: 'Kassa →' },
+      { emoji: '🔒', titel: 'Du entscheidest', beschreibung: 'Wer sieht was – öffentlich, nur für Interessenten oder privat', status: 'mehr', statusLabel: '📦 Im System', link: ADMIN, linkLabel: 'Einstellungen →' },
     ],
     lizenz: lizenzKarte,
   }
@@ -3832,6 +3839,11 @@ function ErgebnisKarten({ pfad, antworten, aufgeklappt, onAufklappen, onWeiter, 
                   <span style={{ fontSize: '0.68rem', color: f.badge, fontWeight: 600, flexShrink: 0 }}>{k.statusLabel}</span>
                 </div>
                 <div style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.4, marginTop: '0.15rem' }}>{k.beschreibung}</div>
+                {k.link && (
+                  <a href={k.link} style={{ display: 'inline-block', marginTop: '0.4rem', fontSize: '0.75rem', color: f.badge, fontWeight: 600, textDecoration: 'none', padding: '0.25rem 0.6rem', background: `${f.badge}18`, border: `1px solid ${f.badge}44`, borderRadius: '6px' }}>
+                    {k.linkLabel ?? 'Öffnen →'}
+                  </a>
+                )}
               </div>
             </div>
           )
@@ -3854,6 +3866,11 @@ function ErgebnisKarten({ pfad, antworten, aufgeklappt, onAufklappen, onWeiter, 
                 <div style={{ fontSize: '1.1rem', marginBottom: '0.2rem' }}>{k.emoji}</div>
                 <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff8f0', marginBottom: '0.15rem' }}>{k.titel}</div>
                 <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.35 }}>{k.beschreibung}</div>
+                {k.link && (
+                  <a href={k.link} style={{ display: 'inline-block', marginTop: '0.4rem', fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', fontWeight: 600, textDecoration: 'none', padding: '0.2rem 0.5rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '5px' }}>
+                    {k.linkLabel ?? 'Öffnen →'}
+                  </a>
+                )}
               </div>
             )
           })}
