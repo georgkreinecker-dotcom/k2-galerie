@@ -8140,14 +8140,63 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             {activeTab === 'werke' && (
               <div>
 
-                {/* Ruhige Willkommensfläche wenn Guide-Flow aktiv und kein Tab ausgewählt */}
-                {guideFlowAktiv && isOeffentlichAdminContext() && activeTab === 'werke' && (
-                  <div style={{ textAlign: 'center', padding: '2rem 1.5rem 1rem', color: '#5c5650' }}>
-                    <div style={{ fontSize: '0.85rem', color: '#b54a1e', fontWeight: 500 }}>
-                      👇 Schau dir die Werkverwaltung unten an – dein Guide erklärt sie dir.
+                {/* Willkommens-Hub wenn Guide-Flow aktiv – Name + Pfad des Users sichtbar genutzt */}
+                {guideFlowAktiv && isOeffentlichAdminContext() && !guideBannerClosed && (() => {
+                  const istVerein = guidePfad === 'gemeinschaft'
+                  const vornameTitel = guideVorname ? `Willkommen, ${guideVorname}!` : 'Willkommen!'
+                  const pfadText = istVerein
+                    ? 'Deine Vereins-Zentrale ist bereit.'
+                    : guidePfad === 'atelier'
+                    ? 'Dein Atelier ist bereit.'
+                    : guidePfad === 'entdecker'
+                    ? 'Deine Galerie wartet auf dich.'
+                    : 'Das ist deine Galerie-Zentrale.'
+                  const akzent = istVerein ? '#1e5cb5' : '#b54a1e'
+                  const akzentHell = istVerein ? '#42a4ff' : '#ff8c42'
+                  const galerieUrl = '/projects/k2-galerie/galerie-oeffentlich'
+                  return (
+                    <div style={{ background: `linear-gradient(135deg, ${akzent}12, ${akzent}06)`, border: `1.5px solid ${akzent}33`, borderRadius: '16px', padding: '1rem 1.25rem', marginBottom: '1.5rem', position: 'relative' }}>
+                      <button type="button" onClick={() => setGuideBannerClosed(true)} style={{ position: 'absolute', top: '0.6rem', right: '0.7rem', background: 'none', border: 'none', cursor: 'pointer', color: `${akzent}55`, fontSize: '1.1rem', lineHeight: 1, padding: '0.15rem 0.3rem' }} title="Schließen">×</button>
+                      {/* Kopf */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.8rem', flexWrap: 'wrap' as const }}>
+                        <div style={{ width: 38, height: 38, borderRadius: '50%', background: `linear-gradient(135deg, ${akzent}, ${akzentHell})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.15rem', flexShrink: 0, boxShadow: `0 3px 10px ${akzent}44` }}>
+                          {istVerein ? '🏛️' : guidePfad === 'atelier' ? '🏢' : guidePfad === 'entdecker' ? '🌱' : '👨‍🎨'}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: '1rem', fontWeight: 700, color: '#1c1a18' }}>{vornameTitel} {pfadText}</div>
+                          <div style={{ fontSize: '0.78rem', color: '#5c5650', marginTop: '0.15rem' }}>
+                            {istVerein ? 'Dein Guide führt dich durch alle Bereiche.' : 'Dein Guide begleitet dich – klick unten auf eine Station.'}
+                          </div>
+                        </div>
+                        <a href={galerieUrl} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', padding: '0.45rem 0.8rem', background: akzent, color: '#fff', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0, whiteSpace: 'nowrap' as const }}>
+                          🎨 Galerie ansehen →
+                        </a>
+                      </div>
+                      {/* Schnellzugriff-Kacheln */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '0.45rem' }}>
+                        {(istVerein ? [
+                          { emoji: '🖼️', name: 'Werke', tab: 'werke' as const },
+                          { emoji: '🎟️', name: 'Events', tab: 'eventplan' as const },
+                          { emoji: '✨', name: 'Aussehen', tab: 'design' as const },
+                          { emoji: '⚙️', name: 'Einstellungen', tab: 'einstellungen' as const },
+                        ] : [
+                          { emoji: '🖼️', name: 'Meine Werke', tab: 'werke' as const },
+                          { emoji: '🎟️', name: 'Events', tab: 'eventplan' as const },
+                          { emoji: '✨', name: 'Aussehen', tab: 'design' as const },
+                          { emoji: '⚙️', name: 'Einstellungen', tab: 'einstellungen' as const },
+                        ]).map(b => (
+                          <button key={b.tab} type="button"
+                            onClick={() => { setActiveTab(b.tab); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+                            style={{ background: activeTab === b.tab ? `${akzent}18` : '#fff', border: activeTab === b.tab ? `1.5px solid ${akzentHell}` : '1px solid #e8e4de', borderRadius: '10px', padding: '0.5rem 0.6rem', display: 'flex', gap: '0.4rem', alignItems: 'center', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', fontWeight: activeTab === b.tab ? 700 : 400, color: activeTab === b.tab ? akzent : '#1c1a18', fontSize: '0.8rem' }}>
+                            <span style={{ fontSize: '1rem' }}>{b.emoji}</span>
+                            <span>{b.name}</span>
+                            {activeTab === b.tab && <span style={{ marginLeft: 'auto', fontSize: '0.65rem', color: akzentHell }}>●</span>}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )
+                })()}
 
                 {/* Guide-Willkommensbanner – nur wenn kein globaler Guide-Flow aktiv */}
                 {guideVorname && isOeffentlichAdminContext() && !guideBannerClosed && !guideFlowAktiv && (() => {
@@ -15366,100 +15415,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
 
       {/* ─── Nahtloser Guide-Begleiter im Admin ─────────────────────────────── */}
       {/* Erscheint wenn User über Guide-Flow hereinkam – begleitet bis Schritt 1 erledigt */}
-      {guideAssistent && guideVorname && isOeffentlichAdminContext() && !guideBegleiterGeschlossen && (() => {
-        const istVerein = guidePfad === 'gemeinschaft'
-        const schritte = istVerein
-          ? [
-              { emoji: '📋', titel: 'Vereinsdaten ausfüllen', tab: 'einstellungen' as const },
-              { emoji: '🖼️', titel: 'Erste Werke hochladen', tab: 'werke' as const },
-              { emoji: '✨', titel: 'Aussehen anpassen', tab: 'design' as const },
-              { emoji: '🎟️', titel: 'Ausstellung planen', tab: 'eventplan' as const },
-            ]
-          : [
-              { emoji: '📋', titel: 'Deine Daten ausfüllen', tab: 'einstellungen' as const },
-              { emoji: '🖼️', titel: 'Erste Werke hochladen', tab: 'werke' as const },
-              { emoji: '✨', titel: 'Galerie gestalten', tab: 'design' as const },
-              { emoji: '🎟️', titel: 'Veranstaltung planen', tab: 'eventplan' as const },
-            ]
-        return (
-          <div style={{
-            position: 'fixed', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)',
-            zIndex: 10000, width: 'min(440px, calc(100vw - 2rem))',
-            animation: 'guideBegleiterEin 0.4s ease',
-          }}>
-            <style>{`
-              @keyframes guideBegleiterEin { from{opacity:0;transform:translateX(-50%) translateY(14px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-              @keyframes blinkB { 0%,100%{opacity:1} 50%{opacity:0.3} }
-            `}</style>
-            <div style={{
-              background: 'rgba(14,8,4,0.97)',
-              border: `1px solid ${istVerein ? 'rgba(66,164,255,0.35)' : 'rgba(255,140,66,0.35)'}`,
-              borderRadius: '20px', padding: '1.1rem',
-              boxShadow: '0 16px 56px rgba(0,0,0,0.55)', backdropFilter: 'blur(16px)',
-            }}>
-              {/* Avatar + Text */}
-              <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'flex-start', marginBottom: '0.9rem' }}>
-                <div style={{
-                  width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-                  background: istVerein ? 'linear-gradient(135deg, #1e5cb5, #42a4ff)' : 'linear-gradient(135deg, #b54a1e, #ff8c42)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem',
-                  boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
-                }}>
-                  {istVerein ? '🏛️' : '👨‍🎨'}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '0.63rem', color: istVerein ? 'rgba(66,164,255,0.6)' : 'rgba(255,140,66,0.5)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' as const, marginBottom: '0.2rem' }}>
-                    {istVerein ? 'Dein Vereins-Guide' : 'Dein Galerie-Guide'}
-                  </div>
-                  <div style={{ fontSize: '0.9rem', color: '#fff8f0', lineHeight: 1.6 }}>
-                    {`Ich bin noch hier, ${guideVorname} – tippe auf einen Schritt und ich führe dich direkt dorthin.`}
-                  </div>
-                </div>
-                <button type="button" onClick={() => setGuideBegleiterGeschlossen(true)}
-                  style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.18)', cursor: 'pointer', fontSize: '1rem', padding: '0.1rem 0.3rem', flexShrink: 0 }}>✕</button>
-              </div>
-
-              {/* Schritt-Buttons */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
-                {schritte.map((s) => {
-                  const istAktiv = activeTab === s.tab
-                  return (
-                    <button key={s.tab} type="button"
-                      onClick={() => {
-                        setActiveTab(s.tab)
-                        if (s.tab === 'einstellungen') setSettingsSubTab('stammdaten')
-                        if (s.tab === 'eventplan') setEventplanSubTab('events')
-                        setGuideBegleiterGeschlossen(true)
-                      }}
-                      style={{
-                        padding: '0.55rem 0.65rem',
-                        background: istAktiv
-                          ? (istVerein ? 'rgba(66,164,255,0.18)' : 'rgba(255,140,66,0.18)')
-                          : 'rgba(255,255,255,0.05)',
-                        border: istAktiv
-                          ? `1px solid ${istVerein ? 'rgba(66,164,255,0.5)' : 'rgba(255,140,66,0.5)'}`
-                          : '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: '10px',
-                        color: istAktiv ? (istVerein ? '#42a4ff' : '#ff8c42') : 'rgba(255,255,255,0.7)',
-                        fontSize: '0.8rem', fontWeight: istAktiv ? 700 : 400,
-                        cursor: 'pointer', fontFamily: 'inherit',
-                        display: 'flex', alignItems: 'center', gap: '0.4rem',
-                        textAlign: 'left' as const,
-                      }}>
-                      <span>{s.emoji}</span>
-                      <span>{s.titel}</span>
-                    </button>
-                  )
-                })}
-              </div>
-
-              <div style={{ marginTop: '0.65rem', textAlign: 'center' as const, fontSize: '0.72rem', color: 'rgba(255,255,255,0.2)' }}>
-                Schließen mit ✕ – du kannst jederzeit über den Tab „Assistent" zurück
-              </div>
-            </div>
-          </div>
-        )
-      })()}
+      {/* Alter Guide-Begleiter entfernt – Hub-Dialog GlobaleGuideBegleitung übernimmt */}
 
     </div>
   )

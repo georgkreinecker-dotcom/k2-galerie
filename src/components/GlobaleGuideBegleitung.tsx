@@ -330,7 +330,8 @@ export function GlobaleGuideBegleitung() {
 
   if (!flow || !flow.aktiv || geschlossen) return null
 
-  const galerieRouten = [
+  // Auf Galerie-Seiten und Admin: nicht zeigen (Admin hat eigenen inline-Hub)
+  const ausgeblendetAuf = [
     '/projects/k2-galerie/galerie-oeffentlich',
     '/projects/k2-galerie/galerie',
     '/projects/vk2/galerie',
@@ -338,8 +339,9 @@ export function GlobaleGuideBegleitung() {
     '/galerie-home',
     '/galerie',
     '/galerie/',
+    '/admin',
   ]
-  if (galerieRouten.includes(location.pathname)) return null
+  if (ausgeblendetAuf.includes(location.pathname)) return null
 
   const { name, pfad } = flow
   const schritte = baueSchritte(pfad, name)
