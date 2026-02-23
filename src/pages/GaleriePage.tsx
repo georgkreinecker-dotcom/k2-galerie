@@ -744,14 +744,16 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   const serverBuildTs = useServerBuildTimestamp()
   const qrVersionTs = useQrVersionTimestamp()
   // ök2: QR MUSS auf Muster-Galerie zeigen (galerie-oeffentlich), nie auf K2 – sonst zeigt Scan die echte K2-Seite
+  // VK2: QR muss auf VK2-Route zeigen, nicht auf K2-Galerie
   const vercelGalerieUrl = useMemo(() => {
+    if (vk2) return GALLERY_DATA_PUBLIC_URL + PROJECT_ROUTES.vk2.galerie
     if (musterOnly) {
       const url = GALLERY_DATA_PUBLIC_URL + PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
       if (!url.includes('galerie-oeffentlich')) return GALLERY_DATA_PUBLIC_URL + '/projects/k2-galerie/galerie-oeffentlich'
       return url
     }
     return GALLERY_DATA_PUBLIC_URL + PROJECT_ROUTES['k2-galerie'].galerie
-  }, [musterOnly])
+  }, [vk2, musterOnly])
   // QR alle 45 s neu bauen mit frischem _= (Cache-Bust), damit Scan am Handy nicht gecachte alte Version lädt
   const [qrBustTick, setQrBustTick] = useState(0)
   useEffect(() => {
@@ -2060,7 +2062,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
         : 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 50%, var(--k2-bg-3) 100%)',
       color: 'var(--k2-text)',
       position: 'relative',
-      overflowX: 'hidden'
+      overflowX: 'hidden',
+      overflowY: 'visible'
     }}>
       {/* Vorschau aus Einstellungen „Seiten prüfen“ – Zurück-Link */}
       {isVorschauModus && (
@@ -3201,67 +3204,69 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                     fontWeight: '600',
                     color: theme.text
                   }}>
-                    {vk2 && vk2Stammdaten ? 'Impressum' : tenantConfig.footerLine}
+                    {vk2 ? 'Impressum' : tenantConfig.footerLine}
                   </h4>
 
-                  {/* VK2: Vereins-Impressum mit Vorstand */}
-                  {vk2 && vk2Stammdaten && (
+                  {/* VK2: Vereins-Impressum mit Vorstand (auch ohne Stammdaten sichtbar) */}
+                  {vk2 && (
                     <div style={{ marginBottom: '1rem' }}>
                       <p style={{ margin: '0 0 0.25rem', fontWeight: 600, color: theme.text, fontSize: 'clamp(0.95rem, 2.2vw, 1.05rem)' }}>
-                        {vk2Stammdaten.verein.name || 'Verein (Name in Einstellungen eintragen)'}
+                        {vk2Stammdaten?.verein?.name || 'Verein (Name in Admin-Einstellungen eintragen)'}
                       </p>
-                      {vk2Stammdaten.verein.vereinsnummer && (
+                      {vk2Stammdaten?.verein?.vereinsnummer && (
                         <p style={{ margin: '0 0 0.15rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
                           ZVR-Zahl: {vk2Stammdaten.verein.vereinsnummer}
                         </p>
                       )}
-                      {(vk2Stammdaten.verein.address || vk2Stammdaten.verein.city) && (
+                      {vk2Stammdaten && (vk2Stammdaten.verein?.address || vk2Stammdaten.verein?.city) && (
                         <p style={{ margin: '0 0 0.15rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
                           {[vk2Stammdaten.verein.address, vk2Stammdaten.verein.city, vk2Stammdaten.verein.country].filter(Boolean).join(', ')}
                         </p>
                       )}
-                      {vk2Stammdaten.verein.email && (
+                      {vk2Stammdaten?.verein?.email && (
                         <p style={{ margin: '0 0 0.15rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
                           ✉️ <a href={`mailto:${vk2Stammdaten.verein.email}`} style={{ color: theme.accent, textDecoration: 'none' }}>
                             {vk2Stammdaten.verein.email}
                           </a>
                         </p>
                       )}
-                      {vk2Stammdaten.verein.website && (
+                      {vk2Stammdaten?.verein?.website && (
                         <p style={{ margin: '0 0 0.75rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
                           🌐 <a href={`https://${vk2Stammdaten.verein.website.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" style={{ color: theme.accent, textDecoration: 'none' }}>
                             {vk2Stammdaten.verein.website}
                           </a>
                         </p>
                       )}
-                      <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: `1px solid color-mix(in srgb, ${theme.muted} 25%, transparent)` }}>
-                        <p style={{ margin: '0 0 0.5rem', fontWeight: 600, color: theme.text, fontSize: 'clamp(0.85rem, 2vw, 0.95rem)' }}>Vorstand</p>
-                        {vk2Stammdaten.vorstand?.name && (
-                          <p style={{ margin: '0 0 0.2rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
-                            Obfrau/Obmann: <span style={{ color: theme.text }}>{vk2Stammdaten.vorstand.name}</span>
-                          </p>
-                        )}
-                        {vk2Stammdaten.vize?.name && (
-                          <p style={{ margin: '0 0 0.2rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
-                            Stellvertreter:in: <span style={{ color: theme.text }}>{vk2Stammdaten.vize.name}</span>
-                          </p>
-                        )}
-                        {vk2Stammdaten.kassier?.name && (
-                          <p style={{ margin: '0 0 0.2rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
-                            Kassier:in: <span style={{ color: theme.text }}>{vk2Stammdaten.kassier.name}</span>
-                          </p>
-                        )}
-                        {vk2Stammdaten.schriftfuehrer?.name && (
-                          <p style={{ margin: '0 0 0.2rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
-                            Schriftführer:in: <span style={{ color: theme.text }}>{vk2Stammdaten.schriftfuehrer.name}</span>
-                          </p>
-                        )}
-                        {vk2Stammdaten.beisitzer?.name && (
-                          <p style={{ margin: '0 0 0.2rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
-                            Beirat/Beisitzer:in: <span style={{ color: theme.text }}>{vk2Stammdaten.beisitzer.name}</span>
-                          </p>
-                        )}
-                      </div>
+                      {vk2Stammdaten?.vorstand && (
+                        <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: `1px solid color-mix(in srgb, ${theme.muted} 25%, transparent)` }}>
+                          <p style={{ margin: '0 0 0.5rem', fontWeight: 600, color: theme.text, fontSize: 'clamp(0.85rem, 2vw, 0.95rem)' }}>Vorstand</p>
+                          {vk2Stammdaten.vorstand?.name && (
+                            <p style={{ margin: '0 0 0.2rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
+                              Obfrau/Obmann: <span style={{ color: theme.text }}>{vk2Stammdaten.vorstand.name}</span>
+                            </p>
+                          )}
+                          {vk2Stammdaten.vize?.name && (
+                            <p style={{ margin: '0 0 0.2rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
+                              Stellvertreter:in: <span style={{ color: theme.text }}>{vk2Stammdaten.vize.name}</span>
+                            </p>
+                          )}
+                          {vk2Stammdaten.kassier?.name && (
+                            <p style={{ margin: '0 0 0.2rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
+                              Kassier:in: <span style={{ color: theme.text }}>{vk2Stammdaten.kassier.name}</span>
+                            </p>
+                          )}
+                          {vk2Stammdaten.schriftfuehrer?.name && (
+                            <p style={{ margin: '0 0 0.2rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
+                              Schriftführer:in: <span style={{ color: theme.text }}>{vk2Stammdaten.schriftfuehrer.name}</span>
+                            </p>
+                          )}
+                          {vk2Stammdaten.beisitzer?.name && (
+                            <p style={{ margin: '0 0 0.2rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
+                              Beirat/Beisitzer:in: <span style={{ color: theme.text }}>{vk2Stammdaten.beisitzer.name}</span>
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                   
