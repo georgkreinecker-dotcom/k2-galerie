@@ -2182,41 +2182,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       }} />
       
       <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Erster Entwurf – Willkommens-Banner (nur ök2, wenn von WillkommenPage mit Namen) */}
+        {/* Guide-Avatar – geführter Rundgang (nur ök2, wenn mit Namen angekommen) */}
         {musterOnly && willkommenName && !willkommenBannerDismissed && (
-          <div
-            style={{
-              background: 'linear-gradient(135deg, rgba(181, 74, 30, 0.95) 0%, rgba(212, 98, 40, 0.95) 100%)',
-              color: '#fff',
-              padding: '0.75rem 1.25rem',
-              textAlign: 'center',
-              fontSize: '0.95rem',
-              position: 'relative',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
-            }}
-          >
-            <span><strong>Dein erster Entwurf</strong> – Willkommen, {willkommenName}! Das ist die Vorschau deiner Galerie.</span>
-            <button
-              type="button"
-              onClick={dismissWillkommenBanner}
-              aria-label="Banner schließen"
-              style={{
-                position: 'absolute',
-                right: '0.75rem',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'rgba(255,255,255,0.25)',
-                border: 'none',
-                borderRadius: '6px',
-                color: '#fff',
-                padding: '0.35rem 0.6rem',
-                fontSize: '0.85rem',
-                cursor: 'pointer',
-              }}
-            >
-              OK
-            </button>
-          </div>
+          <GalerieGuide name={willkommenName} onDismiss={dismissWillkommenBanner} />
         )}
         {/* Mobile-First Admin: Neues Objekt Button (ök2: ausblenden) */}
         {!musterOnly && showMobileAdmin && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) && (
@@ -4762,3 +4730,141 @@ function EtikettQrCode({ nummer }: { nummer: string }) {
 }
 
 export default GalerieVorschauPage
+
+// ─── Guide-Avatar ─────────────────────────────────────────────────────────────
+// Geführter Rundgang durch die Demo-Galerie – Option B (Text + Animation)
+// Option A (ElevenLabs echter Avatar) kommt nach ersten Rückmeldungen
+// ─────────────────────────────────────────────────────────────────────────────
+const GUIDE_SCHRITTE = (name: string) => [
+  {
+    text: `Willkommen, ${name}! 👋\nIch bin dein Galerie-Guide.\nIch zeige dir kurz was hier alles möglich ist.`,
+    dauer: 4000,
+  },
+  {
+    text: `Das hier ist deine persönliche Galerie – online, auf jedem Gerät.\nDeine Werke, dein Name, dein Auftritt.`,
+    dauer: 4500,
+  },
+  {
+    text: `Jedes Werk bekommt ein eigenes Bild, einen Titel und einen Preis.\nAlles in Minuten – ohne IT-Kenntnisse.`,
+    dauer: 4500,
+  },
+  {
+    text: `Interessenten können direkt Kontakt aufnehmen.\nKein Umweg über Social Media.`,
+    dauer: 4000,
+  },
+  {
+    text: `Wenn du magst – schau dich einfach um. 🎨\nUnd wenn du Fragen hast, bin ich da.`,
+    dauer: 4000,
+  },
+]
+
+function GalerieGuide({ name, onDismiss }: { name: string; onDismiss: () => void }) {
+  const [schritt, setSchritt] = useState(0)
+  const [sichtbar, setSichtbar] = useState(true)
+  const [textIndex, setTextIndex] = useState(0)
+  const schritte = GUIDE_SCHRITTE(name)
+  const aktuellerSchritt = schritte[schritt]
+  const volltext = aktuellerSchritt?.text ?? ''
+
+  // Schreibmaschinen-Effekt
+  useEffect(() => {
+    setTextIndex(0)
+  }, [schritt])
+
+  useEffect(() => {
+    if (textIndex >= volltext.length) return
+    const t = setTimeout(() => setTextIndex(i => i + 1), 22)
+    return () => clearTimeout(t)
+  }, [textIndex, volltext])
+
+  // Auto-weiter nach Dauer
+  useEffect(() => {
+    if (textIndex < volltext.length) return
+    if (schritt >= schritte.length - 1) return
+    const t = setTimeout(() => setSchritt(s => s + 1), aktuellerSchritt.dauer)
+    return () => clearTimeout(t)
+  }, [textIndex, schritt, volltext.length, aktuellerSchritt?.dauer, schritte.length])
+
+  const weiter = () => {
+    if (schritt < schritte.length - 1) setSchritt(s => s + 1)
+    else { setSichtbar(false); setTimeout(onDismiss, 400) }
+  }
+
+  if (!sichtbar) return null
+
+  const angezeigterText = volltext.slice(0, textIndex)
+  const istLetzer = schritt === schritte.length - 1
+  const istFertig = textIndex >= volltext.length
+
+  return (
+    <div style={{
+      position: 'fixed',
+      bottom: '1.5rem',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      zIndex: 10000,
+      width: 'min(420px, calc(100vw - 2rem))',
+      animation: 'guideEinblenden 0.4s ease',
+    }}>
+      <style>{`
+        @keyframes guideEinblenden { from { opacity: 0; transform: translateX(-50%) translateY(16px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        @keyframes guidePuls { 0%,100%{opacity:1} 50%{opacity:0.4} }
+      `}</style>
+
+      <div style={{
+        background: 'rgba(18, 10, 6, 0.96)',
+        border: '1px solid rgba(255, 140, 66, 0.4)',
+        borderRadius: '20px',
+        padding: '1.25rem 1.25rem 1rem',
+        boxShadow: '0 12px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,140,66,0.1)',
+        backdropFilter: 'blur(12px)',
+        display: 'flex',
+        gap: '1rem',
+        alignItems: 'flex-start',
+      }}>
+
+        {/* Avatar */}
+        <div style={{
+          width: 52, height: 52, borderRadius: '50%', flexShrink: 0,
+          background: 'linear-gradient(135deg, #b54a1e, #ff8c42)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '1.6rem', boxShadow: '0 4px 16px rgba(255,140,66,0.35)',
+          border: '2px solid rgba(255,140,66,0.4)',
+        }}>
+          👨‍🎨
+        </div>
+
+        {/* Sprechblase */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: '0.72rem', color: 'rgba(255,140,66,0.6)', marginBottom: '0.4rem', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+            Dein Galerie-Guide
+          </div>
+          <div style={{
+            fontSize: '0.95rem', color: '#fff8f0', lineHeight: 1.65,
+            minHeight: '3.5rem', whiteSpace: 'pre-line',
+          }}>
+            {angezeigterText}
+            {!istFertig && <span style={{ animation: 'guidePuls 0.8s infinite', display: 'inline-block', marginLeft: 2 }}>▌</span>}
+          </div>
+
+          {/* Fortschritts-Punkte + Buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.85rem' }}>
+            <div style={{ display: 'flex', gap: '0.35rem' }}>
+              {schritte.map((_, i) => (
+                <div key={i} style={{ width: i === schritt ? 20 : 7, height: 7, borderRadius: 4, background: i === schritt ? '#ff8c42' : i < schritt ? 'rgba(255,140,66,0.4)' : 'rgba(255,255,255,0.15)', transition: 'all 0.3s' }} />
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button type="button" onClick={() => { setSichtbar(false); setTimeout(onDismiss, 300) }} style={{ padding: '0.4rem 0.85rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: 'rgba(255,255,255,0.35)', cursor: 'pointer', fontSize: '0.78rem' }}>
+                Überspringen
+              </button>
+              <button type="button" onClick={weiter} style={{ padding: '0.4rem 1.1rem', background: istFertig ? 'linear-gradient(135deg, #ff8c42, #b54a1e)' : 'rgba(255,140,66,0.2)', border: `1px solid ${istFertig ? 'transparent' : 'rgba(255,140,66,0.3)'}`, borderRadius: '8px', color: istFertig ? '#fff' : 'rgba(255,140,66,0.6)', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 700, transition: 'all 0.2s' }}>
+                {istLetzer ? '✨ Los geht\'s' : 'Weiter →'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

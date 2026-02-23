@@ -1062,6 +1062,29 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </div>
       </section>
 
+      {/* Sektion 17: Guide-Avatar Vision */}
+      <section id="mok2-17-guide-avatar" style={{ marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(95,251,241,0.2)', pageBreakInside: 'avoid' as const }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          17. 🎙️ Guide-Avatar – Vision (Option A nach ersten Rückmeldungen)
+        </h2>
+        <p style={{ lineHeight: 1.75, marginBottom: '1rem' }}>
+          Aktuell läuft <strong style={{ color: '#5ffbf1' }}>Option B</strong>: ein animierter Text-Guide (👨‍🎨) der den Besucher Schritt für Schritt durch die Demo-Galerie führt – mit Schreibmaschinen-Effekt und Fortschritts-Punkten.
+        </p>
+        <div style={{ background: 'rgba(95,251,241,0.06)', border: '1px solid rgba(95,251,241,0.2)', borderRadius: '12px', padding: '1.25rem', marginBottom: '1rem' }}>
+          <h3 style={{ fontSize: '0.95rem', color: '#fbbf24', margin: '0 0 0.75rem' }}>🎙️ Option A – Echter sprechender Avatar (nach ersten Rückmeldungen)</h3>
+          <ul style={{ paddingLeft: '1.25rem', lineHeight: 1.85, margin: 0 }}>
+            <li><strong>Georgs Stimme</strong> als Guide – einmalig aufnehmen mit ElevenLabs (ab ~€22/Monat)</li>
+            <li>Realistisches Avatar-Video mit <strong>HeyGen</strong> oder <strong>D-ID</strong> – Georg erklärt die Galerie persönlich</li>
+            <li>Video wird einmalig erstellt und auf der Demo-Galerie eingebettet</li>
+            <li>Trigger: Wenn die ersten Leitkünstler positives Feedback geben → Avatar aufnehmen</li>
+            <li><strong>USP:</strong> Kein anderes Galerie-Tool hat einen persönlichen sprechenden Guide</li>
+          </ul>
+        </div>
+        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)', fontStyle: 'italic' }}>
+          → Entscheidung nach ersten Rückmeldungen der Gründer-Galerien. Option B bleibt als Fallback.
+        </p>
+      </section>
+
       <footer style={{ marginTop: '2rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>
         <ProductCopyright /> · Stand: Februar 2026 · Quelle: USP-UND-MARKTCHANCEN.md, VERMARKTUNGSKONZEPT-EMPFEHLUNGSPROGRAMM.md, Produkt-Vision, Galerie-App Feature-Stand.
       </footer>
