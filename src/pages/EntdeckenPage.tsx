@@ -10,7 +10,7 @@
 import { useState, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { PROJECT_ROUTES, AGB_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY } from '../config/navigation'
-import { PRODUCT_BRAND_NAME } from '../config/tenantConfig'
+import { PRODUCT_BRAND_NAME, PRODUCT_FEEDBACK_EMAIL, PRODUCT_FEEDBACK_BETREFF } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 
 // ─── Erkundungs-Notizen ───────────────────────────────────────────────────────
@@ -330,6 +330,15 @@ export default function EntdeckenPage() {
         </div>
       )}
 
+      {/* Feedback-Hinweis im Hero – subtil, für echte Nutzer sichtbar */}
+      {step === 'hero' && (
+        <div style={{ position: 'fixed', bottom: '5.5rem', right: '1.5rem', zIndex: 9998 }}>
+          <div style={{ background: 'rgba(18,10,6,0.85)', border: '1px solid rgba(255,140,66,0.25)', borderRadius: '20px', padding: '0.35rem 0.85rem', fontSize: '0.72rem', color: 'rgba(255,140,66,0.6)', whiteSpace: 'nowrap', backdropFilter: 'blur(4px)' }}>
+            Idee? Wunsch? →
+          </div>
+        </div>
+      )}
+
       {/* Fußzeile */}
       {step !== 'result' && (
         <div style={{ textAlign: 'center', padding: '1rem', fontSize: '0.72rem', color: muted, borderTop: '1px solid #e8ddd0', background: bgCard }}>
@@ -341,8 +350,11 @@ export default function EntdeckenPage() {
         </div>
       )}
 
-      {/* ── FLOATING NOTIZ-BUTTON ─────────────────────────────────────────── */}
+      {/* ── FLOATING BUTTONS ─────────────────────────────────────────────── */}
       <div style={{ position: 'fixed', bottom: '1.25rem', right: '1.25rem', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+
+        {/* Wunsch/Feedback-Button – E-Mail-Adresse unsichtbar im Hintergrund */}
+        <FeedbackButton step={step} fontBody={fontBody} accentGlow={'#ff8c42'} accent={'#b54a1e'} />
 
         {/* Notiz-Panel */}
         {notizOffen && (
@@ -388,5 +400,67 @@ export default function EntdeckenPage() {
         </button>
       </div>
     </div>
+  )
+}
+
+// ─── Feedback-Button Komponente ───────────────────────────────────────────────
+function FeedbackButton({ step, fontBody, accentGlow, accent }: { step: string; fontBody: string; accentGlow: string; accent: string }) {
+  const [offen, setOffen] = useState(false)
+  const [text, setText] = useState('')
+  const [gesendet, setGesendet] = useState(false)
+
+  const senden = () => {
+    if (!text.trim()) return
+    const betreff = encodeURIComponent(`${PRODUCT_FEEDBACK_BETREFF} (Schritt: ${step})`)
+    const body = encodeURIComponent(text.trim())
+    // E-Mail-Adresse wird nie im DOM sichtbar – nur im mailto-Link zur Laufzeit
+    window.location.href = `mailto:${PRODUCT_FEEDBACK_EMAIL}?subject=${betreff}&body=${body}`
+    setGesendet(true)
+    setText('')
+    setTimeout(() => { setGesendet(false); setOffen(false) }, 1500)
+  }
+
+  return (
+    <>
+      {offen && (
+        <div style={{ background: '#1a1008', border: `1px solid rgba(255,255,255,0.15)`, borderRadius: '14px', padding: '1rem', width: 'min(300px, calc(100vw - 2.5rem))', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+          <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem', fontFamily: fontBody }}>
+            🌟 Was würdest du dir wünschen oder verbessern?
+          </div>
+          {gesendet ? (
+            <div style={{ textAlign: 'center', padding: '0.75rem', color: '#86efac', fontSize: '0.9rem', fontWeight: 700 }}>✅ Danke – wird gleich geöffnet!</div>
+          ) : (
+            <>
+              <textarea
+                autoFocus
+                value={text}
+                onChange={e => setText(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) senden() }}
+                placeholder="Dein Gedanke, dein Wunsch, deine Idee …"
+                rows={3}
+                style={{ width: '100%', padding: '0.65rem 0.75rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: '#fff8f0', fontFamily: fontBody, fontSize: '0.88rem', resize: 'none', outline: 'none', boxSizing: 'border-box', lineHeight: 1.55 }}
+              />
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                <button type="button" onClick={() => setOffen(false)} style={{ flex: 1, padding: '0.55rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', color: 'rgba(255,255,255,0.35)', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.82rem' }}>Abbrechen</button>
+                <button type="button" onClick={senden} disabled={!text.trim()} style={{ flex: 2, padding: '0.55rem', background: text.trim() ? `linear-gradient(135deg, ${accentGlow}, ${accent})` : 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '8px', color: '#fff', cursor: text.trim() ? 'pointer' : 'default', fontFamily: fontBody, fontSize: '0.88rem', fontWeight: 700 }}>
+                  📨 Senden
+                </button>
+              </div>
+              <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.18)', textAlign: 'right', marginTop: '0.35rem' }}>Öffnet dein E-Mail-Programm · ⌘+Enter</div>
+            </>
+          )}
+        </div>
+      )}
+      <button
+        type="button"
+        onClick={() => { setOffen(o => !o); setText(''); setGesendet(false) }}
+        title="Wunsch oder Verbesserung senden"
+        style={{ width: 52, height: 52, borderRadius: '50%', background: offen ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: '1.3rem', boxShadow: '0 2px 12px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)' }}
+        onMouseLeave={e => { e.currentTarget.style.background = offen ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.08)' }}
+      >
+        {offen ? '✕' : '🌟'}
+      </button>
+    </>
   )
 }

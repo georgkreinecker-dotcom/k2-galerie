@@ -25,6 +25,12 @@ export const PRODUCT_LIZENZ_ANFRAGE_EMAIL = 'info@kgm.at'
 /** Betreff für Lizenz-Anfrage-E-Mail (kurz, erkennbar). */
 export const PRODUCT_LIZENZ_ANFRAGE_BETREFF = 'K2 Galerie – Lizenz anfragen'
 
+/** E-Mail für Nutzer-Feedback / Verbesserungswünsche – nicht im UI anzeigen */
+export const PRODUCT_FEEDBACK_EMAIL = 'georg.kreinecker@kgm.at'
+
+/** Betreff für Feedback-E-Mail */
+export const PRODUCT_FEEDBACK_BETREFF = 'K2 Galerie – Mein Wunsch / Feedback'
+
 export type TenantId = 'k2' | 'demo' | 'oeffentlich' | 'vk2'
 
 export interface TenantConfig {
