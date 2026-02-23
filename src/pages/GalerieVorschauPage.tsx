@@ -307,14 +307,28 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     }
   }, [filter, categoriesWithArtworks])
 
-  // Willkommens-Banner (Erster Entwurf): von WillkommenPage mit Namen → einmalig anzeigen
+  // Willkommens-Banner (Erster Entwurf): von WillkommenPage oder EntdeckenPage mit Namen → einmalig anzeigen
   const [willkommenName, setWillkommenName] = useState<string | null>(null)
   const [willkommenBannerDismissed, setWillkommenBannerDismissed] = useState(false)
   useEffect(() => {
     if (!musterOnly) return
     try {
-      const n = sessionStorage.getItem(WILLKOMMEN_NAME_KEY)
-      const e = sessionStorage.getItem(WILLKOMMEN_ENTWURF_KEY)
+      // 1. URL-Parameter (zuverlässig auch nach sessionStorage.clear)
+      const params = new URLSearchParams(window.location.search)
+      const urlName = params.get('vorname')
+      const urlEntwurf = params.get('entwurf')
+      if (urlName && urlName.trim() && urlEntwurf === '1') {
+        setWillkommenName(urlName.trim())
+        // auch in sessionStorage schreiben für spätere Nutzung
+        try {
+          sessionStorage.setItem(WILLKOMMEN_NAME_KEY, urlName.trim())
+          sessionStorage.setItem(WILLKOMMEN_ENTWURF_KEY, '1')
+        } catch (_) {}
+        return
+      }
+      // 2. sessionStorage (von WillkommenPage / direktem Aufruf)
+      const n = sessionStorage.getItem(WILLKOMMEN_NAME_KEY) || localStorage.getItem(WILLKOMMEN_NAME_KEY)
+      const e = sessionStorage.getItem(WILLKOMMEN_ENTWURF_KEY) || localStorage.getItem(WILLKOMMEN_ENTWURF_KEY)
       if (n && n.trim() && e === '1') setWillkommenName(n.trim())
     } catch (_) {}
   }, [musterOnly])

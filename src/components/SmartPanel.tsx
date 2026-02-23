@@ -14,10 +14,11 @@ const FREMDER_SESSION_KEYS = [
 ]
 
 function startFremderModus() {
-  // sessionStorage komplett leeren (simuliert neues Browser-Fenster)
-  try { sessionStorage.clear() } catch (_) {}
-  // relevante localStorage-Keys für "erster Besuch" entfernen
-  FREMDER_SESSION_KEYS.forEach(k => { try { localStorage.removeItem(k) } catch (_) {} })
+  // Nur die relevanten Keys löschen – kein sessionStorage.clear() (würde Name-Übergabe killen)
+  FREMDER_SESSION_KEYS.forEach(k => {
+    try { sessionStorage.removeItem(k) } catch (_) {}
+    try { localStorage.removeItem(k) } catch (_) {}
+  })
   // Zur Landingpage – echter Neustart
   window.location.href = ENTDECKEN_ROUTE
 }

@@ -119,12 +119,18 @@ export default function EntdeckenPage() {
   const goToDemo = () => {
     const name = answers.q3.trim()
     try {
+      // Name in sessionStorage + localStorage schreiben (doppelt sicher)
       if (name) {
         sessionStorage.setItem(WILLKOMMEN_NAME_KEY, name)
         sessionStorage.setItem(WILLKOMMEN_ENTWURF_KEY, '1')
+        localStorage.setItem(WILLKOMMEN_NAME_KEY, name)
+        localStorage.setItem(WILLKOMMEN_ENTWURF_KEY, '1')
       }
     } catch (_) {}
-    navigate(PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau)
+    // Name auch als URL-Parameter übergeben – funktioniert auch wenn sessionStorage leer
+    const url = PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau
+    const params = name ? `?vorname=${encodeURIComponent(name)}&entwurf=1` : ''
+    navigate(url + params)
   }
 
   // ─── Hilfs-Komponente: Auswahl-Karte ────────────────────────────────────────
@@ -350,54 +356,54 @@ export default function EntdeckenPage() {
         </div>
       )}
 
-      {/* ── FLOATING BUTTONS ─────────────────────────────────────────────── */}
-      <div style={{ position: 'fixed', bottom: '1.25rem', right: '1.25rem', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+      {/* ── FLOATING BUTTONS – nebeneinander unten rechts ────────────────── */}
+      <div style={{ position: 'fixed', bottom: '1.25rem', right: '1.25rem', zIndex: 9999, display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: '0.65rem' }}>
 
-        {/* Wunsch/Feedback-Button – E-Mail-Adresse unsichtbar im Hintergrund */}
+        {/* 🌟 Feedback für echte Nutzer */}
         <FeedbackButton step={step} fontBody={fontBody} accentGlow={'#ff8c42'} accent={'#b54a1e'} />
 
-        {/* Notiz-Panel */}
-        {notizOffen && (
-          <div style={{ background: '#1a1008', border: '1px solid rgba(255,140,66,0.5)', borderRadius: '14px', padding: '1rem', width: 'min(300px, calc(100vw - 2.5rem))', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
-            <div style={{ fontSize: '0.78rem', color: 'rgba(255,140,66,0.7)', marginBottom: '0.5rem', fontFamily: fontBody }}>
-              💡 Idee notieren – landet im Smart Panel
+        {/* 💡 Notiz-Panel (nur für Georg sichtbar – erscheint immer) */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+          {notizOffen && (
+            <div style={{ background: '#1a1008', border: '1px solid rgba(255,140,66,0.5)', borderRadius: '14px', padding: '1rem', width: 'min(280px, calc(100vw - 5rem))', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', position: 'absolute', bottom: '3.75rem', right: 0 }}>
+              <div style={{ fontSize: '0.78rem', color: 'rgba(255,140,66,0.7)', marginBottom: '0.5rem', fontFamily: fontBody }}>
+                💡 Meine Idee – landet im Smart Panel
+              </div>
+              {notizGespeichert ? (
+                <div style={{ textAlign: 'center', padding: '0.75rem', color: '#86efac', fontSize: '0.9rem', fontWeight: 700 }}>✅ Gespeichert!</div>
+              ) : (
+                <>
+                  <textarea
+                    autoFocus
+                    value={notizText}
+                    onChange={e => setNotizText(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleNotizSpeichern() }}
+                    placeholder="Was fällt mir auf? Was würde ich ändern?"
+                    rows={3}
+                    style={{ width: '100%', padding: '0.65rem 0.75rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,140,66,0.3)', borderRadius: '8px', color: '#fff8f0', fontFamily: fontBody, fontSize: '0.88rem', resize: 'none', outline: 'none', boxSizing: 'border-box', lineHeight: 1.55 }}
+                  />
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                    <button type="button" onClick={() => setNotizOffen(false)} style={{ flex: 1, padding: '0.55rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.82rem' }}>Abbrechen</button>
+                    <button type="button" onClick={handleNotizSpeichern} disabled={!notizText.trim()} style={{ flex: 2, padding: '0.55rem', background: notizText.trim() ? 'linear-gradient(135deg, #ff8c42, #b54a1e)' : 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', color: '#fff', cursor: notizText.trim() ? 'pointer' : 'default', fontFamily: fontBody, fontSize: '0.88rem', fontWeight: 700 }}>
+                      💾 Speichern
+                    </button>
+                  </div>
+                  <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.2)', textAlign: 'right', marginTop: '0.35rem' }}>⌘+Enter zum Speichern</div>
+                </>
+              )}
             </div>
-            {notizGespeichert ? (
-              <div style={{ textAlign: 'center', padding: '0.75rem', color: '#86efac', fontSize: '0.9rem', fontWeight: 700 }}>✅ Gespeichert!</div>
-            ) : (
-              <>
-                <textarea
-                  autoFocus
-                  value={notizText}
-                  onChange={e => setNotizText(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleNotizSpeichern() }}
-                  placeholder="Was fällt dir auf? Was würdest du ändern?"
-                  rows={3}
-                  style={{ width: '100%', padding: '0.65rem 0.75rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,140,66,0.3)', borderRadius: '8px', color: '#fff8f0', fontFamily: fontBody, fontSize: '0.88rem', resize: 'none', outline: 'none', boxSizing: 'border-box', lineHeight: 1.55 }}
-                />
-                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                  <button type="button" onClick={() => setNotizOffen(false)} style={{ flex: 1, padding: '0.55rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.82rem' }}>Abbrechen</button>
-                  <button type="button" onClick={handleNotizSpeichern} disabled={!notizText.trim()} style={{ flex: 2, padding: '0.55rem', background: notizText.trim() ? 'linear-gradient(135deg, #ff8c42, #b54a1e)' : 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', color: '#fff', cursor: notizText.trim() ? 'pointer' : 'default', fontFamily: fontBody, fontSize: '0.88rem', fontWeight: 700 }}>
-                    💾 Speichern
-                  </button>
-                </div>
-                <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.2)', textAlign: 'right', marginTop: '0.35rem' }}>⌘+Enter zum Speichern</div>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Trigger-Button */}
-        <button
-          type="button"
-          onClick={() => { setNotizOffen(o => !o); setNotizText(''); setNotizGespeichert(false) }}
-          title="Idee notieren"
-          style={{ width: 52, height: 52, borderRadius: '50%', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', cursor: 'pointer', fontSize: '1.4rem', boxShadow: '0 4px 20px rgba(255,140,66,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.1)' }}
-          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)' }}
-        >
-          {notizOffen ? '✕' : '💡'}
-        </button>
+          )}
+          <button
+            type="button"
+            onClick={() => { setNotizOffen(o => !o); setNotizText(''); setNotizGespeichert(false) }}
+            title="Meine Idee notieren (Georg)"
+            style={{ width: 52, height: 52, borderRadius: '50%', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', cursor: 'pointer', fontSize: '1.4rem', boxShadow: '0 4px 20px rgba(255,140,66,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.1)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)' }}
+          >
+            {notizOffen ? '✕' : '💡'}
+          </button>
+        </div>
       </div>
     </div>
   )
