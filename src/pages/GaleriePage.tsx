@@ -2501,7 +2501,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               letterSpacing: '-0.02em',
               lineHeight: '1.15'
             }}>
-              VK2 Vereinsplattform
+              {displayGalleryName}
             </h1>
             <p style={{
               margin: '0.5rem 0 0',
@@ -2509,7 +2509,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               fontSize: 'clamp(1rem, 2.5vw, 1.2rem)',
               fontWeight: '400'
             }}>
-                Unsere Mitglieder
+              {galerieTexts.welcomeSubtext?.trim() || 'Unsere Mitglieder'}
             </p>
             <div style={{
               display: 'grid',
