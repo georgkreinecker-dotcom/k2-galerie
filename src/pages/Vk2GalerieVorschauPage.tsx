@@ -72,8 +72,18 @@ const Vk2GalerieVorschauPage: React.FC = () => {
         gap: '1rem'
       }}>
         <div>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', color: '#60a5fa', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-            VK2 Vereinsplattform
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', color: '#60a5fa', textTransform: 'uppercase' }}>
+              VK2 Vereinsplattform
+            </span>
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              title="Zur Willkommensseite"
+              style={{ background: 'rgba(37,99,235,0.15)', border: '1px solid rgba(37,99,235,0.35)', borderRadius: 6, padding: '0.15rem 0.5rem', cursor: 'pointer', color: '#60a5fa', fontSize: '1rem', lineHeight: 1, display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+            >
+              🏛️
+            </button>
           </div>
           <h1 style={{ margin: 0, fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: 800, color: '#f0f6ff' }}>
             {vereinsName}
