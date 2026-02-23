@@ -141,10 +141,29 @@ function getOeffentlichGalerieDefaults(): GaleriePageTexts {
   }
 }
 
+function getVk2GalerieDefaults(): GaleriePageTexts {
+  const tc = TENANT_CONFIGS.vk2
+  return {
+    pageTitle: tc.galleryName,
+    heroTitle: '',
+    welcomeHeading: 'Willkommen bei',
+    welcomeSubtext: 'Kunstverein',
+    welcomeIntroText: 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.',
+    eventSectionHeading: 'Vereinstermine & Events',
+    kunstschaffendeHeading: 'Unsere Mitglieder',
+    martinaBio: '',
+    georgBio: '',
+    gemeinsamText: '',
+    galerieButtonText: 'Unsere Mitglieder',
+    virtualTourButtonText: 'Vereinsräume',
+  }
+}
+
 /** Sichere Default-Kopie. tenantId 'oeffentlich' = Galerie-Defaults für ök2; 'vk2' = VK2. */
 function getSafeDefaults(tenantId?: PageTextsTenantId): PageTextsConfig {
   const base = JSON.parse(JSON.stringify(defaults)) as PageTextsConfig
   if (tenantId === 'oeffentlich') base.galerie = { ...base.galerie, ...getOeffentlichGalerieDefaults() }
+  if (tenantId === 'vk2') base.galerie = { ...base.galerie, ...getVk2GalerieDefaults() }
   return base
 }
 
@@ -170,6 +189,27 @@ export function getPageTexts(tenantId?: PageTextsTenantId): PageTextsConfig {
           saved.galerie.welcomeSubtext = oefDefaults.welcomeSubtext
           try { localStorage.setItem(key, JSON.stringify(saved)) } catch (_) {}
         }
+      }
+      // VK2: K2-Daten die durch Kontext-Bug hereingekommen sind → mit VK2-Defaults bereinigen
+      if (tenantId === 'vk2' && saved.galerie) {
+        const k2Defaults = ['K2 Galerie', 'Kunst & Keramik – Martina und Georg Kreinecker', 'Martina Kreinecker', 'Georg Kreinecker']
+        const k2IntroPrefix = 'Ein Neuanfang mit Leidenschaft'
+        let dirty = false
+        if (saved.galerie.heroTitle && k2Defaults.includes(saved.galerie.heroTitle)) {
+          saved.galerie.heroTitle = ''
+          dirty = true
+        }
+        if (saved.galerie.welcomeSubtext && k2Defaults.includes(saved.galerie.welcomeSubtext)) {
+          saved.galerie.welcomeSubtext = 'Kunstverein'
+          dirty = true
+        }
+        if (saved.galerie.welcomeIntroText && saved.galerie.welcomeIntroText.startsWith(k2IntroPrefix)) {
+          saved.galerie.welcomeIntroText = 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.'
+          dirty = true
+        }
+        if (saved.galerie.martinaBio) { saved.galerie.martinaBio = ''; dirty = true }
+        if (saved.galerie.georgBio) { saved.galerie.georgBio = ''; dirty = true }
+        if (dirty) try { localStorage.setItem(key, JSON.stringify(saved)) } catch (_) {}
       }
       result = deepMerge(getSafeDefaults(tenantId), saved) as PageTextsConfig
     } else {
