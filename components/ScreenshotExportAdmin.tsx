@@ -321,16 +321,17 @@ function loadArtworks(): any[] {
       }
     }
 
-    // KRITISCH: Im VK2-Kontext nur echte VK2-Werke (VK2-* Nummer oder vk2-* ID) – keine K2/ök2-Werke
+    // VK2: Nur echte K2-Galerie-Werke (K2-M-*, K2-K-* etc.) entfernen – VK2-eigene Einträge behalten
     if (isVk2AdminContext()) {
       const before = artworks.length
       artworks = artworks.filter((a: any) => {
         const num = String(a?.number || '')
-        const id  = String(a?.id || '')
-        return num.startsWith('VK2-') || id.startsWith('vk2-')
+        // K2-Nummern (K2-M-0001, K2-K-0002 etc.) gehören nicht in VK2
+        if (num.startsWith('K2-') && !num.startsWith('K2-W-')) return false
+        return true
       })
       if (artworks.length < before) {
-        console.warn(`🧹 VK2-Admin: ${before - artworks.length} Fremd-Werke entfernt (K2/ök2 gehören nicht in VK2)`)
+        console.warn(`🧹 VK2-Admin: ${before - artworks.length} K2-Fremd-Werke entfernt`)
         try {
           localStorage.setItem(key, JSON.stringify(artworks))
         } catch (_) {}
@@ -1582,6 +1583,7 @@ function ScreenshotExportAdmin() {
         const raw = localStorage.getItem(KEY_VK2_STAMMDATEN)
         if (raw && raw.length < 500000) {
           const parsed = JSON.parse(raw) as Partial<Vk2Stammdaten>
+          const parsedMitglieder: Vk2Mitglied[] = Array.isArray(parsed.mitglieder) ? parsed.mitglieder.map((m: any) => typeof m === 'string' ? { name: m, oeffentlichSichtbar: true } : { name: m?.name ?? '', email: m?.email, lizenz: m?.lizenz, typ: m?.typ, mitgliedFotoUrl: m?.mitgliedFotoUrl, imageUrl: m?.imageUrl, phone: m?.phone, website: m?.website, seit: m?.seit, strasse: m?.strasse, plz: m?.plz, ort: m?.ort, land: m?.land, geburtsdatum: m?.geburtsdatum, eintrittsdatum: m?.eintrittsdatum ?? m?.seit, oeffentlichSichtbar: m?.oeffentlichSichtbar !== false, bankKontoinhaber: m?.bankKontoinhaber, bankIban: m?.bankIban, bankBic: m?.bankBic, bankName: m?.bankName }) : []
           const merged: Vk2Stammdaten = {
             verein: { ...VK2_STAMMDATEN_DEFAULTS.verein, ...parsed.verein },
             vorstand: { ...VK2_STAMMDATEN_DEFAULTS.vorstand, ...parsed.vorstand },
@@ -1589,12 +1591,18 @@ function ScreenshotExportAdmin() {
             kassier: { ...VK2_STAMMDATEN_DEFAULTS.kassier, ...parsed.kassier },
             schriftfuehrer: { ...VK2_STAMMDATEN_DEFAULTS.schriftfuehrer, ...parsed.schriftfuehrer },
             beisitzer: parsed.beisitzer ? { ...VK2_STAMMDATEN_DEFAULTS.beisitzer!, ...parsed.beisitzer } : undefined,
-            mitglieder: Array.isArray(parsed.mitglieder) ? parsed.mitglieder.map((m: any) => typeof m === 'string' ? { name: m, oeffentlichSichtbar: true } : { name: m?.name ?? '', email: m?.email, lizenz: m?.lizenz, typ: m?.typ, mitgliedFotoUrl: m?.mitgliedFotoUrl, imageUrl: m?.imageUrl, phone: m?.phone, website: m?.website, seit: m?.seit, strasse: m?.strasse, plz: m?.plz, ort: m?.ort, land: m?.land, geburtsdatum: m?.geburtsdatum, eintrittsdatum: m?.eintrittsdatum ?? m?.seit, oeffentlichSichtbar: m?.oeffentlichSichtbar !== false, bankKontoinhaber: m?.bankKontoinhaber, bankIban: m?.bankIban, bankBic: m?.bankBic, bankName: m?.bankName }) : [],
+            // Wenn keine Mitglieder gespeichert: Muster-Mitglieder als Fallback
+            mitglieder: parsedMitglieder.length > 0 ? parsedMitglieder : USER_LISTE_FUER_MITGLIEDER,
             mitgliederNichtRegistriert: Array.isArray(parsed.mitgliederNichtRegistriert) ? parsed.mitgliederNichtRegistriert : [],
           }
           setVk2Stammdaten(merged)
+        } else {
+          // Kein gespeicherter Stand → Defaults + Muster-Mitglieder verwenden
+          setVk2Stammdaten({ ...VK2_STAMMDATEN_DEFAULTS, mitglieder: USER_LISTE_FUER_MITGLIEDER })
         }
-      } catch (_) {}
+      } catch (_) {
+        setVk2Stammdaten({ ...VK2_STAMMDATEN_DEFAULTS, mitglieder: USER_LISTE_FUER_MITGLIEDER })
+      }
     }, 300)
     return () => { isMounted = false; clearTimeout(t) }
   }, [])
