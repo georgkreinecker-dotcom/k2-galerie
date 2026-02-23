@@ -3316,6 +3316,11 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           />
         )}
 
+        {/* Sanfte Abschluss-Karte – erscheint wenn Guide fertig, Nutzer nicht allein lassen */}
+        {musterOnly && !guideVisible && guideName && (
+          <GuideAbschlussKarte name={guideName} />
+        )}
+
         {/* Willkommens-Fenster (nur öffentliche Galerie): Einstieg per QR – Optionen zentriert als Fenster */}
         {musterOnly && showWelcomeModal && (
           <div
@@ -3660,6 +3665,40 @@ function baueDynamischenAbschluss(name: string, a: GuideAntworten): string {
   }
 
   return `Danke, ${name}. ✨\n\nDeine Galerie ist bereit –\nwie aus Zauberhand.`
+}
+
+// ─── GuideAbschlussKarte ──────────────────────────────────────────────────────
+// Erscheint wenn Guide fertig – Nutzer nicht allein lassen
+// ─────────────────────────────────────────────────────────────────────────────
+
+function GuideAbschlussKarte({ name }: { name: string }) {
+  const [sichtbar, setSichtbar] = useState(true)
+  if (!sichtbar) return null
+
+  return (
+    <div style={{ position: 'fixed', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)', zIndex: 9999, width: 'min(420px, calc(100vw - 2rem))', animation: 'guideEin 0.5s ease' }}>
+      <style>{`@keyframes guideEin { from{opacity:0;transform:translateX(-50%) translateY(10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }`}</style>
+      <div style={{ background: 'rgba(14,8,4,0.96)', border: '1px solid rgba(255,140,66,0.25)', borderRadius: '18px', padding: '1.1rem 1.25rem', boxShadow: '0 12px 40px rgba(0,0,0,0.5)', backdropFilter: 'blur(16px)', display: 'flex', gap: '0.85rem', alignItems: 'flex-start' }}>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg, #b54a1e, #ff8c42)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', flexShrink: 0 }}>
+          👨‍🎨
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: '0.65rem', color: 'rgba(255,140,66,0.5)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' as const, marginBottom: '0.2rem' }}>Dein Galerie-Guide</div>
+          <div style={{ fontSize: '0.88rem', color: '#fff8f0', lineHeight: 1.6, marginBottom: '0.75rem' }}>
+            Schau dich in Ruhe um, {name}.<br />
+            Ich bin immer noch da – tippe auf den Button wenn du Fragen hast. 👋
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button type="button" onClick={() => setSichtbar(false)}
+              style={{ flex: 1, padding: '0.6rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem', fontFamily: 'inherit' }}>
+              ✨ Alles klar, danke!
+            </button>
+          </div>
+        </div>
+        <button type="button" onClick={() => setSichtbar(false)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.18)', cursor: 'pointer', fontSize: '1rem', padding: '0.1rem 0.3rem', flexShrink: 0 }}>✕</button>
+      </div>
+    </div>
+  )
 }
 
 // ─── ErgebnisKarten ───────────────────────────────────────────────────────────
