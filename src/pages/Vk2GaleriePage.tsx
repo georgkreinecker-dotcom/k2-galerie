@@ -4,6 +4,7 @@ import { PROJECT_ROUTES } from '../config/navigation'
 import { initVk2DemoStammdatenIfEmpty, type Vk2Stammdaten } from '../config/tenantConfig'
 import { getPageTexts } from '../config/pageTexts'
 import { getPageContentGalerie } from '../config/pageContentGalerie'
+import { BUILD_LABEL } from '../buildInfo.generated'
 import '../App.css'
 
 // Lädt VK2-Stammdaten aus localStorage – NUR eigener Key, keine K2/ök2-Daten
@@ -143,10 +144,10 @@ const Vk2GaleriePage: React.FC = () => {
       {/* Hauptinhalt */}
       <header style={{ padding: 'clamp(2rem, 6vw, 3.5rem) clamp(1.5rem, 4vw, 3rem)', maxWidth: '1200px', margin: '0 auto' }}>
 
-        {/* Foto */}
+        {/* Foto – vollständig anzeigen, nicht abschneiden */}
         {welcomeImage && (
           <div style={{ width: '100%', marginBottom: 'clamp(1.5rem, 4vw, 2.5rem)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
-            <img src={welcomeImage} alt={heroTitle} style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover', maxHeight: 'min(50vh, 360px)' }} />
+            <img src={welcomeImage} alt={heroTitle} style={{ width: '100%', height: 'auto', display: 'block' }} />
           </div>
         )}
 
@@ -242,12 +243,22 @@ const Vk2GaleriePage: React.FC = () => {
         )}
       </footer>
 
-      {/* Stand-Badge */}
-      {typeof window !== 'undefined' && (
-        <div style={{ position: 'fixed', bottom: 8, left: 8, fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', pointerEvents: 'none' }}>
-          VK2
+      {/* Copyright + K2 Brand */}
+      <div style={{ textAlign: 'center', padding: '1.5rem 1rem 2rem', color: 'rgba(255,255,255,0.3)', fontSize: '0.78rem' }}>
+        <div style={{ marginBottom: '0.4rem', fontWeight: 600, fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.05em' }}>
+          K2 Galerie
         </div>
-      )}
+        <div>© {new Date().getFullYear()} {stammdaten?.verein?.name || 'Vereinsplattform'} · Powered by K2 Galerie</div>
+      </div>
+
+      {/* Stand-Badge unten links */}
+      <div
+        style={{ position: 'fixed', bottom: 8, left: 8, fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)', cursor: 'pointer', zIndex: 50 }}
+        onClick={() => { window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now() }}
+        title="Tippen für Cache-Bypass"
+      >
+        Stand: {BUILD_LABEL}
+      </div>
     </div>
   )
 }

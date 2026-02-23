@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { initVk2DemoStammdatenIfEmpty, type Vk2Stammdaten, type Vk2Mitglied } from '../config/tenantConfig'
+import { BUILD_LABEL } from '../buildInfo.generated'
 import '../App.css'
 
 // Lädt VK2-Mitglieder – NUR aus eigenem Key, keine K2/ök2-Daten
@@ -30,8 +31,14 @@ function loadVk2VereinName(): string {
 
 const Vk2GalerieVorschauPage: React.FC = () => {
   const navigate = useNavigate()
-  const [mitglieder, setMitglieder] = useState<Vk2Mitglied[]>(() => loadVk2Mitglieder())
-  const [vereinsName, setVereinsName] = useState(() => loadVk2VereinName())
+  const [mitglieder, setMitglieder] = useState<Vk2Mitglied[]>([])
+  const [vereinsName, setVereinsName] = useState('Vereinsplattform')
+
+  // Beim Mount: Demo-Daten sicherstellen, dann laden
+  useEffect(() => {
+    setMitglieder(loadVk2Mitglieder())
+    setVereinsName(loadVk2VereinName())
+  }, [])
 
   // Neu laden wenn sich localStorage ändert
   useEffect(() => {
@@ -145,6 +152,23 @@ const Vk2GalerieVorschauPage: React.FC = () => {
             })}
           </div>
         )}
+      </div>
+
+      {/* Copyright + K2 Brand */}
+      <div style={{ textAlign: 'center', padding: '1.5rem 1rem 2rem', color: 'rgba(160,200,255,0.3)', fontSize: '0.78rem', borderTop: '1px solid rgba(37,99,235,0.15)', marginTop: '1rem' }}>
+        <div style={{ marginBottom: '0.3rem', fontWeight: 600, fontSize: '0.85rem', color: 'rgba(160,200,255,0.5)', letterSpacing: '0.05em' }}>
+          K2 Galerie
+        </div>
+        <div>© {new Date().getFullYear()} {vereinsName} · Powered by K2 Galerie</div>
+      </div>
+
+      {/* Stand-Badge */}
+      <div
+        style={{ position: 'fixed', bottom: 8, left: 8, fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', zIndex: 50 }}
+        onClick={() => { window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now() }}
+        title="Tippen für Cache-Bypass"
+      >
+        Stand: {BUILD_LABEL}
       </div>
     </div>
   )
