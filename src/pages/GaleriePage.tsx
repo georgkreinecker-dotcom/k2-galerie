@@ -3725,7 +3725,7 @@ interface ErgebnisKarte {
   linkLabel?: string   // Button-Text
 }
 
-function baueKarten(pfad: GuidePfad, a: GuideAntworten): { sofort: ErgebnisKarte[]; system: ErgebnisKarte[]; lizenz: ErgebnisKarte } {
+function baueKarten(pfad: GuidePfad, a: GuideAntworten, name?: string): { sofort: ErgebnisKarte[]; system: ErgebnisKarte[]; lizenz: ErgebnisKarte } {
   const lizenzKarte: ErgebnisKarte = {
     emoji: '💎',
     titel: pfad === 'gemeinschaft' ? 'Vereinsplattform VK2' : pfad === 'atelier' ? 'Studio-Lizenz' : 'Pro-Galerie',
@@ -3740,7 +3740,8 @@ function baueKarten(pfad: GuidePfad, a: GuideAntworten): { sofort: ErgebnisKarte
     statusLabel: 'Wenn du mehr willst →',
   }
 
-  const ADMIN = '/admin?context=oeffentlich'
+  const vornamePart = name ? `&vorname=${encodeURIComponent(name)}` : ''
+  const ADMIN = `/admin?context=oeffentlich${vornamePart}`
   const GALERIE = '/projects/k2-galerie/galerie-oeffentlich'
   const VITA = '/projects/k2-galerie/vita/martina'
   const SHOP = '/projects/k2-galerie/shop'
@@ -3814,8 +3815,8 @@ function baueKarten(pfad: GuidePfad, a: GuideAntworten): { sofort: ErgebnisKarte
   }
 }
 
-function ErgebnisKarten({ pfad, antworten, aufgeklappt, onAufklappen, onWeiter, onFuehrung }: { pfad: GuidePfad; antworten: GuideAntworten; aufgeklappt: boolean; onAufklappen: () => void; onWeiter: () => void; onFuehrung: () => void }) {
-  const karten = baueKarten(pfad, antworten)
+function ErgebnisKarten({ pfad, antworten, name, aufgeklappt, onAufklappen, onWeiter, onFuehrung }: { pfad: GuidePfad; antworten: GuideAntworten; name?: string; aufgeklappt: boolean; onAufklappen: () => void; onWeiter: () => void; onFuehrung: () => void }) {
+  const karten = baueKarten(pfad, antworten, name)
 
   const statusFarbe = (s: ErgebnisKarte['status']) => {
     if (s === 'sofort') return { bg: 'rgba(134,239,172,0.12)', border: 'rgba(134,239,172,0.35)', badge: '#86efac' }
@@ -4146,6 +4147,7 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
           <ErgebnisKarten
             pfad={pfad}
             antworten={antworten}
+            name={name}
             aufgeklappt={kartenAufgeklappt}
             onAufklappen={() => setKartenAufgeklappt(v => !v)}
             onWeiter={schliessen}

@@ -657,8 +657,14 @@ function ScreenshotExportAdmin() {
     } catch (_) {}
   }, [])
 
+  // Vorname aus URL – kommt vom Guide (z.B. /admin?context=oeffentlich&vorname=Klein)
+  const guideVorname = (() => {
+    try { return new URLSearchParams(window.location.search).get('vorname') ?? '' } catch { return '' }
+  })()
+
   // Klare Admin-Struktur: Werke | Eventplanung | Design | Einstellungen. Kasse = ein Button im Header, öffnet direkt den Shop.
   const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'design' | 'einstellungen' | 'assistent'>('werke')
+  const [guideBannerClosed, setGuideBannerClosed] = useState(false)
   const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>('events')
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false) // kleine Leiste „Vergangenheit“, bei Klick aufklappen
   const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager'>('stammdaten')
@@ -8091,6 +8097,46 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             {/* Haupt-Dashboard: nur wenn kein Bereich aktiv (werke = Startseite) */}
             {activeTab === 'werke' && (
               <div>
+
+                {/* Guide-Willkommensbanner – nur wenn Vorname aus Guide mitkommt */}
+                {guideVorname && isOeffentlichAdminContext() && !guideBannerClosed && (
+                  <div style={{ background: 'linear-gradient(135deg, #b54a1e14, #b54a1e08)', border: '1.5px solid #b54a1e33', borderRadius: '16px', padding: '1.25rem 1.5rem', marginBottom: '1.75rem', position: 'relative' }}>
+                    <button
+                      type="button"
+                      onClick={() => setGuideBannerClosed(true)}
+                      style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', background: 'none', border: 'none', cursor: 'pointer', color: '#b54a1e66', fontSize: '1.1rem', lineHeight: 1, padding: '0.2rem 0.4rem' }}
+                      title="Schließen"
+                    >×</button>
+                    <div style={{ fontSize: '1.3rem', marginBottom: '0.5rem' }}>👋</div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1c1a18', marginBottom: '0.4rem' }}>
+                      Willkommen, {guideVorname}! Das ist deine Galerie-Zentrale.
+                    </div>
+                    <div style={{ fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.6, marginBottom: '1rem' }}>
+                      Hier steuerst du alles – von deinen Werken bis zur Kassa. Ein kurzer Überblick was jeder Bereich kann:
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.65rem' }}>
+                      {[
+                        { emoji: '🎨', name: 'Meine Werke', text: 'Fotos hochladen, Titel, Preis, Beschreibung – deine Galerie füllen' },
+                        { emoji: '📋', name: 'Werkkatalog', text: 'Alle Werke auf einen Blick – filtern, suchen, drucken' },
+                        { emoji: '💰', name: 'Kassa', text: 'Direkt verkaufen – Beleg drucken, Übersicht behalten' },
+                        { emoji: '📢', name: 'Veranstaltungen', text: 'Events planen, Einladungen erstellen, Presse informieren' },
+                        { emoji: '✨', name: 'Aussehen', text: 'Farben, Texte, dein Foto – die Galerie wird zu dir' },
+                      ].map((b, i) => (
+                        <div key={i} style={{ background: '#fff', border: '1px solid #e8e4de', borderRadius: '10px', padding: '0.65rem 0.8rem', display: 'flex', gap: '0.6rem', alignItems: 'flex-start' }}>
+                          <span style={{ fontSize: '1.3rem', flexShrink: 0, lineHeight: 1.2 }}>{b.emoji}</span>
+                          <div>
+                            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1c1a18', marginBottom: '0.2rem' }}>{b.name}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#5c5650', lineHeight: 1.4 }}>{b.text}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ marginTop: '1rem', fontSize: '0.82rem', color: '#b54a1e', fontWeight: 600 }}>
+                      👇 Einfach einen Bereich antippen – los geht's!
+                    </div>
+                  </div>
+                )}
+
                 {/* Begrüßung */}
                 <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
                   <h2 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', fontWeight: 700, color: s.text, margin: '0 0 0.35rem' }}>
