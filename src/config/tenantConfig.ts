@@ -149,6 +149,10 @@ export interface Vk2Mitglied {
   seit?: string
   /** Auf der Karte / öffentlich sichtbar (Hakerl). false = gesperrt, nicht auf der öffentlichen Karte */
   oeffentlichSichtbar?: boolean
+  /** Kurz-Bio / Vita für die öffentliche Mitgliederkarte */
+  bio?: string
+  /** Link zur eigenen K2-Galerie (wenn Lizenznehmer) oder externer Website */
+  galerieLinkUrl?: string
   /** Bankverbindung – für Mitglieder, die am Bonussystem teilnehmen */
   bankKontoinhaber?: string
   bankIban?: string

@@ -118,9 +118,9 @@ const USER_LISTE_FUER_MITGLIEDER: Vk2Mitglied[] = [
   { name: 'Kunstverein Musterstadt', email: 'vorstand@kv-musterstadt.at', lizenz: 'VP-2026-1004', typ: 'Skulptur', mitgliedFotoUrl: MUSTER_MITGLIEDER_BILDER[3], imageUrl: MUSTER_WERKFOTO_BILDER[3], phone: '+43 732 771 000', website: 'https://kv-musterstadt.at', strasse: 'Vereinsweg 7', plz: '8010', ort: 'Graz', land: 'Österreich', geburtsdatum: '01.05.1970', eintrittsdatum: '05.02.2026', seit: '05.02.2026' },
   { name: 'Test Nutzer', email: 'test@beispiel.at', lizenz: 'KF-2026-1005', typ: 'Fotografie', mitgliedFotoUrl: MUSTER_MITGLIEDER_BILDER[4], imageUrl: MUSTER_WERKFOTO_BILDER[4], phone: '+43 699 000 9999', website: '', strasse: 'Testweg 99', plz: '6020', ort: 'Innsbruck', land: 'Österreich', geburtsdatum: '20.12.1982', eintrittsdatum: '12.02.2026', seit: '12.02.2026' }
 ]
-const EMPTY_MEMBER_FORM = { name: '', email: '', lizenz: '', typ: '', strasse: '', plz: '', ort: '', land: '', geburtsdatum: '', eintrittsdatum: '', phone: '', website: '', mitgliedFotoUrl: '', imageUrl: '', bankKontoinhaber: '', bankIban: '', bankBic: '', bankName: '' }
+const EMPTY_MEMBER_FORM = { name: '', email: '', lizenz: '', typ: '', strasse: '', plz: '', ort: '', land: '', geburtsdatum: '', eintrittsdatum: '', phone: '', website: '', galerieLinkUrl: '', bio: '', mitgliedFotoUrl: '', imageUrl: '', bankKontoinhaber: '', bankIban: '', bankBic: '', bankName: '' }
 function memberToForm(m: Vk2Mitglied) {
-  return { name: m.name ?? '', email: m.email ?? '', lizenz: m.lizenz ?? '', typ: m.typ ?? '', strasse: m.strasse ?? '', plz: m.plz ?? '', ort: m.ort ?? '', land: m.land ?? '', geburtsdatum: m.geburtsdatum ?? '', eintrittsdatum: m.eintrittsdatum ?? m.seit ?? '', phone: m.phone ?? '', website: m.website ?? '', mitgliedFotoUrl: m.mitgliedFotoUrl ?? '', imageUrl: m.imageUrl ?? '', bankKontoinhaber: m.bankKontoinhaber ?? '', bankIban: m.bankIban ?? '', bankBic: m.bankBic ?? '', bankName: m.bankName ?? '' }
+  return { name: m.name ?? '', email: m.email ?? '', lizenz: m.lizenz ?? '', typ: m.typ ?? '', strasse: m.strasse ?? '', plz: m.plz ?? '', ort: m.ort ?? '', land: m.land ?? '', geburtsdatum: m.geburtsdatum ?? '', eintrittsdatum: m.eintrittsdatum ?? m.seit ?? '', phone: m.phone ?? '', website: m.website ?? '', galerieLinkUrl: m.galerieLinkUrl ?? '', bio: m.bio ?? '', mitgliedFotoUrl: m.mitgliedFotoUrl ?? '', imageUrl: m.imageUrl ?? '', bankKontoinhaber: m.bankKontoinhaber ?? '', bankIban: m.bankIban ?? '', bankBic: m.bankBic ?? '', bankName: m.bankName ?? '' }
 }
 /** CSV-Header (versch. Schreibweisen) → Vk2Mitglied-Feld */
 const CSV_HEADER_MAP: Record<string, keyof Vk2Mitglied> = {
@@ -952,7 +952,7 @@ function ScreenshotExportAdmin() {
   /** VK2: Index in vk2Stammdaten.mitglieder beim Bearbeiten; null = neues Mitglied */
   const [editingMemberIndex, setEditingMemberIndex] = useState<number | null>(null)
   /** VK2: Vollständige Mitglieder-Stammdaten im Modal */
-  const [memberForm, setMemberForm] = useState<{ name: string; email: string; lizenz: string; typ: string; strasse: string; plz: string; ort: string; land: string; geburtsdatum: string; eintrittsdatum: string; phone: string; website: string; mitgliedFotoUrl: string; imageUrl: string; bankKontoinhaber: string; bankIban: string; bankBic: string; bankName: string }>({ ...EMPTY_MEMBER_FORM })
+  const [memberForm, setMemberForm] = useState<{ name: string; email: string; lizenz: string; typ: string; strasse: string; plz: string; ort: string; land: string; geburtsdatum: string; eintrittsdatum: string; phone: string; website: string; galerieLinkUrl: string; bio: string; mitgliedFotoUrl: string; imageUrl: string; bankKontoinhaber: string; bankIban: string; bankBic: string; bankName: string }>({ ...EMPTY_MEMBER_FORM })
   /** VK2: Drag-over für CSV-Import */
   const [csvDragOver, setCsvDragOver] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -14452,6 +14452,29 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       ))}
                     </select>
                   </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.accent, fontWeight: 600 }}>Kurz-Bio / Vita <span style={{ fontWeight: 400, color: s.muted }}>(öffentliche Mitgliederkarte)</span></label>
+                    <textarea
+                      value={memberForm.bio}
+                      onChange={(e) => setMemberForm(f => ({ ...f, bio: e.target.value }))}
+                      placeholder="Kurze Beschreibung: Ausbildung, Schwerpunkte, Stil ..."
+                      rows={3}
+                      style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.accent, fontWeight: 600 }}>Galerie-Link / Website <span style={{ fontWeight: 400, color: s.muted }}>(Klick auf Karte → öffnet diese Seite)</span></label>
+                    <input
+                      type="text"
+                      value={memberForm.galerieLinkUrl}
+                      onChange={(e) => setMemberForm(f => ({ ...f, galerieLinkUrl: e.target.value }))}
+                      placeholder="z.B. https://k2-galerie.vercel.app/galerie oder eigene Website"
+                      style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.95rem', outline: 'none' }}
+                    />
+                    <p style={{ margin: '0.3rem 0 0', fontSize: '0.8rem', color: s.muted }}>
+                      💡 K2-Lizenznehmer: Link zur eigenen K2-Galerie. Sonst: eigene Webseite oder leer lassen.
+                    </p>
+                  </div>
                   <div style={{ borderTop: `1px solid ${s.accent}22`, paddingTop: '0.75rem', marginTop: '0.25rem' }}>
                     <div style={{ fontSize: '0.85rem', color: s.accent, fontWeight: 600, marginBottom: '0.5rem' }}>Bankverbindung (für Bonussystem)</div>
                     <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Nur für Mitglieder, die am Bonussystem teilnehmen.</p>
@@ -14487,7 +14510,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       onClick={() => {
                         if (!memberForm.name.trim()) { alert('Bitte Name eintragen.'); return }
                         const mitglieder = [...(vk2Stammdaten.mitglieder || [])]
-                        const neu: Vk2Mitglied = { name: memberForm.name.trim(), email: memberForm.email.trim() || undefined, lizenz: memberForm.lizenz.trim() || undefined, typ: memberForm.typ || undefined }
+                        const neu: Vk2Mitglied = { name: memberForm.name.trim(), email: memberForm.email.trim() || undefined, lizenz: memberForm.lizenz.trim() || undefined, typ: memberForm.typ || undefined, bio: memberForm.bio.trim() || undefined, galerieLinkUrl: memberForm.galerieLinkUrl.trim() || undefined, website: memberForm.website.trim() || undefined, phone: memberForm.phone.trim() || undefined, strasse: memberForm.strasse.trim() || undefined, plz: memberForm.plz.trim() || undefined, ort: memberForm.ort.trim() || undefined, land: memberForm.land.trim() || undefined, geburtsdatum: memberForm.geburtsdatum.trim() || undefined, eintrittsdatum: memberForm.eintrittsdatum.trim() || undefined, mitgliedFotoUrl: memberForm.mitgliedFotoUrl.trim() || undefined, imageUrl: memberForm.imageUrl.trim() || undefined, bankKontoinhaber: memberForm.bankKontoinhaber.trim() || undefined, bankIban: memberForm.bankIban.trim() || undefined, bankBic: memberForm.bankBic.trim() || undefined, bankName: memberForm.bankName.trim() || undefined }
                         if (editingMemberIndex !== null) {
                           mitglieder[editingMemberIndex] = neu
                         } else {

@@ -86,14 +86,18 @@ function loadVk2Mitglieder(): any[] {
     const mitglieder: any[] = Array.isArray(parsed?.mitglieder) ? parsed.mitglieder : []
     if (mitglieder.length === 0) return []
     return mitglieder
-      .filter((m: any) => m?.name)
+      .filter((m: any) => m?.name && m?.oeffentlichSichtbar !== false)
       .map((m: any, i: number) => ({
         id: `vk2-mitglied-${i}`,
         number: `VK2-${String(i + 1).padStart(2, '0')}`,
         title: m.name,
         category: m.typ?.toLowerCase() || 'sonstiges',
         description: m.typ ? `${m.typ}${m.ort ? ' · ' + m.ort : ''}` : '',
-        imageUrl: m.mitgliedFotoUrl || m.imageUrl || getOek2DefaultArtworkImage(m.typ?.toLowerCase() || 'sonstiges'),
+        bio: m.bio || '',
+        // Link: eigene K2-Galerie (galerieLinkUrl) hat Vorrang, sonst externe website
+        linkUrl: m.galerieLinkUrl || m.website || '',
+        isK2Lizenz: !!(m.lizenz && m.lizenz.trim()),
+        imageUrl: m.mitgliedFotoUrl || m.imageUrl || '',
         price: 0,
         inShop: false,
         inExhibition: true,
@@ -2135,23 +2139,57 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               <p style={{ fontSize: '0.9rem' }}>Im Admin unter „Einstellungen → Stammdaten" Mitglieder hinzufügen.</p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 'clamp(1rem, 2.5vw, 1.5rem)' }}>
-              {mitglieder.map((m: any, idx: number) => (
-                <div key={m.id || idx} style={{ background: vk2BgCard, borderRadius: '16px', overflow: 'hidden', border: `1px solid ${vk2Accent}28`, boxShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>
-                  <div style={{ width: '100%', aspectRatio: '1 / 1', overflow: 'hidden', background: `${vk2Accent}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {m.imageUrl ? (
-                      <img src={m.imageUrl} alt={m.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
-                    ) : (
-                      <div style={{ fontSize: '3.5rem', opacity: 0.4 }}>👤</div>
-                    )}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 'clamp(1rem, 2.5vw, 1.5rem)' }}>
+              {mitglieder.map((m: any, idx: number) => {
+                const hasLink = !!(m.linkUrl && m.linkUrl.trim())
+                const handleClick = () => {
+                  if (!hasLink) return
+                  const url = m.linkUrl.startsWith('http') ? m.linkUrl : `https://${m.linkUrl}`
+                  window.open(url, '_blank', 'noopener,noreferrer')
+                }
+                return (
+                  <div key={m.id || idx}
+                    onClick={hasLink ? handleClick : undefined}
+                    style={{
+                      background: vk2BgCard,
+                      borderRadius: '16px',
+                      overflow: 'hidden',
+                      border: `1px solid ${hasLink ? vk2Accent + '55' : vk2Accent + '28'}`,
+                      boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
+                      cursor: hasLink ? 'pointer' : 'default',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      transition: 'transform 0.15s, box-shadow 0.15s',
+                    }}
+                    onMouseEnter={(e) => { if (hasLink) { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-3px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = `0 8px 24px rgba(37,99,235,0.3)` } }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 12px rgba(0,0,0,0.3)' }}
+                  >
+                    {/* Foto */}
+                    <div style={{ width: '100%', aspectRatio: '1 / 1', overflow: 'hidden', background: `${vk2Accent}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {m.imageUrl ? (
+                        <img src={m.imageUrl} alt={m.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                      ) : (
+                        <div style={{ fontSize: '3.5rem', opacity: 0.4 }}>👤</div>
+                      )}
+                    </div>
+                    {/* Text + Vita */}
+                    <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: '1rem', color: vk2Text, marginBottom: '0.2rem' }}>{m.title}</div>
+                      {m.description && <div style={{ fontSize: '0.82rem', color: vk2AccentLight, fontWeight: 500, marginBottom: '0.5rem' }}>{m.description}</div>}
+                      {m.bio && <p style={{ margin: '0 0 0.75rem', fontSize: '0.83rem', color: vk2Muted, lineHeight: 1.5, flex: 1 }}>{m.bio}</p>}
+                      {/* Link-Button */}
+                      {hasLink && (
+                        <div style={{ marginTop: 'auto', paddingTop: '0.5rem', borderTop: `1px solid ${vk2Accent}22` }}>
+                          <span style={{ fontSize: '0.8rem', color: vk2AccentLight, fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                            {m.isK2Lizenz ? '🎨 Zur K2-Galerie' : '🌐 Zur Website'} →
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div style={{ padding: '1rem' }}>
-                    <div style={{ fontWeight: 700, fontSize: '1rem', color: vk2Text, marginBottom: '0.25rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.title}</div>
-                    {m.description && <div style={{ fontSize: '0.82rem', color: vk2AccentLight, fontWeight: 500 }}>{m.description}</div>}
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
