@@ -1,11 +1,9 @@
 /**
  * GlobaleGuideBegleitung
  *
- * Der Guide-Dialog begleitet auf JEDER Seite nahtlos weiter.
- * Er navigiert automatisch in die richtige Abteilung – User schaut sich um,
- * klickt dann „Weiter →" für die nächste Station.
- *
- * Prinzip: Dialog erklärt. Hintergrund zeigt. User entscheidet wann weiter.
+ * Hub-Layout: Kacheln links/rechts – aktiver Dialog in der Mitte.
+ * User sieht auf einen Blick alle Stationen und kann frei wählen.
+ * Aktive Kachel ist hervorgehoben. Klick auf Kachel → Dialog zeigt diese Station.
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -58,9 +56,7 @@ interface TourSchritt {
   emoji: string
   titel: string
   beschreibung: string
-  // Wohin navigiert der Guide beim Öffnen dieses Schritts?
-  route: string   // React-Route (gleicher Tab, gleiche Seite)
-  // Optionaler Hash/Tab-Parameter für Admin
+  route: string
   adminTab?: string
   adminSubTab?: string
 }
@@ -112,7 +108,7 @@ function baueSchritte(pfad: GuidePfad, name: string): TourSchritt[] {
       {
         id: 'v_start',
         emoji: '🚀',
-        titel: 'Vereinsdaten ausfüllen & starten',
+        titel: 'Jetzt starten',
         beschreibung: 'Name, Adresse, Kontakt eintragen – dann ist eure Vereinsgalerie live. Keine Kreditkarte nötig.',
         route: `/admin?context=oeffentlich&vorname=${vorname}&pfad=${pfad}&guidetab=einstellungen&guidesubtab=stammdaten&assistent=1`,
         adminTab: 'einstellungen',
@@ -125,7 +121,7 @@ function baueSchritte(pfad: GuidePfad, name: string): TourSchritt[] {
     {
       id: 'werke',
       emoji: '🖼️',
-      titel: 'Werkeverwaltung',
+      titel: 'Meine Werke',
       beschreibung: 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist in der Galerie. So einfach.',
       route: `/admin?context=oeffentlich&vorname=${vorname}&pfad=${pfad}&guidetab=werke`,
       adminTab: 'werke',
@@ -133,7 +129,7 @@ function baueSchritte(pfad: GuidePfad, name: string): TourSchritt[] {
     {
       id: 'events',
       emoji: '🎟️',
-      titel: 'Ausstellungen & Events',
+      titel: 'Events & Ausstellungen',
       beschreibung: 'Vernissage geplant? Hier erstellst du Einladungen, QR-Codes und siehst wer kommt.',
       route: `/admin?context=oeffentlich&vorname=${vorname}&pfad=${pfad}&guidetab=eventplan`,
       adminTab: 'eventplan',
@@ -148,7 +144,7 @@ function baueSchritte(pfad: GuidePfad, name: string): TourSchritt[] {
     {
       id: 'kassa',
       emoji: '🧾',
-      titel: 'Kassa & Verkäufe',
+      titel: 'Kassa & Verkauf',
       beschreibung: 'Werk verkauft? Eintragen, Beleg drucken – vom Handy direkt bei der Ausstellung. Ganz simpel.',
       route: '/projects/k2-galerie/shop',
     },
@@ -163,15 +159,15 @@ function baueSchritte(pfad: GuidePfad, name: string): TourSchritt[] {
     {
       id: 'lizenz',
       emoji: '💎',
-      titel: 'Was kostet das Ganze?',
-      beschreibung: 'Basis kostenlos · Pro € 9 / Monat · VK2/Studio € 19 / Monat\nJederzeit wechselbar, keine Bindung.',
+      titel: 'Was kostet das?',
+      beschreibung: 'Basis kostenlos · Pro € 9 / Monat · Studio € 19 / Monat\nJederzeit wechselbar, keine Bindung.',
       route: `/admin?context=oeffentlich&vorname=${vorname}&pfad=${pfad}&guidetab=einstellungen`,
       adminTab: 'einstellungen',
     },
     {
       id: 'start',
       emoji: '🚀',
-      titel: 'Bereit. Jetzt starten.',
+      titel: 'Jetzt starten',
       beschreibung: 'Trag deinen Namen und Kontakt ein – dann ist deine Galerie sofort live. Keine Kreditkarte nötig.',
       route: `/admin?context=oeffentlich&vorname=${vorname}&pfad=${pfad}&guidetab=einstellungen&guidesubtab=stammdaten&assistent=1`,
       adminTab: 'einstellungen',
@@ -191,16 +187,80 @@ function LizenzInfo({ pfad, akzentFarbe }: { pfad: GuidePfad; akzentFarbe: strin
         { emoji: '🔵', name: 'Pro', preis: '€ 9 / Monat', inhalt: '+ Events, Dokumente, Kassa' },
         { emoji: '🟣', name: istVerein ? 'VK2 / Verein' : 'Studio / VK2', preis: '€ 19 / Monat', inhalt: istVerein ? 'Bis 20 Mitglieder, alles inkl.' : 'Mehrere Künstler:innen, alles inkl.' },
       ].map(l => (
-        <div key={l.name} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0.55rem', background: 'rgba(255,255,255,0.04)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.07)' }}>
-          <span style={{ fontSize: '0.95rem' }}>{l.emoji}</span>
+        <div key={l.name} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.35rem 0.5rem', background: 'rgba(255,255,255,0.04)', borderRadius: '7px', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <span style={{ fontSize: '0.9rem' }}>{l.emoji}</span>
           <div style={{ flex: 1 }}>
-            <span style={{ fontWeight: 700, color: '#fff8f0', fontSize: '0.8rem' }}>{l.name}</span>
-            <span style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.72rem', marginLeft: '0.35rem' }}>{l.inhalt}</span>
+            <span style={{ fontWeight: 700, color: '#fff8f0', fontSize: '0.76rem' }}>{l.name}</span>
+            <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.68rem', marginLeft: '0.3rem' }}>{l.inhalt}</span>
           </div>
-          <span style={{ fontSize: '0.78rem', color: akzentFarbe, fontWeight: 600, whiteSpace: 'nowrap' as const }}>{l.preis}</span>
+          <span style={{ fontSize: '0.72rem', color: akzentFarbe, fontWeight: 600, whiteSpace: 'nowrap' as const }}>{l.preis}</span>
         </div>
       ))}
     </div>
+  )
+}
+
+// ─── Kachel-Komponente ────────────────────────────────────────────────────────
+
+function Kachel({
+  schritt, aktiv, besucht, akzentFarbe, akzentGrad, onClick
+}: {
+  schritt: TourSchritt
+  aktiv: boolean
+  besucht: boolean
+  akzentFarbe: string
+  akzentGrad: string
+  onClick: () => void
+}) {
+  const [hover, setHover] = useState(false)
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        gap: '0.3rem', padding: '0.55rem 0.35rem',
+        background: aktiv
+          ? akzentGrad
+          : hover
+          ? 'rgba(255,255,255,0.08)'
+          : besucht
+          ? 'rgba(255,255,255,0.04)'
+          : 'rgba(255,255,255,0.02)',
+        border: aktiv
+          ? 'none'
+          : besucht
+          ? `1px solid ${akzentFarbe}44`
+          : '1px solid rgba(255,255,255,0.08)',
+        borderRadius: '12px',
+        cursor: 'pointer',
+        fontFamily: 'inherit',
+        transition: 'all 0.2s',
+        boxShadow: aktiv ? `0 4px 16px ${akzentFarbe}44` : 'none',
+        position: 'relative' as const,
+        minWidth: 0,
+      }}
+    >
+      {/* Häkchen wenn besucht und nicht aktiv */}
+      {besucht && !aktiv && (
+        <div style={{
+          position: 'absolute', top: 3, right: 4,
+          fontSize: '0.55rem', color: akzentFarbe, fontWeight: 700, lineHeight: 1,
+        }}>✓</div>
+      )}
+      <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>{schritt.emoji}</span>
+      <span style={{
+        fontSize: '0.6rem', fontWeight: aktiv ? 700 : 500,
+        color: aktiv ? '#fff' : besucht ? `${akzentFarbe}cc` : 'rgba(255,255,255,0.45)',
+        textAlign: 'center', lineHeight: 1.2,
+        wordBreak: 'break-word' as const,
+      }}>
+        {schritt.titel.split(' ').slice(0, 2).join(' ')}
+      </span>
+    </button>
   )
 }
 
@@ -212,12 +272,12 @@ export function GlobaleGuideBegleitung() {
   const [flow, setFlow] = useState<GuideFlowState | null>(null)
   const [geschlossen, setGeschlossen] = useState(false)
   const [aktuellerIdx, setAktuellerIdx] = useState(0)
-  const [navigiert, setNavigiert] = useState(false)
+  const [besuchtSet, setBesuchtSet] = useState<Set<number>>(new Set())
 
   // Drag-State – Refs damit keine Re-Renders durch Drag ausgelöst werden
-  const [pos, setPos] = useState<{ x: number; y: number } | null>(null)
   const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null)
   const isDraggingRef = useRef(false)
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null)
 
   const onDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
@@ -234,9 +294,10 @@ export function GlobaleGuideBegleitung() {
       if (!isDraggingRef.current || !dragRef.current) return
       const clientX = 'touches' in e ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX
       const clientY = 'touches' in e ? (e as TouchEvent).touches[0].clientY : (e as MouseEvent).clientY
-      const dx = clientX - dragRef.current.startX
-      const dy = clientY - dragRef.current.startY
-      setPos({ x: dragRef.current.origX + dx, y: dragRef.current.origY + dy })
+      setPos({
+        x: dragRef.current.origX + clientX - dragRef.current.startX,
+        y: dragRef.current.origY + clientY - dragRef.current.startY,
+      })
     }
     const onEnd = () => { isDraggingRef.current = false }
     window.addEventListener('mousemove', onMove)
@@ -263,17 +324,12 @@ export function GlobaleGuideBegleitung() {
     return () => window.removeEventListener('guide-flow-update', ladeFlow)
   }, [ladeFlow])
 
-  // Wenn der User manuell navigiert: Dialog bleibt, aber navigiert-Flag zurücksetzen
   useEffect(() => {
-    if (flow?.aktiv) {
-      setGeschlossen(false)
-      setNavigiert(false)
-    }
+    if (flow?.aktiv) setGeschlossen(false)
   }, [location.pathname, location.search])
 
   if (!flow || !flow.aktiv || geschlossen) return null
 
-  // Auf allen Galerie-Seiten nie zeigen – dort läuft der native Guide / Landing Page
   const galerieRouten = [
     '/projects/k2-galerie/galerie-oeffentlich',
     '/projects/k2-galerie/galerie',
@@ -299,19 +355,21 @@ export function GlobaleGuideBegleitung() {
   const istLetzterSchritt = aktuellerIdx === schritte.length - 1
   const istLizenzSchritt = aktuellerSchritt.id === 'lizenz' || aktuellerSchritt.id === 'v_lizenz'
 
-  // User in die aktuelle Station navigieren
+  const waehleSchritt = (idx: number) => {
+    setAktuellerIdx(idx)
+    setBesuchtSet(prev => new Set(prev).add(aktuellerIdx))
+  }
+
   const zeigeStation = () => {
-    const s = aktuellerSchritt
-    setNavigiert(true)
-    navigate(s.route)
+    setBesuchtSet(prev => new Set(prev).add(aktuellerIdx))
+    navigate(aktuellerSchritt.route)
   }
 
   const weiter = () => {
     if (aktuellerIdx < schritte.length - 1) {
+      setBesuchtSet(prev => new Set(prev).add(aktuellerIdx))
       const naechsterIdx = aktuellerIdx + 1
       setAktuellerIdx(naechsterIdx)
-      setNavigiert(false)
-      // Direkt zur nächsten Station navigieren
       navigate(schritte[naechsterIdx].route)
     }
   }
@@ -322,159 +380,186 @@ export function GlobaleGuideBegleitung() {
     navigate(`/admin?context=oeffentlich&assistent=1&vorname=${encodeURIComponent(name)}&pfad=${pfad}`)
   }
 
-  const erklaerungText = aktuellerSchritt.beschreibung.split('\n').map((z, i) => (
-    <span key={i}>{z}{i < aktuellerSchritt.beschreibung.split('\n').length - 1 && <br />}</span>
+  const erklaerungText = aktuellerSchritt.beschreibung.split('\n').map((z, i, arr) => (
+    <span key={i}>{z}{i < arr.length - 1 && <br />}</span>
   ))
 
-  // Auf Admin-Seite: oben rechts neben dem „Galerie-Zentrale"-Banner
-  const istAdminSeite = location.pathname.includes('/admin') || location.search.includes('context=oeffentlich') || location.search.includes('context=vk2')
+  // Hub-Layout: Kacheln links + rechts, Dialog Mitte
+  // Kacheln aufteilen: linke Hälfte / rechte Hälfte
+  const halbePunkte = Math.ceil(schritte.length / 2)
+  const kachelnLinks = schritte.slice(0, halbePunkte)
+  const kachelnRechts = schritte.slice(halbePunkte)
 
-  // Position: wenn manuell verschoben → freie Koordinaten; auf Admin → oben rechts; sonst unten mittig
-  const dialogStyle: React.CSSProperties = pos
+  // Position: verschoben → frei; sonst unten mittig (breiter Hub)
+  const containerStyle: React.CSSProperties = pos
     ? {
         position: 'fixed',
         left: `calc(50% + ${pos.x}px)`,
         bottom: `calc(1.5rem - ${pos.y}px)`,
         transform: 'translateX(-50%)',
         zIndex: 10000,
-        width: 'min(380px, calc(100vw - 2rem))',
-      }
-    : istAdminSeite
-    ? {
-        position: 'fixed', top: '4.5rem', right: '1.25rem',
-        zIndex: 10000, width: 'min(340px, calc(100vw - 2rem))',
-        animation: 'globGuideEinRechts 0.35s ease',
+        width: 'min(720px, calc(100vw - 1.5rem))',
       }
     : {
-        position: 'fixed', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)',
-        zIndex: 10000, width: 'min(440px, calc(100vw - 2rem))',
-        animation: 'globGuideEin 0.4s ease',
+        position: 'fixed',
+        bottom: '1.2rem',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 10000,
+        width: 'min(720px, calc(100vw - 1.5rem))',
+        animation: 'globGuideHub 0.4s ease',
       }
 
   return (
-    <div style={dialogStyle}>
+    <div style={containerStyle}>
       <style>{`
-        @keyframes globGuideEin { from{opacity:0;transform:translateX(-50%) translateY(14px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-        @keyframes globGuideEinRechts { from{opacity:0;transform:translateX(14px)} to{opacity:1;transform:translateX(0)} }
+        @keyframes globGuideHub {
+          from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
       `}</style>
 
       <div style={{
-        background: 'rgba(14,8,4,0.97)',
-        border: `1px solid ${akzentFarbe}55`,
-        borderRadius: '20px', padding: '1.15rem',
-        boxShadow: '0 16px 56px rgba(0,0,0,0.6)', backdropFilter: 'blur(16px)',
-        cursor: isDraggingRef.current ? 'grabbing' : 'default',
+        background: 'rgba(12,7,3,0.97)',
+        border: `1px solid ${akzentFarbe}44`,
+        borderRadius: '22px',
+        padding: '0.9rem',
+        boxShadow: '0 20px 64px rgba(0,0,0,0.7)',
+        backdropFilter: 'blur(20px)',
       }}>
 
-        {/* Drag-Handle – greifbarer Bereich oben */}
+        {/* Drag-Handle */}
         <div
           onMouseDown={onDragStart}
           onTouchStart={onDragStart}
-          style={{ cursor: 'grab', marginBottom: '0.6rem', display: 'flex', justifyContent: 'center', paddingBottom: '0.2rem' }}
-          title="Ziehen zum Verschieben"
+          style={{ cursor: 'grab', display: 'flex', justifyContent: 'center', marginBottom: '0.6rem' }}
+          title="Verschieben"
         >
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.18)' }} />
+          <div style={{ width: 32, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.14)' }} />
         </div>
 
-        {/* Fortschrittsbalken */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.85rem' }}>
-          <div style={{ display: 'flex', gap: '0.2rem', flex: 1 }}>
-            {schritte.map((s, i) => (
-              <div key={s.id} style={{
-                flex: 1, height: 3, borderRadius: 2,
-                background: i < aktuellerIdx ? akzentFarbe : i === aktuellerIdx ? `${akzentFarbe}66` : 'rgba(255,255,255,0.1)',
-                transition: 'all 0.3s',
-              }} />
+        {/* Haupt-Layout: Kacheln links | Dialog Mitte | Kacheln rechts */}
+        <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'stretch' }}>
+
+          {/* ── Kacheln links ── */}
+          <div style={{
+            display: 'grid',
+            gridTemplateRows: `repeat(${kachelnLinks.length}, 1fr)`,
+            gap: '0.4rem',
+            width: '90px',
+            flexShrink: 0,
+          }}>
+            {kachelnLinks.map((s, i) => (
+              <Kachel
+                key={s.id}
+                schritt={s}
+                aktiv={aktuellerIdx === i}
+                besucht={besuchtSet.has(i)}
+                akzentFarbe={akzentFarbe}
+                akzentGrad={akzentGrad}
+                onClick={() => waehleSchritt(i)}
+              />
             ))}
           </div>
-          <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.3)', whiteSpace: 'nowrap' as const }}>
-            {aktuellerIdx + 1} / {schritte.length}
-          </div>
-        </div>
 
-        {/* Avatar + Text */}
-        <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'flex-start', marginBottom: '0.9rem' }}>
-          <div style={{
-            width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-            background: akzentGrad, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '1.2rem', boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
-          }}>
-            {avatarEmoji}
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '0.62rem', color: `${akzentFarbe}99`, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' as const, marginBottom: '0.2rem' }}>
-              {guideLabel}
+          {/* ── Mitte: Dialog ── */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.55rem', minWidth: 0 }}>
+
+            {/* Kopfzeile: Avatar + Label + Schließen */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+              <div style={{
+                width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+                background: akzentGrad,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '1.05rem', boxShadow: `0 3px 10px ${akzentFarbe}44`,
+              }}>
+                {avatarEmoji}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '0.58rem', color: `${akzentFarbe}99`, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' as const }}>
+                  {guideLabel}
+                </div>
+                <div style={{ fontSize: '0.88rem', color: '#fff8f0', fontWeight: 700, lineHeight: 1.3, marginTop: '0.1rem' }}>
+                  {aktuellerSchritt.emoji} {aktuellerSchritt.titel}
+                </div>
+              </div>
+              <button type="button" onClick={() => setGeschlossen(true)}
+                style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: '1rem', padding: '0.2rem 0.3rem', flexShrink: 0 }}
+                title="Schließen">✕</button>
             </div>
-            <div style={{ fontSize: '0.9rem', color: '#fff8f0', lineHeight: 1.5, fontWeight: 600, marginBottom: '0.25rem' }}>
-              {aktuellerSchritt.emoji} {aktuellerSchritt.titel}
+
+            {/* Fortschrittsbalken */}
+            <div style={{ display: 'flex', gap: '0.18rem' }}>
+              {schritte.map((s, i) => (
+                <div key={s.id}
+                  onClick={() => waehleSchritt(i)}
+                  style={{
+                    flex: 1, height: 3, borderRadius: 2, cursor: 'pointer',
+                    background: i < aktuellerIdx
+                      ? akzentFarbe
+                      : i === aktuellerIdx
+                      ? `${akzentFarbe}88`
+                      : 'rgba(255,255,255,0.1)',
+                    transition: 'background 0.25s',
+                  }}
+                  title={schritte[i].titel}
+                />
+              ))}
             </div>
-            <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.55 }}>
+
+            {/* Beschreibung */}
+            <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.52)', lineHeight: 1.55 }}>
               {erklaerungText}
             </div>
-          </div>
-          <button type="button" onClick={() => setGeschlossen(true)}
-            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.18)', cursor: 'pointer', fontSize: '1rem', padding: '0.1rem 0.3rem', flexShrink: 0 }}
-            title="Vorläufig schließen">✕</button>
-        </div>
 
-        {/* Lizenz-Sonderanzeige */}
-        {istLizenzSchritt && <LizenzInfo pfad={pfad} akzentFarbe={akzentFarbe} />}
+            {/* Lizenz-Sonderanzeige */}
+            {istLizenzSchritt && <LizenzInfo pfad={pfad} akzentFarbe={akzentFarbe} />}
 
-        {/* Aktions-Buttons */}
-        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.4rem', marginTop: '0.65rem' }}>
-
-          {/* Letzter Schritt: Starten */}
-          {istLetzterSchritt ? (
-            <button type="button" onClick={fertigStellen}
-              style={{ width: '100%', padding: '0.85rem', background: akzentGrad, border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.92rem', fontFamily: 'inherit', boxShadow: `0 4px 18px ${akzentFarbe}44` }}>
-              🚀 {istVerein ? 'Vereinsdaten ausfüllen & starten' : 'Daten ausfüllen & starten'}
-            </button>
-          ) : (
-            <>
-              {/* Hauptaktion: Station anzeigen – nur wenn noch nicht navigiert */}
-              {!navigiert && (
-                <button type="button" onClick={zeigeStation}
-                  style={{
-                    width: '100%', padding: '0.75rem',
-                    background: akzentGrad,
-                    border: 'none', borderRadius: '12px',
-                    color: '#fff', fontWeight: 700, cursor: 'pointer',
-                    fontSize: '0.88rem', fontFamily: 'inherit',
-                    boxShadow: `0 4px 14px ${akzentFarbe}33`,
-                  }}>
-                  {aktuellerSchritt.emoji} {aktuellerSchritt.titel} ansehen →
+            {/* Aktions-Buttons */}
+            <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.35rem', marginTop: 'auto' }}>
+              {istLetzterSchritt ? (
+                <button type="button" onClick={fertigStellen}
+                  style={{ width: '100%', padding: '0.75rem', background: akzentGrad, border: 'none', borderRadius: '11px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.88rem', fontFamily: 'inherit', boxShadow: `0 4px 16px ${akzentFarbe}44` }}>
+                  🚀 {istVerein ? 'Vereinsdaten ausfüllen & starten' : 'Daten ausfüllen & starten'}
                 </button>
+              ) : (
+                <>
+                  <button type="button" onClick={zeigeStation}
+                    style={{ width: '100%', padding: '0.7rem', background: akzentGrad, border: 'none', borderRadius: '11px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.84rem', fontFamily: 'inherit', boxShadow: `0 4px 12px ${akzentFarbe}33` }}>
+                    {aktuellerSchritt.emoji} Ansehen →
+                  </button>
+                  <button type="button" onClick={weiter}
+                    style={{ width: '100%', padding: '0.45rem', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '11px', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: '0.75rem', fontFamily: 'inherit', transition: 'all 0.2s' }}>
+                    Nächste Station →
+                  </button>
+                </>
               )}
+            </div>
 
-              {/* Weiter-Button – nach dem Anschauen deutlich sichtbar, davor dezent */}
-              <button type="button" onClick={weiter}
-                style={{
-                  width: '100%',
-                  padding: navigiert ? '0.78rem' : '0.5rem',
-                  background: navigiert ? akzentGrad : 'rgba(255,255,255,0.05)',
-                  border: navigiert ? 'none' : '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: '12px',
-                  color: navigiert ? '#fff' : 'rgba(255,255,255,0.28)',
-                  fontWeight: navigiert ? 700 : 400,
-                  cursor: 'pointer', fontSize: navigiert ? '0.9rem' : '0.78rem', fontFamily: 'inherit',
-                  boxShadow: navigiert ? `0 4px 14px ${akzentFarbe}33` : 'none',
-                  transition: 'all 0.3s',
-                }}>
-                {navigiert ? 'Weiter zur nächsten Station →' : 'Überspringen →'}
-              </button>
-            </>
-          )}
+          </div>
 
-          {/* Station-Punkte */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '0.35rem', marginTop: '0.15rem' }}>
-            {schritte.map((s, i) => (
-              <div key={s.id}
-                style={{
-                  width: i === aktuellerIdx ? 18 : 7, height: 7, borderRadius: 4,
-                  background: i < aktuellerIdx ? akzentFarbe : i === aktuellerIdx ? `${akzentFarbe}88` : 'rgba(255,255,255,0.15)',
-                  transition: 'all 0.2s',
-                }} />
-            ))}
+          {/* ── Kacheln rechts ── */}
+          <div style={{
+            display: 'grid',
+            gridTemplateRows: `repeat(${kachelnRechts.length}, 1fr)`,
+            gap: '0.4rem',
+            width: '90px',
+            flexShrink: 0,
+          }}>
+            {kachelnRechts.map((s, i) => {
+              const globalIdx = halbePunkte + i
+              return (
+                <Kachel
+                  key={s.id}
+                  schritt={s}
+                  aktiv={aktuellerIdx === globalIdx}
+                  besucht={besuchtSet.has(globalIdx)}
+                  akzentFarbe={akzentFarbe}
+                  akzentGrad={akzentGrad}
+                  onClick={() => waehleSchritt(globalIdx)}
+                />
+              )
+            })}
           </div>
 
         </div>
