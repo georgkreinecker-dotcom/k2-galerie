@@ -3741,7 +3741,8 @@ function baueKarten(pfad: GuidePfad, a: GuideAntworten, name?: string): { sofort
   }
 
   const vornamePart = name ? `&vorname=${encodeURIComponent(name)}` : ''
-  const ADMIN = `/admin?context=oeffentlich${vornamePart}`
+  const pfadPart = `&pfad=${pfad}`
+  const ADMIN = `/admin?context=oeffentlich${vornamePart}${pfadPart}`
   const GALERIE = '/projects/k2-galerie/galerie-oeffentlich'
   const VITA = '/projects/k2-galerie/vita/martina'
   const SHOP = '/projects/k2-galerie/shop'

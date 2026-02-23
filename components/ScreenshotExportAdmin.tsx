@@ -661,6 +661,9 @@ function ScreenshotExportAdmin() {
   const guideVorname = (() => {
     try { return new URLSearchParams(window.location.search).get('vorname') ?? '' } catch { return '' }
   })()
+  const guidePfad = (() => {
+    try { return new URLSearchParams(window.location.search).get('pfad') ?? '' } catch { return '' }
+  })()
 
   // Klare Admin-Struktur: Werke | Eventplanung | Design | Einstellungen. Kasse = ein Button im Header, öffnet direkt den Shop.
   const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'design' | 'einstellungen' | 'assistent'>('werke')
@@ -8098,44 +8101,90 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             {activeTab === 'werke' && (
               <div>
 
-                {/* Guide-Willkommensbanner – nur wenn Vorname aus Guide mitkommt */}
-                {guideVorname && isOeffentlichAdminContext() && !guideBannerClosed && (
-                  <div style={{ background: 'linear-gradient(135deg, #b54a1e14, #b54a1e08)', border: '1.5px solid #b54a1e33', borderRadius: '16px', padding: '1.25rem 1.5rem', marginBottom: '1.75rem', position: 'relative' }}>
-                    <button
-                      type="button"
-                      onClick={() => setGuideBannerClosed(true)}
-                      style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', background: 'none', border: 'none', cursor: 'pointer', color: '#b54a1e66', fontSize: '1.1rem', lineHeight: 1, padding: '0.2rem 0.4rem' }}
-                      title="Schließen"
-                    >×</button>
-                    <div style={{ fontSize: '1.3rem', marginBottom: '0.5rem' }}>👋</div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1c1a18', marginBottom: '0.4rem' }}>
-                      Willkommen, {guideVorname}! Das ist deine Galerie-Zentrale.
-                    </div>
-                    <div style={{ fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.6, marginBottom: '1rem' }}>
-                      Hier steuerst du alles – von deinen Werken bis zur Kassa. Ein kurzer Überblick was jeder Bereich kann:
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.65rem' }}>
-                      {[
-                        { emoji: '🎨', name: 'Meine Werke', text: 'Fotos hochladen, Titel, Preis, Beschreibung – deine Galerie füllen' },
-                        { emoji: '📋', name: 'Werkkatalog', text: 'Alle Werke auf einen Blick – filtern, suchen, drucken' },
-                        { emoji: '💰', name: 'Kassa', text: 'Direkt verkaufen – Beleg drucken, Übersicht behalten' },
-                        { emoji: '📢', name: 'Veranstaltungen', text: 'Events planen, Einladungen erstellen, Presse informieren' },
-                        { emoji: '✨', name: 'Aussehen', text: 'Farben, Texte, dein Foto – die Galerie wird zu dir' },
-                      ].map((b, i) => (
-                        <div key={i} style={{ background: '#fff', border: '1px solid #e8e4de', borderRadius: '10px', padding: '0.65rem 0.8rem', display: 'flex', gap: '0.6rem', alignItems: 'flex-start' }}>
-                          <span style={{ fontSize: '1.3rem', flexShrink: 0, lineHeight: 1.2 }}>{b.emoji}</span>
-                          <div>
-                            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1c1a18', marginBottom: '0.2rem' }}>{b.name}</div>
-                            <div style={{ fontSize: '0.75rem', color: '#5c5650', lineHeight: 1.4 }}>{b.text}</div>
+                {/* Guide-Willkommensbanner – pfad-bewusst */}
+                {guideVorname && isOeffentlichAdminContext() && !guideBannerClosed && (() => {
+                  const istVerein = guidePfad === 'gemeinschaft'
+                  const bereiche = istVerein ? [
+                    { emoji: '🏛️', name: 'Gemeinschafts-Galerie', text: 'Alle Werke aller Mitglieder unter einem Dach – jede:r mit eigenem Profil' },
+                    { emoji: '📋', name: 'Werkkatalog', text: 'Alle Werke des Vereins filtern, suchen, drucken' },
+                    { emoji: '🎟️', name: 'Veranstaltungen', text: 'Ausstellungen planen, Einladungen an alle Mitglieder versenden' },
+                    { emoji: '✨', name: 'Aussehen', text: 'Farben, Logo, Texte – die Galerie wird zum Gesicht des Vereins' },
+                    { emoji: '⚙️', name: 'Einstellungen', text: 'Vereinsdaten, Kontakt, Mitglieder verwalten' },
+                  ] : [
+                    { emoji: '🎨', name: 'Meine Werke', text: 'Fotos hochladen, Titel, Preis, Beschreibung – deine Galerie füllen' },
+                    { emoji: '📋', name: 'Werkkatalog', text: 'Alle Werke auf einen Blick – filtern, suchen, drucken' },
+                    { emoji: '💰', name: 'Kassa', text: 'Direkt verkaufen – Beleg drucken, Übersicht behalten' },
+                    { emoji: '📢', name: 'Veranstaltungen', text: 'Events planen, Einladungen erstellen, Presse informieren' },
+                    { emoji: '✨', name: 'Aussehen', text: 'Farben, Texte, dein Foto – die Galerie wird zu dir' },
+                  ]
+                  return (
+                    <div style={{ background: 'linear-gradient(135deg, #b54a1e14, #b54a1e08)', border: '1.5px solid #b54a1e33', borderRadius: '16px', padding: '1.25rem 1.5rem', marginBottom: '1.75rem', position: 'relative' }}>
+                      <button type="button" onClick={() => setGuideBannerClosed(true)} style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', background: 'none', border: 'none', cursor: 'pointer', color: '#b54a1e66', fontSize: '1.1rem', lineHeight: 1, padding: '0.2rem 0.4rem' }} title="Schließen">×</button>
+
+                      {/* Kopf */}
+                      <div style={{ fontSize: '1.3rem', marginBottom: '0.5rem' }}>{istVerein ? '🤝' : '👋'}</div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1c1a18', marginBottom: '0.35rem' }}>
+                        {istVerein
+                          ? `Willkommen, ${guideVorname}! Das ist die Zentrale eures Vereins.`
+                          : `Willkommen, ${guideVorname}! Das ist deine Galerie-Zentrale.`}
+                      </div>
+                      <div style={{ fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.55, marginBottom: '1rem' }}>
+                        {istVerein
+                          ? 'Hier verwaltet ihr alles gemeinsam – Werke, Events, Mitglieder, Aussehen. Jeder Bereich erklärt sich von selbst:'
+                          : 'Hier steuerst du alles – von deinen Werken bis zur Kassa. Ein kurzer Überblick was jeder Bereich kann:'}
+                      </div>
+
+                      {/* Bereichs-Karten */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))', gap: '0.6rem', marginBottom: '1rem' }}>
+                        {bereiche.map((b, i) => (
+                          <div key={i} style={{ background: '#fff', border: '1px solid #e8e4de', borderRadius: '10px', padding: '0.65rem 0.8rem', display: 'flex', gap: '0.6rem', alignItems: 'flex-start' }}>
+                            <span style={{ fontSize: '1.25rem', flexShrink: 0, lineHeight: 1.2 }}>{b.emoji}</span>
+                            <div>
+                              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1c1a18', marginBottom: '0.2rem' }}>{b.name}</div>
+                              <div style={{ fontSize: '0.75rem', color: '#5c5650', lineHeight: 1.4 }}>{b.text}</div>
+                            </div>
                           </div>
+                        ))}
+                      </div>
+
+                      {/* Trennlinie */}
+                      <div style={{ height: '1px', background: '#b54a1e22', margin: '0.9rem 0' }} />
+
+                      {/* Empfehlungs-Hinweis */}
+                      <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
+                        <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>🤝</span>
+                        <div style={{ fontSize: '0.8rem', color: '#5c5650', lineHeight: 1.5 }}>
+                          <span style={{ fontWeight: 700, color: '#1c1a18' }}>Andere Künstler:innen einladen:</span>{' '}
+                          Wenn du jemanden kennst der das hier auch braucht – teile einfach deinen persönlichen Link. Beide profitieren: du bekommst deinen nächsten Monat gratis, sie starten mit einem Monat gratis. Kein Verkaufen, einfach teilen.
                         </div>
-                      ))}
+                      </div>
+
+                      {/* Lizenz-Übersicht */}
+                      <div style={{ background: '#fff', border: '1px solid #e8e4de', borderRadius: '10px', padding: '0.75rem 0.9rem', marginBottom: '0.9rem' }}>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1c1a18', marginBottom: '0.55rem' }}>📋 Was du gerade siehst – und was noch wartet:</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.45rem' }}>
+                          {[
+                            { name: 'Basis', color: '#5c5650', icon: '🔓', text: 'Galerie, Werke, Kassa – sofort, kostenlos testen' },
+                            { name: 'Pro', color: '#b54a1e', icon: '⭐', text: 'Werkverzeichnis, Zertifikate, Pressemappe, Events' },
+                            { name: istVerein ? 'VK2 Verein' : 'Studio', color: '#1d6b3a', icon: istVerein ? '🏛️' : '🏢', text: istVerein ? 'Mehrere Mitglieder, gemeinsame Verwaltung' : 'Mehrere Künstler:innen, gemeinsame Plattform' },
+                          ].map((l, i) => (
+                            <div key={i} style={{ display: 'flex', gap: '0.4rem', alignItems: 'flex-start' }}>
+                              <span style={{ fontSize: '1rem', flexShrink: 0 }}>{l.icon}</span>
+                              <div>
+                                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: l.color }}>{l.name}</div>
+                                <div style={{ fontSize: '0.7rem', color: '#5c5650', lineHeight: 1.35 }}>{l.text}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div style={{ fontSize: '0.82rem', color: '#b54a1e', fontWeight: 600 }}>
+                        👇 Einfach einen Bereich antippen – los geht's!
+                      </div>
                     </div>
-                    <div style={{ marginTop: '1rem', fontSize: '0.82rem', color: '#b54a1e', fontWeight: 600 }}>
-                      👇 Einfach einen Bereich antippen – los geht's!
-                    </div>
-                  </div>
-                )}
+                  )
+                })()}
 
                 {/* Begrüßung */}
                 <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
