@@ -2,6 +2,37 @@ import { useState, useRef, useEffect } from 'react'
 import { PROJECT_ROUTES, MOK2_ROUTE, ENTDECKEN_ROUTE } from '../config/navigation'
 import { ERKUNDUNGS_NOTIZEN_KEY, type ErkundungsNotiz } from '../pages/EntdeckenPage'
 
+const GUIDE_KEY = 'k2-entdecken-guide-antworten'
+
+const GUIDE_LABELS: Record<string, string> = {
+  pfad: 'Pfad',
+  kunstart: 'Kunstart', erfahrung: 'Erfahrung', ziel_kuenstler: 'Ziel',
+  ausstellungen: 'Ausstellungen',
+  verein_groesse: 'Vereinsgröße', verein_ausstellungen: 'Ausstellungen',
+  verein_wunsch: 'Wunsch', vereinsgalerie: 'Vereinsgalerie',
+  atelier_groesse: 'Ateliergröße', atelier_bedarf: 'Bedarf', atelier_struktur: 'Struktur',
+  entdecker_interesse: 'Interesse', entdecker_mut: 'Stand', entdecker_ziel: 'Ziel',
+  kontakt: 'Kontakt',
+}
+const GUIDE_WERT_LABELS: Record<string, string> = {
+  kuenstlerin: '🎨 Künstler:in', gemeinschaft: '🏛️ Gemeinschaft',
+  atelier: '🏢 Atelier/Studio', entdecker: '🌱 Entdecker',
+  malerei: 'Malerei', keramik: 'Keramik/Skulptur', foto: 'Fotografie', anderes: 'Mehreres',
+  anfaenger: 'Erste Schritte', fortgeschritten: 'Einige Jahre', etabliert: 'Etabliert',
+  sichtbarkeit: 'Mehr Sichtbarkeit', verkauf: 'Verkauf', auftritt: 'Prof. Auftritt',
+  mehrmals: 'Mehrmals ausgestellt', wenige: 'Einmal/zweimal', privat: 'Nur privat',
+  klein: 'Klein', mittel: 'Mittelgroß', gross: 'Groß',
+  regelmaessig: 'Regelmäßig', selten: 'Manchmal', geplant: 'Geplant',
+  webauftritt: 'Webauftritt', struktur: 'Ordnung', events: 'Events',
+  ja: '✨ Ja!', besprechen: 'Erst besprechen', nein: 'Eher nicht',
+  solo: 'Solo', gemeinsam: 'Gemeinsam', individuell: 'Individuell', beides: 'Beides',
+  web: 'Webauftritt', inventar: 'Inventar', presse: 'Presse',
+  malen: 'Malen/Zeichnen', handwerk: 'Handwerk', offen: 'Noch offen',
+  idee: 'Idee', versuche: 'Erste Versuche', fertig: 'Schon Fertiges',
+  zeigen: 'Etwas zeigen', community: 'Gleichgesinnte', professionell: 'Professionell',
+  email: 'E-Mail', telefon: 'Telefon', website: 'Website', galerie: 'Über Galerie',
+}
+
 /** Fremder-Modus: alle Session-/localStorage-Keys die einen "ersten Besuch" simulieren */
 const FREMDER_SESSION_KEYS = [
   'k2-agb-accepted',
@@ -11,6 +42,8 @@ const FREMDER_SESSION_KEYS = [
   'k2-shop-from-oeffentlich',
   'k2-entdecken-q1',
   'k2-entdecken-q2',
+  'k2-entdecken-guide-antworten',
+  'k2-empfehlung-offen',
 ]
 
 function startFremderModus() {
@@ -84,6 +117,27 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
   // Sortierbare Hauptbuttons
   const [itemOrder, setItemOrder] = useState<string[]>(loadOrder)
   const [editMode, setEditMode] = useState(false)
+
+  // Guide-Antworten (letzter Besucher via Fremder-Modus)
+  const [guideAntworten, setGuideAntworten] = useState<Record<string, string>>(() => {
+    try { const v = localStorage.getItem(GUIDE_KEY); if (v) return JSON.parse(v) } catch (_) {}
+    return {}
+  })
+
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === GUIDE_KEY) {
+        try { setGuideAntworten(e.newValue ? JSON.parse(e.newValue) : {}) } catch (_) {}
+      }
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
+
+  const loescheGuideAntworten = () => {
+    setGuideAntworten({})
+    try { localStorage.removeItem(GUIDE_KEY) } catch (_) {}
+  }
 
   // Erkundungs-Notizen
   const [notizen, setNotizen] = useState<ErkundungsNotiz[]>(() => {
@@ -238,6 +292,33 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                   {n.zeit} · Schritt: {n.step}
                 </div>
                 <button type="button" onClick={() => loescheNotiz(n.id)} style={{ position: 'absolute', top: '0.4rem', right: '0.4rem', background: 'none', border: 'none', color: 'rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: '0.75rem', padding: '0.1rem 0.3rem', lineHeight: 1 }} title="Erledigt">✕</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Guide-Antworten Auswertung */}
+      {Object.keys(guideAntworten).length > 0 && (
+        <div style={{ borderBottom: '1px solid rgba(95,251,241,0.12)', paddingBottom: '1rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+            <h4 style={{ margin: 0, fontSize: '0.88rem', color: '#5ffbf1', fontWeight: 700 }}>
+              🧭 Letzter Besucher – Antworten
+            </h4>
+            <button type="button" onClick={loescheGuideAntworten}
+              style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.25)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.1rem 0.3rem', fontFamily: 'inherit' }}>
+              Löschen
+            </button>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+            {Object.entries(guideAntworten).map(([key, wert]) => (
+              <div key={key} style={{ display: 'flex', gap: '0.5rem', fontSize: '0.8rem', alignItems: 'baseline' }}>
+                <span style={{ color: 'rgba(255,255,255,0.35)', minWidth: 80, flexShrink: 0 }}>
+                  {GUIDE_LABELS[key] ?? key}
+                </span>
+                <span style={{ color: '#fff8f0', fontWeight: key === 'pfad' ? 700 : 400 }}>
+                  {GUIDE_WERT_LABELS[wert] ?? wert}
+                </span>
               </div>
             ))}
           </div>

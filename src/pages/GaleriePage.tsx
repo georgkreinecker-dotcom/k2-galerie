@@ -3565,6 +3565,103 @@ function pfadLaenge(pfad: GuidePfad): number {
   return reihe.length - 2 // ohne abschluss + empfehlung in Fortschrittsbalken
 }
 
+// Lesbare Labels für die Antwort-Werte (für dynamischen Abschlusstext)
+const ANTWORT_LABELS: Record<string, string> = {
+  // Kunstart
+  malerei: 'Malerei', keramik: 'Keramik & Skulptur', foto: 'Fotografie', anderes: 'verschiedene Kunstformen',
+  // Erfahrung
+  anfaenger: 'gerade erst begonnen', fortgeschritten: 'mit ersten Erfolgen', etabliert: 'mit Ausstellungserfahrung',
+  // Ziel Künstler:in
+  sichtbarkeit: 'mehr Sichtbarkeit', verkauf: 'Verkauf deiner Werke', auftritt: 'einen professionellen Auftritt',
+  // Ausstellungen
+  mehrmals: 'bereits mehrfach ausgestellt', wenige: 'erste Ausstellungserfahrung', privat: 'bisher privat gezeigt',
+  // Verein Größe
+  klein: 'einer kleinen Gruppe', mittel: 'einem mittelgroßen Verein', gross: 'einem großen Verein',
+  // Verein Wunsch
+  webauftritt: 'gemeinsamen Webauftritt', struktur: 'Ordnung in eure Werke', events: 'professionelle Events',
+  // Verein Galerie
+  ja: 'begeistert von der Idee', besprechen: 'noch abwärend',
+  // Atelier Größe
+  solo: 'als Soloatelier',
+  // Atelier Bedarf
+  web: 'Webauftritt', inventar: 'Werkverzeichnis & Inventar', presse: 'Presse & Dokumente',
+  // Atelier Struktur
+  gemeinsam: 'gemeinsame Plattform', individuell: 'individuelle Lösungen', beides: 'beides',
+  // Entdecker
+  malen: 'Malen & Zeichnen', handwerk: 'Handwerk & Formen', offen: 'noch offen',
+  idee: 'einer Idee im Kopf', versuche: 'ersten Versuchen', fertig: 'schon Fertiges',
+  zeigen: 'etwas zeigen', community: 'Gleichgesinnte finden', professionell: 'professionell werden',
+  // Kontakt
+  email: 'per E-Mail', telefon: 'per Telefon', website: 'über deine Website', galerie: 'direkt über die Galerie',
+}
+
+function baueDynamischenAbschluss(name: string, a: GuideAntworten): string {
+  const pfad = a.pfad ?? ''
+
+  if (pfad === 'kuenstlerin') {
+    const kunst = ANTWORT_LABELS[a.kunstart ?? ''] ?? 'deine Kunst'
+    const erf   = ANTWORT_LABELS[a.erfahrung ?? ''] ?? ''
+    const ziel  = ANTWORT_LABELS[a.ziel_kuenstler ?? ''] ?? ''
+    return [
+      `Danke, ${name}. ✨`,
+      ``,
+      `${kunst}${erf ? `, ${erf}` : ''} –`,
+      `und dein Ziel ist ${ziel || 'ein professioneller Auftritt'}.`,
+      ``,
+      `Deine Galerie, deine Vita und`,
+      `deine Pressemappe sind bereit –`,
+      `wie aus Zauberhand.`,
+    ].join('\n')
+  }
+
+  if (pfad === 'gemeinschaft') {
+    const groesse = ANTWORT_LABELS[a.verein_groesse ?? ''] ?? 'eurer Gemeinschaft'
+    const wunsch  = ANTWORT_LABELS[a.verein_wunsch ?? ''] ?? 'mehr Sichtbarkeit'
+    const vg      = a.vereinsgalerie === 'ja' ? 'Und die gemeinsame Vereinsgalerie –\ndie ist jetzt zum Greifen nah.' : ''
+    return [
+      `Danke, ${name}. ✨`,
+      ``,
+      `Für ${groesse} mit dem Wunsch nach`,
+      `${wunsch} –`,
+      `eine Galerie für alle, jedes Mitglied`,
+      `mit eigenem Profil, alles zusammen.`,
+      vg,
+    ].filter(Boolean).join('\n')
+  }
+
+  if (pfad === 'atelier') {
+    const groesse = ANTWORT_LABELS[a.atelier_groesse ?? ''] ?? 'eurem Atelier'
+    const bedarf  = ANTWORT_LABELS[a.atelier_bedarf ?? ''] ?? 'professionellen Auftritt'
+    const struk   = ANTWORT_LABELS[a.atelier_struktur ?? ''] ?? ''
+    return [
+      `Danke, ${name}. ✨`,
+      ``,
+      `Für ${groesse} –`,
+      `${bedarf}${struk ? ` als ${struk}` : ''}.`,
+      ``,
+      `Eine Studio-Plattform, professionell,`,
+      `bereit zum Starten.`,
+    ].join('\n')
+  }
+
+  if (pfad === 'entdecker') {
+    const interesse = ANTWORT_LABELS[a.entdecker_interesse ?? ''] ?? 'deine Kreativität'
+    const ziel      = ANTWORT_LABELS[a.entdecker_ziel ?? ''] ?? 'etwas zeigen'
+    return [
+      `Wunderbar, ${name}. ✨`,
+      ``,
+      `${interesse} – und der Wunsch,`,
+      `${ziel}.`,
+      ``,
+      `Deine Galerie wartet.`,
+      `Kein Druck, kein Stress.`,
+      `Einfach anfangen.`,
+    ].join('\n')
+  }
+
+  return `Danke, ${name}. ✨\n\nDeine Galerie ist bereit –\nwie aus Zauberhand.`
+}
+
 function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: () => void }) {
   const [schritt, setSchritt] = useState<GuideSchritt>('begruessung')
   const [antworten, setAntworten] = useState<GuideAntworten>(ladeGuideAntworten)
@@ -3595,15 +3692,8 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
     entdecker_mut:       `Sehr gut, ${name}! 🌱\nHast du schon etwas gemacht –\noder ist es noch eine Idee?`,
     entdecker_ziel:      `Was wäre dein erster kleiner Schritt\nden du dir vorstellen könntest?`,
     // Gemeinsam
-    kontakt: `Letzte Frage –\nwie sollen Interessierte\ndich am liebsten erreichen?`,
-    abschluss:
-      pfad === 'gemeinschaft'
-        ? `Danke, ${name}. ✨\n\nEine Gemeinschafts-Galerie für euren Verein,\njedes Mitglied mit eigenem Profil –\nalles bereit, wie aus Zauberhand.`
-        : pfad === 'atelier'
-        ? `Danke, ${name}. ✨\n\nEine Studio-Plattform, professionell,\nmit individuellen Galerien pro Künstler:in –\nbereit zum Starten.`
-        : pfad === 'entdecker'
-        ? `Wunderbar, ${name}. ✨\n\nJeder Anfang verdient einen guten Platz.\nDeine Galerie wartet –\nkein Druck, kein Stress.\nEinfach anfangen.`
-        : `Danke, ${name}. ✨\n\nIch habe alles was ich brauche.\nDeine Vita, deine Pressemappe und\ndein erstes Werkverzeichnis sind bereit –\nwie aus Zauberhand.`,
+    kontakt:    `Letzte Frage –\nwie sollen Interessierte\ndich am liebsten erreichen?`,
+    abschluss:  baueDynamischenAbschluss(name, antworten),
     empfehlung: `Noch eine letzte Frage, ${name} –\n\nKennst du jemanden dem das\nauch helfen würde?\n\nWenn du jemanden einlädst –\nnutzt ihr beide die Galerie\nohne Kosten.`,
   }
 
