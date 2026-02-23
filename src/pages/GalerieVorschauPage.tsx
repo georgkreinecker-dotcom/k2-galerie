@@ -2090,6 +2090,72 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
 
   const isVorschauModus = typeof window !== 'undefined' && new URLSearchParams(location.search).get('vorschau') === '1'
 
+  // ═══════════════════════════════════════════════════════════════
+  // VK2: Eigenes Mitglieder-Layout – KEINE Werke, KEIN Warenkorb
+  // ═══════════════════════════════════════════════════════════════
+  if (vk2) {
+    const vk2Accent = '#2563eb'
+    const vk2AccentLight = '#60a5fa'
+    const vk2Bg = '#0f1c2e'
+    const vk2BgCard = '#162032'
+    const vk2Text = '#f0f6ff'
+    const vk2Muted = 'rgba(160,200,255,0.7)'
+    let vereinsName = 'VK2 Vereinsplattform'
+    try {
+      const sd = JSON.parse(localStorage.getItem('k2-vk2-stammdaten') || '{}')
+      if (sd?.verein?.name) vereinsName = sd.verein.name
+    } catch (_) {}
+    const mitglieder = artworks
+    return (
+      <div style={{ minHeight: '100vh', background: vk2Bg, color: vk2Text, fontFamily: 'system-ui, sans-serif' }}>
+        {/* Header */}
+        <div style={{ padding: '1.5rem 2rem 1rem', borderBottom: `1px solid ${vk2Accent}33`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', color: vk2AccentLight, textTransform: 'uppercase', marginBottom: '0.25rem' }}>VK2 Vereinsplattform</div>
+            <h1 style={{ margin: 0, fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: 800, color: vk2Text }}>{vereinsName}</h1>
+            <p style={{ margin: '0.25rem 0 0', color: vk2Muted, fontSize: '0.9rem' }}>
+              {mitglieder.length > 0 ? `${mitglieder.length} Mitglieder` : 'Mitglieder-Galerie'}
+            </p>
+          </div>
+          <button type="button" onClick={() => navigate(-1)}
+            style={{ padding: '0.5rem 1.2rem', background: 'transparent', border: `1px solid ${vk2Accent}66`, color: vk2AccentLight, borderRadius: '8px', cursor: 'pointer', fontSize: '0.88rem', fontWeight: 600 }}>
+            ← Zurück
+          </button>
+        </div>
+        {/* Mitglieder-Raster */}
+        <div style={{ padding: 'clamp(1.5rem, 4vw, 2.5rem)', maxWidth: 1100, margin: '0 auto' }}>
+          {mitglieder.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '4rem 2rem', color: vk2Muted }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👥</div>
+              <p style={{ fontSize: '1.1rem' }}>Noch keine Mitglieder eingetragen.</p>
+              <p style={{ fontSize: '0.9rem' }}>Im Admin unter „Einstellungen → Stammdaten" Mitglieder hinzufügen.</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 'clamp(1rem, 2.5vw, 1.5rem)' }}>
+              {mitglieder.map((m: any, idx: number) => (
+                <div key={m.id || idx} style={{ background: vk2BgCard, borderRadius: '16px', overflow: 'hidden', border: `1px solid ${vk2Accent}28`, boxShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>
+                  <div style={{ width: '100%', aspectRatio: '1 / 1', overflow: 'hidden', background: `${vk2Accent}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {m.imageUrl ? (
+                      <img src={m.imageUrl} alt={m.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                    ) : (
+                      <div style={{ fontSize: '3.5rem', opacity: 0.4 }}>👤</div>
+                    )}
+                  </div>
+                  <div style={{ padding: '1rem' }}>
+                    <div style={{ fontWeight: 700, fontSize: '1rem', color: vk2Text, marginBottom: '0.25rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.title}</div>
+                    {m.description && <div style={{ fontSize: '0.82rem', color: vk2AccentLight, fontWeight: 500 }}>{m.description}</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+  // ═══════════════════════════════════════════════════════════════
+
   /** ök2 (musterOnly): Text/Border/Buttons an Theme anpassen; K2-Vorschau: weiß/lila */
   const galerieTheme = musterOnly
     ? { text: 'var(--k2-text)', muted: 'var(--k2-muted)', accent: 'var(--k2-accent)', border: 'rgba(0,0,0,0.12)', filterActive: 'linear-gradient(135deg, var(--k2-accent) 0%, #6b9080 100%)', filterInactive: 'rgba(0,0,0,0.06)', priceBg: 'var(--k2-accent)', btnBorder: 'rgba(0,0,0,0.15)' }
