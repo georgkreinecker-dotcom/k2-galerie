@@ -1,0 +1,80 @@
+---
+description: Datentrennung localStorage – niemals still löschen (überlebenswichtig)
+alwaysApply: true
+---
+
+# 🔒 DATENTRENNUNG localStorage – NIEMALS STILL LÖSCHEN (ÜBERLEBENSWICHTIG)
+
+## Was passiert ist (23.02.26 – Lehre aus dem Supergau)
+
+Ein Filter in `loadVk2Artworks()` hat Mitglieder-Daten als „Fremd-Einträge" erkannt und
+**still aus localStorage gelöscht** – ohne Warnung, ohne Bestätigung, einfach weg.
+Im Echtbetrieb = alle Kundendaten eines Vereins vernichtet. Supergau.
+
+---
+
+## 🔴 ABSOLUT VERBOTEN
+
+- **Niemals** Daten aus localStorage löschen oder überschreiben ohne explizite Bestätigung durch den User.
+- **Niemals** einen Filter bauen der bei jedem Laden „aufräumt" und dabei Daten entfernt.
+- **Niemals** einen Fehler mit einem Filter reparieren. Filter = falscher Ansatz.
+- **Niemals** `localStorage.setItem(key, JSON.stringify(gefilterteVersion))` als „Reparatur" einsetzen.
+
+---
+
+## ✅ DIE DREI RICHTIGEN KEYS – unveränderlich
+
+| Kontext | localStorage-Key | Enthält |
+|---|---|---|
+| **K2** (echte Galerie) | `k2-artworks` | Echte Werke von Martina & Georg |
+| **ök2** (Demo) | `k2-oeffentlich-artworks` | Nur Muster-Werke |
+| **VK2** (Verein) | `k2-vk2-stammdaten` | Nur Mitglieder (Vorsitzende, Mitglieder-Liste) |
+
+**VK2 hat KEINEN Artwork-Key.** `k2-vk2-artworks` existiert nicht und darf nicht wieder eingeführt werden.
+
+---
+
+## ✅ WAS STATTDESSEN ZU TUN IST
+
+### Wenn falsche Daten in einem Key sind:
+1. **Console.warn** – sichtbar machen, nicht still entfernen
+2. **Dem User anzeigen** was falsch ist
+3. **Einmalige manuelle Bereinigung** anbieten (Button „Bereinigen") – nie automatisch
+
+### Wenn ein neuer Key benötigt wird:
+1. Zuerst fragen: **Gehört dieser Key wirklich hier hin?**
+2. Wenn die Antwort unsicher ist → NICHT anlegen, Georg fragen
+3. Neuer Key = neue Regel in dieser Datei dokumentieren
+
+### Bei Datentrennung K2 / ök2 / VK2:
+- Nur lesen was zum Kontext gehört
+- Nie schreiben in fremde Keys
+- Nie filtern was aus fremden Keys stammt – das ist ein Symptom, nicht die Lösung
+
+---
+
+## 🔴 MUSTER das verboten ist (Beispiel aus dem Supergau)
+
+```typescript
+// ❌ VERBOTEN – löscht still Kundendaten
+const filtered = parsed.filter(a => a.number.startsWith('VK2-'))
+localStorage.setItem('k2-vk2-artworks', JSON.stringify(filtered)) // NEIN!
+```
+
+## ✅ ERLAUBTES MUSTER (nur lesen, nie filtern-und-zurückschreiben)
+
+```typescript
+// ✅ ERLAUBT – nur lesen, nie manipulieren
+const raw = localStorage.getItem('k2-vk2-stammdaten')
+const stammdaten = JSON.parse(raw || '{}')
+const mitglieder = stammdaten?.mitglieder ?? []
+// → direkt verwenden, nie zurückschreiben ohne User-Aktion
+```
+
+---
+
+## Kurzfassung (auswendig lernen)
+
+**Kein Filter löscht Kundendaten. Nie. Auch nicht „zur Sicherheit". Auch nicht „nur Fremdeinträge".**
+**Fehler in Daten = dem User zeigen. Nie still korrigieren.**
+**VK2 = nur Mitglieder. Kein Artwork-Key. Für immer.**
