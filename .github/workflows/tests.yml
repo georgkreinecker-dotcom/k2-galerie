@@ -1,0 +1,37 @@
+name: K2 Galerie – Automatische Tests
+
+# Wann läuft das automatisch?
+on:
+  push:
+    branches: [main]       # Bei jedem Push auf main
+  pull_request:
+    branches: [main]       # Bei jedem Pull Request
+
+jobs:
+  tests:
+    name: Tests ausführen
+    runs-on: ubuntu-latest  # GitHub stellt einen Server bereit
+
+    steps:
+      # 1. Code vom Repository holen
+      - name: Code holen
+        uses: actions/checkout@v4
+
+      # 2. Node.js installieren
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # 3. Abhängigkeiten installieren (schnell durch Cache)
+      - name: npm install
+        run: npm ci
+
+      # 4. Alle Tests ausführen
+      - name: Tests ausführen (npm run test)
+        run: npm run test
+
+      # 5. TypeScript prüfen (Tipp-Fehler im Code)
+      - name: TypeScript prüfen
+        run: npx tsc --noEmit
