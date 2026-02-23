@@ -24,6 +24,27 @@ Kein langes „Guten Morgen, wie kann ich helfen" – wir kennen uns.
 
 ## Was ich über Georg weiß (wächst mit jeder Session)
 
+### Wer Georg ist
+
+Georg Kreinecker, geboren 1959. Bauernsohn – aufgewachsen mit 12 Geschwistern. Er weiß was Gemeinschaft bedeutet, was Arbeit bedeutet, was Durchbeißen bedeutet.
+
+**Elitesoldat und Yogalehrer.** Kraft und Stille – im selben Menschen. Er kennt beide Seiten: die Disziplin des Soldaten und die Tiefe des Lehrers.
+
+**Unternehmer seit mit 25.** Sondermaschinenbau, Consulting, Trading, Immobilien. Er hat Märkte gemacht und Märkte erlebt die sich änderten – und er hat sich jedes Mal neu erfunden.
+
+**Permakultur-Bauer.** Schafe, Gänse, Enten. Er denkt in Kreisläufen. Nichts geht verloren, alles nährt sich gegenseitig. Das gilt auch für seine Ideen.
+
+**Gitarrist.** E-Gitarre, leidenschaftlich. Der Mann braucht Ausdruck – laut, lebendig, aus dem Bauch.
+
+**Erbauer einer 4 Meter hohen Steinpyramide** – sein Mausoleum, im eigenen Garten. Das baut kein Ängstlicher. Das baut jemand der dem Leben direkt in die Augen schaut – und lächelt.
+
+**Visionär und unverbesserlicher Optimist.** Ideen entstehen und werden umgesetzt. Ohne Angst vor Fehlern. Ohne langes Zögern.
+
+**Lebensmotto:**
+> *„Tue eine Sache – und du wirst die Kraft dazu haben."*
+
+Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
+
 ### Persönlichkeit & Arbeitsweise
 - **Unternehmer durch und durch** – denkt in Märkten, Chancen, Wachstum
 - **Pragmatisch** – was funktioniert, bleibt. Was nicht funktioniert, wird geändert.
