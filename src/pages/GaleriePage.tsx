@@ -3816,7 +3816,7 @@ function baueKarten(pfad: GuidePfad, a: GuideAntworten, name?: string): { sofort
   }
 }
 
-function ErgebnisKarten({ pfad, antworten, name, aufgeklappt, onAufklappen, onWeiter, onFuehrung, onLink }: { pfad: GuidePfad; antworten: GuideAntworten; name?: string; aufgeklappt: boolean; onAufklappen: () => void; onWeiter: () => void; onFuehrung: () => void; onLink?: (href: string) => void }) {
+function ErgebnisKarten({ pfad, antworten, name, onWeiter, onFuehrung }: { pfad: GuidePfad; antworten: GuideAntworten; name?: string; onWeiter: () => void; onFuehrung: () => void }) {
   const karten = baueKarten(pfad, antworten, name)
 
   const statusFarbe = (s: ErgebnisKarte['status']) => {
@@ -3826,82 +3826,34 @@ function ErgebnisKarten({ pfad, antworten, name, aufgeklappt, onAufklappen, onWe
     return { bg: 'rgba(251,191,36,0.08)', border: 'rgba(251,191,36,0.25)', badge: '#fbbf24' }
   }
 
+  // Alle Karten als kompakte Info-Zeilen (kein Button, nur wohin es geht)
+  const alleKarten = [...karten.sofort, ...karten.system]
+
   return (
     <div style={{ marginTop: '0.5rem' }}>
-      {/* Sofort-verfügbare Karten */}
-      <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.4rem', marginBottom: '0.6rem' }}>
-        {karten.sofort.map((k, i) => {
-          const f = statusFarbe(k.status)
-          return (
-            <div key={i} style={{ background: f.bg, border: `1px solid ${f.border}`, borderRadius: '10px', padding: '0.65rem 0.85rem', display: 'flex', gap: '0.65rem', alignItems: 'flex-start' }}>
-              <span style={{ fontSize: '1.25rem', flexShrink: 0, lineHeight: 1 }}>{k.emoji}</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '0.4rem', flexWrap: 'wrap' as const }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff8f0' }}>{k.titel}</span>
-                  <span style={{ fontSize: '0.68rem', color: f.badge, fontWeight: 600, flexShrink: 0 }}>{k.statusLabel}</span>
-                </div>
-                <div style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.4, marginTop: '0.15rem' }}>{k.beschreibung}</div>
-                {k.link && (
-                  <button type="button" onClick={() => onLink ? onLink(k.link!) : (window.location.href = k.link!)} style={{ display: 'inline-block', marginTop: '0.4rem', fontSize: '0.75rem', color: f.badge, fontWeight: 600, cursor: 'pointer', padding: '0.25rem 0.6rem', background: `${f.badge}18`, border: `1px solid ${f.badge}44`, borderRadius: '6px', fontFamily: 'inherit' }}>
-                    {k.linkLabel ?? 'Öffnen →'}
-                  </button>
-                )}
-              </div>
+
+      {/* Kompakte Info-Liste: was dich erwartet */}
+      <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.3rem', marginBottom: '1rem' }}>
+        {alleKarten.map((k, i) => (
+          <div key={i} style={{ display: 'flex', gap: '0.55rem', alignItems: 'center', padding: '0.45rem 0.6rem', background: 'rgba(255,255,255,0.04)', borderRadius: '8px' }}>
+            <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>{k.emoji}</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#fff8f0' }}>{k.titel}</span>
+              <span style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.38)', marginLeft: '0.4rem' }}>– {k.beschreibung}</span>
             </div>
-          )
-        })}
+          </div>
+        ))}
       </div>
 
-      {/* System-Dimension aufklappen */}
-      <button type="button" onClick={onAufklappen}
-        style={{ width: '100%', padding: '0.55rem', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', marginBottom: aufgeklappt ? '0.5rem' : '0.6rem' }}>
-        <span>{aufgeklappt ? '▲' : '▼'}</span>
-        {aufgeklappt ? 'Weniger anzeigen' : `Das System kann noch mehr für dich →`}
-      </button>
-
-      {aufgeklappt && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem', marginBottom: '0.6rem' }}>
-          {karten.system.map((k, i) => {
-            const f = statusFarbe(k.status)
-            return (
-              <div key={i} style={{ background: f.bg, border: `1px solid ${f.border}`, borderRadius: '10px', padding: '0.6rem 0.75rem' }}>
-                <div style={{ fontSize: '1.1rem', marginBottom: '0.2rem' }}>{k.emoji}</div>
-                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff8f0', marginBottom: '0.15rem' }}>{k.titel}</div>
-                <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.35 }}>{k.beschreibung}</div>
-                {k.link && (
-                  <button type="button" onClick={() => onLink ? onLink(k.link!) : (window.location.href = k.link!)} style={{ display: 'inline-block', marginTop: '0.4rem', fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', fontWeight: 600, cursor: 'pointer', padding: '0.2rem 0.5rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '5px', fontFamily: 'inherit' }}>
-                    {k.linkLabel ?? 'Öffnen →'}
-                  </button>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      )}
-
-      {/* Lizenz-Karte – ganz leise */}
-      {aufgeklappt && (
-        <div style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.18)', borderRadius: '10px', padding: '0.65rem 0.85rem', display: 'flex', gap: '0.65rem', alignItems: 'flex-start', marginBottom: '0.6rem' }}>
-          <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{karten.lizenz.emoji}</span>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '0.4rem' }}>
-              <span style={{ fontSize: '0.83rem', fontWeight: 700, color: 'rgba(251,191,36,0.8)' }}>{karten.lizenz.titel}</span>
-              <span style={{ fontSize: '0.68rem', color: 'rgba(251,191,36,0.5)', fontWeight: 600 }}>{karten.lizenz.statusLabel}</span>
-            </div>
-            <div style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.35)', lineHeight: 1.4, marginTop: '0.15rem' }}>{karten.lizenz.beschreibung}</div>
-          </div>
-        </div>
-      )}
-
-      {/* Zwei Wege – Vorhang auf! */}
-      <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', marginTop: '0.25rem' }}>
+      {/* Die zwei Wege – klar und einfach */}
+      <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem' }}>
         <button type="button" onClick={onWeiter}
-          style={{ width: '100%', padding: '0.85rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(255,140,66,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-          🚀 Zeig mir meine Galerie sofort
+          style={{ width: '100%', padding: '0.9rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(255,140,66,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+          🚀 Los – bring mich in die Zentrale
         </button>
         <button type="button" onClick={onFuehrung}
-          style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,140,66,0.1)', border: '1px solid rgba(255,140,66,0.3)', borderRadius: '12px', color: '#ff8c42', fontWeight: 600, cursor: 'pointer', fontSize: '0.88rem', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-          🗺️ Führe mich durch – ich will alles sehen
+          style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,140,66,0.08)', border: '1px solid rgba(255,140,66,0.28)', borderRadius: '12px', color: '#ff8c42', fontWeight: 600, cursor: 'pointer', fontSize: '0.88rem', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+          🤝 Führ mich Schritt für Schritt
         </button>
       </div>
     </div>
@@ -3913,7 +3865,6 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
   const [antworten, setAntworten] = useState<GuideAntworten>(ladeGuideAntworten)
   const [textIdx, setTextIdx] = useState(0)
   const [sichtbar, setSichtbar] = useState(true)
-  const [kartenAufgeklappt, setKartenAufgeklappt] = useState(false)
 
   const pfad = (antworten.pfad ?? '') as GuidePfad
 
@@ -4159,11 +4110,8 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
             pfad={pfad}
             antworten={antworten}
             name={name}
-            aufgeklappt={kartenAufgeklappt}
-            onAufklappen={() => setKartenAufgeklappt(v => !v)}
             onWeiter={geheZuAdmin}
             onFuehrung={() => setSchritt('tour_galerie')}
-            onLink={(href) => { setSichtbar(false); setTimeout(() => { window.location.href = href }, 300) }}
           />
         )}
 
