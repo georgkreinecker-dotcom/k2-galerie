@@ -85,6 +85,7 @@ const KEY_OEF_ADMIN_EMAIL = 'k2-oeffentlich-admin-email'
 const KEY_OEF_ADMIN_PHONE = 'k2-oeffentlich-admin-phone'
 /** Design für ök2 (Kundenansicht) – eigener Key, damit Arbeitsansicht = Kundenansicht */
 const KEY_OEF_DESIGN = 'k2-oeffentlich-design-settings'
+const KEY_VK2_DESIGN = 'k2-vk2-design-settings'
 /** Stammdaten in der Muster-Galerie (ök2) – werden nach Lizenz-Erwerb in K2 übernommen */
 const KEY_OEF_STAMMDATEN_MARTINA = 'k2-oeffentlich-stammdaten-martina'
 /** VK2-Stammdaten: Verein, Vorstand, Beirat, Mitglieder */
@@ -886,7 +887,7 @@ function ScreenshotExportAdmin() {
   // Speicher prüfen/bereinigen nur manuell: Einstellungen → Backup & Wiederherstellung / Export-Menü.
   
   // Seitentexte (bearbeitbare Texte pro Seite) – K2 vs. ök2 getrennt
-  const [pageTexts, setPageTextsState] = useState<PageTextsConfig>(() => getPageTexts(isOeffentlichAdminContext() ? 'oeffentlich' : undefined))
+  const [pageTexts, setPageTextsState] = useState<PageTextsConfig>(() => getPageTexts(isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined))
 
   // Altes Blau-Theme erkennen → K2-Orange (wie in GaleriePage)
   const K2_ORANGE_DESIGN = {
@@ -902,7 +903,7 @@ function ScreenshotExportAdmin() {
   const OLD_BLUE_BG_LIST = ['#0a0e27', '#03040a', '#1a1f3a', '#0d1426', '#111c33', '#0f1419']
   const isOldBlueDesign = (d: Record<string, string>) => OLD_BLUE_BG_LIST.includes((d.backgroundColor1 || '').toLowerCase().trim())
 
-  const getDesignStorageKey = () => (isOeffentlichAdminContext() ? KEY_OEF_DESIGN : 'k2-design-settings')
+  const getDesignStorageKey = () => isOeffentlichAdminContext() ? KEY_OEF_DESIGN : isVk2AdminContext() ? KEY_VK2_DESIGN : 'k2-design-settings'
   // Design-Einstellungen – aus localStorage; K2: altes Blau → K2-Orange; ök2: eigener Key, Standard = OEF_DESIGN_DEFAULT
   const [designSettings, setDesignSettings] = useState(() => {
     try {
@@ -911,11 +912,11 @@ function ScreenshotExportAdmin() {
       if (stored && stored.length > 0 && stored.length < 50000) {
         const parsed = JSON.parse(stored)
         if (parsed && typeof parsed === 'object' && (parsed.accentColor || parsed.backgroundColor1)) {
-          if (!isOeffentlichAdminContext() && isOldBlueDesign(parsed)) {
+          if (!isOeffentlichAdminContext() && !isVk2AdminContext() && isOldBlueDesign(parsed)) {
             try { localStorage.setItem('k2-design-settings', JSON.stringify(K2_ORANGE_DESIGN)) } catch (_) {}
             return K2_ORANGE_DESIGN
           }
-          const defaults = isOeffentlichAdminContext() ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN
+          const defaults = isOeffentlichAdminContext() ? OEF_DESIGN_DEFAULT : isVk2AdminContext() ? K2_ORANGE_DESIGN : K2_ORANGE_DESIGN
           return {
             accentColor: parsed.accentColor ?? (defaults as Record<string, string>).accentColor,
             backgroundColor1: parsed.backgroundColor1 ?? (defaults as Record<string, string>).backgroundColor1,
@@ -1292,7 +1293,7 @@ function ScreenshotExportAdmin() {
   )
 
   // Seitengestaltung (Willkommensseite & Galerie-Vorschau) – K2 vs. ök2 getrennt
-  const [pageContent, setPageContent] = useState<PageContentGalerie>(() => getPageContentGalerie(isOeffentlichAdminContext() ? 'oeffentlich' : undefined))
+  const [pageContent, setPageContent] = useState<PageContentGalerie>(() => getPageContentGalerie(isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined))
   const [videoUploadStatus, setVideoUploadStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle')
   const [videoUploadMsg, setVideoUploadMsg] = useState('')
   useEffect(() => {
@@ -1321,7 +1322,7 @@ function ScreenshotExportAdmin() {
   // Beim Wechsel in den Design-Tab: Seitentexte, Seitengestaltung und Design aus Speicher nachladen
   useEffect(() => {
     if (activeTab !== 'design') return
-    const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
+    const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
     setPageTextsState(getPageTexts(tenant))
     setPageContent(getPageContentGalerie(tenant))
     try {

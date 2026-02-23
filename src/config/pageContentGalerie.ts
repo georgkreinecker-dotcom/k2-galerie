@@ -1,14 +1,17 @@
 /**
  * Seitengestaltung: Willkommensseite & Galerie-Vorschau
  * Texte und Bilder für diese Seiten – getrennt von Stammdaten (hochsensibel, streng geschützt).
- * K2: k2-page-content-galerie. ök2: k2-oeffentlich-page-content-galerie.
+ * K2: k2-page-content-galerie. ök2: k2-oeffentlich-page-content-galerie. VK2: k2-vk2-page-content-galerie.
  */
 
 const STORAGE_KEY_K2 = 'k2-page-content-galerie'
 const STORAGE_KEY_OEFFENTLICH = 'k2-oeffentlich-page-content-galerie'
+const STORAGE_KEY_VK2 = 'k2-vk2-page-content-galerie'
 
-function getStorageKey(tenantId?: 'oeffentlich'): string {
-  return tenantId === 'oeffentlich' ? STORAGE_KEY_OEFFENTLICH : STORAGE_KEY_K2
+function getStorageKey(tenantId?: 'oeffentlich' | 'vk2'): string {
+  if (tenantId === 'oeffentlich') return STORAGE_KEY_OEFFENTLICH
+  if (tenantId === 'vk2') return STORAGE_KEY_VK2
+  return STORAGE_KEY_K2
 }
 
 export interface PageContentGalerie {
@@ -38,9 +41,9 @@ function migrateFromStammdatenIfNeeded(): void {
   } catch (_) {}
 }
 
-/** Liest Seitengestaltung (Bilder + optionale Texte). tenantId 'oeffentlich' = ök2. */
-export function getPageContentGalerie(tenantId?: 'oeffentlich'): PageContentGalerie {
-  if (tenantId !== 'oeffentlich') migrateFromStammdatenIfNeeded()
+/** Liest Seitengestaltung (Bilder + optionale Texte). tenantId 'oeffentlich' = ök2, 'vk2' = VK2. */
+export function getPageContentGalerie(tenantId?: 'oeffentlich' | 'vk2'): PageContentGalerie {
+  if (tenantId !== 'oeffentlich' && tenantId !== 'vk2') migrateFromStammdatenIfNeeded()
   try {
     const key = getStorageKey(tenantId)
     const raw = typeof window !== 'undefined' ? localStorage.getItem(key) : null
@@ -67,6 +70,13 @@ export function getPageContentGalerie(tenantId?: 'oeffentlich'): PageContentGale
         if (changed) {
           try { localStorage.setItem(key, JSON.stringify({ ...parsed })) } catch (_) {}
         }
+      } else if (tenantId === 'vk2') {
+        // VK2: blob:-URLs entfernen (session-gebunden)
+        let changed = false
+        if (parsed.virtualTourVideo?.startsWith('blob:')) { parsed.virtualTourVideo = undefined; changed = true }
+        if (changed) {
+          try { localStorage.setItem(key, JSON.stringify({ ...parsed })) } catch (_) {}
+        }
       } else {
         // K2: nur blob:-URLs ersetzen (session-gebunden, nach Reload ungültig)
         // Base64-Bilder NICHT ersetzen – sie sind im selben Browser sichtbar (Vorschau!)
@@ -84,8 +94,8 @@ export function getPageContentGalerie(tenantId?: 'oeffentlich'): PageContentGale
   return { ...defaults }
 }
 
-/** Speichert Seitengestaltung. tenantId 'oeffentlich' = ök2. */
-export function setPageContentGalerie(data: Partial<PageContentGalerie>, tenantId?: 'oeffentlich'): void {
+/** Speichert Seitengestaltung. tenantId 'oeffentlich' = ök2, 'vk2' = VK2. */
+export function setPageContentGalerie(data: Partial<PageContentGalerie>, tenantId?: 'oeffentlich' | 'vk2'): void {
   try {
     if (typeof window !== 'undefined') {
       const current = getPageContentGalerie(tenantId)
