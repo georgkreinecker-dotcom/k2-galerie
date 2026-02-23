@@ -10,9 +10,9 @@ const s = WERBEUNTERLAGEN_STIL
 export default function KundenPage(props: { vk2?: boolean }) {
   const vk2 = !!props.vk2
   const scope = vk2 ? 'vk2' : 'k2'
-  const title = vk2 ? 'Mitglieder' : 'Kundendaten'
+  const title = vk2 ? 'Kontakte & Gäste' : 'Kundendaten'
   const backTo = vk2 ? '/admin?context=vk2' : '/admin'
-  const subtitle = vk2 ? 'Vereinsmitglieder – Künstler:innen und Kontakte.' : 'Kunden für Verkauf, Einladungen und Ausstellungsbetrieb.'
+  const subtitle = vk2 ? 'Vernissage-Gäste, Interessenten, Kontakte des Vereins. Vereinsmitglieder verwaltest du unter Einstellungen → Stammdaten.' : 'Kunden für Verkauf, Einladungen und Ausstellungsbetrieb.'
   return (
     <main style={{ minHeight: '100vh', background: s.bgDark, padding: '2rem clamp(1.5rem, 5vw, 4rem)' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>

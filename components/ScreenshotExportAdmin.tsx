@@ -8130,7 +8130,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.background = s.bgElevated }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}28`; e.currentTarget.style.background = s.bgCard }}
               >
-                {isVk2AdminContext() ? '👥 Mitglieder' : '👥 Kunden'}
+                {isVk2AdminContext() ? '📋 Kontakte & Gäste' : '👥 Kunden'}
               </Link>
 
               {/* Abmelden – klein und zurückhaltend */}

@@ -197,7 +197,7 @@ export function KundenTab(props: { scope?: CustomersScope }) {
       )}
 
       {filtered.length === 0 ? (
-        <p style={{ color: s.muted, fontSize: '0.95rem' }}>{customers.length === 0 ? (scope === 'vk2' ? 'Noch keine Mitglieder. Leg das erste an.' : 'Noch keine Kunden. Leg einen an – z. B. für Vernissage-Gäste oder Käufer.') : 'Keine Treffer zur Suche.'}</p>
+        <p style={{ color: s.muted, fontSize: '0.95rem' }}>{customers.length === 0 ? (scope === 'vk2' ? 'Noch keine Kontakte. Vernissage-Gäste oder Interessenten hier eintragen.' : 'Noch keine Kunden. Leg einen an – z. B. für Vernissage-Gäste oder Käufer.') : 'Keine Treffer zur Suche.'}</p>
       ) : (
         <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
           {filtered.map((c) => (
