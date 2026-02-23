@@ -8126,28 +8126,30 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </button>
               )}
 
-              {/* Kundendaten */}
-              <Link
-                to={isVk2AdminContext() ? PROJECT_ROUTES.vk2.kunden : PROJECT_ROUTES['k2-galerie'].kunden}
-                style={{
-                  padding: '0.5rem 1rem',
-                  background: s.bgCard,
-                  border: `1px solid ${s.accent}28`,
-                  color: s.text,
-                  textDecoration: 'none',
-                  borderRadius: '10px',
-                  fontSize: '0.88rem',
-                  fontWeight: 500,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.background = s.bgElevated }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}28`; e.currentTarget.style.background = s.bgCard }}
-              >
-                {isVk2AdminContext() ? '📋 Kontakte & Gäste' : '👥 Kunden'}
-              </Link>
+              {/* Kundendaten – nur für K2 und ök2, nicht für VK2 (Mitglieder sind in Stammdaten) */}
+              {!isVk2AdminContext() && (
+                <Link
+                  to={PROJECT_ROUTES['k2-galerie'].kunden}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: s.bgCard,
+                    border: `1px solid ${s.accent}28`,
+                    color: s.text,
+                    textDecoration: 'none',
+                    borderRadius: '10px',
+                    fontSize: '0.88rem',
+                    fontWeight: 500,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.background = s.bgElevated }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}28`; e.currentTarget.style.background = s.bgCard }}
+                >
+                  {isOeffentlichAdminContext() ? '📋 Kontakte' : '👥 Kunden'}
+                </Link>
+              )}
 
               {/* Abmelden – klein und zurückhaltend */}
               {!isOeffentlichAdminContext() && (
