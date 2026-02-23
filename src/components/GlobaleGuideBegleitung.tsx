@@ -236,14 +236,17 @@ export function GlobaleGuideBegleitung() {
 
   if (!flow || !flow.aktiv || geschlossen) return null
 
-  // Auf Galerie-Seiten nie zeigen – dort läuft der native Guide
-  const aufGalerieSeite =
-    location.pathname === '/projects/k2-galerie/galerie-oeffentlich' ||
-    location.pathname === '/projects/k2-galerie/galerie' ||
-    location.pathname === '/galerie' ||
-    location.pathname === '/galerie-oeffentlich' ||
-    location.pathname === '/projects/vk2/galerie'
-  if (aufGalerieSeite) return null
+  // Auf allen Galerie-Seiten nie zeigen – dort läuft der native Guide / Landing Page
+  const galerieRouten = [
+    '/projects/k2-galerie/galerie-oeffentlich',
+    '/projects/k2-galerie/galerie',
+    '/projects/vk2/galerie',
+    '/galerie-oeffentlich',
+    '/galerie-home',
+    '/galerie',
+    '/galerie/',
+  ]
+  if (galerieRouten.includes(location.pathname)) return null
 
   const { name, pfad } = flow
   const schritte = baueSchritte(pfad, name)

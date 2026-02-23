@@ -668,6 +668,16 @@ function ScreenshotExportAdmin() {
     try { return new URLSearchParams(window.location.search).get('assistent') === '1' } catch { return false }
   })()
 
+  // Wenn globaler Guide-Flow aktiv: Banner komplett ausblenden – Dialog führt alleine
+  const guideFlowAktiv = (() => {
+    try {
+      const v = localStorage.getItem('k2-guide-flow')
+      if (!v) return false
+      const f = JSON.parse(v)
+      return f?.aktiv === true
+    } catch { return false }
+  })()
+
   // Klare Admin-Struktur: Werke | Eventplanung | Design | Einstellungen. Kasse = ein Button im Header, öffnet direkt den Shop.
   const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'design' | 'einstellungen' | 'assistent'>(guideAssistent ? 'assistent' : 'werke')
   const [guideBannerClosed, setGuideBannerClosed] = useState(false)
@@ -8105,8 +8115,21 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             {activeTab === 'werke' && (
               <div>
 
-                {/* Guide-Willkommensbanner – pfad-bewusst */}
-                {guideVorname && isOeffentlichAdminContext() && !guideBannerClosed && (() => {
+                {/* Ruhige Willkommensfläche wenn Guide-Flow aktiv – Dialog führt alleine */}
+                {guideFlowAktiv && isOeffentlichAdminContext() && (
+                  <div style={{ textAlign: 'center', padding: '3rem 1.5rem 2rem', color: '#5c5650' }}>
+                    <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>👋</div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1c1a18', marginBottom: '0.4rem' }}>
+                      {guideVorname ? `Willkommen, ${guideVorname}!` : 'Willkommen!'}
+                    </div>
+                    <div style={{ fontSize: '0.9rem', lineHeight: 1.6, maxWidth: 320, margin: '0 auto', color: '#5c5650' }}>
+                      Dein Guide unten zeigt dir alles –<br />Schritt für Schritt, in Ruhe.
+                    </div>
+                  </div>
+                )}
+
+                {/* Guide-Willkommensbanner – nur wenn kein globaler Guide-Flow aktiv */}
+                {guideVorname && isOeffentlichAdminContext() && !guideBannerClosed && !guideFlowAktiv && (() => {
                   const istVerein = guidePfad === 'gemeinschaft'
                   type BannerBereich = { emoji: string; name: string; text: string; tab: string }
                   const bereiche: BannerBereich[] = istVerein ? [
@@ -8219,8 +8242,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   )
                 })()}
 
-                {/* Begrüßung + Karten-Grid: nur wenn Guide-Banner nicht aktiv */}
-                {!(guideVorname && isOeffentlichAdminContext() && !guideBannerClosed) && (
+                {/* Begrüßung + Karten-Grid: nur wenn kein Guide aktiv */}
+                {!(guideVorname && isOeffentlichAdminContext() && !guideBannerClosed) && !guideFlowAktiv && (
                 <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
                   <h2 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', fontWeight: 700, color: s.text, margin: '0 0 0.35rem' }}>
                     Was möchtest du heute tun?
@@ -8231,8 +8254,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </div>
                 )}
 
-                {/* Karten-Grid: nur ohne Guide-Banner */}
-                {!(guideVorname && isOeffentlichAdminContext() && !guideBannerClosed) && (
+                {/* Karten-Grid: nur ohne Guide */}
+                {!(guideVorname && isOeffentlichAdminContext() && !guideBannerClosed) && !guideFlowAktiv && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(1rem, 2.5vw, 1.5rem)' }}>
 
                   {/* Werke */}
@@ -8460,8 +8483,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             />
           )}
 
-          {/* Werke verwalten – Kasse = ein Button im Header, öffnet direkt den Shop */}
-          {activeTab === 'werke' && (
+          {/* Werke verwalten – nur wenn kein Guide-Flow aktiv (dann zeigt der Dialog die Führung) */}
+          {activeTab === 'werke' && !guideFlowAktiv && (
             <section style={{
               background: s.bgCard,
               border: `1px solid ${s.accent}22`,

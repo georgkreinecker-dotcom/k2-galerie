@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { speichereGuideFlow } from '../components/GlobaleGuideBegleitung'
+import { speichereGuideFlow, beendeGuideFlow } from '../components/GlobaleGuideBegleitung'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY } from '../config/navigation'
 import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, OEK2_WILLKOMMEN_IMAGES, OEK2_PLACEHOLDER_IMAGE } from '../config/tenantConfig'
@@ -3868,6 +3868,12 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
   const [antworten, setAntworten] = useState<GuideAntworten>(ladeGuideAntworten)
   const [textIdx, setTextIdx] = useState(0)
   const [sichtbar, setSichtbar] = useState(true)
+
+  // Beim Start der Galerie-Seite: alten Guide-Flow aus localStorage löschen
+  // damit der globale Begleiter nicht auf der Landing Page erscheint
+  useEffect(() => {
+    beendeGuideFlow()
+  }, [])
 
   const pfad = (antworten.pfad ?? '') as GuidePfad
 
