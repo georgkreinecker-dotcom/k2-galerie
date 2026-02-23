@@ -88,6 +88,169 @@ interface Answers {
   q3: string
 }
 
+// ─── Hero-Hub: Brand-Logo + Themen-Übersicht ─────────────────────────────────
+interface HeroHubProps {
+  accent: string; accentLight: string; accentGlow: string
+  bgDark: string; bgMid: string
+  fontHeading: string; fontBody: string
+  onWeiter: () => void
+}
+
+const HUB_STATIONEN = [
+  { emoji: '🖼️', name: 'Meine Werke',        sub: 'Fotos, Preise, Beschreibungen – deine Galerie füllen' },
+  { emoji: '🎟️', name: 'Events & Ausst.',     sub: 'Vernissagen planen, Einladungen & QR-Codes erstellen' },
+  { emoji: '✨', name: 'Aussehen & Design',   sub: 'Farben, Texte, dein Foto – die Galerie wird zu dir' },
+  { emoji: '📋', name: 'Werkkatalog',         sub: 'Alle Werke auf einen Blick – filtern, suchen, drucken' },
+  { emoji: '🧾', name: 'Kassa & Verkauf',     sub: 'Direkt verkaufen, Beleg drucken – auch vom Handy' },
+  { emoji: '⚙️', name: 'Einstellungen',       sub: 'Kontakt, Adresse, Öffnungszeiten – deine Stammdaten' },
+]
+
+function HeroHub({ accent, accentLight, accentGlow, bgDark, bgMid, fontHeading, fontBody, onWeiter }: HeroHubProps) {
+  const [aktivIdx, setAktivIdx] = useState(0)
+  const akzentGrad = `linear-gradient(135deg, ${accent}, ${accentGlow})`
+  const halbePunkte = Math.ceil(HUB_STATIONEN.length / 2)
+  const linksStationen = HUB_STATIONEN.slice(0, halbePunkte)
+  const rechtsStationen = HUB_STATIONEN.slice(halbePunkte)
+  const aktivStation = HUB_STATIONEN[aktivIdx]
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: `linear-gradient(160deg, ${bgDark} 0%, ${bgMid} 60%, ${accent}22 100%)`,
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      padding: 'clamp(2rem, 5vw, 3.5rem) clamp(1rem, 4vw, 2rem)',
+      fontFamily: fontBody,
+    }}>
+      {/* ── Brand-Logo ── */}
+      <div style={{ marginBottom: 'clamp(2rem, 5vw, 3rem)', textAlign: 'center' }}>
+        <div style={{ fontFamily: fontHeading, fontSize: 'clamp(2.2rem, 6vw, 3.2rem)', fontWeight: 700, color: accentGlow, letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+          {PRODUCT_BRAND_NAME}
+        </div>
+        <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: '0.3rem' }}>
+          Galerie · für Künstler:innen
+        </div>
+      </div>
+
+      {/* ── Hub ── */}
+      <div style={{ width: '100%', maxWidth: 760 }}>
+        <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+          <div style={{ fontSize: 'clamp(0.9rem, 2.5vw, 1.05rem)', color: 'rgba(255,255,255,0.55)', lineHeight: 1.6 }}>
+            Klick auf einen Bereich – sieh was dich erwartet.
+          </div>
+        </div>
+
+        {/* Hub-Layout */}
+        <div style={{ display: 'flex', gap: 'clamp(0.5rem, 2vw, 1rem)', alignItems: 'stretch' }}>
+
+          {/* Kacheln links */}
+          <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.45rem', width: 'clamp(110px, 18vw, 145px)', flexShrink: 0 }}>
+            {linksStationen.map((st, i) => {
+              const istAktiv = aktivIdx === i
+              return (
+                <button key={i} type="button" onClick={() => setAktivIdx(i)}
+                  style={{
+                    padding: '0.6rem 0.7rem', display: 'flex', alignItems: 'center', gap: '0.45rem',
+                    background: istAktiv ? akzentGrad : 'rgba(255,255,255,0.05)',
+                    border: istAktiv ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '12px', cursor: 'pointer', fontFamily: fontBody,
+                    transition: 'all 0.18s', textAlign: 'left' as const,
+                    boxShadow: istAktiv ? `0 4px 16px ${accent}55` : 'none',
+                    color: istAktiv ? '#fff' : 'rgba(255,255,255,0.6)',
+                    fontWeight: istAktiv ? 700 : 400,
+                  }}>
+                  <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>{st.emoji}</span>
+                  <span style={{ fontSize: '0.72rem', lineHeight: 1.3 }}>{st.name}</span>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Mittelteil – aktive Station */}
+          <div style={{
+            flex: 1, minWidth: 0,
+            background: 'rgba(255,255,255,0.05)',
+            border: `1.5px solid ${accentGlow}33`,
+            borderRadius: '18px', padding: '1.5rem',
+            display: 'flex', flexDirection: 'column' as const, gap: '1rem',
+            backdropFilter: 'blur(12px)',
+          }}>
+            {/* Fortschrittsbalken */}
+            <div style={{ display: 'flex', gap: '0.2rem' }}>
+              {HUB_STATIONEN.map((_, i) => (
+                <div key={i} onClick={() => setAktivIdx(i)}
+                  style={{ flex: 1, height: 3, borderRadius: 2, cursor: 'pointer', transition: 'background 0.2s',
+                    background: i === aktivIdx ? accentGlow : i < aktivIdx ? `${accent}88` : 'rgba(255,255,255,0.12)' }}
+                />
+              ))}
+            </div>
+
+            {/* Avatar + Titel */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{ width: 44, height: 44, borderRadius: '50%', background: akzentGrad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', flexShrink: 0, boxShadow: `0 4px 14px ${accent}44` }}>
+                👨‍🎨
+              </div>
+              <div>
+                <div style={{ fontSize: '0.6rem', color: `${accentGlow}88`, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>Dein Galerie-Guide</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff8f0', marginTop: '0.1rem' }}>
+                  {aktivStation.emoji} {aktivStation.name}
+                </div>
+              </div>
+            </div>
+
+            {/* Beschreibung */}
+            <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.65, flex: 1 }}>
+              {aktivStation.sub}
+            </div>
+
+            {/* Station-Punkte */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '0.3rem' }}>
+              {HUB_STATIONEN.map((_, i) => (
+                <div key={i} onClick={() => setAktivIdx(i)} style={{ cursor: 'pointer',
+                  width: i === aktivIdx ? 18 : 7, height: 7, borderRadius: 4,
+                  background: i === aktivIdx ? accentGlow : 'rgba(255,255,255,0.18)', transition: 'all 0.2s' }} />
+              ))}
+            </div>
+
+            {/* CTA */}
+            <button type="button" onClick={onWeiter}
+              style={{ width: '100%', padding: '0.95rem', background: akzentGrad, border: 'none', borderRadius: '14px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: '1.05rem', boxShadow: `0 6px 24px ${accent}44`, letterSpacing: '0.01em' }}>
+              Jetzt starten – kostenlos & ohne Anmeldung →
+            </button>
+            <div style={{ textAlign: 'center', fontSize: '0.72rem', color: 'rgba(255,255,255,0.25)', letterSpacing: '0.05em' }}>
+              2 kurze Fragen · dann deine persönliche Galerie
+            </div>
+          </div>
+
+          {/* Kacheln rechts */}
+          <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.45rem', width: 'clamp(110px, 18vw, 145px)', flexShrink: 0 }}>
+            {rechtsStationen.map((st, i) => {
+              const globalIdx = halbePunkte + i
+              const istAktiv = aktivIdx === globalIdx
+              return (
+                <button key={globalIdx} type="button" onClick={() => setAktivIdx(globalIdx)}
+                  style={{
+                    padding: '0.6rem 0.7rem', display: 'flex', alignItems: 'center', gap: '0.45rem',
+                    background: istAktiv ? akzentGrad : 'rgba(255,255,255,0.05)',
+                    border: istAktiv ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '12px', cursor: 'pointer', fontFamily: fontBody,
+                    transition: 'all 0.18s', textAlign: 'left' as const,
+                    boxShadow: istAktiv ? `0 4px 16px ${accent}55` : 'none',
+                    color: istAktiv ? '#fff' : 'rgba(255,255,255,0.6)',
+                    fontWeight: istAktiv ? 700 : 400,
+                  }}>
+                  <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>{st.emoji}</span>
+                  <span style={{ fontSize: '0.72rem', lineHeight: 1.3 }}>{st.name}</span>
+                </button>
+              )
+            })}
+          </div>
+
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function EntdeckenPage() {
   const navigate = useNavigate()
   const [step, setStep] = useState<Step>('hero')
@@ -188,57 +351,18 @@ export default function EntdeckenPage() {
     <div style={{ background: bgLight, minHeight: '100vh', fontFamily: fontBody, color: text }}>
       <link rel="stylesheet" href={PROMO_FONTS_URL} />
 
-      {/* ── HERO ─────────────────────────────────────────────────────────────── */}
+      {/* ── HERO: Brand-Logo + Hub-Vorschau ──────────────────────────────────── */}
       {step === 'hero' && (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-          {/* Dunkler Hero */}
-          <div style={{
-            background: `linear-gradient(160deg, ${bgDark} 0%, ${bgMid} 60%, ${accent}33 100%)`,
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            textAlign: 'center',
-            padding: 'clamp(3rem, 8vw, 6rem) clamp(1.5rem, 5vw, 4rem)',
-            position: 'relative',
-            overflow: 'hidden',
-          }}>
-            {/* Leuchtspot */}
-            <div style={{ position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%, -50%)', width: '70%', height: '60%', background: `radial-gradient(ellipse, ${accentGlow}20 0%, transparent 70%)`, pointerEvents: 'none' }} />
-
-            <div style={{ position: 'relative', maxWidth: 600 }}>
-              <div style={{ display: 'inline-block', padding: '0.3rem 1rem', background: `${accentGlow}22`, border: `1px solid ${accentGlow}44`, borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, color: accentGlow, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
-                {T.heroTag}
-              </div>
-              <h1 style={{ fontFamily: fontHeading, fontSize: 'clamp(2rem, 5.5vw, 3.4rem)', fontWeight: 700, color: textLight, margin: '0 0 1.25rem', lineHeight: 1.15, letterSpacing: '-0.02em' }}>
-                {T.heroTitle}
-              </h1>
-              <p style={{ fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', color: '#d4a574', lineHeight: 1.7, maxWidth: 480, margin: '0 auto 2.5rem' }}>
-                {T.heroSub}
-              </p>
-              <button
-                type="button"
-                onClick={() => setStep('q1')}
-                style={{ padding: 'clamp(0.9rem, 2vw, 1.1rem) clamp(2rem, 4vw, 3rem)', background: `linear-gradient(135deg, ${accentGlow} 0%, ${accent} 100%)`, color: '#fff', border: 'none', borderRadius: '50px', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', letterSpacing: '0.01em', boxShadow: `0 8px 32px ${accentGlow}44`, transition: 'all 0.2s' }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 12px 40px ${accentGlow}55` }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = `0 8px 32px ${accentGlow}44` }}
-              >
-                {T.cta}
-              </button>
-              <p style={{ marginTop: '1rem', fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em' }}>
-                {T.ctaSub}
-              </p>
-            </div>
-          </div>
-
-          {/* Vertrauen-Zeile */}
-          <div style={{ background: bgCard, padding: '1.25rem', display: 'flex', justifyContent: 'center', gap: 'clamp(1.5rem, 4vw, 3rem)', flexWrap: 'wrap', borderTop: '1px solid #e8ddd0' }}>
-            {['🎨 Für jede Kunstart', '📱 Auf jedem Gerät', '🔒 Keine Anmeldung nötig'].map(item => (
-              <span key={item} style={{ fontSize: '0.82rem', color: muted, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>{item}</span>
-            ))}
-          </div>
-        </div>
+        <HeroHub
+          accent={accent}
+          accentLight={accentLight}
+          accentGlow={accentGlow}
+          bgDark={bgDark}
+          bgMid={bgMid}
+          fontHeading={fontHeading}
+          fontBody={fontBody}
+          onWeiter={() => setStep('q1')}
+        />
       )}
 
       {/* ── FRAGEN-FLOW ──────────────────────────────────────────────────────── */}
