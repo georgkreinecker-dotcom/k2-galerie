@@ -629,7 +629,8 @@ export default function EntdeckenPage() {
   }
 
   // ─── Hilfs-Komponente: Auswahl-Karte ────────────────────────────────────────
-  function ChoiceCard({ emoji, label, sub, selected, onClick }: { emoji: string; label: string; sub: string; selected: boolean; onClick: () => void }) {
+  function ChoiceCard({ emoji, label, sub, selected, onClick, color }: { emoji: string; label: string; sub: string; selected: boolean; onClick: () => void; color?: string }) {
+    const c = color ?? accent
     return (
       <button
         type="button"
@@ -640,25 +641,25 @@ export default function EntdeckenPage() {
           alignItems: 'flex-start',
           gap: '1rem',
           padding: '1.1rem 1.25rem',
-          background: selected ? `${accent}12` : bgCard,
-          border: `2px solid ${selected ? accent : '#e0d5c5'}`,
+          background: selected ? `${c}12` : bgCard,
+          border: `2px solid ${selected ? c : '#e0d5c5'}`,
           borderRadius: '14px',
           cursor: 'pointer',
           fontFamily: fontBody,
           textAlign: 'left',
           marginBottom: '0.65rem',
           transition: 'all 0.18s',
-          boxShadow: selected ? `0 4px 16px ${accent}22` : '0 1px 4px rgba(0,0,0,0.04)',
+          boxShadow: selected ? `0 4px 16px ${c}22` : '0 1px 4px rgba(0,0,0,0.04)',
         }}
-        onMouseEnter={e => { if (!selected) { e.currentTarget.style.borderColor = `${accent}66`; e.currentTarget.style.background = `${accent}06` } }}
+        onMouseEnter={e => { if (!selected) { e.currentTarget.style.borderColor = `${c}66`; e.currentTarget.style.background = `${c}06` } }}
         onMouseLeave={e => { if (!selected) { e.currentTarget.style.borderColor = '#e0d5c5'; e.currentTarget.style.background = bgCard } }}
       >
         <span style={{ fontSize: '1.6rem', lineHeight: 1, flexShrink: 0, marginTop: '0.1rem' }}>{emoji}</span>
         <span>
-          <span style={{ display: 'block', fontWeight: 700, fontSize: '0.98rem', color: selected ? accent : text, marginBottom: '0.18rem' }}>{label}</span>
+          <span style={{ display: 'block', fontWeight: 700, fontSize: '0.98rem', color: selected ? c : text, marginBottom: '0.18rem' }}>{label}</span>
           <span style={{ fontSize: '0.82rem', color: muted, lineHeight: 1.45 }}>{sub}</span>
         </span>
-        {selected && <span style={{ marginLeft: 'auto', color: accent, fontSize: '1.2rem', flexShrink: 0, alignSelf: 'center' }}>✓</span>}
+        {selected && <span style={{ marginLeft: 'auto', color: c, fontSize: '1.2rem', flexShrink: 0, alignSelf: 'center' }}>✓</span>}
       </button>
     )
   }
@@ -768,7 +769,7 @@ export default function EntdeckenPage() {
                 <ChoiceCard {...T.q1a} selected={answers.q1 === 'hobby'} onClick={() => setAnswers(a => ({ ...a, q1: 'hobby' }))} />
                 <ChoiceCard {...T.q1b} selected={answers.q1 === 'aufsteigend'} onClick={() => setAnswers(a => ({ ...a, q1: 'aufsteigend' }))} />
                 <ChoiceCard {...T.q1c} selected={answers.q1 === 'etabliert'} onClick={() => setAnswers(a => ({ ...a, q1: 'etabliert' }))} />
-                <ChoiceCard {...T.q1d} selected={answers.q1 === 'verein'} onClick={() => setAnswers(a => ({ ...a, q1: 'verein' }))} />
+                <ChoiceCard {...T.q1d} selected={answers.q1 === 'verein'} onClick={() => setAnswers(a => ({ ...a, q1: 'verein' }))} color="#1e5cb5" />
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
                   <button type="button" onClick={() => setStep('hero')} style={{ padding: '0.7rem 1.25rem', background: 'transparent', color: muted, border: `1px solid #e0d5c5`, borderRadius: '10px', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.9rem' }}>{T.btnBack}</button>
                   <button type="button" disabled={!answers.q1} onClick={() => setStep('q3')} style={{ padding: '0.7rem 1.75rem', background: answers.q1 ? `linear-gradient(135deg, ${accent}, ${accentLight})` : '#ccc', color: '#fff', border: 'none', borderRadius: '10px', cursor: answers.q1 ? 'pointer' : 'not-allowed', fontFamily: fontBody, fontSize: '0.95rem', fontWeight: 700 }}>{T.btnNext}</button>
