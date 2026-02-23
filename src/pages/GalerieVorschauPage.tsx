@@ -76,14 +76,27 @@ function loadOeffentlichArtworks(): any[] {
   }
 }
 
-/** VK2: Werke aus k2-vk2-artworks (Vereinsplattform). Leer = leere Liste. */
+/** Prüft ob ein Werk wirklich zur VK2 gehört (VK2-Nummer oder vk2-ID) */
+function isVk2Artwork(a: any): boolean {
+  const num = String(a?.number || '')
+  const id  = String(a?.id || '')
+  return num.startsWith('VK2-') || id.startsWith('vk2-')
+}
+
+/** VK2: Werke aus k2-vk2-artworks – nur echte VK2-Werke, keine K2/ök2-Einträge. */
 function loadVk2Artworks(): any[] {
   try {
     const raw = localStorage.getItem('k2-vk2-artworks')
     if (!raw) return []
     const parsed = JSON.parse(raw)
     if (!Array.isArray(parsed) || parsed.length === 0) return []
-    return parsed.map((a: any) => {
+    // Nur VK2-Werke – fremde Werke (K1, G1, M1, muster-*) werden still entfernt
+    const vk2Only = parsed.filter(isVk2Artwork)
+    if (vk2Only.length < parsed.length) {
+      console.warn(`🧹 VK2-Vorschau: ${parsed.length - vk2Only.length} Fremd-Werke entfernt (K2/ök2 gehören nicht hier rein)`)
+      try { localStorage.setItem('k2-vk2-artworks', JSON.stringify(vk2Only)) } catch (_) {}
+    }
+    return vk2Only.map((a: any) => {
       const out = { ...a }
       if (isPlaceholderImageUrl(out.imageUrl) && out.previewUrl) out.imageUrl = out.previewUrl
       if (isPlaceholderImageUrl(out.imageUrl)) out.imageUrl = getOek2DefaultArtworkImage(out.category)

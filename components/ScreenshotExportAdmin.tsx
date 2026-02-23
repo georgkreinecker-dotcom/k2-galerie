@@ -320,6 +320,22 @@ function loadArtworks(): any[] {
         } catch (_) {}
       }
     }
+
+    // KRITISCH: Im VK2-Kontext nur echte VK2-Werke (VK2-* Nummer oder vk2-* ID) – keine K2/ök2-Werke
+    if (isVk2AdminContext()) {
+      const before = artworks.length
+      artworks = artworks.filter((a: any) => {
+        const num = String(a?.number || '')
+        const id  = String(a?.id || '')
+        return num.startsWith('VK2-') || id.startsWith('vk2-')
+      })
+      if (artworks.length < before) {
+        console.warn(`🧹 VK2-Admin: ${before - artworks.length} Fremd-Werke entfernt (K2/ök2 gehören nicht in VK2)`)
+        try {
+          localStorage.setItem(key, JSON.stringify(artworks))
+        } catch (_) {}
+      }
+    }
     
     // KRITISCH: Behebe automatisch doppelte Nummern beim Laden
     const numberMap = new Map<string, any[]>()
