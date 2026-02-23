@@ -7959,7 +7959,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             type="button"
             onClick={() => {
               try { sessionStorage.removeItem('k2-hub-from') } catch (_) {}
-              window.history.back()
+              window.location.href = '/entdecken?step=hub'
             }}
             style={{
               background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.4)',

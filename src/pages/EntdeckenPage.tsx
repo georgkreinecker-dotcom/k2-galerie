@@ -527,7 +527,15 @@ function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, 
 
 export default function EntdeckenPage() {
   const navigate = useNavigate()
-  const [step, setStep] = useState<Step>('hero')
+  // ?step=hub → direkt zum Hub springen (z.B. Zurück-Button vom Admin)
+  const initialStep: Step = (() => {
+    try {
+      const p = new URLSearchParams(window.location.search).get('step')
+      if (p === 'hub') return 'hub'
+    } catch (_) {}
+    return 'hero'
+  })()
+  const [step, setStep] = useState<Step>(initialStep)
   const [answers, setAnswers] = useState<Answers>({ q1: '', q2: '', q3: '' })
   const [notizOffen, setNotizOffen] = useState(false)
   const [notizText, setNotizText] = useState('')
@@ -625,39 +633,67 @@ export default function EntdeckenPage() {
     <div style={{ background: bgLight, minHeight: '100vh', fontFamily: fontBody, color: text }}>
       <link rel="stylesheet" href={PROMO_FONTS_URL} />
 
-      {/* ── HERO: Original dunkler Eingang ───────────────────────────────────── */}
+      {/* ── HERO: Dunkler Eingang mit Galerie-Foto ───────────────────────────── */}
       {step === 'hero' && (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: `linear-gradient(160deg, ${bgDark} 0%, ${bgMid} 100%)` }}>
           <div style={{
-            background: `linear-gradient(160deg, ${bgDark} 0%, ${bgMid} 60%, ${accent}33 100%)`,
-            flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
-            alignItems: 'center', textAlign: 'center',
-            padding: 'clamp(3rem, 8vw, 6rem) clamp(1.5rem, 5vw, 4rem)',
-            position: 'relative', overflow: 'hidden',
+            flex: 1, display: 'flex', flexDirection: 'row', flexWrap: 'wrap',
+            alignItems: 'stretch', overflow: 'hidden',
           }}>
-            <div style={{ position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%, -50%)', width: '70%', height: '60%', background: `radial-gradient(ellipse, ${accentGlow}20 0%, transparent 70%)`, pointerEvents: 'none' }} />
-            <div style={{ position: 'relative', maxWidth: 600 }}>
-              <div style={{ display: 'inline-block', padding: '0.3rem 1rem', background: `${accentGlow}22`, border: `1px solid ${accentGlow}44`, borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, color: accentGlow, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
-                {T.heroTag}
+            {/* Linke Seite: Text */}
+            <div style={{
+              flex: '1 1 340px', display: 'flex', flexDirection: 'column', justifyContent: 'center',
+              padding: 'clamp(3rem, 8vw, 5rem) clamp(2rem, 6vw, 4rem)',
+              position: 'relative', zIndex: 1,
+            }}>
+              <div style={{ position: 'absolute', top: '20%', left: '-10%', width: '60%', height: '60%', background: `radial-gradient(ellipse, ${accentGlow}18 0%, transparent 70%)`, pointerEvents: 'none' }} />
+              <div style={{ position: 'relative' }}>
+                <div style={{ fontFamily: fontHeading, fontSize: '1rem', color: accentGlow, fontWeight: 700, marginBottom: '1.5rem', letterSpacing: '-0.01em' }}>
+                  {PRODUCT_BRAND_NAME}
+                </div>
+                <div style={{ display: 'inline-block', padding: '0.3rem 1rem', background: `${accentGlow}22`, border: `1px solid ${accentGlow}44`, borderRadius: '20px', fontSize: '0.72rem', fontWeight: 600, color: accentGlow, letterSpacing: '0.1em', textTransform: 'uppercase' as const, marginBottom: '1.25rem' }}>
+                  {T.heroTag}
+                </div>
+                <h1 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 700, color: textLight, margin: '0 0 1.25rem', lineHeight: 1.15, letterSpacing: '-0.02em', maxWidth: 480 }}>
+                  {T.heroTitle}
+                </h1>
+                <p style={{ fontSize: 'clamp(0.95rem, 2vw, 1.1rem)', color: '#d4a574', lineHeight: 1.7, maxWidth: 420, marginBottom: '2.5rem' }}>
+                  {T.heroSub}
+                </p>
+                <button type="button" onClick={() => setStep('q1')}
+                  style={{ display: 'inline-block', padding: 'clamp(0.85rem, 2vw, 1.05rem) clamp(2rem, 4vw, 2.75rem)', background: `linear-gradient(135deg, ${accentGlow} 0%, ${accent} 100%)`, color: '#fff', border: 'none', borderRadius: '50px', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: 'clamp(0.95rem, 2vw, 1.1rem)', letterSpacing: '0.01em', boxShadow: `0 8px 32px ${accentGlow}44`, transition: 'all 0.2s' }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)' }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)' }}>
+                  {T.cta}
+                </button>
+                <p style={{ marginTop: '0.9rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>{T.ctaSub}</p>
               </div>
-              <h1 style={{ fontFamily: fontHeading, fontSize: 'clamp(2rem, 5.5vw, 3.4rem)', fontWeight: 700, color: textLight, margin: '0 0 1.25rem', lineHeight: 1.15, letterSpacing: '-0.02em' }}>
-                {T.heroTitle}
-              </h1>
-              <p style={{ fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', color: '#d4a574', lineHeight: 1.7, maxWidth: 480, margin: '0 auto 2.5rem' }}>
-                {T.heroSub}
-              </p>
-              <button type="button" onClick={() => setStep('q1')}
-                style={{ padding: 'clamp(0.9rem, 2vw, 1.1rem) clamp(2rem, 4vw, 3rem)', background: `linear-gradient(135deg, ${accentGlow} 0%, ${accent} 100%)`, color: '#fff', border: 'none', borderRadius: '50px', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', letterSpacing: '0.01em', boxShadow: `0 8px 32px ${accentGlow}44`, transition: 'all 0.2s' }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 12px 40px ${accentGlow}55` }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = `0 8px 32px ${accentGlow}44` }}>
-                {T.cta}
-              </button>
-              <p style={{ marginTop: '1rem', fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em' }}>{T.ctaSub}</p>
+            </div>
+
+            {/* Rechte Seite: Foto */}
+            <div style={{
+              flex: '1 1 320px', position: 'relative', minHeight: 320, overflow: 'hidden',
+            }}>
+              <img
+                src="/img/oeffentlich/willkommen.jpg"
+                alt="Galerie Vorschau"
+                style={{
+                  position: 'absolute', inset: 0, width: '100%', height: '100%',
+                  objectFit: 'cover', objectPosition: 'center',
+                  opacity: 0.75,
+                }}
+              />
+              {/* Gradient-Übergang links zum Text */}
+              <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${bgDark} 0%, transparent 35%)`, pointerEvents: 'none' }} />
+              {/* Gradient unten */}
+              <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, ${bgDark} 0%, transparent 40%)`, pointerEvents: 'none' }} />
             </div>
           </div>
-          <div style={{ background: bgCard, padding: '1.25rem', display: 'flex', justifyContent: 'center', gap: 'clamp(1.5rem, 4vw, 3rem)', flexWrap: 'wrap', borderTop: '1px solid #e8ddd0' }}>
+
+          {/* Trust-Leiste */}
+          <div style={{ background: 'rgba(0,0,0,0.35)', borderTop: `1px solid rgba(255,255,255,0.06)`, padding: '0.9rem clamp(1.5rem, 4vw, 3rem)', display: 'flex', justifyContent: 'center', gap: 'clamp(1.5rem, 4vw, 3rem)', flexWrap: 'wrap' }}>
             {['🎨 Für jede Kunstart', '📱 Auf jedem Gerät', '🔒 Keine Anmeldung nötig'].map(item => (
-              <span key={item} style={{ fontSize: '0.82rem', color: muted, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>{item}</span>
+              <span key={item} style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>{item}</span>
             ))}
           </div>
         </div>
