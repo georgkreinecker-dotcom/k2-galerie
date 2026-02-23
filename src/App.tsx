@@ -37,6 +37,7 @@ import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUT
 import WillkommenPage from './pages/WillkommenPage'
 import EntdeckenPage from './pages/EntdeckenPage'
 import AGBPage from './pages/AGBPage'
+import { GlobaleGuideBegleitung } from './components/GlobaleGuideBegleitung'
 import SeitengestaltungPage from './pages/SeitengestaltungPage'
 import { BUILD_LABEL, BUILD_TIMESTAMP } from './buildInfo.generated'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
@@ -554,6 +555,10 @@ function App() {
       
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+
+    {/* Globaler Guide-Begleiter – läuft auf jeder Seite nahtlos weiter */}
+    <GlobaleGuideBegleitung />
+
     </AppErrorBoundary>
   )
 }

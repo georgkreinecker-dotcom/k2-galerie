@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { speichereGuideFlow } from '../components/GlobaleGuideBegleitung'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY } from '../config/navigation'
 import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, OEK2_WILLKOMMEN_IMAGES, OEK2_PLACEHOLDER_IMAGE } from '../config/tenantConfig'
@@ -4067,6 +4068,15 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
   // Alle Wege führen in den Admin – mit Vorname + Pfad damit das Banner ihn willkommen heißt
   const geheZuAdmin = (assistent = false) => {
     setSichtbar(false)
+    // Globalen Guide-Flow starten – Dialog begleitet auf jeder Seite weiter
+    speichereGuideFlow({
+      aktiv: true,
+      name: name ?? '',
+      pfad: (antworten.pfad ?? '') as import('../components/GlobaleGuideBegleitung').GuidePfad,
+      schritt: 'start',
+      erledigte: [],
+    })
+    window.dispatchEvent(new CustomEvent('guide-flow-update'))
     const vornamePart = name ? `&vorname=${encodeURIComponent(name)}` : ''
     const pfadPart = antworten.pfad ? `&pfad=${antworten.pfad}` : ''
     const assistentPart = assistent ? '&assistent=1' : ''

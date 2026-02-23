@@ -1,0 +1,36 @@
+---
+description: Guide-Begleitung – nahtlos, persönlich, verblüffend (unveränderlich)
+alwaysApply: true
+---
+
+# 🔒 GUIDE-BEGLEITUNG – NAHTLOS BIS ZUM LETZTEN SCHRITT
+
+## Das Prinzip (Georgs Vision)
+
+> „Diese Art der Kommunikation steht für unsere absolute Bedienerorientiertheit.
+> Sie soll so einzigartig sein, dass allen der Mund offen stehen bleibt. Verblüffen."
+
+## Was das konkret bedeutet
+
+- **Der Guide-Dialog läuft auf JEDER Seite weiter.** Kein Bruch beim Wechsel in den Admin, zur Lizenz-Seite, zur Vereinsgalerie, zur Vita.
+- **Kein User wird alleine gelassen.** Wenn jemand eine neue Seite betritt, ist der Begleiter bereits da.
+- **Derselbe Dialog, derselbe Stil.** Kein neues, fremdes UI – der vertraute schwarze Dialog bleibt.
+- **Nie neu bauen was schon funktioniert.** Bestehende Komponenten erweitern, nicht duplizieren.
+
+## Technische Umsetzung
+
+- **`GlobaleGuideBegleitung`** in `App.tsx` außerhalb der Routes → läuft auf jeder Seite.
+- **`k2-guide-flow`** in `localStorage` → State überlebt Seitenwechsel.
+- Guide startet Flow beim Verlassen der Galerie (`geheZuAdmin` in `GaleriePage.tsx`).
+- Auf der Galerie-Seite selbst: nativer Guide läuft (keine Dopplung).
+
+## Regel bei JEDER Änderung an Guide/Dialog/Onboarding
+
+- [ ] Läuft der Dialog noch auf jeder Seite durch?
+- [ ] Wird kein zweiter, ähnlicher Dialog gebaut statt den bestehenden zu erweitern?
+- [ ] Ist der Stil konsistent (schwarzes Popup, Avatar, Fortschrittsbalken)?
+- [ ] Endet der Flow mit einer klaren, einfachen Aktion (Daten ausfüllen & starten)?
+
+## Kurzfassung
+
+**Guide = Begleiter für den ganzen Weg. Nie abbiegen, nie neu bauen, nie alleine lassen.**
