@@ -9692,60 +9692,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ width: 412 * scale, minHeight: scaledContentMinHeight, margin: '0 auto', boxSizing: 'border-box', overflow: 'hidden' }}>
                 <div style={{ width: 412, transform: `scale(${scale})`, transformOrigin: 'top left', boxSizing: 'border-box' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 0, boxSizing: 'border-box' }}>
-                  {previewFullscreenPage === 1 && isVk2AdminContext() && (
-                  <div style={{ width: '100%', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 100%)', padding: '44px 18px 32px', minHeight: 520 }}>
-                    {/* VK2 Vereinsplattform – saubere Vorschau */}
-                    <div style={{ position: 'absolute', top: 12, left: 14, zIndex: 10 }}>
-                      <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--k2-text)', letterSpacing: '0.02em' }}>{galleryName || tc.galleryName}</div>
-                    </div>
-                    <div style={{ marginBottom: 24, marginTop: 8 }}>
-                      <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 700, background: 'linear-gradient(135deg, var(--k2-text) 0%, var(--k2-accent) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
-                        {(pageTexts.galerie?.heroTitle ?? defaultPageTexts.galerie.heroTitle)?.trim() || galleryName}
-                      </h1>
-                      <p style={{ margin: '0.5rem 0 0', color: 'var(--k2-muted)', fontSize: '1rem', fontWeight: 300, letterSpacing: '0.05em' }}>
-                        {(pageTexts.galerie?.welcomeSubtext ?? defaultPageTexts.galerie.welcomeSubtext)?.trim() || tagline}
-                      </p>
-                    </div>
-                    <section style={{ marginBottom: 32 }}>
-                      <h2 style={{ fontSize: '1.5rem', marginBottom: '0.75rem', fontWeight: 700, lineHeight: 1.2, color: 'var(--k2-text)', letterSpacing: '-0.02em' }}>
-                        {(pageTexts.galerie?.welcomeHeading ?? defaultPageTexts.galerie.welcomeHeading)?.trim() || 'Willkommen bei'} {(pageTexts.galerie?.heroTitle ?? defaultPageTexts.galerie.heroTitle)?.trim() || galleryName} –
-                        <br />
-                        <span style={{ background: 'linear-gradient(135deg, var(--k2-accent) 0%, #e67a2a 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                          {(pageTexts.galerie?.welcomeSubtext ?? defaultPageTexts.galerie.welcomeSubtext)?.trim() || tagline}
-                        </span>
-                      </h2>
-                      <p style={{ fontSize: '0.95rem', color: 'var(--k2-muted)', lineHeight: 1.65, maxWidth: 360 }}>
-                        {(pageTexts.galerie?.welcomeIntroText ?? '').trim() || welcomeIntroDefault}
-                      </p>
-                    </section>
-                    {/* Foto-Upload für VK2-Willkommensbild */}
-                    <section style={{ marginBottom: 24 }}>
-                      <label style={{ display: 'block', cursor: 'pointer', border: '2px dashed var(--k2-accent)', borderRadius: 12, overflow: 'hidden', minHeight: 120, textAlign: 'center', padding: pageContent.welcomeImage ? 0 : '2rem 1rem', color: 'var(--k2-muted)', fontSize: '0.9rem' }}>
-                        {pageContent.welcomeImage
-                          ? <img src={pageContent.welcomeImage} alt="Vereinsfoto" style={{ width: '100%', height: 'auto', borderRadius: 10, display: 'block' }} />
-                          : <span>📸 Vereinsfoto ziehen oder klicken</span>
-                        }
-                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, welcomeImage: img }; setPageContent(next); setPageContentGalerie(next, 'vk2'); if (pendingWelcomeFileRef) pendingWelcomeFileRef.current = f } catch (_) {} } e.target.value = '' }} />
-                      </label>
-                    </section>
-                    {/* Events */}
-                    {(() => {
-                      const todayStart = new Date(); todayStart.setHours(0,0,0,0)
-                      const vk2Events = (() => { try { return JSON.parse(localStorage.getItem('k2-vk2-events') || '[]') } catch { return [] } })()
-                      const upcoming = vk2Events.filter((e: any) => e?.date && new Date(e.endDate || e.date) >= todayStart).slice(0,3)
-                      if (!upcoming.length) return null
-                      return (
-                        <section style={{ marginTop: 16, padding: '0.75rem', background: 'rgba(255,255,255,0.06)', borderRadius: 8 }}>
-                          <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', color: 'var(--k2-muted)', textTransform: 'uppercase' }}>Termine</p>
-                          <ul style={{ margin: 0, paddingLeft: '1rem', color: 'var(--k2-text)', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                            {upcoming.map((ev: any) => <li key={ev.id || ev.date}><strong>{ev.title}</strong></li>)}
-                          </ul>
-                        </section>
-                      )
-                    })()}
-                  </div>
-                  )}
-                  {previewFullscreenPage === 1 && !isVk2AdminContext() && (
+                  {previewFullscreenPage === 1 && (
                   <div style={{ width: '100%', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 100%)' }}>
                     {/* Brand linkes oberes Eck – K2/ök2 */}
                     <div style={{ position: 'absolute', top: 12, left: 14, zIndex: 10 }}>
