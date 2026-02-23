@@ -573,3 +573,191 @@ export function restoreK2AndOek2StammdatenFromRepo(): void {
   } catch (_) {}
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// VOLLBACKUP PRO KONTEXT – K2, ök2, VK2
+// Jeder Kontext hat seine eigene Backup-Funktion und eigene Wiederherstellung.
+// Alle drei können im Systemchaos vollständig wiederhergestellt werden.
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Erstellt ein vollständiges Backup-Objekt für einen Kontext.
+ *  Liest alle relevanten localStorage-Keys und gibt sie als Objekt zurück. */
+function readAllKeys(keys: string[]): Record<string, any> {
+  const result: Record<string, any> = {}
+  for (const key of keys) {
+    try {
+      const raw = localStorage.getItem(key)
+      if (raw && raw.length > 0 && raw.length < 8 * 1024 * 1024) {
+        try { result[key] = JSON.parse(raw) } catch { result[key] = raw }
+      }
+    } catch (_) {}
+  }
+  return result
+}
+
+/** K2-Vollbackup: Stammdaten (Martina, Georg, Galerie) + Werke + Events + Dokumente + Kunden + Design */
+export function createK2Backup(): { data: Record<string, any>; filename: string } {
+  const keys = [
+    'k2-stammdaten-martina',
+    'k2-stammdaten-georg',
+    'k2-stammdaten-galerie',
+    'k2-artworks',
+    'k2-events',
+    'k2-documents',
+    'k2-customers',
+    'k2-design-settings',
+    'k2-page-texts',
+    'k2-page-content-galerie',
+    'k2-registrierung',
+  ]
+  const data = {
+    kontext: 'k2',
+    exportedAt: new Date().toISOString(),
+    version: '1.0',
+    label: 'K2 Vollbackup – Stammdaten, Werke, Events, Dokumente, Design',
+    ...readAllKeys(keys),
+  }
+  const filename = `k2-backup-${new Date().toISOString().slice(0, 10)}-${Date.now()}.json`
+  return { data, filename }
+}
+
+/** ök2-Vollbackup: Demo-Stammdaten + Demo-Werke + Demo-Events + Demo-Dokumente + Demo-Design */
+export function createOek2Backup(): { data: Record<string, any>; filename: string } {
+  const keys = [
+    'k2-oeffentlich-stammdaten-martina',
+    'k2-oeffentlich-stammdaten-georg',
+    'k2-oeffentlich-stammdaten-galerie',
+    'k2-oeffentlich-artworks',
+    'k2-oeffentlich-events',
+    'k2-oeffentlich-documents',
+    'k2-oeffentlich-design-settings',
+    'k2-oeffentlich-page-texts',
+    'k2-oeffentlich-page-content-galerie',
+    'k2-oeffentlich-registrierung',
+  ]
+  const data = {
+    kontext: 'oeffentlich',
+    exportedAt: new Date().toISOString(),
+    version: '1.0',
+    label: 'ök2 Demo-Backup – Demo-Stammdaten, Demo-Werke, Demo-Events, Demo-Design',
+    ...readAllKeys(keys),
+  }
+  const filename = `oek2-backup-${new Date().toISOString().slice(0, 10)}-${Date.now()}.json`
+  return { data, filename }
+}
+
+/** VK2-Vollbackup: Vereins-Stammdaten (Vorstand + Mitglieder) + Events + Dokumente + Design */
+export function createVk2Backup(): { data: Record<string, any>; filename: string } {
+  const keys = [
+    'k2-vk2-stammdaten',      // Verein, Vorstand, Mitglieder-Liste
+    'k2-vk2-events',
+    'k2-vk2-documents',
+    'k2-vk2-design-settings',
+    'k2-vk2-page-texts',
+    'k2-vk2-page-content-galerie',
+    'k2-vk2-registrierung',
+  ]
+  const data = {
+    kontext: 'vk2',
+    exportedAt: new Date().toISOString(),
+    version: '1.0',
+    label: 'VK2 Vereins-Backup – Stammdaten, Vorstand, Mitglieder, Events, Design',
+    ...readAllKeys(keys),
+  }
+  const filename = `vk2-backup-${new Date().toISOString().slice(0, 10)}-${Date.now()}.json`
+  return { data, filename }
+}
+
+/** Hilfsfunktion: Backup-Objekt als JSON-Datei herunterladen */
+export function downloadBackupAsFile(data: Record<string, any>, filename: string): void {
+  const json = JSON.stringify(data, null, 2)
+  const blob = new Blob([json], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.style.display = 'none'
+  document.body.appendChild(a)
+  a.click()
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url) }, 300)
+}
+
+/** K2-Backup wiederherstellen – schreibt alle K2-Keys aus der Backup-Datei zurück */
+export function restoreK2FromBackup(backup: Record<string, any>): { ok: boolean; restored: string[] } {
+  const restored: string[] = []
+  if (!backup || backup.kontext !== 'k2') {
+    // Auch altes Format (ohne kontext-Feld) akzeptieren für Abwärtskompatibilität
+    if (!backup || (backup.kontext && backup.kontext !== 'k2')) {
+      return { ok: false, restored: [] }
+    }
+  }
+  const k2Keys = [
+    'k2-stammdaten-martina', 'k2-stammdaten-georg', 'k2-stammdaten-galerie',
+    'k2-artworks', 'k2-events', 'k2-documents', 'k2-customers',
+    'k2-design-settings', 'k2-page-texts', 'k2-page-content-galerie', 'k2-registrierung',
+  ]
+  for (const key of k2Keys) {
+    if (backup[key] != null) {
+      try {
+        const val = typeof backup[key] === 'string' ? backup[key] : JSON.stringify(backup[key])
+        localStorage.setItem(key, val)
+        restored.push(key)
+      } catch (_) {}
+    }
+  }
+  return { ok: restored.length > 0, restored }
+}
+
+/** ök2-Backup wiederherstellen */
+export function restoreOek2FromBackup(backup: Record<string, any>): { ok: boolean; restored: string[] } {
+  const restored: string[] = []
+  if (!backup || backup.kontext !== 'oeffentlich') return { ok: false, restored: [] }
+  const oek2Keys = [
+    'k2-oeffentlich-stammdaten-martina', 'k2-oeffentlich-stammdaten-georg', 'k2-oeffentlich-stammdaten-galerie',
+    'k2-oeffentlich-artworks', 'k2-oeffentlich-events', 'k2-oeffentlich-documents',
+    'k2-oeffentlich-design-settings', 'k2-oeffentlich-page-texts', 'k2-oeffentlich-page-content-galerie', 'k2-oeffentlich-registrierung',
+  ]
+  for (const key of oek2Keys) {
+    if (backup[key] != null) {
+      try {
+        const val = typeof backup[key] === 'string' ? backup[key] : JSON.stringify(backup[key])
+        localStorage.setItem(key, val)
+        restored.push(key)
+      } catch (_) {}
+    }
+  }
+  return { ok: restored.length > 0, restored }
+}
+
+/** VK2-Backup wiederherstellen – Mitglieder, Vorstand, Events */
+export function restoreVk2FromBackup(backup: Record<string, any>): { ok: boolean; restored: string[] } {
+  const restored: string[] = []
+  if (!backup || backup.kontext !== 'vk2') return { ok: false, restored: [] }
+  const vk2Keys = [
+    'k2-vk2-stammdaten', 'k2-vk2-events', 'k2-vk2-documents',
+    'k2-vk2-design-settings', 'k2-vk2-page-texts', 'k2-vk2-page-content-galerie', 'k2-vk2-registrierung',
+  ]
+  for (const key of vk2Keys) {
+    if (backup[key] != null) {
+      try {
+        const val = typeof backup[key] === 'string' ? backup[key] : JSON.stringify(backup[key])
+        localStorage.setItem(key, val)
+        restored.push(key)
+      } catch (_) {}
+    }
+  }
+  return { ok: restored.length > 0, restored }
+}
+
+/** Erkennt automatisch den Kontext einer Backup-Datei (k2 / oeffentlich / vk2 / unbekannt) */
+export function detectBackupKontext(backup: Record<string, any>): 'k2' | 'oeffentlich' | 'vk2' | 'unbekannt' {
+  if (!backup || typeof backup !== 'object') return 'unbekannt'
+  if (backup.kontext === 'k2') return 'k2'
+  if (backup.kontext === 'oeffentlich') return 'oeffentlich'
+  if (backup.kontext === 'vk2') return 'vk2'
+  // Altes Format erkennen: hat k2-artworks oder martina/georg/gallery
+  if (backup['k2-artworks'] || backup.artworks || backup.martina) return 'k2'
+  if (backup['k2-vk2-stammdaten']) return 'vk2'
+  if (backup['k2-oeffentlich-artworks']) return 'oeffentlich'
+  return 'unbekannt'
+}
+

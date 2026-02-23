@@ -204,7 +204,7 @@ const OEF_DESIGN_DEFAULT = {
 } as const
 import { checkLocalStorageSize, cleanupLargeImages, getLocalStorageReport, tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from './SafeMode'
 import { GalerieAssistent } from '../src/components/GalerieAssistent'
-import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps } from '../src/utils/autoSave'
+import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps, createK2Backup, createOek2Backup, createVk2Backup, downloadBackupAsFile, restoreK2FromBackup, restoreOek2FromBackup, restoreVk2FromBackup, detectBackupKontext } from '../src/utils/autoSave'
 import { sortArtworksNewestFirst } from '../src/utils/artworkSort'
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
 import { writePngDpi } from 'png-dpi-reader-writer'
@@ -10193,7 +10193,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             )}
 
             {/* Lager (Backup) – nur K2 (ök2 und VK2 brauchen kein Vollbackup) */}
-            {settingsSubTab === 'lager' && !isOeffentlichAdminContext() && !isVk2AdminContext() && (
+            {settingsSubTab === 'lager' && (
             <div style={{
               marginBottom: '2rem',
               background: `${s.accent}12`,
@@ -10224,9 +10224,31 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               </button>
               {!backupPanelMinimized && (
                 <div style={{ padding: '0 1.25rem 1.25rem', borderTop: `1px solid ${s.accent}22` }}>
-              <p style={{ color: s.muted, fontSize: '0.9rem', marginTop: '0.75rem', marginBottom: '1rem' }}>
-                Vollbackup auf der Speicherplatte (z. B. backupmicro) reicht. Hier: Vollbackup herunterladen und sicher aufbewahren (z. B. auf backupmicro für Prototyp-Archiv), bei Bedarf aus Backup-Datei wiederherstellen.
+              {/* Kontext-Badge */}
+              <div style={{
+                marginTop: '0.75rem',
+                marginBottom: '1rem',
+                padding: '0.75rem 1rem',
+                background: `${s.accent}18`,
+                borderRadius: '10px',
+                border: `1px solid ${s.accent}33`
+              }}>
+                <div style={{ color: s.accent, fontWeight: '700', fontSize: '0.95rem', marginBottom: '0.25rem' }}>
+                  {isVk2AdminContext() ? '🏛️ VK2 Vereins-Backup' : isOeffentlichAdminContext() ? '🎨 ök2 Demo-Backup' : '🖼️ K2 Galerie-Backup'}
+                </div>
+                <div style={{ color: s.muted, fontSize: '0.85rem' }}>
+                  {isVk2AdminContext()
+                    ? 'Enthält: Vereins-Stammdaten, Vorstand, alle Mitglieder, Events, Design. Komplett wiederherstellbar.'
+                    : isOeffentlichAdminContext()
+                    ? 'Enthält: Demo-Stammdaten, Demo-Werke, Demo-Events, Demo-Design. Separat von K2 und VK2.'
+                    : 'Enthält: Stammdaten (Martina, Georg, Galerie), alle Werke, Events, Dokumente, Kunden, Design.'}
+                </div>
+              </div>
+
+              <p style={{ color: s.muted, fontSize: '0.9rem', marginBottom: '1rem' }}>
+                Backup auf backupmicro aufbewahren. Bei Systemchaos: Backup-Datei hochladen – alles wird wiederhergestellt.
               </p>
+
               <input
                 ref={backupFileInputRef}
                 type="file"
@@ -10242,12 +10264,35 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     try {
                       const raw = reader.result as string
                       const backup = JSON.parse(raw)
-                      const ok = restoreFromBackupFile(backup)
+                      const kontext = detectBackupKontext(backup)
+                      const currentKontext = isVk2AdminContext() ? 'vk2' : isOeffentlichAdminContext() ? 'oeffentlich' : 'k2'
+                      if (kontext !== currentKontext && kontext !== 'unbekannt') {
+                        const kontextName = kontext === 'vk2' ? 'VK2 Verein' : kontext === 'oeffentlich' ? 'ök2 Demo' : 'K2 Galerie'
+                        const currentName = currentKontext === 'vk2' ? 'VK2 Verein' : currentKontext === 'oeffentlich' ? 'ök2 Demo' : 'K2 Galerie'
+                        if (!confirm(`⚠️ Diese Backup-Datei gehört zu „${kontextName}“, du bist aber gerade in „${currentName}“.\n\nTrotzdem wiederherstellen?`)) {
+                          setRestoreProgress('idle')
+                          return
+                        }
+                      }
+                      let ok = false
+                      let restored: string[] = []
+                      if (kontext === 'vk2') {
+                        const r = restoreVk2FromBackup(backup)
+                        ok = r.ok; restored = r.restored
+                      } else if (kontext === 'oeffentlich') {
+                        const r = restoreOek2FromBackup(backup)
+                        ok = r.ok; restored = r.restored
+                      } else {
+                        const r = restoreK2FromBackup(backup)
+                        if (r.ok) { ok = true; restored = r.restored }
+                        else { ok = restoreFromBackupFile(backup) }
+                      }
                       if (!ok) {
                         setRestoreProgress('idle')
-                        alert('❌ Die Datei ist kein gültiges K2-Vollbackup (erwartet: Stammdaten/Werke/Events/Dokumente).')
+                        alert('❌ Die Datei ist kein gültiges Backup (K2, ök2 oder VK2 Backup erwartet).')
                         return
                       }
+                      if (restored.length > 0) console.log('💾 Wiederhergestellt:', restored.join(', '))
                       setRestoreProgress('done')
                       setTimeout(() => { if (window.self === window.top) window.location.reload() }, 800)
                     } catch (err) {
@@ -10262,6 +10307,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   reader.readAsText(file, 'UTF-8')
                 }}
               />
+
               {restoreProgress !== 'idle' && (
                 <div style={{
                   marginBottom: '1rem',
@@ -10290,9 +10336,31 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   </div>
                 </div>
               )}
+
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
                 <button
-                  onClick={downloadFullBackup}
+                  onClick={() => {
+                    try {
+                      if (isVk2AdminContext()) {
+                        const result = createVk2Backup()
+                        const m = (() => { try { return JSON.parse(localStorage.getItem('k2-vk2-stammdaten') || '{}') } catch { return {} } })()
+                        const mitglieder = Array.isArray(m.mitglieder) ? m.mitglieder.length : 0
+                        downloadBackupAsFile(result.data, result.filename)
+                        alert(`✅ VK2 Vereins-Backup heruntergeladen.\n\nEnthält: Vereins-Stammdaten, Vorstand, ${mitglieder} Mitglieder, Events, Design.\n\nAuf backupmicro speichern!`)
+                      } else if (isOeffentlichAdminContext()) {
+                        const result = createOek2Backup()
+                        downloadBackupAsFile(result.data, result.filename)
+                        alert(`✅ ök2 Demo-Backup heruntergeladen.\n\nEnthält: Demo-Stammdaten, Demo-Werke, Demo-Events, Demo-Design.\n\nAuf backupmicro speichern!`)
+                      } else {
+                        const result = createK2Backup()
+                        downloadBackupAsFile(result.data, result.filename)
+                        const artworks = (() => { try { return JSON.parse(localStorage.getItem('k2-artworks') || '[]') } catch { return [] } })()
+                        alert(`✅ K2 Galerie-Backup heruntergeladen.\n\nEnthält: Stammdaten, ${Array.isArray(artworks) ? artworks.length : 0} Werke, Events, Dokumente, Design.\n\nAuf backupmicro speichern!`)
+                      }
+                    } catch (e) {
+                      alert('Fehler beim Erstellen des Backups: ' + (e instanceof Error ? e.message : String(e)))
+                    }
+                  }}
                   style={{
                     padding: '0.75rem 1.25rem',
                     background: s.bgElevated,
@@ -10304,8 +10372,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     cursor: 'pointer'
                   }}
                 >
-                  💾 Vollbackup herunterladen
+                  💾 Backup herunterladen
                 </button>
+
                 <button
                   type="button"
                   disabled={restoreProgress !== 'idle'}
@@ -10323,7 +10392,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 >
                   📂 Aus Backup-Datei wiederherstellen
                 </button>
-                {hasBackup() ? (
+
+                {!isOeffentlichAdminContext() && !isVk2AdminContext() && hasBackup() && (
                   <button
                     disabled={restoreProgress !== 'idle'}
                     onClick={() => {
@@ -10351,26 +10421,29 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       cursor: 'pointer'
                     }}
                   >
-                    🔄 Aus letztem Backup wiederherstellen
+                    🔄 Aus letztem Auto-Backup wiederherstellen
                     {getBackupTimestamp() && (
                       <span style={{ display: 'block', fontSize: '0.75rem', opacity: 0.9, marginTop: '0.2rem' }}>
                         Backup: {new Date(getBackupTimestamp()!).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })}
                       </span>
                     )}
                   </button>
-                ) : (
+                )}
+
+                {!isOeffentlichAdminContext() && !isVk2AdminContext() && !hasBackup() && (
                   <span style={{ color: s.muted, fontSize: '0.9rem' }}>
-                    Kein Backup im Browser – Vollbackup auf Speicherplatte reicht. Bei Bedarf „Vollbackup herunterladen“ oder „Aus Backup-Datei wiederherstellen“.
+                    Kein Auto-Backup im Browser. Backup-Datei von backupmicro hochladen.
                   </span>
                 )}
+
                 <button
                   type="button"
                   onClick={() => {
                     const freed = tryFreeLocalStorageSpace()
                     if (freed > 0) {
-                      alert(`✅ Speicher freigegeben: ca. ${(freed / 1024).toFixed(0)} KB.\n\nDas lokale Auto-Backup wurde entfernt. Bei Bedarf kannst du „Aus Backup-Datei wiederherstellen“ nutzen. Ein neues Auto-Backup entsteht beim nächsten Speichern.`)
+                      alert(`✅ Speicher freigegeben: ca. ${(freed / 1024).toFixed(0)} KB.\n\nDas lokale Auto-Backup wurde entfernt. Backup-Datei von backupmicro zum Wiederherstellen nutzen.`)
                     } else {
-                      alert('Kein lokales Auto-Backup im Speicher (oder bereits gelöscht). Bei „Speicher voll“-Meldung: Browser-Daten für diese Seite löschen.')
+                      alert('Kein lokales Auto-Backup im Speicher (oder bereits gelöscht).')
                     }
                   }}
                   style={{
@@ -10383,15 +10456,15 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     fontWeight: '500',
                     cursor: 'pointer'
                   }}
-                  title="Entfernt das im Browser gespeicherte Auto-Backup (k2-full-backup) – hilft bei „Speicher voll“"
+                  title="Entfernt das im Browser gespeicherte Auto-Backup"
                 >
-                  🔓 Speicher freigeben (lokales Auto-Backup löschen)
+                  🔓 Speicher freigeben
                 </button>
               </div>
-              {/* Verlauf: letzte Backups */}
-              {backupTimestamps.length > 0 && (
+
+              {!isOeffentlichAdminContext() && !isVk2AdminContext() && backupTimestamps.length > 0 && (
                 <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: `1px solid ${s.accent}22` }}>
-                  <div style={{ fontSize: '0.85rem', color: s.muted, marginBottom: '0.5rem' }}>Verlauf (letzte Backups, neueste zuerst)</div>
+                  <div style={{ fontSize: '0.85rem', color: s.muted, marginBottom: '0.5rem' }}>Auto-Backup Verlauf (neueste zuerst)</div>
                   <ul style={{
                     margin: 0,
                     paddingLeft: '1.25rem',
