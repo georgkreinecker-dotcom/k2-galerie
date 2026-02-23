@@ -3,7 +3,7 @@
 | Feld | Inhalt |
 |------|--------|
 | **Datum** | 23.02.26 |
-| **Thema** | Globaler Guide-Begleiter – nahtlose Führung auf jeder Seite |
-| **Was zuletzt** | Crash-Fix: Drag-State in GlobaleGuideBegleitung.tsx von useState auf useRef umgestellt – verhindert Render-Loop durch Event-Listener-Neuregistrierung beim Draggen. Build ✅ Commit a2a3508 Push ✅ |
-| **Nächster Schritt** | App testen: Guide starten → Tour durchgehen → Dialog läuft nahtlos auf jeder Seite weiter? |
-| **Wo nachlesen** | `src/components/GlobaleGuideBegleitung.tsx`, `src/pages/GaleriePage.tsx` (geheZuAdmin), `src/App.tsx` (GlobaleGuideBegleitung), `.cursor/rules/guide-nahtlos-begleitung.mdc` |
+| **Thema** | Backup-System für alle 3 Kontexte (K2, ök2, VK2) |
+| **Was zuletzt** | Neues Backup-System: `createK2Backup`, `createOek2Backup`, `createVk2Backup`, `restoreK2FromBackup`, `restoreOek2FromBackup`, `restoreVk2FromBackup`, `detectBackupKontext` in autoSave.ts. Admin-UI: Backup-Panel für alle 3 Kontexte (war vorher nur K2). Build ✅ Commit 6167212 Push ✅ |
+| **Nächster Schritt** | Backup testen: K2-Admin → Einstellungen → Lager → Backup herunterladen → prüfen ob JSON vollständig. Dann VK2-Admin → gleicher Weg. Datei auf backupmicro speichern. |
+| **Wo nachlesen** | `src/utils/autoSave.ts` (neue Backup-Funktionen), `components/ScreenshotExportAdmin.tsx` (Backup-Panel UI) |
