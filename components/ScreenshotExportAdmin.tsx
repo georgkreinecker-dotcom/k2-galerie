@@ -8408,6 +8408,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
           {/* Galerie-Assistent: neue Kunden Schritt für Schritt zur eigenen Galerie führen */}
           {activeTab === 'assistent' && (
             <GalerieAssistent
+              guideName={guideVorname || undefined}
+              guidePfad={guidePfad || undefined}
               onGoToStep={(tab, subTab) => {
                 setActiveTab(tab)
                 if (subTab && tab === 'einstellungen') setSettingsSubTab(subTab as 'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager')
