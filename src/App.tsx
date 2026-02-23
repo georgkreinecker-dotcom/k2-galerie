@@ -13,6 +13,8 @@ import WerbeunterlagenPage from './pages/WerbeunterlagenPage'
 import Mok2Layout from './components/Mok2Layout'
 import GaleriePage from './pages/GaleriePage'
 import GalerieVorschauPage from './pages/GalerieVorschauPage'
+import Vk2GaleriePage from './pages/Vk2GaleriePage'
+import Vk2GalerieVorschauPage from './pages/Vk2GalerieVorschauPage'
 import PlatzanordnungPage from './pages/PlatzanordnungPage'
 import VitaPage from './pages/VitaPage'
 import ShopPage from './pages/ShopPage'
@@ -508,8 +510,8 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].galerieVorschau} element={<GalerieVorschauPage />} />
       {/* VK2 Vereinsplattform – muss vor /projects/:projectId stehen */}
       <Route path={PROJECT_ROUTES.vk2.home} element={<Navigate to={PROJECT_ROUTES.vk2.galerie} replace />} />
-      <Route path={PROJECT_ROUTES.vk2.galerie} element={<GaleriePage vk2 />} />
-      <Route path={PROJECT_ROUTES.vk2.galerieVorschau} element={<GalerieVorschauPage vk2 />} />
+      <Route path={PROJECT_ROUTES.vk2.galerie} element={<Vk2GaleriePage />} />
+      <Route path={PROJECT_ROUTES.vk2.galerieVorschau} element={<Vk2GalerieVorschauPage />} />
       <Route path={PROJECT_ROUTES.vk2.kunden} element={<KundenPage vk2 />} />
       <Route path={PROJECT_ROUTES.vk2.vollversion} element={<Navigate to="/admin?context=vk2" replace />} />
       <Route path="/projects/:projectId" element={<ProjectStartPage />} />

@@ -4,6 +4,6 @@
 |------|--------|
 | **Datum** | 23.02.26 |
 | **Thema** | VK2 Willkommensseite: 3 Bugs behoben |
-| **Was zuletzt** | VK2 Vorschau-Seite: K2-Werke haben Mitglieder überschrieben (2 useEffects ohne vk2-Schutz). `if (vk2) return` in beiden Lade-useEffects von GalerieVorschauPage.tsx eingefügt. Commit 1225f2d Push ✅ |
-| **Nächster Schritt** | VK2-Mitglieder-Seite testen: /projects/vk2/galerie-vorschau – sollte jetzt 6 Mitglieder (Kunstverein Muster) zeigen, keine K2-Werke mehr. |
-| **Wo nachlesen** | `src/pages/GalerieVorschauPage.tsx` – Zeile 800: `if (vk2) return () => {}`, Zeile 1296: `if (musterOnly || vk2) return` |
+| **Was zuletzt** | 4 hartkodierte VK2-Stellen behoben: (1) GaleriePage h1 „VK2 Vereinsplattform" → displayGalleryName, (2) welcomeSubtext hartkodiert → galerieTexts, (3) Admin-Vorschau Brand-Label „K2 Galerie" → VK2 Vereinsplattform im VK2-Kontext, (4) GalerieVorschauPage K2-Daten-useEffects ohne vk2-Schutz. Commit 4419c3e Push ✅ |
+| **Nächster Schritt** | Nach Vercel-Deploy testen: VK2-Willkommen zeigt „Kunstverein Muster", Admin-Vorschau zeigt oben „VK2 Vereinsplattform", Mitglieder-Seite zeigt 6 Karten. Stand-Badge tippen für Cache-Bypass. |
+| **Wo nachlesen** | `src/pages/GaleriePage.tsx` Zeile 2504, `components/ScreenshotExportAdmin.tsx` Zeile 9699, `src/pages/GalerieVorschauPage.tsx` Zeile 800+1297 |

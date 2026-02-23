@@ -9739,7 +9739,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             if (f && f.type.startsWith('image/')) {
                               try {
                                 const img = await compressImage(f, 800, 0.6)
-                                const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
+                                const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
                                 const next = { ...pageContent, welcomeImage: img }
                                 setPageContent(next)
                                 setPageContentGalerie(next, tenant)
@@ -9758,7 +9758,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 const img = await compressImage(f, 800, 0.6)
                                 const next = { ...pageContent, welcomeImage: img }
                                 setPageContent(next)
-                                setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
+                                setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined)
                                 // Datei für späteren Upload beim Speichern merken
                                 if (!isOeffentlichAdminContext()) pendingWelcomeFileRef.current = f
                                 setImageUploadStatus('✓ Foto bereit – erst ansehen, dann Speichern')
@@ -9818,8 +9818,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           </section>
                         )
                       })()}
-                      {/* Die Kunstschaffenden – wie auf der echten ersten Seite */}
-                      <section style={{ marginTop: 32 }}>
+                      {/* Die Kunstschaffenden + Eingangshalle – nur K2/ök2, nicht VK2 */}
+                      {!isVk2AdminContext() && <><section style={{ marginTop: 32 }}>
                         {designPreviewEdit === 'p2-kunstschaffendeHeading' ? (
                           <input autoFocus value={pageTexts.galerie?.kunstschaffendeHeading ?? defaultPageTexts.galerie.kunstschaffendeHeading ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, kunstschaffendeHeading: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '1.5rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, marginBottom: 24, textAlign: 'center', boxSizing: 'border-box' }} />
                         ) : (
@@ -9927,7 +9927,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             )}
                           </div>
                         </div>
-                      </section>
+                      </section></>}
                     </header>
                   </div>
                   )}
