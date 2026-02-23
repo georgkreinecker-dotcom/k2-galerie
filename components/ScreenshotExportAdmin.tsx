@@ -664,9 +664,12 @@ function ScreenshotExportAdmin() {
   const guidePfad = (() => {
     try { return new URLSearchParams(window.location.search).get('pfad') ?? '' } catch { return '' }
   })()
+  const guideAssistent = (() => {
+    try { return new URLSearchParams(window.location.search).get('assistent') === '1' } catch { return false }
+  })()
 
   // Klare Admin-Struktur: Werke | Eventplanung | Design | Einstellungen. Kasse = ein Button im Header, öffnet direkt den Shop.
-  const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'design' | 'einstellungen' | 'assistent'>('werke')
+  const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'design' | 'einstellungen' | 'assistent'>(guideAssistent ? 'assistent' : 'werke')
   const [guideBannerClosed, setGuideBannerClosed] = useState(false)
   const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>('events')
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false) // kleine Leiste „Vergangenheit“, bei Klick aufklappen
@@ -8215,7 +8218,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   )
                 })()}
 
-                {/* Begrüßung */}
+                {/* Begrüßung + Karten-Grid: nur wenn Guide-Banner nicht aktiv */}
+                {!(guideVorname && isOeffentlichAdminContext() && !guideBannerClosed) && (
                 <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
                   <h2 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', fontWeight: 700, color: s.text, margin: '0 0 0.35rem' }}>
                     Was möchtest du heute tun?
@@ -8224,8 +8228,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     Wähle einen Bereich – alles ist einen Klick entfernt.
                   </p>
                 </div>
+                )}
 
-                {/* Karten-Grid */}
+                {/* Karten-Grid: nur ohne Guide-Banner */}
+                {!(guideVorname && isOeffentlichAdminContext() && !guideBannerClosed) && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(1rem, 2.5vw, 1.5rem)' }}>
 
                   {/* Werke */}
@@ -8369,6 +8375,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   </button>
 
                 </div>
+                )}
 
                 {/* Trennlinie vor Werke-Inhalt */}
                 <div style={{ margin: 'clamp(2rem, 5vw, 3rem) 0 clamp(1rem, 3vw, 1.5rem)', display: 'flex', alignItems: 'center', gap: '1rem' }}>

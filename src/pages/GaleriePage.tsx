@@ -3833,16 +3833,26 @@ function ErgebnisKarten({ pfad, antworten, name, onWeiter, onFuehrung }: { pfad:
     <div style={{ marginTop: '0.5rem' }}>
 
       {/* Kompakte Info-Liste: was dich erwartet */}
-      <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.3rem', marginBottom: '1rem' }}>
-        {alleKarten.map((k, i) => (
-          <div key={i} style={{ display: 'flex', gap: '0.55rem', alignItems: 'center', padding: '0.45rem 0.6rem', background: 'rgba(255,255,255,0.04)', borderRadius: '8px' }}>
-            <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>{k.emoji}</span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#fff8f0' }}>{k.titel}</span>
-              <span style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.38)', marginLeft: '0.4rem' }}>– {k.beschreibung}</span>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem', marginBottom: '1rem' }}>
+        {alleKarten.map((k, i) => {
+          const iconBg =
+            k.status === 'sofort' ? 'rgba(134,239,172,0.18)' :
+            k.status === 'bereit' ? 'rgba(255,140,66,0.18)' :
+            'rgba(255,255,255,0.07)'
+          const iconBorder =
+            k.status === 'sofort' ? 'rgba(134,239,172,0.4)' :
+            k.status === 'bereit' ? 'rgba(255,140,66,0.4)' :
+            'rgba(255,255,255,0.12)'
+          return (
+            <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', padding: '0.5rem 0.6rem', background: 'rgba(255,255,255,0.04)', border: `1px solid ${iconBorder}`, borderRadius: '9px' }}>
+              <span style={{ fontSize: '1.15rem', flexShrink: 0, lineHeight: 1, padding: '0.2rem', background: iconBg, borderRadius: '6px' }}>{k.emoji}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#fff8f0', lineHeight: 1.2 }}>{k.titel}</div>
+                <div style={{ fontSize: '0.69rem', color: 'rgba(255,255,255,0.38)', lineHeight: 1.35, marginTop: '0.15rem' }}>{k.beschreibung}</div>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* Die zwei Wege – klar und einfach */}
@@ -3855,6 +3865,9 @@ function ErgebnisKarten({ pfad, antworten, name, onWeiter, onFuehrung }: { pfad:
           style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,140,66,0.08)', border: '1px solid rgba(255,140,66,0.28)', borderRadius: '12px', color: '#ff8c42', fontWeight: 600, cursor: 'pointer', fontSize: '0.88rem', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
           🤝 Führ mich Schritt für Schritt
         </button>
+        <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.25)', textAlign: 'center' as const, marginTop: '-0.1rem' }}>
+          Der Assistent erklärt dir alles – einen Bereich nach dem anderen
+        </div>
       </div>
     </div>
   )
@@ -4018,12 +4031,13 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
   const schliessen = () => { setSichtbar(false); setTimeout(onDismiss, 350) }
 
   // Alle Wege führen in den Admin – mit Vorname + Pfad damit das Banner ihn willkommen heißt
-  const geheZuAdmin = () => {
+  const geheZuAdmin = (assistent = false) => {
     setSichtbar(false)
     const vornamePart = name ? `&vorname=${encodeURIComponent(name)}` : ''
     const pfadPart = antworten.pfad ? `&pfad=${antworten.pfad}` : ''
+    const assistentPart = assistent ? '&assistent=1' : ''
     setTimeout(() => {
-      window.location.href = `/admin?context=oeffentlich${vornamePart}${pfadPart}`
+      window.location.href = `/admin?context=oeffentlich${vornamePart}${pfadPart}${assistentPart}`
     }, 300)
   }
 
@@ -4111,7 +4125,7 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
             antworten={antworten}
             name={name}
             onWeiter={geheZuAdmin}
-            onFuehrung={() => setSchritt('tour_galerie')}
+            onFuehrung={() => geheZuAdmin(true)}
           />
         )}
 
@@ -4119,7 +4133,7 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
         {istFertig && TOUR_SCHRITTE.includes(schritt) && (
           <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.45rem', marginTop: '0.5rem' }}>
             {schritt === 'tour_dokumente' ? (
-              <button type="button" onClick={geheZuAdmin}
+              <button type="button" onClick={() => geheZuAdmin()}
                 style={{ width: '100%', padding: '0.75rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit', boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }}>
                 🚀 Los – bring mich in die Zentrale →
               </button>
@@ -4130,7 +4144,7 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
               </button>
             )}
             {schritt !== 'tour_dokumente' && (
-              <button type="button" onClick={geheZuAdmin}
+              <button type="button" onClick={() => geheZuAdmin()}
                 style={{ width: '100%', padding: '0.55rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'inherit' }}>
                 Direkt in die Zentrale →
               </button>
@@ -4149,7 +4163,7 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
               style={{ width: '100%', padding: '0.8rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.92rem', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(255,140,66,0.3)' }}>
               Ja, ich kenne jemanden →
             </button>
-            <button type="button" onClick={geheZuAdmin}
+            <button type="button" onClick={() => geheZuAdmin()}
               style={{ width: '100%', padding: '0.65rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', color: 'rgba(255,255,255,0.35)', cursor: 'pointer', fontSize: '0.82rem', fontFamily: 'inherit' }}>
               Weiter in die Zentrale →
             </button>
