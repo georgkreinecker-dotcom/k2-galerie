@@ -3923,7 +3923,13 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
     // Gemeinsam
     kontakt:    `Letzte Frage –\nwie sollen Interessierte\ndich am liebsten erreichen?`,
     abschluss:  baueDynamischenAbschluss(name, antworten),
-    vorhang: '',
+    vorhang: pfad === 'gemeinschaft'
+      ? `Danke, ${name || 'schön dass ihr hier seid'}! 🏛️\n\nIch zeige euch jetzt\neure Vereinsplattform –\nSchritt für Schritt.`
+      : pfad === 'atelier'
+      ? `Danke, ${name || 'willkommen'}! 🏢\n\nIch zeige dir jetzt\ndein Studio-Werkzeug –\nSchritt für Schritt.`
+      : pfad === 'entdecker'
+      ? `Schön dass du da bist, ${name || 'neugieriger Geist'}! 🌱\n\nIch zeige dir jetzt\nwas alles möglich ist –\nSchritt für Schritt.`
+      : `Danke, ${name || 'schön dass du hier bist'}! 🎨\n\nIch zeige dir jetzt\ndeine Galerie –\nSchritt für Schritt.`,
     // Tour-Schritte
     tour_galerie:   `🎨 Deine Galerie ist live.\n\nJetzt ist sie bereit für deine Werke –\nprofessionell, auf jedem Gerät.\nIm Admin kannst du gleich loslegen.`,
     tour_werke:     `🖼️ Meine Werke – das Herzstück.\n\nFoto hochladen, Titel, Preis, Material –\njedes Werk hat seinen eigenen Platz.\nMit einem Klick veröffentlicht.`,
@@ -4080,6 +4086,14 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
   const istTour = TOUR_SCHRITTE.includes(schritt)
   const istAbschluss = schritt === 'abschluss'
   const showFortschritt = schritt !== 'empfehlung' && schritt !== 'vorhang' && !istTour
+  const istVereinsPfad = pfad === 'gemeinschaft'
+  const guideLabel = istVereinsPfad ? 'Dein Vereins-Guide' : 'Dein Galerie-Guide'
+  // Tour-Fortschritt: welcher Schritt in der aktuellen Tour
+  const tourSchritteListe = istVereinsPfad
+    ? ['tour_v_galerie','tour_v_mitglieder','tour_v_events','tour_v_dokumente','tour_v_kassa','tour_v_lizenz','tour_v_entscheidung'] as GuideSchritt[]
+    : ['tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','tour_lizenz','tour_entscheidung'] as GuideSchritt[]
+  const tourPos = istTour ? tourSchritteListe.indexOf(schritt) + 1 : 0
+  const tourGesamt = tourSchritteListe.length
 
   const avatarGrad =
     pfad === 'gemeinschaft' ? 'linear-gradient(135deg, #1e5cb5, #42a4ff)' :
@@ -4100,12 +4114,23 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
 
       <div style={{ background: 'rgba(14,8,4,0.97)', border: '1px solid rgba(255,140,66,0.35)', borderRadius: '20px', padding: '1.25rem', boxShadow: '0 16px 56px rgba(0,0,0,0.55)', backdropFilter: 'blur(16px)', overflowY: istAbschluss ? 'auto' : 'visible', maxHeight: istAbschluss ? 'calc(100vh - 3rem)' : 'none' }}>
 
-        {/* Fortschritts-Balken */}
+        {/* Fortschritts-Balken – Fragen-Phase */}
         {showFortschritt && (
           <div style={{ display: 'flex', gap: '0.3rem', marginBottom: '1rem' }}>
             {Array.from({ length: gesamtSchritte }).map((_, i) => (
-              <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: i < fortschritt ? '#ff8c42' : i === fortschritt ? 'rgba(255,140,66,0.5)' : 'rgba(255,255,255,0.1)', transition: 'all 0.3s' }} />
+              <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: i < fortschritt ? (istVereinsPfad ? '#42a4ff' : '#ff8c42') : i === fortschritt ? (istVereinsPfad ? 'rgba(66,164,255,0.5)' : 'rgba(255,140,66,0.5)') : 'rgba(255,255,255,0.1)', transition: 'all 0.3s' }} />
             ))}
+          </div>
+        )}
+        {/* Tour-Fortschrittsanzeige – Tour-Phase */}
+        {istTour && tourPos > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.85rem' }}>
+            <div style={{ display: 'flex', gap: '0.25rem', flex: 1 }}>
+              {tourSchritteListe.map((_, i) => (
+                <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: i < tourPos ? (istVereinsPfad ? '#42a4ff' : '#ff8c42') : i === tourPos - 1 ? (istVereinsPfad ? 'rgba(66,164,255,0.6)' : 'rgba(255,140,66,0.6)') : 'rgba(255,255,255,0.1)', transition: 'all 0.3s' }} />
+              ))}
+            </div>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap' as const }}>{tourPos} / {tourGesamt}</div>
           </div>
         )}
 
@@ -4115,7 +4140,7 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
             {avatarEmoji}
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '0.65rem', color: 'rgba(255,140,66,0.5)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' as const, marginBottom: '0.25rem' }}>Dein Galerie-Guide</div>
+            <div style={{ fontSize: '0.65rem', color: istVereinsPfad ? 'rgba(66,164,255,0.6)' : 'rgba(255,140,66,0.5)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' as const, marginBottom: '0.25rem' }}>{guideLabel}</div>
             <div style={{ fontSize: '0.93rem', color: '#fff8f0', lineHeight: 1.65, whiteSpace: 'pre-line' as const, minHeight: '2.8rem' }}>
               {volltext.slice(0, textIdx)}
               {!istFertig && <span style={{ animation: 'blink 0.7s infinite', display: 'inline-block', marginLeft: 1 }}>▌</span>}
@@ -4130,9 +4155,9 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
             {aktuelleOptionen.map((opt: Opt) => (
               <button key={opt.wert} type="button"
                 onClick={() => weiterNachAuswahl(opt.wert)}
-                style={{ padding: '0.6rem 0.4rem', background: 'rgba(255,140,66,0.07)', border: '1px solid rgba(255,140,66,0.22)', borderRadius: '10px', color: '#fff8f0', cursor: 'pointer', fontSize: '0.8rem', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: '0.18rem', transition: 'all 0.15s', fontFamily: 'inherit' }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,140,66,0.18)'; e.currentTarget.style.borderColor = 'rgba(255,140,66,0.5)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,140,66,0.07)'; e.currentTarget.style.borderColor = 'rgba(255,140,66,0.22)' }}
+                style={{ padding: '0.6rem 0.4rem', background: istVereinsPfad ? 'rgba(66,164,255,0.07)' : 'rgba(255,140,66,0.07)', border: istVereinsPfad ? '1px solid rgba(66,164,255,0.22)' : '1px solid rgba(255,140,66,0.22)', borderRadius: '10px', color: '#fff8f0', cursor: 'pointer', fontSize: '0.8rem', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: '0.18rem', transition: 'all 0.15s', fontFamily: 'inherit' }}
+                onMouseEnter={e => { e.currentTarget.style.background = istVereinsPfad ? 'rgba(66,164,255,0.18)' : 'rgba(255,140,66,0.18)'; e.currentTarget.style.borderColor = istVereinsPfad ? 'rgba(66,164,255,0.5)' : 'rgba(255,140,66,0.5)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = istVereinsPfad ? 'rgba(66,164,255,0.07)' : 'rgba(255,140,66,0.07)'; e.currentTarget.style.borderColor = istVereinsPfad ? 'rgba(66,164,255,0.22)' : 'rgba(255,140,66,0.22)' }}
               >
                 <span style={{ fontSize: '1.15rem' }}>{opt.emoji}</span>
                 <span style={{ lineHeight: 1.3, textAlign: 'center' as const }}>{opt.label}</span>
@@ -4146,6 +4171,14 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
           <button type="button" onClick={() => setSchritt('wer_bist_du')}
             style={{ width: '100%', marginTop: '0.75rem', padding: '0.65rem', background: 'rgba(255,140,66,0.12)', border: '1px solid rgba(255,140,66,0.3)', borderRadius: '10px', color: '#ff8c42', fontWeight: 600, cursor: 'pointer', fontSize: '0.88rem', fontFamily: 'inherit' }}>
             Los geht's →
+          </button>
+        )}
+
+        {/* Vorhang: Übergang zur Tour */}
+        {istFertig && schritt === 'vorhang' && (
+          <button type="button" onClick={() => setSchritt(naechsterSchritt(schritt, antworten))}
+            style={{ width: '100%', marginTop: '0.75rem', padding: '0.75rem', background: pfad === 'gemeinschaft' ? 'linear-gradient(135deg, #1e5cb5, #42a4ff)' : pfad === 'atelier' ? 'linear-gradient(135deg, #1e7b5c, #42ffb5)' : pfad === 'entdecker' ? 'linear-gradient(135deg, #7b5ce0, #c084fc)' : 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.92rem', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
+            Zeig mir alles →
           </button>
         )}
 
