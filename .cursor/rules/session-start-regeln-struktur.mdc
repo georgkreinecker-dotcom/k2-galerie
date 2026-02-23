@@ -18,6 +18,7 @@ Georg hat sich an klare Regeln und Strukturen angepasst und erwartet, dass die A
    - **k2team-handbuch/00-INDEX.md** – Inhaltsverzeichnis und Einleitung (wo was liegt)
    - **docs/STRUKTUR-HANDELN-QUELLEN.md** – Kurzreferenz Quellen und Regel
    - **docs/GRAFIKER-TISCH-NOTIZEN.md** – Georgs offene Wünsche vom Grafiker-Tisch (Tab „Offen"). Wenn dort Einträge stehen: **sofort erwähnen und umsetzen**, bevor mit der eigentlichen Aufgabe begonnen wird.
+   - **docs/GELOESTE-BUGS.md** – Alle bereits behobenen Bugs. **PFLICHT:** Vor jeder Code-Änderung prüfen ob der Bereich betroffen ist. Niemals einen bereits gelösten Bug wieder einbauen.
 
 2. **Regeln:** Alle Dateien unter **.cursor/rules/*.mdc** mit `alwaysApply: true` werden vom System geladen. Zusätzlich die obigen Projekt-Dateien einlesen, damit **Struktur** (AGB = mök2, Handbuch = wichtige Sachen, einheitlich für K2/ök2/VK2/Tom) und **Orientierung** (HAUS-INDEX, Handbuch-Index, docs) aktiv sind.
 
