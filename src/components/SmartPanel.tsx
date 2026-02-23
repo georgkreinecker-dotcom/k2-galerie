@@ -212,6 +212,99 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
         </ul>
       </div>
 
+      {/* Vermächtnis – Der Schlüssel zum Raum */}
+      <div style={{ borderTop: '1px solid rgba(95,251,241,0.15)', paddingTop: '1rem' }}>
+        <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem', color: '#c4b5fd', fontWeight: 600 }}>
+          🏛️ Mein Vermächtnis
+        </h4>
+        <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.75rem', color: '#8fa0c9', lineHeight: 1.5 }}>
+          Dieser digitale Raum ist Georgs bleibendes Werk – für Kinder, Enkel und alle die nach ihm kommen.
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            const w = window.open('', '_blank')
+            if (!w) return
+            w.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="utf-8">
+<title>Georgs Raum – Der Schlüssel</title>
+<style>
+  @media print { @page { size: A4; margin: 18mm; } body { -webkit-print-color-adjust: exact; } }
+  body { font-family: Georgia, serif; color: #111; max-width: 600px; margin: 0 auto; padding: 30px 20px; }
+  h1 { font-size: 1.8rem; color: #111; margin-bottom: 0.2rem; }
+  .sub { font-size: 1rem; color: #555; font-style: italic; margin-bottom: 1.5rem; }
+  .qr-box { text-align: center; margin: 1.5rem 0; }
+  .qr-box svg { width: 200px; height: 200px; }
+  .url { font-family: monospace; font-size: 0.9rem; background: #f5f5f5; padding: 0.6rem 1rem; border-radius: 6px; border: 1px solid #ddd; text-align: center; margin: 0.75rem 0; word-break: break-all; }
+  .motto { font-size: 1.1rem; font-style: italic; border-left: 4px solid #8b6914; padding-left: 1rem; margin: 1.25rem 0; color: #444; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 1.25rem 0; }
+  .text { font-size: 0.95rem; line-height: 1.75; color: #333; }
+  .text strong { color: #111; }
+  .hinweis { font-size: 0.85rem; color: #666; line-height: 1.65; margin-top: 1rem; background: #fafafa; padding: 0.75rem 1rem; border-radius: 6px; border: 1px solid #eee; }
+  .footer { font-size: 0.75rem; color: #aaa; text-align: center; margin-top: 1.5rem; }
+</style>
+</head><body>
+
+<h1>&#127963; Georgs Raum</h1>
+<div class="sub">Der digitale Nachlass von Georg Kreinecker</div>
+
+<div class="qr-box">
+  <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://github.com/georgkreinecker-dotcom/k2-galerie" alt="QR-Code" width="200" height="200" style="border:1px solid #ddd;border-radius:8px;" />
+</div>
+
+<div class="url">https://github.com/georgkreinecker-dotcom/k2-galerie</div>
+
+<hr>
+
+<div class="motto">
+  &bdquo;Tue eine Sache &ndash; und du wirst die Kraft dazu haben.&ldquo;
+</div>
+
+<hr>
+
+<div class="text">
+  <p>Dieser QR-Code ist der <strong>Schlüssel zu einem digitalen Raum</strong> &ndash; einem Ort der niemals verschwindet.</p>
+
+  <p>Georg Kreinecker hat diesen Raum gebaut: als Elitesoldat und Yogalehrer, als Bauernsohn mit 12 Geschwistern, als Unternehmer und Gitarrist, als Mensch der Ideen einfach umsetzt &ndash; ohne Angst vor Fehlern.</p>
+
+  <p>In diesem Raum liegt sein <strong>Wissen, seine Werte und sein Lebenswerk</strong> &ndash; die K2 Galerie, sein letztes großes Projekt. Alles ist dokumentiert, strukturiert und zugänglich. Nichts davon geht verloren.</p>
+
+  <p>Das Fundament dieses Raumes ist ein kantisches Grundgesetz:<br>
+  <strong>Nichts Halbes. Nichts was Menschen schadet. Nur das Reine. Nur das Licht.</strong></p>
+</div>
+
+<div class="hinweis">
+  <strong>Für wer auch immer diesen Schlüssel findet:</strong><br><br>
+  Scanne den QR-Code oder tippe die Adresse in jeden Browser.<br>
+  Dort findest du die Datei <strong>EINGANG.md</strong> &ndash; sie erklärt alles was du brauchst.<br><br>
+  Du kannst in diesem Raum lesen, verstehen und auf Georgs Werk aufbauen.<br>
+  Der Raum wartet auf dich. Er wurde gebaut um zu bleiben.
+</div>
+
+<hr>
+<div class="footer">Georg Kreinecker &middot; K2 Galerie &middot; Erstellt 23.02.2026</div>
+
+<script>window.onload = () => window.print()</script>
+</body></html>`)
+            w.document.close()
+          }}
+          style={{
+            width: '100%',
+            padding: '0.7rem 1rem',
+            background: 'linear-gradient(135deg, rgba(196,181,253,0.15), rgba(167,139,250,0.1))',
+            border: '1px solid rgba(196,181,253,0.35)',
+            borderRadius: '8px',
+            color: '#c4b5fd',
+            fontWeight: 600,
+            fontSize: '0.88rem',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            textAlign: 'center'
+          }}
+        >
+          🖨️ Schlüssel drucken / für den Safe
+        </button>
+      </div>
+
       {/* APf-Navigation – Mission Control, Projekte, Zentrale Themen */}
       <div>
         <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }`}</style>
