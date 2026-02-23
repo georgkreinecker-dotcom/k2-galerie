@@ -657,6 +657,20 @@ function ScreenshotExportAdmin() {
     } catch (_) {}
   }, [])
 
+  // Guide-Navigation: wenn guidetab in URL, Tab direkt öffnen
+  React.useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      const gt = params.get('guidetab')
+      const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','design','einstellungen','assistent']
+      if (gt && validTabs.includes(gt)) {
+        setActiveTab(gt as any)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    } catch { /* ignore */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [window.location.search])
+
   // Vorname aus URL – kommt vom Guide (z.B. /admin?context=oeffentlich&vorname=Klein)
   const guideVorname = (() => {
     try { return new URLSearchParams(window.location.search).get('vorname') ?? '' } catch { return '' }
@@ -678,8 +692,18 @@ function ScreenshotExportAdmin() {
     } catch { return false }
   })()
 
-  // Klare Admin-Struktur: Werke | Eventplanung | Design | Einstellungen. Kasse = ein Button im Header, öffnet direkt den Shop.
-  const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'design' | 'einstellungen' | 'assistent'>(guideAssistent ? 'assistent' : 'werke')
+  // Klare Admin-Struktur: Werke | Eventplanung | Design | Einstellungen.
+  const initialTab = (() => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      const gt = params.get('guidetab')
+      const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','design','einstellungen','assistent'] as const
+      type AdminTab = typeof validTabs[number]
+      if (gt && validTabs.includes(gt as AdminTab)) return gt as AdminTab
+    } catch { /* ignore */ }
+    return guideAssistent ? 'assistent' : 'werke'
+  })()
+  const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'design' | 'einstellungen' | 'assistent'>(initialTab)
   const [guideBannerClosed, setGuideBannerClosed] = useState(false)
   const [guideBegleiterGeschlossen, setGuideBegleiterGeschlossen] = useState(false)
   const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>('events')
@@ -8115,15 +8139,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             {activeTab === 'werke' && (
               <div>
 
-                {/* Ruhige Willkommensfläche wenn Guide-Flow aktiv – Dialog führt alleine */}
-                {guideFlowAktiv && isOeffentlichAdminContext() && (
-                  <div style={{ textAlign: 'center', padding: '3rem 1.5rem 2rem', color: '#5c5650' }}>
-                    <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>👋</div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1c1a18', marginBottom: '0.4rem' }}>
-                      {guideVorname ? `Willkommen, ${guideVorname}!` : 'Willkommen!'}
-                    </div>
-                    <div style={{ fontSize: '0.9rem', lineHeight: 1.6, maxWidth: 320, margin: '0 auto', color: '#5c5650' }}>
-                      Dein Guide unten zeigt dir alles –<br />Schritt für Schritt, in Ruhe.
+                {/* Ruhige Willkommensfläche wenn Guide-Flow aktiv und kein Tab ausgewählt */}
+                {guideFlowAktiv && isOeffentlichAdminContext() && activeTab === 'werke' && (
+                  <div style={{ textAlign: 'center', padding: '2rem 1.5rem 1rem', color: '#5c5650' }}>
+                    <div style={{ fontSize: '0.85rem', color: '#b54a1e', fontWeight: 500 }}>
+                      👇 Schau dir die Werkverwaltung unten an – dein Guide erklärt sie dir.
                     </div>
                   </div>
                 )}
@@ -8483,8 +8503,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             />
           )}
 
-          {/* Werke verwalten – nur wenn kein Guide-Flow aktiv (dann zeigt der Dialog die Führung) */}
-          {activeTab === 'werke' && !guideFlowAktiv && (
+          {/* Werke verwalten – immer zeigen wenn Tab aktiv */}
+          {activeTab === 'werke' && (
             <section style={{
               background: s.bgCard,
               border: `1px solid ${s.accent}22`,
