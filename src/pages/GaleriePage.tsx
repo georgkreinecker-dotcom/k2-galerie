@@ -3662,6 +3662,179 @@ function baueDynamischenAbschluss(name: string, a: GuideAntworten): string {
   return `Danke, ${name}. ✨\n\nDeine Galerie ist bereit –\nwie aus Zauberhand.`
 }
 
+// ─── ErgebnisKarten ───────────────────────────────────────────────────────────
+// Zeigt nach dem Abschluss das persönliche Paket + die ganze System-Dimension
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface ErgebnisKarte {
+  emoji: string
+  titel: string
+  beschreibung: string
+  status: 'sofort' | 'bereit' | 'mehr' | 'lizenz'
+  statusLabel: string
+}
+
+function baueKarten(pfad: GuidePfad, a: GuideAntworten): { sofort: ErgebnisKarte[]; system: ErgebnisKarte[]; lizenz: ErgebnisKarte } {
+  const lizenzKarte: ErgebnisKarte = {
+    emoji: '💎',
+    titel: pfad === 'gemeinschaft' ? 'Vereinsplattform VK2' : pfad === 'atelier' ? 'Studio-Lizenz' : 'Pro-Galerie',
+    beschreibung: pfad === 'gemeinschaft'
+      ? 'Mitglieder-Profile, gemeinsame Events, Einladungen – ab € 12/Monat'
+      : pfad === 'atelier'
+      ? 'Mehrere Künstler:innen, gemeinsame Verwaltung, Studio-Auftritt – ab € 19/Monat'
+      : pfad === 'entdecker'
+      ? 'Wenn du mehr willst – jederzeit freischaltbar, kein Druck'
+      : 'Werkverzeichnis, Zertifikate, Events & mehr – ab € 9/Monat',
+    status: 'lizenz',
+    statusLabel: 'Wenn du mehr willst →',
+  }
+
+  if (pfad === 'gemeinschaft') {
+    return {
+      sofort: [
+        { emoji: '🏛️', titel: 'Eure Gemeinschafts-Galerie', beschreibung: 'Alle Werke unter einem Dach – jedes Mitglied mit eigenem Bereich', status: 'sofort', statusLabel: '✅ Sofort da' },
+        { emoji: '👤', titel: 'Mitglieder-Profile', beschreibung: 'Jede:r zeigt die eigenen Werke – mit Name, Foto, Kontakt', status: 'bereit', statusLabel: '🔓 Bereit' },
+        { emoji: '🎟️', titel: 'Events & Einladungen', beschreibung: 'Ausstellungen planen, Einladungen versenden, QR-Code für Gäste', status: 'bereit', statusLabel: '🔓 Bereit' },
+      ],
+      system: [
+        { emoji: '📄', titel: 'Presse & Dokumente', beschreibung: 'Pressemappe, Vita, Werkverzeichnis – für den Verein und jedes Mitglied', status: 'mehr', statusLabel: '📦 Im System' },
+        { emoji: '📱', titel: 'Auf jedem Gerät', beschreibung: 'Mac, Handy, Tablet – QR-Code für Besucher, immer aktuell', status: 'mehr', statusLabel: '📦 Im System' },
+        { emoji: '🔒', titel: 'Ihr entscheidet', beschreibung: 'Wer sieht was – öffentlich, nur für Mitglieder oder privat', status: 'mehr', statusLabel: '📦 Im System' },
+        { emoji: '🗂️', titel: 'Werkverzeichnis', beschreibung: 'Alle Werke mit Preis, Zertifikat, Provenienz – für jeden Verkauf', status: 'mehr', statusLabel: '📦 Im System' },
+      ],
+      lizenz: lizenzKarte,
+    }
+  }
+
+  if (pfad === 'atelier') {
+    const gemeinsam = a.atelier_struktur === 'gemeinsam' || a.atelier_struktur === 'beides'
+    return {
+      sofort: [
+        { emoji: '🏢', titel: gemeinsam ? 'Studio-Galerie für alle' : 'Individuelle Galerien', beschreibung: gemeinsam ? 'Eine gemeinsame Plattform, jede:r mit eigenem Profil' : 'Jede:r hat die eigene Galerie – unabhängig, professionell', status: 'sofort', statusLabel: '✅ Sofort da' },
+        { emoji: '📦', titel: 'Werkverzeichnis & Inventar', beschreibung: 'Alle Werke erfasst – mit Preis, Status, Provenienz, Zertifikat', status: 'bereit', statusLabel: '🔓 Bereit' },
+        { emoji: '📄', titel: 'Presse & Dokumente', beschreibung: 'Pressemappe, Vita, Werkverzeichnis – mit einem Klick drucken', status: 'bereit', statusLabel: '🔓 Bereit' },
+      ],
+      system: [
+        { emoji: '🎟️', titel: 'Events & Ausstellungen', beschreibung: 'Events planen, Einladungen versenden, Gästeliste, QR-Code', status: 'mehr', statusLabel: '📦 Im System' },
+        { emoji: '📱', titel: 'Auf jedem Gerät', beschreibung: 'Mac, Handy, Tablet – QR-Code für Besucher, immer aktuell', status: 'mehr', statusLabel: '📦 Im System' },
+        { emoji: '🔒', titel: 'Datenschutz & Kontrolle', beschreibung: 'Wer sieht was – öffentlich, nur Studio-intern oder privat', status: 'mehr', statusLabel: '📦 Im System' },
+        { emoji: '💰', titel: 'Kassa & Verkauf', beschreibung: 'Verkauf direkt in der Galerie – Beleg, Kassa, Übersicht', status: 'mehr', statusLabel: '📦 Im System' },
+      ],
+      lizenz: lizenzKarte,
+    }
+  }
+
+  if (pfad === 'entdecker') {
+    return {
+      sofort: [
+        { emoji: '🎨', titel: 'Deine Galerie', beschreibung: 'Ein Platz für alles was du schaffst – so wie du es willst', status: 'sofort', statusLabel: '✅ Sofort da' },
+        { emoji: '📱', titel: 'Auf jedem Gerät', beschreibung: 'Zeig deinen QR-Code – andere sehen deine Galerie sofort', status: 'bereit', statusLabel: '🔓 Bereit' },
+      ],
+      system: [
+        { emoji: '📄', titel: 'Vita & Dokumente', beschreibung: 'Wenn du sie brauchst – ein Klick und alles ist bereit', status: 'mehr', statusLabel: '📦 Wartet auf dich' },
+        { emoji: '🎟️', titel: 'Events & Einladungen', beschreibung: 'Wenn du mal ausstellen willst – das System kann das', status: 'mehr', statusLabel: '📦 Wartet auf dich' },
+        { emoji: '🗂️', titel: 'Werkverzeichnis', beschreibung: 'Alle Werke sauber erfasst – wenn du bereit bist', status: 'mehr', statusLabel: '📦 Wartet auf dich' },
+      ],
+      lizenz: lizenzKarte,
+    }
+  }
+
+  // Pfad Künstler:in – Standard + spezifisch nach Ziel
+  const ziel = a.ziel_kuenstler ?? ''
+  const erfahrung = a.erfahrung ?? ''
+  return {
+    sofort: [
+      { emoji: '🎨', titel: 'Deine Galerie', beschreibung: 'Professionell, sofort fertig – auf jedem Gerät sichtbar', status: 'sofort', statusLabel: '✅ Sofort da' },
+      { emoji: '📄', titel: 'Deine Vita', beschreibung: erfahrung === 'etabliert' ? 'Mit Ausstellungs-Geschichte, Referenzen, Presse' : 'Dein künstlerischer Weg – ein Klick und druckfertig', status: 'bereit', statusLabel: '🔓 Bereit' },
+      { emoji: '📰', titel: 'Deine Pressemappe', beschreibung: 'Mit deinen Angaben vorbefüllt – für Galerien, Medien, Veranstalter', status: 'bereit', statusLabel: '🔓 Bereit' },
+    ],
+    system: [
+      { emoji: '🗂️', titel: 'Werkverzeichnis', beschreibung: ziel === 'verkauf' ? 'Alle Werke mit Preis, Status, Zertifikat – Verkauf sofort möglich' : 'Alle Werke erfasst – mit Preis, Provenienz, Zertifikat', status: 'mehr', statusLabel: '📦 Im System' },
+      { emoji: '🎟️', titel: 'Events & Einladungen', beschreibung: 'Ausstellungen planen, Einladungen versenden, QR-Code für Gäste', status: 'mehr', statusLabel: '📦 Im System' },
+      { emoji: '📱', titel: 'Auf jedem Gerät', beschreibung: 'Mac, Handy, Tablet – QR-Code scannen und sofort in der Galerie', status: 'mehr', statusLabel: '📦 Im System' },
+      { emoji: '🔒', titel: 'Du entscheidest', beschreibung: 'Wer sieht was – öffentlich, nur für Interessenten oder privat', status: 'mehr', statusLabel: '📦 Im System' },
+    ],
+    lizenz: lizenzKarte,
+  }
+}
+
+function ErgebnisKarten({ pfad, antworten, onWeiter }: { pfad: GuidePfad; antworten: GuideAntworten; onWeiter: () => void }) {
+  const [aufgeklappt, setAufgeklappt] = useState(false)
+  const karten = baueKarten(pfad, antworten)
+
+  const statusFarbe = (s: ErgebnisKarte['status']) => {
+    if (s === 'sofort') return { bg: 'rgba(134,239,172,0.12)', border: 'rgba(134,239,172,0.35)', badge: '#86efac' }
+    if (s === 'bereit') return { bg: 'rgba(255,140,66,0.1)', border: 'rgba(255,140,66,0.3)', badge: '#ff8c42' }
+    if (s === 'mehr')   return { bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.1)', badge: 'rgba(255,255,255,0.35)' }
+    return { bg: 'rgba(251,191,36,0.08)', border: 'rgba(251,191,36,0.25)', badge: '#fbbf24' }
+  }
+
+  return (
+    <div style={{ marginTop: '0.5rem' }}>
+      {/* Sofort-verfügbare Karten */}
+      <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.4rem', marginBottom: '0.6rem' }}>
+        {karten.sofort.map((k, i) => {
+          const f = statusFarbe(k.status)
+          return (
+            <div key={i} style={{ background: f.bg, border: `1px solid ${f.border}`, borderRadius: '10px', padding: '0.65rem 0.85rem', display: 'flex', gap: '0.65rem', alignItems: 'flex-start' }}>
+              <span style={{ fontSize: '1.25rem', flexShrink: 0, lineHeight: 1 }}>{k.emoji}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '0.4rem', flexWrap: 'wrap' as const }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff8f0' }}>{k.titel}</span>
+                  <span style={{ fontSize: '0.68rem', color: f.badge, fontWeight: 600, flexShrink: 0 }}>{k.statusLabel}</span>
+                </div>
+                <div style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.4, marginTop: '0.15rem' }}>{k.beschreibung}</div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* System-Dimension aufklappen */}
+      <button type="button" onClick={() => setAufgeklappt(v => !v)}
+        style={{ width: '100%', padding: '0.55rem', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', marginBottom: aufgeklappt ? '0.5rem' : '0.6rem' }}>
+        <span>{aufgeklappt ? '▲' : '▼'}</span>
+        {aufgeklappt ? 'Weniger anzeigen' : `Das System kann noch mehr für dich →`}
+      </button>
+
+      {aufgeklappt && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem', marginBottom: '0.6rem' }}>
+          {karten.system.map((k, i) => {
+            const f = statusFarbe(k.status)
+            return (
+              <div key={i} style={{ background: f.bg, border: `1px solid ${f.border}`, borderRadius: '10px', padding: '0.6rem 0.75rem' }}>
+                <div style={{ fontSize: '1.1rem', marginBottom: '0.2rem' }}>{k.emoji}</div>
+                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff8f0', marginBottom: '0.15rem' }}>{k.titel}</div>
+                <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.35 }}>{k.beschreibung}</div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Lizenz-Karte – ganz leise */}
+      {aufgeklappt && (
+        <div style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.18)', borderRadius: '10px', padding: '0.65rem 0.85rem', display: 'flex', gap: '0.65rem', alignItems: 'flex-start', marginBottom: '0.6rem' }}>
+          <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{karten.lizenz.emoji}</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '0.4rem' }}>
+              <span style={{ fontSize: '0.83rem', fontWeight: 700, color: 'rgba(251,191,36,0.8)' }}>{karten.lizenz.titel}</span>
+              <span style={{ fontSize: '0.68rem', color: 'rgba(251,191,36,0.5)', fontWeight: 600 }}>{karten.lizenz.statusLabel}</span>
+            </div>
+            <div style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.35)', lineHeight: 1.4, marginTop: '0.15rem' }}>{karten.lizenz.beschreibung}</div>
+          </div>
+        </div>
+      )}
+
+      {/* Weiter-Button */}
+      <button type="button" onClick={onWeiter}
+        style={{ width: '100%', padding: '0.8rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(255,140,66,0.35)' }}>
+        ✨ Galerie erkunden
+      </button>
+    </div>
+  )
+}
+
 function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: () => void }) {
   const [schritt, setSchritt] = useState<GuideSchritt>('begruessung')
   const [antworten, setAntworten] = useState<GuideAntworten>(ladeGuideAntworten)
@@ -3829,14 +4002,16 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
     pfad === 'atelier'      ? '🏢' :
     pfad === 'entdecker'    ? '🌱' : '👨‍🎨'
 
+  const istAbschluss = schritt === 'abschluss'
+
   return (
-    <div style={{ position: 'fixed', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)', zIndex: 10000, width: 'min(440px, calc(100vw - 2rem))', animation: 'guideEin 0.4s ease' }}>
+    <div style={{ position: 'fixed', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)', zIndex: 10000, width: istAbschluss ? 'min(480px, calc(100vw - 1rem))' : 'min(440px, calc(100vw - 2rem))', animation: 'guideEin 0.4s ease', transition: 'width 0.3s ease', maxHeight: istAbschluss ? 'calc(100vh - 3rem)' : 'auto', display: 'flex', flexDirection: 'column' as const }}>
       <style>{`
         @keyframes guideEin { from{opacity:0;transform:translateX(-50%) translateY(14px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
       `}</style>
 
-      <div style={{ background: 'rgba(14,8,4,0.97)', border: '1px solid rgba(255,140,66,0.35)', borderRadius: '20px', padding: '1.25rem', boxShadow: '0 16px 56px rgba(0,0,0,0.55)', backdropFilter: 'blur(16px)' }}>
+      <div style={{ background: 'rgba(14,8,4,0.97)', border: '1px solid rgba(255,140,66,0.35)', borderRadius: '20px', padding: '1.25rem', boxShadow: '0 16px 56px rgba(0,0,0,0.55)', backdropFilter: 'blur(16px)', overflowY: istAbschluss ? 'auto' : 'visible', maxHeight: istAbschluss ? 'calc(100vh - 3rem)' : 'none' }}>
 
         {/* Fortschritts-Balken */}
         {showFortschritt && (
@@ -3887,12 +4062,9 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
           </button>
         )}
 
-        {/* Abschluss → Empfehlung */}
+        {/* Abschluss → Ergebnis-Karten + dann Empfehlung */}
         {istFertig && schritt === 'abschluss' && (
-          <button type="button" onClick={() => setSchritt('empfehlung')}
-            style={{ width: '100%', padding: '0.8rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(255,140,66,0.35)' }}>
-            ✨ Galerie erkunden
-          </button>
+          <ErgebnisKarten pfad={pfad} antworten={antworten} onWeiter={() => setSchritt('empfehlung')} />
         )}
 
         {/* Empfehlungs-Moment – allerletzter Schritt, sehr vorsichtig */}
