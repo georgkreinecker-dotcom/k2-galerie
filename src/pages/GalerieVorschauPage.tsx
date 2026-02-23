@@ -795,9 +795,10 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   }
 
   // PROFESSIONELL: Lade Werke aus Supabase (primär) oder localStorage (Fallback)
-  // musterOnly (ök2): keine echten Daten laden
+  // musterOnly (ök2) und vk2: keine K2-Daten laden
   useEffect(() => {
     if (musterOnly) return () => {}
+    if (vk2) return () => {}
     let isMounted = true
     
     // Backup beim Start erstellen – NUR LESEN, nie still filtern/zurückschreiben
@@ -1291,7 +1292,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   */
   
   // Werke vom Server laden (nur wenn wirklich keine vorhanden sind)
+  // VK2 und musterOnly: keine K2-Daten laden
   useEffect(() => {
+    if (musterOnly || vk2) return
     const loadData = async (forceLocalStorage = false) => {
       setIsLoading(true)
       setLoadStatus({ message: '🔄 Lade Werke...', success: false })
