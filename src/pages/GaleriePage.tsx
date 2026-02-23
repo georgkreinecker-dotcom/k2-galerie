@@ -3758,8 +3758,7 @@ function baueKarten(pfad: GuidePfad, a: GuideAntworten): { sofort: ErgebnisKarte
   }
 }
 
-function ErgebnisKarten({ pfad, antworten, onWeiter }: { pfad: GuidePfad; antworten: GuideAntworten; onWeiter: () => void }) {
-  const [aufgeklappt, setAufgeklappt] = useState(false)
+function ErgebnisKarten({ pfad, antworten, aufgeklappt, onAufklappen, onWeiter }: { pfad: GuidePfad; antworten: GuideAntworten; aufgeklappt: boolean; onAufklappen: () => void; onWeiter: () => void }) {
   const karten = baueKarten(pfad, antworten)
 
   const statusFarbe = (s: ErgebnisKarte['status']) => {
@@ -3791,7 +3790,7 @@ function ErgebnisKarten({ pfad, antworten, onWeiter }: { pfad: GuidePfad; antwor
       </div>
 
       {/* System-Dimension aufklappen */}
-      <button type="button" onClick={() => setAufgeklappt(v => !v)}
+      <button type="button" onClick={onAufklappen}
         style={{ width: '100%', padding: '0.55rem', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', marginBottom: aufgeklappt ? '0.5rem' : '0.6rem' }}>
         <span>{aufgeklappt ? '▲' : '▼'}</span>
         {aufgeklappt ? 'Weniger anzeigen' : `Das System kann noch mehr für dich →`}
@@ -3840,6 +3839,7 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
   const [antworten, setAntworten] = useState<GuideAntworten>(ladeGuideAntworten)
   const [textIdx, setTextIdx] = useState(0)
   const [sichtbar, setSichtbar] = useState(true)
+  const [kartenAufgeklappt, setKartenAufgeklappt] = useState(false)
 
   const pfad = (antworten.pfad ?? '') as GuidePfad
 
@@ -4064,7 +4064,7 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
 
         {/* Abschluss → Ergebnis-Karten + dann Empfehlung */}
         {istFertig && schritt === 'abschluss' && (
-          <ErgebnisKarten pfad={pfad} antworten={antworten} onWeiter={() => setSchritt('empfehlung')} />
+          <ErgebnisKarten pfad={pfad} antworten={antworten} aufgeklappt={kartenAufgeklappt} onAufklappen={() => setKartenAufgeklappt(v => !v)} onWeiter={() => setSchritt('empfehlung')} />
         )}
 
         {/* Empfehlungs-Moment – allerletzter Schritt, sehr vorsichtig */}
