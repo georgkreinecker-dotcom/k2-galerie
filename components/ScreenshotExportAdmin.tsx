@@ -7959,7 +7959,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             type="button"
             onClick={() => {
               try { sessionStorage.removeItem('k2-hub-from') } catch (_) {}
-              window.location.href = '/entdecken?step=hub'
+              window.location.href = isVk2AdminContext()
+                ? '/entdecken?step=hub&q1=verein'
+                : '/entdecken?step=hub'
             }}
             style={{
               background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.4)',

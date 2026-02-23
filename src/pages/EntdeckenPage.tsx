@@ -575,6 +575,7 @@ function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, 
 export default function EntdeckenPage() {
   const navigate = useNavigate()
   // ?step=hub → direkt zum Hub springen (z.B. Zurück-Button vom Admin)
+  // ?q1=verein → Vereins-Antwort vorausfüllen
   const initialStep: Step = (() => {
     try {
       const p = new URLSearchParams(window.location.search).get('step')
@@ -582,8 +583,11 @@ export default function EntdeckenPage() {
     } catch (_) {}
     return 'hero'
   })()
+  const initialQ1 = (() => {
+    try { return new URLSearchParams(window.location.search).get('q1') ?? '' } catch (_) { return '' }
+  })()
   const [step, setStep] = useState<Step>(initialStep)
-  const [answers, setAnswers] = useState<Answers>({ q1: '', q2: '', q3: '' })
+  const [answers, setAnswers] = useState<Answers>({ q1: initialQ1, q2: '', q3: '' })
   const [notizOffen, setNotizOffen] = useState(false)
   const [notizText, setNotizText] = useState('')
   const [notizGespeichert, setNotizGespeichert] = useState(false)
