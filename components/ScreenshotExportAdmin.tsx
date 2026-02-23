@@ -10258,7 +10258,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     type="button"
                     onClick={() => {
                       saveAllForVorschau()
-                      const seite1Route = isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie
+                      const seite1Route = isVk2AdminContext() ? PROJECT_ROUTES.vk2.galerie : isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie
                       requestAnimationFrame(() => { navigate(seite1Route + '?vorschau=1') })
                     }}
                     style={{ padding: '0.5rem 0.9rem', fontSize: '0.9rem', background: `${s.accent}20`, border: `1px solid ${s.accent}66`, borderRadius: 8, color: s.accent, fontWeight: 500, cursor: 'pointer' }}
@@ -10269,7 +10269,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     type="button"
                     onClick={() => {
                       saveAllForVorschau()
-                      const vorschauRoute = isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerieVorschau
+                      const vorschauRoute = isVk2AdminContext() ? PROJECT_ROUTES.vk2.galerieVorschau : isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerieVorschau
                       requestAnimationFrame(() => { navigate(vorschauRoute + '?vorschau=1') })
                     }}
                     style={{ padding: '0.5rem 0.9rem', fontSize: '0.9rem', background: `${s.accent}20`, border: `1px solid ${s.accent}66`, borderRadius: 8, color: s.accent, fontWeight: 500, cursor: 'pointer' }}
