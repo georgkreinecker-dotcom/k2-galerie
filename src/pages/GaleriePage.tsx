@@ -2686,7 +2686,16 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 fontWeight: 300,
                 maxWidth: '620px',
               }}>
-                {musterOnly ? MUSTER_TEXTE.welcomeText : (galerieTexts.welcomeIntroText?.trim() || (vk2 ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.' : 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.'))}
+                {(() => {
+                  if (musterOnly) return MUSTER_TEXTE.welcomeText
+                  const k2DefaultIntro = 'Ein Neuanfang mit Leidenschaft'
+                  const intro = galerieTexts.welcomeIntroText?.trim() || ''
+                  // VK2: K2-Standardtext nie anzeigen – immer eigenen VK2-Text
+                  if (vk2 && (!intro || intro.startsWith(k2DefaultIntro))) {
+                    return 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.'
+                  }
+                  return intro || (vk2 ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.' : 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.')
+                })()}
               </p>
             </div>
           )}
@@ -2704,7 +2713,15 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               fontWeight: 300,
               margin: 0,
             }}>
-              {musterOnly ? MUSTER_TEXTE.welcomeText : (galerieTexts.welcomeIntroText?.trim() || (vk2 ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.' : 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.'))}
+              {(() => {
+                if (musterOnly) return MUSTER_TEXTE.welcomeText
+                const k2DefaultIntro = 'Ein Neuanfang mit Leidenschaft'
+                const intro = galerieTexts.welcomeIntroText?.trim() || ''
+                if (vk2 && (!intro || intro.startsWith(k2DefaultIntro))) {
+                  return 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.'
+                }
+                return intro || (vk2 ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.' : 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.')
+              })()}
             </p>
           </section>
           )}
