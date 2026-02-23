@@ -3479,21 +3479,20 @@ interface GuideAntworten {
   ziel?: string
   ausstellungen?: string
   technik?: string
+  kontakt?: string
 }
 
 function ladeGuideAntworten(): GuideAntworten {
-  try {
-    const v = localStorage.getItem(GUIDE_KEY)
-    if (v) return JSON.parse(v)
-  } catch (_) {}
+  try { const v = localStorage.getItem(GUIDE_KEY); if (v) return JSON.parse(v) } catch (_) {}
   return {}
 }
-
 function speichereGuideAntworten(a: GuideAntworten) {
   try { localStorage.setItem(GUIDE_KEY, JSON.stringify(a)) } catch (_) {}
 }
 
-type GuideSchritt = 'begruessung' | 'kunstart' | 'erfahrung' | 'ziel' | 'abschluss'
+type GuideSchritt = 'begruessung' | 'kunstart' | 'erfahrung' | 'ziel' | 'ausstellungen' | 'technik' | 'kontakt' | 'abschluss'
+
+const GUIDE_REIHENFOLGE: GuideSchritt[] = ['begruessung', 'kunstart', 'erfahrung', 'ziel', 'ausstellungen', 'technik', 'kontakt', 'abschluss']
 
 function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: () => void }) {
   const [schritt, setSchritt] = useState<GuideSchritt>('begruessung')
@@ -3502,26 +3501,16 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
   const [sichtbar, setSichtbar] = useState(true)
 
   const texte: Record<GuideSchritt, string> = {
-    begruessung: `Willkommen in deiner Galerie, ${name}! 👋\nSchau dich um – das alles gehört dir.\nIch hab noch eine kurze Frage …`,
-    kunstart: `Was ist deine Kunst?\nEin paar Worte genügen –\nz.B. „Aquarell", „Keramik", „Fotografie" …`,
-    erfahrung: `Super! Seit wann schaffst du Kunst?\nSind es eher erste Schritte – oder hast du schon\nAusstellungen, Verkäufe, Auszeichnungen?`,
-    ziel: `Was ist dein wichtigstes Ziel?\nMehr Sichtbarkeit – Verkaufen –\noder einfach ein professioneller Auftritt?`,
-    abschluss: `Perfekt, ${name}. ✨\nIch hab alles notiert.\nBeim nächsten Besuch bereite ich\neine Vita und deine ersten Dokumente vor –\nwie aus Zauberhand.`,
+    begruessung:   `Willkommen in deiner Galerie, ${name}! 👋\nSchau dich um – das alles gehört dir.\nIch hab noch ein paar kurze Fragen …`,
+    kunstart:      `Was ist deine Kunst?\nWähle was am besten passt –\ndu kannst später alles verfeinern.`,
+    erfahrung:     `Schön! Seit wann schaffst du Kunst?\nErste Schritte – oder schon mit Erfahrung\nund ersten Erfolgen?`,
+    ziel:          `Was ist dein wichtigstes Ziel?\nWähle das was jetzt am meisten zählt.`,
+    ausstellungen: `Hast du schon ausgestellt?\nOder zeigst du deine Werke bisher\nnur privat?`,
+    technik:       `Mit welchen Materialien arbeitest du\nhauptsächlich?`,
+    kontakt:       `Wie sollen Interessenten\ndich am liebsten erreichen?`,
+    abschluss:     `Danke, ${name}. ✨\n\nIch habe alles was ich brauche.\nDeine Vita, deine Pressemappe und\ndein erstes Werkverzeichnis sind bereit –\nwie aus Zauberhand.`,
   }
 
-  const volltext = texte[schritt]
-
-  // Schreibmaschinen-Effekt
-  useEffect(() => { setTextIdx(0) }, [schritt])
-  useEffect(() => {
-    if (textIdx >= volltext.length) return
-    const t = setTimeout(() => setTextIdx(i => i + 1), 20)
-    return () => clearTimeout(t)
-  }, [textIdx, volltext])
-
-  const istFertig = textIdx >= volltext.length
-
-  // Auswahl-Optionen pro Schritt
   const optionen: Record<string, { emoji: string; label: string; wert: string }[]> = {
     kunstart: [
       { emoji: '🖌️', label: 'Malerei / Zeichnung', wert: 'malerei' },
@@ -3539,85 +3528,113 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
       { emoji: '💰', label: 'Werke verkaufen', wert: 'verkauf' },
       { emoji: '📄', label: 'Professioneller Auftritt', wert: 'auftritt' },
     ],
+    ausstellungen: [
+      { emoji: '🏛️', label: 'Ja, mehrmals', wert: 'mehrmals' },
+      { emoji: '🌱', label: 'Einmal oder zweimal', wert: 'wenige' },
+      { emoji: '🏠', label: 'Noch nicht – nur privat', wert: 'privat' },
+    ],
+    technik: [
+      { emoji: '🎨', label: 'Farbe auf Leinwand / Papier', wert: 'farbe' },
+      { emoji: '🏺', label: 'Ton, Stein, Holz', wert: 'material' },
+      { emoji: '📷', label: 'Kamera / Digital', wert: 'digital' },
+      { emoji: '🧵', label: 'Textil / Mixed Media', wert: 'mixed' },
+    ],
+    kontakt: [
+      { emoji: '📧', label: 'Per E-Mail', wert: 'email' },
+      { emoji: '📱', label: 'Per Telefon', wert: 'telefon' },
+      { emoji: '🌐', label: 'Über meine Website', wert: 'website' },
+      { emoji: '💬', label: 'Direkt über die Galerie', wert: 'galerie' },
+    ],
   }
+
+  const volltext = texte[schritt]
+
+  useEffect(() => { setTextIdx(0) }, [schritt])
+  useEffect(() => {
+    if (textIdx >= volltext.length) return
+    const t = setTimeout(() => setTextIdx(i => i + 1), 20)
+    return () => clearTimeout(t)
+  }, [textIdx, volltext])
+
+  const istFertig = textIdx >= volltext.length
 
   const weiterNachAuswahl = (key: keyof GuideAntworten, wert: string) => {
     const neu = { ...antworten, [key]: wert }
     setAntworten(neu)
     speichereGuideAntworten(neu)
-    const naechster: Record<GuideSchritt, GuideSchritt> = {
-      begruessung: 'kunstart',
-      kunstart: 'erfahrung',
-      erfahrung: 'ziel',
-      ziel: 'abschluss',
-      abschluss: 'abschluss',
-    }
-    setSchritt(naechster[schritt])
+    const idx = GUIDE_REIHENFOLGE.indexOf(schritt)
+    if (idx < GUIDE_REIHENFOLGE.length - 1) setSchritt(GUIDE_REIHENFOLGE[idx + 1])
   }
 
-  const schliessen = () => {
-    setSichtbar(false)
-    setTimeout(onDismiss, 350)
-  }
+  const schliessen = () => { setSichtbar(false); setTimeout(onDismiss, 350) }
 
   if (!sichtbar) return null
 
   const aktuelleOptionen = optionen[schritt] ?? []
+  const fortschritt = GUIDE_REIHENFOLGE.indexOf(schritt)
+  const gesamt = GUIDE_REIHENFOLGE.length - 1 // ohne 'abschluss' in Dots
 
   return (
     <div style={{ position: 'fixed', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)', zIndex: 10000, width: 'min(440px, calc(100vw - 2rem))', animation: 'guideEin 0.4s ease' }}>
       <style>{`
-        @keyframes guideEin { from { opacity:0; transform:translateX(-50%) translateY(14px) } to { opacity:1; transform:translateX(-50%) translateY(0) } }
+        @keyframes guideEin { from{opacity:0;transform:translateX(-50%) translateY(14px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
       `}</style>
 
       <div style={{ background: 'rgba(14,8,4,0.97)', border: '1px solid rgba(255,140,66,0.35)', borderRadius: '20px', padding: '1.25rem', boxShadow: '0 16px 56px rgba(0,0,0,0.55)', backdropFilter: 'blur(16px)' }}>
 
-        {/* Header */}
-        <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'flex-start', marginBottom: aktuelleOptionen.length ? '1rem' : 0 }}>
-          <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'linear-gradient(135deg, #b54a1e, #ff8c42)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0, boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }}>
+        {/* Fortschritts-Balken oben */}
+        <div style={{ display: 'flex', gap: '0.3rem', marginBottom: '1rem' }}>
+          {GUIDE_REIHENFOLGE.slice(0, gesamt).map((_, i) => (
+            <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: i < fortschritt ? '#ff8c42' : i === fortschritt ? 'rgba(255,140,66,0.5)' : 'rgba(255,255,255,0.1)', transition: 'all 0.3s' }} />
+          ))}
+        </div>
+
+        {/* Avatar + Text */}
+        <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'flex-start', marginBottom: aktuelleOptionen.length || schritt === 'abschluss' ? '1rem' : 0 }}>
+          <div style={{ width: 46, height: 46, borderRadius: '50%', background: 'linear-gradient(135deg, #b54a1e, #ff8c42)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', flexShrink: 0, boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }}>
             👨‍🎨
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '0.68rem', color: 'rgba(255,140,66,0.55)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Dein Galerie-Guide</div>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(255,140,66,0.5)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Dein Galerie-Guide</div>
             <div style={{ fontSize: '0.93rem', color: '#fff8f0', lineHeight: 1.65, whiteSpace: 'pre-line', minHeight: '2.8rem' }}>
               {volltext.slice(0, textIdx)}
               {!istFertig && <span style={{ animation: 'blink 0.7s infinite', display: 'inline-block', marginLeft: 1 }}>▌</span>}
             </div>
           </div>
-          <button type="button" onClick={schliessen} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: '1rem', padding: '0.1rem 0.3rem', flexShrink: 0, lineHeight: 1 }} title="Guide schließen">✕</button>
+          <button type="button" onClick={schliessen} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.18)', cursor: 'pointer', fontSize: '1rem', padding: '0.1rem 0.3rem', flexShrink: 0 }} title="Überspringen">✕</button>
         </div>
 
-        {/* Antwort-Buttons – erscheinen erst wenn Text fertig */}
+        {/* Auswahl-Buttons */}
         {istFertig && aktuelleOptionen.length > 0 && (
-          <div style={{ display: 'grid', gridTemplateColumns: aktuelleOptionen.length === 3 ? '1fr 1fr 1fr' : '1fr 1fr', gap: '0.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: aktuelleOptionen.length === 3 ? '1fr 1fr 1fr' : '1fr 1fr', gap: '0.45rem' }}>
             {aktuelleOptionen.map(opt => (
-              <button
-                key={opt.wert}
-                type="button"
+              <button key={opt.wert} type="button"
                 onClick={() => weiterNachAuswahl(schritt as keyof GuideAntworten, opt.wert)}
-                style={{ padding: '0.65rem 0.5rem', background: 'rgba(255,140,66,0.08)', border: '1px solid rgba(255,140,66,0.25)', borderRadius: '10px', color: '#fff8f0', cursor: 'pointer', fontSize: '0.82rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem', transition: 'all 0.15s', fontFamily: 'inherit' }}
+                style={{ padding: '0.6rem 0.4rem', background: 'rgba(255,140,66,0.07)', border: '1px solid rgba(255,140,66,0.22)', borderRadius: '10px', color: '#fff8f0', cursor: 'pointer', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.18rem', transition: 'all 0.15s', fontFamily: 'inherit' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,140,66,0.18)'; e.currentTarget.style.borderColor = 'rgba(255,140,66,0.5)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,140,66,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,140,66,0.25)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,140,66,0.07)'; e.currentTarget.style.borderColor = 'rgba(255,140,66,0.22)' }}
               >
-                <span style={{ fontSize: '1.2rem' }}>{opt.emoji}</span>
+                <span style={{ fontSize: '1.15rem' }}>{opt.emoji}</span>
                 <span style={{ lineHeight: 1.3, textAlign: 'center' }}>{opt.label}</span>
               </button>
             ))}
           </div>
         )}
 
-        {/* Abschluss-Button */}
-        {istFertig && schritt === 'abschluss' && (
-          <button type="button" onClick={schliessen} style={{ width: '100%', marginTop: '0.75rem', padding: '0.75rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem', fontFamily: 'inherit' }}>
-            ✨ Galerie erkunden
+        {/* Begrüßung: Weiter-Button */}
+        {istFertig && schritt === 'begruessung' && (
+          <button type="button" onClick={() => setSchritt('kunstart')}
+            style={{ width: '100%', marginTop: '0.75rem', padding: '0.65rem', background: 'rgba(255,140,66,0.12)', border: '1px solid rgba(255,140,66,0.3)', borderRadius: '10px', color: '#ff8c42', fontWeight: 600, cursor: 'pointer', fontSize: '0.88rem', fontFamily: 'inherit' }}>
+            Los geht's →
           </button>
         )}
 
-        {/* Begrüßung weiter-Button (keine Auswahl nötig) */}
-        {istFertig && schritt === 'begruessung' && (
-          <button type="button" onClick={() => setSchritt('kunstart')} style={{ width: '100%', marginTop: '0.75rem', padding: '0.65rem', background: 'rgba(255,140,66,0.12)', border: '1px solid rgba(255,140,66,0.3)', borderRadius: '10px', color: '#ff8c42', fontWeight: 600, cursor: 'pointer', fontSize: '0.88rem', fontFamily: 'inherit' }}>
-            Weiter →
+        {/* Abschluss */}
+        {istFertig && schritt === 'abschluss' && (
+          <button type="button" onClick={schliessen}
+            style={{ width: '100%', padding: '0.8rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(255,140,66,0.35)' }}>
+            ✨ Galerie erkunden
           </button>
         )}
       </div>
