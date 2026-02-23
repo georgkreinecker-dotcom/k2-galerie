@@ -10859,7 +10859,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               >
                 <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>🖨️</div>
                 <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Drucker</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Etikettendrucker einrichten</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>
+                  {isVk2AdminContext() ? 'Drucken (Standard-Drucker)' : 'Etikettendrucker einrichten'}
+                </div>
               </button>
             </div>
 
@@ -11661,7 +11663,29 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             )}
 
             {/* Drucker Sub-Tab */}
-            {settingsSubTab === 'drucker' && (
+            {settingsSubTab === 'drucker' && isVk2AdminContext() && (
+              <div>
+                <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', fontWeight: '600', color: s.text, marginBottom: '1.5rem' }}>
+                  🖨️ Drucken
+                </h3>
+                <div style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '16px', padding: '1.5rem', maxWidth: 560 }}>
+                  <p style={{ margin: '0 0 1rem', fontSize: '1rem', color: s.text, fontWeight: 600 }}>Standard-Drucker des Mac/PC</p>
+                  <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.6 }}>
+                    Im Vereinsbereich werden Mitgliederlisten, Adresslisten und Dokumente über den normalen Drucker gedruckt –
+                    einfach mit <strong style={{ color: s.text }}>Datei → Drucken</strong> (⌘P) im Browser oder über die jeweiligen Drucken-Buttons.
+                  </p>
+                  <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.88rem', color: s.muted, lineHeight: 1.8 }}>
+                    <li>Mitgliederliste drucken → Stammdaten → Mitglieder-Tab → „Drucken"</li>
+                    <li>Adressliste drucken → gleicher Weg → „Adressliste drucken"</li>
+                    <li>Dokumente drucken → Dokumente-Tab → einzeln öffnen und drucken</li>
+                  </ul>
+                  <p style={{ margin: '1rem 0 0', fontSize: '0.82rem', color: s.muted, fontStyle: 'italic' }}>
+                    💡 Etikettendrucker (Brother QL) wird nur im K2-Galerie-Bereich für Kunst-Etiketten benötigt.
+                  </p>
+                </div>
+              </div>
+            )}
+            {settingsSubTab === 'drucker' && !isVk2AdminContext() && (
               <div>
                 <h3 style={{
                   fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
