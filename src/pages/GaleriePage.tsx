@@ -3465,20 +3465,38 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
 
 export default GaleriePage
 
+
 // ─── GalerieEntdeckenGuide ────────────────────────────────────────────────────
-// Progressiver Guide auf der öffentlichen Galerie – kommt von EntdeckenPage
-// Stellt 2-3 Fragen, sammelt Infos → später: Vita + Dokumente aus Zauberhand
-// Option A (sprechender Avatar mit Georgs Stimme) folgt nach ersten Rückmeldungen
+// Intelligenter 4-Pfad-Guide: Künstler:in / Gemeinschaft / Atelier / Entdecker
+// Jeder Pfad verzweigt nach "Wie würdest du dich beschreiben?" in eigene Fragen
+// Option A (sprechender Avatar) folgt nach ersten Rückmeldungen
 // ─────────────────────────────────────────────────────────────────────────────
 
 const GUIDE_KEY = 'k2-entdecken-guide-antworten'
 
+type GuidePfad = 'kuenstlerin' | 'gemeinschaft' | 'atelier' | 'entdecker' | ''
+
 interface GuideAntworten {
+  pfad?: GuidePfad
+  // Pfad Künstler:in
   kunstart?: string
   erfahrung?: string
-  ziel?: string
+  ziel_kuenstler?: string
   ausstellungen?: string
-  technik?: string
+  // Pfad Gemeinschaft
+  verein_groesse?: string
+  verein_ausstellungen?: string
+  verein_wunsch?: string
+  vereinsgalerie?: string
+  // Pfad Atelier/Studio
+  atelier_groesse?: string
+  atelier_bedarf?: string
+  atelier_struktur?: string
+  // Pfad Entdecker
+  entdecker_interesse?: string
+  entdecker_mut?: string
+  entdecker_ziel?: string
+  // Gemeinsam
   kontakt?: string
 }
 
@@ -3490,9 +3508,62 @@ function speichereGuideAntworten(a: GuideAntworten) {
   try { localStorage.setItem(GUIDE_KEY, JSON.stringify(a)) } catch (_) {}
 }
 
-type GuideSchritt = 'begruessung' | 'kunstart' | 'erfahrung' | 'ziel' | 'ausstellungen' | 'technik' | 'kontakt' | 'abschluss' | 'empfehlung'
+type GuideSchritt =
+  | 'begruessung' | 'wer_bist_du'
+  | 'kunstart' | 'erfahrung' | 'ziel_kuenstler' | 'ausstellungen'
+  | 'verein_groesse' | 'verein_ausstellungen' | 'verein_wunsch' | 'vereinsgalerie'
+  | 'atelier_groesse' | 'atelier_bedarf' | 'atelier_struktur'
+  | 'entdecker_interesse' | 'entdecker_mut' | 'entdecker_ziel'
+  | 'kontakt' | 'abschluss' | 'empfehlung'
 
-const GUIDE_REIHENFOLGE: GuideSchritt[] = ['begruessung', 'kunstart', 'erfahrung', 'ziel', 'ausstellungen', 'technik', 'kontakt', 'abschluss', 'empfehlung']
+function naechsterSchritt(schritt: GuideSchritt, antworten: GuideAntworten): GuideSchritt {
+  const pfad = antworten.pfad ?? ''
+  switch (schritt) {
+    case 'begruessung': return 'wer_bist_du'
+    case 'wer_bist_du':
+      if (pfad === 'kuenstlerin')  return 'kunstart'
+      if (pfad === 'gemeinschaft') return 'verein_groesse'
+      if (pfad === 'atelier')      return 'atelier_groesse'
+      if (pfad === 'entdecker')    return 'entdecker_interesse'
+      return 'kunstart'
+    case 'kunstart':       return 'erfahrung'
+    case 'erfahrung':      return 'ziel_kuenstler'
+    case 'ziel_kuenstler': return 'ausstellungen'
+    case 'ausstellungen':  return 'kontakt'
+    case 'verein_groesse':       return 'verein_ausstellungen'
+    case 'verein_ausstellungen': return 'verein_wunsch'
+    case 'verein_wunsch':        return 'vereinsgalerie'
+    case 'vereinsgalerie':       return 'kontakt'
+    case 'atelier_groesse':  return 'atelier_bedarf'
+    case 'atelier_bedarf':   return 'atelier_struktur'
+    case 'atelier_struktur': return 'kontakt'
+    case 'entdecker_interesse': return 'entdecker_mut'
+    case 'entdecker_mut':       return 'entdecker_ziel'
+    case 'entdecker_ziel':      return 'kontakt'
+    case 'kontakt':   return 'abschluss'
+    case 'abschluss': return 'empfehlung'
+    default:          return 'abschluss'
+  }
+}
+
+const PFAD_REIHENFOLGE: Record<string, GuideSchritt[]> = {
+  kuenstlerin:  ['begruessung','wer_bist_du','kunstart','erfahrung','ziel_kuenstler','ausstellungen','kontakt','abschluss','empfehlung'],
+  gemeinschaft: ['begruessung','wer_bist_du','verein_groesse','verein_ausstellungen','verein_wunsch','vereinsgalerie','kontakt','abschluss','empfehlung'],
+  atelier:      ['begruessung','wer_bist_du','atelier_groesse','atelier_bedarf','atelier_struktur','kontakt','abschluss','empfehlung'],
+  entdecker:    ['begruessung','wer_bist_du','entdecker_interesse','entdecker_mut','entdecker_ziel','kontakt','abschluss','empfehlung'],
+  '':           ['begruessung','wer_bist_du','kunstart','erfahrung','ziel_kuenstler','ausstellungen','kontakt','abschluss','empfehlung'],
+}
+
+function pfadPosition(schritt: GuideSchritt, pfad: GuidePfad): number {
+  const reihe = PFAD_REIHENFOLGE[pfad ?? ''] ?? PFAD_REIHENFOLGE['']
+  const idx = reihe.indexOf(schritt)
+  return idx < 0 ? 0 : idx
+}
+
+function pfadLaenge(pfad: GuidePfad): number {
+  const reihe = PFAD_REIHENFOLGE[pfad ?? ''] ?? PFAD_REIHENFOLGE['']
+  return reihe.length - 2 // ohne abschluss + empfehlung in Fortschrittsbalken
+}
 
 function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: () => void }) {
   const [schritt, setSchritt] = useState<GuideSchritt>('begruessung')
@@ -3500,33 +3571,64 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
   const [textIdx, setTextIdx] = useState(0)
   const [sichtbar, setSichtbar] = useState(true)
 
+  const pfad = (antworten.pfad ?? '') as GuidePfad
+
   const texte: Record<GuideSchritt, string> = {
-    begruessung:   `Willkommen in deiner Galerie, ${name}! 👋\nSchau dich um – das alles gehört dir.\nIch hab noch ein paar kurze Fragen …`,
-    kunstart:      `Was ist deine Kunst?\nWähle was am besten passt –\ndu kannst später alles verfeinern.`,
-    erfahrung:     `Schön! Seit wann schaffst du Kunst?\nErste Schritte – oder schon mit Erfahrung\nund ersten Erfolgen?`,
-    ziel:          `Was ist dein wichtigstes Ziel?\nWähle das was jetzt am meisten zählt.`,
-    ausstellungen: `Hast du schon ausgestellt?\nOder zeigst du deine Werke bisher\nnur privat?`,
-    technik:       `Mit welchen Materialien arbeitest du\nhauptsächlich?`,
-    kontakt:       `Wie sollen Interessenten\ndich am liebsten erreichen?`,
-    abschluss:     `Danke, ${name}. ✨\n\nIch habe alles was ich brauche.\nDeine Vita, deine Pressemappe und\ndein erstes Werkverzeichnis sind bereit –\nwie aus Zauberhand.`,
-    empfehlung:    `Noch eine letzte Frage, ${name} –\n\nKennst du jemanden dem das\nauch helfen würde?\n\nWenn du jemanden einlädst –\nnutzt ihr beide die Galerie\nohne Kosten.`,
+    begruessung:   `Willkommen, ${name}! 👋\nSchau dich ruhig um –\ndas hier könnte bald deine Galerie sein.\nNur eine kurze Frage zuerst …`,
+    wer_bist_du:   `Wie würdest du dich beschreiben?\nDas hilft mir dir genau das Richtige zu zeigen.`,
+    // Pfad Künstler:in
+    kunstart:      `Schön! Was ist deine Kunst?\nWähle was am besten passt –\ndu kannst es später verfeinern.`,
+    erfahrung:     `Und wie weit bist du schon auf deinem Weg?\nEhrlich – es gibt keine falsche Antwort.`,
+    ziel_kuenstler:`Was ist gerade dein wichtigstes Ziel?`,
+    ausstellungen: `Hast du deine Werke\nschon einmal öffentlich gezeigt?`,
+    // Pfad Gemeinschaft
+    verein_groesse:      `Wie viele aktive Mitglieder\nhat eure Gemeinschaft ungefähr?`,
+    verein_ausstellungen:`Zeigt ihr als Gruppe eure Werke?\nAusstellungen, Events, Märkte?`,
+    verein_wunsch:       `Was wäre für eure Gemeinschaft\nam wertvollsten?\nWas fehlt euch noch?`,
+    vereinsgalerie:      `Wäre eine gemeinsame Galerie interessant –\nwo jedes Mitglied eigene Werke zeigt,\naber alle unter einem Dach zusammen?`,
+    // Pfad Atelier/Studio
+    atelier_groesse:  `Wie viele Künstler:innen\narbeiten in eurem Atelier?`,
+    atelier_bedarf:   `Was braucht ihr am meisten?\nWas fehlt euch im professionellen Alltag?`,
+    atelier_struktur: `Möchtet ihr eine gemeinsame Plattform –\noder eher individuelle Lösungen\npro Person?`,
+    // Pfad Entdecker
+    entdecker_interesse: `Was zieht dich an?\nWomit fängst du am liebsten an?`,
+    entdecker_mut:       `Sehr gut, ${name}! 🌱\nHast du schon etwas gemacht –\noder ist es noch eine Idee?`,
+    entdecker_ziel:      `Was wäre dein erster kleiner Schritt\nden du dir vorstellen könntest?`,
+    // Gemeinsam
+    kontakt: `Letzte Frage –\nwie sollen Interessierte\ndich am liebsten erreichen?`,
+    abschluss:
+      pfad === 'gemeinschaft'
+        ? `Danke, ${name}. ✨\n\nEine Gemeinschafts-Galerie für euren Verein,\njedes Mitglied mit eigenem Profil –\nalles bereit, wie aus Zauberhand.`
+        : pfad === 'atelier'
+        ? `Danke, ${name}. ✨\n\nEine Studio-Plattform, professionell,\nmit individuellen Galerien pro Künstler:in –\nbereit zum Starten.`
+        : pfad === 'entdecker'
+        ? `Wunderbar, ${name}. ✨\n\nJeder Anfang verdient einen guten Platz.\nDeine Galerie wartet –\nkein Druck, kein Stress.\nEinfach anfangen.`
+        : `Danke, ${name}. ✨\n\nIch habe alles was ich brauche.\nDeine Vita, deine Pressemappe und\ndein erstes Werkverzeichnis sind bereit –\nwie aus Zauberhand.`,
+    empfehlung: `Noch eine letzte Frage, ${name} –\n\nKennst du jemanden dem das\nauch helfen würde?\n\nWenn du jemanden einlädst –\nnutzt ihr beide die Galerie\nohne Kosten.`,
   }
 
-  const optionen: Record<string, { emoji: string; label: string; wert: string }[]> = {
+  type Opt = { emoji: string; label: string; wert: string }
+  const optionen: Partial<Record<GuideSchritt, Opt[]>> = {
+    wer_bist_du: [
+      { emoji: '🎨', label: 'Ich bin Künstler:in', wert: 'kuenstlerin' },
+      { emoji: '🏛️', label: 'Ich bin Teil einer Gemeinschaft', wert: 'gemeinschaft' },
+      { emoji: '🏢', label: 'Ich betreibe ein Atelier/Studio', wert: 'atelier' },
+      { emoji: '🌱', label: 'Ich entdecke gerade erst', wert: 'entdecker' },
+    ],
     kunstart: [
       { emoji: '🖌️', label: 'Malerei / Zeichnung', wert: 'malerei' },
       { emoji: '🏺', label: 'Keramik / Skulptur', wert: 'keramik' },
       { emoji: '📷', label: 'Fotografie / Digital', wert: 'foto' },
-      { emoji: '✏️', label: 'Anderes / Mehreres', wert: 'anderes' },
+      { emoji: '✏️', label: 'Mehreres / Anderes', wert: 'anderes' },
     ],
     erfahrung: [
       { emoji: '🌱', label: 'Erste Schritte', wert: 'anfaenger' },
-      { emoji: '🌿', label: 'Einige Jahre, erste Verkäufe', wert: 'fortgeschritten' },
+      { emoji: '🌿', label: 'Einige Jahre, erste Erfolge', wert: 'fortgeschritten' },
       { emoji: '⭐', label: 'Ausstellungen & Anerkennung', wert: 'etabliert' },
     ],
-    ziel: [
+    ziel_kuenstler: [
       { emoji: '👁️', label: 'Mehr gesehen werden', wert: 'sichtbarkeit' },
-      { emoji: '💰', label: 'Werke verkaufen', wert: 'verkauf' },
+      { emoji: '🤝', label: 'Werke verkaufen', wert: 'verkauf' },
       { emoji: '📄', label: 'Professioneller Auftritt', wert: 'auftritt' },
     ],
     ausstellungen: [
@@ -3534,11 +3636,58 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
       { emoji: '🌱', label: 'Einmal oder zweimal', wert: 'wenige' },
       { emoji: '🏠', label: 'Noch nicht – nur privat', wert: 'privat' },
     ],
-    technik: [
-      { emoji: '🎨', label: 'Farbe auf Leinwand / Papier', wert: 'farbe' },
-      { emoji: '🏺', label: 'Ton, Stein, Holz', wert: 'material' },
-      { emoji: '📷', label: 'Kamera / Digital', wert: 'digital' },
-      { emoji: '🧵', label: 'Textil / Mixed Media', wert: 'mixed' },
+    verein_groesse: [
+      { emoji: '👥', label: 'Bis 10 Personen', wert: 'klein' },
+      { emoji: '👨‍👩‍👧‍👦', label: '10 bis 50 Personen', wert: 'mittel' },
+      { emoji: '🏛️', label: 'Mehr als 50', wert: 'gross' },
+    ],
+    verein_ausstellungen: [
+      { emoji: '✅', label: 'Ja, regelmäßig', wert: 'regelmaessig' },
+      { emoji: '🌱', label: 'Manchmal, unregelmäßig', wert: 'selten' },
+      { emoji: '💡', label: 'Noch nicht – aber wir wollen', wert: 'geplant' },
+    ],
+    verein_wunsch: [
+      { emoji: '📣', label: 'Mehr Sichtbarkeit für uns alle', wert: 'sichtbarkeit' },
+      { emoji: '🗂️', label: 'Ordnung in unsere Werke', wert: 'struktur' },
+      { emoji: '🌐', label: 'Gemeinsamer Webauftritt', wert: 'webauftritt' },
+      { emoji: '🎟️', label: 'Professionelle Events', wert: 'events' },
+    ],
+    vereinsgalerie: [
+      { emoji: '✨', label: 'Ja – das klingt perfekt!', wert: 'ja' },
+      { emoji: '💬', label: 'Ich müsste das erst besprechen', wert: 'besprechen' },
+      { emoji: '🤔', label: 'Eher nicht – anderes gesucht', wert: 'nein' },
+    ],
+    atelier_groesse: [
+      { emoji: '👤', label: 'Nur ich allein', wert: 'solo' },
+      { emoji: '👥', label: '2 bis 5 Künstler:innen', wert: 'klein' },
+      { emoji: '🏢', label: 'Mehr als 5', wert: 'gross' },
+    ],
+    atelier_bedarf: [
+      { emoji: '🌐', label: 'Professioneller Webauftritt', wert: 'web' },
+      { emoji: '📦', label: 'Werkverzeichnis & Inventar', wert: 'inventar' },
+      { emoji: '🎟️', label: 'Events & Ausstellungen', wert: 'events' },
+      { emoji: '📄', label: 'Presse & Dokumente', wert: 'presse' },
+    ],
+    atelier_struktur: [
+      { emoji: '🤝', label: 'Gemeinsame Plattform für alle', wert: 'gemeinsam' },
+      { emoji: '👤', label: 'Individuell pro Person', wert: 'individuell' },
+      { emoji: '🔀', label: 'Beides wäre ideal', wert: 'beides' },
+    ],
+    entdecker_interesse: [
+      { emoji: '🖌️', label: 'Malen / Zeichnen', wert: 'malen' },
+      { emoji: '📷', label: 'Fotografieren', wert: 'foto' },
+      { emoji: '🏺', label: 'Handwerk / Formen', wert: 'handwerk' },
+      { emoji: '✨', label: 'Ich weiß noch nicht', wert: 'offen' },
+    ],
+    entdecker_mut: [
+      { emoji: '💡', label: 'Noch eine Idee', wert: 'idee' },
+      { emoji: '🌱', label: 'Erste Versuche', wert: 'versuche' },
+      { emoji: '🎨', label: 'Schon etwas Fertiges', wert: 'fertig' },
+    ],
+    entdecker_ziel: [
+      { emoji: '👁️', label: 'Etwas zeigen', wert: 'zeigen' },
+      { emoji: '🤝', label: 'Gleichgesinnte finden', wert: 'community' },
+      { emoji: '📄', label: 'Professionell werden', wert: 'professionell' },
     ],
     kontakt: [
       { emoji: '📧', label: 'Per E-Mail', wert: 'email' },
@@ -3548,23 +3697,27 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
     ],
   }
 
-  const volltext = texte[schritt]
+  const volltext = texte[schritt] ?? ''
 
   useEffect(() => { setTextIdx(0) }, [schritt])
   useEffect(() => {
     if (textIdx >= volltext.length) return
-    const t = setTimeout(() => setTextIdx(i => i + 1), 20)
+    const t = setTimeout(() => setTextIdx(i => i + 1), 18)
     return () => clearTimeout(t)
   }, [textIdx, volltext])
 
   const istFertig = textIdx >= volltext.length
 
-  const weiterNachAuswahl = (key: keyof GuideAntworten, wert: string) => {
-    const neu = { ...antworten, [key]: wert }
+  const weiterNachAuswahl = (wert: string) => {
+    let key: keyof GuideAntworten = schritt as keyof GuideAntworten
+    const neu: GuideAntworten = { ...antworten, [key]: wert }
+    // Beim "wer bist du"-Schritt direkt den Pfad setzen
+    if (schritt === 'wer_bist_du') {
+      neu.pfad = wert as GuidePfad
+    }
     setAntworten(neu)
     speichereGuideAntworten(neu)
-    const idx = GUIDE_REIHENFOLGE.indexOf(schritt)
-    if (idx < GUIDE_REIHENFOLGE.length - 1) setSchritt(GUIDE_REIHENFOLGE[idx + 1])
+    setSchritt(naechsterSchritt(schritt, neu))
   }
 
   const schliessen = () => { setSichtbar(false); setTimeout(onDismiss, 350) }
@@ -3572,8 +3725,19 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
   if (!sichtbar) return null
 
   const aktuelleOptionen = optionen[schritt] ?? []
-  const fortschritt = GUIDE_REIHENFOLGE.indexOf(schritt)
-  const gesamt = GUIDE_REIHENFOLGE.length - 1 // ohne 'abschluss' in Dots
+  const fortschritt = pfadPosition(schritt, pfad)
+  const gesamtSchritte = pfadLaenge(pfad)
+  const showFortschritt = schritt !== 'empfehlung'
+
+  const avatarGrad =
+    pfad === 'gemeinschaft' ? 'linear-gradient(135deg, #1e5cb5, #42a4ff)' :
+    pfad === 'atelier'      ? 'linear-gradient(135deg, #1e7b5c, #42ffb5)' :
+    pfad === 'entdecker'    ? 'linear-gradient(135deg, #7b5ce0, #c084fc)' :
+                              'linear-gradient(135deg, #b54a1e, #ff8c42)'
+  const avatarEmoji =
+    pfad === 'gemeinschaft' ? '🏛️' :
+    pfad === 'atelier'      ? '🏢' :
+    pfad === 'entdecker'    ? '🌱' : '👨‍🎨'
 
   return (
     <div style={{ position: 'fixed', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)', zIndex: 10000, width: 'min(440px, calc(100vw - 2rem))', animation: 'guideEin 0.4s ease' }}>
@@ -3584,21 +3748,23 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
 
       <div style={{ background: 'rgba(14,8,4,0.97)', border: '1px solid rgba(255,140,66,0.35)', borderRadius: '20px', padding: '1.25rem', boxShadow: '0 16px 56px rgba(0,0,0,0.55)', backdropFilter: 'blur(16px)' }}>
 
-        {/* Fortschritts-Balken oben */}
-        <div style={{ display: 'flex', gap: '0.3rem', marginBottom: '1rem' }}>
-          {GUIDE_REIHENFOLGE.slice(0, gesamt).map((_, i) => (
-            <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: i < fortschritt ? '#ff8c42' : i === fortschritt ? 'rgba(255,140,66,0.5)' : 'rgba(255,255,255,0.1)', transition: 'all 0.3s' }} />
-          ))}
-        </div>
+        {/* Fortschritts-Balken */}
+        {showFortschritt && (
+          <div style={{ display: 'flex', gap: '0.3rem', marginBottom: '1rem' }}>
+            {Array.from({ length: gesamtSchritte }).map((_, i) => (
+              <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: i < fortschritt ? '#ff8c42' : i === fortschritt ? 'rgba(255,140,66,0.5)' : 'rgba(255,255,255,0.1)', transition: 'all 0.3s' }} />
+            ))}
+          </div>
+        )}
 
         {/* Avatar + Text */}
-        <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'flex-start', marginBottom: aktuelleOptionen.length || schritt === 'abschluss' ? '1rem' : 0 }}>
-          <div style={{ width: 46, height: 46, borderRadius: '50%', background: 'linear-gradient(135deg, #b54a1e, #ff8c42)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', flexShrink: 0, boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }}>
-            👨‍🎨
+        <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'flex-start', marginBottom: aktuelleOptionen.length > 0 || schritt === 'abschluss' ? '1rem' : 0 }}>
+          <div style={{ width: 46, height: 46, borderRadius: '50%', background: avatarGrad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', flexShrink: 0, boxShadow: '0 4px 14px rgba(255,140,66,0.3)', transition: 'background 0.5s' }}>
+            {avatarEmoji}
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '0.65rem', color: 'rgba(255,140,66,0.5)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Dein Galerie-Guide</div>
-            <div style={{ fontSize: '0.93rem', color: '#fff8f0', lineHeight: 1.65, whiteSpace: 'pre-line', minHeight: '2.8rem' }}>
+            <div style={{ fontSize: '0.65rem', color: 'rgba(255,140,66,0.5)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' as const, marginBottom: '0.25rem' }}>Dein Galerie-Guide</div>
+            <div style={{ fontSize: '0.93rem', color: '#fff8f0', lineHeight: 1.65, whiteSpace: 'pre-line' as const, minHeight: '2.8rem' }}>
               {volltext.slice(0, textIdx)}
               {!istFertig && <span style={{ animation: 'blink 0.7s infinite', display: 'inline-block', marginLeft: 1 }}>▌</span>}
             </div>
@@ -3609,29 +3775,29 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
         {/* Auswahl-Buttons */}
         {istFertig && aktuelleOptionen.length > 0 && (
           <div style={{ display: 'grid', gridTemplateColumns: aktuelleOptionen.length === 3 ? '1fr 1fr 1fr' : '1fr 1fr', gap: '0.45rem' }}>
-            {aktuelleOptionen.map(opt => (
+            {aktuelleOptionen.map((opt: Opt) => (
               <button key={opt.wert} type="button"
-                onClick={() => weiterNachAuswahl(schritt as keyof GuideAntworten, opt.wert)}
-                style={{ padding: '0.6rem 0.4rem', background: 'rgba(255,140,66,0.07)', border: '1px solid rgba(255,140,66,0.22)', borderRadius: '10px', color: '#fff8f0', cursor: 'pointer', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.18rem', transition: 'all 0.15s', fontFamily: 'inherit' }}
+                onClick={() => weiterNachAuswahl(opt.wert)}
+                style={{ padding: '0.6rem 0.4rem', background: 'rgba(255,140,66,0.07)', border: '1px solid rgba(255,140,66,0.22)', borderRadius: '10px', color: '#fff8f0', cursor: 'pointer', fontSize: '0.8rem', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: '0.18rem', transition: 'all 0.15s', fontFamily: 'inherit' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,140,66,0.18)'; e.currentTarget.style.borderColor = 'rgba(255,140,66,0.5)' }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,140,66,0.07)'; e.currentTarget.style.borderColor = 'rgba(255,140,66,0.22)' }}
               >
                 <span style={{ fontSize: '1.15rem' }}>{opt.emoji}</span>
-                <span style={{ lineHeight: 1.3, textAlign: 'center' }}>{opt.label}</span>
+                <span style={{ lineHeight: 1.3, textAlign: 'center' as const }}>{opt.label}</span>
               </button>
             ))}
           </div>
         )}
 
-        {/* Begrüßung: Weiter-Button */}
+        {/* Begrüßung: Los geht's */}
         {istFertig && schritt === 'begruessung' && (
-          <button type="button" onClick={() => setSchritt('kunstart')}
+          <button type="button" onClick={() => setSchritt('wer_bist_du')}
             style={{ width: '100%', marginTop: '0.75rem', padding: '0.65rem', background: 'rgba(255,140,66,0.12)', border: '1px solid rgba(255,140,66,0.3)', borderRadius: '10px', color: '#ff8c42', fontWeight: 600, cursor: 'pointer', fontSize: '0.88rem', fontFamily: 'inherit' }}>
             Los geht's →
           </button>
         )}
 
-        {/* Abschluss → weiter zum Empfehlungs-Moment */}
+        {/* Abschluss → Empfehlung */}
         {istFertig && schritt === 'abschluss' && (
           <button type="button" onClick={() => setSchritt('empfehlung')}
             style={{ width: '100%', padding: '0.8rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(255,140,66,0.35)' }}>
@@ -3641,10 +3807,9 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
 
         {/* Empfehlungs-Moment – allerletzter Schritt, sehr vorsichtig */}
         {istFertig && schritt === 'empfehlung' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.25rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', marginTop: '0.25rem' }}>
             <button type="button"
               onClick={() => {
-                // Empfehlung-Link vorbereiten – öffnet Entdecken-Flow mit Referral-Hinweis
                 try { localStorage.setItem('k2-empfehlung-offen', '1') } catch (_) {}
                 schliessen()
               }}
@@ -3657,6 +3822,7 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
             </button>
           </div>
         )}
+
       </div>
     </div>
   )

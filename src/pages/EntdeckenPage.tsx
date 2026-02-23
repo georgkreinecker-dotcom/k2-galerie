@@ -46,7 +46,7 @@ function speichereNotiz(text: string, step: string) {
 const T = {
   heroTag: 'Für Künstler:innen die gesehen werden wollen',
   heroTitle: 'Deine Kunst verdient mehr als einen Instagram-Post.',
-  heroSub: 'In 3 kurzen Fragen zeigen wir dir, welche Galerie zu dir passt – und was sie dir bringt.',
+  heroSub: 'In 2 kurzen Fragen zeigen wir dir deine persönliche Galerie – und ein Guide begleitet dich durch alles.',
   cta: 'Jetzt entdecken →',
   ctaSub: 'Kostenlos · Keine Anmeldung · 2 Minuten',
 
@@ -79,7 +79,8 @@ const T = {
   footNote: 'Keine E-Mail, kein Passwort, kein Vertrag.',
 }
 
-type Step = 'hero' | 'q1' | 'q2' | 'q3' | 'result'
+// q2 entfällt – der Guide auf der Galerie-Seite übernimmt die Tiefenanalyse
+type Step = 'hero' | 'q1' | 'q3' | 'result'
 
 interface Answers {
   q1: string
@@ -171,7 +172,7 @@ export default function EntdeckenPage() {
 
   // ─── Progress-Punkte ────────────────────────────────────────────────────────
   function Progress() {
-    const steps: Step[] = ['q1', 'q2', 'q3']
+    const steps: Step[] = ['q1', 'q3']
     const current = steps.indexOf(step as Step)
     return (
       <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginBottom: '1.75rem' }}>
@@ -241,7 +242,7 @@ export default function EntdeckenPage() {
       )}
 
       {/* ── FRAGEN-FLOW ──────────────────────────────────────────────────────── */}
-      {(step === 'q1' || step === 'q2' || step === 'q3') && (
+      {(step === 'q1' || step === 'q3') && (
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'clamp(2rem, 5vw, 4rem) clamp(1rem, 4vw, 2rem)' }}>
           <div style={{ maxWidth: 540, width: '100%' }}>
 
@@ -264,29 +265,12 @@ export default function EntdeckenPage() {
                 <ChoiceCard {...T.q1d} selected={answers.q1 === 'verein'} onClick={() => setAnswers(a => ({ ...a, q1: 'verein' }))} />
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
                   <button type="button" onClick={() => setStep('hero')} style={{ padding: '0.7rem 1.25rem', background: 'transparent', color: muted, border: `1px solid #e0d5c5`, borderRadius: '10px', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.9rem' }}>{T.btnBack}</button>
-                  <button type="button" disabled={!answers.q1} onClick={() => setStep('q2')} style={{ padding: '0.7rem 1.75rem', background: answers.q1 ? `linear-gradient(135deg, ${accent}, ${accentLight})` : '#ccc', color: '#fff', border: 'none', borderRadius: '10px', cursor: answers.q1 ? 'pointer' : 'not-allowed', fontFamily: fontBody, fontSize: '0.95rem', fontWeight: 700 }}>{T.btnNext}</button>
+                  <button type="button" disabled={!answers.q1} onClick={() => setStep('q3')} style={{ padding: '0.7rem 1.75rem', background: answers.q1 ? `linear-gradient(135deg, ${accent}, ${accentLight})` : '#ccc', color: '#fff', border: 'none', borderRadius: '10px', cursor: answers.q1 ? 'pointer' : 'not-allowed', fontFamily: fontBody, fontSize: '0.95rem', fontWeight: 700 }}>{T.btnNext}</button>
                 </div>
               </>
             )}
 
-            {/* Frage 2 */}
-            {step === 'q2' && (
-              <>
-                <h2 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', fontWeight: 700, color: text, textAlign: 'center', marginBottom: '1.5rem', lineHeight: 1.3 }}>
-                  {T.q2}
-                </h2>
-                <ChoiceCard {...T.q2a} selected={answers.q2 === 'praesentation'} onClick={() => setAnswers(a => ({ ...a, q2: 'praesentation' }))} />
-                <ChoiceCard {...T.q2b} selected={answers.q2 === 'verkauf'} onClick={() => setAnswers(a => ({ ...a, q2: 'verkauf' }))} />
-                <ChoiceCard {...T.q2c} selected={answers.q2 === 'dokumentation'} onClick={() => setAnswers(a => ({ ...a, q2: 'dokumentation' }))} />
-                <ChoiceCard {...T.q2d} selected={answers.q2 === 'einfach'} onClick={() => setAnswers(a => ({ ...a, q2: 'einfach' }))} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
-                  <button type="button" onClick={() => setStep('q1')} style={{ padding: '0.7rem 1.25rem', background: 'transparent', color: muted, border: `1px solid #e0d5c5`, borderRadius: '10px', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.9rem' }}>{T.btnBack}</button>
-                  <button type="button" disabled={!answers.q2} onClick={() => setStep('q3')} style={{ padding: '0.7rem 1.75rem', background: answers.q2 ? `linear-gradient(135deg, ${accent}, ${accentLight})` : '#ccc', color: '#fff', border: 'none', borderRadius: '10px', cursor: answers.q2 ? 'pointer' : 'not-allowed', fontFamily: fontBody, fontSize: '0.95rem', fontWeight: 700 }}>{T.btnNext}</button>
-                </div>
-              </>
-            )}
-
-            {/* Frage 3 – Name */}
+            {/* Frage 2 (Name) */}
             {step === 'q3' && (
               <>
                 <h2 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', fontWeight: 700, color: text, textAlign: 'center', marginBottom: '0.6rem', lineHeight: 1.3 }}>
@@ -316,7 +300,7 @@ export default function EntdeckenPage() {
                   {answers.q3.trim() ? T.btnFinishName(answers.q3.trim()) : T.btnFinish}
                 </button>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <button type="button" onClick={() => setStep('q2')} style={{ padding: '0.6rem 1rem', background: 'transparent', color: muted, border: `1px solid #e0d5c5`, borderRadius: '10px', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.85rem' }}>{T.btnBack}</button>
+                  <button type="button" onClick={() => setStep('q1')} style={{ padding: '0.6rem 1rem', background: 'transparent', color: muted, border: `1px solid #e0d5c5`, borderRadius: '10px', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.85rem' }}>{T.btnBack}</button>
                   <span style={{ fontSize: '0.75rem', color: muted }}>{T.footNote}</span>
                 </div>
               </>
