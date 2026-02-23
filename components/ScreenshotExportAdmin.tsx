@@ -9583,7 +9583,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
                       setPageContentGalerie(pageContent, tenant)
                       setPageTexts(pageTexts, tenant)
-                      const route = isOeffentlichAdminContext()
+                      const route = isVk2AdminContext()
+                        ? PROJECT_ROUTES.vk2.galerie
+                        : isOeffentlichAdminContext()
                         ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
                         : PROJECT_ROUTES['k2-galerie'].galerie
                       navigate(route + '?vorschau=1')
@@ -9980,7 +9982,43 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     </header>
                   </div>
                   )}
-                  {previewFullscreenPage === 2 && (
+                  {previewFullscreenPage === 2 && isVk2AdminContext() && (
+                  <div style={{ width: '100%', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 100%)', padding: '32px 18px 40px', minHeight: 500 }}>
+                    <div style={{ position: 'absolute', top: 12, left: 14, zIndex: 10 }}>
+                      <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--k2-text)' }}>{galleryName || 'VK2 Vereinsplattform'}</div>
+                    </div>
+                    <main style={{ marginTop: 24 }}>
+                      {/* Mitgliederliste Vorschau */}
+                      <section style={{ marginBottom: 28 }}>
+                        <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--k2-text)', marginBottom: 12 }}>
+                          {pageTexts.galerie?.kunstschaffendeHeading || 'Unsere Mitglieder'}
+                        </h3>
+                        {(vk2Stammdaten.mitglieder || []).length > 0 ? (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                            {(vk2Stammdaten.mitglieder || []).filter(m => m.oeffentlichSichtbar !== false).slice(0,4).map((m, i) => (
+                              <div key={i} style={{ background: 'var(--k2-card-bg-1)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '0.75rem', fontSize: '0.9rem', color: 'var(--k2-text)' }}>
+                                <strong>{m.name}</strong>
+                                {m.typ && <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: 'var(--k2-muted)' }}>{m.typ}</p>}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p style={{ color: 'var(--k2-muted)', fontSize: '0.9rem' }}>Mitglieder werden in Einstellungen → Stammdaten eingetragen</p>
+                        )}
+                      </section>
+                      {/* Impressum Vorschau */}
+                      <section style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                        <h4 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--k2-text)', marginBottom: 8 }}>Impressum</h4>
+                        <p style={{ margin: '0 0 4px', fontWeight: 600, color: 'var(--k2-text)', fontSize: '0.9rem' }}>{vk2Stammdaten.verein?.name || 'Vereinsname (in Stammdaten eintragen)'}</p>
+                        {vk2Stammdaten.verein?.vereinsnummer && <p style={{ margin: '0 0 4px', color: 'var(--k2-muted)', fontSize: '0.82rem' }}>ZVR: {vk2Stammdaten.verein.vereinsnummer}</p>}
+                        {vk2Stammdaten.verein?.address && <p style={{ margin: '0 0 4px', color: 'var(--k2-muted)', fontSize: '0.82rem' }}>{[vk2Stammdaten.verein.address, vk2Stammdaten.verein.city].filter(Boolean).join(', ')}</p>}
+                        {vk2Stammdaten.vorstand?.name && <p style={{ margin: '0 0 2px', color: 'var(--k2-muted)', fontSize: '0.82rem' }}>Obfrau/Obmann: <span style={{ color: 'var(--k2-text)' }}>{vk2Stammdaten.vorstand.name}</span></p>}
+                        {vk2Stammdaten.kassier?.name && <p style={{ margin: '0 0 2px', color: 'var(--k2-muted)', fontSize: '0.82rem' }}>Kassier:in: <span style={{ color: 'var(--k2-text)' }}>{vk2Stammdaten.kassier.name}</span></p>}
+                      </section>
+                    </main>
+                  </div>
+                  )}
+                  {previewFullscreenPage === 2 && !isVk2AdminContext() && (
                   <div style={{ width: '100%', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 100%)' }}>
                     <div style={{ position: 'absolute', top: 12, left: 14, zIndex: 10 }}>
                       <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--k2-text)', letterSpacing: '0.02em', lineHeight: 1.25 }}>{PRODUCT_BRAND_NAME}</div>
