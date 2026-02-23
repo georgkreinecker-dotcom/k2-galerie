@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { initVk2DemoStammdatenIfEmpty, type Vk2Stammdaten, type Vk2Mitglied } from '../config/tenantConfig'
+import { PROJECT_ROUTES } from '../config/navigation'
 import { BUILD_LABEL } from '../buildInfo.generated'
 import '../App.css'
 
@@ -78,7 +79,7 @@ const Vk2GalerieVorschauPage: React.FC = () => {
             </span>
             <button
               type="button"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate(PROJECT_ROUTES.vk2.galerie)}
               title="Zur Willkommensseite"
               style={{ background: 'rgba(37,99,235,0.15)', border: '1px solid rgba(37,99,235,0.35)', borderRadius: 6, padding: '0.15rem 0.5rem', cursor: 'pointer', color: '#60a5fa', fontSize: '1rem', lineHeight: 1, display: 'flex', alignItems: 'center', gap: '0.3rem' }}
             >
