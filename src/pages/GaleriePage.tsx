@@ -3519,7 +3519,9 @@ type GuideSchritt =
   | 'verein_groesse' | 'verein_ausstellungen' | 'verein_wunsch' | 'vereinsgalerie'
   | 'atelier_groesse' | 'atelier_bedarf' | 'atelier_struktur'
   | 'entdecker_interesse' | 'entdecker_mut' | 'entdecker_ziel'
-  | 'kontakt' | 'abschluss' | 'empfehlung'
+  | 'kontakt' | 'abschluss' | 'vorhang'
+  | 'tour_galerie' | 'tour_werke' | 'tour_kontakt' | 'tour_events' | 'tour_dokumente'
+  | 'empfehlung'
 
 function naechsterSchritt(schritt: GuideSchritt, antworten: GuideAntworten): GuideSchritt {
   const pfad = antworten.pfad ?? ''
@@ -3545,18 +3547,26 @@ function naechsterSchritt(schritt: GuideSchritt, antworten: GuideAntworten): Gui
     case 'entdecker_interesse': return 'entdecker_mut'
     case 'entdecker_mut':       return 'entdecker_ziel'
     case 'entdecker_ziel':      return 'kontakt'
-    case 'kontakt':   return 'abschluss'
-    case 'abschluss': return 'empfehlung'
-    default:          return 'abschluss'
+    case 'kontakt':        return 'abschluss'
+    case 'abschluss':      return 'vorhang'
+    case 'vorhang':        return 'tour_galerie'
+    case 'tour_galerie':   return 'tour_werke'
+    case 'tour_werke':     return 'tour_kontakt'
+    case 'tour_kontakt':   return 'tour_events'
+    case 'tour_events':    return 'tour_dokumente'
+    case 'tour_dokumente': return 'empfehlung'
+    default:               return 'empfehlung'
   }
 }
 
+const TOUR_SCHRITTE: GuideSchritt[] = ['tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente']
+
 const PFAD_REIHENFOLGE: Record<string, GuideSchritt[]> = {
-  kuenstlerin:  ['begruessung','wer_bist_du','kunstart','erfahrung','ziel_kuenstler','ausstellungen','kontakt','abschluss','empfehlung'],
-  gemeinschaft: ['begruessung','wer_bist_du','verein_groesse','verein_ausstellungen','verein_wunsch','vereinsgalerie','kontakt','abschluss','empfehlung'],
-  atelier:      ['begruessung','wer_bist_du','atelier_groesse','atelier_bedarf','atelier_struktur','kontakt','abschluss','empfehlung'],
-  entdecker:    ['begruessung','wer_bist_du','entdecker_interesse','entdecker_mut','entdecker_ziel','kontakt','abschluss','empfehlung'],
-  '':           ['begruessung','wer_bist_du','kunstart','erfahrung','ziel_kuenstler','ausstellungen','kontakt','abschluss','empfehlung'],
+  kuenstlerin:  ['begruessung','wer_bist_du','kunstart','erfahrung','ziel_kuenstler','ausstellungen','kontakt','abschluss','vorhang','tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','empfehlung'],
+  gemeinschaft: ['begruessung','wer_bist_du','verein_groesse','verein_ausstellungen','verein_wunsch','vereinsgalerie','kontakt','abschluss','vorhang','tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','empfehlung'],
+  atelier:      ['begruessung','wer_bist_du','atelier_groesse','atelier_bedarf','atelier_struktur','kontakt','abschluss','vorhang','tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','empfehlung'],
+  entdecker:    ['begruessung','wer_bist_du','entdecker_interesse','entdecker_mut','entdecker_ziel','kontakt','abschluss','vorhang','tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','empfehlung'],
+  '':           ['begruessung','wer_bist_du','kunstart','erfahrung','ziel_kuenstler','ausstellungen','kontakt','abschluss','vorhang','tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','empfehlung'],
 }
 
 function pfadPosition(schritt: GuideSchritt, pfad: GuidePfad): number {
@@ -3797,7 +3807,7 @@ function baueKarten(pfad: GuidePfad, a: GuideAntworten): { sofort: ErgebnisKarte
   }
 }
 
-function ErgebnisKarten({ pfad, antworten, aufgeklappt, onAufklappen, onWeiter }: { pfad: GuidePfad; antworten: GuideAntworten; aufgeklappt: boolean; onAufklappen: () => void; onWeiter: () => void }) {
+function ErgebnisKarten({ pfad, antworten, aufgeklappt, onAufklappen, onWeiter, onFuehrung }: { pfad: GuidePfad; antworten: GuideAntworten; aufgeklappt: boolean; onAufklappen: () => void; onWeiter: () => void; onFuehrung: () => void }) {
   const karten = baueKarten(pfad, antworten)
 
   const statusFarbe = (s: ErgebnisKarte['status']) => {
@@ -3864,11 +3874,17 @@ function ErgebnisKarten({ pfad, antworten, aufgeklappt, onAufklappen, onWeiter }
         </div>
       )}
 
-      {/* Weiter-Button */}
-      <button type="button" onClick={onWeiter}
-        style={{ width: '100%', padding: '0.8rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(255,140,66,0.35)' }}>
-        ✨ Galerie erkunden
-      </button>
+      {/* Zwei Wege – Vorhang auf! */}
+      <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', marginTop: '0.25rem' }}>
+        <button type="button" onClick={onWeiter}
+          style={{ width: '100%', padding: '0.85rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(255,140,66,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+          🚀 Zeig mir meine Galerie sofort
+        </button>
+        <button type="button" onClick={onFuehrung}
+          style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,140,66,0.1)', border: '1px solid rgba(255,140,66,0.3)', borderRadius: '12px', color: '#ff8c42', fontWeight: 600, cursor: 'pointer', fontSize: '0.88rem', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+          🗺️ Führe mich durch – ich will alles sehen
+        </button>
+      </div>
     </div>
   )
 }
@@ -3906,6 +3922,13 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
     // Gemeinsam
     kontakt:    `Letzte Frage –\nwie sollen Interessierte\ndich am liebsten erreichen?`,
     abschluss:  baueDynamischenAbschluss(name, antworten),
+    vorhang: '',
+    // Tour-Schritte
+    tour_galerie:   `Das hier ist deine Galerie. 🎨\n\nDeine Werke – professionell präsentiert,\nauf jedem Gerät sichtbar.\nQR-Code scannen → sofort online.`,
+    tour_werke:     `Jedes Werk bekommt seinen Platz. 🖼️\n\nMit Foto, Titel, Preis,\nMaterial, Größe und Zertifikat.\nAlles auf einem Blick.`,
+    tour_kontakt:   `Interessenten erreichen dich direkt. 📬\n\nKein Umweg über Social Media –\ndirekt in deine Galerie,\ndirekt zu dir.`,
+    tour_events:    `Ausstellungen planen leicht gemacht. 🎟️\n\nEinladungen versenden, Gästeliste,\nQR-Code für die Vernissage –\nalles an einem Ort.`,
+    tour_dokumente: `Deine Dokumente – sofort druckfertig. 📄\n\nVita, Pressemappe, Werkverzeichnis –\nmit deinen Daten vorbefüllt.\nEin Klick und fertig.`,
     empfehlung: `Noch eine letzte Frage, ${name} –\n\nKennst du jemanden dem das\nauch helfen würde?\n\nWenn du jemanden einlädst –\nnutzt ihr beide die Galerie\nohne Kosten.`,
   }
 
@@ -4029,7 +4052,9 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
   const aktuelleOptionen = optionen[schritt] ?? []
   const fortschritt = pfadPosition(schritt, pfad)
   const gesamtSchritte = pfadLaenge(pfad)
-  const showFortschritt = schritt !== 'empfehlung'
+  const istTour = TOUR_SCHRITTE.includes(schritt)
+  const istAbschluss = schritt === 'abschluss'
+  const showFortschritt = schritt !== 'empfehlung' && schritt !== 'vorhang' && !istTour
 
   const avatarGrad =
     pfad === 'gemeinschaft' ? 'linear-gradient(135deg, #1e5cb5, #42a4ff)' :
@@ -4040,8 +4065,6 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
     pfad === 'gemeinschaft' ? '🏛️' :
     pfad === 'atelier'      ? '🏢' :
     pfad === 'entdecker'    ? '🌱' : '👨‍🎨'
-
-  const istAbschluss = schritt === 'abschluss'
 
   return (
     <div style={{ position: 'fixed', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)', zIndex: 10000, width: istAbschluss ? 'min(480px, calc(100vw - 1rem))' : 'min(440px, calc(100vw - 2rem))', animation: 'guideEin 0.4s ease', transition: 'width 0.3s ease', maxHeight: istAbschluss ? 'calc(100vh - 3rem)' : 'auto', display: 'flex', flexDirection: 'column' as const }}>
@@ -4101,9 +4124,32 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
           </button>
         )}
 
-        {/* Abschluss → Ergebnis-Karten + dann Empfehlung */}
+        {/* Abschluss → Ergebnis-Karten → zwei Wege */}
         {istFertig && schritt === 'abschluss' && (
-          <ErgebnisKarten pfad={pfad} antworten={antworten} aufgeklappt={kartenAufgeklappt} onAufklappen={() => setKartenAufgeklappt(v => !v)} onWeiter={() => setSchritt('empfehlung')} />
+          <ErgebnisKarten
+            pfad={pfad}
+            antworten={antworten}
+            aufgeklappt={kartenAufgeklappt}
+            onAufklappen={() => setKartenAufgeklappt(v => !v)}
+            onWeiter={schliessen}
+            onFuehrung={() => setSchritt('tour_galerie')}
+          />
+        )}
+
+        {/* Tour-Schritte: Weiter-Button */}
+        {istFertig && TOUR_SCHRITTE.includes(schritt) && (
+          <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.45rem', marginTop: '0.5rem' }}>
+            <button type="button" onClick={() => setSchritt(naechsterSchritt(schritt, antworten))}
+              style={{ width: '100%', padding: '0.75rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit', boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }}>
+              {schritt === 'tour_dokumente' ? '✨ Fertig – ich erkunde selbst →' : 'Weiter →'}
+            </button>
+            {schritt !== 'tour_dokumente' && (
+              <button type="button" onClick={schliessen}
+                style={{ width: '100%', padding: '0.55rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'inherit' }}>
+                Danke – ich erkunde selbst
+              </button>
+            )}
+          </div>
         )}
 
         {/* Empfehlungs-Moment – allerletzter Schritt, sehr vorsichtig */}
