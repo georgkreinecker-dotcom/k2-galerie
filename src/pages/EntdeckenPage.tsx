@@ -282,13 +282,54 @@ interface HubArbProps {
 // Stationen angepasst je nach Pfad (q1-Antwort)
 function baueHubStationen(q1: string) {
   const istVerein = q1 === 'verein'
+
+  if (istVerein) {
+    return [
+      {
+        emoji: '🖼️',
+        name: 'Werke & Mitglieder',
+        beschreibung: 'Alle Werke aller Mitglieder an einem Ort. Jede:r hat ein eigenes Profil mit Fotos, Preisen und Beschreibungen.',
+        tab: 'werke',
+      },
+      {
+        emoji: '🤝',
+        name: 'Mitgliederverwaltung',
+        beschreibung: 'Mitglieder einladen, Zugänge vergeben, Beiträge verwalten – alles übersichtlich an einem Ort.',
+        tab: 'einstellungen',
+      },
+      {
+        emoji: '🎟️',
+        name: 'Veranstaltungen',
+        beschreibung: 'Ausstellungen und Vereinsevents planen, Einladungen an alle Mitglieder verschicken, QR-Codes für Besucher.',
+        tab: 'eventplan',
+      },
+      {
+        emoji: '📋',
+        name: 'Vereinskatalog',
+        beschreibung: 'Alle Werke des Vereins – filtern nach Mitglied, Technik, Preis – als Katalog drucken oder digital teilen.',
+        tab: 'katalog',
+      },
+      {
+        emoji: '✨',
+        name: 'Aussehen & Marke',
+        beschreibung: 'Farben, Logo, Vereinsname, Willkommensbild – die Galerie wird zum Gesicht eures Vereins.',
+        tab: 'design',
+      },
+      {
+        emoji: '🚀',
+        name: 'Verein starten',
+        beschreibung: 'Vereinsname, Kontakt, Adresse – einmal eingetragen und euer gemeinsamer Auftritt ist live.',
+        tab: 'einstellungen',
+        istStart: true,
+      },
+    ]
+  }
+
   return [
     {
       emoji: '🖼️',
-      name: istVerein ? 'Werke & Mitglieder' : 'Meine Werke',
-      beschreibung: istVerein
-        ? 'Alle Werke aller Mitglieder an einem Ort – jede:r mit eigenem Profil, Fotos und Preisen.'
-        : 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist live in deiner Galerie.',
+      name: 'Meine Werke',
+      beschreibung: 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist live in deiner Galerie.',
       tab: 'werke',
     },
     {
@@ -333,7 +374,13 @@ function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, 
   const [aktivIdx, setAktivIdx] = useState(0)
   const navigate = useNavigate()
   const istVerein = q1 === 'verein'
-  const akzentGrad = `linear-gradient(135deg, ${accent}, ${accentGlow})`
+
+  // VK2 = blaue Akzentfarbe, ök2 = orange/braun
+  const hubAccent      = istVerein ? '#1e5cb5' : accent
+  const hubAccentGlow  = istVerein ? '#42a4ff' : accentGlow
+  const hubContext     = istVerein ? 'vk2' : 'oeffentlich'
+
+  const akzentGrad = `linear-gradient(135deg, ${hubAccent}, ${hubAccentGlow})`
   const avatarEmoji = istVerein ? '🏛️' : q1 === 'etabliert' ? '⭐' : q1 === 'aufsteigend' ? '🌱' : '👨‍🎨'
   const stationen = baueHubStationen(q1)
   const aktivStation = stationen[aktivIdx]
@@ -343,14 +390,14 @@ function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, 
 
   const oeffneTab = (tab: string) => {
     try { sessionStorage.setItem('k2-hub-from', '1') } catch (_) {}
-    navigate(`/admin?context=oeffentlich&tab=${tab}&from=hub`)
+    navigate(`/admin?context=${hubContext}&tab=${tab}&from=hub`)
   }
 
-  const begruessung = name
-    ? `${name}, das ist deine Galerie.`
-    : 'Das ist deine Galerie.'
+  const begruessung = istVerein
+    ? (name ? `${name} – das ist eure Vereinsgalerie.` : 'Das ist eure Vereinsgalerie.')
+    : (name ? `${name}, das ist deine Galerie.` : 'Das ist deine Galerie.')
   const subText = istVerein
-    ? 'Hier habt ihr alles für euren gemeinsamen Auftritt.'
+    ? 'Klick auf einen Bereich – schaut euch an was euch erwartet.'
     : q1 === 'etabliert'
     ? 'Professionell. Vollständig. Sofort einsatzbereit.'
     : 'Klick auf einen Bereich – schau dir an was dich erwartet.'
@@ -459,8 +506,8 @@ function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, 
           {/* Aktions-Buttons */}
           {'istStart' in aktivStation && aktivStation.istStart ? (
             <button type="button" onClick={onStarten}
-              style={{ width: '100%', padding: '0.95rem', background: akzentGrad, border: 'none', borderRadius: '14px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', boxShadow: `0 6px 24px ${accent}55`, letterSpacing: '0.01em' }}>
-              🚀 {name ? `${name}'s Galerie` : 'Galerie'} jetzt öffnen →
+              style={{ width: '100%', padding: '0.95rem', background: akzentGrad, border: 'none', borderRadius: '14px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', boxShadow: `0 6px 24px ${hubAccent}55`, letterSpacing: '0.01em' }}>
+              🚀 {istVerein ? (name ? `${name} – Vereinsgalerie` : 'Vereinsgalerie') : (name ? `${name}'s Galerie` : 'Galerie')} jetzt öffnen →
             </button>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem' }}>
@@ -564,8 +611,8 @@ export default function EntdeckenPage() {
 
   const goToDemo = () => {
     const name = answers.q3.trim()
+    const istVerein = answers.q1 === 'verein'
     try {
-      // Name in sessionStorage + localStorage schreiben (doppelt sicher)
       if (name) {
         sessionStorage.setItem(WILLKOMMEN_NAME_KEY, name)
         sessionStorage.setItem(WILLKOMMEN_ENTWURF_KEY, '1')
@@ -573,9 +620,10 @@ export default function EntdeckenPage() {
         localStorage.setItem(WILLKOMMEN_ENTWURF_KEY, '1')
       }
     } catch (_) {}
-    // Zur öffentlichen Galerie – der Besucher erlebt sie wie ein echter Gast
-    // Guide-Fragen laufen dort weiter (progressiver Flow)
-    const url = PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+    // Verein → VK2-Galerie, sonst → ök2-Galerie
+    const url = istVerein
+      ? PROJECT_ROUTES.vk2.galerieVorschau
+      : PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
     const params = name ? `?vorname=${encodeURIComponent(name)}&entwurf=1` : ''
     navigate(url + params)
   }
