@@ -9656,10 +9656,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <input type="file" accept="image/*" ref={galerieImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                 <input type="file" accept="image/*" ref={virtualTourImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                 {(() => {
-                  const tc = isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich : TENANT_CONFIGS.k2
-                  const galleryName = tc.galleryName
-                  const tagline = tc.tagline
-                  const welcomeIntroDefault = defaultPageTexts.galerie.welcomeIntroText || 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.'
+                  const tc = isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich : isVk2AdminContext() ? TENANT_CONFIGS.vk2 : TENANT_CONFIGS.k2
+                  const galleryName = isVk2AdminContext() ? (vk2Stammdaten.verein?.name || tc.galleryName) : tc.galleryName
+                  const tagline = isVk2AdminContext() ? (vk2Stammdaten.vorstand?.name ? `Obfrau/Obmann: ${vk2Stammdaten.vorstand.name}` : tc.tagline) : tc.tagline
+                  const welcomeIntroDefault = isVk2AdminContext()
+                    ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.'
+                    : (defaultPageTexts.galerie.welcomeIntroText || 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.')
                   return (
                 <>
                 {/* Design-Vorschau: manuelle Größe (Ziehen) + Zoom 100%–200% */}
@@ -10106,10 +10108,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     <h3 style={{ fontSize: '1rem', color: 'var(--k2-accent)', marginBottom: '0.75rem' }}>Vorschau (Kundengröße)</h3>
                     <div style={{ overflow: 'auto', maxHeight: 'min(85vh, 640px)', borderRadius: 16, border: '2px solid var(--k2-accent)', background: 'var(--k2-bg-1)' }}>
                       {(() => {
-                        const tc = isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich : TENANT_CONFIGS.k2
-                        const galleryName = tc.galleryName
-                        const tagline = tc.tagline
-                        const welcomeIntroDefault = defaultPageTexts.galerie.welcomeIntroText || 'Ein Neuanfang mit Leidenschaft …'
+                        const tc = isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich : isVk2AdminContext() ? TENANT_CONFIGS.vk2 : TENANT_CONFIGS.k2
+                        const galleryName = isVk2AdminContext() ? (vk2Stammdaten.verein?.name || tc.galleryName) : tc.galleryName
+                        const tagline = isVk2AdminContext() ? (vk2Stammdaten.vorstand?.name ? `Obfrau/Obmann: ${vk2Stammdaten.vorstand.name}` : tc.tagline) : tc.tagline
+                        const welcomeIntroDefault = isVk2AdminContext()
+                          ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.'
+                          : (defaultPageTexts.galerie.welcomeIntroText || 'Ein Neuanfang mit Leidenschaft …')
                         const scale = 1
                         return (
                           <div style={{ width: 412 * scale, overflow: 'hidden', margin: '0 auto' }}>
