@@ -27,6 +27,7 @@ const mok2Sections = [
   { id: 'mok2-10b-vk2-lizenz', label: 'Lizenzstruktur VK2 (Vereinsplattform)' },
   { id: 'mok2-13', label: '13. Werkkatalog & Werkkarte' },
   { id: 'mok2-14', label: '14. 💎 Excellent-Lizenz' },
+  { id: 'mok2-15-gruender', label: '15. 🌱 Gründer-Galerie & Leitkünstler' },
 ] as const
 
 const printStyles = `

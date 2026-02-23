@@ -868,6 +868,98 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </p>
       </section>
 
+      {/* Sektion 15: Gründer-Galerie + Leitkünstler */}
+      <section id="mok2-15-gruender" style={{ marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(95,251,241,0.2)', pageBreakInside: 'avoid' as const }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          15. Gründer-Galerie &amp; Leitkünstler:innen – Die erste Welle
+        </h2>
+
+        <h3 style={{ fontSize: '1rem', color: '#fbbf24', margin: '1rem 0 0.5rem' }}>Das Konzept</h3>
+        <p style={{ lineHeight: 1.75, marginBottom: '0.75rem' }}>
+          Kein Marktgeschrei. Kein Verkaufsdruck. Stattdessen: Die richtigen Menschen zuerst einladen –
+          als <strong style={{ color: '#5ffbf1' }}>Gründer-Galerien</strong>. Limitiert. Exklusiv. Auf Augenhöhe.
+        </p>
+        <ul style={{ paddingLeft: '1.25rem', lineHeight: 1.8, marginBottom: '1rem' }}>
+          <li>Maximal <strong>50 Gründer-Galerien</strong> – wer früh kommt, prägt das Produkt mit</li>
+          <li>Günstigerer Einstiegspreis als Dankeschön für das Vertrauen</li>
+          <li>Ihre Stimme zählt – Feedback fließt direkt in die Weiterentwicklung</li>
+          <li>Kein „Beta" – sondern: <em>„Wir bauen das gemeinsam"</em></li>
+        </ul>
+
+        <h3 style={{ fontSize: '1rem', color: '#fbbf24', margin: '1.25rem 0 0.5rem' }}>Die Leitkünstler:innen – Multiplikatoren</h3>
+        <p style={{ lineHeight: 1.75, marginBottom: '0.75rem' }}>
+          5 bis 10 ausgewählte Künstler:innen erhalten die K2 Galerie <strong style={{ color: '#5ffbf1' }}>kostenlos</strong> –
+          als Zeichen des Vertrauens, nicht als Werbegeschäft. Sie werden nicht gebeten zu werben.
+          Sie werden gebeten, <strong>ehrlich zu sein</strong>. Was sie berichten, kommt von allein.
+        </p>
+        <ul style={{ paddingLeft: '1.25rem', lineHeight: 1.8, marginBottom: '1.25rem' }}>
+          <li>Etablierte Künstler:innen mit Netzwerk und Glaubwürdigkeit</li>
+          <li>Menschen die für Qualität stehen – ihr Name ist ihr Kapital</li>
+          <li>Kunstvereine mit aktiver Gemeinschaft</li>
+          <li>Kunstlehrer:innen mit direktem Kontakt zu aufstrebenden Talenten</li>
+        </ul>
+
+        {/* Begleitschreiben */}
+        <div style={{ background: 'rgba(95,251,241,0.06)', border: '1px solid rgba(95,251,241,0.25)', borderRadius: '12px', padding: '1.5rem', marginTop: '1.5rem', breakInside: 'avoid' as const }}>
+          <h3 style={{ fontSize: '1rem', color: '#5ffbf1', marginTop: 0, marginBottom: '1rem' }}>
+            ✉️ Begleitschreiben – Leitkünstler:innen (Vorlage)
+          </h3>
+          <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.45)', marginBottom: '1rem', fontStyle: 'italic' }}>
+            Persönlich. Handgeschrieben oder per E-Mail. Nie als Serienbrief.
+          </p>
+
+          <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '1.25rem', fontSize: '0.95rem', lineHeight: 1.85, color: 'rgba(255,255,255,0.85)', fontFamily: 'Georgia, serif' }}>
+            <p style={{ margin: '0 0 0.75rem' }}>Liebe [Vorname],</p>
+
+            <p style={{ margin: '0 0 0.75rem' }}>
+              ich wende mich persönlich an dich – weil ich deine Arbeit kenne und schätze.
+              Nicht als Künstler:in mit einer Galerie, sondern als Mensch der versteht
+              was es bedeutet, ein Werk in die Welt zu bringen.
+            </p>
+
+            <p style={{ margin: '0 0 0.75rem' }}>
+              Ich habe in den letzten Jahren eine digitale Galerie entwickelt –
+              <strong style={{ color: '#5ffbf1' }}> K2 Galerie</strong>.
+              Nicht für den Massenmarkt. Für Künstler:innen die ihre Werke so präsentieren wollen
+              wie sie es verdienen: professionell, persönlich, ohne technisches Vorwissen.
+            </p>
+
+            <p style={{ margin: '0 0 0.75rem' }}>
+              Ich lade dich ein, sie zu nutzen – <strong>kostenlos, ohne Bedingungen</strong>.
+              Kein Vertrag. Kein Kleingedrucktes. Nur die Bitte:
+              Sei ehrlich mit mir. Was funktioniert? Was fehlt? Was überrascht dich?
+            </p>
+
+            <p style={{ margin: '0 0 0.75rem' }}>
+              Du musst nichts empfehlen, nichts teilen, nichts werben.
+              Dein Urteil – das ist alles was ich mir wünsche.
+            </p>
+
+            <p style={{ margin: '0 0 0.75rem' }}>
+              Wenn du neugierig bist: Ich zeige dir die Galerie persönlich.
+              Kein Pitch, kein Verkaufsgespräch – einfach zwei Menschen die über Kunst reden.
+            </p>
+
+            <p style={{ margin: '0' }}>
+              Mit herzlichen Grüßen,<br />
+              <strong>Georg Kreinecker</strong><br />
+              <span style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.5)' }}>K2 Galerie · Kunst &amp; Keramik</span>
+            </p>
+          </div>
+
+          <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '8px', fontSize: '0.88rem', lineHeight: 1.65 }}>
+            <strong style={{ color: '#fbbf24' }}>💡 Hinweise zur Verwendung:</strong>
+            <ul style={{ paddingLeft: '1.1rem', margin: '0.5rem 0 0', lineHeight: 1.75 }}>
+              <li>Immer <strong>persönlich anpassen</strong> – Namen, ein Detail das zeigt: ich kenne deine Arbeit</li>
+              <li>Nie als Serienbrief – das spürt man sofort</li>
+              <li>Optional: einen kleinen handgeschriebenen Zusatz bei physischem Brief</li>
+              <li>Kein Anhang, kein PDF, kein Produkt-Flyer beim ersten Kontakt</li>
+              <li>Erst wenn Interesse da ist: Demo-Termin oder Link zur Galerie</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
       <footer style={{ marginTop: '2rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>
         <ProductCopyright /> · Stand: Februar 2026 · Quelle: USP-UND-MARKTCHANCEN.md, VERMARKTUNGSKONZEPT-EMPFEHLUNGSPROGRAMM.md, Produkt-Vision, Galerie-App Feature-Stand.
       </footer>
