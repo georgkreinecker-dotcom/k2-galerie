@@ -8,7 +8,7 @@
  * Prinzip: Dialog erklärt. Hintergrund zeigt. User entscheidet wann weiter.
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 
 // ─── Typen ───────────────────────────────────────────────────────────────────
@@ -214,6 +214,43 @@ export function GlobaleGuideBegleitung() {
   const [aktuellerIdx, setAktuellerIdx] = useState(0)
   const [navigiert, setNavigiert] = useState(false)
 
+  // Drag-State – Refs damit keine Re-Renders durch Drag ausgelöst werden
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null)
+  const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null)
+  const isDraggingRef = useRef(false)
+
+  const onDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
+    const origX = pos?.x ?? 0
+    const origY = pos?.y ?? 0
+    dragRef.current = { startX: clientX, startY: clientY, origX, origY }
+    isDraggingRef.current = true
+    e.preventDefault()
+  }
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent | TouchEvent) => {
+      if (!isDraggingRef.current || !dragRef.current) return
+      const clientX = 'touches' in e ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX
+      const clientY = 'touches' in e ? (e as TouchEvent).touches[0].clientY : (e as MouseEvent).clientY
+      const dx = clientX - dragRef.current.startX
+      const dy = clientY - dragRef.current.startY
+      setPos({ x: dragRef.current.origX + dx, y: dragRef.current.origY + dy })
+    }
+    const onEnd = () => { isDraggingRef.current = false }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('touchmove', onMove, { passive: false })
+    window.addEventListener('mouseup', onEnd)
+    window.addEventListener('touchend', onEnd)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('touchmove', onMove)
+      window.removeEventListener('mouseup', onEnd)
+      window.removeEventListener('touchend', onEnd)
+    }
+  }, [])
+
   const ladeFlow = useCallback(() => {
     const f = ladeGuideFlow()
     setFlow(f)
@@ -289,12 +326,24 @@ export function GlobaleGuideBegleitung() {
     <span key={i}>{z}{i < aktuellerSchritt.beschreibung.split('\n').length - 1 && <br />}</span>
   ))
 
+  // Position: wenn verschoben, absolute Koordinaten; sonst unten mittig
+  const dialogStyle: React.CSSProperties = pos
+    ? {
+        position: 'fixed',
+        left: `calc(50% + ${pos.x}px)`,
+        bottom: `calc(1.5rem - ${pos.y}px)`,
+        transform: 'translateX(-50%)',
+        zIndex: 10000,
+        width: 'min(440px, calc(100vw - 2rem))',
+      }
+    : {
+        position: 'fixed', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)',
+        zIndex: 10000, width: 'min(440px, calc(100vw - 2rem))',
+        animation: 'globGuideEin 0.4s ease',
+      }
+
   return (
-    <div style={{
-      position: 'fixed', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)',
-      zIndex: 10000, width: 'min(440px, calc(100vw - 2rem))',
-      animation: 'globGuideEin 0.4s ease',
-    }}>
+    <div style={dialogStyle}>
       <style>{`
         @keyframes globGuideEin { from{opacity:0;transform:translateX(-50%) translateY(14px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
       `}</style>
@@ -304,7 +353,18 @@ export function GlobaleGuideBegleitung() {
         border: `1px solid ${akzentFarbe}55`,
         borderRadius: '20px', padding: '1.15rem',
         boxShadow: '0 16px 56px rgba(0,0,0,0.6)', backdropFilter: 'blur(16px)',
+        cursor: isDraggingRef.current ? 'grabbing' : 'default',
       }}>
+
+        {/* Drag-Handle – greifbarer Bereich oben */}
+        <div
+          onMouseDown={onDragStart}
+          onTouchStart={onDragStart}
+          style={{ cursor: 'grab', marginBottom: '0.6rem', display: 'flex', justifyContent: 'center', paddingBottom: '0.2rem' }}
+          title="Ziehen zum Verschieben"
+        >
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.18)' }} />
+        </div>
 
         {/* Fortschrittsbalken */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.85rem' }}>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, AGB_ROUTE } from '../src/config/navigation'
 import ZertifikatTab from './tabs/ZertifikatTab'
@@ -604,6 +604,7 @@ function ScreenshotExportAdmin() {
   syncAdminContextFromUrl()
 
   const navigate = useNavigate()
+  const location = useLocation()
   // Singleton-Check: Verhindere doppeltes Mounten - KRITISCH gegen Crashes
   const mountId = React.useRef(`admin-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`)
   const isMountedRef = React.useRef(true)
@@ -657,19 +658,19 @@ function ScreenshotExportAdmin() {
     } catch (_) {}
   }, [])
 
-  // Guide-Navigation: wenn guidetab in URL, Tab direkt öffnen
+  // Guide-Navigation: reagiert auf URL-Änderungen (React Router navigate) – öffnet den richtigen Tab
   React.useEffect(() => {
     try {
-      const params = new URLSearchParams(window.location.search)
+      const params = new URLSearchParams(location.search)
       const gt = params.get('guidetab')
-      const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','design','einstellungen','assistent']
-      if (gt && validTabs.includes(gt)) {
-        setActiveTab(gt as any)
+      const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','design','einstellungen','assistent'] as const
+      type AdminTab = typeof validTabs[number]
+      if (gt && (validTabs as readonly string[]).includes(gt)) {
+        setActiveTab(gt as AdminTab)
         window.scrollTo({ top: 0, behavior: 'smooth' })
       }
     } catch { /* ignore */ }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [window.location.search])
+  }, [location.search])
 
   // Vorname aus URL – kommt vom Guide (z.B. /admin?context=oeffentlich&vorname=Klein)
   const guideVorname = (() => {
