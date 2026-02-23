@@ -8114,8 +8114,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </Link>
               )}
 
-              {/* Reservieren */}
-              {!isOeffentlichAdminContext() && (
+              {/* Reservieren – nur K2, nicht VK2/ök2 */}
+              {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
                 <button type="button" onClick={() => setShowReserveModal(true)}
                   style={{ padding: '0.5rem 1rem', background: s.bgCard, border: `1px solid #d9770688`, color: '#d97706', borderRadius: '10px', fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s' }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = '#fef3c7' }}
@@ -8509,7 +8509,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>↓ Direkt hier unten</div>
                   </button>
 
-                  {/* Werkkatalog */}
+                  {/* Werkkatalog – nur K2/ök2, nicht VK2 (VK2 hat Mitglieder, keine Werkdatenbank) */}
+                  {!isVk2AdminContext() && (
                   <button type="button" onClick={() => setActiveTab('katalog')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: `2px solid ${s.accent}22`, borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit' }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.transform = 'translateY(-2px)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}22`; e.currentTarget.style.transform = 'translateY(0)' }}
@@ -8521,9 +8522,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     </div>
                     <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Öffnen →</div>
                   </button>
+                  )}
 
-                  {/* Statistik */}
-                  {!isOeffentlichAdminContext() && (
+                  {/* Statistik – nur K2, nicht VK2/ök2 */}
+                  {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
                   <button type="button" onClick={() => setActiveTab('statistik')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: `2px solid ${s.accent}22`, borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit' }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.transform = 'translateY(-2px)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}22`; e.currentTarget.style.transform = 'translateY(0)' }}
@@ -8537,8 +8539,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   </button>
                   )}
 
-                  {/* Echtheitszertifikat */}
-                  {!isOeffentlichAdminContext() && (
+                  {/* Echtheitszertifikat – nur K2, nicht VK2/ök2 */}
+                  {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
                   <button type="button" onClick={() => setActiveTab('zertifikat')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: '2px solid rgba(251,191,36,0.35)', borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit', position: 'relative' }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.7)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.35)'; e.currentTarget.style.transform = 'translateY(0)' }}
@@ -8553,8 +8555,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   </button>
                   )}
 
-                  {/* Newsletter */}
-                  {!isOeffentlichAdminContext() && (
+                  {/* Newsletter – nur K2, nicht VK2/ök2 */}
+                  {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
                   <button type="button" onClick={() => setActiveTab('newsletter')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: '2px solid rgba(251,191,36,0.35)', borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit', position: 'relative' }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.7)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.35)'; e.currentTarget.style.transform = 'translateY(0)' }}
@@ -8569,8 +8571,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   </button>
                   )}
 
-                  {/* Pressemappe */}
-                  {!isOeffentlichAdminContext() && (
+                  {/* Pressemappe – nur K2, nicht VK2/ök2 */}
+                  {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
                   <button type="button" onClick={() => setActiveTab('pressemappe')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: '2px solid rgba(251,191,36,0.35)', borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit', position: 'relative' }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.7)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.35)'; e.currentTarget.style.transform = 'translateY(0)' }}
