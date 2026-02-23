@@ -3,7 +3,7 @@
 | Feld | Inhalt |
 |------|--------|
 | **Datum** | 23.02.26 |
-| **Thema** | mök2 Marketing: Gründer-Galerie + Leitkünstler:innen Konzept |
-| **Was zuletzt** | Sektion 15 in MarketingOek2Page.tsx eingefügt: Gründer-Galerie Konzept (max. 50), Leitkünstler:innen Gratis-Edition, vollständige Begleitschreiben-Vorlage. Mok2Layout.tsx Sidebar ergänzt. Build ✅, Commit 7e6c9c2, Push ✅ |
-| **Nächster Schritt** | Landingpage bauen (DE, mehrsprachig-fähig) – 3-Fragen-Flow → persönliche Demo-Galerie |
-| **Wo nachlesen** | `src/pages/MarketingOek2Page.tsx` (Sektion 15), `src/components/Mok2Layout.tsx` |
+| **Thema** | Landingpage /entdecken + Leitkünstler-Liste mök2 |
+| **Was zuletzt** | EntdeckenPage.tsx neu (Route /entdecken): Hero → 3-Fragen-Flow → Demo-Galerie. mök2 Sektion 16: Leitkünstler-Liste mit 7 Kategorien. Build ✅, Commit 06926b1, Push ✅ |
+| **Nächster Schritt** | Landingpage testen (https://k2-galerie.vercel.app/entdecken). Leitkünstler-Namen in mök2 eintragen. |
+| **Wo nachlesen** | `src/pages/EntdeckenPage.tsx`, `src/pages/MarketingOek2Page.tsx` (Sektionen 15+16) |

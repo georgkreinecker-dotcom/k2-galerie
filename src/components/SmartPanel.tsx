@@ -1,5 +1,25 @@
 import { useState, useRef } from 'react'
-import { PROJECT_ROUTES, MOK2_ROUTE } from '../config/navigation'
+import { PROJECT_ROUTES, MOK2_ROUTE, ENTDECKEN_ROUTE } from '../config/navigation'
+
+/** Fremder-Modus: alle Session-/localStorage-Keys die einen "ersten Besuch" simulieren */
+const FREMDER_SESSION_KEYS = [
+  'k2-agb-accepted',
+  'k2-willkommen-name',
+  'k2-willkommen-entwurf',
+  'k2-admin-context',
+  'k2-shop-from-oeffentlich',
+  'k2-entdecken-q1',
+  'k2-entdecken-q2',
+]
+
+function startFremderModus() {
+  // sessionStorage komplett leeren (simuliert neues Browser-Fenster)
+  try { sessionStorage.clear() } catch (_) {}
+  // relevante localStorage-Keys für "erster Besuch" entfernen
+  FREMDER_SESSION_KEYS.forEach(k => { try { localStorage.removeItem(k) } catch (_) {} })
+  // Zur Landingpage – echter Neustart
+  window.location.href = ENTDECKEN_ROUTE
+}
 
 /** VK2 immer per Voll-Navigation öffnen – verhindert, dass K2/Router-Zustand bleibt */
 const VK2_GALERIE_URL = '/projects/vk2/galerie'
@@ -131,6 +151,41 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
         <p style={{ margin: 0, fontSize: '0.85rem', color: '#8fa0c9' }}>
           Schnellzugriff
         </p>
+      </div>
+
+      {/* Fremder-Modus – Landingpage aus Kundenperspektive testen */}
+      <div style={{ borderBottom: '1px solid rgba(95,251,241,0.12)', paddingBottom: '1rem' }}>
+        <button
+          type="button"
+          onClick={startFremderModus}
+          style={{
+            width: '100%',
+            padding: '0.85rem 1rem',
+            background: 'linear-gradient(135deg, rgba(255,140,66,0.18), rgba(181,74,30,0.12))',
+            border: '1px solid rgba(255,140,66,0.5)',
+            borderRadius: '10px',
+            color: '#ff8c42',
+            fontWeight: 700,
+            fontSize: '0.92rem',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            textAlign: 'left',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.6rem',
+            transition: 'all 0.18s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,140,66,0.28), rgba(181,74,30,0.2))'; e.currentTarget.style.borderColor = 'rgba(255,140,66,0.8)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,140,66,0.18), rgba(181,74,30,0.12))'; e.currentTarget.style.borderColor = 'rgba(255,140,66,0.5)' }}
+          title="Landingpage wie ein Erstbesucher erleben – alle Session-Daten werden kurz zurückgesetzt"
+        >
+          <span style={{ fontSize: '1.2rem' }}>👤</span>
+          <span style={{ flex: 1 }}>
+            <span style={{ display: 'block', lineHeight: 1.2 }}>Als Fremder eintreten</span>
+            <span style={{ fontSize: '0.72rem', color: 'rgba(255,140,66,0.7)', fontWeight: 400 }}>Landingpage wie beim ersten Besuch</span>
+          </span>
+          <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>→</span>
+        </button>
       </div>
 
       {/* Sortierbare Hauptbuttons – wie iPhone: Bearbeiten → Ziehen */}
