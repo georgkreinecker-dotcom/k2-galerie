@@ -960,6 +960,108 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </div>
       </section>
 
+      {/* Sektion 16: Leitkünstler-Liste */}
+      <section id="mok2-16-leitkuenstler" style={{ marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(95,251,241,0.2)', pageBreakInside: 'avoid' as const }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          16. Leitkünstler:innen – Meine Liste
+        </h2>
+        <p style={{ lineHeight: 1.75, marginBottom: '1rem', fontSize: '0.92rem', color: 'rgba(255,255,255,0.7)' }}>
+          Persönliche Liste – wen kenne ich, wen schätze ich, wer wäre ein guter Multiplikator?
+          Kategorien zur Orientierung. Namen werden persönlich hinzugefügt.
+        </p>
+
+        {/* Kategorie 1 */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '0.95rem', color: '#fbbf24', margin: '0 0 0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            🎨 Etablierte Bildende Künstler:innen
+          </h3>
+          <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem', fontStyle: 'italic' }}>
+            Ausstellungserfahrung, eigene Preisliste, bekannt in der Region – ihr Wort hat Gewicht
+          </p>
+          <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(95,251,241,0.2)', borderRadius: '8px', padding: '0.75rem 1rem', minHeight: '3rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.35)', fontStyle: 'italic' }}>
+            → Hier Namen eintragen …
+          </div>
+        </div>
+
+        {/* Kategorie 2 */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '0.95rem', color: '#fbbf24', margin: '0 0 0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            🌱 Aufstrebende Künstler:innen (hungrig, suchend)
+          </h3>
+          <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem', fontStyle: 'italic' }}>
+            Aktiv in Social Media, auf der Suche nach Sichtbarkeit, offen für Neues
+          </p>
+          <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(95,251,241,0.2)', borderRadius: '8px', padding: '0.75rem 1rem', minHeight: '3rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.35)', fontStyle: 'italic' }}>
+            → Hier Namen eintragen …
+          </div>
+        </div>
+
+        {/* Kategorie 3 */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '0.95rem', color: '#fbbf24', margin: '0 0 0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            🏛️ Kunstvereine &amp; Gemeinschaften
+          </h3>
+          <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem', fontStyle: 'italic' }}>
+            Vereinsvorstand, Obmann/Obfrau – eine Person erreicht sofort viele Mitglieder
+          </p>
+          <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(95,251,241,0.2)', borderRadius: '8px', padding: '0.75rem 1rem', minHeight: '3rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.35)', fontStyle: 'italic' }}>
+            → Hier Namen/Vereine eintragen …
+          </div>
+        </div>
+
+        {/* Kategorie 4 */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '0.95rem', color: '#fbbf24', margin: '0 0 0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            🎓 Kunstlehrer:innen &amp; Kursleiter:innen
+          </h3>
+          <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem', fontStyle: 'italic' }}>
+            VHS, Privatateliers, Kunstschulen – direkter Kontakt zu Schüler:innen die selbst Galerien suchen
+          </p>
+          <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(95,251,241,0.2)', borderRadius: '8px', padding: '0.75rem 1rem', minHeight: '3rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.35)', fontStyle: 'italic' }}>
+            → Hier Namen eintragen …
+          </div>
+        </div>
+
+        {/* Kategorie 5 */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '0.95rem', color: '#fbbf24', margin: '0 0 0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            🏺 Kunsthandwerk &amp; Keramik
+          </h3>
+          <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem', fontStyle: 'italic' }}>
+            Töpfer:innen, Textilkünstler:innen, Goldschmiede – oft gute Community, kaum digitale Präsenz
+          </p>
+          <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(95,251,241,0.2)', borderRadius: '8px', padding: '0.75rem 1rem', minHeight: '3rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.35)', fontStyle: 'italic' }}>
+            → Hier Namen eintragen …
+          </div>
+        </div>
+
+        {/* Kategorie 6 */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '0.95rem', color: '#fbbf24', margin: '0 0 0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            📷 Fotograf:innen &amp; Digitale Künstler:innen
+          </h3>
+          <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem', fontStyle: 'italic' }}>
+            Technikaffin, Social-Media-stark, zeigen gerne neue Tools – schnelle Verbreitung
+          </p>
+          <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(95,251,241,0.2)', borderRadius: '8px', padding: '0.75rem 1rem', minHeight: '3rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.35)', fontStyle: 'italic' }}>
+            → Hier Namen eintragen …
+          </div>
+        </div>
+
+        {/* Kategorie 7 */}
+        <div style={{ marginBottom: '0.5rem' }}>
+          <h3 style={{ fontSize: '0.95rem', color: '#fbbf24', margin: '0 0 0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            🌐 Regionale Kulturvermittler:innen
+          </h3>
+          <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem', fontStyle: 'italic' }}>
+            Kulturzentren, Büchereien, Gemeindekultur, lokale Presse – Türöffner zur breiten Öffentlichkeit
+          </p>
+          <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(95,251,241,0.2)', borderRadius: '8px', padding: '0.75rem 1rem', minHeight: '3rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.35)', fontStyle: 'italic' }}>
+            → Hier Namen/Kontakte eintragen …
+          </div>
+        </div>
+      </section>
+
       <footer style={{ marginTop: '2rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>
         <ProductCopyright /> · Stand: Februar 2026 · Quelle: USP-UND-MARKTCHANCEN.md, VERMARKTUNGSKONZEPT-EMPFEHLUNGSPROGRAMM.md, Produkt-Vision, Galerie-App Feature-Stand.
       </footer>

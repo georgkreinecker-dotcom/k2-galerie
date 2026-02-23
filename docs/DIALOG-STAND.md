@@ -3,7 +3,7 @@
 | Feld | Inhalt |
 |------|--------|
 | **Datum** | 23.02.26 |
-| **Thema** | Refactoring: ScreenshotExportAdmin aufgeteilt |
-| **Was zuletzt** | 5 Tabs ausgelagert in `components/tabs/`: StatistikTab, ZertifikatTab, NewsletterTab, PressemappeTab, WerkkatalogTab. Admin von 16.227 → 15.200 Zeilen. Design/Werke/Einstellungen/Eventplan bleiben im Haupt-Admin (zu viele geteilte States für sinnvolles Auslagern). Build ✅, Commit d2e509c, Push ✅ |
-| **Nächster Schritt** | Keine offenen Aufgaben. Refactoring abgeschlossen (soweit sinnvoll). Nächste Session: neue Features oder Themen von Georg |
-| **Wo nachlesen** | `components/tabs/` (ausgelagerte Tabs), `components/ScreenshotExportAdmin.tsx` |
+| **Thema** | mök2 Marketing: Gründer-Galerie + Leitkünstler:innen Konzept |
+| **Was zuletzt** | Sektion 15 in MarketingOek2Page.tsx eingefügt: Gründer-Galerie Konzept (max. 50), Leitkünstler:innen Gratis-Edition, vollständige Begleitschreiben-Vorlage. Mok2Layout.tsx Sidebar ergänzt. Build ✅, Commit 7e6c9c2, Push ✅ |
+| **Nächster Schritt** | Landingpage bauen (DE, mehrsprachig-fähig) – 3-Fragen-Flow → persönliche Demo-Galerie |
+| **Wo nachlesen** | `src/pages/MarketingOek2Page.tsx` (Sektion 15), `src/components/Mok2Layout.tsx` |

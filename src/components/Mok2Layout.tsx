@@ -28,6 +28,7 @@ const mok2Sections = [
   { id: 'mok2-13', label: '13. Werkkatalog & Werkkarte' },
   { id: 'mok2-14', label: '14. 💎 Excellent-Lizenz' },
   { id: 'mok2-15-gruender', label: '15. 🌱 Gründer-Galerie & Leitkünstler' },
+  { id: 'mok2-16-leitkuenstler', label: '16. 📋 Leitkünstler:innen – Meine Liste' },
 ] as const
 
 const printStyles = `

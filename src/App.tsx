@@ -33,8 +33,9 @@ import PlatformStartPage from './pages/PlatformStartPage'
 import FlyerK2GaleriePage from './pages/FlyerK2GaleriePage'
 import PresseEinladungK2GaleriePage from './pages/PresseEinladungK2GaleriePage'
 import KundenPage from './pages/KundenPage'
-import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUTE } from './config/navigation'
+import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUTE, ENTDECKEN_ROUTE } from './config/navigation'
 import WillkommenPage from './pages/WillkommenPage'
+import EntdeckenPage from './pages/EntdeckenPage'
 import AGBPage from './pages/AGBPage'
 import SeitengestaltungPage from './pages/SeitengestaltungPage'
 import { BUILD_LABEL, BUILD_TIMESTAMP } from './buildInfo.generated'
@@ -490,6 +491,7 @@ function App() {
       <Route path={MOK2_ROUTE} element={<Navigate to={PROJECT_ROUTES['k2-galerie'].marketingOek2} replace />} />
       {/* Willkommensseite (Werbung/Flyer): Zugangsbereich, Anmelden, Erster Entwurf – mök2-Stil */}
       <Route path={WILLKOMMEN_ROUTE} element={<WillkommenPage />} />
+      <Route path={ENTDECKEN_ROUTE} element={<EntdeckenPage />} />
       {/* Allgemeine Geschäftsbedingungen – rechtliche Absicherung */}
       <Route path={AGB_ROUTE} element={<AGBPage />} />
       {/* Projekt-Routen – spezifische Pfade VOR /projects/:projectId, damit VK2 nicht abgefangen wird */}

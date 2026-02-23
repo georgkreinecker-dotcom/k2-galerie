@@ -14,6 +14,9 @@ export const WILLKOMMEN_ROUTE = '/willkommen'
 /** Allgemeine Geschäftsbedingungen – rechtliche Absicherung */
 export const AGB_ROUTE = '/agb'
 
+/** Landingpage – 3-Fragen-Flow für neue Künstler:innen */
+export const ENTDECKEN_ROUTE = '/entdecken'
+
 /** SessionStorage-Keys von WillkommenPage: Name + Flag „Erster Entwurf“ (in GalerieVorschauPage musterOnly auslesen) */
 export const WILLKOMMEN_NAME_KEY = 'k2-willkommen-name'
 export const WILLKOMMEN_ENTWURF_KEY = 'k2-willkommen-entwurf'
