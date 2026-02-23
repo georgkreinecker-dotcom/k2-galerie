@@ -127,20 +127,32 @@ const Vk2GalerieVorschauPage: React.FC = () => {
                   onMouseEnter={(e) => { if (hasLink) { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-3px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 24px rgba(37,99,235,0.3)' } }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 12px rgba(0,0,0,0.3)' }}
                 >
-                  {/* Foto oder Platzhalter */}
-                  <div style={{ width: '100%', aspectRatio: '4/3', background: 'rgba(37,99,235,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                    {m.mitgliedFotoUrl ? (
-                      <img src={m.mitgliedFotoUrl} alt={m.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  {/* Werkfoto oben */}
+                  <div style={{ width: '100%', aspectRatio: '3/2', background: 'rgba(37,99,235,0.08)', overflow: 'hidden', position: 'relative' }}>
+                    {m.imageUrl ? (
+                      <img src={m.imageUrl} alt={`Werk von ${m.name}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
-                      <div style={{ fontSize: '3rem', opacity: 0.4 }}>👤</div>
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', opacity: 0.25 }}>🖼️</div>
                     )}
                   </div>
 
-                  {/* Info */}
-                  <div style={{ padding: '1rem 1.1rem 1.2rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                    <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: '#f0f6ff' }}>{m.name}</h3>
-                    {m.typ && <p style={{ margin: 0, color: '#60a5fa', fontSize: '0.88rem', fontWeight: 500 }}>{m.typ}</p>}
-                    {m.bio && <p style={{ margin: '0.25rem 0 0', color: 'rgba(160,200,255,0.75)', fontSize: '0.85rem', lineHeight: 1.5 }}>{m.bio}</p>}
+                  {/* Info mit Porträt-Kreis */}
+                  <div style={{ padding: '0.9rem 1.1rem 1.1rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', marginBottom: '0.2rem' }}>
+                      {/* Porträt-Kreis */}
+                      <div style={{ width: 42, height: 42, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(37,99,235,0.4)', background: 'rgba(37,99,235,0.12)' }}>
+                        {m.mitgliedFotoUrl ? (
+                          <img src={m.mitgliedFotoUrl} alt={m.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>👤</div>
+                        )}
+                      </div>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#f0f6ff', lineHeight: 1.2 }}>{m.name}</h3>
+                        {m.typ && <p style={{ margin: 0, color: '#60a5fa', fontSize: '0.82rem', fontWeight: 500 }}>{m.typ}</p>}
+                      </div>
+                    </div>
+                    {m.bio && <p style={{ margin: '0.1rem 0 0', color: 'rgba(160,200,255,0.75)', fontSize: '0.83rem', lineHeight: 1.5 }}>{m.bio}</p>}
                     {hasLink && (
                       <p style={{ margin: 'auto 0 0', paddingTop: '0.5rem', fontSize: '0.82rem', color: '#60a5fa' }}>
                         Galerie ansehen →

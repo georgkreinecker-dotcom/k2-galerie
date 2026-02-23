@@ -230,6 +230,36 @@ export const VK2_STAMMDATEN_DEFAULTS: Vk2Stammdaten = {
   mitgliederNichtRegistriert: [],
 }
 
+// Dummy-Fotos als SVG Data-URL (Portrait + Werk) – kein externer Server nötig
+const _dummyColors = ['#e07b4a','#5b9bd5','#6dab6d','#c47ab5','#d4a843','#7a9ec4']
+function _mkPortrait(i: number, initials: string): string {
+  const c = _dummyColors[i % _dummyColors.length]
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="${c}22"/><circle cx="100" cy="78" r="38" fill="${c}99"/><ellipse cx="100" cy="160" rx="52" ry="36" fill="${c}66"/><text x="100" y="88" text-anchor="middle" font-family="system-ui,sans-serif" font-size="32" font-weight="700" fill="${c}">${initials}</text></svg>`
+  return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)))
+}
+function _mkWerk(i: number, titel: string, typ: string): string {
+  const c = _dummyColors[i % _dummyColors.length]
+  const shapes = [
+    `<rect x="30" y="40" width="140" height="100" rx="8" fill="${c}44"/><circle cx="80" cy="90" r="28" fill="${c}88"/><polygon points="120,60 160,130 80,130" fill="${c}66"/>`,
+    `<circle cx="100" cy="90" r="55" fill="${c}33"/><circle cx="100" cy="90" r="35" fill="${c}66"/><circle cx="100" cy="90" r="15" fill="${c}"/>`,
+    `<rect x="25" y="35" width="150" height="110" rx="4" fill="${c}22"/><line x1="25" y1="35" x2="175" y2="145" stroke="${c}" stroke-width="3"/><line x1="175" y1="35" x2="25" y2="145" stroke="${c}88" stroke-width="2"/>`,
+    `<polygon points="100,30 175,150 25,150" fill="${c}55"/><polygon points="100,55 155,145 45,145" fill="${c}99"/>`,
+    `<rect x="40" y="50" width="50" height="80" fill="${c}77"/><rect x="110" y="70" width="50" height="60" fill="${c}44"/><rect x="60" y="100" width="80" height="30" fill="${c}"/>`,
+    `<ellipse cx="100" cy="90" rx="65" ry="45" fill="${c}33"/><ellipse cx="100" cy="90" rx="40" ry="25" fill="${c}77"/><rect x="70" y="75" width="60" height="30" fill="${c}44"/>`,
+  ]
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="300" height="200" fill="#f8f4ef"/>${shapes[i % shapes.length]}<text x="150" y="185" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#888">${titel} · ${typ}</text></svg>`
+  return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)))
+}
+
+const _dm = [
+  { name: 'Maria Mustermann', email: 'maria@muster.at', lizenz: 'VP-001', typ: 'Malerei',    bio: 'Malerei mit Öl und Acryl – Landschaften und Portraits.', seit: '2019' },
+  { name: 'Hans Beispiel',    email: 'hans@muster.at',  lizenz: 'VP-002', typ: 'Skulptur',   bio: 'Bildhauer mit Fokus auf moderne Metall- und Holzskulpturen.', seit: '2020' },
+  { name: 'Anna Probst',      email: 'anna@muster.at',  lizenz: 'VP-003', typ: 'Fotografie', bio: 'Dokumentarfotografie und künstlerische Porträts.', seit: '2018' },
+  { name: 'Karl Vorlage',     email: 'karl@muster.at',  lizenz: 'VP-004', typ: 'Grafik',     bio: 'Illustration und digitale Grafik für Print und Web.', seit: '2021' },
+  { name: 'Eva Entwurf',      email: 'eva@muster.at',   lizenz: 'VP-005', typ: 'Keramik',    bio: 'Töpferei und handgefertigte Keramikobjekte.', seit: '2017' },
+  { name: 'Josef Skizze',     email: 'josef@muster.at', lizenz: 'VB-006', typ: 'Textil',     bio: 'Textile Kunst und experimentelle Stoffarbeiten.', seit: '2022' },
+]
+
 /** Dummy-Verein für Demo/Vorschau – wird gesetzt wenn k2-vk2-stammdaten leer ist */
 export const VK2_DEMO_STAMMDATEN: Vk2Stammdaten = {
   verein: {
@@ -246,27 +276,47 @@ export const VK2_DEMO_STAMMDATEN: Vk2Stammdaten = {
   kassier: { name: 'Anna Probst' },
   schriftfuehrer: { name: 'Karl Vorlage' },
   beisitzer: { name: 'Eva Entwurf' },
-  mitglieder: [
-    { name: 'Maria Mustermann', email: 'maria@muster.at', lizenz: 'VP-001', typ: 'Malerei', oeffentlichSichtbar: true },
-    { name: 'Hans Beispiel', email: 'hans@muster.at', lizenz: 'VP-002', typ: 'Skulptur', oeffentlichSichtbar: true },
-    { name: 'Anna Probst', email: 'anna@muster.at', lizenz: 'VP-003', typ: 'Fotografie', oeffentlichSichtbar: true },
-    { name: 'Karl Vorlage', email: 'karl@muster.at', lizenz: 'VP-004', typ: 'Grafik', oeffentlichSichtbar: true },
-    { name: 'Eva Entwurf', email: 'eva@muster.at', lizenz: 'VP-005', typ: 'Keramik', oeffentlichSichtbar: true },
-    { name: 'Josef Skizze', email: 'josef@muster.at', lizenz: 'VB-006', typ: 'Textil', oeffentlichSichtbar: true },
-  ],
+  mitglieder: _dm.map((m, i) => ({
+    ...m,
+    oeffentlichSichtbar: true,
+    mitgliedFotoUrl: _mkPortrait(i, m.name.split(' ').map(w => w[0]).join('').slice(0, 2)),
+    imageUrl: _mkWerk(i, m.name.split(' ')[0], m.typ),
+  })),
   mitgliederNichtRegistriert: ['Petra Farbe', 'Thomas Pinsel'],
 }
 
-/** Initialisiert VK2-Stammdaten mit Demo-Daten falls noch nichts gespeichert ist */
+/** Initialisiert VK2-Stammdaten mit Demo-Daten falls noch nichts gespeichert ist.
+ *  Füllt auch fehlende Demo-Fotos nach (mitgliedFotoUrl / imageUrl) ohne echte Daten zu überschreiben. */
 export function initVk2DemoStammdatenIfEmpty(): void {
   if (typeof window === 'undefined') return
   try {
     const raw = localStorage.getItem('k2-vk2-stammdaten')
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      if (parsed?.verein?.name) return
+    if (!raw) {
+      localStorage.setItem('k2-vk2-stammdaten', JSON.stringify(VK2_DEMO_STAMMDATEN))
+      return
     }
-    localStorage.setItem('k2-vk2-stammdaten', JSON.stringify(VK2_DEMO_STAMMDATEN))
+    const parsed = JSON.parse(raw) as Vk2Stammdaten
+    if (!parsed?.verein?.name) {
+      localStorage.setItem('k2-vk2-stammdaten', JSON.stringify(VK2_DEMO_STAMMDATEN))
+      return
+    }
+    // Fotos für Demo-Mitglieder nachfüllen (nur wenn Vereinsname = Demo UND Foto fehlt)
+    if (parsed.verein.name === 'Kunstverein Muster' && Array.isArray(parsed.mitglieder)) {
+      let changed = false
+      const updated = parsed.mitglieder.map((m, i) => {
+        const dm = VK2_DEMO_STAMMDATEN.mitglieder[i]
+        if (!dm) return m
+        const patch: Partial<Vk2Mitglied> = {}
+        if (!m.mitgliedFotoUrl && dm.mitgliedFotoUrl) { patch.mitgliedFotoUrl = dm.mitgliedFotoUrl; changed = true }
+        if (!m.imageUrl && dm.imageUrl) { patch.imageUrl = dm.imageUrl; changed = true }
+        if (!m.bio && dm.bio) { patch.bio = dm.bio; changed = true }
+        if (!m.seit && dm.seit) { patch.seit = dm.seit; changed = true }
+        return Object.keys(patch).length > 0 ? { ...m, ...patch } : m
+      })
+      if (changed) {
+        localStorage.setItem('k2-vk2-stammdaten', JSON.stringify({ ...parsed, mitglieder: updated }))
+      }
+    }
   } catch (_) {}
 }
 
