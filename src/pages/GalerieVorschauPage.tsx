@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY } from '../config/navigation'
-import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, type ArtworkCategoryId } from '../config/tenantConfig'
+import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, type ArtworkCategoryId, initVk2DemoStammdatenIfEmpty } from '../config/tenantConfig'
 import { 
   syncMobileToSupabase, 
   checkMobileUpdates, 
@@ -80,6 +80,8 @@ function loadOeffentlichArtworks(): any[] {
  *  und wandelt sie in Karten-Objekte für die Galerie-Vorschau um (Porträt + Kunstbereich). */
 function loadVk2Mitglieder(): any[] {
   try {
+    // Sicherstellen dass Demo-Daten vorhanden sind (falls direkt auf Vorschau navigiert)
+    initVk2DemoStammdatenIfEmpty()
     const raw = localStorage.getItem('k2-vk2-stammdaten')
     if (!raw) return []
     const parsed = JSON.parse(raw)

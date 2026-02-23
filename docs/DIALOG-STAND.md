@@ -4,6 +4,6 @@
 |------|--------|
 | **Datum** | 23.02.26 |
 | **Thema** | VK2 Willkommensseite: 3 Bugs behoben |
-| **Was zuletzt** | VK2 komplett überarbeitet: Dummy-Verein "Kunstverein Muster" + 6 Mitglieder als Demo-Start. displayGalleryName zeigt Vereinsnamen aus Stammdaten statt "Vereinsplattform". Nicht-editierbare Design-Karte gelöscht. Commit 4d86b29 Push ✅ |
-| **Nächster Schritt** | VK2-Seite auf Vercel testen: /projects/vk2/galerie – zeigt jetzt "Kunstverein Muster" als Titel, 6 Mitglieder sichtbar, Impressum mit Vereinsdaten. Stand-Badge tippen für Cache-Bypass. |
-| **Wo nachlesen** | `src/config/tenantConfig.ts` – VK2_DEMO_STAMMDATEN, initVk2DemoStammdatenIfEmpty. `src/pages/GaleriePage.tsx` – displayGalleryName |
+| **Was zuletzt** | VK2 Vorschau-Seite: K2-Werke haben Mitglieder überschrieben (2 useEffects ohne vk2-Schutz). `if (vk2) return` in beiden Lade-useEffects von GalerieVorschauPage.tsx eingefügt. Commit 1225f2d Push ✅ |
+| **Nächster Schritt** | VK2-Mitglieder-Seite testen: /projects/vk2/galerie-vorschau – sollte jetzt 6 Mitglieder (Kunstverein Muster) zeigen, keine K2-Werke mehr. |
+| **Wo nachlesen** | `src/pages/GalerieVorschauPage.tsx` – Zeile 800: `if (vk2) return () => {}`, Zeile 1296: `if (musterOnly || vk2) return` |
