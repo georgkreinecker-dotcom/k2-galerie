@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY } from '../config/navigation'
-import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, SEED_VK2_ARTISTS, type ArtworkCategoryId } from '../config/tenantConfig'
+import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, type ArtworkCategoryId } from '../config/tenantConfig'
 import { 
   syncMobileToSupabase, 
   checkMobileUpdates, 
@@ -76,31 +76,28 @@ function loadOeffentlichArtworks(): any[] {
   }
 }
 
-/** VK2: Strikte Trennung – nur echte VK2-Einträge (VK2-Nummer oder vk2-/vk2-seed-ID).
- *  Alle K2/ök2-Werke werden sofort aus localStorage entfernt und nie angezeigt. */
-function loadVk2Artworks(): any[] {
+/** VK2 hat KEINE Werke – nur Mitglieder. Diese Funktion lädt Mitglieder aus k2-vk2-stammdaten
+ *  und wandelt sie in Karten-Objekte für die Galerie-Vorschau um (Porträt + Kunstbereich). */
+function loadVk2Mitglieder(): any[] {
   try {
-    const raw = localStorage.getItem('k2-vk2-artworks')
+    const raw = localStorage.getItem('k2-vk2-stammdaten')
     if (!raw) return []
     const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed) || parsed.length === 0) return []
-    // STRIKT: Nur VK2-eigene Einträge (VK2-Nummer ODER vk2-* ID)
-    const vk2Only = parsed.filter((a: any) => {
-      const num = String(a?.number || '')
-      const id  = String(a?.id || '')
-      return num.startsWith('VK2-') || id.startsWith('vk2-')
-    })
-    if (vk2Only.length !== parsed.length) {
-      // Alle Fremdeinträge sofort aus dem Key entfernen
-      try { localStorage.setItem('k2-vk2-artworks', JSON.stringify(vk2Only)) } catch (_) {}
-    }
-    if (vk2Only.length === 0) return [] // Fallback → SEED_VK2_ARTISTS in useEffect
-    return vk2Only.map((a: any) => {
-      const out = { ...a }
-      if (isPlaceholderImageUrl(out.imageUrl) && out.previewUrl) out.imageUrl = out.previewUrl
-      if (isPlaceholderImageUrl(out.imageUrl)) out.imageUrl = getOek2DefaultArtworkImage(out.category)
-      return out
-    })
+    const mitglieder: any[] = Array.isArray(parsed?.mitglieder) ? parsed.mitglieder : []
+    if (mitglieder.length === 0) return []
+    return mitglieder
+      .filter((m: any) => m?.name)
+      .map((m: any, i: number) => ({
+        id: `vk2-mitglied-${i}`,
+        number: `VK2-${String(i + 1).padStart(2, '0')}`,
+        title: m.name,
+        category: m.typ?.toLowerCase() || 'sonstiges',
+        description: m.typ ? `${m.typ}${m.ort ? ' · ' + m.ort : ''}` : '',
+        imageUrl: m.mitgliedFotoUrl || m.imageUrl || getOek2DefaultArtworkImage(m.typ?.toLowerCase() || 'sonstiges'),
+        price: 0,
+        inShop: false,
+        inExhibition: true,
+      }))
   } catch {
     return []
   }
@@ -252,11 +249,10 @@ type Filter = 'alle' | ArtworkCategoryId
 const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }: { initialFilter?: Filter; musterOnly?: boolean; vk2?: boolean }) => {
   const navigate = useNavigate()
   
-  // ök2 (musterOnly): k2-oeffentlich-artworks; VK2 (vk2): k2-vk2-artworks; K2: k2-artworks
+  // ök2 (musterOnly): k2-oeffentlich-artworks; VK2 (vk2): Mitglieder aus k2-vk2-stammdaten; K2: k2-artworks
   const initialArtworks = (() => {
     if (vk2) {
-      const v = loadVk2Artworks()
-      return v
+      return loadVk2Mitglieder()
     }
     if (musterOnly) {
       const oef = loadOeffentlichArtworks()
@@ -351,11 +347,10 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     } catch (_) {}
   }
 
-  // ök2 / VK2: Werke aus dem jeweiligen Speicher anzeigen
+  // ök2 / VK2: Einträge aus dem jeweiligen Speicher anzeigen
   useEffect(() => {
     if (vk2) {
-      const v = loadVk2Artworks()
-      setArtworks(v.length > 0 ? v : [...SEED_VK2_ARTISTS])
+      setArtworks(loadVk2Mitglieder())
       return
     }
     if (musterOnly) {
@@ -364,12 +359,11 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     }
   }, [musterOnly, vk2])
 
-  // K2 / ök2 / VK2: Nach Speichern im Admin (artworks-updated) Galerie-Liste aus dem jeweiligen Speicher aktualisieren
+  // K2 / ök2 / VK2: Nach Speichern im Admin aktualisieren
   useEffect(() => {
     const onUpdated = () => {
       if (vk2) {
-        const v = loadVk2Artworks()
-        setArtworks(v.length > 0 ? v : [...SEED_VK2_ARTISTS])
+        setArtworks(loadVk2Mitglieder())
         return
       }
       if (musterOnly) {

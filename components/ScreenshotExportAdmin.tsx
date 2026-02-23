@@ -69,7 +69,7 @@ function isVk2AdminContext(): boolean {
 
 // KRITISCH: Getrennte Storage-Keys für K2 vs. ök2 vs. VK2 – niemals Daten vermischen
 function getArtworksKey(): string {
-  if (isVk2AdminContext()) return 'k2-vk2-artworks'
+  // VK2 hat KEINE Werke – nur Mitglieder in k2-vk2-stammdaten
   return isOeffentlichAdminContext() ? 'k2-oeffentlich-artworks' : 'k2-artworks'
 }
 function getEventsKey(): string {
@@ -276,14 +276,14 @@ function saveArtworks(artworks: any[]): boolean {
 }
 
 function loadArtworks(): any[] {
+  // VK2 hat KEINE Werke – nur Mitglieder (in k2-vk2-stammdaten)
+  if (isVk2AdminContext()) return []
   try {
     const key = getArtworksKey()
     const stored = localStorage.getItem(key)
     // ök2: Wenn noch keine Daten, Musterwerke als Ausgangsbasis (K2-artworks nie anrühren)
-    // VK2: Kein Seed mehr – leer bleibt leer (Platzhalter wurden entfernt)
     if (!stored || stored === '[]') {
       if (isOeffentlichAdminContext()) return [...MUSTER_ARTWORKS]
-      if (isVk2AdminContext()) return []
       return []
     }
     // SAFE MODE: Prüfe Größe bevor Parsen
@@ -293,7 +293,6 @@ function loadArtworks(): any[] {
     }
     let artworks = JSON.parse(stored)
     
-    // VK2: vk2-seed-* Einträge sind gültige Platzhalter – NICHT entfernen
     
     // KRITISCH: Im ök2-Kontext nur echte K2-Galerie-Werke entfernen (K2-M-, K2-K-, … bzw. K2-0001), nicht ök2-eigene (K2-W-*)
     if (isOeffentlichAdminContext()) {
@@ -312,21 +311,7 @@ function loadArtworks(): any[] {
       }
     }
 
-    // VK2: STRIKT – nur VK2-Einträge (VK2-Nummer ODER vk2-* ID). Alles andere sofort raus.
-    if (isVk2AdminContext()) {
-      const before = artworks.length
-      artworks = artworks.filter((a: any) => {
-        const num = String(a?.number || '')
-        const id  = String(a?.id || '')
-        return num.startsWith('VK2-') || id.startsWith('vk2-')
-      })
-      if (artworks.length !== before) {
-        console.warn(`🔒 VK2-Admin: ${before - artworks.length} Fremd-Werke entfernt (K2/ök2 gehören nicht in VK2)`)
-        try {
-          localStorage.setItem(key, JSON.stringify(artworks))
-        } catch (_) {}
-      }
-    }
+    // VK2 hat keine Artworks – loadArtworks() wird im VK2-Kontext nicht verwendet
     
     // KRITISCH: Behebe automatisch doppelte Nummern beim Laden
     const numberMap = new Map<string, any[]>()
