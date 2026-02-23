@@ -8140,59 +8140,161 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             {activeTab === 'werke' && (
               <div>
 
-                {/* Willkommens-Hub wenn Guide-Flow aktiv – Name + Pfad des Users sichtbar genutzt */}
+                {/* Großer Willkommens-Hub wenn Guide-Flow aktiv */}
                 {guideFlowAktiv && isOeffentlichAdminContext() && !guideBannerClosed && (() => {
                   const istVerein = guidePfad === 'gemeinschaft'
-                  const vornameTitel = guideVorname ? `Willkommen, ${guideVorname}!` : 'Willkommen!'
-                  const pfadText = istVerein
-                    ? 'Deine Vereins-Zentrale ist bereit.'
-                    : guidePfad === 'atelier'
-                    ? 'Dein Atelier ist bereit.'
-                    : guidePfad === 'entdecker'
-                    ? 'Deine Galerie wartet auf dich.'
-                    : 'Das ist deine Galerie-Zentrale.'
                   const akzent = istVerein ? '#1e5cb5' : '#b54a1e'
                   const akzentHell = istVerein ? '#42a4ff' : '#ff8c42'
+                  const akzentGrad = istVerein
+                    ? 'linear-gradient(135deg, #1e5cb5, #42a4ff)'
+                    : 'linear-gradient(135deg, #b54a1e, #ff8c42)'
+                  const avatarEmoji = istVerein ? '🏛️' : guidePfad === 'atelier' ? '🏢' : guidePfad === 'entdecker' ? '🌱' : '👨‍🎨'
+                  const vornameTitel = guideVorname ? `Willkommen, ${guideVorname}!` : 'Willkommen!'
+                  const pfadText = istVerein ? 'Das ist die Zentrale eures Vereins.'
+                    : guidePfad === 'atelier' ? 'Dein Atelier ist bereit.'
+                    : guidePfad === 'entdecker' ? 'Deine Galerie wartet auf dich.'
+                    : 'Das ist deine Galerie-Zentrale.'
                   const galerieUrl = '/projects/k2-galerie/galerie-oeffentlich'
+
+                  // Alle Stationen – Kacheln links + rechts
+                  type HubTab = 'werke' | 'eventplan' | 'design' | 'einstellungen' | 'katalog' | 'assistent'
+                  const alleStationen: { emoji: string; name: string; beschreibung: string; tab: HubTab }[] = istVerein ? [
+                    { emoji: '🖼️', name: 'Werke & Mitglieder', beschreibung: 'Alle Werke aller Mitglieder – Fotos, Preise, Profile.', tab: 'werke' },
+                    { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Vernissagen planen, Einladungen erstellen, QR-Codes.', tab: 'eventplan' },
+                    { emoji: '✨', name: 'Aussehen & Design', beschreibung: 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
+                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Vereinsdaten, Kontakt, Mitglieder verwalten.', tab: 'einstellungen' },
+                    { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
+                    { emoji: '🚀', name: 'Jetzt starten', beschreibung: 'Daten ausfüllen und die Galerie live schalten.', tab: 'assistent' },
+                  ] : [
+                    { emoji: '🖼️', name: 'Meine Werke', beschreibung: 'Fotos hochladen, Titel, Preis – ein Klick und es ist live.', tab: 'werke' },
+                    { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Vernissage planen, Einladungen & QR-Codes erstellen.', tab: 'eventplan' },
+                    { emoji: '✨', name: 'Aussehen & Design', beschreibung: 'Farben, Texte, dein Foto – die Galerie wird zu dir.', tab: 'design' },
+                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Kontakt, Adresse, Öffnungszeiten – deine Stammdaten.', tab: 'einstellungen' },
+                    { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
+                    { emoji: '🚀', name: 'Jetzt starten', beschreibung: 'Daten ausfüllen und deine Galerie live schalten.', tab: 'assistent' },
+                  ]
+
+                  // Aktive Station = welcher Tab ist gerade offen
+                  const aktivIdx = alleStationen.findIndex(s => s.tab === activeTab)
+                  const aktivStation = aktivIdx >= 0 ? alleStationen[aktivIdx] : alleStationen[0]
+                  const halbePunkte = Math.ceil(alleStationen.length / 2)
+                  const linksStationen = alleStationen.slice(0, halbePunkte)
+                  const rechtsStationen = alleStationen.slice(halbePunkte)
+
                   return (
-                    <div style={{ background: `linear-gradient(135deg, ${akzent}12, ${akzent}06)`, border: `1.5px solid ${akzent}33`, borderRadius: '16px', padding: '1rem 1.25rem', marginBottom: '1.5rem', position: 'relative' }}>
-                      <button type="button" onClick={() => setGuideBannerClosed(true)} style={{ position: 'absolute', top: '0.6rem', right: '0.7rem', background: 'none', border: 'none', cursor: 'pointer', color: `${akzent}55`, fontSize: '1.1rem', lineHeight: 1, padding: '0.15rem 0.3rem' }} title="Schließen">×</button>
-                      {/* Kopf */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.8rem', flexWrap: 'wrap' as const }}>
-                        <div style={{ width: 38, height: 38, borderRadius: '50%', background: `linear-gradient(135deg, ${akzent}, ${akzentHell})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.15rem', flexShrink: 0, boxShadow: `0 3px 10px ${akzent}44` }}>
-                          {istVerein ? '🏛️' : guidePfad === 'atelier' ? '🏢' : guidePfad === 'entdecker' ? '🌱' : '👨‍🎨'}
+                    <div style={{ background: `linear-gradient(135deg, ${akzent}10, ${akzent}05)`, border: `1.5px solid ${akzent}30`, borderRadius: '20px', padding: '1.5rem', marginBottom: '2rem', position: 'relative' }}>
+                      <button type="button" onClick={() => setGuideBannerClosed(true)} style={{ position: 'absolute', top: '0.9rem', right: '1rem', background: 'none', border: 'none', cursor: 'pointer', color: `${akzent}44`, fontSize: '1.2rem', lineHeight: 1, padding: '0.2rem 0.4rem' }} title="Schließen">×</button>
+
+                      {/* Kopfzeile */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem', marginBottom: '1.25rem', flexWrap: 'wrap' as const }}>
+                        <div style={{ width: 46, height: 46, borderRadius: '50%', background: akzentGrad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', flexShrink: 0, boxShadow: `0 4px 14px ${akzent}44` }}>
+                          {avatarEmoji}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: '1rem', fontWeight: 700, color: '#1c1a18' }}>{vornameTitel} {pfadText}</div>
-                          <div style={{ fontSize: '0.78rem', color: '#5c5650', marginTop: '0.15rem' }}>
-                            {istVerein ? 'Dein Guide führt dich durch alle Bereiche.' : 'Dein Guide begleitet dich – klick unten auf eine Station.'}
+                          <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#1c1a18', lineHeight: 1.3 }}>{vornameTitel} {pfadText}</div>
+                          <div style={{ fontSize: '0.82rem', color: '#5c5650', marginTop: '0.2rem' }}>
+                            {istVerein ? 'Dein Guide führt euch durch alle Bereiche.' : 'Klick auf eine Kachel – dein Guide erklärt sie dir.'}
                           </div>
                         </div>
-                        <a href={galerieUrl} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', padding: '0.45rem 0.8rem', background: akzent, color: '#fff', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0, whiteSpace: 'nowrap' as const }}>
+                        <a href={galerieUrl} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.55rem 1rem', background: akzent, color: '#fff', borderRadius: '10px', fontSize: '0.84rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0, whiteSpace: 'nowrap' as const, boxShadow: `0 3px 10px ${akzent}44` }}>
                           🎨 Galerie ansehen →
                         </a>
                       </div>
-                      {/* Schnellzugriff-Kacheln */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '0.45rem' }}>
-                        {(istVerein ? [
-                          { emoji: '🖼️', name: 'Werke', tab: 'werke' as const },
-                          { emoji: '🎟️', name: 'Events', tab: 'eventplan' as const },
-                          { emoji: '✨', name: 'Aussehen', tab: 'design' as const },
-                          { emoji: '⚙️', name: 'Einstellungen', tab: 'einstellungen' as const },
-                        ] : [
-                          { emoji: '🖼️', name: 'Meine Werke', tab: 'werke' as const },
-                          { emoji: '🎟️', name: 'Events', tab: 'eventplan' as const },
-                          { emoji: '✨', name: 'Aussehen', tab: 'design' as const },
-                          { emoji: '⚙️', name: 'Einstellungen', tab: 'einstellungen' as const },
-                        ]).map(b => (
-                          <button key={b.tab} type="button"
-                            onClick={() => { setActiveTab(b.tab); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
-                            style={{ background: activeTab === b.tab ? `${akzent}18` : '#fff', border: activeTab === b.tab ? `1.5px solid ${akzentHell}` : '1px solid #e8e4de', borderRadius: '10px', padding: '0.5rem 0.6rem', display: 'flex', gap: '0.4rem', alignItems: 'center', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', fontWeight: activeTab === b.tab ? 700 : 400, color: activeTab === b.tab ? akzent : '#1c1a18', fontSize: '0.8rem' }}>
-                            <span style={{ fontSize: '1rem' }}>{b.emoji}</span>
-                            <span>{b.name}</span>
-                            {activeTab === b.tab && <span style={{ marginLeft: 'auto', fontSize: '0.65rem', color: akzentHell }}>●</span>}
+
+                      {/* Hub: Kacheln links | aktiver Dialog Mitte | Kacheln rechts */}
+                      <div style={{ display: 'flex', gap: '1rem', alignItems: 'stretch' }}>
+
+                        {/* Kacheln links */}
+                        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: '140px', flexShrink: 0 }}>
+                          {linksStationen.map((st, i) => {
+                            const istAktiv = activeTab === st.tab
+                            return (
+                              <button key={st.tab} type="button"
+                                onClick={() => { setActiveTab(st.tab); window.scrollTo({ top: 200, behavior: 'smooth' }) }}
+                                style={{
+                                  padding: '0.65rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                  background: istAktiv ? akzentGrad : '#fff',
+                                  border: istAktiv ? 'none' : '1px solid #e8e4de',
+                                  borderRadius: '12px', cursor: 'pointer', fontFamily: 'inherit',
+                                  transition: 'all 0.15s', textAlign: 'left' as const,
+                                  boxShadow: istAktiv ? `0 3px 12px ${akzent}44` : '0 1px 3px rgba(0,0,0,0.06)',
+                                  color: istAktiv ? '#fff' : '#1c1a18',
+                                  fontWeight: istAktiv ? 700 : 400,
+                                  position: 'relative' as const,
+                                }}>
+                                <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{st.emoji}</span>
+                                <span style={{ fontSize: '0.78rem', lineHeight: 1.3 }}>{st.name}</span>
+                                {istAktiv && <span style={{ position: 'absolute', top: 5, right: 7, fontSize: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>●</span>}
+                              </button>
+                            )
+                          })}
+                        </div>
+
+                        {/* Aktiver Dialog Mitte */}
+                        <div style={{ flex: 1, background: '#fff', borderRadius: '16px', padding: '1.25rem', border: `2px solid ${akzentHell}44`, boxShadow: `0 4px 20px ${akzent}18`, display: 'flex', flexDirection: 'column' as const, gap: '0.75rem', minWidth: 0 }}>
+                          {/* Station-Kopf */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                            <div style={{ width: 40, height: 40, borderRadius: '50%', background: akzentGrad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>
+                              {avatarEmoji}
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '0.6rem', color: akzentHell, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em' }}>
+                                {istVerein ? 'Vereins-Guide' : 'Galerie-Guide'}
+                              </div>
+                              <div style={{ fontSize: '1rem', fontWeight: 700, color: '#1c1a18' }}>
+                                {aktivStation.emoji} {aktivStation.name}
+                              </div>
+                            </div>
+                          </div>
+                          {/* Fortschrittsbalken */}
+                          <div style={{ display: 'flex', gap: '0.2rem' }}>
+                            {alleStationen.map((st, i) => (
+                              <div key={st.tab}
+                                onClick={() => { setActiveTab(st.tab); window.scrollTo({ top: 200, behavior: 'smooth' }) }}
+                                style={{ flex: 1, height: 4, borderRadius: 2, cursor: 'pointer', transition: 'background 0.2s',
+                                  background: i < (aktivIdx >= 0 ? aktivIdx : 0) ? akzent : st.tab === activeTab ? akzentHell : '#e8e4de' }}
+                                title={st.name}
+                              />
+                            ))}
+                          </div>
+                          {/* Beschreibung */}
+                          <div style={{ fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.6, flex: 1 }}>
+                            {aktivStation.beschreibung}
+                          </div>
+                          {/* Aktion */}
+                          <button type="button"
+                            onClick={() => { setActiveTab(aktivStation.tab); window.scrollTo({ top: 200, behavior: 'smooth' }) }}
+                            style={{ width: '100%', padding: '0.8rem', background: akzentGrad, border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit', boxShadow: `0 4px 14px ${akzent}44` }}>
+                            {aktivStation.emoji} {aktivStation.name} öffnen →
                           </button>
-                        ))}
+                        </div>
+
+                        {/* Kacheln rechts */}
+                        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: '140px', flexShrink: 0 }}>
+                          {rechtsStationen.map((st) => {
+                            const istAktiv = activeTab === st.tab
+                            return (
+                              <button key={st.tab} type="button"
+                                onClick={() => { setActiveTab(st.tab); window.scrollTo({ top: 200, behavior: 'smooth' }) }}
+                                style={{
+                                  padding: '0.65rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                  background: istAktiv ? akzentGrad : '#fff',
+                                  border: istAktiv ? 'none' : '1px solid #e8e4de',
+                                  borderRadius: '12px', cursor: 'pointer', fontFamily: 'inherit',
+                                  transition: 'all 0.15s', textAlign: 'left' as const,
+                                  boxShadow: istAktiv ? `0 3px 12px ${akzent}44` : '0 1px 3px rgba(0,0,0,0.06)',
+                                  color: istAktiv ? '#fff' : '#1c1a18',
+                                  fontWeight: istAktiv ? 700 : 400,
+                                  position: 'relative' as const,
+                                }}>
+                                <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{st.emoji}</span>
+                                <span style={{ fontSize: '0.78rem', lineHeight: 1.3 }}>{st.name}</span>
+                                {istAktiv && <span style={{ position: 'absolute', top: 5, right: 7, fontSize: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>●</span>}
+                              </button>
+                            )
+                          })}
+                        </div>
+
                       </div>
                     </div>
                   )
