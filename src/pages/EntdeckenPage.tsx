@@ -7,11 +7,40 @@
  * Am Ende: verblüffender Moment – „Das ist deine Galerie."
  */
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { PROJECT_ROUTES, AGB_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY } from '../config/navigation'
 import { PRODUCT_BRAND_NAME } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
+
+// ─── Erkundungs-Notizen ───────────────────────────────────────────────────────
+export const ERKUNDUNGS_NOTIZEN_KEY = 'k2-erkundungs-notizen'
+
+export interface ErkundungsNotiz {
+  id: string
+  text: string
+  step: string
+  zeit: string
+}
+
+function ladeNotizen(): ErkundungsNotiz[] {
+  try {
+    const v = localStorage.getItem(ERKUNDUNGS_NOTIZEN_KEY)
+    if (v) return JSON.parse(v)
+  } catch (_) {}
+  return []
+}
+
+function speichereNotiz(text: string, step: string) {
+  const notizen = ladeNotizen()
+  notizen.push({
+    id: Date.now().toString(),
+    text: text.trim(),
+    step,
+    zeit: new Date().toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit' }),
+  })
+  try { localStorage.setItem(ERKUNDUNGS_NOTIZEN_KEY, JSON.stringify(notizen)) } catch (_) {}
+}
 
 // ─── Texte (hier zentral, später leicht übersetzbar) ─────────────────────────
 const T = {
@@ -62,6 +91,17 @@ export default function EntdeckenPage() {
   const navigate = useNavigate()
   const [step, setStep] = useState<Step>('hero')
   const [answers, setAnswers] = useState<Answers>({ q1: '', q2: '', q3: '' })
+  const [notizOffen, setNotizOffen] = useState(false)
+  const [notizText, setNotizText] = useState('')
+  const [notizGespeichert, setNotizGespeichert] = useState(false)
+
+  const handleNotizSpeichern = useCallback(() => {
+    if (!notizText.trim()) return
+    speichereNotiz(notizText, step)
+    setNotizText('')
+    setNotizGespeichert(true)
+    setTimeout(() => { setNotizGespeichert(false); setNotizOffen(false) }, 1200)
+  }, [notizText, step])
 
   const accent = '#b54a1e'
   const accentLight = '#d4622a'
@@ -300,6 +340,53 @@ export default function EntdeckenPage() {
           <span>Kein Kauf nötig</span>
         </div>
       )}
+
+      {/* ── FLOATING NOTIZ-BUTTON ─────────────────────────────────────────── */}
+      <div style={{ position: 'fixed', bottom: '1.25rem', right: '1.25rem', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+
+        {/* Notiz-Panel */}
+        {notizOffen && (
+          <div style={{ background: '#1a1008', border: '1px solid rgba(255,140,66,0.5)', borderRadius: '14px', padding: '1rem', width: 'min(300px, calc(100vw - 2.5rem))', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+            <div style={{ fontSize: '0.78rem', color: 'rgba(255,140,66,0.7)', marginBottom: '0.5rem', fontFamily: fontBody }}>
+              💡 Idee notieren – landet im Smart Panel
+            </div>
+            {notizGespeichert ? (
+              <div style={{ textAlign: 'center', padding: '0.75rem', color: '#86efac', fontSize: '0.9rem', fontWeight: 700 }}>✅ Gespeichert!</div>
+            ) : (
+              <>
+                <textarea
+                  autoFocus
+                  value={notizText}
+                  onChange={e => setNotizText(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleNotizSpeichern() }}
+                  placeholder="Was fällt dir auf? Was würdest du ändern?"
+                  rows={3}
+                  style={{ width: '100%', padding: '0.65rem 0.75rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,140,66,0.3)', borderRadius: '8px', color: '#fff8f0', fontFamily: fontBody, fontSize: '0.88rem', resize: 'none', outline: 'none', boxSizing: 'border-box', lineHeight: 1.55 }}
+                />
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  <button type="button" onClick={() => setNotizOffen(false)} style={{ flex: 1, padding: '0.55rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.82rem' }}>Abbrechen</button>
+                  <button type="button" onClick={handleNotizSpeichern} disabled={!notizText.trim()} style={{ flex: 2, padding: '0.55rem', background: notizText.trim() ? 'linear-gradient(135deg, #ff8c42, #b54a1e)' : 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', color: '#fff', cursor: notizText.trim() ? 'pointer' : 'default', fontFamily: fontBody, fontSize: '0.88rem', fontWeight: 700 }}>
+                    💾 Speichern
+                  </button>
+                </div>
+                <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.2)', textAlign: 'right', marginTop: '0.35rem' }}>⌘+Enter zum Speichern</div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Trigger-Button */}
+        <button
+          type="button"
+          onClick={() => { setNotizOffen(o => !o); setNotizText(''); setNotizGespeichert(false) }}
+          title="Idee notieren"
+          style={{ width: 52, height: 52, borderRadius: '50%', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', cursor: 'pointer', fontSize: '1.4rem', boxShadow: '0 4px 20px rgba(255,140,66,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.1)' }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)' }}
+        >
+          {notizOffen ? '✕' : '💡'}
+        </button>
+      </div>
     </div>
   )
 }

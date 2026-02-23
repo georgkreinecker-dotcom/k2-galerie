@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { PROJECT_ROUTES, MOK2_ROUTE, ENTDECKEN_ROUTE } from '../config/navigation'
+import { ERKUNDUNGS_NOTIZEN_KEY, type ErkundungsNotiz } from '../pages/EntdeckenPage'
 
 /** Fremder-Modus: alle Session-/localStorage-Keys die einen "ersten Besuch" simulieren */
 const FREMDER_SESSION_KEYS = [
@@ -74,18 +75,48 @@ interface SmartPanelProps {
 }
 
 export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps) {
-  // Im APf-Kontext: Seite im Frame wechseln. Außerhalb: normale Navigation.
   const nav = (page: string, url: string) => {
-    if (onNavigate) {
-      onNavigate(page)
-    } else {
-      window.location.href = url
-    }
+    if (onNavigate) onNavigate(page)
+    else window.location.href = url
   }
 
   // Sortierbare Hauptbuttons
   const [itemOrder, setItemOrder] = useState<string[]>(loadOrder)
   const [editMode, setEditMode] = useState(false)
+
+  // Erkundungs-Notizen
+  const [notizen, setNotizen] = useState<ErkundungsNotiz[]>(() => {
+    try {
+      const v = localStorage.getItem(ERKUNDUNGS_NOTIZEN_KEY)
+      if (v) return JSON.parse(v)
+    } catch (_) {}
+    return []
+  })
+
+  // Aktualisieren wenn aus EntdeckenPage neue Notiz gespeichert wird
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === ERKUNDUNGS_NOTIZEN_KEY) {
+        try {
+          const v = e.newValue ? JSON.parse(e.newValue) : []
+          setNotizen(v)
+        } catch (_) {}
+      }
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
+
+  const loescheNotiz = (id: string) => {
+    const neu = notizen.filter(n => n.id !== id)
+    setNotizen(neu)
+    try { localStorage.setItem(ERKUNDUNGS_NOTIZEN_KEY, JSON.stringify(neu)) } catch (_) {}
+  }
+
+  const loescheAlle = () => {
+    setNotizen([])
+    try { localStorage.removeItem(ERKUNDUNGS_NOTIZEN_KEY) } catch (_) {}
+  }
   const dragId = useRef<string | null>(null)
   const dragOverId = useRef<string | null>(null)
 
@@ -187,6 +218,30 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
           <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>→</span>
         </button>
       </div>
+
+      {/* Erkundungs-Notizen Inbox */}
+      {notizen.length > 0 && (
+        <div style={{ borderBottom: '1px solid rgba(95,251,241,0.12)', paddingBottom: '1rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+            <h4 style={{ margin: 0, fontSize: '0.88rem', color: '#fbbf24', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <span style={{ background: '#b54a1e', color: '#fff', borderRadius: '50%', width: 18, height: 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700 }}>{notizen.length}</span>
+              💡 Deine Erkundungs-Ideen
+            </h4>
+            <button type="button" onClick={loescheAlle} style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.25)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.1rem 0.3rem', fontFamily: 'inherit' }}>Alle löschen</button>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+            {notizen.map(n => (
+              <div key={n.id} style={{ background: 'rgba(251,191,36,0.07)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: '8px', padding: '0.6rem 0.75rem', position: 'relative' }}>
+                <div style={{ fontSize: '0.82rem', color: '#fff8f0', lineHeight: 1.5, paddingRight: '1.2rem' }}>{n.text}</div>
+                <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.3)', marginTop: '0.25rem' }}>
+                  {n.zeit} · Schritt: {n.step}
+                </div>
+                <button type="button" onClick={() => loescheNotiz(n.id)} style={{ position: 'absolute', top: '0.4rem', right: '0.4rem', background: 'none', border: 'none', color: 'rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: '0.75rem', padding: '0.1rem 0.3rem', lineHeight: 1 }} title="Erledigt">✕</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Sortierbare Hauptbuttons – wie iPhone: Bearbeiten → Ziehen */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
