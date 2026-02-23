@@ -3551,8 +3551,8 @@ function naechsterSchritt(schritt: GuideSchritt, antworten: GuideAntworten): Gui
     case 'entdecker_interesse': return 'entdecker_mut'
     case 'entdecker_mut':       return 'entdecker_ziel'
     case 'entdecker_ziel':      return 'kontakt'
-    case 'kontakt':        return 'abschluss'
-    case 'abschluss':      return 'vorhang'
+    case 'kontakt':
+      return pfad === 'gemeinschaft' ? 'tour_v_galerie' : 'tour_galerie'
     case 'vorhang':
       return pfad === 'gemeinschaft' ? 'tour_v_galerie' : 'tour_galerie'
     // Künstler/Atelier/Entdecker Tour
@@ -3581,11 +3581,11 @@ const TOUR_SCHRITTE: GuideSchritt[] = [
 ]
 
 const PFAD_REIHENFOLGE: Record<string, GuideSchritt[]> = {
-  kuenstlerin:  ['begruessung','wer_bist_du','kunstart','erfahrung','ziel_kuenstler','ausstellungen','kontakt','abschluss','vorhang','tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','tour_lizenz','tour_entscheidung','empfehlung'],
-  gemeinschaft: ['begruessung','wer_bist_du','verein_groesse','verein_ausstellungen','verein_wunsch','vereinsgalerie','kontakt','abschluss','vorhang','tour_v_galerie','tour_v_mitglieder','tour_v_events','tour_v_dokumente','tour_v_kassa','tour_v_lizenz','tour_v_entscheidung','empfehlung'],
-  atelier:      ['begruessung','wer_bist_du','atelier_groesse','atelier_bedarf','atelier_struktur','kontakt','abschluss','vorhang','tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','tour_lizenz','tour_entscheidung','empfehlung'],
-  entdecker:    ['begruessung','wer_bist_du','entdecker_interesse','entdecker_mut','entdecker_ziel','kontakt','abschluss','vorhang','tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','tour_lizenz','tour_entscheidung','empfehlung'],
-  '':           ['begruessung','wer_bist_du','kunstart','erfahrung','ziel_kuenstler','ausstellungen','kontakt','abschluss','vorhang','tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','tour_lizenz','tour_entscheidung','empfehlung'],
+  kuenstlerin:  ['begruessung','wer_bist_du','kunstart','erfahrung','ziel_kuenstler','ausstellungen','kontakt','tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','tour_lizenz','tour_entscheidung','empfehlung'],
+  gemeinschaft: ['begruessung','wer_bist_du','verein_groesse','verein_ausstellungen','verein_wunsch','vereinsgalerie','kontakt','tour_v_galerie','tour_v_mitglieder','tour_v_events','tour_v_dokumente','tour_v_kassa','tour_v_lizenz','tour_v_entscheidung','empfehlung'],
+  atelier:      ['begruessung','wer_bist_du','atelier_groesse','atelier_bedarf','atelier_struktur','kontakt','tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','tour_lizenz','tour_entscheidung','empfehlung'],
+  entdecker:    ['begruessung','wer_bist_du','entdecker_interesse','entdecker_mut','entdecker_ziel','kontakt','tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','tour_lizenz','tour_entscheidung','empfehlung'],
+  '':           ['begruessung','wer_bist_du','kunstart','erfahrung','ziel_kuenstler','ausstellungen','kontakt','tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','tour_lizenz','tour_entscheidung','empfehlung'],
 }
 
 function pfadPosition(schritt: GuideSchritt, pfad: GuidePfad): number {
@@ -4051,6 +4051,14 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
 
   const istFertig = textIdx >= volltext.length
 
+  // Begrüßung: automatisch weiter – kein Button nötig
+  useEffect(() => {
+    if (istFertig && schritt === 'begruessung') {
+      const t = setTimeout(() => setSchritt('wer_bist_du'), 800)
+      return () => clearTimeout(t)
+    }
+  }, [istFertig, schritt])
+
   const weiterNachAuswahl = (wert: string) => {
     let key: keyof GuideAntworten = schritt as keyof GuideAntworten
     const neu: GuideAntworten = { ...antworten, [key]: wert }
@@ -4094,8 +4102,7 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
   const fortschritt = pfadPosition(schritt, pfad)
   const gesamtSchritte = pfadLaenge(pfad)
   const istTour = TOUR_SCHRITTE.includes(schritt)
-  const istAbschluss = schritt === 'abschluss'
-  const showFortschritt = schritt !== 'empfehlung' && schritt !== 'vorhang' && !istTour
+  const showFortschritt = schritt !== 'empfehlung' && !istTour
   const istVereinsPfad = pfad === 'gemeinschaft'
   const guideLabel = istVereinsPfad ? 'Dein Vereins-Guide' : 'Dein Galerie-Guide'
   // Tour-Fortschritt: welcher Schritt in der aktuellen Tour
@@ -4116,13 +4123,13 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
     pfad === 'entdecker'    ? '🌱' : '👨‍🎨'
 
   return (
-    <div style={{ position: 'fixed', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)', zIndex: 10000, width: istAbschluss ? 'min(480px, calc(100vw - 1rem))' : 'min(440px, calc(100vw - 2rem))', animation: 'guideEin 0.4s ease', transition: 'width 0.3s ease', maxHeight: istAbschluss ? 'calc(100vh - 3rem)' : 'auto', display: 'flex', flexDirection: 'column' as const }}>
+    <div style={{ position: 'fixed', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)', zIndex: 10000, width: 'min(440px, calc(100vw - 2rem))', animation: 'guideEin 0.4s ease', transition: 'width 0.3s ease', display: 'flex', flexDirection: 'column' as const }}>
       <style>{`
         @keyframes guideEin { from{opacity:0;transform:translateX(-50%) translateY(14px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
       `}</style>
 
-      <div style={{ background: 'rgba(14,8,4,0.97)', border: '1px solid rgba(255,140,66,0.35)', borderRadius: '20px', padding: '1.25rem', boxShadow: '0 16px 56px rgba(0,0,0,0.55)', backdropFilter: 'blur(16px)', overflowY: istAbschluss ? 'auto' : 'visible', maxHeight: istAbschluss ? 'calc(100vh - 3rem)' : 'none' }}>
+      <div style={{ background: 'rgba(14,8,4,0.97)', border: '1px solid rgba(255,140,66,0.35)', borderRadius: '20px', padding: '1.25rem', boxShadow: '0 16px 56px rgba(0,0,0,0.55)', backdropFilter: 'blur(16px)' }}>
 
         {/* Fortschritts-Balken – Fragen-Phase */}
         {showFortschritt && (
@@ -4145,7 +4152,7 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
         )}
 
         {/* Avatar + Text */}
-        <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'flex-start', marginBottom: aktuelleOptionen.length > 0 || schritt === 'abschluss' ? '1rem' : 0 }}>
+          <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'flex-start', marginBottom: aktuelleOptionen.length > 0 ? '1rem' : 0 }}>
           <div style={{ width: 46, height: 46, borderRadius: '50%', background: avatarGrad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', flexShrink: 0, boxShadow: '0 4px 14px rgba(255,140,66,0.3)', transition: 'background 0.5s' }}>
             {avatarEmoji}
           </div>
@@ -4176,32 +4183,11 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
           </div>
         )}
 
-        {/* Begrüßung: Los geht's */}
-        {istFertig && schritt === 'begruessung' && (
-          <button type="button" onClick={() => setSchritt('wer_bist_du')}
-            style={{ width: '100%', marginTop: '0.75rem', padding: '0.65rem', background: 'rgba(255,140,66,0.12)', border: '1px solid rgba(255,140,66,0.3)', borderRadius: '10px', color: '#ff8c42', fontWeight: 600, cursor: 'pointer', fontSize: '0.88rem', fontFamily: 'inherit' }}>
-            Los geht's →
-          </button>
-        )}
+        {/* Begrüßung: automatisch weiter – kein Button */}
 
-        {/* Vorhang: Übergang zur Tour */}
-        {istFertig && schritt === 'vorhang' && (
-          <button type="button" onClick={() => setSchritt(naechsterSchritt(schritt, antworten))}
-            style={{ width: '100%', marginTop: '0.75rem', padding: '0.75rem', background: pfad === 'gemeinschaft' ? 'linear-gradient(135deg, #1e5cb5, #42a4ff)' : pfad === 'atelier' ? 'linear-gradient(135deg, #1e7b5c, #42ffb5)' : pfad === 'entdecker' ? 'linear-gradient(135deg, #7b5ce0, #c084fc)' : 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.92rem', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
-            Zeig mir alles →
-          </button>
-        )}
+        {/* Vorhang entfernt – Flow geht direkt weiter */}
 
-        {/* Abschluss → Ergebnis-Karten → zwei Wege */}
-        {istFertig && schritt === 'abschluss' && (
-          <ErgebnisKarten
-            pfad={pfad}
-            antworten={antworten}
-            name={name}
-            onWeiter={geheZuAdmin}
-            onFuehrung={() => geheZuAdmin(true)}
-          />
-        )}
+        {/* Abschluss entfernt – nahtloser Flow über Vorhang direkt in Tour */}
 
         {/* Tour-Schritte: Ansehen + Weiter + Gesehen-Feedback */}
         {istFertig && TOUR_SCHRITTE.includes(schritt) && (() => {
@@ -4263,26 +4249,30 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
             )
           }
 
-          // Normal: Ansehen-Button + Gesehen-Feedback + Weiter
-          const ansAktivBg = istVereinsTour ? 'linear-gradient(135deg, #1e5cb5, #42a4ff)' : 'linear-gradient(135deg, #ff8c42, #b54a1e)'
-          const weiterAktivColor = istVereinsTour ? '#42a4ff' : '#ff8c42'
-          const weiterAktivBorder = istVereinsTour ? '1px solid rgba(66,164,255,0.4)' : '1px solid rgba(255,140,66,0.4)'
-          const weiterAktivBg = istVereinsTour ? 'rgba(66,164,255,0.12)' : 'rgba(255,140,66,0.15)'
+          // Flow: Weiter ist der Hauptbutton – „Schau mal rein" ist optional/neugierig
+          const akzentFarbe = istVereinsTour ? '#42a4ff' : '#ff8c42'
+          const akzentGrad = istVereinsTour ? 'linear-gradient(135deg, #1e5cb5, #42a4ff)' : 'linear-gradient(135deg, #ff8c42, #b54a1e)'
           return (
-            <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.45rem', marginTop: '0.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.45rem', marginTop: '0.6rem' }}>
+
+              {/* Haupt-Aktion: Weiter im Flow */}
+              <button type="button" onClick={() => setSchritt(naechsterSchritt(schritt, antworten))}
+                style={{ width: '100%', padding: '0.75rem', background: akzentGrad, border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit', boxShadow: `0 4px 14px rgba(0,0,0,0.25)` }}>
+                Weiter →
+              </button>
+
+              {/* Optionaler Einblick – einladend, kein Druck */}
               {tourLink && (
                 <button type="button"
                   onClick={() => { window.open(tourLink.url, '_blank'); markiereGesehen(schritt) }}
-                  style={{ width: '100%', padding: '0.75rem', background: bereitsGesehen ? 'rgba(95,251,241,0.1)' : ansAktivBg, border: bereitsGesehen ? '1px solid rgba(95,251,241,0.4)' : 'none', borderRadius: '12px', color: bereitsGesehen ? '#5ffbf1' : '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit', boxShadow: bereitsGesehen ? 'none' : '0 4px 14px rgba(66,164,255,0.25)' }}>
-                  {bereitsGesehen ? `✓ Gesehen – nochmal öffnen` : `${tourLink.label} →`}
+                  style={{ width: '100%', padding: '0.5rem 0.75rem', background: 'rgba(255,255,255,0.04)', border: `1px solid ${bereitsGesehen ? akzentFarbe + '44' : 'rgba(255,255,255,0.1)'}`, borderRadius: '10px', color: bereitsGesehen ? akzentFarbe : 'rgba(255,255,255,0.45)', fontWeight: 400, cursor: 'pointer', fontSize: '0.82rem', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+                  {bereitsGesehen ? `✓ Nochmal reinschauen` : `👀 Schau mal rein – was da schon passiert`}
                 </button>
               )}
-              <button type="button" onClick={() => setSchritt(naechsterSchritt(schritt, antworten))}
-                style={{ width: '100%', padding: '0.6rem', background: bereitsGesehen ? weiterAktivBg : 'rgba(255,255,255,0.06)', border: bereitsGesehen ? weiterAktivBorder : '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: bereitsGesehen ? weiterAktivColor : 'rgba(255,255,255,0.35)', fontWeight: bereitsGesehen ? 600 : 400, cursor: 'pointer', fontSize: '0.85rem', fontFamily: 'inherit' }}>
-                {bereitsGesehen ? 'Weiter →' : 'Überspringen →'}
-              </button>
+
+              {/* Abkürzen */}
               <button type="button" onClick={() => geheZuAdmin()}
-                style={{ width: '100%', padding: '0.4rem', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.18)', cursor: 'pointer', fontSize: '0.72rem', fontFamily: 'inherit' }}>
+                style={{ width: '100%', padding: '0.35rem', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.15)', cursor: 'pointer', fontSize: '0.72rem', fontFamily: 'inherit' }}>
                 Direkt in die Zentrale
               </button>
             </div>
