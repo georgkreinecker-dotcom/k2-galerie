@@ -3522,6 +3522,8 @@ type GuideSchritt =
   | 'kontakt' | 'abschluss' | 'vorhang'
   | 'tour_galerie' | 'tour_werke' | 'tour_kontakt' | 'tour_events' | 'tour_dokumente'
   | 'tour_lizenz' | 'tour_entscheidung'
+  | 'tour_v_galerie' | 'tour_v_mitglieder' | 'tour_v_events' | 'tour_v_dokumente' | 'tour_v_kassa'
+  | 'tour_v_lizenz' | 'tour_v_entscheidung'
   | 'empfehlung'
 
 function naechsterSchritt(schritt: GuideSchritt, antworten: GuideAntworten): GuideSchritt {
@@ -3550,7 +3552,9 @@ function naechsterSchritt(schritt: GuideSchritt, antworten: GuideAntworten): Gui
     case 'entdecker_ziel':      return 'kontakt'
     case 'kontakt':        return 'abschluss'
     case 'abschluss':      return 'vorhang'
-    case 'vorhang':        return 'tour_galerie'
+    case 'vorhang':
+      return pfad === 'gemeinschaft' ? 'tour_v_galerie' : 'tour_galerie'
+    // Künstler/Atelier/Entdecker Tour
     case 'tour_galerie':      return 'tour_werke'
     case 'tour_werke':        return 'tour_kontakt'
     case 'tour_kontakt':      return 'tour_events'
@@ -3558,15 +3562,26 @@ function naechsterSchritt(schritt: GuideSchritt, antworten: GuideAntworten): Gui
     case 'tour_dokumente':    return 'tour_lizenz'
     case 'tour_lizenz':       return 'tour_entscheidung'
     case 'tour_entscheidung': return 'empfehlung'
+    // Vereins-Tour
+    case 'tour_v_galerie':     return 'tour_v_mitglieder'
+    case 'tour_v_mitglieder':  return 'tour_v_events'
+    case 'tour_v_events':      return 'tour_v_dokumente'
+    case 'tour_v_dokumente':   return 'tour_v_kassa'
+    case 'tour_v_kassa':       return 'tour_v_lizenz'
+    case 'tour_v_lizenz':      return 'tour_v_entscheidung'
+    case 'tour_v_entscheidung': return 'empfehlung'
     default:                  return 'empfehlung'
   }
 }
 
-const TOUR_SCHRITTE: GuideSchritt[] = ['tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','tour_lizenz','tour_entscheidung']
+const TOUR_SCHRITTE: GuideSchritt[] = [
+  'tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','tour_lizenz','tour_entscheidung',
+  'tour_v_galerie','tour_v_mitglieder','tour_v_events','tour_v_dokumente','tour_v_kassa','tour_v_lizenz','tour_v_entscheidung',
+]
 
 const PFAD_REIHENFOLGE: Record<string, GuideSchritt[]> = {
   kuenstlerin:  ['begruessung','wer_bist_du','kunstart','erfahrung','ziel_kuenstler','ausstellungen','kontakt','abschluss','vorhang','tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','tour_lizenz','tour_entscheidung','empfehlung'],
-  gemeinschaft: ['begruessung','wer_bist_du','verein_groesse','verein_ausstellungen','verein_wunsch','vereinsgalerie','kontakt','abschluss','vorhang','tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','tour_lizenz','tour_entscheidung','empfehlung'],
+  gemeinschaft: ['begruessung','wer_bist_du','verein_groesse','verein_ausstellungen','verein_wunsch','vereinsgalerie','kontakt','abschluss','vorhang','tour_v_galerie','tour_v_mitglieder','tour_v_events','tour_v_dokumente','tour_v_kassa','tour_v_lizenz','tour_v_entscheidung','empfehlung'],
   atelier:      ['begruessung','wer_bist_du','atelier_groesse','atelier_bedarf','atelier_struktur','kontakt','abschluss','vorhang','tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','tour_lizenz','tour_entscheidung','empfehlung'],
   entdecker:    ['begruessung','wer_bist_du','entdecker_interesse','entdecker_mut','entdecker_ziel','kontakt','abschluss','vorhang','tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','tour_lizenz','tour_entscheidung','empfehlung'],
   '':           ['begruessung','wer_bist_du','kunstart','erfahrung','ziel_kuenstler','ausstellungen','kontakt','abschluss','vorhang','tour_galerie','tour_werke','tour_kontakt','tour_events','tour_dokumente','tour_lizenz','tour_entscheidung','empfehlung'],
@@ -3917,6 +3932,14 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
     tour_dokumente: `📄 Dokumente – sofort druckfertig.\n\nDeine Vita, Pressemappe, Werkverzeichnis –\naus deinen Daten vorbefüllt.\nEin Klick und es ist fertig.`,
     tour_lizenz: `💎 Welches Paket passt zu dir?\n\n🟢 Basis – kostenlos\nGalerie, Werke, Kontakt.\nPerfekt zum Starten.\n\n🔵 Pro – € 9 / Monat\n+ Events, Dokumente, Kassa.\nFür alle die mehr wollen.\n\n🟣 VK2 / Studio – € 19 / Monat\nMehrere Künstler:innen,\nVereinsplattform, alles inklusive.`,
     tour_entscheidung: `✅ Du hast alles gesehen, ${name}.\n\nJetzt kannst du loslegen –\nohne Zeitdruck, ohne Risiko.\n\nEinfach Stammdaten ausfüllen\nund deine Galerie ist live.`,
+    // ─── Vereins-Tour ───────────────────────────────────────────────
+    tour_v_galerie: `🏛️ Eure Vereinsgalerie – ein Haus für alle.\n\nJedes Mitglied hat seinen eigenen Platz.\nAlle Werke gemeinsam unter einem Dach –\nprofessionell, auf jedem Gerät erreichbar.`,
+    tour_v_mitglieder: `👥 Mitglieder verwalten – einfach und übersichtlich.\n\nJedes Mitglied bekommt ein eigenes Profil.\nWerke, Kontakt, Vita – alles an einem Ort.\nDu entscheidest wer was sieht.`,
+    tour_v_events: `🎟️ Gemeinsame Ausstellungen & Events.\n\nVernissagen planen, Einladungen versenden,\nGästeliste führen – für den ganzen Verein.\nEin QR-Code für die Eröffnung inklusive.`,
+    tour_v_dokumente: `📄 Vereinsdokumente – immer griffbereit.\n\nPressemappe, Werkverzeichnis, Einladungen –\nautomatisch aus euren Daten erstellt.\nEin Klick und es ist fertig.`,
+    tour_v_kassa: `🧾 Kassa – für Ausstellungen und Verkäufe.\n\nVerkäufe erfassen, Belege drucken,\nÜbersicht behalten – alles ohne extra Software.\nFunktioniert auf jedem Gerät im Netz.`,
+    tour_v_lizenz: `💎 Das VK2-Paket – für Vereine gemacht.\n\n🟣 VK2 / Studio – € 19 / Monat\nBis zu 20 Mitglieder mit eigenem Profil.\nGemeinsame Galerie, Events, Dokumente, Kassa.\n\n🔵 Pro – € 9 / Monat\nFür kleine Vereine oder Einzelkünstler:innen.\n\n🟢 Basis – kostenlos\nPerfekt zum ersten Kennenlernen.`,
+    tour_v_entscheidung: `✅ Ihr habt alles gesehen.\n\nJetzt könnt ihr loslegen –\nohne Zeitdruck, ohne Risiko.\n\nEinfach Vereinsdaten ausfüllen\nund eure Galerie ist live.`,
     empfehlung: `Noch eine letzte Frage, ${name} –\n\nKennst du jemanden dem das\nauch helfen würde?\n\nWenn du jemanden einlädst –\nnutzt ihr beide die Galerie\nohne Kosten.`,
   }
 
@@ -4139,24 +4162,33 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
 
         {/* Tour-Schritte: Ansehen + Weiter + Gesehen-Feedback */}
         {istFertig && TOUR_SCHRITTE.includes(schritt) && (() => {
+          const istVereinsTour = schritt.startsWith('tour_v_')
           const tourLinks: Partial<Record<GuideSchritt, { url: string; label: string }>> = {
+            // Künstler-Tour
             tour_galerie:   { url: '/projects/k2-galerie/galerie-oeffentlich', label: '🎨 Galerie live ansehen' },
             tour_werke:     { url: '/admin?context=oeffentlich', label: '🖼️ Werkeverwaltung ansehen' },
             tour_kontakt:   { url: '/projects/k2-galerie/galerie-oeffentlich', label: '📬 Kontakt in der Galerie sehen' },
             tour_events:    { url: '/admin?context=oeffentlich', label: '🎟️ Eventplanung ansehen' },
             tour_dokumente: { url: '/projects/k2-galerie/vita/martina', label: '📄 Dokumente ansehen' },
+            // Vereins-Tour
+            tour_v_galerie:    { url: '/projects/vk2/galerie', label: '🏛️ Vereinsgalerie ansehen' },
+            tour_v_mitglieder: { url: '/admin?context=vk2', label: '👥 Mitgliederverwaltung ansehen' },
+            tour_v_events:     { url: '/admin?context=vk2', label: '🎟️ Eventplanung ansehen' },
+            tour_v_dokumente:  { url: '/projects/k2-galerie/vita/martina', label: '📄 Dokumente ansehen' },
+            tour_v_kassa:      { url: '/projects/k2-galerie/shop', label: '🧾 Kassa ansehen' },
           }
           const tourLink = tourLinks[schritt]
           const bereitsGesehen = gesehenSchritte.has(schritt)
-          const istLizenz = schritt === 'tour_lizenz'
-          const istEntscheidung = schritt === 'tour_entscheidung'
+          const istLizenz = schritt === 'tour_lizenz' || schritt === 'tour_v_lizenz'
+          const istEntscheidung = schritt === 'tour_entscheidung' || schritt === 'tour_v_entscheidung'
+          const naechsterLizenzSchritt: GuideSchritt = istVereinsTour ? 'tour_v_entscheidung' : 'tour_entscheidung'
 
-          // Lizenz-Schritt: nur Weiter, kein Ansehen nötig
+          // Lizenz-Schritt (beide Pfade): nur Weiter, kein Ansehen nötig
           if (istLizenz) {
             return (
               <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.45rem', marginTop: '0.5rem' }}>
-                <button type="button" onClick={() => setSchritt('tour_entscheidung')}
-                  style={{ width: '100%', padding: '0.75rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit', boxShadow: '0 4px 14px rgba(255,140,66,0.3)' }}>
+                <button type="button" onClick={() => setSchritt(naechsterLizenzSchritt)}
+                  style={{ width: '100%', padding: '0.75rem', background: istVereinsTour ? 'linear-gradient(135deg, #1e5cb5, #42a4ff)' : 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit', boxShadow: '0 4px 14px rgba(66,164,255,0.3)' }}>
                   Ich hab mich entschieden →
                 </button>
                 <button type="button" onClick={() => geheZuAdmin()}
@@ -4167,13 +4199,15 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
             )
           }
 
-          // Entscheidungs-Abschluss: Stammdaten ausfüllen + Lizenz wählen
+          // Entscheidungs-Abschluss (beide Pfade)
           if (istEntscheidung) {
+            const btnLabel = istVereinsTour ? '🚀 Jetzt Vereinsdaten ausfüllen & starten' : '🚀 Jetzt Stammdaten ausfüllen & starten'
+            const btnGrad = istVereinsTour ? 'linear-gradient(135deg, #1e5cb5, #42a4ff)' : 'linear-gradient(135deg, #ff8c42, #b54a1e)'
             return (
               <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', marginTop: '0.5rem' }}>
                 <button type="button" onClick={() => geheZuAdmin(true)}
-                  style={{ width: '100%', padding: '0.85rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem', fontFamily: 'inherit', boxShadow: '0 4px 18px rgba(255,140,66,0.35)' }}>
-                  🚀 Jetzt Stammdaten ausfüllen & starten
+                  style={{ width: '100%', padding: '0.85rem', background: btnGrad, border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem', fontFamily: 'inherit', boxShadow: '0 4px 18px rgba(30,92,181,0.35)' }}>
+                  {btnLabel}
                 </button>
                 <div style={{ textAlign: 'center' as const, fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)', marginTop: '0.1rem' }}>
                   Keine Kreditkarte nötig · jederzeit wechselbar
@@ -4187,17 +4221,21 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
           }
 
           // Normal: Ansehen-Button + Gesehen-Feedback + Weiter
+          const ansAktivBg = istVereinsTour ? 'linear-gradient(135deg, #1e5cb5, #42a4ff)' : 'linear-gradient(135deg, #ff8c42, #b54a1e)'
+          const weiterAktivColor = istVereinsTour ? '#42a4ff' : '#ff8c42'
+          const weiterAktivBorder = istVereinsTour ? '1px solid rgba(66,164,255,0.4)' : '1px solid rgba(255,140,66,0.4)'
+          const weiterAktivBg = istVereinsTour ? 'rgba(66,164,255,0.12)' : 'rgba(255,140,66,0.15)'
           return (
             <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.45rem', marginTop: '0.5rem' }}>
               {tourLink && (
                 <button type="button"
                   onClick={() => { window.open(tourLink.url, '_blank'); markiereGesehen(schritt) }}
-                  style={{ width: '100%', padding: '0.75rem', background: bereitsGesehen ? 'rgba(95,251,241,0.1)' : 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: bereitsGesehen ? '1px solid rgba(95,251,241,0.4)' : 'none', borderRadius: '12px', color: bereitsGesehen ? '#5ffbf1' : '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit', boxShadow: bereitsGesehen ? 'none' : '0 4px 14px rgba(255,140,66,0.3)' }}>
+                  style={{ width: '100%', padding: '0.75rem', background: bereitsGesehen ? 'rgba(95,251,241,0.1)' : ansAktivBg, border: bereitsGesehen ? '1px solid rgba(95,251,241,0.4)' : 'none', borderRadius: '12px', color: bereitsGesehen ? '#5ffbf1' : '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit', boxShadow: bereitsGesehen ? 'none' : '0 4px 14px rgba(66,164,255,0.25)' }}>
                   {bereitsGesehen ? `✓ Gesehen – nochmal öffnen` : `${tourLink.label} →`}
                 </button>
               )}
               <button type="button" onClick={() => setSchritt(naechsterSchritt(schritt, antworten))}
-                style={{ width: '100%', padding: '0.6rem', background: bereitsGesehen ? 'rgba(255,140,66,0.15)' : 'rgba(255,255,255,0.06)', border: bereitsGesehen ? '1px solid rgba(255,140,66,0.4)' : '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: bereitsGesehen ? '#ff8c42' : 'rgba(255,255,255,0.35)', fontWeight: bereitsGesehen ? 600 : 400, cursor: 'pointer', fontSize: '0.85rem', fontFamily: 'inherit' }}>
+                style={{ width: '100%', padding: '0.6rem', background: bereitsGesehen ? weiterAktivBg : 'rgba(255,255,255,0.06)', border: bereitsGesehen ? weiterAktivBorder : '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: bereitsGesehen ? weiterAktivColor : 'rgba(255,255,255,0.35)', fontWeight: bereitsGesehen ? 600 : 400, cursor: 'pointer', fontSize: '0.85rem', fontFamily: 'inherit' }}>
                 {bereitsGesehen ? 'Weiter →' : 'Überspringen →'}
               </button>
               <button type="button" onClick={() => geheZuAdmin()}
