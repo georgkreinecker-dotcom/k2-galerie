@@ -2099,7 +2099,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               Auch aus anderem WLAN erreichbar:
             </span>
             <a href={getK2PublicPageUrl()} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--k2-accent)', fontWeight: 600, textDecoration: 'underline' }}>
-              K2 im Internet öffnen
+              {vk2 ? 'VK2 im Internet öffnen' : 'K2 im Internet öffnen'}
             </a>
           </div>
         )}
@@ -2146,22 +2146,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             marginBottom: '1rem'
           }}>
             <span>VK2 Vereinsplattform – Unsere Mitglieder</span>
-            <button
-              type="button"
-              onClick={handleAdminButtonClick}
-              style={{
-                padding: '0.35rem 0.75rem',
-                background: 'rgba(255,255,255,0.25)',
-                border: '1px solid rgba(255,255,255,0.5)',
-                borderRadius: '8px',
-                color: '#fff',
-                fontSize: '0.9rem',
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}
-            >
-              Admin
-            </button>
           </div>
         )}
         {/* Admin Button – auf normaler Galerie, ök2 und VK2 (VK2: K2-Familie Orange) */}
@@ -2680,7 +2664,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 fontWeight: 300,
                 maxWidth: '620px',
               }}>
-                {musterOnly ? MUSTER_TEXTE.welcomeText : (galerieTexts.welcomeIntroText?.trim() || 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.')}
+                {musterOnly ? MUSTER_TEXTE.welcomeText : (galerieTexts.welcomeIntroText?.trim() || (vk2 ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.' : 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.'))}
               </p>
             </div>
           )}
@@ -2698,7 +2682,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               fontWeight: 300,
               margin: 0,
             }}>
-              {musterOnly ? MUSTER_TEXTE.welcomeText : (galerieTexts.welcomeIntroText?.trim() || 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.')}
+              {musterOnly ? MUSTER_TEXTE.welcomeText : (galerieTexts.welcomeIntroText?.trim() || (vk2 ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.' : 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.'))}
             </p>
           </section>
           )}
