@@ -76,24 +76,26 @@ function loadOeffentlichArtworks(): any[] {
   }
 }
 
-/** VK2: Werke aus k2-vk2-artworks – K2-Galerie-Werke (K2-M-*, K2-K-* etc.) entfernen, VK2-eigene behalten */
+/** VK2: Strikte Trennung – nur echte VK2-Einträge (VK2-Nummer oder vk2-/vk2-seed-ID).
+ *  Alle K2/ök2-Werke werden sofort aus localStorage entfernt und nie angezeigt. */
 function loadVk2Artworks(): any[] {
   try {
     const raw = localStorage.getItem('k2-vk2-artworks')
     if (!raw) return []
     const parsed = JSON.parse(raw)
     if (!Array.isArray(parsed) || parsed.length === 0) return []
-    // Nur echte K2-Galerie-Nummern entfernen – VK2-eigene Einträge behalten
-    const filtered = parsed.filter((a: any) => {
+    // STRIKT: Nur VK2-eigene Einträge (VK2-Nummer ODER vk2-* ID)
+    const vk2Only = parsed.filter((a: any) => {
       const num = String(a?.number || '')
-      if (num.startsWith('K2-') && !num.startsWith('K2-W-')) return false
-      return true
+      const id  = String(a?.id || '')
+      return num.startsWith('VK2-') || id.startsWith('vk2-')
     })
-    if (filtered.length < parsed.length) {
-      console.warn(`🧹 VK2-Vorschau: ${parsed.length - filtered.length} K2-Galerie-Werke entfernt`)
-      try { localStorage.setItem('k2-vk2-artworks', JSON.stringify(filtered)) } catch (_) {}
+    if (vk2Only.length !== parsed.length) {
+      // Alle Fremdeinträge sofort aus dem Key entfernen
+      try { localStorage.setItem('k2-vk2-artworks', JSON.stringify(vk2Only)) } catch (_) {}
     }
-    return filtered.map((a: any) => {
+    if (vk2Only.length === 0) return [] // Fallback → SEED_VK2_ARTISTS in useEffect
+    return vk2Only.map((a: any) => {
       const out = { ...a }
       if (isPlaceholderImageUrl(out.imageUrl) && out.previewUrl) out.imageUrl = out.previewUrl
       if (isPlaceholderImageUrl(out.imageUrl)) out.imageUrl = getOek2DefaultArtworkImage(out.category)

@@ -293,16 +293,7 @@ function loadArtworks(): any[] {
     }
     let artworks = JSON.parse(stored)
     
-    // VK2: Alte Seed-Platzhalter einmalig aus Speicher entfernen (nur vk2-seed-* / VK2-M1 etc.)
-    if (isVk2AdminContext() && Array.isArray(artworks) && artworks.length > 0) {
-      const onlySeed = artworks.every((a: any) => a?.id && String(a.id).startsWith('vk2-seed-'))
-      if (onlySeed) {
-        try {
-          localStorage.setItem(key, '[]')
-        } catch (_) {}
-        return []
-      }
-    }
+    // VK2: vk2-seed-* Einträge sind gültige Platzhalter – NICHT entfernen
     
     // KRITISCH: Im ök2-Kontext nur echte K2-Galerie-Werke entfernen (K2-M-, K2-K-, … bzw. K2-0001), nicht ök2-eigene (K2-W-*)
     if (isOeffentlichAdminContext()) {
@@ -321,17 +312,16 @@ function loadArtworks(): any[] {
       }
     }
 
-    // VK2: Nur echte K2-Galerie-Werke (K2-M-*, K2-K-* etc.) entfernen – VK2-eigene Einträge behalten
+    // VK2: STRIKT – nur VK2-Einträge (VK2-Nummer ODER vk2-* ID). Alles andere sofort raus.
     if (isVk2AdminContext()) {
       const before = artworks.length
       artworks = artworks.filter((a: any) => {
         const num = String(a?.number || '')
-        // K2-Nummern (K2-M-0001, K2-K-0002 etc.) gehören nicht in VK2
-        if (num.startsWith('K2-') && !num.startsWith('K2-W-')) return false
-        return true
+        const id  = String(a?.id || '')
+        return num.startsWith('VK2-') || id.startsWith('vk2-')
       })
-      if (artworks.length < before) {
-        console.warn(`🧹 VK2-Admin: ${before - artworks.length} K2-Fremd-Werke entfernt`)
+      if (artworks.length !== before) {
+        console.warn(`🔒 VK2-Admin: ${before - artworks.length} Fremd-Werke entfernt (K2/ök2 gehören nicht in VK2)`)
         try {
           localStorage.setItem(key, JSON.stringify(artworks))
         } catch (_) {}
