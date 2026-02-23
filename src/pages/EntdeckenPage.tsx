@@ -80,7 +80,7 @@ const T = {
 }
 
 // q2 entfällt – der Guide auf der Galerie-Seite übernimmt die Tiefenanalyse
-type Step = 'hero' | 'q1' | 'q3' | 'result'
+type Step = 'hero' | 'q1' | 'q3' | 'hub' | 'result'
 
 interface Answers {
   q1: string
@@ -251,6 +251,243 @@ function HeroHub({ accent, accentLight, accentGlow, bgDark, bgMid, fontHeading, 
   )
 }
 
+// ─── Hub-Arbeitsbereich: nach den Fragen – alle Themen + Guide Mitte ─────────
+
+interface HubArbProps {
+  name: string; q1: string
+  accent: string; accentLight: string; accentGlow: string
+  bgDark: string; bgMid: string; bgLight: string
+  fontHeading: string; fontBody: string
+  onStarten: () => void
+  onZurueck: () => void
+}
+
+// Stationen angepasst je nach Pfad (q1-Antwort)
+function baueHubStationen(q1: string) {
+  const istVerein = q1 === 'verein'
+  return [
+    {
+      emoji: '🖼️',
+      name: istVerein ? 'Werke & Mitglieder' : 'Meine Werke',
+      beschreibung: istVerein
+        ? 'Alle Werke aller Mitglieder an einem Ort – jede:r mit eigenem Profil, Fotos und Preisen.'
+        : 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist live in deiner Galerie.',
+    },
+    {
+      emoji: '🎟️',
+      name: 'Events & Ausstellungen',
+      beschreibung: 'Vernissage planen, Einladungen erstellen, QR-Codes für Besucher – alles an einem Ort.',
+    },
+    {
+      emoji: '✨',
+      name: 'Aussehen & Design',
+      beschreibung: q1 === 'etabliert'
+        ? 'Professionelles Erscheinungsbild: Farben, Logo, Willkommensbild – passend zu deinem Stil.'
+        : 'Farben, dein Foto, deine Texte – die Galerie wird zu deinem persönlichen Auftritt.',
+    },
+    {
+      emoji: '📋',
+      name: 'Werkkatalog',
+      beschreibung: q1 === 'etabliert' || q1 === 'aufsteigend'
+        ? 'Zertifikate, Werkverzeichnis, Pressemappe – alles aus deinen Daten vorbefüllt, ein Klick zum Drucken.'
+        : 'Alle deine Werke auf einen Blick – filtern, suchen, drucken.',
+    },
+    {
+      emoji: '🧾',
+      name: 'Kassa & Verkauf',
+      beschreibung: 'Werk verkauft? Eintragen, Beleg drucken – vom Handy direkt bei der Ausstellung. Ganz simpel.',
+    },
+    {
+      emoji: '🚀',
+      name: 'Galerie starten',
+      beschreibung: 'Kontakt und Adresse eintragen – dann ist deine Galerie sofort live. Keine Kreditkarte nötig.',
+      istStart: true,
+    },
+  ]
+}
+
+function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, bgMid, bgLight, fontHeading, fontBody, onStarten, onZurueck }: HubArbProps) {
+  const [aktivIdx, setAktivIdx] = useState(0)
+  const istVerein = q1 === 'verein'
+  const akzentGrad = `linear-gradient(135deg, ${accent}, ${accentGlow})`
+  const avatarEmoji = istVerein ? '🏛️' : q1 === 'etabliert' ? '⭐' : q1 === 'aufsteigend' ? '🌱' : '👨‍🎨'
+  const stationen = baueHubStationen(q1)
+  const aktivStation = stationen[aktivIdx]
+  const halbePunkte = Math.ceil(stationen.length / 2)
+  const linksStationen = stationen.slice(0, halbePunkte)
+  const rechtsStationen = stationen.slice(halbePunkte)
+
+  const begruessung = name
+    ? `${name}, das ist deine Galerie.`
+    : 'Das ist deine Galerie.'
+  const subText = istVerein
+    ? 'Hier habt ihr alles für euren gemeinsamen Auftritt.'
+    : q1 === 'etabliert'
+    ? 'Professionell. Vollständig. Sofort einsatzbereit.'
+    : 'Klick auf einen Bereich – schau dir an was dich erwartet.'
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: `linear-gradient(160deg, ${bgDark} 0%, ${bgMid} 55%, ${accent}28 100%)`,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      padding: 'clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 2rem)',
+      fontFamily: fontBody,
+    }}>
+      {/* Logo klein oben */}
+      <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+        <div style={{ fontFamily: fontHeading, fontSize: 'clamp(1.2rem, 3vw, 1.6rem)', fontWeight: 700, color: accentGlow, letterSpacing: '-0.02em' }}>
+          {PRODUCT_BRAND_NAME}
+        </div>
+      </div>
+
+      {/* Begrüßung */}
+      <div style={{ textAlign: 'center', marginBottom: 'clamp(1.25rem, 3vw, 2rem)', maxWidth: 600 }}>
+        <h2 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.5rem, 4vw, 2.2rem)', fontWeight: 700, color: '#fff8f0', margin: '0 0 0.5rem', lineHeight: 1.2 }}>
+          {begruessung}
+        </h2>
+        <p style={{ fontSize: 'clamp(0.9rem, 2vw, 1rem)', color: 'rgba(255,255,255,0.5)', margin: 0 }}>
+          {subText}
+        </p>
+      </div>
+
+      {/* Hub-Layout: Kacheln links | Guide-Dialog Mitte | Kacheln rechts */}
+      <div style={{ width: '100%', maxWidth: 800, display: 'flex', gap: 'clamp(0.5rem, 2vw, 1rem)', alignItems: 'stretch' }}>
+
+        {/* Kacheln links */}
+        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: 'clamp(115px, 18vw, 150px)', flexShrink: 0 }}>
+          {linksStationen.map((st, i) => {
+            const istAktiv = aktivIdx === i
+            return (
+              <button key={i} type="button" onClick={() => setAktivIdx(i)}
+                style={{
+                  padding: '0.7rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  background: istAktiv ? akzentGrad : 'rgba(255,255,255,0.06)',
+                  border: istAktiv ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '13px', cursor: 'pointer', fontFamily: fontBody,
+                  transition: 'all 0.18s', textAlign: 'left' as const,
+                  boxShadow: istAktiv ? `0 4px 16px ${accent}55` : 'none',
+                  color: istAktiv ? '#fff' : 'rgba(255,255,255,0.65)',
+                  fontWeight: istAktiv ? 700 : 400,
+                  position: 'relative' as const,
+                }}>
+                <span style={{ fontSize: '1.15rem', flexShrink: 0 }}>{st.emoji}</span>
+                <span style={{ fontSize: '0.74rem', lineHeight: 1.3 }}>{st.name}</span>
+                {istAktiv && <span style={{ position: 'absolute', top: 4, right: 6, width: 6, height: 6, borderRadius: '50%', background: 'rgba(255,255,255,0.7)' }} />}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Guide-Dialog Mitte */}
+        <div style={{
+          flex: 1, minWidth: 0,
+          background: 'rgba(255,255,255,0.05)',
+          border: `1.5px solid ${accentGlow}33`,
+          borderRadius: '20px', padding: 'clamp(1.2rem, 3vw, 1.75rem)',
+          display: 'flex', flexDirection: 'column' as const, gap: '0.9rem',
+          backdropFilter: 'blur(14px)',
+        }}>
+          {/* Fortschrittsbalken – klickbar */}
+          <div style={{ display: 'flex', gap: '0.22rem' }}>
+            {stationen.map((_, i) => (
+              <div key={i} onClick={() => setAktivIdx(i)}
+                style={{ flex: 1, height: 3, borderRadius: 2, cursor: 'pointer', transition: 'background 0.2s',
+                  background: i === aktivIdx ? accentGlow : i < aktivIdx ? `${accent}88` : 'rgba(255,255,255,0.12)' }}
+              />
+            ))}
+          </div>
+
+          {/* Avatar + Titel */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ width: 46, height: 46, borderRadius: '50%', background: akzentGrad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', flexShrink: 0, boxShadow: `0 4px 14px ${accent}55` }}>
+              {avatarEmoji}
+            </div>
+            <div>
+              <div style={{ fontSize: '0.6rem', color: `${accentGlow}88`, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>
+                {istVerein ? 'Vereins-Guide' : 'Galerie-Guide'}
+              </div>
+              <div style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', fontWeight: 700, color: '#fff8f0', marginTop: '0.1rem' }}>
+                {aktivStation.emoji} {aktivStation.name}
+              </div>
+            </div>
+          </div>
+
+          {/* Beschreibung */}
+          <div style={{ fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', color: 'rgba(255,255,255,0.6)', lineHeight: 1.65, flex: 1 }}>
+            {aktivStation.beschreibung}
+          </div>
+
+          {/* Punkte-Navigation */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '0.32rem' }}>
+            {stationen.map((_, i) => (
+              <div key={i} onClick={() => setAktivIdx(i)} style={{ cursor: 'pointer', transition: 'all 0.2s',
+                width: i === aktivIdx ? 18 : 7, height: 7, borderRadius: 4,
+                background: i === aktivIdx ? accentGlow : 'rgba(255,255,255,0.2)' }} />
+            ))}
+          </div>
+
+          {/* Aktions-Buttons */}
+          {'istStart' in aktivStation && aktivStation.istStart ? (
+            <button type="button" onClick={onStarten}
+              style={{ width: '100%', padding: '0.95rem', background: akzentGrad, border: 'none', borderRadius: '14px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', boxShadow: `0 6px 24px ${accent}55`, letterSpacing: '0.01em' }}>
+              🚀 {name ? `${name}'s Galerie` : 'Galerie'} jetzt öffnen →
+            </button>
+          ) : (
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button type="button" onClick={() => setAktivIdx(Math.min(aktivIdx + 1, stationen.length - 1))}
+                style={{ flex: 1, padding: '0.85rem', background: akzentGrad, border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: '0.9rem', boxShadow: `0 4px 14px ${accent}44` }}>
+                Weiter →
+              </button>
+              <button type="button" onClick={onStarten}
+                style={{ padding: '0.85rem 1rem', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', color: 'rgba(255,255,255,0.55)', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.82rem', whiteSpace: 'nowrap' as const }}>
+                Alles gesehen →
+              </button>
+            </div>
+          )}
+
+          <div style={{ textAlign: 'center', fontSize: '0.7rem', color: 'rgba(255,255,255,0.2)' }}>
+            Kostenlos · Keine Anmeldung · Jederzeit kündbar
+          </div>
+        </div>
+
+        {/* Kacheln rechts */}
+        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: 'clamp(115px, 18vw, 150px)', flexShrink: 0 }}>
+          {rechtsStationen.map((st, i) => {
+            const globalIdx = halbePunkte + i
+            const istAktiv = aktivIdx === globalIdx
+            return (
+              <button key={globalIdx} type="button" onClick={() => setAktivIdx(globalIdx)}
+                style={{
+                  padding: '0.7rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  background: istAktiv ? akzentGrad : 'rgba(255,255,255,0.06)',
+                  border: istAktiv ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '13px', cursor: 'pointer', fontFamily: fontBody,
+                  transition: 'all 0.18s', textAlign: 'left' as const,
+                  boxShadow: istAktiv ? `0 4px 16px ${accent}55` : 'none',
+                  color: istAktiv ? '#fff' : 'rgba(255,255,255,0.65)',
+                  fontWeight: istAktiv ? 700 : 400,
+                  position: 'relative' as const,
+                }}>
+                <span style={{ fontSize: '1.15rem', flexShrink: 0 }}>{st.emoji}</span>
+                <span style={{ fontSize: '0.74rem', lineHeight: 1.3 }}>{st.name}</span>
+                {istAktiv && <span style={{ position: 'absolute', top: 4, right: 6, width: 6, height: 6, borderRadius: '50%', background: 'rgba(255,255,255,0.7)' }} />}
+              </button>
+            )
+          })}
+        </div>
+
+      </div>
+
+      {/* Zurück-Link */}
+      <button type="button" onClick={onZurueck}
+        style={{ marginTop: '1.25rem', background: 'none', border: 'none', color: 'rgba(255,255,255,0.25)', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.78rem' }}>
+        ← zurück
+      </button>
+    </div>
+  )
+}
+
 export default function EntdeckenPage() {
   const navigate = useNavigate()
   const [step, setStep] = useState<Step>('hero')
@@ -351,18 +588,42 @@ export default function EntdeckenPage() {
     <div style={{ background: bgLight, minHeight: '100vh', fontFamily: fontBody, color: text }}>
       <link rel="stylesheet" href={PROMO_FONTS_URL} />
 
-      {/* ── HERO: Brand-Logo + Hub-Vorschau ──────────────────────────────────── */}
+      {/* ── HERO: Original dunkler Eingang ───────────────────────────────────── */}
       {step === 'hero' && (
-        <HeroHub
-          accent={accent}
-          accentLight={accentLight}
-          accentGlow={accentGlow}
-          bgDark={bgDark}
-          bgMid={bgMid}
-          fontHeading={fontHeading}
-          fontBody={fontBody}
-          onWeiter={() => setStep('q1')}
-        />
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+          <div style={{
+            background: `linear-gradient(160deg, ${bgDark} 0%, ${bgMid} 60%, ${accent}33 100%)`,
+            flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
+            alignItems: 'center', textAlign: 'center',
+            padding: 'clamp(3rem, 8vw, 6rem) clamp(1.5rem, 5vw, 4rem)',
+            position: 'relative', overflow: 'hidden',
+          }}>
+            <div style={{ position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%, -50%)', width: '70%', height: '60%', background: `radial-gradient(ellipse, ${accentGlow}20 0%, transparent 70%)`, pointerEvents: 'none' }} />
+            <div style={{ position: 'relative', maxWidth: 600 }}>
+              <div style={{ display: 'inline-block', padding: '0.3rem 1rem', background: `${accentGlow}22`, border: `1px solid ${accentGlow}44`, borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, color: accentGlow, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
+                {T.heroTag}
+              </div>
+              <h1 style={{ fontFamily: fontHeading, fontSize: 'clamp(2rem, 5.5vw, 3.4rem)', fontWeight: 700, color: textLight, margin: '0 0 1.25rem', lineHeight: 1.15, letterSpacing: '-0.02em' }}>
+                {T.heroTitle}
+              </h1>
+              <p style={{ fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', color: '#d4a574', lineHeight: 1.7, maxWidth: 480, margin: '0 auto 2.5rem' }}>
+                {T.heroSub}
+              </p>
+              <button type="button" onClick={() => setStep('q1')}
+                style={{ padding: 'clamp(0.9rem, 2vw, 1.1rem) clamp(2rem, 4vw, 3rem)', background: `linear-gradient(135deg, ${accentGlow} 0%, ${accent} 100%)`, color: '#fff', border: 'none', borderRadius: '50px', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', letterSpacing: '0.01em', boxShadow: `0 8px 32px ${accentGlow}44`, transition: 'all 0.2s' }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 12px 40px ${accentGlow}55` }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = `0 8px 32px ${accentGlow}44` }}>
+                {T.cta}
+              </button>
+              <p style={{ marginTop: '1rem', fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em' }}>{T.ctaSub}</p>
+            </div>
+          </div>
+          <div style={{ background: bgCard, padding: '1.25rem', display: 'flex', justifyContent: 'center', gap: 'clamp(1.5rem, 4vw, 3rem)', flexWrap: 'wrap', borderTop: '1px solid #e8ddd0' }}>
+            {['🎨 Für jede Kunstart', '📱 Auf jedem Gerät', '🔒 Keine Anmeldung nötig'].map(item => (
+              <span key={item} style={{ fontSize: '0.82rem', color: muted, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>{item}</span>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* ── FRAGEN-FLOW ──────────────────────────────────────────────────────── */}
@@ -407,7 +668,7 @@ export default function EntdeckenPage() {
                   type="text"
                   value={answers.q3}
                   onChange={e => setAnswers(a => ({ ...a, q3: e.target.value }))}
-                  onKeyDown={e => { if (e.key === 'Enter') { setStep('result'); goToDemo() } }}
+                  onKeyDown={e => { if (e.key === 'Enter') setStep('hub') }}
                   placeholder={T.q3placeholder}
                   autoFocus
                   style={{ width: '100%', padding: '1rem 1.25rem', border: `2px solid ${accent}44`, borderRadius: '12px', fontFamily: fontHeading, fontSize: '1.1rem', background: bgCard, color: text, marginBottom: '1rem', boxSizing: 'border-box', outline: 'none', transition: 'border-color 0.2s' }}
@@ -416,7 +677,7 @@ export default function EntdeckenPage() {
                 />
                 <button
                   type="button"
-                  onClick={() => { setStep('result'); goToDemo() }}
+                  onClick={() => setStep('hub')}
                   style={{ width: '100%', padding: '1.1rem', background: `linear-gradient(135deg, ${accentGlow} 0%, ${accent} 100%)`, color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: '1.05rem', boxShadow: `0 6px 24px ${accent}33`, transition: 'all 0.2s', marginBottom: '0.75rem' }}
                   onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)' }}
                   onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)' }}
@@ -431,6 +692,24 @@ export default function EntdeckenPage() {
             )}
           </div>
         </div>
+      )}
+
+      {/* ── HUB: Alle Themen + Guide in der Mitte als Arbeitsbereich ─────────── */}
+      {step === 'hub' && (
+        <HubArbeitsbereich
+          name={answers.q3.trim()}
+          q1={answers.q1}
+          accent={accent}
+          accentLight={accentLight}
+          accentGlow={accentGlow}
+          bgDark={bgDark}
+          bgMid={bgMid}
+          bgLight={bgLight}
+          fontHeading={fontHeading}
+          fontBody={fontBody}
+          onStarten={goToDemo}
+          onZurueck={() => setStep('q3')}
+        />
       )}
 
       {/* ── ERGEBNIS (kurz sichtbar vor Weiterleitung) ──────────────────────── */}
