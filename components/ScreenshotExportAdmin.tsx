@@ -6487,17 +6487,21 @@ ${'='.repeat(60)}
     field: 'galerieCardImage' | 'virtualTourImage',
     filename: string
   ) => {
-    if (isOeffentlichAdminContext()) return
+    // K2 und ök2 laden auf GitHub hoch – Base64 wird durch dauerhaften Vercel-Pfad ersetzt
+    const subfolder = isOeffentlichAdminContext() ? 'oeffentlich' : 'k2'
+    const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
     try {
       const { uploadImageToGitHub } = await import('../src/utils/githubImageUpload')
-      const url = await uploadImageToGitHub(file, filename, (msg) => console.log(msg))
+      const url = await uploadImageToGitHub(file, filename, (msg) => console.log(msg), subfolder)
+      // Vercel-Pfad im State + localStorage setzen → Base64 weg → kein Speicher-Problem mehr
       const next = { ...pageContent, [field]: url }
       setPageContent(next)
-      setPageContentGalerie(next, undefined)
+      setPageContentGalerie(next, tenant)
       localStorage.removeItem('k2-last-publish-signature')
-      alert('✅ Foto hochgeladen!\n\nIn ca. 2 Minuten ist es auf allen Geräten sichtbar.')
+      alert('✅ Foto dauerhaft gespeichert!\n\nIn ca. 2 Minuten auf allen Geräten sichtbar.')
     } catch (err) {
       console.warn('GitHub Upload fehlgeschlagen:', err)
+      // Kein Alert – Base64 bleibt als Fallback im localStorage
     }
   }
 
@@ -9613,44 +9617,42 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               if (!isOeffentlichAdminContext()) window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
                               setDesignSaveFeedback('ok')
                               setTimeout(() => setDesignSaveFeedback(null), 6000)
-                              // Foto auf GitHub hochladen – damit es auf ALLEN Geräten sichtbar ist
-                              // Entweder neues File-Objekt (pendingWelcomeFileRef) oder vorhandenes Base64 aus pageContent
-                              if (!isOeffentlichAdminContext()) {
+                              // Foto auf GitHub hochladen – damit es dauerhaft auf Vercel gespeichert ist
+                              // Gilt für K2 UND ök2 – Base64 wird durch Vercel-Pfad ersetzt → kein localStorage-Verlust mehr
+                              {
+                                const subfolder = isOeffentlichAdminContext() ? 'oeffentlich' : 'k2'
+                                const tenantForUpload = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
                                 const fileToUpload = pendingWelcomeFileRef.current
                                 const base64Image = pageContent.welcomeImage
                                 pendingWelcomeFileRef.current = null
 
-                                if (fileToUpload) {
-                                  // Neues Foto: direkt als File hochladen
-                                  setImageUploadStatus('⏳ Foto wird für alle Geräte gespeichert…')
+                                const doWelcomeUpload = async (uploadFile: File) => {
+                                  setImageUploadStatus('⏳ Foto wird dauerhaft gespeichert…')
                                   try {
                                     const { uploadImageToGitHub } = await import('../src/utils/githubImageUpload')
-                                    const url = await uploadImageToGitHub(fileToUpload, 'willkommen.jpg', () => {})
+                                    const url = await uploadImageToGitHub(uploadFile, 'willkommen.jpg', () => {}, subfolder)
                                     const next2 = { ...pageContent, welcomeImage: url }
                                     setPageContent(next2)
-                                    setPageContentGalerie(next2, undefined)
-                                    setImageUploadStatus('✅ Auf allen Geräten sichtbar')
+                                    setPageContentGalerie(next2, tenantForUpload)
+                                    setImageUploadStatus('✅ Dauerhaft gespeichert – auf allen Geräten sichtbar')
                                     setTimeout(() => setImageUploadStatus(null), 6000)
                                   } catch (_) {
-                                    setImageUploadStatus('⚠️ Nur am Mac gespeichert – Handy sieht noch altes Foto')
+                                    setImageUploadStatus('⚠️ Nur lokal gespeichert – bitte nochmals speichern')
                                     setTimeout(() => setImageUploadStatus(null), 8000)
                                   }
+                                }
+
+                                if (fileToUpload) {
+                                  await doWelcomeUpload(fileToUpload)
                                 } else if (base64Image && base64Image.startsWith('data:')) {
                                   // Altes Base64-Foto: als Blob konvertieren und hochladen
-                                  setImageUploadStatus('⏳ Foto wird für alle Geräte gespeichert…')
                                   try {
-                                    const { uploadImageToGitHub } = await import('../src/utils/githubImageUpload')
                                     const res = await fetch(base64Image)
                                     const blob = await res.blob()
-                                    const file = new File([blob], 'willkommen.jpg', { type: blob.type })
-                                    const url = await uploadImageToGitHub(file, 'willkommen.jpg', () => {})
-                                    const next2 = { ...pageContent, welcomeImage: url }
-                                    setPageContent(next2)
-                                    setPageContentGalerie(next2, undefined)
-                                    setImageUploadStatus('✅ Auf allen Geräten sichtbar')
-                                    setTimeout(() => setImageUploadStatus(null), 6000)
+                                    const fileFromBase64 = new File([blob], 'willkommen.jpg', { type: blob.type })
+                                    await doWelcomeUpload(fileFromBase64)
                                   } catch (_) {
-                                    setImageUploadStatus('⚠️ Nur am Mac gespeichert – Handy sieht noch altes Foto')
+                                    setImageUploadStatus('⚠️ Nur lokal gespeichert – bitte nochmals speichern')
                                     setTimeout(() => setImageUploadStatus(null), 8000)
                                   }
                                 }
@@ -9743,8 +9745,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 const next = { ...pageContent, welcomeImage: img }
                                 setPageContent(next)
                                 setPageContentGalerie(next, tenant)
-                                // Datei für späteren Upload beim Speichern merken
-                                if (!isOeffentlichAdminContext()) pendingWelcomeFileRef.current = f
+                                // Datei für späteren Upload beim Speichern merken (K2 + ök2, nicht VK2)
+                                if (!isVk2AdminContext()) pendingWelcomeFileRef.current = f
                                 setImageUploadStatus('✓ Foto bereit – erst ansehen, dann Speichern')
                                 setTimeout(() => setImageUploadStatus(null), 6000)
                               } catch (_) { alert('Fehler beim Bild') }
@@ -9759,8 +9761,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 const next = { ...pageContent, welcomeImage: img }
                                 setPageContent(next)
                                 setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined)
-                                // Datei für späteren Upload beim Speichern merken
-                                if (!isOeffentlichAdminContext()) pendingWelcomeFileRef.current = f
+                                // Datei für späteren Upload beim Speichern merken (K2 + ök2, nicht VK2)
+                                if (!isVk2AdminContext()) pendingWelcomeFileRef.current = f
                                 setImageUploadStatus('✓ Foto bereit – erst ansehen, dann Speichern')
                                 setTimeout(() => setImageUploadStatus(null), 6000)
                               } catch (_) { alert('Fehler beim Bild') }

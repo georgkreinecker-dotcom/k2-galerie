@@ -33,7 +33,8 @@ async function getFileSha(path: string, token: string): Promise<string | null> {
 export async function uploadImageToGitHub(
   file: File,
   filename: string = 'willkommen.jpg',
-  onStatus?: (msg: string) => void
+  onStatus?: (msg: string) => void,
+  subfolder: 'k2' | 'oeffentlich' = 'k2'
 ): Promise<string> {
   const token = getToken()
   if (!token) throw new Error('Kein GitHub Token konfiguriert')
@@ -44,7 +45,7 @@ export async function uploadImageToGitHub(
   const compressed = await compressImage(file, 800, 0.75)
   const base64 = compressed.replace(/^data:image\/\w+;base64,/, '')
 
-  const path = `public/img/k2/${filename}`
+  const path = `public/img/${subfolder}/${filename}`
 
   onStatus?.('Prüfe vorhandene Datei…')
   const sha = await getFileSha(path, token)
@@ -73,7 +74,7 @@ export async function uploadImageToGitHub(
   }
 
   onStatus?.('✅ Hochgeladen – Vercel deployt (~2 Min)')
-  return `/img/k2/${filename}`
+  return `/img/${subfolder}/${filename}`
 }
 
 /** Lädt ein Video (File-Objekt) via GitHub API hoch. Gibt die öffentliche URL zurück. */
