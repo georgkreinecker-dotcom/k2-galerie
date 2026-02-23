@@ -671,6 +671,7 @@ function ScreenshotExportAdmin() {
   // Klare Admin-Struktur: Werke | Eventplanung | Design | Einstellungen. Kasse = ein Button im Header, öffnet direkt den Shop.
   const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'design' | 'einstellungen' | 'assistent'>(guideAssistent ? 'assistent' : 'werke')
   const [guideBannerClosed, setGuideBannerClosed] = useState(false)
+  const [guideBegleiterGeschlossen, setGuideBegleiterGeschlossen] = useState(false)
   const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>('events')
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false) // kleine Leiste „Vergangenheit“, bei Klick aufklappen
   const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager'>('stammdaten')
@@ -15318,6 +15319,104 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
           </div>
         </div>
       )}
+
+      {/* ─── Nahtloser Guide-Begleiter im Admin ─────────────────────────────── */}
+      {/* Erscheint wenn User über Guide-Flow hereinkam – begleitet bis Schritt 1 erledigt */}
+      {guideAssistent && guideVorname && isOeffentlichAdminContext() && !guideBegleiterGeschlossen && (() => {
+        const istVerein = guidePfad === 'gemeinschaft'
+        const schritte = istVerein
+          ? [
+              { emoji: '📋', titel: 'Vereinsdaten ausfüllen', tab: 'einstellungen' as const },
+              { emoji: '🖼️', titel: 'Erste Werke hochladen', tab: 'werke' as const },
+              { emoji: '✨', titel: 'Aussehen anpassen', tab: 'design' as const },
+              { emoji: '🎟️', titel: 'Ausstellung planen', tab: 'eventplan' as const },
+            ]
+          : [
+              { emoji: '📋', titel: 'Deine Daten ausfüllen', tab: 'einstellungen' as const },
+              { emoji: '🖼️', titel: 'Erste Werke hochladen', tab: 'werke' as const },
+              { emoji: '✨', titel: 'Galerie gestalten', tab: 'design' as const },
+              { emoji: '🎟️', titel: 'Veranstaltung planen', tab: 'eventplan' as const },
+            ]
+        return (
+          <div style={{
+            position: 'fixed', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)',
+            zIndex: 10000, width: 'min(440px, calc(100vw - 2rem))',
+            animation: 'guideBegleiterEin 0.4s ease',
+          }}>
+            <style>{`
+              @keyframes guideBegleiterEin { from{opacity:0;transform:translateX(-50%) translateY(14px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+              @keyframes blinkB { 0%,100%{opacity:1} 50%{opacity:0.3} }
+            `}</style>
+            <div style={{
+              background: 'rgba(14,8,4,0.97)',
+              border: `1px solid ${istVerein ? 'rgba(66,164,255,0.35)' : 'rgba(255,140,66,0.35)'}`,
+              borderRadius: '20px', padding: '1.1rem',
+              boxShadow: '0 16px 56px rgba(0,0,0,0.55)', backdropFilter: 'blur(16px)',
+            }}>
+              {/* Avatar + Text */}
+              <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'flex-start', marginBottom: '0.9rem' }}>
+                <div style={{
+                  width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+                  background: istVerein ? 'linear-gradient(135deg, #1e5cb5, #42a4ff)' : 'linear-gradient(135deg, #b54a1e, #ff8c42)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem',
+                  boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
+                }}>
+                  {istVerein ? '🏛️' : '👨‍🎨'}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.63rem', color: istVerein ? 'rgba(66,164,255,0.6)' : 'rgba(255,140,66,0.5)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' as const, marginBottom: '0.2rem' }}>
+                    {istVerein ? 'Dein Vereins-Guide' : 'Dein Galerie-Guide'}
+                  </div>
+                  <div style={{ fontSize: '0.9rem', color: '#fff8f0', lineHeight: 1.6 }}>
+                    {`Ich bin noch hier, ${guideVorname} – tippe auf einen Schritt und ich führe dich direkt dorthin.`}
+                  </div>
+                </div>
+                <button type="button" onClick={() => setGuideBegleiterGeschlossen(true)}
+                  style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.18)', cursor: 'pointer', fontSize: '1rem', padding: '0.1rem 0.3rem', flexShrink: 0 }}>✕</button>
+              </div>
+
+              {/* Schritt-Buttons */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
+                {schritte.map((s) => {
+                  const istAktiv = activeTab === s.tab
+                  return (
+                    <button key={s.tab} type="button"
+                      onClick={() => {
+                        setActiveTab(s.tab)
+                        if (s.tab === 'einstellungen') setSettingsSubTab('stammdaten')
+                        if (s.tab === 'eventplan') setEventplanSubTab('events')
+                        setGuideBegleiterGeschlossen(true)
+                      }}
+                      style={{
+                        padding: '0.55rem 0.65rem',
+                        background: istAktiv
+                          ? (istVerein ? 'rgba(66,164,255,0.18)' : 'rgba(255,140,66,0.18)')
+                          : 'rgba(255,255,255,0.05)',
+                        border: istAktiv
+                          ? `1px solid ${istVerein ? 'rgba(66,164,255,0.5)' : 'rgba(255,140,66,0.5)'}`
+                          : '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '10px',
+                        color: istAktiv ? (istVerein ? '#42a4ff' : '#ff8c42') : 'rgba(255,255,255,0.7)',
+                        fontSize: '0.8rem', fontWeight: istAktiv ? 700 : 400,
+                        cursor: 'pointer', fontFamily: 'inherit',
+                        display: 'flex', alignItems: 'center', gap: '0.4rem',
+                        textAlign: 'left' as const,
+                      }}>
+                      <span>{s.emoji}</span>
+                      <span>{s.titel}</span>
+                    </button>
+                  )
+                })}
+              </div>
+
+              <div style={{ marginTop: '0.65rem', textAlign: 'center' as const, fontSize: '0.72rem', color: 'rgba(255,255,255,0.2)' }}>
+                Schließen mit ✕ – du kannst jederzeit über den Tab „Assistent" zurück
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
     </div>
   )
 }
