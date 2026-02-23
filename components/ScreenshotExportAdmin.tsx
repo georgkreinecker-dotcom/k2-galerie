@@ -886,8 +886,23 @@ function ScreenshotExportAdmin() {
   // KEIN automatischer Safe-Mode-Check mehr beim Öffnen/Reopen (verursacht Fenster-Abstürze).
   // Speicher prüfen/bereinigen nur manuell: Einstellungen → Backup & Wiederherstellung / Export-Menü.
   
-  // Seitentexte (bearbeitbare Texte pro Seite) – K2 vs. ök2 getrennt
-  const [pageTexts, setPageTextsState] = useState<PageTextsConfig>(() => getPageTexts(isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined))
+  // Seitentexte (bearbeitbare Texte pro Seite) – K2 vs. ök2 vs. VK2 getrennt
+  const [pageTexts, setPageTextsState] = useState<PageTextsConfig>(() => {
+    const raw = getPageTexts(isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined)
+    if (isVk2AdminContext()) {
+      // VK2: K2-Standardtexte erkennen und mit VK2-Defaults überschreiben
+      const K2_HERO = 'K2 Galerie'
+      const K2_TAGLINE = 'Kunst & Keramik – Martina und Georg Kreinecker'
+      const K2_INTRO = 'Ein Neuanfang mit Leidenschaft'
+      const vk2Vereinsname = (() => { try { const s = localStorage.getItem('k2-vk2-stammdaten'); return s ? (JSON.parse(s)?.verein?.name || '') : '' } catch { return '' } })()
+      const galerie = raw.galerie ?? {}
+      const heroTitle = (!galerie.heroTitle || galerie.heroTitle === K2_HERO) ? (vk2Vereinsname || 'VK2 Vereinsplattform') : galerie.heroTitle
+      const welcomeSubtext = (!galerie.welcomeSubtext || galerie.welcomeSubtext === K2_TAGLINE) ? 'Kunstverein' : galerie.welcomeSubtext
+      const welcomeIntroText = (!galerie.welcomeIntroText || galerie.welcomeIntroText.startsWith(K2_INTRO)) ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.' : galerie.welcomeIntroText
+      return { ...raw, galerie: { ...galerie, heroTitle, welcomeSubtext, welcomeIntroText } }
+    }
+    return raw
+  })
 
   // Altes Blau-Theme erkennen → K2-Orange (wie in GaleriePage)
   const K2_ORANGE_DESIGN = {
@@ -9675,9 +9690,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 0, boxSizing: 'border-box' }}>
                   {previewFullscreenPage === 1 && (
                   <div style={{ width: '100%', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 100%)' }}>
-                    {/* Brand linkes oberes Eck – nur K2 Galerie */}
+                    {/* Brand linkes oberes Eck – K2/ök2/VK2 */}
                     <div style={{ position: 'absolute', top: 12, left: 14, zIndex: 10 }}>
-                      <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--k2-text)', letterSpacing: '0.02em', lineHeight: 1.25 }}>{PRODUCT_BRAND_NAME}</div>
+                      <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--k2-text)', letterSpacing: '0.02em', lineHeight: 1.25 }}>{isVk2AdminContext() ? galleryName : PRODUCT_BRAND_NAME}</div>
                     </div>
                     <header style={{ padding: '24px 18px 24px', paddingTop: 44, maxWidth: 412, margin: 0 }}>
                       <div style={{ marginBottom: 32 }}>
