@@ -413,11 +413,13 @@ function FeedbackButton({ step, fontBody, accentGlow, accent }: { step: string; 
     if (!text.trim()) return
     const betreff = encodeURIComponent(`${PRODUCT_FEEDBACK_BETREFF} (Schritt: ${step})`)
     const body = encodeURIComponent(text.trim())
-    // E-Mail-Adresse wird nie im DOM sichtbar – nur im mailto-Link zur Laufzeit
-    window.location.href = `mailto:${PRODUCT_FEEDBACK_EMAIL}?subject=${betreff}&body=${body}`
     setGesendet(true)
     setText('')
-    setTimeout(() => { setGesendet(false); setOffen(false) }, 1500)
+    // E-Mail-Adresse wird nie im DOM sichtbar – nur im mailto-Link zur Laufzeit
+    setTimeout(() => {
+      window.location.href = `mailto:${PRODUCT_FEEDBACK_EMAIL}?subject=${betreff}&body=${body}`
+    }, 2200)
+    setTimeout(() => { setGesendet(false); setOffen(false) }, 4000)
   }
 
   return (
@@ -428,7 +430,17 @@ function FeedbackButton({ step, fontBody, accentGlow, accent }: { step: string; 
             🌟 Was würdest du dir wünschen oder verbessern?
           </div>
           {gesendet ? (
-            <div style={{ textAlign: 'center', padding: '0.75rem', color: '#86efac', fontSize: '0.9rem', fontWeight: 700 }}>✅ Danke – wird gleich geöffnet!</div>
+            <div style={{ textAlign: 'center', padding: '1.25rem 0.75rem' }}>
+              <div style={{ fontSize: '2rem', marginBottom: '0.6rem' }}>💚</div>
+              <div style={{ fontFamily: fontBody, fontWeight: 700, fontSize: '1rem', color: '#fff8f0', marginBottom: '0.4rem', lineHeight: 1.3 }}>
+                Danke für deine Mitarbeit!
+              </div>
+              <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.6 }}>
+                Dein Wunsch hilft dabei,<br />
+                K2 Galerie besser zu machen.<br />
+                <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem' }}>Dein E-Mail-Programm öffnet sich gleich …</span>
+              </div>
+            </div>
           ) : (
             <>
               <textarea
