@@ -8104,46 +8104,75 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 {/* Guide-Willkommensbanner – pfad-bewusst */}
                 {guideVorname && isOeffentlichAdminContext() && !guideBannerClosed && (() => {
                   const istVerein = guidePfad === 'gemeinschaft'
-                  const bereiche = istVerein ? [
-                    { emoji: '🏛️', name: 'Gemeinschafts-Galerie', text: 'Alle Werke aller Mitglieder unter einem Dach – jede:r mit eigenem Profil' },
-                    { emoji: '📋', name: 'Werkkatalog', text: 'Alle Werke des Vereins filtern, suchen, drucken' },
-                    { emoji: '🎟️', name: 'Veranstaltungen', text: 'Ausstellungen planen, Einladungen an alle Mitglieder versenden' },
-                    { emoji: '✨', name: 'Aussehen', text: 'Farben, Logo, Texte – die Galerie wird zum Gesicht des Vereins' },
-                    { emoji: '⚙️', name: 'Einstellungen', text: 'Vereinsdaten, Kontakt, Mitglieder verwalten' },
+                  type BannerBereich = { emoji: string; name: string; text: string; tab: string }
+                  const bereiche: BannerBereich[] = istVerein ? [
+                    { emoji: '🏛️', name: 'Gemeinschafts-Galerie', text: 'Alle Werke aller Mitglieder unter einem Dach – jede:r mit eigenem Profil', tab: 'werke' },
+                    { emoji: '📋', name: 'Werkkatalog', text: 'Alle Werke des Vereins filtern, suchen, drucken', tab: 'katalog' },
+                    { emoji: '🎟️', name: 'Veranstaltungen', text: 'Ausstellungen planen, Einladungen an alle Mitglieder versenden', tab: 'eventplan' },
+                    { emoji: '✨', name: 'Aussehen', text: 'Farben, Logo, Texte – die Galerie wird zum Gesicht des Vereins', tab: 'design' },
+                    { emoji: '⚙️', name: 'Einstellungen', text: 'Vereinsdaten, Kontakt, Mitglieder verwalten', tab: 'einstellungen' },
                   ] : [
-                    { emoji: '🎨', name: 'Meine Werke', text: 'Fotos hochladen, Titel, Preis, Beschreibung – deine Galerie füllen' },
-                    { emoji: '📋', name: 'Werkkatalog', text: 'Alle Werke auf einen Blick – filtern, suchen, drucken' },
-                    { emoji: '💰', name: 'Kassa', text: 'Direkt verkaufen – Beleg drucken, Übersicht behalten' },
-                    { emoji: '📢', name: 'Veranstaltungen', text: 'Events planen, Einladungen erstellen, Presse informieren' },
-                    { emoji: '✨', name: 'Aussehen', text: 'Farben, Texte, dein Foto – die Galerie wird zu dir' },
+                    { emoji: '🎨', name: 'Meine Werke', text: 'Fotos hochladen, Titel, Preis, Beschreibung – deine Galerie füllen', tab: 'werke' },
+                    { emoji: '📋', name: 'Werkkatalog', text: 'Alle Werke auf einen Blick – filtern, suchen, drucken', tab: 'katalog' },
+                    { emoji: '💰', name: 'Kassa', text: 'Direkt verkaufen – Beleg drucken, Übersicht behalten', tab: 'kassa' },
+                    { emoji: '📢', name: 'Veranstaltungen', text: 'Events planen, Einladungen erstellen, Presse informieren', tab: 'eventplan' },
+                    { emoji: '✨', name: 'Aussehen', text: 'Farben, Texte, dein Foto – die Galerie wird zu dir', tab: 'design' },
                   ]
+                  const galerieUrl = isOeffentlichAdminContext()
+                    ? '/projects/k2-galerie/galerie-oeffentlich'
+                    : '/projects/k2-galerie/galerie'
                   return (
                     <div style={{ background: 'linear-gradient(135deg, #b54a1e14, #b54a1e08)', border: '1.5px solid #b54a1e33', borderRadius: '16px', padding: '1.25rem 1.5rem', marginBottom: '1.75rem', position: 'relative' }}>
                       <button type="button" onClick={() => setGuideBannerClosed(true)} style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', background: 'none', border: 'none', cursor: 'pointer', color: '#b54a1e66', fontSize: '1.1rem', lineHeight: 1, padding: '0.2rem 0.4rem' }} title="Schließen">×</button>
 
-                      {/* Kopf */}
-                      <div style={{ fontSize: '1.3rem', marginBottom: '0.5rem' }}>{istVerein ? '🤝' : '👋'}</div>
-                      <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1c1a18', marginBottom: '0.35rem' }}>
-                        {istVerein
-                          ? `Willkommen, ${guideVorname}! Das ist die Zentrale eures Vereins.`
-                          : `Willkommen, ${guideVorname}! Das ist deine Galerie-Zentrale.`}
+                      {/* Kopf + Galerie-Vorschau Button */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                        <div>
+                          <div style={{ fontSize: '1.3rem', marginBottom: '0.35rem' }}>{istVerein ? '🤝' : '👋'}</div>
+                          <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1c1a18' }}>
+                            {istVerein
+                              ? `Willkommen, ${guideVorname}! Das ist die Zentrale eures Vereins.`
+                              : `Willkommen, ${guideVorname}! Das ist deine Galerie-Zentrale.`}
+                          </div>
+                        </div>
+                        <a href={galerieUrl} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.5rem 0.9rem', background: '#b54a1e', color: '#fff', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0, whiteSpace: 'nowrap' as const }}>
+                          🎨 Galerie ansehen →
+                        </a>
                       </div>
                       <div style={{ fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.55, marginBottom: '1rem' }}>
                         {istVerein
-                          ? 'Hier verwaltet ihr alles gemeinsam – Werke, Events, Mitglieder, Aussehen. Jeder Bereich erklärt sich von selbst:'
-                          : 'Hier steuerst du alles – von deinen Werken bis zur Kassa. Ein kurzer Überblick was jeder Bereich kann:'}
+                          ? 'Tippe auf einen Bereich um direkt loszulegen:'
+                          : 'Tippe auf einen Bereich um direkt loszulegen:'}
                       </div>
 
-                      {/* Bereichs-Karten */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))', gap: '0.6rem', marginBottom: '1rem' }}>
+                      {/* Bereichs-Karten – klickbar */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.6rem', marginBottom: '1rem' }}>
                         {bereiche.map((b, i) => (
-                          <div key={i} style={{ background: '#fff', border: '1px solid #e8e4de', borderRadius: '10px', padding: '0.65rem 0.8rem', display: 'flex', gap: '0.6rem', alignItems: 'flex-start' }}>
+                          <button key={i} type="button"
+                            onClick={() => {
+                              setGuideBannerClosed(true)
+                              if (b.tab === 'kassa') {
+                                try { sessionStorage.setItem('k2-admin-context', isOeffentlichAdminContext() ? 'oeffentlich' : 'k2') } catch (_) {}
+                                window.location.href = '/projects/k2-galerie/shop?openAsKasse=1'
+                              } else {
+                                const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','design','einstellungen','assistent'] as const
+                                type AdminTab = typeof validTabs[number]
+                                if (validTabs.includes(b.tab as AdminTab)) {
+                                  setActiveTab(b.tab as AdminTab)
+                                }
+                                window.scrollTo({ top: 0, behavior: 'smooth' })
+                              }
+                            }}
+                            style={{ background: '#fff', border: '1px solid #e8e4de', borderRadius: '10px', padding: '0.65rem 0.8rem', display: 'flex', gap: '0.6rem', alignItems: 'flex-start', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit', transition: 'all 0.15s' }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#b54a1e66'; e.currentTarget.style.background = '#fdf9f6' }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#e8e4de'; e.currentTarget.style.background = '#fff' }}
+                          >
                             <span style={{ fontSize: '1.25rem', flexShrink: 0, lineHeight: 1.2 }}>{b.emoji}</span>
                             <div>
                               <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1c1a18', marginBottom: '0.2rem' }}>{b.name}</div>
                               <div style={{ fontSize: '0.75rem', color: '#5c5650', lineHeight: 1.4 }}>{b.text}</div>
                             </div>
-                          </div>
+                          </button>
                         ))}
                       </div>
 
