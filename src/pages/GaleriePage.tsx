@@ -2145,7 +2145,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
             marginBottom: '1rem'
           }}>
-            <span>VK2 Vereinsplattform – Galerie</span>
+            <span>VK2 Vereinsplattform – Unsere Mitglieder</span>
             <button
               type="button"
               onClick={handleAdminButtonClick}

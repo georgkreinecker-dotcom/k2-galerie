@@ -8071,7 +8071,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.background = s.bgElevated }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}28`; e.currentTarget.style.background = s.bgCard }}
               >
-                🖼️ Galerie ansehen
+                {isVk2AdminContext() ? '👥 Unsere Mitglieder' : '🖼️ Galerie ansehen'}
               </Link>
 
               {/* Kasse – primäre Aktion, deutlich hervorgehoben */}
@@ -8250,7 +8250,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           </div>
                         </div>
                         <a href={galerieUrl} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.55rem 1rem', background: akzent, color: '#fff', borderRadius: '10px', fontSize: '0.84rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0, whiteSpace: 'nowrap' as const, boxShadow: `0 3px 10px ${akzent}44` }}>
-                          🎨 Galerie ansehen →
+                          {istVerein ? '👥 Unsere Mitglieder' : '🎨 Galerie ansehen'} →
                         </a>
                       </div>
 
@@ -8361,7 +8361,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '🏛️', name: 'Gemeinschafts-Galerie', text: 'Alle Werke aller Mitglieder unter einem Dach – jede:r mit eigenem Profil', tab: 'werke' },
                     { emoji: '📋', name: 'Werkkatalog', text: 'Alle Werke des Vereins filtern, suchen, drucken', tab: 'katalog' },
                     { emoji: '🎟️', name: 'Veranstaltungen', text: 'Ausstellungen planen, Einladungen an alle Mitglieder versenden', tab: 'eventplan' },
-                    { emoji: '✨', name: 'Aussehen', text: 'Farben, Logo, Texte – die Galerie wird zum Gesicht des Vereins', tab: 'design' },
+                    { emoji: '✨', name: 'Aussehen', text: 'Farben, Texte, Foto – eure Mitglieder-Seite nach euren Wünschen', tab: 'design' },
                     { emoji: '⚙️', name: 'Einstellungen', text: 'Vereinsdaten, Kontakt, Mitglieder verwalten', tab: 'einstellungen' },
                   ] : [
                     { emoji: '🎨', name: 'Meine Werke', text: 'Fotos hochladen, Titel, Preis, Beschreibung – deine Galerie füllen', tab: 'werke' },
@@ -8388,7 +8388,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           </div>
                         </div>
                         <a href={galerieUrl} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.5rem 0.9rem', background: '#b54a1e', color: '#fff', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0, whiteSpace: 'nowrap' as const }}>
-                          🎨 Galerie ansehen →
+                          {istVerein ? '👥 Unsere Mitglieder' : '🎨 Galerie ansehen'} →
                         </a>
                       </div>
                       <div style={{ fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.55, marginBottom: '1rem' }}>
@@ -8647,7 +8647,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   {activeTab === 'newsletter' && '📬 Newsletter & Einladungen'}
                   {activeTab === 'pressemappe' && '📰 Pressemappe'}
                   {activeTab === 'eventplan' && '📢 Veranstaltungen & Werbung'}
-                  {activeTab === 'design' && '✨ Aussehen der Galerie – nach deinen Wünschen anpassen'}
+                  {activeTab === 'design' && (isVk2AdminContext() ? '✨ Aussehen – nach euren Wünschen anpassen' : '✨ Aussehen der Galerie – nach deinen Wünschen anpassen')}
                   {activeTab === 'einstellungen' && '⚙️ Einstellungen'}
                 </h2>
               </div>
@@ -9573,7 +9573,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         : PROJECT_ROUTES['k2-galerie'].galerie
                       navigate(route + '?vorschau=1')
                     }} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1.1rem', fontSize: '1rem', fontWeight: 700, background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: 10, color: '#10b981', cursor: 'pointer', fontFamily: 'inherit' }}>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>2</span> 👁 Galerie ansehen – gefällt es?
+                      <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>2</span> {isVk2AdminContext() ? '👁 Unsere Mitglieder-Seite ansehen – gefällt es?' : '👁 Galerie ansehen – gefällt es?'}
                     </button>
                     <span style={{ color: s.muted, fontSize: '1.2rem' }}>→</span>
                     {/* Schritt 3: Speichern */}
@@ -10822,11 +10822,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         </div>
                       </div>
                     </div>
-                    {/* Registrierte Mitglieder – eine Wartung: Profil anlegen, User übernehmen, Bearbeiten (Vereinsgalerie). */}
+                    {/* Registrierte Mitglieder – eine Wartung: Profil anlegen, User übernehmen, Bearbeiten (Unsere Mitglieder). */}
                     <div style={{ marginBottom: '1rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
                       <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>📋 Registrierte Mitglieder</h3>
-                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted }}>Profile für die Vereinsgalerie. <strong>Ab 10 registrierten Mitgliedern</strong> wird der Verein kostenfrei (Pro-Version).</p>
-                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: s.accent, fontStyle: 'italic' }}>💡 Was du hier siehst (Name, E-Mail, Kunstrichtung, Bild), erscheint auf den Karten in der Vereinsgalerie – öffentlich sichtbar.</p>
+                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted }}>Profile für die Unsere Mitglieder. <strong>Ab 10 registrierten Mitgliedern</strong> wird der Verein kostenfrei (Pro-Version).</p>
+                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: s.accent, fontStyle: 'italic' }}>💡 Was du hier siehst (Name, E-Mail, Kunstrichtung, Bild), erscheint auf den Karten in der Unsere Mitglieder – öffentlich sichtbar.</p>
                       <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}><strong>Auf Karte:</strong> Hakerl = auf der Karte öffentlich sichtbar. Kein Hakerl = gesperrt, erscheint nicht auf der öffentlichen Karte.</p>
                       <div style={{ marginBottom: '0.75rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
                         <button
@@ -10834,7 +10834,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           onClick={() => { setEditingMemberIndex(null); setMemberForm(EMPTY_MEMBER_FORM); setShowAddModal(true) }}
                           style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: s.gradientAccent, border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer' }}
                         >
-                          + Profil für Vereinsgalerie anlegen
+                          + Profil für Unsere Mitglieder anlegen
                         </button>
                         <button
                           type="button"
@@ -14241,7 +14241,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 fontWeight: '600',
                 color: '#ffffff'
               }}>
-                {isVk2AdminContext() ? (editingMemberIndex !== null ? 'Profil für Vereinsgalerie bearbeiten' : 'Profil für Vereinsgalerie anlegen') : (editingArtwork ? 'Werk bearbeiten' : 'Neues Werk')}
+                {isVk2AdminContext() ? (editingMemberIndex !== null ? 'Profil für Unsere Mitglieder bearbeiten' : 'Profil für Unsere Mitglieder anlegen') : (editingArtwork ? 'Werk bearbeiten' : 'Neues Werk')}
               </h2>
               <button 
                 onClick={() => {
@@ -14305,10 +14305,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               flexDirection: 'column',
               gap: '1rem'
             }}>
-              {/* VK2: Angaben für die Vereinsgalerie (Name, E-Mail, Kunstrichtung) – kein Werk-Formular */}
+              {/* VK2: Angaben für die Unsere Mitglieder (Name, E-Mail, Kunstrichtung) – kein Werk-Formular */}
               {isVk2AdminContext() ? (
                 <>
-                  <p style={{ margin: 0, fontSize: '0.9rem', color: s.muted }}>Angaben für die Darstellung in der Vereinsgalerie.</p>
+                  <p style={{ margin: 0, fontSize: '0.9rem', color: s.muted }}>Angaben für die Darstellung in der Unsere Mitglieder.</p>
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.accent, fontWeight: 600 }}>Name *</label>
                     <input
