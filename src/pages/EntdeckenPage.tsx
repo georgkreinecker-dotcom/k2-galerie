@@ -97,21 +97,27 @@ interface HeroHubProps {
 }
 
 const HUB_STATIONEN = [
-  { emoji: '🖼️', name: 'Meine Werke',        sub: 'Fotos, Preise, Beschreibungen – deine Galerie füllen' },
-  { emoji: '🎟️', name: 'Events & Ausst.',     sub: 'Vernissagen planen, Einladungen & QR-Codes erstellen' },
-  { emoji: '✨', name: 'Aussehen & Design',   sub: 'Farben, Texte, dein Foto – die Galerie wird zu dir' },
-  { emoji: '📋', name: 'Werkkatalog',         sub: 'Alle Werke auf einen Blick – filtern, suchen, drucken' },
-  { emoji: '🧾', name: 'Kassa & Verkauf',     sub: 'Direkt verkaufen, Beleg drucken – auch vom Handy' },
-  { emoji: '⚙️', name: 'Einstellungen',       sub: 'Kontakt, Adresse, Öffnungszeiten – deine Stammdaten' },
+  { emoji: '🖼️', name: 'Meine Werke',        sub: 'Fotos, Preise, Beschreibungen – deine Galerie füllen',          tab: 'werke' },
+  { emoji: '🎟️', name: 'Events & Ausst.',     sub: 'Vernissagen planen, Einladungen & QR-Codes erstellen',           tab: 'eventplan' },
+  { emoji: '✨', name: 'Aussehen & Design',   sub: 'Farben, Texte, dein Foto – die Galerie wird zu dir',             tab: 'design' },
+  { emoji: '📋', name: 'Werkkatalog',         sub: 'Alle Werke auf einen Blick – filtern, suchen, drucken',          tab: 'katalog' },
+  { emoji: '🧾', name: 'Kassa & Verkauf',     sub: 'Direkt verkaufen, Beleg drucken – auch vom Handy',               tab: 'statistik' },
+  { emoji: '⚙️', name: 'Einstellungen',       sub: 'Kontakt, Adresse, Öffnungszeiten – deine Stammdaten',            tab: 'einstellungen' },
 ]
 
 function HeroHub({ accent, accentLight, accentGlow, bgDark, bgMid, fontHeading, fontBody, onWeiter }: HeroHubProps) {
   const [aktivIdx, setAktivIdx] = useState(0)
+  const navigate = useNavigate()
   const akzentGrad = `linear-gradient(135deg, ${accent}, ${accentGlow})`
   const halbePunkte = Math.ceil(HUB_STATIONEN.length / 2)
   const linksStationen = HUB_STATIONEN.slice(0, halbePunkte)
   const rechtsStationen = HUB_STATIONEN.slice(halbePunkte)
   const aktivStation = HUB_STATIONEN[aktivIdx]
+
+  const oeffneTab = (tab: string) => {
+    try { sessionStorage.setItem('k2-hub-from', '1') } catch (_) {}
+    navigate(`/admin?context=oeffentlich&tab=${tab}&from=hub`)
+  }
 
   return (
     <div style={{
@@ -147,7 +153,8 @@ function HeroHub({ accent, accentLight, accentGlow, bgDark, bgMid, fontHeading, 
             {linksStationen.map((st, i) => {
               const istAktiv = aktivIdx === i
               return (
-                <button key={i} type="button" onClick={() => setAktivIdx(i)}
+                <button key={i} type="button" onClick={() => istAktiv ? oeffneTab(st.tab) : setAktivIdx(i)}
+                  title={istAktiv ? `${st.name} ansehen` : st.name}
                   style={{
                     padding: '0.6rem 0.7rem', display: 'flex', alignItems: 'center', gap: '0.45rem',
                     background: istAktiv ? akzentGrad : 'rgba(255,255,255,0.05)',
@@ -160,6 +167,7 @@ function HeroHub({ accent, accentLight, accentGlow, bgDark, bgMid, fontHeading, 
                   }}>
                   <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>{st.emoji}</span>
                   <span style={{ fontSize: '0.72rem', lineHeight: 1.3 }}>{st.name}</span>
+                  {istAktiv && <span style={{ marginLeft: 'auto', fontSize: '0.65rem', opacity: 0.7 }}>→</span>}
                 </button>
               )
             })}
@@ -211,7 +219,14 @@ function HeroHub({ accent, accentLight, accentGlow, bgDark, bgMid, fontHeading, 
               ))}
             </div>
 
-            {/* CTA */}
+            {/* Vorschau-Button + CTA */}
+            <button type="button" onClick={() => oeffneTab(aktivStation.tab)}
+              style={{ width: '100%', padding: '0.85rem', background: 'rgba(255,255,255,0.1)', border: `1px solid ${accentGlow}55`, borderRadius: '12px', color: '#fff8f0', fontWeight: 600, cursor: 'pointer', fontFamily: fontBody, fontSize: '0.92rem', letterSpacing: '0.01em', transition: 'all 0.18s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.18)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}>
+              {aktivStation.emoji} {aktivStation.name} ansehen →
+            </button>
+
             <button type="button" onClick={onWeiter}
               style={{ width: '100%', padding: '0.95rem', background: akzentGrad, border: 'none', borderRadius: '14px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: '1.05rem', boxShadow: `0 6px 24px ${accent}44`, letterSpacing: '0.01em' }}>
               Jetzt starten – kostenlos & ohne Anmeldung →
@@ -227,7 +242,8 @@ function HeroHub({ accent, accentLight, accentGlow, bgDark, bgMid, fontHeading, 
               const globalIdx = halbePunkte + i
               const istAktiv = aktivIdx === globalIdx
               return (
-                <button key={globalIdx} type="button" onClick={() => setAktivIdx(globalIdx)}
+                <button key={globalIdx} type="button" onClick={() => istAktiv ? oeffneTab(st.tab) : setAktivIdx(globalIdx)}
+                  title={istAktiv ? `${st.name} ansehen` : st.name}
                   style={{
                     padding: '0.6rem 0.7rem', display: 'flex', alignItems: 'center', gap: '0.45rem',
                     background: istAktiv ? akzentGrad : 'rgba(255,255,255,0.05)',
@@ -240,6 +256,7 @@ function HeroHub({ accent, accentLight, accentGlow, bgDark, bgMid, fontHeading, 
                   }}>
                   <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>{st.emoji}</span>
                   <span style={{ fontSize: '0.72rem', lineHeight: 1.3 }}>{st.name}</span>
+                  {istAktiv && <span style={{ marginLeft: 'auto', fontSize: '0.65rem', opacity: 0.7 }}>→</span>}
                 </button>
               )
             })}
@@ -272,11 +289,13 @@ function baueHubStationen(q1: string) {
       beschreibung: istVerein
         ? 'Alle Werke aller Mitglieder an einem Ort – jede:r mit eigenem Profil, Fotos und Preisen.'
         : 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist live in deiner Galerie.',
+      tab: 'werke',
     },
     {
       emoji: '🎟️',
       name: 'Events & Ausstellungen',
       beschreibung: 'Vernissage planen, Einladungen erstellen, QR-Codes für Besucher – alles an einem Ort.',
+      tab: 'eventplan',
     },
     {
       emoji: '✨',
@@ -284,6 +303,7 @@ function baueHubStationen(q1: string) {
       beschreibung: q1 === 'etabliert'
         ? 'Professionelles Erscheinungsbild: Farben, Logo, Willkommensbild – passend zu deinem Stil.'
         : 'Farben, dein Foto, deine Texte – die Galerie wird zu deinem persönlichen Auftritt.',
+      tab: 'design',
     },
     {
       emoji: '📋',
@@ -291,16 +311,19 @@ function baueHubStationen(q1: string) {
       beschreibung: q1 === 'etabliert' || q1 === 'aufsteigend'
         ? 'Zertifikate, Werkverzeichnis, Pressemappe – alles aus deinen Daten vorbefüllt, ein Klick zum Drucken.'
         : 'Alle deine Werke auf einen Blick – filtern, suchen, drucken.',
+      tab: 'katalog',
     },
     {
       emoji: '🧾',
       name: 'Kassa & Verkauf',
       beschreibung: 'Werk verkauft? Eintragen, Beleg drucken – vom Handy direkt bei der Ausstellung. Ganz simpel.',
+      tab: 'statistik',
     },
     {
       emoji: '🚀',
       name: 'Galerie starten',
       beschreibung: 'Kontakt und Adresse eintragen – dann ist deine Galerie sofort live. Keine Kreditkarte nötig.',
+      tab: 'einstellungen',
       istStart: true,
     },
   ]
@@ -308,6 +331,7 @@ function baueHubStationen(q1: string) {
 
 function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, bgMid, bgLight, fontHeading, fontBody, onStarten, onZurueck }: HubArbProps) {
   const [aktivIdx, setAktivIdx] = useState(0)
+  const navigate = useNavigate()
   const istVerein = q1 === 'verein'
   const akzentGrad = `linear-gradient(135deg, ${accent}, ${accentGlow})`
   const avatarEmoji = istVerein ? '🏛️' : q1 === 'etabliert' ? '⭐' : q1 === 'aufsteigend' ? '🌱' : '👨‍🎨'
@@ -316,6 +340,11 @@ function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, 
   const halbePunkte = Math.ceil(stationen.length / 2)
   const linksStationen = stationen.slice(0, halbePunkte)
   const rechtsStationen = stationen.slice(halbePunkte)
+
+  const oeffneTab = (tab: string) => {
+    try { sessionStorage.setItem('k2-hub-from', '1') } catch (_) {}
+    navigate(`/admin?context=oeffentlich&tab=${tab}&from=hub`)
+  }
 
   const begruessung = name
     ? `${name}, das ist deine Galerie.`
@@ -434,15 +463,23 @@ function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, 
               🚀 {name ? `${name}'s Galerie` : 'Galerie'} jetzt öffnen →
             </button>
           ) : (
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button type="button" onClick={() => setAktivIdx(Math.min(aktivIdx + 1, stationen.length - 1))}
-                style={{ flex: 1, padding: '0.85rem', background: akzentGrad, border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: '0.9rem', boxShadow: `0 4px 14px ${accent}44` }}>
-                Weiter →
-              </button>
-              <button type="button" onClick={onStarten}
-                style={{ padding: '0.85rem 1rem', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', color: 'rgba(255,255,255,0.55)', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.82rem', whiteSpace: 'nowrap' as const }}>
-                Alles gesehen →
-              </button>
+            <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem' }}>
+              {'tab' in aktivStation && (aktivStation as { tab?: string }).tab && (
+                <button type="button" onClick={() => oeffneTab((aktivStation as { tab: string }).tab)}
+                  style={{ width: '100%', padding: '0.8rem', background: 'rgba(255,255,255,0.1)', border: `1px solid ${accentGlow}55`, borderRadius: '12px', color: '#fff8f0', fontWeight: 600, cursor: 'pointer', fontFamily: fontBody, fontSize: '0.9rem' }}>
+                  {aktivStation.emoji} {aktivStation.name} ansehen →
+                </button>
+              )}
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button type="button" onClick={() => setAktivIdx(Math.min(aktivIdx + 1, stationen.length - 1))}
+                  style={{ flex: 1, padding: '0.75rem', background: akzentGrad, border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: '0.88rem', boxShadow: `0 4px 14px ${accent}44` }}>
+                  Weiter →
+                </button>
+                <button type="button" onClick={onStarten}
+                  style={{ padding: '0.75rem 0.9rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '12px', color: 'rgba(255,255,255,0.45)', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.8rem', whiteSpace: 'nowrap' as const }}>
+                  Galerie starten →
+                </button>
+              </div>
             </div>
           )}
 

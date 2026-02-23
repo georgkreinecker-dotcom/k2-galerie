@@ -693,14 +693,23 @@ function ScreenshotExportAdmin() {
     } catch { return false }
   })()
 
+  // Vom Hub gekommen? → Zurück-Button anzeigen
+  const fromHub = (() => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      return params.get('from') === 'hub' || sessionStorage.getItem('k2-hub-from') === '1'
+    } catch { return false }
+  })()
+
   // Klare Admin-Struktur: Werke | Eventplanung | Design | Einstellungen.
   const initialTab = (() => {
     try {
       const params = new URLSearchParams(window.location.search)
-      const gt = params.get('guidetab')
       const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','design','einstellungen','assistent'] as const
       type AdminTab = typeof validTabs[number]
-      if (gt && validTabs.includes(gt as AdminTab)) return gt as AdminTab
+      // ?tab=... (vom Hub) oder ?guidetab=... (alter Guide)
+      const t = params.get('tab') || params.get('guidetab')
+      if (t && validTabs.includes(t as AdminTab)) return t as AdminTab
     } catch { /* ignore */ }
     return guideAssistent ? 'assistent' : 'werke'
   })()
@@ -7936,6 +7945,45 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
       fontFamily: s.fontBody
     }}>
       <link rel="stylesheet" href={PROMO_FONTS_URL} />
+
+      {/* ── Zurück zum Guide-Hub (erscheint wenn man vom /entdecken-Hub kommt) ── */}
+      {fromHub && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 99999,
+          background: 'linear-gradient(135deg, #b54a1e, #ff8c42)',
+          padding: '0.5rem 1rem',
+          display: 'flex', alignItems: 'center', gap: '0.75rem',
+          boxShadow: '0 2px 12px rgba(181,74,30,0.45)',
+        }}>
+          <button
+            type="button"
+            onClick={() => {
+              try { sessionStorage.removeItem('k2-hub-from') } catch (_) {}
+              window.history.back()
+            }}
+            style={{
+              background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.4)',
+              borderRadius: '20px', padding: '0.3rem 1rem', color: '#fff',
+              fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem',
+              display: 'flex', alignItems: 'center', gap: '0.4rem',
+              fontFamily: s.fontBody,
+            }}>
+            ← Zurück zum Guide
+          </button>
+          <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.82rem' }}>
+            Du schaust dir gerade an: <strong style={{ color: '#fff' }}>
+              {activeTab === 'werke' ? '🖼️ Meine Werke' :
+               activeTab === 'eventplan' ? '🎟️ Events & Ausstellungen' :
+               activeTab === 'design' ? '✨ Aussehen & Design' :
+               activeTab === 'katalog' ? '📋 Werkkatalog' :
+               activeTab === 'statistik' ? '🧾 Kassa & Verkauf' :
+               activeTab === 'einstellungen' ? '⚙️ Einstellungen' :
+               activeTab}
+            </strong>
+          </span>
+        </div>
+      )}
+
       {/* Dezenter Akzent-Hintergrund – wie Willkommensseite Mustergalerie */}
       <div style={{
         position: 'fixed',
@@ -7948,6 +7996,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
         zIndex: 0
       }} />
       
+      {/* Spacer wenn Zurück-Banner sichtbar ist */}
+      {fromHub && <div style={{ height: 44 }} />}
+
       <div style={{ position: 'relative', zIndex: 1 }}>
         <header style={{
           padding: 'clamp(1rem, 3vw, 1.5rem) clamp(1.5rem, 4vw, 3rem)',
