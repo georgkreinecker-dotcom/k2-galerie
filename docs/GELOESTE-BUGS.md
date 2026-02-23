@@ -1,5 +1,9 @@
 # Gelöste Bugs – Nachschlagewerk für AI (PFLICHT lesen bei Session-Start)
 
+> **Automatische Tests:** `npm run test` (oder `npm test`) – läuft 21 Tests.
+> **Tests laufen bei jedem Build automatisch** (in `npm run build` integriert).
+> Test-Dateien: `src/tests/datentrennung.test.ts`, `kundendaten-schutz.test.ts`, `bild-upload.test.ts`
+
 **Zweck:** Damit kein Bug zweimal auftaucht. Vor jeder Änderung an betroffenen Stellen: hier nachschauen.
 
 ---

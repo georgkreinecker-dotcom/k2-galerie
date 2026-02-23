@@ -2,8 +2,8 @@
 
 | Feld | Inhalt |
 |------|--------|
-| **Datum** | 23.02.26 |
-| **Thema** | VK2 Seiten: QR-Code, Mitglieder-Karten, Foto, Copyright + Stand-Badge fertig |
-| **Was zuletzt** | VK2 komplett neu gebaut (eigene Komponenten). Dann: (1) QR-Code im Impressum → Mitglieder-Seite mit Cache-Bust. (2) Mitglieder-Karten: useEffect Mount-Fix. (3) Foto vollständig (kein Abschneiden). (4) Copyright + K2 Brand-Logo in beiden VK2-Seiten. (5) Stand-Badge mit Cache-Bypass. Commit 4ba049b Push ✅ |
-| **Nächster Schritt** | Vercel-Deploy abwarten (~1-2 Min), dann VK2-Seite testen: QR-Code sichtbar, Mitglieder-Karten da, Foto vollständig, Copyright unten. Stand-Badge tippen für Cache-Bypass. |
-| **Wo nachlesen** | `src/pages/Vk2GaleriePage.tsx`, `src/pages/Vk2GalerieVorschauPage.tsx` |
+| **Datum** | 23.02.26 19:21 |
+| **Thema** | Automatische Tests (Vitest) eingerichtet – 21 Tests grün |
+| **Was zuletzt** | Vitest-Framework eingerichtet. 3 Test-Dateien mit 21 Tests für die kritischsten Bugs: (1) `datentrennung.test.ts` – K2/ök2/VK2 Datentrennung. (2) `kundendaten-schutz.test.ts` – Kundendaten niemals löschen. (3) `bild-upload.test.ts` – Vercel-Pfad statt Base64. `npm run build` führt jetzt Tests automatisch vor jedem Build aus. Commit ausstehend. |
+| **Nächster Schritt** | Morgen: `npm run test` ausführen – muss 21 grün zeigen. Dann `npm run build` testen. |
+| **Wo nachlesen** | `src/tests/`, `vitest.config.ts`, `docs/GELOESTE-BUGS.md` |
