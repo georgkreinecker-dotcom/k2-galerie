@@ -150,10 +150,10 @@ function getUpcomingEventsOeffentlich(): any[] {
   }
 }
 
-/** VK2: Events aus k2-vk2-events, fallback k2-events. */
+/** VK2: Events aus k2-vk2-events – KEIN Fallback auf k2-events (K2-Datentrennung). */
 function getUpcomingEventsVk2(): any[] {
   try {
-    const raw = localStorage.getItem('k2-vk2-events') || localStorage.getItem('k2-events')
+    const raw = localStorage.getItem('k2-vk2-events')
     if (!raw) return []
     const list = JSON.parse(raw)
     if (!Array.isArray(list)) return []
@@ -2484,7 +2484,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               fontSize: 'clamp(1rem, 2.5vw, 1.2rem)',
               fontWeight: '400'
             }}>
-              Künstler:innen & Werke des Vereins
+                Unsere Mitglieder
             </p>
             <div style={{
               display: 'grid',
@@ -2501,7 +2501,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                   lineHeight: 1.6,
                   fontWeight: '300'
                 }}>
-                  {(galerieTexts.welcomeIntroText ?? '').trim() || 'Künstler:innen und Werke der Vereinsplattform.'}
+                  {(galerieTexts.welcomeIntroText ?? '').trim() || 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft.'}
                 </p>
                 <Link
                   to={PROJECT_ROUTES.vk2.galerieVorschau}
@@ -2518,7 +2518,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                     boxShadow: '0 8px 24px rgba(255, 140, 66, 0.4)'
                   }}
                 >
-                  Werke ansehen →
+                  Unsere Mitglieder ansehen →
                 </Link>
               </div>
               <div style={{
