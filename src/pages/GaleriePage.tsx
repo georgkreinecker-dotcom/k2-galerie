@@ -490,6 +490,28 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     }
   }, [musterOnly])
 
+  // VK2: Vereins-Stammdaten für Impressum
+  const [vk2Stammdaten, setVk2Stammdaten] = useState<import('../config/tenantConfig').Vk2Stammdaten | null>(() => {
+    if (!vk2) return null
+    try {
+      const raw = typeof window !== 'undefined' ? localStorage.getItem('k2-vk2-stammdaten') : null
+      if (raw) return JSON.parse(raw)
+    } catch (_) {}
+    return null
+  })
+  useEffect(() => {
+    if (!vk2) return
+    const load = () => {
+      try {
+        const raw = localStorage.getItem('k2-vk2-stammdaten')
+        if (raw) setVk2Stammdaten(JSON.parse(raw))
+      } catch (_) {}
+    }
+    load()
+    window.addEventListener('storage', load)
+    return () => window.removeEventListener('storage', load)
+  }, [vk2])
+
   // VK2: Events (k2-vk2-events) und Willkommensbild (k2-vk2-welcomeImage)
   const [vk2UpcomingEvents, setVk2UpcomingEvents] = useState<any[]>(() => getUpcomingEventsVk2())
   const [vk2WelcomeImage, setVk2WelcomeImage] = useState(() => {
@@ -3152,18 +3174,80 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 gap: 'clamp(2rem, 4vw, 3rem)',
                 alignItems: 'flex-start'
               }}>
-                {/* Linke Seite: Vollständige Stammdaten */}
+              {/* Linke Seite: Vollständige Stammdaten */}
                 <div style={{ flex: 1 }}>
-                  <h4 style={{ 
-                    margin: '0 0 1rem', 
-                    fontSize: 'clamp(1rem, 2.5vw, 1.25rem)', 
-                    fontWeight: '600', 
-                    color: theme.text 
+                  <h4 style={{
+                    margin: '0 0 1rem',
+                    fontSize: 'clamp(1rem, 2.5vw, 1.25rem)',
+                    fontWeight: '600',
+                    color: theme.text
                   }}>
-                    {tenantConfig.footerLine}
+                    {vk2 && vk2Stammdaten ? 'Impressum' : tenantConfig.footerLine}
                   </h4>
+
+                  {/* VK2: Vereins-Impressum mit Vorstand */}
+                  {vk2 && vk2Stammdaten && (
+                    <div style={{ marginBottom: '1rem' }}>
+                      <p style={{ margin: '0 0 0.25rem', fontWeight: 600, color: theme.text, fontSize: 'clamp(0.95rem, 2.2vw, 1.05rem)' }}>
+                        {vk2Stammdaten.verein.name || 'Verein (Name in Einstellungen eintragen)'}
+                      </p>
+                      {vk2Stammdaten.verein.vereinsnummer && (
+                        <p style={{ margin: '0 0 0.15rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
+                          ZVR-Zahl: {vk2Stammdaten.verein.vereinsnummer}
+                        </p>
+                      )}
+                      {(vk2Stammdaten.verein.address || vk2Stammdaten.verein.city) && (
+                        <p style={{ margin: '0 0 0.15rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
+                          {[vk2Stammdaten.verein.address, vk2Stammdaten.verein.city, vk2Stammdaten.verein.country].filter(Boolean).join(', ')}
+                        </p>
+                      )}
+                      {vk2Stammdaten.verein.email && (
+                        <p style={{ margin: '0 0 0.15rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
+                          ✉️ <a href={`mailto:${vk2Stammdaten.verein.email}`} style={{ color: theme.accent, textDecoration: 'none' }}>
+                            {vk2Stammdaten.verein.email}
+                          </a>
+                        </p>
+                      )}
+                      {vk2Stammdaten.verein.website && (
+                        <p style={{ margin: '0 0 0.75rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
+                          🌐 <a href={`https://${vk2Stammdaten.verein.website.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" style={{ color: theme.accent, textDecoration: 'none' }}>
+                            {vk2Stammdaten.verein.website}
+                          </a>
+                        </p>
+                      )}
+                      <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: `1px solid color-mix(in srgb, ${theme.muted} 25%, transparent)` }}>
+                        <p style={{ margin: '0 0 0.5rem', fontWeight: 600, color: theme.text, fontSize: 'clamp(0.85rem, 2vw, 0.95rem)' }}>Vorstand</p>
+                        {vk2Stammdaten.vorstand?.name && (
+                          <p style={{ margin: '0 0 0.2rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
+                            Obfrau/Obmann: <span style={{ color: theme.text }}>{vk2Stammdaten.vorstand.name}</span>
+                          </p>
+                        )}
+                        {vk2Stammdaten.vize?.name && (
+                          <p style={{ margin: '0 0 0.2rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
+                            Stellvertreter:in: <span style={{ color: theme.text }}>{vk2Stammdaten.vize.name}</span>
+                          </p>
+                        )}
+                        {vk2Stammdaten.kassier?.name && (
+                          <p style={{ margin: '0 0 0.2rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
+                            Kassier:in: <span style={{ color: theme.text }}>{vk2Stammdaten.kassier.name}</span>
+                          </p>
+                        )}
+                        {vk2Stammdaten.schriftfuehrer?.name && (
+                          <p style={{ margin: '0 0 0.2rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
+                            Schriftführer:in: <span style={{ color: theme.text }}>{vk2Stammdaten.schriftfuehrer.name}</span>
+                          </p>
+                        )}
+                        {vk2Stammdaten.beisitzer?.name && (
+                          <p style={{ margin: '0 0 0.2rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
+                            Beirat/Beisitzer:in: <span style={{ color: theme.text }}>{vk2Stammdaten.beisitzer.name}</span>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   
-                  {/* Galerie Kontakt - Kompakt (ök2: immer aus MUSTER_TEXTE) */}
+                  {/* K2/ök2: Galerie-Kontakt – bei VK2 nicht anzeigen (VK2 hat eigenes Impressum oben) */}
+                  {!vk2 && (<>{/* Galerie Kontakt - Kompakt (ök2: immer aus MUSTER_TEXTE) */}
                   <div style={{ marginBottom: '0.75rem' }}>
                     <p style={{ margin: '0 0 0.25rem', fontWeight: '500', color: theme.text, fontSize: 'clamp(0.95rem, 2.2vw, 1.1rem)' }}>
                       {tenantConfig.galleryName}
@@ -3244,16 +3328,23 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                       )}
                     </div>
                   </div>
+                  </>)}
                   
-                  {/* Gewerbe & Haftungsausschluss – gut lesbar, Theme-Farbe */}
-                  <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: `1px solid color-mix(in srgb, ${theme.muted} 35%, transparent)` }}>
+                  {/* Gewerbe & Haftungsausschluss – nur K2/ök2 */}
+                  {!vk2 && <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: `1px solid color-mix(in srgb, ${theme.muted} 35%, transparent)` }}>
                     <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', color: theme.text, lineHeight: 1.45 }}>
                       Gewerbe: freie Kunstschaffende
                     </p>
                     <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', color: theme.muted, lineHeight: 1.45 }}>
                       Haftungsausschluss: Die Inhalte wurden mit Sorgfalt erstellt. Für Richtigkeit, Vollständigkeit und Aktualität kann keine Gewähr übernommen werden.
                     </p>
-                  </div>
+                  </div>}
+                  {/* VK2: Haftungsausschluss für Verein */}
+                  {vk2 && <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: `1px solid color-mix(in srgb, ${theme.muted} 35%, transparent)` }}>
+                    <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', color: theme.muted, lineHeight: 1.45 }}>
+                      Haftungsausschluss: Die Inhalte wurden mit Sorgfalt erstellt. Für Richtigkeit, Vollständigkeit und Aktualität kann keine Gewähr übernommen werden.
+                    </p>
+                  </div>}
                 </div>
                 
                 {/* Rechte Seite: QR mit Bezeichnung der Seite (Kunde sieht Galeriename, kein Vercel) */}
@@ -3278,9 +3369,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                     </div>
                 )}
               </div>
-              <p style={{ marginTop: '1.25rem', marginBottom: 0, fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', color: theme.muted }}>
-                {PRODUCT_COPYRIGHT}
-              </p>
+                <p style={{ marginTop: '1.5rem', marginBottom: 0, paddingTop: '1rem', borderTop: `1px solid color-mix(in srgb, ${theme.muted} 25%, transparent)`, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted, letterSpacing: '0.01em' }}>
+                  {PRODUCT_COPYRIGHT}
+                </p>
             </div>
           </section>
         </main>
