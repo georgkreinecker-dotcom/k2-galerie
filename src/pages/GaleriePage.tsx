@@ -27,9 +27,11 @@ const KEY_OEF_ADMIN_PASSWORD = 'k2-oeffentlich-admin-password'
 const KEY_OEF_ADMIN_EMAIL = 'k2-oeffentlich-admin-email'
 const KEY_OEF_ADMIN_PHONE = 'k2-oeffentlich-admin-phone'
 /** K2 im Internet – gleiche Seite, funktioniert in jedem WLAN/Mobilfunk */
-function getK2PublicPageUrl(): string {
-  if (typeof window === 'undefined') return 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
-  return GALLERY_DATA_PUBLIC_URL + window.location.pathname
+function getPublicPageUrl(vk2: boolean, musterOnly: boolean): string {
+  const base = 'https://k2-galerie.vercel.app'
+  if (vk2) return base + '/projects/vk2/galerie'
+  if (musterOnly) return base + '/galerie-oeffentlich'
+  return base + '/projects/k2-galerie/galerie'
 }
 
 function isLocalOrPrivateOrigin(): boolean {
@@ -2120,8 +2122,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             <span style={{ marginRight: '0.5rem', color: musterOnly ? 'var(--k2-text)' : 'rgba(255,255,255,0.75)' }}>
               Auch aus anderem WLAN erreichbar:
             </span>
-            <a href={getK2PublicPageUrl()} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--k2-accent)', fontWeight: 600, textDecoration: 'underline' }}>
-              {vk2 ? 'VK2 im Internet öffnen' : 'K2 im Internet öffnen'}
+            <a href={getPublicPageUrl(vk2, musterOnly)} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--k2-accent)', fontWeight: 600, textDecoration: 'underline' }}>
+              {vk2 ? 'VK2 im Internet öffnen' : musterOnly ? 'ök2 im Internet öffnen' : 'K2 im Internet öffnen'}
             </a>
           </div>
         )}
