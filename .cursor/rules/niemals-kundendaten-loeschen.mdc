@@ -1,0 +1,131 @@
+---
+description: ABSOLUTES VERBOT – Kundendaten niemals automatisch löschen oder überschreiben
+alwaysApply: true
+---
+
+# 🔴 ABSOLUTES VERBOT – KUNDENDATEN NIEMALS AUTOMATISCH LÖSCHEN
+
+## Diese Regel hat keine Ausnahmen. Keine. Nie.
+
+Im Echtbetrieb bedeutet ein stiller Datenverlust:
+- Kunstwerke eines Künstlers für immer weg
+- Mitgliederliste eines Vereins vernichtet
+- Stammdaten (Name, Kontakt, Adresse) gelöscht
+- Kein Backup weil der Code das Backup auch überschrieben hat
+
+**Das ist der Supergau. Er darf nie passieren.**
+
+---
+
+## 🔴 ABSOLUT VERBOTEN – immer, überall, ohne Ausnahme
+
+```typescript
+// ❌ VERBOTEN – löscht still Kundendaten beim Laden
+const filtered = list.filter(...)
+localStorage.setItem('k2-artworks', JSON.stringify(filtered))
+
+// ❌ VERBOTEN – löscht alle k2-* Keys (auch Werke, Stammdaten)
+for (let i = 0; i < localStorage.length; i++) {
+  if (k.startsWith('k2-')) localStorage.removeItem(k)
+}
+
+// ❌ VERBOTEN – überschreibt lokale Werke mit Server-Daten ohne Prüfung
+setArtworks(serverData)
+localStorage.setItem('k2-artworks', JSON.stringify(serverData))
+
+// ❌ VERBOTEN – automatisches "Aufräumen" beim Start/Laden
+if (filtered.length < list.length) {
+  localStorage.setItem(key, JSON.stringify(filtered)) // NEIN!
+}
+
+// ❌ VERBOTEN – localStorage.clear() oder sessionStorage.clear() für Kundendaten
+localStorage.clear() // löscht ALLES – niemals!
+```
+
+---
+
+## ✅ EINZIG ERLAUBTE AKTIONEN MIT KUNDENDATEN
+
+```typescript
+// ✅ Nur lesen
+const raw = localStorage.getItem('k2-artworks')
+const list = JSON.parse(raw || '[]')
+
+// ✅ Nur warnen wenn etwas verdächtig ist – nie löschen
+if (verdaechtig.length > 0) {
+  console.warn('⚠️ Verdächtige Einträge gefunden:', verdaechtig)
+  // STOP. Kein setItem. Kein removeItem. Nur warnen.
+}
+
+// ✅ Schreiben NUR nach expliziter User-Aktion (Klick auf Button)
+// Beispiel: User klickt "Werk löschen" → dann und nur dann:
+const neu = artworks.filter((_, i) => i !== zuLoeschenderIndex)
+localStorage.setItem('k2-artworks', JSON.stringify(neu))
+
+// ✅ Backup erstellen – lesen + extra Key schreiben, nie überschreiben
+localStorage.setItem('k2-artworks-backup', JSON.stringify(aktuelleWerke))
+
+// ✅ Crash-Handler: nur sichere UI/Session-Keys löschen
+const SAFE_TO_DELETE = [
+  'k2-admin-unlocked', 'k2-admin-unlocked-expiry',
+  'k2-last-loaded-timestamp', 'k2-guide-flow', ...
+]
+SAFE_TO_DELETE.forEach(k => localStorage.removeItem(k))
+// NIEMALS k2-artworks, k2-stammdaten-*, k2-vk2-stammdaten, k2-oeffentlich-*
+```
+
+---
+
+## 🔴 DIE GESCHÜTZTEN KEYS – niemals automatisch löschen/überschreiben
+
+| Key | Inhalt | Schutz |
+|---|---|---|
+| `k2-artworks` | Echte Werke Martina & Georg | 🔴 ABSOLUT GESCHÜTZT |
+| `k2-stammdaten-martina` | Echte Kontaktdaten Martina | 🔴 ABSOLUT GESCHÜTZT |
+| `k2-stammdaten-georg` | Echte Kontaktdaten Georg | 🔴 ABSOLUT GESCHÜTZT |
+| `k2-stammdaten-galerie` | Echte Galeriedaten | 🔴 ABSOLUT GESCHÜTZT |
+| `k2-vk2-stammdaten` | Vereins-Mitgliederliste | 🔴 ABSOLUT GESCHÜTZT |
+| `k2-oeffentlich-artworks` | Demo-Werke | 🔴 ABSOLUT GESCHÜTZT |
+| `k2-artworks-backup` | Backup echte Werke | 🔴 ABSOLUT GESCHÜTZT |
+| `k2-events` | Echte Events | 🔴 ABSOLUT GESCHÜTZT |
+| `k2-documents` | Echte Dokumente | 🔴 ABSOLUT GESCHÜTZT |
+
+---
+
+## 🔴 SERVER-SYNC SCHUTZ – Pflichtprüfung vor jedem Überschreiben
+
+Bevor Server-Daten lokale Daten ersetzen, MUSS gelten:
+
+```typescript
+// 1. Server darf nie mit leerer Liste überschreiben
+if (serverData.length === 0) {
+  console.warn('⚠️ Server lieferte leer – lokale Daten bleiben')
+  return
+}
+
+// 2. Server darf nicht mit drastisch kleinerer Liste überschreiben
+const lokalAnzahl = loadArtworks()?.length ?? 0
+if (serverData.length < lokalAnzahl * 0.5) {
+  console.warn(`⚠️ Server: ${serverData.length}, lokal: ${lokalAnzahl} – zu großer Unterschied, Sync übersprungen`)
+  return
+}
+
+// Erst dann überschreiben
+localStorage.setItem('k2-artworks', JSON.stringify(serverData))
+```
+
+---
+
+## Checkliste vor JEDER Code-Änderung die localStorage berührt
+
+- [ ] Schreibe ich in einen geschützten Key? → Nur nach User-Aktion erlaubt
+- [ ] Filtere ich Daten und schreibe zurück? → VERBOTEN
+- [ ] Lösche ich Keys automatisch? → Nur SAFE_TO_DELETE-Liste erlaubt
+- [ ] Kommt die Änderung vom Server? → Leer-Prüfung + 50%-Prüfung pflicht
+- [ ] Crash-Handler? → Nur SAFE_TO_DELETE, nie Werk/Stammdaten-Keys
+
+## Kurzfassung
+
+**Kundendaten löscht NUR der Kunde – durch einen bewussten Klick.**
+**Code löscht nie automatisch. Nie. Auch nicht zur Sicherheit. Auch nicht zum Aufräumen.**
+**Filter + localStorage.setItem = verboten. Immer.**
