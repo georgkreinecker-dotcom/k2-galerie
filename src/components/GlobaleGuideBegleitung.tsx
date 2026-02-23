@@ -326,7 +326,10 @@ export function GlobaleGuideBegleitung() {
     <span key={i}>{z}{i < aktuellerSchritt.beschreibung.split('\n').length - 1 && <br />}</span>
   ))
 
-  // Position: wenn verschoben, absolute Koordinaten; sonst unten mittig
+  // Auf Admin-Seite: oben rechts neben dem „Galerie-Zentrale"-Banner
+  const istAdminSeite = location.pathname.includes('/admin') || location.search.includes('context=oeffentlich') || location.search.includes('context=vk2')
+
+  // Position: wenn manuell verschoben → freie Koordinaten; auf Admin → oben rechts; sonst unten mittig
   const dialogStyle: React.CSSProperties = pos
     ? {
         position: 'fixed',
@@ -334,7 +337,13 @@ export function GlobaleGuideBegleitung() {
         bottom: `calc(1.5rem - ${pos.y}px)`,
         transform: 'translateX(-50%)',
         zIndex: 10000,
-        width: 'min(440px, calc(100vw - 2rem))',
+        width: 'min(380px, calc(100vw - 2rem))',
+      }
+    : istAdminSeite
+    ? {
+        position: 'fixed', top: '4.5rem', right: '1.25rem',
+        zIndex: 10000, width: 'min(340px, calc(100vw - 2rem))',
+        animation: 'globGuideEinRechts 0.35s ease',
       }
     : {
         position: 'fixed', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)',
@@ -346,6 +355,7 @@ export function GlobaleGuideBegleitung() {
     <div style={dialogStyle}>
       <style>{`
         @keyframes globGuideEin { from{opacity:0;transform:translateX(-50%) translateY(14px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+        @keyframes globGuideEinRechts { from{opacity:0;transform:translateX(14px)} to{opacity:1;transform:translateX(0)} }
       `}</style>
 
       <div style={{
