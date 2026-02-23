@@ -230,6 +230,46 @@ export const VK2_STAMMDATEN_DEFAULTS: Vk2Stammdaten = {
   mitgliederNichtRegistriert: [],
 }
 
+/** Dummy-Verein für Demo/Vorschau – wird gesetzt wenn k2-vk2-stammdaten leer ist */
+export const VK2_DEMO_STAMMDATEN: Vk2Stammdaten = {
+  verein: {
+    name: 'Kunstverein Muster',
+    address: 'Musterstraße 12',
+    city: 'Wien',
+    country: 'Österreich',
+    vereinsnummer: 'ZVR 123456789',
+    email: 'office@kunstverein-muster.at',
+    website: 'www.kunstverein-muster.at',
+  },
+  vorstand: { name: 'Maria Mustermann' },
+  vize: { name: 'Hans Beispiel' },
+  kassier: { name: 'Anna Probst' },
+  schriftfuehrer: { name: 'Karl Vorlage' },
+  beisitzer: { name: 'Eva Entwurf' },
+  mitglieder: [
+    { name: 'Maria Mustermann', email: 'maria@muster.at', lizenz: 'VP-001', typ: 'Malerei', oeffentlichSichtbar: true },
+    { name: 'Hans Beispiel', email: 'hans@muster.at', lizenz: 'VP-002', typ: 'Skulptur', oeffentlichSichtbar: true },
+    { name: 'Anna Probst', email: 'anna@muster.at', lizenz: 'VP-003', typ: 'Fotografie', oeffentlichSichtbar: true },
+    { name: 'Karl Vorlage', email: 'karl@muster.at', lizenz: 'VP-004', typ: 'Grafik', oeffentlichSichtbar: true },
+    { name: 'Eva Entwurf', email: 'eva@muster.at', lizenz: 'VP-005', typ: 'Keramik', oeffentlichSichtbar: true },
+    { name: 'Josef Skizze', email: 'josef@muster.at', lizenz: 'VB-006', typ: 'Textil', oeffentlichSichtbar: true },
+  ],
+  mitgliederNichtRegistriert: ['Petra Farbe', 'Thomas Pinsel'],
+}
+
+/** Initialisiert VK2-Stammdaten mit Demo-Daten falls noch nichts gespeichert ist */
+export function initVk2DemoStammdatenIfEmpty(): void {
+  if (typeof window === 'undefined') return
+  try {
+    const raw = localStorage.getItem('k2-vk2-stammdaten')
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (parsed?.verein?.name) return
+    }
+    localStorage.setItem('k2-vk2-stammdaten', JSON.stringify(VK2_DEMO_STAMMDATEN))
+  } catch (_) {}
+}
+
 /** Platzhalter-Bild für Musterwerke und ök2-Seiten (keine echten Fotos). Exportiert für Fallback bei Ladefehler. */
 export const OEK2_PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5NdXN0ZXI8L3RleHQ+PC9zdmc+'
 const MUSTER_PLACEHOLDER_IMAGE = OEK2_PLACEHOLDER_IMAGE

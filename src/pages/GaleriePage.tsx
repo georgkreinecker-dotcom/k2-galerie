@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { speichereGuideFlow, beendeGuideFlow } from '../components/GlobaleGuideBegleitung'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY } from '../config/navigation'
-import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, OEK2_WILLKOMMEN_IMAGES, OEK2_PLACEHOLDER_IMAGE } from '../config/tenantConfig'
+import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, OEK2_WILLKOMMEN_IMAGES, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty } from '../config/tenantConfig'
 import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie } from '../config/pageContentGalerie'
 import { getPageTexts, type GaleriePageTexts } from '../config/pageTexts'
@@ -293,6 +293,18 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     if (isVorschauModusEarly) setVorschauGalerieTexts(getPageTexts(pageTextsTenant).galerie)
   }, [isVorschauModusEarly, pageTextsTenant])
   const galerieTexts = (isVorschauModusEarly && vorschauGalerieTexts) ? vorschauGalerieTexts : defaultGalerieTexts
+  // VK2: Vereinsname aus Stammdaten als Fallback wenn heroTitle leer – damit nie "Vereinsplattform" erscheint
+  const displayGalleryName = useMemo(() => {
+    if (!vk2) return tenantConfig.galleryName
+    const heroTitle = (galerieTexts.heroTitle ?? '').trim()
+    if (heroTitle) return heroTitle
+    try {
+      const raw = typeof window !== 'undefined' ? localStorage.getItem('k2-vk2-stammdaten') : null
+      const stamm = raw ? JSON.parse(raw) : null
+      if (stamm?.verein?.name) return stamm.verein.name
+    } catch (_) {}
+    return tenantConfig.galleryName
+  }, [vk2, galerieTexts.heroTitle, tenantConfig.galleryName])
   const willkommenRef = React.useRef<HTMLDivElement>(null)
   const galerieRef = React.useRef<HTMLDivElement>(null)
   const kunstschaffendeRef = React.useRef<HTMLDivElement>(null)
@@ -495,6 +507,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   // VK2: Vereins-Stammdaten für Impressum
   const [vk2Stammdaten, setVk2Stammdaten] = useState<import('../config/tenantConfig').Vk2Stammdaten | null>(() => {
     if (!vk2) return null
+    initVk2DemoStammdatenIfEmpty()
     try {
       const raw = typeof window !== 'undefined' ? localStorage.getItem('k2-vk2-stammdaten') : null
       if (raw) return JSON.parse(raw)
@@ -503,6 +516,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   })
   useEffect(() => {
     if (!vk2) return
+    initVk2DemoStammdatenIfEmpty()
     const load = () => {
       try {
         const raw = localStorage.getItem('k2-vk2-stammdaten')
@@ -2148,7 +2162,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             lineHeight: 1.25,
             textShadow: musterOnly ? 'none' : '0 1px 2px rgba(0,0,0,0.2)'
           }}>
-            {vk2 ? 'VK2 Vereinsplattform' : PRODUCT_BRAND_NAME}
+            {vk2 ? displayGalleryName : PRODUCT_BRAND_NAME}
           </div>
         </div>
         {/* VK2: deutlicher Balken, damit klar ist: das ist die Vereinsplattform-Galerie, nicht K2 */}
@@ -2172,7 +2186,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
             marginBottom: '1rem'
           }}>
-            <span>VK2 Vereinsplattform – Unsere Mitglieder</span>
+            <span>{displayGalleryName} – {galerieTexts.kunstschaffendeHeading || 'Unsere Mitglieder'}</span>
           </div>
         )}
         {/* Admin Button – auf normaler Galerie, ök2 und VK2 (VK2: K2-Familie Orange) */}
@@ -2580,7 +2594,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             }}>
               <img
                 src={musterOnly && welcomeImageFailed ? OEK2_PLACEHOLDER_IMAGE : displayImages.welcomeImage}
-                alt={musterOnly ? tenantConfig.galleryName : ((galerieTexts.heroTitle ?? '').trim() || tenantConfig.galleryName)}
+                alt={musterOnly ? tenantConfig.galleryName : displayGalleryName}
                 onError={() => { if (musterOnly) setWelcomeImageFailed(true) }}
                 style={{
                   width: '100%',
@@ -2624,7 +2638,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                   letterSpacing: '-0.02em',
                   color: musterOnly ? 'var(--k2-text)' : '#fff',
                 }}>
-                  {musterOnly ? tenantConfig.galleryName : ((galerieTexts.heroTitle ?? '').trim() || tenantConfig.galleryName)}
+                  {musterOnly ? tenantConfig.galleryName : displayGalleryName}
                 </h1>
                 <p style={{
                   margin: '0.5rem 0 0',
@@ -2663,7 +2677,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 letterSpacing: '-0.03em',
                 color: musterOnly ? 'var(--k2-text)' : '#fff',
               }}>
-                {musterOnly ? tenantConfig.galleryName : ((galerieTexts.heroTitle ?? '').trim() || tenantConfig.galleryName)}
+                {musterOnly ? tenantConfig.galleryName : displayGalleryName}
               </h1>
               {/* Dekorative Linie */}
               <div style={{
