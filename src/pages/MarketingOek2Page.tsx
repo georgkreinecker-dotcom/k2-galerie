@@ -1085,6 +1085,48 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </p>
       </section>
 
+      {/* Sektion 18: Empfehlungs-Programm – die richtige Sprache */}
+      <section id="mok2-18-empfehlung" style={{ marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(95,251,241,0.2)', pageBreakInside: 'avoid' as const }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          18. 🤝 Empfehlungs-Programm – die richtige Sprache
+        </h2>
+
+        <div style={{ background: 'rgba(251,191,36,0.07)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: '12px', padding: '1.25rem', marginBottom: '1.25rem' }}>
+          <h3 style={{ fontSize: '0.95rem', color: '#fbbf24', margin: '0 0 0.75rem' }}>🔑 Der entscheidende Insight</h3>
+          <p style={{ lineHeight: 1.8, margin: 0, fontSize: '0.95rem' }}>
+            Viele Künstler:innen haben ein kleines Budget – aber sie sind zu stolz um das zu sagen.<br />
+            Sie wären über ein zusätzliches Einkommen sehr froh – aber das Wort <strong style={{ color: '#fbbf24' }}>„Geld"</strong> darf nie fallen.<br />
+            <strong>Würde bewahren. Trotzdem helfen.</strong>
+          </p>
+        </div>
+
+        <h3 style={{ fontSize: '0.95rem', color: '#fbbf24', margin: '1rem 0 0.5rem' }}>❌ So nicht</h3>
+        <ul style={{ paddingLeft: '1.25rem', lineHeight: 1.8, marginBottom: '1rem', color: 'rgba(255,255,255,0.6)' }}>
+          <li>„Verdiene 50% Provision durch Empfehlungen"</li>
+          <li>„Empfehlungs-Programm – dein Einkommen wächst"</li>
+          <li>„Affiliate-Link teilen und kassieren"</li>
+        </ul>
+
+        <h3 style={{ fontSize: '0.95rem', color: '#5ffbf1', margin: '1rem 0 0.5rem' }}>✅ So ja</h3>
+        <ul style={{ paddingLeft: '1.25rem', lineHeight: 1.8, marginBottom: '1.25rem' }}>
+          <li>„Teile deine Galerie mit jemandem den du schätzt – und beide zahlen nichts."</li>
+          <li>„Kennst du jemanden dem das auch helfen würde?"</li>
+          <li>„Wenn du jemanden einlädst – nutzt ihr beide die Galerie ohne Kosten."</li>
+          <li>„Solidarität unter Künstlern – wer gibt, bekommt."</li>
+        </ul>
+
+        <div style={{ background: 'rgba(95,251,241,0.06)', border: '1px solid rgba(95,251,241,0.2)', borderRadius: '12px', padding: '1.25rem' }}>
+          <h3 style={{ fontSize: '0.95rem', color: '#5ffbf1', margin: '0 0 0.75rem' }}>📍 Wann und wo es erscheint</h3>
+          <ul style={{ paddingLeft: '1.25rem', lineHeight: 1.85, margin: 0 }}>
+            <li><strong>Nie</strong> auf der Landingpage oder im Entdecken-Flow</li>
+            <li><strong>Nie</strong> als erster Kontakt</li>
+            <li><strong>Erst</strong> ganz am Ende des Guide-Flows – nach dem Abschluss-Moment</li>
+            <li><strong>Erst</strong> wenn der Besucher bereits begeistert ist – als <em>letzte, leise Frage</em></li>
+            <li>Zwei Buttons: „Ja, ich kenne jemanden →" und „Vielleicht später" (kein Druck)</li>
+          </ul>
+        </div>
+      </section>
+
       <footer style={{ marginTop: '2rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>
         <ProductCopyright /> · Stand: Februar 2026 · Quelle: USP-UND-MARKTCHANCEN.md, VERMARKTUNGSKONZEPT-EMPFEHLUNGSPROGRAMM.md, Produkt-Vision, Galerie-App Feature-Stand.
       </footer>

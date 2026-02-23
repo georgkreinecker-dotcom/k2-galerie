@@ -3490,9 +3490,9 @@ function speichereGuideAntworten(a: GuideAntworten) {
   try { localStorage.setItem(GUIDE_KEY, JSON.stringify(a)) } catch (_) {}
 }
 
-type GuideSchritt = 'begruessung' | 'kunstart' | 'erfahrung' | 'ziel' | 'ausstellungen' | 'technik' | 'kontakt' | 'abschluss'
+type GuideSchritt = 'begruessung' | 'kunstart' | 'erfahrung' | 'ziel' | 'ausstellungen' | 'technik' | 'kontakt' | 'abschluss' | 'empfehlung'
 
-const GUIDE_REIHENFOLGE: GuideSchritt[] = ['begruessung', 'kunstart', 'erfahrung', 'ziel', 'ausstellungen', 'technik', 'kontakt', 'abschluss']
+const GUIDE_REIHENFOLGE: GuideSchritt[] = ['begruessung', 'kunstart', 'erfahrung', 'ziel', 'ausstellungen', 'technik', 'kontakt', 'abschluss', 'empfehlung']
 
 function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: () => void }) {
   const [schritt, setSchritt] = useState<GuideSchritt>('begruessung')
@@ -3509,6 +3509,7 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
     technik:       `Mit welchen Materialien arbeitest du\nhauptsächlich?`,
     kontakt:       `Wie sollen Interessenten\ndich am liebsten erreichen?`,
     abschluss:     `Danke, ${name}. ✨\n\nIch habe alles was ich brauche.\nDeine Vita, deine Pressemappe und\ndein erstes Werkverzeichnis sind bereit –\nwie aus Zauberhand.`,
+    empfehlung:    `Noch eine letzte Frage, ${name} –\n\nKennst du jemanden dem das\nauch helfen würde?\n\nWenn du jemanden einlädst –\nnutzt ihr beide die Galerie\nohne Kosten.`,
   }
 
   const optionen: Record<string, { emoji: string; label: string; wert: string }[]> = {
@@ -3630,12 +3631,31 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
           </button>
         )}
 
-        {/* Abschluss */}
+        {/* Abschluss → weiter zum Empfehlungs-Moment */}
         {istFertig && schritt === 'abschluss' && (
-          <button type="button" onClick={schliessen}
+          <button type="button" onClick={() => setSchritt('empfehlung')}
             style={{ width: '100%', padding: '0.8rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(255,140,66,0.35)' }}>
             ✨ Galerie erkunden
           </button>
+        )}
+
+        {/* Empfehlungs-Moment – allerletzter Schritt, sehr vorsichtig */}
+        {istFertig && schritt === 'empfehlung' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.25rem' }}>
+            <button type="button"
+              onClick={() => {
+                // Empfehlung-Link vorbereiten – öffnet Entdecken-Flow mit Referral-Hinweis
+                try { localStorage.setItem('k2-empfehlung-offen', '1') } catch (_) {}
+                schliessen()
+              }}
+              style={{ width: '100%', padding: '0.8rem', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.92rem', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(255,140,66,0.3)' }}>
+              Ja, ich kenne jemanden →
+            </button>
+            <button type="button" onClick={schliessen}
+              style={{ width: '100%', padding: '0.65rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', color: 'rgba(255,255,255,0.35)', cursor: 'pointer', fontSize: '0.82rem', fontFamily: 'inherit' }}>
+              Vielleicht später
+            </button>
+          </div>
         )}
       </div>
     </div>
