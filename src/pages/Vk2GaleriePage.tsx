@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import QRCode from 'qrcode'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { initVk2DemoStammdatenIfEmpty, type Vk2Stammdaten } from '../config/tenantConfig'
 import { getPageTexts } from '../config/pageTexts'
 import { getPageContentGalerie } from '../config/pageContentGalerie'
 import { BUILD_LABEL } from '../buildInfo.generated'
+import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import '../App.css'
 
 // Lädt VK2-Stammdaten aus localStorage – NUR eigener Key, keine K2/ök2-Daten
@@ -49,12 +51,16 @@ function formatDate(dateStr: string): string {
   }
 }
 
+const VK2_VERCEL_BASE = 'https://k2-galerie.vercel.app'
+
 const Vk2GaleriePage: React.FC = () => {
   const navigate = useNavigate()
   const [stammdaten, setStammdaten] = useState<Vk2Stammdaten | null>(() => loadVk2Stammdaten())
   const [pageTexts, setPageTexts] = useState(() => loadVk2PageTexts())
   const [pageContent, setPageContent] = useState(() => loadVk2PageContent())
   const [events, setEvents] = useState<any[]>(() => loadVk2Events())
+  const [qrDataUrl, setQrDataUrl] = useState<string>('')
+  const qrVersionTs = useQrVersionTimestamp()
 
   // Neu laden wenn localStorage sich ändert (z.B. nach Admin-Speicherung)
   useEffect(() => {
@@ -73,6 +79,17 @@ const Vk2GaleriePage: React.FC = () => {
       window.removeEventListener('page-texts-updated', reload)
     }
   }, [])
+
+  // QR-Code auf Mitglieder-Seite (Vercel, mit Cache-Bust)
+  useEffect(() => {
+    let cancelled = false
+    const mitgliederUrl = VK2_VERCEL_BASE + PROJECT_ROUTES.vk2.galerieVorschau
+    const qrUrl = buildQrUrlWithBust(mitgliederUrl, qrVersionTs)
+    QRCode.toDataURL(qrUrl, { width: 120, margin: 1 })
+      .then((url) => { if (!cancelled) setQrDataUrl(url) })
+      .catch(() => { if (!cancelled) setQrDataUrl('') })
+    return () => { cancelled = true }
+  }, [qrVersionTs])
 
   // Titel: aus Seitentexten → Vereinsname → Fallback
   const vereinsName = stammdaten?.verein?.name || 'Vereinsplattform'
@@ -239,6 +256,21 @@ const Vk2GaleriePage: React.FC = () => {
             <p style={{ margin: '0 0 0.2rem', color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>Obfrau/Obmann: <span style={{ color: '#fff5f0' }}>{stammdaten.vorstand.name}</span></p>
             {stammdaten.vize?.name && <p style={{ margin: '0 0 0.2rem', color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>Stellvertreter:in: <span style={{ color: '#fff5f0' }}>{stammdaten.vize.name}</span></p>}
             {stammdaten.kassier?.name && <p style={{ margin: '0 0 0.2rem', color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>Kassier:in: <span style={{ color: '#fff5f0' }}>{stammdaten.kassier.name}</span></p>}
+          </div>
+        )}
+
+        {/* QR-Code → Mitglieder-Seite */}
+        {qrDataUrl && (
+          <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <img src={qrDataUrl} alt="QR-Code Mitglieder" style={{ width: 100, height: 100, borderRadius: 8, background: '#fff', padding: 4 }} />
+            <div>
+              <p style={{ margin: '0 0 0.2rem', fontWeight: 600, color: '#fff5f0', fontSize: '0.9rem' }}>
+                {pageTexts.kunstschaffendeHeading?.trim() || 'Unsere Mitglieder'} direkt aufrufen
+              </p>
+              <p style={{ margin: 0, color: 'rgba(255,255,255,0.5)', fontSize: '0.82rem' }}>
+                QR-Code scannen
+              </p>
+            </div>
           </div>
         )}
       </footer>
