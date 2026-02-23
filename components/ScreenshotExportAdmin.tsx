@@ -9696,22 +9696,22 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   <div style={{ width: '100%', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 100%)', padding: '44px 18px 32px', minHeight: 520 }}>
                     {/* VK2 Vereinsplattform – saubere Vorschau */}
                     <div style={{ position: 'absolute', top: 12, left: 14, zIndex: 10 }}>
-                      <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--k2-text)', letterSpacing: '0.02em' }}>{galleryName || 'VK2 Vereinsplattform'}</div>
+                      <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--k2-text)', letterSpacing: '0.02em' }}>{galleryName || tc.galleryName}</div>
                     </div>
                     <div style={{ marginBottom: 24, marginTop: 8 }}>
                       <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 700, background: 'linear-gradient(135deg, var(--k2-text) 0%, var(--k2-accent) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
-                        {(pageTexts.galerie?.heroTitle ?? '').trim() || galleryName || 'VK2 Vereinsplattform'}
+                        {(pageTexts.galerie?.heroTitle ?? defaultPageTexts.galerie.heroTitle)?.trim() || galleryName}
                       </h1>
                       <p style={{ margin: '0.5rem 0 0', color: 'var(--k2-muted)', fontSize: '1rem', fontWeight: 300, letterSpacing: '0.05em' }}>
-                        {(pageTexts.galerie?.welcomeSubtext ?? '').trim() || 'Unsere Mitglieder'}
+                        {(pageTexts.galerie?.welcomeSubtext ?? defaultPageTexts.galerie.welcomeSubtext)?.trim() || tagline}
                       </p>
                     </div>
                     <section style={{ marginBottom: 32 }}>
                       <h2 style={{ fontSize: '1.5rem', marginBottom: '0.75rem', fontWeight: 700, lineHeight: 1.2, color: 'var(--k2-text)', letterSpacing: '-0.02em' }}>
-                        {(pageTexts.galerie?.welcomeHeading ?? '').trim() || 'Willkommen bei'} {(pageTexts.galerie?.heroTitle ?? '').trim() || galleryName} –
+                        {(pageTexts.galerie?.welcomeHeading ?? defaultPageTexts.galerie.welcomeHeading)?.trim() || 'Willkommen bei'} {(pageTexts.galerie?.heroTitle ?? defaultPageTexts.galerie.heroTitle)?.trim() || galleryName} –
                         <br />
                         <span style={{ background: 'linear-gradient(135deg, var(--k2-accent) 0%, #e67a2a 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                          {(pageTexts.galerie?.welcomeSubtext ?? '').trim() || 'Kunstverein'}
+                          {(pageTexts.galerie?.welcomeSubtext ?? defaultPageTexts.galerie.welcomeSubtext)?.trim() || tagline}
                         </span>
                       </h2>
                       <p style={{ fontSize: '0.95rem', color: 'var(--k2-muted)', lineHeight: 1.65, maxWidth: 360 }}>
