@@ -127,8 +127,9 @@ export default function EntdeckenPage() {
         localStorage.setItem(WILLKOMMEN_ENTWURF_KEY, '1')
       }
     } catch (_) {}
-    // Name auch als URL-Parameter übergeben – funktioniert auch wenn sessionStorage leer
-    const url = PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau
+    // Zur öffentlichen Galerie – der Besucher erlebt sie wie ein echter Gast
+    // Guide-Fragen laufen dort weiter (progressiver Flow)
+    const url = PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
     const params = name ? `?vorname=${encodeURIComponent(name)}&entwurf=1` : ''
     navigate(url + params)
   }
