@@ -268,6 +268,62 @@ const Vk2GaleriePage: React.FC = () => {
           </div>
         )}
 
+        {/* ── KOMMUNIKATION (WhatsApp) ── */}
+        {(stammdaten?.kommunikation?.whatsappGruppeLink || stammdaten?.kommunikation?.vorstandTelefon || (stammdaten?.kommunikation?.umfragen || []).filter(u => u.aktiv && u.frage).length > 0) && (
+          <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', fontWeight: 700, color: '#fff5f0', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              💬 Kommunikation
+            </h3>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '0.75rem' }}>
+              {stammdaten?.kommunikation?.whatsappGruppeLink && (
+                <a
+                  href={stammdaten.kommunikation.whatsappGruppeLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 1.1rem', background: '#25d366', borderRadius: 24, color: '#fff', fontSize: '0.9rem', fontWeight: 700, textDecoration: 'none', boxShadow: '0 2px 12px rgba(37,211,102,0.35)' }}
+                >
+                  <span>💬</span> WhatsApp-Gruppe beitreten
+                </a>
+              )}
+              {stammdaten?.kommunikation?.vorstandTelefon && (
+                <a
+                  href={`https://wa.me/${stammdaten.kommunikation.vorstandTelefon}?text=${encodeURIComponent(`Hallo, ich bin Mitglied bei ${vereinsName} und habe eine Frage:`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 1.1rem', background: 'rgba(37,211,102,0.18)', border: '1px solid rgba(37,211,102,0.4)', borderRadius: 24, color: '#25d366', fontSize: '0.9rem', fontWeight: 700, textDecoration: 'none' }}
+                >
+                  <span>📩</span> Vorstand schreiben
+                </a>
+              )}
+            </div>
+
+            {/* Umfragen */}
+            {(stammdaten?.kommunikation?.umfragen || []).filter(u => u.aktiv && u.frage.trim()).length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {(stammdaten?.kommunikation?.umfragen || []).filter(u => u.aktiv && u.frage.trim()).map(umfrage => {
+                  const waText = `📊 *${umfrage.frage}*\n\n${umfrage.antworten.map((a, i) => `${['1️⃣','2️⃣','3️⃣','4️⃣'][i] || (i+1)+'.'}  ${a}`).join('\n')}\n\nBitte abstimmen und zurückschreiben!`
+                  return (
+                    <div key={umfrage.id} style={{ padding: '0.65rem 0.9rem', background: 'rgba(37,211,102,0.07)', border: '1px solid rgba(37,211,102,0.2)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
+                      <div>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#fff5f0', marginBottom: '0.2rem' }}>📊 {umfrage.frage}</div>
+                        <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)' }}>{umfrage.antworten.join(' · ')}</div>
+                      </div>
+                      <a
+                        href={`https://wa.me/?text=${encodeURIComponent(waText)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.85rem', background: '#25d366', borderRadius: 20, color: '#fff', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0 }}
+                      >
+                        Abstimmen via WhatsApp ↗
+                      </a>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* QR-Code → Mitglieder-Seite */}
         {qrDataUrl && (
           <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>

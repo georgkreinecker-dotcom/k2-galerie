@@ -186,6 +186,24 @@ export interface Vk2Stammdaten {
   mitglieder: Vk2Mitglied[]
   /** Nicht registrierte Mitglieder (ohne K2-Account). Obliegt dem Verein; werden im System erfasst (Datenschutz). */
   mitgliederNichtRegistriert: string[]
+  /** Kommunikation: WhatsApp-Gruppe, Vorstand-Kontakt, Umfragen */
+  kommunikation?: {
+    /** WhatsApp Gruppen-Einladungslink (z.B. https://chat.whatsapp.com/xxx) */
+    whatsappGruppeLink?: string
+    /** Telefonnummer des Vorstands für Direkt-Nachricht (Format: 4366412345678) */
+    vorstandTelefon?: string
+    /** Aktive Umfragen */
+    umfragen?: Vk2Umfrage[]
+  }
+}
+
+/** Umfrage für Vereinsmitglieder – wird per WhatsApp-Link geteilt */
+export interface Vk2Umfrage {
+  id: string
+  frage: string
+  antworten: string[]
+  erstelltAm: string
+  aktiv: boolean
 }
 
 /** Registrierungs-Config: Lizenztyp, Vereinsmitgliedschaft, Bonussystem-Option (für K2/ök2/VK2) */

@@ -11159,6 +11159,161 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         </div>
                       </div>
                     </div>
+                    {/* ── KOMMUNIKATION ── */}
+                    <div style={{ marginBottom: '1.5rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
+                      <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>💬 Kommunikation (WhatsApp)</h3>
+                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.82rem', color: s.muted }}>Diese Links erscheinen auf der Mitglieder-Galerie. Mitglieder können direkt per WhatsApp kommunizieren – am Handy öffnet sich die App, am PC WhatsApp Web.</p>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: s.muted, fontWeight: 600 }}>
+                            📱 WhatsApp-Gruppen-Link
+                          </label>
+                          <input
+                            type="url"
+                            value={vk2Stammdaten.kommunikation?.whatsappGruppeLink || ''}
+                            onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, kommunikation: { ...vk2Stammdaten.kommunikation, whatsappGruppeLink: e.target.value } })}
+                            placeholder="https://chat.whatsapp.com/..."
+                            style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, outline: 'none' }}
+                          />
+                          <p style={{ margin: '0.25rem 0 0', fontSize: '0.75rem', color: s.muted }}>In WhatsApp: Gruppe → Link einladen → Link kopieren</p>
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: s.muted, fontWeight: 600 }}>
+                            📞 Vorstand Telefon (für Direkt-Nachricht)
+                          </label>
+                          <input
+                            type="tel"
+                            value={vk2Stammdaten.kommunikation?.vorstandTelefon || ''}
+                            onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, kommunikation: { ...vk2Stammdaten.kommunikation, vorstandTelefon: e.target.value.replace(/\s/g, '') } })}
+                            placeholder="4366412345678 (ohne + oder 0)"
+                            style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, outline: 'none' }}
+                          />
+                          <p style={{ margin: '0.25rem 0 0', fontSize: '0.75rem', color: s.muted }}>Österreich: 43 + Nummer ohne führende 0 (z.B. 4366412345678)</p>
+                        </div>
+                      </div>
+
+                      {/* Vorschau */}
+                      {(vk2Stammdaten.kommunikation?.whatsappGruppeLink || vk2Stammdaten.kommunikation?.vorstandTelefon) && (
+                        <div style={{ padding: '0.6rem 0.75rem', background: '#25d36611', border: '1px solid #25d36644', borderRadius: 8, display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.8rem', color: s.muted }}>Vorschau:</span>
+                          {vk2Stammdaten.kommunikation?.whatsappGruppeLink && (
+                            <a href={vk2Stammdaten.kommunikation.whatsappGruppeLink} target="_blank" rel="noopener noreferrer" style={{ padding: '0.3rem 0.7rem', background: '#25d366', borderRadius: 20, color: '#fff', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                              💬 Gruppe beitreten ↗
+                            </a>
+                          )}
+                          {vk2Stammdaten.kommunikation?.vorstandTelefon && (
+                            <a href={`https://wa.me/${vk2Stammdaten.kommunikation.vorstandTelefon}`} target="_blank" rel="noopener noreferrer" style={{ padding: '0.3rem 0.7rem', background: '#25d366', borderRadius: 20, color: '#fff', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                              📩 Vorstand schreiben ↗
+                            </a>
+                          )}
+                        </div>
+                      )}
+
+                      {/* ── UMFRAGEN ── */}
+                      <div style={{ marginTop: '1rem', borderTop: `1px solid ${s.accent}22`, paddingTop: '0.75rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          <div>
+                            <span style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>📊 Umfragen</span>
+                            <span style={{ fontSize: '0.8rem', color: s.muted, marginLeft: '0.5rem' }}>Link per WhatsApp teilen – Mitglieder antworten direkt</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const id = `umfrage-${Date.now()}`
+                              const neu: import('../src/config/tenantConfig').Vk2Umfrage = { id, frage: '', antworten: ['Ja', 'Nein'], erstelltAm: new Date().toISOString(), aktiv: true }
+                              const umfragen = [...(vk2Stammdaten.kommunikation?.umfragen || []), neu]
+                              setVk2Stammdaten({ ...vk2Stammdaten, kommunikation: { ...vk2Stammdaten.kommunikation, umfragen } })
+                            }}
+                            style={{ padding: '0.4rem 0.85rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: 8, color: s.accent, fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' }}
+                          >
+                            + Neue Umfrage
+                          </button>
+                        </div>
+
+                        {(vk2Stammdaten.kommunikation?.umfragen || []).length === 0 && (
+                          <p style={{ fontSize: '0.82rem', color: s.muted, fontStyle: 'italic' }}>Noch keine Umfragen. Mit „+ Neue Umfrage" eine erstellen.</p>
+                        )}
+
+                        {(vk2Stammdaten.kommunikation?.umfragen || []).map((umfrage, ui) => {
+                          const pollUrl = `https://k2-galerie.vercel.app${window.location.pathname.replace('/admin', '') || '/'}vk2-umfrage?id=${umfrage.id}&frage=${encodeURIComponent(umfrage.frage)}&antworten=${encodeURIComponent(umfrage.antworten.join('|'))}`
+                          const whatsappText = `📊 *${umfrage.frage}*\n\nBitte abstimmen:\n${umfrage.antworten.map((a, i) => `${['1️⃣','2️⃣','3️⃣','4️⃣'][i] || (i+1)+'.'}  ${a}`).join('\n')}\n\n➡️ ${pollUrl}`
+                          const waLink = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`
+                          return (
+                            <div key={umfrage.id} style={{ marginBottom: '0.75rem', padding: '0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}22`, borderRadius: 10 }}>
+                              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', alignItems: 'flex-start' }}>
+                                <input
+                                  type="text"
+                                  value={umfrage.frage}
+                                  onChange={(e) => {
+                                    const umfragen = (vk2Stammdaten.kommunikation?.umfragen || []).map((u, i) => i === ui ? { ...u, frage: e.target.value } : u)
+                                    setVk2Stammdaten({ ...vk2Stammdaten, kommunikation: { ...vk2Stammdaten.kommunikation, umfragen } })
+                                  }}
+                                  placeholder="Frage eingeben, z.B. Wann passt die nächste Ausstellung?"
+                                  style={{ flex: 1, padding: '0.5rem 0.7rem', background: s.bgCard, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem', outline: 'none' }}
+                                />
+                                <button type="button" title="Umfrage löschen" onClick={() => {
+                                  const umfragen = (vk2Stammdaten.kommunikation?.umfragen || []).filter((_, i) => i !== ui)
+                                  setVk2Stammdaten({ ...vk2Stammdaten, kommunikation: { ...vk2Stammdaten.kommunikation, umfragen } })
+                                }} style={{ padding: '0.5rem 0.6rem', background: 'none', border: `1px solid ${s.accent}22`, borderRadius: 8, color: s.muted, cursor: 'pointer', fontSize: '1rem', flexShrink: 0 }}>🗑️</button>
+                              </div>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.5rem' }}>
+                                {umfrage.antworten.map((ant, ai) => (
+                                  <div key={ai} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                    <input
+                                      type="text"
+                                      value={ant}
+                                      onChange={(e) => {
+                                        const antworten = umfrage.antworten.map((a, i) => i === ai ? e.target.value : a)
+                                        const umfragen = (vk2Stammdaten.kommunikation?.umfragen || []).map((u, i) => i === ui ? { ...u, antworten } : u)
+                                        setVk2Stammdaten({ ...vk2Stammdaten, kommunikation: { ...vk2Stammdaten.kommunikation, umfragen } })
+                                      }}
+                                      placeholder={`Antwort ${ai + 1}`}
+                                      style={{ width: 100, padding: '0.3rem 0.5rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: 6, color: s.text, fontSize: '0.85rem', outline: 'none' }}
+                                    />
+                                    {umfrage.antworten.length > 2 && (
+                                      <button type="button" onClick={() => {
+                                        const antworten = umfrage.antworten.filter((_, i) => i !== ai)
+                                        const umfragen = (vk2Stammdaten.kommunikation?.umfragen || []).map((u, i) => i === ui ? { ...u, antworten } : u)
+                                        setVk2Stammdaten({ ...vk2Stammdaten, kommunikation: { ...vk2Stammdaten.kommunikation, umfragen } })
+                                      }} style={{ background: 'none', border: 'none', color: s.muted, cursor: 'pointer', fontSize: '0.8rem', padding: '0 2px' }}>×</button>
+                                    )}
+                                  </div>
+                                ))}
+                                {umfrage.antworten.length < 4 && (
+                                  <button type="button" onClick={() => {
+                                    const antworten = [...umfrage.antworten, '']
+                                    const umfragen = (vk2Stammdaten.kommunikation?.umfragen || []).map((u, i) => i === ui ? { ...u, antworten } : u)
+                                    setVk2Stammdaten({ ...vk2Stammdaten, kommunikation: { ...vk2Stammdaten.kommunikation, umfragen } })
+                                  }} style={{ padding: '0.3rem 0.5rem', background: `${s.accent}15`, border: `1px dashed ${s.accent}44`, borderRadius: 6, color: s.accent, fontSize: '0.82rem', cursor: 'pointer' }}>+ Antwort</button>
+                                )}
+                              </div>
+                              {umfrage.frage.trim() && (
+                                <a
+                                  href={waLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 1rem', background: '#25d366', borderRadius: 20, color: '#fff', fontSize: '0.85rem', fontWeight: 700, textDecoration: 'none' }}
+                                >
+                                  💬 Per WhatsApp teilen ↗
+                                </a>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+
+                      {/* Speichern */}
+                      <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end' }}>
+                        <button
+                          type="button"
+                          onClick={() => { try { localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify(vk2Stammdaten)) } catch (_) {}; alert('Kommunikations-Einstellungen gespeichert ✅') }}
+                          style={{ padding: '0.5rem 1.25rem', background: s.gradientAccent, border: 'none', borderRadius: 8, color: '#fff', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer' }}
+                        >
+                          Speichern
+                        </button>
+                      </div>
+                    </div>
+
                     {/* Vorstand & Beirat – gegendert; Vollzugang nur Vorsitzende:r + Kassier:in (siehe docs/VK2-ZUGANG-ROLLEN.md) */}
                     <div style={{ marginBottom: '1.5rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
                       <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>👥 Vorstand & Beirat</h3>
