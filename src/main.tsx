@@ -3,16 +3,9 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
 
-// QR-Scan im mobilen LAN: Einmal Reload mit Cache-Buster. NUR echte Mobile-Geräte (UserAgent), nicht schmale Desktop-Fenster (Cursor/Dev ≤768px) – sonst Endlosschleife/Crash.
-// Im iframe (Cursor Preview) NIEMALS replace – sonst Reload-Loop/Crash (Regel: stand-qr, crash-waehrend-programmieren).
-const isMobileDevice = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+// Cache-Busting wird vom index.html Inject-Script erledigt (build-info.json Vergleich).
+// Kein zweiter Reload hier – sonst zwei Mechanismen gleichzeitig → Seite wechselt unerwartet.
 const notInIframe = typeof window !== 'undefined' && window.self === window.top
-const skipBootstrapForReload = notInIframe && isMobileDevice && !/[?&]_=\d+/.test(window.location.href)
-if (skipBootstrapForReload) {
-  const url = window.location.href
-  const sep = url.includes('?') ? '&' : '?'
-  window.location.replace(url + sep + '_=' + Date.now())
-}
 
 // Cache-Busting: Versions-Info für Debugging
 const BUILD_VERSION = '1.0.0-' + Date.now()
@@ -151,7 +144,8 @@ function applyDesignFromStorageSync() {
   } catch (_) {}
 }
 
-if (!skipBootstrapForReload) {
+// App immer starten (kein bedingter Start mehr nötig)
+{
 try {
   applyDesignFromStorageSync()
 
