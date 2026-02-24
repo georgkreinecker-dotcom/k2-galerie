@@ -130,9 +130,10 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
     }
   }, [currentPage])
 
-  // Update currentPage wenn URL-Parameter sich ändert (z. B. Link „APf“ mit ?page=admin)
+  // Update currentPage NUR wenn explizit ein ?page= Parameter gesetzt ist
+  // Nicht bei leerem pageFromUrl – sonst wird die zuletzt gemerkte Seite überschrieben
   useEffect(() => {
-    if (pageFromUrl) {
+    if (pageFromUrl && pageFromUrl.trim()) {
       setCurrentPage(pageFromUrl)
     }
   }, [pageFromUrl])

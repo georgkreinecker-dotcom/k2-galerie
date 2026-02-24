@@ -45,7 +45,8 @@ function compressImageAsDataUrl(file: File): Promise<string> {
     const img = new Image()
     img.onload = () => {
       URL.revokeObjectURL(url)
-      const maxW = 1200
+      // Maximale Breite 600px – klein genug für localStorage, gut genug für Vorschau
+      const maxW = 600
       const w = img.width
       const h = img.height
       const scale = w > maxW ? maxW / w : 1
@@ -60,8 +61,9 @@ function compressImageAsDataUrl(file: File): Promise<string> {
         return
       }
       ctx.drawImage(img, 0, 0, c.width, c.height)
-      let dataUrl = c.toDataURL('image/jpeg', 0.85)
-      if (dataUrl.length > MAX_DATA_URL_LENGTH) dataUrl = c.toDataURL('image/jpeg', 0.7)
+      // Qualität 0.55 – reicht für Galerie-Vorschau, spart deutlich Speicher
+      let dataUrl = c.toDataURL('image/jpeg', 0.55)
+      if (dataUrl.length > MAX_DATA_URL_LENGTH) dataUrl = c.toDataURL('image/jpeg', 0.4)
       resolve(dataUrl)
     }
     img.onerror = () => {
