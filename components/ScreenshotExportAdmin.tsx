@@ -10116,21 +10116,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ width: 412 * scale, minHeight: scaledContentMinHeight, margin: '0 auto', boxSizing: 'border-box', overflow: 'hidden' }}>
                 <div style={{ width: 412, transform: `scale(${scale})`, transformOrigin: 'top left', boxSizing: 'border-box' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 0, boxSizing: 'border-box' }}>
-                  {previewFullscreenPage === 1 && isVk2AdminContext() && (
-                  <div style={{ width: '100%', minHeight: 220, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.2rem', padding: '2rem 1.5rem', textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.9rem', color: 'var(--k2-muted)', maxWidth: 320 }}>
-                      Änderungen speichern, dann die echte Seite ansehen:
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => { saveAllForVorschau(); requestAnimationFrame(() => { navigate(PROJECT_ROUTES.vk2.galerie + '?vorschau=1') }) }}
-                      style={{ padding: '0.8rem 2rem', background: 'linear-gradient(135deg, #ff8c42, #d4622a)', border: 'none', borderRadius: 10, color: '#fff', fontWeight: 700, fontSize: '1rem', cursor: 'pointer' }}
-                    >
-                      👁️ Startseite anzeigen →
-                    </button>
-                  </div>
-                  )}
-                  {previewFullscreenPage === 1 && !isVk2AdminContext() && (
+                  {previewFullscreenPage === 1 && (
                   <div style={{ width: '100%', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 100%)' }}>
                     {/* Brand linkes oberes Eck – K2/ök2 */}
                     <div style={{ position: 'absolute', top: 12, left: 14, zIndex: 10 }}>
@@ -10447,21 +10433,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     </header>
                   </div>
                   )} {/* Ende !isVk2AdminContext Seite 1 */}
-                  {previewFullscreenPage === 2 && isVk2AdminContext() && (
-                  <div style={{ width: '100%', minHeight: 220, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.2rem', padding: '2rem 1.5rem', textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.9rem', color: 'var(--k2-muted)', maxWidth: 320 }}>
-                      Änderungen speichern, dann die echte Mitglieder-Seite ansehen:
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => { saveAllForVorschau(); requestAnimationFrame(() => { navigate(PROJECT_ROUTES.vk2.galerieVorschau + '?vorschau=1') }) }}
-                      style={{ padding: '0.8rem 2rem', background: 'linear-gradient(135deg, #ff8c42, #d4622a)', border: 'none', borderRadius: 10, color: '#fff', fontWeight: 700, fontSize: '1rem', cursor: 'pointer' }}
-                    >
-                      👁️ Mitglieder-Seite anzeigen →
-                    </button>
-                  </div>
-                  )}
-                  {previewFullscreenPage === 2 && !isVk2AdminContext() && (
+                  {previewFullscreenPage === 2 && (
                   <div style={{ width: '100%', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 100%)' }}>
                     <div style={{ position: 'absolute', top: 12, left: 14, zIndex: 10 }}>
                       <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--k2-text)', letterSpacing: '0.02em', lineHeight: 1.25 }}>{PRODUCT_BRAND_NAME}</div>
