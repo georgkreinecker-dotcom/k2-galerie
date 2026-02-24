@@ -90,6 +90,26 @@
 
 ---
 
+## BUG-009 · APf zeigt falsche Seite beim Zurückkommen
+**Symptom:** Beim Zurückkehren zur APf wird eine andere Seite angezeigt als zuletzt bearbeitet.
+**Ursache:** `useEffect` für `pageFromUrl` feuerte auch bei leerem `pageFromUrl` (null) und überschrieb dadurch die gespeicherte Seite aus `k2-apf-last-page`.
+**Lösung:** Guard `if (pageFromUrl && pageFromUrl.trim())` – nur setzen wenn wirklich ein URL-Parameter vorhanden.
+**Betroffene Dateien:** `src/pages/DevViewPage.tsx` Zeile ~134
+**Commit:** 9909a61 · 24.02.26
+**Status:** ✅ Behoben
+
+---
+
+## BUG-010 · Foto in mök2/VK2 verschwindet nach Speichern
+**Symptom:** Foto wird hochgeladen, kurz sichtbar, dann weg (bleibt nur in Vorschau).
+**Ursache:** Base64-Komprimierung zu schwach (maxW 1200px, Qualität 0.85) → große Datenmenge → localStorage läuft voll → Foto fällt weg.
+**Lösung:** Komprimierung verschärft: maxW 600px, Qualität 0.55 (Fallback 0.4). Reicht für Vorschau, passt zuverlässig in localStorage.
+**Betroffene Dateien:** `src/pages/MarketingOek2Page.tsx` `compressImageAsDataUrl()`
+**Commit:** 9909a61 · 24.02.26
+**Status:** ✅ Behoben
+
+---
+
 ## Checkliste bei Session-Start (PFLICHT)
 
 - [ ] Diese Datei gelesen?
