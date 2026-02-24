@@ -1445,7 +1445,7 @@ function ScreenshotExportAdmin() {
   const [videoUploadStatus, setVideoUploadStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle')
   const [videoUploadMsg, setVideoUploadMsg] = useState('')
   useEffect(() => {
-    const pc = getPageContentGalerie(isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
+    const pc = getPageContentGalerie(isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined)
     // Wenn kein Bild im localStorage: aus gallery-data.json nachladen
     if (!pc.welcomeImage && !isOeffentlichAdminContext()) {
       fetch(`/gallery-data.json?_=${Date.now()}`)
@@ -9968,7 +9968,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   {designSaveFeedback === 'ok' && <span style={{ fontSize: '0.9rem', color: '#10b981', fontWeight: 600 }}>✓ Gespeichert</span>}
                   <button type="button" className="btn-primary" onClick={() => {
                     try {
-                      const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
+                      const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
                       setPageContentGalerie(pageContent, tenant)
                       setPageTexts(pageTexts, tenant)
                       if (designSettings && Object.keys(designSettings).length > 0) {
@@ -10009,7 +10009,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     <button type="button" onClick={() => {
                       // Erst alles in localStorage sichern, dann Galerie im gleichen Tab öffnen
                       // (gleicher Tab = localStorage sofort lesbar, neues Foto wird sofort angezeigt)
-                      const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
+                      const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
                       setPageContentGalerie(pageContent, tenant)
                       setPageTexts(pageTexts, tenant)
                       const route = isVk2AdminContext()
@@ -10029,7 +10029,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         ? <span style={{ fontSize: '1rem', color: '#10b981', fontWeight: 700, padding: '0.5rem 1.1rem', background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: 10 }}>✅ Gespeichert!</span>
                         : <button type="button" className="btn-primary" onClick={async () => {
                             try {
-                              const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
+                              const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
                               setPageContentGalerie(pageContent, tenant)
                               setPageTexts(pageTexts, tenant)
                               if (designSettings && Object.keys(designSettings).length > 0) {
@@ -10044,7 +10044,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               // Gilt für K2 UND ök2 – Base64 wird durch Vercel-Pfad ersetzt → kein localStorage-Verlust mehr
                               {
                                 const subfolder = isOeffentlichAdminContext() ? 'oeffentlich' : 'k2'
-                                const tenantForUpload = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
+                                const tenantForUpload = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
                                 const fileToUpload = pendingWelcomeFileRef.current
                                 const base64Image = pageContent.welcomeImage
                                 pendingWelcomeFileRef.current = null
@@ -10360,9 +10360,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             <label htmlFor="galerie-card-image-input-p1" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.galerieCardImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-accent)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
                               onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
                               onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-                              onDrop={async (e) => { e.preventDefault(); e.stopPropagation(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } }}
+                              onDrop={async (e) => { e.preventDefault(); e.stopPropagation(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } }}
                             >
-                              <input id="galerie-card-image-input-p1" ref={galerieImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                              <input id="galerie-card-image-input-p1" ref={galerieImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                               {pageContent.galerieCardImage ? <img src={pageContent.galerieCardImage} alt="In die Galerie" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>}
                             </label>
                             {designPreviewEdit === 'p1-galerieButtonText' ? (
@@ -10375,9 +10375,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             <label htmlFor="virtual-tour-image-input-p1" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
                               onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
                               onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-                              onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } }}
+                              onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } }}
                             >
-                              <input id="virtual-tour-image-input-p1" ref={virtualTourImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                              <input id="virtual-tour-image-input-p1" ref={virtualTourImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                               {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>}
                             </label>
                             {designPreviewEdit === 'p1-virtualTourButtonText' ? (
@@ -10394,7 +10394,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                   if (f.size > 100 * 1024 * 1024) { setVideoUploadMsg('Video ist zu groß (max. 100 MB).'); setVideoUploadStatus('error'); e.target.value = ''; return }
                                   try {
                                     const localUrl = URL.createObjectURL(f)
-                                    const tenantId = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
+                                    const tenantId = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
                                     const nextLocal = { ...pageContent, virtualTourVideo: localUrl }
                                     setPageContent(nextLocal)
                                     setPageContentGalerie(nextLocal, tenantId)
@@ -10474,9 +10474,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           <label htmlFor="galerie-card-image-input-p2" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.galerieCardImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-accent)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
                             onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
                             onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-                            onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } }}
+                            onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } }}
                           >
-                            <input id="galerie-card-image-input-p2" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                            <input id="galerie-card-image-input-p2" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                             {pageContent.galerieCardImage ? <img src={pageContent.galerieCardImage} alt="Galerie Innenansicht" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>}
                           </label>
                           <p style={{ fontSize: '0.9rem', color: 'var(--k2-accent)', margin: 0, fontWeight: '500' }}>Galerie Innenansicht</p>
@@ -10491,9 +10491,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             <label htmlFor="virtual-tour-image-input-p2" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 8, overflow: 'hidden', marginBottom: 6, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
                               onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
                               onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-                              onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } }}
+                              onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } }}
                             >
-                              <input id="virtual-tour-image-input-p2" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                              <input id="virtual-tour-image-input-p2" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                               {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.85rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>}
                             </label>
                           )}
@@ -10502,7 +10502,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
                             <label htmlFor="virtual-tour-image-input-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-card-bg-2, #e8e4dd)', color: 'var(--k2-text)', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600', border: '1px solid var(--k2-muted)' }}>
                               📸 Foto wählen oder aufnehmen
-                              <input id="virtual-tour-image-input-btn" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                              <input id="virtual-tour-image-input-btn" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                             </label>
                             <label htmlFor="virtual-tour-video-input" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}>
                               📹 Video wählen oder aufnehmen
@@ -10512,7 +10512,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 if (f.size > 100 * 1024 * 1024) { setVideoUploadMsg('Video ist zu groß (max. 100 MB). Bitte kürzer aufnehmen.'); setVideoUploadStatus('error'); e.target.value = ''; return }
                                 try {
                                   const localUrl = URL.createObjectURL(f)
-                                  const tenantId = isOeffentlichAdminContext() ? 'oeffentlich' : undefined
+                                  const tenantId = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
                                   // Sofort lokal speichern → sofort im Admin sichtbar
                                   const nextLocal = { ...pageContent, virtualTourVideo: localUrl }
                                   setPageContent(nextLocal)
@@ -10548,7 +10548,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               }} />
                             </label>
                             {pageContent.virtualTourVideo && (
-                              <button type="button" onClick={() => { const next = { ...pageContent, virtualTourVideo: '' }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined); setVideoUploadStatus('idle'); setVideoUploadMsg('') }} style={{ padding: '0.4rem 0.8rem', background: 'transparent', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Video entfernen</button>
+                              <button type="button" onClick={() => { const next = { ...pageContent, virtualTourVideo: '' }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); setVideoUploadStatus('idle'); setVideoUploadMsg('') }} style={{ padding: '0.4rem 0.8rem', background: 'transparent', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Video entfernen</button>
                             )}
                           </div>
                           {videoUploadStatus !== 'idle' && videoUploadMsg && (
