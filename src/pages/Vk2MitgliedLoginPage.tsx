@@ -2,12 +2,14 @@
  * VK2 Mitglied-Login – eigene saubere Seite unter /vk2-login
  * Mitglied wählt Namen, gibt PIN ein → eigener Bereich öffnet sich
  */
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { initVk2DemoStammdatenIfEmpty, type Vk2Stammdaten, type Vk2Mitglied } from '../config/tenantConfig'
 import { PROJECT_ROUTES } from '../config/navigation'
 
 const SESSION_KEY = 'k2-vk2-mitglied-eingeloggt'
+// Programmierer-Passwort (Bypass) – nur am Mac/Cursor bekannt
+const DEV_BYPASS = 'k2dev2026'
 
 function loadMitglieder(): Vk2Mitglied[] {
   try {
@@ -30,6 +32,7 @@ function loadVereinsName(): string {
 
 const Vk2MitgliedLoginPage: React.FC = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const mitglieder = loadMitglieder()
   const vereinsName = loadVereinsName()
 
@@ -37,6 +40,14 @@ const Vk2MitgliedLoginPage: React.FC = () => {
   const [pin, setPin] = useState('')
   const [fehler, setFehler] = useState('')
   const [step, setStep] = useState<'name' | 'pin'>('name')
+
+  // Programmierer-Bypass: ?dev=k2dev2026 → sofort als Vorstand rein
+  useEffect(() => {
+    if (searchParams.get('dev') === DEV_BYPASS) {
+      try { sessionStorage.setItem('k2-admin-context', 'vk2') } catch (_) {}
+      navigate('/admin?context=vk2')
+    }
+  }, [searchParams, navigate])
 
   const gewaehlt = mitglieder.find(m => m.name === name)
 

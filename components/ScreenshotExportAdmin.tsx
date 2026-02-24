@@ -8064,8 +8064,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
 
   // ── VK2 MITGLIED-LOGIN-BEREICH ──
   const isMitgliedRoute = isVk2AdminContext() && typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mitglied') === '1'
+  // Programmierer-Bypass: ?dev=k2dev2026 → Login-Screen überspringen
+  const devBypass = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('dev') === 'k2dev2026'
 
-  if (isMitgliedRoute && !vk2EingeloggtMitglied) {
+  if (isMitgliedRoute && !vk2EingeloggtMitglied && !devBypass) {
     const mitgliedListe = (vk2Stammdaten.mitglieder || []).filter(m => m.pin)
     return (
       <div style={{ minHeight: '100vh', background: '#0f1c2e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'system-ui, sans-serif', padding: '1rem' }}>
@@ -8144,12 +8146,20 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
     )
   }
 
-  if (isMitgliedRoute && vk2EingeloggtMitglied) {
-    const mitglied = (vk2Stammdaten.mitglieder || []).find(m => m.name === vk2EingeloggtMitglied)
-    const mitgliedIdx = (vk2Stammdaten.mitglieder || []).findIndex(m => m.name === vk2EingeloggtMitglied)
+  // Bei Bypass: als erstes Vorstandsmitglied einloggen (für Profil-Ansicht)
+  const devBypassName = devBypass
+    ? ((vk2Stammdaten.mitglieder || []).find(m => m.rolle === 'vorstand')?.name
+        || (vk2Stammdaten.mitglieder || [])[0]?.name
+        || null)
+    : null
+
+  if (isMitgliedRoute && (vk2EingeloggtMitglied || devBypassName)) {
+    const aktiverName = vk2EingeloggtMitglied || devBypassName || ''
+    const mitglied = (vk2Stammdaten.mitglieder || []).find(m => m.name === aktiverName)
+    const mitgliedIdx = (vk2Stammdaten.mitglieder || []).findIndex(m => m.name === aktiverName)
     const istVorstand = mitglied?.rolle === 'vorstand'
 
-    if (istVorstand) {
+    if (istVorstand && !devBypass) {
       // Vorstand → normaler Admin (URL ohne mitglied=1 öffnen)
       window.location.href = '/admin?context=vk2'
       return null
@@ -8161,13 +8171,16 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
         <div style={{ padding: '1.2rem 1.5rem', borderBottom: '1px solid rgba(37,99,235,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
           <div>
             <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.1em', color: '#60a5fa', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Mein Profil</div>
-            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#f0f6ff' }}>{vk2EingeloggtMitglied}</div>
+            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#f0f6ff' }}>
+              {aktiverName}
+              {devBypass && <span style={{ marginLeft: '0.5rem', fontSize: '0.7rem', background: '#b54a1e', color: '#fff', borderRadius: 4, padding: '0.1rem 0.4rem', fontWeight: 700 }}>DEV</span>}
+            </div>
           </div>
           <button
             type="button"
-            onClick={() => { try { sessionStorage.removeItem(VK2_MITGLIED_SESSION_KEY) } catch (_) {}; setVk2EingeloggtMitglied(null) }}
+            onClick={() => { try { sessionStorage.removeItem(VK2_MITGLIED_SESSION_KEY) } catch (_) {}; setVk2EingeloggtMitglied(null); window.location.href = '/vk2-login' }}
             style={{ padding: '0.4rem 0.9rem', background: 'transparent', border: '1px solid rgba(160,200,255,0.2)', borderRadius: 8, color: 'rgba(160,200,255,0.5)', fontSize: '0.8rem', cursor: 'pointer' }}
-          >Abmelden</button>
+          >{devBypass ? '← Zurück' : 'Abmelden'}</button>
         </div>
 
         {/* Profil-Formular */}
