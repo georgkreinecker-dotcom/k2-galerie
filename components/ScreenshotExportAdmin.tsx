@@ -1224,7 +1224,8 @@ function ScreenshotExportAdmin() {
   // Seitentexte laden (K2 oder ök2 je nach Kontext)
   useEffect(() => {
     let isMounted = true
-    const key = isOeffentlichAdminContext() ? 'k2-oeffentlich-page-texts' : 'k2-page-texts'
+    const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
+    const key = isOeffentlichAdminContext() ? 'k2-oeffentlich-page-texts' : isVk2AdminContext() ? 'k2-vk2-page-texts' : 'k2-page-texts'
     const t = setTimeout(() => {
       if (!isMounted) return
       try {
@@ -1232,8 +1233,8 @@ function ScreenshotExportAdmin() {
         if (stored && stored.length < 50000) {
           const saved = JSON.parse(stored) as PageTextsConfig
           if (isMounted) setPageTextsState(saved)
-        } else if (isOeffentlichAdminContext()) {
-          if (isMounted) setPageTextsState(getPageTexts('oeffentlich'))
+        } else if (tenant) {
+          if (isMounted) setPageTextsState(getPageTexts(tenant))
         }
       } catch (_) {}
     }, 100)
@@ -10406,7 +10407,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                         const url = await uploadVideoToGitHub(f, 'virtual-tour.mp4', (msg) => setVideoUploadMsg(msg))
                                         const nextVercel = { ...nextLocal, virtualTourVideo: url }
                                         setPageContent(nextVercel)
-                                        setPageContentGalerie(nextVercel, undefined)
+                                        setPageContentGalerie(nextVercel, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined)
                                         localStorage.removeItem('k2-last-publish-signature')
                                         setVideoUploadStatus('done')
                                         setVideoUploadMsg('✅ Video hochgeladen – in ca. 2 Min. überall sichtbar.')
@@ -12279,6 +12280,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           localStorage.setItem(KEY_OEF_ADMIN_PASSWORD, adminNewPw)
                           if (adminContactEmail.trim()) localStorage.setItem(KEY_OEF_ADMIN_EMAIL, adminContactEmail.trim())
                           if (adminContactPhone.trim()) localStorage.setItem(KEY_OEF_ADMIN_PHONE, adminContactPhone.trim())
+                        } else if (isVk2AdminContext()) {
+                          const vk2Stored = localStorage.getItem('k2-vk2-stammdaten')
+                          const data = vk2Stored ? JSON.parse(vk2Stored) : {}
+                          if (!data.vorstand) data.vorstand = {}
+                          data.vorstand.adminPassword = adminNewPw
+                          localStorage.setItem('k2-vk2-stammdaten', JSON.stringify(data))
                         } else {
                           const galleryStored = localStorage.getItem('k2-stammdaten-galerie')
                           const data = galleryStored ? JSON.parse(galleryStored) : {}
