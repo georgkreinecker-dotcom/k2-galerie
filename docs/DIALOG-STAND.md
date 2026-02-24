@@ -2,8 +2,8 @@
 
 | Feld | Inhalt |
 |------|--------|
-| **Datum** | 24.02.26 16:17 |
-| **Thema** | VK2 Mitglied-Profil: Foto-Upload, Werk-Upload, Vita-Feld |
-| **Was zuletzt** | VK2 Mitglied-Modal komplett erweitert: Porträt-Foto Upload (👤, 400px, 60% JPEG), Werk-Foto Upload (🖼️, 600px, 60% JPEG) – beides mit Drag&Drop und Kamera-Button. Vita-Feld (ausführlich, separater Bereich, 5 Zeilen) + Bio (Kurzform für Karte) – klar getrennt. Vk2Mitglied-Typ um vita-Feld erweitert. Commit: d631a3a ✅ auf GitHub |
-| **Nächster Schritt** | VK2 Admin testen: Mitglied bearbeiten → Foto hochladen (Kamera oder Datei) → Werk hochladen → Vita eingeben → Speichern → in der Vorschau prüfen. |
-| **Wo nachlesen** | `components/ScreenshotExportAdmin.tsx` (Zeile ~14393), `src/config/tenantConfig.ts` (Vk2Mitglied Interface) |
+| **Datum** | 24.02.26 16:42 |
+| **Thema** | VK2 Rollen-System: PIN-Login für Mitglieder, Voll-Admin für Vorstand |
+| **Was zuletzt** | `Vk2Mitglied` um `rolle` + `pin` erweitert. Admin-Modal: Zugangsberechtigung-Block (Rolle + PIN + Zufalls-Generator). Mitglied-Login unter `/admin?context=vk2&mitglied=1` → PIN-Screen → eigenes Profil (Foto, Werk, Bio, Vita, Website). Vorstand → automatisch voller Admin. VK2-Galerie: 🔑 Mitglied-Button. Voll-Admin: Liste exportieren (CSV) + drucken. Commit: 961cfef ✅ auf GitHub |
+| **Nächster Schritt** | Testen: 1) Mitglied anlegen mit PIN in Admin. 2) VK2-Galerie öffnen → 🔑 Mitglied → Name wählen → PIN → Profil bearbeiten. 3) CSV-Export testen. |
+| **Wo nachlesen** | `components/ScreenshotExportAdmin.tsx` (VK2_MITGLIED_SESSION_KEY, isMitgliedRoute), `src/config/tenantConfig.ts` (Vk2Mitglied Interface), `src/pages/Vk2GaleriePage.tsx` |

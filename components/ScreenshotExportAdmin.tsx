@@ -101,6 +101,63 @@ const KEY_VK2_DESIGN = 'k2-vk2-design-settings'
 const KEY_OEF_STAMMDATEN_MARTINA = 'k2-oeffentlich-stammdaten-martina'
 /** VK2-Stammdaten: Verein, Vorstand, Beirat, Mitglieder */
 const KEY_VK2_STAMMDATEN = 'k2-vk2-stammdaten'
+
+/** Druckt eine oder mehrere Mitgliedskarten im Kreditkarten-Format (85×54 mm, 3 pro Reihe) */
+function printMitgliedskarten(mitglieder: import('../src/config/tenantConfig').Vk2Mitglied[], vereinName: string) {
+  const kartenHtml = mitglieder.map(m => {
+    const foto = m.mitgliedFotoUrl
+      ? `<img src="${m.mitgliedFotoUrl}" alt="" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid #ff8c42;flex-shrink:0;">`
+      : `<div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#ff8c42,#b54a1e);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">👤</div>`
+    const bio = m.bio ? `<div style="font-size:7.5px;color:#8c7060;margin-top:3px;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${m.bio}</div>` : ''
+    const web = (m.galerieLinkUrl || m.website) ? `<div style="font-size:7px;color:#b54a1e;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(m.galerieLinkUrl || m.website || '').replace('https://','')}</div>` : ''
+    const istVorstand = m.rolle === 'vorstand'
+    return `
+      <div style="width:85mm;height:54mm;background:linear-gradient(135deg,#1a0f0a 0%,#2d1a14 60%,#3d2419 100%);color:#fff5f0;border-radius:4mm;padding:4mm 5mm;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;page-break-inside:avoid;position:relative;overflow:hidden;">
+        <div style="position:absolute;right:-8mm;top:-8mm;width:28mm;height:28mm;border-radius:50%;background:rgba(255,140,66,0.08);"></div>
+        <div style="position:absolute;right:2mm;bottom:-4mm;width:16mm;height:16mm;border-radius:50%;background:rgba(255,140,66,0.05);"></div>
+        <div style="display:flex;align-items:center;gap:3mm;">
+          ${foto}
+          <div style="flex:1;overflow:hidden;">
+            <div style="font-size:10.5px;font-weight:800;letter-spacing:0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.name || ''}</div>
+            ${m.typ ? `<div style="font-size:8px;color:#ff8c42;font-weight:600;margin-top:1px;">${m.typ}</div>` : ''}
+            ${istVorstand ? `<div style="font-size:7px;background:rgba(255,140,66,0.2);color:#ff8c42;border-radius:3px;padding:1px 4px;display:inline-block;margin-top:2px;">👑 Vorstand</div>` : ''}
+            ${bio}
+          </div>
+        </div>
+        <div>
+          ${web}
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:3mm;border-top:0.5px solid rgba(255,140,66,0.25);padding-top:2mm;">
+            <div>
+              <div style="font-size:7px;color:rgba(255,200,150,0.5);text-transform:uppercase;letter-spacing:0.1em;">Mitglied</div>
+              <div style="font-size:9px;font-weight:700;color:#ff8c42;">${vereinName}</div>
+            </div>
+            ${m.eintrittsdatum || m.seit ? `<div style="font-size:7px;color:rgba(255,200,150,0.4);">seit ${(m.eintrittsdatum || m.seit || '').slice(0,4)}</div>` : ''}
+          </div>
+        </div>
+      </div>`
+  }).join('')
+
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Mitgliedskarten</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  @page { size: A4; margin: 10mm; }
+  body { font-family: system-ui, sans-serif; background: #fff; }
+  .grid { display: flex; flex-wrap: wrap; gap: 5mm; justify-content: flex-start; }
+  .grid > div { break-inside: avoid; }
+  .info { font-size: 10px; color: #999; margin-bottom: 6mm; }
+  h1 { font-size: 14px; font-weight: 800; margin-bottom: 2mm; }
+  @media screen { body { padding: 20px; background: #f5f5f5; } .grid > div { box-shadow: 0 2px 12px rgba(0,0,0,0.3); } }
+</style>
+</head><body>
+  <h1>Mitgliedskarten – ${vereinName}</h1>
+  <div class="info">${mitglieder.length} Karte${mitglieder.length !== 1 ? 'n' : ''} · ${new Date().toLocaleDateString('de-AT')}</div>
+  <div class="grid">${kartenHtml}</div>
+</body></html>`
+
+  const w = window.open('', '_blank')
+  if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 400) }
+}
 /** Registrierung: Lizenztyp, Vereinsmitglied, Empfehlungsoption (K2/ök2/VK2 getrennt) */
 const KEY_REGISTRIERUNG = 'k2-registrierung'
 const KEY_OEF_REGISTRIERUNG = 'k2-oeffentlich-registrierung'
@@ -8157,6 +8214,17 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             />
           </div>
 
+          {/* Eigene Karte drucken */}
+          {mitglied && (
+            <button
+              type="button"
+              onClick={() => printMitgliedskarten([mitglied], vk2Stammdaten.verein?.name || 'Verein')}
+              style={{ width: '100%', padding: '0.75rem', background: 'linear-gradient(135deg,#b54a1e,#d4622a)', border: 'none', borderRadius: 10, color: '#fff', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+            >
+              🖨️ Meine Mitgliedskarte drucken
+            </button>
+          )}
+
           <p style={{ margin: 0, fontSize: '0.78rem', color: 'rgba(160,200,255,0.3)', textAlign: 'center' }}>Änderungen werden sofort gespeichert.</p>
         </div>
       </div>
@@ -11189,6 +11257,24 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         >
                           🖨️ Liste drucken
                         </button>
+                        {/* Karten drucken */}
+                        <button
+                          type="button"
+                          title="Alle Mitgliedskarten drucken (Kreditkarten-Format, 3 pro Reihe)"
+                          onClick={() => {
+                            const mitglieder = (vk2Stammdaten.mitglieder || [])
+                              .slice()
+                              .sort((a, b) => {
+                                if (a.rolle === 'vorstand' && b.rolle !== 'vorstand') return -1
+                                if (b.rolle === 'vorstand' && a.rolle !== 'vorstand') return 1
+                                return (a.name || '').localeCompare(b.name || '', 'de')
+                              })
+                            printMitgliedskarten(mitglieder, vk2Stammdaten.verein?.name || 'Verein')
+                          }}
+                          style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: `linear-gradient(135deg,${s.accent}33,${s.accent}22)`, border: `1px solid ${s.accent}66`, borderRadius: 8, color: s.accent, fontWeight: 700, cursor: 'pointer' }}
+                        >
+                          🪪 Alle Mitgliedskarten drucken
+                        </button>
                       </div>
                       {/* CSV-Import: Drag & Drop oder Datei wählen */}
                       <div
@@ -11309,6 +11395,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 <td style={{ padding: '0.5rem 0.75rem', color: s.text }}>{d.typ}</td>
                                 <td style={{ padding: '0.5rem', display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
                                   <button type="button" onClick={() => { setEditingMemberIndex(i); setMemberForm(memberToForm(m)); setShowAddModal(true) }} style={{ padding: '0.35rem 0.6rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: 6, color: s.accent, fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>Bearbeiten</button>
+                                  <button type="button" title="Mitgliedskarte drucken" onClick={() => printMitgliedskarten([m], vk2Stammdaten.verein?.name || 'Verein')} style={{ padding: '0.35rem 0.5rem', background: 'none', border: `1px solid ${s.accent}33`, borderRadius: 6, color: s.accent, fontSize: '0.95rem', cursor: 'pointer' }}>🪪</button>
                                   <button type="button" onClick={() => { const neu = (vk2Stammdaten.mitglieder || []).filter((_, j) => j !== i); setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }); try { localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify({ ...vk2Stammdaten, mitglieder: neu })) } catch (_) {} }} style={{ background: 'none', border: 'none', color: s.muted, cursor: 'pointer', fontSize: '1.1rem' }} title="Entfernen">×</button>
                                 </td>
                               </tr>
