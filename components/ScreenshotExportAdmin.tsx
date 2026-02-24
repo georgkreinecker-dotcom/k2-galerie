@@ -948,6 +948,7 @@ function ScreenshotExportAdmin() {
     return { ...(isOeffentlichAdminContext() ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN) }
   })
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showVitaEditor, setShowVitaEditor] = useState(false)
   const [editingArtwork, setEditingArtwork] = useState<any | null>(null)
   /** VK2: Index in vk2Stammdaten.mitglieder beim Bearbeiten; null = neues Mitglied */
   const [editingMemberIndex, setEditingMemberIndex] = useState<number | null>(null)
@@ -14271,6 +14272,107 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
         </div>
       )}
 
+            {/* Vita-Editor: großes Vollbild-Fenster */}
+            {showVitaEditor && (
+              <div
+                style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)', zIndex: 999999, display: 'flex', alignItems: 'stretch', justifyContent: 'center', padding: '0' }}
+                onClick={() => setShowVitaEditor(false)}
+              >
+                <div
+                  style={{ width: '100%', maxWidth: 760, margin: '0 auto', background: 'linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)', display: 'flex', flexDirection: 'column', boxShadow: '0 0 80px rgba(0,0,0,0.8)' }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Header */}
+                  <div style={{ padding: '1.2rem 1.5rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#f0f6ff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        📝 Vita
+                        {memberForm.name && <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'rgba(160,200,255,0.6)' }}>– {memberForm.name}</span>}
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: 'rgba(160,200,255,0.5)', marginTop: '0.2rem' }}>Ausführlicher Lebenslauf · Text eingeben, einfügen (Strg+V) oder reinziehen</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button
+                        type="button"
+                        onClick={() => setShowVitaEditor(false)}
+                        style={{ padding: '0.5rem 1.2rem', background: 'rgba(37,99,235,0.2)', border: '1px solid rgba(37,99,235,0.4)', borderRadius: 10, color: '#60a5fa', fontSize: '0.88rem', fontWeight: 700, cursor: 'pointer' }}
+                      >
+                        ✓ Übernehmen
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowVitaEditor(false)}
+                        style={{ width: 36, height: 36, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(160,200,255,0.6)', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >×</button>
+                    </div>
+                  </div>
+
+                  {/* Editor-Bereich */}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '1rem 1.5rem 1.5rem', gap: '0.75rem', overflow: 'hidden' }}>
+
+                    {/* Schnell-Vorlagen */}
+                    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                      {[
+                        { label: '📚 Ausbildung', text: 'Ausbildung:\n' },
+                        { label: '🎨 Technik', text: 'Technik & Stil:\n' },
+                        { label: '🏆 Ausstellungen', text: 'Ausstellungen:\n' },
+                        { label: '💡 Inspiration', text: 'Inspiration:\n' },
+                      ].map(v => (
+                        <button
+                          key={v.label}
+                          type="button"
+                          onClick={() => setMemberForm(f => ({ ...f, vita: (f.vita ? f.vita + '\n\n' : '') + v.text }))}
+                          style={{ padding: '0.3rem 0.7rem', background: 'rgba(37,99,235,0.12)', border: '1px solid rgba(37,99,235,0.25)', borderRadius: 20, color: 'rgba(160,200,255,0.8)', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 500 }}
+                        >{v.label}</button>
+                      ))}
+                      {memberForm.vita?.trim() && (
+                        <button
+                          type="button"
+                          onClick={() => { if (window.confirm('Vita löschen?')) setMemberForm(f => ({ ...f, vita: '' })) }}
+                          style={{ padding: '0.3rem 0.7rem', background: 'rgba(181,74,30,0.12)', border: '1px solid rgba(181,74,30,0.25)', borderRadius: 20, color: 'rgba(255,160,100,0.8)', fontSize: '0.78rem', cursor: 'pointer', marginLeft: 'auto' }}
+                        >🗑️ Leeren</button>
+                      )}
+                    </div>
+
+                    {/* Textarea – drop-Zone */}
+                    <textarea
+                      value={memberForm.vita}
+                      onChange={(e) => setMemberForm(f => ({ ...f, vita: e.target.value }))}
+                      placeholder={'Hier die Vita eingeben, einfügen oder reinziehen …\n\nBeispiel:\nGeboren 1975 in Wien. Studium an der Akademie der bildenden Künste.\nSchwerpunkt: Öl auf Leinwand, abstrakte Landschaften.\n\nAusstellungen:\n• 2018 – Galerie am Stubenring, Wien\n• 2021 – Kunstmesse Salzburg\n• 2023 – Gruppenausstellung Linz'}
+                      autoFocus
+                      onDrop={(e) => {
+                        e.preventDefault()
+                        const text = e.dataTransfer.getData('text/plain')
+                        if (text) setMemberForm(f => ({ ...f, vita: (f.vita ? f.vita + '\n\n' : '') + text }))
+                      }}
+                      onDragOver={(e) => e.preventDefault()}
+                      style={{
+                        flex: 1,
+                        width: '100%',
+                        padding: '1rem 1.2rem',
+                        background: 'rgba(255,255,255,0.04)',
+                        border: '1px solid rgba(37,99,235,0.25)',
+                        borderRadius: 12,
+                        color: '#e8f0ff',
+                        fontSize: '0.95rem',
+                        lineHeight: 1.75,
+                        outline: 'none',
+                        resize: 'none',
+                        fontFamily: 'Georgia, "Times New Roman", serif',
+                        minHeight: 300,
+                        caretColor: '#60a5fa',
+                      }}
+                    />
+
+                    {/* Zeichenzahl */}
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(160,200,255,0.35)', textAlign: 'right' }}>
+                      {memberForm.vita?.length ?? 0} Zeichen
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Modal: Neues Werk hinzufügen - z-index hoch damit es über allem liegt */}
       {showAddModal && (
         <div 
@@ -14502,18 +14604,29 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   </div>
 
                   {/* ── VITA-BEREICH ── */}
-                  <div style={{ borderTop: `1px solid ${s.accent}22`, paddingTop: '0.75rem' }}>
-                    <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.accent, fontWeight: 600 }}>
-                      📝 Vita <span style={{ fontWeight: 400, color: s.muted }}>(ausführlich, separater Bereich)</span>
-                    </label>
-                    <textarea
-                      value={memberForm.vita}
-                      onChange={(e) => setMemberForm(f => ({ ...f, vita: e.target.value }))}
-                      placeholder="Ausführlicher Lebenslauf: Ausbildung, Lehrjahre, wichtige Stationen, Ausstellungen, Preise, Technik, Stil, Inspiration ..."
-                      rows={5}
-                      style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
-                    />
-                    <p style={{ margin: '0.25rem 0 0', fontSize: '0.78rem', color: s.muted }}>Für die Detailansicht – kann lang sein. Bio (unten) ist die Kurzform für die Karte.</p>
+                  <div style={{ borderTop: `1px solid ${s.accent}22`, paddingTop: '0.9rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.6rem' }}>
+                      <div>
+                        <div style={{ fontSize: '1rem', fontWeight: 700, color: s.text, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          📝 <span>Vita</span>
+                          {memberForm.vita?.trim() && <span style={{ fontSize: '0.72rem', background: `${s.accent}22`, color: s.accent, borderRadius: 20, padding: '0.1rem 0.5rem', fontWeight: 600 }}>✓ vorhanden</span>}
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.15rem' }}>Ausführlicher Lebenslauf – erscheint beim Aufklappen des Profils</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowVitaEditor(true)}
+                        style={{ padding: '0.5rem 1.1rem', background: s.gradientAccent, border: 'none', borderRadius: 10, color: '#fff', fontSize: '0.88rem', fontWeight: 700, cursor: 'pointer', flexShrink: 0, boxShadow: s.shadow }}
+                      >
+                        {memberForm.vita?.trim() ? '✏️ Bearbeiten' : '+ Vita schreiben'}
+                      </button>
+                    </div>
+                    {memberForm.vita?.trim() && (
+                      <div style={{ background: s.bgElevated, borderRadius: 8, padding: '0.6rem 0.8rem', border: `1px solid ${s.accent}22`, maxHeight: 72, overflow: 'hidden', position: 'relative' }}>
+                        <p style={{ margin: 0, fontSize: '0.82rem', color: 'rgba(200,220,255,0.7)', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{memberForm.vita}</p>
+                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 28, background: `linear-gradient(transparent, ${s.bgElevated})` }} />
+                      </div>
+                    )}
                   </div>
 
                   {/* ── BASIS-DATEN ── */}
