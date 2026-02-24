@@ -367,7 +367,7 @@ function MobileRootRedirect() {
   if (isMobileView()) {
     return <Navigate to={PROJECT_ROUTES['k2-galerie'].galerie} replace />
   }
-  return <DevViewPage defaultPage="galerie" />
+  return <DevViewPage />
 }
 
 /** Auf Mobile: /dev-view → sofort Galerie (niemals 4 Seiten/Smart Panel). */
@@ -487,7 +487,7 @@ function App() {
       {/* Plattform-Routen – auf Mobile sofort Galerie (kein Smart Panel) */}
       <Route path="/platform" element={
         <AppErrorBoundary>
-          {isMobileView() ? <Navigate to={PROJECT_ROUTES['k2-galerie'].galerie} replace /> : <DevViewPage defaultPage="mission" />}
+          {isMobileView() ? <Navigate to={PROJECT_ROUTES['k2-galerie'].galerie} replace /> : <DevViewPage />}
         </AppErrorBoundary>
       } />
       <Route path={PLATFORM_ROUTES.key} element={<KeyPage />} />

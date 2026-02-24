@@ -120,7 +120,12 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   const [mobileZoom, setMobileZoom] = useState(1)
   const [desktopZoom, setDesktopZoom] = useState(1)
 
-  // Aktuelle Seite in localStorage merken – beim nächsten „Zurück zur APf“ wieder anzeigen
+  // Alten gespeicherten Wert beim ersten Laden löschen → Desktop startet immer leer
+  useEffect(() => {
+    if (typeof window !== 'undefined') localStorage.removeItem(APF_LAST_PAGE_KEY)
+  }, []) // nur einmal beim Mount
+
+  // Aktuelle Seite in localStorage merken – desktop-leer NICHT speichern
   useEffect(() => {
     if (currentPage && currentPage !== 'desktop-leer' && typeof window !== 'undefined') {
       localStorage.setItem(APF_LAST_PAGE_KEY, currentPage)
