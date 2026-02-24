@@ -2,8 +2,8 @@
 
 | Feld | Inhalt |
 |------|--------|
-| **Datum** | 24.02.26 16:03 |
-| **Thema** | Zwei Bugs behoben: APf merkt Seite, Foto bleibt gespeichert |
-| **Was zuletzt** | BUG-009: APf zeigte falsche Seite beim Zurückkommen – pageFromUrl-Guard fix. BUG-010: Foto in mök2/VK2 verschwand – Komprimierung auf 600px/0.55 verschärft. Freunde-Erklärung: Druckseite im K2-Look fertig mit Joe-Statement, 140+ Stunden, Figma-Geschichte, Eferding, Galerie-Eröffnung 24.03.26. Commit: 9909a61 ✅ auf GitHub |
-| **Nächster Schritt** | Foto-Fix testen: Foto hochladen in mök2 → muss nach Reload noch da sein. APf-Fix testen: Seite wechseln, zurückkommen → muss dieselbe Seite zeigen. |
-| **Wo nachlesen** | `src/pages/DevViewPage.tsx`, `src/pages/MarketingOek2Page.tsx`, `docs/GELOESTE-BUGS.md` |
+| **Datum** | 24.02.26 16:17 |
+| **Thema** | VK2 Mitglied-Profil: Foto-Upload, Werk-Upload, Vita-Feld |
+| **Was zuletzt** | VK2 Mitglied-Modal komplett erweitert: Porträt-Foto Upload (👤, 400px, 60% JPEG), Werk-Foto Upload (🖼️, 600px, 60% JPEG) – beides mit Drag&Drop und Kamera-Button. Vita-Feld (ausführlich, separater Bereich, 5 Zeilen) + Bio (Kurzform für Karte) – klar getrennt. Vk2Mitglied-Typ um vita-Feld erweitert. Commit: d631a3a ✅ auf GitHub |
+| **Nächster Schritt** | VK2 Admin testen: Mitglied bearbeiten → Foto hochladen (Kamera oder Datei) → Werk hochladen → Vita eingeben → Speichern → in der Vorschau prüfen. |
+| **Wo nachlesen** | `components/ScreenshotExportAdmin.tsx` (Zeile ~14393), `src/config/tenantConfig.ts` (Vk2Mitglied Interface) |

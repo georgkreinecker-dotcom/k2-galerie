@@ -102,8 +102,8 @@ const Vk2GalerieVorschauPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Mitglieder-Raster */}
-      <div style={{ padding: 'clamp(1.5rem, 4vw, 2.5rem)', maxWidth: 1100, margin: '0 auto' }}>
+      {/* Mitglieder-Liste – kompakt */}
+      <div style={{ padding: 'clamp(1rem, 3vw, 2rem)', maxWidth: 800, margin: '0 auto' }}>
         {mitglieder.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '4rem 2rem', color: 'rgba(160,200,255,0.7)' }}>
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👥</div>
@@ -111,7 +111,7 @@ const Vk2GalerieVorschauPage: React.FC = () => {
             <p style={{ fontSize: '0.9rem' }}>Im Admin unter „Einstellungen → Stammdaten" Mitglieder hinzufügen.</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 'clamp(1rem, 2.5vw, 1.5rem)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {mitglieder.map((m, idx) => {
               const hasLink = !!(m.galerieLinkUrl || m.website)
               const linkUrl = m.galerieLinkUrl || m.website || ''
@@ -126,50 +126,49 @@ const Vk2GalerieVorschauPage: React.FC = () => {
                   onClick={hasLink ? handleClick : undefined}
                   style={{
                     background: '#162032',
-                    borderRadius: 16,
-                    overflow: 'hidden',
-                    border: `1px solid ${hasLink ? 'rgba(37,99,235,0.35)' : 'rgba(37,99,235,0.18)'}`,
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
+                    borderRadius: 12,
+                    border: `1px solid ${hasLink ? 'rgba(37,99,235,0.3)' : 'rgba(37,99,235,0.15)'}`,
                     cursor: hasLink ? 'pointer' : 'default',
                     display: 'flex',
-                    flexDirection: 'column',
-                    transition: 'transform 0.15s, box-shadow 0.15s'
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    padding: '0.65rem 0.9rem',
+                    transition: 'background 0.15s'
                   }}
-                  onMouseEnter={(e) => { if (hasLink) { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-3px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 24px rgba(37,99,235,0.3)' } }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 12px rgba(0,0,0,0.3)' }}
+                  onMouseEnter={(e) => { if (hasLink) (e.currentTarget as HTMLDivElement).style.background = '#1e2f47' }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = '#162032' }}
                 >
-                  {/* Werkfoto oben */}
-                  <div style={{ width: '100%', aspectRatio: '3/2', background: 'rgba(37,99,235,0.08)', overflow: 'hidden', position: 'relative' }}>
-                    {m.imageUrl ? (
-                      <img src={m.imageUrl} alt={`Werk von ${m.name}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  {/* Porträt-Kreis */}
+                  <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(37,99,235,0.4)', background: 'rgba(37,99,235,0.12)' }}>
+                    {m.mitgliedFotoUrl ? (
+                      <img src={m.mitgliedFotoUrl} alt={m.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
-                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', opacity: 0.25 }}>🖼️</div>
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>👤</div>
                     )}
                   </div>
 
-                  {/* Info mit Porträt-Kreis */}
-                  <div style={{ padding: '0.9rem 1.1rem 1.1rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', marginBottom: '0.2rem' }}>
-                      {/* Porträt-Kreis */}
-                      <div style={{ width: 42, height: 42, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(37,99,235,0.4)', background: 'rgba(37,99,235,0.12)' }}>
-                        {m.mitgliedFotoUrl ? (
-                          <img src={m.mitgliedFotoUrl} alt={m.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        ) : (
-                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>👤</div>
-                        )}
-                      </div>
-                      <div>
-                        <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#f0f6ff', lineHeight: 1.2 }}>{m.name}</h3>
-                        {m.typ && <p style={{ margin: 0, color: '#60a5fa', fontSize: '0.82rem', fontWeight: 500 }}>{m.typ}</p>}
-                      </div>
+                  {/* Text */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#f0f6ff' }}>{m.name}</span>
+                      {m.typ && <span style={{ color: '#60a5fa', fontSize: '0.8rem', fontWeight: 500 }}>{m.typ}</span>}
                     </div>
-                    {m.bio && <p style={{ margin: '0.1rem 0 0', color: 'rgba(160,200,255,0.75)', fontSize: '0.83rem', lineHeight: 1.5 }}>{m.bio}</p>}
-                    {hasLink && (
-                      <p style={{ margin: 'auto 0 0', paddingTop: '0.5rem', fontSize: '0.82rem', color: '#60a5fa' }}>
-                        Galerie ansehen →
-                      </p>
+                    {m.bio && (
+                      <p style={{ margin: '0.1rem 0 0', color: 'rgba(160,200,255,0.6)', fontSize: '0.8rem', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.bio}</p>
                     )}
                   </div>
+
+                  {/* Werkfoto-Thumbnail */}
+                  {m.imageUrl ? (
+                    <div style={{ width: 52, height: 40, borderRadius: 6, overflow: 'hidden', flexShrink: 0, border: '1px solid rgba(37,99,235,0.2)' }}>
+                      <img src={m.imageUrl} alt="Werk" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                  ) : null}
+
+                  {/* Link-Pfeil */}
+                  {hasLink && (
+                    <span style={{ color: '#60a5fa', fontSize: '1rem', flexShrink: 0, opacity: 0.7 }}>›</span>
+                  )}
                 </div>
               )
             })}
