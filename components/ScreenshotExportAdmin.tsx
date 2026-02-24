@@ -1083,6 +1083,8 @@ function ScreenshotExportAdmin() {
   const [artworkArtist, setArtworkArtist] = useState<string>('')
   const [artworkDescription, setArtworkDescription] = useState('')
   const [artworkTechnik, setArtworkTechnik] = useState<string>('') // z.B. "Acryl auf Leinwand"
+  const [artworkYear, setArtworkYear] = useState<string>('') // Entstehungsjahr
+  const [artworkVerkaufsstatus, setArtworkVerkaufsstatus] = useState<'verfuegbar' | 'reserviert' | 'verkauft'>('verfuegbar')
   const [artworkDimensions, setArtworkDimensions] = useState<string>('') // z.B. "60×80 cm"
   const [artworkPrice, setArtworkPrice] = useState<string>('')
   // Sichtbarkeit-Einstellungen:
@@ -6771,6 +6773,8 @@ ${'='.repeat(60)}
       artist: artworkArtist,
       description: artworkDescription,
       technik: artworkTechnik.trim() || undefined,
+      year: artworkYear.trim() || undefined,
+      verkaufsstatus: isVk2AdminContext() ? artworkVerkaufsstatus : undefined,
       dimensions: artworkDimensions.trim() || undefined,
       price: parseFloat(artworkPrice) || 0,
       quantity: quantityNum,
@@ -7118,6 +7122,8 @@ ${'='.repeat(60)}
       setArtworkQuantity('1')
       setIsInShop(true)
       setIsImVereinskatalog(false)
+      setArtworkYear('')
+      setArtworkVerkaufsstatus('verfuegbar')
       
       // Event dispatchen, damit Galerie-Seite sich aktualisiert
       window.dispatchEvent(new CustomEvent('artworks-updated', { 
@@ -9719,6 +9725,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             setArtworkQuantity(String(artwork.quantity ?? 1))
                             setIsInShop(artwork.inShop !== undefined ? artwork.inShop : true)
                           setIsImVereinskatalog(artwork.imVereinskatalog || false)
+                          setArtworkYear(artwork.year || '')
+                          setArtworkVerkaufsstatus(artwork.verkaufsstatus || 'verfuegbar')
                             setArtworkNumber(artwork.number || '')
                             setArtworkFormVariantOek2((artwork.subcategoryFree || artwork.dimensionsFree || artwork.artist) ? 'ausfuehrlich' : 'schnell')
                             if (artwork.imageUrl) setPreviewUrl(artwork.imageUrl)
@@ -9762,6 +9770,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           setArtworkQuantity(String(artwork.quantity ?? 1))
                           setIsInShop(artwork.inShop !== undefined ? artwork.inShop : true)
                           setIsImVereinskatalog(artwork.imVereinskatalog || false)
+                          setArtworkYear(artwork.year || '')
+                          setArtworkVerkaufsstatus(artwork.verkaufsstatus || 'verfuegbar')
                           setArtworkNumber(artwork.number || '')
                           if (artwork.imageUrl) setPreviewUrl(artwork.imageUrl)
                           setShowAddModal(true)
@@ -14989,6 +14999,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             setPhotoBackgroundPreset('hell')
             setIsInShop(true)
       setIsImVereinskatalog(false)
+      setArtworkYear('')
+      setArtworkVerkaufsstatus('verfuegbar')
             setArtworkFormVariantOek2('schnell')
             setArtworkCategoryFree('')
             setArtworkSubcategoryFree('')
@@ -15051,6 +15063,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   setPhotoBackgroundPreset('hell')
                   setIsInShop(true)
       setIsImVereinskatalog(false)
+      setArtworkYear('')
+      setArtworkVerkaufsstatus('verfuegbar')
                   setArtworkFormVariantOek2('schnell')
                   setArtworkCategoryFree('')
                   setArtworkSubcategoryFree('')
@@ -15543,7 +15557,58 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </div>
               )}
 
-              {isOeffentlichAdminContext() ? (
+              {isVk2AdminContext() ? (
+                /* VK2 Verkaufs-Formular: alle für den Katalog relevanten Felder */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+                  {/* Zeile 1: Künstler:in */}
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: 600 }}>Künstler:in *</label>
+                    <input type="text" value={artworkArtist} onChange={e => setArtworkArtist(e.target.value)} placeholder="Name der Künstler:in" style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none' }} />
+                  </div>
+                  {/* Zeile 2: Technik + Jahr */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: '0.6rem' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: 600 }}>Technik</label>
+                      <input type="text" value={artworkTechnik} onChange={e => setArtworkTechnik(e.target.value)} placeholder="z.B. Acryl auf Leinwand" style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none' }} />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: 600 }}>Jahr</label>
+                      <input type="text" value={artworkYear} onChange={e => setArtworkYear(e.target.value)} placeholder="2024" maxLength={4} style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none' }} />
+                    </div>
+                  </div>
+                  {/* Zeile 3: Maße */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: 600 }}>Breite (cm)</label>
+                      <input type="number" min={0} value={artworkPaintingWidth} onChange={e => setArtworkPaintingWidth(e.target.value)} placeholder="z.B. 60" style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none' }} />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: 600 }}>Höhe (cm)</label>
+                      <input type="number" min={0} value={artworkPaintingHeight} onChange={e => setArtworkPaintingHeight(e.target.value)} placeholder="z.B. 80" style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none' }} />
+                    </div>
+                  </div>
+                  {/* Zeile 4: Beschreibung */}
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: 600 }}>Beschreibung</label>
+                    <textarea value={artworkDescription} onChange={e => setArtworkDescription(e.target.value)} placeholder="Kurze Beschreibung des Werks …" rows={2} style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none', resize: 'vertical' }} />
+                  </div>
+                  {/* Zeile 5: Preis + Status */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '0.6rem', alignItems: 'start' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: 600 }}>Preis (€) *</label>
+                      <input type="number" min={0} step={0.01} value={artworkPrice} onChange={e => setArtworkPrice(e.target.value)} placeholder="0.00" style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none' }} />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: 600 }}>Verkaufsstatus</label>
+                      <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                        {([['verfuegbar','✅ Verfügbar','rgba(34,197,94,0.2)','rgba(34,197,94,0.6)'],['reserviert','🔶 Reserviert','rgba(251,191,36,0.2)','rgba(251,191,36,0.6)'],['verkauft','🔴 Verkauft','rgba(239,68,68,0.2)','rgba(239,68,68,0.6)']] as const).map(([val, lbl, bg, bd]) => (
+                          <button key={val} type="button" onClick={() => setArtworkVerkaufsstatus(val)} style={{ padding: '0.35rem 0.7rem', borderRadius: 20, border: `1px solid ${artworkVerkaufsstatus === val ? bd : 'rgba(255,255,255,0.12)'}`, background: artworkVerkaufsstatus === val ? bg : 'transparent', color: artworkVerkaufsstatus === val ? '#fff' : 'rgba(255,255,255,0.4)', fontSize: '0.78rem', cursor: 'pointer', fontWeight: artworkVerkaufsstatus === val ? 700 : 400 }}>{lbl}</button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : isOeffentlichAdminContext() ? (
                 /* ök2 Künstler: Schnellversion oder Ausführliche Version – bei Änderungsarbeit jederzeit umschaltbar */
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -16335,6 +16400,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     setPreviewUrl(null)
                     setIsInShop(true)
       setIsImVereinskatalog(false)
+      setArtworkYear('')
+      setArtworkVerkaufsstatus('verfuegbar')
                   }}
                   style={{
                     padding: '0.6rem 1.25rem',

@@ -68,6 +68,7 @@ export const PROJECT_ROUTES = {
     galerie: '/projects/vk2/galerie',
     galerieVorschau: '/projects/vk2/galerie-vorschau',
     mitgliedLogin: '/vk2-login',
+    katalog: '/projects/vk2/katalog',
     kunden: '/projects/vk2/kunden',
     /** Vollversion = Admin-Zugang für Verein; leitet auf Admin mit context=vk2 */
     vollversion: '/projects/vk2/vollversion',

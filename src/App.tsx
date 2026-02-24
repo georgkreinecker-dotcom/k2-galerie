@@ -14,6 +14,7 @@ import Mok2Layout from './components/Mok2Layout'
 import GaleriePage from './pages/GaleriePage'
 import GalerieVorschauPage from './pages/GalerieVorschauPage'
 import Vk2GaleriePage from './pages/Vk2GaleriePage'
+import Vk2KatalogPage from './pages/Vk2KatalogPage'
 import Vk2GalerieVorschauPage from './pages/Vk2GalerieVorschauPage'
 import Vk2MitgliedLoginPage from './pages/Vk2MitgliedLoginPage'
 import PlatzanordnungPage from './pages/PlatzanordnungPage'
@@ -512,6 +513,7 @@ function App() {
       {/* VK2 Vereinsplattform – muss vor /projects/:projectId stehen */}
       <Route path={PROJECT_ROUTES.vk2.home} element={<Navigate to={PROJECT_ROUTES.vk2.galerie} replace />} />
       <Route path={PROJECT_ROUTES.vk2.galerie} element={<Vk2GaleriePage />} />
+      <Route path={PROJECT_ROUTES.vk2.katalog} element={<Vk2KatalogPage />} />
       <Route path={PROJECT_ROUTES.vk2.galerieVorschau} element={<Vk2GalerieVorschauPage />} />
       <Route path={PROJECT_ROUTES.vk2.mitgliedLogin} element={<Vk2MitgliedLoginPage />} />
       <Route path={PROJECT_ROUTES.vk2.kunden} element={<KundenPage vk2 />} />

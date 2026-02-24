@@ -190,24 +190,41 @@ const Vk2GaleriePage: React.FC = () => {
           {introText}
         </p>
 
-        {/* Hauptbutton */}
-        <Link
-          to={PROJECT_ROUTES.vk2.galerieVorschau}
-          style={{
-            display: 'inline-block',
-            marginTop: 'clamp(1.25rem, 3vw, 1.75rem)',
-            padding: 'clamp(0.85rem, 2vw, 1rem) clamp(1.75rem, 4vw, 2.25rem)',
-            background: 'linear-gradient(135deg, #ff8c42 0%, #e67a2a 100%)',
-            color: '#fff',
-            textDecoration: 'none',
-            borderRadius: 12,
-            fontSize: 'clamp(1rem, 2.5vw, 1.1rem)',
-            fontWeight: 600,
-            boxShadow: '0 8px 24px rgba(255,140,66,0.4)'
-          }}
-        >
-          {pageTexts.kunstschaffendeHeading?.trim() || 'Unsere Mitglieder'} ansehen →
-        </Link>
+        {/* Hauptbuttons */}
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: 'clamp(1.25rem, 3vw, 1.75rem)' }}>
+          <Link
+            to={PROJECT_ROUTES.vk2.galerieVorschau}
+            style={{
+              display: 'inline-block',
+              padding: 'clamp(0.85rem, 2vw, 1rem) clamp(1.75rem, 4vw, 2.25rem)',
+              background: 'linear-gradient(135deg, #ff8c42 0%, #e67a2a 100%)',
+              color: '#fff',
+              textDecoration: 'none',
+              borderRadius: 12,
+              fontSize: 'clamp(1rem, 2.5vw, 1.1rem)',
+              fontWeight: 600,
+              boxShadow: '0 8px 24px rgba(255,140,66,0.4)'
+            }}
+          >
+            {pageTexts.kunstschaffendeHeading?.trim() || 'Unsere Mitglieder'} ansehen →
+          </Link>
+          <Link
+            to={PROJECT_ROUTES.vk2.katalog}
+            style={{
+              display: 'inline-block',
+              padding: 'clamp(0.85rem, 2vw, 1rem) clamp(1.75rem, 4vw, 2.25rem)',
+              background: 'linear-gradient(135deg, rgba(251,191,36,0.2) 0%, rgba(251,191,36,0.1) 100%)',
+              border: '1.5px solid rgba(251,191,36,0.5)',
+              color: '#fbbf24',
+              textDecoration: 'none',
+              borderRadius: 12,
+              fontSize: 'clamp(1rem, 2.5vw, 1.1rem)',
+              fontWeight: 600,
+            }}
+          >
+            🏆 Vereinskatalog →
+          </Link>
+        </div>
 
         {/* Events – nur wenn vorhanden, schmal und dezent */}
         {upcomingEvents.length > 0 && (
