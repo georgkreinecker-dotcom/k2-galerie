@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { WERBEUNTERLAGEN_STIL } from '../../src/config/marketingWerbelinie'
 import { getCategoryLabel, ARTWORK_CATEGORIES } from '../../src/config/tenantConfig'
 
@@ -387,6 +387,87 @@ export default function WerkkatalogTab({
           </div>
         </div>
       )}
+
+      {/* ─── Vereinskatalog-Vorschau: 5 ausgesuchte Werke der Mitglieder ─── */}
+      <VereinskatalogVorschau />
+
     </section>
+  )
+}
+
+function VereinskatalogVorschau() {
+  const vereinsWerke = useMemo(() => {
+    const result: any[] = []
+    try {
+      const raw = localStorage.getItem('k2-artworks') || ''
+      if (raw) {
+        const all: any[] = JSON.parse(raw)
+        all.filter(a => a.imVereinskatalog).forEach(a => result.push(a))
+      }
+    } catch (_) {}
+    // VK2-Mitglieder-Keys (Format: k2-vk2-artworks-NAME)
+    try {
+      Object.keys(localStorage).filter(k => k.startsWith('k2-vk2-artworks-')).forEach(key => {
+        const raw = localStorage.getItem(key) || ''
+        if (!raw) return
+        const all: any[] = JSON.parse(raw)
+        all.filter(a => a.imVereinskatalog).forEach(a => result.push(a))
+      })
+    } catch (_) {}
+    return result.slice(0, 5)
+  }, [])
+
+  if (vereinsWerke.length === 0) return null
+
+  const s = WERBEUNTERLAGEN_STIL
+
+  return (
+    <div style={{ marginTop: '2.5rem', borderTop: `2px solid rgba(251,191,36,0.2)`, paddingTop: '2rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem' }}>
+        <span style={{ fontSize: '1.3rem' }}>🏆</span>
+        <div>
+          <div style={{ fontWeight: 800, fontSize: '1.1rem', color: s.text }}>5 ausgesuchte Werke unserer Mitglieder</div>
+          <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.1rem' }}>Vereinskatalog – von Lizenzmitgliedern freigegebene Werke</div>
+        </div>
+        <span style={{ marginLeft: 'auto', fontSize: '0.78rem', color: 'rgba(251,191,36,0.7)', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)', padding: '0.2rem 0.6rem', borderRadius: 20 }}>
+          {vereinsWerke.length} von max. 5
+        </span>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 180px), 1fr))', gap: '0.75rem' }}>
+        {vereinsWerke.map((w: any) => {
+          const status = w.verkaufsstatus || 'verfuegbar'
+          const statusColor = status === 'verkauft' ? '#ef4444' : status === 'reserviert' ? '#f59e0b' : '#22c55e'
+          const statusLabel = status === 'verkauft' ? 'Verkauft' : status === 'reserviert' ? 'Reserviert' : 'Verfügbar'
+          return (
+            <div key={w.id} style={{ background: s.bgElevated, borderRadius: 12, overflow: 'hidden', border: `1px solid rgba(251,191,36,0.15)` }}>
+              {/* Bild */}
+              <div style={{ aspectRatio: '4/3', background: '#e8e4dc', position: 'relative', overflow: 'hidden' }}>
+                {w.imageUrl
+                  ? <img src={w.imageUrl} alt={w.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', opacity: 0.4 }}>🖼️</div>
+                }
+                <span style={{ position: 'absolute', top: '0.35rem', right: '0.35rem', padding: '0.1rem 0.4rem', borderRadius: 10, background: 'rgba(255,255,255,0.85)', color: statusColor, fontSize: '0.65rem', fontWeight: 700 }}>
+                  {statusLabel}
+                </span>
+              </div>
+              {/* Info */}
+              <div style={{ padding: '0.6rem 0.75rem' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.88rem', color: s.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{w.title || '–'}</div>
+                <div style={{ fontSize: '0.75rem', color: 'rgba(180,130,20,0.9)', fontWeight: 600, marginTop: '0.1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{w.artist || '–'}</div>
+                {(w.technik || w.year) && (
+                  <div style={{ fontSize: '0.7rem', color: s.muted, marginTop: '0.15rem' }}>{[w.technik, w.year].filter(Boolean).join(' · ')}</div>
+                )}
+                {w.price && (
+                  <div style={{ fontSize: '0.85rem', fontWeight: 800, color: status === 'verkauft' ? s.muted : s.text, marginTop: '0.3rem' }}>
+                    € {Number(w.price).toLocaleString('de-AT')}
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
