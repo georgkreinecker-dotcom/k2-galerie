@@ -20,6 +20,17 @@ import { getWerbeliniePrDocCss, WERBELINIE_FONTS_URL, WERBEUNTERLAGEN_STIL, PROM
 import '../src/App.css'
 
 const ADMIN_CONTEXT_KEY = 'k2-admin-context'
+/** Session-Key: eingeloggtes VK2-Mitglied (Name) – nur eigenes Profil bearbeitbar */
+const VK2_MITGLIED_SESSION_KEY = 'k2-vk2-mitglied-eingeloggt'
+
+/** Gibt den Namen des eingeloggten VK2-Mitglieds zurück, oder null */
+function getVk2EingeloggtesM(): string | null {
+  try { return sessionStorage.getItem(VK2_MITGLIED_SESSION_KEY) } catch { return null }
+}
+/** Ist ein Mitglied (nicht Vorstand) eingeloggt? */
+function isVk2MitgliedEingeloggt(): boolean {
+  return !!getVk2EingeloggtesM()
+}
 
 /**
  * Setzt den Admin-Kontext SOFORT synchron aus der URL – muss am Anfang aufgerufen werden.
@@ -118,9 +129,9 @@ const USER_LISTE_FUER_MITGLIEDER: Vk2Mitglied[] = [
   { name: 'Kunstverein Musterstadt', email: 'vorstand@kv-musterstadt.at', lizenz: 'VP-2026-1004', typ: 'Skulptur', mitgliedFotoUrl: MUSTER_MITGLIEDER_BILDER[3], imageUrl: MUSTER_WERKFOTO_BILDER[3], phone: '+43 732 771 000', website: 'https://kv-musterstadt.at', strasse: 'Vereinsweg 7', plz: '8010', ort: 'Graz', land: 'Österreich', geburtsdatum: '01.05.1970', eintrittsdatum: '05.02.2026', seit: '05.02.2026' },
   { name: 'Test Nutzer', email: 'test@beispiel.at', lizenz: 'KF-2026-1005', typ: 'Fotografie', mitgliedFotoUrl: MUSTER_MITGLIEDER_BILDER[4], imageUrl: MUSTER_WERKFOTO_BILDER[4], phone: '+43 699 000 9999', website: '', strasse: 'Testweg 99', plz: '6020', ort: 'Innsbruck', land: 'Österreich', geburtsdatum: '20.12.1982', eintrittsdatum: '12.02.2026', seit: '12.02.2026' }
 ]
-const EMPTY_MEMBER_FORM = { name: '', email: '', lizenz: '', typ: '', strasse: '', plz: '', ort: '', land: '', geburtsdatum: '', eintrittsdatum: '', phone: '', website: '', galerieLinkUrl: '', bio: '', vita: '', mitgliedFotoUrl: '', imageUrl: '', bankKontoinhaber: '', bankIban: '', bankBic: '', bankName: '' }
+const EMPTY_MEMBER_FORM = { name: '', email: '', lizenz: '', typ: '', strasse: '', plz: '', ort: '', land: '', geburtsdatum: '', eintrittsdatum: '', phone: '', website: '', galerieLinkUrl: '', bio: '', vita: '', mitgliedFotoUrl: '', imageUrl: '', bankKontoinhaber: '', bankIban: '', bankBic: '', bankName: '', rolle: 'mitglied' as 'vorstand' | 'mitglied', pin: '' }
 function memberToForm(m: Vk2Mitglied) {
-  return { name: m.name ?? '', email: m.email ?? '', lizenz: m.lizenz ?? '', typ: m.typ ?? '', strasse: m.strasse ?? '', plz: m.plz ?? '', ort: m.ort ?? '', land: m.land ?? '', geburtsdatum: m.geburtsdatum ?? '', eintrittsdatum: m.eintrittsdatum ?? m.seit ?? '', phone: m.phone ?? '', website: m.website ?? '', galerieLinkUrl: m.galerieLinkUrl ?? '', bio: m.bio ?? '', vita: m.vita ?? '', mitgliedFotoUrl: m.mitgliedFotoUrl ?? '', imageUrl: m.imageUrl ?? '', bankKontoinhaber: m.bankKontoinhaber ?? '', bankIban: m.bankIban ?? '', bankBic: m.bankBic ?? '', bankName: m.bankName ?? '' }
+  return { name: m.name ?? '', email: m.email ?? '', lizenz: m.lizenz ?? '', typ: m.typ ?? '', strasse: m.strasse ?? '', plz: m.plz ?? '', ort: m.ort ?? '', land: m.land ?? '', geburtsdatum: m.geburtsdatum ?? '', eintrittsdatum: m.eintrittsdatum ?? m.seit ?? '', phone: m.phone ?? '', website: m.website ?? '', galerieLinkUrl: m.galerieLinkUrl ?? '', bio: m.bio ?? '', vita: m.vita ?? '', mitgliedFotoUrl: m.mitgliedFotoUrl ?? '', imageUrl: m.imageUrl ?? '', bankKontoinhaber: m.bankKontoinhaber ?? '', bankIban: m.bankIban ?? '', bankBic: m.bankBic ?? '', bankName: m.bankName ?? '', rolle: m.rolle ?? 'mitglied', pin: m.pin ?? '' }
 }
 /** CSV-Header (versch. Schreibweisen) → Vk2Mitglied-Feld */
 const CSV_HEADER_MAP: Record<string, keyof Vk2Mitglied> = {
@@ -949,11 +960,18 @@ function ScreenshotExportAdmin() {
   })
   const [showAddModal, setShowAddModal] = useState(false)
   const [showVitaEditor, setShowVitaEditor] = useState(false)
+  /** VK2 Mitglied-Login Modal */
+  const [showMitgliedLogin, setShowMitgliedLogin] = useState(false)
+  const [mitgliedLoginName, setMitgliedLoginName] = useState('')
+  const [mitgliedLoginPin, setMitgliedLoginPin] = useState('')
+  const [mitgliedLoginFehler, setMitgliedLoginFehler] = useState('')
+  /** Eingeloggtes Mitglied (Name) – nur eigenes Profil */
+  const [vk2EingeloggtMitglied, setVk2EingeloggtMitglied] = useState<string | null>(() => getVk2EingeloggtesM())
   const [editingArtwork, setEditingArtwork] = useState<any | null>(null)
   /** VK2: Index in vk2Stammdaten.mitglieder beim Bearbeiten; null = neues Mitglied */
   const [editingMemberIndex, setEditingMemberIndex] = useState<number | null>(null)
   /** VK2: Vollständige Mitglieder-Stammdaten im Modal */
-  const [memberForm, setMemberForm] = useState<{ name: string; email: string; lizenz: string; typ: string; strasse: string; plz: string; ort: string; land: string; geburtsdatum: string; eintrittsdatum: string; phone: string; website: string; galerieLinkUrl: string; bio: string; vita: string; mitgliedFotoUrl: string; imageUrl: string; bankKontoinhaber: string; bankIban: string; bankBic: string; bankName: string }>({ ...EMPTY_MEMBER_FORM })
+  const [memberForm, setMemberForm] = useState<{ name: string; email: string; lizenz: string; typ: string; strasse: string; plz: string; ort: string; land: string; geburtsdatum: string; eintrittsdatum: string; phone: string; website: string; galerieLinkUrl: string; bio: string; vita: string; mitgliedFotoUrl: string; imageUrl: string; bankKontoinhaber: string; bankIban: string; bankBic: string; bankName: string; rolle: 'vorstand' | 'mitglied'; pin: string }>({ ...EMPTY_MEMBER_FORM })
   /** VK2: Drag-over für CSV-Import */
   const [csvDragOver, setCsvDragOver] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -7954,6 +7972,197 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
 
   const s = WERBEUNTERLAGEN_STIL
 
+  // ── VK2 MITGLIED-LOGIN-BEREICH ──
+  const isMitgliedRoute = isVk2AdminContext() && typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mitglied') === '1'
+
+  if (isMitgliedRoute && !vk2EingeloggtMitglied) {
+    const mitgliedListe = (vk2Stammdaten.mitglieder || []).filter(m => m.pin)
+    return (
+      <div style={{ minHeight: '100vh', background: '#0f1c2e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'system-ui, sans-serif', padding: '1rem' }}>
+        <div style={{ background: '#162032', borderRadius: 20, border: '1px solid rgba(37,99,235,0.3)', padding: 'clamp(1.5rem,5vw,2.5rem)', width: '100%', maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
+          <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🔑</div>
+            <h1 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800, color: '#f0f6ff' }}>Mitglied-Login</h1>
+            <p style={{ margin: '0.4rem 0 0', color: 'rgba(160,200,255,0.6)', fontSize: '0.88rem' }}>Eigenes Profil bearbeiten</p>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: 'rgba(160,200,255,0.8)', fontWeight: 600 }}>Name wählen</label>
+              <select
+                value={mitgliedLoginName}
+                onChange={(e) => { setMitgliedLoginName(e.target.value); setMitgliedLoginFehler('') }}
+                style={{ width: '100%', padding: '0.7rem', background: '#1e2f47', border: '1px solid rgba(37,99,235,0.4)', borderRadius: 10, color: '#f0f6ff', fontSize: '0.95rem', outline: 'none', cursor: 'pointer' }}
+              >
+                <option value="">– Name wählen –</option>
+                {mitgliedListe.map(m => (
+                  <option key={m.name} value={m.name}>{m.name}{m.typ ? ` · ${m.typ}` : ''}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: 'rgba(160,200,255,0.8)', fontWeight: 600 }}>PIN eingeben</label>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={4}
+                value={mitgliedLoginPin}
+                onChange={(e) => { setMitgliedLoginPin(e.target.value.replace(/\D/g, '').slice(0, 4)); setMitgliedLoginFehler('') }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const m = mitgliedListe.find(x => x.name === mitgliedLoginName)
+                    if (m && m.pin === mitgliedLoginPin) {
+                      try { sessionStorage.setItem(VK2_MITGLIED_SESSION_KEY, m.name) } catch (_) {}
+                      setVk2EingeloggtMitglied(m.name)
+                      setMitgliedLoginFehler('')
+                    } else {
+                      setMitgliedLoginFehler('Name oder PIN falsch.')
+                    }
+                  }
+                }}
+                placeholder="••••"
+                style={{ width: '100%', padding: '0.7rem', background: '#1e2f47', border: `1px solid ${mitgliedLoginFehler ? '#ef4444' : 'rgba(37,99,235,0.4)'}`, borderRadius: 10, color: '#f0f6ff', fontSize: '1.3rem', outline: 'none', letterSpacing: '0.4em', textAlign: 'center' }}
+              />
+              {mitgliedLoginFehler && <p style={{ margin: '0.3rem 0 0', color: '#ef4444', fontSize: '0.82rem' }}>{mitgliedLoginFehler}</p>}
+            </div>
+
+            <button
+              type="button"
+              disabled={!mitgliedLoginName || mitgliedLoginPin.length < 4}
+              onClick={() => {
+                const m = mitgliedListe.find(x => x.name === mitgliedLoginName)
+                if (m && m.pin === mitgliedLoginPin) {
+                  try { sessionStorage.setItem(VK2_MITGLIED_SESSION_KEY, m.name) } catch (_) {}
+                  setVk2EingeloggtMitglied(m.name)
+                  setMitgliedLoginFehler('')
+                } else {
+                  setMitgliedLoginFehler('Name oder PIN falsch.')
+                }
+              }}
+              style={{ padding: '0.75rem', background: (!mitgliedLoginName || mitgliedLoginPin.length < 4) ? 'rgba(37,99,235,0.2)' : 'linear-gradient(135deg,#2563eb,#1d4ed8)', border: 'none', borderRadius: 10, color: '#fff', fontSize: '1rem', fontWeight: 700, cursor: (!mitgliedLoginName || mitgliedLoginPin.length < 4) ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}
+            >
+              Einloggen →
+            </button>
+
+            <p style={{ margin: 0, textAlign: 'center', fontSize: '0.78rem', color: 'rgba(160,200,255,0.35)' }}>
+              PIN vergessen? Den Vereins-Admin fragen.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (isMitgliedRoute && vk2EingeloggtMitglied) {
+    const mitglied = (vk2Stammdaten.mitglieder || []).find(m => m.name === vk2EingeloggtMitglied)
+    const mitgliedIdx = (vk2Stammdaten.mitglieder || []).findIndex(m => m.name === vk2EingeloggtMitglied)
+    const istVorstand = mitglied?.rolle === 'vorstand'
+
+    if (istVorstand) {
+      // Vorstand → normaler Admin (URL ohne mitglied=1 öffnen)
+      window.location.href = '/admin?context=vk2'
+      return null
+    }
+
+    return (
+      <div style={{ minHeight: '100vh', background: '#0f1c2e', color: '#f0f6ff', fontFamily: 'system-ui, sans-serif' }}>
+        {/* Header */}
+        <div style={{ padding: '1.2rem 1.5rem', borderBottom: '1px solid rgba(37,99,235,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+          <div>
+            <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.1em', color: '#60a5fa', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Mein Profil</div>
+            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#f0f6ff' }}>{vk2EingeloggtMitglied}</div>
+          </div>
+          <button
+            type="button"
+            onClick={() => { try { sessionStorage.removeItem(VK2_MITGLIED_SESSION_KEY) } catch (_) {}; setVk2EingeloggtMitglied(null) }}
+            style={{ padding: '0.4rem 0.9rem', background: 'transparent', border: '1px solid rgba(160,200,255,0.2)', borderRadius: 8, color: 'rgba(160,200,255,0.5)', fontSize: '0.8rem', cursor: 'pointer' }}
+          >Abmelden</button>
+        </div>
+
+        {/* Profil-Formular */}
+        <div style={{ padding: 'clamp(1rem,3vw,2rem)', maxWidth: 600, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+
+          {/* Fotos */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#60a5fa', fontWeight: 600 }}>👤 Foto</label>
+              {mitglied?.mitgliedFotoUrl ? (
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                  <img src={mitglied.mitgliedFotoUrl} alt="Foto" style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(37,99,235,0.5)', display: 'block' }} />
+                  <button type="button" onClick={() => { const neu = [...(vk2Stammdaten.mitglieder||[])]; if (neu[mitgliedIdx]) { neu[mitgliedIdx] = { ...neu[mitgliedIdx], mitgliedFotoUrl: undefined }; setVk2Stammdaten({...vk2Stammdaten, mitglieder:neu}); try{localStorage.setItem(KEY_VK2_STAMMDATEN,JSON.stringify({...vk2Stammdaten,mitglieder:neu}))}catch(_){} }}} style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#b54a1e', border: 'none', color: '#fff', fontSize: '0.75rem', cursor: 'pointer', display:'flex',alignItems:'center',justifyContent:'center' }}>×</button>
+                </div>
+              ) : (
+                <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', width: '100%', aspectRatio: '1', background: 'rgba(37,99,235,0.08)', border: '2px dashed rgba(37,99,235,0.3)', borderRadius: 12, cursor: 'pointer', color: 'rgba(160,200,255,0.5)', fontSize: '0.8rem', textAlign: 'center' }}>
+                  <span style={{ fontSize: '1.8rem' }}>👤</span><span>Foto hinzufügen</span>
+                  <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={(e) => {
+                    const file = e.target.files?.[0]; if (!file) return
+                    const reader = new FileReader(); reader.onload = () => { const dataUrl = reader.result as string; const img = new Image(); img.onload = () => { const maxW=400; const scale=img.width>maxW?maxW/img.width:1; const c=document.createElement('canvas'); c.width=Math.round(img.width*scale); c.height=Math.round(img.height*scale); const ctx=c.getContext('2d'); const url=ctx?c.toDataURL('image/jpeg',0.6):dataUrl; if(ctx)ctx.drawImage(img,0,0,c.width,c.height); const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],mitgliedFotoUrl:url};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{localStorage.setItem(KEY_VK2_STAMMDATEN,JSON.stringify({...vk2Stammdaten,mitglieder:neu}))}catch(_){}} }; img.src=dataUrl }; reader.readAsDataURL(file)
+                  }} />
+                </label>
+              )}
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#60a5fa', fontWeight: 600 }}>🖼️ Werk</label>
+              {mitglied?.imageUrl ? (
+                <div style={{ position: 'relative' }}>
+                  <img src={mitglied.imageUrl} alt="Werk" style={{ width: '100%', aspectRatio: '3/2', objectFit: 'cover', borderRadius: 10, border: '1px solid rgba(37,99,235,0.3)', display: 'block' }} />
+                  <button type="button" onClick={() => { const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],imageUrl:undefined};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{localStorage.setItem(KEY_VK2_STAMMDATEN,JSON.stringify({...vk2Stammdaten,mitglieder:neu}))}catch(_){}} }} style={{ position: 'absolute', top: 4, right: 4, width: 24, height: 24, borderRadius: '50%', background: '#b54a1e', border: 'none', color: '#fff', fontSize: '0.8rem', cursor: 'pointer', display:'flex',alignItems:'center',justifyContent:'center' }}>×</button>
+                </div>
+              ) : (
+                <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', width: '100%', aspectRatio: '3/2', background: 'rgba(37,99,235,0.08)', border: '2px dashed rgba(37,99,235,0.3)', borderRadius: 12, cursor: 'pointer', color: 'rgba(160,200,255,0.5)', fontSize: '0.8rem', textAlign: 'center' }}>
+                  <span style={{ fontSize: '1.8rem' }}>🖼️</span><span>Werk hinzufügen</span>
+                  <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={(e) => {
+                    const file = e.target.files?.[0]; if (!file) return
+                    const reader = new FileReader(); reader.onload = () => { const dataUrl = reader.result as string; const img = new Image(); img.onload = () => { const maxW=600; const scale=img.width>maxW?maxW/img.width:1; const c=document.createElement('canvas'); c.width=Math.round(img.width*scale); c.height=Math.round(img.height*scale); const ctx=c.getContext('2d'); const url=ctx?c.toDataURL('image/jpeg',0.6):dataUrl; if(ctx)ctx.drawImage(img,0,0,c.width,c.height); const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],imageUrl:url};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{localStorage.setItem(KEY_VK2_STAMMDATEN,JSON.stringify({...vk2Stammdaten,mitglieder:neu}))}catch(_){}} }; img.src=dataUrl }; reader.readAsDataURL(file)
+                  }} />
+                </label>
+              )}
+            </div>
+          </div>
+
+          {/* Bio */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: '#60a5fa', fontWeight: 600 }}>Kurz-Bio (Karte)</label>
+            <textarea
+              value={mitglied?.bio || ''}
+              onChange={(e) => { const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],bio:e.target.value};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{localStorage.setItem(KEY_VK2_STAMMDATEN,JSON.stringify({...vk2Stammdaten,mitglieder:neu}))}catch(_){}} }}
+              placeholder="1–2 Sätze für die öffentliche Mitglieder-Karte ..."
+              rows={2}
+              style={{ width: '100%', padding: '0.65rem', background: '#1e2f47', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 10, color: '#f0f6ff', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
+            />
+          </div>
+
+          {/* Vita */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: '#60a5fa', fontWeight: 600 }}>📝 Vita (ausführlich)</label>
+            <textarea
+              value={mitglied?.vita || ''}
+              onChange={(e) => { const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],vita:e.target.value};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{localStorage.setItem(KEY_VK2_STAMMDATEN,JSON.stringify({...vk2Stammdaten,mitglieder:neu}))}catch(_){}} }}
+              placeholder={'Ausführlicher Lebenslauf, Ausstellungen, Technik, Inspiration ...'}
+              rows={8}
+              style={{ width: '100%', padding: '0.65rem', background: '#1e2f47', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 10, color: '#f0f6ff', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Georgia, serif', lineHeight: 1.7 }}
+            />
+          </div>
+
+          {/* Website */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: '#60a5fa', fontWeight: 600 }}>🌐 Homepage / Galerie-Link</label>
+            <input
+              type="text"
+              value={mitglied?.galerieLinkUrl || mitglied?.website || ''}
+              onChange={(e) => { const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],galerieLinkUrl:e.target.value};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{localStorage.setItem(KEY_VK2_STAMMDATEN,JSON.stringify({...vk2Stammdaten,mitglieder:neu}))}catch(_){}} }}
+              placeholder="https://meine-seite.at"
+              style={{ width: '100%', padding: '0.65rem', background: '#1e2f47', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 10, color: '#f0f6ff', fontSize: '0.9rem', outline: 'none' }}
+            />
+          </div>
+
+          <p style={{ margin: 0, fontSize: '0.78rem', color: 'rgba(160,200,255,0.3)', textAlign: 'center' }}>Änderungen werden sofort gespeichert.</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -10937,6 +11146,49 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           👥 User aus „Meine User“ übernehmen
                         </button>
                         <span style={{ fontSize: '0.8rem', color: s.muted }}>Fügt User mit allen Daten hinzu (ohne Doppel).</span>
+                        {/* Export & Druck für Vorstand */}
+                        <button
+                          type="button"
+                          title="Mitgliederliste als CSV exportieren"
+                          onClick={() => {
+                            const mitglieder = vk2Stammdaten.mitglieder || []
+                            const header = 'Name,E-Mail,Typ,Eintrittsdatum,Ort,Telefon,Rolle,PIN'
+                            const rows = mitglieder.map(m => [
+                              m.name || '',
+                              m.email || '',
+                              m.typ || '',
+                              m.eintrittsdatum || m.seit || '',
+                              m.ort || '',
+                              m.phone || '',
+                              m.rolle || 'mitglied',
+                              m.pin || ''
+                            ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+                            const csv = [header, ...rows].join('\n')
+                            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
+                            const url = URL.createObjectURL(blob)
+                            const a = document.createElement('a')
+                            a.href = url; a.download = 'mitgliederliste.csv'; a.click()
+                            URL.revokeObjectURL(url)
+                          }}
+                          style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: 8, color: s.accent, fontWeight: 600, cursor: 'pointer' }}
+                        >
+                          📥 Liste exportieren (CSV)
+                        </button>
+                        <button
+                          type="button"
+                          title="Mitgliederliste drucken"
+                          onClick={() => {
+                            const mitglieder = vk2Stammdaten.mitglieder || []
+                            const vereinName = vk2Stammdaten.verein?.name || 'Verein'
+                            const rows = mitglieder.map((m, i) => `<tr><td>${i+1}</td><td>${m.name||''}</td><td>${m.email||''}</td><td>${m.typ||''}</td><td>${m.eintrittsdatum||m.seit||''}</td><td>${m.ort||''}</td><td>${m.rolle==='vorstand'?'👑 Vorstand':'Mitglied'}</td></tr>`).join('')
+                            const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Mitgliederliste</title><style>body{font-family:system-ui;padding:2rem}h1{font-size:1.3rem;margin-bottom:0.5rem}table{width:100%;border-collapse:collapse;font-size:0.88rem}th,td{padding:0.4rem 0.6rem;border:1px solid #ccc;text-align:left}th{background:#f0f0f0;font-weight:700}@media print{body{padding:1rem}}</style></head><body><h1>Mitgliederliste – ${vereinName}</h1><p style="margin:0 0 0.75rem;color:#666;font-size:0.82rem">${new Date().toLocaleDateString('de-AT')} · ${mitglieder.length} Mitglieder</p><table><thead><tr><th>#</th><th>Name</th><th>E-Mail</th><th>Kunstrichtung</th><th>Eintritt</th><th>Ort</th><th>Rolle</th></tr></thead><tbody>${rows}</tbody></table></body></html>`
+                            const w = window.open('', '_blank')
+                            if (w) { w.document.write(html); w.document.close(); w.print() }
+                          }}
+                          style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: 8, color: s.accent, fontWeight: 600, cursor: 'pointer' }}
+                        >
+                          🖨️ Liste drucken
+                        </button>
                       </div>
                       {/* CSV-Import: Drag & Drop oder Datei wählen */}
                       <div
@@ -11049,6 +11301,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 </td>
                                 <td style={{ padding: '0.5rem 0.75rem', color: s.text, fontWeight: vorstandRole ? 600 : undefined }}>{d.name}</td>
                                 <td style={{ padding: '0.5rem 0.75rem' }}>{vorstandRole ? <span style={{ fontSize: '0.8rem', color: s.accent, fontWeight: 600 }}>⭐ {vorstandRole}</span> : <span style={{ color: s.muted }}>–</span>}</td>
+                                <td style={{ padding: '0.5rem 0.75rem', textAlign: 'center' }}>
+                                  {m.rolle === 'vorstand' ? <span title="Voll-Admin" style={{ fontSize: '0.8rem' }}>👑</span> : m.pin ? <span title={`PIN: ${m.pin}`} style={{ fontSize: '0.8rem', color: s.accent }}>🔑</span> : <span title="Kein PIN vergeben" style={{ fontSize: '0.8rem', color: s.muted }}>–</span>}
+                                </td>
                                 <td style={{ padding: '0.5rem 0.75rem', color: s.text }}>{d.email}</td>
                                 <td style={{ padding: '0.5rem 0.75rem', fontFamily: 'monospace', color: s.accent }}>{d.lizenz}</td>
                                 <td style={{ padding: '0.5rem 0.75rem', color: s.text }}>{d.typ}</td>
@@ -14689,6 +14944,55 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     </div>
                   </div>
 
+                  {/* ── ZUGANGSBERECHTIGUNG ── */}
+                  <div style={{ borderTop: `1px solid ${s.accent}22`, paddingTop: '0.75rem' }}>
+                    <div style={{ fontSize: '0.85rem', color: s.accent, fontWeight: 600, marginBottom: '0.5rem' }}>🔑 Zugangsberechtigung</div>
+                    <p style={{ margin: '0 0 0.6rem', fontSize: '0.8rem', color: s.muted }}>Bestimmt was dieses Mitglied im Admin bearbeiten darf.</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                      {/* Rolle */}
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.8rem', color: s.muted, fontWeight: 600 }}>Rolle</label>
+                        <div style={{ display: 'flex', gap: '0.4rem' }}>
+                          {(['mitglied', 'vorstand'] as const).map(r => (
+                            <button
+                              key={r}
+                              type="button"
+                              onClick={() => setMemberForm(f => ({ ...f, rolle: r }))}
+                              style={{ flex: 1, padding: '0.5rem', borderRadius: 8, border: `1px solid ${memberForm.rolle === r ? s.accent : s.accent + '33'}`, background: memberForm.rolle === r ? `${s.accent}22` : s.bgElevated, color: memberForm.rolle === r ? s.accent : s.muted, fontSize: '0.82rem', fontWeight: memberForm.rolle === r ? 700 : 400, cursor: 'pointer' }}
+                            >
+                              {r === 'vorstand' ? '👑 Vorstand' : '👤 Mitglied'}
+                            </button>
+                          ))}
+                        </div>
+                        <p style={{ margin: '0.25rem 0 0', fontSize: '0.75rem', color: s.muted }}>
+                          {memberForm.rolle === 'vorstand' ? 'Voll-Admin: alles bearbeiten, Liste exportieren' : 'Nur eigenes Profil bearbeiten'}
+                        </p>
+                      </div>
+                      {/* PIN */}
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.8rem', color: s.muted, fontWeight: 600 }}>PIN (4-stellig)</label>
+                        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            maxLength={4}
+                            value={memberForm.pin}
+                            onChange={(e) => setMemberForm(f => ({ ...f, pin: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
+                            placeholder="z.B. 1234"
+                            style={{ width: '100%', padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', color: s.text, fontSize: '1.1rem', outline: 'none', letterSpacing: '0.3em', textAlign: 'center', fontWeight: 700 }}
+                          />
+                          <button
+                            type="button"
+                            title="Zufälligen PIN generieren"
+                            onClick={() => setMemberForm(f => ({ ...f, pin: String(Math.floor(1000 + Math.random() * 9000)) }))}
+                            style={{ padding: '0.5rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 6, color: s.accent, fontSize: '0.9rem', cursor: 'pointer', flexShrink: 0 }}
+                          >🎲</button>
+                        </div>
+                        <p style={{ margin: '0.25rem 0 0', fontSize: '0.75rem', color: s.muted }}>Mitglied tippt beim Login: Name wählen → PIN eingeben</p>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* ── BANKVERBINDUNG ── */}
                   <div style={{ borderTop: `1px solid ${s.accent}22`, paddingTop: '0.75rem' }}>
                     <div style={{ fontSize: '0.85rem', color: s.accent, fontWeight: 600, marginBottom: '0.5rem' }}>Bankverbindung (für Bonussystem)</div>
@@ -14727,7 +15031,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       onClick={() => {
                         if (!memberForm.name.trim()) { alert('Bitte Name eintragen.'); return }
                         const mitglieder = [...(vk2Stammdaten.mitglieder || [])]
-                        const neu: Vk2Mitglied = { name: memberForm.name.trim(), email: memberForm.email.trim() || undefined, lizenz: memberForm.lizenz.trim() || undefined, typ: memberForm.typ || undefined, bio: memberForm.bio.trim() || undefined, vita: memberForm.vita.trim() || undefined, galerieLinkUrl: memberForm.galerieLinkUrl.trim() || undefined, website: memberForm.website.trim() || undefined, phone: memberForm.phone.trim() || undefined, strasse: memberForm.strasse.trim() || undefined, plz: memberForm.plz.trim() || undefined, ort: memberForm.ort.trim() || undefined, land: memberForm.land.trim() || undefined, geburtsdatum: memberForm.geburtsdatum.trim() || undefined, eintrittsdatum: memberForm.eintrittsdatum.trim() || undefined, mitgliedFotoUrl: memberForm.mitgliedFotoUrl.trim() || undefined, imageUrl: memberForm.imageUrl.trim() || undefined, bankKontoinhaber: memberForm.bankKontoinhaber.trim() || undefined, bankIban: memberForm.bankIban.trim() || undefined, bankBic: memberForm.bankBic.trim() || undefined, bankName: memberForm.bankName.trim() || undefined, oeffentlichSichtbar: true }
+                        const neu: Vk2Mitglied = { name: memberForm.name.trim(), email: memberForm.email.trim() || undefined, lizenz: memberForm.lizenz.trim() || undefined, typ: memberForm.typ || undefined, bio: memberForm.bio.trim() || undefined, vita: memberForm.vita.trim() || undefined, galerieLinkUrl: memberForm.galerieLinkUrl.trim() || undefined, website: memberForm.website.trim() || undefined, phone: memberForm.phone.trim() || undefined, strasse: memberForm.strasse.trim() || undefined, plz: memberForm.plz.trim() || undefined, ort: memberForm.ort.trim() || undefined, land: memberForm.land.trim() || undefined, geburtsdatum: memberForm.geburtsdatum.trim() || undefined, eintrittsdatum: memberForm.eintrittsdatum.trim() || undefined, mitgliedFotoUrl: memberForm.mitgliedFotoUrl.trim() || undefined, imageUrl: memberForm.imageUrl.trim() || undefined, bankKontoinhaber: memberForm.bankKontoinhaber.trim() || undefined, bankIban: memberForm.bankIban.trim() || undefined, bankBic: memberForm.bankBic.trim() || undefined, bankName: memberForm.bankName.trim() || undefined, rolle: memberForm.rolle || 'mitglied', pin: memberForm.pin.trim() || undefined, oeffentlichSichtbar: true }
                         if (editingMemberIndex !== null) {
                           mitglieder[editingMemberIndex] = neu
                         } else {

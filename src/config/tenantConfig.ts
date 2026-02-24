@@ -153,6 +153,10 @@ export interface Vk2Mitglied {
   bio?: string
   /** Ausführliche Vita – separater Bereich, editierbar, für Detailansicht */
   vita?: string
+  /** Rolle im Verein: 'vorstand' = Voll-Admin (Präsident/Schriftführer), 'mitglied' = eingeschränkter Zugang */
+  rolle?: 'vorstand' | 'mitglied'
+  /** PIN für Mitglied-Login (4-stellig, vom Admin vergeben) */
+  pin?: string
   /** Link zur eigenen K2-Galerie (wenn Lizenznehmer) oder externer Website */
   galerieLinkUrl?: string
   /** Bankverbindung – für Mitglieder, die am Bonussystem teilnehmen */

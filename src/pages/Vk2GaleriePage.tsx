@@ -139,12 +139,21 @@ const Vk2GaleriePage: React.FC = () => {
         <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'rgba(255,140,66,0.8)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
           {heroTitle} – {pageTexts.kunstschaffendeHeading?.trim() || 'Unsere Mitglieder'}
         </span>
-        <button
-          onClick={() => navigate('/admin?context=vk2')}
-          style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6, padding: '0.25rem 0.6rem', fontSize: '0.78rem', cursor: 'pointer' }}
-        >
-          Admin
-        </button>
+        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+          <button
+            onClick={() => navigate('/admin?context=vk2&mitglied=1')}
+            style={{ background: 'rgba(37,99,235,0.25)', color: 'rgba(160,200,255,0.9)', border: '1px solid rgba(37,99,235,0.4)', borderRadius: 6, padding: '0.25rem 0.6rem', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}
+            title="Mitglied-Login: eigenes Profil bearbeiten"
+          >
+            🔑 Mitglied
+          </button>
+          <button
+            onClick={() => navigate('/admin?context=vk2')}
+            style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6, padding: '0.25rem 0.6rem', fontSize: '0.78rem', cursor: 'pointer' }}
+          >
+            Admin
+          </button>
+        </div>
       </div>
 
       {/* Vorschau-Banner (nur wenn ?vorschau=1) */}
