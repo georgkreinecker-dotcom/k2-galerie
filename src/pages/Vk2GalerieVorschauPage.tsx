@@ -31,7 +31,7 @@ function EingangsKarte({ data, index }: { data: EingangskarteData; index: number
   ]
   const hasBild = !!data.imageUrl
   return (
-    <div style={{ position: 'relative', borderRadius: 'clamp(10px, 2vw, 16px)', overflow: 'hidden', aspectRatio: '3/2', background: hasBild ? '#111' : dummyGradients[index % 2], border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 4px 20px rgba(0,0,0,0.35)' }}>
+    <div style={{ position: 'relative', borderRadius: 'clamp(10px, 2vw, 16px)', overflow: 'hidden', aspectRatio: '3/2', minHeight: 120, background: hasBild ? '#111' : dummyGradients[index % 2], border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 4px 20px rgba(0,0,0,0.35)' }}>
       {hasBild && <img src={data.imageUrl} alt={data.titel} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
       {!hasBild && (
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 12px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

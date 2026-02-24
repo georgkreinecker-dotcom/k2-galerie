@@ -404,7 +404,7 @@ function loadEingangskarten(): EingangskarteData[] {
 }
 
 function Vk2Eingangskarten() {
-  const [karten, setKarten] = React.useState<EingangskarteData[]>(() => loadEingangskarten())
+  const [karten, setKarten] = React.useState<EingangskarteData[]>(loadEingangskarten)
 
   React.useEffect(() => {
     const reload = () => setKarten(loadEingangskarten())
@@ -444,6 +444,7 @@ function EingangsKarte({ data, index }: { data: EingangskarteData; index: number
       borderRadius: 'clamp(10px, 2vw, 16px)',
       overflow: 'hidden',
       aspectRatio: '3/2',
+      minHeight: 120,
       background: hasBild ? '#111' : dummyGradients[index % 2],
       border: '1px solid rgba(255,255,255,0.1)',
       boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
