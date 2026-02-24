@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { PROJECT_ROUTES, MOK2_ROUTE, ENTDECKEN_ROUTE } from '../config/navigation'
 import { ERKUNDUNGS_NOTIZEN_KEY, type ErkundungsNotiz } from '../pages/EntdeckenPage'
 
@@ -134,6 +134,22 @@ interface SmartPanelProps {
 }
 
 export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps) {
+  // Aktiven Button per URL erkennen – überschreibt den prop wenn Seite direkt per URL geöffnet wurde
+  const [browserPath, setBrowserPath] = useState(() => typeof window !== 'undefined' ? window.location.pathname : '')
+  useEffect(() => {
+    const onPop = () => setBrowserPath(window.location.pathname)
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+  const activePage = useMemo(() => {
+    if (browserPath.startsWith('/projects/vk2')) return 'vk2'
+    if (browserPath.startsWith('/projects/k2-galerie/galerie-oeffentlich') || browserPath.startsWith('/galerie-oeffentlich')) return 'galerie-oeffentlich'
+    if (browserPath.startsWith('/galerie') || browserPath.startsWith('/projects/k2-galerie/galerie')) return 'galerie'
+    if (browserPath.startsWith('/mok2') || browserPath.startsWith('/projects/k2-galerie/marketing')) return 'mok2'
+    if (browserPath.startsWith('/k2team-handbuch')) return 'handbuch'
+    return currentPage || ''
+  }, [browserPath, currentPage])
+
   const nav = (page: string, url: string) => {
     if (onNavigate) onNavigate(page)
     else window.location.href = url
@@ -489,22 +505,28 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
             )}
             <button
               type="button"
-              onClick={() => { if (editMode) return; if (item.direct) window.location.href = item.url; else nav(item.page, item.url) }}
+              onClick={() => { if (editMode) return; window.location.href = item.url }}
               style={{
                 flex: 1,
                 padding: '0.85rem 1rem',
-                background: item.color,
-                border: `1px solid ${item.border}`,
+                background: activePage === item.page
+                  ? item.color.replace(/0\.\d+\)/g, m => String(Math.min(parseFloat(m) * 2.5, 1)) + ')')
+                  : item.color,
+                border: activePage === item.page
+                  ? `2px solid ${item.border.replace(/0\.\d+\)/, '1)')}`
+                  : `1px solid ${item.border}`,
                 borderRadius: '8px',
                 color: item.id === 'oek2' || item.id === 'admin' || item.id === 'handbuch' ? '#5ffbf1' : item.id === 'mok2' ? '#fbbf24' : '#ff8c42',
-                fontWeight: 600,
+                fontWeight: activePage === item.page ? 800 : 600,
                 fontSize: '0.95rem',
                 textAlign: 'center',
                 cursor: editMode ? 'grab' : 'pointer',
                 fontFamily: 'inherit',
                 transition: 'all 0.2s ease',
+                boxShadow: activePage === item.page ? `0 0 12px ${item.border}` : 'none',
               }}
             >
+              {activePage === item.page && <span style={{ marginRight: '0.4rem', fontSize: '0.75rem' }}>▶</span>}
               {item.label}
             </button>
           </div>
