@@ -118,7 +118,7 @@ function loadDiverses(): DiversesItem[] {
   } catch { /* ignore */ }
   // Standardeinträge beim ersten Start
   return [
-    { id: 'freunde', label: 'Für meine Freunde', url: 'docs/FREUNDE-ERKLAERUNG.md', emoji: '👥' },
+    { id: 'freunde', label: 'Für meine Freunde', url: '/freunde-erklaerung.html', emoji: '👥' },
   ]
 }
 
@@ -195,13 +195,12 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
   }
 
   const diversesOeffnen = (item: DiversesItem) => {
-    // Wenn es ein docs/-Pfad ist → als Text in neuem Tab anzeigen
-    if (item.url.startsWith('docs/') || item.url.startsWith('/docs/')) {
-      window.open(item.url.startsWith('/') ? item.url : '/' + item.url, '_blank')
-    } else if (item.url.startsWith('http')) {
+    if (item.url.startsWith('http')) {
+      window.open(item.url, '_blank')
+    } else if (item.url.startsWith('/')) {
       window.open(item.url, '_blank')
     } else {
-      window.location.href = item.url
+      window.open('/' + item.url, '_blank')
     }
   }
 
