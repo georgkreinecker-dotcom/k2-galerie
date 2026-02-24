@@ -15,6 +15,7 @@ import GaleriePage from './pages/GaleriePage'
 import GalerieVorschauPage from './pages/GalerieVorschauPage'
 import Vk2GaleriePage from './pages/Vk2GaleriePage'
 import Vk2GalerieVorschauPage from './pages/Vk2GalerieVorschauPage'
+import Vk2MitgliedLoginPage from './pages/Vk2MitgliedLoginPage'
 import PlatzanordnungPage from './pages/PlatzanordnungPage'
 import VitaPage from './pages/VitaPage'
 import ShopPage from './pages/ShopPage'
@@ -512,6 +513,7 @@ function App() {
       <Route path={PROJECT_ROUTES.vk2.home} element={<Navigate to={PROJECT_ROUTES.vk2.galerie} replace />} />
       <Route path={PROJECT_ROUTES.vk2.galerie} element={<Vk2GaleriePage />} />
       <Route path={PROJECT_ROUTES.vk2.galerieVorschau} element={<Vk2GalerieVorschauPage />} />
+      <Route path={PROJECT_ROUTES.vk2.mitgliedLogin} element={<Vk2MitgliedLoginPage />} />
       <Route path={PROJECT_ROUTES.vk2.kunden} element={<KundenPage vk2 />} />
       <Route path={PROJECT_ROUTES.vk2.vollversion} element={<Navigate to="/admin?context=vk2" replace />} />
       <Route path="/projects/:projectId" element={<ProjectStartPage />} />

@@ -141,7 +141,7 @@ const Vk2GaleriePage: React.FC = () => {
         </span>
         <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
           <button
-            onClick={() => navigate('/admin?context=vk2&mitglied=1')}
+            onClick={() => navigate(PROJECT_ROUTES.vk2.mitgliedLogin)}
             style={{ background: 'rgba(37,99,235,0.25)', color: 'rgba(160,200,255,0.9)', border: '1px solid rgba(37,99,235,0.4)', borderRadius: 6, padding: '0.25rem 0.6rem', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}
             title="Mitglied-Login: eigenes Profil bearbeiten"
           >

@@ -102,6 +102,39 @@ const KEY_OEF_STAMMDATEN_MARTINA = 'k2-oeffentlich-stammdaten-martina'
 /** VK2-Stammdaten: Verein, Vorstand, Beirat, Mitglieder */
 const KEY_VK2_STAMMDATEN = 'k2-vk2-stammdaten'
 
+/** QR-Code-Block für Mitglied-Login – erscheint im Voll-Admin bei der Mitgliederliste */
+function VK2LoginQrBlock({ s }: { s: { accent: string; text: string; muted: string } }) {
+  const [qrDataUrl, setQrDataUrl] = React.useState('')
+  const loginUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://k2-galerie.vercel.app'}/vk2-login`
+  React.useEffect(() => {
+    let cancelled = false
+    import('qrcode').then(QRCode => {
+      QRCode.default.toDataURL(loginUrl, { width: 120, margin: 1 })
+        .then((url: string) => { if (!cancelled) setQrDataUrl(url) })
+        .catch(() => {})
+    })
+    return () => { cancelled = true }
+  }, [loginUrl])
+  return (
+    <div style={{ margin: '0.75rem 0', padding: '0.75rem 1rem', background: `${s.accent}0d`, border: `1px solid ${s.accent}33`, borderRadius: 12, display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+      {qrDataUrl && (
+        <img src={qrDataUrl} alt="QR Mitglied-Login" style={{ width: 80, height: 80, borderRadius: 6, background: '#fff', padding: 4, flexShrink: 0 }} />
+      )}
+      <div style={{ flex: 1 }}>
+        <div style={{ fontWeight: 700, color: s.text, fontSize: '0.9rem', marginBottom: '0.25rem' }}>🔑 Mitglied-Login QR-Code</div>
+        <div style={{ fontSize: '0.8rem', color: s.muted, marginBottom: '0.4rem' }}>
+          Diesen QR-Code per WhatsApp an Mitglieder schicken. Scan → Login-Seite → Name wählen → PIN → eigenes Profil.
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <code style={{ fontSize: '0.75rem', color: s.accent, background: `${s.accent}15`, padding: '0.2rem 0.5rem', borderRadius: 4 }}>{loginUrl}</code>
+          <button type="button" onClick={() => { try { navigator.clipboard.writeText(loginUrl); alert('Link kopiert ✅') } catch (_) {} }} style={{ padding: '0.25rem 0.6rem', background: `${s.accent}22`, border: `1px solid ${s.accent}44`, borderRadius: 6, color: s.accent, fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}>Link kopieren</button>
+          <a href={`https://wa.me/?text=${encodeURIComponent(`🔑 Dein Login-Link für deinen Mitglieder-Bereich:\n${loginUrl}\n\nName wählen + PIN eingeben → fertig!`)}`} target="_blank" rel="noopener noreferrer" style={{ padding: '0.25rem 0.6rem', background: '#25d36620', border: '1px solid #25d36644', borderRadius: 6, color: '#25d366', fontSize: '0.78rem', fontWeight: 600, textDecoration: 'none' }}>💬 Per WhatsApp teilen</a>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /** Druckt eine oder mehrere Mitgliedskarten im Kreditkarten-Format (85×54 mm, 3 pro Reihe) */
 function printMitgliedskarten(mitglieder: import('../src/config/tenantConfig').Vk2Mitglied[], vereinName: string) {
   const kartenHtml = mitglieder.map(m => {
@@ -11431,6 +11464,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           🪪 Alle Mitgliedskarten drucken
                         </button>
                       </div>
+
+                      {/* QR-Code für Mitglied-Login */}
+                      <VK2LoginQrBlock s={s} />
+
                       {/* CSV-Import: Drag & Drop oder Datei wählen */}
                       <div
                         onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setCsvDragOver(true) }}
