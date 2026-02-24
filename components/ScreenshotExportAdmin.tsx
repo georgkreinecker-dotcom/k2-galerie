@@ -118,9 +118,9 @@ const USER_LISTE_FUER_MITGLIEDER: Vk2Mitglied[] = [
   { name: 'Kunstverein Musterstadt', email: 'vorstand@kv-musterstadt.at', lizenz: 'VP-2026-1004', typ: 'Skulptur', mitgliedFotoUrl: MUSTER_MITGLIEDER_BILDER[3], imageUrl: MUSTER_WERKFOTO_BILDER[3], phone: '+43 732 771 000', website: 'https://kv-musterstadt.at', strasse: 'Vereinsweg 7', plz: '8010', ort: 'Graz', land: 'Österreich', geburtsdatum: '01.05.1970', eintrittsdatum: '05.02.2026', seit: '05.02.2026' },
   { name: 'Test Nutzer', email: 'test@beispiel.at', lizenz: 'KF-2026-1005', typ: 'Fotografie', mitgliedFotoUrl: MUSTER_MITGLIEDER_BILDER[4], imageUrl: MUSTER_WERKFOTO_BILDER[4], phone: '+43 699 000 9999', website: '', strasse: 'Testweg 99', plz: '6020', ort: 'Innsbruck', land: 'Österreich', geburtsdatum: '20.12.1982', eintrittsdatum: '12.02.2026', seit: '12.02.2026' }
 ]
-const EMPTY_MEMBER_FORM = { name: '', email: '', lizenz: '', typ: '', strasse: '', plz: '', ort: '', land: '', geburtsdatum: '', eintrittsdatum: '', phone: '', website: '', galerieLinkUrl: '', bio: '', mitgliedFotoUrl: '', imageUrl: '', bankKontoinhaber: '', bankIban: '', bankBic: '', bankName: '' }
+const EMPTY_MEMBER_FORM = { name: '', email: '', lizenz: '', typ: '', strasse: '', plz: '', ort: '', land: '', geburtsdatum: '', eintrittsdatum: '', phone: '', website: '', galerieLinkUrl: '', bio: '', vita: '', mitgliedFotoUrl: '', imageUrl: '', bankKontoinhaber: '', bankIban: '', bankBic: '', bankName: '' }
 function memberToForm(m: Vk2Mitglied) {
-  return { name: m.name ?? '', email: m.email ?? '', lizenz: m.lizenz ?? '', typ: m.typ ?? '', strasse: m.strasse ?? '', plz: m.plz ?? '', ort: m.ort ?? '', land: m.land ?? '', geburtsdatum: m.geburtsdatum ?? '', eintrittsdatum: m.eintrittsdatum ?? m.seit ?? '', phone: m.phone ?? '', website: m.website ?? '', galerieLinkUrl: m.galerieLinkUrl ?? '', bio: m.bio ?? '', mitgliedFotoUrl: m.mitgliedFotoUrl ?? '', imageUrl: m.imageUrl ?? '', bankKontoinhaber: m.bankKontoinhaber ?? '', bankIban: m.bankIban ?? '', bankBic: m.bankBic ?? '', bankName: m.bankName ?? '' }
+  return { name: m.name ?? '', email: m.email ?? '', lizenz: m.lizenz ?? '', typ: m.typ ?? '', strasse: m.strasse ?? '', plz: m.plz ?? '', ort: m.ort ?? '', land: m.land ?? '', geburtsdatum: m.geburtsdatum ?? '', eintrittsdatum: m.eintrittsdatum ?? m.seit ?? '', phone: m.phone ?? '', website: m.website ?? '', galerieLinkUrl: m.galerieLinkUrl ?? '', bio: m.bio ?? '', vita: m.vita ?? '', mitgliedFotoUrl: m.mitgliedFotoUrl ?? '', imageUrl: m.imageUrl ?? '', bankKontoinhaber: m.bankKontoinhaber ?? '', bankIban: m.bankIban ?? '', bankBic: m.bankBic ?? '', bankName: m.bankName ?? '' }
 }
 /** CSV-Header (versch. Schreibweisen) → Vk2Mitglied-Feld */
 const CSV_HEADER_MAP: Record<string, keyof Vk2Mitglied> = {
@@ -952,7 +952,7 @@ function ScreenshotExportAdmin() {
   /** VK2: Index in vk2Stammdaten.mitglieder beim Bearbeiten; null = neues Mitglied */
   const [editingMemberIndex, setEditingMemberIndex] = useState<number | null>(null)
   /** VK2: Vollständige Mitglieder-Stammdaten im Modal */
-  const [memberForm, setMemberForm] = useState<{ name: string; email: string; lizenz: string; typ: string; strasse: string; plz: string; ort: string; land: string; geburtsdatum: string; eintrittsdatum: string; phone: string; website: string; galerieLinkUrl: string; bio: string; mitgliedFotoUrl: string; imageUrl: string; bankKontoinhaber: string; bankIban: string; bankBic: string; bankName: string }>({ ...EMPTY_MEMBER_FORM })
+  const [memberForm, setMemberForm] = useState<{ name: string; email: string; lizenz: string; typ: string; strasse: string; plz: string; ort: string; land: string; geburtsdatum: string; eintrittsdatum: string; phone: string; website: string; galerieLinkUrl: string; bio: string; vita: string; mitgliedFotoUrl: string; imageUrl: string; bankKontoinhaber: string; bankIban: string; bankBic: string; bankName: string }>({ ...EMPTY_MEMBER_FORM })
   /** VK2: Drag-over für CSV-Import */
   const [csvDragOver, setCsvDragOver] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -14390,67 +14390,170 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               flexDirection: 'column',
               gap: '1rem'
             }}>
-              {/* VK2: Angaben für die Unsere Mitglieder (Name, E-Mail, Kunstrichtung) – kein Werk-Formular */}
+              {/* VK2: Profil-Formular – Foto, Werk, Vita, Name, Kontakt, Bank */}
               {isVk2AdminContext() ? (
                 <>
-                  <p style={{ margin: 0, fontSize: '0.9rem', color: s.muted }}>Angaben für die Darstellung in der Unsere Mitglieder.</p>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.accent, fontWeight: 600 }}>Name *</label>
-                    <input
-                      type="text"
-                      value={memberForm.name}
-                      onChange={(e) => setMemberForm(f => ({ ...f, name: e.target.value }))}
-                      placeholder="z.B. Anna Beispiel"
-                      style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.95rem', outline: 'none' }}
-                    />
+                  <p style={{ margin: 0, fontSize: '0.9rem', color: s.muted }}>Profil für die Mitglieder-Galerie – Foto, Werk und Vita separat bearbeitbar.</p>
+
+                  {/* ── BILDER-BEREICH ── */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+
+                    {/* Porträt-Foto */}
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: s.accent, fontWeight: 600 }}>
+                        👤 Foto <span style={{ fontWeight: 400, color: s.muted, fontSize: '0.8rem' }}>(Porträt-Kreis)</span>
+                      </label>
+                      {memberForm.mitgliedFotoUrl ? (
+                        <div style={{ position: 'relative', display: 'inline-block' }}>
+                          <img src={memberForm.mitgliedFotoUrl} alt="Porträt" style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${s.accent}66`, display: 'block' }} />
+                          <button type="button" onClick={() => setMemberForm(f => ({ ...f, mitgliedFotoUrl: '' }))} style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#b54a1e', border: 'none', color: '#fff', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>×</button>
+                        </div>
+                      ) : (
+                        <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', width: '100%', aspectRatio: '1', background: `${s.accent}0d`, border: `2px dashed ${s.accent}44`, borderRadius: 12, cursor: 'pointer', color: s.muted, fontSize: '0.8rem', textAlign: 'center', padding: '0.5rem' }}>
+                          <span style={{ fontSize: '1.8rem' }}>👤</span>
+                          <span>Tippen oder ziehen</span>
+                          <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            if (!file) return
+                            const reader = new FileReader()
+                            reader.onload = () => {
+                              const dataUrl = reader.result as string
+                              const img = new Image()
+                              img.onload = () => {
+                                const maxW = 400
+                                const scale = img.width > maxW ? maxW / img.width : 1
+                                const c = document.createElement('canvas')
+                                c.width = Math.round(img.width * scale)
+                                c.height = Math.round(img.height * scale)
+                                const ctx = c.getContext('2d')
+                                if (ctx) { ctx.drawImage(img, 0, 0, c.width, c.height); setMemberForm(f => ({ ...f, mitgliedFotoUrl: c.toDataURL('image/jpeg', 0.6) })) }
+                                else { setMemberForm(f => ({ ...f, mitgliedFotoUrl: dataUrl })) }
+                              }
+                              img.src = dataUrl
+                            }
+                            reader.readAsDataURL(file)
+                          }} />
+                        </label>
+                      )}
+                    </div>
+
+                    {/* Werkfoto */}
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: s.accent, fontWeight: 600 }}>
+                        🖼️ Werk <span style={{ fontWeight: 400, color: s.muted, fontSize: '0.8rem' }}>(Karte oben)</span>
+                      </label>
+                      {memberForm.imageUrl ? (
+                        <div style={{ position: 'relative' }}>
+                          <img src={memberForm.imageUrl} alt="Werk" style={{ width: '100%', aspectRatio: '3/2', objectFit: 'cover', borderRadius: 10, border: `1px solid ${s.accent}44`, display: 'block' }} />
+                          <button type="button" onClick={() => setMemberForm(f => ({ ...f, imageUrl: '' }))} style={{ position: 'absolute', top: 4, right: 4, width: 24, height: 24, borderRadius: '50%', background: '#b54a1e', border: 'none', color: '#fff', fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                        </div>
+                      ) : (
+                        <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', width: '100%', aspectRatio: '3/2', background: `${s.accent}0d`, border: `2px dashed ${s.accent}44`, borderRadius: 12, cursor: 'pointer', color: s.muted, fontSize: '0.8rem', textAlign: 'center', padding: '0.5rem' }}>
+                          <span style={{ fontSize: '1.8rem' }}>🖼️</span>
+                          <span>Tippen oder ziehen</span>
+                          <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            if (!file) return
+                            const reader = new FileReader()
+                            reader.onload = () => {
+                              const dataUrl = reader.result as string
+                              const img = new Image()
+                              img.onload = () => {
+                                const maxW = 600
+                                const scale = img.width > maxW ? maxW / img.width : 1
+                                const c = document.createElement('canvas')
+                                c.width = Math.round(img.width * scale)
+                                c.height = Math.round(img.height * scale)
+                                const ctx = c.getContext('2d')
+                                if (ctx) { ctx.drawImage(img, 0, 0, c.width, c.height); setMemberForm(f => ({ ...f, imageUrl: c.toDataURL('image/jpeg', 0.6) })) }
+                                else { setMemberForm(f => ({ ...f, imageUrl: dataUrl })) }
+                              }
+                              img.src = dataUrl
+                            }
+                            reader.readAsDataURL(file)
+                          }} />
+                        </label>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.accent, fontWeight: 600 }}>E-Mail</label>
-                    <input
-                      type="email"
-                      value={memberForm.email}
-                      onChange={(e) => setMemberForm(f => ({ ...f, email: e.target.value }))}
-                      placeholder="z.B. anna@beispiel.at"
-                      style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.95rem', outline: 'none' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.accent, fontWeight: 600 }}>Kunstrichtung / Kategorie</label>
-                    <select
-                      value={memberForm.typ}
-                      onChange={(e) => setMemberForm(f => ({ ...f, typ: e.target.value }))}
-                      style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.95rem', outline: 'none', cursor: 'pointer' }}
-                    >
-                      <option value="">– Bitte wählen –</option>
-                      {VK2_KUNSTBEREICHE.map((k) => (
-                        <option key={k.id} value={k.label}>{k.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.accent, fontWeight: 600 }}>Kurz-Bio / Vita <span style={{ fontWeight: 400, color: s.muted }}>(öffentliche Mitgliederkarte)</span></label>
+
+                  {/* ── VITA-BEREICH ── */}
+                  <div style={{ borderTop: `1px solid ${s.accent}22`, paddingTop: '0.75rem' }}>
+                    <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.accent, fontWeight: 600 }}>
+                      📝 Vita <span style={{ fontWeight: 400, color: s.muted }}>(ausführlich, separater Bereich)</span>
+                    </label>
                     <textarea
-                      value={memberForm.bio}
-                      onChange={(e) => setMemberForm(f => ({ ...f, bio: e.target.value }))}
-                      placeholder="Kurze Beschreibung: Ausbildung, Schwerpunkte, Stil ..."
-                      rows={3}
+                      value={memberForm.vita}
+                      onChange={(e) => setMemberForm(f => ({ ...f, vita: e.target.value }))}
+                      placeholder="Ausführlicher Lebenslauf: Ausbildung, Lehrjahre, wichtige Stationen, Ausstellungen, Preise, Technik, Stil, Inspiration ..."
+                      rows={5}
                       style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
                     />
+                    <p style={{ margin: '0.25rem 0 0', fontSize: '0.78rem', color: s.muted }}>Für die Detailansicht – kann lang sein. Bio (unten) ist die Kurzform für die Karte.</p>
                   </div>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.accent, fontWeight: 600 }}>Galerie-Link / Website <span style={{ fontWeight: 400, color: s.muted }}>(Klick auf Karte → öffnet diese Seite)</span></label>
-                    <input
-                      type="text"
-                      value={memberForm.galerieLinkUrl}
-                      onChange={(e) => setMemberForm(f => ({ ...f, galerieLinkUrl: e.target.value }))}
-                      placeholder="z.B. https://k2-galerie.vercel.app/galerie oder eigene Website"
-                      style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.95rem', outline: 'none' }}
-                    />
-                    <p style={{ margin: '0.3rem 0 0', fontSize: '0.8rem', color: s.muted }}>
-                      💡 K2-Lizenznehmer: Link zur eigenen K2-Galerie. Sonst: eigene Webseite oder leer lassen.
-                    </p>
+
+                  {/* ── BASIS-DATEN ── */}
+                  <div style={{ borderTop: `1px solid ${s.accent}22`, paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                    <div style={{ fontSize: '0.85rem', color: s.accent, fontWeight: 600 }}>Basisdaten</div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.muted, fontWeight: 600 }}>Name *</label>
+                      <input
+                        type="text"
+                        value={memberForm.name}
+                        onChange={(e) => setMemberForm(f => ({ ...f, name: e.target.value }))}
+                        placeholder="z.B. Anna Beispiel"
+                        style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.95rem', outline: 'none' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.muted, fontWeight: 600 }}>E-Mail</label>
+                      <input
+                        type="email"
+                        value={memberForm.email}
+                        onChange={(e) => setMemberForm(f => ({ ...f, email: e.target.value }))}
+                        placeholder="z.B. anna@beispiel.at"
+                        style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.95rem', outline: 'none' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.muted, fontWeight: 600 }}>Kunstrichtung / Kategorie</label>
+                      <select
+                        value={memberForm.typ}
+                        onChange={(e) => setMemberForm(f => ({ ...f, typ: e.target.value }))}
+                        style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.95rem', outline: 'none', cursor: 'pointer' }}
+                      >
+                        <option value="">– Bitte wählen –</option>
+                        {VK2_KUNSTBEREICHE.map((k) => (
+                          <option key={k.id} value={k.label}>{k.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.muted, fontWeight: 600 }}>
+                        Kurz-Bio <span style={{ fontWeight: 400, color: s.muted }}>(1–2 Sätze für die Karte)</span>
+                      </label>
+                      <textarea
+                        value={memberForm.bio}
+                        onChange={(e) => setMemberForm(f => ({ ...f, bio: e.target.value }))}
+                        placeholder="Kurze Beschreibung: Schwerpunkte, Stil ..."
+                        rows={2}
+                        style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.muted, fontWeight: 600 }}>Galerie-Link / Website</label>
+                      <input
+                        type="text"
+                        value={memberForm.galerieLinkUrl}
+                        onChange={(e) => setMemberForm(f => ({ ...f, galerieLinkUrl: e.target.value }))}
+                        placeholder="z.B. https://k2-galerie.vercel.app/galerie oder eigene Website"
+                        style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.95rem', outline: 'none' }}
+                      />
+                    </div>
                   </div>
-                  <div style={{ borderTop: `1px solid ${s.accent}22`, paddingTop: '0.75rem', marginTop: '0.25rem' }}>
+
+                  {/* ── BANKVERBINDUNG ── */}
+                  <div style={{ borderTop: `1px solid ${s.accent}22`, paddingTop: '0.75rem' }}>
                     <div style={{ fontSize: '0.85rem', color: s.accent, fontWeight: 600, marginBottom: '0.5rem' }}>Bankverbindung (für Bonussystem)</div>
                     <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Nur für Mitglieder, die am Bonussystem teilnehmen.</p>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
@@ -14472,6 +14575,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       </div>
                     </div>
                   </div>
+
+                  {/* ── BUTTONS ── */}
                   <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: `1px solid ${s.accent}22` }}>
                     <button
                       type="button"
@@ -14485,7 +14590,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       onClick={() => {
                         if (!memberForm.name.trim()) { alert('Bitte Name eintragen.'); return }
                         const mitglieder = [...(vk2Stammdaten.mitglieder || [])]
-                        const neu: Vk2Mitglied = { name: memberForm.name.trim(), email: memberForm.email.trim() || undefined, lizenz: memberForm.lizenz.trim() || undefined, typ: memberForm.typ || undefined, bio: memberForm.bio.trim() || undefined, galerieLinkUrl: memberForm.galerieLinkUrl.trim() || undefined, website: memberForm.website.trim() || undefined, phone: memberForm.phone.trim() || undefined, strasse: memberForm.strasse.trim() || undefined, plz: memberForm.plz.trim() || undefined, ort: memberForm.ort.trim() || undefined, land: memberForm.land.trim() || undefined, geburtsdatum: memberForm.geburtsdatum.trim() || undefined, eintrittsdatum: memberForm.eintrittsdatum.trim() || undefined, mitgliedFotoUrl: memberForm.mitgliedFotoUrl.trim() || undefined, imageUrl: memberForm.imageUrl.trim() || undefined, bankKontoinhaber: memberForm.bankKontoinhaber.trim() || undefined, bankIban: memberForm.bankIban.trim() || undefined, bankBic: memberForm.bankBic.trim() || undefined, bankName: memberForm.bankName.trim() || undefined }
+                        const neu: Vk2Mitglied = { name: memberForm.name.trim(), email: memberForm.email.trim() || undefined, lizenz: memberForm.lizenz.trim() || undefined, typ: memberForm.typ || undefined, bio: memberForm.bio.trim() || undefined, vita: memberForm.vita.trim() || undefined, galerieLinkUrl: memberForm.galerieLinkUrl.trim() || undefined, website: memberForm.website.trim() || undefined, phone: memberForm.phone.trim() || undefined, strasse: memberForm.strasse.trim() || undefined, plz: memberForm.plz.trim() || undefined, ort: memberForm.ort.trim() || undefined, land: memberForm.land.trim() || undefined, geburtsdatum: memberForm.geburtsdatum.trim() || undefined, eintrittsdatum: memberForm.eintrittsdatum.trim() || undefined, mitgliedFotoUrl: memberForm.mitgliedFotoUrl.trim() || undefined, imageUrl: memberForm.imageUrl.trim() || undefined, bankKontoinhaber: memberForm.bankKontoinhaber.trim() || undefined, bankIban: memberForm.bankIban.trim() || undefined, bankBic: memberForm.bankBic.trim() || undefined, bankName: memberForm.bankName.trim() || undefined, oeffentlichSichtbar: true }
                         if (editingMemberIndex !== null) {
                           mitglieder[editingMemberIndex] = neu
                         } else {

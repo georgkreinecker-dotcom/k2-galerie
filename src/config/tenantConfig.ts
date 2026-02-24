@@ -151,6 +151,8 @@ export interface Vk2Mitglied {
   oeffentlichSichtbar?: boolean
   /** Kurz-Bio / Vita für die öffentliche Mitgliederkarte */
   bio?: string
+  /** Ausführliche Vita – separater Bereich, editierbar, für Detailansicht */
+  vita?: string
   /** Link zur eigenen K2-Galerie (wenn Lizenznehmer) oder externer Website */
   galerieLinkUrl?: string
   /** Bankverbindung – für Mitglieder, die am Bonussystem teilnehmen */
