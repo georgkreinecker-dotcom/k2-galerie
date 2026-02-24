@@ -404,7 +404,17 @@ function loadEingangskarten(): EingangskarteData[] {
 }
 
 function Vk2Eingangskarten() {
-  const karten = loadEingangskarten()
+  const [karten, setKarten] = React.useState<EingangskarteData[]>(() => loadEingangskarten())
+
+  React.useEffect(() => {
+    const reload = () => setKarten(loadEingangskarten())
+    window.addEventListener('storage', reload)
+    window.addEventListener('vk2-karten-updated', reload)
+    return () => {
+      window.removeEventListener('storage', reload)
+      window.removeEventListener('vk2-karten-updated', reload)
+    }
+  }, [])
 
   return (
     <div style={{

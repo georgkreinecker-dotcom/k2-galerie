@@ -841,6 +841,7 @@ function ScreenshotExportAdmin() {
   const saveVk2Karten = (karten: {titel:string;untertitel:string;imageUrl:string}[]) => {
     try { localStorage.setItem(VK2_KARTEN_KEY, JSON.stringify(karten)) } catch { /* ignore */ }
     setVk2Karten(karten)
+    window.dispatchEvent(new Event('vk2-karten-updated'))
   }
   const galerieImageInputRef = React.useRef<HTMLInputElement>(null)
   const virtualTourImageInputRef = React.useRef<HTMLInputElement>(null)
@@ -1781,8 +1782,8 @@ function ScreenshotExportAdmin() {
       if (artworksStr.length < 10000000) localStorage.setItem(getArtworksKey(), artworksStr)
       localStorage.setItem(getEventsKey(), JSON.stringify(events))
       localStorage.setItem(getDocumentsKey(), JSON.stringify(documents))
-      setPageTexts(pageTexts, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
-      setPageContentGalerie(pageContent, isOeffentlichAdminContext() ? 'oeffentlich' : undefined)
+      setPageTexts(pageTexts, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined)
+      setPageContentGalerie(pageContent, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined)
     } catch (e) {
       console.warn('Vorschau-Speichern:', e)
     }
@@ -10096,8 +10097,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     </div>
                   </div>
                 </div>
-                <input type="file" accept="image/*" ref={galerieImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
-                <input type="file" accept="image/*" ref={virtualTourImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                <input type="file" accept="image/*" ref={galerieImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                <input type="file" accept="image/*" ref={virtualTourImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                 {(() => {
                   const tc = isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich : isVk2AdminContext() ? TENANT_CONFIGS.vk2 : TENANT_CONFIGS.k2
                   const galleryName = isVk2AdminContext() ? (vk2Stammdaten.verein?.name || tc.galleryName) : tc.galleryName
