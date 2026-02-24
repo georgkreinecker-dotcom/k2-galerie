@@ -111,21 +111,18 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
 
   // Standardmäßig Desktop-Ansicht für optimale Arbeitsansicht
   const [viewMode, setViewMode] = useState<ViewMode>(isLocalhost ? 'desktop' : 'desktop')
-  // Beim Zurückkehren zur APf immer die zuletzt bearbeitete Seite anzeigen (aus URL oder localStorage)
+  // Beim Zurückkehren zur APf: leerer Desktop (wie Mac-Desktop). Nur wenn ?page= gesetzt ist, direkt öffnen.
   const [currentPage, setCurrentPage] = useState(() => {
     if (pageFromUrl) return pageFromUrl
-    if (typeof window !== 'undefined') {
-      const last = localStorage.getItem(APF_LAST_PAGE_KEY)
-      if (last) return last
-    }
-    return (isLocalhost ? 'galerie' : defaultPage) || 'mission'
+    // Kein automatisches Wiederherstellen der letzten Seite – Desktop startet leer
+    return defaultPage || 'desktop-leer'
   })
   const [mobileZoom, setMobileZoom] = useState(1)
   const [desktopZoom, setDesktopZoom] = useState(1)
 
   // Aktuelle Seite in localStorage merken – beim nächsten „Zurück zur APf“ wieder anzeigen
   useEffect(() => {
-    if (currentPage && typeof window !== 'undefined') {
+    if (currentPage && currentPage !== 'desktop-leer' && typeof window !== 'undefined') {
       localStorage.setItem(APF_LAST_PAGE_KEY, currentPage)
     }
   }, [currentPage])
@@ -841,7 +838,9 @@ end tell`
     ? 'galerie' 
     : currentPage
 
-  const currentPageData = pagesFiltered.find(p => p.id === effectiveCurrentPage) || pagesFiltered[0]
+  const currentPageData = effectiveCurrentPage === 'desktop-leer'
+    ? { id: 'desktop-leer', name: 'Desktop', component: () => null }
+    : (pagesFiltered.find(p => p.id === effectiveCurrentPage) || pagesFiltered[0])
   const CurrentComponent = currentPageData.component
   
   // Render-Komponente mit Props für GaleriePage
@@ -849,6 +848,29 @@ end tell`
   const renderComponent = (key?: string, skipAdmin?: boolean) => {
     // Verwende effectiveCurrentPage statt currentPage (umleitet "platform" auf Mobile zu "galerie")
     const pageToRender = effectiveCurrentPage
+
+    // Leerer Desktop – neutraler Hintergrund, keine Seite geöffnet
+    if (pageToRender === 'desktop-leer') {
+      return (
+        <div key="desktop-leer" style={{
+          width: '100%',
+          height: '100%',
+          background: 'linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '1.5rem',
+          color: 'rgba(255,255,255,0.18)',
+          userSelect: 'none',
+        }}>
+          <div style={{ fontSize: '3.5rem', opacity: 0.25 }}>💚</div>
+          <div style={{ fontSize: '0.9rem', letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.4 }}>
+            K2 Galerie
+          </div>
+        </div>
+      )
+    }
     
     // Im Split-Mode: Admin nur im Desktop-Bereich rendern
     if (skipAdmin && pageToRender === 'admin') {
