@@ -185,88 +185,37 @@ const Vk2GaleriePage: React.FC = () => {
           {subtext}
         </p>
 
-        {/* Grid: Intro + Events */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
-          gap: 'clamp(1.5rem, 4vw, 2.5rem)',
-          alignItems: 'start',
-          marginTop: 'clamp(1.5rem, 4vw, 2.5rem)'
-        }}>
-          {/* Intro + Button */}
-          <div>
-            <p style={{ margin: 0, color: 'rgba(255,255,255,0.88)', fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', lineHeight: 1.6, fontWeight: 300 }}>
-              {introText}
-            </p>
-            <Link
-              to={PROJECT_ROUTES.vk2.galerieVorschau}
-              style={{
-                display: 'inline-block',
-                marginTop: 'clamp(1.25rem, 3vw, 1.75rem)',
-                padding: 'clamp(0.85rem, 2vw, 1rem) clamp(1.75rem, 4vw, 2.25rem)',
-                background: 'linear-gradient(135deg, #ff8c42 0%, #e67a2a 100%)',
-                color: '#fff',
-                textDecoration: 'none',
-                borderRadius: 12,
-                fontSize: 'clamp(1rem, 2.5vw, 1.1rem)',
-                fontWeight: 600,
-                boxShadow: '0 8px 24px rgba(255,140,66,0.4)'
-              }}
-            >
-              {pageTexts.kunstschaffendeHeading?.trim() || 'Unsere Mitglieder'} ansehen →
-            </Link>
-          </div>
+        {/* Intro-Text */}
+        <p style={{ margin: 'clamp(1rem, 3vw, 1.5rem) 0 0', color: 'rgba(255,255,255,0.75)', fontSize: 'clamp(1rem, 2.5vw, 1.1rem)', lineHeight: 1.7, fontWeight: 300, maxWidth: 600 }}>
+          {introText}
+        </p>
 
-          {/* Mitglieder-Vorschau (Karten) */}
-          {(stammdaten?.mitglieder || []).filter(m => m.oeffentlichSichtbar !== false).length > 0 && (
-            <div>
-              <p style={{ margin: '0 0 0.75rem', fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,140,66,0.8)', fontWeight: 600 }}>
-                {pageTexts.kunstschaffendeHeading?.trim() || 'Unsere Mitglieder'}
-              </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
-                {(stammdaten?.mitglieder || []).filter(m => m.oeffentlichSichtbar !== false).slice(0, 6).map((m, i) => (
-                  <Link
-                    key={i}
-                    to={PROJECT_ROUTES.vk2.galerieVorschau}
-                    style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.45rem 0.75rem 0.45rem 0.45rem', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,140,66,0.2)', borderRadius: 40, backdropFilter: 'blur(4px)', transition: 'all 0.2s', cursor: 'pointer' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,140,66,0.15)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
-                  >
-                    {m.mitgliedFotoUrl ? (
-                      <img src={m.mitgliedFotoUrl} alt={m.name} style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,140,66,0.5)', flexShrink: 0 }} />
-                    ) : (
-                      <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#ff8c42,#b54a1e)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', flexShrink: 0 }}>
-                        {(m.name || '?')[0].toUpperCase()}
-                      </div>
-                    )}
-                    <div>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#fff5f0', lineHeight: 1.2 }}>{m.name}</div>
-                      {m.typ && <div style={{ fontSize: '0.72rem', color: 'rgba(255,140,66,0.7)' }}>{m.typ}</div>}
-                    </div>
-                  </Link>
-                ))}
-                {(stammdaten?.mitglieder || []).filter(m => m.oeffentlichSichtbar !== false).length > 6 && (
-                  <Link
-                    to={PROJECT_ROUTES.vk2.galerieVorschau}
-                    style={{ display: 'flex', alignItems: 'center', padding: '0.45rem 0.9rem', background: 'rgba(255,140,66,0.12)', border: '1px solid rgba(255,140,66,0.3)', borderRadius: 40, color: 'rgba(255,140,66,0.9)', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none' }}
-                  >
-                    +{(stammdaten?.mitglieder || []).filter(m => m.oeffentlichSichtbar !== false).length - 6} mehr →
-                  </Link>
-                )}
-              </div>
-            </div>
-          )}
+        {/* Hauptbutton */}
+        <Link
+          to={PROJECT_ROUTES.vk2.galerieVorschau}
+          style={{
+            display: 'inline-block',
+            marginTop: 'clamp(1.25rem, 3vw, 1.75rem)',
+            padding: 'clamp(0.85rem, 2vw, 1rem) clamp(1.75rem, 4vw, 2.25rem)',
+            background: 'linear-gradient(135deg, #ff8c42 0%, #e67a2a 100%)',
+            color: '#fff',
+            textDecoration: 'none',
+            borderRadius: 12,
+            fontSize: 'clamp(1rem, 2.5vw, 1.1rem)',
+            fontWeight: 600,
+            boxShadow: '0 8px 24px rgba(255,140,66,0.4)'
+          }}
+        >
+          {pageTexts.kunstschaffendeHeading?.trim() || 'Unsere Mitglieder'} ansehen →
+        </Link>
 
-          {/* Events */}
-          <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: '1rem 1.25rem', borderLeft: '4px solid rgba(255,140,66,0.5)' }}>
-            <p style={{ margin: '0 0 0.75rem', fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.75)', fontWeight: 600 }}>
-              {eventHeading}
-            </p>
-            {upcomingEvents.length === 0 ? (
-              <p style={{ margin: 0, color: 'rgba(255,255,255,0.7)', fontSize: 'clamp(0.95rem, 2vw, 1.05rem)' }}>
-                Derzeit keine anstehenden Termine.
-              </p>
-            ) : (
+        {/* Events – nur wenn vorhanden, schmal und dezent */}
+        {upcomingEvents.length > 0 && (
+        <div style={{ marginTop: 'clamp(1.5rem, 4vw, 2rem)', maxWidth: 480, background: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: '0.9rem 1.1rem', borderLeft: '3px solid rgba(255,140,66,0.4)' }}>
+          <p style={{ margin: '0 0 0.6rem', fontSize: '0.78rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
+            {eventHeading}
+          </p>
+          {upcomingEvents.length === 0 ? null : (
               <ul style={{ margin: 0, paddingLeft: '1.25rem', color: '#fff', fontSize: 'clamp(0.95rem, 2vw, 1.05rem)', lineHeight: 1.6 }}>
                 {upcomingEvents.map((ev: any) => (
                   <li key={ev.id || ev.date} style={{ marginBottom: '0.5rem' }}>
@@ -277,7 +226,8 @@ const Vk2GaleriePage: React.FC = () => {
               </ul>
             )}
           </div>
-        </div>
+        )}
+
       </header>
 
       {/* Impressum */}
