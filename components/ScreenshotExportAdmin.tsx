@@ -8069,7 +8069,31 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             {/* Schnell-Aktionen – das was man täglich braucht */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
 
-              {/* Galerie ansehen */}
+              {/* VK2: Zurück zur Vereins-Galerie */}
+              {isVk2AdminContext() && (
+                <Link
+                  to={PROJECT_ROUTES.vk2.galerie}
+                  title="Zur Vereins-Galerie"
+                  style={{
+                    padding: '0.5rem 0.75rem',
+                    background: s.bgCard,
+                    border: `1px solid ${s.accent}28`,
+                    color: s.text,
+                    textDecoration: 'none',
+                    borderRadius: '10px',
+                    fontSize: '1rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.background = s.bgElevated }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}28`; e.currentTarget.style.background = s.bgCard }}
+                >
+                  🏛️
+                </Link>
+              )}
+
+              {/* Galerie / Mitglieder ansehen */}
               <Link
                 to={isVk2AdminContext() ? PROJECT_ROUTES.vk2.galerieVorschau : isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerie}
                 state={{ fromAdmin: true }}
