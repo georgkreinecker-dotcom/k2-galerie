@@ -822,6 +822,26 @@ function ScreenshotExportAdmin() {
   const designPreviewResizeStart = useRef<{ y: number; height: number } | null>(null)
   const previewContainerRef = React.useRef<HTMLDivElement>(null)
   const welcomeImageInputRef = React.useRef<HTMLInputElement>(null)
+
+  // VK2 Eingangskarten (2 Stück, editierbar im Design-Tab)
+  const VK2_KARTEN_KEY = 'k2-vk2-eingangskarten'
+  const VK2_KARTEN_DEFAULT = [
+    { titel: 'Unsere Galerie', untertitel: 'Werke, Ausstellungen & Events – entdecke unseren Verein', imageUrl: '' },
+    { titel: 'Mitglieder & Künstler:innen', untertitel: 'Leidenschaft, Können und Kreativität – lerne uns kennen', imageUrl: '' },
+  ]
+  const [vk2Karten, setVk2Karten] = React.useState<{titel:string;untertitel:string;imageUrl:string}[]>(() => {
+    try {
+      const raw = typeof window !== 'undefined' ? localStorage.getItem(VK2_KARTEN_KEY) : null
+      if (!raw) return VK2_KARTEN_DEFAULT
+      const p = JSON.parse(raw)
+      if (Array.isArray(p) && p.length >= 2) return p
+    } catch { /* ignore */ }
+    return VK2_KARTEN_DEFAULT
+  })
+  const saveVk2Karten = (karten: {titel:string;untertitel:string;imageUrl:string}[]) => {
+    try { localStorage.setItem(VK2_KARTEN_KEY, JSON.stringify(karten)) } catch { /* ignore */ }
+    setVk2Karten(karten)
+  }
   const galerieImageInputRef = React.useRef<HTMLInputElement>(null)
   const virtualTourImageInputRef = React.useRef<HTMLInputElement>(null)
   const [backupTimestamps, setBackupTimestamps] = useState<string[]>([])
@@ -10164,6 +10184,84 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           </div>
                         )}
                       </section>
+                      {/* VK2 Eingangskarten – 2 editierbare Bildkarten */}
+                      {isVk2AdminContext() && (
+                        <section style={{ marginTop: '1.5rem', padding: '1.25rem', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 14 }}>
+                          <h3 style={{ margin: '0 0 0.9rem', fontSize: '1rem', fontWeight: 700, color: s.text }}>🖼️ Eingangskarten (2 Bilder)</h3>
+                          <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: s.muted }}>Erscheinen auf der Startseite zwischen Willkommensfoto und Vereinsname. Je ein Foto + editierbarer Text.</p>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            {vk2Karten.map((karte, idx) => (
+                              <div key={idx} style={{ background: s.bgElevated, borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                {/* Bild-Upload */}
+                                <label
+                                  style={{ display: 'block', aspectRatio: '3/2', cursor: 'pointer', position: 'relative', background: karte.imageUrl ? '#000' : 'rgba(0,0,0,0.15)', overflow: 'hidden' }}
+                                  title="Klicken oder Foto ziehen"
+                                  onDragOver={e => e.preventDefault()}
+                                  onDrop={async e => {
+                                    e.preventDefault()
+                                    const f = e.dataTransfer.files?.[0]
+                                    if (!f || !f.type.startsWith('image/')) return
+                                    try {
+                                      const img = await compressImage(f, 800, 0.65)
+                                      const updated = vk2Karten.map((k, i) => i === idx ? { ...k, imageUrl: img } : k)
+                                      saveVk2Karten(updated)
+                                    } catch { /* ignore */ }
+                                  }}
+                                >
+                                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={async e => {
+                                    const f = e.target.files?.[0]
+                                    if (!f) return
+                                    try {
+                                      const img = await compressImage(f, 800, 0.65)
+                                      const updated = vk2Karten.map((k, i) => i === idx ? { ...k, imageUrl: img } : k)
+                                      saveVk2Karten(updated)
+                                    } catch { /* ignore */ }
+                                    e.target.value = ''
+                                  }} />
+                                  {karte.imageUrl
+                                    ? <img src={karte.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                                    : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', color: s.muted, fontSize: '0.85rem' }}>
+                                        <span style={{ fontSize: '1.6rem', opacity: 0.4 }}>{idx === 0 ? '🖼️' : '👥'}</span>
+                                        <span>📸 Foto wählen</span>
+                                      </div>
+                                  }
+                                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0)', display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', padding: '0.4rem' }}>
+                                    <span style={{ background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: '0.65rem', padding: '0.15rem 0.4rem', borderRadius: 6 }}>✏️ {karte.imageUrl ? 'ändern' : 'wählen'}</span>
+                                  </div>
+                                  {karte.imageUrl && (
+                                    <button
+                                      type="button"
+                                      onClick={e => { e.preventDefault(); e.stopPropagation(); const updated = vk2Karten.map((k, i) => i === idx ? { ...k, imageUrl: '' } : k); saveVk2Karten(updated) }}
+                                      style={{ position: 'absolute', top: '0.3rem', right: '0.3rem', background: 'rgba(180,0,0,0.7)', border: 'none', borderRadius: '50%', width: 22, height: 22, color: '#fff', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                    >×</button>
+                                  )}
+                                </label>
+                                {/* Titel + Untertitel editierbar */}
+                                <div style={{ padding: '0.6rem 0.7rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                  <input
+                                    type="text"
+                                    value={karte.titel}
+                                    onChange={e => { const updated = vk2Karten.map((k, i) => i === idx ? { ...k, titel: e.target.value } : k); saveVk2Karten(updated) }}
+                                    placeholder="Titel der Karte"
+                                    style={{ width: '100%', padding: '0.35rem 0.5rem', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6, color: s.text, fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }}
+                                  />
+                                  <input
+                                    type="text"
+                                    value={karte.untertitel}
+                                    onChange={e => { const updated = vk2Karten.map((k, i) => i === idx ? { ...k, untertitel: e.target.value } : k); saveVk2Karten(updated) }}
+                                    placeholder="Kurzer Untertitel"
+                                    style={{ width: '100%', padding: '0.3rem 0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: s.muted, fontSize: '0.75rem', outline: 'none', boxSizing: 'border-box' }}
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <p style={{ margin: '0.7rem 0 0', fontSize: '0.72rem', color: 'rgba(251,191,36,0.5)' }}>
+                            💡 Fotos werden sofort gespeichert. Texte ebenfalls. Auf der VK2-Startseite sofort sichtbar.
+                          </p>
+                        </section>
+                      )}
+
                       {/* Aktuelles aus den Eventplanungen – wie auf der echten ersten Seite */}
                       {(() => {
                         const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)

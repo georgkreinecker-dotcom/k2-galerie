@@ -177,6 +177,9 @@ const Vk2GaleriePage: React.FC = () => {
           </div>
         )}
 
+        {/* Eingangskarten – zwei editierbare Bildkarten */}
+        <Vk2Eingangskarten />
+
         {/* Titel + Subtext */}
         <h1 style={{ margin: 0, fontSize: 'clamp(2rem, 6vw, 3.5rem)', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.15 }}>
           {heroTitle}
@@ -363,6 +366,120 @@ const Vk2GaleriePage: React.FC = () => {
       >
         Stand: {BUILD_LABEL}
       </div>
+    </div>
+  )
+}
+
+// ─── Eingangskarten ─────────────────────────────────────────────────────────
+
+const VK2_KARTEN_KEY = 'k2-vk2-eingangskarten'
+
+interface EingangskarteData {
+  titel: string
+  untertitel: string
+  imageUrl: string
+}
+
+const DEFAULT_KARTEN: EingangskarteData[] = [
+  {
+    titel: 'Unsere Galerie',
+    untertitel: 'Werke, Ausstellungen & Events – entdecke unseren Verein',
+    imageUrl: '',
+  },
+  {
+    titel: 'Mitglieder & Künstler:innen',
+    untertitel: 'Leidenschaft, Können und Kreativität – lerne uns kennen',
+    imageUrl: '',
+  },
+]
+
+function loadEingangskarten(): EingangskarteData[] {
+  try {
+    const raw = localStorage.getItem(VK2_KARTEN_KEY)
+    if (!raw) return DEFAULT_KARTEN
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed) && parsed.length >= 2) return parsed
+  } catch { /* ignore */ }
+  return DEFAULT_KARTEN
+}
+
+function Vk2Eingangskarten() {
+  const karten = loadEingangskarten()
+
+  return (
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(2, 1fr)',
+      gap: 'clamp(0.75rem, 2vw, 1.25rem)',
+      marginBottom: 'clamp(1.5rem, 4vw, 2.5rem)',
+    }}>
+      {karten.map((k, i) => (
+        <EingangsKarte key={i} data={k} index={i} />
+      ))}
+    </div>
+  )
+}
+
+function EingangsKarte({ data, index }: { data: EingangskarteData; index: number }) {
+  // Dummy-Hintergründe wenn kein Bild gesetzt
+  const dummyGradients = [
+    'linear-gradient(135deg, rgba(255,140,66,0.35) 0%, rgba(180,74,30,0.5) 100%)',
+    'linear-gradient(135deg, rgba(251,191,36,0.25) 0%, rgba(180,100,20,0.4) 100%)',
+  ]
+  const hasBild = !!data.imageUrl
+
+  return (
+    <div style={{
+      position: 'relative',
+      borderRadius: 'clamp(10px, 2vw, 16px)',
+      overflow: 'hidden',
+      aspectRatio: '3/2',
+      background: hasBild ? '#111' : dummyGradients[index % 2],
+      border: '1px solid rgba(255,255,255,0.1)',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
+    }}>
+      {/* Bild */}
+      {hasBild && (
+        <img
+          src={data.imageUrl}
+          alt={data.titel}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+      )}
+
+      {/* Dummy-Muster wenn kein Bild */}
+      {!hasBild && (
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: 'repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 12px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <span style={{ fontSize: 'clamp(2rem, 6vw, 3.5rem)', opacity: 0.2 }}>{index === 0 ? '🖼️' : '👥'}</span>
+        </div>
+      )}
+
+      {/* Gradient-Overlay */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 60%, transparent 100%)',
+      }} />
+
+      {/* Text unten */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 'clamp(0.75rem, 2vw, 1.1rem)' }}>
+        <div style={{ fontWeight: 700, fontSize: 'clamp(0.9rem, 2.5vw, 1.1rem)', color: '#fff', lineHeight: 1.2, marginBottom: '0.2rem' }}>
+          {data.titel}
+        </div>
+        <div style={{ fontSize: 'clamp(0.72rem, 1.8vw, 0.85rem)', color: 'rgba(255,255,255,0.72)', lineHeight: 1.4 }}>
+          {data.untertitel}
+        </div>
+      </div>
+
+      {/* Bearbeiten-Hinweis (nur im Admin) */}
+      {typeof window !== 'undefined' && (window.location.search.includes('vorschau=1') || window.location.pathname.includes('admin')) && (
+        <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6, padding: '0.15rem 0.45rem', fontSize: '0.68rem', color: 'rgba(255,255,255,0.7)' }}>
+          ✏️ editierbar
+        </div>
+      )}
     </div>
   )
 }
