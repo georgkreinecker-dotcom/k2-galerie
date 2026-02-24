@@ -1,0 +1,32 @@
+---
+description: Session-Start Aufwärmen – Tests zuerst, dann programmieren
+alwaysApply: true
+---
+
+# 🔥 Session-Start = Aufwärmen (Tests zuerst)
+
+## Grundprinzip (unveränderlich)
+
+> **Vor jeder Programmierarbeit zuerst testen – wie Aufwärmen vor dem Sport.**
+> Erst wenn alle Tests grün sind, wird Code geändert.
+
+## Pflicht zu Sessionbeginn
+
+**Bevor irgendeine Code-Änderung gemacht wird:**
+
+```bash
+npm run test
+```
+
+- ✅ Alle Tests grün → weiterarbeiten
+- ❌ Test(s) rot → zuerst Ursache finden und beheben, DANN mit der eigentlichen Aufgabe weitermachen
+
+## Warum
+
+- Zeigt sofort ob der aktuelle Stand „gesund" ist
+- Verhindert, dass neue Änderungen auf bereits kaputtem Code aufbauen
+- Gibt Georg und Joe Sicherheit: Basis stimmt, wir können loslegen
+
+## Kurzfassung
+
+**Session-Start = `npm run test` → alle grün → dann programmieren. Keine Ausnahme.**

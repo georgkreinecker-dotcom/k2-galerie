@@ -101,6 +101,31 @@ const MEINE_TODOS = [
   { text: 'Optional: Kurz-Anleitung „So empfiehlst du“ nutzen', href: `${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-6` },
 ]
 
+// ── Diverses – frei befüllbare Ablage ──────────────────────────────────────────
+const DIVERSES_KEY = 'smartpanel-diverses'
+
+type DiversesItem = {
+  id: string
+  label: string
+  url: string  // URL oder /pfad oder docs/DATEI.md
+  emoji?: string
+}
+
+function loadDiverses(): DiversesItem[] {
+  try {
+    const v = localStorage.getItem(DIVERSES_KEY)
+    if (v) return JSON.parse(v)
+  } catch { /* ignore */ }
+  // Standardeinträge beim ersten Start
+  return [
+    { id: 'freunde', label: 'Für meine Freunde', url: 'docs/FREUNDE-ERKLAERUNG.md', emoji: '👥' },
+  ]
+}
+
+function saveDiverses(items: DiversesItem[]) {
+  try { localStorage.setItem(DIVERSES_KEY, JSON.stringify(items)) } catch { /* ignore */ }
+}
+
 // Smart Panel (SP) – K2-Balken & Schnellzugriff (schlank, mök2-Links nur in mök2)
 
 interface SmartPanelProps {
@@ -137,6 +162,47 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
   const loescheGuideAntworten = () => {
     setGuideAntworten({})
     try { localStorage.removeItem(GUIDE_KEY) } catch (_) {}
+  }
+
+  // Diverses – frei befüllbare Ablage
+  const [diverses, setDiverses] = useState<DiversesItem[]>(loadDiverses)
+  const [diversesNeuLabel, setDiversesNeuLabel] = useState('')
+  const [diversesNeuUrl, setDiversesNeuUrl] = useState('')
+  const [diversesNeuEmoji, setDiversesNeuEmoji] = useState('📄')
+  const [diversesAddMode, setDiversesAddMode] = useState(false)
+
+  const diversesHinzufuegen = () => {
+    if (!diversesNeuLabel.trim() || !diversesNeuUrl.trim()) return
+    const neu: DiversesItem = {
+      id: Date.now().toString(),
+      label: diversesNeuLabel.trim(),
+      url: diversesNeuUrl.trim(),
+      emoji: diversesNeuEmoji || '📄',
+    }
+    const updated = [...diverses, neu]
+    setDiverses(updated)
+    saveDiverses(updated)
+    setDiversesNeuLabel('')
+    setDiversesNeuUrl('')
+    setDiversesNeuEmoji('📄')
+    setDiversesAddMode(false)
+  }
+
+  const diversesLoeschen = (id: string) => {
+    const updated = diverses.filter(d => d.id !== id)
+    setDiverses(updated)
+    saveDiverses(updated)
+  }
+
+  const diversesOeffnen = (item: DiversesItem) => {
+    // Wenn es ein docs/-Pfad ist → als Text in neuem Tab anzeigen
+    if (item.url.startsWith('docs/') || item.url.startsWith('/docs/')) {
+      window.open(item.url.startsWith('/') ? item.url : '/' + item.url, '_blank')
+    } else if (item.url.startsWith('http')) {
+      window.open(item.url, '_blank')
+    } else {
+      window.location.href = item.url
+    }
   }
 
   // Erkundungs-Notizen
@@ -237,6 +303,78 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
         <p style={{ margin: 0, fontSize: '0.85rem', color: '#8fa0c9' }}>
           Schnellzugriff
         </p>
+      </div>
+
+      {/* ── Diverses – frei befüllbare Ablage ─────────────────────── */}
+      <div style={{ borderBottom: '1px solid rgba(95,251,241,0.12)', paddingBottom: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+          <h4 style={{ margin: 0, fontSize: '0.88rem', color: '#c4b5fd', fontWeight: 700 }}>
+            📁 Diverses
+          </h4>
+          <button
+            type="button"
+            onClick={() => setDiversesAddMode(m => !m)}
+            style={{ fontSize: '0.72rem', color: diversesAddMode ? '#5ffbf1' : 'rgba(255,255,255,0.35)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.1rem 0.4rem', fontFamily: 'inherit' }}
+          >{diversesAddMode ? '✕ Abbrechen' : '＋ Hinzufügen'}</button>
+        </div>
+
+        {/* Neuer Eintrag */}
+        {diversesAddMode && (
+          <div style={{ background: 'rgba(196,181,253,0.06)', border: '1px solid rgba(196,181,253,0.2)', borderRadius: '8px', padding: '0.75rem', marginBottom: '0.6rem', display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+            <div style={{ display: 'flex', gap: '0.4rem' }}>
+              <input
+                value={diversesNeuEmoji}
+                onChange={e => setDiversesNeuEmoji(e.target.value)}
+                placeholder="📄"
+                maxLength={4}
+                style={{ width: 38, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(196,181,253,0.25)', borderRadius: '6px', color: '#fff', fontSize: '1rem', padding: '0.35rem 0.4rem', fontFamily: 'inherit', textAlign: 'center' }}
+              />
+              <input
+                value={diversesNeuLabel}
+                onChange={e => setDiversesNeuLabel(e.target.value)}
+                placeholder="Name / Bezeichnung"
+                style={{ flex: 1, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(196,181,253,0.25)', borderRadius: '6px', color: '#fff', fontSize: '0.82rem', padding: '0.35rem 0.6rem', fontFamily: 'inherit' }}
+              />
+            </div>
+            <input
+              value={diversesNeuUrl}
+              onChange={e => setDiversesNeuUrl(e.target.value)}
+              placeholder="Link oder Pfad (z. B. docs/DATEI.md oder https://...)"
+              style={{ width: '100%', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(196,181,253,0.25)', borderRadius: '6px', color: '#fff', fontSize: '0.78rem', padding: '0.35rem 0.6rem', fontFamily: 'inherit', boxSizing: 'border-box' }}
+            />
+            <button
+              type="button"
+              onClick={diversesHinzufuegen}
+              style={{ background: 'rgba(196,181,253,0.18)', border: '1px solid rgba(196,181,253,0.4)', borderRadius: '6px', color: '#c4b5fd', fontWeight: 600, fontSize: '0.82rem', padding: '0.4rem', cursor: 'pointer', fontFamily: 'inherit' }}
+            >✅ Ablegen</button>
+          </div>
+        )}
+
+        {/* Abgelegte Einträge */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+          {diverses.length === 0 && (
+            <p style={{ margin: 0, fontSize: '0.75rem', color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>Noch nichts abgelegt – „＋ Hinzufügen" drücken</p>
+          )}
+          {diverses.map(item => (
+            <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <button
+                type="button"
+                onClick={() => diversesOeffnen(item)}
+                style={{ flex: 1, textAlign: 'left', background: 'rgba(196,181,253,0.07)', border: '1px solid rgba(196,181,253,0.2)', borderRadius: '7px', color: '#e9d5ff', fontSize: '0.82rem', padding: '0.5rem 0.7rem', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+              >
+                <span>{item.emoji ?? '📄'}</span>
+                <span style={{ flex: 1 }}>{item.label}</span>
+                <span style={{ fontSize: '0.68rem', opacity: 0.4 }}>→</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => diversesLoeschen(item.id)}
+                style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: '0.75rem', padding: '0.25rem 0.4rem', lineHeight: 1 }}
+                title="Entfernen"
+              >✕</button>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Fremder-Modus – Landingpage aus Kundenperspektive testen */}

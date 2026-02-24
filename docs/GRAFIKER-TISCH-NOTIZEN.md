@@ -8,7 +8,7 @@
 
 ## Offene Wünsche (noch umzusetzen)
 
-*(noch keine Einträge)*
+- **Profi-Tests ausbauen** – wenn das Projekt auf mehrere Kunden/Lizenznehmer skaliert: mehr Tests (E-Mail bei Fehler, Backup-Tests, Handy-Tests). Georg erinnern sobald erste externe Nutzer dazukommen. (notiert 23.02.26)
 
 ---
 
