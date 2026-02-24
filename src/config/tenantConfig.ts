@@ -159,6 +159,8 @@ export interface Vk2Mitglied {
   pin?: string
   /** Link zur eigenen K2-Galerie (wenn Lizenznehmer) oder externer Website */
   galerieLinkUrl?: string
+  /** URL der Lizenz-Galerie auf Vercel (z.B. https://anna-k2.vercel.app) – für Vereinskatalog */
+  lizenzGalerieUrl?: string
   /** Bankverbindung – für Mitglieder, die am Bonussystem teilnehmen */
   bankKontoinhaber?: string
   bankIban?: string

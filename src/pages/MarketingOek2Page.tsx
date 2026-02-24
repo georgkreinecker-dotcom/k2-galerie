@@ -605,6 +605,10 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.75)' }}>
           Quelle: <code>docs/VK2-VEREINSPLATTFORM.md</code>. Beim Drucken dieser mök2-Seite („Als PDF drucken“) ist die VK2-Lizenzstruktur mit dabei.
         </p>
+        <p style={{ padding: '0.75rem 1rem', background: 'rgba(251,191,36,0.1)', borderRadius: '8px', borderLeft: '4px solid #fbbf24', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '0.75rem' }}>
+          <strong style={{ color: '#fbbf24' }}>🏆 NEU: Vereinskatalog</strong> – Lizenzmitglieder mit eigener K2-Galerie können bis zu <strong>5 ihrer schönsten Werke</strong> für den gemeinsamen Vereinskatalog freigeben. Der Katalog zeigt alle Werke aller Lizenzmitglieder zusammen, filterbar nach Künstler:in, Technik und Preis – als PDF druckbar. <em style={{ color: 'rgba(255,255,255,0.7)' }}>Motto: „Zeige deine schönsten Werke.“</em>
+          <br /><strong>Vorteil für Lizenzmitglieder:</strong> Sichtbarkeit im Vereinskontext + eigene Galerie = doppelte Präsenz. Starkes Argument für Mitgliedschaft.
+        </p>
       </section>
 
       {/* 11. Sicherheit & Vor Veröffentlichung – alle Infos dokumentiert, jederzeit abrufbar */}

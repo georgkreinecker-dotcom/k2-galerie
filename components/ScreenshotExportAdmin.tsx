@@ -219,9 +219,9 @@ const USER_LISTE_FUER_MITGLIEDER: Vk2Mitglied[] = [
   { name: 'Kunstverein Musterstadt', email: 'vorstand@kv-musterstadt.at', lizenz: 'VP-2026-1004', typ: 'Skulptur', mitgliedFotoUrl: MUSTER_MITGLIEDER_BILDER[3], imageUrl: MUSTER_WERKFOTO_BILDER[3], phone: '+43 732 771 000', website: 'https://kv-musterstadt.at', strasse: 'Vereinsweg 7', plz: '8010', ort: 'Graz', land: 'Österreich', geburtsdatum: '01.05.1970', eintrittsdatum: '05.02.2026', seit: '05.02.2026' },
   { name: 'Test Nutzer', email: 'test@beispiel.at', lizenz: 'KF-2026-1005', typ: 'Fotografie', mitgliedFotoUrl: MUSTER_MITGLIEDER_BILDER[4], imageUrl: MUSTER_WERKFOTO_BILDER[4], phone: '+43 699 000 9999', website: '', strasse: 'Testweg 99', plz: '6020', ort: 'Innsbruck', land: 'Österreich', geburtsdatum: '20.12.1982', eintrittsdatum: '12.02.2026', seit: '12.02.2026' }
 ]
-const EMPTY_MEMBER_FORM = { name: '', email: '', lizenz: '', typ: '', strasse: '', plz: '', ort: '', land: '', geburtsdatum: '', eintrittsdatum: '', phone: '', website: '', galerieLinkUrl: '', bio: '', vita: '', mitgliedFotoUrl: '', imageUrl: '', bankKontoinhaber: '', bankIban: '', bankBic: '', bankName: '', rolle: 'mitglied' as 'vorstand' | 'mitglied', pin: '' }
+const EMPTY_MEMBER_FORM = { name: '', email: '', lizenz: '', typ: '', strasse: '', plz: '', ort: '', land: '', geburtsdatum: '', eintrittsdatum: '', phone: '', website: '', galerieLinkUrl: '', lizenzGalerieUrl: '', bio: '', vita: '', mitgliedFotoUrl: '', imageUrl: '', bankKontoinhaber: '', bankIban: '', bankBic: '', bankName: '', rolle: 'mitglied' as 'vorstand' | 'mitglied', pin: '' }
 function memberToForm(m: Vk2Mitglied) {
-  return { name: m.name ?? '', email: m.email ?? '', lizenz: m.lizenz ?? '', typ: m.typ ?? '', strasse: m.strasse ?? '', plz: m.plz ?? '', ort: m.ort ?? '', land: m.land ?? '', geburtsdatum: m.geburtsdatum ?? '', eintrittsdatum: m.eintrittsdatum ?? m.seit ?? '', phone: m.phone ?? '', website: m.website ?? '', galerieLinkUrl: m.galerieLinkUrl ?? '', bio: m.bio ?? '', vita: m.vita ?? '', mitgliedFotoUrl: m.mitgliedFotoUrl ?? '', imageUrl: m.imageUrl ?? '', bankKontoinhaber: m.bankKontoinhaber ?? '', bankIban: m.bankIban ?? '', bankBic: m.bankBic ?? '', bankName: m.bankName ?? '', rolle: m.rolle ?? 'mitglied', pin: m.pin ?? '' }
+  return { name: m.name ?? '', email: m.email ?? '', lizenz: m.lizenz ?? '', typ: m.typ ?? '', strasse: m.strasse ?? '', plz: m.plz ?? '', ort: m.ort ?? '', land: m.land ?? '', geburtsdatum: m.geburtsdatum ?? '', eintrittsdatum: m.eintrittsdatum ?? m.seit ?? '', phone: m.phone ?? '', website: m.website ?? '', galerieLinkUrl: m.galerieLinkUrl ?? '', lizenzGalerieUrl: m.lizenzGalerieUrl ?? '', bio: m.bio ?? '', vita: m.vita ?? '', mitgliedFotoUrl: m.mitgliedFotoUrl ?? '', imageUrl: m.imageUrl ?? '', bankKontoinhaber: m.bankKontoinhaber ?? '', bankIban: m.bankIban ?? '', bankBic: m.bankBic ?? '', bankName: m.bankName ?? '', rolle: m.rolle ?? 'mitglied', pin: m.pin ?? '' }
 }
 /** CSV-Header (versch. Schreibweisen) → Vk2Mitglied-Feld */
 const CSV_HEADER_MAP: Record<string, keyof Vk2Mitglied> = {
@@ -1061,7 +1061,7 @@ function ScreenshotExportAdmin() {
   /** VK2: Index in vk2Stammdaten.mitglieder beim Bearbeiten; null = neues Mitglied */
   const [editingMemberIndex, setEditingMemberIndex] = useState<number | null>(null)
   /** VK2: Vollständige Mitglieder-Stammdaten im Modal */
-  const [memberForm, setMemberForm] = useState<{ name: string; email: string; lizenz: string; typ: string; strasse: string; plz: string; ort: string; land: string; geburtsdatum: string; eintrittsdatum: string; phone: string; website: string; galerieLinkUrl: string; bio: string; vita: string; mitgliedFotoUrl: string; imageUrl: string; bankKontoinhaber: string; bankIban: string; bankBic: string; bankName: string; rolle: 'vorstand' | 'mitglied'; pin: string }>({ ...EMPTY_MEMBER_FORM })
+  const [memberForm, setMemberForm] = useState<{ name: string; email: string; lizenz: string; typ: string; strasse: string; plz: string; ort: string; land: string; geburtsdatum: string; eintrittsdatum: string; phone: string; website: string; galerieLinkUrl: string; lizenzGalerieUrl: string; bio: string; vita: string; mitgliedFotoUrl: string; imageUrl: string; bankKontoinhaber: string; bankIban: string; bankBic: string; bankName: string; rolle: 'vorstand' | 'mitglied'; pin: string }>({ ...EMPTY_MEMBER_FORM })
   /** VK2: Drag-over für CSV-Import */
   const [csvDragOver, setCsvDragOver] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -1090,6 +1090,7 @@ function ScreenshotExportAdmin() {
   // - inShop: Werke im Online-Shop verfügbar (kann geändert werden)
   const [isInExhibition] = useState(true)
   const [isInShop, setIsInShop] = useState(true)
+  const [isImVereinskatalog, setIsImVereinskatalog] = useState(false)
   const [artworkQuantity, setArtworkQuantity] = useState<string>('1')
   const [artworkNumber, setArtworkNumber] = useState<string>('')
   // ök2 Künstler: Schnellversion (wenig Felder) vs. ausführliche Version; alle Kategorien/Beschreibungen frei
@@ -6775,6 +6776,7 @@ ${'='.repeat(60)}
       quantity: quantityNum,
       inExhibition: isInExhibition,
       inShop: isInShop,
+      imVereinskatalog: isImVereinskatalog || false,
       imageUrl: imageDataUrl,
       createdAt: new Date().toISOString(),
       addedToGalleryAt: new Date().toISOString(),
@@ -7115,6 +7117,7 @@ ${'='.repeat(60)}
       setArtworkPrice('')
       setArtworkQuantity('1')
       setIsInShop(true)
+      setIsImVereinskatalog(false)
       
       // Event dispatchen, damit Galerie-Seite sich aktualisiert
       window.dispatchEvent(new CustomEvent('artworks-updated', { 
@@ -9634,6 +9637,26 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     }}>
                       {artwork.inExhibition && <span style={{ display: 'block' }}>✓ Ausstellung</span>}
                       {artwork.inShop && <span style={{ display: 'block' }}>✓ Shop</span>}
+                      {isVk2AdminContext() && (() => {
+                        const katalogAnzahl = allArtworks.filter((a: any) => a.imVereinskatalog).length
+                        const istDrin = !!artwork.imVereinskatalog
+                        const limitErreicht = !istDrin && katalogAnzahl >= 5
+                        return (
+                          <button
+                            type="button"
+                            title={limitErreicht ? 'Limit (5) erreicht – erst anderes Werk abwählen' : (istDrin ? 'Aus Vereinskatalog entfernen' : 'Im Vereinskatalog zeigen')}
+                            onClick={() => {
+                              if (limitErreicht) return
+                              const updated = allArtworks.map((a: any) => a.id === artwork.id ? { ...a, imVereinskatalog: !istDrin } : a)
+                              saveArtworks(updated)
+                              setAllArtworks(updated)
+                            }}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.3rem', padding: '0.2rem 0.5rem', background: istDrin ? 'rgba(251,191,36,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${istDrin ? 'rgba(251,191,36,0.5)' : 'rgba(255,255,255,0.15)'}`, borderRadius: 6, color: istDrin ? '#fbbf24' : 'rgba(255,255,255,0.3)', fontSize: '0.72rem', cursor: limitErreicht ? 'not-allowed' : 'pointer', opacity: limitErreicht ? 0.5 : 1 }}
+                          >
+                            🏆 {istDrin ? `Katalog ✓ (${katalogAnzahl}/5)` : `Katalog (${katalogAnzahl}/5)`}
+                          </button>
+                        )
+                      })()}
                       {(artwork.addedToGalleryAt || artwork.createdAt) && (
                         <span style={{ display: 'block', color: s.muted, fontSize: 'clamp(0.75rem, 2vw, 0.85rem)' }}>
                           Aufgenommen: {(() => {
@@ -9695,6 +9718,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             setArtworkPrice(String(artwork.price || ''))
                             setArtworkQuantity(String(artwork.quantity ?? 1))
                             setIsInShop(artwork.inShop !== undefined ? artwork.inShop : true)
+                          setIsImVereinskatalog(artwork.imVereinskatalog || false)
                             setArtworkNumber(artwork.number || '')
                             setArtworkFormVariantOek2((artwork.subcategoryFree || artwork.dimensionsFree || artwork.artist) ? 'ausfuehrlich' : 'schnell')
                             if (artwork.imageUrl) setPreviewUrl(artwork.imageUrl)
@@ -9737,6 +9761,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           setArtworkPrice(String(artwork.price || ''))
                           setArtworkQuantity(String(artwork.quantity ?? 1))
                           setIsInShop(artwork.inShop !== undefined ? artwork.inShop : true)
+                          setIsImVereinskatalog(artwork.imVereinskatalog || false)
                           setArtworkNumber(artwork.number || '')
                           if (artwork.imageUrl) setPreviewUrl(artwork.imageUrl)
                           setShowAddModal(true)
@@ -14963,6 +14988,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             setPhotoUseFreistellen(true)
             setPhotoBackgroundPreset('hell')
             setIsInShop(true)
+      setIsImVereinskatalog(false)
             setArtworkFormVariantOek2('schnell')
             setArtworkCategoryFree('')
             setArtworkSubcategoryFree('')
@@ -15024,6 +15050,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   setPhotoUseFreistellen(true)
                   setPhotoBackgroundPreset('hell')
                   setIsInShop(true)
+      setIsImVereinskatalog(false)
                   setArtworkFormVariantOek2('schnell')
                   setArtworkCategoryFree('')
                   setArtworkSubcategoryFree('')
@@ -15234,6 +15261,19 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.95rem', outline: 'none' }}
                       />
                     </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: '#fbbf24', fontWeight: 600 }}>🏆 Lizenz-Galerie URL (für Vereinskatalog)</label>
+                      <input
+                        type="text"
+                        value={memberForm.lizenzGalerieUrl}
+                        onChange={(e) => setMemberForm(f => ({ ...f, lizenzGalerieUrl: e.target.value }))}
+                        placeholder="z.B. https://anna-k2.vercel.app"
+                        style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: '1px solid rgba(251,191,36,0.3)', borderRadius: '8px', color: s.text, fontSize: '0.95rem', outline: 'none' }}
+                      />
+                      <p style={{ margin: '0.3rem 0 0', fontSize: '0.72rem', color: 'rgba(251,191,36,0.5)' }}>
+                        Wenn das Mitglied eine eigene K2-Lizenzgalerie hat – der Katalog holt sich die markierten Werke von dort.
+                      </p>
+                    </div>
                   </div>
 
                   {/* ── ZUGANGSBERECHTIGUNG ── */}
@@ -15323,7 +15363,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       onClick={() => {
                         if (!memberForm.name.trim()) { alert('Bitte Name eintragen.'); return }
                         const mitglieder = [...(vk2Stammdaten.mitglieder || [])]
-                        const neu: Vk2Mitglied = { name: memberForm.name.trim(), email: memberForm.email.trim() || undefined, lizenz: memberForm.lizenz.trim() || undefined, typ: memberForm.typ || undefined, bio: memberForm.bio.trim() || undefined, vita: memberForm.vita.trim() || undefined, galerieLinkUrl: memberForm.galerieLinkUrl.trim() || undefined, website: memberForm.website.trim() || undefined, phone: memberForm.phone.trim() || undefined, strasse: memberForm.strasse.trim() || undefined, plz: memberForm.plz.trim() || undefined, ort: memberForm.ort.trim() || undefined, land: memberForm.land.trim() || undefined, geburtsdatum: memberForm.geburtsdatum.trim() || undefined, eintrittsdatum: memberForm.eintrittsdatum.trim() || undefined, mitgliedFotoUrl: memberForm.mitgliedFotoUrl.trim() || undefined, imageUrl: memberForm.imageUrl.trim() || undefined, bankKontoinhaber: memberForm.bankKontoinhaber.trim() || undefined, bankIban: memberForm.bankIban.trim() || undefined, bankBic: memberForm.bankBic.trim() || undefined, bankName: memberForm.bankName.trim() || undefined, rolle: memberForm.rolle || 'mitglied', pin: memberForm.pin.trim() || undefined, oeffentlichSichtbar: true }
+                        const neu: Vk2Mitglied = { name: memberForm.name.trim(), email: memberForm.email.trim() || undefined, lizenz: memberForm.lizenz.trim() || undefined, typ: memberForm.typ || undefined, bio: memberForm.bio.trim() || undefined, vita: memberForm.vita.trim() || undefined, galerieLinkUrl: memberForm.galerieLinkUrl.trim() || undefined, lizenzGalerieUrl: memberForm.lizenzGalerieUrl.trim() || undefined, website: memberForm.website.trim() || undefined, phone: memberForm.phone.trim() || undefined, strasse: memberForm.strasse.trim() || undefined, plz: memberForm.plz.trim() || undefined, ort: memberForm.ort.trim() || undefined, land: memberForm.land.trim() || undefined, geburtsdatum: memberForm.geburtsdatum.trim() || undefined, eintrittsdatum: memberForm.eintrittsdatum.trim() || undefined, mitgliedFotoUrl: memberForm.mitgliedFotoUrl.trim() || undefined, imageUrl: memberForm.imageUrl.trim() || undefined, bankKontoinhaber: memberForm.bankKontoinhaber.trim() || undefined, bankIban: memberForm.bankIban.trim() || undefined, bankBic: memberForm.bankBic.trim() || undefined, bankName: memberForm.bankName.trim() || undefined, rolle: memberForm.rolle || 'mitglied', pin: memberForm.pin.trim() || undefined, oeffentlichSichtbar: true }
                         if (editingMemberIndex !== null) {
                           mitglieder[editingMemberIndex] = neu
                         } else {
@@ -15557,6 +15597,30 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     <input type="checkbox" checked={isInShop} onChange={(e) => setIsInShop(e.target.checked)} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
                     Im Online-Shop verfügbar
                   </label>
+                  {/* Vereinskatalog-Checkbox – nur für VK2-Mitglieder mit Lizenzgalerie */}
+                  {isVk2AdminContext() && (() => {
+                    const katalogAnzahl = loadArtworks().filter((a: any) => a.imVereinskatalog && (!editingArtwork || a.id !== editingArtwork.id)).length
+                    const limitErreicht = !isImVereinskatalog && katalogAnzahl >= 5
+                    return (
+                      <div style={{ marginTop: '0.25rem' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: limitErreicht ? 'rgba(255,140,66,0.5)' : '#fbbf24', cursor: limitErreicht ? 'not-allowed' : 'pointer', opacity: limitErreicht ? 0.6 : 1 }}>
+                          <input
+                            type="checkbox"
+                            checked={isImVereinskatalog}
+                            disabled={limitErreicht}
+                            onChange={(e) => setIsImVereinskatalog(e.target.checked)}
+                            style={{ width: '16px', height: '16px', cursor: limitErreicht ? 'not-allowed' : 'pointer', accentColor: '#fbbf24' }}
+                          />
+                          🏆 Im Vereinskatalog zeigen
+                        </label>
+                        <div style={{ marginTop: '0.2rem', fontSize: '0.72rem', color: limitErreicht ? '#ff8c42' : 'rgba(255,255,255,0.3)', paddingLeft: '1.5rem' }}>
+                          {limitErreicht
+                            ? '⚠️ Limit erreicht – erst ein anderes Werk abwählen'
+                            : `${katalogAnzahl + (isImVereinskatalog ? 0 : 0)} von max. 5 ausgewählt`}
+                        </div>
+                      </div>
+                    )
+                  })()}
                 </div>
               ) : (
               <>
@@ -16270,6 +16334,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     setSelectedFile(null)
                     setPreviewUrl(null)
                     setIsInShop(true)
+      setIsImVereinskatalog(false)
                   }}
                   style={{
                     padding: '0.6rem 1.25rem',
