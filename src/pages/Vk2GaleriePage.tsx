@@ -107,59 +107,72 @@ const Vk2GaleriePage: React.FC = () => {
     try { return new Date(ev.date) >= today } catch { return false }
   }).slice(0, 3)
 
+  // Farben – warmes helles Design
+  const C = {
+    bg: '#faf8f5',
+    bgCard: '#ffffff',
+    text: '#1c1a18',
+    textMid: '#5c5650',
+    textLight: '#9a928a',
+    accent: '#c0562a',
+    accentHover: '#a04520',
+    accentSoft: '#f0e8e2',
+    gold: '#a07828',
+    goldBg: '#fdf6e8',
+    border: '#e8e2da',
+    heroOverlay: 'linear-gradient(to bottom, rgba(0,0,0,0.0) 0%, rgba(20,12,8,0.65) 70%, rgba(20,12,8,0.95) 100%)',
+  }
+
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #1a0f0a 0%, #2d1a14 50%, #3d2419 100%)',
-      color: '#fff5f0',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
+      background: C.bg,
+      color: C.text,
+      fontFamily: '"Georgia", "Times New Roman", serif',
       position: 'relative',
       overflowX: 'hidden',
-      overflowY: 'visible'
     }}>
-      {/* Obere Leiste: APf-Button + VK2-Badge + Admin */}
-      <div style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0.5rem 1rem',
-        background: 'rgba(26,15,10,0.95)',
-        backdropFilter: 'blur(8px)',
-        borderBottom: '1px solid rgba(255,140,66,0.2)'
+
+      {/* ── NAV-LEISTE ── */}
+      <nav style={{
+        position: 'sticky', top: 0, zIndex: 100,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0.6rem 1.5rem',
+        background: 'rgba(250,248,245,0.97)',
+        backdropFilter: 'blur(12px)',
+        borderBottom: `1px solid ${C.border}`,
+        boxShadow: '0 1px 8px rgba(0,0,0,0.06)',
       }}>
         <button
           onClick={() => navigate('/')}
-          style={{ background: '#ff8c42', color: '#fff', border: 'none', borderRadius: 8, padding: '0.3rem 0.7rem', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}
+          style={{ background: C.accent, color: '#fff', border: 'none', borderRadius: 8, padding: '0.3rem 0.75rem', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer', letterSpacing: '0.04em' }}
         >
           APf
         </button>
-        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'rgba(255,140,66,0.8)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          {heroTitle} – {pageTexts.kunstschaffendeHeading?.trim() || 'Unsere Mitglieder'}
+        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: C.textMid, letterSpacing: '0.14em', textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif' }}>
+          {vereinsName}
         </span>
-        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <button
             onClick={() => navigate(PROJECT_ROUTES.vk2.mitgliedLogin)}
-            style={{ background: 'rgba(37,99,235,0.25)', color: 'rgba(160,200,255,0.9)', border: '1px solid rgba(37,99,235,0.4)', borderRadius: 6, padding: '0.25rem 0.6rem', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}
-            title="Mitglied-Login: eigenes Profil bearbeiten"
+            style={{ background: '#f0f4ff', color: '#3b5bdb', border: '1px solid #c5d0fa', borderRadius: 8, padding: '0.28rem 0.7rem', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600, fontFamily: 'system-ui, sans-serif' }}
+            title="Mitglied-Login"
           >
             🔑 Mitglied
           </button>
           <button
             onClick={() => navigate('/admin?context=vk2')}
-            style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6, padding: '0.25rem 0.6rem', fontSize: '0.78rem', cursor: 'pointer' }}
+            style={{ background: 'transparent', color: C.textLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '0.28rem 0.7rem', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'system-ui, sans-serif' }}
           >
             Admin
           </button>
         </div>
-      </div>
+      </nav>
 
-      {/* Vorschau-Banner (nur wenn ?vorschau=1) */}
+      {/* ── VORSCHAU-BANNER ── */}
       {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('vorschau') === '1' && (
-        <div style={{ background: '#b54a1e', color: '#fff', padding: '0.5rem 1rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'space-between' }}>
-          <button onClick={() => navigate('/admin?context=vk2')} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 6, padding: '0.3rem 0.8rem', color: '#fff', cursor: 'pointer', fontSize: '0.85rem' }}>
+        <div style={{ background: C.accent, color: '#fff', padding: '0.5rem 1.5rem', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'space-between', fontFamily: 'system-ui, sans-serif' }}>
+          <button onClick={() => navigate('/admin?context=vk2')} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 6, padding: '0.28rem 0.8rem', color: '#fff', cursor: 'pointer', fontSize: '0.84rem' }}>
             ← Zurück zu Einstellungen
           </button>
           <span>Vorschau – hier siehst du deine gespeicherten Änderungen</span>
@@ -167,200 +180,181 @@ const Vk2GaleriePage: React.FC = () => {
         </div>
       )}
 
-      {/* Hauptinhalt */}
-      <header style={{ padding: 'clamp(2rem, 6vw, 3.5rem) clamp(1.5rem, 4vw, 3rem)', maxWidth: '1200px', margin: '0 auto' }}>
-
-        {/* Foto – vollständig anzeigen, nicht abschneiden */}
-        {welcomeImage && (
-          <div style={{ width: '100%', marginBottom: 'clamp(1.5rem, 4vw, 2.5rem)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
-            <img src={welcomeImage} alt={heroTitle} style={{ width: '100%', height: 'auto', display: 'block' }} />
-          </div>
+      {/* ── HERO: Foto mit Titel-Overlay ── */}
+      <div style={{ position: 'relative', width: '100%', height: 'clamp(320px, 52vh, 540px)', overflow: 'hidden' }}>
+        {welcomeImage ? (
+          <img src={welcomeImage} alt={heroTitle} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        ) : (
+          <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #c8b89a 0%, #a89278 50%, #887258 100%)' }} />
         )}
+        <div style={{ position: 'absolute', inset: 0, background: C.heroOverlay }} />
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 'clamp(1.5rem, 4vw, 2.5rem) clamp(1.5rem, 5vw, 3rem)' }}>
+          <p style={{ margin: '0 0 0.35rem', fontSize: '0.78rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,230,180,0.85)', fontWeight: 600, fontFamily: 'system-ui, sans-serif' }}>
+            {subtext}
+          </p>
+          <h1 style={{ margin: 0, fontSize: 'clamp(2rem, 6vw, 3.8rem)', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.08, textShadow: '0 2px 16px rgba(0,0,0,0.4)' }}>
+            {heroTitle}
+          </h1>
+        </div>
+      </div>
 
-        {/* Eingangskarten – zwei editierbare Bildkarten */}
+      {/* ── EINGANGSKARTEN ── */}
+      <div style={{ padding: '1.75rem clamp(1.25rem, 5vw, 3rem)', background: C.bg }}>
         <Vk2Eingangskarten />
+      </div>
 
-        {/* Titel + Subtext */}
-        <h1 style={{ margin: 0, fontSize: 'clamp(2rem, 6vw, 3.5rem)', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.15 }}>
-          {heroTitle}
-        </h1>
-        <p style={{ margin: '0.5rem 0 0', color: 'rgba(255,255,255,0.75)', fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', fontWeight: 400 }}>
-          {subtext}
-        </p>
+      {/* ── TRENNLINIE ── */}
+      <div style={{ height: 1, background: C.border, margin: '0 clamp(1.25rem, 5vw, 3rem)' }} />
 
-        {/* Intro-Text */}
-        <p style={{ margin: 'clamp(1rem, 3vw, 1.5rem) 0 0', color: 'rgba(255,255,255,0.75)', fontSize: 'clamp(1rem, 2.5vw, 1.1rem)', lineHeight: 1.7, fontWeight: 300, maxWidth: 600 }}>
+      {/* ── INTRO + BUTTONS ── */}
+      <div style={{ padding: '2rem clamp(1.25rem, 5vw, 3rem)', maxWidth: 720 }}>
+        <p style={{ margin: '0 0 1.75rem', color: C.textMid, fontSize: '1.05rem', lineHeight: 1.75, fontWeight: 400 }}>
           {introText}
         </p>
-
-        {/* Hauptbuttons */}
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: 'clamp(1.25rem, 3vw, 1.75rem)' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <Link
             to={PROJECT_ROUTES.vk2.galerieVorschau}
             style={{
-              display: 'inline-block',
-              padding: 'clamp(0.85rem, 2vw, 1rem) clamp(1.75rem, 4vw, 2.25rem)',
-              background: 'linear-gradient(135deg, #ff8c42 0%, #e67a2a 100%)',
-              color: '#fff',
-              textDecoration: 'none',
-              borderRadius: 12,
-              fontSize: 'clamp(1rem, 2.5vw, 1.1rem)',
-              fontWeight: 600,
-              boxShadow: '0 8px 24px rgba(255,140,66,0.4)'
+              display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
+              padding: '0.85rem 1.9rem',
+              background: C.accent,
+              color: '#fff', textDecoration: 'none', borderRadius: 10,
+              fontSize: '0.95rem', fontWeight: 700, fontFamily: 'system-ui, sans-serif',
+              boxShadow: '0 3px 14px rgba(192,86,42,0.28)',
+              letterSpacing: '0.01em',
             }}
           >
-            {pageTexts.kunstschaffendeHeading?.trim() || 'Unsere Mitglieder'} ansehen →
+            👥 {pageTexts.kunstschaffendeHeading?.trim() || 'Unsere Mitglieder'} ansehen →
           </Link>
           <Link
             to={PROJECT_ROUTES.vk2.katalog}
             style={{
-              display: 'inline-block',
-              padding: 'clamp(0.85rem, 2vw, 1rem) clamp(1.75rem, 4vw, 2.25rem)',
-              background: 'linear-gradient(135deg, rgba(251,191,36,0.2) 0%, rgba(251,191,36,0.1) 100%)',
-              border: '1.5px solid rgba(251,191,36,0.5)',
-              color: '#fbbf24',
-              textDecoration: 'none',
-              borderRadius: 12,
-              fontSize: 'clamp(1rem, 2.5vw, 1.1rem)',
-              fontWeight: 600,
+              display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
+              padding: '0.85rem 1.9rem',
+              background: C.goldBg,
+              border: `1.5px solid ${C.gold}`,
+              color: C.gold, textDecoration: 'none', borderRadius: 10,
+              fontSize: '0.95rem', fontWeight: 700, fontFamily: 'system-ui, sans-serif',
+              letterSpacing: '0.01em',
             }}
           >
             🏆 Vereinskatalog →
           </Link>
         </div>
-
-        {/* Events – nur wenn vorhanden, schmal und dezent */}
-        {upcomingEvents.length > 0 && (
-        <div style={{ marginTop: 'clamp(1.5rem, 4vw, 2rem)', maxWidth: 480, background: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: '0.9rem 1.1rem', borderLeft: '3px solid rgba(255,140,66,0.4)' }}>
-          <p style={{ margin: '0 0 0.6rem', fontSize: '0.78rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
-            {eventHeading}
-          </p>
-          {upcomingEvents.length === 0 ? null : (
-              <ul style={{ margin: 0, paddingLeft: '1.25rem', color: '#fff', fontSize: 'clamp(0.95rem, 2vw, 1.05rem)', lineHeight: 1.6 }}>
-                {upcomingEvents.map((ev: any) => (
-                  <li key={ev.id || ev.date} style={{ marginBottom: '0.5rem' }}>
-                    <strong>{ev.title}</strong>
-                    {ev.date && <span style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 400 }}> — {formatDate(ev.date)}</span>}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-
-      </header>
-
-      {/* Impressum */}
-      <footer style={{ marginTop: 'clamp(3rem, 8vw, 5rem)', padding: 'clamp(1.5rem, 4vw, 2.5rem)', borderTop: '1px solid rgba(255,255,255,0.1)', maxWidth: '1200px', marginLeft: 'auto', marginRight: 'auto' }}>
-        <h4 style={{ margin: '0 0 0.75rem', fontSize: 'clamp(0.9rem, 2vw, 1rem)', fontWeight: 600, color: '#fff5f0' }}>Impressum</h4>
-        <p style={{ margin: '0 0 0.25rem', fontWeight: 600, color: '#fff5f0', fontSize: '0.95rem' }}>
-          {stammdaten?.verein?.name || 'Verein (Name in Admin-Einstellungen eintragen)'}
-        </p>
-        {stammdaten?.verein?.vereinsnummer && (
-          <p style={{ margin: '0 0 0.15rem', color: 'rgba(255,255,255,0.6)', fontSize: '0.88rem' }}>ZVR-Zahl: {stammdaten.verein.vereinsnummer}</p>
-        )}
-        {(stammdaten?.verein?.address || stammdaten?.verein?.city) && (
-          <p style={{ margin: '0 0 0.15rem', color: 'rgba(255,255,255,0.6)', fontSize: '0.88rem' }}>
-            {[stammdaten.verein.address, stammdaten.verein.city, stammdaten.verein.country].filter(Boolean).join(', ')}
-          </p>
-        )}
-        {stammdaten?.verein?.email && (
-          <p style={{ margin: '0 0 0.15rem', fontSize: '0.88rem' }}>
-            <a href={`mailto:${stammdaten.verein.email}`} style={{ color: '#ff8c42', textDecoration: 'none' }}>{stammdaten.verein.email}</a>
-          </p>
-        )}
-        {stammdaten?.vorstand?.name && (
-          <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-            <p style={{ margin: '0 0 0.5rem', fontWeight: 600, color: '#fff5f0', fontSize: '0.9rem' }}>Vorstand</p>
-            <p style={{ margin: '0 0 0.2rem', color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>Obfrau/Obmann: <span style={{ color: '#fff5f0' }}>{stammdaten.vorstand.name}</span></p>
-            {stammdaten.vize?.name && <p style={{ margin: '0 0 0.2rem', color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>Stellvertreter:in: <span style={{ color: '#fff5f0' }}>{stammdaten.vize.name}</span></p>}
-            {stammdaten.kassier?.name && <p style={{ margin: '0 0 0.2rem', color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>Kassier:in: <span style={{ color: '#fff5f0' }}>{stammdaten.kassier.name}</span></p>}
-          </div>
-        )}
-
-        {/* ── KOMMUNIKATION (WhatsApp) ── */}
-        {(stammdaten?.kommunikation?.whatsappGruppeLink || stammdaten?.kommunikation?.vorstandTelefon || (stammdaten?.kommunikation?.umfragen || []).filter(u => u.aktiv && u.frage).length > 0) && (
-          <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-            <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', fontWeight: 700, color: '#fff5f0', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              💬 Kommunikation
-            </h3>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '0.75rem' }}>
-              {stammdaten?.kommunikation?.whatsappGruppeLink && (
-                <a
-                  href={stammdaten.kommunikation.whatsappGruppeLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 1.1rem', background: '#25d366', borderRadius: 24, color: '#fff', fontSize: '0.9rem', fontWeight: 700, textDecoration: 'none', boxShadow: '0 2px 12px rgba(37,211,102,0.35)' }}
-                >
-                  <span>💬</span> WhatsApp-Gruppe beitreten
-                </a>
-              )}
-              {stammdaten?.kommunikation?.vorstandTelefon && (
-                <a
-                  href={`https://wa.me/${stammdaten.kommunikation.vorstandTelefon}?text=${encodeURIComponent(`Hallo, ich bin Mitglied bei ${vereinsName} und habe eine Frage:`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 1.1rem', background: 'rgba(37,211,102,0.18)', border: '1px solid rgba(37,211,102,0.4)', borderRadius: 24, color: '#25d366', fontSize: '0.9rem', fontWeight: 700, textDecoration: 'none' }}
-                >
-                  <span>📩</span> Vorstand schreiben
-                </a>
-              )}
-            </div>
-
-            {/* Umfragen */}
-            {(stammdaten?.kommunikation?.umfragen || []).filter(u => u.aktiv && u.frage.trim()).length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {(stammdaten?.kommunikation?.umfragen || []).filter(u => u.aktiv && u.frage.trim()).map(umfrage => {
-                  const waText = `📊 *${umfrage.frage}*\n\n${umfrage.antworten.map((a, i) => `${['1️⃣','2️⃣','3️⃣','4️⃣'][i] || (i+1)+'.'}  ${a}`).join('\n')}\n\nBitte abstimmen und zurückschreiben!`
-                  return (
-                    <div key={umfrage.id} style={{ padding: '0.65rem 0.9rem', background: 'rgba(37,211,102,0.07)', border: '1px solid rgba(37,211,102,0.2)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
-                      <div>
-                        <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#fff5f0', marginBottom: '0.2rem' }}>📊 {umfrage.frage}</div>
-                        <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)' }}>{umfrage.antworten.join(' · ')}</div>
-                      </div>
-                      <a
-                        href={`https://wa.me/?text=${encodeURIComponent(waText)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.85rem', background: '#25d366', borderRadius: 20, color: '#fff', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0 }}
-                      >
-                        Abstimmen via WhatsApp ↗
-                      </a>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* QR-Code → Mitglieder-Seite */}
-        {qrDataUrl && (
-          <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-            <img src={qrDataUrl} alt="QR-Code Mitglieder" style={{ width: 100, height: 100, borderRadius: 8, background: '#fff', padding: 4 }} />
-            <div>
-              <p style={{ margin: '0 0 0.2rem', fontWeight: 600, color: '#fff5f0', fontSize: '0.9rem' }}>
-                {pageTexts.kunstschaffendeHeading?.trim() || 'Unsere Mitglieder'} direkt aufrufen
-              </p>
-              <p style={{ margin: 0, color: 'rgba(255,255,255,0.5)', fontSize: '0.82rem' }}>
-                QR-Code scannen
-              </p>
-            </div>
-          </div>
-        )}
-      </footer>
-
-      {/* Copyright + K2 Brand */}
-      <div style={{ textAlign: 'center', padding: '1.5rem 1rem 2rem', color: 'rgba(255,255,255,0.3)', fontSize: '0.78rem' }}>
-        <div style={{ marginBottom: '0.4rem', fontWeight: 600, fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.05em' }}>
-          K2 Galerie
-        </div>
-        <div>© {new Date().getFullYear()} {stammdaten?.verein?.name || 'Vereinsplattform'} · Powered by K2 Galerie</div>
       </div>
 
-      {/* Stand-Badge unten links */}
+      {/* ── EVENTS ── */}
+      {upcomingEvents.length > 0 && (
+        <div style={{ padding: '0 clamp(1.25rem, 5vw, 3rem) 2rem', maxWidth: 720 }}>
+          <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 14, padding: '1.25rem 1.5rem', borderLeft: `4px solid ${C.accent}`, boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
+            <p style={{ margin: '0 0 0.75rem', fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: C.textLight, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }}>
+              {eventHeading}
+            </p>
+            <ul style={{ margin: 0, paddingLeft: '1.1rem', color: C.text, fontSize: '0.95rem', lineHeight: 1.7, fontFamily: 'system-ui, sans-serif' }}>
+              {upcomingEvents.map((ev: any) => (
+                <li key={ev.id || ev.date} style={{ marginBottom: '0.35rem' }}>
+                  <strong>{ev.title}</strong>
+                  {ev.date && <span style={{ color: C.textMid, fontWeight: 400 }}> – {formatDate(ev.date)}</span>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {/* ── FOOTER ── */}
+      <footer style={{ marginTop: '3rem', padding: '2rem clamp(1.25rem, 5vw, 3rem) 2.5rem', borderTop: `1px solid ${C.border}`, background: '#f2ede6', fontFamily: 'system-ui, sans-serif' }}>
+        <div style={{ display: 'flex', gap: '3rem', flexWrap: 'wrap', maxWidth: 860 }}>
+
+          {/* Verein */}
+          <div style={{ minWidth: 200 }}>
+            <p style={{ margin: '0 0 0.15rem', fontWeight: 700, color: C.text, fontSize: '0.92rem' }}>
+              {stammdaten?.verein?.name || 'Verein'}
+            </p>
+            {stammdaten?.verein?.vereinsnummer && (
+              <p style={{ margin: '0 0 0.1rem', color: C.textMid, fontSize: '0.82rem' }}>ZVR: {stammdaten.verein.vereinsnummer}</p>
+            )}
+            {(stammdaten?.verein?.address || stammdaten?.verein?.city) && (
+              <p style={{ margin: '0 0 0.1rem', color: C.textMid, fontSize: '0.82rem' }}>
+                {[stammdaten.verein.address, stammdaten.verein.city].filter(Boolean).join(', ')}
+              </p>
+            )}
+            {stammdaten?.verein?.email && (
+              <p style={{ margin: '0 0 0.1rem', fontSize: '0.82rem' }}>
+                <a href={`mailto:${stammdaten.verein.email}`} style={{ color: C.accent, textDecoration: 'none' }}>{stammdaten.verein.email}</a>
+              </p>
+            )}
+          </div>
+
+          {/* Vorstand */}
+          {stammdaten?.vorstand?.name && (
+            <div style={{ minWidth: 160 }}>
+              <p style={{ margin: '0 0 0.35rem', fontWeight: 700, color: C.text, fontSize: '0.82rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Vorstand</p>
+              <p style={{ margin: '0 0 0.1rem', color: C.textMid, fontSize: '0.82rem' }}>{stammdaten.vorstand.name}</p>
+              {stammdaten.vize?.name && <p style={{ margin: '0 0 0.1rem', color: C.textMid, fontSize: '0.82rem' }}>{stammdaten.vize.name}</p>}
+            </div>
+          )}
+
+          {/* Kommunikation */}
+          {(stammdaten?.kommunikation?.whatsappGruppeLink || stammdaten?.kommunikation?.vorstandTelefon) && (
+            <div>
+              <p style={{ margin: '0 0 0.5rem', fontWeight: 700, color: C.text, fontSize: '0.82rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Kontakt</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                {stammdaten?.kommunikation?.whatsappGruppeLink && (
+                  <a href={stammdaten.kommunikation.whatsappGruppeLink} target="_blank" rel="noopener noreferrer"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.9rem', background: '#25d366', borderRadius: 20, color: '#fff', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none' }}>
+                    💬 WhatsApp-Gruppe
+                  </a>
+                )}
+                {stammdaten?.kommunikation?.vorstandTelefon && (
+                  <a href={`https://wa.me/${stammdaten.kommunikation.vorstandTelefon}`} target="_blank" rel="noopener noreferrer"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.9rem', background: 'rgba(37,211,102,0.12)', border: '1px solid rgba(37,211,102,0.35)', borderRadius: 20, color: '#1a7a3c', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none' }}>
+                    📩 Vorstand schreiben
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* QR-Code */}
+          {qrDataUrl && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <img src={qrDataUrl} alt="QR" style={{ width: 72, height: 72, borderRadius: 6, background: '#fff', padding: 3, boxShadow: '0 1px 6px rgba(0,0,0,0.1)' }} />
+              <p style={{ margin: 0, color: C.textLight, fontSize: '0.78rem', maxWidth: 100, lineHeight: 1.4 }}>Mitglieder direkt aufrufen</p>
+            </div>
+          )}
+        </div>
+
+        {/* Umfragen */}
+        {(stammdaten?.kommunikation?.umfragen || []).filter(u => u.aktiv && u.frage.trim()).length > 0 && (
+          <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: '0.5rem', maxWidth: 600 }}>
+            {(stammdaten?.kommunikation?.umfragen || []).filter(u => u.aktiv && u.frage.trim()).map(umfrage => {
+              const waText = `📊 *${umfrage.frage}*\n\n${umfrage.antworten.map((a, i) => `${['1️⃣','2️⃣','3️⃣','4️⃣'][i] || (i+1)+'.'}  ${a}`).join('\n')}\n\nBitte abstimmen!`
+              return (
+                <div key={umfrage.id} style={{ padding: '0.6rem 0.9rem', background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: C.text, marginBottom: '0.15rem' }}>📊 {umfrage.frage}</div>
+                    <div style={{ fontSize: '0.75rem', color: C.textLight }}>{umfrage.antworten.join(' · ')}</div>
+                  </div>
+                  <a href={`https://wa.me/?text=${encodeURIComponent(waText)}`} target="_blank" rel="noopener noreferrer"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', padding: '0.35rem 0.8rem', background: '#25d366', borderRadius: 18, color: '#fff', fontSize: '0.8rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0 }}>
+                    Abstimmen ↗
+                  </a>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Copyright */}
+        <p style={{ margin: '1.5rem 0 0', color: C.textLight, fontSize: '0.75rem' }}>
+          © {new Date().getFullYear()} {stammdaten?.verein?.name || 'Vereinsplattform'} · Powered by K2 Galerie
+        </p>
+      </footer>
+
+      {/* Stand-Badge */}
       <div
-        style={{ position: 'fixed', bottom: 8, left: 8, fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)', cursor: 'pointer', zIndex: 50 }}
+        style={{ position: 'fixed', bottom: 8, left: 8, fontSize: '0.65rem', color: 'rgba(0,0,0,0.25)', cursor: 'pointer', zIndex: 50, fontFamily: 'system-ui, sans-serif' }}
         onClick={() => { window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now() }}
         title="Tippen für Cache-Bypass"
       >
@@ -420,8 +414,7 @@ function Vk2Eingangskarten() {
     <div style={{
       display: 'grid',
       gridTemplateColumns: 'repeat(2, 1fr)',
-      gap: 'clamp(0.75rem, 2vw, 1.25rem)',
-      marginBottom: 'clamp(1.5rem, 4vw, 2.5rem)',
+      gap: '1rem',
     }}>
       {karten.map((k, i) => (
         <EingangsKarte key={i} data={k} index={i} />
@@ -431,23 +424,24 @@ function Vk2Eingangskarten() {
 }
 
 function EingangsKarte({ data, index }: { data: EingangskarteData; index: number }) {
-  // Dummy-Hintergründe wenn kein Bild gesetzt
   const dummyGradients = [
-    'linear-gradient(135deg, rgba(255,140,66,0.35) 0%, rgba(180,74,30,0.5) 100%)',
-    'linear-gradient(135deg, rgba(251,191,36,0.25) 0%, rgba(180,100,20,0.4) 100%)',
+    'linear-gradient(135deg, #e8d5c4 0%, #c8a888 100%)',
+    'linear-gradient(135deg, #d8e4d0 0%, #a8c498 100%)',
   ]
+  const dummyIcons = ['🖼️', '👥']
   const hasBild = !!data.imageUrl
 
   return (
     <div style={{
       position: 'relative',
-      borderRadius: 'clamp(10px, 2vw, 16px)',
+      borderRadius: 14,
       overflow: 'hidden',
-      aspectRatio: '3/2',
-      minHeight: 120,
-      background: hasBild ? '#111' : dummyGradients[index % 2],
-      border: '1px solid rgba(255,255,255,0.1)',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
+      aspectRatio: '4/3',
+      minHeight: 160,
+      background: hasBild ? '#e8e2da' : dummyGradients[index % 2],
+      border: '1px solid #e0d8cf',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.10)',
+      cursor: 'pointer',
     }}>
       {/* Bild */}
       {hasBild && (
@@ -458,36 +452,34 @@ function EingangsKarte({ data, index }: { data: EingangskarteData; index: number
         />
       )}
 
-      {/* Dummy-Muster wenn kein Bild */}
+      {/* Platzhalter wenn kein Bild */}
       {!hasBild && (
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: 'repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 12px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <span style={{ fontSize: 'clamp(2rem, 6vw, 3.5rem)', opacity: 0.2 }}>{index === 0 ? '🖼️' : '👥'}</span>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ fontSize: 'clamp(2.5rem, 7vw, 4rem)', opacity: 0.35 }}>{dummyIcons[index % 2]}</span>
         </div>
       )}
 
-      {/* Gradient-Overlay */}
+      {/* Gradient-Overlay von unten */}
       <div style={{
         position: 'absolute', inset: 0,
-        background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 60%, transparent 100%)',
+        background: hasBild
+          ? 'linear-gradient(to top, rgba(20,12,8,0.82) 0%, rgba(0,0,0,0.15) 55%, transparent 100%)'
+          : 'linear-gradient(to top, rgba(20,12,8,0.65) 0%, transparent 70%)',
       }} />
 
       {/* Text unten */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 'clamp(0.75rem, 2vw, 1.1rem)' }}>
-        <div style={{ fontWeight: 700, fontSize: 'clamp(0.9rem, 2.5vw, 1.1rem)', color: '#fff', lineHeight: 1.2, marginBottom: '0.2rem' }}>
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0.85rem 1rem' }}>
+        <div style={{ fontWeight: 700, fontSize: 'clamp(0.88rem, 2.5vw, 1rem)', color: '#fff', lineHeight: 1.2, marginBottom: '0.18rem', fontFamily: 'system-ui, sans-serif', textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}>
           {data.titel}
         </div>
-        <div style={{ fontSize: 'clamp(0.72rem, 1.8vw, 0.85rem)', color: 'rgba(255,255,255,0.72)', lineHeight: 1.4 }}>
+        <div style={{ fontSize: 'clamp(0.7rem, 1.8vw, 0.8rem)', color: 'rgba(255,255,255,0.78)', lineHeight: 1.4, fontFamily: 'system-ui, sans-serif' }}>
           {data.untertitel}
         </div>
       </div>
 
       {/* Bearbeiten-Hinweis (nur im Admin) */}
       {typeof window !== 'undefined' && (window.location.search.includes('vorschau=1') || window.location.pathname.includes('admin')) && (
-        <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6, padding: '0.15rem 0.45rem', fontSize: '0.68rem', color: 'rgba(255,255,255,0.7)' }}>
+        <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'rgba(192,86,42,0.85)', borderRadius: 6, padding: '0.15rem 0.45rem', fontSize: '0.68rem', color: '#fff', fontFamily: 'system-ui, sans-serif' }}>
           ✏️ editierbar
         </div>
       )}
