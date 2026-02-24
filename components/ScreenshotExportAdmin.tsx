@@ -8215,10 +8215,21 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
         {/* Profil-Formular */}
         <div style={{ padding: 'clamp(1rem,3vw,2rem)', maxWidth: 600, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
 
+          {/* Hinweis-Banner: was du bearbeiten kannst */}
+          <div style={{ background: 'rgba(37,99,235,0.12)', border: '1px solid rgba(37,99,235,0.35)', borderRadius: 12, padding: '0.9rem 1.1rem', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+            <span style={{ fontSize: '1.3rem', lineHeight: 1 }}>✏️</span>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#93c5fd', marginBottom: '0.25rem' }}>Dein persönlicher Bereich</div>
+              <div style={{ fontSize: '0.78rem', color: 'rgba(160,200,255,0.65)', lineHeight: 1.5 }}>
+                Alle <strong style={{ color: '#60a5fa' }}>blau umrandeten Felder</strong> kannst du selbst bearbeiten – Foto, Werk-Bild, Bio, Vita und Homepage. Änderungen werden sofort gespeichert.
+              </div>
+            </div>
+          </div>
+
           {/* Fotos */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#60a5fa', fontWeight: 600 }}>👤 Foto</label>
+            <div style={{ background: 'rgba(37,99,235,0.07)', border: '2px solid rgba(37,99,235,0.4)', borderRadius: 12, padding: '0.75rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#60a5fa', fontWeight: 700 }}>✏️ 👤 Foto</label>
               {mitglied?.mitgliedFotoUrl ? (
                 <div style={{ position: 'relative', display: 'inline-block' }}>
                   <img src={mitglied.mitgliedFotoUrl} alt="Foto" style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(37,99,235,0.5)', display: 'block' }} />
@@ -8234,8 +8245,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </label>
               )}
             </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#60a5fa', fontWeight: 600 }}>🖼️ Werk</label>
+            <div style={{ background: 'rgba(37,99,235,0.07)', border: '2px solid rgba(37,99,235,0.4)', borderRadius: 12, padding: '0.75rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#60a5fa', fontWeight: 700 }}>✏️ 🖼️ Werk</label>
               {mitglied?.imageUrl ? (
                 <div style={{ position: 'relative' }}>
                   <img src={mitglied.imageUrl} alt="Werk" style={{ width: '100%', aspectRatio: '3/2', objectFit: 'cover', borderRadius: 10, border: '1px solid rgba(37,99,235,0.3)', display: 'block' }} />
@@ -8254,38 +8265,44 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
           </div>
 
           {/* Bio */}
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: '#60a5fa', fontWeight: 600 }}>Kurz-Bio (Karte)</label>
+          <div style={{ background: 'rgba(37,99,235,0.07)', border: '2px solid rgba(37,99,235,0.4)', borderRadius: 12, padding: '0.9rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#60a5fa', fontWeight: 700 }}>
+              <span>✏️</span> Kurz-Bio <span style={{ fontSize: '0.72rem', fontWeight: 400, color: 'rgba(160,200,255,0.5)' }}>· erscheint auf deiner Mitglieder-Karte</span>
+            </label>
             <textarea
               value={mitglied?.bio || ''}
               onChange={(e) => { const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],bio:e.target.value};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{localStorage.setItem(KEY_VK2_STAMMDATEN,JSON.stringify({...vk2Stammdaten,mitglieder:neu}))}catch(_){}} }}
               placeholder="1–2 Sätze für die öffentliche Mitglieder-Karte ..."
               rows={2}
-              style={{ width: '100%', padding: '0.65rem', background: '#1e2f47', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 10, color: '#f0f6ff', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
+              style={{ width: '100%', padding: '0.65rem', background: '#1e2f47', border: '1px solid rgba(37,99,235,0.25)', borderRadius: 10, color: '#f0f6ff', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
             />
           </div>
 
           {/* Vita */}
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: '#60a5fa', fontWeight: 600 }}>📝 Vita (ausführlich)</label>
+          <div style={{ background: 'rgba(37,99,235,0.07)', border: '2px solid rgba(37,99,235,0.4)', borderRadius: 12, padding: '0.9rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#60a5fa', fontWeight: 700 }}>
+              <span>✏️</span> Vita (ausführlich) <span style={{ fontSize: '0.72rem', fontWeight: 400, color: 'rgba(160,200,255,0.5)' }}>· für dein öffentliches Profil</span>
+            </label>
             <textarea
               value={mitglied?.vita || ''}
               onChange={(e) => { const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],vita:e.target.value};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{localStorage.setItem(KEY_VK2_STAMMDATEN,JSON.stringify({...vk2Stammdaten,mitglieder:neu}))}catch(_){}} }}
               placeholder={'Ausführlicher Lebenslauf, Ausstellungen, Technik, Inspiration ...'}
               rows={8}
-              style={{ width: '100%', padding: '0.65rem', background: '#1e2f47', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 10, color: '#f0f6ff', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Georgia, serif', lineHeight: 1.7 }}
+              style={{ width: '100%', padding: '0.65rem', background: '#1e2f47', border: '1px solid rgba(37,99,235,0.25)', borderRadius: 10, color: '#f0f6ff', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Georgia, serif', lineHeight: 1.7 }}
             />
           </div>
 
           {/* Website */}
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: '#60a5fa', fontWeight: 600 }}>🌐 Homepage / Galerie-Link</label>
+          <div style={{ background: 'rgba(37,99,235,0.07)', border: '2px solid rgba(37,99,235,0.4)', borderRadius: 12, padding: '0.9rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#60a5fa', fontWeight: 700 }}>
+              <span>✏️</span> Homepage / Galerie-Link <span style={{ fontSize: '0.72rem', fontWeight: 400, color: 'rgba(160,200,255,0.5)' }}>· optional</span>
+            </label>
             <input
               type="text"
               value={mitglied?.galerieLinkUrl || mitglied?.website || ''}
               onChange={(e) => { const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],galerieLinkUrl:e.target.value};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{localStorage.setItem(KEY_VK2_STAMMDATEN,JSON.stringify({...vk2Stammdaten,mitglieder:neu}))}catch(_){}} }}
               placeholder="https://meine-seite.at"
-              style={{ width: '100%', padding: '0.65rem', background: '#1e2f47', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 10, color: '#f0f6ff', fontSize: '0.9rem', outline: 'none' }}
+              style={{ width: '100%', padding: '0.65rem', background: '#1e2f47', border: '1px solid rgba(37,99,235,0.25)', borderRadius: 10, color: '#f0f6ff', fontSize: '0.9rem', outline: 'none' }}
             />
           </div>
 
@@ -9461,8 +9478,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         <div style={{ fontSize: '0.85rem', fontFamily: 'monospace', color: s.accent }}>{d.lizenz || '–'}</div>
                         <div style={{ fontSize: '0.9rem', color: s.text }}>{d.typ || '–'}</div>
                         {d.seit && <div style={{ fontSize: '0.8rem', color: s.muted }}>Seit {d.seit}</div>}
-                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
                           <button type="button" onClick={() => { setEditingMemberIndex(indexInFull); setMemberForm(memberToForm(m)); setShowAddModal(true) }} style={{ padding: '0.5rem 1rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: '8px', color: s.accent, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>Bearbeiten</button>
+                          <button type="button" title="Zeigt wie das Mitglied seinen eigenen Bereich sieht" onClick={() => { try { sessionStorage.setItem(VK2_MITGLIED_SESSION_KEY, m.name) } catch (_) {}; window.open('/admin?context=vk2&mitglied=1', '_blank') }} style={{ padding: '0.5rem 0.85rem', background: 'rgba(37,99,235,0.15)', border: '1px solid rgba(37,99,235,0.4)', borderRadius: '8px', color: '#93c5fd', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>👁️ Als Mitglied sehen</button>
                           <button type="button" onClick={() => { const neu = mitglieder.filter((_, j) => j !== indexInFull); setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }); try { localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify({ ...vk2Stammdaten, mitglieder: neu })) } catch (_) {} }} style={{ padding: '0.5rem', background: 'transparent', border: 'none', color: s.muted, cursor: 'pointer', fontSize: '1.2rem' }} title="Entfernen">×</button>
                         </div>
                       </div>
@@ -9494,8 +9512,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         <div style={{ fontSize: '0.85rem', fontFamily: 'monospace', color: s.accent }}>{d.lizenz || '–'}</div>
                         <div style={{ fontSize: '0.9rem', color: s.text }}>{d.typ || '–'}</div>
                         {d.seit && <div style={{ fontSize: '0.8rem', color: s.muted }}>Seit {d.seit}</div>}
-                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
                           <button type="button" onClick={() => { setEditingMemberIndex(indexInFull); setMemberForm(memberToForm(m)); setShowAddModal(true) }} style={{ padding: '0.5rem 1rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: '8px', color: s.accent, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>Bearbeiten</button>
+                          <button type="button" title="Zeigt wie das Mitglied seinen eigenen Bereich sieht" onClick={() => { try { sessionStorage.setItem(VK2_MITGLIED_SESSION_KEY, m.name) } catch (_) {}; window.open('/admin?context=vk2&mitglied=1', '_blank') }} style={{ padding: '0.5rem 0.85rem', background: 'rgba(37,99,235,0.15)', border: '1px solid rgba(37,99,235,0.4)', borderRadius: '8px', color: '#93c5fd', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>👁️ Als Mitglied sehen</button>
                           <button type="button" onClick={() => { const neu = mitglieder.filter((_, j) => j !== indexInFull); setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }); try { localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify({ ...vk2Stammdaten, mitglieder: neu })) } catch (_) {} }} style={{ padding: '0.5rem', background: 'transparent', border: 'none', color: s.muted, cursor: 'pointer', fontSize: '1.2rem' }} title="Entfernen">×</button>
                         </div>
                       </div>
