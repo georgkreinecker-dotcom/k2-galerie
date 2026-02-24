@@ -151,6 +151,20 @@ const Vk2MitgliedLoginPage: React.FC = () => {
             >
               Weiter →
             </button>
+
+            {/* Programmierer-Zugang – nur am Mac/localhost sichtbar */}
+            {typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && (
+              <button
+                type="button"
+                onClick={() => {
+                  try { sessionStorage.setItem('k2-admin-context', 'vk2') } catch (_) {}
+                  navigate('/admin?context=vk2')
+                }}
+                style={{ marginTop: '0.6rem', width: '100%', padding: '0.6rem', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 10, color: 'rgba(52,211,153,0.85)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}
+              >
+                🔧 Programmierer-Zugang (nur lokal)
+              </button>
+            )}
           </>
         ) : (
           <>
