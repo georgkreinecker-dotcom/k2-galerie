@@ -9,7 +9,7 @@ VK2 Mitglieder-Seite ans helle Design angepasst
 - **Meine Notizen am Smart Panel** – Die Standardliste „Diverses“ im Smart Panel enthält jetzt Georgs Notizen: „Georgs Notizen (Übersicht)“ → Notizen-Seite, „Brief an August“ → /notizen-georg/diverses/brief-an-august.md, plus „Für meine Freunde“. Neue Nutzer sehen diese Einträge sofort; bestehende behalten ihre gespeicherte Liste.
 
 ## Letzter Commit
-- (noch nicht committed: SmartPanel Diverses um Georgs Notizen ergänzt)
+- SmartPanel: Meine Notizen in Diverses, Notizen-Seite, Crash-Check – Commit: 449e65a ✅ auf GitHub
 
 ## Nächste Schritte (offen)
 1. **Vereinskatalog** – Werke aus Lizenz-Galerien per `fetch()` laden (wenn `lizenzGalerieUrl` bei Mitglied gesetzt)
