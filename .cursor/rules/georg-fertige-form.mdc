@@ -1,0 +1,30 @@
+---
+description: Georgs Anweisung – immer fertige Form, nie nur Struktur
+alwaysApply: true
+---
+
+# 🔒 Georg: Immer fertige Form (generelle Order)
+
+## Regel (unveränderlich)
+
+**Wenn Georg sagt: „ich erstelle …“, „mach mir …“, „das oder das“ – er meint immer die fertige Form, nicht irgendeine Struktur.**
+
+- **Fertige Form** = so, dass man es sofort nutzen, lesen oder zeigen kann: schön formatiert, lesbar, abgeschlossen.
+- **Nicht** = nur Datenstruktur, nur Rohfassung, nur Markdown-Datei, nur Platzhalter, nur „Grundgerüst“.
+
+## Konkret
+
+| Georg sagt … | Er meint | Nicht |
+|--------------|----------|--------|
+| „Brief in die Notizen“ | Fertige Leseansicht, schöne Typografie | Nur .md-Datei oder Link auf Rohfassung |
+| „Erstell mir X“ | X in nutzbarer, fertiger Form | Nur Struktur oder Entwurf |
+| „Mach mir das/das“ | Das Ergebnis in fertiger Form | Halbfertig oder „Grundlage zum Weiterebearbeiten“ |
+
+## Konsequenz für die AI
+
+- Bei **jeder** Anweisung von Georg, die mit Erstellen, Einbauen, „mach mir“ zu tun hat: Ergebnis so liefern, dass es **fertig** ist – gestaltet, lesbar, nutzbar.
+- Nicht fragen „soll ich nur die Struktur machen?“ – Georg meint immer die fertige Form, sofern er nicht ausdrücklich etwas anderes sagt.
+
+## Kurzfassung
+
+**Georg = fertige Form. Nie nur Struktur, nie nur Rohfassung. Immer so, dass es sofort da ist und gut aussieht.**
