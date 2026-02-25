@@ -114,18 +114,15 @@ type DiversesItem = {
   emoji?: string
 }
 
-/** Basis-URL für Georgs Notizen (public/notizen-georg) */
-const NOTIZEN_GEORG_BASE = '/notizen-georg'
-
 function loadDiverses(): DiversesItem[] {
   try {
     const v = localStorage.getItem(DIVERSES_KEY)
     if (v) return JSON.parse(v)
   } catch { /* ignore */ }
-  // Standardeinträge beim ersten Start – inkl. Georgs Notizen
+  // Standardeinträge beim ersten Start – inkl. Georgs Notizen (Leseansicht)
   return [
     { id: 'notizen-uebersicht', label: 'Georgs Notizen (Übersicht)', url: PROJECT_ROUTES['k2-galerie'].notizen, emoji: '📝' },
-    { id: 'brief-august', label: 'Brief an August', url: `${NOTIZEN_GEORG_BASE}/diverses/brief-an-august.md`, emoji: '✉️' },
+    { id: 'brief-august', label: 'Brief an August', url: PROJECT_ROUTES['k2-galerie'].notizenBriefAugust, emoji: '✉️' },
     { id: 'freunde', label: 'Für meine Freunde', url: '/freunde-erklaerung.html', emoji: '👥' },
   ]
 }

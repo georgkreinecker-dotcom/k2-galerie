@@ -1,16 +1,15 @@
 import { Link } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
 
-/** Basis-URL für Notizen (public/notizen-georg wird von Vercel ausgeliefert) */
-const NOTIZEN_BASE = '/notizen-georg'
+type NotizItem = { label: string; to?: string; href?: string }
 
-const sections = [
+const sections: { id: string; title: string; desc: string; items: NotizItem[] }[] = [
   {
     id: 'diverses',
     title: '📁 Diverses',
     desc: 'Briefe an Freunde, Gedanken über Gott und die Welt',
     items: [
-      { label: 'Brief an August', href: `${NOTIZEN_BASE}/diverses/brief-an-august.md` },
+      { label: 'Brief an August', to: PROJECT_ROUTES['k2-galerie'].notizenBriefAugust },
     ],
   },
 ]
@@ -48,14 +47,23 @@ export default function NotizenPage() {
             <ul style={{ margin: 0, paddingLeft: '1.25rem', listStyle: 'disc' }}>
               {sec.items.map(item => (
                 <li key={item.label} style={{ marginBottom: '0.5rem' }}>
-                  <a
-                    href={item.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: '#a78bfa', textDecoration: 'underline' }}
-                  >
-                    {item.label}
-                  </a>
+                  {item.to ? (
+                    <Link
+                      to={item.to}
+                      style={{ color: '#a78bfa', textDecoration: 'underline' }}
+                    >
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <a
+                      href={item.href ?? '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: '#a78bfa', textDecoration: 'underline' }}
+                    >
+                      {item.label}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>

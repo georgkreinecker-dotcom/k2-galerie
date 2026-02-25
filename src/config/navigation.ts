@@ -62,6 +62,7 @@ export const PROJECT_ROUTES = {
     vitaGeorg: '/projects/k2-galerie/vita/georg',
     /** Georgs persönliche Notizen (Diverses, Briefe, Vermächtnis) – One-Click aus Smart Panel */
     notizen: '/projects/k2-galerie/notizen',
+    notizenBriefAugust: '/projects/k2-galerie/notizen/brief-an-august',
   },
   vk2: {
     id: 'vk2',

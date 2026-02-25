@@ -6,6 +6,7 @@ import ProjectStartPage from './pages/ProjectStartPage'
 import ControlStudioPage from './pages/ControlStudioPage'
 import ProjectPlanPage from './pages/ProjectPlanPage'
 import NotizenPage from './pages/NotizenPage'
+import BriefAnAugustPage from './pages/BriefAnAugustPage'
 import K2TeamHandbuchPage from './pages/K2TeamHandbuchPage'
 import MobileConnectPage from './pages/MobileConnectPage'
 import ProduktVorschauPage from './pages/ProduktVorschauPage'
@@ -527,6 +528,7 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].controlStudio} element={<ControlStudioPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].kunden} element={<KundenPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].plan} element={<ProjectPlanPage />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].notizenBriefAugust} element={<BriefAnAugustPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].notizen} element={<NotizenPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].mobileConnect} element={<MobileConnectPage />} />
       <Route path="/projects/k2-galerie/vita/:artistId" element={<VitaPage />} />
