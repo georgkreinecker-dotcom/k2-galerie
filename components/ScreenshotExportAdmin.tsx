@@ -16,7 +16,7 @@ import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
-import { getWerbeliniePrDocCss, WERBELINIE_FONTS_URL, WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../src/config/marketingWerbelinie'
+import { getWerbeliniePrDocCss, getWerbeliniePrDocCssVk2, WERBELINIE_FONTS_URL, WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../src/config/marketingWerbelinie'
 import '../src/App.css'
 
 const ADMIN_CONTEXT_KEY = 'k2-admin-context'
@@ -90,6 +90,14 @@ function getEventsKey(): string {
 function getDocumentsKey(): string {
   if (isVk2AdminContext()) return 'k2-vk2-documents'
   return isOeffentlichAdminContext() ? 'k2-oeffentlich-documents' : 'k2-documents'
+}
+/** Admin-URL mit Kontext (VK2/ök2) zum Injizieren in generierte Dokumente – „Zurück“ landet dann im richtigen Admin. */
+function getAdminReturnUrl(): string {
+  if (typeof window === 'undefined') return ''
+  return window.location.origin + window.location.pathname + (window.location.search || '')
+}
+function escapeJsStringForDoc(s: string): string {
+  return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r')
 }
 const KEY_OEF_ADMIN_PASSWORD = 'k2-oeffentlich-admin-password'
 const KEY_OEF_ADMIN_EMAIL = 'k2-oeffentlich-admin-email'
@@ -3094,7 +3102,9 @@ ${'='.repeat(60)}
 
   const generateEditablePresseaussendungPDF = (presseaussendung: any, event: any) => {
     let blob: Blob | null = null // WICHTIG: Außerhalb try-catch definieren
-    
+    const isVk2 = isVk2AdminContext()
+    const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
+    const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getWerbeliniePrDocCss('k2-pr-doc')
     const galleryData = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
     const galleryName = galleryData.name || 'K2 Galerie'
     const galleryAddress = galleryData.address || ''
@@ -3108,10 +3118,10 @@ ${'='.repeat(60)}
   <meta charset="UTF-8">
   <title>Presseaussendung - ${event?.title || 'Event'}</title>
   <link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" />
-  <style>${getWerbeliniePrDocCss('k2-pr-doc')}</style>
+  <style>${prDocCss}</style>
   <style id="print-page-size">@media print { @page { size: A4; margin: 15mm; } }</style>
 </head>
-<body class="k2-pr-doc format-a4">
+<body class="${prDocClass} format-a4">
   <div class="no-print">
     <button onclick="goBack(); return false;" class="secondary">← Zurück</button>
     <span style="margin: 0 8px; color: #666;">Format:</span>
@@ -3151,16 +3161,17 @@ ${'='.repeat(60)}
   </div>
 
   <script>
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl())}';
+    var prDocClass = '${prDocClass}';
     function setFormat(f) {
-      document.body.className = 'k2-pr-doc format-' + f;
+      document.body.className = prDocClass + ' format-' + f;
       var p = document.getElementById('print-page-size');
       if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 15mm; } }';
     }
     function goBack() {
-      var adminUrl = (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
+      var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
         ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
-        : (window.location.origin + '/admin')
-      
+        : (window.location.origin + '/admin');
       if (window.opener && !window.opener.closed) {
         try {
           window.opener.location.href = adminUrl
@@ -3177,7 +3188,6 @@ ${'='.repeat(60)}
           // Falls Fehler, navigiere direkt
         }
       }
-      
       window.location.href = adminUrl
     }
     
@@ -3295,6 +3305,9 @@ ${'='.repeat(60)}
   }
 
   const generateEditableSocialMediaPDF = (socialMedia: any, event: any) => {
+    const isVk2 = isVk2AdminContext()
+    const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
+    const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getWerbeliniePrDocCss('k2-pr-doc')
     const galleryData = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
     const galleryName = galleryData.name || 'K2 Galerie'
     
@@ -3305,10 +3318,10 @@ ${'='.repeat(60)}
   <meta charset="UTF-8">
   <title>Social Media - ${event?.title || 'Event'}</title>
   <link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" />
-  <style>${getWerbeliniePrDocCss('k2-pr-doc')}</style>
+  <style>${prDocCss}</style>
   <style id="print-page-size">@media print { @page { size: A4; margin: 15mm; } }</style>
 </head>
-<body class="k2-pr-doc format-a4">
+<body class="${prDocClass} format-a4">
   <div class="no-print">
     <button onclick="goBack(); return false;" class="secondary">← Zurück</button>
     <span style="margin: 0 8px; color: #666;">Format:</span>
@@ -3353,16 +3366,17 @@ ${'='.repeat(60)}
   </div>
 
   <script>
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl())}';
+    var prDocClass = '${prDocClass}';
     function setFormat(f) {
-      document.body.className = 'k2-pr-doc format-' + f;
+      document.body.className = prDocClass + ' format-' + f;
       var p = document.getElementById('print-page-size');
       if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 15mm; } }';
     }
     function goBack() {
-      var adminUrl = (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
+      var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
         ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
-        : (window.location.origin + '/admin')
-      
+        : (window.location.origin + '/admin');
       if (window.opener && !window.opener.closed) {
         try {
           window.opener.location.href = adminUrl
@@ -3379,7 +3393,6 @@ ${'='.repeat(60)}
           // Falls Fehler, navigiere direkt
         }
       }
-      
       window.location.href = adminUrl
     }
     
@@ -3695,8 +3708,11 @@ ${'='.repeat(60)}
   }
 
   const generateEditableNewsletterPDF = (newsletter: any, event: any) => {
+    const isVk2 = isVk2AdminContext()
+    const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
+    const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getWerbeliniePrDocCss('k2-pr-doc')
     const galleryName = (() => {
-      if (isVk2AdminContext()) {
+      if (isVk2) {
         try {
           const stamm = JSON.parse(localStorage.getItem(KEY_VK2_STAMMDATEN) || '{}') as Vk2Stammdaten
           return stamm?.verein?.name || 'Kunstverein Muster'
@@ -3712,10 +3728,10 @@ ${'='.repeat(60)}
   <meta charset="UTF-8">
   <title>Newsletter - ${event?.title || 'Event'}</title>
   <link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" />
-  <style>${getWerbeliniePrDocCss('k2-pr-doc')}</style>
+  <style>${prDocCss}</style>
   <style id="print-page-size">@media print { @page { size: A4; margin: 15mm; } }</style>
 </head>
-<body class="k2-pr-doc format-a4">
+<body class="${prDocClass} format-a4">
   <div class="no-print">
     <button onclick="goBack(); return false;" class="secondary">← Zurück</button>
     <span style="margin: 0 8px; color: #666;">Format:</span>
@@ -3752,16 +3768,17 @@ ${'='.repeat(60)}
   </div>
 
   <script>
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl())}';
+    var prDocClass = '${prDocClass}';
     function setFormat(f) {
-      document.body.className = 'k2-pr-doc format-' + f;
+      document.body.className = prDocClass + ' format-' + f;
       var p = document.getElementById('print-page-size');
       if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 15mm; } }';
     }
     function goBack() {
-      var adminUrl = (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
+      var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
         ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
-        : (window.location.origin + '/admin')
-      
+        : (window.location.origin + '/admin');
       if (window.opener && !window.opener.closed) {
         try {
           window.opener.location.href = adminUrl
@@ -3778,7 +3795,6 @@ ${'='.repeat(60)}
           // Falls Fehler, navigiere direkt
         }
       }
-      
       window.location.href = adminUrl
     }
     
@@ -3860,6 +3876,9 @@ ${'='.repeat(60)}
 
   // Bearbeitbare PR-Vorschläge als PDF generieren
   const generateEditablePRSuggestionsPDF = (suggestions: any, event: any) => {
+    const isVk2 = isVk2AdminContext()
+    const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
+    const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getWerbeliniePrDocCss('k2-pr-doc')
     const galleryData = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
     const galleryName = galleryData.name || 'K2 Galerie'
     
@@ -3870,10 +3889,10 @@ ${'='.repeat(60)}
   <meta charset="UTF-8">
   <title>PR-Vorschläge - ${suggestions.eventTitle || 'Event'}</title>
   <link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" />
-  <style>${getWerbeliniePrDocCss('k2-pr-doc')}</style>
+  <style>${prDocCss}</style>
   <style id="print-page-size">@media print { @page { size: A4; margin: 15mm; } }</style>
 </head>
-<body class="k2-pr-doc format-a4">
+<body class="${prDocClass} format-a4">
   <div class="no-print">
     <button onclick="goBack()" class="secondary">← Zurück</button>
     <span style="margin: 0 8px; color: #666;">Format:</span>
@@ -3961,16 +3980,17 @@ ${'='.repeat(60)}
   </div>
 
   <script>
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl())}';
+    var prDocClass = '${prDocClass}';
     function setFormat(f) {
-      document.body.className = 'k2-pr-doc format-' + f;
+      document.body.className = prDocClass + ' format-' + f;
       var p = document.getElementById('print-page-size');
       if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 15mm; } }';
     }
     function goBack() {
-      var adminUrl = (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
+      var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
         ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
-        : (window.location.origin + '/admin')
-      
+        : (window.location.origin + '/admin');
       if (window.opener && !window.opener.closed) {
         try {
           window.opener.location.href = adminUrl
@@ -3987,7 +4007,6 @@ ${'='.repeat(60)}
           // Falls Fehler, navigiere direkt
         }
       }
-      
       window.location.href = adminUrl
     }
     
@@ -4161,24 +4180,21 @@ ${'='.repeat(60)}
     <div class="content">${content.replace(/\n/g, '<br>')}</div>
   </div>
   <script>
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl())}';
     function goBack() {
-      // Einfacher Ansatz: Immer direkt zur Admin-Seite navigieren
-      // Prüfe ob Hash-Router verwendet wird
-      const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '')
-      const adminUrl = (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
+      var baseUrl = window.location.origin + window.location.pathname.replace(/\\/[^\\/]*$/, '');
+      var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
         ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
-        : (baseUrl + '/admin')
+        : (baseUrl + '/admin');
 
       console.log('goBack() - adminUrl:', adminUrl)
       console.log('goBack() - window.location:', window.location.href)
       
-      // Wenn es ein Pop-up ist, versuche zu schließen
       if (window.opener && !window.opener.closed) {
         try {
-          // Navigiere im Opener zur Admin-Seite
           window.opener.location.href = adminUrl
           window.opener.focus()
-          setTimeout(() => {
+          setTimeout(function() {
             try {
               window.close()
             } catch (e) {
@@ -4188,16 +4204,11 @@ ${'='.repeat(60)}
           return
         } catch (e) {
           console.log('Fehler beim Schließen des Pop-ups:', e)
-          // Falls Fehler, navigiere direkt
         }
       }
-      
-      // Direkt zur Admin-Seite navigieren
-      console.log('Navigiere zu:', adminUrl)
       window.location.href = adminUrl
     }
-    // Nach Drucken automatisch zurücknavigieren - mit Cleanup
-    const handleAfterPrint = () => {
+    var handleAfterPrint = function() {
       window.removeEventListener('afterprint', handleAfterPrint)
       goBack()
     }
@@ -4545,24 +4556,21 @@ ${'='.repeat(60)}
     </div>
   </div>
   <script>
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl())}';
     function goBack() {
-      // Einfacher Ansatz: Immer direkt zur Admin-Seite navigieren
-      // Prüfe ob Hash-Router verwendet wird
-      const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '')
-      const adminUrl = (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
+      var baseUrl = window.location.origin + window.location.pathname.replace(/\\/[^\\/]*$/, '');
+      var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
         ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
-        : (baseUrl + '/admin')
+        : (baseUrl + '/admin');
 
       console.log('goBack() - adminUrl:', adminUrl)
       console.log('goBack() - window.location:', window.location.href)
       
-      // Wenn es ein Pop-up ist, versuche zu schließen
       if (window.opener && !window.opener.closed) {
         try {
-          // Navigiere im Opener zur Admin-Seite
           window.opener.location.href = adminUrl
           window.opener.focus()
-          setTimeout(() => {
+          setTimeout(function() {
             try {
               window.close()
             } catch (e) {
@@ -4572,23 +4580,17 @@ ${'='.repeat(60)}
           return
         } catch (e) {
           console.log('Fehler beim Schließen des Pop-ups:', e)
-          // Falls Fehler, navigiere direkt
         }
       }
-      
-      // Direkt zur Admin-Seite navigieren
-      console.log('Navigiere zu:', adminUrl)
       window.location.href = adminUrl
     }
-    // Nach Drucken automatisch zurücknavigieren - mit Cleanup
-    const handleAfterPrint = () => {
+    var handleAfterPrint = function() {
       window.removeEventListener('afterprint', handleAfterPrint)
       goBack()
     }
     window.addEventListener('afterprint', handleAfterPrint)
     
-    // Cleanup beim Schließen - KRITISCH für Crash-Prävention
-    const cleanup = () => {
+    var cleanup = function() {
       window.removeEventListener('afterprint', handleAfterPrint)
     }
     window.addEventListener('beforeunload', cleanup)
@@ -5005,11 +5007,11 @@ ${'='.repeat(60)}
   </div>
   
   <script>
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl())}';
     function goBack() {
-      var adminUrl = (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
+      var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
         ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
-        : (window.location.origin + '/admin')
-      
+        : (window.location.origin + '/admin');
       if (window.opener && !window.opener.closed) {
         try {
           window.opener.location.href = adminUrl
@@ -5026,7 +5028,6 @@ ${'='.repeat(60)}
           // Falls Fehler, navigiere direkt
         }
       }
-      
       window.location.href = adminUrl
     }
   </script>
@@ -5334,24 +5335,21 @@ ${'='.repeat(60)}
     </div>
   </div>
   <script>
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl())}';
     function goBack() {
-      // Einfacher Ansatz: Immer direkt zur Admin-Seite navigieren
-      // Prüfe ob Hash-Router verwendet wird
-      const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '')
-      const adminUrl = (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
+      var baseUrl = window.location.origin + window.location.pathname.replace(/\\/[^\\/]*$/, '');
+      var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
         ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
-        : (baseUrl + '/admin')
+        : (baseUrl + '/admin');
 
       console.log('goBack() - adminUrl:', adminUrl)
       console.log('goBack() - window.location:', window.location.href)
       
-      // Wenn es ein Pop-up ist, versuche zu schließen
       if (window.opener && !window.opener.closed) {
         try {
-          // Navigiere im Opener zur Admin-Seite
           window.opener.location.href = adminUrl
           window.opener.focus()
-          setTimeout(() => {
+          setTimeout(function() {
             try {
               window.close()
             } catch (e) {
@@ -5361,23 +5359,17 @@ ${'='.repeat(60)}
           return
         } catch (e) {
           console.log('Fehler beim Schließen des Pop-ups:', e)
-          // Falls Fehler, navigiere direkt
         }
       }
-      
-      // Direkt zur Admin-Seite navigieren
-      console.log('Navigiere zu:', adminUrl)
       window.location.href = adminUrl
     }
-    // Nach Drucken automatisch zurücknavigieren - mit Cleanup
-    const handleAfterPrint = () => {
+    var handleAfterPrint = function() {
       window.removeEventListener('afterprint', handleAfterPrint)
       goBack()
     }
     window.addEventListener('afterprint', handleAfterPrint)
     
-    // Cleanup beim Schließen - KRITISCH für Crash-Prävention
-    const cleanup = () => {
+    var cleanup = function() {
       window.removeEventListener('afterprint', handleAfterPrint)
     }
     window.addEventListener('beforeunload', cleanup)
@@ -5565,24 +5557,21 @@ ${'='.repeat(60)}
     </div>
   </div>
   <script>
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl())}';
     function goBack() {
-      // Einfacher Ansatz: Immer direkt zur Admin-Seite navigieren
-      // Prüfe ob Hash-Router verwendet wird
-      const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '')
-      const adminUrl = (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
+      var baseUrl = window.location.origin + window.location.pathname.replace(/\\/[^\\/]*$/, '');
+      var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
         ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
-        : (baseUrl + '/admin')
+        : (baseUrl + '/admin');
 
       console.log('goBack() - adminUrl:', adminUrl)
       console.log('goBack() - window.location:', window.location.href)
       
-      // Wenn es ein Pop-up ist, versuche zu schließen
       if (window.opener && !window.opener.closed) {
         try {
-          // Navigiere im Opener zur Admin-Seite
           window.opener.location.href = adminUrl
           window.opener.focus()
-          setTimeout(() => {
+          setTimeout(function() {
             try {
               window.close()
             } catch (e) {
@@ -5592,23 +5581,17 @@ ${'='.repeat(60)}
           return
         } catch (e) {
           console.log('Fehler beim Schließen des Pop-ups:', e)
-          // Falls Fehler, navigiere direkt
         }
       }
-      
-      // Direkt zur Admin-Seite navigieren
-      console.log('Navigiere zu:', adminUrl)
       window.location.href = adminUrl
     }
-    // Nach Drucken automatisch zurücknavigieren - mit Cleanup
-    const handleAfterPrint = () => {
+    var handleAfterPrint = function() {
       window.removeEventListener('afterprint', handleAfterPrint)
       goBack()
     }
     window.addEventListener('afterprint', handleAfterPrint)
     
-    // Cleanup beim Schließen - KRITISCH für Crash-Prävention
-    const cleanup = () => {
+    var cleanup = function() {
       window.removeEventListener('afterprint', handleAfterPrint)
     }
     window.addEventListener('beforeunload', cleanup)

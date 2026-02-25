@@ -6,11 +6,12 @@
 VK2 Mitglieder-Seite ans helle Design angepasst
 
 ## Was zuletzt gemacht
-- **Dokumente in der App öffnen** – Beim Klick auf ein Dokument in der Werbematerial-Liste: (1) Gespeichertes HTML wird zuerst als Blob mit openPDFWindowSafely geöffnet (kein leeres Fenster mehr). (2) Wenn kein gespeicherter Inhalt, aber Event vorhanden: Inhalt aus Event + Typ neu erzeugen und öffnen (wie „Neu erstellen“). (3) Bei allen Dokument-Karten wird `event` an handleViewEventDocument übergeben (QR-Plakat, Newsletter, Plakat, Event-Flyer, Presse, Social).
-- **VK2-Dokumente ohne K2-Daten** – Bereits umgesetzt (generateEmailNewsletterContent, generateEditableNewsletterPDF, generateNewsletterContent, generateEventFlyerContent).
+- **„Zurück“ aus Dokumenten landet im richtigen Admin** – Beim Speichern/Schließen von Newsletter, Flyer, Presse usw. führte „← Zurück“ oft zu K2 statt VK2 (weil Blob-Fenster mit noopener geöffnet wird → opener war null). Jetzt wird die Admin-URL **beim Erzeugen** des Dokuments injiziert (inkl. `?context=vk2` bzw. `?context=oeffentlich`). goBack() nutzt diese URL zuerst. Alle generierten Dokumente (Newsletter, Presse, Event-Flyer, Social, PR-Vorschläge, Plakat) angepasst.
+- **VK2-Dokumente: helles Design wie VK2-Seiten** – Im VK2-Admin erzeugte PR-Dokumente (Newsletter, Presse, Event-Flyer, Social, PR-Vorschläge) nutzen jetzt das **helle** Layout (WERBEUNTERLAGEN_STIL: heller Hintergrund, dunkle Schrift, Akzent #b54a1e) statt des dunklen K2-Designs. Neue CSS-Variante: `getWerbeliniePrDocCssVk2()` in marketingWerbelinie.ts.
+- **Dokumente in der App öffnen** – Bereits umgesetzt (Blob zuerst, Fallback Neu-erzeugen, event überall).
 
 ## Letzter Commit
-- (noch nicht committed – Dokumente in App öffnen + event überall)
+- (noch nicht committed – Zurück → VK2, VK2-Design für PR-Dokumente)
 
 ## Nächste Schritte (offen)
 1. **L3 / vermischte Daten** – Bereits gespeichertes Dokument (z. B. Tab „L 3)“) enthält noch alte K2+VK2-Mischung. Abhilfe: Dieses Dokument in der Liste löschen und mit „Neu erstellen“ neu anlegen → dann nur VK2-Daten.

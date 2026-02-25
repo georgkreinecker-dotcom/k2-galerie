@@ -220,6 +220,142 @@ export function getWerbeliniePrDocCss(className: string): string {
 }
 
 /**
+ * CSS für PR-Dokumente im VK2-Kontext – hell wie VK2/Admin (WERBEUNTERLAGEN_STIL), nicht dunkles K2-Design.
+ */
+export function getWerbeliniePrDocCssVk2(className: string): string {
+  const s = {
+    bg: '#f6f4f0',
+    pageBg: '#fffefb',
+    text: '#1c1a18',
+    muted: '#5c5650',
+    accent: '#b54a1e',
+    border: 'rgba(28, 26, 24, 0.12)',
+    inputBg: '#fff',
+  }
+  return `
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: ${WERBELINIE_FONTS.body};
+    background: ${s.bg};
+    color: ${s.text};
+    padding: 20px;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+  body.format-a4 .page { width: 210mm; min-height: 297mm; max-width: 100%; }
+  body.format-a3 .page { width: 297mm; min-height: 420mm; max-width: 100%; }
+  body.format-a5 .page { width: 148mm; min-height: 210mm; max-width: 100%; }
+  .page {
+    margin: 0 auto 24px;
+    padding: 12mm 14mm;
+    background: ${s.pageBg};
+    color: ${s.text};
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+    border: 1px solid ${s.border};
+  }
+  .page .content { position: relative; z-index: 1; }
+  .header {
+    border-bottom: 2px solid ${s.accent};
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+  }
+  .header h1 {
+    font-family: ${WERBELINIE_FONTS.heading};
+    font-size: clamp(1.4rem, 4vw, 1.9rem);
+    color: ${s.text};
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .header-info { font-size: 0.85rem; color: ${s.muted}; line-height: 1.5; }
+  h1, h2 {
+    font-family: ${WERBELINIE_FONTS.heading};
+    color: ${s.text};
+    font-weight: 600;
+    margin-bottom: 10px;
+    border-bottom: 1px solid ${s.border};
+    padding-bottom: 8px;
+  }
+  h2 { font-size: 1.2rem; margin-top: 20px; }
+  .field-group { margin-bottom: 20px; }
+  label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: ${s.muted};
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  textarea, input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid ${s.border};
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    resize: vertical;
+    background: ${s.inputBg};
+    color: ${s.text};
+  }
+  textarea:focus, input[type="text"]:focus {
+    outline: none;
+    border-color: ${s.accent};
+    box-shadow: 0 0 0 2px rgba(181, 74, 30, 0.15);
+  }
+  textarea { min-height: 120px; }
+  .no-print {
+    background: ${s.pageBg};
+    border: 1px solid ${s.border};
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+  .no-print p { color: ${s.muted}; margin-top: 8px; font-size: 0.85rem; }
+  .no-print button {
+    background: ${s.accent};
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 0 4px 8px 0;
+    font-family: inherit;
+  }
+  .no-print button:hover { filter: brightness(1.08); }
+  .no-print button.secondary { background: #6b7280; }
+  .info-box {
+    background: rgba(181, 74, 30, 0.06);
+    border-left: 4px solid ${s.accent};
+    padding: 10px 12px;
+    margin: 12px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.9rem;
+    color: ${s.text};
+  }
+  @media print {
+    body { background: #fff !important; padding: 0 !important; }
+    .no-print { display: none !important; }
+    .page {
+      box-shadow: none !important;
+      margin: 0 !important;
+      page-break-after: always;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    body.format-a4 .page { width: 210mm !important; min-height: 297mm !important; }
+    body.format-a3 .page { width: 297mm !important; min-height: 420mm !important; }
+    body.format-a5 .page { width: 148mm !important; min-height: 210mm !important; }
+  }
+  `
+}
+
+/**
  * Eigenes Promotion-Design für Werbeunterlagen – bewusst NICHT am App-Design orientiert.
  * Eigene Ideen für die Promotion: eigenständige Farben, Typo und Stil.
  */
