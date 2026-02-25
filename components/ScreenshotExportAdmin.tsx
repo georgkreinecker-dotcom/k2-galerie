@@ -14829,7 +14829,16 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                       if (evSug) {
                                         generateEditablePRSuggestionsPDF(evSug, event)
                                       } else {
-                                        alert('Keine PR-Vorschläge für dieses Event gefunden.')
+                                        // Ohne PR-Assistent: aus Event generierte Inhalte als PDF öffnen (damit sich etwas öffnet)
+                                        const fallback = {
+                                          eventId: event.id,
+                                          eventTitle: event.title,
+                                          presseaussendung: generatePresseaussendungContent(event),
+                                          socialMedia: generateSocialMediaContent(event),
+                                          newsletter: generateEmailNewsletterContent(event),
+                                          flyer: generateEventFlyerContent(event)
+                                        }
+                                        generateEditablePRSuggestionsPDF(fallback, event)
                                       }
                                     }}
                                     style={{

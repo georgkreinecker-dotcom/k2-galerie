@@ -6,13 +6,14 @@
 VK2 Mitglieder-Seite ans helle Design angepasst
 
 ## Was zuletzt gemacht
-- **QR-Code Plakat nur in K2** – Das Dokument „QR-Code Plakat“ (K2 GALERIE, Martina & Georg, Homepage/Virtueller Rundgang) ist K2-spezifisch und wird im **VK2-Admin nicht mehr angeboten** (Karte in der Werbematerial-Übersicht nur bei K2, bei VK2 ausgeblendet).
-- **In-App-Dokument-Viewer bei blockiertem Pop-up** – Overlay im gleichen Tab bei blockiertem Fenster (Commit 1c121cb).
+- **„Alle PR-Dokumente auf einen Blick“ öffnet immer** – Wenn keine PR-Vorschläge für das Event existieren, wird kein Alert mehr gezeigt; stattdessen wird ein PDF mit aus dem Event generierten Inhalten (Presse, Social, Newsletter, Flyer) geöffnet. Damit „lässt sich was öffnen“.
+- **QR-Code Plakat nur in K2** – Im VK2-Admin ausgeblendet (Commit 574badd).
+- **In-App-Dokument-Viewer bei blockiertem Pop-up** – Overlay im gleichen Tab (Commit 1c121cb).
 - **Klare Trennung K2 | VK2 | ök2** – Doku, VK2/K2 ADMIN-Badge, Session aus URL, VK2-Labels (Commit a8ff7de).
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- In-App-Viewer bei blockiertem Pop-up – Commit: 1c121cb ✅ auf GitHub
+- QR-Code Plakat nur K2, im VK2 ausgeblendet – Commit: 574badd ✅ auf GitHub
 
 ## Nächste Schritte (offen)
 1. **L3 / vermischte Daten** – Bereits gespeichertes Dokument (z. B. Tab „L 3)“) enthält noch alte K2+VK2-Mischung. Abhilfe: Dieses Dokument in der Liste löschen und mit „Neu erstellen“ neu anlegen → dann nur VK2-Daten.
