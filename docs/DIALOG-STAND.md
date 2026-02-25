@@ -10,7 +10,7 @@ VK2 Mitglieder-Seite ans helle Design angepasst
 - **Zurück / VK2-Design / Dokumente öffnen** – Bereits umgesetzt (Admin-URL injiziert, helles VK2-Design, Blob + Fallback).
 
 ## Letzter Commit
-- (noch nicht committed – Klare Trennung: Doku, VK2/K2 ADMIN-Badge, Session aus URL, VK2-Labels)
+- Klare Trennung K2|VK2|ök2: Doku, VK2/K2 ADMIN-Badge, Session aus URL, VK2-Labels – Commit: a8ff7de ✅ auf GitHub
 
 ## Nächste Schritte (offen)
 1. **L3 / vermischte Daten** – Bereits gespeichertes Dokument (z. B. Tab „L 3)“) enthält noch alte K2+VK2-Mischung. Abhilfe: Dieses Dokument in der Liste löschen und mit „Neu erstellen“ neu anlegen → dann nur VK2-Daten.
