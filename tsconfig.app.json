@@ -25,5 +25,5 @@
     "noUncheckedSideEffectImports": true
   },
   "include": ["src"],
-  "exclude": ["src/pages/GaleriePage.original.tsx", "src/pages/GaleriePage.simple.tsx"]
+  "exclude": ["src/pages/GaleriePage.original.tsx", "src/pages/GaleriePage.simple.tsx", "src/tests"]
 }
