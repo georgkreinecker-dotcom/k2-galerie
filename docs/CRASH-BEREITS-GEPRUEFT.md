@@ -133,4 +133,6 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 | 21.02.26 | GaleriePage Mobile-Polling | useEffect Zeile ~1090: isMobile && !isVercel → `notInIframe` (window.self===window.top) ergänzt. Sonst startet Polling auch in Cursor Preview. |
 | 21.02.26 | ScreenshotExportAdmin Backup-Reload | Zeilen ~9521 + ~9609: Beide `setTimeout(reload)` nach Backup-Wiederherstellung mit `window.self===window.top` abgesichert (waren nicht gechekt). |
 
-*Zuletzt ergänzt: 21.02.26 (Crash-Check: GaleriePage Mobile-Polling + ScreenshotExportAdmin Backup-Reload iframe-gesichert)*
+| 25.02.26 | SmartPanel | location.href in startFremderModus, nav(), Item-Button – iframe-Check ergänzt (kein location.href wenn window.self !== window.top) |
+
+*Zuletzt ergänzt: 25.02.26 (Crash-Check: SmartPanel location.href iframe-gesichert)*

@@ -60,6 +60,8 @@ export const PROJECT_ROUTES = {
     verguetung: '/projects/k2-galerie/verguetung',
     vitaMartina: '/projects/k2-galerie/vita/martina',
     vitaGeorg: '/projects/k2-galerie/vita/georg',
+    /** Georgs persönliche Notizen (Diverses, Briefe, Vermächtnis) – One-Click aus Smart Panel */
+    notizen: '/projects/k2-galerie/notizen',
   },
   vk2: {
     id: 'vk2',
@@ -89,6 +91,7 @@ export const PROJECT_ROUTES = {
     verguetung: '/projects/k2-galerie/verguetung',
     vitaMartina: '/projects/k2-galerie/vita/martina',
     vitaGeorg: '/projects/k2-galerie/vita/georg',
+    notizen: '/projects/k2-galerie/notizen',
   },
   // Weitere Projekte hier hinzufügen:
   // 'projekt-2': {

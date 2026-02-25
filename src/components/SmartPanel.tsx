@@ -47,6 +47,8 @@ const FREMDER_SESSION_KEYS = [
 ]
 
 function startFremderModus() {
+  // Im iframe (Cursor Preview) kein location.href – verhindert Reload/Crash
+  if (typeof window !== 'undefined' && window.self !== window.top) return
   // Nur die relevanten Keys löschen – kein sessionStorage.clear() (würde Name-Übergabe killen)
   FREMDER_SESSION_KEYS.forEach(k => {
     try { sessionStorage.removeItem(k) } catch (_) {}
@@ -76,6 +78,7 @@ const DEFAULT_ITEMS: PanelItem[] = [
   { id: 'oek2', label: '🌐 Öffentliche Galerie K2', page: 'galerie-oeffentlich', url: PROJECT_ROUTES['k2-galerie'].galerieOeffentlich, color: 'linear-gradient(135deg, rgba(95,251,241,0.12), rgba(60,200,190,0.08))', border: 'rgba(95,251,241,0.3)' },
   { id: 'vk2', label: '🎨 VK2 Vereinsplattform', page: 'vk2', url: VK2_GALERIE_URL, color: 'linear-gradient(135deg, rgba(230,122,42,0.2), rgba(255,140,66,0.15))', border: 'rgba(255,140,66,0.4)' },
   { id: 'mok2', label: '📋 mök2 – Vertrieb & Promotion', page: 'mok2', url: MOK2_ROUTE, color: 'linear-gradient(135deg, rgba(251,191,36,0.12), rgba(245,158,11,0.08))', border: 'rgba(251,191,36,0.3)' },
+  { id: 'notizen', label: '📝 Notizen', page: 'notizen', url: PROJECT_ROUTES['k2-galerie'].notizen, color: 'linear-gradient(135deg, rgba(196,181,253,0.15), rgba(139,92,246,0.08))', border: 'rgba(196,181,253,0.35)' },
   { id: 'handbuch', label: '🧠 Handbuch', page: 'handbuch', url: '/k2team-handbuch', color: 'rgba(95,251,241,0.08)', border: 'rgba(95,251,241,0.2)', direct: true },
 ]
 
@@ -84,7 +87,7 @@ function loadOrder(): string[] {
     const saved = localStorage.getItem(PANEL_ORDER_KEY)
     if (saved) return JSON.parse(saved)
   } catch { /* ignore */ }
-  return DEFAULT_ITEMS.map(i => i.id)
+  return ['k2', 'oek2', 'vk2', 'mok2', 'notizen', 'handbuch']
 }
 
 function saveOrder(order: string[]) {
@@ -111,13 +114,18 @@ type DiversesItem = {
   emoji?: string
 }
 
+/** Basis-URL für Georgs Notizen (public/notizen-georg) */
+const NOTIZEN_GEORG_BASE = '/notizen-georg'
+
 function loadDiverses(): DiversesItem[] {
   try {
     const v = localStorage.getItem(DIVERSES_KEY)
     if (v) return JSON.parse(v)
   } catch { /* ignore */ }
-  // Standardeinträge beim ersten Start
+  // Standardeinträge beim ersten Start – inkl. Georgs Notizen
   return [
+    { id: 'notizen-uebersicht', label: 'Georgs Notizen (Übersicht)', url: PROJECT_ROUTES['k2-galerie'].notizen, emoji: '📝' },
+    { id: 'brief-august', label: 'Brief an August', url: `${NOTIZEN_GEORG_BASE}/diverses/brief-an-august.md`, emoji: '✉️' },
     { id: 'freunde', label: 'Für meine Freunde', url: '/freunde-erklaerung.html', emoji: '👥' },
   ]
 }
@@ -146,13 +154,14 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
     if (browserPath.startsWith('/projects/k2-galerie/galerie-oeffentlich') || browserPath.startsWith('/galerie-oeffentlich')) return 'galerie-oeffentlich'
     if (browserPath.startsWith('/galerie') || browserPath.startsWith('/projects/k2-galerie/galerie')) return 'galerie'
     if (browserPath.startsWith('/mok2') || browserPath.startsWith('/projects/k2-galerie/marketing')) return 'mok2'
+    if (browserPath.startsWith('/projects/k2-galerie/notizen')) return 'notizen'
     if (browserPath.startsWith('/k2team-handbuch')) return 'handbuch'
     return currentPage || ''
   }, [browserPath, currentPage])
 
   const nav = (page: string, url: string) => {
     if (onNavigate) onNavigate(page)
-    else window.location.href = url
+    else if (typeof window !== 'undefined' && window.self === window.top) window.location.href = url
   }
 
   // Sortierbare Hauptbuttons
@@ -505,7 +514,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
             )}
             <button
               type="button"
-              onClick={() => { if (editMode) return; window.location.href = item.url }}
+              onClick={() => { if (editMode) return; if (typeof window !== 'undefined' && window.self !== window.top) return; window.location.href = item.url }}
               style={{
                 flex: 1,
                 padding: '0.85rem 1rem',

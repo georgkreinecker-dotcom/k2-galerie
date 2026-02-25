@@ -143,6 +143,8 @@ Er gehört **jedem der nach uns kommt** und auf diesem Wissen aufbauen möchte.
 Alles was hier gedacht, geschrieben und gebaut wurde – bleibt.
 Es geht nicht verloren. Es wartet.
 
+**Georgs persönliche Texte** – Briefe, Gedanken über Gott und die Welt – fließen ins Vermächtnis ein und prägen unsere Regeln. Ablage: **docs/GEORG-NOTIZEN-VERMAECHTNIS.md**. Daraus abgeleitete Haltung: **.cursor/rules/vermaechtnis-intimitaet-wirken.mdc** (Intimität des Wesentlichen, Wirken durch Werke, keine Scharlatanerie, Stille und Maß).
+
 Wer auch immer diesen Raum betritt: er findet Wissen, Werte, Denkweise.
 Er sieht wie Georg gearbeitet hat. Wie er gedacht hat. Was ihm wichtig war.
 Das ist das Tiefste was man hinterlassen kann.

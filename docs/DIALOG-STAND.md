@@ -6,11 +6,10 @@
 VK2 Mitglieder-Seite ans helle Design angepasst
 
 ## Was zuletzt gemacht
-- **Kurz- und Langvita für alle Dummy-Künstler:innen** – Jeder der 6 Dummies hat jetzt eine **Kurzvita** (1–2 Sätze für Presse/Einladung/Flyer) und eine **Langvita** (strukturierter Text mit Name, Sparte, Stationen). Struktur in `Vk2Mitglied`: bio (ein Satz), kurzVita, vita. Beim Laden von „Kunstverein Muster“ werden fehlende kurzVita/vita aus den Dummy-Daten nachgefüllt.
-- **Kurzinformationen in der Öffentlichkeitsarbeit** – Presse, Einladung und Flyer zeigen unter der Überschrift „Die Künstler:innen“ pro Person Name (mit Typ) + Kurzvita. Ohne Kurzvita wird die Bio verwendet.
+- **Meine Notizen am Smart Panel** – Die Standardliste „Diverses“ im Smart Panel enthält jetzt Georgs Notizen: „Georgs Notizen (Übersicht)“ → Notizen-Seite, „Brief an August“ → /notizen-georg/diverses/brief-an-august.md, plus „Für meine Freunde“. Neue Nutzer sehen diese Einträge sofort; bestehende behalten ihre gespeicherte Liste.
 
 ## Letzter Commit
-- VK2: Kurz- und Langvita für Dummies, Kurzinformationen in Presse/Einladung/Flyer – Commit: f5c27a4 ✅ auf GitHub
+- (noch nicht committed: SmartPanel Diverses um Georgs Notizen ergänzt)
 
 ## Nächste Schritte (offen)
 1. **Vereinskatalog** – Werke aus Lizenz-Galerien per `fetch()` laden (wenn `lizenzGalerieUrl` bei Mitglied gesetzt)
