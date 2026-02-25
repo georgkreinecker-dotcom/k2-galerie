@@ -6,10 +6,10 @@
 VK2 Mitglieder-Seite ans helle Design angepasst
 
 ## Was zuletzt gemacht
-- **Shop: „Zurück zum Admin“** – Der Link in der Kasse („zurück zum Admin“) nutzt jetzt den gespeicherten Kontext: aus sessionStorage `k2-admin-context` → bei VK2 `/admin?context=vk2`, bei ök2 `/admin?context=oeffentlich`, sonst `/admin`. Kein Landen mehr in K2, wenn du aus VK2/ök2-Kasse kommst.
+- **VK2-Dokumente ohne K2-Daten** – Im VK2-Admin erzeugte Newsletter, Event-Flyer und „ÜBER DIE AUSSTELLUNG“-Texte nutzen nur noch Vereinsdaten (Verein + Mitglieder). Keine Martina/Georg, kein info@kgm.at, kein K2-Kontakt mehr in VK2-Werbematerial. Angepasst: generateEmailNewsletterContent, generateEditableNewsletterPDF, generateNewsletterContent, generateEventFlyerContent.
 
 ## Letzter Commit
-- (wird nach diesem Fix committed)
+- VK2-Dokumente: nur Vereinsdaten – Commit: 12f3029 ✅ (noch pushen)
 
 ## Nächste Schritte (offen)
 1. **Dokumente öffnen** – Bei Georg öffnen erstellte Dokumente (QR-Plakat, Newsletter) „noch nicht“; ggf. andere Code-Pfade oder VK2-spezifisch prüfen.

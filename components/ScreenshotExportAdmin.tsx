@@ -2902,7 +2902,34 @@ function ScreenshotExportAdmin() {
       öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
       sonstiges: 'Veranstaltung'
     }
-    
+    const ort = event.location || ''
+    if (isVk2AdminContext()) {
+      try {
+        const stamm = JSON.parse(localStorage.getItem(KEY_VK2_STAMMDATEN) || '{}') as Vk2Stammdaten
+        const v = stamm?.verein
+        const adr = [v?.address, v?.city].filter(Boolean).join(', ')
+        return {
+          subject: `Einladung: ${event.title}`,
+          greeting: 'Liebe Kunstfreunde,',
+          body: `
+wir laden dich herzlich ein zu unserer ${eventTypeNames[event.type] || 'Veranstaltung'}!
+
+TERMINDATEN:
+📅 ${formatEventDates(event)}
+
+ORT:
+📍 ${ort || adr || 'Vereinshaus'}
+
+BESCHREIBUNG:
+${event.description || 'Wir freuen uns auf deinen Besuch!'}
+
+KONTAKT:
+${v?.email ? `E-Mail: ${v.email}` : ''}
+${adr ? `Adresse: ${adr}` : ''}
+          `.trim()
+        }
+      } catch (_) {}
+    }
     return {
       subject: `Einladung: ${event.title}`,
       greeting: 'Liebe Kunstfreunde,',
@@ -2913,7 +2940,7 @@ TERMINDATEN:
 📅 ${formatEventDates(event)}
 
 ORT:
-📍 ${event.location || galleryData.address || ''}
+📍 ${ort || galleryData.address || ''}
 
 BESCHREIBUNG:
 ${event.description || 'Wir freuen uns auf deinen Besuch!'}
@@ -3469,6 +3496,60 @@ ${'='.repeat(60)}
   }
 
   const generateEventFlyerContent = (event: any): { subject?: string; body?: string } => {
+    const eventDate = event?.date ? new Date(event.date).toLocaleDateString('de-AT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + (event?.startTime ? ` · ${event.startTime} Uhr` : ', 18 Uhr') : 'Termin folgt'
+    const title = event?.title || 'Vernissage'
+    const desc = event?.description || 'Malerei, Keramik und Skulptur in einem außergewöhnlichen Galerieraum.'
+
+    if (isVk2AdminContext()) {
+      const raw = localStorage.getItem(KEY_VK2_STAMMDATEN)
+      const stamm = raw ? (JSON.parse(raw) as Vk2Stammdaten) : null
+      const verein = stamm?.verein || { name: 'Kunstverein Muster', address: 'Musterstraße 12', city: 'Wien', email: '', website: '' }
+      const mitglieder = (stamm?.mitglieder || []).filter((m: any) => m?.name)
+      const vName = verein.name || 'Kunstverein Muster'
+      const adresse = [verein.address, verein.city].filter(Boolean).join(', ') || ''
+      const kuenstlerListe = mitglieder.length > 0 ? mitglieder.map((m: any) => m.name + (m.typ ? ` (${m.typ})` : '')).join(', ') : 'die Vereinsmitglieder'
+      const kuenstlerBlock = mitglieder.length > 0 && mitglieder.some((m: any) => m.kurzVita || m.bio)
+        ? mitglieder.map((m: any) => {
+            const kurz = m.kurzVita || m.bio || ''
+            return kurz ? `${m.name}${m.typ ? ` (${m.typ})` : ''}\n${kurz}\n\n` : ''
+          }).join('')
+        : ''
+      return {
+        subject: `✦ ${title} – Event-Flyer | ${vName}`,
+        body: [
+          `═══════════════════════════════════════`,
+          `  ${title.toUpperCase()}`,
+          `  ${vName}`,
+          `═══════════════════════════════════════`,
+          ``,
+          `📅  ${eventDate}`,
+          adresse ? `📍  ${adresse}` : '',
+          ``,
+          `───────────────────────────────────────`,
+          `ÜBER DIE AUSSTELLUNG`,
+          `───────────────────────────────────────`,
+          ``,
+          desc,
+          ``,
+          `${vName} präsentiert einen Querschnitt durch das Schaffen des Vereins.`,
+          `${kuenstlerListe} zeigen aktuelle Werke in einer gemeinsamen Schau.`,
+          ``,
+          `───────────────────────────────────────`,
+          `DIE KÜNSTLER:INNEN`,
+          `───────────────────────────────────────`,
+          ``,
+          kuenstlerBlock || '(Angaben zu den Künstler:innen im Verein hinterlegen)',
+          `───────────────────────────────────────`,
+          `KONTAKT & INFORMATION`,
+          `───────────────────────────────────────`,
+          ``,
+          verein.email ? `✉  ${verein.email}` : '',
+          adresse ? `🏛  ${adresse}` : '',
+          verein.website ? `🌐  ${verein.website}` : '',
+        ].filter(line => line !== null && line !== undefined).join('\n')
+      }
+    }
+
     const g = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
     const m = JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}')
     const p = JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}')
@@ -3476,9 +3557,6 @@ ${'='.repeat(60)}
     const mName = m.name || 'Martina Kreinecker'
     const pName = p.name || 'Georg Kreinecker'
     const adresse = [g.address, g.city].filter(Boolean).join(', ') || ''
-    const eventDate = event?.date ? new Date(event.date).toLocaleDateString('de-AT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + (event?.startTime ? ` · ${event.startTime} Uhr` : ', 18 Uhr') : 'Termin folgt'
-    const title = event?.title || 'Vernissage'
-    const desc = event?.description || 'Malerei, Keramik und Skulptur in einem außergewöhnlichen Galerieraum.'
     return {
       subject: `✦ ${title} – Event-Flyer | ${gName}`,
       body: [
@@ -3525,6 +3603,51 @@ ${'='.repeat(60)}
   }
 
   const generateEmailNewsletterContent = (event: any): { subject?: string; body?: string } => {
+    const eventDate = event?.date ? new Date(event.date).toLocaleDateString('de-AT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + (event?.startTime ? ` · ${event.startTime} Uhr` : ', 18 Uhr') : 'Termin folgt'
+    const title = event?.title || 'Vernissage'
+    const desc = event?.description || 'Malerei, Keramik und Skulptur in einer einzigartigen Galerieatmosphäre.'
+
+    if (isVk2AdminContext()) {
+      const raw = localStorage.getItem(KEY_VK2_STAMMDATEN)
+      const stamm = raw ? (JSON.parse(raw) as Vk2Stammdaten) : null
+      const verein = stamm?.verein || { name: 'Kunstverein Muster', address: 'Musterstraße 12', city: 'Wien', email: 'office@kunstverein-muster.at', website: '' }
+      const mitglieder = (stamm?.mitglieder || []).filter((m: any) => m?.name)
+      const vName = verein.name || 'Kunstverein Muster'
+      const adresse = [verein.address, verein.city].filter(Boolean).join(', ') || ''
+      const kuenstlerListe = mitglieder.length > 0 ? mitglieder.map((m: any) => m.name + (m.typ ? ` (${m.typ})` : '')).join(', ') : 'die Vereinsmitglieder'
+      return {
+        subject: `Einladung: ${title} – ${vName}`,
+        body: [
+          `Liebe Kunstfreundinnen und Kunstfreunde,`,
+          ``,
+          `wir freuen uns, Sie persönlich zu unserer Veranstaltung einladen zu dürfen:`,
+          ``,
+          `  ✦  ${title.toUpperCase()}`,
+          `  📅  ${eventDate}`,
+          adresse ? `  📍  ${adresse}` : '',
+          ``,
+          `─────────────────────────────────────────`,
+          ``,
+          desc,
+          ``,
+          `${kuenstlerListe} zeigen aktuelle Werke in einer gemeinsamen Schau –`,
+          `ein Querschnitt durch das Schaffen unseres Vereins.`,
+          ``,
+          `Wir würden uns sehr freuen, Sie an diesem Abend begrüßen zu dürfen.`,
+          `Für Getränke und eine herzliche Atmosphäre ist gesorgt.`,
+          ``,
+          `─────────────────────────────────────────`,
+          ``,
+          verein.email ? `Anmeldung erwünscht: ${verein.email}` : '',
+          ``,
+          `Mit freundlichen Grüßen`,
+          vName,
+          adresse ? adresse : '',
+          verein.website ? verein.website : '',
+        ].filter(line => line !== null && line !== undefined && line !== '').join('\n')
+      }
+    }
+
     const g = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
     const m = JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}')
     const p = JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}')
@@ -3532,9 +3655,6 @@ ${'='.repeat(60)}
     const mName = m.name || 'Martina Kreinecker'
     const pName = p.name || 'Georg Kreinecker'
     const adresse = [g.address, g.city].filter(Boolean).join(', ') || ''
-    const eventDate = event?.date ? new Date(event.date).toLocaleDateString('de-AT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + (event?.startTime ? ` · ${event.startTime} Uhr` : ', 18 Uhr') : 'Termin folgt'
-    const title = event?.title || 'Vernissage'
-    const desc = event?.description || 'Malerei, Keramik und Skulptur in einer einzigartigen Galerieatmosphäre.'
     return {
       subject: `Einladung: ${title} – ${gName}`,
       body: [
@@ -3575,9 +3695,16 @@ ${'='.repeat(60)}
   }
 
   const generateEditableNewsletterPDF = (newsletter: any, event: any) => {
-    const galleryData = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
-    const galleryName = galleryData.name || 'K2 Galerie'
-    
+    const galleryName = (() => {
+      if (isVk2AdminContext()) {
+        try {
+          const stamm = JSON.parse(localStorage.getItem(KEY_VK2_STAMMDATEN) || '{}') as Vk2Stammdaten
+          return stamm?.verein?.name || 'Kunstverein Muster'
+        } catch { return 'Kunstverein Muster' }
+      }
+      const galleryData = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
+      return galleryData.name || 'K2 Galerie'
+    })()
     const html = `
 <!DOCTYPE html>
 <html>
