@@ -6,12 +6,13 @@
 VK2 Mitglieder-Seite ans helle Design angepasst
 
 ## Was zuletzt gemacht
-- **In-App-Dokument-Viewer bei blockiertem Pop-up (umgesetzt)** – Wenn der Browser das neue Fenster blockiert, wird das Dokument nicht mehr nur per Alert gemeldet, sondern **im gleichen Tab** in einem Overlay angezeigt: Header mit „← Zurück“ und iframe mit dem HTML. Keine Pop-up-Erlaubnis nötig. Gilt für: gespeicherte HTML-Dokumente (Blob/openPDFWindowSafely), VK2 Einladung/Presse/Flyer, K2 Einladung/Presse, Vita-Dokument, Fallback bei `window.open('', '_blank')` null + base64-HTML.
+- **QR-Code Plakat nur in K2** – Das Dokument „QR-Code Plakat“ (K2 GALERIE, Martina & Georg, Homepage/Virtueller Rundgang) ist K2-spezifisch und wird im **VK2-Admin nicht mehr angeboten** (Karte in der Werbematerial-Übersicht nur bei K2, bei VK2 ausgeblendet).
+- **In-App-Dokument-Viewer bei blockiertem Pop-up** – Overlay im gleichen Tab bei blockiertem Fenster (Commit 1c121cb).
 - **Klare Trennung K2 | VK2 | ök2** – Doku, VK2/K2 ADMIN-Badge, Session aus URL, VK2-Labels (Commit a8ff7de).
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- (nach diesem Stand: In-App-Viewer bei blockiertem Pop-up – noch nicht committed)
+- In-App-Viewer bei blockiertem Pop-up – Commit: 1c121cb ✅ auf GitHub
 
 ## Nächste Schritte (offen)
 1. **L3 / vermischte Daten** – Bereits gespeichertes Dokument (z. B. Tab „L 3)“) enthält noch alte K2+VK2-Mischung. Abhilfe: Dieses Dokument in der Liste löschen und mit „Neu erstellen“ neu anlegen → dann nur VK2-Daten.

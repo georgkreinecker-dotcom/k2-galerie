@@ -14549,7 +14549,18 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
 
                           {/* ═══ KÜNSTLER-FREUNDLICHE DOKUMENT-ÜBERSICHT ═══ */}
                           {(() => {
-                            // Alle Dokument-Karten definieren
+                            // QR-Code Plakat = nur K2 (Martina & Georg, K2 GALERIE) – nicht im VK2-Admin anbieten
+                            const qrPlakatKarte = {
+                              typ: 'qr-plakat' as const,
+                              icon: '🏛️',
+                              titel: 'QR-Code Plakat',
+                              beschreibung: 'Zum Aufhängen – Besucher scannen',
+                              docs: byTyp['qr-plakat'] || [],
+                              onOpen: (doc: any) => handleViewEventDocument(doc, event),
+                              onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
+                              onErstellen: () => printQRCodePlakat(event)
+                            }
+                            // Alle Dokument-Karten definieren (QR-Code Plakat nur bei K2)
                             const DOKUMENT_KARTEN = [
                               {
                                 typ: 'druckversion' as const,
@@ -14564,16 +14575,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 },
                                 onErstellen: null as null | (() => void)
                               },
-                              {
-                                typ: 'qr-plakat' as const,
-                                icon: '🏛️',
-                                titel: 'QR-Code Plakat',
-                                beschreibung: 'Zum Aufhängen – Besucher scannen',
-                                docs: byTyp['qr-plakat'] || [],
-                                onOpen: (doc: any) => handleViewEventDocument(doc, event),
-                                onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
-                                onErstellen: () => printQRCodePlakat(event)
-                              },
+                              ...(isVk2AdminContext() ? [] : [qrPlakatKarte]),
                               {
                                 typ: 'newsletter' as const,
                                 icon: '📧',
