@@ -10,7 +10,7 @@ VK2 Mitglieder-Seite ans helle Design angepasst
 - **Kurzinformationen in der Öffentlichkeitsarbeit** – Presse, Einladung und Flyer zeigen unter der Überschrift „Die Künstler:innen“ pro Person Name (mit Typ) + Kurzvita. Ohne Kurzvita wird die Bio verwendet.
 
 ## Letzter Commit
-- (gleich) VK2: Kurz- und Langvita für Dummies, Kurzinformationen in Presse/Einladung/Flyer ✅
+- VK2: Kurz- und Langvita für Dummies, Kurzinformationen in Presse/Einladung/Flyer – Commit: f5c27a4 ✅ auf GitHub
 
 ## Nächste Schritte (offen)
 1. **Vereinskatalog** – Werke aus Lizenz-Galerien per `fetch()` laden (wenn `lizenzGalerieUrl` bei Mitglied gesetzt)
