@@ -840,6 +840,8 @@ function ScreenshotExportAdmin() {
   const [designPreviewHeightPx, setDesignPreviewHeightPx] = useState(560) // Vorschau-Höhe – per Ziehen anpassbar
   const [designPreviewScale, setDesignPreviewScale] = useState(1) // 1 = 100%, manuell vergrößerbar
   const designPreviewResizeStart = useRef<{ y: number; height: number } | null>(null)
+  /** Bei blockiertem Pop-up: Dokument im gleichen Tab anzeigen (kein Fenster nötig) */
+  const [inAppDocumentViewer, setInAppDocumentViewer] = useState<{ html: string; title: string } | null>(null)
   const previewContainerRef = React.useRef<HTMLDivElement>(null)
   const welcomeImageInputRef = React.useRef<HTMLInputElement>(null)
 
@@ -6039,7 +6041,7 @@ ${'='.repeat(60)}
         const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
         const url = URL.createObjectURL(blob)
         const opened = window.open(url, '_blank')
-        if (!opened) alert('Pop-up wurde blockiert. Bitte Fenster erlauben und erneut klicken.')
+        if (!opened) setInAppDocumentViewer({ html, title: document.name || 'Dokument' })
         setTimeout(() => URL.revokeObjectURL(url), 5000)
       } catch (e) {
         const newWindow = window.open()
@@ -6058,9 +6060,7 @@ ${'='.repeat(60)}
         const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
         const url = URL.createObjectURL(blob)
         const opened = window.open(url, '_blank')
-        if (!opened) {
-          alert('Pop-up wurde blockiert. Bitte erlaube Fenster für diese Seite, dann erneut auf das Dokument klicken.')
-        }
+        if (!opened) setInAppDocumentViewer({ html, title: document.name || 'Dokument' })
         setTimeout(() => URL.revokeObjectURL(url), 5000)
       } catch (e) {
         const newWindow = window.open()
@@ -6081,7 +6081,7 @@ ${'='.repeat(60)}
           const html = new TextDecoder('utf-8').decode(bytes)
           const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
           const opened = openPDFWindowSafely(blob, document.name || 'Dokument')
-          if (!opened) alert('Pop-up wurde blockiert. Bitte Fenster für diese Seite erlauben, dann erneut klicken.')
+          if (!opened) setInAppDocumentViewer({ html, title: document.name || 'Dokument' })
           return
         } catch (_) {
           // Fallback unten mit newWindow
@@ -6116,7 +6116,18 @@ ${'='.repeat(60)}
     }
     const newWindow = window.open('', '_blank')
     if (!newWindow) {
-      alert('Pop-up wurde blockiert. Bitte im Browser Fenster für diese Seite erlauben (Adresszeile oder Einstellungen), dann erneut auf das Dokument klicken.')
+      if (fileData && fileType?.includes('html') && typeof fileData === 'string' && fileData.startsWith('data:')) {
+        try {
+          const base64 = fileData.replace(/^data:[^;]+;base64,/, '')
+          const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
+          const html = new TextDecoder('utf-8').decode(bytes)
+          setInAppDocumentViewer({ html, title: document.name || 'Dokument' })
+        } catch {
+          alert('Pop-up wurde blockiert. Bitte im Browser Fenster für diese Seite erlauben (Adresszeile oder Einstellungen), dann erneut auf das Dokument klicken.')
+        }
+      } else {
+        alert('Pop-up wurde blockiert. Bitte im Browser Fenster für diese Seite erlauben (Adresszeile oder Einstellungen), dann erneut auf das Dokument klicken.')
+      }
       return
     }
     if (!fileData) {
@@ -6177,7 +6188,7 @@ ${'='.repeat(60)}
       const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
       const url = URL.createObjectURL(blob)
       const opened = window.open(url, '_blank')
-      if (!opened) alert('Pop-up wurde blockiert. Bitte Fenster erlauben und erneut klicken.')
+      if (!opened) setInAppDocumentViewer({ html, title: person?.name ? `Vita – ${person.name}` : 'Vita' })
       setTimeout(() => URL.revokeObjectURL(url), 5000)
     } catch (e) {
       const w = window.open()
@@ -8602,6 +8613,38 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
       fontFamily: s.fontBody
     }}>
       <link rel="stylesheet" href={PROMO_FONTS_URL} />
+
+      {/* In-App-Dokument-Viewer bei blockiertem Pop-up (kein Fenster nötig) */}
+      {inAppDocumentViewer && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100000,
+          background: 'rgba(0,0,0,0.85)', display: 'flex', flexDirection: 'column',
+          fontFamily: 'system-ui, sans-serif'
+        }}>
+          <div style={{
+            flexShrink: 0, padding: '0.75rem 1rem', background: '#1c1a18', color: '#fff',
+            display: 'flex', alignItems: 'center', gap: '1rem', borderBottom: '1px solid rgba(255,255,255,0.15)'
+          }}>
+            <button
+              type="button"
+              onClick={() => setInAppDocumentViewer(null)}
+              style={{
+                padding: '0.4rem 0.8rem', background: '#b54a1e', color: '#fff', border: 'none', borderRadius: 8,
+                fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer'
+              }}
+            >← Zurück</button>
+            <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)' }}>{inAppDocumentViewer.title}</span>
+          </div>
+          <iframe
+            title={inAppDocumentViewer.title}
+            srcDoc={inAppDocumentViewer.html}
+            style={{
+              flex: 1, width: '100%', border: 'none', background: '#fff'
+            }}
+            sandbox="allow-same-origin allow-scripts"
+          />
+        </div>
+      )}
 
       {/* ── Zurück zum Guide-Hub (erscheint wenn man vom /entdecken-Hub kommt) ── */}
       {fromHub && (

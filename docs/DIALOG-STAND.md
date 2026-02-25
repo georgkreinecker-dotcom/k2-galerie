@@ -6,11 +6,12 @@
 VK2 Mitglieder-Seite ans helle Design angepasst
 
 ## Was zuletzt gemacht
-- **Klare Trennung K2 | VK2 | ök2 (umgesetzt)** – (1) **Doku:** `docs/TRENNUNG-K2-VK2-OEK2.md` mit verbindlichen Regeln (eine Aktion = ein Kontext, sichtbare Kontext-Marke, Session aus URL, Werbematerial pro Kontext). (2) **Admin-Header:** Badge zeigt „VK2 ADMIN“ bzw. „K2 ADMIN“ (ök2 unverändert). (3) **Session:** Beim Laden des Admins wird `k2-admin-context` aus der URL (`?context=vk2` / `?context=oeffentlich`) in den sessionStorage geschrieben, sonst `k2` – kein Verwischen nach Wechsel. (4) **VK2-Labels:** Karte und Bereich „Eventplan“ heißen im VK2 „Vereins-Events & Werbematerial“ bzw. „Vereins-Events & Werbematerial“ (klar getrennt von K2).
-- **Zurück / VK2-Design / Dokumente öffnen** – Bereits umgesetzt (Admin-URL injiziert, helles VK2-Design, Blob + Fallback).
+- **In-App-Dokument-Viewer bei blockiertem Pop-up (umgesetzt)** – Wenn der Browser das neue Fenster blockiert, wird das Dokument nicht mehr nur per Alert gemeldet, sondern **im gleichen Tab** in einem Overlay angezeigt: Header mit „← Zurück“ und iframe mit dem HTML. Keine Pop-up-Erlaubnis nötig. Gilt für: gespeicherte HTML-Dokumente (Blob/openPDFWindowSafely), VK2 Einladung/Presse/Flyer, K2 Einladung/Presse, Vita-Dokument, Fallback bei `window.open('', '_blank')` null + base64-HTML.
+- **Klare Trennung K2 | VK2 | ök2** – Doku, VK2/K2 ADMIN-Badge, Session aus URL, VK2-Labels (Commit a8ff7de).
+- **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- Klare Trennung K2|VK2|ök2: Doku, VK2/K2 ADMIN-Badge, Session aus URL, VK2-Labels – Commit: a8ff7de ✅ auf GitHub
+- (nach diesem Stand: In-App-Viewer bei blockiertem Pop-up – noch nicht committed)
 
 ## Nächste Schritte (offen)
 1. **L3 / vermischte Daten** – Bereits gespeichertes Dokument (z. B. Tab „L 3)“) enthält noch alte K2+VK2-Mischung. Abhilfe: Dieses Dokument in der Liste löschen und mit „Neu erstellen“ neu anlegen → dann nur VK2-Daten.
