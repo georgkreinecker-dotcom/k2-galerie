@@ -6,7 +6,7 @@
 VK2 Mitglieder-Seite ans helle Design angepasst
 
 ## Was zuletzt gemacht
-- **Zurück aus Dokumenten (QR-Plakat etc.)** – goBack() in allen generierten Dokument-HTMLs nutzt jetzt die Admin-URL vom **Opener** inkl. Query (`?context=vk2` oder `?context=oeffentlich`). Beim Klick „Zurück“ landest du wieder im gleichen Kontext (VK2/ök2), nicht mehr in K2. Alle 9 goBack()-Varianten in ScreenshotExportAdmin.tsx angepasst.
+- **Shop: „Zurück zum Admin“** – Der Link in der Kasse („zurück zum Admin“) nutzt jetzt den gespeicherten Kontext: aus sessionStorage `k2-admin-context` → bei VK2 `/admin?context=vk2`, bei ök2 `/admin?context=oeffentlich`, sonst `/admin`. Kein Landen mehr in K2, wenn du aus VK2/ök2-Kasse kommst.
 
 ## Letzter Commit
 - (wird nach diesem Fix committed)
@@ -18,6 +18,7 @@ VK2 Mitglieder-Seite ans helle Design angepasst
 4. **Vor Veröffentlichung:** QS und Checkliste **docs/VOR-VEROEFFENTLICHUNG.md** noch einmal genau durchgehen (geplant mit Georg).
 
 ## Heute außerdem
+- **Zurück aus Dokumenten:** goBack() in generierten Dokumenten nutzt Opener-URL inkl. context (Commit 192d544).
 - **CI:** GitHub Actions führt jetzt vollen Build bei jedem Push (Commit f8f0a7c).
 
 ## Wo nachlesen

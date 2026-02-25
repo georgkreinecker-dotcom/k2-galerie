@@ -166,6 +166,17 @@ const ShopPage = () => {
     forceKasseOpen ||
     (!fromGalerieView && typeof sessionStorage !== 'undefined' && !!sessionStorage.getItem('k2-admin-context'))
 
+  // Zurück zum Admin: Kontext erhalten (VK2/ök2), sonst landet man in K2
+  const adminLink =
+    typeof sessionStorage !== 'undefined'
+      ? (() => {
+          const ctx = sessionStorage.getItem('k2-admin-context')
+          if (ctx === 'vk2') return '/admin?context=vk2'
+          if (ctx === 'oeffentlich') return '/admin?context=oeffentlich'
+          return '/admin'
+        })()
+      : '/admin'
+
   // Warenkorb aus localStorage laden
   useEffect(() => {
     const loadCart = () => {
@@ -1185,7 +1196,7 @@ const ShopPage = () => {
               )}
               {isAdminContext && (
               <Link 
-                to="/admin" 
+                to={adminLink} 
                 style={{ 
                   padding: '0.6rem 1.25rem', 
                   background: s.bgCard,
