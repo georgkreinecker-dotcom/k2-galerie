@@ -6020,7 +6020,10 @@ ${'='.repeat(60)}
   // Dokument öffnen/anschauen (documentUrl = Link zum Projekt-Flyer, z. B. K2 Galerie Flyer). Unterstützt auch data/fileData aus globalem Speicher.
   // Bei Einladung/Presse: Fertiges Dummy-Dokument im Nutzer-Design mit Stammdaten + Foto (zum Absenden bereit).
   const handleViewEventDocument = (document: any, event?: any) => {
-    if (document.documentUrl) {
+    try {
+    const fileDataOrUrl = document.fileData || document.data
+    // Gespeicherte Daten haben Vorrang; documentUrl nur nutzen wenn kein Inhalt (sonst evtl. abgelaufene blob-URL → leeres Fenster)
+    if (!fileDataOrUrl && document.documentUrl && !String(document.documentUrl).startsWith('blob:')) {
       window.open(document.documentUrl, '_blank')
       return
     }
@@ -6074,30 +6077,65 @@ ${'='.repeat(60)}
       }
       return
     }
-    const fileData = document.fileData || document.data
-    const newWindow = window.open()
-    if (newWindow && fileData) {
-      try {
-        // HTML als Data-URL: Inhalt direkt ins Fenster schreiben (fertige Ansicht), nicht iframe – sonst bleibt Tab oft leer
-        if (fileType?.includes('html') && typeof fileData === 'string' && fileData.startsWith('data:')) {
-          const base64 = fileData.replace(/^data:[^;]+;base64,/, '')
-          if (base64 !== fileData) {
-            try {
-              const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
-              const html = new TextDecoder('utf-8').decode(bytes)
-              newWindow.document.open()
-              newWindow.document.write(html)
-              newWindow.document.close()
-            } catch (_) {
-              newWindow.document.write(`<html><head><title>${(document.name || '').replace(/</g, '&lt;')}</title></head><body style="margin:0; padding:20px;"><iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe></body></html>`)
-              newWindow.document.close()
-            }
-          } else {
-            newWindow.document.write(`<html><head><title>${(document.name || '').replace(/</g, '&lt;')}</title></head><body style="margin:0; padding:20px;"><iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe></body></html>`)
-            newWindow.document.close()
-          }
-        } else {
-          newWindow.document.write(`
+    const fileData = fileDataOrUrl
+    // Gespeichertes HTML wie Presse: zuerst Blob + openPDFWindowSafely (kein leeres Fenster vorher öffnen)
+    if (fileData && fileType?.includes('html') && typeof fileData === 'string' && fileData.startsWith('data:')) {
+      const base64 = fileData.replace(/^data:[^;]+;base64,/, '')
+      if (base64 !== fileData) {
+        try {
+          const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
+          const html = new TextDecoder('utf-8').decode(bytes)
+          const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+          const opened = openPDFWindowSafely(blob, document.name || 'Dokument')
+          if (!opened) alert('Pop-up wurde blockiert. Bitte Fenster für diese Seite erlauben, dann erneut klicken.')
+          return
+        } catch (_) {
+          // Fallback unten mit newWindow
+        }
+      }
+    }
+    // Kein gespeicherter Inhalt, aber Event vorhanden: aus Event + Typ neu erzeugen und öffnen (wie „Neu erstellen“)
+    if (!fileData && event) {
+      const ev = events.find((e: any) => e.id === event.id) || event
+      const suggestionsList = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+      const evSug = suggestionsList.find((sg: any) => sg.eventId === event.id)
+      const typ = document.werbematerialTyp || document.typ
+      switch (typ) {
+        case 'newsletter':
+          generateEditableNewsletterPDF(evSug?.newsletter || generateEmailNewsletterContent(ev), ev)
+          return
+        case 'plakat':
+          if (ev) generatePlakatForEvent(ev)
+          return
+        case 'event-flyer':
+          generateEditableNewsletterPDF(evSug?.flyer || generateEventFlyerContent(ev), ev)
+          return
+        case 'presse':
+          generateEditablePresseaussendungPDF(evSug?.presseaussendung || generatePresseaussendungContent(ev), ev)
+          return
+        case 'social':
+          generateEditableSocialMediaPDF(evSug?.socialMedia || generateSocialMediaContent(ev), ev)
+          return
+        default:
+          break
+      }
+    }
+    const newWindow = window.open('', '_blank')
+    if (!newWindow) {
+      alert('Pop-up wurde blockiert. Bitte im Browser Fenster für diese Seite erlauben (Adresszeile oder Einstellungen), dann erneut auf das Dokument klicken.')
+      return
+    }
+    if (!fileData) {
+      newWindow.document.write('<html><head><meta charset="utf-8"><title>' + (document.name || 'Dokument').replace(/</g, '&lt;') + '</title></head><body style="padding:2rem; font-family:sans-serif;"><p>Dieses Dokument hat keinen gespeicherten Inhalt. Bitte erstelle es neu mit „Neu erstellen“.</p></body></html>')
+      newWindow.document.close()
+      return
+    }
+    try {
+      if (fileType?.includes('html') && typeof fileData === 'string' && fileData.startsWith('data:')) {
+        newWindow.document.write(`<html><head><title>${(document.name || '').replace(/</g, '&lt;')}</title></head><body style="margin:0; padding:20px;"><iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe></body></html>`)
+        newWindow.document.close()
+      } else {
+        newWindow.document.write(`
         <html>
           <head><title>${(document.name || '').replace(/</g, '&lt;')}</title></head>
           <body style="margin:0; padding:20px; background:#f5f5f5;">
@@ -6112,13 +6150,16 @@ ${'='.repeat(60)}
           </body>
         </html>
       `)
-          newWindow.document.close()
-        }
-      } catch (e) {
-        console.error('Dokument öffnen:', e)
-        newWindow.document.write('<html><body style="padding:2rem; font-family:sans-serif;"><p>Dokument konnte nicht angezeigt werden.</p></body></html>')
         newWindow.document.close()
       }
+    } catch (e) {
+      console.error('Dokument öffnen:', e)
+      newWindow.document.write('<html><body style="padding:2rem; font-family:sans-serif;"><p>Dokument konnte nicht angezeigt werden.</p></body></html>')
+      newWindow.document.close()
+    }
+    } catch (err) {
+      console.error('Dokument öffnen (Handler):', err)
+      alert('Beim Öffnen ist ein Fehler aufgetreten: ' + (err instanceof Error ? err.message : String(err)) + '\n\nBitte in der Browser-Konsole (F12) nachsehen.')
     }
   }
 
@@ -14490,7 +14531,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 titel: 'QR-Code Plakat',
                                 beschreibung: 'Zum Aufhängen – Besucher scannen',
                                 docs: byTyp['qr-plakat'] || [],
-                                onOpen: (doc: any) => handleViewEventDocument(doc),
+                                onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
                                 onErstellen: () => printQRCodePlakat(event)
                               },
@@ -14500,7 +14541,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 titel: 'Newsletter',
                                 beschreibung: 'E-Mail an Stammkunden',
                                 docs: byTyp['newsletter'] || [],
-                                onOpen: (doc: any) => handleViewEventDocument(doc),
+                                onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
                                 onErstellen: () => {
                                   const ev = events.find((e: any) => e.id === event.id)
@@ -14515,7 +14556,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 titel: 'Plakat',
                                 beschreibung: 'A3/A2 für Schaufenster & Wände',
                                 docs: byTyp['plakat'] || [],
-                                onOpen: (doc: any) => handleViewEventDocument(doc),
+                                onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
                                 onErstellen: () => {
                                   const ev = events.find((e: any) => e.id === event.id)
@@ -14528,7 +14569,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 titel: 'Event-Flyer',
                                 beschreibung: 'Handzettel für persönliche Einladung',
                                 docs: byTyp['event-flyer'] || [],
-                                onOpen: (doc: any) => handleViewEventDocument(doc),
+                                onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
                                 onErstellen: () => {
                                   const ev = events.find((e: any) => e.id === event.id)
@@ -14543,7 +14584,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 titel: 'Presseaussendung',
                                 beschreibung: 'Für Zeitungen & Medien',
                                 docs: byTyp['presse'] || [],
-                                onOpen: (doc: any) => handleViewEventDocument(doc),
+                                onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
                                 onErstellen: () => {
                                   const ev = events.find((e: any) => e.id === event.id)
@@ -14558,7 +14599,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 titel: 'Social Media',
                                 beschreibung: 'Instagram, Facebook, WhatsApp',
                                 docs: byTyp['social'] || [],
-                                onOpen: (doc: any) => handleViewEventDocument(doc),
+                                onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
                                 onErstellen: () => {
                                   const ev = events.find((e: any) => e.id === event.id)

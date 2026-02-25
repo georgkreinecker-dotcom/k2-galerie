@@ -6,13 +6,14 @@
 VK2 Mitglieder-Seite ans helle Design angepasst
 
 ## Was zuletzt gemacht
-- **VK2-Dokumente ohne K2-Daten** – Im VK2-Admin erzeugte Newsletter, Event-Flyer und „ÜBER DIE AUSSTELLUNG“-Texte nutzen nur noch Vereinsdaten (Verein + Mitglieder). Keine Martina/Georg, kein info@kgm.at, kein K2-Kontakt mehr in VK2-Werbematerial. Angepasst: generateEmailNewsletterContent, generateEditableNewsletterPDF, generateNewsletterContent, generateEventFlyerContent.
+- **Dokumente in der App öffnen** – Beim Klick auf ein Dokument in der Werbematerial-Liste: (1) Gespeichertes HTML wird zuerst als Blob mit openPDFWindowSafely geöffnet (kein leeres Fenster mehr). (2) Wenn kein gespeicherter Inhalt, aber Event vorhanden: Inhalt aus Event + Typ neu erzeugen und öffnen (wie „Neu erstellen“). (3) Bei allen Dokument-Karten wird `event` an handleViewEventDocument übergeben (QR-Plakat, Newsletter, Plakat, Event-Flyer, Presse, Social).
+- **VK2-Dokumente ohne K2-Daten** – Bereits umgesetzt (generateEmailNewsletterContent, generateEditableNewsletterPDF, generateNewsletterContent, generateEventFlyerContent).
 
 ## Letzter Commit
-- VK2-Dokumente: nur Vereinsdaten – Commit: 12f3029 ✅ (noch pushen)
+- (noch nicht committed – Dokumente in App öffnen + event überall)
 
 ## Nächste Schritte (offen)
-1. **Dokumente öffnen** – Bei Georg öffnen erstellte Dokumente (QR-Plakat, Newsletter) „noch nicht“; ggf. andere Code-Pfade oder VK2-spezifisch prüfen.
+1. **L3 / vermischte Daten** – Bereits gespeichertes Dokument (z. B. Tab „L 3)“) enthält noch alte K2+VK2-Mischung. Abhilfe: Dieses Dokument in der Liste löschen und mit „Neu erstellen“ neu anlegen → dann nur VK2-Daten.
 2. **Vereinskatalog** – Werke aus Lizenz-Galerien per `fetch()` laden (wenn `lizenzGalerieUrl` bei Mitglied gesetzt)
 3. **VK2-Katalog als PDF-Download** direkt aus der App
 4. **Vor Veröffentlichung:** QS und Checkliste **docs/VOR-VEROEFFENTLICHUNG.md** noch einmal genau durchgehen (geplant mit Georg).

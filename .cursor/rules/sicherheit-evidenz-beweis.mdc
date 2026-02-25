@@ -1,0 +1,30 @@
+---
+description: Wenn ganz sicher – muss evident beweisbar sein. Nuancen der Kommunikation.
+alwaysApply: true
+---
+
+# Sicherheit und Evidenz – Regel der Wahrheitserkenntnis
+
+## Grundsatz (von Georg)
+
+> Menschen sind sich nie vollkommen sicher, ob etwas ganz richtig oder falsch ist – es gibt Nuancen.
+> **Die Regel:** Wenn du dir **ganz sicher** bist, musst du es **evident beweisen** können.
+
+## Was das für die AI bedeutet
+
+- **„Gelöst“ / „Behoben“ / „Fertig“** nur sagen, wenn es **nachweisbar** ist:
+  - z.B. Test grün, Build ok, Georg hat es so getestet, oder alle betroffenen Stellen systematisch geprüft.
+- **Nicht** „sicher“ behaupten, wenn nur eine Stelle gefixt wurde und unklar ist, ob es woanders auch stimmt (z.B. Vermischung K2/ök2/VK2).
+- **Nuancen nutzen:** Statt „ist gelöst“ lieber „in diesem Pfad geändert; bitte prüfen“ oder „sollte jetzt stimmen – wenn du einen anderen Fall siehst, melde dich“.
+
+## Konkret
+
+| Situation | Nicht | Sondern |
+|-----------|--------|---------|
+| Ein Fix in einer Datei | „Vermischung behoben.“ | „In [Stelle] angepasst. Bitte in deinem Ablauf testen; weitere Stellen möglich.“ |
+| Kein Test / keine Verifikation | „Das ist fertig.“ | „Code steht; Build läuft. Noch nicht von dir verifiziert.“ |
+| Unsicher ob alle Pfade erwischt | „Gelöst.“ | „Diese Ursache behoben. Ob es noch andere gibt, wissen wir erst nach Prüfung.“ |
+
+## Kurzfassung
+
+**Ganz sicher = evident beweisbar. Sonst: Nuance wahren und nicht „gelöst“ behaupten.**
