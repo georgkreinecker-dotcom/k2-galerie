@@ -761,6 +761,17 @@ function ScreenshotExportAdmin() {
     } catch (_) {}
   }, [])
 
+  // Klare Trennung: Kontext beim Laden aus URL in sessionStorage schreiben – nie verwischen
+  React.useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      const ctx = params.get('context')
+      if (ctx === 'vk2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'vk2')
+      else if (ctx === 'oeffentlich') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'oeffentlich')
+      else sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2')
+    } catch (_) {}
+  }, [location.search])
+
   // Guide-Navigation: reagiert auf URL-Änderungen (React Router navigate) – öffnet den richtigen Tab
   React.useEffect(() => {
     try {
@@ -8688,7 +8699,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   fontWeight: 600,
                   letterSpacing: '0.03em'
                 }}>
-                  ADMIN
+                  {isVk2AdminContext() ? 'VK2 ADMIN' : 'K2 ADMIN'}
                 </span>
               )}
             </div>
@@ -9245,15 +9256,17 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   </button>
                   )}
 
-                  {/* Eventplanung */}
+                  {/* Eventplanung / VK2: Vereins-Werbematerial */}
                   <button type="button" onClick={() => setActiveTab('eventplan')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: `2px solid ${s.accent}22`, borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit' }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.transform = 'translateY(-2px)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}22`; e.currentTarget.style.transform = 'translateY(0)' }}
                   >
                     <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📢</div>
-                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Veranstaltungen & Werbung</div>
+                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>
+                      {isVk2AdminContext() ? 'Vereins-Events & Werbematerial' : 'Veranstaltungen & Werbung'}
+                    </div>
                     <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
-                      Events planen, Einladungen und Flyer erstellen, Presse, Social Media
+                      {isVk2AdminContext() ? 'Events planen, Flyer und Newsletter für den Verein erstellen' : 'Events planen, Einladungen und Flyer erstellen, Presse, Social Media'}
                     </div>
                     <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Öffnen →</div>
                   </button>
@@ -9318,7 +9331,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   {activeTab === 'zertifikat' && '🔏 Echtheitszertifikate'}
                   {activeTab === 'newsletter' && '📬 Newsletter & Einladungen'}
                   {activeTab === 'pressemappe' && '📰 Pressemappe'}
-                  {activeTab === 'eventplan' && '📢 Veranstaltungen & Werbung'}
+                  {activeTab === 'eventplan' && (isVk2AdminContext() ? '📢 Vereins-Events & Werbematerial' : '📢 Veranstaltungen & Werbung')}
                   {activeTab === 'design' && (isVk2AdminContext() ? '✨ Aussehen – nach euren Wünschen anpassen' : '✨ Aussehen der Galerie – nach deinen Wünschen anpassen')}
                   {activeTab === 'einstellungen' && '⚙️ Einstellungen'}
                 </h2>

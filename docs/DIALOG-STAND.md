@@ -6,12 +6,11 @@
 VK2 Mitglieder-Seite ans helle Design angepasst
 
 ## Was zuletzt gemacht
-- **„Zurück“ aus Dokumenten landet im richtigen Admin** – Beim Speichern/Schließen von Newsletter, Flyer, Presse usw. führte „← Zurück“ oft zu K2 statt VK2 (weil Blob-Fenster mit noopener geöffnet wird → opener war null). Jetzt wird die Admin-URL **beim Erzeugen** des Dokuments injiziert (inkl. `?context=vk2` bzw. `?context=oeffentlich`). goBack() nutzt diese URL zuerst. Alle generierten Dokumente (Newsletter, Presse, Event-Flyer, Social, PR-Vorschläge, Plakat) angepasst.
-- **VK2-Dokumente: helles Design wie VK2-Seiten** – Im VK2-Admin erzeugte PR-Dokumente (Newsletter, Presse, Event-Flyer, Social, PR-Vorschläge) nutzen jetzt das **helle** Layout (WERBEUNTERLAGEN_STIL: heller Hintergrund, dunkle Schrift, Akzent #b54a1e) statt des dunklen K2-Designs. Neue CSS-Variante: `getWerbeliniePrDocCssVk2()` in marketingWerbelinie.ts.
-- **Dokumente in der App öffnen** – Bereits umgesetzt (Blob zuerst, Fallback Neu-erzeugen, event überall).
+- **Klare Trennung K2 | VK2 | ök2 (umgesetzt)** – (1) **Doku:** `docs/TRENNUNG-K2-VK2-OEK2.md` mit verbindlichen Regeln (eine Aktion = ein Kontext, sichtbare Kontext-Marke, Session aus URL, Werbematerial pro Kontext). (2) **Admin-Header:** Badge zeigt „VK2 ADMIN“ bzw. „K2 ADMIN“ (ök2 unverändert). (3) **Session:** Beim Laden des Admins wird `k2-admin-context` aus der URL (`?context=vk2` / `?context=oeffentlich`) in den sessionStorage geschrieben, sonst `k2` – kein Verwischen nach Wechsel. (4) **VK2-Labels:** Karte und Bereich „Eventplan“ heißen im VK2 „Vereins-Events & Werbematerial“ bzw. „Vereins-Events & Werbematerial“ (klar getrennt von K2).
+- **Zurück / VK2-Design / Dokumente öffnen** – Bereits umgesetzt (Admin-URL injiziert, helles VK2-Design, Blob + Fallback).
 
 ## Letzter Commit
-- (noch nicht committed – Zurück → VK2, VK2-Design für PR-Dokumente)
+- (noch nicht committed – Klare Trennung: Doku, VK2/K2 ADMIN-Badge, Session aus URL, VK2-Labels)
 
 ## Nächste Schritte (offen)
 1. **L3 / vermischte Daten** – Bereits gespeichertes Dokument (z. B. Tab „L 3)“) enthält noch alte K2+VK2-Mischung. Abhilfe: Dieses Dokument in der Liste löschen und mit „Neu erstellen“ neu anlegen → dann nur VK2-Daten.
