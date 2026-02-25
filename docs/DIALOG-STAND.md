@@ -6,10 +6,11 @@
 VK2 Mitglieder-Seite ans helle Design angepasst
 
 ## Was zuletzt gemacht
-- **Muster-Vereinsaktivität + Öffentlichkeitsarbeit** – Ein Muster-Event „Gemeinschaftsausstellung im Vereinshaus Muster“ (Datum in einem Monat) mit allen 6 Dummy-Künstlern wird automatisch angelegt, wenn VK2-Admin mit Kunstverein Muster geöffnet wird und noch keine Events existieren. Dazu drei Muster-Dokumente: Presse, Einladung, Flyer (im gleichen Stil wie die Muster-Vereinsgalerie: warm, hell, Georgia, Terrakotta). Beim Öffnen eines dieser Dokumente im VK2-Admin wird das HTML aus Vereinsdaten + Mitgliedern generiert. ✅
+- **Kurz- und Langvita für alle Dummy-Künstler:innen** – Jeder der 6 Dummies hat jetzt eine **Kurzvita** (1–2 Sätze für Presse/Einladung/Flyer) und eine **Langvita** (strukturierter Text mit Name, Sparte, Stationen). Struktur in `Vk2Mitglied`: bio (ein Satz), kurzVita, vita. Beim Laden von „Kunstverein Muster“ werden fehlende kurzVita/vita aus den Dummy-Daten nachgefüllt.
+- **Kurzinformationen in der Öffentlichkeitsarbeit** – Presse, Einladung und Flyer zeigen unter der Überschrift „Die Künstler:innen“ pro Person Name (mit Typ) + Kurzvita. Ohne Kurzvita wird die Bio verwendet.
 
 ## Letzter Commit
-- VK2: Muster-Event Gemeinschaftsausstellung + Presse/Einladung/Flyer für Öffentlichkeitsarbeit – Commit: b19b1fc ✅ auf GitHub
+- (gleich) VK2: Kurz- und Langvita für Dummies, Kurzinformationen in Presse/Einladung/Flyer ✅
 
 ## Nächste Schritte (offen)
 1. **Vereinskatalog** – Werke aus Lizenz-Galerien per `fetch()` laden (wenn `lizenzGalerieUrl` bei Mitglied gesetzt)

@@ -5842,27 +5842,34 @@ ${'='.repeat(60)}
   }
 
   // VK2: Einladung/Presse/Flyer im Stil der Muster-Vereinsgalerie (warm, hell, Georgia, Terrakotta). HTML als String-Konkatenation um JSX-Parse zu vermeiden.
-  const buildVk2ReadyToSendDocumentHtml = (docKind: 'einladung' | 'presse' | 'flyer', eventTitle: string, eventDate: string, verein: { name: string; address?: string; city?: string; email?: string; website?: string }, mitglieder: { name: string; typ?: string }[]): string => {
+  // mitglieder mit kurzVita werden als Kurzinformationen in den Text eingefügt (Struktur: Name + Kurzvita pro Person).
+  const buildVk2ReadyToSendDocumentHtml = (docKind: 'einladung' | 'presse' | 'flyer', eventTitle: string, eventDate: string, verein: { name: string; address?: string; city?: string; email?: string; website?: string }, mitglieder: { name: string; typ?: string; kurzVita?: string; bio?: string }[]): string => {
     const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     const vName = verein.name || 'Kunstverein Muster'
     const adresse = [verein.address, verein.city].filter(Boolean).join(', ') || 'Musterstraße 12, 1010 Wien'
     const kuenstlerListe = mitglieder.length > 0 ? mitglieder.map(m => m.name + (m.typ ? ' (' + m.typ + ')' : '')).join(', ') : 'Maria Mustermann (Malerei), Hans Beispiel (Skulptur), Anna Probst (Fotografie), Karl Vorlage (Grafik), Eva Entwurf (Keramik), Josef Skizze (Textil)'
+    const kuenstlerBlock = mitglieder.length > 0 && mitglieder.some(m => m.kurzVita || m.bio)
+      ? mitglieder.map(m => { const kurz = m.kurzVita || m.bio || ''; return kurz ? '<p><strong>' + esc(m.name) + (m.typ ? ' (' + esc(m.typ) + ')' : '') + '</strong><br>' + esc(kurz) + '</p>' : '' }).join('')
+      : ''
     const accent = '#c0562a'
     const bg = '#faf8f5'
     const text = '#1c1a18'
     const muted = '#5c5650'
-    const commonStyle = 'body{font-family:Georgia,serif;max-width:600px;margin:0 auto;padding:2rem 1.5rem;line-height:1.65;color:' + text + ';background:' + bg + '}h1{font-size:1.5rem;border-bottom:3px solid ' + accent + ';padding-bottom:.5rem;margin-top:0;color:' + text + '}p{margin:.75rem 0}.meta{color:' + muted + ';font-size:.95rem}@media print{body{background:#fff;color:#111}h1{border-color:#333}.meta{color:#555}}'
+    const commonStyle = 'body{font-family:Georgia,serif;max-width:600px;margin:0 auto;padding:2rem 1.5rem;line-height:1.65;color:' + text + ';background:' + bg + '}h1{font-size:1.5rem;border-bottom:3px solid ' + accent + ';padding-bottom:.5rem;margin-top:0;color:' + text + '}h2{font-size:1.15rem;margin-top:1.5rem;margin-bottom:.5rem;color:' + text + '}p{margin:.75rem 0}.meta{color:' + muted + ';font-size:.95rem}@media print{body{background:#fff;color:#111}h1{border-color:#333}.meta{color:#555}}'
     const headStart = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>'
     const headEnd = '</title><style>' + commonStyle + '</style></head><body>'
     const bodyEnd = '</body></html>'
     if (docKind === 'einladung') {
-      return headStart + 'Einladung – ' + esc(eventTitle) + headEnd + '<h1>Einladung zur Vernissage</h1><p><strong>' + esc(vName) + '</strong></p><p class="meta">' + esc(eventDate) + '</p><p>' + esc(adresse) + '</p><p>Sehr geehrte Damen und Herren,</p><p>wir laden Sie herzlich zu unserer Gemeinschaftsausstellung ein. ' + esc(kuenstlerListe) + ' präsentieren ihre Werke – Malerei, Skulptur, Fotografie, Grafik, Keramik und Textilkunst unter einem Dach.</p><p>Für Getränke und einen kleinen Imbiss ist gesorgt. Wir freuen uns auf Ihren Besuch.</p><p>Um Anmeldung wird gebeten: ' + esc(verein.email || '') + '</p><p class="meta" style="margin-top:2rem;">Mit freundlichen Grüßen<br>' + esc(vName) + '</p>' + bodyEnd
+      const kurzBlock = kuenstlerBlock ? '<h2>Die Künstler:innen</h2>' + kuenstlerBlock : ''
+      return headStart + 'Einladung – ' + esc(eventTitle) + headEnd + '<h1>Einladung zur Vernissage</h1><p><strong>' + esc(vName) + '</strong></p><p class="meta">' + esc(eventDate) + '</p><p>' + esc(adresse) + '</p><p>Sehr geehrte Damen und Herren,</p><p>wir laden Sie herzlich zu unserer Gemeinschaftsausstellung ein. ' + esc(kuenstlerListe) + ' präsentieren ihre Werke – Malerei, Skulptur, Fotografie, Grafik, Keramik und Textilkunst unter einem Dach.</p>' + kurzBlock + '<p>Für Getränke und einen kleinen Imbiss ist gesorgt. Wir freuen uns auf Ihren Besuch.</p><p>Um Anmeldung wird gebeten: ' + esc(verein.email || '') + '</p><p class="meta" style="margin-top:2rem;">Mit freundlichen Grüßen<br>' + esc(vName) + '</p>' + bodyEnd
     }
     if (docKind === 'presse') {
-      return headStart + 'Presseinformation – ' + esc(eventTitle) + headEnd + '<h1>Presseinformation – Gemeinschaftsausstellung</h1><p><strong>' + esc(vName) + '</strong> lädt zur Eröffnung der Ausstellung ein.</p><p class="meta">' + esc(eventDate) + '<br>' + esc(adresse) + '</p><p>' + esc(kuenstlerListe) + ' zeigen aktuelle Werke in einer gemeinsamen Schau im Vereinshaus – ein Querschnitt durch das Schaffen des Vereins.</p><p>Die Vernissage bietet Presse und Gästen die Möglichkeit, die Künstler:innen kennenzulernen. Für Rückfragen und Bildmaterial stehen wir gern zur Verfügung.</p><p>Kontakt: ' + esc(verein.email || '') + '</p><p class="meta" style="margin-top:1.5rem;">' + esc(vName) + ' · ' + esc(verein.website || '') + '</p>' + bodyEnd
+      const kurzBlock = kuenstlerBlock ? '<h2>Die Künstler:innen</h2>' + kuenstlerBlock : ''
+      return headStart + 'Presseinformation – ' + esc(eventTitle) + headEnd + '<h1>Presseinformation – Gemeinschaftsausstellung</h1><p><strong>' + esc(vName) + '</strong> lädt zur Eröffnung der Ausstellung ein.</p><p class="meta">' + esc(eventDate) + '<br>' + esc(adresse) + '</p><p>' + esc(kuenstlerListe) + ' zeigen aktuelle Werke in einer gemeinsamen Schau im Vereinshaus – ein Querschnitt durch das Schaffen des Vereins.</p>' + kurzBlock + '<p>Die Vernissage bietet Presse und Gästen die Möglichkeit, die Künstler:innen kennenzulernen. Für Rückfragen und Bildmaterial stehen wir gern zur Verfügung.</p><p>Kontakt: ' + esc(verein.email || '') + '</p><p class="meta" style="margin-top:1.5rem;">' + esc(vName) + ' · ' + esc(verein.website || '') + '</p>' + bodyEnd
     }
-    const flyerStyle = commonStyle + '.flyer-title{font-size:1.8rem;text-align:center;margin:1.5rem 0}.flyer-sub{text-align:center;color:' + muted + ';margin-bottom:1.5rem}'
-    return headStart + 'Flyer – ' + esc(eventTitle) + '</title><style>' + flyerStyle + '</style></head><body><p class="flyer-title">' + esc(eventTitle) + '</p><p class="flyer-sub">' + esc(vName) + '</p><p class="meta" style="text-align:center;">' + esc(eventDate) + ' · ' + esc(adresse) + '</p><p style="margin-top:1.5rem;">' + esc(kuenstlerListe) + '</p><p style="margin-top:1rem;">Eintritt frei. Wir freuen uns auf Ihren Besuch.</p><p class="meta" style="margin-top:2rem;text-align:center;">' + esc(verein.email || '') + ' · ' + esc(verein.website || '') + '</p>' + bodyEnd
+    const flyerStyle = commonStyle + '.flyer-title{font-size:1.8rem;text-align:center;margin:1.5rem 0}.flyer-sub{text-align:center;color:' + muted + ';margin-bottom:1.5rem}.flyer-kuenstler{margin-top:1rem;text-align:left}'
+    const flyerKurzBlock = kuenstlerBlock ? '<h2 style="text-align:center;margin-top:1.5rem;">Die Künstler:innen</h2><div class="flyer-kuenstler">' + kuenstlerBlock + '</div>' : ''
+    return headStart + 'Flyer – ' + esc(eventTitle) + '</title><style>' + flyerStyle + '</style></head><body><p class="flyer-title">' + esc(eventTitle) + '</p><p class="flyer-sub">' + esc(vName) + '</p><p class="meta" style="text-align:center;">' + esc(eventDate) + ' · ' + esc(adresse) + '</p><p style="margin-top:1.5rem;">' + esc(kuenstlerListe) + '</p>' + flyerKurzBlock + '<p style="margin-top:1rem;">Eintritt frei. Wir freuen uns auf Ihren Besuch.</p><p class="meta" style="margin-top:2rem;text-align:center;">' + esc(verein.email || '') + ' · ' + esc(verein.website || '') + '</p>' + bodyEnd
   }
 
   // Dokument öffnen/anschauen (documentUrl = Link zum Projekt-Flyer, z. B. K2 Galerie Flyer). Unterstützt auch data/fileData aus globalem Speicher.
@@ -5884,7 +5891,7 @@ ${'='.repeat(60)}
         const raw = localStorage.getItem('k2-vk2-stammdaten')
         const stamm = raw ? JSON.parse(raw) as Vk2Stammdaten : null
         const verein = stamm?.verein ? { name: stamm.verein.name, address: stamm.verein.address, city: stamm.verein.city, email: stamm.verein.email, website: stamm.verein.website } : { name: 'Kunstverein Muster', address: 'Musterstraße 12', city: 'Wien', email: 'office@kunstverein-muster.at', website: 'www.kunstverein-muster.at' }
-        const mitglieder = (stamm?.mitglieder || []).filter((m: any) => m?.name).map((m: any) => ({ name: m.name, typ: m.typ }))
+        const mitglieder = (stamm?.mitglieder || []).filter((m: any) => m?.name).map((m: any) => ({ name: m.name, typ: m.typ, kurzVita: m.kurzVita, bio: m.bio }))
         const docKind = isEinladung ? 'einladung' : isPresse ? 'presse' : 'flyer'
         const html = buildVk2ReadyToSendDocumentHtml(docKind, eventTitle, eventDate, verein, mitglieder)
         const blob = new Blob([html], { type: 'text/html;charset=utf-8' })

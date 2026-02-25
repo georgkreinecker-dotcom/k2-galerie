@@ -149,9 +149,11 @@ export interface Vk2Mitglied {
   seit?: string
   /** Auf der Karte / öffentlich sichtbar (Hakerl). false = gesperrt, nicht auf der öffentlichen Karte */
   oeffentlichSichtbar?: boolean
-  /** Kurz-Bio / Vita für die öffentliche Mitgliederkarte */
+  /** Kurz-Bio / Vita für die öffentliche Mitgliederkarte (ein Satz) */
   bio?: string
-  /** Ausführliche Vita – separater Bereich, editierbar, für Detailansicht */
+  /** Kurzvita für Öffentlichkeitsarbeit (1–2 Sätze, Presse/Einladung/Flyer) */
+  kurzVita?: string
+  /** Ausführliche Vita (Langvita) – separater Bereich, editierbar, für Detailansicht */
   vita?: string
   /** Rolle im Verein: 'vorstand' = Voll-Admin (Präsident/Schriftführer), 'mitglied' = eingeschränkter Zugang */
   rolle?: 'vorstand' | 'mitglied'
@@ -278,12 +280,66 @@ function _mkWerk(i: number, titel: string, typ: string): string {
 }
 
 const _dm = [
-  { name: 'Maria Mustermann', email: 'maria@muster.at', lizenz: 'VP-001', typ: 'Malerei',    bio: 'Malerei mit Öl und Acryl – Landschaften und Portraits.', seit: '2019' },
-  { name: 'Hans Beispiel',    email: 'hans@muster.at',  lizenz: 'VP-002', typ: 'Skulptur',   bio: 'Bildhauer mit Fokus auf moderne Metall- und Holzskulpturen.', seit: '2020' },
-  { name: 'Anna Probst',      email: 'anna@muster.at',  lizenz: 'VP-003', typ: 'Fotografie', bio: 'Dokumentarfotografie und künstlerische Porträts.', seit: '2018' },
-  { name: 'Karl Vorlage',     email: 'karl@muster.at',  lizenz: 'VP-004', typ: 'Grafik',     bio: 'Illustration und digitale Grafik für Print und Web.', seit: '2021' },
-  { name: 'Eva Entwurf',      email: 'eva@muster.at',   lizenz: 'VP-005', typ: 'Keramik',    bio: 'Töpferei und handgefertigte Keramikobjekte.', seit: '2017' },
-  { name: 'Josef Skizze',     email: 'josef@muster.at', lizenz: 'VB-006', typ: 'Textil',     bio: 'Textile Kunst und experimentelle Stoffarbeiten.', seit: '2022' },
+  {
+    name: 'Maria Mustermann',
+    email: 'maria@muster.at',
+    lizenz: 'VP-001',
+    typ: 'Malerei',
+    bio: 'Malerei mit Öl und Acryl – Landschaften und Portraits.',
+    kurzVita: 'Maria Mustermann arbeitet mit Öl und Acryl; Schwerpunkte Landschaften und Portraits. Studium der Bildenden Kunst, seit 2019 im Verein.',
+    vita: 'Maria Mustermann\nMalerei · Öl, Acryl\n\nGeboren in Wien. Studium der Bildenden Kunst, Schwerpunkt Malerei.\n\nSeit 2019 Mitglied im Kunstverein Muster. Landschaften und Portraits in kräftigen Farben; Ausstellungen im In- und Ausland. Arbeiten in privaten Sammlungen.',
+    seit: '2019',
+  },
+  {
+    name: 'Hans Beispiel',
+    email: 'hans@muster.at',
+    lizenz: 'VP-002',
+    typ: 'Skulptur',
+    bio: 'Bildhauer mit Fokus auf moderne Metall- und Holzskulpturen.',
+    kurzVita: 'Hans Beispiel ist Bildhauer mit Fokus auf Metall und Holz. Zahlreiche Symposien und Ausstellungen, seit 2020 im Verein.',
+    vita: 'Hans Beispiel\nSkulptur · Metall, Holz\n\nGeboren in Graz. Ausbildung in Bildhauerei und Metallgestaltung.\n\nSeit 2020 Mitglied im Kunstverein Muster. Moderne Skulpturen im öffentlichen Raum und in Galerien. Teilnahme an Bildhauer-Symposien in Österreich und Deutschland.',
+    seit: '2020',
+  },
+  {
+    name: 'Anna Probst',
+    email: 'anna@muster.at',
+    lizenz: 'VP-003',
+    typ: 'Fotografie',
+    bio: 'Dokumentarfotografie und künstlerische Porträts.',
+    kurzVita: 'Anna Probst widmet sich Dokumentarfotografie und künstlerischen Porträts. Preise und Stipendien, seit 2018 im Verein.',
+    vita: 'Anna Probst\nFotografie · Dokumentar, Porträt\n\nGeboren in Linz. Studium der Fotografie und visuellen Medien.\n\nSeit 2018 Mitglied im Kunstverein Muster. Dokumentarische Reihen und künstlerische Porträts; Ausstellungen und Publikationen. Stipendien und Preise im Inland.',
+    seit: '2018',
+  },
+  {
+    name: 'Karl Vorlage',
+    email: 'karl@muster.at',
+    lizenz: 'VP-004',
+    typ: 'Grafik',
+    bio: 'Illustration und digitale Grafik für Print und Web.',
+    kurzVita: 'Karl Vorlage arbeitet in Illustration und digitaler Grafik für Print und Web. Seit 2021 Mitglied im Kunstverein Muster.',
+    vita: 'Karl Vorlage\nGrafik · Illustration, Digital\n\nGeboren in Salzburg. Ausbildung in Grafikdesign und Illustration.\n\nSeit 2021 Mitglied im Kunstverein Muster. Illustrationen für Verlage und digitale Formate; freie Arbeiten in Siebdruck und Digital Print. Gruppenausstellungen.',
+    seit: '2021',
+  },
+  {
+    name: 'Eva Entwurf',
+    email: 'eva@muster.at',
+    lizenz: 'VP-005',
+    typ: 'Keramik',
+    bio: 'Töpferei und handgefertigte Keramikobjekte.',
+    kurzVita: 'Eva Entwurf fertigt handgearbeitete Keramik und Objekte. Langjährige Werkstattpraxis, seit 2017 im Verein.',
+    vita: 'Eva Entwurf\nKeramik · Objekt, Gebrauch\n\nGeboren in Innsbruck. Lehre und Werkstattpraxis in Keramik.\n\nSeit 2017 Mitglied im Kunstverein Muster. Handgefertigte Gefäße und Objekte; oxidierender und reduzierender Brand. Regelmäßige Teilnahme an Kunstmärkten und Ausstellungen.',
+    seit: '2017',
+  },
+  {
+    name: 'Josef Skizze',
+    email: 'josef@muster.at',
+    lizenz: 'VB-006',
+    typ: 'Textil',
+    bio: 'Textile Kunst und experimentelle Stoffarbeiten.',
+    kurzVita: 'Josef Skizze arbeitet mit textiler Kunst und experimentellen Stoffen. Seit 2022 Mitglied im Kunstverein Muster.',
+    vita: 'Josef Skizze\nTextil · Experimentell, Objekt\n\nGeboren in Klagenfurt. Auseinandersetzung mit Textil und Material.\n\nSeit 2022 Mitglied im Kunstverein Muster. Experimentelle Stoffarbeiten und Objekte; Ausstellungen im Bereich Textilkunst und angewandte Kunst.',
+    seit: '2022',
+  },
 ]
 
 /** Dummy-Verein für Demo/Vorschau – wird gesetzt wenn k2-vk2-stammdaten leer ist */
@@ -405,6 +461,8 @@ export function initVk2DemoStammdatenIfEmpty(): void {
         if (!m.mitgliedFotoUrl && dm.mitgliedFotoUrl) { patch.mitgliedFotoUrl = dm.mitgliedFotoUrl; changed = true }
         if (!m.imageUrl && dm.imageUrl) { patch.imageUrl = dm.imageUrl; changed = true }
         if (!m.bio && dm.bio) { patch.bio = dm.bio; changed = true }
+        if (!m.kurzVita && (dm as Partial<Vk2Mitglied>).kurzVita) { patch.kurzVita = (dm as Partial<Vk2Mitglied>).kurzVita; changed = true }
+        if (!m.vita && (dm as Partial<Vk2Mitglied>).vita) { patch.vita = (dm as Partial<Vk2Mitglied>).vita; changed = true }
         if (!m.seit && dm.seit) { patch.seit = dm.seit; changed = true }
         return Object.keys(patch).length > 0 ? { ...m, ...patch } : m
       })
