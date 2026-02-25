@@ -9,7 +9,7 @@ VK2 Mitglieder-Seite ans helle Design angepasst
 - **Muster-Vereinsaktivität + Öffentlichkeitsarbeit** – Ein Muster-Event „Gemeinschaftsausstellung im Vereinshaus Muster“ (Datum in einem Monat) mit allen 6 Dummy-Künstlern wird automatisch angelegt, wenn VK2-Admin mit Kunstverein Muster geöffnet wird und noch keine Events existieren. Dazu drei Muster-Dokumente: Presse, Einladung, Flyer (im gleichen Stil wie die Muster-Vereinsgalerie: warm, hell, Georgia, Terrakotta). Beim Öffnen eines dieser Dokumente im VK2-Admin wird das HTML aus Vereinsdaten + Mitgliedern generiert. ✅
 
 ## Letzter Commit
-- (gleich) VK2: Muster-Event Gemeinschaftsausstellung + Presse/Einladung/Flyer für Öffentlichkeitsarbeit ✅
+- VK2: Muster-Event Gemeinschaftsausstellung + Presse/Einladung/Flyer für Öffentlichkeitsarbeit – Commit: b19b1fc ✅ auf GitHub
 
 ## Nächste Schritte (offen)
 1. **Vereinskatalog** – Werke aus Lizenz-Galerien per `fetch()` laden (wenn `lizenzGalerieUrl` bei Mitglied gesetzt)
