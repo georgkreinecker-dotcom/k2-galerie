@@ -5932,7 +5932,27 @@ ${'='.repeat(60)}
     const fileData = document.fileData || document.data
     const newWindow = window.open()
     if (newWindow && fileData) {
-      newWindow.document.write(`
+      try {
+        // HTML als Data-URL: Inhalt direkt ins Fenster schreiben (fertige Ansicht), nicht iframe – sonst bleibt Tab oft leer
+        if (fileType?.includes('html') && typeof fileData === 'string' && fileData.startsWith('data:')) {
+          const base64 = fileData.replace(/^data:[^;]+;base64,/, '')
+          if (base64 !== fileData) {
+            try {
+              const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
+              const html = new TextDecoder('utf-8').decode(bytes)
+              newWindow.document.open()
+              newWindow.document.write(html)
+              newWindow.document.close()
+            } catch (_) {
+              newWindow.document.write(`<html><head><title>${(document.name || '').replace(/</g, '&lt;')}</title></head><body style="margin:0; padding:20px;"><iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe></body></html>`)
+              newWindow.document.close()
+            }
+          } else {
+            newWindow.document.write(`<html><head><title>${(document.name || '').replace(/</g, '&lt;')}</title></head><body style="margin:0; padding:20px;"><iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe></body></html>`)
+            newWindow.document.close()
+          }
+        } else {
+          newWindow.document.write(`
         <html>
           <head><title>${(document.name || '').replace(/</g, '&lt;')}</title></head>
           <body style="margin:0; padding:20px; background:#f5f5f5;">
@@ -5947,6 +5967,13 @@ ${'='.repeat(60)}
           </body>
         </html>
       `)
+          newWindow.document.close()
+        }
+      } catch (e) {
+        console.error('Dokument öffnen:', e)
+        newWindow.document.write('<html><body style="padding:2rem; font-family:sans-serif;"><p>Dokument konnte nicht angezeigt werden.</p></body></html>')
+        newWindow.document.close()
+      }
     }
   }
 
