@@ -197,7 +197,7 @@ function printMitgliedskarten(mitglieder: import('../src/config/tenantConfig').V
 </body></html>`
 
   const w = window.open('', '_blank')
-  if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 400) }
+  if (w) { try { w.focus() } catch (_) { }; w.document.write(html); w.document.close(); setTimeout(() => w.print(), 400) }
 }
 /** Registrierung: Lizenztyp, Vereinsmitglied, Empfehlungsoption (K2/ök2/VK2 getrennt) */
 const KEY_REGISTRIERUNG = 'k2-registrierung'
@@ -633,6 +633,7 @@ function openPDFWindowSafely(blob: Blob, title?: string): Window | null {
       return null
     }
     
+    try { pdfWindow.focus() } catch (_) { /* Browser kann Focus verweigern */ }
     // Fenster zum Tracking hinzufügen
     openPDFWindows.push(pdfWindow)
     
@@ -3042,6 +3043,7 @@ ${'='.repeat(60)}
       const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
       const url = URL.createObjectURL(blob)
       const win = window.open(url, '_blank')
+      if (win) try { win.focus() } catch (_) { }
       setTimeout(() => URL.revokeObjectURL(url), 500)
       if (win) {
         alert('✅ Text wurde geöffnet. Du kannst ihn kopieren und in Word/Pages einfügen.')
@@ -3078,6 +3080,7 @@ ${'='.repeat(60)}
       const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
       const url = URL.createObjectURL(blob)
       const win = window.open(url, '_blank')
+      if (win) try { win.focus() } catch (_) { }
       setTimeout(() => URL.revokeObjectURL(url), 500)
     })
   }
@@ -3109,6 +3112,7 @@ ${'='.repeat(60)}
       const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
       const url = URL.createObjectURL(blob)
       const win = window.open(url, '_blank')
+      if (win) try { win.focus() } catch (_) { }
       setTimeout(() => URL.revokeObjectURL(url), 500)
     })
   }
@@ -3256,7 +3260,7 @@ ${'='.repeat(60)}
       
       // Versuche Fenster zu öffnen - mit besserer Pop-up-Erkennung
       const pdfWindow = window.open(url, '_blank', 'noopener,noreferrer')
-      
+      if (pdfWindow) try { pdfWindow.focus() } catch (_) { }
       // Prüfe ob Fenster wirklich geöffnet wurde (mit kurzer Verzögerung)
       setTimeout(() => {
         if (!pdfWindow || pdfWindow.closed || typeof pdfWindow.closed === 'undefined') {
@@ -3461,7 +3465,7 @@ ${'='.repeat(60)}
       
       // Versuche Fenster zu öffnen - mit besserer Pop-up-Erkennung
       const pdfWindow = window.open(url, '_blank', 'noopener,noreferrer')
-      
+      if (pdfWindow) try { pdfWindow.focus() } catch (_) { }
       // Prüfe ob Fenster wirklich geöffnet wurde (mit kurzer Verzögerung)
       setTimeout(() => {
         if (!pdfWindow || pdfWindow.closed || typeof pdfWindow.closed === 'undefined') {
@@ -6020,7 +6024,8 @@ ${'='.repeat(60)}
     const fileDataOrUrl = document.fileData || document.data
     // Gespeicherte Daten haben Vorrang; documentUrl nur nutzen wenn kein Inhalt (sonst evtl. abgelaufene blob-URL → leeres Fenster)
     if (!fileDataOrUrl && document.documentUrl && !String(document.documentUrl).startsWith('blob:')) {
-      window.open(document.documentUrl, '_blank')
+      const w = window.open(document.documentUrl, '_blank')
+      if (w) try { w.focus() } catch (_) { }
       return
     }
     const fileType = document.fileType || document.type || ''
@@ -6042,10 +6047,12 @@ ${'='.repeat(60)}
         const url = URL.createObjectURL(blob)
         const opened = window.open(url, '_blank')
         if (!opened) setInAppDocumentViewer({ html, title: document.name || 'Dokument' })
+        else try { opened.focus() } catch (_) { }
         setTimeout(() => URL.revokeObjectURL(url), 5000)
       } catch (e) {
         const newWindow = window.open()
         if (newWindow) {
+          try { newWindow.focus() } catch (_) { }
           const html = buildVk2ReadyToSendDocumentHtml('einladung', eventTitle, eventDate, { name: 'Kunstverein Muster' }, [])
           newWindow.document.write(html)
           newWindow.document.close()
@@ -6061,10 +6068,12 @@ ${'='.repeat(60)}
         const url = URL.createObjectURL(blob)
         const opened = window.open(url, '_blank')
         if (!opened) setInAppDocumentViewer({ html, title: document.name || 'Dokument' })
+        else try { opened.focus() } catch (_) { }
         setTimeout(() => URL.revokeObjectURL(url), 5000)
       } catch (e) {
         const newWindow = window.open()
         if (newWindow) {
+          try { newWindow.focus() } catch (_) { }
           newWindow.document.write(html)
           newWindow.document.close()
         }
@@ -6082,6 +6091,7 @@ ${'='.repeat(60)}
           const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
           const opened = openPDFWindowSafely(blob, document.name || 'Dokument')
           if (!opened) setInAppDocumentViewer({ html, title: document.name || 'Dokument' })
+          else try { opened.focus() } catch (_) { }
           return
         } catch (_) {
           // Fallback unten mit newWindow
@@ -6130,6 +6140,7 @@ ${'='.repeat(60)}
       }
       return
     }
+    try { newWindow.focus() } catch (_) { }
     if (!fileData) {
       newWindow.document.write('<html><head><meta charset="utf-8"><title>' + (document.name || 'Dokument').replace(/</g, '&lt;') + '</title></head><body style="padding:2rem; font-family:sans-serif;"><p>Dieses Dokument hat keinen gespeicherten Inhalt. Bitte erstelle es neu mit „Neu erstellen“.</p></body></html>')
       newWindow.document.close()
@@ -6189,10 +6200,11 @@ ${'='.repeat(60)}
       const url = URL.createObjectURL(blob)
       const opened = window.open(url, '_blank')
       if (!opened) setInAppDocumentViewer({ html, title: person?.name ? `Vita – ${person.name}` : 'Vita' })
+      else try { opened.focus() } catch (_) { }
       setTimeout(() => URL.revokeObjectURL(url), 5000)
     } catch (e) {
       const w = window.open()
-      if (w) { w.document.write(html); w.document.close() }
+      if (w) { try { w.focus() } catch (_) { }; w.document.write(html); w.document.close() }
     }
   }
 
@@ -6365,6 +6377,7 @@ ${'='.repeat(60)}
     if (doc.isPDF) {
       // Bereits PDF - direkt öffnen
       const printWindow = window.open('', '_blank')
+      if (printWindow) try { printWindow.focus() } catch (_) { }
       if (!printWindow) {
         // Fallback: Download-Link erstellen wenn Pop-up blockiert wird
         if (doc.data) {
@@ -6409,6 +6422,7 @@ ${'='.repeat(60)}
     // Bild zu PDF konvertieren
     if (doc.type.startsWith('image/')) {
       const printWindow = window.open('', '_blank')
+      if (printWindow) try { printWindow.focus() } catch (_) { }
       if (!printWindow) {
         alert('Pop-up-Blocker verhindert PDF-Erstellung.')
         return
@@ -7528,6 +7542,7 @@ ${'='.repeat(60)}
   const handlePrint = async () => {
     if (!savedArtwork) return
     const win = window.open('', '_blank', 'width=400,height=500')
+    if (win) try { win.focus() } catch (_) { }
     if (!win) {
       alert('Pop-up blockiert. Bitte erlaube Fenster für diese Seite (Adresszeile/Safari) und versuche erneut.')
       return
@@ -7868,7 +7883,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
       } else {
         const blobUrl = URL.createObjectURL(blob)
         const w = window.open(blobUrl, '_blank')
-        if (w) w.document.title = `Etikett ${savedArtwork.number}`
+        if (w) { try { w.focus() } catch (_) { }; w.document.title = `Etikett ${savedArtwork.number}` }
         setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
       }
     } catch (e) {
@@ -8182,6 +8197,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
 
     // Öffne auch das PDF-Fenster zur Ansicht
     const printWindow = window.open('', '_blank')
+    if (printWindow) try { printWindow.focus() } catch (_) { }
     if (!printWindow) {
       alert('Pop-up-Blocker verhindert PDF-Ansicht. Bitte erlaube Pop-ups.')
       return
@@ -8222,6 +8238,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
     filteredArtworks = sortArtworksNewestFirst(filteredArtworks)
 
     const printWindow = window.open('', '_blank')
+    if (printWindow) try { printWindow.focus() } catch (_) { }
     if (!printWindow) {
       alert('Pop-up-Blocker verhindert PDF-Erstellung. Bitte erlaube Pop-ups.')
       return
@@ -9519,7 +9536,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             '<tbody>' + rows + '</tbody></table></body></html>'
                           ].join('')
                           const w = window.open('', '_blank')
-                          if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 400) }
+                          if (w) { try { w.focus() } catch (_) { }; w.document.write(html); w.document.close(); setTimeout(() => w.print(), 400) }
                         }}
                         style={{ padding: '0.6rem 1.1rem', background: s.bgElevated, color: s.text, border: `1px solid ${s.accent}44`, borderRadius: '10px', fontSize: '0.86rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' as const }}
                       >
@@ -9552,7 +9569,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             karten, '</body></html>'
                           ].join('')
                           const w = window.open('', '_blank')
-                          if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 400) }
+                          if (w) { try { w.focus() } catch (_) { }; w.document.write(html); w.document.close(); setTimeout(() => w.print(), 400) }
                         }}
                         style={{ padding: '0.6rem 1.1rem', background: s.bgElevated, color: s.text, border: `1px solid ${s.accent}44`, borderRadius: '10px', fontSize: '0.86rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' as const }}
                       >
@@ -11881,7 +11898,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             const rows = mitglieder.map((m, i) => `<tr><td>${i+1}</td><td>${m.name||''}</td><td>${m.email||''}</td><td>${m.typ||''}</td><td>${m.eintrittsdatum||m.seit||''}</td><td>${m.ort||''}</td><td>${m.rolle==='vorstand'?'👑 Vorstand':'Mitglied'}</td></tr>`).join('')
                             const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Mitgliederliste</title><style>body{font-family:system-ui;padding:2rem}h1{font-size:1.3rem;margin-bottom:0.5rem}table{width:100%;border-collapse:collapse;font-size:0.88rem}th,td{padding:0.4rem 0.6rem;border:1px solid #ccc;text-align:left}th{background:#f0f0f0;font-weight:700}@media print{body{padding:1rem}}</style></head><body><h1>Mitgliederliste – ${vereinName}</h1><p style="margin:0 0 0.75rem;color:#666;font-size:0.82rem">${new Date().toLocaleDateString('de-AT')} · ${mitglieder.length} Mitglieder</p><table><thead><tr><th>#</th><th>Name</th><th>E-Mail</th><th>Kunstrichtung</th><th>Eintritt</th><th>Ort</th><th>Rolle</th></tr></thead><tbody>${rows}</tbody></table></body></html>`
                             const w = window.open('', '_blank')
-                            if (w) { w.document.write(html); w.document.close(); w.print() }
+                            if (w) { try { w.focus() } catch (_) { }; w.document.write(html); w.document.close(); w.print() }
                           }}
                           style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: 8, color: s.accent, fontWeight: 600, cursor: 'pointer' }}
                         >

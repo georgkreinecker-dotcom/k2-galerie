@@ -6,14 +6,15 @@
 VK2 Mitglieder-Seite ans helle Design angepasst
 
 ## Was zuletzt gemacht
-- **„Alle PR-Dokumente auf einen Blick“ öffnet immer** – Wenn keine PR-Vorschläge für das Event existieren, wird kein Alert mehr gezeigt; stattdessen wird ein PDF mit aus dem Event generierten Inhalten (Presse, Social, Newsletter, Flyer) geöffnet. Damit „lässt sich was öffnen“.
+- **Dokumente sofort sichtbar (Focus)** – Beim Öffnen von Dokumenten (Newsletter, Presse, Flyer, Vita, PDF, Etikett, Druckfenster etc.) wird das neue Fenster/der neue Tab mit `.focus()` in den Vordergrund geholt. Du musst nicht mehr in der Menüleiste (Tab „L“) suchen – das Dokument erscheint direkt.
+- **„Alle PR-Dokumente auf einen Blick“ öffnet immer** – Fallback aus Event bei fehlenden PR-Vorschlägen (Commit 1ad018f).
 - **QR-Code Plakat nur in K2** – Im VK2-Admin ausgeblendet (Commit 574badd).
 - **In-App-Dokument-Viewer bei blockiertem Pop-up** – Overlay im gleichen Tab (Commit 1c121cb).
 - **Klare Trennung K2 | VK2 | ök2** – Doku, VK2/K2 ADMIN-Badge, Session aus URL, VK2-Labels (Commit a8ff7de).
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- QR-Code Plakat nur K2, im VK2 ausgeblendet – Commit: 574badd ✅ auf GitHub
+- Dokumente: Focus auf neues Fenster/Tab – sofort sichtbar (noch nicht committed)
 
 ## Nächste Schritte (offen)
 1. **L3 / vermischte Daten** – Bereits gespeichertes Dokument (z. B. Tab „L 3)“) enthält noch alte K2+VK2-Mischung. Abhilfe: Dieses Dokument in der Liste löschen und mit „Neu erstellen“ neu anlegen → dann nur VK2-Daten.
