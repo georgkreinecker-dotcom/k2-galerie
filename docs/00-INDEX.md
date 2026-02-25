@@ -71,7 +71,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 
 ## Setup & Qualität
 - **SETUP-ANLEITUNG.md** – Projekt-Setup.
-- **QUALITAETSSICHERUNG.md** – Qualitätssicherung.
+- **QUALITAETSSICHERUNG.md** – Qualitätssicherung; **QS-Standard vor Commit** (Tests + Build immer) ist dort verbindlich festgelegt.
 - **LICENCE-STRUKTUR.md** – Lizenzstruktur.
 - **LIZENZMODELL-BASIC-PRO-ENTERPRISE.md** – Stufen Basic/Pro/Enterprise, Limits, Feature-Matrix, Aufstufung.
 

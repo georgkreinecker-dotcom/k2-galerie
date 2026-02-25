@@ -1,0 +1,37 @@
+---
+description: QS-Standard vor Commit – Tests + Build immer, Georg muss nicht nachfragen
+alwaysApply: true
+---
+
+# ✅ QS-Standard vor Commit (verbindlich)
+
+## Regel
+
+**Vor jedem Commit und Push** muss die Qualitätssicherung durchgelaufen sein. Georg muss **nicht extra danach fragen** – die AI führt den QS-Standard selbst aus.
+
+## Pflicht-Checkliste vor Commit/Push
+
+1. **Tests:** `npm run test` → alle 21 Tests grün.
+2. **Build:** `npm run build` → durchgelaufen (inkl. test, write-build-info, tsc, vite build).
+3. **Stand:** `node scripts/write-build-info.js` (wird im Build mit erledigt).
+4. **Erst dann:** `git add .` → `git commit -m "…"` → `git push`.
+
+## Reihenfolge (unveränderlich)
+
+```
+npm run test     → grün
+npm run build    → erfolgreich
+write-build-info (im Build enthalten)
+git add . && git commit && git push
+```
+
+## Wenn etwas nicht grün ist
+
+- **Tests rot:** Zuerst Ursache beheben, dann weiter. Kein Commit mit roten Tests.
+- **Build fehlgeschlagen:** Fehler beheben (z. B. TypeScript, fehlende Imports), dann Build erneut. Kein Push mit kaputtem Build.
+
+## Kurzfassung
+
+**QS-Standard = vor jedem Commit: test + build grün. Keine Ausnahme. Georg fragt nicht mehr „ist QS durch?“ – es ist immer durch, wenn committed wurde.**
+
+Verknüpfung: Session-Start = `session-start-aufwaermen.mdc` (Tests zuerst). Fertig = `fertig-heisst-getestet-committed.mdc` (committed + Build war erfolgreich).

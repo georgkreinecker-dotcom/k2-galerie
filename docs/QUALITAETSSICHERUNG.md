@@ -1,5 +1,17 @@
 # ✅ Qualitätssicherung - Supabase Integration
 
+## 🔒 QS-Standard (verbindlich – Georg muss nicht nachfragen)
+
+**Vor jedem Commit und Push** gilt:
+
+1. **Tests:** `npm run test` → alle grün.
+2. **Build:** `npm run build` → erfolgreich durchgelaufen.
+3. **Erst dann:** Commit + Push.
+
+Diese Reihenfolge ist **immer** einzuhalten. Verbindliche Regel: **.cursor/rules/qs-standard-vor-commit.mdc** (wird von der AI bei jeder Aufgabe angewendet).
+
+---
+
 ## 🎯 Implementierte Features
 
 ### 1. Datenbank-Schema ✅
