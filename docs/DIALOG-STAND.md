@@ -6,15 +6,16 @@
 VK2 Mitglieder-Seite ans helle Design angepasst
 
 ## Was zuletzt gemacht
-- **Meine Notizen am Smart Panel** – Die Standardliste „Diverses“ im Smart Panel enthält jetzt Georgs Notizen: „Georgs Notizen (Übersicht)“ → Notizen-Seite, „Brief an August“ → /notizen-georg/diverses/brief-an-august.md, plus „Für meine Freunde“. Neue Nutzer sehen diese Einträge sofort; bestehende behalten ihre gespeicherte Liste.
+- **Zurück aus Dokumenten (QR-Plakat etc.)** – goBack() in allen generierten Dokument-HTMLs nutzt jetzt die Admin-URL vom **Opener** inkl. Query (`?context=vk2` oder `?context=oeffentlich`). Beim Klick „Zurück“ landest du wieder im gleichen Kontext (VK2/ök2), nicht mehr in K2. Alle 9 goBack()-Varianten in ScreenshotExportAdmin.tsx angepasst.
 
 ## Letzter Commit
-- CI: voller Build bei jedem Push; QS-Vergleich-Doku – Commit: f8f0a7c ✅ auf GitHub
+- (wird nach diesem Fix committed)
 
 ## Nächste Schritte (offen)
-1. **Vereinskatalog** – Werke aus Lizenz-Galerien per `fetch()` laden (wenn `lizenzGalerieUrl` bei Mitglied gesetzt)
-2. **VK2-Katalog als PDF-Download** direkt aus der App
-3. **Vor Veröffentlichung:** QS und Checkliste **docs/VOR-VEROEFFENTLICHUNG.md** noch einmal genau durchgehen (geplant mit Georg).
+1. **Dokumente öffnen** – Bei Georg öffnen erstellte Dokumente (QR-Plakat, Newsletter) „noch nicht“; ggf. andere Code-Pfade oder VK2-spezifisch prüfen.
+2. **Vereinskatalog** – Werke aus Lizenz-Galerien per `fetch()` laden (wenn `lizenzGalerieUrl` bei Mitglied gesetzt)
+3. **VK2-Katalog als PDF-Download** direkt aus der App
+4. **Vor Veröffentlichung:** QS und Checkliste **docs/VOR-VEROEFFENTLICHUNG.md** noch einmal genau durchgehen (geplant mit Georg).
 
 ## Heute außerdem
 - **CI:** GitHub Actions führt jetzt vollen Build bei jedem Push (Commit f8f0a7c).

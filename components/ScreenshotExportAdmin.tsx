@@ -3130,7 +3130,9 @@ ${'='.repeat(60)}
       if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 15mm; } }';
     }
     function goBack() {
-      var adminUrl = window.location.origin + '/admin'
+      var adminUrl = (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
+        ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
+        : (window.location.origin + '/admin')
       
       if (window.opener && !window.opener.closed) {
         try {
@@ -3330,7 +3332,9 @@ ${'='.repeat(60)}
       if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 15mm; } }';
     }
     function goBack() {
-      var adminUrl = window.location.origin + '/admin'
+      var adminUrl = (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
+        ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
+        : (window.location.origin + '/admin')
       
       if (window.opener && !window.opener.closed) {
         try {
@@ -3627,7 +3631,9 @@ ${'='.repeat(60)}
       if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 15mm; } }';
     }
     function goBack() {
-      var adminUrl = window.location.origin + '/admin'
+      var adminUrl = (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
+        ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
+        : (window.location.origin + '/admin')
       
       if (window.opener && !window.opener.closed) {
         try {
@@ -3834,7 +3840,9 @@ ${'='.repeat(60)}
       if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 15mm; } }';
     }
     function goBack() {
-      var adminUrl = window.location.origin + '/admin'
+      var adminUrl = (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
+        ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
+        : (window.location.origin + '/admin')
       
       if (window.opener && !window.opener.closed) {
         try {
@@ -4030,8 +4038,10 @@ ${'='.repeat(60)}
       // Einfacher Ansatz: Immer direkt zur Admin-Seite navigieren
       // Prüfe ob Hash-Router verwendet wird
       const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '')
-      const adminUrl = baseUrl + '/admin'
-      
+      const adminUrl = (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
+        ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
+        : (baseUrl + '/admin')
+
       console.log('goBack() - adminUrl:', adminUrl)
       console.log('goBack() - window.location:', window.location.href)
       
@@ -4412,8 +4422,10 @@ ${'='.repeat(60)}
       // Einfacher Ansatz: Immer direkt zur Admin-Seite navigieren
       // Prüfe ob Hash-Router verwendet wird
       const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '')
-      const adminUrl = baseUrl + '/admin'
-      
+      const adminUrl = (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
+        ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
+        : (baseUrl + '/admin')
+
       console.log('goBack() - adminUrl:', adminUrl)
       console.log('goBack() - window.location:', window.location.href)
       
@@ -4867,7 +4879,9 @@ ${'='.repeat(60)}
   
   <script>
     function goBack() {
-      var adminUrl = window.location.origin + '/admin'
+      var adminUrl = (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
+        ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
+        : (window.location.origin + '/admin')
       
       if (window.opener && !window.opener.closed) {
         try {
@@ -5197,8 +5211,10 @@ ${'='.repeat(60)}
       // Einfacher Ansatz: Immer direkt zur Admin-Seite navigieren
       // Prüfe ob Hash-Router verwendet wird
       const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '')
-      const adminUrl = baseUrl + '/admin'
-      
+      const adminUrl = (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
+        ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
+        : (baseUrl + '/admin')
+
       console.log('goBack() - adminUrl:', adminUrl)
       console.log('goBack() - window.location:', window.location.href)
       
@@ -5426,8 +5442,10 @@ ${'='.repeat(60)}
       // Einfacher Ansatz: Immer direkt zur Admin-Seite navigieren
       // Prüfe ob Hash-Router verwendet wird
       const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '')
-      const adminUrl = baseUrl + '/admin'
-      
+      const adminUrl = (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
+        ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
+        : (baseUrl + '/admin')
+
       console.log('goBack() - adminUrl:', adminUrl)
       console.log('goBack() - window.location:', window.location.href)
       
