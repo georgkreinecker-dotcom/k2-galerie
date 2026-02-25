@@ -6,10 +6,10 @@
 VK2 Mitglieder-Seite ans helle Design angepasst
 
 ## Was zuletzt gemacht
-- **VK2 Mitglieder-Seite (GalerieVorschau)** – komplett ans helle Design angepasst: gleiche Farbpalette (C.bg, C.text, C.accent), Nav wie Startseite, Eingangskarten mit hellem Platzhalter, Mitglieder-Karten hell mit Rahmen, Vita/Detail aufgeklappt hell, Footer #f2ede6. Event `vk2-karten-updated` für Karten-Reload ergänzt. ✅
+- **Muster-Vereinsaktivität + Öffentlichkeitsarbeit** – Ein Muster-Event „Gemeinschaftsausstellung im Vereinshaus Muster“ (Datum in einem Monat) mit allen 6 Dummy-Künstlern wird automatisch angelegt, wenn VK2-Admin mit Kunstverein Muster geöffnet wird und noch keine Events existieren. Dazu drei Muster-Dokumente: Presse, Einladung, Flyer (im gleichen Stil wie die Muster-Vereinsgalerie: warm, hell, Georgia, Terrakotta). Beim Öffnen eines dieser Dokumente im VK2-Admin wird das HTML aus Vereinsdaten + Mitgliedern generiert. ✅
 
 ## Letzter Commit
-- (gleich nach diesem Stand) VK2 Mitglieder-Seite: helles Design wie Startseite ✅
+- (gleich) VK2: Muster-Event Gemeinschaftsausstellung + Presse/Einladung/Flyer für Öffentlichkeitsarbeit ✅
 
 ## Nächste Schritte (offen)
 1. **Vereinskatalog** – Werke aus Lizenz-Galerien per `fetch()` laden (wenn `lizenzGalerieUrl` bei Mitglied gesetzt)

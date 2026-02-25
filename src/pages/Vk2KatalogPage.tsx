@@ -98,6 +98,12 @@ export const Vk2KatalogPage: React.FC = () => {
 
   const handlePrint = () => window.print()
 
+  // PDF-Druck nur für eingeloggte Mitglieder (oder VK2-Admin/Vorstand)
+  const SESSION_KEY = 'k2-vk2-mitglied-eingeloggt'
+  const isMitgliedEingeloggt = typeof sessionStorage !== 'undefined' && !!sessionStorage.getItem(SESSION_KEY)
+  const isVk2Admin = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'vk2'
+  const darfPdfDrucken = isMitgliedEingeloggt || isVk2Admin
+
   return (
     <div style={{ minHeight: '100vh', background: s.bg, color: s.text, fontFamily: "'Inter', sans-serif" }}>
 
@@ -112,13 +118,19 @@ export const Vk2KatalogPage: React.FC = () => {
             Die schönsten Werke unserer Lizenzmitglieder
           </p>
         </div>
-        <button
-          onClick={handlePrint}
-          style={{ padding: '0.5rem 1.1rem', background: 'rgba(251,191,36,0.15)', border: `1px solid rgba(251,191,36,0.4)`, borderRadius: 8, color: s.accent, fontSize: '0.85rem', cursor: 'pointer', fontWeight: 600 }}
-          className="no-print"
-        >
-          🖨️ Als PDF drucken
-        </button>
+        {darfPdfDrucken ? (
+          <button
+            onClick={handlePrint}
+            style={{ padding: '0.5rem 1.1rem', background: 'rgba(251,191,36,0.15)', border: `1px solid rgba(251,191,36,0.4)`, borderRadius: 8, color: s.accent, fontSize: '0.85rem', cursor: 'pointer', fontWeight: 600 }}
+            className="no-print"
+          >
+            🖨️ Als PDF drucken
+          </button>
+        ) : (
+          <span className="no-print" style={{ fontSize: '0.78rem', color: s.muted }}>
+            PDF-Druck nur für eingeloggte Mitglieder
+          </span>
+        )}
       </header>
 
       {/* Filter-Bar */}

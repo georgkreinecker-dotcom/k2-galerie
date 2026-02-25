@@ -311,6 +311,75 @@ export const VK2_DEMO_STAMMDATEN: Vk2Stammdaten = {
   mitgliederNichtRegistriert: ['Petra Farbe', 'Thomas Pinsel'],
 }
 
+/** Muster-Vereinsaktivität: Gemeinschaftsausstellung im Vereinshaus X, in einem Monat, mit allen Dummy-Künstlern */
+export function getVk2DemoEvent(): {
+  id: string
+  title: string
+  type: string
+  date: string
+  endDate: string
+  startTime: string
+  endTime: string
+  dailyTimes: Record<string, { start: string; end: string }>
+  description: string
+  location: string
+  createdAt: string
+  updatedAt: string
+} {
+  const d = new Date()
+  d.setMonth(d.getMonth() + 1)
+  const dateStr = d.toISOString().slice(0, 10)
+  const kuenstler = _dm.map(m => `${m.name} (${m.typ})`).join(', ')
+  return {
+    id: 'vk2-demo-gemeinschaftsausstellung',
+    title: 'Gemeinschaftsausstellung im Vereinshaus Muster',
+    type: 'vernissage',
+    date: dateStr,
+    endDate: dateStr,
+    startTime: '18:00',
+    endTime: '21:00',
+    dailyTimes: {},
+    description: `Alle unsere Künstler:innen präsentieren ihre Werke unter einem Dach: ${kuenstler}. Malerei, Skulptur, Fotografie, Grafik, Keramik und Textilkunst – ein Querschnitt durch das Schaffen des Kunstvereins Muster.`,
+    location: 'Vereinshaus Muster, Musterstraße 12, 1010 Wien',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }
+}
+
+/** Muster-Dokumente für Öffentlichkeitsarbeit (Presse, Einladung, Flyer) zum Demo-Event */
+export function getVk2DemoDocuments(eventId: string): Array<{ id: string; name: string; category: string; eventId: string; werbematerialTyp: string }> {
+  return [
+    { id: `${eventId}-presse`, name: 'Presse – Gemeinschaftsausstellung Vereinshaus Muster', category: 'pr-dokumente', eventId, werbematerialTyp: 'presse' },
+    { id: `${eventId}-einladung`, name: 'Einladung – Gemeinschaftsausstellung Vereinshaus Muster', category: 'pr-dokumente', eventId, werbematerialTyp: 'flyer' },
+    { id: `${eventId}-flyer`, name: 'Flyer – Gemeinschaftsausstellung Vereinshaus Muster', category: 'pr-dokumente', eventId, werbematerialTyp: 'flyer' },
+  ]
+}
+
+/** Initialisiert VK2-Muster-Event und -Dokumente, wenn Verein = Kunstverein Muster und Events/Dokumente leer. */
+export function initVk2DemoEventAndDocumentsIfEmpty(): void {
+  if (typeof window === 'undefined') return
+  try {
+    const rawStamm = localStorage.getItem('k2-vk2-stammdaten')
+    if (!rawStamm) return
+    const stamm = JSON.parse(rawStamm) as Vk2Stammdaten
+    if (stamm?.verein?.name !== 'Kunstverein Muster') return
+
+    const eventsRaw = localStorage.getItem('k2-vk2-events')
+    const events: unknown[] = eventsRaw ? JSON.parse(eventsRaw) : []
+    if (Array.isArray(events) && events.length === 0) {
+      const demoEvent = getVk2DemoEvent()
+      localStorage.setItem('k2-vk2-events', JSON.stringify([demoEvent]))
+    }
+
+    const docsRaw = localStorage.getItem('k2-vk2-documents')
+    const docs: unknown[] = docsRaw ? JSON.parse(docsRaw) : []
+    if (Array.isArray(docs) && docs.length === 0) {
+      const demoDocs = getVk2DemoDocuments('vk2-demo-gemeinschaftsausstellung')
+      localStorage.setItem('k2-vk2-documents', JSON.stringify(demoDocs))
+    }
+  } catch (_) {}
+}
+
 /** Initialisiert VK2-Stammdaten mit Demo-Daten falls noch nichts gespeichert ist.
  *  Füllt auch fehlende Demo-Fotos nach (mitgliedFotoUrl / imageUrl) ohne echte Daten zu überschreiben. */
 export function initVk2DemoStammdatenIfEmpty(): void {

@@ -11,7 +11,7 @@ import WerkkatalogTab from './tabs/WerkkatalogTab'
 
 /** Feste Galerie-URL für Etiketten-QR (unabhängig vom Router/WLAN) – gleiche Basis wie Mobile Connect */
 const GALERIE_QR_BASE = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
-import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, type TenantId, type ArtworkCategoryId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
+import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, type TenantId, type ArtworkCategoryId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
@@ -561,6 +561,7 @@ function saveEvents(events: any[]): void {
 
 function loadEvents(): any[] {
   try {
+    if (isVk2AdminContext()) initVk2DemoEventAndDocumentsIfEmpty()
     const key = getEventsKey()
     const stored = localStorage.getItem(key)
     if (!stored || stored === '[]') {
@@ -2438,6 +2439,7 @@ function ScreenshotExportAdmin() {
   // Dokumente aus localStorage laden (Key abhängig von K2 vs. ök2)
   const loadDocuments = () => {
     try {
+      if (isVk2AdminContext()) initVk2DemoEventAndDocumentsIfEmpty()
       const stored = localStorage.getItem(getDocumentsKey())
       if (stored) {
         return JSON.parse(stored)
@@ -5839,6 +5841,30 @@ ${'='.repeat(60)}
     return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Presseinformation</title><style>body{font-family:Georgia,serif;max-width:600px;margin:0 auto;padding:2rem 1.5rem;line-height:1.65;color:${text};background:${bg}}h1{font-size:1.4rem;border-bottom:3px solid ${accent};padding-bottom:.4rem;margin-top:0}p{margin:.6rem 0}.meta{color:${muted};font-size:.9rem}@media print{body{background:#fff;color:#111}h1{border-color:#333}.meta{color:#555}}</style></head><body>${imgBlock}<h1>Presseinformation – Vernissage</h1><p><strong>${esc(g.name || 'Galerie Muster')}</strong> lädt zur Eröffnung der Ausstellung ein.</p><p class="meta">${esc(eventDate)}<br>${esc(adresse)}</p><p>${esc(m)} (Malerei, Grafik) und ${esc(p)} (Keramik, Skulptur) zeigen aktuelle Werke in einer gemeinsamen Schau. Die Ausstellung spannt einen Bogen von großformatigen Bildern über grafische Arbeiten bis zu keramischen Objekten und Skulptur – ein Querschnitt durch das aktuelle Schaffen beider Künstler:innen.</p><p>Die Vernissage am Eröffnungsabend bietet Presse und Gästen die Möglichkeit, die Werke in Anwesenheit der Künstler:innen zu sehen und mit ihnen ins Gespräch zu kommen. Im Anschluss ist die Ausstellung zu den regulären Öffnungszeiten der Galerie zugänglich.</p><p>Für Rückfragen, Bildmaterial oder Interviewwünsche stehen wir gern zur Verfügung.</p><p>Kontakt: ${esc(g.email || '')}${g.phone ? ', ' + esc(g.phone) : ''}</p><p class="meta" style="margin-top:1.5rem;">Öffnungszeiten: ${esc(g.openingHours || '')}</p></body></html>`
   }
 
+  // VK2: Einladung/Presse/Flyer im Stil der Muster-Vereinsgalerie (warm, hell, Georgia, Terrakotta). HTML als String-Konkatenation um JSX-Parse zu vermeiden.
+  const buildVk2ReadyToSendDocumentHtml = (docKind: 'einladung' | 'presse' | 'flyer', eventTitle: string, eventDate: string, verein: { name: string; address?: string; city?: string; email?: string; website?: string }, mitglieder: { name: string; typ?: string }[]): string => {
+    const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    const vName = verein.name || 'Kunstverein Muster'
+    const adresse = [verein.address, verein.city].filter(Boolean).join(', ') || 'Musterstraße 12, 1010 Wien'
+    const kuenstlerListe = mitglieder.length > 0 ? mitglieder.map(m => m.name + (m.typ ? ' (' + m.typ + ')' : '')).join(', ') : 'Maria Mustermann (Malerei), Hans Beispiel (Skulptur), Anna Probst (Fotografie), Karl Vorlage (Grafik), Eva Entwurf (Keramik), Josef Skizze (Textil)'
+    const accent = '#c0562a'
+    const bg = '#faf8f5'
+    const text = '#1c1a18'
+    const muted = '#5c5650'
+    const commonStyle = 'body{font-family:Georgia,serif;max-width:600px;margin:0 auto;padding:2rem 1.5rem;line-height:1.65;color:' + text + ';background:' + bg + '}h1{font-size:1.5rem;border-bottom:3px solid ' + accent + ';padding-bottom:.5rem;margin-top:0;color:' + text + '}p{margin:.75rem 0}.meta{color:' + muted + ';font-size:.95rem}@media print{body{background:#fff;color:#111}h1{border-color:#333}.meta{color:#555}}'
+    const headStart = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>'
+    const headEnd = '</title><style>' + commonStyle + '</style></head><body>'
+    const bodyEnd = '</body></html>'
+    if (docKind === 'einladung') {
+      return headStart + 'Einladung – ' + esc(eventTitle) + headEnd + '<h1>Einladung zur Vernissage</h1><p><strong>' + esc(vName) + '</strong></p><p class="meta">' + esc(eventDate) + '</p><p>' + esc(adresse) + '</p><p>Sehr geehrte Damen und Herren,</p><p>wir laden Sie herzlich zu unserer Gemeinschaftsausstellung ein. ' + esc(kuenstlerListe) + ' präsentieren ihre Werke – Malerei, Skulptur, Fotografie, Grafik, Keramik und Textilkunst unter einem Dach.</p><p>Für Getränke und einen kleinen Imbiss ist gesorgt. Wir freuen uns auf Ihren Besuch.</p><p>Um Anmeldung wird gebeten: ' + esc(verein.email || '') + '</p><p class="meta" style="margin-top:2rem;">Mit freundlichen Grüßen<br>' + esc(vName) + '</p>' + bodyEnd
+    }
+    if (docKind === 'presse') {
+      return headStart + 'Presseinformation – ' + esc(eventTitle) + headEnd + '<h1>Presseinformation – Gemeinschaftsausstellung</h1><p><strong>' + esc(vName) + '</strong> lädt zur Eröffnung der Ausstellung ein.</p><p class="meta">' + esc(eventDate) + '<br>' + esc(adresse) + '</p><p>' + esc(kuenstlerListe) + ' zeigen aktuelle Werke in einer gemeinsamen Schau im Vereinshaus – ein Querschnitt durch das Schaffen des Vereins.</p><p>Die Vernissage bietet Presse und Gästen die Möglichkeit, die Künstler:innen kennenzulernen. Für Rückfragen und Bildmaterial stehen wir gern zur Verfügung.</p><p>Kontakt: ' + esc(verein.email || '') + '</p><p class="meta" style="margin-top:1.5rem;">' + esc(vName) + ' · ' + esc(verein.website || '') + '</p>' + bodyEnd
+    }
+    const flyerStyle = commonStyle + '.flyer-title{font-size:1.8rem;text-align:center;margin:1.5rem 0}.flyer-sub{text-align:center;color:' + muted + ';margin-bottom:1.5rem}'
+    return headStart + 'Flyer – ' + esc(eventTitle) + '</title><style>' + flyerStyle + '</style></head><body><p class="flyer-title">' + esc(eventTitle) + '</p><p class="flyer-sub">' + esc(vName) + '</p><p class="meta" style="text-align:center;">' + esc(eventDate) + ' · ' + esc(adresse) + '</p><p style="margin-top:1.5rem;">' + esc(kuenstlerListe) + '</p><p style="margin-top:1rem;">Eintritt frei. Wir freuen uns auf Ihren Besuch.</p><p class="meta" style="margin-top:2rem;text-align:center;">' + esc(verein.email || '') + ' · ' + esc(verein.website || '') + '</p>' + bodyEnd
+  }
+
   // Dokument öffnen/anschauen (documentUrl = Link zum Projekt-Flyer, z. B. K2 Galerie Flyer). Unterstützt auch data/fileData aus globalem Speicher.
   // Bei Einladung/Presse: Fertiges Dummy-Dokument im Nutzer-Design mit Stammdaten + Foto (zum Absenden bereit).
   const handleViewEventDocument = (document: any, event?: any) => {
@@ -5851,6 +5877,32 @@ ${'='.repeat(60)}
     const eventDate = (event?.date ? new Date(event.date).toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + (event?.startTime ? ', ' + event.startTime + ' Uhr' : ', 18 Uhr') : 'Samstag, 15. März 2026, 18 Uhr')
     const isEinladung = document.name && String(document.name).toLowerCase().includes('einladung')
     const isPresse = document.name && String(document.name).toLowerCase().includes('presse')
+    const isFlyer = document.name && String(document.name).toLowerCase().includes('flyer')
+
+    if (isVk2AdminContext() && (isEinladung || isPresse || isFlyer)) {
+      try {
+        const raw = localStorage.getItem('k2-vk2-stammdaten')
+        const stamm = raw ? JSON.parse(raw) as Vk2Stammdaten : null
+        const verein = stamm?.verein ? { name: stamm.verein.name, address: stamm.verein.address, city: stamm.verein.city, email: stamm.verein.email, website: stamm.verein.website } : { name: 'Kunstverein Muster', address: 'Musterstraße 12', city: 'Wien', email: 'office@kunstverein-muster.at', website: 'www.kunstverein-muster.at' }
+        const mitglieder = (stamm?.mitglieder || []).filter((m: any) => m?.name).map((m: any) => ({ name: m.name, typ: m.typ }))
+        const docKind = isEinladung ? 'einladung' : isPresse ? 'presse' : 'flyer'
+        const html = buildVk2ReadyToSendDocumentHtml(docKind, eventTitle, eventDate, verein, mitglieder)
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+        const url = URL.createObjectURL(blob)
+        const opened = window.open(url, '_blank')
+        if (!opened) alert('Pop-up wurde blockiert. Bitte Fenster erlauben und erneut klicken.')
+        setTimeout(() => URL.revokeObjectURL(url), 5000)
+      } catch (e) {
+        const newWindow = window.open()
+        if (newWindow) {
+          const html = buildVk2ReadyToSendDocumentHtml('einladung', eventTitle, eventDate, { name: 'Kunstverein Muster' }, [])
+          newWindow.document.write(html)
+          newWindow.document.close()
+        }
+      }
+      return
+    }
+
     if (isEinladung || isPresse) {
       const html = buildReadyToSendDocumentHtml(isEinladung ? 'einladung' : 'presse', eventTitle, eventDate)
       try {

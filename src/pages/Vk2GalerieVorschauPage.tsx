@@ -110,6 +110,18 @@ const Vk2GalerieVorschauPage: React.FC = () => {
   const welcomeImage = pageContent.welcomeImage || ''
   const mitgliederHeading = pageTexts?.kunstschaffendeHeading?.trim() || 'Unsere Mitglieder'
 
+  /** Vereinsfunktion aus Vorstand/Vize/Kassier/Schriftführer ableiten */
+  const getVereinsfunktion = (m: Vk2Mitglied): string | null => {
+    if (!stammdaten) return null
+    const n = (m.name || '').trim()
+    if (!n) return null
+    if (stammdaten.vorstand?.name && stammdaten.vorstand.name.trim() === n) return 'Obfrau/Obmann'
+    if (stammdaten.vize?.name && stammdaten.vize.name.trim() === n) return 'Stellvertreter:in'
+    if (stammdaten.kassier?.name && stammdaten.kassier.name.trim() === n) return 'Kassier:in'
+    if (stammdaten.schriftfuehrer?.name && stammdaten.schriftfuehrer.name.trim() === n) return 'Schriftführer:in'
+    return null
+  }
+
   const C = {
     bg: '#faf8f5',
     bgCard: '#ffffff',
@@ -195,6 +207,11 @@ const Vk2GalerieVorschauPage: React.FC = () => {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', flexWrap: 'wrap' }}>
                         <span style={{ fontWeight: 700, fontSize: '1rem', color: C.text, fontFamily: 'system-ui, sans-serif' }}>{m.name}</span>
+                        {getVereinsfunktion(m) && (
+                          <span style={{ fontSize: '0.72rem', fontWeight: 600, color: C.textMid, fontFamily: 'system-ui, sans-serif', background: C.bg, padding: '0.12rem 0.5rem', borderRadius: 6, border: `1px solid ${C.border}` }}>
+                            {getVereinsfunktion(m)}
+                          </span>
+                        )}
                         {m.typ && <span style={{ color: C.accent, fontSize: '0.82rem', fontWeight: 500, fontFamily: 'system-ui, sans-serif' }}>{m.typ}</span>}
                       </div>
                       {m.bio && <p style={{ margin: '0.1rem 0 0', color: C.textMid, fontSize: '0.82rem', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'system-ui, sans-serif' }}>{m.bio}</p>}
