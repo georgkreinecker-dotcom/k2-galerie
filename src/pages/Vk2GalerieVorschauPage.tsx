@@ -26,22 +26,23 @@ function loadEingangskarten(): EingangskarteData[] {
 
 function EingangsKarte({ data, index }: { data: EingangskarteData; index: number }) {
   const dummyGradients = [
-    'linear-gradient(135deg, rgba(255,140,66,0.35) 0%, rgba(180,74,30,0.5) 100%)',
-    'linear-gradient(135deg, rgba(251,191,36,0.25) 0%, rgba(180,100,20,0.4) 100%)',
+    'linear-gradient(135deg, #e8d5c4 0%, #c8a888 100%)',
+    'linear-gradient(135deg, #d8e4d0 0%, #a8c498 100%)',
   ]
+  const dummyIcons = ['🖼️', '👥']
   const hasBild = !!data.imageUrl
   return (
-    <div style={{ position: 'relative', borderRadius: 'clamp(10px, 2vw, 16px)', overflow: 'hidden', aspectRatio: '3/2', minHeight: 120, background: hasBild ? '#111' : dummyGradients[index % 2], border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 4px 20px rgba(0,0,0,0.35)' }}>
+    <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', aspectRatio: '4/3', minHeight: 160, background: hasBild ? '#e8e2da' : dummyGradients[index % 2], border: '1px solid #e0d8cf', boxShadow: '0 4px 20px rgba(0,0,0,0.10)' }}>
       {hasBild && <img src={data.imageUrl} alt={data.titel} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
       {!hasBild && (
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 12px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontSize: 'clamp(2rem, 6vw, 3.5rem)', opacity: 0.2 }}>{index === 0 ? '🖼️' : '👥'}</span>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ fontSize: 'clamp(2.5rem, 7vw, 4rem)', opacity: 0.35 }}>{dummyIcons[index % 2]}</span>
         </div>
       )}
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 60%, transparent 100%)' }} />
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 'clamp(0.75rem, 2vw, 1.1rem)' }}>
-        <div style={{ fontWeight: 700, fontSize: 'clamp(0.9rem, 2.5vw, 1.1rem)', color: '#fff', lineHeight: 1.2, marginBottom: '0.2rem' }}>{data.titel}</div>
-        <div style={{ fontSize: 'clamp(0.72rem, 1.8vw, 0.85rem)', color: 'rgba(255,255,255,0.72)', lineHeight: 1.4 }}>{data.untertitel}</div>
+      <div style={{ position: 'absolute', inset: 0, background: hasBild ? 'linear-gradient(to top, rgba(20,12,8,0.82) 0%, rgba(0,0,0,0.15) 55%, transparent 100%)' : 'linear-gradient(to top, rgba(20,12,8,0.65) 0%, transparent 70%)' }} />
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0.85rem 1rem' }}>
+        <div style={{ fontWeight: 700, fontSize: 'clamp(0.88rem, 2.5vw, 1rem)', color: '#fff', lineHeight: 1.2, marginBottom: '0.18rem', fontFamily: 'system-ui, sans-serif', textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}>{data.titel}</div>
+        <div style={{ fontSize: 'clamp(0.7rem, 1.8vw, 0.8rem)', color: 'rgba(255,255,255,0.78)', lineHeight: 1.4, fontFamily: 'system-ui, sans-serif' }}>{data.untertitel}</div>
       </div>
     </div>
   )
@@ -96,10 +97,12 @@ const Vk2GalerieVorschauPage: React.FC = () => {
     window.addEventListener('storage', reload)
     window.addEventListener('vk2-stammdaten-updated', reload)
     window.addEventListener('page-texts-updated', reload)
+    window.addEventListener('vk2-karten-updated', reload)
     return () => {
       window.removeEventListener('storage', reload)
       window.removeEventListener('vk2-stammdaten-updated', reload)
       window.removeEventListener('page-texts-updated', reload)
+      window.removeEventListener('vk2-karten-updated', reload)
     }
   }, [])
 
@@ -107,26 +110,36 @@ const Vk2GalerieVorschauPage: React.FC = () => {
   const welcomeImage = pageContent.welcomeImage || ''
   const mitgliederHeading = pageTexts?.kunstschaffendeHeading?.trim() || 'Unsere Mitglieder'
 
-  return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #1a0f0a 0%, #2d1a14 50%, #3d2419 100%)', color: '#fff5f0', fontFamily: 'system-ui, -apple-system, sans-serif', overflowX: 'hidden' }}>
+  const C = {
+    bg: '#faf8f5',
+    bgCard: '#ffffff',
+    text: '#1c1a18',
+    textMid: '#5c5650',
+    textLight: '#9a928a',
+    accent: '#c0562a',
+    border: '#e8e2da',
+  }
 
-      {/* Obere Leiste – gleich wie Startseite */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 1rem', background: 'rgba(26,15,10,0.95)', backdropFilter: 'blur(8px)', borderBottom: '1px solid rgba(255,140,66,0.2)' }}>
-        <button onClick={() => navigate(PROJECT_ROUTES.vk2.galerie)} style={{ background: '#ff8c42', color: '#fff', border: 'none', borderRadius: 8, padding: '0.3rem 0.7rem', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}>
+  return (
+    <div style={{ minHeight: '100vh', background: C.bg, color: C.text, fontFamily: '"Georgia", "Times New Roman", serif', overflowX: 'hidden' }}>
+
+      {/* Nav – wie Startseite */}
+      <nav style={{ position: 'sticky', top: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 1.5rem', background: 'rgba(250,248,245,0.97)', backdropFilter: 'blur(12px)', borderBottom: `1px solid ${C.border}`, boxShadow: '0 1px 8px rgba(0,0,0,0.06)' }}>
+        <button onClick={() => navigate(PROJECT_ROUTES.vk2.galerie)} style={{ background: C.accent, color: '#fff', border: 'none', borderRadius: 8, padding: '0.3rem 0.75rem', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer', letterSpacing: '0.04em' }}>
           APf
         </button>
-        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'rgba(255,140,66,0.8)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: C.textMid, letterSpacing: '0.14em', textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif' }}>
           {vereinsName} – {mitgliederHeading}
         </span>
-        <button onClick={() => navigate(PROJECT_ROUTES.vk2.galerie)} style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6, padding: '0.25rem 0.6rem', fontSize: '0.78rem', cursor: 'pointer' }}>
+        <button onClick={() => navigate(PROJECT_ROUTES.vk2.galerie)} style={{ background: 'transparent', color: C.textLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '0.28rem 0.7rem', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'system-ui, sans-serif' }}>
           ← Startseite
         </button>
-      </div>
+      </nav>
 
       {/* Vorschau-Banner */}
       {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('vorschau') === '1' && (
-        <div style={{ background: '#b54a1e', color: '#fff', padding: '0.5rem 1rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'space-between' }}>
-          <button onClick={() => navigate('/admin?context=vk2')} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 6, padding: '0.3rem 0.8rem', color: '#fff', cursor: 'pointer', fontSize: '0.85rem' }}>
+        <div style={{ background: C.accent, color: '#fff', padding: '0.5rem 1.5rem', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'space-between', fontFamily: 'system-ui, sans-serif' }}>
+          <button onClick={() => navigate('/admin?context=vk2')} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 6, padding: '0.28rem 0.8rem', color: '#fff', cursor: 'pointer', fontSize: '0.84rem' }}>
             ← Zurück zu Einstellungen
           </button>
           <span>Vorschau – hier siehst du deine gespeicherten Änderungen</span>
@@ -134,99 +147,87 @@ const Vk2GalerieVorschauPage: React.FC = () => {
         </div>
       )}
 
-      {/* Hauptinhalt */}
-      <header style={{ padding: 'clamp(2rem, 6vw, 3.5rem) clamp(1.5rem, 4vw, 3rem)', maxWidth: '1200px', margin: '0 auto' }}>
+      {/* Hero: Willkommensfoto (optional) */}
+      {welcomeImage && (
+        <div style={{ position: 'relative', width: '100%', height: 'clamp(200px, 38vh, 380px)', overflow: 'hidden' }}>
+          <img src={welcomeImage} alt={vereinsName} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, rgba(20,12,8,0.6) 100%)' }} />
+        </div>
+      )}
 
-        {/* Willkommensfoto */}
-        {welcomeImage && (
-          <div style={{ width: '100%', marginBottom: 'clamp(1.5rem, 4vw, 2.5rem)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
-            <img src={welcomeImage} alt={vereinsName} style={{ width: '100%', height: 'auto', display: 'block' }} />
-          </div>
-        )}
+      {/* Hauptinhalt */}
+      <div style={{ padding: 'clamp(1.5rem, 4vw, 2.5rem) clamp(1.25rem, 5vw, 3rem)', maxWidth: 900, margin: '0 auto' }}>
 
         {/* Eingangskarten */}
         {karten.length >= 2 && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'clamp(0.75rem, 2vw, 1.25rem)', marginBottom: 'clamp(1.5rem, 4vw, 2.5rem)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1.75rem' }}>
             {karten.map((k, i) => <EingangsKarte key={i} data={k} index={i} />)}
           </div>
         )}
 
-        {/* Heading */}
-        <h1 style={{ margin: 0, fontSize: 'clamp(2rem, 6vw, 3.5rem)', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.15 }}>
+        <h1 style={{ margin: '0 0 0.35rem', fontSize: 'clamp(1.85rem, 5vw, 3rem)', fontWeight: 800, color: C.text, letterSpacing: '-0.02em', lineHeight: 1.1 }}>
           {mitgliederHeading}
         </h1>
-        <p style={{ margin: '0.5rem 0 clamp(1.5rem, 4vw, 2.5rem)', color: 'rgba(255,255,255,0.65)', fontSize: '1rem', fontWeight: 300 }}>
+        <p style={{ margin: '0 0 1.5rem', color: C.textMid, fontSize: '0.95rem', fontFamily: 'system-ui, sans-serif' }}>
           {mitglieder.length > 0 ? `${mitglieder.length} Mitglieder` : 'Mitglieder-Galerie'} · {vereinsName}
         </p>
 
         {/* Mitglieder-Liste */}
         {mitglieder.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '4rem 2rem', color: 'rgba(255,255,255,0.5)' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👥</div>
+          <div style={{ textAlign: 'center', padding: '3rem 2rem', color: C.textLight, fontFamily: 'system-ui, sans-serif' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>👥</div>
             <p>Noch keine Mitglieder eingetragen.</p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
             {mitglieder.map((m, idx) => {
               const istOffen = offenIdx === idx
               const homepageUrl = m.galerieLinkUrl || m.website || ''
               const hasHomepage = !!homepageUrl
               const hasVita = !!(m.vita || m.bio)
               return (
-                <div key={m.email || m.name || idx} style={{ borderRadius: 12, overflow: 'hidden', border: `1px solid ${istOffen ? 'rgba(255,140,66,0.5)' : 'rgba(255,140,66,0.2)'}`, background: istOffen ? 'rgba(255,140,66,0.08)' : 'rgba(255,255,255,0.04)', transition: 'all 0.15s' }}>
+                <div key={m.email || m.name || idx} style={{ borderRadius: 12, overflow: 'hidden', border: `1px solid ${istOffen ? C.accent : C.border}`, background: C.bgCard, boxShadow: '0 2px 10px rgba(0,0,0,0.04)', transition: 'all 0.15s' }}>
 
-                  {/* Zeile */}
                   <div onClick={() => setOffenIdx(istOffen ? null : idx)} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', cursor: 'pointer' }}>
-                    {/* Porträt */}
-                    <div style={{ width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(255,140,66,0.4)', background: 'rgba(255,140,66,0.12)' }}>
-                      {m.mitgliedFotoUrl
-                        ? <img src={m.mitgliedFotoUrl} alt={m.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem' }}>👤</div>
-                      }
+                    <div style={{ width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: `2px solid ${C.border}`, background: C.bg }}>
+                      {m.mitgliedFotoUrl ? <img src={m.mitgliedFotoUrl} alt={m.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>👤</div>}
                     </div>
-
-                    {/* Name + Typ + Bio */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', flexWrap: 'wrap' }}>
-                        <span style={{ fontWeight: 700, fontSize: '1rem', color: '#fff5f0' }}>{m.name}</span>
-                        {m.typ && <span style={{ color: 'rgba(255,140,66,0.8)', fontSize: '0.82rem', fontWeight: 500 }}>{m.typ}</span>}
+                        <span style={{ fontWeight: 700, fontSize: '1rem', color: C.text, fontFamily: 'system-ui, sans-serif' }}>{m.name}</span>
+                        {m.typ && <span style={{ color: C.accent, fontSize: '0.82rem', fontWeight: 500, fontFamily: 'system-ui, sans-serif' }}>{m.typ}</span>}
                       </div>
-                      {m.bio && <p style={{ margin: '0.1rem 0 0', color: 'rgba(255,255,255,0.5)', fontSize: '0.82rem', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.bio}</p>}
+                      {m.bio && <p style={{ margin: '0.1rem 0 0', color: C.textMid, fontSize: '0.82rem', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'system-ui, sans-serif' }}>{m.bio}</p>}
                     </div>
-
-                    {/* Werkfoto-Thumbnail */}
                     {m.imageUrl && (
-                      <div style={{ width: 52, height: 42, borderRadius: 7, overflow: 'hidden', flexShrink: 0, border: '1px solid rgba(255,140,66,0.25)' }}>
+                      <div style={{ width: 52, height: 42, borderRadius: 8, overflow: 'hidden', flexShrink: 0, border: `1px solid ${C.border}` }}>
                         <img src={m.imageUrl} alt="Werk" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       </div>
                     )}
-
-                    {/* Icons */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
                       {hasHomepage && (
                         <button type="button" title="Homepage" onClick={() => { const url = homepageUrl.startsWith('http') ? homepageUrl : `https://${homepageUrl}`; window.open(url, '_blank', 'noopener,noreferrer') }}
-                          style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,140,66,0.12)', border: '1px solid rgba(255,140,66,0.3)', color: '#ff8c42', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🌐</button>
+                          style={{ width: 32, height: 32, borderRadius: 8, background: C.bg, border: `1px solid ${C.border}`, color: C.accent, fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🌐</button>
                       )}
                       {hasVita && (
                         <button type="button" title="Vita" onClick={() => setOffenIdx(istOffen ? null : idx)}
-                          style={{ width: 32, height: 32, borderRadius: 8, background: istOffen ? 'rgba(255,140,66,0.3)' : 'rgba(255,140,66,0.12)', border: '1px solid rgba(255,140,66,0.3)', color: '#ff8c42', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>📄</button>
+                          style={{ width: 32, height: 32, borderRadius: 8, background: istOffen ? C.accent : C.bg, border: `1px solid ${C.accent}`, color: istOffen ? '#fff' : C.accent, fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>📄</button>
                       )}
                     </div>
-                    <span style={{ color: '#ff8c42', fontSize: '0.85rem', opacity: 0.6, flexShrink: 0, transition: 'transform 0.2s', transform: istOffen ? 'rotate(90deg)' : 'none', display: 'inline-block' }}>›</span>
+                    <span style={{ color: C.textLight, fontSize: '0.9rem', flexShrink: 0, transition: 'transform 0.2s', transform: istOffen ? 'rotate(90deg)' : 'none', display: 'inline-block' }}>›</span>
                   </div>
 
-                  {/* Detail aufgeklappt */}
                   {istOffen && (
-                    <div style={{ background: 'rgba(0,0,0,0.25)', borderTop: '1px solid rgba(255,140,66,0.15)', padding: '1rem 1.1rem 1.2rem', display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+                    <div style={{ background: C.bg, borderTop: `1px solid ${C.border}`, padding: '1rem 1.1rem 1.2rem', display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
                       {(m.imageUrl || m.mitgliedFotoUrl) && (
                         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
                           {m.imageUrl && (
-                            <div style={{ flex: 1, borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,140,66,0.2)', maxHeight: 200 }}>
+                            <div style={{ flex: 1, borderRadius: 10, overflow: 'hidden', border: `1px solid ${C.border}`, maxHeight: 200 }}>
                               <img src={m.imageUrl} alt="Werk" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', maxHeight: 200 }} />
                             </div>
                           )}
                           {m.mitgliedFotoUrl && (
-                            <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', border: '2px solid rgba(255,140,66,0.4)', flexShrink: 0 }}>
+                            <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', border: `2px solid ${C.border}`, flexShrink: 0 }}>
                               <img src={m.mitgliedFotoUrl} alt={m.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             </div>
                           )}
@@ -234,16 +235,16 @@ const Vk2GalerieVorschauPage: React.FC = () => {
                       )}
                       {m.vita && (
                         <div>
-                          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'rgba(255,140,66,0.8)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Vita</div>
-                          <p style={{ margin: 0, color: 'rgba(255,245,240,0.85)', fontSize: '0.9rem', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{m.vita}</p>
+                          <div style={{ fontSize: '0.72rem', fontWeight: 700, color: C.accent, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.4rem', fontFamily: 'system-ui, sans-serif' }}>Vita</div>
+                          <p style={{ margin: 0, color: C.textMid, fontSize: '0.9rem', lineHeight: 1.65, whiteSpace: 'pre-wrap', fontFamily: 'system-ui, sans-serif' }}>{m.vita}</p>
                         </div>
                       )}
                       {!m.vita && m.bio && (
-                        <p style={{ margin: 0, color: 'rgba(255,245,240,0.85)', fontSize: '0.9rem', lineHeight: 1.65 }}>{m.bio}</p>
+                        <p style={{ margin: 0, color: C.textMid, fontSize: '0.9rem', lineHeight: 1.65, fontFamily: 'system-ui, sans-serif' }}>{m.bio}</p>
                       )}
                       {hasHomepage && (
                         <button type="button" onClick={() => { const url = homepageUrl.startsWith('http') ? homepageUrl : `https://${homepageUrl}`; window.open(url, '_blank', 'noopener,noreferrer') }}
-                          style={{ alignSelf: 'flex-start', padding: '0.45rem 1rem', background: 'rgba(255,140,66,0.15)', border: '1px solid rgba(255,140,66,0.4)', borderRadius: 8, color: '#ff8c42', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
+                          style={{ alignSelf: 'flex-start', padding: '0.45rem 1rem', background: C.accent, border: 'none', borderRadius: 8, color: '#fff', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'system-ui, sans-serif' }}>
                           🌐 Homepage besuchen
                         </button>
                       )}
@@ -254,16 +255,16 @@ const Vk2GalerieVorschauPage: React.FC = () => {
             })}
           </div>
         )}
-      </header>
+      </div>
 
       {/* Footer */}
-      <footer style={{ padding: 'clamp(1.5rem, 4vw, 2.5rem)', borderTop: '1px solid rgba(255,255,255,0.08)', maxWidth: '1200px', margin: '2rem auto 0', textAlign: 'center' }}>
-        <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.05em', marginBottom: '0.3rem' }}>K2 Galerie</div>
-        <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.78rem' }}>© {new Date().getFullYear()} {vereinsName} · Powered by K2 Galerie</div>
+      <footer style={{ marginTop: '2rem', padding: '1.5rem clamp(1.25rem, 5vw, 3rem)', borderTop: `1px solid ${C.border}`, background: '#f2ede6', textAlign: 'center', fontFamily: 'system-ui, sans-serif' }}>
+        <div style={{ fontWeight: 600, fontSize: '0.82rem', color: C.textMid, letterSpacing: '0.05em', marginBottom: '0.25rem' }}>K2 Galerie</div>
+        <div style={{ color: C.textLight, fontSize: '0.78rem' }}>© {new Date().getFullYear()} {vereinsName} · Powered by K2 Galerie</div>
       </footer>
 
       {/* Stand-Badge */}
-      <div style={{ position: 'fixed', bottom: 8, left: 8, fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)', cursor: 'pointer', zIndex: 50 }}
+      <div style={{ position: 'fixed', bottom: 8, left: 8, fontSize: '0.65rem', color: 'rgba(0,0,0,0.25)', cursor: 'pointer', zIndex: 50, fontFamily: 'system-ui, sans-serif' }}
         onClick={() => { window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now() }}
         title="Tippen für Cache-Bypass">
         Stand: {BUILD_LABEL}
