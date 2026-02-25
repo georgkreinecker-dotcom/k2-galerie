@@ -17,3 +17,7 @@ Alle persönlichen Notizen, Briefe und Gedanken liegen hier in **verschiedenen O
 
 - Gesamt-Index und Vermächtnis-Verknüpfung: **docs/GEORG-NOTIZEN-VERMAECHTNIS.md**
 - WIR-PROZESS / Vermächtnis: **docs/WIR-PROZESS.md** (Abschnitt „Das Vermächtnis“)
+
+## App / Auslieferung
+
+- **public/notizen-georg/** ist die Kopie, die mit der App ausgeliefert wird (Vercel, URL `/notizen-georg/...`). Bei Änderungen in docs/notizen-georg: gleiche Datei auch in public/notizen-georg anlegen bzw. aktualisieren, damit der Link in den Notizen funktioniert.
