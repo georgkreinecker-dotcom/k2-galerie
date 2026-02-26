@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, AGB_ROUTE } from '../config/navigation'
+import { PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, AGB_ROUTE, ENTDECKEN_ROUTE } from '../config/navigation'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 
@@ -30,6 +30,14 @@ type PendingAction = 'ansicht' | 'entwurf' | null
 export default function WillkommenPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+
+  // Neuer Interessent: gleich mit der emotionalen Begrüßung („Für Künstler:innen …“, „Jetzt entdecken“)
+  // → /willkommen leitet auf /entdecken weiter; alle Links/QR bleiben unverändert
+  useEffect(() => {
+    const q = window.location.search
+    navigate(q ? `${ENTDECKEN_ROUTE}${q}` : ENTDECKEN_ROUTE, { replace: true })
+  }, [navigate])
+
   const variant = searchParams.get('variant') === 'a' ? 'a' : 'c'
   const slogan = loadSlogan()
   const [name, setName] = useState('')
@@ -39,14 +47,6 @@ export default function WillkommenPage() {
   const [agbCheckbox, setAgbCheckbox] = useState(false)
 
   useEffect(() => { setAgbAccepted(getAgbAccepted()) }, [showAgbModal])
-
-  useEffect(() => {
-    const a = searchParams.get('assistent')
-    if (a === 'ansicht' || a === 'vorschau' || a === 'entwurf') {
-      setSearchParams({}, { replace: true })
-      startEntry(a === 'vorschau' ? 'ansicht' : a as PendingAction)
-    }
-  }, [searchParams])
 
   const doNavigate = (action: PendingAction) => {
     if (!action) return
@@ -69,7 +69,6 @@ export default function WillkommenPage() {
   }
 
   const startEntry = (action: PendingAction) => {
-    // Beim „nur umsehen“ / Galerie starten keine AGB – nur bei Lizenz/Kauf relevant
     if (action === 'entwurf' || action === 'ansicht') {
       doNavigate(action)
       return
@@ -78,9 +77,12 @@ export default function WillkommenPage() {
     else { setPendingAction(action); setShowAgbModal(true); setAgbCheckbox(false) }
   }
 
-  return variant === 'a'
-    ? <VariantA name={name} setName={setName} slogan={slogan} startEntry={startEntry} showAgbModal={showAgbModal} setShowAgbModal={setShowAgbModal} agbCheckbox={agbCheckbox} setAgbCheckbox={setAgbCheckbox} pendingAction={pendingAction} setPendingAction={setPendingAction} doNavigate={doNavigate} />
-    : <VariantC name={name} setName={setName} slogan={slogan} startEntry={startEntry} showAgbModal={showAgbModal} setShowAgbModal={setShowAgbModal} agbCheckbox={agbCheckbox} setAgbCheckbox={setAgbCheckbox} pendingAction={pendingAction} setPendingAction={setPendingAction} doNavigate={doNavigate} />
+  // Nach Redirect wird diese Seite nicht mehr gerendert; Fallback für kurzen Moment
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'system-ui', color: '#666' }}>
+      Weiterleitung …
+    </div>
+  )
 }
 
 // ─── Gemeinsame Props ──────────────────────────────────────────────────────────

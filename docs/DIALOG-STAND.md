@@ -43,9 +43,10 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Empfehlungstext isoliert im Admin:** Klick auf „→ Empfehlungstool (Link teilen)“ öffnet kein neues Fenster/keine ök2-Seite mehr, sondern ein **Modal im Admin** mit dem vorbereiteten Empfehlungstext. User kann den Text anpassen und mit einem Klick „Per E-Mail senden“, „WhatsApp teilen“ oder „Text kopieren“ weiterleiten. Commit: 1acc614 ✅ auf GitHub
+- **Einstieg neuer Interessent:** (1) Willkommen: nur noch „Meine Galerie ausprobieren“ prominent; „Galerie ansehen“ und „Eigene Galerie kaufen“ als kleine Text-Links darunter. (2) Beim „Galerie starten“ / „nur umsehen“ **kein AGB-Modal** mehr – nur bei Lizenz anfragen. (3) Galerie-Vorschau: Guide (Otto) erscheint **erst nach 3 Sekunden**, damit zuerst die Galerie im Fokus ist. Commit: 2d2b1b5 ✅ auf GitHub
 
 ## Nächste Schritte (offen)
+- **Von vorne testen:** Willkommen → Name → Galerie starten → Vorschau (Guide nach 3 s); bei Bedarf weitere UX-Anpassungen Galerie-Vorschau.
 - **Admin im Hub-Design (Phase 1):** Startansicht „Was möchtest du heute tun?“ durch 3-Spalten-Hub ersetzt – links Bereiche (Meine Werke, Werkkatalog, Events), Mitte Fokus-Karte + „↓ Direkt hier unten“, rechts Kassa/Einstellungen/Assistent + Galerie ansehen. K2/ök2/VK2 berücksichtigt.
 4. **Vor Veröffentlichung:** Erster Durchgang in **docs/VOR-VEROEFFENTLICHUNG.md** erledigt (Stand-Tabelle für Georg). **Mit Georg:** Checkboxen durchgehen, npm audit + AGB/Impressum-Inhalte prüfen und abhaken.
 5. **Praxis-Test gestartet (26.02.26):** Git-Teil erledigt (Commit 16283ea, Tag vor-praxistest-2026-02-26). Noch empfohlen: App-Vollbackup herunterladen; backupmicro Hard-Backup wenn angesteckt. **Ab jetzt:** Galerien befüllen + testen; weitere Änderungen wie bisher (commit, push, drei Regeln).
