@@ -323,7 +323,6 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
 
   // Willkommens-Banner (Erster Entwurf): von WillkommenPage oder EntdeckenPage mit Namen → einmalig anzeigen
   const [willkommenName, setWillkommenName] = useState<string | null>(null)
-  const [entdeckenQ1, setEntdeckenQ1] = useState<string | null>(null) // Für personalisierte Guide-Texte (hobby, aufsteigend, etabliert)
   const [willkommenBannerDismissed, setWillkommenBannerDismissed] = useState(false)
   // Guide (Otto) erst nach kurzer Verzögerung – zuerst die Galerie sehen, nicht sofort überfordern
   const [showGuideAfterDelay, setShowGuideAfterDelay] = useState(false)
@@ -341,7 +340,6 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       const urlEntwurf = params.get('entwurf')
       if (urlName && urlName.trim() && urlEntwurf === '1') {
         setWillkommenName(urlName.trim())
-        setEntdeckenQ1(sessionStorage.getItem('k2-entdecken-q1') || null)
         try {
           sessionStorage.setItem(WILLKOMMEN_NAME_KEY, urlName.trim())
           sessionStorage.setItem(WILLKOMMEN_ENTWURF_KEY, '1')
@@ -351,10 +349,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       // 2. sessionStorage (von WillkommenPage / EntdeckenPage)
       const n = sessionStorage.getItem(WILLKOMMEN_NAME_KEY) || localStorage.getItem(WILLKOMMEN_NAME_KEY)
       const e = sessionStorage.getItem(WILLKOMMEN_ENTWURF_KEY) || localStorage.getItem(WILLKOMMEN_ENTWURF_KEY)
-      if (n && n.trim() && e === '1') {
-        setWillkommenName(n.trim())
-        setEntdeckenQ1(sessionStorage.getItem('k2-entdecken-q1') || null)
-      }
+      if (n && n.trim() && e === '1') setWillkommenName(n.trim())
     } catch (_) {}
   }, [musterOnly])
   const dismissWillkommenBanner = () => {
@@ -2320,7 +2315,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       <div style={{ position: 'relative', zIndex: 1 }}>
         {/* Guide-Avatar – geführter Rundgang (nur ök2, wenn mit Namen angekommen) */}
         {musterOnly && willkommenName && !willkommenBannerDismissed && showGuideAfterDelay && (
-          <GalerieGuide name={willkommenName} entdeckenQ1={entdeckenQ1} onDismiss={dismissWillkommenBanner} />
+          <GalerieGuide name={willkommenName} onDismiss={dismissWillkommenBanner} />
         )}
         {/* Mobile-First Admin: Neues Objekt Button (ök2: ausblenden) */}
         {!musterOnly && showMobileAdmin && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) && (
@@ -4894,47 +4889,34 @@ export default GalerieVorschauPage
 // Geführter Rundgang durch die Demo-Galerie – Option B (Text + Animation)
 // Option A (ElevenLabs echter Avatar) kommt nach ersten Rückmeldungen
 // ─────────────────────────────────────────────────────────────────────────────
-// Personalisierte Einstiege je nach Entdecken-Antwort (womit sich der Nutzer identifizieren kann)
-const IDENTIFIKATION_TEXTE: Record<string, string> = {
-  hobby: 'Du liebst deine Kunst – hier siehst du, wie sie im Mittelpunkt steht.',
-  aufsteigend: 'Du willst Sichtbarkeit – hier siehst du, wie deine Werke professionell wirken.',
-  etabliert: 'Du suchst das passende Werkzeug – hier siehst du die volle Galerie, sofort einsatzbereit.',
-}
+const GUIDE_SCHRITTE = (name: string) => [
+  {
+    text: `Willkommen, ${name}! 👋\nIch bin dein Galerie-Guide.\nIch zeige dir kurz was hier alles möglich ist.`,
+    dauer: 4000,
+  },
+  {
+    text: `Das hier ist deine persönliche Galerie – online, auf jedem Gerät.\nDeine Werke, dein Name, dein Auftritt.`,
+    dauer: 4500,
+  },
+  {
+    text: `Jedes Werk bekommt ein eigenes Bild, einen Titel und einen Preis.\nAlles in Minuten – ohne IT-Kenntnisse.`,
+    dauer: 4500,
+  },
+  {
+    text: `Interessenten können direkt Kontakt aufnehmen.\nKein Umweg über Social Media.`,
+    dauer: 4000,
+  },
+  {
+    text: `Wenn du magst – schau dich einfach um. 🎨\nUnd wenn du Fragen hast, bin ich da.`,
+    dauer: 4000,
+  },
+]
 
-const GUIDE_SCHRITTE = (name: string, entdeckenQ1: string | null) => {
-  const identifikation = entdeckenQ1 ? IDENTIFIKATION_TEXTE[entdeckenQ1] : null
-  const schritte = [
-    {
-      text: identifikation
-        ? `Willkommen, ${name}! 👋\n${identifikation}\nIch zeige dir kurz, was hier alles möglich ist.`
-        : `Willkommen, ${name}! 👋\nIch bin dein Galerie-Guide.\nIch zeige dir kurz was hier alles möglich ist.`,
-      dauer: identifikation ? 5000 : 4000,
-    },
-    {
-      text: `Das hier ist deine persönliche Galerie – online, auf jedem Gerät.\nDeine Werke, dein Name, dein Auftritt.`,
-      dauer: 4500,
-    },
-    {
-      text: `Jedes Werk bekommt ein eigenes Bild, einen Titel und einen Preis.\nAlles in Minuten – ohne IT-Kenntnisse.`,
-      dauer: 4500,
-    },
-    {
-      text: `Interessenten können direkt Kontakt aufnehmen.\nKein Umweg über Social Media.`,
-      dauer: 4000,
-    },
-    {
-      text: `Wenn du magst – schau dich einfach um. 🎨\nUnd wenn du Fragen hast, bin ich da.`,
-      dauer: 4000,
-    },
-  ]
-  return schritte
-}
-
-function GalerieGuide({ name, entdeckenQ1, onDismiss }: { name: string; entdeckenQ1?: string | null; onDismiss: () => void }) {
+function GalerieGuide({ name, onDismiss }: { name: string; onDismiss: () => void }) {
   const [schritt, setSchritt] = useState(0)
   const [sichtbar, setSichtbar] = useState(true)
   const [textIndex, setTextIndex] = useState(0)
-  const schritte = GUIDE_SCHRITTE(name, entdeckenQ1 ?? null)
+  const schritte = GUIDE_SCHRITTE(name)
   const aktuellerSchritt = schritte[schritt]
   const volltext = aktuellerSchritt?.text ?? ''
 

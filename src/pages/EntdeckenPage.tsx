@@ -46,21 +46,13 @@ function speichereNotiz(text: string, step: string) {
 const T = {
   heroTag: 'Für Künstler:innen die gesehen werden wollen',
   heroTitle: 'Deine Kunst verdient mehr als einen Instagram-Post.',
-  heroSub: 'In 2 kurzen Fragen zeigen wir dir deine persönliche Galerie – danach führt dich ein Guide durch alle Bereiche (Werke, Events, Kassa, Start).',
+  heroSub: 'Wähle deinen Weg – dann siehst du sofort, was dich erwartet.',
   cta: 'Jetzt entdecken →',
-  ctaSub: 'Kostenlos · Keine Anmeldung · 2 Minuten',
+  ctaSub: 'Kostenlos · Keine Anmeldung · 1 Minute',
 
-  q1: 'Wie würdest du dich beschreiben?',
-  q1a: { emoji: '🎨', label: 'Ich male, zeichne, fotografiere – und liebe es', sub: 'Hobby oder Leidenschaft – die Freude steht im Mittelpunkt' },
-  q1b: { emoji: '🌱', label: 'Ich nehme meine Kunst ernst – sie soll mich tragen', sub: 'Auf dem Weg zur Professionalisierung, hungrig nach Sichtbarkeit' },
-  q1c: { emoji: '⭐', label: 'Ich bin bereits etabliert und suche das passende Werkzeug', sub: 'Ausstellungen, Sammler, professioneller Auftritt' },
-  q1d: { emoji: '🏛️', label: 'Vereinsgalerie – eine eigene Welt', sub: 'Gemeinsamer Katalog, Mitglieder, gemeinsame Galerie – anders als die Solo-Galerie.' },
-
-  q2: 'Was ist dir am wichtigsten?',
-  q2a: { emoji: '✨', label: 'Meine Werke schön und würdig präsentieren', sub: 'Ein Ort der meiner Kunst gerecht wird' },
-  q2b: { emoji: '🤝', label: 'Interessenten und Käufer finden', sub: 'Kontakt, Anfragen, Verkauf ermöglichen' },
-  q2c: { emoji: '📋', label: 'Mein Werk dokumentieren und archivieren', sub: 'Zertifikate, Werkverzeichnis, Provenienz' },
-  q2d: { emoji: '🚀', label: 'Professionell auftreten ohne IT-Kenntnisse', sub: 'Einfach, schnell, sofort vorzeigbar' },
+  weg: 'Wohin möchtest du?',
+  wegSolo: { emoji: '🖼️', label: 'Meine eigene Galerie', sub: 'Deine Werke, dein Name, dein Auftritt – online und im Atelier.' },
+  wegVerein: { emoji: '🏛️', label: 'Vereinsgalerie', sub: 'Gemeinsamer Katalog, Mitglieder, gemeinsame Galerie – eine eigene Welt.' },
 
   q3: 'Wie heißt du – oder deine Galerie?',
   q3placeholder: 'Dein Künstlername oder Galeriename',
@@ -279,9 +271,9 @@ interface HubArbProps {
   onZurueck: () => void
 }
 
-// Stationen angepasst je nach Pfad (q1-Antwort)
-function baueHubStationen(q1: string) {
-  const istVerein = q1 === 'verein'
+// Stationen je nach Weg (solo = eigene Galerie, verein = Vereinsgalerie) – keine Vermischung
+function baueHubStationen(weg: string) {
+  const istVerein = weg === 'verein'
 
   if (istVerein) {
     return [
@@ -341,17 +333,13 @@ function baueHubStationen(q1: string) {
     {
       emoji: '✨',
       name: 'Aussehen & Design',
-      beschreibung: q1 === 'etabliert'
-        ? 'Professionelles Erscheinungsbild: Farben, Logo, Willkommensbild – passend zu deinem Stil.'
-        : 'Farben, dein Foto, deine Texte – die Galerie wird zu deinem persönlichen Auftritt.',
+      beschreibung: 'Farben, dein Foto, deine Texte – die Galerie wird zu deinem persönlichen Auftritt.',
       tab: 'design',
     },
     {
       emoji: '📋',
       name: 'Werkkatalog',
-      beschreibung: q1 === 'etabliert' || q1 === 'aufsteigend'
-        ? 'Zertifikate, Werkverzeichnis, Pressemappe – alles aus deinen Daten vorbefüllt, ein Klick zum Drucken.'
-        : 'Alle deine Werke auf einen Blick – filtern, suchen, drucken.',
+      beschreibung: 'Alle deine Werke auf einen Blick – filtern, suchen, drucken.',
       tab: 'katalog',
     },
     {
@@ -381,7 +369,7 @@ function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, 
   const hubContext     = istVerein ? 'vk2' : 'oeffentlich'
 
   const akzentGrad = `linear-gradient(135deg, ${hubAccent}, ${hubAccentGlow})`
-  const avatarEmoji = istVerein ? '🏛️' : q1 === 'etabliert' ? '⭐' : q1 === 'aufsteigend' ? '🌱' : '👨‍🎨'
+  const avatarEmoji = istVerein ? '🏛️' : '👨‍🎨'
   const stationen = baueHubStationen(q1)
   const aktivStation = stationen[aktivIdx]
   const halbePunkte = Math.ceil(stationen.length / 2)
@@ -398,8 +386,6 @@ function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, 
     : (name ? `${name}, das ist deine Galerie.` : 'Das ist deine Galerie.')
   const subText = istVerein
     ? 'Das ist dein Guide – klick auf einen Bereich und schaut, was euch erwartet.'
-    : q1 === 'etabliert'
-    ? 'Professionell. Vollständig. Sofort einsatzbereit.'
     : 'Das ist dein Guide – klick auf einen Bereich und schau, was dich erwartet.'
 
   return (
@@ -584,7 +570,10 @@ export default function EntdeckenPage() {
     return 'hero'
   })()
   const initialQ1 = (() => {
-    try { return new URLSearchParams(window.location.search).get('q1') ?? '' } catch (_) { return '' }
+    try {
+      const q = new URLSearchParams(window.location.search).get('weg') ?? new URLSearchParams(window.location.search).get('q1') ?? ''
+      return q === 'verein' ? 'verein' : q === 'solo' ? 'solo' : ''
+    } catch (_) { return '' }
   })()
   const [step, setStep] = useState<Step>(initialStep)
   const [answers, setAnswers] = useState<Answers>({ q1: initialQ1, q2: '', q3: '' })
@@ -617,7 +606,6 @@ export default function EntdeckenPage() {
     const name = answers.q3.trim()
     const istVerein = answers.q1 === 'verein'
     try {
-      sessionStorage.setItem('k2-entdecken-q1', answers.q1)
       if (name) {
         sessionStorage.setItem(WILLKOMMEN_NAME_KEY, name)
         sessionStorage.setItem(WILLKOMMEN_ENTWURF_KEY, '1')
@@ -765,24 +753,17 @@ export default function EntdeckenPage() {
 
             <Progress />
 
-            {/* Frage 1 */}
+            {/* Zwei Wege – keine Vermischung */}
             {step === 'q1' && (
               <>
                 <h2 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', fontWeight: 700, color: text, textAlign: 'center', marginBottom: '1.5rem', lineHeight: 1.3 }}>
-                  {T.q1}
+                  {T.weg}
                 </h2>
-                <ChoiceCard {...T.q1a} selected={answers.q1 === 'hobby'} onClick={() => setAnswers(a => ({ ...a, q1: 'hobby' }))} />
-                <ChoiceCard {...T.q1b} selected={answers.q1 === 'aufsteigend'} onClick={() => setAnswers(a => ({ ...a, q1: 'aufsteigend' }))} />
-                <ChoiceCard {...T.q1c} selected={answers.q1 === 'etabliert'} onClick={() => setAnswers(a => ({ ...a, q1: 'etabliert' }))} />
-                <ChoiceCard {...T.q1d} selected={answers.q1 === 'verein'} onClick={() => setAnswers(a => ({ ...a, q1: 'verein' }))} color="#1e5cb5" />
-                {answers.q1 === 'verein' && (
-                  <p style={{ marginTop: '0.75rem', padding: '0.75rem 1rem', background: 'rgba(30, 92, 181, 0.08)', border: '1px solid rgba(30, 92, 181, 0.25)', borderRadius: '12px', fontSize: '0.85rem', color: '#1e5cb5', lineHeight: 1.5 }}>
-                    Du gehst in die <strong>Vereinsgalerie</strong> – eine andere Welt: gemeinsamer Katalog, Mitglieder, gemeinsame Ausstellungen. Nächster Schritt: Name eingeben, dann siehst du sie.
-                  </p>
-                )}
+                <ChoiceCard {...T.wegSolo} selected={answers.q1 === 'solo'} onClick={() => setAnswers(a => ({ ...a, q1: 'solo' }))} />
+                <ChoiceCard {...T.wegVerein} selected={answers.q1 === 'verein'} onClick={() => setAnswers(a => ({ ...a, q1: 'verein' }))} color="#1e5cb5" />
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
                   <button type="button" onClick={() => setStep('hero')} style={{ padding: '0.7rem 1.25rem', background: 'transparent', color: muted, border: `1px solid #e0d5c5`, borderRadius: '10px', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.9rem' }}>{T.btnBack}</button>
-                  <button type="button" disabled={!answers.q1} onClick={() => setStep('q3')} style={{ padding: '0.7rem 1.75rem', background: answers.q1 ? `linear-gradient(135deg, ${accent}, ${accentLight})` : '#ccc', color: '#fff', border: 'none', borderRadius: '10px', cursor: answers.q1 ? 'pointer' : 'not-allowed', fontFamily: fontBody, fontSize: '0.95rem', fontWeight: 700 }}>{T.btnNext}</button>
+                  <button type="button" disabled={answers.q1 !== 'solo' && answers.q1 !== 'verein'} onClick={() => setStep('q3')} style={{ padding: '0.7rem 1.75rem', background: (answers.q1 === 'solo' || answers.q1 === 'verein') ? `linear-gradient(135deg, ${accent}, ${accentLight})` : '#ccc', color: '#fff', border: 'none', borderRadius: '10px', cursor: (answers.q1 === 'solo' || answers.q1 === 'verein') ? 'pointer' : 'not-allowed', fontFamily: fontBody, fontSize: '0.95rem', fontWeight: 700 }}>{T.btnNext}</button>
                 </div>
               </>
             )}
