@@ -6,6 +6,7 @@
 Favoriten (max 5): Vorreihung in Galerie, Option beim Anlegen, VK2 wie gehabt
 
 ## Was zuletzt gemacht
+- **mök2: Warum kostet Wiederbeschaffung so viel, wenn ein Laie es kann?** – Absatz ergänzt: Einkauf = Team mit mehreren Rollen, Stundensätzen, Prozess; Laie + AI = eine Person, Eigenzeit, keine Rechnung. Der Marktpreis für „bauen Sie mir das nach“ bleibt hoch; das Ergebnis kann gleichwertig sein.
 - **mök2: Entwicklerkosten-Klarstellung:** Die Summe ist Wiederbeschaffungswert (was ein Profi-Team kosten würde), nicht „Verdienst“ des Erbauers – eigener Hinweis-Block + Anpassung im Hinweis-Text.
 - **mök2: Geschätzte Entwicklerkosten-Rechnung und grobe Marktwertberechnung:** In der Sektion „Produktbewertung“ ergänzt: (1) Entwicklerkosten-Rechnung (Stunden nach Bereich, Stundensatz, Summe 188.000 – 498.000 €), (2) Marktwertberechnung (Zielgruppe, Vergleichspreise Basic 10–15 €/Monat / Pro 25–35 €/Monat, Szenarien Erlös/Jahr). Sidebar: „Entwicklerkosten (Schätzung)“ und „Marktwert (grober Ansatz)“ verlinken auf die Unterabschnitte. Mit „Als PDF drucken“ ausdruckbar.
 - **Event-Flyer / alle orangen Sektoren kommen im grünen Bereich an:** (1) Beim Klick auf „← Zurück“ im In-App-Viewer wird die Dokumentenliste aus localStorage neu geladen → grüne/orange Bereiche sind nach dem Schließen des Dokuments aktuell. (2) Beim Erstellen („Jetzt erstellen – sofort fertig“) wird das Dokument **sofort** in die Liste eingetragen (Platzhalter mit leerem Inhalt), damit der grüne Bereich sofort erscheint; der eigentliche Inhalt wird asynchron nachgetragen. Gilt für Event-Flyer, Newsletter, Plakat, Presseaussendung, Social Media. (3) Presse/Social: Bug behoben, dass `const blob` im try das äußere `blob` überschattet hatte → Dokumente wurden nie gespeichert; jetzt wird das äußere `blob` gesetzt und die Liste sofort mit Platzhalter befüllt.
@@ -31,7 +32,7 @@ Favoriten (max 5): Vorreihung in Galerie, Option beim Anlegen, VK2 wie gehabt
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **mök2: Wiederbeschaffungswert-Klarstellung** – Entwicklerkosten = was ein Profi-Team kosten würde, nicht Verdienst. Commit: ecdf366 ✅ auf GitHub
+- **mök2: Warum Wiederbeschaffung so viel kostet (Laie kann es)** – Erklärung ergänzt. Commit: 99153ba ✅ auf GitHub
 
 ## Nächste Schritte (offen)
 4. **Vor Veröffentlichung:** QS und Checkliste **docs/VOR-VEROEFFENTLICHUNG.md** noch einmal genau durchgehen (geplant mit Georg).
