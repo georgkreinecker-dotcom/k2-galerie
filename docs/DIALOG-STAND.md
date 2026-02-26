@@ -30,6 +30,7 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **Vereinskatalog:** Werke aus Lizenz-Galerien werden per `fetch(lizenzGalerieUrl/gallery-data.json)` geladen; nur Werke mit `imVereinskatalog`; lokale Werke bleiben Fallback.
 - **VK2-Katalog als PDF:** Button „Als PDF drucken / herunterladen“ + Hinweis „Im Druckdialog ‚Als PDF speichern‘ wählen“.
 - **Crash von gestern geprüft** – main.tsx + appBootstrap.tsx: Fehler-Reload-Buttons iframe-gesichert.
+- **Entdecken-Hub (otto, das ist deine Galerie): One-Click-Regel.** Drei Buttons („Meine Werke ansehen“, „Weiter“, „Galerie starten“) waren verwirrend. Jetzt: **eine** klare Hauptaktion pro Station – „[Station] öffnen →“ (öffnet Admin-Tab). „Nächste Station“ und „Galerie ansehen“ als kleine Text-Links darunter, damit keine konkurrierenden Aktionen. Commit: 5e137fd ✅
 - **Druck-Fußzeilen (Seitenanzahl, Druckdatum, Dokumentenersteller):** (1) **App (alle App-Drucke):** #print-footer in App.tsx mit PRODUCT_BRAND_NAME + Druckdatum (de-AT), vor beforeprint aktualisiert; @page @bottom-right „Seite X von Y“ in index.css; #print-footer am Bildschirm ausgeblendet. (2) **Admin-Dokumente (In-App-Viewer):** wrapDocumentWithPrintFooter(html) injiziert in jedes geöffnete Dokument Style (@page margin-bottom, @bottom-right Seitenzahl, #doc-print-footer) + div + Script (Ersteller + Datum beim Laden). Commit: 4803154 ✅
 - **Crash-Check (26.02.26):** index.html – „Laden …“-Klick und „Galerie lädt nicht“-Button nur noch Reload wenn window.self===window.top. Commit: 54191d2 ✅
 - **Dokumente sofort sichtbar (Focus)** – Beim Öffnen von Dokumenten (Newsletter, Presse, Flyer, Vita, PDF, Etikett, Druckfenster etc.) wird das neue Fenster/der neue Tab mit `.focus()` in den Vordergrund geholt. Du musst nicht mehr in der Menüleiste (Tab „L“) suchen – das Dokument erscheint direkt.
@@ -40,7 +41,7 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Druck-Fußzeilen: Seitenanzahl, Druckdatum, Dokumentenersteller** – App + Admin-Dokumente. Commit: 4803154 ✅ auf GitHub
+- **Entdecken-Hub: One-Click-Regel** – eine Hauptaktion, Nächste Station & Galerie ansehen als Text-Links. Commit: 5e137fd ✅ auf GitHub
 
 ## Nächste Schritte (offen)
 4. **Vor Veröffentlichung:** Erster Durchgang in **docs/VOR-VEROEFFENTLICHUNG.md** erledigt (Stand-Tabelle für Georg). **Mit Georg:** Checkboxen durchgehen, npm audit + AGB/Impressum-Inhalte prüfen und abhaken.
