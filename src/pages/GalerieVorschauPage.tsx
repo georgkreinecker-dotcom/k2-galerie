@@ -2965,6 +2965,29 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                             }
                           }}
                           />
+                          {/* Favorit der Künstler:in (jede:r hat bis zu 5) */}
+                          {artwork.imVereinskatalog && (
+                            <div style={{
+                              position: 'absolute',
+                              top: '0.5rem',
+                              left: '0.5rem',
+                              background: 'rgba(0, 0, 0, 0.75)',
+                              backdropFilter: 'blur(4px)',
+                              color: galerieTheme.accent || '#5ffbf1',
+                              padding: '0.2rem 0.45rem',
+                              borderRadius: '6px',
+                              fontSize: 'clamp(0.65rem, 1.8vw, 0.8rem)',
+                              fontWeight: '600',
+                              pointerEvents: 'none',
+                              zIndex: 2,
+                              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.2rem'
+                            }}>
+                              <span aria-hidden>★</span> Favorit
+                            </div>
+                          )}
                           {/* Nummer als Overlay auf dem Bild */}
                           {artwork.number && (
                             <div style={{

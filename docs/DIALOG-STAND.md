@@ -6,6 +6,7 @@
 Favoriten (max 5): Vorreihung in Galerie, Option beim Anlegen, VK2 wie gehabt
 
 ## Was zuletzt gemacht
+- **Favoriten in der Galerie sichtbar + Filter nur belegte Kategorien:** (1) Auf jeder Werkkarte erscheint bei Favoriten (imVereinskatalog) ein Badge „★ Favorit“ oben links auf dem Bild – jeder Künstler hat bis zu 5 Favoriten (Martina und Georg je 5). (2) Die Filterleiste („Alle Werke“, Bilder, Keramik, …) zeigt nur Kategorien, in denen tatsächlich Werke vorkommen – bei nur 2 Kategorien nur 2 Buttons (war bereits über categoriesWithArtworks umgesetzt).
 - **Zurück in die Dokumenten-Vorschau (Flyer & Werbedokumente):** Beim Öffnen eines Dokuments von „Hier sind deine Flyer und Werbedokumente …“ enthält die Rück-URL jetzt `tab=eventplan&eventplan=öffentlichkeitsarbeit`. Beim Admin-Start wird `eventplan` aus der URL gelesen → „← Zurück“ führt wieder genau auf die grüne Lupen-Vorschau, nicht in die Event-Übersicht.
 - **Zurück landet auf der richtigen Seite:** (1) **Dokumente:** getAdminReturnUrl(activeTab, eventplanSubTab) – Rück-URL enthält Tab + Eventplan-Untertab. (2) **Galerie-Vorschau:** fromAdminTab/fromAdminContext → /admin?tab=einstellungen.
 - **Premium im K2-Admin:** Statt klickbarer Karten nur noch ein **Hinweis**: „Vorerst noch nicht verfügbar – daran wird gearbeitet.“ Sektion „Erweiterte Funktionen (Premium)“ bleibt als Platzhalter.
