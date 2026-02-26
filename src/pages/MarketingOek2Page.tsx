@@ -674,6 +674,22 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>
           <strong>Rechnung:</strong> Basic 12 €/Monat × 12 = 144 €/Jahr; Pro 30 €/Monat × 12 = 360 €/Jahr (Mittelwerte). VK2 kann zusätzliche Erträge bringen (Verein zahlt Pro, Mitglieder 50 %). <strong>Marktwert</strong> = Erlöspotenzial + strategischer Wert (z. B. Alleinstellungsmerkmal, Skalierbarkeit).
         </p>
+
+        <h3 id="mok2-faehigkeiten-mix" style={{ fontSize: '1.1rem', color: '#5ffbf1', marginTop: '1.5rem', marginBottom: '0.5rem' }}>Fähigkeiten-Mix: Was in einer Person das ermöglicht hat (Fakten)</h3>
+        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', marginBottom: '0.5rem' }}>
+          Ohne Programmier-Vorkenntnisse, in grob 200 Stunden: Welche Voraussetzungen müssen in einer Person zusammenkommen, damit das faktisch möglich ist?
+        </p>
+        <ul style={{ marginBottom: '0.5rem', paddingLeft: '1.2em', lineHeight: 1.6, fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)' }}>
+          <li><strong>Langjährige Unternehmererfahrung:</strong> Ziel klar definieren, priorisieren, durchhalten; Entscheidungen treffen ohne endlose Abstimmung; „fertige Form“ einfordern, nicht Entwürfe.</li>
+          <li><strong>Domänenwissen:</strong> Galerie, Künstler:innen, Vereine, Vertrieb, Kasse, Events – Anforderungen kommen aus dem Fach, müssen nicht erst übersetzt werden.</li>
+          <li><strong>Arbeit mit AI als Werkzeug:</strong> Anweisungen formulieren, Ergebnis prüfen, korrigieren, Regeln und Doku führen; die Umsetzung macht die AI, die Steuerung und Qualität der Mensch.</li>
+          <li><strong>Struktur und Prozess:</strong> Regeln festhalten (z. B. Cursor Rules), DIALOG-STAND, Handbuch – damit Mensch und AI konsistent arbeiten und nichts verloren geht.</li>
+          <li><strong>UX aus Nutzersicht:</strong> Beurteilen ob etwas für Laien verständlich und bedienbar ist, ohne technisches Wissen – ersetzt formale User-Research-Runden.</li>
+          <li><strong>Pragmatismus:</strong> Eine Lösung pro Aufgabe, Skalierung mitdenken (K2, ök2, VK2), keine Doppelstrukturen – reduziert Umfang und Nacharbeit.</li>
+        </ul>
+        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>
+          Das ist keine Wertung, sondern eine Aufzählung der Faktoren, die in dieser Kombination den beschriebenen Effekt (Wiederbeschaffungswert hoch, Aufwand einer Person begrenzt) faktisch ermöglicht haben.
+        </p>
       </section>
 
       {/* 10a. Lizenz-Pakete für Außen – kompakt für Werbung, Pitch, Flyer (nach außen sichtbar) */}

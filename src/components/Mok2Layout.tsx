@@ -27,6 +27,7 @@ const mok2Sections = [
   { id: 'mok2-produktbewertung', label: 'Produktbewertung (Kosten | Marktwert)' },
   { id: 'mok2-entwicklerkosten', label: 'Entwicklerkosten (Schätzung)' },
   { id: 'mok2-marktwert', label: 'Marktwert (grober Ansatz)' },
+  { id: 'mok2-faehigkeiten-mix', label: 'Fähigkeiten-Mix (Fakten)' },
   { id: 'mok2-lizenz-pakete-aussen', label: 'Lizenzpakete (Außensicht)' },
   { id: 'mok2-10b-vk2-lizenz', label: 'Lizenzstruktur VK2 (Vereinsplattform)' },
   { id: 'mok2-13', label: '13. Werkkatalog & Werkkarte' },
