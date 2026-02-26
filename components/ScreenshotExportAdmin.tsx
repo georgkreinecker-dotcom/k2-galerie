@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES, AGB_ROUTE } from '../src/config/navigation'
+import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, WILLKOMMEN_ROUTE } from '../src/config/navigation'
 import ZertifikatTab from './tabs/ZertifikatTab'
 import NewsletterTab from './tabs/NewsletterTab'
 import PressemappeTab from './tabs/PressemappeTab'
@@ -1194,6 +1194,8 @@ function ScreenshotExportAdmin() {
   const [showPrintModal, setShowPrintModal] = useState(false)
   const [oneClickPrinting, setOneClickPrinting] = useState(false)
   const [showShareFallbackOverlay, setShowShareFallbackOverlay] = useState(false)
+  const [showEmpfehlungstextModal, setShowEmpfehlungstextModal] = useState(false)
+  const [empfehlungstextModalText, setEmpfehlungstextModalText] = useState('')
   const [shareFallbackImageUrl, setShareFallbackImageUrl] = useState<string | null>(null)
   const shareFallbackBlobRef = useRef<Blob | null>(null)
   const [printLabelData, setPrintLabelData] = useState<{ url: string; widthMm: number; heightMm: number } | null>(null)
@@ -12670,7 +12672,29 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     <div style={{ padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}33`, borderRadius: 12 }}>
                       <div style={{ fontSize: '0.8rem', color: s.accent, fontWeight: 700, marginBottom: '0.25rem' }}>Deine Empfehler-ID</div>
                       <div style={{ fontSize: '1.1rem', fontWeight: 700, color: s.text, fontFamily: 'monospace' }}>{empfehlerId}</div>
-                      <Link to={`${PROJECT_ROUTES['k2-galerie'].empfehlungstool}?teil=1`} style={{ fontSize: '0.88rem', color: s.accent, marginTop: '0.5rem', display: 'inline-block' }}>→ Empfehlungstool (Link teilen)</Link>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const id = getOrCreateEmpfehlerId()
+                          const name = (typeof localStorage !== 'undefined' ? (localStorage.getItem('k2-empfehlungstool-name') || '').trim() : '') || 'Dein Name'
+                          const link = `${BASE_APP_URL}${WILLKOMMEN_ROUTE}?empfehler=${encodeURIComponent(id)}`
+                          const text = `Hallo,
+
+ich nutze die ${PRODUCT_BRAND_NAME} für meine Galerie und bin begeistert. Du kannst dir die Demo-Galerie als Muster ansehen und selbst ausprobieren:
+
+${link}
+
+Der Link enthält bereits meine Empfehlung. Beim Lizenzabschluss kannst du wählen: Empfehlung annehmen (dann werde ich als Werber zugeordnet; du erhältst 10 % Rabatt, ich erhalte 10 % Gutschrift) oder ohne Empfehlung lizensieren – beides ist möglich.
+
+Viele Grüße,
+${name}`
+                          setEmpfehlungstextModalText(text)
+                          setShowEmpfehlungstextModal(true)
+                        }}
+                        style={{ fontSize: '0.88rem', color: s.accent, marginTop: '0.5rem', display: 'inline-block', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}
+                      >
+                        → Empfehlungstool (Link teilen)
+                      </button>
                     </div>
                     <div style={{ padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}33`, borderRadius: 12 }}>
                       <div style={{ fontSize: '0.8rem', color: s.accent, fontWeight: 700, marginBottom: '0.25rem' }}>Deine Rabattstufe</div>
@@ -17134,6 +17158,114 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
           />
         </div>,
         document.body
+      )}
+
+      {/* Empfehlungstext teilen – isoliert im Modal, User kann anpassen, ein Klick zum Weiterleiten */}
+      {showEmpfehlungstextModal && (
+        <div className="admin-modal-overlay" onClick={() => setShowEmpfehlungstextModal(false)}>
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '560px' }}>
+            <div className="admin-modal-header">
+              <h2>Empfehlungstext teilen</h2>
+              <button type="button" className="admin-modal-close" onClick={() => setShowEmpfehlungstextModal(false)}>×</button>
+            </div>
+            <div className="admin-modal-content" style={{ padding: '1rem 1.25rem' }}>
+              <p style={{ fontSize: '0.9rem', color: 'var(--k2-muted)', margin: '0 0 0.75rem', lineHeight: 1.5 }}>
+                Du kannst den Text anpassen und dann per E-Mail oder WhatsApp weiterleiten.
+              </p>
+              <textarea
+                value={empfehlungstextModalText}
+                onChange={(e) => setEmpfehlungstextModalText(e.target.value)}
+                rows={14}
+                style={{
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  padding: '0.75rem 1rem',
+                  fontSize: '0.9rem',
+                  lineHeight: 1.5,
+                  border: '1px solid rgba(181,74,30,0.35)',
+                  borderRadius: 8,
+                  background: 'rgba(255,255,255,0.06)',
+                  color: 'var(--k2-text)',
+                  resize: 'vertical',
+                  fontFamily: 'inherit',
+                }}
+              />
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem' }}>
+                <a
+                  href={`mailto:?subject=${encodeURIComponent('Empfehlung: K2 Galerie – deine Galerie in 5 Minuten')}&body=${encodeURIComponent(empfehlungstextModalText)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    padding: '0.65rem 1.25rem',
+                    background: '#b54a1e',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 8,
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    display: 'inline-block',
+                  }}
+                >
+                  Per E-Mail senden
+                </a>
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent('Empfehlung: K2 Galerie – deine Galerie in 5 Minuten\n\n' + empfehlungstextModalText)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    padding: '0.65rem 1.25rem',
+                    background: 'rgba(37,211,102,0.25)',
+                    color: '#25d366',
+                    border: '1px solid rgba(37,211,102,0.5)',
+                    borderRadius: 8,
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    display: 'inline-block',
+                  }}
+                >
+                  WhatsApp teilen
+                </a>
+                <button
+                  type="button"
+                  onClick={() => {
+                    try {
+                      navigator.clipboard.writeText(empfehlungstextModalText)
+                    } catch (_) {}
+                  }}
+                  style={{
+                    padding: '0.65rem 1.25rem',
+                    background: 'rgba(255,255,255,0.12)',
+                    color: 'var(--k2-text)',
+                    border: '1px solid rgba(181,74,30,0.35)',
+                    borderRadius: 8,
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Text kopieren
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowEmpfehlungstextModal(false)}
+                  style={{
+                    padding: '0.65rem 1.25rem',
+                    background: 'transparent',
+                    color: 'var(--k2-muted)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    borderRadius: 8,
+                    fontSize: '0.95rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Schließen
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Teilen-Fallback Overlay: Bild + „Etikett teilen“ oder „Etikett herunterladen“ (neutral, kein blaues Rahmen) */}
