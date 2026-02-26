@@ -17161,16 +17161,16 @@ ${name}`
         document.body
       )}
 
-      {/* Empfehlungstext teilen – isoliert im Modal, User kann anpassen, ein Klick zum Weiterleiten */}
+      {/* Empfehlungstext teilen – isoliert im Modal, gut lesbar (Kontrast auf hellem Admin-Hintergrund) */}
       {showEmpfehlungstextModal && (
         <div className="admin-modal-overlay" onClick={() => setShowEmpfehlungstextModal(false)}>
-          <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '560px' }}>
-            <div className="admin-modal-header">
-              <h2>Empfehlungstext teilen</h2>
-              <button type="button" className="admin-modal-close" onClick={() => setShowEmpfehlungstextModal(false)}>×</button>
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '560px', background: '#fffefb', color: '#1c1a18' }}>
+            <div className="admin-modal-header" style={{ borderBottom: '1px solid #e5e2dc', color: '#1c1a18' }}>
+              <h2 style={{ color: '#1c1a18', margin: 0 }}>Empfehlungstext teilen</h2>
+              <button type="button" className="admin-modal-close" onClick={() => setShowEmpfehlungstextModal(false)} style={{ color: '#1c1a18' }}>×</button>
             </div>
-            <div className="admin-modal-content" style={{ padding: '1rem 1.25rem' }}>
-              <p style={{ fontSize: '0.9rem', color: 'var(--k2-muted)', margin: '0 0 0.75rem', lineHeight: 1.5 }}>
+            <div className="admin-modal-content" style={{ padding: '1rem 1.25rem', background: '#fffefb' }}>
+              <p style={{ fontSize: '0.9rem', color: '#5c5650', margin: '0 0 0.75rem', lineHeight: 1.5 }}>
                 Du kannst den Text anpassen und dann per E-Mail oder WhatsApp weiterleiten.
               </p>
               <textarea
@@ -17183,10 +17183,10 @@ ${name}`
                   padding: '0.75rem 1rem',
                   fontSize: '0.9rem',
                   lineHeight: 1.5,
-                  border: '1px solid rgba(181,74,30,0.35)',
+                  border: '1px solid #b54a1e',
                   borderRadius: 8,
-                  background: 'rgba(255,255,255,0.06)',
-                  color: 'var(--k2-text)',
+                  background: '#fff',
+                  color: '#1c1a18',
                   resize: 'vertical',
                   fontFamily: 'inherit',
                 }}
@@ -17216,8 +17216,8 @@ ${name}`
                   rel="noopener noreferrer"
                   style={{
                     padding: '0.65rem 1.25rem',
-                    background: 'rgba(37,211,102,0.25)',
-                    color: '#25d366',
+                    background: 'rgba(37,211,102,0.2)',
+                    color: '#15803d',
                     border: '1px solid rgba(37,211,102,0.5)',
                     borderRadius: 8,
                     fontSize: '0.95rem',
@@ -17237,9 +17237,9 @@ ${name}`
                   }}
                   style={{
                     padding: '0.65rem 1.25rem',
-                    background: 'rgba(255,255,255,0.12)',
-                    color: 'var(--k2-text)',
-                    border: '1px solid rgba(181,74,30,0.35)',
+                    background: '#f6f4f0',
+                    color: '#1c1a18',
+                    border: '1px solid #b54a1e',
                     borderRadius: 8,
                     fontSize: '0.95rem',
                     fontWeight: 600,
@@ -17254,8 +17254,8 @@ ${name}`
                   style={{
                     padding: '0.65rem 1.25rem',
                     background: 'transparent',
-                    color: 'var(--k2-muted)',
-                    border: '1px solid rgba(255,255,255,0.2)',
+                    color: '#5c5650',
+                    border: '1px solid #5c5650',
                     borderRadius: 8,
                     fontSize: '0.95rem',
                     cursor: 'pointer',
