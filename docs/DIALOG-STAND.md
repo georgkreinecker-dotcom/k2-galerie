@@ -43,7 +43,7 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- (wird nach Push eingetragen)
+- **Guide führt in ök2:** Admin-Werke bei Kontextwechsel neu laden, Vita/Shop mit fromOeffentlich. Commit: f5def88 ✅ auf GitHub
 
 ## Was gerade gemacht (Guide → ök2)
 - **Admin:** Werke werden bei Kontextwechsel (`location.search`) neu geladen – wenn man mit Guide auf `/admin?context=oeffentlich` geht, werden nicht mehr K2-Daten angezeigt.
