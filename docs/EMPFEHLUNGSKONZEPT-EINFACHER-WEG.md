@@ -10,7 +10,7 @@
 - **Kein Cashback:** Keine Auszahlung von Geld an Empfehler:innen (kein Abrechnungssystem, keine Überweisungen, weniger Rechtliches).
 - **Kostensenkung:** Beide Seiten profitieren über **Rabatt** bzw. **Gutschrift** im Produkt:
   - **Geworbene:r** (Neukunde): z. B. **10 % Rabatt auf die erste Lizenz** (oder erste 3 Monate).
-  - **Empfehler:in** (Werber:in): z. B. **10 % Gutschrift auf die nächste eigene Lizenzrechnung** (oder feste Gutschrift pro erfolgreicher Empfehlung).
+  - **Empfehler:in** (Werber:in): z. B. **10 % Gutschrift auf die nächste eigene Lizenzrechnung** pro geworbenem Kunden. **10 Geworbene = 100 % Gutschrift = nächste Rechnung gratis.**
 - **Effekt:** Ähnliche Motivation wie „Geld zurück“, aber deutlich weniger Aufwand und rechtlich einfacher.
 
 ---
@@ -41,7 +41,7 @@
 
 - Mitmachen darf, wer eine gültige Lizenz (Basic/Pro/…) hat.
 - **Geworbene:r:** Max. einmal 10 % Rabatt auf die erste Lizenz (bzw. erste Laufzeit), nur bei Angabe einer gültigen Empfehler-ID beim Abschluss.
-- **Empfehler:in:** 10 % Gutschrift auf die **nächste** eigene Lizenzrechnung pro erfolgreich geworbenem Kunden (einmalig pro Geworbenem); keine Auszahlung, nur Anrechnung.
+- **Empfehler:in:** 10 % Gutschrift auf die **nächste** eigene Lizenzrechnung pro erfolgreich geworbenem Kunden (einmalig pro Geworbenem); Gutschriften addieren sich – z. B. 10 Geworbene = 100 % = Lizenz für diese Rechnung kostenlos. Keine Auszahlung, nur Anrechnung.
 - Keine Selbstempfehlung; ID nur gültigen, aktiven Konten zugeordnet; Missbrauch führt zum Ausschluss.
 
 ---
@@ -112,7 +112,7 @@ Später mit Backend: Empfehler-ID pro User in DB; Gutschriften in DB; Abrechnung
 
 | Thema | Inhalt |
 |-------|--------|
-| **Anreiz** | Geworbene:r: 10 % Rabatt auf erste Lizenz. Empfehler:in: 10 % Gutschrift auf nächste eigene Rechnung. |
+| **Anreiz** | Geworbene:r: 10 % Rabatt auf erste Lizenz. Empfehler:in: 10 % Gutschrift pro Geworbenem auf nächste Rechnung (10 Geworbene = Rechnung gratis). |
 | **Vermarktung** | mök2 Sektion 6, Einstellungen „Empfehlungs-Programm“, Empfehlungstool, Checkout-Hinweis; Sprache: Rabatt/Gutschrift, kein Cashback. |
 | **Technik** | ID + Link + Speicher empfehlerId vorhanden; offen: Rabatt-Logik, Gutschrift speichern und anrechnen, URL-Parameter vorausfüllen. |
 | **Recht** | AGB/Teilnahmebedingungen: Wer, wie viel, wann; keine Selbstempfehlung. |
