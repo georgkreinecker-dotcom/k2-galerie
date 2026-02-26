@@ -46,7 +46,7 @@ function speichereNotiz(text: string, step: string) {
 const T = {
   heroTag: 'Für Künstler:innen die gesehen werden wollen',
   heroTitle: 'Deine Kunst verdient mehr als einen Instagram-Post.',
-  heroSub: 'In 2 kurzen Fragen zeigen wir dir deine persönliche Galerie – und ein Guide begleitet dich durch alles.',
+  heroSub: 'In 2 kurzen Fragen zeigen wir dir deine persönliche Galerie – danach führt dich ein Guide durch alle Bereiche (Werke, Events, Kassa, Start).',
   cta: 'Jetzt entdecken →',
   ctaSub: 'Kostenlos · Keine Anmeldung · 2 Minuten',
 
@@ -397,10 +397,10 @@ function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, 
     ? (name ? `${name} – das ist eure Vereinsgalerie.` : 'Das ist eure Vereinsgalerie.')
     : (name ? `${name}, das ist deine Galerie.` : 'Das ist deine Galerie.')
   const subText = istVerein
-    ? 'Klick auf einen Bereich – schaut euch an was euch erwartet.'
+    ? 'Das ist dein Guide – klick auf einen Bereich und schaut, was euch erwartet.'
     : q1 === 'etabliert'
     ? 'Professionell. Vollständig. Sofort einsatzbereit.'
-    : 'Klick auf einen Bereich – schau dir an was dich erwartet.'
+    : 'Das ist dein Guide – klick auf einen Bereich und schau, was dich erwartet.'
 
   return (
     <div style={{
