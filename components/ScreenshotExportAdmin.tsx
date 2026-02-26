@@ -4111,7 +4111,7 @@ ${'='.repeat(60)}
     `
 
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-    openPDFWindowSafely(blob, 'Presseaussendung')
+    openDocumentInApp(html, 'Presseaussendung')
     
     // Speichere auch in Dokumente-Sektion
     const reader = new FileReader()
@@ -4269,7 +4269,7 @@ ${'='.repeat(60)}
     `
 
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-    openPDFWindowSafely(blob, 'Presseaussendung')
+    openDocumentInApp(html, 'Presseaussendung')
     
     // Speichere auch in Dokumente-Sektion
     const reader = new FileReader()
@@ -4420,7 +4420,7 @@ ${'='.repeat(60)}
     `
 
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-    openPDFWindowSafely(blob, 'Presseaussendung')
+    openDocumentInApp(html, 'Presseaussendung')
     
     // Speichere auch in Dokumente-Sektion
     const reader = new FileReader()
@@ -4644,7 +4644,7 @@ ${'='.repeat(60)}
     `
 
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-    openPDFWindowSafely(blob, 'Presseaussendung')
+    openDocumentInApp(html, 'Presseaussendung')
     
     // Speichere auch in Dokumente-Sektion
     const reader = new FileReader()
@@ -4815,7 +4815,7 @@ ${'='.repeat(60)}
     `
 
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-    openPDFWindowSafely(blob, 'Presseaussendung')
+    openDocumentInApp(html, 'Presseaussendung')
     
     // Speichere auch in Dokumente-Sektion
     const reader = new FileReader()
@@ -5081,57 +5081,7 @@ ${'='.repeat(60)}
       console.log('HTML generiert, Länge:', html.length)
 
       blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-      const url = URL.createObjectURL(blob)
-      
-      console.log('Plakat HTML generiert, Größe:', blob.size, 'bytes')
-      console.log('Plakat URL erstellt:', url.substring(0, 50) + '...')
-      
-      // Versuche Fenster zu öffnen
-      const pdfWindow = window.open(url, '_blank', 'noopener,noreferrer')
-      
-      if (!pdfWindow || pdfWindow.closed || typeof pdfWindow.closed === 'undefined') {
-        // Pop-up blockiert - öffne als Link ohne Download-Attribut
-        console.log('Popup blockiert, verwende Fallback-Link')
-        URL.revokeObjectURL(url)
-        const newUrl = URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = newUrl
-        link.target = '_blank'
-        document.body.appendChild(link)
-        link.click()
-        setTimeout(() => {
-          document.body.removeChild(link)
-          // URL nicht sofort revoken - Browser braucht Zeit zum Laden
-          setTimeout(() => {
-            console.log('Revoking fallback URL nach 15 Sekunden')
-            URL.revokeObjectURL(newUrl)
-          }, 15000)
-        }, 100)
-      } else {
-        // Fenster erfolgreich geöffnet - Cleanup NUR wenn Fenster geschlossen wird
-        // WICHTIG: URL nicht sofort revoken, sonst wird Seite weiß!
-        console.log('Fenster erfolgreich geöffnet')
-        
-        // Warte bis Seite geladen ist bevor wir URL revoken
-        pdfWindow.addEventListener('load', function() {
-          console.log('Plakat-Seite geladen')
-        })
-        
-        pdfWindow.addEventListener('beforeunload', function() {
-          console.log('Fenster wird geschlossen, revoke URL')
-          URL.revokeObjectURL(url)
-        })
-        
-        // Fallback: Cleanup nach 60 Sekunden (falls beforeunload nicht funktioniert)
-        setTimeout(function() {
-          if (pdfWindow.closed) {
-            console.log('Fenster geschlossen (Timeout), revoke URL')
-            URL.revokeObjectURL(url)
-          } else {
-            console.log('Fenster noch offen nach 60 Sekunden, URL bleibt aktiv')
-          }
-        }, 60000)
-      }
+      openDocumentInApp(html, 'QR-Plakat – ' + (event?.title || 'Event'))
     } catch (error) {
       console.error('Fehler beim Generieren des Plakats:', error)
       alert('Fehler beim Generieren des Plakats: ' + (error instanceof Error ? error.message : String(error)))
@@ -5423,7 +5373,7 @@ ${'='.repeat(60)}
     `
 
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-    openPDFWindowSafely(blob, 'Presseaussendung')
+    openDocumentInApp(html, 'Presseaussendung')
     alert('✅ Pressemappe generiert!')
   }
 
@@ -5645,7 +5595,7 @@ ${'='.repeat(60)}
     `
 
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-    openPDFWindowSafely(blob, 'Presseaussendung')
+    openDocumentInApp(html, 'Presseaussendung')
     
     // Speichere auch in Dokumente-Sektion
     const reader = new FileReader()
@@ -5883,7 +5833,7 @@ ${'='.repeat(60)}
     `
 
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-    openPDFWindowSafely(blob, 'Presseaussendung')
+    openDocumentInApp(html, 'Presseaussendung')
     
     // Speichere auch in Dokumente-Sektion
     const reader = new FileReader()
@@ -6043,33 +5993,26 @@ ${'='.repeat(60)}
     return headStart + 'Flyer – ' + esc(eventTitle) + '</title><style>' + flyerStyle + '</style></head><body><p class="flyer-title">' + esc(eventTitle) + '</p><p class="flyer-sub">' + esc(vName) + '</p><p class="meta" style="text-align:center;">' + esc(eventDate) + ' · ' + esc(adresse) + '</p><p style="margin-top:1.5rem;">' + esc(kuenstlerListe) + '</p>' + flyerKurzBlock + '<p style="margin-top:1rem;">Eintritt frei. Wir freuen uns auf Ihren Besuch.</p><p class="meta" style="margin-top:2rem;text-align:center;">' + esc(verein.email || '') + ' · ' + esc(verein.website || '') + '</p>' + bodyEnd
   }
 
+  // Ein Standard für alle Dokumente: immer im In-App-Viewer (gleicher Tab, gleiche Leiste, gleiches Verhalten).
+  const openDocumentInApp = (html: string, title: string) => setInAppDocumentViewer({ html, title })
+
   // Dokument öffnen/anschauen (documentUrl = Link zum Projekt-Flyer, z. B. K2 Galerie Flyer). Unterstützt auch data/fileData aus globalem Speicher.
-  // Bei Einladung/Presse: Fertiges Dummy-Dokument im Nutzer-Design mit Stammdaten + Foto (zum Absenden bereit).
   const handleViewEventDocument = (document: any, event?: any) => {
     try {
     const adminReturnUrl = getAdminReturnUrl(activeTab, eventplanSubTab)
     const fileDataOrUrl = document.fileData || document.data
-    // Gespeicherte Daten haben Vorrang; documentUrl nur nutzen wenn kein Inhalt. Immer mit Zurück-Leiste öffnen.
-    // WICHTIG: iframe src muss absolute URL sein – bei blob:-Seite löst sich /flyer-k2-galerie sonst falsch auf → leeres Dokument.
+    const docTitle = document.name || 'Dokument'
+    // Gespeicherte Daten haben Vorrang; documentUrl nur nutzen wenn kein Inhalt. iframe src = absolute URL.
     if (!fileDataOrUrl && document.documentUrl && !String(document.documentUrl).startsWith('blob:')) {
       const docUrl = String(document.documentUrl)
       const absUrl = (typeof window !== 'undefined' && window.location.origin)
         ? window.location.origin + (docUrl.startsWith('/') ? docUrl : '/' + docUrl)
         : docUrl
       const wrapper = wrapDocumentHtmlWithBackButton(
-        '<html><head><meta charset="utf-8"><title>' + (document.name || 'Dokument').replace(/</g, '&lt;') + '</title></head><body style="margin:0;padding:0;"><iframe src="' + absUrl.replace(/"/g, '&quot;') + '" style="width:100%;height:calc(100vh - 52px);border:none;"></iframe></body></html>',
+        '<html><head><meta charset="utf-8"><title>' + (docTitle).replace(/</g, '&lt;') + '</title></head><body style="margin:0;padding:0;"><iframe src="' + absUrl.replace(/"/g, '&quot;') + '" style="width:100%;height:calc(100vh - 52px);border:none;"></iframe></body></html>',
         adminReturnUrl
       )
-      const blob = new Blob([wrapper], { type: 'text/html;charset=utf-8' })
-      const url = URL.createObjectURL(blob)
-      const w = window.open(url, '_blank')
-      if (w) {
-        try { w.focus() } catch (_) { }
-        setTimeout(() => { try { w.focus() } catch (_) { } }, 200)
-      } else {
-        setInAppDocumentViewer({ html: wrapper, title: document.name || 'Dokument' })
-      }
-      setTimeout(() => URL.revokeObjectURL(url), 10000)
+      openDocumentInApp(wrapper, docTitle)
       return
     }
     const fileType = document.fileType || document.type || ''
@@ -6088,20 +6031,10 @@ ${'='.repeat(60)}
         const docKind = isEinladung ? 'einladung' : isPresse ? 'presse' : 'flyer'
         const htmlRaw = buildVk2ReadyToSendDocumentHtml(docKind, eventTitle, eventDate, verein, mitglieder)
         const html = wrapDocumentHtmlWithBackButton(htmlRaw, adminReturnUrl)
-        const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-        const url = URL.createObjectURL(blob)
-        const opened = window.open(url, '_blank')
-        if (!opened) setInAppDocumentViewer({ html, title: document.name || 'Dokument' })
-        else try { opened.focus() } catch (_) { }
-        setTimeout(() => URL.revokeObjectURL(url), 5000)
+        openDocumentInApp(html, docTitle)
       } catch (e) {
-        const newWindow = window.open()
-        if (newWindow) {
-          try { newWindow.focus() } catch (_) { }
-          const htmlRaw = buildVk2ReadyToSendDocumentHtml('einladung', eventTitle, eventDate, { name: 'Kunstverein Muster' }, [])
-          newWindow.document.write(wrapDocumentHtmlWithBackButton(htmlRaw, adminReturnUrl))
-          newWindow.document.close()
-        }
+        const htmlRaw = buildVk2ReadyToSendDocumentHtml('einladung', eventTitle, eventDate, { name: 'Kunstverein Muster' }, [])
+        openDocumentInApp(wrapDocumentHtmlWithBackButton(htmlRaw, adminReturnUrl), docTitle)
       }
       return
     }
@@ -6109,28 +6042,11 @@ ${'='.repeat(60)}
     if (isEinladung || isPresse) {
       const htmlRaw = buildReadyToSendDocumentHtml(isEinladung ? 'einladung' : 'presse', eventTitle, eventDate)
       const html = wrapDocumentHtmlWithBackButton(htmlRaw, adminReturnUrl)
-      try {
-        const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-        const url = URL.createObjectURL(blob)
-        const opened = window.open(url, '_blank')
-        if (!opened) setInAppDocumentViewer({ html, title: document.name || 'Dokument' })
-        else {
-          try { opened.focus() } catch (_) { }
-          setTimeout(() => { try { opened.focus() } catch (_) { } }, 200)
-        }
-        setTimeout(() => URL.revokeObjectURL(url), 10000)
-      } catch (e) {
-        const newWindow = window.open()
-        if (newWindow) {
-          try { newWindow.focus() } catch (_) { }
-          newWindow.document.write(html)
-          newWindow.document.close()
-        }
-      }
+      openDocumentInApp(html, docTitle)
       return
     }
     const fileData = fileDataOrUrl
-    // Gespeichertes HTML wie Presse: zuerst Blob + openPDFWindowSafely (kein leeres Fenster vorher öffnen)
+    // Gespeichertes HTML (Base64)
     if (fileData && fileType?.includes('html') && typeof fileData === 'string' && fileData.startsWith('data:')) {
       const base64 = fileData.replace(/^data:[^;]+;base64,/, '')
       if (base64 !== fileData) {
@@ -6138,13 +6054,10 @@ ${'='.repeat(60)}
           const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
           const htmlDecoded = new TextDecoder('utf-8').decode(bytes)
           const html = wrapDocumentHtmlWithBackButton(htmlDecoded, adminReturnUrl)
-          const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-          const opened = openPDFWindowSafely(blob, document.name || 'Dokument')
-          if (!opened) setInAppDocumentViewer({ html, title: document.name || 'Dokument' })
-          else try { opened.focus() } catch (_) { }
+          openDocumentInApp(html, docTitle)
           return
         } catch (_) {
-          // Fallback unten mit newWindow
+          // Fallback unten
         }
       }
     }
@@ -6174,35 +6087,15 @@ ${'='.repeat(60)}
           break
       }
     }
-    const newWindow = window.open('', '_blank')
-    if (!newWindow) {
-      if (fileData && fileType?.includes('html') && typeof fileData === 'string' && fileData.startsWith('data:')) {
-        try {
-          const base64 = fileData.replace(/^data:[^;]+;base64,/, '')
-          const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
-          const htmlDecoded = new TextDecoder('utf-8').decode(bytes)
-          const html = wrapDocumentHtmlWithBackButton(htmlDecoded, adminReturnUrl)
-          setInAppDocumentViewer({ html, title: document.name || 'Dokument' })
-        } catch {
-          alert('Pop-up wurde blockiert. Bitte im Browser Fenster für diese Seite erlauben (Adresszeile oder Einstellungen), dann erneut auf das Dokument klicken.')
-        }
-      } else {
-        alert('Pop-up wurde blockiert. Bitte im Browser Fenster für diese Seite erlauben (Adresszeile oder Einstellungen), dann erneut auf das Dokument klicken.')
-      }
-      return
-    }
-    try { newWindow.focus() } catch (_) { }
-    const emptyDocHtml = wrapDocumentHtmlWithBackButton('<html><head><meta charset="utf-8"><title>' + (document.name || 'Dokument').replace(/</g, '&lt;') + '</title></head><body style="padding:2rem; font-family:sans-serif;"><p>Dieses Dokument hat keinen gespeicherten Inhalt. Bitte erstelle es neu mit „Neu erstellen“.</p></body></html>', adminReturnUrl)
+    const emptyDocHtml = wrapDocumentHtmlWithBackButton('<html><head><meta charset="utf-8"><title>' + (docTitle).replace(/</g, '&lt;') + '</title></head><body style="padding:2rem; font-family:sans-serif;"><p>Dieses Dokument hat keinen gespeicherten Inhalt. Bitte erstelle es neu mit „Neu erstellen“.</p></body></html>', adminReturnUrl)
     if (!fileData) {
-      newWindow.document.write(emptyDocHtml)
-      newWindow.document.close()
+      openDocumentInApp(emptyDocHtml, docTitle)
       return
     }
     try {
       if (fileType?.includes('html') && typeof fileData === 'string' && fileData.startsWith('data:')) {
-        const wrapperWithBack = wrapDocumentHtmlWithBackButton(`<html><head><title>${(document.name || '').replace(/</g, '&lt;')}</title></head><body style="margin:0; padding:20px;"><iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe></body></html>`, adminReturnUrl)
-        newWindow.document.write(wrapperWithBack)
-        newWindow.document.close()
+        const wrapperWithBack = wrapDocumentHtmlWithBackButton(`<html><head><title>${(docTitle).replace(/</g, '&lt;')}</title></head><body style="margin:0; padding:20px;"><iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe></body></html>`, adminReturnUrl)
+        openDocumentInApp(wrapperWithBack, docTitle)
       } else {
         const bodyContent = fileType?.includes('pdf')
           ? `<iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe>`
@@ -6210,18 +6103,16 @@ ${'='.repeat(60)}
           ? `<img src="${fileData}" style="max-width:100%; height:auto;" />`
           : fileType?.includes('html')
           ? `<iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe>`
-          : `<a href="${fileData}" download="${(document.fileName || document.name || '').replace(/</g, '&lt;')}">Download: ${(document.name || '').replace(/</g, '&lt;')}</a>`
+          : `<a href="${fileData}" download="${(document.fileName || document.name || '').replace(/</g, '&lt;')}">Download: ${(docTitle).replace(/</g, '&lt;')}</a>`
         const wrapperWithBack = wrapDocumentHtmlWithBackButton(
-          '<html><head><title>' + (document.name || '').replace(/</g, '&lt;') + '</title></head><body style="margin:0; padding:20px; background:#f5f5f5;">' + bodyContent + '</body></html>',
+          '<html><head><title>' + (docTitle).replace(/</g, '&lt;') + '</title></head><body style="margin:0; padding:20px; background:#f5f5f5;">' + bodyContent + '</body></html>',
           adminReturnUrl
         )
-        newWindow.document.write(wrapperWithBack)
-        newWindow.document.close()
+        openDocumentInApp(wrapperWithBack, docTitle)
       }
     } catch (e) {
       console.error('Dokument öffnen:', e)
-      newWindow.document.write(wrapDocumentHtmlWithBackButton('<html><body style="padding:2rem; font-family:sans-serif;"><p>Dokument konnte nicht angezeigt werden.</p></body></html>', adminReturnUrl))
-      newWindow.document.close()
+      openDocumentInApp(wrapDocumentHtmlWithBackButton('<html><body style="padding:2rem; font-family:sans-serif;"><p>Dokument konnte nicht angezeigt werden.</p></body></html>', adminReturnUrl), docTitle)
     }
     } catch (err) {
       console.error('Dokument öffnen (Handler):', err)
@@ -6229,7 +6120,7 @@ ${'='.repeat(60)}
     }
   }
 
-  // Vita als Dokument öffnen (gleiches Design wie Einladung/Presse) – für Außenkommunikation, Druck/PDF
+  // Vita als Dokument öffnen – gleicher Standard wie alle anderen Dokumente (In-App-Viewer).
   const openVitaDocument = (personId: 'martina' | 'georg') => {
     const person = personId === 'martina' ? martinaData : georgData
     const design = designSettings || OEF_DESIGN_DEFAULT
@@ -6246,17 +6137,7 @@ ${'='.repeat(60)}
       mutedColor: design.mutedColor
     }, galleryData?.name)
     const html = wrapDocumentHtmlWithBackButton(htmlRaw, getAdminReturnUrl(activeTab, eventplanSubTab))
-    try {
-      const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-      const url = URL.createObjectURL(blob)
-      const opened = window.open(url, '_blank')
-      if (!opened) setInAppDocumentViewer({ html, title: person?.name ? `Vita – ${person.name}` : 'Vita' })
-      else try { opened.focus() } catch (_) { }
-      setTimeout(() => URL.revokeObjectURL(url), 5000)
-    } catch (e) {
-      const w = window.open()
-      if (w) { try { w.focus() } catch (_) { }; w.document.write(html); w.document.close() }
-    }
+    openDocumentInApp(html, person?.name ? `Vita – ${person.name}` : 'Vita')
   }
 
   // Werbematerial-Vorschlag aus globalem Dokumentenspeicher löschen
