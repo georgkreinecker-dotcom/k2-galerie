@@ -9338,6 +9338,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '🖼️', name: 'Meine Werke', beschreibung: 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist live in deiner Galerie.', tab: 'werke' },
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke filtern, suchen, drucken – nach Status, Kategorie, Datum, Preis.', tab: 'katalog' },
                     { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Events planen, Einladungen und Flyer erstellen, Presse, Social Media.', tab: 'eventplan' },
+                    { emoji: '✨', name: 'Aussehen & Design', beschreibung: isOeffentlichAdminContext() ? 'Farben, Texte, dein Foto – die Galerie wird zu dir.' : 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
                   ]
                   const rechtsBereiche: HubArea[] = isVk2AdminContext() ? [
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
