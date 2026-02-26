@@ -2487,13 +2487,11 @@ function ScreenshotExportAdmin() {
     return num === 1 ? `${baseName} – ${eventTitle}` : `${baseName} – ${eventTitle} (Vorschlag ${num})`
   }
 
-  // Dokumente aus localStorage laden - verzögert - mit Cleanup
+  // Dokumente aus localStorage laden – bei Kontextwechsel neu laden (getDocumentsKey hängt von context ab)
   useEffect(() => {
     let isMounted = true
-    
     const timeoutId = setTimeout(() => {
       if (!isMounted) return
-      
       try {
         const docs = loadDocuments()
         if (isMounted) setDocuments(docs)
@@ -2502,20 +2500,17 @@ function ScreenshotExportAdmin() {
         if (isMounted) setDocuments([])
       }
     }, 300)
-    
     return () => {
       isMounted = false
-      clearTimeout(timeoutId) // Cleanup beim Unmount
+      clearTimeout(timeoutId)
     }
-  }, [])
+  }, [location.search])
 
-  // Events aus localStorage laden - verzögert - mit Cleanup
+  // Events aus localStorage laden – bei Kontextwechsel (K2/VK2/ök2) neu laden, sonst vermischt sich VK2-Event in K2
   useEffect(() => {
     let isMounted = true
-    
     const timeoutId = setTimeout(() => {
       if (!isMounted) return
-      
       try {
         const loadedEvents = loadEvents()
         if (isMounted) setEvents(loadedEvents)
@@ -2524,12 +2519,11 @@ function ScreenshotExportAdmin() {
         if (isMounted) setEvents([])
       }
     }, 400)
-    
     return () => {
       isMounted = false
-      clearTimeout(timeoutId) // Cleanup beim Unmount
+      clearTimeout(timeoutId)
     }
-  }, [])
+  }, [location.search])
   
   // AUTO-SAVE: Speichere alle Daten automatisch alle 5 Sekunden - VERHINDERT DATENVERLUST BEI CRASHES
   useEffect(() => {

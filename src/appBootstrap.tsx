@@ -52,7 +52,7 @@ export function run(): void {
         2. Browser-Cache leeren<br />
         3. Anderen Browser verwenden
       </p>
-      <button onclick="window.location.reload()" style="padding: 0.75rem 1.5rem; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
+      <button onclick="if(window.self===window.top)window.location.reload();" style="padding: 0.75rem 1.5rem; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
         🔃 Seite neu laden
       </button>
     </div>

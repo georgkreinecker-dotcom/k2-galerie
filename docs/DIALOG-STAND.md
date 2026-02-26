@@ -1,11 +1,12 @@
 # Dialog-Stand
 
-## Datum: 25.02.26
+## Datum: 26.02.26
 
 ## Thema
-VK2 Mitglieder-Seite ans helle Design angepasst
+Crash-Check (gestern): Reload-Buttons iframe-gesichert
 
 ## Was zuletzt gemacht
+- **Crash von gestern geprüft** – main.tsx + appBootstrap.tsx: Fehler-Buttons „Seite neu laden“ ohne iframe-Check → im Preview Klick = Reload im iframe = Loop/Crash. Fix: alle 3 Buttons nur noch bei window.self===window.top reload.
 - **Dokumente sofort sichtbar (Focus)** – Beim Öffnen von Dokumenten (Newsletter, Presse, Flyer, Vita, PDF, Etikett, Druckfenster etc.) wird das neue Fenster/der neue Tab mit `.focus()` in den Vordergrund geholt. Du musst nicht mehr in der Menüleiste (Tab „L“) suchen – das Dokument erscheint direkt.
 - **„Alle PR-Dokumente auf einen Blick“ öffnet immer** – Fallback aus Event bei fehlenden PR-Vorschlägen (Commit 1ad018f).
 - **QR-Code Plakat nur in K2** – Im VK2-Admin ausgeblendet (Commit 574badd).
@@ -14,7 +15,7 @@ VK2 Mitglieder-Seite ans helle Design angepasst
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- Dokumente: Focus auf neues Fenster/Tab – sofort sichtbar (noch nicht committed)
+- Crash-Check: main/appBootstrap Fehler-Reload-Buttons iframe-gesichert – (wird gleich committed)
 
 ## Nächste Schritte (offen)
 1. **L3 / vermischte Daten** – Bereits gespeichertes Dokument (z. B. Tab „L 3)“) enthält noch alte K2+VK2-Mischung. Abhilfe: Dieses Dokument in der Liste löschen und mit „Neu erstellen“ neu anlegen → dann nur VK2-Daten.

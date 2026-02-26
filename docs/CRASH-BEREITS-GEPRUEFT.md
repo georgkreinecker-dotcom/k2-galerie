@@ -134,5 +134,6 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 | 21.02.26 | ScreenshotExportAdmin Backup-Reload | Zeilen ~9521 + ~9609: Beide `setTimeout(reload)` nach Backup-Wiederherstellung mit `window.self===window.top` abgesichert (waren nicht gechekt). |
 
 | 25.02.26 | SmartPanel | location.href in startFremderModus, nav(), Item-Button – iframe-Check ergänzt (kein location.href wenn window.self !== window.top) |
+| 26.02.26 | main.tsx, appBootstrap.tsx | Fehler-HTML „Seite neu laden“-Buttons: beide hatten onclick="window.location.reload()" ohne iframe-Check. Im Preview-Klick → Reload im iframe → Loop/Crash. **Fix:** onclick nur ausführen wenn window.self===window.top (alle 3 Buttons). |
 
-*Zuletzt ergänzt: 25.02.26 (Crash-Check: SmartPanel location.href iframe-gesichert)*
+*Zuletzt ergänzt: 26.02.26 (Crash-Check: main/appBootstrap Fehler-Reload-Buttons iframe-gesichert)*
