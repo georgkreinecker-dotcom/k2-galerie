@@ -8880,7 +8880,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.background = s.bgElevated }}
                   onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}28`; e.currentTarget.style.background = s.bgCard }}
                 >
-                  {isOeffentlichAdminContext() ? '📋 Kontakte' : '👥 Kunden'}
+                  📋 Kundenliste
                 </Link>
               )}
 
@@ -9248,7 +9248,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     try { sessionStorage.setItem('k2-admin-context', isOeffentlichAdminContext() ? 'oeffentlich' : 'k2') } catch (_) {}
                     window.location.href = '/projects/k2-galerie/shop?openAsKasse=1'
                   }
-                  const galerieUrl = isOeffentlichAdminContext() ? '/projects/k2-galerie/galerie-oeffentlich' : '/projects/k2-galerie/galerie'
                   return (
                     <div style={{ marginBottom: 'clamp(2rem, 4vw, 2.5rem)' }}>
                       <h2 style={{ fontSize: 'clamp(1.2rem, 2.5vw, 1.5rem)', fontWeight: 700, color: s.text, margin: '0 0 0.25rem' }}>
@@ -9278,23 +9277,23 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             </button>
                           ))}
                         </div>
-                        {/* Mitte: Fokus Meine Werke / Vereinsmitglieder */}
-                        <div style={{ flex: 1, minWidth: 0, background: s.bgCard, border: `2px solid ${s.accent}33`, borderRadius: '16px', padding: 'clamp(1.1rem, 2.5vw, 1.5rem)', boxShadow: `0 4px 20px ${s.accent}18`, display: 'flex', flexDirection: 'column' as const, gap: '0.75rem' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                            <div style={{ width: 40, height: 40, borderRadius: '50%', background: akzentGrad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>🖼️</div>
+                        {/* Mitte: Fokus Meine Werke / Vereinsmitglieder – kompakt, nicht zu groß */}
+                        <div style={{ flex: '0 1 auto', maxWidth: 'clamp(240px, 28vw, 300px)', minWidth: 0, background: s.bgCard, border: `2px solid ${s.accent}33`, borderRadius: '16px', padding: 'clamp(0.85rem, 1.8vw, 1.1rem)', boxShadow: `0 4px 20px ${s.accent}18`, display: 'flex', flexDirection: 'column' as const, gap: '0.5rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div style={{ width: 32, height: 32, borderRadius: '50%', background: akzentGrad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>🖼️</div>
                             <div>
-                              <div style={{ fontSize: '0.6rem', color: s.accent, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em' }}>Galerie-Guide</div>
-                              <div style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>{isVk2AdminContext() ? 'Vereinsmitglieder' : 'Meine Werke'}</div>
+                              <div style={{ fontSize: '0.55rem', color: s.accent, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em' }}>Galerie-Guide</div>
+                              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: s.text }}>{isVk2AdminContext() ? 'Vereinsmitglieder' : 'Meine Werke'}</div>
                             </div>
                           </div>
-                          <div style={{ fontSize: '0.88rem', color: s.muted, lineHeight: 1.6, flex: 1 }}>
+                          <div style={{ fontSize: '0.8rem', color: s.muted, lineHeight: 1.5 }}>
                             {isVk2AdminContext() ? 'Mitglieder hinzufügen, bearbeiten, verwalten – Fotos, Profile.' : 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist live in deiner Galerie.'}
                           </div>
                           <button type="button" onClick={scrollToWerke}
-                            style={{ width: '100%', padding: '0.8rem', background: akzentGrad, border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit', boxShadow: `0 4px 14px ${akzent}44` }}>
+                            style={{ width: '100%', padding: '0.6rem', background: akzentGrad, border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem', fontFamily: 'inherit', boxShadow: `0 4px 14px ${akzent}44` }}>
                             ↓ Direkt hier unten
                           </button>
-                          <div style={{ fontSize: '0.72rem', color: s.muted, textAlign: 'center' as const }}>Kostenlos · Keine Anmeldung · Jederzeit kündbar</div>
+                          <div style={{ fontSize: '0.65rem', color: s.muted, textAlign: 'center' as const }}>Kostenlos · Keine Anmeldung · Jederzeit kündbar</div>
                         </div>
                         {/* Rechts: Schnellzugriffe */}
                         <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: 'clamp(130px, 16vw, 160px)', flexShrink: 0 }}>
@@ -9317,9 +9316,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               <span style={{ fontSize: '0.78rem', lineHeight: 1.3 }}>{b.name}</span>
                             </button>
                           ))}
-                          <a href={galerieUrl} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.65rem 0.75rem', background: `${s.accent}12`, border: `1px solid ${s.accent}33`, borderRadius: '12px', color: s.accent, fontSize: '0.78rem', fontWeight: 600, textDecoration: 'none' }}>
-                            <span>🎨</span> Galerie ansehen →
-                          </a>
                         </div>
                       </div>
                       {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
