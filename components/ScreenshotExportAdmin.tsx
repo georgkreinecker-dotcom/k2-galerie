@@ -9256,9 +9256,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       <p style={{ color: s.muted, margin: 0, fontSize: '0.9rem', marginBottom: '1rem' }}>
                         Das ist dein Guide – klick auf einen Bereich, dann siehst du was dich erwartet.
                       </p>
-                      <div style={{ display: 'flex', gap: 'clamp(0.75rem, 2vw, 1.25rem)', alignItems: 'stretch', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 'clamp(0.75rem, 2vw, 1.25rem)', alignItems: 'stretch' }}>
                         {/* Links: Bereiche */}
-                        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: 'clamp(130px, 16vw, 160px)', flexShrink: 0 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: 'clamp(130px, 16vw, 160px)', justifySelf: 'start' }}>
                           {linksBereiche.map((b) => (
                             <button key={b.tab} type="button"
                               onClick={() => { setActiveTab(b.tab as any); window.scrollTo({ top: 200, behavior: 'smooth' }) }}
@@ -9272,13 +9272,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 color: b.tab === 'werke' ? '#fff' : s.text,
                                 fontWeight: b.tab === 'werke' ? 700 : 400,
                               }}>
-                              <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{b.emoji}</span>
+                              <span style={{ fontSize: '1.45rem', flexShrink: 0 }}>{b.emoji}</span>
                               <span style={{ fontSize: '0.78rem', lineHeight: 1.3 }}>{b.name}</span>
                             </button>
                           ))}
                         </div>
-                        {/* Mitte: Fokus Meine Werke / Vereinsmitglieder – kompakt, nicht zu groß */}
-                        <div style={{ flex: '0 1 auto', maxWidth: 'clamp(240px, 28vw, 300px)', minWidth: 0, background: s.bgCard, border: `2px solid ${s.accent}33`, borderRadius: '16px', padding: 'clamp(0.85rem, 1.8vw, 1.1rem)', boxShadow: `0 4px 20px ${s.accent}18`, display: 'flex', flexDirection: 'column' as const, gap: '0.5rem' }}>
+                        {/* Mitte: Fokus Meine Werke / Vereinsmitglieder – zentriert, kompakt */}
+                        <div style={{ justifySelf: 'center', maxWidth: 'clamp(240px, 28vw, 300px)', minWidth: 0, background: s.bgCard, border: `2px solid ${s.accent}33`, borderRadius: '16px', padding: 'clamp(0.85rem, 1.8vw, 1.1rem)', boxShadow: `0 4px 20px ${s.accent}18`, display: 'flex', flexDirection: 'column' as const, gap: '0.5rem' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <div style={{ width: 32, height: 32, borderRadius: '50%', background: akzentGrad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>🖼️</div>
                             <div>
@@ -9296,7 +9296,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           <div style={{ fontSize: '0.65rem', color: s.muted, textAlign: 'center' as const }}>Kostenlos · Keine Anmeldung · Jederzeit kündbar</div>
                         </div>
                         {/* Rechts: Schnellzugriffe */}
-                        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: 'clamp(130px, 16vw, 160px)', flexShrink: 0 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: 'clamp(130px, 16vw, 160px)', justifySelf: 'end' }}>
                           {rechtsBereiche.map((b) => (
                             <button key={b.tab} type="button"
                               onClick={() => { if (b.tab === 'kassa') openKasse(); else { setActiveTab(b.tab as any); window.scrollTo({ top: 200, behavior: 'smooth' }) } }}
@@ -9312,7 +9312,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               }}
                               onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66` }}
                               onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}22` }}>
-                              <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{b.emoji}</span>
+                              <span style={{ fontSize: '1.45rem', flexShrink: 0 }}>{b.emoji}</span>
                               <span style={{ fontSize: '0.78rem', lineHeight: 1.3 }}>{b.name}</span>
                             </button>
                           ))}
