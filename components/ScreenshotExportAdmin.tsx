@@ -9388,6 +9388,33 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               }}>
                 {isVk2AdminContext() ? 'Vereinsmitglieder' : 'Werke verwalten'}
               </h2>
+              {!isVk2AdminContext() && (() => {
+                const galerieWert = allArtworks.reduce((sum: number, a: any) => sum + (Number(a.price) || 0), 0)
+                const werkeMitPreis = allArtworks.filter((a: any) => (Number(a.price) || 0) > 0).length
+                return (
+                  <div style={{
+                    marginBottom: '1.25rem',
+                    padding: '0.75rem 1rem',
+                    background: galerieWert > 0 ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.04)',
+                    border: `1px solid ${galerieWert > 0 ? 'rgba(34,197,94,0.25)' : s.accent + '22'}`,
+                    borderRadius: '12px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    flexWrap: 'wrap'
+                  }}>
+                    <span style={{ fontSize: '0.9rem', color: s.muted }}>Wert der Galerie (Summe aller Galeriepreise):</span>
+                    <strong style={{ fontSize: '1.25rem', color: galerieWert > 0 ? '#16a34a' : s.text }}>
+                      € {(galerieWert || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </strong>
+                    {werkeMitPreis > 0 && (
+                      <span style={{ fontSize: '0.8rem', color: s.muted }}>
+                        ({werkeMitPreis} {werkeMitPreis === 1 ? 'Werk' : 'Werke'} mit Preis)
+                      </span>
+                    )}
+                  </div>
+                )
+              })()}
               {isVk2AdminContext() && (
                 <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted }}>
                   <button type="button" onClick={() => { setActiveTab('einstellungen'); setSettingsSubTab('stammdaten') }} style={{ background: 'none', border: 'none', padding: 0, color: s.accent, textDecoration: 'underline', cursor: 'pointer', fontSize: 'inherit' }}>Stammdaten (Verein, Vorstand, Mitglieder) bearbeiten → Einstellungen</button>
