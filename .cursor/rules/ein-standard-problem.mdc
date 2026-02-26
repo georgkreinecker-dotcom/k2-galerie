@@ -1,0 +1,32 @@
+---
+description: Gleiche Problemstellung = ein Standard, eine Lösung. Keine verschiedenen Regeln pro Fall (z. B. Dokument öffnen, Zurück-Navigation).
+alwaysApply: true
+---
+
+# 🔒 Ein Standard pro Problemstellung (kategorisch)
+
+## Was passiert ist (Dokumente-Chaos, 26.02.26)
+
+- **Problemstellung:** „Dokument aus dem Admin öffnen“ (Flyer, Presse, Newsletter, QR-Plakat, Vita, gespeicherte Dateien).
+- **Statt einer Lösung:** Verschiedene Wege – teils neues Fenster, teils In-App-Viewer, teils Fallback nur bei blockiertem Pop-up, teils andere Zurück-URL, teils anderes Verhalten. Folge: leere Dokumente, „hängt im Browser-Balken“, Zurück führt in die falsche Ansicht.
+- **Georg:** „Was hat dich dazu bewogen, verschiedene Standards für die gleiche Problemstellung zu erfinden?“
+
+## Regel (unveränderlich)
+
+**Für dieselbe Problemstellung gibt es genau einen Standard – keine Ausnahme.**
+
+- **Vor dem Implementieren:** Klären: „Gibt es dafür schon eine Lösung / einen Ablauf?“ Wenn ja → dieselbe nutzen, nicht eine zweite erfinden.
+- **Beim Erweitern:** Neuer Fall (z. B. neues Dokumentformat) = **dieselbe** Öffnungsart, **dieselbe** Leiste, **dieselbe** Rück-Navigation wie bei den bestehenden Fällen. Kein „für Newsletter mache ich es anders“.
+- **Nicht erlaubt:** Pro Typ/Fall eigene Regeln („Flyer in neuem Tab, Newsletter im Viewer, Presse mit Fallback“). Das ist verboten.
+
+## Konkret
+
+| Situation | Nicht | Sondern |
+|-----------|--------|---------|
+| Neues „Ding“ das wie bestehende funktioniert | Eigenen Weg bauen (neues Fenster, anderer Fallback) | Bestehenden Weg wiederverwenden (z. B. `openDocumentInApp`) |
+| Bugfix für einen von mehreren Fällen | Nur diesen einen Fall anpassen | Prüfen: gelten die anderen Fälle noch? Ein Standard für alle. |
+| Neue Feature-Idee (z. B. „X soll sich wie Y verhalten“) | Y nachbauen mit Abweichungen | Y-Logik/API nutzen; eine Implementierung, viele Aufrufer. |
+
+## Kurzfassung
+
+**Gleiche Problemstellung = eine Lösung. Keine zweite, keine Sonderfälle ohne zwingenden Grund. Regel kategorisch – gilt für Menschen und AI.**

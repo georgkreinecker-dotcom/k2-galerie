@@ -121,3 +121,5 @@
 
 Wenn ein Bug behoben wird: **sofort hier eintragen** bevor die Antwort an Georg geht.
 Format: BUG-NNN · Titel · Symptom · Ursache · Lösung · Datei · Commit · Status
+
+**Gleiche Problemstellung = ein Standard** – verschiedene Wege für dieselbe Aufgabe sind Fehlerquellen. Siehe **.cursor/rules/ein-standard-problem.mdc** und **docs/00-INDEX.md** (Prinzipien & Regeln).

@@ -110,5 +110,6 @@ Alle anderen Dateien bleiben; bei Unsicherheit wurde nichts gelöscht.
 - **Admin-Auth einrichten:** `docs/ADMIN-AUTH-SETUP.md`
 - **Crash-Fixes:** `docs/CRASH-FIXES-STAND-17-02-26.md`
 - **K2 vs. ök2:** `docs/K2-OEK2-DATENTRENNUNG.md`
+- **Ein Standard pro Problemstellung:** Gleiche Aufgabe = eine Lösung (verschiedene Standards = Fehlerquellen). Regel: `.cursor/rules/ein-standard-problem.mdc`; Doku: `docs/STRUKTUR-HANDELN-QUELLEN.md`, `docs/00-INDEX.md`.
 - **Handbuch-Inhalt:** `k2team-handbuch/00-INDEX.md`
 - **Docs-Liste:** `docs/00-INDEX.md`

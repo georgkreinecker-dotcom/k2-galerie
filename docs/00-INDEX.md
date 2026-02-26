@@ -69,6 +69,9 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **STAMMDATEN-NEU-EINGEBEN.md** – Stammdaten neu eingeben.
 - **MASKEN-EVENT-FELDER.md** – Event-Felder in Masken.
 
+## Prinzipien & Regeln (Fehlerquellen vermeiden)
+- **Ein Standard pro Problemstellung** – Gleiche Aufgabe = eine Lösung; verschiedene Standards = automatische Fehlerquellen. Verbindlich: **.cursor/rules/ein-standard-problem.mdc**. Siehe auch **STRUKTUR-HANDELN-QUELLEN.md** (Abschnitt Regel).
+
 ## Setup & Qualität
 - **SETUP-ANLEITUNG.md** – Projekt-Setup.
 - **QUALITAETSSICHERUNG.md** – Qualitätssicherung; **QS-Standard vor Commit** (Tests + Build immer) ist dort verbindlich festgelegt.
