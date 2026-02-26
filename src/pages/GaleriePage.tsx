@@ -197,17 +197,43 @@ function getFlyerDocForEvent(docs: any[], eventId: string): any | null {
   return flyer || null
 }
 
-/** Event-Dokument in neuem Fenster öffnen (PDF/Bild/HTML/Download) */
-function openEventDocument(doc: { name?: string; fileData?: string; data?: string; fileName?: string; fileType?: string }) {
-  const fileData = doc?.fileData || doc?.data
-  if (!fileData) return
+/** Event-Dokument in neuem Fenster öffnen (PDF/Bild/HTML/Download).
+ * Wenn doc kein fileData hat: in fullDocsForEvent nach id/name suchen (z. B. nach Export nur Referenzen). */
+function openEventDocument(
+  doc: { id?: string; name?: string; fileData?: string; data?: string; fileName?: string; fileType?: string },
+  fullDocsForEvent?: { id?: string; name?: string; fileData?: string; data?: string; fileName?: string; fileType?: string }[]
+) {
+  let fileData = doc?.fileData || doc?.data
+  let useDoc = doc
+  if (!fileData && fullDocsForEvent && fullDocsForEvent.length > 0) {
+    const full = fullDocsForEvent.find(
+      (d: any) =>
+        (d.id && doc.id && d.id === doc.id) ||
+        (d.name && doc.name && String(d.name).trim() === String(doc.name).trim())
+    )
+    if (full && (full.fileData || full.data)) {
+      fileData = full.fileData || full.data
+      useDoc = full
+    }
+  }
+  if (!fileData) {
+    if (typeof window !== 'undefined' && window.alert) {
+      window.alert('Dokument konnte nicht geladen werden – Inhalt fehlt. Bitte im Admin prüfen (Event bearbeiten, Dokument erneut anlegen).')
+    }
+    return
+  }
   const w = window.open()
-  if (!w) return
-  const fileType = doc.fileType || ''
+  if (!w) {
+    if (typeof window !== 'undefined' && window.alert) {
+      window.alert('Neues Fenster wurde blockiert. Bitte Pop-ups für diese Seite erlauben und erneut klicken.')
+    }
+    return
+  }
+  const fileType = useDoc.fileType || ''
   const isPdf = fileType.includes('pdf')
   const isImage = fileType.includes('image')
   const isHtml = fileType.includes('html') || (typeof fileData === 'string' && fileData.startsWith('data:text/html'))
-  const safeTitle = (doc.name || doc.fileName || 'Dokument').replace(/</g, '&lt;')
+  const safeTitle = (useDoc.name || useDoc.fileName || 'Dokument').replace(/</g, '&lt;')
   if (isHtml) {
     w.location.href = fileData
     return
@@ -215,7 +241,7 @@ function openEventDocument(doc: { name?: string; fileData?: string; data?: strin
   w.document.write(`
     <!DOCTYPE html><html><head><title>${safeTitle}</title></head>
     <body style="margin:0;padding:20px;background:#f5f5f5;">
-      ${isPdf ? `<iframe src="${fileData}" style="width:100%;height:100vh;border:none;"></iframe>` : isImage ? `<img src="${fileData}" alt="" style="max-width:100%;height:auto;" />` : `<a href="${fileData}" download="${(doc.fileName || '').replace(/</g, '&lt;')}">Download: ${safeTitle}</a>`}
+      ${isPdf ? `<iframe src="${fileData}" style="width:100%;height:100vh;border:none;"></iframe>` : isImage ? `<img src="${fileData}" alt="" style="max-width:100%;height:auto;" />` : `<a href="${fileData}" download="${(useDoc.fileName || '').replace(/</g, '&lt;')}">Download: ${safeTitle}</a>`}
     </body></html>
   `)
   w.document.close()
@@ -2836,25 +2862,28 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                       )}
                       {ev.documents && ev.documents.length > 0 && (
                         <ul style={{ margin: '0.25rem 0 0 1rem', paddingLeft: '0.75rem', listStyle: 'none', fontSize: '0.95em', width: '100%' }}>
-                          {ev.documents.map((doc: any) => (
-                            <li key={doc.id || doc.name}>
-                              <button
-                                type="button"
-                                onClick={() => openEventDocument(doc)}
-                                style={{
-                                  background: 'none',
-                                  border: 'none',
-                                  padding: 0,
-                                  color: musterOnly ? '#6b9080' : vk2 ? 'var(--k2-accent)' : 'rgba(184, 184, 255, 0.95)',
-                                  textDecoration: 'underline',
-                                  cursor: 'pointer',
-                                  font: 'inherit'
-                                }}
-                              >
-                                📎 {doc.name || doc.fileName || 'Dokument'}
-                              </button>
-                            </li>
-                          ))}
+                          {ev.documents.map((doc: any) => {
+                            const fullDocsForEvent = [...(ev.documents || []), ...(eventDocuments || []).filter((d: any) => d.eventId === ev.id)]
+                            return (
+                              <li key={doc.id || doc.name}>
+                                <button
+                                  type="button"
+                                  onClick={() => openEventDocument(doc, fullDocsForEvent)}
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    padding: 0,
+                                    color: musterOnly ? '#6b9080' : vk2 ? 'var(--k2-accent)' : 'rgba(184, 184, 255, 0.95)',
+                                    textDecoration: 'underline',
+                                    cursor: 'pointer',
+                                    font: 'inherit'
+                                  }}
+                                >
+                                  📎 {doc.name || doc.fileName || 'Dokument'}
+                                </button>
+                              </li>
+                            )
+                          })}
                         </ul>
                       )}
                     </li>
