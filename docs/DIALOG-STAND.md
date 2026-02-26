@@ -43,7 +43,7 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **LicencesPage + mök2/App auf 10 %:** (1) LicencesPage: Bei gültiger Empfehler-ID Hinweis „Empfehlungs-Rabatt: 10 %“ und reduzierter Preis (z. B. 99 € → 89,10 €); URL-Prefill ?empfehler=, Gutschrift bei Erfassung. (2) MarketingOek2Page, EmpfehlungstoolPage, VerguetungPage: alle Empfehlungs-Texte von 50 % auf 10 % Rabatt/Gutschrift umgestellt. Commit: fc5b282 ✅ auf GitHub
+- **Empfehlungstool „Link teilen“:** Klick auf „→ Empfehlungstool (Link teilen)“ in Einstellungen → Empfehlungs-Programm öffnet die Seite mit ?teil=1; die Seite scrollt automatisch zum „Vorbereiteten Empfehlungsschreiben“ – User sieht den Text sofort und kann mit einem Klick „Per E-Mail senden“ oder „WhatsApp teilen“ weiterleiten. Commit: e42b45a ✅ auf GitHub
 
 ## Nächste Schritte (offen)
 - **Admin im Hub-Design (Phase 1):** Startansicht „Was möchtest du heute tun?“ durch 3-Spalten-Hub ersetzt – links Bereiche (Meine Werke, Werkkatalog, Events), Mitte Fokus-Karte + „↓ Direkt hier unten“, rechts Kassa/Einstellungen/Assistent + Galerie ansehen. K2/ök2/VK2 berücksichtigt.
