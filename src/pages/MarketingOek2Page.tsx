@@ -571,7 +571,102 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <li>Bewertung: Was Künstler:innen und Vereine bereit sind zu zahlen (Preiswürdigkeit), was vergleichbare Angebote kosten → ergibt den <strong>Marktwert</strong>. Entscheidend für Lizenzpreise und Positionierung.</li>
         </ul>
         <p style={{ marginTop: '0.75rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.75)' }}>
-          Kurz: <strong>Entwicklerkosten</strong> = was reingesteckt wurde; <strong>Marktwert</strong> = was der Markt (Käufer) dafür gibt. Beides in mök2 führen und bei Bedarf mit konkreten Zahlen (z. B. aus Marktcheck) ergänzen.
+          Kurz: <strong>Entwicklerkosten</strong> = was reingesteckt wurde; <strong>Marktwert</strong> = was der Markt (Käufer) dafür gibt.
+        </p>
+
+        <h3 id="mok2-entwicklerkosten" style={{ fontSize: '1.1rem', color: '#5ffbf1', marginTop: '1.5rem', marginBottom: '0.5rem' }}>Geschätzte Entwicklerkosten-Rechnung (Orientierung)</h3>
+        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', marginBottom: '0.75rem' }}>
+          Grobe Schätzung – keine verbindliche Rechnung. Zum Nachvollziehen und Anpassen (z. B. Stundensatz, Stunden).
+        </p>
+        <table style={{ width: '100%', maxWidth: 640, borderCollapse: 'collapse', fontSize: '0.9rem', marginBottom: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '2px solid rgba(95,251,241,0.4)' }}>
+              <th style={{ textAlign: 'left', padding: '0.4rem 0.6rem', color: '#5ffbf1' }}>Bereich</th>
+              <th style={{ textAlign: 'right', padding: '0.4rem 0.6rem', color: '#5ffbf1' }}>Stunden (geschätzt)</th>
+              <th style={{ textAlign: 'right', padding: '0.4rem 0.6rem', color: '#5ffbf1' }}>Stundensatz (Orientierung)</th>
+              <th style={{ textAlign: 'right', padding: '0.4rem 0.6rem', color: '#5ffbf1' }}>Summe (Bandbreite)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <td style={{ padding: '0.4rem 0.6rem' }}>Frontend / App (React, PWA, Multi-Tenant)</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>1.200 – 2.000</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>80 – 120 €</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>96.000 – 240.000 €</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <td style={{ padding: '0.4rem 0.6rem' }}>Backend / Infrastruktur (Vercel, Supabase, APIs)</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>300 – 600</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>80 – 120 €</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>24.000 – 72.000 €</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <td style={{ padding: '0.4rem 0.6rem' }}>Design / UX (Oberflächen, Galerie, Admin)</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>400 – 700</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>70 – 100 €</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>28.000 – 70.000 €</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <td style={{ padding: '0.4rem 0.6rem' }}>Doku, Prozesse, Handbuch, mök2</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>200 – 400</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>60 – 90 €</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>12.000 – 36.000 €</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <td style={{ padding: '0.4rem 0.6rem' }}>Projektleitung, Wartung, Erweiterung (laufend)</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>400 – 800</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>70 – 100 €</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>28.000 – 80.000 €</td>
+            </tr>
+            <tr style={{ borderTop: '2px solid rgba(95,251,241,0.4)', fontWeight: 700 }}>
+              <td style={{ padding: '0.5rem 0.6rem' }}>Gesamt (geschätzt)</td>
+              <td style={{ padding: '0.5rem 0.6rem', textAlign: 'right' }}>2.500 – 4.500 h</td>
+              <td style={{ padding: '0.5rem 0.6rem', textAlign: 'right' }}>–</td>
+              <td style={{ padding: '0.5rem 0.6rem', textAlign: 'right', color: '#5ffbf1' }}>188.000 – 498.000 €</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>
+          <strong>Hinweis:</strong> Stundensätze orientieren sich an Freelancer/kleine Agentur (AT/DE). Je nach Region und Aufwand anpassbar. Gesamtsumme dient der Einordnung „was steckt drin“ – z. B. für Partner, Investoren, interne Rechenschaft.
+        </p>
+
+        <h3 id="mok2-marktwert" style={{ fontSize: '1.1rem', color: '#5ffbf1', marginTop: '1.5rem', marginBottom: '0.5rem' }}>Grobe Marktwertberechnung (Orientierung)</h3>
+        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', marginBottom: '0.75rem' }}>
+          Was der Markt (Käufer) dafür gibt – Grundlage für Lizenzpreise und Erlöspotenzial.
+        </p>
+        <ul style={{ marginBottom: '0.75rem', paddingLeft: '1.2em', lineHeight: 1.6, fontSize: '0.9rem' }}>
+          <li><strong>Zielgruppe:</strong> Künstler:innen (Einstieg bis Pro), kleine Galerien, Kunstvereine (VK2).</li>
+          <li><strong>Nutzen:</strong> Webauftritt, Werke, Events, Kasse, Etiketten, Marketing aus einer Hand – ohne IT-Kenntnisse.</li>
+          <li><strong>Vergleichspreise (Marktcheck):</strong> Basic 10–15 €/Monat, Pro 25–35 €/Monat (siehe <code>docs/MARKTCHECK-PREISE-BASIC-PRO-VERGLEICH.md</code>).</li>
+        </ul>
+        <table style={{ width: '100%', maxWidth: 560, borderCollapse: 'collapse', fontSize: '0.9rem', marginBottom: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '2px solid rgba(95,251,241,0.4)' }}>
+              <th style={{ textAlign: 'left', padding: '0.4rem 0.6rem', color: '#5ffbf1' }}>Szenario</th>
+              <th style={{ textAlign: 'right', padding: '0.4rem 0.6rem', color: '#5ffbf1' }}>Lizenzen (Beispiel)</th>
+              <th style={{ textAlign: 'right', padding: '0.4rem 0.6rem', color: '#5ffbf1' }}>Erlös/Jahr (grober Richtwert)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <td style={{ padding: '0.4rem 0.6rem' }}>Konservativ (Einstieg)</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>20 Basic, 10 Pro</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>ca. 4.200 – 6.600 €</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <td style={{ padding: '0.4rem 0.6rem' }}>Mittleres Szenario</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>50 Basic, 25 Pro</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>ca. 10.500 – 16.500 €</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <td style={{ padding: '0.4rem 0.6rem' }}>Starkes Wachstum</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>150 Basic, 75 Pro</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>ca. 31.500 – 49.500 €</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>
+          <strong>Rechnung:</strong> Basic 12 €/Monat × 12 = 144 €/Jahr; Pro 30 €/Monat × 12 = 360 €/Jahr (Mittelwerte). VK2 kann zusätzliche Erträge bringen (Verein zahlt Pro, Mitglieder 50 %). <strong>Marktwert</strong> = Erlöspotenzial + strategischer Wert (z. B. Alleinstellungsmerkmal, Skalierbarkeit).
         </p>
       </section>
 

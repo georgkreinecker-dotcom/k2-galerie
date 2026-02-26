@@ -1205,6 +1205,7 @@ function ScreenshotExportAdmin() {
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const inAppViewerIframeRef = useRef<HTMLIFrameElement>(null)
   
   // Eventplan
   const [events, setEvents] = useState<any[]>([])
@@ -4114,31 +4115,35 @@ ${'='.repeat(60)}
     `
 
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const eid = event?.id || 'unknown'
+    const etitle = event?.title || suggestions.eventTitle || 'Event'
+    const prAlleDocId = `pr-editable-all-${eid}-${Date.now()}`
+    const prAllePlaceholder = {
+      id: prAlleDocId,
+      name: getNextWerbematerialVorschlagName(eid, etitle, 'pr-alle', 'PR-Vorschläge (alle bearbeitbar)'),
+      type: 'text/html',
+      size: blob.size,
+      data: '',
+      fileName: `pr-suggestions-editable-${etitle.replace(/\s+/g, '-').toLowerCase()}.html`,
+      uploadedAt: new Date().toISOString(),
+      isPDF: false,
+      isPlaceholder: false,
+      category: 'pr-dokumente',
+      eventId: eid,
+      eventTitle: etitle,
+      werbematerialTyp: 'pr-alle'
+    }
+    const existingPrAlle = loadDocuments()
+    saveDocuments([...existingPrAlle, prAllePlaceholder])
+    setDocuments([...existingPrAlle, prAllePlaceholder])
     openDocumentInApp(html, 'Presseaussendung')
-    
-    // Speichere auch in Dokumente-Sektion
     const reader = new FileReader()
     reader.onloadend = () => {
-      const eid = event?.id || 'unknown'
-      const etitle = event?.title || suggestions.eventTitle || 'Event'
-      const documentData = {
-        id: `pr-editable-all-${eid}-${Date.now()}`,
-        name: getNextWerbematerialVorschlagName(eid, etitle, 'pr-alle', 'PR-Vorschläge (alle bearbeitbar)'),
-        type: 'text/html',
-        size: blob.size,
-        data: reader.result as string,
-        fileName: `pr-suggestions-editable-${etitle.replace(/\s+/g, '-').toLowerCase()}.html`,
-        uploadedAt: new Date().toISOString(),
-        isPDF: false,
-        isPlaceholder: false,
-        category: 'pr-dokumente',
-        eventId: eid,
-        eventTitle: etitle,
-        werbematerialTyp: 'pr-alle'
-      }
-      const existingDocs = loadDocuments()
-      const updated = [...existingDocs, documentData]
+      const documentData = { ...prAllePlaceholder, data: reader.result as string }
+      const current = loadDocuments()
+      const updated = current.map((d: any) => d.id === prAlleDocId ? documentData : d)
       saveDocuments(updated)
+      setDocuments(updated)
     }
     reader.readAsDataURL(blob)
   }
@@ -4272,32 +4277,35 @@ ${'='.repeat(60)}
     `
 
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const presseDocId = `pr-presseaussendung-${event.id}-${Date.now()}`
+    const pressePlaceholder = {
+      id: presseDocId,
+      name: getNextWerbematerialVorschlagName(event.id, event.title, 'presse', 'Presseaussendung'),
+      type: 'text/html',
+      size: blob.size,
+      data: '',
+      fileName: `presseaussendung-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
+      uploadedAt: new Date().toISOString(),
+      isPDF: false,
+      isPlaceholder: false,
+      category: 'pr-dokumente',
+      eventId: event.id,
+      eventTitle: event.title,
+      werbematerialTyp: 'presse'
+    }
+    const existingPresse = loadDocuments()
+    saveDocuments([...existingPresse, pressePlaceholder])
+    setDocuments([...existingPresse, pressePlaceholder])
     openDocumentInApp(html, 'Presseaussendung')
-    
-    // Speichere auch in Dokumente-Sektion
     const reader = new FileReader()
     reader.onloadend = () => {
-      const documentData = {
-        id: `pr-presseaussendung-${event.id}-${Date.now()}`,
-        name: getNextWerbematerialVorschlagName(event.id, event.title, 'presse', 'Presseaussendung'),
-        type: 'text/html',
-        size: blob.size,
-        data: reader.result as string,
-        fileName: `presseaussendung-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
-        uploadedAt: new Date().toISOString(),
-        isPDF: false,
-        isPlaceholder: false,
-        category: 'pr-dokumente',
-        eventId: event.id,
-        eventTitle: event.title,
-        werbematerialTyp: 'presse'
-      }
-      const existingDocs = loadDocuments()
-      const updated = [...existingDocs, documentData]
+      const documentData = { ...pressePlaceholder, data: reader.result as string }
+      const current = loadDocuments()
+      const updated = current.map((d: any) => d.id === presseDocId ? documentData : d)
       saveDocuments(updated)
+      setDocuments(updated)
     }
     reader.readAsDataURL(blob)
-    
     alert('✅ Presseaussendung generiert!')
   }
 
@@ -4423,32 +4431,35 @@ ${'='.repeat(60)}
     `
 
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const socialDocId = `pr-socialmedia-${event.id}-${Date.now()}`
+    const socialPlaceholder = {
+      id: socialDocId,
+      name: getNextWerbematerialVorschlagName(event.id, event.title, 'social', 'Social Media'),
+      type: 'text/html',
+      size: blob.size,
+      data: '',
+      fileName: `social-media-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
+      uploadedAt: new Date().toISOString(),
+      isPDF: false,
+      isPlaceholder: false,
+      category: 'pr-dokumente',
+      eventId: event.id,
+      eventTitle: event.title,
+      werbematerialTyp: 'social'
+    }
+    const existingSocial = loadDocuments()
+    saveDocuments([...existingSocial, socialPlaceholder])
+    setDocuments([...existingSocial, socialPlaceholder])
     openDocumentInApp(html, 'Presseaussendung')
-    
-    // Speichere auch in Dokumente-Sektion
     const reader = new FileReader()
     reader.onloadend = () => {
-      const documentData = {
-        id: `pr-socialmedia-${event.id}-${Date.now()}`,
-        name: getNextWerbematerialVorschlagName(event.id, event.title, 'social', 'Social Media'),
-        type: 'text/html',
-        size: blob.size,
-        data: reader.result as string,
-        fileName: `social-media-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
-        uploadedAt: new Date().toISOString(),
-        isPDF: false,
-        isPlaceholder: false,
-        category: 'pr-dokumente',
-        eventId: event.id,
-        eventTitle: event.title,
-        werbematerialTyp: 'social'
-      }
-      const existingDocs = loadDocuments()
-      const updated = [...existingDocs, documentData]
+      const documentData = { ...socialPlaceholder, data: reader.result as string }
+      const current = loadDocuments()
+      const updated = current.map((d: any) => d.id === socialDocId ? documentData : d)
       saveDocuments(updated)
+      setDocuments(updated)
     }
     reader.readAsDataURL(blob)
-    
     alert('✅ Social Media Posts generiert!')
   }
 
@@ -8586,7 +8597,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
         }}>
           <div style={{
             flexShrink: 0, padding: '0.75rem 1rem', background: '#1c1a18', color: '#fff',
-            display: 'flex', alignItems: 'center', gap: '1rem', borderBottom: '1px solid rgba(255,255,255,0.15)'
+            display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid rgba(255,255,255,0.15)', flexWrap: 'wrap'
           }}>
             <button
               type="button"
@@ -8602,9 +8613,39 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer'
               }}
             >← Zurück</button>
-            <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)' }}>{inAppDocumentViewer.title}</span>
+            <button
+              type="button"
+              onClick={() => {
+                try {
+                  const win = inAppViewerIframeRef.current?.contentWindow
+                  if (win) {
+                    win.focus()
+                    win.print()
+                  } else {
+                    const w = window.open('', '_blank')
+                    if (w) {
+                      w.document.write(inAppDocumentViewer.html)
+                      w.document.close()
+                      w.focus()
+                      w.print()
+                    } else {
+                      alert('Drucken: Bitte Pop-ups erlauben oder „Als PDF drucken“ im Druckdialog wählen.')
+                    }
+                  }
+                } catch (e) {
+                  console.error('Drucken:', e)
+                  alert('Drucken fehlgeschlagen. Bitte „Als PDF drucken“ im Druckdialog versuchen.')
+                }
+              }}
+              style={{
+                padding: '0.4rem 0.8rem', background: '#2d5a2d', color: '#fff', border: 'none', borderRadius: 8,
+                fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer'
+              }}
+            >Drucken</button>
+            <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', flex: 1 }}>{inAppDocumentViewer.title}</span>
           </div>
           <iframe
+            ref={inAppViewerIframeRef}
             title={inAppDocumentViewer.title}
             srcDoc={inAppDocumentViewer.html}
             style={{
