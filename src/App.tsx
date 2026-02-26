@@ -256,12 +256,13 @@ class AdminErrorBoundary extends Component<{ children: ReactNode }, { hasError: 
   }
 }
 
-/** Cache-Bypass: komplette Seite mit neuem URL-Parameter laden (umgeht Browser-Cache). */
+/** Cache-Bypass: komplette Seite mit neuem URL-Parameter laden (umgeht Browser-Cache). Kontext (z. B. context=vk2) bleibt erhalten. */
 function doHardReload() {
-  const u = typeof window !== 'undefined' ? window.location : null
-  if (!u) return
-  const sep = u.pathname.includes('?') ? '&' : '?'
-  u.href = u.origin + u.pathname + sep + 'v=' + Date.now()
+  const w = typeof window !== 'undefined' ? window : null
+  if (!w?.location) return
+  const params = new URLSearchParams(w.location.search || '')
+  params.set('v', String(Date.now()))
+  w.location.href = w.location.origin + w.location.pathname + '?' + params.toString()
 }
 
 function StandBadgeSync() {

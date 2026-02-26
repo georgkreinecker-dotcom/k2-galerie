@@ -6,6 +6,7 @@
 Favoriten (max 5): Vorreihung in Galerie, Option beim Anlegen, VK2 wie gehabt
 
 ## Was zuletzt gemacht
+- **Stand-Badge im VK2-Admin:** Beim Tippen auf „Stand“ hat doHardReload nur pathname + v= gesetzt, die URL-Parameter (z. B. context=vk2) gingen verloren → man landete in K2-Admin. **Fix:** doHardReload übernimmt die bestehenden Search-Parameter und hängt nur v= an (context=vk2 bleibt erhalten).
 - **Favoriten (max 5):** Beim Erstellen/Bearbeiten eines Werks Option „Als Favorit“ (K2/ök2: „vorne in deiner Galerie“; VK2: „vorne in Galerie & Vereinskatalog“). Galerie- und Vorschau-Sortierung: Favoriten zuerst, dann neueste. Export (gallery-data.json) ebenfalls Favoriten zuerst → Besucher sehen dieselbe Reihenfolge. In der Werkliste: Favorit-Button für alle Kontexte (K2, ök2, VK2).
 - **L3 / vermischte Daten:** Im VK2-Admin bei Werbematerial/Dokumenten ein Hinweis: „Falls ein Dokument noch K2-Daten enthält: Auf × klicken (aus Liste entfernen), dann Neu erstellen.“
 - **Vereinskatalog:** Werke aus Lizenz-Galerien werden per `fetch(lizenzGalerieUrl/gallery-data.json)` geladen; nur Werke mit `imVereinskatalog`; lokale Werke bleiben Fallback.
