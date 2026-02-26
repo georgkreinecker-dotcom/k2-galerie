@@ -41,7 +41,7 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Admin-Startansicht im Hub-Design (Phase 1)** – 3 Spalten wie Entdecken, eine Hauptaktion, zielsicher. Commit: (gleich) ✅
+- **Admin-Startansicht im Hub-Design (Phase 1)** – 3 Spalten wie Entdecken, eine Hauptaktion, zielsicher. Commit: b51efe7 ✅ auf GitHub
 
 ## Nächste Schritte (offen)
 - **Admin im Hub-Design (Phase 1):** Startansicht „Was möchtest du heute tun?“ durch 3-Spalten-Hub ersetzt – links Bereiche (Meine Werke, Werkkatalog, Events), Mitte Fokus-Karte + „↓ Direkt hier unten“, rechts Kassa/Einstellungen/Assistent + Galerie ansehen. K2/ök2/VK2 berücksichtigt.
