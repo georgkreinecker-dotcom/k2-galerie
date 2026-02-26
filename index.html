@@ -39,8 +39,8 @@
         } catch (e) {}
       })();
     </script>
-    <script>(function(){if(window.self!==window.top)return;var b=1772111410523;var o=location.origin;var p=location.pathname;var bust="v="+Date.now();var url=o+"/build-info.json?t="+Date.now()+"&r="+Math.random();fetch(url,{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b){try{var k="k2_updated";if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,"1");location.replace(o+p+"?"+bust);}}catch(e){}}}).catch(function(){});})();</script>
-    <div id="root" style="min-height: 100vh; background: #1a0f0a; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="setTimeout(function(){ var r=document.getElementById('root'); if(r&&r.querySelector('#root-loading')) location.reload(); }, 100)">
+    <script>(function(){if(window.self!==window.top)return;var b=1772112129355;var o=location.origin;var p=location.pathname;var bust="v="+Date.now();var url=o+"/build-info.json?t="+Date.now()+"&r="+Math.random();fetch(url,{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b){try{var k="k2_updated";if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,"1");location.replace(o+p+"?"+bust);}}catch(e){}}}).catch(function(){});})();</script>
+    <div id="root" style="min-height: 100vh; background: #1a0f0a; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="setTimeout(function(){ if(window.self!==window.top)return; var r=document.getElementById('root'); if(r&&r.querySelector('#root-loading')) location.reload(); }, 100)">
       <div id="root-loading" style="text-align:center;color:rgba(255,255,255,0.9);font-family:system-ui;padding:2rem;">
         <p style="margin:0 0 0.5rem;font-size:1.1rem;">Laden …</p>
         <p style="margin:0;font-size:0.85rem;color:rgba(255,255,255,0.6);">Nach QR-Scan: Warte kurz.<br>Lädt nicht? Tippe hier zum Neuladen.</p>
@@ -54,7 +54,7 @@
           var root = document.getElementById('root');
           var loading = document.getElementById('root-loading');
           if (root && loading && root.contains(loading)) {
-            root.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.9);font-family:system-ui;padding:2rem;max-width:90vw;"><p style="margin-bottom:1rem;font-size:1.1rem;">Galerie lädt nicht.</p><p style="font-size:0.9rem;margin-bottom:1rem;">Bitte prüfe die Verbindung (WLAN/Mobilfunk).</p><p style="font-size:0.85rem;margin-bottom:1.5rem;color:rgba(255,255,255,0.7);">Tippe unten um neu zu laden.</p><button onclick="location.reload()" style="padding:0.75rem 1.5rem;background:#667eea;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:1rem;touch-action:manipulation;">Seite neu laden</button></div>';
+            root.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.9);font-family:system-ui;padding:2rem;max-width:90vw;"><p style="margin-bottom:1rem;font-size:1.1rem;">Galerie lädt nicht.</p><p style="font-size:0.9rem;margin-bottom:1rem;">Bitte prüfe die Verbindung (WLAN/Mobilfunk).</p><p style="font-size:0.85rem;margin-bottom:1.5rem;color:rgba(255,255,255,0.7);">Tippe unten um neu zu laden.</p><button onclick="if(window.self===window.top)location.reload()" style="padding:0.75rem 1.5rem;background:#667eea;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:1rem;touch-action:manipulation;">Seite neu laden</button></div>';
           }
         }, timeoutMs);
         document.documentElement.addEventListener('click', function() { clearTimeout(t); }, { once: true });
