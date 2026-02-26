@@ -36,6 +36,7 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **Druck-Fußzeilen (Seitenanzahl, Druckdatum, Dokumentenersteller):** (1) **App (alle App-Drucke):** #print-footer in App.tsx mit PRODUCT_BRAND_NAME + Druckdatum (de-AT), vor beforeprint aktualisiert; @page @bottom-right „Seite X von Y“ in index.css; #print-footer am Bildschirm ausgeblendet. (2) **Admin-Dokumente (In-App-Viewer):** wrapDocumentWithPrintFooter(html) injiziert in jedes geöffnete Dokument Style (@page margin-bottom, @bottom-right Seitenzahl, #doc-print-footer) + div + Script (Ersteller + Datum beim Laden). Commit: 4803154 ✅
 - **Crash-Check (26.02.26):** index.html – „Laden …“-Klick und „Galerie lädt nicht“-Button nur noch Reload wenn window.self===window.top. Commit: 54191d2 ✅
 - **Crash-Check (26.02.26):** doHardReload() (Stand-Badge) + VK2 Stand-Badges (Vk2GaleriePage, Vk2GalerieVorschauPage) – Reload/Redirect nur wenn window.self===window.top (kein Reload in Cursor Preview). Commit: 380c228 ✅
+- **Admin K2/ök2:** „Aussehen & Design“ war im Haupt-Hub („Was möchtest du heute tun?“) nur bei VK2 als Icon in der linken Spalte – bei K2 und ök2 fehlte es. **Fix:** linksBereiche für K2/ök2 um Eintrag „✨ Aussehen & Design“ ergänzt (wie bei VK2). Commit: 01069ee ✅
 - **Dokumente sofort sichtbar (Focus)** – Beim Öffnen von Dokumenten (Newsletter, Presse, Flyer, Vita, PDF, Etikett, Druckfenster etc.) wird das neue Fenster/der neue Tab mit `.focus()` in den Vordergrund geholt. Du musst nicht mehr in der Menüleiste (Tab „L“) suchen – das Dokument erscheint direkt.
 - **„Alle PR-Dokumente auf einen Blick“ öffnet immer** – Fallback aus Event bei fehlenden PR-Vorschlägen (Commit 1ad018f).
 - **QR-Code Plakat nur in K2** – Im VK2-Admin ausgeblendet (Commit 574badd).
@@ -44,7 +45,7 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Admin K2/ök2: Aussehen & Design wieder als Icon im Hub.** Commit: (nach Push) ✅ auf GitHub
+- **Admin K2/ök2: Aussehen & Design wieder als Icon im Hub (linke Spalte).** Commit: 01069ee ✅ auf GitHub
 
 ## Was gerade gemacht (ök2: 7 fertige Musterdokumente)
 - **ök2 zeigt jetzt 7 fertige Musterdokumente:** 2 unter „Druckfertige Dokumente“ (Einladung, Presse aus MUSTER_EVENTS) + 5 PR-Dokumente (Newsletter, Plakat, Event-Flyer, Presseaussendung, Social Media) aus getOek2MusterPrDocuments(). Alle mit MUSTER_TEXTE (Lena Berg, Paul Weber, Galerie Muster, info@galerie-muster.example) und einheitlichem Design (#6b9080).
