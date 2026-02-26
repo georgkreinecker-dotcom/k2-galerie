@@ -288,9 +288,9 @@ const Vk2GalerieVorschauPage: React.FC = () => {
         <div style={{ color: C.textLight, fontSize: '0.78rem' }}>© {new Date().getFullYear()} {vereinsName} · Powered by K2 Galerie</div>
       </footer>
 
-      {/* Stand-Badge */}
+      {/* Stand-Badge – im iframe (Cursor Preview) kein Reload */}
       <div style={{ position: 'fixed', bottom: 8, left: 8, fontSize: '0.65rem', color: 'rgba(0,0,0,0.25)', cursor: 'pointer', zIndex: 50, fontFamily: 'system-ui, sans-serif' }}
-        onClick={() => { window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now() }}
+        onClick={() => { if (typeof window !== 'undefined' && window.self !== window.top) return; window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now() }}
         title="Tippen für Cache-Bypass">
         Stand: {BUILD_LABEL}
       </div>

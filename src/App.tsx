@@ -257,8 +257,9 @@ class AdminErrorBoundary extends Component<{ children: ReactNode }, { hasError: 
   }
 }
 
-/** Cache-Bypass: komplette Seite mit neuem URL-Parameter laden (umgeht Browser-Cache). Kontext (z. B. context=vk2) bleibt erhalten. */
+/** Cache-Bypass: komplette Seite mit neuem URL-Parameter laden (umgeht Browser-Cache). Kontext (z. B. context=vk2) bleibt erhalten. Im iframe (Cursor Preview) kein Reload – verhindert Loop/Crash. */
 function doHardReload() {
+  if (typeof window !== 'undefined' && window.self !== window.top) return
   const w = typeof window !== 'undefined' ? window : null
   if (!w?.location) return
   const params = new URLSearchParams(w.location.search || '')

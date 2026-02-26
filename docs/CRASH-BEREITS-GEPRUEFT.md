@@ -136,5 +136,6 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 | 25.02.26 | SmartPanel | location.href in startFremderModus, nav(), Item-Button – iframe-Check ergänzt (kein location.href wenn window.self !== window.top) |
 | 26.02.26 | main.tsx, appBootstrap.tsx | Fehler-HTML „Seite neu laden“-Buttons: beide hatten onclick="window.location.reload()" ohne iframe-Check. Im Preview-Klick → Reload im iframe → Loop/Crash. **Fix:** onclick nur ausführen wenn window.self===window.top (alle 3 Buttons). |
 | 26.02.26 | index.html | (1) root-div onclick (Laden … tippen): location.reload() ohne iframe-Check. (2) Timeout-Fehler-HTML „Galerie lädt nicht“ – Button onclick="location.reload()" ohne iframe-Check. **Fix:** Beide nur wenn window.self===window.top. |
+| 26.02.26 | App.tsx, Vk2GaleriePage, Vk2GalerieVorschauPage | **Neue Prüfung:** doHardReload() (Stand-Badge-Klick) ohne iframe-Check → Reload im Preview möglich. VK2 Stand-Badges (Vk2GaleriePage, Vk2GalerieVorschauPage) onClick mit location.href ohne iframe-Check. **Fix:** doHardReload am Anfang `if (window.self !== window.top) return`; beide VK2-Stand-Badges nur wenn `window.self === window.top` dann location.href. |
 
-*Zuletzt ergänzt: 26.02.26 (Crash-Check: index.html Lade-/Fehler-Reload iframe-gesichert)*
+*Zuletzt ergänzt: 26.02.26 (Crash-Check: doHardReload + VK2 Stand-Badges iframe-gesichert)*

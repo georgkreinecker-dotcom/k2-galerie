@@ -367,7 +367,7 @@ export const VK2_DEMO_STAMMDATEN: Vk2Stammdaten = {
   mitgliederNichtRegistriert: ['Petra Farbe', 'Thomas Pinsel'],
 }
 
-/** Muster-Vereinsaktivität: Gemeinschaftsausstellung im Vereinshaus X, in einem Monat, mit allen Dummy-Künstlern */
+/** Muster-Vereinsaktivität: Gemeinschaftsausstellung im Vereinshaus X, in einem Monat, mit allen Dummy-Künstlern. Inkl. 2 Druckfertige Dokumente (Einladung, Presse). */
 export function getVk2DemoEvent(): {
   id: string
   title: string
@@ -379,6 +379,7 @@ export function getVk2DemoEvent(): {
   dailyTimes: Record<string, { start: string; end: string }>
   description: string
   location: string
+  documents: Array<{ id: string; name: string; fileName: string; fileType: string; fileData: string }>
   createdAt: string
   updatedAt: string
 } {
@@ -397,17 +398,68 @@ export function getVk2DemoEvent(): {
     dailyTimes: {},
     description: `Alle unsere Künstler:innen präsentieren ihre Werke unter einem Dach: ${kuenstler}. Malerei, Skulptur, Fotografie, Grafik, Keramik und Textilkunst – ein Querschnitt durch das Schaffen des Kunstvereins Muster.`,
     location: 'Vereinshaus Muster, Musterstraße 12, 1010 Wien',
+    documents: [
+      { id: 'vk2-demo-einladung', name: 'Einladung – Gemeinschaftsausstellung', fileName: 'einladung-gemeinschaftsausstellung.html', fileType: 'text/html', fileData: getVk2MusterEinladungDataUrl() },
+      { id: 'vk2-demo-presse', name: 'Presseinformation – Gemeinschaftsausstellung', fileName: 'presse-gemeinschaftsausstellung.html', fileType: 'text/html', fileData: getVk2MusterPresseDataUrl() },
+    ],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   }
 }
 
-/** Muster-Dokumente für Öffentlichkeitsarbeit (Presse, Einladung, Flyer) zum Demo-Event */
-export function getVk2DemoDocuments(eventId: string): Array<{ id: string; name: string; category: string; eventId: string; werbematerialTyp: string }> {
+const VK2_MUSTER_CSS = 'body{font-family:Georgia,serif;max-width:600px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#222}h1{font-size:1.35rem;border-bottom:2px solid #6b9080;padding-bottom:.5rem}p{margin:.5rem 0}.meta{color:#555;font-size:.9rem}'
+
+function getVk2MusterEinladungDataUrl(): string {
+  const v = VK2_DEMO_STAMMDATEN.verein
+  const adr = [v.address, v.city].filter(Boolean).join(', ')
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Einladung – Gemeinschaftsausstellung</title><style>${VK2_MUSTER_CSS}</style></head><body><h1>Einladung zur Gemeinschaftsausstellung</h1><p><strong>${v.name}</strong></p><p class="meta">Vereinshaus Muster, Musterstraße 12, 1010 Wien · 18 Uhr</p><p>Wir freuen uns, Sie persönlich einzuladen. Alle Künstler:innen des Vereins präsentieren ihre Werke.</p><p>Anmeldung erwünscht: ${v.email || 'office@kunstverein-muster.at'}</p></body></html>`
+  return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
+}
+
+function getVk2MusterPresseDataUrl(): string {
+  const v = VK2_DEMO_STAMMDATEN.verein
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Presse – Gemeinschaftsausstellung</title><style>${VK2_MUSTER_CSS}</style></head><body><h1>Presseinformation – Gemeinschaftsausstellung</h1><p><strong>${v.name}</strong> lädt zur Vernissage ein.</p><p class="meta">Vereinshaus Muster, Musterstraße 12, 1010 Wien</p><p>Die Vereinsmitglieder zeigen Malerei, Skulptur, Fotografie, Grafik, Keramik und Textilkunst. Kontakt: ${v.email || 'office@kunstverein-muster.at'}</p></body></html>`
+  return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
+}
+
+function getVk2MusterNewsletterDataUrl(): string {
+  const v = VK2_DEMO_STAMMDATEN.verein
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Newsletter – Gemeinschaftsausstellung</title><style>${VK2_MUSTER_CSS}</style></head><body><h1>E-Mail Newsletter</h1><p><strong>${v.name}</strong></p><p class="meta">Einladung: Gemeinschaftsausstellung im Vereinshaus Muster</p><p>Liebe Kunstfreundinnen und Kunstfreunde, wir freuen uns auf Ihre Teilnahme. Anmeldung: ${v.email || 'office@kunstverein-muster.at'}</p></body></html>`
+  return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
+}
+
+function getVk2MusterPlakatDataUrl(): string {
+  const v = VK2_DEMO_STAMMDATEN.verein
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plakat – Gemeinschaftsausstellung</title><style>${VK2_MUSTER_CSS}</style></head><body><h1>Gemeinschaftsausstellung im Vereinshaus Muster</h1><p class="meta">Vernissage · Vereinshaus Muster, Musterstraße 12, 1010 Wien</p><p>${v.name} · Kontakt: ${v.email || 'office@kunstverein-muster.at'}</p></body></html>`
+  return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
+}
+
+function getVk2MusterEventFlyerDataUrl(): string {
+  const v = VK2_DEMO_STAMMDATEN.verein
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Event-Flyer – Gemeinschaftsausstellung</title><style>${VK2_MUSTER_CSS}</style></head><body><h1>Gemeinschaftsausstellung im Vereinshaus Muster</h1><p class="meta">Vereinshaus Muster, Musterstraße 12, 1010 Wien</p><p>${v.name} – Handzettel für persönliche Einladung. ✉ ${v.email || 'office@kunstverein-muster.at'}</p></body></html>`
+  return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
+}
+
+function getVk2MusterPresseaussendungDataUrl(): string {
+  const v = VK2_DEMO_STAMMDATEN.verein
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Presseaussendung – Gemeinschaftsausstellung</title><style>${VK2_MUSTER_CSS}</style></head><body><h1>PRESSEAUSSENDUNG</h1><p><strong>${v.name}</strong> – Gemeinschaftsausstellung</p><p class="meta">Vereinshaus Muster, Musterstraße 12, 1010 Wien</p><p>Kontakt: ${v.email || 'office@kunstverein-muster.at'}</p><p>– Ende der Presseaussendung –</p></body></html>`
+  return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
+}
+
+function getVk2MusterSocialDataUrl(): string {
+  const v = VK2_DEMO_STAMMDATEN.verein
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Social Media – Gemeinschaftsausstellung</title><style>${VK2_MUSTER_CSS}</style></head><body><h1>Social Media Posts</h1><p><strong>Instagram / Facebook / WhatsApp</strong></p><p>✦ Gemeinschaftsausstellung im Vereinshaus Muster</p><p>${v.name} · ✉ ${v.email || 'office@kunstverein-muster.at'}</p></body></html>`
+  return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
+}
+
+/** Muster-Dokumente für Öffentlichkeitsarbeit (7 Typen wie ök2) zum Demo-Event – mit fileData zum Öffnen. */
+export function getVk2DemoDocuments(eventId: string): Array<{ id: string; name: string; category: string; eventId: string; werbematerialTyp: string; fileData: string; fileName: string; fileType: string }> {
   return [
-    { id: `${eventId}-presse`, name: 'Presse – Gemeinschaftsausstellung Vereinshaus Muster', category: 'pr-dokumente', eventId, werbematerialTyp: 'presse' },
-    { id: `${eventId}-einladung`, name: 'Einladung – Gemeinschaftsausstellung Vereinshaus Muster', category: 'pr-dokumente', eventId, werbematerialTyp: 'flyer' },
-    { id: `${eventId}-flyer`, name: 'Flyer – Gemeinschaftsausstellung Vereinshaus Muster', category: 'pr-dokumente', eventId, werbematerialTyp: 'flyer' },
+    { id: `${eventId}-newsletter`, name: 'Newsletter – Gemeinschaftsausstellung', eventId, category: 'pr-dokumente', werbematerialTyp: 'newsletter', fileData: getVk2MusterNewsletterDataUrl(), fileName: 'newsletter-gemeinschaftsausstellung.html', fileType: 'text/html' },
+    { id: `${eventId}-plakat`, name: 'Plakat – Gemeinschaftsausstellung', eventId, category: 'pr-dokumente', werbematerialTyp: 'plakat', fileData: getVk2MusterPlakatDataUrl(), fileName: 'plakat-gemeinschaftsausstellung.html', fileType: 'text/html' },
+    { id: `${eventId}-event-flyer`, name: 'Event-Flyer – Gemeinschaftsausstellung', eventId, category: 'pr-dokumente', werbematerialTyp: 'event-flyer', fileData: getVk2MusterEventFlyerDataUrl(), fileName: 'event-flyer-gemeinschaftsausstellung.html', fileType: 'text/html' },
+    { id: `${eventId}-presse`, name: 'Presseaussendung – Gemeinschaftsausstellung', eventId, category: 'pr-dokumente', werbematerialTyp: 'presse', fileData: getVk2MusterPresseaussendungDataUrl(), fileName: 'presse-gemeinschaftsausstellung.html', fileType: 'text/html' },
+    { id: `${eventId}-social`, name: 'Social Media – Gemeinschaftsausstellung', eventId, category: 'pr-dokumente', werbematerialTyp: 'social', fileData: getVk2MusterSocialDataUrl(), fileName: 'social-gemeinschaftsausstellung.html', fileType: 'text/html' },
   ]
 }
 
