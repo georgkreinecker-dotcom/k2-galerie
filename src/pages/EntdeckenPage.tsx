@@ -54,7 +54,7 @@ const T = {
   q1a: { emoji: '🎨', label: 'Ich male, zeichne, fotografiere – und liebe es', sub: 'Hobby oder Leidenschaft – die Freude steht im Mittelpunkt' },
   q1b: { emoji: '🌱', label: 'Ich nehme meine Kunst ernst – sie soll mich tragen', sub: 'Auf dem Weg zur Professionalisierung, hungrig nach Sichtbarkeit' },
   q1c: { emoji: '⭐', label: 'Ich bin bereits etabliert und suche das passende Werkzeug', sub: 'Ausstellungen, Sammler, professioneller Auftritt' },
-  q1d: { emoji: '🏛️', label: 'Ich bin Teil einer Gemeinschaft – Verein oder Gruppe', sub: 'Wir wollen unsere Werke gemeinsam zeigen' },
+  q1d: { emoji: '🏛️', label: 'Vereinsgalerie – eine eigene Welt', sub: 'Gemeinsamer Katalog, Mitglieder, gemeinsame Galerie – anders als die Solo-Galerie.' },
 
   q2: 'Was ist dir am wichtigsten?',
   q2a: { emoji: '✨', label: 'Meine Werke schön und würdig präsentieren', sub: 'Ein Ort der meiner Kunst gerecht wird' },
@@ -617,6 +617,7 @@ export default function EntdeckenPage() {
     const name = answers.q3.trim()
     const istVerein = answers.q1 === 'verein'
     try {
+      sessionStorage.setItem('k2-entdecken-q1', answers.q1)
       if (name) {
         sessionStorage.setItem(WILLKOMMEN_NAME_KEY, name)
         sessionStorage.setItem(WILLKOMMEN_ENTWURF_KEY, '1')
@@ -624,10 +625,10 @@ export default function EntdeckenPage() {
         localStorage.setItem(WILLKOMMEN_ENTWURF_KEY, '1')
       }
     } catch (_) {}
-    // Verein → VK2-Galerie, sonst → ök2-Galerie
+    // Verein → VK2-Galerie, sonst → ök2-Galerie-Vorschau (dort personalisierter Guide)
     const url = istVerein
       ? PROJECT_ROUTES.vk2.galerieVorschau
-      : PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+      : PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau
     const params = name ? `?vorname=${encodeURIComponent(name)}&entwurf=1` : ''
     navigate(url + params)
   }
@@ -774,6 +775,11 @@ export default function EntdeckenPage() {
                 <ChoiceCard {...T.q1b} selected={answers.q1 === 'aufsteigend'} onClick={() => setAnswers(a => ({ ...a, q1: 'aufsteigend' }))} />
                 <ChoiceCard {...T.q1c} selected={answers.q1 === 'etabliert'} onClick={() => setAnswers(a => ({ ...a, q1: 'etabliert' }))} />
                 <ChoiceCard {...T.q1d} selected={answers.q1 === 'verein'} onClick={() => setAnswers(a => ({ ...a, q1: 'verein' }))} color="#1e5cb5" />
+                {answers.q1 === 'verein' && (
+                  <p style={{ marginTop: '0.75rem', padding: '0.75rem 1rem', background: 'rgba(30, 92, 181, 0.08)', border: '1px solid rgba(30, 92, 181, 0.25)', borderRadius: '12px', fontSize: '0.85rem', color: '#1e5cb5', lineHeight: 1.5 }}>
+                    Du gehst in die <strong>Vereinsgalerie</strong> – eine andere Welt: gemeinsamer Katalog, Mitglieder, gemeinsame Ausstellungen. Nächster Schritt: Name eingeben, dann siehst du sie.
+                  </p>
+                )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
                   <button type="button" onClick={() => setStep('hero')} style={{ padding: '0.7rem 1.25rem', background: 'transparent', color: muted, border: `1px solid #e0d5c5`, borderRadius: '10px', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.9rem' }}>{T.btnBack}</button>
                   <button type="button" disabled={!answers.q1} onClick={() => setStep('q3')} style={{ padding: '0.7rem 1.75rem', background: answers.q1 ? `linear-gradient(135deg, ${accent}, ${accentLight})` : '#ccc', color: '#fff', border: 'none', borderRadius: '10px', cursor: answers.q1 ? 'pointer' : 'not-allowed', fontFamily: fontBody, fontSize: '0.95rem', fontWeight: 700 }}>{T.btnNext}</button>
