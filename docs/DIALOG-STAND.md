@@ -43,7 +43,7 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Galerie-Guide („In die Galerie“):** Keine Datenerhebung mehr – keine Frage „Wie würdest du dich beschreiben?“ und keine 4 Optionen. Nur noch: Begrüßung → ein Schritt „Schau dich um – oder klick unten, um in den Admin zu gehen“ mit Button „In den Admin →“. Commit: (nach Push) ✅
+- **Galerie-Guide („In die Galerie“):** Keine Datenerhebung mehr – keine Frage „Wie würdest du dich beschreiben?“ und keine 4 Optionen. Nur noch: Begrüßung → ein Schritt „Schau dich um – oder klick unten, um in den Admin zu gehen“ mit Button „In den Admin →“. Commit: 290606e ✅ auf GitHub
 
 ## Nächste Schritte (offen)
 - **Test:** Galerie-Seite mit Namen (von Entdecken) → Guide zeigt nur Begrüßung + „In den Admin“.

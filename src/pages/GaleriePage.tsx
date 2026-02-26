@@ -3422,8 +3422,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
         </>
         )}
 
-        {/* Guide-Avatar – progressiver Onboarding-Flow (von EntdeckenPage kommend) */}
-        {musterOnly && guideVisible && guideName && (
+        {/* Guide nur auf echter Galerie (K2) – in Muster/Demo-Galerie hat er nichts verloren */}
+        {!musterOnly && guideVisible && guideName && (
           <GalerieEntdeckenGuide
             name={guideName}
             onDismiss={() => {
@@ -3433,8 +3433,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           />
         )}
 
-        {/* Sanfte Abschluss-Karte – erscheint wenn Guide fertig, Nutzer nicht allein lassen */}
-        {musterOnly && !guideVisible && guideName && (
+        {!musterOnly && !guideVisible && guideName && (
           <GuideAbschlussKarte name={guideName} />
         )}
 
