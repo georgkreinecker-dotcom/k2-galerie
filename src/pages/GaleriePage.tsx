@@ -190,23 +190,32 @@ function formatEventDateRange(dateStr: string, endDateStr?: string): string {
   }
 }
 
+/** Flyer-Dokument für ein Event aus Dokumentenliste holen (K2/ök2/VK2) */
+function getFlyerDocForEvent(docs: any[], eventId: string): any | null {
+  if (!Array.isArray(docs) || !eventId) return null
+  const flyer = docs.find((d: any) => d.category === 'pr-dokumente' && d.eventId === eventId && (d.werbematerialTyp === 'flyer' || (d.name && (String(d.name).toLowerCase().includes('flyer') || String(d.name).toLowerCase().includes('einladung')))))
+  return flyer || null
+}
+
 /** Event-Dokument in neuem Fenster öffnen (PDF/Bild/HTML/Download) */
-function openEventDocument(doc: { name?: string; fileData?: string; fileName?: string; fileType?: string }) {
-  if (!doc?.fileData) return
+function openEventDocument(doc: { name?: string; fileData?: string; data?: string; fileName?: string; fileType?: string }) {
+  const fileData = doc?.fileData || doc?.data
+  if (!fileData) return
   const w = window.open()
   if (!w) return
-  const isPdf = doc.fileType?.includes('pdf')
-  const isImage = doc.fileType?.includes('image')
-  const isHtml = doc.fileType?.includes('html') || (typeof doc.fileData === 'string' && doc.fileData.startsWith('data:text/html'))
+  const fileType = doc.fileType || ''
+  const isPdf = fileType.includes('pdf')
+  const isImage = fileType.includes('image')
+  const isHtml = fileType.includes('html') || (typeof fileData === 'string' && fileData.startsWith('data:text/html'))
   const safeTitle = (doc.name || doc.fileName || 'Dokument').replace(/</g, '&lt;')
   if (isHtml) {
-    w.location.href = doc.fileData
+    w.location.href = fileData
     return
   }
   w.document.write(`
     <!DOCTYPE html><html><head><title>${safeTitle}</title></head>
     <body style="margin:0;padding:20px;background:#f5f5f5;">
-      ${isPdf ? `<iframe src="${doc.fileData}" style="width:100%;height:100vh;border:none;"></iframe>` : isImage ? `<img src="${doc.fileData}" alt="" style="max-width:100%;height:auto;" />` : `<a href="${doc.fileData}" download="${(doc.fileName || '').replace(/</g, '&lt;')}">Download: ${safeTitle}</a>`}
+      ${isPdf ? `<iframe src="${fileData}" style="width:100%;height:100vh;border:none;"></iframe>` : isImage ? `<img src="${fileData}" alt="" style="max-width:100%;height:auto;" />` : `<a href="${fileData}" download="${(doc.fileName || '').replace(/</g, '&lt;')}">Download: ${safeTitle}</a>`}
     </body></html>
   `)
   w.document.close()
@@ -527,6 +536,31 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     window.addEventListener('storage', load)
     return () => window.removeEventListener('storage', load)
   }, [vk2])
+
+  // Event-Dokumente für Flyer-Icon (K2 / ök2 / VK2 – Key je nach Kontext)
+  const eventDocumentsKey = vk2 ? 'k2-vk2-documents' : musterOnly ? 'k2-oeffentlich-documents' : 'k2-documents'
+  const [eventDocuments, setEventDocuments] = useState<any[]>(() => {
+    try {
+      const raw = typeof window !== 'undefined' ? localStorage.getItem(eventDocumentsKey) : null
+      if (!raw) return []
+      const parsed = JSON.parse(raw)
+      return Array.isArray(parsed) ? parsed : []
+    } catch { return [] }
+  })
+  useEffect(() => {
+    const load = () => {
+      try {
+        const key = vk2 ? 'k2-vk2-documents' : musterOnly ? 'k2-oeffentlich-documents' : 'k2-documents'
+        const raw = localStorage.getItem(key)
+        if (!raw) { setEventDocuments([]); return }
+        const parsed = JSON.parse(raw)
+        setEventDocuments(Array.isArray(parsed) ? parsed : [])
+      } catch { setEventDocuments([]) }
+    }
+    load()
+    window.addEventListener('storage', load)
+    return () => window.removeEventListener('storage', load)
+  }, [musterOnly, vk2])
 
   // VK2: Events (k2-vk2-events) und Willkommensbild (k2-vk2-welcomeImage)
   const [vk2UpcomingEvents, setVk2UpcomingEvents] = useState<any[]>(() => getUpcomingEventsVk2())
@@ -2775,39 +2809,57 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 {galerieTexts.eventSectionHeading || 'Demnächst bei uns'}
               </p>
               <ul style={{ margin: 0, paddingLeft: '1.25rem', color: musterOnly ? 'var(--k2-text)' : '#ffffff', fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', lineHeight: 1.6 }}>
-                {(musterOnly ? upcomingEventsOeffentlich : vk2 ? vk2UpcomingEvents : upcomingEvents).map((ev: any) => (
-                  <li key={ev.id || ev.date} style={{ marginBottom: ev.documents?.length ? '0.5rem' : 0 }}>
-                    <strong>{ev.title}</strong>
-                    {ev.date && (
-                      <span style={{ color: musterOnly ? 'var(--k2-muted)' : vk2 ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.85)', fontWeight: '400' }}>
-                        {' — '}{formatEventDateRange(ev.date, ev.endDate)}
-                      </span>
-                    )}
-                    {ev.documents && ev.documents.length > 0 && (
-                      <ul style={{ margin: '0.25rem 0 0 1rem', paddingLeft: '0.75rem', listStyle: 'none', fontSize: '0.95em' }}>
-                        {ev.documents.map((doc: any) => (
-                          <li key={doc.id || doc.name}>
-                            <button
-                              type="button"
-                              onClick={() => openEventDocument(doc)}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                padding: 0,
-                                color: musterOnly ? '#6b9080' : vk2 ? 'var(--k2-accent)' : 'rgba(184, 184, 255, 0.95)',
-                                textDecoration: 'underline',
-                                cursor: 'pointer',
-                                font: 'inherit'
-                              }}
-                            >
-                              📎 {doc.name || doc.fileName || 'Dokument'}
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </li>
-                ))}
+                {(musterOnly ? upcomingEventsOeffentlich : vk2 ? vk2UpcomingEvents : upcomingEvents).map((ev: any) => {
+                  const flyerDoc = getFlyerDocForEvent(eventDocuments, ev.id)
+                  const hasFlyer = flyerDoc && (flyerDoc.fileData || flyerDoc.data)
+                  return (
+                    <li key={ev.id || ev.date} style={{ marginBottom: (ev.documents?.length || hasFlyer) ? '0.5rem' : 0, display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <strong>{ev.title}</strong>
+                      {ev.date && (
+                        <span style={{ color: musterOnly ? 'var(--k2-muted)' : vk2 ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.85)', fontWeight: '400' }}>
+                          {' — '}{formatEventDateRange(ev.date, ev.endDate)}
+                        </span>
+                      )}
+                      {hasFlyer && (
+                        <button
+                          type="button"
+                          onClick={() => openEventDocument({ name: flyerDoc.name, fileData: flyerDoc.fileData || flyerDoc.data, fileType: flyerDoc.fileType || 'text/html' })}
+                          title="Flyer anzeigen"
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, padding: 0,
+                            border: 'none', borderRadius: 6, background: musterOnly ? 'rgba(107,144,128,0.2)' : vk2 ? 'rgba(255,140,66,0.2)' : 'rgba(184,184,255,0.2)',
+                            color: musterOnly ? '#6b9080' : vk2 ? 'var(--k2-accent)' : 'rgba(184,184,255,0.95)', cursor: 'pointer', fontSize: '0.95rem'
+                          }}
+                        >
+                          📄
+                        </button>
+                      )}
+                      {ev.documents && ev.documents.length > 0 && (
+                        <ul style={{ margin: '0.25rem 0 0 1rem', paddingLeft: '0.75rem', listStyle: 'none', fontSize: '0.95em', width: '100%' }}>
+                          {ev.documents.map((doc: any) => (
+                            <li key={doc.id || doc.name}>
+                              <button
+                                type="button"
+                                onClick={() => openEventDocument(doc)}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  padding: 0,
+                                  color: musterOnly ? '#6b9080' : vk2 ? 'var(--k2-accent)' : 'rgba(184, 184, 255, 0.95)',
+                                  textDecoration: 'underline',
+                                  cursor: 'pointer',
+                                  font: 'inherit'
+                                }}
+                              >
+                                📎 {doc.name || doc.fileName || 'Dokument'}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  )
+                })}
               </ul>
             </section>
           )}

@@ -43,6 +43,51 @@ function loadVk2Events(): any[] {
   }
 }
 
+// Lädt VK2-Dokumente – NUR eigener Key (für Flyer pro Event)
+function loadVk2Documents(): any[] {
+  try {
+    const raw = localStorage.getItem('k2-vk2-documents')
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+/** Flyer-Dokument für ein Event finden (werbematerialTyp flyer oder Name enthält Flyer/Einladung) */
+function getFlyerDocForEvent(docs: any[], eventId: string): any | null {
+  const flyer = docs.find((d: any) => d.category === 'pr-dokumente' && d.eventId === eventId && (d.werbematerialTyp === 'flyer' || (d.name && (String(d.name).toLowerCase().includes('flyer') || String(d.name).toLowerCase().includes('einladung')))))
+  return flyer || null
+}
+
+/** HTML aus gespeichertem fileData (data:text/html;base64,...) decodieren */
+function decodeDocHtml(doc: any): string | null {
+  const fd = doc?.fileData || doc?.data
+  if (!fd || typeof fd !== 'string' || !fd.startsWith('data:')) return null
+  const base64 = fd.replace(/^data:[^;]+;base64,/, '')
+  if (base64 === fd) return null
+  try {
+    return decodeURIComponent(escape(atob(base64)))
+  } catch {
+    try {
+      return new TextDecoder('utf-8').decode(Uint8Array.from(atob(base64), c => c.charCodeAt(0)))
+    } catch {
+      return null
+    }
+  }
+}
+
+/** Minimaler VK2-Flyer-HTML wenn kein gespeichertes Dokument (z. B. Demo) */
+function buildMinimalVk2FlyerHtml(ev: any, stammdaten: Vk2Stammdaten | null): string {
+  const title = ev?.title || 'Vernissage'
+  const dateStr = ev?.date ? formatDate(ev.date) : ''
+  const location = ev?.location || stammdaten?.verein?.address || ''
+  const vName = stammdaten?.verein?.name || 'Kunstverein'
+  const esc = (s: string) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Flyer – ${esc(title)}</title><style>body{font-family:system-ui,sans-serif;max-width:600px;margin:2rem auto;padding:1.5rem;color:#1c1a18;line-height:1.6}.title{font-size:1.5rem;text-align:center;margin-bottom:0.5rem}.sub{text-align:center;color:#5c5650;margin-bottom:1rem}.meta{text-align:center;font-size:0.9rem;color:#5c5650}</style></head><body><p class="title">${esc(title)}</p><p class="sub">${esc(vName)}</p><p class="meta">${esc(dateStr)}${location ? ' · ' + esc(location) : ''}</p><p style="margin-top:1.5rem;">Wir freuen uns auf Ihren Besuch.</p><p class="meta" style="margin-top:2rem;">${stammdaten?.verein?.email ? esc(stammdaten.verein.email) : ''}</p></body></html>`
+}
+
 function formatDate(dateStr: string): string {
   try {
     return new Date(dateStr).toLocaleDateString('de-AT', { day: '2-digit', month: '2-digit', year: 'numeric' })
@@ -60,6 +105,8 @@ const Vk2GaleriePage: React.FC = () => {
   const [pageTexts, setPageTexts] = useState(() => loadVk2PageTexts())
   const [pageContent, setPageContent] = useState(() => loadVk2PageContent())
   const [events, setEvents] = useState<any[]>(() => loadVk2Events())
+  const [documents, setDocuments] = useState<any[]>(() => loadVk2Documents())
+  const [flyerViewer, setFlyerViewer] = useState<{ html: string; title: string } | null>(null)
   const [qrDataUrl, setQrDataUrl] = useState<string>('')
   const qrVersionTs = useQrVersionTimestamp()
 
@@ -70,6 +117,7 @@ const Vk2GaleriePage: React.FC = () => {
       setPageTexts(loadVk2PageTexts())
       setPageContent(loadVk2PageContent())
       setEvents(loadVk2Events())
+      setDocuments(loadVk2Documents())
     }
     window.addEventListener('storage', reload)
     window.addEventListener('vk2-stammdaten-updated', reload)
@@ -107,6 +155,15 @@ const Vk2GaleriePage: React.FC = () => {
     if (!ev.date) return false
     try { return new Date(ev.date) >= today } catch { return false }
   }).slice(0, 3)
+
+  // Flyer eines Events anzeigen (gespeichertes HTML oder minimal generiert)
+  const openEventFlyer = (ev: any) => {
+    const flyerDoc = getFlyerDocForEvent(documents, ev.id)
+    const decoded = flyerDoc ? decodeDocHtml(flyerDoc) : null
+    const html = decoded || buildMinimalVk2FlyerHtml(ev, stammdaten)
+    const title = flyerDoc?.name || `Flyer – ${ev?.title || 'Event'}`
+    setFlyerViewer({ html, title })
+  }
 
   // Farben – warmes helles Design
   const C = {
@@ -260,9 +317,30 @@ const Vk2GaleriePage: React.FC = () => {
             </p>
             <ul style={{ margin: 0, paddingLeft: '1.1rem', color: C.text, fontSize: '0.95rem', lineHeight: 1.7, fontFamily: 'system-ui, sans-serif' }}>
               {upcomingEvents.map((ev: any) => (
-                <li key={ev.id || ev.date} style={{ marginBottom: '0.35rem' }}>
+                <li key={ev.id || ev.date} style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                   <strong>{ev.title}</strong>
                   {ev.date && <span style={{ color: C.textMid, fontWeight: 400 }}> – {formatDate(ev.date)}</span>}
+                  <button
+                    type="button"
+                    onClick={() => openEventFlyer(ev)}
+                    title="Flyer anzeigen"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 28,
+                      height: 28,
+                      padding: 0,
+                      border: `1px solid ${C.border}`,
+                      borderRadius: 6,
+                      background: C.bgCard,
+                      color: C.accent,
+                      cursor: 'pointer',
+                      fontSize: '0.95rem',
+                    }}
+                  >
+                    📄
+                  </button>
                 </li>
               ))}
             </ul>
@@ -359,6 +437,31 @@ const Vk2GaleriePage: React.FC = () => {
           © {new Date().getFullYear()} {stammdaten?.verein?.name || 'Vereinsplattform'} · Powered by K2 Galerie
         </p>
       </footer>
+
+      {/* Flyer-Modal: Event-Flyer anzeigen */}
+      {flyerViewer && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 10000,
+            background: 'rgba(0,0,0,0.6)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'stretch',
+            justifyContent: 'stretch',
+          }}
+          onClick={() => setFlyerViewer(null)}
+        >
+          <div style={{ position: 'sticky', top: 0, left: 0, right: 0, padding: '0.5rem 1rem', background: C.bgCard, borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: C.text }}>{flyerViewer.title}</span>
+            <button type="button" onClick={() => setFlyerViewer(null)} style={{ padding: '0.35rem 0.8rem', background: C.accent, color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>Schließen</button>
+          </div>
+          <div style={{ flex: 1, overflow: 'auto', padding: '1rem', display: 'flex', justifyContent: 'center' }} onClick={e => e.stopPropagation()}>
+            <iframe title={flyerViewer.title} srcDoc={flyerViewer.html} style={{ width: '100%', maxWidth: 640, minHeight: 480, border: 'none', background: '#fff', borderRadius: 8, boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }} />
+          </div>
+        </div>
+      )}
 
       {/* Stand-Badge */}
       <div

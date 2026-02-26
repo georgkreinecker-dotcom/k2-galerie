@@ -45,13 +45,13 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 ## Letzter Commit
 - **Guide führt in ök2:** Admin-Werke bei Kontextwechsel neu laden, Vita/Shop mit fromOeffentlich. Commit: f5def88 ✅ auf GitHub
 
-## Was gerade gemacht (Guide → ök2)
-- **Admin:** Werke werden bei Kontextwechsel (`location.search`) neu geladen – wenn man mit Guide auf `/admin?context=oeffentlich` geht, werden nicht mehr K2-Daten angezeigt.
-- **Guide Vita/Shop:** Klick auf „Dokumente & Vita“ bzw. „Kassa“ navigiert mit `state: { fromOeffentlich: true }` → Shop und Vita zeigen Demo-Inhalt (ök2).
-- **VitaPage:** Unterstützt `location.state.fromOeffentlich` – von Guide geöffnet = ök2-Vita.
+## Was gerade gemacht (Event-Flyer-Icon)
+- **Vk2GaleriePage:** Bei „VEREINSTERMINE & EVENTS“ hat jedes Event ein klickbares 📄-Icon; Klick öffnet den Flyer (gespeichertes HTML oder minimal generiert) in einem Modal.
+- **GaleriePage (K2, ök2, VK2):** In der Event-Sektion „Demnächst bei uns“ erscheint pro Event ein 📄-Icon, wenn ein Flyer-Dokument existiert; Klick öffnet den Flyer in neuem Fenster.
+- Flyer-Dokument = PR-Dokument mit `eventId` und Flyer/Einladung-Typ; K2/ök2/VK2 nutzen jeweils den passenden Dokument-Key.
 
 ## Nächste Schritte (offen)
-- **Test:** Guide durchklicken (Events, Werke, Dokumente, Kassa) – überall ök2, nicht K2.
+- **Test:** Event-Flyer-Icon auf VK2-Galerie und Galerie (K2/ök2) durchklicken – Flyer öffnet.
 - **Admin im Hub-Design (Phase 1):** Startansicht „Was möchtest du heute tun?“ durch 3-Spalten-Hub ersetzt – links Bereiche (Meine Werke, Werkkatalog, Events), Mitte Fokus-Karte + „↓ Direkt hier unten“, rechts Kassa/Einstellungen/Assistent + Galerie ansehen. K2/ök2/VK2 berücksichtigt.
 4. **Vor Veröffentlichung:** Erster Durchgang in **docs/VOR-VEROEFFENTLICHUNG.md** erledigt (Stand-Tabelle für Georg). **Mit Georg:** Checkboxen durchgehen, npm audit + AGB/Impressum-Inhalte prüfen und abhaken.
 5. **Praxis-Test gestartet (26.02.26):** Git-Teil erledigt (Commit 16283ea, Tag vor-praxistest-2026-02-26). Noch empfohlen: App-Vollbackup herunterladen; backupmicro Hard-Backup wenn angesteckt. **Ab jetzt:** Galerien befüllen + testen; weitere Änderungen wie bisher (commit, push, drei Regeln).
