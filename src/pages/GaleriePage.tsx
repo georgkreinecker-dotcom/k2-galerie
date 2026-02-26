@@ -3631,48 +3631,29 @@ function speichereGuideAntworten(a: GuideAntworten) {
 }
 
 type GuideSchritt =
-  | 'begruessung' | 'wer_bist_du'
+  | 'begruessung' | 'weiter'
+  | 'wer_bist_du'
   | 'kunstart' | 'erfahrung' | 'ziel_kuenstler' | 'ausstellungen'
   | 'verein_groesse' | 'verein_ausstellungen' | 'verein_wunsch' | 'vereinsgalerie'
   | 'atelier_groesse' | 'atelier_bedarf' | 'atelier_struktur'
   | 'entdecker_interesse' | 'entdecker_mut' | 'entdecker_ziel'
   | 'kontakt'
 
-function naechsterSchritt(schritt: GuideSchritt, antworten: GuideAntworten): GuideSchritt {
-  const pfad = antworten.pfad ?? ''
+function naechsterSchritt(schritt: GuideSchritt, _antworten: GuideAntworten): GuideSchritt {
   switch (schritt) {
-    case 'begruessung': return 'wer_bist_du'
-    case 'wer_bist_du':
-      if (pfad === 'kuenstlerin')  return 'kunstart'
-      if (pfad === 'gemeinschaft') return 'verein_groesse'
-      if (pfad === 'atelier')      return 'atelier_groesse'
-      if (pfad === 'entdecker')    return 'entdecker_interesse'
-      return 'kunstart'
-    case 'kunstart':       return 'erfahrung'
-    case 'erfahrung':      return 'ziel_kuenstler'
-    case 'ziel_kuenstler': return 'ausstellungen'
-    case 'ausstellungen':  return 'kontakt'
-    case 'verein_groesse':       return 'verein_ausstellungen'
-    case 'verein_ausstellungen': return 'verein_wunsch'
-    case 'verein_wunsch':        return 'vereinsgalerie'
-    case 'vereinsgalerie':       return 'kontakt'
-    case 'atelier_groesse':  return 'atelier_bedarf'
-    case 'atelier_bedarf':   return 'atelier_struktur'
-    case 'atelier_struktur': return 'kontakt'
-    case 'entdecker_interesse': return 'entdecker_mut'
-    case 'entdecker_mut':       return 'entdecker_ziel'
-    case 'entdecker_ziel':      return 'kontakt'
-    default:               return 'kontakt'
+    case 'begruessung': return 'weiter'
+    case 'weiter':      return 'weiter'
+    default:            return 'weiter'
   }
 }
 
-
+// Nur noch Begrüßung + ein Schritt „In den Admin“ – keine Datenerhebung, keine Fragen
 const PFAD_REIHENFOLGE: Record<string, GuideSchritt[]> = {
-  kuenstlerin:  ['begruessung','wer_bist_du','kunstart','erfahrung','ziel_kuenstler','ausstellungen','kontakt'],
-  gemeinschaft: ['begruessung','wer_bist_du','verein_groesse','verein_ausstellungen','verein_wunsch','vereinsgalerie','kontakt'],
-  atelier:      ['begruessung','wer_bist_du','atelier_groesse','atelier_bedarf','atelier_struktur','kontakt'],
-  entdecker:    ['begruessung','wer_bist_du','entdecker_interesse','entdecker_mut','entdecker_ziel','kontakt'],
-  '':           ['begruessung','wer_bist_du','kunstart','erfahrung','ziel_kuenstler','ausstellungen','kontakt'],
+  kuenstlerin:  ['begruessung', 'weiter'],
+  gemeinschaft: ['begruessung', 'weiter'],
+  atelier:      ['begruessung', 'weiter'],
+  entdecker:    ['begruessung', 'weiter'],
+  '':           ['begruessung', 'weiter'],
 }
 
 function pfadPosition(schritt: GuideSchritt, pfad: GuidePfad): number {
@@ -3681,9 +3662,8 @@ function pfadPosition(schritt: GuideSchritt, pfad: GuidePfad): number {
   return idx < 0 ? 0 : idx
 }
 
-function pfadLaenge(pfad: GuidePfad): number {
-  const reihe = PFAD_REIHENFOLGE[pfad ?? ''] ?? PFAD_REIHENFOLGE['']
-  return reihe.length - 2 // ohne abschluss + empfehlung in Fortschrittsbalken
+function pfadLaenge(_pfad: GuidePfad): number {
+  return 1
 }
 
 // Lesbare Labels für die Antwort-Werte (für dynamischen Abschlusstext)
@@ -3994,7 +3974,8 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
   const pfad = (antworten.pfad ?? '') as GuidePfad
 
   const texte: Record<GuideSchritt, string> = {
-    begruessung:   `Willkommen, ${name}! 👋\nSchau dich ruhig um –\ndas hier könnte bald deine Galerie sein.\nNur eine kurze Frage zuerst …`,
+    begruessung:   `Willkommen, ${name}! 👋\nSchau dich ruhig um –\ndas hier könnte bald deine Galerie sein.\nUnten kannst du direkt in den Admin.`,
+    weiter:        `Schau dich um – oder klick unten,\num in den Admin zu gehen.`,
     wer_bist_du:   `Wie würdest du dich beschreiben?\nDas hilft mir dir genau das Richtige zu zeigen.`,
     // Pfad Künstler:in
     kunstart:      `Schön! Was ist deine Kunst?\nWähle was am besten passt –\ndu kannst es später verfeinern.`,
@@ -4020,6 +4001,7 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
 
   type Opt = { emoji: string; label: string; wert: string }
   const optionen: Partial<Record<GuideSchritt, Opt[]>> = {
+    weiter: [{ emoji: '🚀', label: 'In den Admin →', wert: 'admin' }],
     wer_bist_du: [
       { emoji: '🎨', label: 'Ich bin Künstler:in', wert: 'kuenstlerin' },
       { emoji: '🏛️', label: 'Ich bin Teil einer Gemeinschaft', wert: 'gemeinschaft' },
@@ -4119,22 +4101,21 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
 
   const istFertig = textIdx >= volltext.length
 
-  // Automatisch weiter – kein Button nötig wo keine Entscheidung gefragt ist
-  const STOPP_SCHRITTE: GuideSchritt[] = [
-    'wer_bist_du','kunstart','erfahrung','ziel_kuenstler','ausstellungen','kontakt',
-    'verein_groesse','verein_ausstellungen','verein_wunsch','vereinsgalerie',
-    'atelier_groesse','atelier_bedarf','atelier_struktur',
-    'entdecker_interesse','entdecker_mut','entdecker_ziel',
-  ]
+  // Nur Begrüßung auto-weiter zu „weiter“; dort muss geklickt werden
+  const STOPP_SCHRITTE: GuideSchritt[] = ['weiter']
   useEffect(() => {
     if (!istFertig) return
     if (STOPP_SCHRITTE.includes(schritt)) return
-    // Begrüßung: automatisch weiter
-    const t = setTimeout(() => setSchritt(naechsterSchritt(schritt, antworten)), 1000)
+    const t = setTimeout(() => setSchritt(naechsterSchritt(schritt, antworten)), 800)
     return () => clearTimeout(t)
   }, [istFertig, schritt])
 
   const weiterNachAuswahl = (wert: string) => {
+    // Einziger Schritt mit Aktion: „In den Admin“ – keine Datenerhebung
+    if (schritt === 'weiter' && wert === 'admin') {
+      geheZuAdmin()
+      return
+    }
     let key: keyof GuideAntworten = schritt as keyof GuideAntworten
     const neu: GuideAntworten = { ...antworten, [key]: wert }
     if (schritt === 'wer_bist_du') {
@@ -4142,7 +4123,6 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
     }
     setAntworten(neu)
     speichereGuideAntworten(neu)
-    // Nach letzter Frage (kontakt) → direkt in die Zentrale
     if (schritt === 'kontakt') {
       setTimeout(() => {
         speichereGuideFlow({

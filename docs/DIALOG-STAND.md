@@ -43,10 +43,10 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Zwei Wege, keine Vermischung:** Entdecken zeigt nur noch **zwei Wege**: „Meine eigene Galerie“ und „Vereinsgalerie“. Keine 4-Optionen-Frage mehr, keine Datensammlung; daraus folgt klare Logik (solo → ök2-Vorschau, verein → VK2). Galerie-Guide wieder neutral ohne Personalisierung. Commit: (nach Push) ✅
+- **Galerie-Guide („In die Galerie“):** Keine Datenerhebung mehr – keine Frage „Wie würdest du dich beschreiben?“ und keine 4 Optionen. Nur noch: Begrüßung → ein Schritt „Schau dich um – oder klick unten, um in den Admin zu gehen“ mit Button „In den Admin →“. Commit: (nach Push) ✅
 
 ## Nächste Schritte (offen)
-- **Test:** Entdecken → „Wohin möchtest du?“ → eine der zwei Wege → Name → Galerie öffnen.
+- **Test:** Galerie-Seite mit Namen (von Entdecken) → Guide zeigt nur Begrüßung + „In den Admin“.
 - **Admin im Hub-Design (Phase 1):** Startansicht „Was möchtest du heute tun?“ durch 3-Spalten-Hub ersetzt – links Bereiche (Meine Werke, Werkkatalog, Events), Mitte Fokus-Karte + „↓ Direkt hier unten“, rechts Kassa/Einstellungen/Assistent + Galerie ansehen. K2/ök2/VK2 berücksichtigt.
 4. **Vor Veröffentlichung:** Erster Durchgang in **docs/VOR-VEROEFFENTLICHUNG.md** erledigt (Stand-Tabelle für Georg). **Mit Georg:** Checkboxen durchgehen, npm audit + AGB/Impressum-Inhalte prüfen und abhaken.
 5. **Praxis-Test gestartet (26.02.26):** Git-Teil erledigt (Commit 16283ea, Tag vor-praxistest-2026-02-26). Noch empfohlen: App-Vollbackup herunterladen; backupmicro Hard-Backup wenn angesteckt. **Ab jetzt:** Galerien befüllen + testen; weitere Änderungen wie bisher (commit, push, drei Regeln).
