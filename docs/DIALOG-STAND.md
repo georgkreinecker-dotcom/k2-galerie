@@ -41,7 +41,7 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Entdecken: Guide-Versprechen ehrlich** – „danach führt dich ein Guide durch alle Bereiche (Werke, Events, Kassa, Start)“; im Hub „Das ist dein Guide – …“. Commit: 17461e1 ✅ auf GitHub
+- **Guide = Übersicht (Hub); Admin selbsterklärend** – „Zurück zum Guide“ → „Zurück zur Übersicht“ (führt zum Entdecken-Hub). Auf Admin bewusst kein zweiter Guide; „Was möchtest du heute tun?“ reicht. Commit: e6e3c38 ✅ auf GitHub
 
 ## Nächste Schritte (offen)
 4. **Vor Veröffentlichung:** Erster Durchgang in **docs/VOR-VEROEFFENTLICHUNG.md** erledigt (Stand-Tabelle für Georg). **Mit Georg:** Checkboxen durchgehen, npm audit + AGB/Impressum-Inhalte prüfen und abhaken.
