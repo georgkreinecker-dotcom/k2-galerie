@@ -32,7 +32,8 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **PRODUKT-VISION.md** – Produkt-Vision K2 Galerie.
 - **PLATTFORM-UNTERSTUETZUNG.md** – Welche Plattformen (Windows, Android, Mac).
 - **USP-UND-MARKTCHANCEN.md** – USPs und Marktchancen.
-- **VERMARKTUNGSKONZEPT-EMPFEHLUNGSPROGRAMM.md** – Empfehlungsprogramm / Vermarktung.
+- **VERMARKTUNGSKONZEPT-EMPFEHLUNGSPROGRAMM.md** – Empfehlungsprogramm / Vermarktung (50 %-Gebühr).
+- **EMPFEHLUNGSKONZEPT-EINFACHER-WEG.md** – **Empfehlung konkret:** Kostensenkung (10 % Rabatt / 10 % Gutschrift), Vermarktung + technische Umsetzung, ohne Cashback.
 - **VERBESSERUNGEN-VERMARKTUNG-GEMEINSAM.md** – **Vorschlag:** Was wir gemeinsam verbessern können (Zielgruppe, Kanäle, Customer Journey, Trust; priorisierte Liste).
 - **ABRECHNUNGSSTRUKTUR-EMPFEHLUNGSPROGRAMM.md** – Abrechnungsstruktur Empfehlungsprogramm.
 - **MARKTCHECK-PREISE-BASIC-PRO-VERGLEICH.md** – Marktcheck: Was Nutzer für Basic/Pro pro Monat zahlen würden, Vergleichsprodukte (KUNSTMATRIX, Wix, Squarespace, ArtCloud), Orientierung für Preisgestaltung; Einzigartigkeit & höherer Preis.

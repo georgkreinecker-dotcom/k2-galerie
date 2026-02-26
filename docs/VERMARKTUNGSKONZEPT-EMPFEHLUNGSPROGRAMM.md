@@ -67,3 +67,5 @@ Optional: **Empfehlungs-Link** – Link zur Registrierung/Angebotsseite, der die
 ---
 
 *Stand: Februar 2026. Ergänzt die Vermarktungsideen aus USP-UND-MARKTCHANCEN.md und Produkt-Vision; Begriff „Empfehlungs-Programm“ wie im Projekt verwendet.*
+
+**Einfacher Weg (Kostensenkung statt Auszahlung):** Siehe **docs/EMPFEHLUNGSKONZEPT-EINFACHER-WEG.md** – 10 % Rabatt für Geworbene, 10 % Gutschrift für Empfehler:in, konkrete Vermarktung und technische Umsetzung.
