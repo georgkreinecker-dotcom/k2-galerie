@@ -15,7 +15,7 @@ Crash-Check (gestern): Reload-Buttons iframe-gesichert
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- Crash-Check: main/appBootstrap Fehler-Reload-Buttons iframe-gesichert – (wird gleich committed)
+- Crash-Check: main/appBootstrap Fehler-Reload-Buttons iframe-gesichert – Commit: 2a60f19 ✅ auf GitHub
 
 ## Nächste Schritte (offen)
 1. **L3 / vermischte Daten** – Bereits gespeichertes Dokument (z. B. Tab „L 3)“) enthält noch alte K2+VK2-Mischung. Abhilfe: Dieses Dokument in der Liste löschen und mit „Neu erstellen“ neu anlegen → dann nur VK2-Daten.
