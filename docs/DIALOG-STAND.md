@@ -45,7 +45,11 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 ## Letzter Commit
 - **Event-Flyer-Icon (VK2, K2, ök2):** Klick auf 📄 zeigt Flyer. Commit: c877813 ✅ auf GitHub
 
-## Was gerade gemacht (K2 / VK2 / ök2: je Kontext nur eigene Daten)
+## Was gerade gemacht (ök2: 7 fertige Musterdokumente)
+- **ök2 zeigt jetzt 7 fertige Musterdokumente:** 2 unter „Druckfertige Dokumente“ (Einladung, Presse aus MUSTER_EVENTS) + 5 PR-Dokumente (Newsletter, Plakat, Event-Flyer, Presseaussendung, Social Media) aus getOek2MusterPrDocuments(). Alle mit MUSTER_TEXTE (Lena Berg, Paul Weber, Galerie Muster, info@galerie-muster.example) und einheitlichem Design (#6b9080).
+- **tenantConfig:** getMusterNewsletterDataUrl(), getMusterPlakatDataUrl(), getMusterEventFlyerDataUrl(), getMusterPresseaussendungDataUrl(), getMusterSocialDataUrl() + getOek2MusterPrDocuments(). loadDocuments() in ök2 liefert diese 5 statt [].
+
+## Zuvor (K2 / VK2 / ök2: je Kontext nur eigene Daten)
 - **Gleiches Prinzip für alle drei:** K2 nutzt nur k2-events, k2-documents, k2-stammdaten-*; VK2 nur k2-vk2-* und vk2Stammdaten (Verein, Mitglieder); ök2 nur MUSTER_EVENTS und State (Muster).
 - **VK2-Dokumente:** Social Media PDF, PR-Vorschläge PDF, Plakat, Flyer-Content, Presse-Content, Social-Content, Presse-Export nutzen im VK2-Kontext ausschließlich vk2Stammdaten (Verein name/address/email/website, Mitglieder). Kein K2 galleryData/martinaData/georgData mehr in VK2-Dokumenten.
 - **K2:** Unverändert – lädt nur k2-events, k2-documents; Stammdaten aus k2-stammdaten-* (State); Generatoren nutzen State.

@@ -681,6 +681,65 @@ function getMusterPresseDataUrl(): string {
   return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
 }
 
+const MUSTER_CSS = 'body{font-family:Georgia,serif;max-width:600px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#222}h1{font-size:1.35rem;border-bottom:2px solid #6b9080;padding-bottom:.5rem}p{margin:.5rem 0}.meta{color:#555;font-size:.9rem}'
+
+/** Newsletter Muster (ök2) – HTML aus MUSTER_TEXTE, einheitliches Design. */
+function getMusterNewsletterDataUrl(): string {
+  const g = MUSTER_TEXTE.gallery
+  const m = MUSTER_TEXTE.martina.name
+  const p = MUSTER_TEXTE.georg.name
+  const adresse = [g.address, g.city].filter(Boolean).join(', ')
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Newsletter – Vernissage</title><style>${MUSTER_CSS}</style></head><body><h1>E-Mail Newsletter</h1><p><strong>Galerie Muster</strong></p><p class="meta">Einladung: Vernissage – Neue Arbeiten · Samstag, 15. März 2026, 18 Uhr</p><p>Liebe Kunstfreundinnen und Kunstfreunde,</p><p>wir freuen uns, Sie persönlich zu unserer Veranstaltung einladen zu dürfen: <strong>Vernissage – Neue Arbeiten</strong>.</p><p>${adresse ? `📍 ${adresse}` : ''}</p><p>${m} und ${p} zeigen neue Arbeiten aus Malerei, Keramik, Grafik und Skulptur.</p><p>Anmeldung erwünscht: ${g.email || 'info@galerie-muster.example'}</p><p>Mit herzlichen Grüßen<br>${m} &amp; ${p}<br>Galerie Muster</p></body></html>`
+  return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
+}
+
+/** Plakat Muster (ök2). */
+function getMusterPlakatDataUrl(): string {
+  const g = MUSTER_TEXTE.gallery
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plakat – Vernissage</title><style>${MUSTER_CSS}</style></head><body><h1>Vernissage – Neue Arbeiten</h1><p class="meta">Samstag, 15. März 2026, 18 Uhr</p><p>Galerie Muster · ${g.address || 'Musterstraße 1'}, ${(g as any).city || '12345 Musterstadt'}</p><p>Lena Berg &amp; Paul Weber · Malerei, Keramik, Grafik &amp; Skulptur</p><p>Kontakt: ${g.email || 'info@galerie-muster.example'}</p></body></html>`
+  return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
+}
+
+/** Event-Flyer Muster (ök2). */
+function getMusterEventFlyerDataUrl(): string {
+  const g = MUSTER_TEXTE.gallery
+  const m = MUSTER_TEXTE.martina.name
+  const p = MUSTER_TEXTE.georg.name
+  const adresse = [g.address, (g as any).city].filter(Boolean).join(', ')
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Event-Flyer – Vernissage</title><style>${MUSTER_CSS}</style></head><body><h1>Vernissage – Neue Arbeiten</h1><p class="meta">Samstag, 15. März 2026, 18 Uhr</p><p>${adresse || 'Musterstraße 1, 12345 Musterstadt'}</p><p>${m} und ${p} präsentieren neue Arbeiten. Handzettel für persönliche Einladung.</p><p>${g.email ? `✉ ${g.email}` : ''} ${g.phone ? `☎ ${g.phone}` : ''}</p></body></html>`
+  return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
+}
+
+/** Presseaussendung Muster (ök2). */
+function getMusterPresseaussendungDataUrl(): string {
+  const g = MUSTER_TEXTE.gallery
+  const m = MUSTER_TEXTE.martina.name
+  const p = MUSTER_TEXTE.georg.name
+  const adresse = [g.address, (g as any).city].filter(Boolean).join(', ')
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Presseaussendung – Vernissage</title><style>${MUSTER_CSS}</style></head><body><h1>PRESSEAUSSENDUNG</h1><p><strong>Galerie Muster</strong> – Vernissage – Neue Arbeiten</p><p class="meta">Samstag, 15. März 2026, 18 Uhr · ${adresse || 'Musterstraße 1, 12345 Musterstadt'}</p><p>${m} und ${p} zeigen aktuelle Werke in Malerei, Keramik, Grafik und Skulptur.</p><p>Kontakt: ${g.email || 'info@galerie-muster.example'}, ${g.phone || ''}</p><p>– Ende der Presseaussendung –</p></body></html>`
+  return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
+}
+
+/** Social Media Muster (ök2). */
+function getMusterSocialDataUrl(): string {
+  const g = MUSTER_TEXTE.gallery
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Social Media – Vernissage</title><style>${MUSTER_CSS}</style></head><body><h1>Social Media Posts</h1><p><strong>Instagram / Facebook / WhatsApp</strong></p><p>✦ Vernissage – Neue Arbeiten</p><p>📅 Samstag, 15. März 2026, 18 Uhr</p><p>Galerie Muster – Lena Berg &amp; Paul Weber zeigen neue Werke.</p><p>✉ ${g.email || 'info@galerie-muster.example'}</p></body></html>`
+  return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
+}
+
+const MUSTER_EVENT_ID = 'muster-event-1'
+
+/** Liefert 5 vorgefertigte PR-Musterdokumente für ök2 (Newsletter, Plakat, Event-Flyer, Presseaussendung, Social). Mit MUSTER_TEXTE und einheitlichem Design. */
+export function getOek2MusterPrDocuments(): Array<{ id: string; name: string; eventId: string; category: string; werbematerialTyp: string; fileData: string; fileName: string; fileType: string }> {
+  return [
+    { id: 'muster-pr-newsletter', name: 'Newsletter – Vernissage', eventId: MUSTER_EVENT_ID, category: 'pr-dokumente', werbematerialTyp: 'newsletter', fileData: getMusterNewsletterDataUrl(), fileName: 'newsletter-vernissage.html', fileType: 'text/html' },
+    { id: 'muster-pr-plakat', name: 'Plakat – Vernissage', eventId: MUSTER_EVENT_ID, category: 'pr-dokumente', werbematerialTyp: 'plakat', fileData: getMusterPlakatDataUrl(), fileName: 'plakat-vernissage.html', fileType: 'text/html' },
+    { id: 'muster-pr-flyer', name: 'Event-Flyer – Vernissage', eventId: MUSTER_EVENT_ID, category: 'pr-dokumente', werbematerialTyp: 'event-flyer', fileData: getMusterEventFlyerDataUrl(), fileName: 'event-flyer-vernissage.html', fileType: 'text/html' },
+    { id: 'muster-pr-presse', name: 'Presseaussendung – Vernissage', eventId: MUSTER_EVENT_ID, category: 'pr-dokumente', werbematerialTyp: 'presse', fileData: getMusterPresseaussendungDataUrl(), fileName: 'presseaussendung-vernissage.html', fileType: 'text/html' },
+    { id: 'muster-pr-social', name: 'Social Media – Vernissage', eventId: MUSTER_EVENT_ID, category: 'pr-dokumente', werbematerialTyp: 'social', fileData: getMusterSocialDataUrl(), fileName: 'social-vernissage.html', fileType: 'text/html' },
+  ]
+}
+
 /** Muster-Events für ök2 (Vernissage mit Einladung + Presse). Wenn k2-oeffentlich-events leer ist, werden diese angezeigt. */
 export const MUSTER_EVENTS = [
   {
