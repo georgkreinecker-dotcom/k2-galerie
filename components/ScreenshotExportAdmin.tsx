@@ -14667,6 +14667,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
 
                             return (
                               <div>
+                                {/* VK2: Hinweis bei vermischten Daten (L3 o.ä.) – Dokument aus Liste entfernen, dann Neu erstellen */}
+                                {isVk2AdminContext() && (
+                                  <div style={{ marginBottom: '0.75rem', padding: '0.5rem 0.75rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 8, fontSize: '0.8rem', color: s.muted }}>
+                                    Falls ein Dokument noch K2-Daten enthält: Auf <strong>×</strong> neben dem Dokument klicken (aus Liste entfernen), dann <strong>Neu erstellen</strong> – dann nur VK2-Daten.
+                                  </div>
+                                )}
                                 {/* STATUS-BALKEN: Auf einen Blick */}
                                 <div style={{
                                   display: 'flex',

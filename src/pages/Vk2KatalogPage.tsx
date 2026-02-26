@@ -50,17 +50,15 @@ export const Vk2KatalogPage: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<'alle' | 'verfuegbar' | 'reserviert' | 'verkauft'>('alle')
   const [filterCategory, setFilterCategory] = useState('')
 
-  // Werke aus localStorage (Mitglieder die lokal eingetragen sind) sammeln
+  // Werke sammeln: aus lizenzGalerieUrl (fetch) + lokale Fallbacks
   useEffect(() => {
     const stammdaten = loadVk2Stammdaten()
     const mitglieder = stammdaten?.mitglieder || []
 
     const collected: KatalogWork[] = []
 
-    // 1. Werke aus dem lokalen VK2-Admin (gespeichert unter k2-vk2-artworks-MITGLIEDNAME)
+    // 1. Lokale Werke aus Mitglieder-Artwork-Keys (wie bisher)
     mitglieder.forEach((m: import('../config/tenantConfig').Vk2Mitglied) => {
-      if (!m.lizenzGalerieUrl) return
-      // Werke die als imVereinskatalog markiert sind aus den einzelnen Mitglieder-Artwork-Keys
       const keySuffix = m.name.replace(/\s+/g, '-').toLowerCase()
       const rawLocal = localStorage.getItem(`k2-vk2-artworks-${keySuffix}`) || localStorage.getItem(`k2-artworks-${keySuffix}`)
       if (rawLocal) {
@@ -71,7 +69,35 @@ export const Vk2KatalogPage: React.FC = () => {
       }
     })
 
-    // 2. Fallback: globale Werke aus k2-artworks (K2-eigene Demo)
+    // 2. Werke aus Lizenz-Galerien per fetch (lizenzGalerieUrl → gallery-data.json)
+    const mitgliederMitUrl = mitglieder.filter((m: import('../config/tenantConfig').Vk2Mitglied) => m.lizenzGalerieUrl?.trim())
+    if (mitgliederMitUrl.length > 0) {
+      const base = (url: string) => url.replace(/\/$/, '')
+      Promise.all(
+        mitgliederMitUrl.map(async (m: import('../config/tenantConfig').Vk2Mitglied) => {
+          const url = `${base(m.lizenzGalerieUrl!)}/gallery-data.json?t=${Date.now()}`
+          try {
+            const res = await fetch(url, { cache: 'no-store' })
+            if (!res.ok) return []
+            const data = await res.json()
+            const artworks = Array.isArray(data.artworks) ? data.artworks : []
+            return artworks
+              .filter((w: any) => w.imVereinskatalog)
+              .map((w: any) => ({ ...w, mitgliedName: m.name, artist: w.artist || m.name }))
+          } catch {
+            return []
+          }
+        })
+      ).then((arrays) => {
+        const fromFetch: KatalogWork[] = []
+        arrays.forEach((arr) => arr.forEach((w: KatalogWork) => fromFetch.push(w)))
+        setWorks([...collected, ...fromFetch])
+        setLoading(false)
+      })
+      return
+    }
+
+    // 3. Fallback: globale Werke aus k2-artworks (K2-eigene Demo)
     if (collected.length === 0) {
       try {
         const raw = localStorage.getItem('k2-artworks') || localStorage.getItem('k2-oeffentlich-artworks')
@@ -119,13 +145,16 @@ export const Vk2KatalogPage: React.FC = () => {
           </p>
         </div>
         {darfPdfDrucken ? (
-          <button
-            onClick={handlePrint}
-            style={{ padding: '0.5rem 1.1rem', background: 'rgba(251,191,36,0.15)', border: `1px solid rgba(251,191,36,0.4)`, borderRadius: 8, color: s.accent, fontSize: '0.85rem', cursor: 'pointer', fontWeight: 600 }}
-            className="no-print"
-          >
-            🖨️ Als PDF drucken
-          </button>
+          <div className="no-print" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' }}>
+            <button
+              onClick={handlePrint}
+              style={{ padding: '0.5rem 1.1rem', background: 'rgba(251,191,36,0.15)', border: `1px solid rgba(251,191,36,0.4)`, borderRadius: 8, color: s.accent, fontSize: '0.85rem', cursor: 'pointer', fontWeight: 600 }}
+              title="Im Druckdialog „Als PDF speichern“ wählen, um die Datei herunterzuladen."
+            >
+              🖨️ Als PDF drucken / herunterladen
+            </button>
+            <span style={{ fontSize: '0.72rem', color: s.muted }}>Im Druckdialog „Als PDF speichern“ wählen</span>
+          </div>
         ) : (
           <span className="no-print" style={{ fontSize: '0.78rem', color: s.muted }}>
             PDF-Druck nur für eingeloggte Mitglieder

@@ -3,10 +3,13 @@
 ## Datum: 26.02.26
 
 ## Thema
-Crash-Check (gestern): Reload-Buttons iframe-gesichert
+Offene Punkte 1–3 umgesetzt (L3-Hinweis, Vereinskatalog fetch, PDF-Download)
 
 ## Was zuletzt gemacht
-- **Crash von gestern geprüft** – main.tsx + appBootstrap.tsx: Fehler-Buttons „Seite neu laden“ ohne iframe-Check → im Preview Klick = Reload im iframe = Loop/Crash. Fix: alle 3 Buttons nur noch bei window.self===window.top reload.
+- **L3 / vermischte Daten:** Im VK2-Admin bei Werbematerial/Dokumenten ein Hinweis: „Falls ein Dokument noch K2-Daten enthält: Auf × klicken (aus Liste entfernen), dann Neu erstellen.“
+- **Vereinskatalog:** Werke aus Lizenz-Galerien werden per `fetch(lizenzGalerieUrl/gallery-data.json)` geladen; nur Werke mit `imVereinskatalog`; lokale Werke bleiben Fallback.
+- **VK2-Katalog als PDF:** Button „Als PDF drucken / herunterladen“ + Hinweis „Im Druckdialog ‚Als PDF speichern‘ wählen“.
+- **Crash von gestern geprüft** – main.tsx + appBootstrap.tsx: Fehler-Reload-Buttons iframe-gesichert.
 - **Dokumente sofort sichtbar (Focus)** – Beim Öffnen von Dokumenten (Newsletter, Presse, Flyer, Vita, PDF, Etikett, Druckfenster etc.) wird das neue Fenster/der neue Tab mit `.focus()` in den Vordergrund geholt. Du musst nicht mehr in der Menüleiste (Tab „L“) suchen – das Dokument erscheint direkt.
 - **„Alle PR-Dokumente auf einen Blick“ öffnet immer** – Fallback aus Event bei fehlenden PR-Vorschlägen (Commit 1ad018f).
 - **QR-Code Plakat nur in K2** – Im VK2-Admin ausgeblendet (Commit 574badd).
@@ -15,12 +18,9 @@ Crash-Check (gestern): Reload-Buttons iframe-gesichert
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- Crash-Check: main/appBootstrap Fehler-Reload-Buttons iframe-gesichert – Commit: 2a60f19 ✅ auf GitHub
+- L3-Hinweis, Vereinskatalog fetch, VK2-Katalog PDF – (wird gleich committed)
 
 ## Nächste Schritte (offen)
-1. **L3 / vermischte Daten** – Bereits gespeichertes Dokument (z. B. Tab „L 3)“) enthält noch alte K2+VK2-Mischung. Abhilfe: Dieses Dokument in der Liste löschen und mit „Neu erstellen“ neu anlegen → dann nur VK2-Daten.
-2. **Vereinskatalog** – Werke aus Lizenz-Galerien per `fetch()` laden (wenn `lizenzGalerieUrl` bei Mitglied gesetzt)
-3. **VK2-Katalog als PDF-Download** direkt aus der App
 4. **Vor Veröffentlichung:** QS und Checkliste **docs/VOR-VEROEFFENTLICHUNG.md** noch einmal genau durchgehen (geplant mit Georg).
 
 ## Heute außerdem
