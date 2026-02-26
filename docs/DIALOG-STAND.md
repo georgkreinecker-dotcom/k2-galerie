@@ -45,13 +45,14 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 ## Letzter Commit
 - **Event-Flyer-Icon (VK2, K2, ök2):** Klick auf 📄 zeigt Flyer. Commit: c877813 ✅ auf GitHub
 
-## Was gerade gemacht (ök2 Dokumente aus einem Guss)
-- **ök2 Events/Dokumente nur aus einer Quelle:** loadEvents() liefert in ök2 **immer** MUSTER_EVENTS (kein Lesen aus k2-oeffentlich-events) → keine vermischten K2-Daten mehr in der Demo. loadDocuments() liefert in ök2 **immer** [] → gespeicherte PR-Dokumente werden ignoriert; sichtbar sind nur die Event-Dokumente aus MUSTER_EVENTS (Einladung, Presse aus MUSTER_TEXTE).
-- **Plakat:** generatePlakatForEvent nutzt bei ök2 galleryData (State = Muster), sonst localStorage.
-- **Zuvor bereits:** Newsletter, Presse, Flyer, Social, PR-Vorschläge nutzen State (galleryData, martinaData, georgData) bzw. TENANT_CONFIGS.oeffentlich bei ök2 – keine k2-stammdaten-* für Dokument-Inhalt.
+## Was gerade gemacht (K2 / VK2 / ök2: je Kontext nur eigene Daten)
+- **Gleiches Prinzip für alle drei:** K2 nutzt nur k2-events, k2-documents, k2-stammdaten-*; VK2 nur k2-vk2-* und vk2Stammdaten (Verein, Mitglieder); ök2 nur MUSTER_EVENTS und State (Muster).
+- **VK2-Dokumente:** Social Media PDF, PR-Vorschläge PDF, Plakat, Flyer-Content, Presse-Content, Social-Content, Presse-Export nutzen im VK2-Kontext ausschließlich vk2Stammdaten (Verein name/address/email/website, Mitglieder). Kein K2 galleryData/martinaData/georgData mehr in VK2-Dokumenten.
+- **K2:** Unverändert – lädt nur k2-events, k2-documents; Stammdaten aus k2-stammdaten-* (State); Generatoren nutzen State.
+- **ök2:** Unverändert – Events/Docs nur Muster; State = MUSTER_TEXTE.
 
 ## Nächster Schritt
-- Im Browser ök2-Admin öffnen (context=oeffentlich), Eventplan → Öffentlichkeitsarbeit: Newsletter/Flyer/Presse öffnen und prüfen, dass nur Musterdaten (Lena Berg, Paul Weber, Galerie Muster, info@galerie-muster.example) erscheinen.
+- Kurz testen: Admin mit context=oeffentlich (ök2), context=vk2 (VK2), ohne context (K2) – jeweils Eventplan → Öffentlichkeitsarbeit, Newsletter/Flyer/Presse erzeugen und prüfen, dass nur die jeweiligen Daten (Muster / Verein / K2) erscheinen.
 
 ## Was zuvor (Event-Flyer-Icon)
 - **Vk2GaleriePage:** Bei „VEREINSTERMINE & EVENTS“ hat jedes Event ein klickbares 📄-Icon; Klick öffnet den Flyer (gespeichertes HTML oder minimal generiert) in einem Modal.

@@ -2797,7 +2797,7 @@ function ScreenshotExportAdmin() {
     }
   }
 
-  // Content-Generatoren im App-Design-Stil
+  // Content-Generatoren im App-Design-Stil – je Kontext nur eigene Daten (K2 / ök2 / VK2)
   const generatePresseaussendungContent = (event: any) => {
     const eventTypeLabels: Record<string, string> = {
       galerieeröffnung: 'Galerieeröffnung',
@@ -2808,6 +2808,35 @@ function ScreenshotExportAdmin() {
     }
     const evType = eventTypeLabels[event.type] || 'Veranstaltung'
     const evDate = formatEventDates(event)
+
+    if (isVk2AdminContext()) {
+      const verein = vk2Stammdaten?.verein || { name: 'Kunstverein Muster', address: '', city: '', email: '', website: '' }
+      const mitglieder = (vk2Stammdaten?.mitglieder || []).filter((m: any) => m?.name)
+      const gName = verein.name || 'Kunstverein Muster'
+      const adresse = [verein.address, verein.city].filter(Boolean).join(', ')
+      const ort = event.location || adresse || ''
+      const kuenstlerListe = mitglieder.length > 0 ? mitglieder.map((m: any) => m.name).join(', ') : 'die Vereinsmitglieder'
+      const desc = event.description || 'Aktuelle Werke der Vereinsmitglieder in einer gemeinsamen Schau.'
+      return {
+        title: `PRESSEAUSSENDUNG – ${event.title} | ${gName}`,
+        content: [
+          `PRESSEAUSSENDUNG`, `Zur sofortigen Veröffentlichung`, ``,
+          `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+          `${event.title.toUpperCase()}`, `${evType} · ${gName}`,
+          `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`, ``,
+          `TERMIN:   ${evDate}`, `ORT:      ${ort || adresse}`, `EINTRITT: frei`, ``,
+          `───────────────────────────────────────`, `ZUR AUSSTELLUNG`, `───────────────────────────────────────`, ``,
+          desc, ``,
+          `${kuenstlerListe} zeigen aktuelle Werke – ein Querschnitt durch das Schaffen des Vereins.`, ``,
+          `───────────────────────────────────────`, `KONTAKT & BILDMATERIAL`, `───────────────────────────────────────`, ``,
+          verein.email ? `E-Mail:  ${verein.email}` : '', (verein as any).phone ? `Telefon: ${(verein as any).phone}` : '',
+          adresse ? `Adresse: ${adresse}` : '', ``,
+          verein.website || '', ``,
+          `– Ende der Presseaussendung –`,
+        ].filter(l => l !== null && l !== undefined).join('\n')
+      }
+    }
+
     const ort = event.location || galleryData.address || ''
     const desc = event.description || 'Malerei, Keramik und Skulptur in einem außergewöhnlichen Galerieraum.'
     const mName = martinaData?.name || 'Martina Kreinecker'
@@ -2884,13 +2913,39 @@ function ScreenshotExportAdmin() {
       finissage: 'Finissage', öffentlichkeitsarbeit: 'Veranstaltung', sonstiges: 'Veranstaltung'
     }
     const datesFormatted = formatEventDates(event)
+    const typeName = typeNameMap[event.type] || 'Veranstaltung'
+    const hashtags = hashtagMap[event.type] || '#Kunst #Galerie'
+
+    if (isVk2AdminContext()) {
+      const verein = vk2Stammdaten?.verein || { name: 'Kunstverein Muster', address: '', city: '', email: '', website: '' }
+      const gName = verein.name || 'Kunstverein Muster'
+      const adr = [verein.address, verein.city].filter(Boolean).join(', ')
+      const ort = event.location || adr || ''
+      const desc = event.description || 'Wir freuen uns auf deinen Besuch!'
+      const baseHashtags = '#Kunstverein #KunstInÖsterreich'
+      return {
+        instagram: [
+          `✦ ${event.title}`, ``, `${desc}`, ``, `📅 ${datesFormatted}`,
+          ort ? `📍 ${ort}` : '', ``, `${gName} – aktuelle Werke der Vereinsmitglieder.`, ``,
+          `Eintritt frei. Wir freuen uns auf euch! 🎨`, ``, `${hashtags} ${baseHashtags}`,
+        ].filter(Boolean).join('\n'),
+        facebook: [
+          `🎨 ${event.title} – ${typeName} beim ${gName}`, ``, `Wir laden herzlich ein!`, ``, desc, ``,
+          `📅 ${datesFormatted}`, ort ? `📍 ${ort}` : '',
+          verein.email ? `✉ ${verein.email}` : '', ``, `Wir freuen uns auf euren Besuch! 💚`,
+        ].filter(Boolean).join('\n'),
+        whatsapp: [
+          `✦ *${event.title}*`, `📅 ${datesFormatted}`, ort ? `📍 ${ort}` : '', ``, desc, ``, `_${gName}_`,
+          verein.email ? `✉ ${verein.email}` : '',
+        ].filter(Boolean).join('\n'),
+      }
+    }
+
     const ort = event.location || galleryData.address || ''
     const desc = event.description || 'Wir freuen uns auf deinen Besuch!'
     const mName = martinaData?.name || 'Martina Kreinecker'
     const pName = georgData?.name || 'Georg Kreinecker'
     const gName = galleryData.name || 'K2 Galerie'
-    const typeName = typeNameMap[event.type] || 'Veranstaltung'
-    const hashtags = hashtagMap[event.type] || '#Kunst #Galerie'
     const baseHashtags = `#K2Galerie #KunstInÖsterreich #Malerei #Keramik`
     return {
       instagram: [
@@ -2943,6 +2998,19 @@ function ScreenshotExportAdmin() {
   }
 
   const generateFlyerContent = (event: any) => {
+    if (isVk2AdminContext()) {
+      const v = vk2Stammdaten?.verein
+      const adr = v ? [v.address, v.city].filter(Boolean).join(', ') : ''
+      return {
+        headline: event.title,
+        date: formatEventDates(event),
+        location: event.location || adr || '',
+        description: event.description || '',
+        type: event.type,
+        qrCode: v?.website || window.location.origin,
+        contact: { phone: (v as any)?.phone || '', email: v?.email || '', address: adr || '' }
+      }
+    }
     return {
       headline: event.title,
       date: formatEventDates(event),
@@ -3018,7 +3086,6 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
   }
 
   const generatePlakatContent = (event: any) => {
-    const g = galleryData || {}
     const eventTypeNames: Record<string, string> = {
       galerieeröffnung: 'Galerieeröffnung',
       vernissage: 'Vernissage',
@@ -3026,7 +3093,21 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
       öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
       sonstiges: 'Veranstaltung'
     }
-    
+    if (isVk2AdminContext()) {
+      const v = vk2Stammdaten?.verein
+      const g = v ? { address: v.address, city: v.city, website: v.website || '', phone: (v as any).phone || '', email: v.email || '' } : {}
+      const adr = [g.address, g.city].filter(Boolean).join(', ')
+      return {
+        title: event.title || 'Event',
+        type: eventTypeNames[event.type] || 'Veranstaltung',
+        date: formatEventDates(event) || 'Datum folgt',
+        location: event.location || adr || '',
+        description: event.description || '',
+        qrCode: g.website || window.location.origin,
+        contact: { phone: g.phone || '', email: g.email || '', address: adr || '' }
+      }
+    }
+    const g = galleryData || {}
     return {
       title: event.title || 'Event',
       type: eventTypeNames[event.type] || 'Veranstaltung',
@@ -3045,8 +3126,18 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
   // Einzelne bearbeitbare PDFs generieren
   // Leichtgewichtige Text-Export Funktionen (statt PDF) - viel weniger Memory-Belastung
   const exportPresseaussendungAsText = (presseaussendung: any, event: any) => {
-    const g = galleryData || {}
-    const galleryName = g.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
+    const galleryName = (() => {
+      if (isVk2AdminContext()) return vk2Stammdaten?.verein?.name || 'Kunstverein Muster'
+      const g = galleryData || {}
+      return g.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
+    })()
+    const g = (() => {
+      if (isVk2AdminContext()) {
+        const v = vk2Stammdaten?.verein
+        return v ? { address: v.address, city: v.city, phone: (v as any).phone || '', email: v.email || '' } : {}
+      }
+      return galleryData || {}
+    })()
     
     const text = `
 ${'='.repeat(60)}
@@ -3366,8 +3457,11 @@ ${'='.repeat(60)}
     const isVk2 = isVk2AdminContext()
     const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
     const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getWerbeliniePrDocCss('k2-pr-doc')
-    const g = galleryData || {}
-    const galleryName = g.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
+    const galleryName = (() => {
+      if (isVk2) return vk2Stammdaten?.verein?.name || 'Kunstverein Muster'
+      const g = galleryData || {}
+      return g.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
+    })()
     
     const html = `
 <!DOCTYPE html>
@@ -3942,8 +4036,11 @@ ${'='.repeat(60)}
     const isVk2 = isVk2AdminContext()
     const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
     const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getWerbeliniePrDocCss('k2-pr-doc')
-    const g = galleryData || {}
-    const galleryName = g.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
+    const galleryName = (() => {
+      if (isVk2) return vk2Stammdaten?.verein?.name || 'Kunstverein Muster'
+      const g = galleryData || {}
+      return g.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
+    })()
     
     const html = `
 <!DOCTYPE html>
@@ -4905,8 +5002,15 @@ ${'='.repeat(60)}
         return
       }
       
-      // Bei ök2 nur State (Muster), sonst localStorage
-      const freshGalleryData = isOeffentlichAdminContext() ? (galleryData || {}) : JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
+      // Immer nur eigene Kontext-Daten: ök2 = State (Muster), VK2 = Verein, K2 = localStorage
+      const freshGalleryData = (() => {
+        if (isOeffentlichAdminContext()) return galleryData || {}
+        if (isVk2AdminContext()) {
+          const v = vk2Stammdaten?.verein
+          return v ? { name: v.name, address: v.address, city: v.city, website: v.website || '', phone: (v as any).phone || '', email: v.email || '' } : {}
+        }
+        return JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
+      })()
       const freshSuggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
       const freshEventSuggestion = freshSuggestions.find((s: any) => s.eventId === event.id)
       
