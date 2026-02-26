@@ -605,13 +605,12 @@ function saveEvents(events: any[]): void {
 
 function loadEvents(): any[] {
   try {
+    // ök2: Immer Muster-Events aus einer Quelle – keine gespeicherten Events/Dokumente (verhindert K2-Daten in Demo)
+    if (isOeffentlichAdminContext()) return JSON.parse(JSON.stringify(MUSTER_EVENTS))
     if (isVk2AdminContext()) initVk2DemoEventAndDocumentsIfEmpty()
     const key = getEventsKey()
     const stored = localStorage.getItem(key)
-    if (!stored || stored === '[]') {
-      if (isOeffentlichAdminContext()) return JSON.parse(JSON.stringify(MUSTER_EVENTS))
-      return []
-    }
+    if (!stored || stored === '[]') return []
     return JSON.parse(stored)
   } catch (error) {
     console.error('Fehler beim Laden der Events:', error)
@@ -2508,14 +2507,13 @@ function ScreenshotExportAdmin() {
   // KEIN Auto-Sync (Supabase / gallery-data.json) mehr beim Admin-Start – verursacht Fenster-Abstürze.
   // Mobile-Werke kommen über artworks-updated Event beim Speichern; Werke werden nur aus localStorage geladen (siehe oben, 2 s Verzögerung).
 
-  // Dokumente aus localStorage laden (Key abhängig von K2 vs. ök2)
+  // Dokumente aus localStorage laden (Key abhängig von K2 vs. ök2). ök2: Keine gespeicherten Dokumente – nur Event-Docs aus MUSTER_EVENTS.
   const loadDocuments = () => {
     try {
+      if (isOeffentlichAdminContext()) return []
       if (isVk2AdminContext()) initVk2DemoEventAndDocumentsIfEmpty()
       const stored = localStorage.getItem(getDocumentsKey())
-      if (stored) {
-        return JSON.parse(stored)
-      }
+      if (stored) return JSON.parse(stored)
       return []
     } catch (error) {
       console.error('Fehler beim Laden der Dokumente:', error)
@@ -3020,7 +3018,7 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
   }
 
   const generatePlakatContent = (event: any) => {
-    const galleryData = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
+    const g = galleryData || {}
     const eventTypeNames: Record<string, string> = {
       galerieeröffnung: 'Galerieeröffnung',
       vernissage: 'Vernissage',
@@ -3033,13 +3031,13 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
       title: event.title || 'Event',
       type: eventTypeNames[event.type] || 'Veranstaltung',
       date: formatEventDates(event) || 'Datum folgt',
-      location: event.location || galleryData.address || '',
+      location: event.location || g.address || '',
       description: event.description || '',
-      qrCode: galleryData.website || window.location.origin,
+      qrCode: g.website || window.location.origin,
       contact: {
-        phone: galleryData.phone || '',
-        email: galleryData.email || '',
-        address: galleryData.address || ''
+        phone: g.phone || '',
+        email: g.email || '',
+        address: g.address || ''
       }
     }
   }
@@ -3047,8 +3045,8 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
   // Einzelne bearbeitbare PDFs generieren
   // Leichtgewichtige Text-Export Funktionen (statt PDF) - viel weniger Memory-Belastung
   const exportPresseaussendungAsText = (presseaussendung: any, event: any) => {
-    const galleryData = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
-    const galleryName = galleryData.name || 'K2 Galerie'
+    const g = galleryData || {}
+    const galleryName = g.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
     
     const text = `
 ${'='.repeat(60)}
@@ -3060,9 +3058,9 @@ PRESSEAUSSENDUNG
 Event: ${event?.title || 'Nicht angegeben'}
 Datum: ${event?.date ? new Date(event.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Nicht angegeben'}
 
-${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
-${galleryData.phone ? `Telefon: ${galleryData.phone}` : ''}
-${galleryData.email ? `E-Mail: ${galleryData.email}` : ''}
+${g.address ? `Adresse: ${g.address}` : ''}
+${g.phone ? `Telefon: ${g.phone}` : ''}
+${g.email ? `E-Mail: ${g.email}` : ''}
 
 ${'-'.repeat(60)}
 
@@ -3167,11 +3165,11 @@ ${'='.repeat(60)}
     const isVk2 = isVk2AdminContext()
     const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
     const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getWerbeliniePrDocCss('k2-pr-doc')
-    const galleryData = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
-    const galleryName = galleryData.name || 'K2 Galerie'
-    const galleryAddress = galleryData.address || ''
-    const galleryPhone = galleryData.phone || ''
-    const galleryEmail = galleryData.email || ''
+    const g = galleryData || {}
+    const galleryName = g.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
+    const galleryAddress = g.address || ''
+    const galleryPhone = g.phone || ''
+    const galleryEmail = g.email || ''
     
     const html = `
 <!DOCTYPE html>
@@ -3368,8 +3366,8 @@ ${'='.repeat(60)}
     const isVk2 = isVk2AdminContext()
     const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
     const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getWerbeliniePrDocCss('k2-pr-doc')
-    const galleryData = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
-    const galleryName = galleryData.name || 'K2 Galerie'
+    const g = galleryData || {}
+    const galleryName = g.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
     
     const html = `
 <!DOCTYPE html>
@@ -3622,12 +3620,12 @@ ${'='.repeat(60)}
       }
     }
 
-    const g = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
-    const m = JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}')
-    const p = JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}')
-    const gName = g.name || 'K2 Galerie'
-    const mName = m.name || 'Martina Kreinecker'
-    const pName = p.name || 'Georg Kreinecker'
+    const g = galleryData || {}
+    const m = martinaData || {}
+    const p = georgData || {}
+    const gName = g.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
+    const mName = m.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.artist1Name : 'Martina Kreinecker')
+    const pName = p.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.artist2Name : 'Georg Kreinecker')
     const adresse = [g.address, g.city].filter(Boolean).join(', ') || ''
     return {
       subject: `✦ ${title} – Event-Flyer | ${gName}`,
@@ -3720,12 +3718,13 @@ ${'='.repeat(60)}
       }
     }
 
-    const g = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
-    const m = JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}')
-    const p = JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}')
-    const gName = g.name || 'K2 Galerie'
-    const mName = m.name || 'Martina Kreinecker'
-    const pName = p.name || 'Georg Kreinecker'
+    // K2/ök2: Stammdaten aus State (ök2 = Muster, K2 = echte Daten) – niemals direkt aus localStorage, sonst zeigt ök2 K2-Daten
+    const g = galleryData || {}
+    const m = martinaData || {}
+    const p = georgData || {}
+    const gName = g.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
+    const mName = m.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.artist1Name : 'Martina Kreinecker')
+    const pName = p.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.artist2Name : 'Georg Kreinecker')
     const adresse = [g.address, g.city].filter(Boolean).join(', ') || ''
     return {
       subject: `Einladung: ${title} – ${gName}`,
@@ -3761,7 +3760,7 @@ ${'='.repeat(60)}
         `${gName}`,
         adresse ? adresse : '',
         ``,
-        `www.k2-galerie.at`,
+        isOeffentlichAdminContext() ? (g.website || 'www.k2-galerie.at') : `www.k2-galerie.at`,
       ].filter(line => line !== null && line !== undefined).join('\n')
     }
   }
@@ -3777,8 +3776,7 @@ ${'='.repeat(60)}
           return stamm?.verein?.name || 'Kunstverein Muster'
         } catch { return 'Kunstverein Muster' }
       }
-      const galleryData = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
-      return galleryData.name || 'K2 Galerie'
+      return (galleryData?.name) || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
     })()
     const html = `
 <!DOCTYPE html>
@@ -3944,8 +3942,8 @@ ${'='.repeat(60)}
     const isVk2 = isVk2AdminContext()
     const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
     const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getWerbeliniePrDocCss('k2-pr-doc')
-    const galleryData = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
-    const galleryName = galleryData.name || 'K2 Galerie'
+    const g = galleryData || {}
+    const galleryName = g.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
     
     const html = `
 <!DOCTYPE html>
@@ -4907,8 +4905,8 @@ ${'='.repeat(60)}
         return
       }
       
-      // IMMER frische Daten aus localStorage laden
-      const freshGalleryData = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
+      // Bei ök2 nur State (Muster), sonst localStorage
+      const freshGalleryData = isOeffentlichAdminContext() ? (galleryData || {}) : JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
       const freshSuggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
       const freshEventSuggestion = freshSuggestions.find((s: any) => s.eventId === event.id)
       

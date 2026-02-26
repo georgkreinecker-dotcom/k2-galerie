@@ -43,9 +43,17 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Guide führt in ök2:** Admin-Werke bei Kontextwechsel neu laden, Vita/Shop mit fromOeffentlich. Commit: f5def88 ✅ auf GitHub
+- **Event-Flyer-Icon (VK2, K2, ök2):** Klick auf 📄 zeigt Flyer. Commit: c877813 ✅ auf GitHub
 
-## Was gerade gemacht (Event-Flyer-Icon)
+## Was gerade gemacht (ök2 Dokumente aus einem Guss)
+- **ök2 Events/Dokumente nur aus einer Quelle:** loadEvents() liefert in ök2 **immer** MUSTER_EVENTS (kein Lesen aus k2-oeffentlich-events) → keine vermischten K2-Daten mehr in der Demo. loadDocuments() liefert in ök2 **immer** [] → gespeicherte PR-Dokumente werden ignoriert; sichtbar sind nur die Event-Dokumente aus MUSTER_EVENTS (Einladung, Presse aus MUSTER_TEXTE).
+- **Plakat:** generatePlakatForEvent nutzt bei ök2 galleryData (State = Muster), sonst localStorage.
+- **Zuvor bereits:** Newsletter, Presse, Flyer, Social, PR-Vorschläge nutzen State (galleryData, martinaData, georgData) bzw. TENANT_CONFIGS.oeffentlich bei ök2 – keine k2-stammdaten-* für Dokument-Inhalt.
+
+## Nächster Schritt
+- Im Browser ök2-Admin öffnen (context=oeffentlich), Eventplan → Öffentlichkeitsarbeit: Newsletter/Flyer/Presse öffnen und prüfen, dass nur Musterdaten (Lena Berg, Paul Weber, Galerie Muster, info@galerie-muster.example) erscheinen.
+
+## Was zuvor (Event-Flyer-Icon)
 - **Vk2GaleriePage:** Bei „VEREINSTERMINE & EVENTS“ hat jedes Event ein klickbares 📄-Icon; Klick öffnet den Flyer (gespeichertes HTML oder minimal generiert) in einem Modal.
 - **GaleriePage (K2, ök2, VK2):** In der Event-Sektion „Demnächst bei uns“ erscheint pro Event ein 📄-Icon, wenn ein Flyer-Dokument existiert; Klick öffnet den Flyer in neuem Fenster.
 - Flyer-Dokument = PR-Dokument mit `eventId` und Flyer/Einladung-Typ; K2/ök2/VK2 nutzen jeweils den passenden Dokument-Key.
