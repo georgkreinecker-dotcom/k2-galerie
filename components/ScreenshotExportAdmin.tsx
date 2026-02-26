@@ -656,6 +656,8 @@ function openPDFWindowSafely(blob: Blob, title?: string): Window | null {
     }
     
     try { pdfWindow.focus() } catch (_) { /* Browser kann Focus verweigern */ }
+    // Zweiter Fokus nach kurzer Verzögerung – Tab/Fenster kommt in den Vordergrund („Newsletter öffnet erst nach Klick auf Leiste“)
+    setTimeout(() => { try { pdfWindow.focus() } catch (_) { } }, 180)
     // Fenster zum Tracking hinzufügen
     openPDFWindows.push(pdfWindow)
     
@@ -3885,7 +3887,8 @@ ${'='.repeat(60)}
 </html>
     `
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-    openPDFWindowSafely(blob, 'Presseaussendung')
+    const opened = openPDFWindowSafely(blob, 'Newsletter – ' + (event?.title || 'Event'))
+    if (!opened) setInAppDocumentViewer({ html, title: 'Newsletter – ' + (event?.title || 'Event') })
     
     // Speichere auch in Dokumente-Sektion
     const reader = new FileReader()
@@ -6046,17 +6049,27 @@ ${'='.repeat(60)}
     try {
     const adminReturnUrl = getAdminReturnUrl(activeTab, eventplanSubTab)
     const fileDataOrUrl = document.fileData || document.data
-    // Gespeicherte Daten haben Vorrang; documentUrl nur nutzen wenn kein Inhalt (sonst evtl. abgelaufene blob-URL → leeres Fenster). Immer mit Zurück-Leiste öffnen.
+    // Gespeicherte Daten haben Vorrang; documentUrl nur nutzen wenn kein Inhalt. Immer mit Zurück-Leiste öffnen.
+    // WICHTIG: iframe src muss absolute URL sein – bei blob:-Seite löst sich /flyer-k2-galerie sonst falsch auf → leeres Dokument.
     if (!fileDataOrUrl && document.documentUrl && !String(document.documentUrl).startsWith('blob:')) {
+      const docUrl = String(document.documentUrl)
+      const absUrl = (typeof window !== 'undefined' && window.location.origin)
+        ? window.location.origin + (docUrl.startsWith('/') ? docUrl : '/' + docUrl)
+        : docUrl
       const wrapper = wrapDocumentHtmlWithBackButton(
-        '<html><head><meta charset="utf-8"><title>' + (document.name || 'Dokument').replace(/</g, '&lt;') + '</title></head><body style="margin:0;padding:0;"><iframe src="' + (document.documentUrl as string).replace(/"/g, '&quot;') + '" style="width:100%;height:calc(100vh - 52px);border:none;"></iframe></body></html>',
+        '<html><head><meta charset="utf-8"><title>' + (document.name || 'Dokument').replace(/</g, '&lt;') + '</title></head><body style="margin:0;padding:0;"><iframe src="' + absUrl.replace(/"/g, '&quot;') + '" style="width:100%;height:calc(100vh - 52px);border:none;"></iframe></body></html>',
         adminReturnUrl
       )
       const blob = new Blob([wrapper], { type: 'text/html;charset=utf-8' })
       const url = URL.createObjectURL(blob)
       const w = window.open(url, '_blank')
-      if (w) try { w.focus() } catch (_) { }
-      setTimeout(() => URL.revokeObjectURL(url), 5000)
+      if (w) {
+        try { w.focus() } catch (_) { }
+        setTimeout(() => { try { w.focus() } catch (_) { } }, 200)
+      } else {
+        setInAppDocumentViewer({ html: wrapper, title: document.name || 'Dokument' })
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 10000)
       return
     }
     const fileType = document.fileType || document.type || ''
@@ -6101,8 +6114,11 @@ ${'='.repeat(60)}
         const url = URL.createObjectURL(blob)
         const opened = window.open(url, '_blank')
         if (!opened) setInAppDocumentViewer({ html, title: document.name || 'Dokument' })
-        else try { opened.focus() } catch (_) { }
-        setTimeout(() => URL.revokeObjectURL(url), 5000)
+        else {
+          try { opened.focus() } catch (_) { }
+          setTimeout(() => { try { opened.focus() } catch (_) { } }, 200)
+        }
+        setTimeout(() => URL.revokeObjectURL(url), 10000)
       } catch (e) {
         const newWindow = window.open()
         if (newWindow) {
