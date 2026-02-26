@@ -1,0 +1,50 @@
+---
+description: Dokumente & Events – je Kontext (K2/VK2/ök2) nur eine Datenquelle, keine Vermischung
+alwaysApply: true
+---
+
+# 🔒 Dokumente & Events – je Kontext nur eine Quelle (strenge Regel)
+
+## Grundsatz (unveränderlich)
+
+**Jeder Kontext (K2, VK2, ök2) nutzt ausschließlich seine eigene Datenquelle für Events, Dokumente und alle daraus generierten Inhalte. Keine Vermischung – nie.**
+
+---
+
+## Die drei Quellen
+
+| Kontext | Events laden aus | Dokumente laden aus | Inhalte (Namen, Kontakt, Adresse) aus |
+|--------|-------------------|----------------------|----------------------------------------|
+| **K2** | `k2-events` | `k2-documents` | State aus `k2-stammdaten-*` (galleryData, martinaData, georgData) |
+| **VK2** | `k2-vk2-events` | `k2-vk2-documents` | **nur** `vk2Stammdaten` (Verein, Mitglieder) – **niemals** galleryData/martinaData/georgData |
+| **ök2** | **nur** MUSTER_EVENTS (kein localStorage) | **nur** [] (keine gespeicherten PR-Docs) | **nur** MUSTER_TEXTE / State (Lena Berg, Paul Weber, Galerie Muster) |
+
+---
+
+## Konkret
+
+### Beim Laden
+- **ök2:** `loadEvents()` liefert immer `MUSTER_EVENTS`; `loadDocuments()` liefert immer `[]`. Kein Lesen aus `k2-oeffentlich-events` / `k2-oeffentlich-documents` für Anzeige.
+- **VK2:** Nur `k2-vk2-events`, `k2-vk2-documents`, `k2-vk2-stammdaten`.
+- **K2:** Nur `k2-events`, `k2-documents`, `k2-stammdaten-*`.
+
+### Bei Dokument-Generatoren (Newsletter, Presse, Flyer, Plakat, Social, PR-Vorschläge)
+- **VK2:** Jeder Generator muss bei `isVk2AdminContext()` **ausschließlich** `vk2Stammdaten` (Verein, Mitglieder) verwenden – kein `galleryData`, kein `martinaData`, kein `georgData`, kein `localStorage.getItem('k2-stammdaten-*')`.
+- **ök2:** Nur State (bereits mit MUSTER_TEXTE initialisiert) bzw. `TENANT_CONFIGS.oeffentlich` – kein Lesen aus `k2-stammdaten-*`.
+- **K2:** State (aus k2-stammdaten-* geladen) – kein Lesen aus VK2- oder ök2-Keys.
+
+### Neue Features / neue Generatoren
+- **Vor dem Implementieren prüfen:** Welcher Kontext? Dann nur die zugehörige Quelle nutzen.
+- **Wenn unsicher:** Regel: Eine Kontext-Prüfung (`isOeffentlichAdminContext()`, `isVk2AdminContext()`) und pro Zweig **nur** die passende Quelle (State Muster / vk2Stammdaten / K2-State).
+
+---
+
+## Warum diese Regel
+
+Vermischung führt dazu, dass in der Demo (ök2) echte K2-Daten (Martina/Georg, info@kgm.at) erscheinen oder in VK2-Dokumenten K2-Galeriedaten. Das ist Datenschutz- und Vertrauensproblem und wurde mehrfach mühsam bereinigt. Eine feste Regel verhindert Rückfälle.
+
+---
+
+## Kurzfassung
+
+**K2 = nur K2-Keys und K2-State. VK2 = nur VK2-Keys und vk2Stammdaten. ök2 = nur MUSTER_EVENTS und Muster-State. Keine Ausnahme.**
