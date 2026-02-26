@@ -4,8 +4,8 @@
  * zum Kopieren, per E-Mail oder WhatsApp an Freund:innen zu senden.
  */
 
-import { useState, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useMemo, useRef, useEffect } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { BASE_APP_URL, WILLKOMMEN_ROUTE } from '../config/navigation'
 import { getOrCreateEmpfehlerId } from '../utils/empfehlerId'
@@ -22,9 +22,18 @@ function getStoredName(): string {
 }
 
 export default function EmpfehlungstoolPage() {
+  const [searchParams] = useSearchParams()
+  const scrollToTeil = searchParams.get('teil') === '1'
   const empfehlerId = getOrCreateEmpfehlerId()
   const [empfehlerName, setEmpfehlerName] = useState(getStoredName)
   const [copied, setCopied] = useState(false)
+  const schreibenRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    if (scrollToTeil && schreibenRef.current) {
+      schreibenRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [scrollToTeil])
 
   const empfehlungslink = useMemo(
     () => `${BASE_APP_URL}${WILLKOMMEN_ROUTE}?empfehler=${encodeURIComponent(empfehlerId)}`,
@@ -183,8 +192,9 @@ ${name}`
         />
       </section>
 
-      {/* Vorlage */}
+      {/* Vorlage – bei ?teil=1 automatisch in den Fokus gescrollt */}
       <section
+        ref={schreibenRef}
         style={{
           padding: '1.25rem 1.5rem',
           background: t.card,

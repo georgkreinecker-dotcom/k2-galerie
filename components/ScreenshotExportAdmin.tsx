@@ -12670,7 +12670,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     <div style={{ padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}33`, borderRadius: 12 }}>
                       <div style={{ fontSize: '0.8rem', color: s.accent, fontWeight: 700, marginBottom: '0.25rem' }}>Deine Empfehler-ID</div>
                       <div style={{ fontSize: '1.1rem', fontWeight: 700, color: s.text, fontFamily: 'monospace' }}>{empfehlerId}</div>
-                      <Link to={`${PROJECT_ROUTES['k2-galerie'].empfehlungstool}`} style={{ fontSize: '0.88rem', color: s.accent, marginTop: '0.5rem', display: 'inline-block' }}>→ Empfehlungstool (Link teilen)</Link>
+                      <Link to={`${PROJECT_ROUTES['k2-galerie'].empfehlungstool}?teil=1`} style={{ fontSize: '0.88rem', color: s.accent, marginTop: '0.5rem', display: 'inline-block' }}>→ Empfehlungstool (Link teilen)</Link>
                     </div>
                     <div style={{ padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}33`, borderRadius: 12 }}>
                       <div style={{ fontSize: '0.8rem', color: s.accent, fontWeight: 700, marginBottom: '0.25rem' }}>Deine Rabattstufe</div>
