@@ -6,6 +6,7 @@
 Favoriten (max 5): Vorreihung in Galerie, Option beim Anlegen, VK2 wie gehabt
 
 ## Was zuletzt gemacht
+- **mök2: Fähigkeiten-Mix (Fakten):** Sektion „Was in einer Person das ermöglicht hat“ – Unternehmererfahrung, Domänenwissen, Arbeit mit AI, Struktur/Prozess, UX aus Nutzersicht, Pragmatismus; ausdrücklich als Aufzählung von Faktoren, keine Wertung.
 - **mök2: Warum kostet Wiederbeschaffung so viel, wenn ein Laie es kann?** – Absatz ergänzt: Einkauf = Team mit mehreren Rollen, Stundensätzen, Prozess; Laie + AI = eine Person, Eigenzeit, keine Rechnung. Der Marktpreis für „bauen Sie mir das nach“ bleibt hoch; das Ergebnis kann gleichwertig sein.
 - **mök2: Entwicklerkosten-Klarstellung:** Die Summe ist Wiederbeschaffungswert (was ein Profi-Team kosten würde), nicht „Verdienst“ des Erbauers – eigener Hinweis-Block + Anpassung im Hinweis-Text.
 - **mök2: Geschätzte Entwicklerkosten-Rechnung und grobe Marktwertberechnung:** In der Sektion „Produktbewertung“ ergänzt: (1) Entwicklerkosten-Rechnung (Stunden nach Bereich, Stundensatz, Summe 188.000 – 498.000 €), (2) Marktwertberechnung (Zielgruppe, Vergleichspreise Basic 10–15 €/Monat / Pro 25–35 €/Monat, Szenarien Erlös/Jahr). Sidebar: „Entwicklerkosten (Schätzung)“ und „Marktwert (grober Ansatz)“ verlinken auf die Unterabschnitte. Mit „Als PDF drucken“ ausdruckbar.
@@ -32,7 +33,7 @@ Favoriten (max 5): Vorreihung in Galerie, Option beim Anlegen, VK2 wie gehabt
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **mök2: Warum Wiederbeschaffung so viel kostet (Laie kann es)** – Erklärung ergänzt. Commit: 99153ba ✅ auf GitHub
+- **mök2: Fähigkeiten-Mix (Fakten)** – Welche Voraussetzungen in einer Person (Unternehmererfahrung, Domänenwissen, Arbeit mit AI, Struktur, UX aus Nutzersicht, Pragmatismus) das ermöglicht haben; sachlich, keine Würdigung. Commit: b206085 ✅ auf GitHub
 
 ## Nächste Schritte (offen)
 4. **Vor Veröffentlichung:** QS und Checkliste **docs/VOR-VEROEFFENTLICHUNG.md** noch einmal genau durchgehen (geplant mit Georg).
