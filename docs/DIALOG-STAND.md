@@ -18,7 +18,7 @@ Offene Punkte 1–3 umgesetzt (L3-Hinweis, Vereinskatalog fetch, PDF-Download)
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- L3-Hinweis, Vereinskatalog fetch, VK2-Katalog PDF – (wird gleich committed)
+- L3-Hinweis, Vereinskatalog fetch, VK2-Katalog PDF – Commit: 8ddc12b ✅ auf GitHub
 
 ## Nächste Schritte (offen)
 4. **Vor Veröffentlichung:** QS und Checkliste **docs/VOR-VEROEFFENTLICHUNG.md** noch einmal genau durchgehen (geplant mit Georg).
