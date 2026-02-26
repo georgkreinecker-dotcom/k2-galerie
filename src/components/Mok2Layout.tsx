@@ -24,6 +24,7 @@ const mok2Sections = [
   { id: 'mok2-7', label: '7. Promotion für alle Medien (inkl. Zielgruppe)' },
   { id: 'mok2-8', label: '8. APf-Struktur' },
   { id: 'mok2-9', label: '9. Werbeunterlagen' },
+  { id: 'mok2-produktbewertung', label: 'Produktbewertung (Kosten | Marktwert)' },
   { id: 'mok2-lizenz-pakete-aussen', label: 'Lizenzpakete (Außensicht)' },
   { id: 'mok2-10b-vk2-lizenz', label: 'Lizenzstruktur VK2 (Vereinsplattform)' },
   { id: 'mok2-13', label: '13. Werkkatalog & Werkkarte' },

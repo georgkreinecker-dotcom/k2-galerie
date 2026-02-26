@@ -550,6 +550,31 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </p>
       </section>
 
+      {/* Produktbewertung: Entwicklerkosten vs. Marktwert – für Bewertung/Pitch */}
+      <section id="mok2-produktbewertung" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Produktbewertung: Entwicklerkosten vs. Marktwert
+        </h2>
+        <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
+          Wenn das Produkt bewertet werden soll, sind zwei Perspektiven wichtig – beide gehören in die Vertriebs- und Preisargumentation.
+        </p>
+        <p style={{ marginBottom: '0.75rem', fontWeight: 600, color: '#5ffbf1' }}>1. Entwicklerkosten (was steckt drin)</p>
+        <ul style={{ marginBottom: '1.25rem', paddingLeft: '1.5em', lineHeight: 1.65, fontSize: '0.95rem' }}>
+          <li>Mehrjähriges Projekt: Full-Stack PWA (React, TypeScript, Vercel, Supabase), Multi-Tenant (K2, ök2, VK2), Galerie, Shop, Kassa, Events, Werbematerial, Empfehlungs-Programm, Vereinsplattform.</li>
+          <li>Größenordnung: viele tausend Stunden Entwicklung, laufende Wartung und Erweiterung.</li>
+          <li>Bewertung: Vergleich zu typischen Stundensätzen (Entwicklung, Design, Doku) → ergibt einen <strong>Kostenwert</strong>, der zeigt, was „reingesteckt“ wurde. Wird z. B. für interne Rechenschaft, Partner oder Investoren genutzt.</li>
+        </ul>
+        <p style={{ marginBottom: '0.75rem', fontWeight: 600, color: '#5ffbf1' }}>2. Marktwert (was es für Käufer wert ist)</p>
+        <ul style={{ marginBottom: '0.5rem', paddingLeft: '1.5em', lineHeight: 1.65, fontSize: '0.95rem' }}>
+          <li>Nutzen für Zielgruppe: Eigener Webauftritt, Werke präsentieren, Events bewerben, Verkauf/Kasse, Etiketten, Marketing aus einem Guss – ohne IT-Kenntnisse.</li>
+          <li>Vergleich zu Alternativen: Website-Baukasten + separate Tools vs. eine integrierte Lösung; Zeitersparnis und Einfachheit.</li>
+          <li>Bewertung: Was Künstler:innen und Vereine bereit sind zu zahlen (Preiswürdigkeit), was vergleichbare Angebote kosten → ergibt den <strong>Marktwert</strong>. Entscheidend für Lizenzpreise und Positionierung.</li>
+        </ul>
+        <p style={{ marginTop: '0.75rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.75)' }}>
+          Kurz: <strong>Entwicklerkosten</strong> = was reingesteckt wurde; <strong>Marktwert</strong> = was der Markt (Käufer) dafür gibt. Beides in mök2 führen und bei Bedarf mit konkreten Zahlen (z. B. aus Marktcheck) ergänzen.
+        </p>
+      </section>
+
       {/* 10a. Lizenz-Pakete für Außen – kompakt für Werbung, Pitch, Flyer (nach außen sichtbar) */}
       <section id="mok2-lizenz-pakete-aussen" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
