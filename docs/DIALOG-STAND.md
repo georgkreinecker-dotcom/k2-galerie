@@ -6,6 +6,7 @@
 Favoriten (max 5): Vorreihung in Galerie, Option beim Anlegen, VK2 wie gehabt
 
 ## Was zuletzt gemacht
+- **mök2: Geschätzte Entwicklerkosten-Rechnung und grobe Marktwertberechnung:** In der Sektion „Produktbewertung“ ergänzt: (1) Entwicklerkosten-Rechnung (Stunden nach Bereich, Stundensatz, Summe 188.000 – 498.000 €), (2) Marktwertberechnung (Zielgruppe, Vergleichspreise Basic 10–15 €/Monat / Pro 25–35 €/Monat, Szenarien Erlös/Jahr). Sidebar: „Entwicklerkosten (Schätzung)“ und „Marktwert (grober Ansatz)“ verlinken auf die Unterabschnitte. Mit „Als PDF drucken“ ausdruckbar.
 - **Event-Flyer / alle orangen Sektoren kommen im grünen Bereich an:** (1) Beim Klick auf „← Zurück“ im In-App-Viewer wird die Dokumentenliste aus localStorage neu geladen → grüne/orange Bereiche sind nach dem Schließen des Dokuments aktuell. (2) Beim Erstellen („Jetzt erstellen – sofort fertig“) wird das Dokument **sofort** in die Liste eingetragen (Platzhalter mit leerem Inhalt), damit der grüne Bereich sofort erscheint; der eigentliche Inhalt wird asynchron nachgetragen. Gilt für Event-Flyer, Newsletter, Plakat, Presseaussendung, Social Media. (3) Presse/Social: Bug behoben, dass `const blob` im try das äußere `blob` überschattet hatte → Dokumente wurden nie gespeichert; jetzt wird das äußere `blob` gesetzt und die Liste sofort mit Platzhalter befüllt.
 - **Prinzip „Ein Standard pro Problemstellung“ sichtbar gemacht:** Gleiche Aufgabe = eine Lösung; verschiedene Standards = Fehlerquellen (wie im Maschinenbau). Regel: `.cursor/rules/ein-standard-problem.mdc`. Jetzt auch in **docs/STRUKTUR-HANDELN-QUELLEN.md** (Regel + Siehe auch), **docs/00-INDEX.md** (Abschnitt „Prinzipien & Regeln“), **HAUS-INDEX.md** (Schnellfinder), **docs/GELOESTE-BUGS.md** (bei Regel für neue Bugs) – damit es überall auffindbar ist.
 - **Ein Standard für alle Dokumente:** Alle Dokumente (Flyer, Presse, Einladung, Newsletter, QR-Plakat, Vita, gespeicherte HTML/PDF/Bilder) öffnen jetzt **ausschließlich im In-App-Viewer** (gleicher Tab, gleiche Leiste „← Zurück“, gleiches Verhalten). Keine eigenen Regeln mehr pro Dokumenttyp – eine Funktion `openDocumentInApp(html, title)`; handleViewEventDocument, openVitaDocument und alle generate* (Plakat, Presse, Social, …) nutzen sie.
@@ -29,7 +30,7 @@ Favoriten (max 5): Vorreihung in Galerie, Option beim Anlegen, VK2 wie gehabt
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Event-Flyer/alle PR-Dokumente im grünen Bereich** – Sofort-Eintrag in Liste + Zurück lädt Liste; Presse/Social blob-Bug behoben. Commit: d479a24 ✅ auf GitHub
+- **mök2: Entwicklerkosten + Marktwert** – Geschätzte Rechnung und grobe Marktwertberechnung in mök2. Commit: cba3f28 ✅ auf GitHub
 
 ## Nächste Schritte (offen)
 4. **Vor Veröffentlichung:** QS und Checkliste **docs/VOR-VEROEFFENTLICHUNG.md** noch einmal genau durchgehen (geplant mit Georg).
