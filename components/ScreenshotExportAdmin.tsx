@@ -3144,6 +3144,7 @@ ${'='.repeat(60)}
 
   const generateEditablePresseaussendungPDF = (presseaussendung: any, event: any) => {
     let blob: Blob | null = null // WICHTIG: Außerhalb try-catch definieren
+    let presseDocId: string | null = null
     const isVk2 = isVk2AdminContext()
     const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
     const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getWerbeliniePrDocCss('k2-pr-doc')
@@ -3280,31 +3281,45 @@ ${'='.repeat(60)}
 </html>
     `
     try {
-      const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+      blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+      const eid = event?.id || 'unknown'
+      const etitle = event?.title || 'Event'
+      presseDocId = `pr-editable-presseaussendung-${eid}-${Date.now()}`
+      const pressePlaceholder = {
+        id: presseDocId,
+        name: getNextWerbematerialVorschlagName(eid, etitle, 'presse', 'Presseaussendung (bearbeitbar)'),
+        type: 'text/html',
+        size: blob.size,
+        data: '',
+        fileName: `presseaussendung-editable-${etitle.replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente',
+        eventId: eid,
+        eventTitle: etitle,
+        werbematerialTyp: 'presse'
+      }
+      const existingPresse = loadDocuments()
+      saveDocuments([...existingPresse, pressePlaceholder])
+      setDocuments([...existingPresse, pressePlaceholder])
       const url = URL.createObjectURL(blob)
-      
-      // Versuche Fenster zu öffnen - mit besserer Pop-up-Erkennung
       const pdfWindow = window.open(url, '_blank', 'noopener,noreferrer')
       if (pdfWindow) try { pdfWindow.focus() } catch (_) { }
-      // Prüfe ob Fenster wirklich geöffnet wurde (mit kurzer Verzögerung)
       setTimeout(() => {
         if (!pdfWindow || pdfWindow.closed || typeof pdfWindow.closed === 'undefined') {
-          // Pop-up blockiert - öffne als Link ohne Download-Attribut
           URL.revokeObjectURL(url)
-          const newUrl = URL.createObjectURL(blob)
+          const newUrl = URL.createObjectURL(blob!)
           const link = document.createElement('a')
           link.href = newUrl
           link.target = '_blank'
-          // KEIN download-Attribut - Browser öffnet Datei statt Download
           document.body.appendChild(link)
           link.click()
           setTimeout(() => {
             document.body.removeChild(link)
-            // URL nicht sofort revoken - Browser braucht Zeit zum Laden
             setTimeout(() => URL.revokeObjectURL(newUrl), 2000)
           }, 100)
         } else {
-          // Fenster erfolgreich geöffnet - Cleanup später
           pdfWindow.addEventListener('beforeunload', () => {
             URL.revokeObjectURL(url)
           })
@@ -3313,40 +3328,24 @@ ${'='.repeat(60)}
     } catch (error) {
       console.error('Fehler beim Generieren des PDFs:', error)
       alert('Fehler beim Generieren des PDFs. Bitte versuche es erneut.')
-      return // WICHTIG: Return wenn Fehler, damit blob nicht verwendet wird
+      return
     }
-    
-    // Speichere auch in Dokumente-Sektion (nur wenn blob erfolgreich erstellt wurde)
-    if (blob) {
+    if (blob && presseDocId) {
+      const docId = presseDocId
       const reader = new FileReader()
-      const blobToSave: Blob = blob // Explizite Type-Assertion
       reader.onloadend = () => {
-        const eid = event?.id || 'unknown'
-        const etitle = event?.title || 'Event'
-        const documentData = {
-          id: `pr-editable-presseaussendung-${eid}-${Date.now()}`,
-          name: getNextWerbematerialVorschlagName(eid, etitle, 'presse', 'Presseaussendung (bearbeitbar)'),
-          type: 'text/html',
-          size: blobToSave.size,
-          data: reader.result as string,
-          fileName: `presseaussendung-editable-${etitle.replace(/\s+/g, '-').toLowerCase()}.html`,
-          uploadedAt: new Date().toISOString(),
-          isPDF: false,
-          isPlaceholder: false,
-          category: 'pr-dokumente',
-          eventId: eid,
-          eventTitle: etitle,
-          werbematerialTyp: 'presse'
-        }
-        const existingDocs = loadDocuments()
-        const updated = [...existingDocs, documentData]
+        const current = loadDocuments()
+        const updated = current.map((d: any) => d.id === docId ? { ...d, data: reader.result as string } : d)
         saveDocuments(updated)
+        setDocuments(updated)
       }
       reader.readAsDataURL(blob)
     }
   }
 
   const generateEditableSocialMediaPDF = (socialMedia: any, event: any) => {
+    let blob: Blob | null = null
+    let socialDocId: string | null = null
     const isVk2 = isVk2AdminContext()
     const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
     const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getWerbeliniePrDocCss('k2-pr-doc')
@@ -3485,65 +3484,64 @@ ${'='.repeat(60)}
 </html>
     `
     try {
-      const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+      blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+      const eid = event?.id || 'unknown'
+      const etitle = event?.title || 'Event'
+      socialDocId = `pr-editable-socialmedia-${eid}-${Date.now()}`
+      const socialPlaceholder = {
+        id: socialDocId,
+        name: getNextWerbematerialVorschlagName(eid, etitle, 'social', 'Social Media (bearbeitbar)'),
+        type: 'text/html',
+        size: blob.size,
+        data: '',
+        fileName: `social-media-editable-${etitle.replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente',
+        eventId: eid,
+        eventTitle: etitle,
+        werbematerialTyp: 'social'
+      }
+      const existingSocial = loadDocuments()
+      saveDocuments([...existingSocial, socialPlaceholder])
+      setDocuments([...existingSocial, socialPlaceholder])
       const url = URL.createObjectURL(blob)
-      
-      // Versuche Fenster zu öffnen - mit besserer Pop-up-Erkennung
       const pdfWindow = window.open(url, '_blank', 'noopener,noreferrer')
       if (pdfWindow) try { pdfWindow.focus() } catch (_) { }
-      // Prüfe ob Fenster wirklich geöffnet wurde (mit kurzer Verzögerung)
       setTimeout(() => {
         if (!pdfWindow || pdfWindow.closed || typeof pdfWindow.closed === 'undefined') {
-          // Pop-up blockiert - öffne als Link ohne Download-Attribut
           URL.revokeObjectURL(url)
-          const newUrl = URL.createObjectURL(blob)
+          const newUrl = URL.createObjectURL(blob!)
           const link = document.createElement('a')
           link.href = newUrl
           link.target = '_blank'
-          // KEIN download-Attribut - Browser öffnet Datei statt Download
           document.body.appendChild(link)
           link.click()
           setTimeout(() => {
             document.body.removeChild(link)
-            // URL nicht sofort revoken - Browser braucht Zeit zum Laden
             setTimeout(() => URL.revokeObjectURL(newUrl), 2000)
           }, 100)
         } else {
-          // Fenster erfolgreich geöffnet - Cleanup später
           pdfWindow.addEventListener('beforeunload', () => {
             URL.revokeObjectURL(url)
           })
         }
       }, 100)
-      
-      // Speichere auch in Dokumente-Sektion
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        const eid = event?.id || 'unknown'
-        const etitle = event?.title || 'Event'
-        const documentData = {
-          id: `pr-editable-socialmedia-${eid}-${Date.now()}`,
-          name: getNextWerbematerialVorschlagName(eid, etitle, 'social', 'Social Media (bearbeitbar)'),
-          type: 'text/html',
-          size: blob.size,
-          data: reader.result as string,
-          fileName: `social-media-editable-${etitle.replace(/\s+/g, '-').toLowerCase()}.html`,
-          uploadedAt: new Date().toISOString(),
-          isPDF: false,
-          isPlaceholder: false,
-          category: 'pr-dokumente',
-          eventId: eid,
-          eventTitle: etitle,
-          werbematerialTyp: 'social'
+      if (socialDocId) {
+        const docId = socialDocId
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          const current = loadDocuments()
+          const updated = current.map((d: any) => d.id === docId ? { ...d, data: reader.result as string } : d)
+          saveDocuments(updated)
+          setDocuments(updated)
         }
-        const existingDocs = loadDocuments()
-        const updated = [...existingDocs, documentData]
-        saveDocuments(updated)
+        reader.onerror = () => {
+          console.error('Fehler beim Lesen des Blobs')
+        }
+        reader.readAsDataURL(blob!)
       }
-      reader.onerror = () => {
-        console.error('Fehler beim Lesen des Blobs')
-      }
-      reader.readAsDataURL(blob)
     } catch (error) {
       console.error('Fehler beim Generieren des PDFs:', error)
       alert('Fehler beim Generieren des PDFs. Bitte versuche es erneut.')
@@ -3888,31 +3886,36 @@ ${'='.repeat(60)}
     `
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
     // Immer im gleichen Tab öffnen – kein neuer Tab, der „oben im Browser-Balken hängt“; sofort sichtbar mit Zurück/Format/PDF/Speichern.
+    const eid = event?.id || 'unknown'
+    const etitle = event?.title || 'Event'
+    const docId = `pr-editable-newsletter-${eid}-${Date.now()}`
+    const docName = getNextWerbematerialVorschlagName(eid, etitle, 'newsletter', 'Newsletter (bearbeitbar)')
+    const documentDataPlaceholder = {
+      id: docId,
+      name: docName,
+      type: 'text/html',
+      size: blob.size,
+      data: '',
+      fileName: `newsletter-editable-${etitle.replace(/\s+/g, '-').toLowerCase()}.html`,
+      uploadedAt: new Date().toISOString(),
+      isPDF: false,
+      isPlaceholder: false,
+      category: 'pr-dokumente',
+      eventId: eid,
+      eventTitle: etitle,
+      werbematerialTyp: 'newsletter'
+    }
+    const existingDocs = loadDocuments()
+    saveDocuments([...existingDocs, documentDataPlaceholder])
+    setDocuments([...existingDocs, documentDataPlaceholder])
     setInAppDocumentViewer({ html, title: 'Newsletter – ' + (event?.title || 'Event') })
-    
-    // Speichere auch in Dokumente-Sektion
     const reader = new FileReader()
     reader.onloadend = () => {
-      const eid = event?.id || 'unknown'
-      const etitle = event?.title || 'Event'
-      const documentData = {
-        id: `pr-editable-newsletter-${eid}-${Date.now()}`,
-        name: getNextWerbematerialVorschlagName(eid, etitle, 'newsletter', 'Newsletter (bearbeitbar)'),
-        type: 'text/html',
-        size: blob.size,
-        data: reader.result as string,
-        fileName: `newsletter-editable-${etitle.replace(/\s+/g, '-').toLowerCase()}.html`,
-        uploadedAt: new Date().toISOString(),
-        isPDF: false,
-        isPlaceholder: false,
-        category: 'pr-dokumente',
-        eventId: eid,
-        eventTitle: etitle,
-        werbematerialTyp: 'newsletter'
-      }
-      const existingDocs = loadDocuments()
-      const updated = [...existingDocs, documentData]
+      const documentData = { ...documentDataPlaceholder, data: reader.result as string }
+      const current = loadDocuments()
+      const updated = current.map((d: any) => d.id === docId ? documentData : d)
       saveDocuments(updated)
+      setDocuments(updated)
     }
     reader.readAsDataURL(blob)
   }
@@ -4644,32 +4647,37 @@ ${'='.repeat(60)}
     `
 
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-    openDocumentInApp(html, 'Presseaussendung')
-    
-    // Speichere auch in Dokumente-Sektion
+    const docId = `pr-flyer-${event.id}-${Date.now()}`
+    const docName = getNextWerbematerialVorschlagName(event.id, event.title, 'event-flyer', 'Event-Flyer')
+    // Sofort in Liste eintragen, damit grüner Bereich erscheint (Inhalt wird unten nachgetragen)
+    const documentDataPlaceholder = {
+      id: docId,
+      name: docName,
+      type: 'text/html',
+      size: blob.size,
+      data: '',
+      fileName: `flyer-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
+      uploadedAt: new Date().toISOString(),
+      isPDF: false,
+      isPlaceholder: false,
+      category: 'pr-dokumente',
+      eventId: event.id,
+      eventTitle: event.title,
+      werbematerialTyp: 'event-flyer'
+    }
+    const existingDocs = loadDocuments()
+    saveDocuments([...existingDocs, documentDataPlaceholder])
+    setDocuments([...existingDocs, documentDataPlaceholder])
+    openDocumentInApp(html, 'Event-Flyer – ' + (event?.title || 'Event'))
     const reader = new FileReader()
     reader.onloadend = () => {
-      const documentData = {
-        id: `pr-flyer-${event.id}-${Date.now()}`,
-        name: getNextWerbematerialVorschlagName(event.id, event.title, 'event-flyer', 'Event-Flyer'),
-        type: 'text/html',
-        size: blob.size,
-        data: reader.result as string,
-        fileName: `flyer-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
-        uploadedAt: new Date().toISOString(),
-        isPDF: false,
-        isPlaceholder: false,
-        category: 'pr-dokumente',
-        eventId: event.id,
-        eventTitle: event.title,
-        werbematerialTyp: 'event-flyer'
-      }
-      const existingDocs = loadDocuments()
-      const updated = [...existingDocs, documentData]
+      const documentData = { ...documentDataPlaceholder, data: reader.result as string }
+      const current = loadDocuments()
+      const updated = current.map((d: any) => d.id === docId ? documentData : d)
       saveDocuments(updated)
+      setDocuments(updated)
     }
     reader.readAsDataURL(blob)
-    
     alert('✅ Flyer generiert! Bitte im Browser drucken.')
   }
 
@@ -4857,6 +4865,7 @@ ${'='.repeat(60)}
   // Plakat für spezifisches Event generieren
   const generatePlakatForEvent = (event: any) => {
     let blob: Blob | null = null // WICHTIG: Außerhalb try-catch definieren
+    let plakatDocIdForUpdate: string | null = null
     
     try {
       console.log('generatePlakatForEvent aufgerufen mit Event:', event)
@@ -5081,38 +5090,43 @@ ${'='.repeat(60)}
       console.log('HTML generiert, Länge:', html.length)
 
       blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-      openDocumentInApp(html, 'QR-Plakat – ' + (event?.title || 'Event'))
+      plakatDocIdForUpdate = `pr-plakat-${event.id}-${Date.now()}`
+      const plakatDocName = getNextWerbematerialVorschlagName(event.id, event.title, 'plakat', 'Plakat')
+      const plakatPlaceholder = {
+        id: plakatDocIdForUpdate,
+        name: plakatDocName,
+        type: 'text/html',
+        size: blob.size,
+        data: '',
+        fileName: `plakat-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente',
+        eventId: event.id,
+        eventTitle: event.title,
+        werbematerialTyp: 'plakat'
+      }
+      const existingPlakat = loadDocuments()
+      saveDocuments([...existingPlakat, plakatPlaceholder])
+      setDocuments([...existingPlakat, plakatPlaceholder])
+      openDocumentInApp(html, 'Plakat – ' + (event?.title || 'Event'))
     } catch (error) {
       console.error('Fehler beim Generieren des Plakats:', error)
       alert('Fehler beim Generieren des Plakats: ' + (error instanceof Error ? error.message : String(error)))
       return // WICHTIG: Return wenn Fehler, damit blob nicht verwendet wird
     }
     
-    // Speichere auch in Dokumente-Sektion (nur wenn blob erfolgreich erstellt wurde)
-    if (blob) {
+    if (blob && plakatDocIdForUpdate) {
+      const docId = plakatDocIdForUpdate
       const reader = new FileReader()
       reader.onloadend = () => {
-        const documentData = {
-          id: `pr-plakat-${event.id}-${Date.now()}`,
-          name: getNextWerbematerialVorschlagName(event.id, event.title, 'plakat', 'Plakat'),
-          type: 'text/html',
-          size: blob!.size,
-          data: reader.result as string,
-          fileName: `plakat-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
-          uploadedAt: new Date().toISOString(),
-          isPDF: false,
-          isPlaceholder: false,
-          category: 'pr-dokumente',
-          eventId: event.id,
-          eventTitle: event.title,
-          werbematerialTyp: 'plakat'
-        }
-        const existingDocs = loadDocuments()
-        const updated = [...existingDocs, documentData]
+        const current = loadDocuments()
+        const updated = current.map((d: any) => d.id === docId ? { ...d, data: reader.result as string } : d)
         saveDocuments(updated)
+        setDocuments(updated)
       }
       reader.readAsDataURL(blob)
-      
       alert('✅ Plakat generiert! Bitte im Browser drucken (A3 Format).')
     }
   }
@@ -8576,7 +8590,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
           }}>
             <button
               type="button"
-              onClick={() => setInAppDocumentViewer(null)}
+              onClick={() => {
+                try {
+                  const docs = loadDocuments()
+                  setDocuments(docs)
+                } catch (_) {}
+                setInAppDocumentViewer(null)
+              }}
               style={{
                 padding: '0.4rem 0.8rem', background: '#b54a1e', color: '#fff', border: 'none', borderRadius: 8,
                 fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer'

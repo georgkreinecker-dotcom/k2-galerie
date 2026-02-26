@@ -6,6 +6,8 @@
 Favoriten (max 5): Vorreihung in Galerie, Option beim Anlegen, VK2 wie gehabt
 
 ## Was zuletzt gemacht
+- **Event-Flyer / alle orangen Sektoren kommen im grünen Bereich an:** (1) Beim Klick auf „← Zurück“ im In-App-Viewer wird die Dokumentenliste aus localStorage neu geladen → grüne/orange Bereiche sind nach dem Schließen des Dokuments aktuell. (2) Beim Erstellen („Jetzt erstellen – sofort fertig“) wird das Dokument **sofort** in die Liste eingetragen (Platzhalter mit leerem Inhalt), damit der grüne Bereich sofort erscheint; der eigentliche Inhalt wird asynchron nachgetragen. Gilt für Event-Flyer, Newsletter, Plakat, Presseaussendung, Social Media. (3) Presse/Social: Bug behoben, dass `const blob` im try das äußere `blob` überschattet hatte → Dokumente wurden nie gespeichert; jetzt wird das äußere `blob` gesetzt und die Liste sofort mit Platzhalter befüllt.
+- **Prinzip „Ein Standard pro Problemstellung“ sichtbar gemacht:** Gleiche Aufgabe = eine Lösung; verschiedene Standards = Fehlerquellen (wie im Maschinenbau). Regel: `.cursor/rules/ein-standard-problem.mdc`. Jetzt auch in **docs/STRUKTUR-HANDELN-QUELLEN.md** (Regel + Siehe auch), **docs/00-INDEX.md** (Abschnitt „Prinzipien & Regeln“), **HAUS-INDEX.md** (Schnellfinder), **docs/GELOESTE-BUGS.md** (bei Regel für neue Bugs) – damit es überall auffindbar ist.
 - **Ein Standard für alle Dokumente:** Alle Dokumente (Flyer, Presse, Einladung, Newsletter, QR-Plakat, Vita, gespeicherte HTML/PDF/Bilder) öffnen jetzt **ausschließlich im In-App-Viewer** (gleicher Tab, gleiche Leiste „← Zurück“, gleiches Verhalten). Keine eigenen Regeln mehr pro Dokumenttyp – eine Funktion `openDocumentInApp(html, title)`; handleViewEventDocument, openVitaDocument und alle generate* (Plakat, Presse, Social, …) nutzen sie.
 - **Newsletter öffnet immer im gleichen Tab:** Kein neuer Tab mehr, der „oben im Browser-Balken hängt“ – Newsletter öffnet sofort im In-App-Viewer (Zurück, Format A4/A3/A5, Als PDF drucken, Speichern) im gleichen Fenster.
 - **Dokumente-Chaos behoben:** (1) **Leeres druckfertiges Dokument:** iframe für Flyer/Presse-Einladung (documentUrl) nutzt jetzt **absolute URL** (origin + Pfad), damit der Inhalt lädt – bei blob-Seite löst sich `/flyer-k2-galerie` sonst falsch auf. (2) **Newsletter öffnet nicht:** Bei blockiertem Pop-up öffnet der Newsletter im **In-App-Viewer** (gleiches Format mit Zurück/Format/PDF/Speichern). (3) **Fokus:** Verzögerter zweiter Fokus (~180–200 ms) beim Öffnen von Dokumenten, damit der Tab in den Vordergrund kommt („erst Klick auf Leiste“). (4) Wenn Fenster für druckfertiges Doc nicht geöffnet werden kann → In-App-Viewer. Revoke-Timeout für blob-URLs auf 10 s erhöht.
@@ -27,8 +29,7 @@ Favoriten (max 5): Vorreihung in Galerie, Option beim Anlegen, VK2 wie gehabt
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- Premium-Platzierung: eigene Sektion „Erweiterte Funktionen (Premium)“ am Ende des Karten-Grids – Commit: 1d4c621 ✅ auf GitHub
-- Stand-Badge: Kontext (context=vk2) beim Reload erhalten – Commit: 8d28384 ✅ auf GitHub
+- **Prinzip „Ein Standard pro Problemstellung“ in Doku verankert** – STRUKTUR-HANDELN-QUELLEN (Regel + Siehe auch), docs/00-INDEX (neuer Abschnitt Prinzipien & Regeln), HAUS-INDEX (Schnellfinder), GELOESTE-BUGS (Regel für neue Bugs). Commit: 534b6e2 ✅ auf GitHub
 
 ## Nächste Schritte (offen)
 4. **Vor Veröffentlichung:** QS und Checkliste **docs/VOR-VEROEFFENTLICHUNG.md** noch einmal genau durchgehen (geplant mit Georg).
