@@ -575,8 +575,11 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </p>
 
         <h3 id="mok2-entwicklerkosten" style={{ fontSize: '1.1rem', color: '#5ffbf1', marginTop: '1.5rem', marginBottom: '0.5rem' }}>Geschätzte Entwicklerkosten-Rechnung (Orientierung)</h3>
-        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', marginBottom: '0.75rem' }}>
+        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', marginBottom: '0.5rem' }}>
           Grobe Schätzung – keine verbindliche Rechnung. Zum Nachvollziehen und Anpassen (z. B. Stundensatz, Stunden).
+        </p>
+        <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.95)', marginBottom: '0.75rem', padding: '0.6rem', background: 'rgba(95,251,241,0.08)', borderLeft: '3px solid rgba(95,251,241,0.5)', lineHeight: 1.55 }}>
+          <strong>Wichtig:</strong> Die Summe ist <strong>kein „Verdienst“</strong> des Erbauers. Sie ist der <strong>Wiederbeschaffungswert</strong>: Was es kosten würde, wenn man ein professionelles Team (Agentur/Freelancer) beauftragen würde, diese Lösung <em>neu zu bauen</em>. Wer als Quereinsteiger mit viel Zeit und z. B. AI-Unterstützung selbst baut, hat keine Rechnung über 500.000 € bezahlt – der <em>Wert des entstandenen Produkts</em> für Bewertung, Partner oder Verkauf liegt trotzdem in dieser Größenordnung, weil ein Dritter genau das zahlen müsste, um Ähnliches zu bekommen.
         </p>
         <table style={{ width: '100%', maxWidth: 640, borderCollapse: 'collapse', fontSize: '0.9rem', marginBottom: '1rem' }}>
           <thead>
@@ -627,7 +630,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           </tbody>
         </table>
         <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>
-          <strong>Hinweis:</strong> Stundensätze orientieren sich an Freelancer/kleine Agentur (AT/DE). Je nach Region und Aufwand anpassbar. Gesamtsumme dient der Einordnung „was steckt drin“ – z. B. für Partner, Investoren, interne Rechenschaft.
+          <strong>Hinweis:</strong> Stundensätze orientieren sich an Freelancer/kleine Agentur (AT/DE). Je nach Region und Aufwand anpassbar. Gesamtsumme = Wiederbeschaffungswert („was müsste man zahlen, um das neu bauen zu lassen“), nicht das eigene Einkommen aus der Entwicklung – z. B. für Partner, Investoren, interne Rechenschaft.
         </p>
 
         <h3 id="mok2-marktwert" style={{ fontSize: '1.1rem', color: '#5ffbf1', marginTop: '1.5rem', marginBottom: '0.5rem' }}>Grobe Marktwertberechnung (Orientierung)</h3>
