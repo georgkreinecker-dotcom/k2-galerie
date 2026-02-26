@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { getCurrentTenantId } from '../config/tenantConfig'
 import { MUSTER_TEXTE } from '../config/tenantConfig'
@@ -29,8 +29,10 @@ function buildInitialVita(artistId: 'martina' | 'georg', data: { name?: string; 
 
 export default function VitaPage() {
   const { artistId } = useParams<{ artistId: string }>()
+  const location = useLocation()
   const id = (artistId === 'martina' || artistId === 'georg' ? artistId : 'martina') as 'martina' | 'georg'
-  const isOeffentlich = getCurrentTenantId() === 'oeffentlich'
+  // Guide/Demo: von Guide mit fromOeffentlich → ök2-Vita anzeigen
+  const isOeffentlich = getCurrentTenantId() === 'oeffentlich' || (location.state as { fromOeffentlich?: boolean })?.fromOeffentlich === true
   const storageKey = isOeffentlich ? OEFFENTLICH_VITA_KEYS[id] : STORAGE_KEYS[id]
   const [vita, setVita] = useState('')
   const [saved, setSaved] = useState(false)

@@ -43,10 +43,15 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Galerie-Guide („In die Galerie“):** Keine Datenerhebung mehr – keine Frage „Wie würdest du dich beschreiben?“ und keine 4 Optionen. Nur noch: Begrüßung → ein Schritt „Schau dich um – oder klick unten, um in den Admin zu gehen“ mit Button „In den Admin →“. Commit: 290606e ✅ auf GitHub
+- (wird nach Push eingetragen)
+
+## Was gerade gemacht (Guide → ök2)
+- **Admin:** Werke werden bei Kontextwechsel (`location.search`) neu geladen – wenn man mit Guide auf `/admin?context=oeffentlich` geht, werden nicht mehr K2-Daten angezeigt.
+- **Guide Vita/Shop:** Klick auf „Dokumente & Vita“ bzw. „Kassa“ navigiert mit `state: { fromOeffentlich: true }` → Shop und Vita zeigen Demo-Inhalt (ök2).
+- **VitaPage:** Unterstützt `location.state.fromOeffentlich` – von Guide geöffnet = ök2-Vita.
 
 ## Nächste Schritte (offen)
-- **Test:** Galerie-Seite mit Namen (von Entdecken) → Guide zeigt nur Begrüßung + „In den Admin“.
+- **Test:** Guide durchklicken (Events, Werke, Dokumente, Kassa) – überall ök2, nicht K2.
 - **Admin im Hub-Design (Phase 1):** Startansicht „Was möchtest du heute tun?“ durch 3-Spalten-Hub ersetzt – links Bereiche (Meine Werke, Werkkatalog, Events), Mitte Fokus-Karte + „↓ Direkt hier unten“, rechts Kassa/Einstellungen/Assistent + Galerie ansehen. K2/ök2/VK2 berücksichtigt.
 4. **Vor Veröffentlichung:** Erster Durchgang in **docs/VOR-VEROEFFENTLICHUNG.md** erledigt (Stand-Tabelle für Georg). **Mit Georg:** Checkboxen durchgehen, npm audit + AGB/Impressum-Inhalte prüfen und abhaken.
 5. **Praxis-Test gestartet (26.02.26):** Git-Teil erledigt (Commit 16283ea, Tag vor-praxistest-2026-02-26). Noch empfohlen: App-Vollbackup herunterladen; backupmicro Hard-Backup wenn angesteckt. **Ab jetzt:** Galerien befüllen + testen; weitere Änderungen wie bisher (commit, push, drei Regeln).

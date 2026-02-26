@@ -2462,7 +2462,7 @@ function ScreenshotExportAdmin() {
   }, [artworkCategory]) // NUR Kategorie - verhindert Render-Loop!
 
 
-  // Werke aus localStorage laden – erst 3 s nach Mount (starker Reopen-Crash-Schutz)
+  // Werke aus localStorage laden – bei Kontextwechsel (K2/ök2/VK2) neu laden, sonst zeigt Admin nach Guide-Klick weiter K2-Daten
   useEffect(() => {
     let isMounted = true
     const t = setTimeout(() => {
@@ -2481,7 +2481,7 @@ function ScreenshotExportAdmin() {
       }
     }, 3000)
     return () => { isMounted = false; clearTimeout(t) }
-  }, [])
+  }, [location.search])
   
   // WICHTIG: Event-Listener für Mobile-Updates (damit Mobile-Werke im Admin angezeigt werden)
   useEffect(() => {

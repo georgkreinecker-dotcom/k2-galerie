@@ -362,9 +362,19 @@ export function GlobaleGuideBegleitung() {
     setBesuchtSet(prev => new Set(prev).add(aktuellerIdx))
   }
 
+  // Guide führt immer in ök2 – Vita/Shop mit fromOeffentlich, damit Demo-Inhalt angezeigt wird
+  const navigateToStation = (route: string) => {
+    const isVitaOrShop = route.includes('/vita') || route.includes('/shop')
+    if (isVitaOrShop) {
+      navigate(route, { state: { fromOeffentlich: true } })
+    } else {
+      navigate(route)
+    }
+  }
+
   const zeigeStation = () => {
     setBesuchtSet(prev => new Set(prev).add(aktuellerIdx))
-    navigate(aktuellerSchritt.route)
+    navigateToStation(aktuellerSchritt.route)
   }
 
   const weiter = () => {
@@ -372,7 +382,7 @@ export function GlobaleGuideBegleitung() {
       setBesuchtSet(prev => new Set(prev).add(aktuellerIdx))
       const naechsterIdx = aktuellerIdx + 1
       setAktuellerIdx(naechsterIdx)
-      navigate(schritte[naechsterIdx].route)
+      navigateToStation(schritte[naechsterIdx].route)
     }
   }
 
