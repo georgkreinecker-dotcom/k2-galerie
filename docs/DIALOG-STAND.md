@@ -29,7 +29,7 @@ Favoriten (max 5): Vorreihung in Galerie, Option beim Anlegen, VK2 wie gehabt
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Event-Flyer/alle PR-Dokumente im grünen Bereich** – Sofort-Eintrag in Liste + Zurück lädt Liste; Presse/Social blob-Bug behoben. Commit: d479a24 ✅ (noch nicht gepusht)
+- **Event-Flyer/alle PR-Dokumente im grünen Bereich** – Sofort-Eintrag in Liste + Zurück lädt Liste; Presse/Social blob-Bug behoben. Commit: d479a24 ✅ auf GitHub
 
 ## Nächste Schritte (offen)
 4. **Vor Veröffentlichung:** QS und Checkliste **docs/VOR-VEROEFFENTLICHUNG.md** noch einmal genau durchgehen (geplant mit Georg).
