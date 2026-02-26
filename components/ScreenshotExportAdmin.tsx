@@ -867,8 +867,8 @@ function ScreenshotExportAdmin() {
   const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'design' | 'einstellungen' | 'assistent'>(initialTab)
   const [guideBannerClosed, setGuideBannerClosed] = useState(false)
   const [guideBegleiterGeschlossen, setGuideBegleiterGeschlossen] = useState(false)
-  /** Hover im Admin-Hub: Mitte zeigt Beschreibung des angezeigten Bereichs */
-  const [hubHoveredArea, setHubHoveredArea] = useState<{ emoji: string; name: string; beschreibung: string; tab: string } | null>(null)
+  /** Hover im Admin-Hub: Mitte zeigt Beschreibung – gespeichert als tab (string), damit alle Icons zuverlässig reagieren */
+  const [hubHoveredTab, setHubHoveredTab] = useState<string | null>(null)
   const initialEventplanSubTab = (() => {
     try {
       const p = new URLSearchParams(window.location.search)
@@ -9258,15 +9258,15 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       <p style={{ color: s.muted, margin: 0, fontSize: '0.9rem', marginBottom: '1rem' }}>
                         Das ist dein Guide – klick auf einen Bereich, dann siehst du was dich erwartet.
                       </p>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 'clamp(1.25rem, 3vw, 2rem)', alignItems: 'stretch' }} onMouseLeave={() => setHubHoveredArea(null)}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 'clamp(1.25rem, 3vw, 2rem)', alignItems: 'stretch' }} onMouseLeave={() => setHubHoveredTab(null)}>
                         {/* Links: Bereiche – zum Zentrum (justifySelf end) */}
                         <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: 'clamp(130px, 16vw, 160px)', justifySelf: 'end' }}>
                           {linksBereiche.map((b) => (
                             <button key={b.tab} type="button"
                               onClick={() => { setActiveTab(b.tab as any); window.scrollTo({ top: 200, behavior: 'smooth' }) }}
                               onDoubleClick={() => { setActiveTab(b.tab as any); window.scrollTo({ top: 200, behavior: 'smooth' }) }}
-                              onMouseEnter={() => setHubHoveredArea(b)}
-                              onMouseLeave={() => setHubHoveredArea(null)}
+                              onMouseEnter={() => setHubHoveredTab(b.tab)}
+                              onMouseLeave={() => setHubHoveredTab(null)}
                               style={{
                                 padding: '0.65rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
                                 background: b.tab === 'werke' ? akzentGrad : s.bgCard,
@@ -9282,9 +9282,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             </button>
                           ))}
                         </div>
-                        {/* Mitte: zeigt Beschreibung des Bereichs unter dem Pfeil (Hover) oder Standard */}
+                        {/* Mitte: zeigt Beschreibung des Bereichs unter dem Pfeil (Hover) oder Standard – Lookup per tab für alle Icons (auch Werkkatalog, Events) */}
                         {(() => {
-                          const fokus = hubHoveredArea ?? linksBereiche[0]
+                          const allAreas = [...linksBereiche, ...rechtsBereiche]
+                          const fokus = (hubHoveredTab ? allAreas.find((a) => a.tab === hubHoveredTab) : null) ?? linksBereiche[0]
                           const openFokus = () => {
                             if (fokus.tab === 'kassa') openKasse()
                             else if (fokus.tab === 'werke') scrollToWerke()
@@ -9314,7 +9315,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             <button key={b.tab} type="button"
                               onClick={() => { if (b.tab === 'kassa') openKasse(); else { setActiveTab(b.tab as any); window.scrollTo({ top: 200, behavior: 'smooth' }) } }}
                               onDoubleClick={() => { if (b.tab === 'kassa') openKasse(); else { setActiveTab(b.tab as any); window.scrollTo({ top: 200, behavior: 'smooth' }) } }}
-                              onMouseEnter={(e) => { setHubHoveredArea(b); e.currentTarget.style.borderColor = `${s.accent}66` }}
+                              onMouseEnter={(e) => { setHubHoveredTab(b.tab); e.currentTarget.style.borderColor = `${s.accent}66` }}
                               onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}22` }}
                               style={{
                                 padding: '0.65rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem',

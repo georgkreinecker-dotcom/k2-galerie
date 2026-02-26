@@ -41,7 +41,7 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Admin-Hub** – Mittelteil ins Zentrum (Grid 1fr auto 1fr), Icons links/rechts größer (1.45rem). Commit: ab1a2af ✅ auf GitHub
+- **Admin-Hub** – Icons zum Zentrum (mittlerer Abstand), Hover auf Icon zeigt Beschreibung in der Mitte; Doppelklick auf Icon oder Klick auf „↓ … öffnen“ öffnet den Bereich. Commit: 49ddbde ✅ auf GitHub
 
 ## Nächste Schritte (offen)
 - **Admin im Hub-Design (Phase 1):** Startansicht „Was möchtest du heute tun?“ durch 3-Spalten-Hub ersetzt – links Bereiche (Meine Werke, Werkkatalog, Events), Mitte Fokus-Karte + „↓ Direkt hier unten“, rechts Kassa/Einstellungen/Assistent + Galerie ansehen. K2/ök2/VK2 berücksichtigt.
