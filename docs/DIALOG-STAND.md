@@ -21,7 +21,7 @@ Favoriten (max 5): Vorreihung in Galerie, Option beim Anlegen, VK2 wie gehabt
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- Premium-Platzierung: eigene Sektion „Erweiterte Funktionen (Premium)“ am Ende des Karten-Grids (wird mit diesem Commit gepusht).
+- Premium-Platzierung: eigene Sektion „Erweiterte Funktionen (Premium)“ am Ende des Karten-Grids – Commit: 1d4c621 ✅ auf GitHub
 - Stand-Badge: Kontext (context=vk2) beim Reload erhalten – Commit: 8d28384 ✅ auf GitHub
 
 ## Nächste Schritte (offen)
