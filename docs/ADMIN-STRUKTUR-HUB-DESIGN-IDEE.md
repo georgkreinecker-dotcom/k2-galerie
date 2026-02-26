@@ -1,7 +1,7 @@
 # Admin-Struktur im Hub-Design – Idee / Prüfauftrag
 
 **Stand:** 26.02.26  
-**Status:** Idee festgehalten, Umsetzung offen (wann Georg möchte).
+**Status:** Phase 1 umgesetzt (Admin-Startansicht = Hub-Layout). Optional: Phase 2 (gemeinsame HubLayout-Komponente).
 
 ---
 

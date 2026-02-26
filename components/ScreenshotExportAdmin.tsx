@@ -9217,133 +9217,122 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   )
                 })()}
 
-                {/* Begrüßung + Karten-Grid: nur wenn kein Guide aktiv */}
-                {!(guideVorname && isOeffentlichAdminContext() && !guideBannerClosed) && !guideFlowAktiv && (
-                <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
-                  <h2 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', fontWeight: 700, color: s.text, margin: '0 0 0.35rem' }}>
-                    Was möchtest du heute tun?
-                  </h2>
-                  <p style={{ color: s.muted, margin: 0, fontSize: '0.95rem' }}>
-                    Wähle einen Bereich – alles ist einen Klick entfernt.
-                  </p>
-                </div>
-                )}
-
-                {/* Karten-Grid: nur ohne Guide */}
-                {!(guideVorname && isOeffentlichAdminContext() && !guideBannerClosed) && !guideFlowAktiv && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(1rem, 2.5vw, 1.5rem)' }}>
-
-                  {/* Werke */}
-                  <button type="button" onClick={() => {/* bleibt auf werke, scrollt runter */}} style={{ textAlign: 'left', cursor: 'default', background: s.bgCard, border: `2px solid ${s.accent}33`, borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease' }}>
-                    <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>🎨</div>
-                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>
-                      {isVk2AdminContext() ? 'Vereinsmitglieder' : 'Meine Werke'}
+                {/* Hub-Layout (wie Entdecken): nur wenn kein Guide aktiv – 3 Spalten, zielsicher, eine Hauptaktion */}
+                {!(guideVorname && isOeffentlichAdminContext() && !guideBannerClosed) && !guideFlowAktiv && (() => {
+                  const akzent = s.accent
+                  const akzentGrad = `linear-gradient(135deg, ${s.accent} 0%, #d96b35 100%)`
+                  type HubArea = { emoji: string; name: string; beschreibung: string; tab: string }
+                  const linksBereiche: HubArea[] = isVk2AdminContext() ? [
+                    { emoji: '🖼️', name: 'Vereinsmitglieder', beschreibung: 'Mitglieder hinzufügen, bearbeiten, verwalten – Fotos, Profile.', tab: 'werke' },
+                    { emoji: '🎟️', name: 'Events & Werbung', beschreibung: 'Events planen, Flyer und Newsletter für den Verein erstellen.', tab: 'eventplan' },
+                    { emoji: '✨', name: 'Aussehen & Design', beschreibung: 'Farben, Texte, Bilder – die Galerie nach euren Wünschen.', tab: 'design' },
+                  ] : [
+                    { emoji: '🖼️', name: 'Meine Werke', beschreibung: 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist live in deiner Galerie.', tab: 'werke' },
+                    { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke filtern, suchen, drucken – nach Status, Kategorie, Datum, Preis.', tab: 'katalog' },
+                    { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Events planen, Einladungen und Flyer erstellen, Presse, Social Media.', tab: 'eventplan' },
+                  ]
+                  const rechtsBereiche: HubArea[] = isVk2AdminContext() ? [
+                    { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
+                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Vereinsdaten, Kontakt, Mitglieder verwalten.', tab: 'einstellungen' },
+                    { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Der Assistent führt euch durch die Einrichtung.', tab: 'assistent' },
+                  ] : isOeffentlichAdminContext() ? [
+                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Meine Daten, Kontakt, Backup.', tab: 'einstellungen' },
+                    { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Neu hier? Der Assistent führt dich durch die Einrichtung.', tab: 'assistent' },
+                  ] : [
+                    { emoji: '🧾', name: 'Kassa & Verkauf', beschreibung: 'Werk verkauft? Eintragen, Beleg drucken – vom Handy direkt.', tab: 'kassa' },
+                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Meine Daten, Drucker, Sicherheit, Backup.', tab: 'einstellungen' },
+                    { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Neu hier? Der Assistent führt dich durch die Einrichtung.', tab: 'assistent' },
+                  ]
+                  const scrollToWerke = () => document.getElementById('admin-werke-inhalt')?.scrollIntoView({ behavior: 'smooth' })
+                  const openKasse = () => {
+                    try { sessionStorage.setItem('k2-admin-context', isOeffentlichAdminContext() ? 'oeffentlich' : 'k2') } catch (_) {}
+                    window.location.href = '/projects/k2-galerie/shop?openAsKasse=1'
+                  }
+                  const galerieUrl = isOeffentlichAdminContext() ? '/projects/k2-galerie/galerie-oeffentlich' : '/projects/k2-galerie/galerie'
+                  return (
+                    <div style={{ marginBottom: 'clamp(2rem, 4vw, 2.5rem)' }}>
+                      <h2 style={{ fontSize: 'clamp(1.2rem, 2.5vw, 1.5rem)', fontWeight: 700, color: s.text, margin: '0 0 0.25rem' }}>
+                        Was möchtest du heute tun?
+                      </h2>
+                      <p style={{ color: s.muted, margin: 0, fontSize: '0.9rem', marginBottom: '1rem' }}>
+                        Das ist dein Guide – klick auf einen Bereich, dann siehst du was dich erwartet.
+                      </p>
+                      <div style={{ display: 'flex', gap: 'clamp(0.75rem, 2vw, 1.25rem)', alignItems: 'stretch', flexWrap: 'wrap' }}>
+                        {/* Links: Bereiche */}
+                        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: 'clamp(130px, 16vw, 160px)', flexShrink: 0 }}>
+                          {linksBereiche.map((b) => (
+                            <button key={b.tab} type="button"
+                              onClick={() => { setActiveTab(b.tab as any); window.scrollTo({ top: 200, behavior: 'smooth' }) }}
+                              style={{
+                                padding: '0.65rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                background: b.tab === 'werke' ? akzentGrad : s.bgCard,
+                                border: b.tab === 'werke' ? 'none' : `1px solid ${s.accent}22`,
+                                borderRadius: '12px', cursor: 'pointer', fontFamily: 'inherit',
+                                transition: 'all 0.15s', textAlign: 'left' as const,
+                                boxShadow: b.tab === 'werke' ? `0 3px 12px ${akzent}44` : '0 1px 3px rgba(0,0,0,0.06)',
+                                color: b.tab === 'werke' ? '#fff' : s.text,
+                                fontWeight: b.tab === 'werke' ? 700 : 400,
+                              }}>
+                              <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{b.emoji}</span>
+                              <span style={{ fontSize: '0.78rem', lineHeight: 1.3 }}>{b.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                        {/* Mitte: Fokus Meine Werke / Vereinsmitglieder */}
+                        <div style={{ flex: 1, minWidth: 0, background: s.bgCard, border: `2px solid ${s.accent}33`, borderRadius: '16px', padding: 'clamp(1.1rem, 2.5vw, 1.5rem)', boxShadow: `0 4px 20px ${s.accent}18`, display: 'flex', flexDirection: 'column' as const, gap: '0.75rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                            <div style={{ width: 40, height: 40, borderRadius: '50%', background: akzentGrad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>🖼️</div>
+                            <div>
+                              <div style={{ fontSize: '0.6rem', color: s.accent, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em' }}>Galerie-Guide</div>
+                              <div style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>{isVk2AdminContext() ? 'Vereinsmitglieder' : 'Meine Werke'}</div>
+                            </div>
+                          </div>
+                          <div style={{ fontSize: '0.88rem', color: s.muted, lineHeight: 1.6, flex: 1 }}>
+                            {isVk2AdminContext() ? 'Mitglieder hinzufügen, bearbeiten, verwalten – Fotos, Profile.' : 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist live in deiner Galerie.'}
+                          </div>
+                          <button type="button" onClick={scrollToWerke}
+                            style={{ width: '100%', padding: '0.8rem', background: akzentGrad, border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit', boxShadow: `0 4px 14px ${akzent}44` }}>
+                            ↓ Direkt hier unten
+                          </button>
+                          <div style={{ fontSize: '0.72rem', color: s.muted, textAlign: 'center' as const }}>Kostenlos · Keine Anmeldung · Jederzeit kündbar</div>
+                        </div>
+                        {/* Rechts: Schnellzugriffe */}
+                        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: 'clamp(130px, 16vw, 160px)', flexShrink: 0 }}>
+                          {rechtsBereiche.map((b) => (
+                            <button key={b.tab} type="button"
+                              onClick={() => { if (b.tab === 'kassa') openKasse(); else { setActiveTab(b.tab as any); window.scrollTo({ top: 200, behavior: 'smooth' }) } }}
+                              style={{
+                                padding: '0.65rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                background: s.bgCard,
+                                border: `1px solid ${s.accent}22`,
+                                borderRadius: '12px', cursor: 'pointer', fontFamily: 'inherit',
+                                transition: 'all 0.15s', textAlign: 'left' as const,
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                                color: s.text,
+                                fontWeight: 400,
+                              }}
+                              onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66` }}
+                              onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}22` }}>
+                              <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{b.emoji}</span>
+                              <span style={{ fontSize: '0.78rem', lineHeight: 1.3 }}>{b.name}</span>
+                            </button>
+                          ))}
+                          <a href={galerieUrl} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.65rem 0.75rem', background: `${s.accent}12`, border: `1px solid ${s.accent}33`, borderRadius: '12px', color: s.accent, fontSize: '0.78rem', fontWeight: 600, textDecoration: 'none' }}>
+                            <span>🎨</span> Galerie ansehen →
+                          </a>
+                        </div>
+                      </div>
+                      {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
+                        <div style={{ marginTop: '1rem', paddingTop: '0.6rem', borderTop: `1px solid ${s.accent}22` }}>
+                          <div style={{ fontSize: '0.8rem', color: s.muted }}>Erweiterte Funktionen (Premium): <strong style={{ color: s.text }}>Vorerst noch nicht verfügbar</strong> – daran wird gearbeitet.</div>
+                        </div>
+                      )}
                     </div>
-                    <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
-                      {isVk2AdminContext() ? 'Mitglieder hinzufügen, bearbeiten, verwalten' : 'Werke hinzufügen, bearbeiten, veröffentlichen'}
-                    </div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>↓ Direkt hier unten</div>
-                  </button>
-
-                  {/* Werkkatalog – nur K2/ök2, nicht VK2 (VK2 hat Mitglieder, keine Werkdatenbank) */}
-                  {!isVk2AdminContext() && (
-                  <button type="button" onClick={() => setActiveTab('katalog')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: `2px solid ${s.accent}22`, borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.transform = 'translateY(-2px)' }}
-                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}22`; e.currentTarget.style.transform = 'translateY(0)' }}
-                  >
-                    <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📋</div>
-                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Werkkatalog</div>
-                    <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
-                      Alle Werke filtern, suchen, drucken – nach Status, Kategorie, Datum, Preis
-                    </div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Öffnen →</div>
-                  </button>
-                  )}
-
-                  {/* Statistik – nur K2, nicht VK2/ök2 */}
-                  {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
-                  <button type="button" onClick={() => setActiveTab('statistik')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: `2px solid ${s.accent}22`, borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.transform = 'translateY(-2px)' }}
-                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}22`; e.currentTarget.style.transform = 'translateY(0)' }}
-                  >
-                    <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📊</div>
-                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Verkaufsstatistik</div>
-                    <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
-                      Umsatz, meistverkaufte Werke, Kategorien, Zeitraum-Auswertung
-                    </div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Öffnen →</div>
-                  </button>
-                  )}
-
-                  {/* Eventplanung / VK2: Vereins-Werbematerial */}
-                  <button type="button" onClick={() => setActiveTab('eventplan')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: `2px solid ${s.accent}22`, borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.transform = 'translateY(-2px)' }}
-                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}22`; e.currentTarget.style.transform = 'translateY(0)' }}
-                  >
-                    <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📢</div>
-                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>
-                      {isVk2AdminContext() ? 'Vereins-Events & Werbematerial' : 'Veranstaltungen & Werbung'}
-                    </div>
-                    <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
-                      {isVk2AdminContext() ? 'Events planen, Flyer und Newsletter für den Verein erstellen' : 'Events planen, Einladungen und Flyer erstellen, Presse, Social Media'}
-                    </div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Öffnen →</div>
-                  </button>
-
-                  {/* Design */}
-                  <button type="button" onClick={() => setActiveTab('design')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: `2px solid ${s.accent}22`, borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.transform = 'translateY(-2px)' }}
-                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}22`; e.currentTarget.style.transform = 'translateY(0)' }}
-                  >
-                    <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>✨</div>
-                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Aussehen der Galerie</div>
-                    <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
-                      Nach deinen Wünschen anpassen – Farben, Texte, Bilder, Theme
-                    </div>
-                    <div style={{ padding: '0.5rem 1rem', background: `linear-gradient(135deg, ${s.accent} 0%, #d96b35 100%)`, color: '#fff', borderRadius: 8, fontSize: '0.9rem', fontWeight: 700 }}>✨ Jetzt gestalten →</div>
-                  </button>
-
-                  {/* Einstellungen */}
-                  <button type="button" onClick={() => setActiveTab('einstellungen')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: `2px solid ${s.accent}22`, borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.transform = 'translateY(-2px)' }}
-                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}22`; e.currentTarget.style.transform = 'translateY(0)' }}
-                  >
-                    <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>⚙️</div>
-                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Einstellungen</div>
-                    <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
-                      Meine Daten (Name, Kontakt, Adresse), Drucker, Sicherheit, Backup
-                    </div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Öffnen →</div>
-                  </button>
-
-                  {/* Assistent */}
-                  <button type="button" onClick={() => setActiveTab('assistent')} style={{ textAlign: 'left', cursor: 'pointer', background: `linear-gradient(135deg, ${s.accent}12, ${s.accent}06)`, border: `2px solid ${s.accent}44`, borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}88`; e.currentTarget.style.transform = 'translateY(-2px)' }}
-                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}44`; e.currentTarget.style.transform = 'translateY(0)' }}
-                  >
-                    <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>🤖</div>
-                    <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.accent, marginBottom: '0.35rem' }}>Schritt-für-Schritt-Hilfe</div>
-                    <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
-                      Neu hier? Der Assistent führt dich durch die Einrichtung
-                    </div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Öffnen →</div>
-                  </button>
-
-                  {/* Premium-Bereich: Hinweis „vorerst nicht verfügbar“, Platzhalter für die Zukunft */}
-                  {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
-                  <div style={{ gridColumn: '1 / -1', marginTop: '1rem', paddingTop: '0.6rem', borderTop: `1px solid ${s.accent}22` }}>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.muted, marginBottom: '0.4rem' }}>Erweiterte Funktionen (Premium)</div>
-                    <div style={{ background: `${s.bgCard}`, border: `1px solid rgba(251,191,36,0.25)`, borderRadius: 10, padding: '0.65rem 1rem', fontSize: '0.8rem', color: s.muted, lineHeight: 1.5 }}>
-                      <strong style={{ color: s.text }}>Vorerst noch nicht verfügbar</strong> – daran wird gearbeitet. Geplant sind u. a. Echtheitszertifikate, Newsletter & Einladungen, Pressemappe.
-                    </div>
-                  </div>
-                  )}
-
-                </div>
-                )}
+                  )
+                })()}
 
                 {/* Trennlinie vor Werke-Inhalt */}
-                <div style={{ margin: 'clamp(2rem, 5vw, 3rem) 0 clamp(1rem, 3vw, 1.5rem)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div id="admin-werke-inhalt" style={{ margin: 'clamp(2rem, 5vw, 3rem) 0 clamp(1rem, 3vw, 1.5rem)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <div style={{ flex: 1, height: 1, background: `${s.accent}22` }} />
                   <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>🎨 {isVk2AdminContext() ? 'Vereinsmitglieder' : 'Meine Werke'}</span>
                   <div style={{ flex: 1, height: 1, background: `${s.accent}22` }} />
