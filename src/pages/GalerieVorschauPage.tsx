@@ -9,7 +9,7 @@ import {
   loadArtworksFromSupabase,
   isSupabaseConfigured
 } from '../utils/supabaseClient'
-import { sortArtworksNewestFirst } from '../utils/artworkSort'
+import { sortArtworksFavoritesFirstThenNewest } from '../utils/artworkSort'
 import { appendToHistory } from '../utils/artworkHistory'
 import { tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from '../../components/SafeMode'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
@@ -2655,7 +2655,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               }
             } catch (_) {}
           }
-          const filteredArtworks = sortArtworksNewestFirst(
+          const filteredArtworks = sortArtworksFavoritesFirstThenNewest(
             currentArtworks.filter((artwork) => {
               if (!artwork) return false
               if (filter === 'alle') {

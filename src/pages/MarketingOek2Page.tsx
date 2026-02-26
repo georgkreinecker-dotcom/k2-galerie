@@ -210,6 +210,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <div className="marketing-oek2-no-print" style={{ marginTop: '1.5rem', padding: '1rem 1.25rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.35)', borderRadius: '10px' }}>
           <h3 style={{ fontSize: '1rem', margin: '0 0 0.75rem', color: '#5ffbf1', fontWeight: 600 }}>📋 Struktur der mök2</h3>
           <ol style={{ margin: 0, paddingLeft: '1.35rem', lineHeight: 1.9, color: 'rgba(255,255,255,0.95)', fontSize: '0.95rem' }}>
+            <li><a href="#mok2-was-kann-die-app" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Was kann die App?</strong> (ök2 | VK2 – kurz)</a></li>
             <li><a href="#mok2-1" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>USPs</strong> (Unique Selling Points)</a></li>
             <li><a href="#mok2-2" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Marktchancen – Stärken</strong></a></li>
             <li><a href="#mok2-3" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Marktchancen – Herausforderungen</strong></a></li>
@@ -240,6 +241,37 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>2. {botschaft}</p>
         </div>
       )}
+
+      {/* 0. Was kann die App? – ganz kurz für Interessenten (ök2 | VK2) */}
+      <section id="mok2-was-kann-die-app" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Was kann die App? Was bringt mir das?
+        </h2>
+        <p style={{ marginBottom: '1rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)' }}>
+          Zwei Varianten – auf einen Blick:
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
+          <div style={{ padding: '1rem 1.1rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.35)', borderRadius: 10 }}>
+            <div style={{ fontSize: '1rem', fontWeight: 700, color: '#5ffbf1', marginBottom: '0.5rem' }}>ök2 – Deine Galerie (Lizenz)</div>
+            <ul style={{ margin: 0, paddingLeft: '1.2em', lineHeight: 1.55, fontSize: '0.88rem', color: 'rgba(255,255,255,0.9)' }}>
+              <li>Eigene Galerie im Netz: Werke, Vita, Shop</li>
+              <li>Events planen, Einladungen &amp; Flyer aus der App</li>
+              <li>Kasse &amp; Etiketten (Verkauf vor Ort, WLAN-Drucker)</li>
+              <li>Marketing aus einem Guss: Newsletter, Presse, Social</li>
+              <li>Ein Stand auf allen Geräten (Handy, Tablet, Rechner)</li>
+            </ul>
+          </div>
+          <div style={{ padding: '1rem 1.1rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.35)', borderRadius: 10 }}>
+            <div style={{ fontSize: '1rem', fontWeight: 700, color: '#fbbf24', marginBottom: '0.5rem' }}>VK2 – Vereinsplattform</div>
+            <ul style={{ margin: 0, paddingLeft: '1.2em', lineHeight: 1.55, fontSize: '0.88rem', color: 'rgba(255,255,255,0.9)' }}>
+              <li>Gemeinsame Vereinsgalerie + Mitglieder mit eigener Galerie</li>
+              <li>Vereinskatalog: schönste Werke aller Lizenzmitglieder (PDF, filterbar)</li>
+              <li>Events &amp; Werbung für den Verein, einheitliches Design</li>
+              <li>Mitglieder verwalten, Lizenzen, Dokumente</li>
+            </ul>
+          </div>
+        </div>
+      </section>
 
       {/* 1. Markteinschätzung: USPs */}
       <section id="mok2-1" style={{ marginBottom: '2rem' }}>

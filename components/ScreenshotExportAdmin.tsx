@@ -315,7 +315,7 @@ const OEF_DESIGN_DEFAULT = {
 import { checkLocalStorageSize, cleanupLargeImages, getLocalStorageReport, tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from './SafeMode'
 import { GalerieAssistent } from '../src/components/GalerieAssistent'
 import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps, createK2Backup, createOek2Backup, createVk2Backup, downloadBackupAsFile, restoreK2FromBackup, restoreOek2FromBackup, restoreVk2FromBackup, detectBackupKontext } from '../src/utils/autoSave'
-import { sortArtworksNewestFirst } from '../src/utils/artworkSort'
+import { sortArtworksNewestFirst, sortArtworksFavoritesFirstThenNewest } from '../src/utils/artworkSort'
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
 import { writePngDpi } from 'png-dpi-reader-writer'
 
@@ -2102,7 +2102,7 @@ function ScreenshotExportAdmin() {
         const artworksById = new Map<string, any>()
         artworksStored.forEach((a: any) => { const k = a?.number || a?.id; if (k) artworksById.set(String(k), a) })
         artworksState.forEach((a: any) => { const k = a?.number || a?.id; if (k) artworksById.set(String(k), a) })
-        const artworksForExport = sortArtworksNewestFirst(Array.from(artworksById.values()))
+        const artworksForExport = sortArtworksFavoritesFirstThenNewest(Array.from(artworksById.values()))
 
         const data = {
           martina: martinaExport,
@@ -10006,14 +10006,15 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     }}>
                       {artwork.inExhibition && <span style={{ display: 'block' }}>✓ Ausstellung</span>}
                       {artwork.inShop && <span style={{ display: 'block' }}>✓ Shop</span>}
-                      {isVk2AdminContext() && (() => {
+                      {(() => {
                         const katalogAnzahl = allArtworks.filter((a: any) => a.imVereinskatalog).length
                         const istDrin = !!artwork.imVereinskatalog
                         const limitErreicht = !istDrin && katalogAnzahl >= 5
+                        const vk2 = isVk2AdminContext()
                         return (
                           <button
                             type="button"
-                            title={limitErreicht ? 'Limit (5) erreicht – erst anderes Werk abwählen' : (istDrin ? 'Aus Vereinskatalog entfernen' : 'Im Vereinskatalog zeigen')}
+                            title={limitErreicht ? 'Limit (5) erreicht – erst anderes Werk abwählen' : (istDrin ? 'Favorit entfernen' : 'Als Favorit (vorne in Galerie' + (vk2 ? ' & Vereinskatalog' : '') + ')')}
                             onClick={() => {
                               if (limitErreicht) return
                               const updated = allArtworks.map((a: any) => a.id === artwork.id ? { ...a, imVereinskatalog: !istDrin } : a)
@@ -10022,7 +10023,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             }}
                             style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.3rem', padding: '0.2rem 0.5rem', background: istDrin ? 'rgba(251,191,36,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${istDrin ? 'rgba(251,191,36,0.5)' : 'rgba(255,255,255,0.15)'}`, borderRadius: 6, color: istDrin ? '#fbbf24' : 'rgba(255,255,255,0.3)', fontSize: '0.72rem', cursor: limitErreicht ? 'not-allowed' : 'pointer', opacity: limitErreicht ? 0.5 : 1 }}
                           >
-                            🏆 {istDrin ? `Katalog ✓ (${katalogAnzahl}/5)` : `Katalog (${katalogAnzahl}/5)`}
+                            {vk2 ? '🏆' : '⭐'} {istDrin ? `Favorit ✓ (${katalogAnzahl}/5)` : `Favorit (${katalogAnzahl}/5)`}
                           </button>
                         )
                       })()}
@@ -16090,10 +16091,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     <input type="checkbox" checked={isInShop} onChange={(e) => setIsInShop(e.target.checked)} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
                     Im Online-Shop verfügbar
                   </label>
-                  {/* Vereinskatalog-Checkbox – nur für VK2-Mitglieder mit Lizenzgalerie */}
-                  {isVk2AdminContext() && (() => {
+                  {/* Favorit (max 5): Vorreihung in Galerie; bei VK2 zusätzlich im Vereinskatalog */}
+                  {(() => {
                     const katalogAnzahl = loadArtworks().filter((a: any) => a.imVereinskatalog && (!editingArtwork || a.id !== editingArtwork.id)).length
                     const limitErreicht = !isImVereinskatalog && katalogAnzahl >= 5
+                    const vk2 = isVk2AdminContext()
                     return (
                       <div style={{ marginTop: '0.25rem' }}>
                         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: limitErreicht ? 'rgba(255,140,66,0.5)' : '#fbbf24', cursor: limitErreicht ? 'not-allowed' : 'pointer', opacity: limitErreicht ? 0.6 : 1 }}>
@@ -16104,7 +16106,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             onChange={(e) => setIsImVereinskatalog(e.target.checked)}
                             style={{ width: '16px', height: '16px', cursor: limitErreicht ? 'not-allowed' : 'pointer', accentColor: '#fbbf24' }}
                           />
-                          🏆 Im Vereinskatalog zeigen
+                          {vk2 ? '🏆 Als Favorit (vorne in Galerie & Vereinskatalog, max 5)' : '⭐ Als Favorit (vorne in deiner Galerie, max 5)'}
                         </label>
                         <div style={{ marginTop: '0.2rem', fontSize: '0.72rem', color: limitErreicht ? '#ff8c42' : 'rgba(255,255,255,0.3)', paddingLeft: '1.5rem' }}>
                           {limitErreicht
