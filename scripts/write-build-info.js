@@ -50,7 +50,8 @@ if (jsonChanged) fs.writeFileSync(publicPath, jsonContent, 'utf8')
 {
   const ts = now.getTime()
   // Im iframe (Cursor Preview) KEIN location.replace – verhindert Reload-Schleifen und Totalabsturz
-const injectScript = '<script>(function(){if(window.self!==window.top)return;var b=' + ts + ';var o=location.origin;var p=location.pathname;var bust="v="+Date.now();var url=o+"/build-info.json?t="+Date.now()+"&r="+Math.random();fetch(url,{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b){try{var k="k2_updated";if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,"1");location.replace(o+p+"?"+bust);}}catch(e){}}}).catch(function(){});})();</script>'
+// Beim Reload bestehende Search-Params erhalten (z. B. empfehler=K2-E-XXX), nur v=Bust setzen – sonst bleibt Empfehlungs-Link hängen / verliert ID
+  const injectScript = '<script>(function(){if(window.self!==window.top)return;var b=' + ts + ';var o=location.origin;var p=location.pathname;var url=o+"/build-info.json?t="+Date.now()+"&r="+Math.random();fetch(url,{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b){try{var k="k2_updated";if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,"1");var q=location.search?location.search.slice(1):"";var params=new URLSearchParams(q);params.set("v",Date.now());location.replace(o+p+"?"+params.toString());}}catch(e){}}}).catch(function(){});})();</script>'
   const indexPath = path.join(__dirname, '..', 'index.html')
   let indexHtml = fs.readFileSync(indexPath, 'utf8')
   if (indexHtml.includes('<!-- BUILD_TS_INJECT -->')) {
