@@ -131,7 +131,7 @@ export const Vk2KatalogPage: React.FC = () => {
   const darfPdfDrucken = isMitgliedEingeloggt || isVk2Admin
 
   return (
-    <div style={{ minHeight: '100vh', background: s.bg, color: s.text, fontFamily: "'Inter', sans-serif" }}>
+    <div className="print-compact" style={{ minHeight: '100vh', background: s.bg, color: s.text, fontFamily: "'Inter', sans-serif" }}>
 
       {/* Header */}
       <header style={{ padding: '1.25rem 1.5rem', borderBottom: `1px solid ${s.border}`, display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
@@ -210,12 +210,13 @@ export const Vk2KatalogPage: React.FC = () => {
         )}
       </main>
 
-      {/* Print-Styles */}
+      {/* Print-Styles (seitensparend: @page aus index.css) */}
       <style>{`
         @media print {
           .no-print { display: none !important; }
           body { background: #fff !important; color: #111 !important; }
           header { border-bottom: 1px solid #ccc !important; }
+          main { padding: 0 2mm !important; }
         }
       `}</style>
     </div>

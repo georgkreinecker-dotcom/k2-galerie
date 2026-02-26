@@ -50,6 +50,10 @@ Während wir Galerien befüllen und testen, gilt **ohne Ausnahme**:
     ```
 - **Bedeutung:** Der Commit + Tag **vor-praxistest-2026-02-26** (bzw. das von euch gewählte Datum) ist der Stand „vor Befüllen“. Bei Bedarf: `git checkout vor-praxistest-2026-02-26` (oder den konkreten Commit) wiederherstellen.
 
+**✅ Erledigt (26.02.26):** Commit 16283ea, Tag **vor-praxistest-2026-02-26** auf GitHub gepusht.
+
+**Programmcode = höchste Priorität:** Der Code ist auf GitHub + Vercel sicher. Zusätzlich auf backupmicro: `bash scripts/backup-code-to-backupmicro.sh` (siehe Abschnitt „Wo was steht“).
+
 ### 3. Vercel: Deployment = Snapshot „vor Praxis-Test“
 
 - Nach dem Push baut Vercel automatisch.
@@ -80,8 +84,9 @@ Während wir Galerien befüllen und testen, gilt **ohne Ausnahme**:
 
 | Thema | Datei / Ort |
 |--------|-------------|
+| **Code auf backupmicro spiegeln** | **scripts/backup-code-to-backupmicro.sh** |
 | Backup & Vollbackup (Handbuch) | **public/k2team-handbuch/13-BACKUP-VOLLBACKUP-K2-GALERIE.md** |
-| Hard-Backup Skript | **scripts/hard-backup-to-backupmicro.sh** |
+| Hard-Backup Skript (Galeriedaten) | **scripts/hard-backup-to-backupmicro.sh** |
 | Vor Veröffentlichung (Checkliste) | **docs/VOR-VEROEFFENTLICHUNG.md** |
 | K2/ök2 Datentrennung | **docs/K2-OEK2-DATENTRENNUNG.md**, **.cursor/rules/k2-oek2-trennung.mdc** |
 | Niemals Kundendaten löschen | **.cursor/rules/niemals-kundendaten-loeschen.mdc** |

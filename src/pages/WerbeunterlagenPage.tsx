@@ -33,7 +33,7 @@ function loadBotschaft(): string {
 const printStyles = `
   @media print {
     .${PRINT_HIDE} { display: none !important; }
-    .werbeunterlagen-page { background: #fff !important; padding: 0 !important; color: #1c1a18 !important; }
+    .werbeunterlagen-page { background: #fff !important; padding: 0 2mm !important; color: #1c1a18 !important; }
     .werbeunterlagen-page .präsentationsmappe-seite { box-shadow: none !important; page-break-after: always; }
     .werbeunterlagen-page .social-mask-wrap { break-inside: avoid; }
     .werbeunterlagen-page .flyer-a5 { page-break-after: always; }
@@ -75,7 +75,7 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
   }
 
   return (
-    <div className="werbeunterlagen-page" style={{ background: s.bgDark, minHeight: '100vh', color: s.text, fontFamily: s.fontBody }}>
+    <div className="werbeunterlagen-page print-compact" style={{ background: s.bgDark, minHeight: '100vh', color: s.text, fontFamily: s.fontBody }}>
       <link rel="stylesheet" href={PROMO_FONTS_URL} />
       <style>{printStyles}</style>
 

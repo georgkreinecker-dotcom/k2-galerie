@@ -89,7 +89,7 @@ export function buildVitaDocumentHtml(
     h1 { font-size: 1.6rem; border-bottom: 3px solid ${accent}; padding-bottom: 0.5rem; margin-top: 0; }
     p { margin: 0.75rem 0; }
     .meta { color: ${muted}; font-size: 0.95rem; }
-    @media print { body { background: #fff; color: #111; } h1 { border-color: #333; } .meta { color: #555; } }
+    @media print { @page { margin: 10mm; size: A4; } body { background: #fff; color: #111; font-size: 9pt; line-height: 1.32; padding: 4mm 6mm; } h1 { border-color: #333; font-size: 1.15rem; margin-bottom: 0.3rem; } p { margin: 0.2rem 0; } .meta { color: #555; font-size: 8.5pt; } }
   </style>
 </head>
 <body>

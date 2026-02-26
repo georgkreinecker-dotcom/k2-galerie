@@ -121,6 +121,18 @@ function wrapDocumentHtmlWithBackButton(html: string, returnUrl: string): string
   const bar = getDocumentBackBarHtml(returnUrl)
   return html.replace(/<body([^>]*)>/i, '<body$1>' + bar)
 }
+
+/** Fügt Druck-Fußzeile in jedes Dokument: Dokumentenersteller, Druckdatum, Seitenzahl (für In-App-Viewer-Drucke). */
+function wrapDocumentWithPrintFooter(html: string): string {
+  const brandEsc = PRODUCT_BRAND_NAME.replace(/\\/g, '\\\\').replace(/'/g, "\\'")
+  const printStyle = '<style id="k2-print-footer-style">@media print{@page{margin-bottom:14mm}@page{@bottom-right{content:"Seite " counter(page) " von " counter(pages);font-size:8pt;color:#666;font-family:system-ui,sans-serif}}body{padding-bottom:12mm !important}#doc-print-footer{position:fixed;bottom:0;left:0;right:0;padding:4px 10mm;font-size:8pt;color:#666;font-family:system-ui,sans-serif}}</style>'
+  const footerScript = '<div id="doc-print-footer" aria-hidden="true"></div><script>(function(){var el=document.getElementById("doc-print-footer");if(el)el.textContent=\'' + brandEsc + ' | Druck: \'+new Date().toLocaleDateString("de-AT")+"";})();<\/script>'
+  let out = html
+  if (out.includes('</head>')) out = out.replace('</head>', printStyle + '</head>')
+  if (out.includes('</body>')) out = out.replace('</body>', footerScript + '</body>')
+  return out
+}
+
 const KEY_OEF_ADMIN_PASSWORD = 'k2-oeffentlich-admin-password'
 const KEY_OEF_ADMIN_EMAIL = 'k2-oeffentlich-admin-email'
 const KEY_OEF_ADMIN_PHONE = 'k2-oeffentlich-admin-phone'
@@ -3163,7 +3175,7 @@ ${'='.repeat(60)}
   <title>Presseaussendung - ${event?.title || 'Event'}</title>
   <link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" />
   <style>${prDocCss}</style>
-  <style id="print-page-size">@media print { @page { size: A4; margin: 15mm; } }</style>
+  <style id="print-page-size">@media print { @page { size: A4; margin: 10mm; } }</style>
 </head>
 <body class="${prDocClass} format-a4">
   <div class="no-print">
@@ -3210,7 +3222,7 @@ ${'='.repeat(60)}
     function setFormat(f) {
       document.body.className = prDocClass + ' format-' + f;
       var p = document.getElementById('print-page-size');
-      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 15mm; } }';
+      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 10mm; } }';
     }
     function goBack() {
       var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
@@ -3361,7 +3373,7 @@ ${'='.repeat(60)}
   <title>Social Media - ${event?.title || 'Event'}</title>
   <link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" />
   <style>${prDocCss}</style>
-  <style id="print-page-size">@media print { @page { size: A4; margin: 15mm; } }</style>
+  <style id="print-page-size">@media print { @page { size: A4; margin: 10mm; } }</style>
 </head>
 <body class="${prDocClass} format-a4">
   <div class="no-print">
@@ -3413,7 +3425,7 @@ ${'='.repeat(60)}
     function setFormat(f) {
       document.body.className = prDocClass + ' format-' + f;
       var p = document.getElementById('print-page-size');
-      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 15mm; } }';
+      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 10mm; } }';
     }
     function goBack() {
       var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
@@ -3770,7 +3782,7 @@ ${'='.repeat(60)}
   <title>Newsletter - ${event?.title || 'Event'}</title>
   <link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" />
   <style>${prDocCss}</style>
-  <style id="print-page-size">@media print { @page { size: A4; margin: 15mm; } }</style>
+  <style id="print-page-size">@media print { @page { size: A4; margin: 10mm; } }</style>
 </head>
 <body class="${prDocClass} format-a4">
   <div class="no-print">
@@ -3814,7 +3826,7 @@ ${'='.repeat(60)}
     function setFormat(f) {
       document.body.className = prDocClass + ' format-' + f;
       var p = document.getElementById('print-page-size');
-      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 15mm; } }';
+      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 10mm; } }';
     }
     function goBack() {
       var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
@@ -3937,7 +3949,7 @@ ${'='.repeat(60)}
   <title>PR-Vorschläge - ${suggestions.eventTitle || 'Event'}</title>
   <link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" />
   <style>${prDocCss}</style>
-  <style id="print-page-size">@media print { @page { size: A4; margin: 15mm; } }</style>
+  <style id="print-page-size">@media print { @page { size: A4; margin: 10mm; } }</style>
 </head>
 <body class="${prDocClass} format-a4">
   <div class="no-print">
@@ -4032,7 +4044,7 @@ ${'='.repeat(60)}
     function setFormat(f) {
       document.body.className = prDocClass + ' format-' + f;
       var p = document.getElementById('print-page-size');
-      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 15mm; } }';
+      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 10mm; } }';
     }
     function goBack() {
       var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
@@ -4159,7 +4171,8 @@ ${'='.repeat(60)}
   <title>Presseaussendung - ${event.title}</title>
   <style>
     @media print {
-      body { margin: 0; }
+      @page { margin: 10mm; size: A4; }
+      body { margin: 0; font-size: 9pt; line-height: 1.32; padding: 2mm; }
       .no-print { display: none; }
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -4491,7 +4504,8 @@ ${'='.repeat(60)}
   <title>Flyer - ${flyerContent.headline}</title>
   <style>
     @media print {
-      body { margin: 0; background: white; }
+      @page { margin: 10mm; size: A4; }
+      body { margin: 0; background: white; font-size: 9pt; line-height: 1.32; padding: 2mm; }
       .no-print { display: none; }
       .flyer { background: white !important; color: #1a1f3a !important; }
     }
@@ -4938,7 +4952,8 @@ ${'='.repeat(60)}
   <title>Plakat - ${plakatContent.title}</title>
   <style>
     @media print {
-      body { margin: 0; background: white !important; }
+      @page { margin: 10mm; size: A4; }
+      body { margin: 0; background: white !important; font-size: 9pt; line-height: 1.32; padding: 2mm; }
       .no-print { display: none; }
       .plakat { width: 297mm; height: 420mm; background: white !important; color: #1a1f3a !important; }
       .plakat h1 { color: #1a1f3a !important; }
@@ -6018,8 +6033,8 @@ ${'='.repeat(60)}
     return headStart + 'Flyer – ' + esc(eventTitle) + '</title><style>' + flyerStyle + '</style></head><body><p class="flyer-title">' + esc(eventTitle) + '</p><p class="flyer-sub">' + esc(vName) + '</p><p class="meta" style="text-align:center;">' + esc(eventDate) + ' · ' + esc(adresse) + '</p><p style="margin-top:1.5rem;">' + esc(kuenstlerListe) + '</p>' + flyerKurzBlock + '<p style="margin-top:1rem;">Eintritt frei. Wir freuen uns auf Ihren Besuch.</p><p class="meta" style="margin-top:2rem;text-align:center;">' + esc(verein.email || '') + ' · ' + esc(verein.website || '') + '</p>' + bodyEnd
   }
 
-  // Ein Standard für alle Dokumente: immer im In-App-Viewer (gleicher Tab, gleiche Leiste, gleiches Verhalten).
-  const openDocumentInApp = (html: string, title: string) => setInAppDocumentViewer({ html, title })
+  // Ein Standard für alle Dokumente: immer im In-App-Viewer (gleicher Tab, gleiche Leiste, gleiches Verhalten). Mit Druck-Fußzeile (Ersteller, Datum, Seitenzahl).
+  const openDocumentInApp = (html: string, title: string) => setInAppDocumentViewer({ html: wrapDocumentWithPrintFooter(html), title })
 
   // Dokument öffnen/anschauen (documentUrl = Link zum Projekt-Flyer, z. B. K2 Galerie Flyer). Unterstützt auch data/fileData aus globalem Speicher.
   const handleViewEventDocument = (document: any, event?: any) => {
@@ -8215,10 +8230,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
           <title>${title} - K2 Galerie</title>
           <style>
             @media print {
-              @page {
-                size: A4;
-                margin: 15mm;
-              }
+              @page { size: A4; margin: 10mm; }
+              body { font-size: 9pt; line-height: 1.32; padding: 4mm; }
             }
             body {
               font-family: Arial, sans-serif;
@@ -13904,7 +13917,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
   <title>Tägliche Zeiten - ${editingEvent.title}</title>
   <style>
     @media print {
-      body { margin: 0; background: white !important; }
+      @page { margin: 10mm; size: A4; }
+      body { margin: 0; background: white !important; font-size: 9pt; line-height: 1.32; padding: 2mm; }
       .no-print { display: none; }
       .page { background: white !important; color: #1a1f3a !important; border: none !important; box-shadow: none !important; }
       h1 { color: #667eea !important; border-bottom-color: #667eea !important; }

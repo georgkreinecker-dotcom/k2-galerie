@@ -46,6 +46,7 @@ import AGBPage from './pages/AGBPage'
 import { GlobaleGuideBegleitung } from './components/GlobaleGuideBegleitung'
 import SeitengestaltungPage from './pages/SeitengestaltungPage'
 import { BUILD_LABEL, BUILD_TIMESTAMP } from './buildInfo.generated'
+import { PRODUCT_BRAND_NAME } from './config/tenantConfig'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 
 // Error Boundary für gesamte App
@@ -406,6 +407,23 @@ function restoreAdminSessionIfNeeded() {
   } catch (_) {}
 }
 
+/** Druck-Fußzeile: Dokumentenersteller + Druckdatum (nur im Druck sichtbar, Seitenzahl kommt aus @page) */
+function PrintFooter() {
+  const ref = useRef<HTMLDivElement>(null)
+  const update = () => {
+    if (ref.current) {
+      const date = new Date().toLocaleDateString('de-AT', { day: '2-digit', month: '2-digit', year: 'numeric' })
+      ref.current.textContent = `${PRODUCT_BRAND_NAME} | Druck: ${date}`
+    }
+  }
+  useEffect(() => {
+    update()
+    window.addEventListener('beforeprint', update)
+    return () => window.removeEventListener('beforeprint', update)
+  }, [])
+  return <div id="print-footer" ref={ref} aria-hidden />
+}
+
 /** Aktuelle Route → APf-Tab (DevView page id), damit die gleiche Seite in der APf geöffnet wird */
 function getApfPageFromPath(pathname: string, search: string): string {
   if (pathname === '/') {
@@ -574,6 +592,8 @@ function App() {
 
     {/* Globaler Guide-Begleiter – läuft auf jeder Seite nahtlos weiter */}
     <GlobaleGuideBegleitung />
+    {/* Druck-Fußzeile: Dokumentenersteller | Druckdatum (Seitenzahl via @page in index.css) */}
+    <PrintFooter />
 
     </AppErrorBoundary>
   )

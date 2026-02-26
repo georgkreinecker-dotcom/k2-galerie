@@ -203,11 +203,13 @@ export function getWerbeliniePrDocCss(className: string): string {
     color: ${WERBELINIE.text};
   }
   @media print {
-    body { background: #fff !important; padding: 0 !important; }
+    @page { margin: 10mm; size: A4; }
+    body { background: #fff !important; padding: 0 !important; font-size: 9pt; line-height: 1.32; }
     .no-print { display: none !important; }
     .page {
       box-shadow: none !important;
       margin: 0 !important;
+      padding: 8mm 10mm !important;
       page-break-after: always;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
@@ -339,11 +341,13 @@ export function getWerbeliniePrDocCssVk2(className: string): string {
     color: ${s.text};
   }
   @media print {
-    body { background: #fff !important; padding: 0 !important; }
+    @page { margin: 10mm; size: A4; }
+    body { background: #fff !important; padding: 0 !important; font-size: 9pt; line-height: 1.32; }
     .no-print { display: none !important; }
     .page {
       box-shadow: none !important;
       margin: 0 !important;
+      padding: 8mm 10mm !important;
       page-break-after: always;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;

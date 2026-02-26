@@ -78,13 +78,22 @@ function compressImageAsDataUrl(file: File): Promise<string> {
 
 const printStyles = `
   @media print {
+    @page { margin: 10mm; size: A4; }
     .marketing-oek2-no-print { display: none !important; }
-    .marketing-oek2-page { padding: 0; background: #fff; color: #111; }
+    .marketing-oek2-page { padding: 0 2mm !important; max-width: none !important; background: #fff; color: #111; font-size: 9pt; line-height: 1.32; }
     .marketing-oek2-page a { color: #1a0f0a; }
-    .marketing-oek2-page section { break-inside: avoid; }
-    .marketing-oek2-page ul { margin: 0.4em 0; padding-left: 1.2em; }
-    .marketing-oek2-page h1 { font-size: 1.5rem; margin-top: 0; }
-    .marketing-oek2-page h2 { font-size: 1.2rem; margin-top: 1rem; }
+    .marketing-oek2-page section { break-inside: avoid; margin-bottom: 0.5rem !important; margin-top: 0 !important; padding-top: 0 !important; border-top: none !important; }
+    .marketing-oek2-page h1 { font-size: 1.15rem; margin: 0 0 0.25rem 0; }
+    .marketing-oek2-page h2 { font-size: 0.95rem; margin: 0.4rem 0 0.25rem 0 !important; padding-bottom: 0.15rem !important; border-bottom-width: 1px !important; }
+    .marketing-oek2-page h3 { font-size: 0.85rem; margin: 0.35rem 0 0.2rem 0 !important; }
+    .marketing-oek2-page p { margin: 0.2rem 0 !important; line-height: 1.3 !important; font-size: 8.5pt; }
+    .marketing-oek2-page ul, .marketing-oek2-page ol { margin: 0.15rem 0 !important; padding-left: 1.1em !important; line-height: 1.28 !important; font-size: 8.5pt; }
+    .marketing-oek2-page li { margin-bottom: 0.08rem; }
+    .marketing-oek2-page td, .marketing-oek2-page th { padding: 0.15rem 0.35rem !important; font-size: 8pt; }
+    .marketing-oek2-page table { margin-bottom: 0.4rem !important; }
+    .marketing-oek2-page [style*="padding: 0.75rem"], .marketing-oek2-page [style*="padding: 1rem"] { padding: 0.25rem 0.4rem !important; margin-top: 0.15rem !important; margin-bottom: 0.15rem !important; font-size: 8pt !important; line-height: 1.25 !important; }
+    .marketing-oek2-page [style*="gridTemplateColumns"] { gap: 0.35rem !important; }
+    .marketing-oek2-page [style*="gridTemplateColumns"] > div { padding: 0.3rem 0.4rem !important; }
   }
 `
 

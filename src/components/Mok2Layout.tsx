@@ -391,6 +391,7 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
 
       {/* Hauptinhalt */}
       <main
+        className="print-compact"
         style={{
           marginTop: TOP_BAR_HEIGHT,
           marginLeft: panelMinimized ? 0 : PANEL_WIDTH,

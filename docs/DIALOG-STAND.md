@@ -43,7 +43,7 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 
 ## Nächste Schritte (offen)
 4. **Vor Veröffentlichung:** Erster Durchgang in **docs/VOR-VEROEFFENTLICHUNG.md** erledigt (Stand-Tabelle für Georg). **Mit Georg:** Checkboxen durchgehen, npm audit + AGB/Impressum-Inhalte prüfen und abhaken.
-5. **Vor Praxis-Test (Befüllen Galerie Eferding + K2):** **docs/PRAXISTEST-BEFUELLEN-SICHERHEIT.md** – Vollbackup durchführen (App-Vollbackup, Git commit+push+Tag `vor-praxistest-2026-02-26`, Vercel = Snapshot, backupmicro Hard-Backup). Danach: „Ab jetzt beginnt der Praxis-Test.“
+5. **Praxis-Test gestartet (26.02.26):** Git-Teil erledigt (Commit 16283ea, Tag vor-praxistest-2026-02-26). Noch empfohlen: App-Vollbackup herunterladen; backupmicro Hard-Backup wenn angesteckt. **Ab jetzt:** Galerien befüllen + testen; weitere Änderungen wie bisher (commit, push, drei Regeln).
 
 ## Heute außerdem
 - **Zurück aus Dokumenten:** goBack() in generierten Dokumenten nutzt Opener-URL inkl. context (Commit 192d544).

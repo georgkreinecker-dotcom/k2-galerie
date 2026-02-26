@@ -93,7 +93,7 @@ export default function K2TeamHandbuchPage() {
   }
 
   return (
-    <main className="mission-wrapper">
+    <main className="mission-wrapper print-compact">
       <style>{`
         @media print {
           .mission-wrapper header > div:last-child,
