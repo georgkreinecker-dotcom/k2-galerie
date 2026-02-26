@@ -351,6 +351,8 @@ import { GalerieAssistent } from '../src/components/GalerieAssistent'
 import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps, createK2Backup, createOek2Backup, createVk2Backup, downloadBackupAsFile, restoreK2FromBackup, restoreOek2FromBackup, restoreVk2FromBackup, detectBackupKontext } from '../src/utils/autoSave'
 import { sortArtworksNewestFirst, sortArtworksFavoritesFirstThenNewest } from '../src/utils/artworkSort'
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
+import { getOrCreateEmpfehlerId } from '../src/utils/empfehlerId'
+import { getGutschriftSumme } from '../src/utils/empfehlerGutschrift'
 import { writePngDpi } from 'png-dpi-reader-writer'
 
 // KRITISCH: Importiere Safe Mode Utilities für Crash-Schutz
@@ -878,7 +880,7 @@ function ScreenshotExportAdmin() {
   })()
   const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>(initialEventplanSubTab)
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false) // kleine Leiste „Vergangenheit“, bei Klick aufklappen
-  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager'>('stammdaten')
+  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager' | 'empfehlung'>('stammdaten')
   const [designSubTab, setDesignSubTab] = useState<'vorschau' | 'farben'>('vorschau')
   const [designPreviewEdit, setDesignPreviewEdit] = useState<string | null>(null) // z. B. 'p1-title' | 'p2-martinaBio' – alles auf der Seite klickbar
   const [previewContainerWidth, setPreviewContainerWidth] = useState(412) // für bildausfüllende Skalierung
@@ -9259,8 +9261,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         Das ist dein Guide – klick auf einen Bereich, dann siehst du was dich erwartet.
                       </p>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 'clamp(1.25rem, 3vw, 2rem)', alignItems: 'stretch' }} onMouseLeave={() => setHubHoveredTab(null)}>
-                        {/* Links: Bereiche – zum Zentrum (justifySelf end) */}
-                        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: 'clamp(130px, 16vw, 160px)', justifySelf: 'end' }}>
+                        {/* Links: Bereiche – zIndex damit Hover (Werkkatalog, Events) nicht von Mitte überdeckt wird */}
+                        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: 'clamp(130px, 16vw, 160px)', justifySelf: 'end', position: 'relative' as const, zIndex: 2 }}>
                           {linksBereiche.map((b) => (
                             <button key={b.tab} type="button"
                               onClick={() => { setActiveTab(b.tab as any); window.scrollTo({ top: 200, behavior: 'smooth' }) }}
@@ -9282,7 +9284,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             </button>
                           ))}
                         </div>
-                        {/* Mitte: zeigt Beschreibung des Bereichs unter dem Pfeil (Hover) oder Standard – Lookup per tab für alle Icons (auch Werkkatalog, Events) */}
+                        {/* Mitte: zIndex 0 damit linke/rechte Spalte Hover erhalten */}
                         {(() => {
                           const allAreas = [...linksBereiche, ...rechtsBereiche]
                           const fokus = (hubHoveredTab ? allAreas.find((a) => a.tab === hubHoveredTab) : null) ?? linksBereiche[0]
@@ -9292,7 +9294,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             else { setActiveTab(fokus.tab as any); window.scrollTo({ top: 200, behavior: 'smooth' }) }
                           }
                           return (
-                            <div style={{ justifySelf: 'center', maxWidth: 'clamp(240px, 28vw, 300px)', minWidth: 0, background: s.bgCard, border: `2px solid ${s.accent}33`, borderRadius: '16px', padding: 'clamp(0.85rem, 1.8vw, 1.1rem)', boxShadow: `0 4px 20px ${s.accent}18`, display: 'flex', flexDirection: 'column' as const, gap: '0.5rem' }}>
+                            <div style={{ justifySelf: 'center', maxWidth: 'clamp(240px, 28vw, 300px)', minWidth: 0, position: 'relative' as const, zIndex: 0, background: s.bgCard, border: `2px solid ${s.accent}33`, borderRadius: '16px', padding: 'clamp(0.85rem, 1.8vw, 1.1rem)', boxShadow: `0 4px 20px ${s.accent}18`, display: 'flex', flexDirection: 'column' as const, gap: '0.5rem' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 <div style={{ width: 32, height: 32, borderRadius: '50%', background: akzentGrad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>{fokus.emoji}</div>
                                 <div>
@@ -9309,8 +9311,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             </div>
                           )
                         })()}
-                        {/* Rechts: Schnellzugriffe – zum Zentrum (justifySelf start) */}
-                        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: 'clamp(130px, 16vw, 160px)', justifySelf: 'start' }}>
+                        {/* Rechts: Schnellzugriffe – zIndex damit Hover nicht von Mitte überdeckt wird */}
+                        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: 'clamp(130px, 16vw, 160px)', justifySelf: 'start', position: 'relative' as const, zIndex: 2 }}>
                           {rechtsBereiche.map((b) => (
                             <button key={b.tab} type="button"
                               onClick={() => { if (b.tab === 'kassa') openKasse(); else { setActiveTab(b.tab as any); window.scrollTo({ top: 200, behavior: 'smooth' }) } }}
@@ -9377,7 +9379,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               guidePfad={guidePfad || undefined}
               onGoToStep={(tab, subTab) => {
                 setActiveTab(tab)
-                if (subTab && tab === 'einstellungen') setSettingsSubTab(subTab as 'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager')
+                if (subTab && tab === 'einstellungen') setSettingsSubTab(subTab as 'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager' | 'empfehlung')
                 if (subTab && tab === 'eventplan') setEventplanSubTab(subTab as 'events' | 'öffentlichkeitsarbeit')
               }}
             />
@@ -11605,6 +11607,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   {isVk2AdminContext() ? 'Drucken (Standard-Drucker)' : 'Etikettendrucker einrichten'}
                 </div>
               </button>
+              <button type="button" onClick={() => setSettingsSubTab('empfehlung')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'empfehlung' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'empfehlung' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'empfehlung' ? s.accent : `${s.accent}22` }}
+              >
+                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>🤝</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Empfehlungs-Programm</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Deine Rabattstufe, geworbene User</div>
+              </button>
             </div>
 
             {/* Stammdaten Sub-Tab */}
@@ -12633,6 +12643,64 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </div>
               </div>
             )}
+
+            {/* Empfehlungs-Programm Sub-Tab: Rabattstufe + geworbene User */}
+            {settingsSubTab === 'empfehlung' && (() => {
+              const empfehlerId = getOrCreateEmpfehlerId()
+              const gutschriftSumme = getGutschriftSumme(empfehlerId)
+              let grants: { id: string; name: string; email: string; licenseType: string; createdAt: string }[] = []
+              try {
+                const raw = localStorage.getItem('k2-license-grants')
+                if (raw) {
+                  const parsed = JSON.parse(raw)
+                  if (Array.isArray(parsed)) grants = parsed.filter((g: any) => g && (g.empfehlerId || '').trim() === empfehlerId)
+                }
+              } catch (_) {}
+              const anzahlGeworbene = grants.length
+              const prozentGutschrift = Math.min(anzahlGeworbene * 10, 100)
+              return (
+                <div>
+                  <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', fontWeight: 600, color: s.text, marginBottom: '1rem' }}>
+                    🤝 Empfehlungs-Programm
+                  </h3>
+                  <p style={{ margin: '0 0 1.25rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.6 }}>
+                    Du empfiehlst die K2 Galerie weiter – geworbene Nutzer:innen bekommen 10 % Rabatt, du bekommst 10 % Gutschrift pro Person auf deine nächste Rechnung. 10 Geworbene = Rechnung gratis.
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: 560 }}>
+                    <div style={{ padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}33`, borderRadius: 12 }}>
+                      <div style={{ fontSize: '0.8rem', color: s.accent, fontWeight: 700, marginBottom: '0.25rem' }}>Deine Empfehler-ID</div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: 700, color: s.text, fontFamily: 'monospace' }}>{empfehlerId}</div>
+                      <Link to={`${PROJECT_ROUTES['k2-galerie'].empfehlungstool}`} style={{ fontSize: '0.88rem', color: s.accent, marginTop: '0.5rem', display: 'inline-block' }}>→ Empfehlungstool (Link teilen)</Link>
+                    </div>
+                    <div style={{ padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}33`, borderRadius: 12 }}>
+                      <div style={{ fontSize: '0.8rem', color: s.accent, fontWeight: 700, marginBottom: '0.25rem' }}>Deine Rabattstufe</div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 700, color: s.text }}>
+                        {anzahlGeworbene} {anzahlGeworbene === 1 ? 'Geworbene:r' : 'Geworbene'} = {prozentGutschrift} % Gutschrift auf deine nächste Rechnung
+                      </div>
+                      {gutschriftSumme > 0 && (
+                        <div style={{ fontSize: '0.9rem', color: s.muted, marginTop: '0.35rem' }}>
+                          Gutschrift gesamt: € {gutschriftSumme.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}33`, borderRadius: 12 }}>
+                      <div style={{ fontSize: '0.8rem', color: s.accent, fontWeight: 700, marginBottom: '0.5rem' }}>Deine geworbenen User</div>
+                      {grants.length === 0 ? (
+                        <p style={{ margin: 0, fontSize: '0.9rem', color: s.muted }}>Noch niemand. Teile deinen Empfehlungs-Link – sobald jemand mit deiner ID eine Lizenz abschließt, erscheint die Person hier.</p>
+                      ) : (
+                        <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.8 }}>
+                          {grants.map((g) => (
+                            <li key={g.id}>
+                              <strong>{g.name}</strong> ({g.email}) – {g.licenseType} · {g.createdAt ? new Date(g.createdAt).toLocaleDateString('de-DE') : ''}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )
+            })()}
 
             {/* Drucker Sub-Tab */}
             {settingsSubTab === 'drucker' && isVk2AdminContext() && (

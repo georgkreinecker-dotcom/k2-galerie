@@ -41,7 +41,7 @@ ich nutze die ${PRODUCT_BRAND_NAME} für meine Galerie und bin begeistert. Du ka
 
 ${empfehlungslink}
 
-Der Link enthält bereits meine Empfehlung. Beim Lizenzabschluss kannst du wählen: Empfehlung annehmen (dann werde ich als Werber zugeordnet und erhalte 50 % der Lizenzgebühren) oder ohne Empfehlung lizensieren – beides ist möglich.
+Der Link enthält bereits meine Empfehlung. Beim Lizenzabschluss kannst du wählen: Empfehlung annehmen (dann werde ich als Werber zugeordnet; du erhältst 10 % Rabatt, ich erhalte 10 % Gutschrift) oder ohne Empfehlung lizensieren – beides ist möglich.
 
 Viele Grüße,
 ${name}`
@@ -119,7 +119,7 @@ ${name}`
       >
         <h2 style={{ fontSize: '1.1rem', margin: '0 0 0.5rem', color: t.accent }}>Deine Empfehler-ID</h2>
         <p style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', color: t.muted }}>
-          Sie steckt im Link, den du teilst. Beim Lizenzabschluss können sie entscheiden: Empfehlung annehmen (dann Zuordnung zu dir, du erhältst 50 %) oder ohne Empfehlung lizensieren.
+          Sie steckt im Link, den du teilst. Beim Lizenzabschluss können sie entscheiden: Empfehlung annehmen (dann Zuordnung zu dir, du erhältst 10 % Gutschrift) oder ohne Empfehlung lizensieren.
         </p>
         <div
           style={{
@@ -195,7 +195,7 @@ ${name}`
       >
         <h2 style={{ fontSize: '1.1rem', margin: '0 0 0.75rem', color: t.accent }}>Vorbereitetes Empfehlungsschreiben</h2>
         <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: t.muted }}>
-          Du kannst den Text kopieren, per E-Mail versenden oder über WhatsApp teilen. Der Link enthält deine Empfehlung – beim Lizenzabschluss können sie annehmen (dann 50 % an dich) oder ohne Empfehlung lizensieren.
+          Du kannst den Text kopieren, per E-Mail versenden oder über WhatsApp teilen. Der Link enthält deine Empfehlung – beim Lizenzabschluss können sie annehmen (dann 10 % Rabatt für sie, 10 % Gutschrift an dich) oder ohne Empfehlung lizensieren.
         </p>
         <pre
           style={{

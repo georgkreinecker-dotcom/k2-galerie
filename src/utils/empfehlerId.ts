@@ -47,3 +47,9 @@ export function getEmpfehlerId(): string | null {
     return null
   }
 }
+
+/** Prüft, ob eine eingegebene Empfehler-ID das gültige Format hat (K2-E- + 6 Zeichen). */
+export function isValidEmpfehlerIdFormat(id: string): boolean {
+  const trimmed = (id || '').trim()
+  return trimmed.startsWith(PREFIX) && trimmed.length === PREFIX.length + ID_LENGTH
+}

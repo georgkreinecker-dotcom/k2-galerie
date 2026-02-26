@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import '../App.css'
 import { PLATFORM_ROUTES, PROJECT_ROUTES } from '../config/navigation'
 import TermWithExplanation from '../components/TermWithExplanation'
+import { isValidEmpfehlerIdFormat } from '../utils/empfehlerId'
+import { addGutschrift } from '../utils/empfehlerGutschrift'
 
 const STORAGE_KEY = 'k2-license-grants'
 
@@ -12,14 +14,15 @@ export interface LicenceGrant {
   email: string
   licenseType: 'basic' | 'pro' | 'excellent' | 'vk2'
   empfehlerId?: string
+  empfehlungsRabattAngewendet?: boolean
   createdAt: string
 }
 
-const LICENCE_TYPES: { id: 'basic' | 'pro' | 'excellent' | 'vk2'; name: string; price: string; summary: string; icon: string; highlight?: boolean }[] = [
-  { id: 'basic',     name: 'Basic',              price: '49 €/Monat',                           icon: '🎨',  summary: 'Bis 30 Werke, 1 Galerie, Events, Kasse, Etiketten, Standard-URL' },
-  { id: 'pro',       name: 'Pro',                price: '99 €/Monat',                           icon: '⭐',  summary: 'Unbegrenzte Werke, Custom Domain, volles Marketing (Flyer, Presse, Social Media)' },
-  { id: 'excellent', name: 'Excellent',          price: '149 €/Monat',                          icon: '💎',  summary: 'Alles aus Pro + Anfragen-Inbox, Echtheitszertifikat, Newsletter, Verkaufsstatistik, Pressemappe, Priority Support', highlight: true },
-  { id: 'vk2',       name: 'Kunstvereine (VK2)', price: 'ab 10 Mitgliedern kostenfrei',         icon: '🏛️', summary: 'Verein nutzt Pro; Vereinsmitglieder 50 % Rabatt; nicht registrierte Mitglieder im System erfasst' },
+const LICENCE_TYPES: { id: 'basic' | 'pro' | 'excellent' | 'vk2'; name: string; price: string; priceEur: number | null; summary: string; icon: string; highlight?: boolean }[] = [
+  { id: 'basic',     name: 'Basic',              price: '49 €/Monat',   priceEur: 49,   icon: '🎨',  summary: 'Bis 30 Werke, 1 Galerie, Events, Kasse, Etiketten, Standard-URL' },
+  { id: 'pro',       name: 'Pro',                price: '99 €/Monat',   priceEur: 99,   icon: '⭐',  summary: 'Unbegrenzte Werke, Custom Domain, volles Marketing (Flyer, Presse, Social Media)' },
+  { id: 'excellent', name: 'Excellent',          price: '149 €/Monat',  priceEur: 149,  icon: '💎',  summary: 'Alles aus Pro + Anfragen-Inbox, Echtheitszertifikat, Newsletter, Verkaufsstatistik, Pressemappe, Priority Support', highlight: true },
+  { id: 'vk2',       name: 'Kunstvereine (VK2)', price: 'ab 10 Mitgliedern kostenfrei', priceEur: null, icon: '🏛️', summary: 'Verein nutzt Pro; Vereinsmitglieder 50 % Rabatt; nicht registrierte Mitglieder im System erfasst' },
 ]
 
 function loadGrants(): LicenceGrant[] {
@@ -60,6 +63,12 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
     setGrants(loadGrants())
   }, [])
 
+  // Empfehler-ID aus URL vorausfüllen (?empfehler=K2-E-XXXXXX) – einmalig beim Laden
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get('empfehler')
+    if (fromUrl && isValidEmpfehlerIdFormat(fromUrl)) setEmpfehlerId(fromUrl.trim())
+  }, [])
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setMessage(null)
@@ -69,13 +78,23 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
       setMessage({ type: 'error', text: 'Name und E-Mail sind Pflicht.' })
       return
     }
+    const trimmedEmpfehler = empfehlerId.trim()
+    const hatEmpfehlung = trimmedEmpfehler && isValidEmpfehlerIdFormat(trimmedEmpfehler)
     const newGrant: LicenceGrant = {
       id: `lic-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       name: trimmedName,
       email: trimmedEmail,
       licenseType,
-      empfehlerId: empfehlerId.trim() || undefined,
+      empfehlerId: hatEmpfehlung ? trimmedEmpfehler : undefined,
+      empfehlungsRabattAngewendet: hatEmpfehlung || undefined,
       createdAt: new Date().toISOString(),
+    }
+    if (hatEmpfehlung) {
+      const lt = LICENCE_TYPES.find((x) => x.id === licenseType)
+      if (lt?.priceEur != null && lt.priceEur > 0) {
+        const gutschriftBetrag = Math.round(lt.priceEur * 0.1 * 100) / 100
+        addGutschrift(trimmedEmpfehler, gutschriftBetrag, newGrant.id)
+      }
     }
     const next = [...grants, newGrant]
     setGrants(next)
@@ -84,7 +103,7 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
     setEmail('')
     setLicenseType('pro')
     setEmpfehlerId('')
-    setMessage({ type: 'ok', text: '✅ Lizenz erfasst.' })
+    setMessage({ type: 'ok', text: hatEmpfehlung ? '✅ Lizenz erfasst. 10 % Empfehlungs-Rabatt wurde berücksichtigt.' : '✅ Lizenz erfasst.' })
   }
 
   const handleDelete = (id: string) => {
@@ -229,8 +248,19 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
               </select>
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.25rem' }}>Empfehler-ID (optional)</label>
-              <input type="text" value={empfehlerId} onChange={(e) => setEmpfehlerId(e.target.value)} className="input" placeholder="ID des Empfehlers (für Vergütung)" />
+              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.25rem' }}>Empfehler-ID (optional) – Du erhältst 10 % Rabatt</label>
+              <input type="text" value={empfehlerId} onChange={(e) => setEmpfehlerId(e.target.value)} className="input" placeholder="z. B. K2-E-XXXXXX (steht im Empfehlungs-Link)" />
+              {empfehlerId.trim() && isValidEmpfehlerIdFormat(empfehlerId) && (() => {
+                const lt = LICENCE_TYPES.find((x) => x.id === licenseType)
+                const preisEur = lt?.priceEur ?? 0
+                const mitRabatt = preisEur > 0 ? (preisEur * 0.9).toFixed(2) : null
+                return (
+                  <p style={{ margin: '0.5rem 0 0', fontSize: '0.85rem', color: 'var(--k2-accent)', fontWeight: 600 }}>
+                    ✓ Empfehlungs-Rabatt: 10 % – wird bei Erfassung berücksichtigt.
+                    {mitRabatt != null && <span style={{ display: 'block', marginTop: '0.25rem', fontWeight: 400, color: 'var(--k2-muted)' }}>Preis für {lt?.name}: {preisEur} € → {mitRabatt} €/Monat</span>}
+                  </p>
+                )
+              })()}
             </div>
             {message && (
               <p style={{ fontSize: '0.9rem', color: message.type === 'ok' ? 'var(--k2-accent)' : '#f87171', margin: 0 }}>

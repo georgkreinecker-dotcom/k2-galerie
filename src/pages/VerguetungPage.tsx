@@ -55,12 +55,12 @@ export default function VerguetungPage() {
         Automatisierte Vergütung
       </h1>
       <p style={{ margin: '0 0 1.5rem', color: t.muted, fontSize: '1rem' }}>
-        Einstufiges System: Wer wirbt, erhält 50 % der Lizenzgebühren. Keine weiteren Ebenen. Die Empfehler-ID steckt im Link – der Geworbene kann beim Lizenzabschluss entscheiden: Empfehlung annehmen (dann Zuordnung zum Werber) oder ohne Empfehlung lizensieren.
+        Einstufiges System: Wer wirbt, erhält 10 % Gutschrift; der Geworbene erhält 10 % Rabatt. Keine weiteren Ebenen. Die Empfehler-ID steckt im Link – der Geworbene kann beim Lizenzabschluss entscheiden: Empfehlung annehmen (dann Zuordnung zum Werber) oder ohne Empfehlung lizensieren.
       </p>
 
-      <Section title="1. Einstufig: 50 % für den Werber">
+      <Section title="1. Einstufig: 10 % Rabatt & 10 % Gutschrift">
         <ul style={{ margin: 0, paddingLeft: '1.25rem', lineHeight: 1.7, color: t.text }}>
-          <li><strong>Nur eine Stufe:</strong> Der Werber erhält <strong>50 % der Lizenzgebühren</strong> der Person, die er geworben hat. Kein Multi-Level, keine „Empfehler von Empfehler“-Vergütung.</li>
+          <li><strong>Nur eine Stufe:</strong> Der Werber erhält <strong>10 % Gutschrift</strong>, die geworbene Person <strong>10 % Rabatt</strong>. Kein Multi-Level, keine „Empfehler von Empfehler“-Vergütung.</li>
           <li><strong>Automatisiert:</strong> Jede Lizenz-Zahlung löst die Berechnung aus; Abrechnungsläufe (z. B. monatlich) erzeugen Gutschriften oder Auszahlungslisten.</li>
         </ul>
       </Section>
@@ -68,8 +68,8 @@ export default function VerguetungPage() {
       <Section title="2. ID im Link – Geworbener entscheidet beim Lizenzabschluss">
         <ul style={{ margin: 0, paddingLeft: '1.25rem', lineHeight: 1.7, color: t.text }}>
           <li><strong>Link enthält die Empfehler-ID:</strong> Der Werber schickt einen Link (z. B. Willkommensseite mit <code>?empfehler=K2-E-XXXXXX</code>). Der Geworbene muss <strong>nichts eintragen</strong>.</li>
-          <li><strong>Entscheidung beim Lizenzabschluss:</strong> Der Geworbene kann <strong>die Empfehlung annehmen</strong> (dann wird er dem Werber zugeordnet, 50 % an den Werber) oder <strong>ohne Empfehlung lizensieren</strong> – also auch ganz ohne Werber.</li>
-          <li><strong>Datenbasis:</strong> Pro Lizenz optional eine Empfehler-ID (nur wenn der Geworbene die Empfehlung angenommen hat). Pro Zahlung: Betrag, Datum, Lizenz, ggf. 50 % Vergütung an den Werber.</li>
+          <li><strong>Entscheidung beim Lizenzabschluss:</strong> Der Geworbene kann <strong>die Empfehlung annehmen</strong> (dann wird er dem Werber zugeordnet, 10 % Rabatt für ihn, 10 % Gutschrift an den Werber) oder <strong>ohne Empfehlung lizensieren</strong> – also auch ganz ohne Werber.</li>
+          <li><strong>Datenbasis:</strong> Pro Lizenz optional eine Empfehler-ID (nur wenn der Geworbene die Empfehlung angenommen hat). Pro Zahlung: Betrag, Datum, Lizenz, ggf. 10 % Gutschrift an den Werber.</li>
         </ul>
       </Section>
 
@@ -77,7 +77,7 @@ export default function VerguetungPage() {
         <ol style={{ margin: 0, paddingLeft: '1.25rem', lineHeight: 1.8, color: t.text }}>
           <li><strong>Ereignis:</strong> Lizenzgebühr wird fällig / gezahlt (monatlich oder jährlich).</li>
           <li><strong>Zuordnung:</strong> Für die Zahlung ist die Empfehler-ID gespeichert (weil der Nutzer über den Empfehlungslink kam und sich lizensiert hat).</li>
-          <li><strong>Berechnung:</strong> 50 % der Gebühr an den Werber (nur diese eine Stufe).</li>
+          <li><strong>Berechnung:</strong> 10 % der Gebühr als Gutschrift an den Werber (nur diese eine Stufe).</li>
           <li><strong>Gutschrift/Auszahlung:</strong> Beträge pro Werber sammeln → Gutschrift auf nächste Rechnung, Auszahlungsliste (Export) oder Gutschein für Verlängerung.</li>
         </ol>
       </Section>
@@ -85,8 +85,8 @@ export default function VerguetungPage() {
       <Section title="4. Technik & Einbindung">
         <ul style={{ margin: 0, paddingLeft: '1.25rem', lineHeight: 1.7, color: t.text }}>
           <li><strong>Speicher:</strong> Pro Lizenz eine Empfehler-ID. Bei Erfassung der Lizenz (oder beim Checkout) wird die ID aus dem Link/Kontext übernommen und gespeichert.</li>
-          <li><strong>Zahlungen:</strong> Bei Erfassung (Stripe, manuell, Abo) pro Zahlung „Lizenz → Empfehler“ auslesen, 50 % berechnen, Gutschrift/Liste aktualisieren.</li>
-          <li><strong>Konfiguration:</strong> Ein Satz (50 %), keine Stufe 2. Optional: Mindestbeträge, Auszahlungsgrenzen – in Abrechnungskonfiguration.</li>
+          <li><strong>Zahlungen:</strong> Bei Erfassung (Stripe, manuell, Abo) pro Zahlung „Lizenz → Empfehler“ auslesen, 10 % berechnen, Gutschrift/Liste aktualisieren.</li>
+          <li><strong>Konfiguration:</strong> Ein Satz (10 % Rabatt/Gutschrift), keine Stufe 2. Optional: Mindestbeträge, Auszahlungsgrenzen – in Abrechnungskonfiguration.</li>
         </ul>
       </Section>
 

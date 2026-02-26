@@ -348,7 +348,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </p>
         <ol style={{ lineHeight: 1.7, paddingLeft: '1.5em', margin: 0 }}>
           <li>
-            <strong>Empfehlungs-Programm</strong> – Nutzer:innen werben mit Empfehler-ID; 50 % der Lizenzgebühr an Empfehler:in. <a href="#mok2-so-empfiehlst-du" style={{ color: '#5ffbf1', textDecoration: 'none' }}>Kurz-Anleitung „So empfiehlst du“</a>. Details: <a href="#mok2-6" style={{ color: '#5ffbf1', textDecoration: 'none' }}>Sektion 6</a>.
+            <strong>Empfehlungs-Programm</strong> – Nutzer:innen werben mit Empfehler-ID; 10 % Rabatt für den Geworbenen, 10 % Gutschrift für den Empfehler/die Empfehlerin. <a href="#mok2-so-empfiehlst-du" style={{ color: '#5ffbf1', textDecoration: 'none' }}>Kurz-Anleitung „So empfiehlst du“</a>. Details: <a href="#mok2-6" style={{ color: '#5ffbf1', textDecoration: 'none' }}>Sektion 6</a>.
           </li>
           <li>
             <strong>Kooperation (Ziel eintragen):</strong> z. B. Kunstverein / Verband (VK2), Messe, Atelier-Netzwerk. <em style={{ color: 'rgba(255,255,255,0.7)' }}>→ Hier konkreten Namen oder Ziel eintragen, ersten Kontakt planen.</em>
@@ -410,14 +410,14 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           6. Vermarktungskonzept: Empfehlungs-Programm (Vertrieb durch Nutzer:innen)
         </h2>
         <p style={{ marginBottom: '1rem', lineHeight: 1.6 }}>
-          Nutzer:innen werben weitere Künstler:innen; Empfehler:innen erhalten 50 % der Lizenzgebühr über eine persönliche Empfehler-ID.
+          Nutzer:innen werben weitere Künstler:innen; Geworbene erhalten 10 % Rabatt, Empfehler:innen erhalten 10 % Gutschrift über eine persönliche Empfehler-ID.
         </p>
         <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
-          <li><strong>Grundidee:</strong> Vertrieb durch die Nutzer:innen – Künstler:innen empfehlen die K2 Galerie weiter. Wer wirbt, erhält 50 % der Lizenzgebühr des geworbenen Nutzers/der geworbenen Nutzerin. Jede:r hat eine eindeutige Empfehler-ID; trägt ein neuer Nutzer diese ID ein, wird die Gutschrift zugeordnet.</li>
-          <li><strong>Ablauf:</strong> Nutzer:in A erhält in der App eine Empfehler-ID (z. B. Einstellungen → Empfehlungs-Programm), gibt sie an B weiter; B trägt die ID bei Registrierung/Lizenz-Abschluss ein → 50 % der Lizenzgebühr an A.</li>
+          <li><strong>Grundidee:</strong> Vertrieb durch die Nutzer:innen – Künstler:innen empfehlen die K2 Galerie weiter. Wer wirbt, erhält 10 % Gutschrift; der Geworbene erhält 10 % Rabatt. Jede:r hat eine eindeutige Empfehler-ID; trägt ein neuer Nutzer diese ID ein, wird die Gutschrift zugeordnet.</li>
+          <li><strong>Ablauf:</strong> Nutzer:in A erhält in der App eine Empfehler-ID (z. B. Einstellungen → Empfehlungs-Programm), gibt sie an B weiter; B trägt die ID bei Registrierung/Lizenz-Abschluss ein → 10 % Rabatt für B, 10 % Gutschrift für A.</li>
           <li><strong>Empfehler-ID:</strong> Eindeutig pro Nutzer:in, gut kommunizierbar (z. B. K2-XXXX-YYYY). Optional: Empfehlungs-Link mit ID als Parameter.</li>
-          <li><strong>Vergütung:</strong> 50 % der Lizenzgebühr an den Empfehler/die Empfehlerin. Bei <strong>jeder</strong> Zahlung, solange der geworbene Nutzer/die geworbene Nutzerin Lizenzgebühren zahlt – nicht nur bei der Erstanmeldung. Ausgestaltung: Gutschrift, Auszahlung oder Gutschein je nach Betriebsmodell.</li>
-          <li><strong>In der App:</strong> ID anzeigen/kopieren (Einstellungen / Empfehlungs-Programm); Eingabe der ID bei Registrierung oder Checkout; bei Speicherung ID prüfen und 50 %-Regel anwenden.</li>
+          <li><strong>Vergütung:</strong> 10 % Gutschrift für den Empfehler/die Empfehlerin, 10 % Rabatt für den Geworbenen. Bei <strong>jeder</strong> Lizenz-Erfassung wird die Gutschrift zugeordnet. Ausgestaltung: Gutschrift, Auszahlung oder Gutschein je nach Betriebsmodell.</li>
+          <li><strong>In der App:</strong> ID anzeigen/kopieren (Einstellungen / Empfehlungs-Programm); Eingabe der ID bei Registrierung oder Checkout; bei Speicherung ID prüfen und 10 %-Rabatt bzw. 10 %-Gutschrift anwenden.</li>
           <li><strong>Rechtliches:</strong> Transparenz in AGB (Wer, wie, wann); Datenschutz nur für Zuordnung; Missbrauch vermeiden (keine Selbstempfehlung, ID nur gültigen Konten zuordnen).</li>
         </ul>
       </section>
@@ -428,12 +428,12 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           So empfiehlst du die K2 Galerie (Kurz-Anleitung)
         </h2>
         <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.5 }}>
-          Für Nutzer:innen – in 3 Schritten: ID/Link holen, teilen, Geworbene nutzt Link. Du erhältst 50 % der Lizenzgebühr, wenn die Person deine Empfehlung annimmt.
+          Für Nutzer:innen – in 3 Schritten: ID/Link holen, teilen, Geworbene nutzt Link. Die Person erhält 10 % Rabatt, du erhältst 10 % Gutschrift, wenn sie deine Empfehlung annimmt.
         </p>
         <ol style={{ lineHeight: 1.7, paddingLeft: '1.5em', margin: '0 0 1rem' }}>
           <li><strong>Wo finde ich meine Empfehler-ID?</strong> In der App: <strong>Einstellungen → Empfehlungs-Programm</strong> (oder über mök2: <strong>Empfehlungstool</strong>). Dort siehst du deine ID und einen <strong>Empfehlungs-Link</strong> – Link kopieren oder „E-Mail öffnen“ / „WhatsApp teilen“.</li>
           <li><strong>Wem gebe ich den Link?</strong> Freund:innen, anderen Künstler:innen, Galerien – allen, die eine eigene Galerie-Webseite + Kasse + Werbung aus einer Hand suchen.</li>
-          <li><strong>Was passiert bei der Person?</strong> Sie öffnet den Link → Willkommensseite (Demo, Vorschau, „Lizenz anfragen“). Wenn sie eine Lizenz abschließt und deine Empfehlung annimmt (der Link enthält deine ID), erhältst du <strong>50 % der Lizenzgebühr</strong> – bei jeder Zahlung, solange sie Kunde bleibt.</li>
+          <li><strong>Was passiert bei der Person?</strong> Sie öffnet den Link → Willkommensseite (Demo, Vorschau, „Lizenz anfragen“). Wenn sie eine Lizenz abschließt und deine Empfehlung annimmt (der Link enthält deine ID), erhält sie <strong>10 % Rabatt</strong> und du <strong>10 % Gutschrift</strong>.</li>
         </ol>
         <p style={{ padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.1)', borderRadius: '8px', borderLeft: '4px solid #5ffbf1', fontSize: '0.9rem', lineHeight: 1.5 }}>
           <strong>Kurz:</strong> Link im Empfehlungstool kopieren → per E-Mail oder WhatsApp teilen → Geworbene nutzt Link und kann beim Lizenzabschluss deine Empfehlung annehmen. Fertig.
@@ -516,7 +516,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <li><strong>Content-Bausteine ablegen:</strong> Kurzversion (1–2 Sätze), Mittelversion (Absatz), Langversion (wie Sektion 7 oben) – alle hier auf Marketing ök2. Beim Erstellen von Posts oder Presse: passende Länge wählen.</li>
           <li><strong>Zeitplan & To-dos:</strong> Nutze den <strong>Plan</strong> (Projekt → Plan) für Phasen wie „Slogan & Story“, „Social aktiv“, „Content-Plan“, „Pressepartner“. Offene Punkte dort abhaken.</li>
           <li><strong>Materialien aus der App:</strong> Flyer, Plakat, Newsletter, Presse – werden in der Galerie-App aus Stammdaten & Events erzeugt (Control-Studio / Öffentlichkeitsarbeit). Nicht doppelt pflegen: Stammdaten aktuell halten, dann Materialien generieren.</li>
-          <li><strong>Empfehlungs-Programm:</strong> Vertrieb durch Nutzer:innen (Sektion 6) – ID-Konzept und 50 %-Regel für Partner und geworbene Künstler:innen kommunizieren.</li>
+          <li><strong>Empfehlungs-Programm:</strong> Vertrieb durch Nutzer:innen (Sektion 6) – ID-Konzept und 10 % Rabatt/Gutschrift für Partner und geworbene Künstler:innen kommunizieren.</li>
           <li><strong>Rückblick:</strong> Regelmäßig prüfen: Welche Kanäle laufen? Was bringt Anfragen? Nächste Schritte im Plan ergänzen und hier auf Marketing ök2 die Botschaften bei Bedarf schärfen.</li>
         </ol>
         <p style={{ marginTop: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.8)' }}>
@@ -1291,7 +1291,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
 
         <h3 style={{ fontSize: '0.95rem', color: '#fbbf24', margin: '1rem 0 0.5rem' }}>❌ So nicht</h3>
         <ul style={{ paddingLeft: '1.25rem', lineHeight: 1.8, marginBottom: '1rem', color: 'rgba(255,255,255,0.6)' }}>
-          <li>„Verdiene 50% Provision durch Empfehlungen"</li>
+          <li>„Verdiene 10 % Gutschrift durch Empfehlungen"</li>
           <li>„Empfehlungs-Programm – dein Einkommen wächst"</li>
           <li>„Affiliate-Link teilen und kassieren"</li>
         </ul>
