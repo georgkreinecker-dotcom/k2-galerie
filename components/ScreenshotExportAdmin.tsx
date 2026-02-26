@@ -12678,13 +12678,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           const id = getOrCreateEmpfehlerId()
                           const name = (typeof localStorage !== 'undefined' ? (localStorage.getItem('k2-empfehlungstool-name') || '').trim() : '') || 'Dein Name'
                           const link = `${BASE_APP_URL}${WILLKOMMEN_ROUTE}?empfehler=${encodeURIComponent(id)}`
+                          const rabattProzent = '10' // Regel: Geworbene erhalten 10 % Rabatt, Empfehler 10 % Gutschrift
                           const text = `Hallo,
 
 ich nutze die ${PRODUCT_BRAND_NAME} für meine Galerie und bin begeistert. Du kannst dir die Demo-Galerie als Muster ansehen und selbst ausprobieren:
 
 ${link}
 
-Der Link enthält bereits meine Empfehlung. Beim Lizenzabschluss kannst du wählen: Empfehlung annehmen (dann werde ich als Werber zugeordnet; du erhältst 10 % Rabatt, ich erhalte 10 % Gutschrift) oder ohne Empfehlung lizensieren – beides ist möglich.
+Der Link enthält bereits meine Empfehlung. Beim Lizenzabschluss kannst du wählen: Empfehlung annehmen (dann werde ich als Werber zugeordnet; du erhältst ${rabattProzent} % Rabatt, ich erhalte ${rabattProzent} % Gutschrift) oder ohne Empfehlung lizensieren – beides ist möglich.
 
 Viele Grüße,
 ${name}`
