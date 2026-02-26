@@ -91,13 +91,35 @@ function getDocumentsKey(): string {
   if (isVk2AdminContext()) return 'k2-vk2-documents'
   return isOeffentlichAdminContext() ? 'k2-oeffentlich-documents' : 'k2-documents'
 }
-/** Admin-URL mit Kontext (VK2/ök2) zum Injizieren in generierte Dokumente – „Zurück“ landet dann im richtigen Admin. */
-function getAdminReturnUrl(): string {
+/** Admin-URL inkl. Tab + Eventplan-Untertab – „Zurück“ landet in der Dokumenten-Vorschau (Flyer & Werbedokumente), nicht in der Übersicht. */
+function getAdminReturnUrl(activeTab?: string, eventplanSubTab?: string): string {
   if (typeof window === 'undefined') return ''
-  return window.location.origin + window.location.pathname + (window.location.search || '')
+  const base = window.location.origin + window.location.pathname
+  const params = new URLSearchParams(window.location.search || '')
+  if (activeTab && activeTab !== 'werke') params.set('tab', activeTab)
+  if (activeTab === 'eventplan' && eventplanSubTab === 'öffentlichkeitsarbeit') params.set('eventplan', 'öffentlichkeitsarbeit')
+  const qs = params.toString()
+  return qs ? base + '?' + qs : base
 }
 function escapeJsStringForDoc(s: string): string {
   return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r')
+}
+
+/** Einheitliche „← Zurück“-Leiste für alle geöffneten Dokumente (K2, ök2, VK2) – immer sichtbar, gleicher Tab/Kontext. */
+function getDocumentBackBarHtml(returnUrl: string): string {
+  const url = escapeJsStringForDoc(returnUrl)
+  return (
+    '<div style="position:sticky;top:0;z-index:9999;background:#1c1a18;color:#fff;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-family:system-ui,sans-serif;">' +
+    '<button type="button" onclick="goBack(); return false;" style="padding:0.4rem 0.8rem;background:#b54a1e;color:#fff;border:none;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;">← Zurück</button>' +
+    '<span style="font-size:0.9rem;opacity:0.9;">Dokument</span></div>' +
+    '<script>var ADMIN_RETURN_URL=\'' + url + '\';function goBack(){var u=(typeof ADMIN_RETURN_URL!==\'undefined\'&&ADMIN_RETURN_URL)?ADMIN_RETURN_URL:(window.opener&&!window.opener.closed&&window.opener.location.pathname.indexOf(\'/admin\')!==-1)?(window.opener.location.origin+window.opener.location.pathname+(window.opener.location.search||\'\')):\'\';if(window.opener&&!window.opener.closed){window.opener.location.href=u;window.opener.focus();window.close();return;}if(u)window.location.href=u;else window.history.back();}<\/script>'
+  )
+}
+
+/** Fügt die Zurück-Leiste am Anfang des body ein – für alle Dokumente einheitlich. */
+function wrapDocumentHtmlWithBackButton(html: string, returnUrl: string): string {
+  const bar = getDocumentBackBarHtml(returnUrl)
+  return html.replace(/<body([^>]*)>/i, '<body$1>' + bar)
 }
 const KEY_OEF_ADMIN_PASSWORD = 'k2-oeffentlich-admin-password'
 const KEY_OEF_ADMIN_EMAIL = 'k2-oeffentlich-admin-email'
@@ -831,7 +853,14 @@ function ScreenshotExportAdmin() {
   const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'design' | 'einstellungen' | 'assistent'>(initialTab)
   const [guideBannerClosed, setGuideBannerClosed] = useState(false)
   const [guideBegleiterGeschlossen, setGuideBegleiterGeschlossen] = useState(false)
-  const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>('events')
+  const initialEventplanSubTab = (() => {
+    try {
+      const p = new URLSearchParams(window.location.search)
+      if (p.get('tab') === 'eventplan' && p.get('eventplan') === 'öffentlichkeitsarbeit') return 'öffentlichkeitsarbeit' as const
+    } catch { /* ignore */ }
+    return 'events' as const
+  })()
+  const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>(initialEventplanSubTab)
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false) // kleine Leiste „Vergangenheit“, bei Klick aufklappen
   const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager'>('stammdaten')
   const [designSubTab, setDesignSubTab] = useState<'vorschau' | 'farben'>('vorschau')
@@ -3172,7 +3201,7 @@ ${'='.repeat(60)}
   </div>
 
   <script>
-    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl())}';
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
     var prDocClass = '${prDocClass}';
     function setFormat(f) {
       document.body.className = prDocClass + ' format-' + f;
@@ -3377,7 +3406,7 @@ ${'='.repeat(60)}
   </div>
 
   <script>
-    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl())}';
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
     var prDocClass = '${prDocClass}';
     function setFormat(f) {
       document.body.className = prDocClass + ' format-' + f;
@@ -3779,7 +3808,7 @@ ${'='.repeat(60)}
   </div>
 
   <script>
-    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl())}';
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
     var prDocClass = '${prDocClass}';
     function setFormat(f) {
       document.body.className = prDocClass + ' format-' + f;
@@ -3991,7 +4020,7 @@ ${'='.repeat(60)}
   </div>
 
   <script>
-    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl())}';
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
     var prDocClass = '${prDocClass}';
     function setFormat(f) {
       document.body.className = prDocClass + ' format-' + f;
@@ -4191,7 +4220,7 @@ ${'='.repeat(60)}
     <div class="content">${content.replace(/\n/g, '<br>')}</div>
   </div>
   <script>
-    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl())}';
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
     function goBack() {
       var baseUrl = window.location.origin + window.location.pathname.replace(/\\/[^\\/]*$/, '');
       var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
@@ -4567,7 +4596,7 @@ ${'='.repeat(60)}
     </div>
   </div>
   <script>
-    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl())}';
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
     function goBack() {
       var baseUrl = window.location.origin + window.location.pathname.replace(/\\/[^\\/]*$/, '');
       var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
@@ -5018,7 +5047,7 @@ ${'='.repeat(60)}
   </div>
   
   <script>
-    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl())}';
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
     function goBack() {
       var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
         ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
@@ -5346,7 +5375,7 @@ ${'='.repeat(60)}
     </div>
   </div>
   <script>
-    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl())}';
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
     function goBack() {
       var baseUrl = window.location.origin + window.location.pathname.replace(/\\/[^\\/]*$/, '');
       var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
@@ -5568,7 +5597,7 @@ ${'='.repeat(60)}
     </div>
   </div>
   <script>
-    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl())}';
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
     function goBack() {
       var baseUrl = window.location.origin + window.location.pathname.replace(/\\/[^\\/]*$/, '');
       var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
@@ -6015,11 +6044,19 @@ ${'='.repeat(60)}
   // Bei Einladung/Presse: Fertiges Dummy-Dokument im Nutzer-Design mit Stammdaten + Foto (zum Absenden bereit).
   const handleViewEventDocument = (document: any, event?: any) => {
     try {
+    const adminReturnUrl = getAdminReturnUrl(activeTab, eventplanSubTab)
     const fileDataOrUrl = document.fileData || document.data
-    // Gespeicherte Daten haben Vorrang; documentUrl nur nutzen wenn kein Inhalt (sonst evtl. abgelaufene blob-URL → leeres Fenster)
+    // Gespeicherte Daten haben Vorrang; documentUrl nur nutzen wenn kein Inhalt (sonst evtl. abgelaufene blob-URL → leeres Fenster). Immer mit Zurück-Leiste öffnen.
     if (!fileDataOrUrl && document.documentUrl && !String(document.documentUrl).startsWith('blob:')) {
-      const w = window.open(document.documentUrl, '_blank')
+      const wrapper = wrapDocumentHtmlWithBackButton(
+        '<html><head><meta charset="utf-8"><title>' + (document.name || 'Dokument').replace(/</g, '&lt;') + '</title></head><body style="margin:0;padding:0;"><iframe src="' + (document.documentUrl as string).replace(/"/g, '&quot;') + '" style="width:100%;height:calc(100vh - 52px);border:none;"></iframe></body></html>',
+        adminReturnUrl
+      )
+      const blob = new Blob([wrapper], { type: 'text/html;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const w = window.open(url, '_blank')
       if (w) try { w.focus() } catch (_) { }
+      setTimeout(() => URL.revokeObjectURL(url), 5000)
       return
     }
     const fileType = document.fileType || document.type || ''
@@ -6036,7 +6073,8 @@ ${'='.repeat(60)}
         const verein = stamm?.verein ? { name: stamm.verein.name, address: stamm.verein.address, city: stamm.verein.city, email: stamm.verein.email, website: stamm.verein.website } : { name: 'Kunstverein Muster', address: 'Musterstraße 12', city: 'Wien', email: 'office@kunstverein-muster.at', website: 'www.kunstverein-muster.at' }
         const mitglieder = (stamm?.mitglieder || []).filter((m: any) => m?.name).map((m: any) => ({ name: m.name, typ: m.typ, kurzVita: m.kurzVita, bio: m.bio }))
         const docKind = isEinladung ? 'einladung' : isPresse ? 'presse' : 'flyer'
-        const html = buildVk2ReadyToSendDocumentHtml(docKind, eventTitle, eventDate, verein, mitglieder)
+        const htmlRaw = buildVk2ReadyToSendDocumentHtml(docKind, eventTitle, eventDate, verein, mitglieder)
+        const html = wrapDocumentHtmlWithBackButton(htmlRaw, adminReturnUrl)
         const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
         const url = URL.createObjectURL(blob)
         const opened = window.open(url, '_blank')
@@ -6047,8 +6085,8 @@ ${'='.repeat(60)}
         const newWindow = window.open()
         if (newWindow) {
           try { newWindow.focus() } catch (_) { }
-          const html = buildVk2ReadyToSendDocumentHtml('einladung', eventTitle, eventDate, { name: 'Kunstverein Muster' }, [])
-          newWindow.document.write(html)
+          const htmlRaw = buildVk2ReadyToSendDocumentHtml('einladung', eventTitle, eventDate, { name: 'Kunstverein Muster' }, [])
+          newWindow.document.write(wrapDocumentHtmlWithBackButton(htmlRaw, adminReturnUrl))
           newWindow.document.close()
         }
       }
@@ -6056,7 +6094,8 @@ ${'='.repeat(60)}
     }
 
     if (isEinladung || isPresse) {
-      const html = buildReadyToSendDocumentHtml(isEinladung ? 'einladung' : 'presse', eventTitle, eventDate)
+      const htmlRaw = buildReadyToSendDocumentHtml(isEinladung ? 'einladung' : 'presse', eventTitle, eventDate)
+      const html = wrapDocumentHtmlWithBackButton(htmlRaw, adminReturnUrl)
       try {
         const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
         const url = URL.createObjectURL(blob)
@@ -6081,7 +6120,8 @@ ${'='.repeat(60)}
       if (base64 !== fileData) {
         try {
           const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
-          const html = new TextDecoder('utf-8').decode(bytes)
+          const htmlDecoded = new TextDecoder('utf-8').decode(bytes)
+          const html = wrapDocumentHtmlWithBackButton(htmlDecoded, adminReturnUrl)
           const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
           const opened = openPDFWindowSafely(blob, document.name || 'Dokument')
           if (!opened) setInAppDocumentViewer({ html, title: document.name || 'Dokument' })
@@ -6124,7 +6164,8 @@ ${'='.repeat(60)}
         try {
           const base64 = fileData.replace(/^data:[^;]+;base64,/, '')
           const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
-          const html = new TextDecoder('utf-8').decode(bytes)
+          const htmlDecoded = new TextDecoder('utf-8').decode(bytes)
+          const html = wrapDocumentHtmlWithBackButton(htmlDecoded, adminReturnUrl)
           setInAppDocumentViewer({ html, title: document.name || 'Dokument' })
         } catch {
           alert('Pop-up wurde blockiert. Bitte im Browser Fenster für diese Seite erlauben (Adresszeile oder Einstellungen), dann erneut auf das Dokument klicken.')
@@ -6135,36 +6176,35 @@ ${'='.repeat(60)}
       return
     }
     try { newWindow.focus() } catch (_) { }
+    const emptyDocHtml = wrapDocumentHtmlWithBackButton('<html><head><meta charset="utf-8"><title>' + (document.name || 'Dokument').replace(/</g, '&lt;') + '</title></head><body style="padding:2rem; font-family:sans-serif;"><p>Dieses Dokument hat keinen gespeicherten Inhalt. Bitte erstelle es neu mit „Neu erstellen“.</p></body></html>', adminReturnUrl)
     if (!fileData) {
-      newWindow.document.write('<html><head><meta charset="utf-8"><title>' + (document.name || 'Dokument').replace(/</g, '&lt;') + '</title></head><body style="padding:2rem; font-family:sans-serif;"><p>Dieses Dokument hat keinen gespeicherten Inhalt. Bitte erstelle es neu mit „Neu erstellen“.</p></body></html>')
+      newWindow.document.write(emptyDocHtml)
       newWindow.document.close()
       return
     }
     try {
       if (fileType?.includes('html') && typeof fileData === 'string' && fileData.startsWith('data:')) {
-        newWindow.document.write(`<html><head><title>${(document.name || '').replace(/</g, '&lt;')}</title></head><body style="margin:0; padding:20px;"><iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe></body></html>`)
+        const wrapperWithBack = wrapDocumentHtmlWithBackButton(`<html><head><title>${(document.name || '').replace(/</g, '&lt;')}</title></head><body style="margin:0; padding:20px;"><iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe></body></html>`, adminReturnUrl)
+        newWindow.document.write(wrapperWithBack)
         newWindow.document.close()
       } else {
-        newWindow.document.write(`
-        <html>
-          <head><title>${(document.name || '').replace(/</g, '&lt;')}</title></head>
-          <body style="margin:0; padding:20px; background:#f5f5f5;">
-            ${fileType?.includes('pdf')
-              ? `<iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe>`
-              : fileType?.includes('image')
-              ? `<img src="${fileData}" style="max-width:100%; height:auto;" />`
-              : fileType?.includes('html')
-              ? `<iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe>`
-              : `<a href="${fileData}" download="${(document.fileName || document.name || '').replace(/</g, '&lt;')}">Download: ${(document.name || '').replace(/</g, '&lt;')}</a>`
-            }
-          </body>
-        </html>
-      `)
+        const bodyContent = fileType?.includes('pdf')
+          ? `<iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe>`
+          : fileType?.includes('image')
+          ? `<img src="${fileData}" style="max-width:100%; height:auto;" />`
+          : fileType?.includes('html')
+          ? `<iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe>`
+          : `<a href="${fileData}" download="${(document.fileName || document.name || '').replace(/</g, '&lt;')}">Download: ${(document.name || '').replace(/</g, '&lt;')}</a>`
+        const wrapperWithBack = wrapDocumentHtmlWithBackButton(
+          '<html><head><title>' + (document.name || '').replace(/</g, '&lt;') + '</title></head><body style="margin:0; padding:20px; background:#f5f5f5;">' + bodyContent + '</body></html>',
+          adminReturnUrl
+        )
+        newWindow.document.write(wrapperWithBack)
         newWindow.document.close()
       }
     } catch (e) {
       console.error('Dokument öffnen:', e)
-      newWindow.document.write('<html><body style="padding:2rem; font-family:sans-serif;"><p>Dokument konnte nicht angezeigt werden.</p></body></html>')
+      newWindow.document.write(wrapDocumentHtmlWithBackButton('<html><body style="padding:2rem; font-family:sans-serif;"><p>Dokument konnte nicht angezeigt werden.</p></body></html>', adminReturnUrl))
       newWindow.document.close()
     }
     } catch (err) {
@@ -6177,7 +6217,7 @@ ${'='.repeat(60)}
   const openVitaDocument = (personId: 'martina' | 'georg') => {
     const person = personId === 'martina' ? martinaData : georgData
     const design = designSettings || OEF_DESIGN_DEFAULT
-    const html = buildVitaDocumentHtml(personId, {
+    const htmlRaw = buildVitaDocumentHtml(personId, {
       name: person?.name || '',
       email: person?.email,
       phone: person?.phone,
@@ -6189,6 +6229,7 @@ ${'='.repeat(60)}
       textColor: design.textColor,
       mutedColor: design.mutedColor
     }, galleryData?.name)
+    const html = wrapDocumentHtmlWithBackButton(htmlRaw, getAdminReturnUrl(activeTab, eventplanSubTab))
     try {
       const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
       const url = URL.createObjectURL(blob)
@@ -9316,49 +9357,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Öffnen →</div>
                   </button>
 
-                  {/* Premium-Bereich: eigene Sektion, kompakt (halb so groß wie normale Karten) */}
+                  {/* Premium-Bereich: Hinweis „vorerst nicht verfügbar“, Platzhalter für die Zukunft */}
                   {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
-                  <>
-                    <div style={{ gridColumn: '1 / -1', marginTop: '1rem', marginBottom: '0.35rem', paddingTop: '0.6rem', borderTop: `1px solid ${s.accent}22` }}>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 600, color: s.muted }}>Erweiterte Funktionen (Premium)</span>
+                  <div style={{ gridColumn: '1 / -1', marginTop: '1rem', paddingTop: '0.6rem', borderTop: `1px solid ${s.accent}22` }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.muted, marginBottom: '0.4rem' }}>Erweiterte Funktionen (Premium)</div>
+                    <div style={{ background: `${s.bgCard}`, border: `1px solid rgba(251,191,36,0.25)`, borderRadius: 10, padding: '0.65rem 1rem', fontSize: '0.8rem', color: s.muted, lineHeight: 1.5 }}>
+                      <strong style={{ color: s.text }}>Vorerst noch nicht verfügbar</strong> – daran wird gearbeitet. Geplant sind u. a. Echtheitszertifikate, Newsletter & Einladungen, Pressemappe.
                     </div>
-                    <button type="button" onClick={() => setActiveTab('zertifikat')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: '2px solid rgba(251,191,36,0.35)', borderRadius: '10px', padding: 'clamp(0.6rem, 1.5vw, 0.9rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit', position: 'relative' }}
-                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.7)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.35)'; e.currentTarget.style.transform = 'translateY(0)' }}
-                    >
-                      <div style={{ position: 'absolute', top: -6, right: 8, background: 'linear-gradient(90deg,#f59e0b,#fbbf24)', color: '#1a1a00', fontSize: '0.6rem', fontWeight: 800, padding: '2px 6px', borderRadius: 12 }}>💎 PREMIUM</div>
-                      <div style={{ fontSize: '1.25rem', marginBottom: '0.4rem' }}>🔏</div>
-                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: s.text, marginBottom: '0.2rem' }}>Echtheitszertifikate</div>
-                      <div style={{ fontSize: '0.75rem', color: s.muted, lineHeight: 1.4, marginBottom: '0.5rem' }}>
-                        PDF-Zertifikat pro Werk – mit Foto, Galeriedaten, Unterschrift
-                      </div>
-                      <div style={{ fontSize: '0.7rem', fontWeight: 600, color: '#fbbf24' }}>Öffnen →</div>
-                    </button>
-                    <button type="button" onClick={() => setActiveTab('newsletter')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: '2px solid rgba(251,191,36,0.35)', borderRadius: '10px', padding: 'clamp(0.6rem, 1.5vw, 0.9rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit', position: 'relative' }}
-                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.7)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.35)'; e.currentTarget.style.transform = 'translateY(0)' }}
-                    >
-                      <div style={{ position: 'absolute', top: -6, right: 8, background: 'linear-gradient(90deg,#f59e0b,#fbbf24)', color: '#1a1a00', fontSize: '0.6rem', fontWeight: 800, padding: '2px 6px', borderRadius: 12 }}>💎 PREMIUM</div>
-                      <div style={{ fontSize: '1.25rem', marginBottom: '0.4rem' }}>📬</div>
-                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: s.text, marginBottom: '0.2rem' }}>Newsletter & Einladungen</div>
-                      <div style={{ fontSize: '0.75rem', color: s.muted, lineHeight: 1.4, marginBottom: '0.5rem' }}>
-                        Kontaktliste für Vernissagen, Einladungen und Neuigkeiten
-                      </div>
-                      <div style={{ fontSize: '0.7rem', fontWeight: 600, color: '#fbbf24' }}>Öffnen →</div>
-                    </button>
-                    <button type="button" onClick={() => setActiveTab('pressemappe')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: '2px solid rgba(251,191,36,0.35)', borderRadius: '10px', padding: 'clamp(0.6rem, 1.5vw, 0.9rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit', position: 'relative' }}
-                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.7)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.35)'; e.currentTarget.style.transform = 'translateY(0)' }}
-                    >
-                      <div style={{ position: 'absolute', top: -6, right: 8, background: 'linear-gradient(90deg,#f59e0b,#fbbf24)', color: '#1a1a00', fontSize: '0.6rem', fontWeight: 800, padding: '2px 6px', borderRadius: 12 }}>💎 PREMIUM</div>
-                      <div style={{ fontSize: '1.25rem', marginBottom: '0.4rem' }}>📰</div>
-                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: s.text, marginBottom: '0.2rem' }}>Pressemappe</div>
-                      <div style={{ fontSize: '0.75rem', color: s.muted, lineHeight: 1.4, marginBottom: '0.5rem' }}>
-                        Automatisch generiertes PDF aus Stammdaten, Vita und ausgewählten Werken
-                      </div>
-                      <div style={{ fontSize: '0.7rem', fontWeight: 600, color: '#fbbf24' }}>Öffnen →</div>
-                    </button>
-                  </>
+                  </div>
                   )}
 
                 </div>
@@ -11087,7 +11093,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     onClick={() => {
                       saveAllForVorschau()
                       const seite1Route = isVk2AdminContext() ? PROJECT_ROUTES.vk2.galerie : isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie
-                      requestAnimationFrame(() => { navigate(seite1Route + '?vorschau=1') })
+                      const state = { fromAdminTab: 'einstellungen' as const, fromAdminContext: isVk2AdminContext() ? 'vk2' : isOeffentlichAdminContext() ? 'oeffentlich' : null }
+                      requestAnimationFrame(() => { navigate(seite1Route + '?vorschau=1', { state }) })
                     }}
                     style={{ padding: '0.5rem 0.9rem', fontSize: '0.9rem', background: `${s.accent}20`, border: `1px solid ${s.accent}66`, borderRadius: 8, color: s.accent, fontWeight: 500, cursor: 'pointer' }}
                   >
@@ -11098,7 +11105,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     onClick={() => {
                       saveAllForVorschau()
                       const vorschauRoute = isVk2AdminContext() ? PROJECT_ROUTES.vk2.galerieVorschau : isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerieVorschau
-                      requestAnimationFrame(() => { navigate(vorschauRoute + '?vorschau=1') })
+                      const state = { fromAdminTab: 'einstellungen' as const, fromAdminContext: isVk2AdminContext() ? 'vk2' : isOeffentlichAdminContext() ? 'oeffentlich' : null }
+                      requestAnimationFrame(() => { navigate(vorschauRoute + '?vorschau=1', { state }) })
                     }}
                     style={{ padding: '0.5rem 0.9rem', fontSize: '0.9rem', background: `${s.accent}20`, border: `1px solid ${s.accent}66`, borderRadius: 8, color: s.accent, fontWeight: 500, cursor: 'pointer' }}
                   >
@@ -16795,6 +16803,46 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   </span>
                 </label>
               </div>
+
+              {/* Favorit (max 5): direkt unter Shop – zu meinen 5 Top-Favoriten */}
+              {(() => {
+                const katalogAnzahl = loadArtworks().filter((a: any) => a.imVereinskatalog && (!editingArtwork || a.id !== editingArtwork.id)).length
+                const limitErreicht = !isImVereinskatalog && katalogAnzahl >= 5
+                const vk2 = isVk2AdminContext()
+                return (
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <label style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      padding: '0.6rem',
+                      background: 'rgba(255, 255, 255, 0.03)',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      cursor: limitErreicht ? 'not-allowed' : 'pointer',
+                      opacity: limitErreicht ? 0.6 : 1,
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => { if (!limitErreicht) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)' }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isImVereinskatalog}
+                        disabled={limitErreicht}
+                        onChange={(e) => setIsImVereinskatalog(e.target.checked)}
+                        style={{ width: '16px', height: '16px', cursor: limitErreicht ? 'not-allowed' : 'pointer', accentColor: '#fbbf24' }}
+                      />
+                      <span style={{ fontSize: '0.85rem', color: limitErreicht ? 'rgba(255,140,66,0.7)' : '#fbbf24' }}>
+                        {vk2 ? '🏆 Zu meinen 5 Top-Favoriten (vorne in Galerie & Vereinskatalog)' : '⭐ Zu meinen 5 Top-Favoriten (vorne in deiner Galerie)'}
+                      </span>
+                    </label>
+                    <div style={{ marginTop: '0.2rem', fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', paddingLeft: '1.5rem' }}>
+                      {limitErreicht ? '⚠️ Limit erreicht – erst ein anderes Werk abwählen' : `${katalogAnzahl + (isImVereinskatalog ? 1 : 0)} von max. 5 ausgewählt`}
+                    </div>
+                  </div>
+                )
+              })()}
 
               </>
               )}

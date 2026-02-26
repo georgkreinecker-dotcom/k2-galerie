@@ -2231,7 +2231,13 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         }}>
           <button
             type="button"
-            onClick={() => navigate(musterOnly ? '/admin?context=oeffentlich' : '/admin')}
+            onClick={() => {
+              const s = location.state as { fromAdminTab?: string; fromAdminContext?: string | null } | null
+              const ctx = s?.fromAdminContext ?? (musterOnly ? 'oeffentlich' : null)
+              const tab = s?.fromAdminTab
+              const backUrl = '/admin' + (ctx ? '?context=' + ctx : '') + (tab ? (ctx ? '&' : '?') + 'tab=' + tab : '')
+              navigate(backUrl)
+            }}
             style={{ background: 'rgba(0,0,0,0.2)', border: 'none', color: 'inherit', padding: '0.4rem 0.8rem', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}
           >
             ← Zurück zu Einstellungen

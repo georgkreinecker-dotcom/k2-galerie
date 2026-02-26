@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { initVk2DemoStammdatenIfEmpty, type Vk2Stammdaten } from '../config/tenantConfig'
@@ -55,6 +55,7 @@ const VK2_VERCEL_BASE = 'https://k2-galerie.vercel.app'
 
 const Vk2GaleriePage: React.FC = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const [stammdaten, setStammdaten] = useState<Vk2Stammdaten | null>(() => loadVk2Stammdaten())
   const [pageTexts, setPageTexts] = useState(() => loadVk2PageTexts())
   const [pageContent, setPageContent] = useState(() => loadVk2PageContent())
@@ -172,7 +173,14 @@ const Vk2GaleriePage: React.FC = () => {
       {/* ── VORSCHAU-BANNER ── */}
       {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('vorschau') === '1' && (
         <div style={{ background: C.accent, color: '#fff', padding: '0.5rem 1.5rem', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'space-between', fontFamily: 'system-ui, sans-serif' }}>
-          <button onClick={() => navigate('/admin?context=vk2')} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 6, padding: '0.28rem 0.8rem', color: '#fff', cursor: 'pointer', fontSize: '0.84rem' }}>
+          <button
+            onClick={() => {
+              const s = location.state as { fromAdminTab?: string } | null
+              const backUrl = '/admin?context=vk2' + (s?.fromAdminTab ? '&tab=' + s.fromAdminTab : '')
+              navigate(backUrl)
+            }}
+            style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 6, padding: '0.28rem 0.8rem', color: '#fff', cursor: 'pointer', fontSize: '0.84rem' }}
+          >
             ← Zurück zu Einstellungen
           </button>
           <span>Vorschau – hier siehst du deine gespeicherten Änderungen</span>

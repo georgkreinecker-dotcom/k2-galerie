@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { initVk2DemoStammdatenIfEmpty, type Vk2Stammdaten, type Vk2Mitglied } from '../config/tenantConfig'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { getPageContentGalerie } from '../config/pageContentGalerie'
@@ -71,6 +71,7 @@ function loadVk2Stammdaten(): Vk2Stammdaten | null {
 // ─── Hauptkomponente ──────────────────────────────────────────────────────────
 const Vk2GalerieVorschauPage: React.FC = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const [mitglieder, setMitglieder] = useState<Vk2Mitglied[]>([])
   const [stammdaten, setStammdaten] = useState<Vk2Stammdaten | null>(null)
   const [pageContent, setPageContent] = useState(() => getPageContentGalerie('vk2'))
@@ -151,7 +152,14 @@ const Vk2GalerieVorschauPage: React.FC = () => {
       {/* Vorschau-Banner */}
       {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('vorschau') === '1' && (
         <div style={{ background: C.accent, color: '#fff', padding: '0.5rem 1.5rem', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'space-between', fontFamily: 'system-ui, sans-serif' }}>
-          <button onClick={() => navigate('/admin?context=vk2')} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 6, padding: '0.28rem 0.8rem', color: '#fff', cursor: 'pointer', fontSize: '0.84rem' }}>
+          <button
+            onClick={() => {
+              const s = location.state as { fromAdminTab?: string } | null
+              const backUrl = '/admin?context=vk2' + (s?.fromAdminTab ? '&tab=' + s.fromAdminTab : '')
+              navigate(backUrl)
+            }}
+            style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 6, padding: '0.28rem 0.8rem', color: '#fff', cursor: 'pointer', fontSize: '0.84rem' }}
+          >
             ← Zurück zu Einstellungen
           </button>
           <span>Vorschau – hier siehst du deine gespeicherten Änderungen</span>

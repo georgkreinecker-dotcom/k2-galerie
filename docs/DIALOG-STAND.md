@@ -6,7 +6,9 @@
 Favoriten (max 5): Vorreihung in Galerie, Option beim Anlegen, VK2 wie gehabt
 
 ## Was zuletzt gemacht
-- **Premium-Platzierung im K2-Admin:** Die drei Premium-Karten sind in eine eigene Sektion „Erweiterte Funktionen (Premium)“ am Ende; **halb so groß** wie die normalen Karten (kleineres Padding, kleinere Schrift, kleineres Icon/Badge).
+- **Zurück in die Dokumenten-Vorschau (Flyer & Werbedokumente):** Beim Öffnen eines Dokuments von „Hier sind deine Flyer und Werbedokumente …“ enthält die Rück-URL jetzt `tab=eventplan&eventplan=öffentlichkeitsarbeit`. Beim Admin-Start wird `eventplan` aus der URL gelesen → „← Zurück“ führt wieder genau auf die grüne Lupen-Vorschau, nicht in die Event-Übersicht.
+- **Zurück landet auf der richtigen Seite:** (1) **Dokumente:** getAdminReturnUrl(activeTab, eventplanSubTab) – Rück-URL enthält Tab + Eventplan-Untertab. (2) **Galerie-Vorschau:** fromAdminTab/fromAdminContext → /admin?tab=einstellungen.
+- **Premium im K2-Admin:** Statt klickbarer Karten nur noch ein **Hinweis**: „Vorerst noch nicht verfügbar – daran wird gearbeitet.“ Sektion „Erweiterte Funktionen (Premium)“ bleibt als Platzhalter.
 - **Stand-Badge im VK2-Admin:** Beim Tippen auf „Stand“ hat doHardReload nur pathname + v= gesetzt, die URL-Parameter (z. B. context=vk2) gingen verloren → man landete in K2-Admin. **Fix:** doHardReload übernimmt die bestehenden Search-Parameter und hängt nur v= an (context=vk2 bleibt erhalten).
 - **Favoriten (max 5):** Beim Erstellen/Bearbeiten eines Werks Option „Als Favorit“ (K2/ök2: „vorne in deiner Galerie“; VK2: „vorne in Galerie & Vereinskatalog“). Galerie- und Vorschau-Sortierung: Favoriten zuerst, dann neueste. Export (gallery-data.json) ebenfalls Favoriten zuerst → Besucher sehen dieselbe Reihenfolge. In der Werkliste: Favorit-Button für alle Kontexte (K2, ök2, VK2).
 - **L3 / vermischte Daten:** Im VK2-Admin bei Werbematerial/Dokumenten ein Hinweis: „Falls ein Dokument noch K2-Daten enthält: Auf × klicken (aus Liste entfernen), dann Neu erstellen.“
