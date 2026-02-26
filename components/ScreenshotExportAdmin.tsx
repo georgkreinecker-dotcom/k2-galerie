@@ -8669,7 +8669,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
         </div>
       )}
 
-      {/* ── Zurück zum Guide-Hub (erscheint wenn man vom /entdecken-Hub kommt) ── */}
+      {/* ── Zurück zur Übersicht (Hub = „der Guide“; auf Admin bewusst kein zweiter Guide – „Was möchtest du tun?“ ist selbsterklärend) ── */}
       {fromHub && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, zIndex: 99999,
@@ -8692,8 +8692,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem',
               display: 'flex', alignItems: 'center', gap: '0.4rem',
               fontFamily: s.fontBody,
-            }}>
-            ← Zurück zum Guide
+            }}
+            title="Zurück zur Übersicht mit allen Bereichen (Meine Werke, Events, Kassa, …)">
+            ← Zurück zur Übersicht
           </button>
           <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.82rem' }}>
             Du schaust dir gerade an: <strong style={{ color: '#fff' }}>
