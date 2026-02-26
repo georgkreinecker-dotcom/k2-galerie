@@ -3887,8 +3887,8 @@ ${'='.repeat(60)}
 </html>
     `
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-    const opened = openPDFWindowSafely(blob, 'Newsletter – ' + (event?.title || 'Event'))
-    if (!opened) setInAppDocumentViewer({ html, title: 'Newsletter – ' + (event?.title || 'Event') })
+    // Immer im gleichen Tab öffnen – kein neuer Tab, der „oben im Browser-Balken hängt“; sofort sichtbar mit Zurück/Format/PDF/Speichern.
+    setInAppDocumentViewer({ html, title: 'Newsletter – ' + (event?.title || 'Event') })
     
     // Speichere auch in Dokumente-Sektion
     const reader = new FileReader()
