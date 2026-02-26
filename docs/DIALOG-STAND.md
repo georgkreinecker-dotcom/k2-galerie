@@ -44,6 +44,7 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **Guide = Übersicht (Hub); Admin selbsterklärend** – „Zurück zum Guide“ → „Zurück zur Übersicht“ (führt zum Entdecken-Hub). Auf Admin bewusst kein zweiter Guide; „Was möchtest du heute tun?“ reicht. Commit: e6e3c38 ✅ auf GitHub
 
 ## Nächste Schritte (offen)
+- **Idee festgehalten:** Admin-Struktur im Hub-Design (3 Spalten, Fokus Mitte wie Entdecken) – zielsicherer, optisch überzeugend. Siehe **docs/ADMIN-STRUKTUR-HUB-DESIGN-IDEE.md**. Umsetzung offen, wenn Georg möchte.
 4. **Vor Veröffentlichung:** Erster Durchgang in **docs/VOR-VEROEFFENTLICHUNG.md** erledigt (Stand-Tabelle für Georg). **Mit Georg:** Checkboxen durchgehen, npm audit + AGB/Impressum-Inhalte prüfen und abhaken.
 5. **Praxis-Test gestartet (26.02.26):** Git-Teil erledigt (Commit 16283ea, Tag vor-praxistest-2026-02-26). Noch empfohlen: App-Vollbackup herunterladen; backupmicro Hard-Backup wenn angesteckt. **Ab jetzt:** Galerien befüllen + testen; weitere Änderungen wie bisher (commit, push, drei Regeln).
 
