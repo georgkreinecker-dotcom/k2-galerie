@@ -39,10 +39,18 @@
 
 ### 2.3 Teilnahmebedingungen (Stichpunkte für AGB)
 
-- Mitmachen darf, wer eine gültige Lizenz (Basic/Pro/…) hat.
+- Mitmachen darf, wer eine gültige Lizenz hat (Basic, Pro, VK2-Verein oder VK2-Mitglied).
 - **Geworbene:r:** Max. einmal 10 % Rabatt auf die erste Lizenz (bzw. erste Laufzeit), nur bei Angabe einer gültigen Empfehler-ID beim Abschluss.
 - **Empfehler:in:** 10 % Gutschrift auf die **nächste** eigene Lizenzrechnung pro erfolgreich geworbenem Kunden (einmalig pro Geworbenem); Gutschriften addieren sich – z. B. 10 Geworbene = 100 % = Lizenz für diese Rechnung kostenlos. Keine Auszahlung, nur Anrechnung.
 - Keine Selbstempfehlung; ID nur gültigen, aktiven Konten zugeordnet; Missbrauch führt zum Ausschluss.
+
+### 2.4 VK2-Kompatibilität (Kunstvereine)
+
+- **Dieselbe Regel** gilt für alle Lizenztypen – auch für **VK2** (Vereinsplattform). 10 % Rabatt für Geworbene, 10 % Gutschrift pro Geworbenem für Empfehler:in; 10 Geworbene = nächste Rechnung gratis.
+- **Empfehler:in** kann sein: Einzelkünstler:in (Basic/Pro), **Verein** (VK2) oder **Vereinsmitglied** (50 %-Lizenz). **Geworbene:r** kann Basic, Pro oder **VK2** (Verein) wählen.
+- **Bezugsgröße:** Bei VK2-Verein = Vereinsbeitrag (z. B. Pro bis 10 Mitglieder, danach kostenfrei). Bei Vereinsmitglied = 50 %-Lizenz. Rabatt bzw. Gutschrift beziehen sich auf die jeweilige Rechnung (Verein oder Mitglied).
+- **Verein als Empfehler:** Wenn ein Verein 10 Geworbene hat → 100 % Gutschrift auf die nächste Vereinsrechnung (oder, falls bereits „ab 10 Mitgliedern kostenfrei“, Gutschrift für spätere Gebühren / Mitgliedsanteile definieren).
+- **Konsequenz:** Ein einheitliches Empfehlungs-Programm für Basic, Pro und VK2 – gleiche Logik, gleiche Kommunikation, nur die Rechnungsbasis (Einzelkünstler vs. Verein vs. Mitglied) ist kontextabhängig.
 
 ---
 
@@ -116,6 +124,7 @@ Später mit Backend: Empfehler-ID pro User in DB; Gutschriften in DB; Abrechnung
 | **Vermarktung** | mök2 Sektion 6, Einstellungen „Empfehlungs-Programm“, Empfehlungstool, Checkout-Hinweis; Sprache: Rabatt/Gutschrift, kein Cashback. |
 | **Technik** | ID + Link + Speicher empfehlerId vorhanden; offen: Rabatt-Logik, Gutschrift speichern und anrechnen, URL-Parameter vorausfüllen. |
 | **Recht** | AGB/Teilnahmebedingungen: Wer, wie viel, wann; keine Selbstempfehlung. |
+| **VK2** | Dieselbe Regel für Basic, Pro und VK2 (Verein + Mitglied); Bezugsgröße = jeweilige Rechnung. |
 
 ---
 
