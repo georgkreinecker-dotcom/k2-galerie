@@ -37,6 +37,7 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **Crash-Check (26.02.26):** index.html – „Laden …“-Klick und „Galerie lädt nicht“-Button nur noch Reload wenn window.self===window.top. Commit: 54191d2 ✅
 - **Crash-Check (26.02.26):** doHardReload() (Stand-Badge) + VK2 Stand-Badges (Vk2GaleriePage, Vk2GalerieVorschauPage) – Reload/Redirect nur wenn window.self===window.top (kein Reload in Cursor Preview). Commit: 380c228 ✅
 - **Admin K2/ök2:** „Aussehen & Design“ war im Haupt-Hub („Was möchtest du heute tun?“) nur bei VK2 als Icon in der linken Spalte – bei K2 und ök2 fehlte es. **Fix:** linksBereiche für K2/ök2 um Eintrag „✨ Aussehen & Design“ ergänzt (wie bei VK2). Commit: 01069ee ✅
+- **Galerie – Event-Dokument-Icons (📎):** Klick auf „Einladung zur Vernissage“ / „Presseinformation“ unter „Aktuelles aus den Eventplanungen“ hat oft nichts getan (doc ohne fileData). **Fix:** openEventDocument nutzt Fallback aus eventDocuments (ev.documents + eventDocuments mit eventId); bei fehlendem Inhalt und bei blockiertem Pop-up klare Hinweise. Commit: 4946bef ✅
 - **Dokumente sofort sichtbar (Focus)** – Beim Öffnen von Dokumenten (Newsletter, Presse, Flyer, Vita, PDF, Etikett, Druckfenster etc.) wird das neue Fenster/der neue Tab mit `.focus()` in den Vordergrund geholt. Du musst nicht mehr in der Menüleiste (Tab „L“) suchen – das Dokument erscheint direkt.
 - **„Alle PR-Dokumente auf einen Blick“ öffnet immer** – Fallback aus Event bei fehlenden PR-Vorschlägen (Commit 1ad018f).
 - **QR-Code Plakat nur in K2** – Im VK2-Admin ausgeblendet (Commit 574badd).
@@ -45,7 +46,7 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Admin K2/ök2: Aussehen & Design wieder als Icon im Hub (linke Spalte).** Commit: 01069ee ✅ auf GitHub
+- **Galerie: Event-Dokument-Icons (📎) öffnen + Stand 26.02.26 20:06.** Commit: 4946bef ✅ auf GitHub
 
 ## Was gerade gemacht (ök2: 7 fertige Musterdokumente)
 - **ök2 zeigt jetzt 7 fertige Musterdokumente:** 2 unter „Druckfertige Dokumente“ (Einladung, Presse aus MUSTER_EVENTS) + 5 PR-Dokumente (Newsletter, Plakat, Event-Flyer, Presseaussendung, Social Media) aus getOek2MusterPrDocuments(). Alle mit MUSTER_TEXTE (Lena Berg, Paul Weber, Galerie Muster, info@galerie-muster.example) und einheitlichem Design (#6b9080).
@@ -57,8 +58,9 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **K2:** Unverändert – lädt nur k2-events, k2-documents; Stammdaten aus k2-stammdaten-* (State); Generatoren nutzen State.
 - **ök2:** Unverändert – Events/Docs nur Muster; State = MUSTER_TEXTE.
 
-## Nächster Schritt
-- Kurz testen: Admin mit context=oeffentlich (ök2), context=vk2 (VK2), ohne context (K2) – jeweils Eventplan → Öffentlichkeitsarbeit, Newsletter/Flyer/Presse erzeugen und prüfen, dass nur die jeweiligen Daten (Muster / Verein / K2) erscheinen.
+## Nächster Schritt (für nächste Session)
+- **Test:** 📎-Icons unter „Aktuelles aus den Eventplanungen“ – Einladung/Presse klicken, Dokument soll sich öffnen.
+- Optional: Admin context=oeffentlich/vk2/K2 – Eventplan → Öffentlichkeitsarbeit, Kontext-Daten prüfen.
 
 ## Was zuvor (Event-Flyer-Icon)
 - **Vk2GaleriePage:** Bei „VEREINSTERMINE & EVENTS“ hat jedes Event ein klickbares 📄-Icon; Klick öffnet den Flyer (gespeichertes HTML oder minimal generiert) in einem Modal.
@@ -75,8 +77,13 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **Zurück aus Dokumenten:** goBack() in generierten Dokumenten nutzt Opener-URL inkl. context (Commit 192d544).
 - **CI:** GitHub Actions führt jetzt vollen Build bei jedem Push (Commit f8f0a7c).
 
+## Session-Ende 26.02.26
+- **Code:** Commit 4946bef gepusht (Event-Dokument-Icons + Stand 20:06). Vercel baut automatisch.
+- **Nächste Session:** DIALOG-STAND lesen → Faden: Event-Icons testen, ggf. Kontext-Test ök2/VK2/K2.
+
 ## Wo nachlesen
 - `src/pages/Vk2GaleriePage.tsx` – Startseite + Eingangskarten-Komponente
 - `src/pages/Vk2GalerieVorschauPage.tsx` – Mitglieder-Seite (noch anpassen)
 - `components/ScreenshotExportAdmin.tsx` – Admin mit Datentrennung
 - `.cursor/rules/k2-oek2-trennung.mdc` – Datentrennung-Regeln
+- `docs/PRAXISTEST-BEFUELLEN-SICHERHEIT.md` – Backup-Checkliste vor Praxis-Test
