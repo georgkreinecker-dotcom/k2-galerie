@@ -9316,47 +9316,47 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     <div style={{ fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Öffnen →</div>
                   </button>
 
-                  {/* Premium-Bereich: eigene Sektion, stört die Tagesstruktur nicht */}
+                  {/* Premium-Bereich: eigene Sektion, kompakt (halb so groß wie normale Karten) */}
                   {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
                   <>
-                    <div style={{ gridColumn: '1 / -1', marginTop: '1.5rem', marginBottom: '0.5rem', paddingTop: '1rem', borderTop: `1px solid ${s.accent}22` }}>
-                      <span style={{ fontSize: '0.9rem', fontWeight: 600, color: s.muted }}>Erweiterte Funktionen (Premium)</span>
+                    <div style={{ gridColumn: '1 / -1', marginTop: '1rem', marginBottom: '0.35rem', paddingTop: '0.6rem', borderTop: `1px solid ${s.accent}22` }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 600, color: s.muted }}>Erweiterte Funktionen (Premium)</span>
                     </div>
-                    <button type="button" onClick={() => setActiveTab('zertifikat')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: '2px solid rgba(251,191,36,0.35)', borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit', position: 'relative' }}
+                    <button type="button" onClick={() => setActiveTab('zertifikat')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: '2px solid rgba(251,191,36,0.35)', borderRadius: '10px', padding: 'clamp(0.6rem, 1.5vw, 0.9rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit', position: 'relative' }}
                       onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.7)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
                       onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.35)'; e.currentTarget.style.transform = 'translateY(0)' }}
                     >
-                      <div style={{ position: 'absolute', top: -10, right: 14, background: 'linear-gradient(90deg,#f59e0b,#fbbf24)', color: '#1a1a00', fontSize: '0.68rem', fontWeight: 800, padding: '2px 9px', borderRadius: 20 }}>💎 PREMIUM</div>
-                      <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>🔏</div>
-                      <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Echtheitszertifikate</div>
-                      <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
+                      <div style={{ position: 'absolute', top: -6, right: 8, background: 'linear-gradient(90deg,#f59e0b,#fbbf24)', color: '#1a1a00', fontSize: '0.6rem', fontWeight: 800, padding: '2px 6px', borderRadius: 12 }}>💎 PREMIUM</div>
+                      <div style={{ fontSize: '1.25rem', marginBottom: '0.4rem' }}>🔏</div>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: s.text, marginBottom: '0.2rem' }}>Echtheitszertifikate</div>
+                      <div style={{ fontSize: '0.75rem', color: s.muted, lineHeight: 1.4, marginBottom: '0.5rem' }}>
                         PDF-Zertifikat pro Werk – mit Foto, Galeriedaten, Unterschrift
                       </div>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#fbbf24' }}>Öffnen →</div>
+                      <div style={{ fontSize: '0.7rem', fontWeight: 600, color: '#fbbf24' }}>Öffnen →</div>
                     </button>
-                    <button type="button" onClick={() => setActiveTab('newsletter')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: '2px solid rgba(251,191,36,0.35)', borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit', position: 'relative' }}
+                    <button type="button" onClick={() => setActiveTab('newsletter')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: '2px solid rgba(251,191,36,0.35)', borderRadius: '10px', padding: 'clamp(0.6rem, 1.5vw, 0.9rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit', position: 'relative' }}
                       onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.7)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
                       onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.35)'; e.currentTarget.style.transform = 'translateY(0)' }}
                     >
-                      <div style={{ position: 'absolute', top: -10, right: 14, background: 'linear-gradient(90deg,#f59e0b,#fbbf24)', color: '#1a1a00', fontSize: '0.68rem', fontWeight: 800, padding: '2px 9px', borderRadius: 20 }}>💎 PREMIUM</div>
-                      <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📬</div>
-                      <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Newsletter & Einladungen</div>
-                      <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
+                      <div style={{ position: 'absolute', top: -6, right: 8, background: 'linear-gradient(90deg,#f59e0b,#fbbf24)', color: '#1a1a00', fontSize: '0.6rem', fontWeight: 800, padding: '2px 6px', borderRadius: 12 }}>💎 PREMIUM</div>
+                      <div style={{ fontSize: '1.25rem', marginBottom: '0.4rem' }}>📬</div>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: s.text, marginBottom: '0.2rem' }}>Newsletter & Einladungen</div>
+                      <div style={{ fontSize: '0.75rem', color: s.muted, lineHeight: 1.4, marginBottom: '0.5rem' }}>
                         Kontaktliste für Vernissagen, Einladungen und Neuigkeiten
                       </div>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#fbbf24' }}>Öffnen →</div>
+                      <div style={{ fontSize: '0.7rem', fontWeight: 600, color: '#fbbf24' }}>Öffnen →</div>
                     </button>
-                    <button type="button" onClick={() => setActiveTab('pressemappe')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: '2px solid rgba(251,191,36,0.35)', borderRadius: '16px', padding: 'clamp(1.25rem, 3vw, 1.75rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit', position: 'relative' }}
+                    <button type="button" onClick={() => setActiveTab('pressemappe')} style={{ textAlign: 'left', cursor: 'pointer', background: s.bgCard, border: '2px solid rgba(251,191,36,0.35)', borderRadius: '10px', padding: 'clamp(0.6rem, 1.5vw, 0.9rem)', boxShadow: s.shadow, transition: 'all 0.2s ease', fontFamily: 'inherit', position: 'relative' }}
                       onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.7)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
                       onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(251,191,36,0.35)'; e.currentTarget.style.transform = 'translateY(0)' }}
                     >
-                      <div style={{ position: 'absolute', top: -10, right: 14, background: 'linear-gradient(90deg,#f59e0b,#fbbf24)', color: '#1a1a00', fontSize: '0.68rem', fontWeight: 800, padding: '2px 9px', borderRadius: 20 }}>💎 PREMIUM</div>
-                      <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📰</div>
-                      <div style={{ fontWeight: 700, fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>Pressemappe</div>
-                      <div style={{ fontSize: '0.85rem', color: s.muted, lineHeight: 1.5, marginBottom: '1rem' }}>
+                      <div style={{ position: 'absolute', top: -6, right: 8, background: 'linear-gradient(90deg,#f59e0b,#fbbf24)', color: '#1a1a00', fontSize: '0.6rem', fontWeight: 800, padding: '2px 6px', borderRadius: 12 }}>💎 PREMIUM</div>
+                      <div style={{ fontSize: '1.25rem', marginBottom: '0.4rem' }}>📰</div>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: s.text, marginBottom: '0.2rem' }}>Pressemappe</div>
+                      <div style={{ fontSize: '0.75rem', color: s.muted, lineHeight: 1.4, marginBottom: '0.5rem' }}>
                         Automatisch generiertes PDF aus Stammdaten, Vita und ausgewählten Werken
                       </div>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#fbbf24' }}>Öffnen →</div>
+                      <div style={{ fontSize: '0.7rem', fontWeight: 600, color: '#fbbf24' }}>Öffnen →</div>
                     </button>
                   </>
                   )}
