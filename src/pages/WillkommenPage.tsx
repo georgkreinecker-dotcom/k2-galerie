@@ -69,6 +69,11 @@ export default function WillkommenPage() {
   }
 
   const startEntry = (action: PendingAction) => {
+    // Beim „nur umsehen“ / Galerie starten keine AGB – nur bei Lizenz/Kauf relevant
+    if (action === 'entwurf' || action === 'ansicht') {
+      doNavigate(action)
+      return
+    }
     if (agbAccepted) doNavigate(action)
     else { setPendingAction(action); setShowAgbModal(true); setAgbCheckbox(false) }
   }
@@ -164,24 +169,12 @@ function VariantA({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 'clamp(2rem, 5vw, 3rem) clamp(1rem, 4vw, 2rem)' }}>
         <div style={{ maxWidth: 520, width: '100%' }}>
 
-          {/* Einladungstext */}
-          <p style={{ fontSize: '1.05rem', color: muted, textAlign: 'center', marginBottom: '2rem', lineHeight: 1.7 }}>
-            Schau dich um – oder probiere gleich aus, wie die Galerie mit deinem Namen aussieht.
+          {/* Einladungstext – neuer Interessent: nur eine klare Aktion */}
+          <p style={{ fontSize: '1.05rem', color: muted, textAlign: 'center', marginBottom: '1.5rem', lineHeight: 1.7 }}>
+            Gib deinen Namen ein – und sieh sofort, wie deine eigene Galerie aussehen würde.
           </p>
 
-          {/* Galerie ansehen */}
-          <button type="button" onClick={() => startEntry('ansicht')} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '1.25rem', padding: '1.25rem 1.5rem', background: bgCard, border: `1px solid #e0d5c5`, borderRadius: '14px', cursor: 'pointer', fontFamily: fontBody, textAlign: 'left', marginBottom: '1rem', boxShadow: '0 2px 12px rgba(60,30,10,0.06)', transition: 'all 0.2s' }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = accent; e.currentTarget.style.boxShadow = '0 6px 24px rgba(181,74,30,0.12)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = '#e0d5c5'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(60,30,10,0.06)'; e.currentTarget.style.transform = 'translateY(0)' }}
-          >
-            <span style={{ width: 52, height: 52, borderRadius: '12px', background: bgWarm, border: `1px solid #e0d5c5`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', flexShrink: 0 }}>🖼️</span>
-            <span>
-              <span style={{ display: 'block', fontWeight: 700, fontSize: '1.05rem', color: text, marginBottom: '0.2rem' }}>Galerie ansehen</span>
-              <span style={{ fontSize: '0.85rem', color: muted }}>Einfach reinschauen – ganz ohne Anmeldung</span>
-            </span>
-          </button>
-
-          {/* Eigene Galerie ausprobieren */}
+          {/* Nur: Meine Galerie ausprobieren („Galerie ansehen“ / „Kaufen“ nicht hier – würden nur verwirren) */}
           <div style={{ background: bgCard, border: `2px solid ${accent}`, borderRadius: '14px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(181,74,30,0.10)', marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', marginBottom: '1.1rem' }}>
               <span style={{ width: 52, height: 52, borderRadius: '12px', background: `${accent}15`, border: `1px solid ${accent}33`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', flexShrink: 0 }}>✏️</span>
@@ -205,20 +198,14 @@ function VariantA({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
             </button>
           </div>
 
-          {/* Lizenz anfragen */}
-          <a href={`mailto:${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_EMAIL)}?subject=${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_BETREFF)}`}
-            style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', background: bgWarm, border: `1px solid #e0d5c5`, borderRadius: '12px', textDecoration: 'none', transition: 'all 0.2s' }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = accent }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = '#e0d5c5' }}
-          >
-            <span style={{ fontSize: '1.5rem' }}>📩</span>
-            <span>
-              <span style={{ display: 'block', fontWeight: 700, fontSize: '0.95rem', color: text }}>Eigene Galerie kaufen</span>
-              <span style={{ fontSize: '0.8rem', color: muted }}>Lizenz anfragen – wir melden uns</span>
-            </span>
-          </a>
+          {/* Weitere Optionen nur dezent – nicht für den allerersten Blick */}
+          <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.8rem', color: muted }}>
+            <button type="button" onClick={() => startEntry('ansicht')} style={{ background: 'none', border: 'none', color: muted, textDecoration: 'underline', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>Nur Galerie ansehen</button>
+            {' · '}
+            <a href={`mailto:${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_EMAIL)}?subject=${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_BETREFF)}`} style={{ color: muted, textDecoration: 'underline' }}>Lizenz anfragen</a>
+          </p>
 
-          {/* Fußzeile */}
+          {/* Fußzeile – AGB/Legal nur unten, nicht im Fokus */}
           <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.75rem', color: muted, lineHeight: 2 }}>
             <Link to={AGB_ROUTE} style={{ color: muted, textDecoration: 'none' }}>AGB</Link>
             {' · '}
@@ -309,33 +296,12 @@ function VariantC({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
             </button>
           </div>
 
-          {/* Sekundär: Galerie ansehen */}
-          <button type="button" onClick={() => startEntry('ansicht')}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', background: bgCard, border: `1px solid #e8ddd0`, borderRadius: '12px', cursor: 'pointer', fontFamily: fontBody, textAlign: 'left', marginBottom: '1rem', transition: 'all 0.2s' }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = `${accent}66`; e.currentTarget.style.background = bgLight }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = '#e8ddd0'; e.currentTarget.style.background = bgCard }}
-          >
-            <span style={{ fontSize: '1.5rem' }}>🖼️</span>
-            <span>
-              <span style={{ display: 'block', fontWeight: 600, fontSize: '0.95rem', color: text }}>Galerie ansehen</span>
-              <span style={{ fontSize: '0.8rem', color: muted }}>Einfach reinschauen – ohne Anmeldung</span>
-            </span>
-            <span style={{ marginLeft: 'auto', color: muted, fontSize: '1.1rem' }}>→</span>
-          </button>
-
-          {/* Lizenz anfragen */}
-          <a href={`mailto:${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_EMAIL)}?subject=${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_BETREFF)}`}
-            style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem', background: bgLight, border: `1px solid #e8ddd0`, borderRadius: '12px', textDecoration: 'none', transition: 'all 0.2s', marginBottom: '1.5rem' }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = `${accent}66` }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = '#e8ddd0' }}
-          >
-            <span style={{ fontSize: '1.5rem' }}>📩</span>
-            <span>
-              <span style={{ display: 'block', fontWeight: 600, fontSize: '0.95rem', color: text }}>Eigene Galerie kaufen</span>
-              <span style={{ fontSize: '0.8rem', color: muted }}>Lizenz anfragen – wir melden uns</span>
-            </span>
-            <span style={{ marginLeft: 'auto', color: muted, fontSize: '1.1rem' }}>→</span>
-          </a>
+          {/* Weitere Optionen dezent – neuer Interessent soll zuerst „Galerie starten“ sehen */}
+          <p style={{ textAlign: 'center', marginTop: '0.5rem', marginBottom: '1.5rem', fontSize: '0.8rem', color: muted }}>
+            <button type="button" onClick={() => startEntry('ansicht')} style={{ background: 'none', border: 'none', color: muted, textDecoration: 'underline', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>Nur Galerie ansehen</button>
+            {' · '}
+            <a href={`mailto:${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_EMAIL)}?subject=${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_BETREFF)}`} style={{ color: muted, textDecoration: 'underline' }}>Lizenz anfragen</a>
+          </p>
 
           {/* Fußzeile */}
           <p style={{ textAlign: 'center', fontSize: '0.75rem', color: muted, lineHeight: 2 }}>

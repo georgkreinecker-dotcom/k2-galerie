@@ -324,6 +324,13 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   // Willkommens-Banner (Erster Entwurf): von WillkommenPage oder EntdeckenPage mit Namen → einmalig anzeigen
   const [willkommenName, setWillkommenName] = useState<string | null>(null)
   const [willkommenBannerDismissed, setWillkommenBannerDismissed] = useState(false)
+  // Guide (Otto) erst nach kurzer Verzögerung – zuerst die Galerie sehen, nicht sofort überfordern
+  const [showGuideAfterDelay, setShowGuideAfterDelay] = useState(false)
+  useEffect(() => {
+    if (!musterOnly || !willkommenName || willkommenBannerDismissed) return
+    const t = setTimeout(() => setShowGuideAfterDelay(true), 3000)
+    return () => clearTimeout(t)
+  }, [musterOnly, willkommenName, willkommenBannerDismissed])
   useEffect(() => {
     if (!musterOnly) return
     try {
@@ -2308,7 +2315,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       
       <div style={{ position: 'relative', zIndex: 1 }}>
         {/* Guide-Avatar – geführter Rundgang (nur ök2, wenn mit Namen angekommen) */}
-        {musterOnly && willkommenName && !willkommenBannerDismissed && (
+        {musterOnly && willkommenName && !willkommenBannerDismissed && showGuideAfterDelay && (
           <GalerieGuide name={willkommenName} onDismiss={dismissWillkommenBanner} />
         )}
         {/* Mobile-First Admin: Neues Objekt Button (ök2: ausblenden) */}
