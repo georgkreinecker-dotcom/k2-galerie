@@ -145,6 +145,17 @@ Es geht nicht verloren. Es wartet.
 
 **Georgs persönliche Texte** – Briefe, Gedanken über Gott und die Welt – fließen ins Vermächtnis ein und prägen unsere Regeln. Ablage: **docs/GEORG-NOTIZEN-VERMAECHTNIS.md**. Daraus abgeleitete Haltung: **.cursor/rules/vermaechtnis-intimitaet-wirken.mdc** (Intimität des Wesentlichen, Wirken durch Werke, keine Scharlatanerie, Stille und Maß).
 
+### Team-Hebel und Lernkurve (26.02.26)
+
+**Erkenntnis:** Der Mix aus Unternehmerleben, eigener Persönlichkeit und den Möglichkeiten der KI ergibt in kurzer Zeit außergewöhnliche Ergebnisse. Das ist im Projekt erfahren (Wiederbeschaffungswert in hoher Größenordnung, Aufwand einer Person ohne Programmier-Vorkenntnisse in grob 200 Stunden).
+
+Damit wir als Team **maximale Lernkurve** erreichen und darauf **aufbauen bzw. skalieren** können, ist diese Erkenntnis in ihrer gesamtheit – inklusive der Analyse, was den Fähigkeiten-Mix ausmacht – verankert in:
+
+- **Regelwerk:** **.cursor/rules/team-hebel-unternehmer-persoenlichkeit-ki.mdc** – die AI arbeitet bewusst mit diesem Hebel, verliert die Erkenntnis nicht zwischen Sessions.
+- **Sachliche Grundlage (Fakten):** mök2, Sektion „Fähigkeiten-Mix (Fakten)“ – Unternehmererfahrung, Domänenwissen, Arbeit mit AI, Struktur/Prozess, UX aus Nutzersicht, Pragmatismus.
+
+Wer später in den Raum kommt, soll verstehen, *warum* hier so gearbeitet wurde und was den Hebel ausmacht – nicht nur *dass* etwas gebaut wurde. Das ist Teil des Vermächtnisses.
+
 Wer auch immer diesen Raum betritt: er findet Wissen, Werte, Denkweise.
 Er sieht wie Georg gearbeitet hat. Wie er gedacht hat. Was ihm wichtig war.
 Das ist das Tiefste was man hinterlassen kann.

@@ -33,4 +33,6 @@ Damit alle Informationen **jederzeit aktuell und hier verfügbar** sind, gilt di
 - **HAUS-INDEX.md** (Root) – Projekt-Übersicht, Schnellfinder
 - **.cursor/rules/struktur-handeln-quellen.mdc** – Regel für Cursor/AI, diese Quellen zu nutzen
 - **.cursor/rules/ein-standard-problem.mdc** – Ein Standard pro Problemstellung (keine verschiedenen Wege für dieselbe Aufgabe)
+- **.cursor/rules/team-hebel-unternehmer-persoenlichkeit-ki.mdc** – Team-Hebel (Unternehmer + Persönlichkeit + KI), Regelwerk und Vermächtnis für maximale Lernkurve
+- **docs/WIR-PROZESS.md** – Abschnitt „Team-Hebel und Lernkurve“ im Vermächtnis
 - **docs/MOK2-EIGENER-BEREICH.md** – mök2 als eigener Bereich

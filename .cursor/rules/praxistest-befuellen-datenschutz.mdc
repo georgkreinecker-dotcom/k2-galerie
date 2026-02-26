@@ -1,0 +1,30 @@
+---
+description: "Praxis-Test (Befüllen Galerie Eferding + K2): Keine Vermischung, kein Datenverlust, nichts Unreparierbares. Vorher Vollbackup."
+alwaysApply: true
+---
+
+# Praxis-Test: Befüllen & Datenschutz (absolut)
+
+## Kontext
+
+In den nächsten Tagen werden die **Galerie Eferding** und die **K2-Galerie** mit Werken befüllt und der ganze Prozess getestet.
+
+## Drei absolute Regeln (ohne Ausnahme)
+
+1. **Keine Daten durcheinanderbringen** – K2 ≠ Eferding ≠ ök2. Kontext/Mandant immer trennen.
+2. **Keine Daten verlieren** – Kein stilles Überschreiben, kein automatisches Löschen. Bestehende Regeln (niemals-kundendaten-loeschen, Datentrennung) unverändert.
+3. **Nichts kaputtmachen, das nicht reparierbar ist** – Keine irreversiblen Änderungen ohne Absicherung. Bei Unsicherheit: nachfragen.
+
+## Vor dem Befüllen: Vollbackup
+
+Vor Start des Praxis-Tests **einmalig** durchführen (Schnittstelle „Ab jetzt beginnt der Praxis-Test“):
+
+- App-Vollbackup (Admin → Einstellungen)
+- Git: commit + push, dann Tag z. B. `vor-praxistest-2026-02-26`
+- Vercel = Snapshot; backupmicro: `bash scripts/hard-backup-to-backupmicro.sh`
+
+**Vollständige Anleitung:** **docs/PRAXISTEST-BEFUELLEN-SICHERHEIT.md**
+
+## Kurzfassung
+
+**Befüllen/Test-Phase = diese drei Regeln + Vollbackup vorher. Jede Änderung danach gegen diese Regeln prüfen.**

@@ -7,6 +7,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 ## Plan & nächste Schritte
 - **PLAN-SCHRITT-FUER-SCHRITT.md** – **Unser gemeinsamer Plan:** Schritte 1–10 in Reihenfolge (Basis abhaken → ein Feature wählen → Pilot-Verein → Onboarding → optional Preise → später Rest). Ein Schritt nach dem anderen.
 - **DIALOG-STAND.md** – **Nach Absturz:** Eine Datei = ein Anker. Steht immer: letzte Session, Thema, was zuletzt dran, nächster Schritt. Sag „weiter nach Absturz“ → KI liest sie und arbeitet dort weiter. Kein Suchen im Konzept.
+- **WIR-PROZESS.md** – **Gemeinsamer Arbeitsraum, Vermächtnis, Team-Hebel:** Wer Georg ist, Wachstums-Vereinbarungen, Session-Reflexion; Abschnitt „Team-Hebel und Lernkurve“ (Unternehmer + Persönlichkeit + KI = außergewöhnliche Hebelwirkung; Regelwerk + Vermächtnis für maximale Lernkurve). Regel: `.cursor/rules/team-hebel-unternehmer-persoenlichkeit-ki.mdc`.
 
 ## Zentrale Nutzer-Themen (Übersicht)
 - **ZENTRALE-THEMEN-FUER-NUTZER.md** – **Eine Übersicht:** Änderungen sichtbar, Geräte, Drucker, Stand/Handy, Backup, Echte Galerie vs. Demo, Admin, Kassa. Kurz + Verweise auf die Einzel-Dokus.
@@ -17,6 +18,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **VERBESSERUNGEN-OHNE-MEHRKOSTEN.md** – Was ohne Mehrkosten umgesetzt wurde + was du regelmäßig tun kannst (npm audit, CORS, RLS).
 - **PRODUKT-LABEL-SICHERHEIT-ROADMAP.md** – Verkaufbares Produkt: sehr gutes Label, Zahlungen/Vergütungen sicher, Nachweis für Regress; Prioritäten (Auth, RLS, Zahlungsprovider, Audit-Log, Rechtliches).
 - **VOR-VEROEFFENTLICHUNG.md** – **Checkliste vor Go-Live** (Auth aktivieren, Migration 002, npm audit, AGB/DSGVO, Deployment) – nicht vergessen vor Veröffentlichung.
+- **PRAXISTEST-BEFUELLEN-SICHERHEIT.md** – **Vor dem Befüllen der Galerien (Eferding, K2):** Absolute Regeln (keine Vermischung, kein Datenverlust, nichts Unreparierbares) + Vollbackup-Anleitung (App, Git-Tag, Vercel, backupmicro). „Ab jetzt beginnt der Praxis-Test.“
 - **ADMIN-AUTH-SETUP.md** – Admin-Nutzer in Supabase anlegen, Migration 002 anwenden, testen.
 
 ## K2 vs. ök2 & Daten

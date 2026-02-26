@@ -1,9 +1,14 @@
 # Dialog-Stand
 
+**Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
+
 ## Datum: 26.02.26
 
 ## Thema
 Favoriten (max 5): Vorreihung in Galerie, Option beim Anlegen, VK2 wie gehabt
+
+## Woran zuletzt gearbeitet (inhaltlicher Faden)
+mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, Veröffentlichungsvorbereitung. Crash-Check war Unterbrechung in diesem Strom.
 
 ## Was zuletzt gemacht
 - **mök2: Fähigkeiten-Mix (Fakten):** Sektion „Was in einer Person das ermöglicht hat“ – Unternehmererfahrung, Domänenwissen, Arbeit mit AI, Struktur/Prozess, UX aus Nutzersicht, Pragmatismus; ausdrücklich als Aufzählung von Faktoren, keine Wertung.
@@ -25,6 +30,7 @@ Favoriten (max 5): Vorreihung in Galerie, Option beim Anlegen, VK2 wie gehabt
 - **Vereinskatalog:** Werke aus Lizenz-Galerien werden per `fetch(lizenzGalerieUrl/gallery-data.json)` geladen; nur Werke mit `imVereinskatalog`; lokale Werke bleiben Fallback.
 - **VK2-Katalog als PDF:** Button „Als PDF drucken / herunterladen“ + Hinweis „Im Druckdialog ‚Als PDF speichern‘ wählen“.
 - **Crash von gestern geprüft** – main.tsx + appBootstrap.tsx: Fehler-Reload-Buttons iframe-gesichert.
+- **Crash-Check (26.02.26):** index.html – „Laden …“-Klick und „Galerie lädt nicht“-Button nur noch Reload wenn window.self===window.top. Commit: 54191d2 ✅
 - **Dokumente sofort sichtbar (Focus)** – Beim Öffnen von Dokumenten (Newsletter, Presse, Flyer, Vita, PDF, Etikett, Druckfenster etc.) wird das neue Fenster/der neue Tab mit `.focus()` in den Vordergrund geholt. Du musst nicht mehr in der Menüleiste (Tab „L“) suchen – das Dokument erscheint direkt.
 - **„Alle PR-Dokumente auf einen Blick“ öffnet immer** – Fallback aus Event bei fehlenden PR-Vorschlägen (Commit 1ad018f).
 - **QR-Code Plakat nur in K2** – Im VK2-Admin ausgeblendet (Commit 574badd).
@@ -33,10 +39,11 @@ Favoriten (max 5): Vorreihung in Galerie, Option beim Anlegen, VK2 wie gehabt
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **mök2: Fähigkeiten-Mix (Fakten)** – Welche Voraussetzungen in einer Person (Unternehmererfahrung, Domänenwissen, Arbeit mit AI, Struktur, UX aus Nutzersicht, Pragmatismus) das ermöglicht haben; sachlich, keine Würdigung. Commit: b206085 ✅ auf GitHub
+- **Crash: index.html iframe-sicher** – Lade- und Fehler-Reload nur außerhalb Cursor-Preview. Commit: 54191d2 ✅ auf GitHub
 
 ## Nächste Schritte (offen)
-4. **Vor Veröffentlichung:** QS und Checkliste **docs/VOR-VEROEFFENTLICHUNG.md** noch einmal genau durchgehen (geplant mit Georg).
+4. **Vor Veröffentlichung:** Erster Durchgang in **docs/VOR-VEROEFFENTLICHUNG.md** erledigt (Stand-Tabelle für Georg). **Mit Georg:** Checkboxen durchgehen, npm audit + AGB/Impressum-Inhalte prüfen und abhaken.
+5. **Vor Praxis-Test (Befüllen Galerie Eferding + K2):** **docs/PRAXISTEST-BEFUELLEN-SICHERHEIT.md** – Vollbackup durchführen (App-Vollbackup, Git commit+push+Tag `vor-praxistest-2026-02-26`, Vercel = Snapshot, backupmicro Hard-Backup). Danach: „Ab jetzt beginnt der Praxis-Test.“
 
 ## Heute außerdem
 - **Zurück aus Dokumenten:** goBack() in generierten Dokumenten nutzt Opener-URL inkl. context (Commit 192d544).

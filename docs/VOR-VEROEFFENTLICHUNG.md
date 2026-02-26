@@ -5,29 +5,42 @@ Damit nichts vergessen wird: Diese Datei vor dem Veröffentlichen durchgehen.
 
 ---
 
+## ✅ Erster Durchgang (26.02.26) – Stand für Georg
+
+| Bereich | Status | Hinweis |
+|--------|--------|--------|
+| **Lokal bauen** | ✅ | `npm run build` läuft durch. |
+| **Stand / Badge** | ✅ | build-info.json, QR mit Server-Stand, Inject-Script – Mechanik steht. |
+| **AGB / Impressum** | Vorhanden | AGBPage (`/agb`), Impressum in Galerie-Footer; **mit Georg:** Texte aktuell? |
+| **Admin-Auth (Supabase)** | Optional | Aktuell: Admin per Galerie-Passwort. Supabase-Login nur wenn ihr DB-Schreibschutz wollt – siehe ADMIN-AUTH-SETUP.md. |
+| **npm audit** | Mit Georg prüfen | Einige moderate/high (ajv, axios, minimatch, rollup, electron). `npm audit fix` kann Breaking Changes haben – nicht blind ausführen. |
+| **.env / Secrets** | Mit Georg prüfen | Keine Keys im Repo? Vercel/Supabase Env gesetzt? |
+
+**Nächster Schritt:** Mit Georg die Checkboxen unten durchgehen und abhaken; bei npm audit und AGB/Impressum-Inhalten gemeinsam entscheiden.
+
+---
+
 ## 🔒 Sicherheit & Auth
 
-- [ ] **Admin-Auth aktivieren** (wenn Supabase genutzt wird):
-  - [ ] In Supabase **Admin-Nutzer anlegen** (E-Mail + Passwort). Anleitung: **docs/ADMIN-AUTH-SETUP.md**
-  - [ ] **Migration 002** anwenden (RLS: Schreiben nur für eingeloggte Nutzer). Siehe **docs/ADMIN-AUTH-SETUP.md** Abschnitt 2.
-  - [ ] **Test:** /admin aufrufen → Login → Werke speichern/löschen prüfen.
-- [ ] **.env / Secrets:** Keine echten Keys im Repo; Vercel/Supabase Umgebungsvariablen gesetzt.
-- [ ] **npm audit:** Kritische/hohe Meldungen prüfen und beheben (`npm audit`, ggf. `npm audit fix`).
+- [ ] **Admin-Auth** – aktuell: **Galerie-Passwort** für /admin. Supabase-Login nur wenn gewünscht (dann: ADMIN-AUTH-SETUP.md):
+  - [ ] (Optional) In Supabase Admin-Nutzer anlegen, Migration 002, Test.
+- [ ] **.env / Secrets:** Keine echten Keys im Repo; Vercel/Supabase Umgebungsvariablen gesetzt. *(Georg: bestätigen)*
+- [ ] **npm audit:** Moderate/High prüfen – `npm audit` ausführen; Fix nur nach Prüfung (Breaking Changes möglich). *(Georg: entscheiden)*
 
 ---
 
 ## 📋 Produkt & Recht
 
-- [ ] **AGB / Datenschutz / Impressum** prüfen und aktuell halten (siehe **docs/PRODUKT-LABEL-SICHERHEIT-ROADMAP.md**).
-- [ ] **Zahlungen:** Wenn Kartenzahlung angeboten wird: nur über zertifizierten Provider (z. B. Stripe); nie Kartendaten selbst speichern.
+- [ ] **AGB / Datenschutz / Impressum** prüfen und aktuell halten (siehe **docs/PRODUKT-LABEL-SICHERHEIT-ROADMAP.md**). *(Georg: Texte durchsehen)*
+- [ ] **Zahlungen:** Wenn Kartenzahlung angeboten wird: nur über zertifizierten Provider (z. B. Stripe). *(Aktuell: keine Kartenzahlung in App = N/A)*
 
 ---
 
 ## 🚀 Deployment & Stand
 
-- [ ] **Lokal bauen:** `npm run build` läuft ohne Fehler.
-- [ ] **Push auf Production-Branch** (z. B. main); Vercel-Deployment „Ready“.
-- [ ] **Stand prüfen:** Auf Handy/Galerie Build-Badge oder build-info.json – neuer Stand sichtbar nach Update.
+- [x] **Lokal bauen:** `npm run build` läuft ohne Fehler.
+- [ ] **Push auf Production-Branch** (main); Vercel-Deployment „Ready“. *(Georg: nach Änderungen pushen)*
+- [x] **Stand prüfen:** Build-Badge + build-info.json + QR mit Server-Stand – Mechanik steht; auf Handy nach Update prüfen. *(Georg: einmal auf Gerät testen)*
 
 ---
 
@@ -35,6 +48,7 @@ Damit nichts vergessen wird: Diese Datei vor dem Veröffentlichen durchgehen.
 
 | Thema | Datei |
 |--------|--------|
+| **Praxis-Test: Befüllen + Vollbackup „vor Praxis-Test“** | **docs/PRAXISTEST-BEFUELLEN-SICHERHEIT.md** |
 | Admin-Nutzer anlegen + Migration 002 | **docs/ADMIN-AUTH-SETUP.md** |
 | Produkt-Label / Sicherheits-Roadmap | **docs/PRODUKT-LABEL-SICHERHEIT-ROADMAP.md** |
 | Sicherheits-Checklisten | **docs/SICHERHEIT-STABILITAET-CHECKLISTE.md** |
@@ -42,4 +56,4 @@ Damit nichts vergessen wird: Diese Datei vor dem Veröffentlichen durchgehen.
 
 ---
 
-*Stand: 17.02.26 – Vor Veröffentlichung diese Checkliste durchgehen und abhaken.*
+*Stand: 26.02.26 – Erster Durchgang ergänzt. Mit Georg Checkliste durchgehen und abhaken.*
