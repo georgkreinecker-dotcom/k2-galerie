@@ -503,28 +503,28 @@ function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, 
             ))}
           </div>
 
-          {/* Aktions-Buttons */}
+          {/* Aktions-Buttons – One-Click-Regel: eine klare Hauptaktion, keine drei konkurrierenden Buttons */}
           {'istStart' in aktivStation && aktivStation.istStart ? (
             <button type="button" onClick={onStarten}
               style={{ width: '100%', padding: '0.95rem', background: akzentGrad, border: 'none', borderRadius: '14px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', boxShadow: `0 6px 24px ${hubAccent}55`, letterSpacing: '0.01em' }}>
               🚀 {istVerein ? (name ? `${name} – Vereinsgalerie` : 'Vereinsgalerie') : (name ? `${name}'s Galerie` : 'Galerie')} jetzt öffnen →
             </button>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.6rem' }}>
               {'tab' in aktivStation && (aktivStation as { tab?: string }).tab && (
                 <button type="button" onClick={() => oeffneTab((aktivStation as { tab: string }).tab)}
-                  style={{ width: '100%', padding: '0.8rem', background: 'rgba(255,255,255,0.1)', border: `1px solid ${accentGlow}55`, borderRadius: '12px', color: '#fff8f0', fontWeight: 600, cursor: 'pointer', fontFamily: fontBody, fontSize: '0.9rem' }}>
-                  {aktivStation.emoji} {aktivStation.name} ansehen →
+                  style={{ width: '100%', padding: '0.85rem', background: akzentGrad, border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: '0.9rem', boxShadow: `0 4px 14px ${accent}44` }}>
+                  {aktivStation.emoji} {aktivStation.name} öffnen →
                 </button>
               )}
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap', fontSize: '0.78rem' }}>
                 <button type="button" onClick={() => setAktivIdx(Math.min(aktivIdx + 1, stationen.length - 1))}
-                  style={{ flex: 1, padding: '0.75rem', background: akzentGrad, border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: '0.88rem', boxShadow: `0 4px 14px ${accent}44` }}>
-                  Weiter →
+                  style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: fontBody, textDecoration: 'underline', padding: 0 }}>
+                  Nächste Station →
                 </button>
                 <button type="button" onClick={onStarten}
-                  style={{ padding: '0.75rem 0.9rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '12px', color: 'rgba(255,255,255,0.45)', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.8rem', whiteSpace: 'nowrap' as const }}>
-                  Galerie starten →
+                  style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: fontBody, textDecoration: 'underline', padding: 0 }}>
+                  Galerie ansehen →
                 </button>
               </div>
             </div>
