@@ -11,6 +11,8 @@ Favoriten (max 5): Vorreihung in Galerie, Option beim Anlegen, VK2 wie gehabt
 mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, Veröffentlichungsvorbereitung. Crash-Check war Unterbrechung in diesem Strom.
 
 ## Was zuletzt gemacht
+- **LicencesPage 10 %-Rabatt sichtbar:** Bei gültiger Empfehler-ID: Label „Du erhältst 10 % Rabatt“, Hinweis „✓ Empfehlungs-Rabatt: 10 %“ und Preiszeile (z. B. 99 € → 89,10 €). URL-Prefill ?empfehler= und addGutschrift beim Speichern bereits vorhanden.
+- **mök2/App auf 10 % umgestellt:** MarketingOek2Page, EmpfehlungstoolPage, VerguetungPage – alle Empfehlungs-„50 %“ durch „10 % Rabatt“ / „10 % Gutschrift“. VK2-Lizenzmitglieder 50 % unverändert.
 - **mök2: Fähigkeiten-Mix (Fakten):** Sektion „Was in einer Person das ermöglicht hat“ – Unternehmererfahrung, Domänenwissen, Arbeit mit AI, Struktur/Prozess, UX aus Nutzersicht, Pragmatismus; ausdrücklich als Aufzählung von Faktoren, keine Wertung.
 - **mök2: Warum kostet Wiederbeschaffung so viel, wenn ein Laie es kann?** – Absatz ergänzt: Einkauf = Team mit mehreren Rollen, Stundensätzen, Prozess; Laie + AI = eine Person, Eigenzeit, keine Rechnung. Der Marktpreis für „bauen Sie mir das nach“ bleibt hoch; das Ergebnis kann gleichwertig sein.
 - **mök2: Entwicklerkosten-Klarstellung:** Die Summe ist Wiederbeschaffungswert (was ein Profi-Team kosten würde), nicht „Verdienst“ des Erbauers – eigener Hinweis-Block + Anpassung im Hinweis-Text.
@@ -41,7 +43,7 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Admin-Hub** – Icons zum Zentrum (mittlerer Abstand), Hover auf Icon zeigt Beschreibung in der Mitte; Doppelklick auf Icon oder Klick auf „↓ … öffnen“ öffnet den Bereich. Commit: 49ddbde ✅ auf GitHub
+- **LicencesPage + mök2/App auf 10 %:** (1) LicencesPage: Bei gültiger Empfehler-ID Hinweis „Empfehlungs-Rabatt: 10 %“ und reduzierter Preis (z. B. 99 € → 89,10 €); URL-Prefill ?empfehler=, Gutschrift bei Erfassung. (2) MarketingOek2Page, EmpfehlungstoolPage, VerguetungPage: alle Empfehlungs-Texte von 50 % auf 10 % Rabatt/Gutschrift umgestellt. Commit: fc5b282 ✅ auf GitHub
 
 ## Nächste Schritte (offen)
 - **Admin im Hub-Design (Phase 1):** Startansicht „Was möchtest du heute tun?“ durch 3-Spalten-Hub ersetzt – links Bereiche (Meine Werke, Werkkatalog, Events), Mitte Fokus-Karte + „↓ Direkt hier unten“, rechts Kassa/Einstellungen/Assistent + Galerie ansehen. K2/ök2/VK2 berücksichtigt.
