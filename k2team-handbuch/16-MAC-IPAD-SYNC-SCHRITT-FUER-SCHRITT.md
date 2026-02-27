@@ -29,8 +29,9 @@
 
 ### Am Mac
 
-3. **Galerie oder Vorschau öffnen** (z. B. k2-galerie.vercel.app/…). Die App lädt von Vercel.
-4. Falls nötig: **Stand-Badge tippen** oder Seite **neu laden**, damit der neueste Stand erscheint.
+3. **Galerie öffnen** (z. B. k2-galerie.vercel.app/galerie). Beim ersten Öffnen wird einmal von Vercel geladen.
+4. **Damit neue Werke vom iPad erscheinen:** Unten rechts auf **„🔄 Vom Server laden“** klicken. (1–2 Minuten nach dem Speichern am iPad warten, dann klicken – Vercel braucht kurz zum Aktualisieren.)
+5. Alternativ: Seite **neu laden** (F5 oder Cmd+R).
 
 → Das neue/geänderte Werk vom iPad erscheint am Mac.
 
@@ -41,7 +42,7 @@
 | Richtung   | Was du machst | Auf dem anderen Gerät |
 |-----------|----------------|------------------------|
 | **Mac → iPad**   | Werk **speichern** (geht automatisch an Vercel). | Galerie/Vorschau öffnen; bei Bedarf Stand-Badge tippen. |
-| **iPad → Mac**   | Werk **speichern** (geht automatisch an Vercel). | Galerie/Vorschau öffnen; bei Bedarf Stand-Badge tippen. |
+| **iPad → Mac**   | Werk **speichern** (geht automatisch an Vercel). | Galerie öffnen; **„Vom Server laden“** klicken (unten rechts) oder Seite neu laden. |
 
 **Merksatz:** Speichern = Daten an die zentrale Stelle. Öffnen/Laden = Daten von dort. Kein extra „Veröffentlichen“ nötig.
 

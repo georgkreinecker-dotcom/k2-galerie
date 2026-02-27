@@ -2305,9 +2305,33 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
         >
           ⚙️ Admin
         </button>
-        
-        {/* Aktualisieren Button ENTFERNT - Automatisches Polling alle 10 Sekunden aktiv! */}
-        {/* Neue Werke werden automatisch synchronisiert - kein manueller Button nötig */}
+
+        {/* Am Mac: „Vom Server laden“ – damit neue Werke vom iPad hier erscheinen (iPad speichern → 1–2 Min warten → hier klicken) */}
+        {!musterOnly && !vk2 && !(isMobileDevice || isMobile) && (
+          <button
+            type="button"
+            onClick={() => handleRefresh()}
+            disabled={isRefreshing}
+            title="Lädt Werke und Daten neu von Vercel (z. B. nach Speichern am iPad)"
+            style={{
+              position: 'fixed',
+              bottom: '1rem',
+              right: '4.5rem',
+              padding: '0.5rem 0.75rem',
+              fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)',
+              fontWeight: 600,
+              background: isRefreshing ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.25)',
+              borderRadius: 8,
+              color: theme.text,
+              cursor: isRefreshing ? 'wait' : 'pointer',
+              zIndex: 1000,
+              minHeight: '44px'
+            }}
+          >
+            {isRefreshing ? '⏳ Lade…' : '🔄 Vom Server laden'}
+          </button>
+        )}
 
         {/* Admin Login Modal – auch von ök2-Willkommensseite erreichbar */}
         {showAdminModal && (
