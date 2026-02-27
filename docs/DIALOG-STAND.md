@@ -5,10 +5,10 @@
 ## Datum: 27.02.26
 
 ## Thema
-Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen. **Erledigt:** Raw-Liste beim Speichern, Freistellen-Hinweis bei Fallback. **Neu:** „Foto jetzt freistellen“ im Admin – Fotos vom iPad (ohne Freistellung) am Mac nachträglich freistellen.
+Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen. **Erledigt:** Raw-Liste, Freistellen-Hinweis, „Foto jetzt freistellen“ am Mac. **Neu (27.02.26 Abend):** Vor-Ort-Test-Probleme adressiert – einheitliche Meldung, Mobile-Kompression, Platzhalter/Cleanup, Upload auch ohne selectedFile.
 
 ## Nächster Schritt
-- **Georg (27.02.26 Nachmittag):** Geht wieder zum Testen (iPad), hofft weiterzukommen als am Vormittag; macht hier Schluss. Beim Wiedereinstieg: Testergebnisse abfragen, ggf. dort weitermachen.
+- **Georg:** Erneut am iPad testen (Foto aufnehmen → Speichern). Erwartung: eine klare Meldung, kein „Speicherplatz“-Chaos, Bild sofort sichtbar (kein Platzhalter). Bei Problemen: konkrete Meldung/Seite notieren.
 1. **QR/Stand-Fix (27.02.26):** QR und Stand-Badge nutzen jetzt **/api/build-info** statt build-info.json – Serverless-API, beim Build mit aktuellem Stand beschrieben, umgeht CDN-Cache. Commit c5351e1.
 2. Nach Vercel-Build (1–2 Min): APf neu laden oder „QR neu“ → Vercel-Stand sollte aktuelle Zeit zeigen; iPad refresh.html oder QR scannen.
 3. Falls Vercel-Build fehlschlägt: docs/VERCEL-CHECKLISTE-BEI-KEINEM-STAND.md.
@@ -16,6 +16,7 @@ Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen. **Erl
 5. **Schritt für Schritt (Screenshot Vercel):** **docs/SCHRITT-FUER-SCHRITT-STAND-AKTUELL.md** – 6 Schritte: pushen → Current prüfen → ggf. Promote/Redeploy → build-info auf Vercel prüfen → iPad refresh/QR → Kontrolle. Passt zum Befund: Vercel zeigt Ready, aber „Current“ kann alter Commit sein.
 
 ## Was zuletzt gemacht (27.02.26)
+- **Vor-Ort-Test (iPad) – Ablauf robuster:** (1) **Einheitliche Freistellungs-Meldung:** Nach Speichern und bei „Foto jetzt freistellen“-Fehler dieselbe, positive Formulierung: „Foto gespeichert. Auf diesem Gerät wurde keine Freistellung durchgeführt – das Foto hat einen professionellen Hintergrund. Am Mac: Werk bearbeiten → ‚Foto jetzt freistellen‘.“ (2) **Mobile-Kompression:** Auf iPhone/iPad/Android wird beim Speichern stärker komprimiert (600px, 0.5) – weniger Speicherplatz-Probleme, schneller. (3) **Platzhalter/Cleanup:** Beim localStorage-Cleanup (Daten zu groß) wird das **gerade gespeicherte** Werk nie ausgedünnt (Bild bleibt). (4) **Upload auch ohne selectedFile:** Wenn das Bild aus der Vorschau kommt (z. B. iPad-Kamera, kein selectedFile), wird trotzdem aus imageDataUrl eine Datei erzeugt und zu GitHub hochgeladen → Liste bekommt URL, kein „später ausgefüllt“. ScreenshotExportAdmin.tsx. Tests + Build ✅.
 - **Kassa-Statistik sichtbar:** Im Admin-Hub („Was möchtest du heute tun?“) gibt es jetzt neben „Kassa & Verkauf“ eine Karte **„📊 Verkaufsstatistik“** – ein Klick öffnet die komplette Kassa-Statistik (Umsatz, Verkäufe, Lager, Drucken, CSV). Vorher war nur die Kassa (Shop) verlinkt, die Statistik war nur über URL ?tab=statistik erreichbar.
 - **„Werke speichern“ öffnete gallery-data.json in neuem Tab (BUG-015):** Nach dem Speichern läuft automatisch publishMobile({ silent: true }). Schlägt die API fehl, gab es einen Fallback (Download-Link per Klick). Auf iPad öffnet das die JSON in einem neuen Tab. Fix: Bei silent keinen Fallback mehr – kein link.click(), kein neuer Tab. Du bleibst in der App. ScreenshotExportAdmin.tsx, GELOESTE-BUGS.md BUG-015.
 - **Foto vom iPad nicht freigestellt – am Mac nachträglich:** Im Admin unter „Werk bearbeiten“ gibt es bei vorhandenem Bild einen Button **„✨ Foto jetzt freistellen“**. Damit kannst du ein bereits gespeichertes Foto (z. B. vom iPad ohne Freistellung) am Mac nachträglich freistellen; danach **Speichern** klicken, dann ist das Werk überall mit freigestelltem Bild. Unterstützt data-URL, blob-URL und Server-URL (/img/k2/…). ScreenshotExportAdmin.tsx.

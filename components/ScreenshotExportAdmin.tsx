@@ -7184,8 +7184,10 @@ ${'='.repeat(60)}
       let imageDataUrl: string
       
       if (selectedFile) {
-        // Neues Bild: anständig komprimieren, um Datenmenge klein zu halten (max 720px, Qualität 0.6)
-        const compressedDataUrl = await compressImage(selectedFile, 720, 0.6)
+        // Mobile: stärker komprimieren (600/0.5) – weniger Speicherplatz-Probleme, schneller
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+        const [maxW, q] = isMobile ? [600, 0.5] : [720, 0.6]
+        const compressedDataUrl = await compressImage(selectedFile, maxW, q)
         
         // Grenze 1.2MB pro Bild (localStorage schonend, viele Werke möglich)
         if (compressedDataUrl.length > 1200000) {
@@ -7212,9 +7214,11 @@ ${'='.repeat(60)}
           }
         }
       } else if (editingArtwork && previewUrl && typeof previewUrl === 'string' && previewUrl.startsWith('data:')) {
-        // Bearbeitung: neues Bild in der Vorschau (z. B. iPad Kamera) – Vorschau immer verwenden, auch wenn selectedFile auf iPad nicht gesetzt wurde
+        // Bearbeitung: neues Bild in der Vorschau (z. B. iPad Kamera) – Mobile: stärker komprimieren
         const fileFromPreview = await dataUrlToFile(previewUrl)
-        let compressed = await compressImage(fileFromPreview, 720, 0.6)
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+        const [maxW, q] = isMobile ? [600, 0.5] : [720, 0.6]
+        let compressed = await compressImage(fileFromPreview, maxW, q)
         if (compressed.length > 1200000) {
           const more = await compressImage(fileFromPreview, 600, 0.5)
           compressed = more.length > 1200000 ? compressed : more
@@ -7432,9 +7436,12 @@ ${'='.repeat(60)}
         // Automatisches Cleanup: Entferne große Bilder und alte Werke
         console.log(`⚠️ Daten zu groß (${(currentSize / 1024 / 1024).toFixed(2)}MB) - führe Cleanup durch...`)
         
-        // 1. Komprimiere große Bilder (entferne sehr große Bilder >500KB)
+        // 1. Komprimiere große Bilder (entferne sehr große >500KB) – NIEMALS das gerade gespeicherte Werk
+        const justSavedKey = artworkData?.number ?? artworkData?.id
         const cleanedArtworks = artworks.map((artwork: any) => {
-          if (artwork.imageUrl && artwork.imageUrl.length > 500000) { // Über 500KB
+          const key = artwork?.number ?? artwork?.id
+          if (key === justSavedKey) return artwork // Gerade gespeichertes Werk nie ausdünnen
+          if (artwork.imageUrl && artwork.imageUrl.length > 500000) {
             console.log(`🗜️ Entferne sehr großes Bild von Werk ${artwork.number || artwork.id} (${(artwork.imageUrl.length / 1024).toFixed(0)}KB)`)
             return { ...artwork, imageUrl: '' }
           }
@@ -7535,14 +7542,14 @@ ${'='.repeat(60)}
         console.warn('⚠️ Nummer-Index fehlgeschlagen:', e)
       }
       
-      // K2: Werk-Bild automatisch via GitHub hochladen → überall sichtbar
-      // WICHTIG: Liste ROH aus localStorage lesen (nicht loadArtworks()) – sonst filtert/umbenannt und neues Werk geht verloren
-      if (!forOek2 && selectedFile && imageDataUrl) {
+      // K2: Werk-Bild automatisch via GitHub hochladen → überall sichtbar (auch ohne selectedFile, z. B. iPad-Vorschau)
+      if (!forOek2 && imageDataUrl) {
         try {
           const { uploadImageToGitHub } = await import('../src/utils/githubImageUpload')
           const safeNumber = (artworkData.number || artworkData.id || 'werk').replace(/[^a-zA-Z0-9-]/g, '-')
           const filename = `werk-${safeNumber}.jpg`
-          const url = await uploadImageToGitHub(selectedFile, filename, (msg) => console.log(msg))
+          const fileToUpload = selectedFile || (await dataUrlToFile(imageDataUrl))
+          const url = await uploadImageToGitHub(fileToUpload, filename, (msg) => console.log(msg))
           artworkData.imageUrl = url
           const key = getArtworksKey()
           const raw = localStorage.getItem(key)
@@ -7586,11 +7593,11 @@ ${'='.repeat(60)}
       const reloaded = loadArtworks()
       console.log('📦 Reloaded artworks:', reloaded.length, 'Neues Werk gefunden:', artworkData?.number)
       
-      // Hinweis anzeigen, wenn Freistellung nicht möglich war (z. B. iPad Speicher)
+      // Einheitliche Meldung, wenn keine Freistellung (Mobile oder Fehler) – keine Fehlermeldung, klare Option
       try {
         if (sessionStorage.getItem('k2-freistellen-fallback-used')) {
           sessionStorage.removeItem('k2-freistellen-fallback-used')
-          alert('Hinweis: Freistellung konnte auf diesem Gerät nicht durchgeführt werden. Das Bild wurde mit professionellem Hintergrund gespeichert.')
+          alert('Foto gespeichert. Auf diesem Gerät wurde keine Freistellung durchgeführt – das Foto hat einen professionellen Hintergrund.\n\nAm Mac: Werk bearbeiten → „Foto jetzt freistellen“ für echte Freistellung.')
         }
       } catch (_) {}
       
@@ -16364,7 +16371,7 @@ ${name}`
                             try {
                               sessionStorage.setItem('k2-freistellen-fallback-used', Date.now().toString())
                             } catch (_) {}
-                            alert('Freistellung konnte auf diesem Gerät nicht durchgeführt werden. Bitte am Mac mit starkem Browser versuchen.')
+                            alert('Auf diesem Gerät wurde keine Freistellung durchgeführt.\n\nAm Mac: Werk bearbeiten → „Foto jetzt freistellen“ nutzen.')
                           } finally {
                             setFreistellenInProgress(false)
                           }

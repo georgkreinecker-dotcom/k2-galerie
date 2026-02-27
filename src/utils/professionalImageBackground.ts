@@ -108,9 +108,16 @@ function onlyProfessionalBackground(
   })
 }
 
+/** Mobile Geräte: Freistellung (ONNX) oft instabil/Speicher – hier nie versuchen, nur Pro-Hintergrund. */
+function isMobileDevice(): boolean {
+  if (typeof navigator === 'undefined' || !navigator.userAgent) return false
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+}
+
 /**
  * Echte Objektfreistellung + professioneller Hintergrund.
- * Kostenlos, im Browser, funktioniert auch bei ök2. Bei Fehler: Fallback auf Pro-Hintergrund ohne Freistellung.
+ * Kostenlos, im Browser. Auf Mobile (iPad/iPhone): nur Pro-Hintergrund, keine Freistellung – immer gleicher Ablauf.
+ * Am Desktop bei Fehler: Fallback Pro-Hintergrund ohne Freistellung.
  * @param backgroundPreset Optional: 'hell' | 'weiss' | 'warm' | 'kuehl' | 'dunkel' (Standard: 'hell')
  */
 export function compositeOnProfessionalBackground(
@@ -119,6 +126,13 @@ export function compositeOnProfessionalBackground(
 ): Promise<string> {
   const background = BACKGROUND_PRESETS[backgroundPreset] ?? BACKGROUND_PRESETS.hell
   return (async () => {
+    // Auf Mobile: Freistellung weglassen – einheitlich, schnell, keine Fehlermeldungen
+    if (isMobileDevice()) {
+      try {
+        sessionStorage.setItem('k2-freistellen-fallback-used', Date.now().toString())
+      } catch (_) {}
+      return onlyProfessionalBackground(imageDataUrl, background)
+    }
     try {
       const { removeBackground } = await import('@imgly/background-removal')
       const blob = await removeBackground(imageDataUrl)
