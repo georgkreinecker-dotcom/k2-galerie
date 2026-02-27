@@ -28,12 +28,35 @@
 
 ---
 
-## 3. Kurz
+## 3. Kein neues Deployment trotz Push
+
+**Wenn du gerade gepusht hast, aber unter Deployments nichts Neues erscheint:**
+
+1. **Vercel → Projekt k2-galerie → Settings → Git**
+   - **Connected Git Repository:** Welches Repo steht da? Es muss **dasselbe** sein, in das du pushst (z. B. `georgkreinecker-dotcom/k2-galerie`). Wenn ein anderes Repo oder ein anderes Konto (z. B. k2galerie/…) verbunden ist, werden Pushes von deinem Mac nicht ausgelöst.
+   - **Production Branch:** Muss **main** sein. Wenn dort z. B. `main-fresh` steht, wird bei Push auf `main` kein Production-Build gestartet.
+
+2. **Git-Integration neu verbinden (wenn Repo stimmt, aber trotzdem nichts kommt)**
+   - In Vercel: Settings → Git → **Disconnect** (oder „Repository ändern“).
+   - Danach wieder **Connect** → GitHub → das richtige Repo wählen (`k2-galerie`) → Branch **main**.
+   - Damit wird der Webhook neu eingerichtet; der nächste Push sollte ein Deployment auslösen.
+
+3. **Sofort ein Deployment auslösen (ohne neuen Push)**
+   - Vercel → **Deployments** → beim **neuesten** Deployment (oben) auf die **drei Punkte ⋯** klicken → **Redeploy**.
+   - Oder: Projekt-Übersicht → **Deploy**-Button (falls vorhanden) → „Redeploy with latest commit“ o. ä.
+
+4. **Push kommt an, aber Vercel baut nicht (Webhook defekt)**
+   - **GitHub prüfen:** Repo **k2-galerie** → **Settings** → **Webhooks**. Gibt es einen Eintrag von Vercel? Bei „Recent Deliveries“: Letzte Lieferungen grün (200) oder rot (Fehler)? Bei Fehlern: Webhook löschen; in Vercel unter Git einmal **Disconnect** → wieder **Connect** (erstellt neuen Webhook).
+   - **Workaround – Deploy Hook:** Vercel → Projekt **k2-galerie** → **Settings** → **Git** → Abschnitt **Deploy Hooks**. Neuen Hook anlegen (z. B. Name „Manuell“), Branch **main** → Vercel zeigt eine **URL**. Diese URL einmal im Browser aufrufen (oder mit `curl <URL>`) → löst sofort ein Deployment aus, unabhängig vom GitHub-Webhook.
+
+---
+
+## 4. Kurz
 
 | Problem | Prüfen |
 |--------|--------|
 | Stand bleibt alt | Deployments → neuestes **Ready**? Sonst Build-Log, Fehler beheben. |
-| Kein neues Deployment | Settings → Git → Production Branch = **main**? |
+| Kein neues Deployment | Settings → Git → **richtiges Repo?** Production Branch = **main**? |
 | Build fehlgeschlagen | Build-Log lesen, lokal `npm run build`, Fix pushen. |
 
 Siehe auch: **docs/BERICHT-ISTZUSTAND-SYNC-VERCEL-27-02-26.md**, **docs/VERCEL-STAND-HANDY.md**.
