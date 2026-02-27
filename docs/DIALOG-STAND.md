@@ -11,7 +11,7 @@ Admin-Hub „Was möchtest du heute tun?“: One-Click, klare Icons + Kurzinfo, 
 mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, Veröffentlichungsvorbereitung. Crash-Check war Unterbrechung in diesem Strom.
 
 ## Was zuletzt gemacht
-- **PR-Dokumente (Newsletter, Plakat, …) grün statt orange:** Wenn Dokumente schon Inhalt hatten, blieben die Balken „Noch nicht erstellt“. Ursache: eventId-Vergleich (String vs. Zahl nach JSON). Jetzt typensicher: String(d.eventId) === String(event.id); gleiche Logik in getNextWerbematerialVorschlagName. Commit: [dieser]
+- **PR-Dokumente (Newsletter, Plakat, …) grün statt orange:** Wenn Dokumente schon Inhalt hatten, blieben die Balken „Noch nicht erstellt“. Ursache: eventId-Vergleich (String vs. Zahl nach JSON). Jetzt typensicher: String(d.eventId) === String(event.id); gleiche Logik in getNextWerbematerialVorschlagName. Commit: 8c5e846 ✅
 - **Admin-Hub „Was möchtest du heute tun?“:** Mittlere Galerie-Guide-Karte entfernt (Doppelfunktion). Nur noch zwei Spalten mit allen Bereichen (Meine Werke, Werkkatalog, Events, Aussehen & Design | Kassa, Einstellungen, Schritt-für-Schritt); je Icon + kurze Funktionsinfo (beschreibung), Icons größer (clamp 1.75rem–2.1rem). One-Click pro Bereich. hubHoveredTab-State entfernt. Commit: 2edf426 ✅
 - **LicencesPage 10 %-Rabatt sichtbar:** Bei gültiger Empfehler-ID: Label „Du erhältst 10 % Rabatt“, Hinweis „✓ Empfehlungs-Rabatt: 10 %“ und Preiszeile (z. B. 99 € → 89,10 €). URL-Prefill ?empfehler= und addGutschrift beim Speichern bereits vorhanden.
 - **mök2/App auf 10 % umgestellt:** MarketingOek2Page, EmpfehlungstoolPage, VerguetungPage – alle Empfehlungs-„50 %“ durch „10 % Rabatt“ / „10 % Gutschrift“. VK2-Lizenzmitglieder 50 % unverändert.
