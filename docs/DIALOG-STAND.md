@@ -8,6 +8,7 @@
 Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen. **Erledigt:** Raw-Liste beim Speichern, Freistellen-Hinweis bei Fallback. **Neu:** „Foto jetzt freistellen“ im Admin – Fotos vom iPad (ohne Freistellung) am Mac nachträglich freistellen.
 
 ## Nächster Schritt
+- **Georg (27.02.26 Nachmittag):** Geht wieder zum Testen (iPad), hofft weiterzukommen als am Vormittag; macht hier Schluss. Beim Wiedereinstieg: Testergebnisse abfragen, ggf. dort weitermachen.
 1. **QR/Stand-Fix (27.02.26):** QR und Stand-Badge nutzen jetzt **/api/build-info** statt build-info.json – Serverless-API, beim Build mit aktuellem Stand beschrieben, umgeht CDN-Cache. Commit c5351e1.
 2. Nach Vercel-Build (1–2 Min): APf neu laden oder „QR neu“ → Vercel-Stand sollte aktuelle Zeit zeigen; iPad refresh.html oder QR scannen.
 3. Falls Vercel-Build fehlschlägt: docs/VERCEL-CHECKLISTE-BEI-KEINEM-STAND.md.
