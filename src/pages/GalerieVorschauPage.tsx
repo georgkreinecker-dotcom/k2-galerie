@@ -12,6 +12,7 @@ import {
 import { sortArtworksFavoritesFirstThenNewest } from '../utils/artworkSort'
 import { appendToHistory } from '../utils/artworkHistory'
 import { tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from '../../components/SafeMode'
+import { readArtworksRaw, loadForDisplay, filterK2Only as filterK2OnlyStorage, saveArtworksOnly as saveArtworksStorage, mayWriteServerList, mergeAndMaybeWrite } from '../utils/artworksStorage'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
 import '../App.css'
 
@@ -259,6 +260,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   const navigate = useNavigate()
   
   // ök2 (musterOnly): k2-oeffentlich-artworks; VK2 (vk2): Mitglieder aus k2-vk2-stammdaten; K2: k2-artworks
+  // K2: Eine Quelle – nur lesen, nie beim Init zurückschreiben (Regel: niemals still löschen)
   const initialArtworks = (() => {
     if (vk2) {
       return loadVk2Mitglieder()
@@ -268,38 +270,18 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       if (oef.length > 0) return oef
       return [...MUSTER_ARTWORKS]
     }
-    try {
-      const stored = localStorage.getItem('k2-artworks')
-      if (!stored) return []
-      const parsed = JSON.parse(stored)
-      if (!Array.isArray(parsed)) return []
-      const filtered = filterK2ArtworksOnly(parsed)
-      // Nur zurückschreiben wenn echte ök2-Muster (ohne _isMuster) entfernt wurden
-      const realMusterRemoved = parsed.some((a: any) => !a._isMuster && String(a.id || '').startsWith('muster-'))
-      if (realMusterRemoved) {
-        try {
-          localStorage.setItem('k2-artworks', JSON.stringify(filtered))
-          window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: filtered.length, musterRemoved: true } }))
-        } catch (_) {}
-      }
-      const list = filtered.length > 0 ? filtered : []
-      if (list.length > 0) {
-        console.log('✅ Initiale Werke aus localStorage geladen:', list.length, 'Nummern:', list.map((a: any) => a.number || a.id))
-        return list.map((a: any) => {
-          if (!a.imageUrl && a.previewUrl) {
-            a.imageUrl = a.previewUrl
-          }
-          if (!a.imageUrl && !a.previewUrl) {
-            a.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
-          }
-          return a
-        })
-      }
-      return []
-    } catch (error) {
-      console.error('Fehler beim initialen Laden:', error)
-      return []
+    const list = loadForDisplay()
+    if (list.length > 0) {
+      return list.map((a: any) => {
+        const out = { ...a }
+        if (!out.imageUrl && out.previewUrl) out.imageUrl = out.previewUrl
+        if (!out.imageUrl && !out.previewUrl) {
+          out.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+        }
+        return out
+      })
     }
+    return []
   })()
   
   const [artworks, setArtworks] = useState<any[]>(initialArtworks)
@@ -580,6 +562,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   const [etikettQrUrl, setEtikettQrUrl] = useState<string | null>(null)
   const qrScannerVideoRef = useRef<HTMLVideoElement>(null)
   const qrScannerCanvasRef = useRef<HTMLCanvasElement>(null)
+  const adminLoadMountedRef = useRef(true)
   
   // Öffne Modal zum Bearbeiten eines Objekts
   const openEditModal = (artwork: any) => {
@@ -821,6 +804,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   useEffect(() => {
     if (musterOnly) return () => {}
     if (vk2) return () => {}
+    adminLoadMountedRef.current = true
     let isMounted = true
     
     // Backup beim Start erstellen – NUR LESEN, nie still filtern/zurückschreiben
@@ -883,8 +867,10 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 setLoadStatus({ message: `✅ ${lokalAnzahl} Werke (lokal)`, success: true })
               } else {
                 console.log(`✅ ${filteredSupabase.length} Werke aus Supabase geladen`)
+                if (mayWriteServerList(filteredSupabase, lokalAnzahl)) {
+                  saveArtworksStorage(filteredSupabase, { allowReduce: false })
+                }
                 setArtworks(filteredSupabase)
-                try { localStorage.setItem('k2-artworks', JSON.stringify(filteredSupabase)) } catch (_) {}
                 setLoadStatus({ message: `✅ ${filteredSupabase.length} Werke geladen`, success: true })
               }
               setTimeout(() => setLoadStatus(null), 2000)
@@ -1247,6 +1233,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     
     return () => {
       isMounted = false
+      adminLoadMountedRef.current = false
       if (initialCheckTimeoutId) {
         clearTimeout(initialCheckTimeoutId)
       }
@@ -1519,9 +1506,24 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 
                 // K2: Muster/VK2-Werke nicht in k2-artworks speichern
                 const toSaveMerge = filterK2ArtworksOnly(mergedArtworks)
+                const localCountBeforeMerge = existingArtworks.length
+                const mayWrite = toSaveMerge.length >= localCountBeforeMerge
                 try {
-                  localStorage.setItem('k2-artworks', JSON.stringify(toSaveMerge))
-                  console.log('✅ Gemergte Werke gespeichert:', toSaveMerge.length, toSaveMerge.length < mergedArtworks.length ? '(Muster/VK2 entfernt)' : '')
+                  if (!mayWrite) {
+                    console.warn(`⚠️ Merge würde ${localCountBeforeMerge} → ${toSaveMerge.length} reduzieren – localStorage unverändert`)
+                    stored = existingArtworks
+                    const exhibitionArtworks = existingArtworks.map((a: any) => {
+                      if (!a.imageUrl && a.previewUrl) a.imageUrl = a.previewUrl
+                      if (!a.imageUrl && !a.previewUrl) a.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+                      return a
+                    })
+                    setArtworks(exhibitionArtworks)
+                    setLoadStatus({ message: `✅ ${existingArtworks.length} Werke (lokal beibehalten)`, success: true })
+                    setTimeout(() => setLoadStatus(null), 3000)
+                    setIsLoading(false)
+                  } else {
+                    const ok = saveArtworksStorage(toSaveMerge, { allowReduce: false })
+                    if (ok) console.log('✅ Gemergte Werke gespeichert:', toSaveMerge.length)
                   
                   // Mobile: Synchronisiere gemergte Liste zu Supabase
                   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
@@ -1557,6 +1559,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                   })
                   setTimeout(() => setLoadStatus(null), 3000)
                   setIsLoading(false)
+                  }
                 } catch (e) {
                   console.warn('⚠️ Werke zu groß für localStorage, verwende direkt')
                   stored = mergedArtworks
@@ -1665,19 +1668,29 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
             stack: error?.stack
           })
           
-          // WICHTIG: Bei Fehler IMMER Supabase prüfen (falls Mobile)
+          // WICHTIG: Bei Fehler Supabase prüfen (Mobile) – NIEMALS mit weniger Werken überschreiben
           const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
           if (isMobile) {
             try {
               console.log('📱 Versuche Supabase als Fallback...')
               const { loadArtworksFromSupabase } = await import('../utils/supabaseClient')
               const supabaseArtworks = await loadArtworksFromSupabase()
+              const localCount = readArtworksRaw().length
               if (supabaseArtworks && Array.isArray(supabaseArtworks) && supabaseArtworks.length > 0) {
-                console.log('✅ Supabase-Daten geladen:', supabaseArtworks.length)
-                localStorage.setItem('k2-artworks', JSON.stringify(supabaseArtworks))
-                stored = supabaseArtworks
-                setArtworks(supabaseArtworks)
-                setLoadStatus({ message: `✅ ${supabaseArtworks.length} Werke von Supabase geladen`, success: true })
+                if (!mayWriteServerList(supabaseArtworks, localCount)) {
+                  console.warn(`⚠️ Supabase-Fallback: ${supabaseArtworks.length} Werke, lokal ${localCount} – behalte lokale Daten`)
+                  stored = readArtworksRaw()
+                  if (stored && stored.length > 0 && adminLoadMountedRef.current) {
+                    setArtworks(filterK2OnlyStorage(stored).map((a: any) => ({ ...a, imageUrl: a.imageUrl || a.previewUrl || '' })))
+                    setLoadStatus({ message: `✅ ${stored.length} Werke (lokal)`, success: true })
+                  }
+                } else {
+                  console.log('✅ Supabase-Daten übernommen:', supabaseArtworks.length)
+                  saveArtworksStorage(filterK2OnlyStorage(supabaseArtworks), { allowReduce: false })
+                  stored = supabaseArtworks
+                  setArtworks(supabaseArtworks)
+                  setLoadStatus({ message: `✅ ${supabaseArtworks.length} Werke von Supabase geladen`, success: true })
+                }
                 setTimeout(() => setLoadStatus(null), 3000)
                 setIsLoading(false)
                 return
@@ -1918,13 +1931,21 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           
           if (toHistory.length > 0) appendToHistory(toHistory)
           const toSaveServer = filterK2ArtworksOnly(mergedArtworks)
+          const localCountHere = localArtworks.length
+          const mayWriteServer = toSaveServer.length >= localCountHere
           console.log(`🔒 Server = Quelle: ${toSaveServer.length} Werke, ${toHistory.length} in History`, toSaveServer.length < mergedArtworks.length ? '(Muster/VK2 entfernt)' : '')
           
           try {
-            localStorage.setItem('k2-artworks', JSON.stringify(toSaveServer))
-            console.log('✅ Gemergte Werke geladen:', toSaveServer.length, 'Version:', data.version, `(${serverArtworks.length} Server + ${toSaveServer.length - serverArtworks.length} Mobile)`)
+            let listForDisplay = toSaveServer
+            if (mayWriteServer) {
+              const ok = saveArtworksStorage(toSaveServer, { allowReduce: false })
+              if (ok) console.log('✅ Gemergte Werke geladen:', toSaveServer.length, 'Version:', data.version)
+            } else {
+              console.warn(`⚠️ Merge würde ${localCountHere} → ${toSaveServer.length} – localStorage unverändert`)
+              listForDisplay = localArtworks
+            }
             
-            const exhibitionArtworks = toSaveServer
+            const exhibitionArtworks = listForDisplay
               .map((a: any) => {
                 if (!a) return null
                 // Stelle sicher, dass imageUrl korrekt gesetzt ist

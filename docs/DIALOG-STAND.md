@@ -5,12 +5,13 @@
 ## Datum: 27.02.26
 
 ## Thema
-Praxistest: Bild-Bugs beim Bearbeiten und bei neuen Werken behoben
+Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen (iPad-Werke weg)
 
 ## Woran zuletzt gearbeitet (inhaltlicher Faden)
-Praxistest (Martina/Georg befüllen Galerie): Werk bearbeiten – neues Foto wurde nicht übernommen; neues Werk – Fragezeichen statt Bild.
+iPad: Zwei Werke angelegt → in Galerie teils Fragezeichen, nach Zurück in Verwaltung beide weg. Ursache: mehrere Pfade haben `k2-artworks` mit weniger Einträgen überschrieben. Lösung: **artworksStorage** als einzige Schreibstelle, alle Lade-/Sync-Pfade daran angebunden.
 
 ## Was zuletzt gemacht
+- **Artworks-Storage (eine Quelle):** Supabase-Primärladung und syncFromGalleryData „Server = Quelle“ schreiben nur noch über `saveArtworksStorage` / `mayWriteServerList`; bei „Merge würde weniger Werke“ bleibt localStorage unverändert, Anzeige aus lokalen Daten. TS-Fehler im Catch (isMounted): `adminLoadMountedRef` auf Komponentenebene, im Catch `adminLoadMountedRef.current` statt `isMounted`. Build ✅.
 - **iPad-Chaos behoben (gründlich):** (1) **Admin loadArtworks() (ök2):** Gefilterte Liste (K2-M-/K2-K- nur Anzeige) wird **nicht mehr** in localStorage geschrieben – kein stilles Löschen beim Laden. (2) **GalerieVorschauPage syncFromGalleryData:** Bei „Keine Server-Daten“ / „Server nicht erreichbar“ wird localStorage nur geschrieben wenn toKeep.length >= localArtworks.length; bei Fehler-Polling gar kein setItem, nur setArtworks. (3) Eine Quelle, keine stillen Überschreibungen mit weniger Werken. BUG-011 in GELOESTE-BUGS.md.
 - **iPad Admin – neues Foto + Freistellung:** Vorschau-Pfad komprimiert + Freistellung; neues Foto beim Bearbeiten wird übernommen. ScreenshotExportAdmin.tsx.
 - **Bild-Bugs (Praxistest):** (1) **Bearbeiten – neues Foto nicht übernommen:** Beim Öffnen des Bearbeitungsdialogs wird `selectedFile` zurückgesetzt; beim Speichern wird bei Bearbeitung die Vorschau (data-URL) genutzt. blob:-URLs werden nicht mehr beibehalten. (2) **Neues Werk – Fragezeichen statt Bild:** Werkliste zeigt blob:-URLs nicht mehr (Platzhalter); onError = „Kein Bild“-Platzhalter. ScreenshotExportAdmin.tsx.
@@ -58,7 +59,7 @@ Praxistest (Martina/Georg befüllen Galerie): Werk bearbeiten – neues Foto wur
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- (wird nach diesem Fix: iPad-Chaos – keine stillen Überschreibungen, BUG-011)
+- **iPad-Chaos behoben: keine stillen Überschreibungen, BUG-011.** Commit: 8c2e3bf ✅ auf GitHub
 
 ## Nächster Schritt
 - **iPad:** Nochmal testen: Neues Werk anlegen → in Galerie prüfen → zurück in Verwaltung → Werk muss bleiben; Musterwerke dürfen dein Werk nicht verdrängen.
