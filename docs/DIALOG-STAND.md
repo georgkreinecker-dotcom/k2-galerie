@@ -5,13 +5,14 @@
 ## Datum: 27.02.26
 
 ## Thema
-Einfache Kassa & Lagerhaltung – alle fünf Punkte umgesetzt
+mök2: Produkt- & Branchenvergleich (Vorteile ök2 klar herausgearbeitet)
 
 ## Woran zuletzt gearbeitet (inhaltlicher Faden)
-Kassa, Statistik, Werkkatalog. Verkaufs- & Lagerstatistik, Storno, CSV, Galerie/Lager-Toggle, Tagesumsatz.
+Kassa/Lagerhaltung abgeschlossen; mök2 um Vergleich Markt vs. ök2 ergänzt.
 
 ## Was zuletzt gemacht
 - **Einfache Kassa & Lagerhaltung (5 Punkte):** (1) Druck-Button „Verkaufs- & Lagerstatistik“ immer sichtbar (auch bei 0 Verkäufen). (2) **Verkauf stornieren:** In Verkaufsliste Button „Stornieren“ → Eintrag aus k2-sold-artworks entfernt, Stückzahl +1. (3) **CSV-Export:** Button „📥 CSV exportieren“ lädt verkaufsliste-YYYY-MM-DD.csv (Datum;Nr.;Titel;Preis; Gesamtumsatz). (4) **Galerie/Lager-Toggle:** Im Werkkatalog in der Status-Spalte Buttons „→ Lager“ / „→ Galerie“ – ein Klick wechselt ohne Werk zu bearbeiten. (5) **Umsatz heute:** Kachel „Umsatz heute“ in der Statistik. Commit: 787f57d ✅
+- **mök2 – Produkt- & Branchenvergleich:** Neue Sektion „Warum ök2?“ nach USPs: Am Markt (Kasse 15–35 €/Monat, Galerie/Events/Etiketten getrennt, mehrere hundert €/Jahr) vs. ök2 (eine Oberfläche, eine Datenbasis, Kasse & Lager integriert, ein Stand). Kernvorteil-Satz + Link in Promotion Sektion 7. Sidebar + Struktur-Liste ergänzt.
 - **Virtueller Rundgang (K2 + ök2):** Unter dem Rundgang-Text Hinweis ergänzt: „Eigenes Video (z. B. Atelier- oder Galerie-Rundgang) mit maximaler Länge in den Einstellungen unter Design → Seitengestaltung einbinden und positionieren.“ Der Block ist für ök2 bereits sichtbar (Bild/Video aus Seitengestaltung).
 - **PWA-Icon-Hinweis (Galerie + Vorschau):** Auf Mobile erscheint oben ein schließbarer Hinweis: „Das Icon legt sich nicht von selbst auf deinen Bildschirm – du musst es einmal aktiv hinzufügen.“ Kurzanleitung iOS (Teilen → Zum Home-Bildschirm) bzw. Android (Menü → Zum Startbildschirm hinzufügen). Nur wenn nicht schon als PWA geöffnet; einmal „OK“ = Hinweis weg (localStorage k2-pwa-icon-hint-closed).
 - **PR-Dokumente (Newsletter, Plakat, …) grün statt orange:** Wenn Dokumente schon Inhalt hatten, blieben die Balken „Noch nicht erstellt“. Ursache: eventId-Vergleich (String vs. Zahl nach JSON). Jetzt typensicher: String(d.eventId) === String(event.id); gleiche Logik in getNextWerbematerialVorschlagName. Commit: 8c5e846 ✅

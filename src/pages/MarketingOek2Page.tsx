@@ -221,6 +221,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <ol style={{ margin: 0, paddingLeft: '1.35rem', lineHeight: 1.9, color: 'rgba(255,255,255,0.95)', fontSize: '0.95rem' }}>
             <li><a href="#mok2-was-kann-die-app" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Was kann die App?</strong> (ök2 | VK2 – kurz)</a></li>
             <li><a href="#mok2-1" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>USPs</strong> (Unique Selling Points)</a></li>
+            <li><a href="#mok2-produkt-branchenvergleich" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Produkt- &amp; Branchenvergleich</strong> (Vorteile im Vergleich)</a></li>
             <li><a href="#mok2-2" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Marktchancen – Stärken</strong></a></li>
             <li><a href="#mok2-3" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Marktchancen – Herausforderungen</strong></a></li>
             <li><a href="#mok2-4" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Fazit & nächste Schritte</strong></a></li>
@@ -300,6 +301,41 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <li><strong>Datensouveränität und Backup</strong> – Lokale Speicherung, Backup & Wiederherstellung; K2 vs. Demo (ök2) strikt getrennt; keine Datenverluste durch Merge-Logik.</li>
           <li><strong>Professioneller Auftritt</strong> – Deutsche UI, anpassbares Design (Farben, Willkommensbild, Vita, Platzanordnung, Shop).</li>
         </ul>
+      </section>
+
+      {/* Produkt- und Branchenvergleich – Vorteile von ök2 klar herausarbeiten */}
+      <section id="mok2-produkt-branchenvergleich" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Produkt- &amp; Branchenvergleich: Warum ök2?
+        </h2>
+        <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
+          Am Markt sind Galerie-Webauftritt, Kasse, Events und Etiketten meist <strong>getrennte Produkte</strong>. Hier die Gegenüberstellung – damit die Vorteile von ök2 klar werden.
+        </p>
+
+        <h3 style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)', marginTop: '1rem', marginBottom: '0.5rem' }}>Am Markt (typische Aufteilung)</h3>
+        <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', marginBottom: '1rem', fontSize: '0.9rem' }}>
+          <li><strong>Kassensystem allein</strong> (z. B. für Kunst/Kultur): ca. 15–35 €/Monat + TSE/Signatur (ca. 80–180 €/Jahr), oft eigene Hardware (Tablet, Bondrucker). Nur Kasse – keine Galerie, keine Events.</li>
+          <li><strong>Website/Galerie</strong>: Baukasten oder Agentur – separates System, andere Oberfläche, andere Daten. Werke und Verkäufe hängen nicht zusammen.</li>
+          <li><strong>Events/Einladungen</strong>: wieder anderes Tool (E-Mail, Flyer) – Daten erneut pflegen, kein einheitliches Design aus der Galerie.</li>
+          <li><strong>Etiketten/Werkbeschriftung</strong>: eigene Software oder manuell – keine Anbindung an Bestand und Verkauf.</li>
+          <li><strong>Ergebnis:</strong> Mehrere Abos, mehrere Oberflächen, keine durchgängige Datenbasis. Leicht <strong>mehrere hundert Euro pro Jahr</strong>, ohne dass alles zusammenspielt.</li>
+        </ul>
+
+        <h3 style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)', marginTop: '1rem', marginBottom: '0.5rem' }}>ök2 / K2 Galerie (eine Lösung)</h3>
+        <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', marginBottom: '1rem', fontSize: '0.9rem' }}>
+          <li><strong>Eine Oberfläche, eine Datenbasis:</strong> Galerie, Werke, Kasse, Lager, Events, Marketing, Etiketten – alles in einer App. Einmal erfassen, überall nutzen.</li>
+          <li><strong>Kasse &amp; Lagerhaltung integriert:</strong> Verkauf erfassen, Beleg drucken (Etikett oder A4), Verkaufs- und Lagerstatistik, Storno, CSV für Buchhaltung, Umsatz heute. Werkkatalog mit Status Galerie/Lager/Verkauft. Kein separates Kassensystem nötig.</li>
+          <li><strong>Ein Stand auf allen Geräten:</strong> Admin am Rechner, Galerie und Kassa auf Tablet/Handy – gleicher Stand per QR, keine Medienbrüche.</li>
+          <li><strong>Sprache und Begriffe für Künstler:innen:</strong> Werke, Vita, Events, Stammdaten, Öffentlichkeitsarbeit – kein abstraktes „CMS“ oder „Items“.</li>
+          <li><strong>Branche:</strong> Künstler:innen und kleine Galerien sind mit „Webauftritt + Kasse + Events + Marketing aus einer Hand“ <strong>unterversorgt</strong>. Reine Kassensysteme oder reine Website-Baukästen decken den Bedarf nicht ab – ök2 füllt diese Lücke.</li>
+        </ul>
+
+        <div style={{ padding: '1rem 1.25rem', background: 'rgba(95,251,241,0.1)', border: '1px solid rgba(95,251,241,0.35)', borderRadius: 10, marginTop: '1rem' }}>
+          <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#5ffbf1', marginBottom: '0.5rem' }}>Kernvorteil auf einen Satz</div>
+          <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.95)', lineHeight: 1.55 }}>
+            Statt Kasse hier, Galerie dort, Events woanders: <strong>eine Lösung für Webauftritt, Verkauf vor Ort, Lager, Events und Werbung</strong> – ein Preis, ein Stand, eine Datenbasis. Genau das fehlt am Markt für Künstler:innen und kleine Galerien.
+          </p>
+        </div>
       </section>
 
       {/* 2. Marktchancen – Stärken */}
@@ -480,6 +516,9 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <li><strong>Plattformneutral:</strong> Windows, Android, Mac, iOS – Browser/PWA, keine App-Store-Pflicht, keine Mac-Pflicht für Kunden.</li>
           <li><strong>Fotostudio in der App:</strong> Objektfreistellung und Pro-Hintergrund im Browser, ideal für Fotos vom Handy/Tablet – ohne externe Dienste.</li>
         </ul>
+        <p style={{ marginTop: '0.5rem', fontSize: '0.88rem' }}>
+          <a href="#mok2-produkt-branchenvergleich" style={{ color: '#5ffbf1', textDecoration: 'none' }}>→ Ausführlicher <strong>Produkt- &amp; Branchenvergleich</strong> (Markt vs. ök2, Vorteile auf einen Blick)</a>
+        </p>
 
         <h3 style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.9)', marginTop: '1rem', marginBottom: '0.5rem' }}>Wodurch zeichnet sich das Produkt besonders aus?</h3>
         <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>

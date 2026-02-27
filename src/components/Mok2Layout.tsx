@@ -13,6 +13,7 @@ const TOP_BAR_HEIGHT = 56
 const mok2Sections = [
   { id: 'mok2-was-kann-die-app', label: 'Was kann die App? (ök2 | VK2)' },
   { id: 'mok2-1', label: '1. USPs' },
+  { id: 'mok2-produkt-branchenvergleich', label: 'Produkt- & Branchenvergleich (Vorteile)' },
   { id: 'mok2-2', label: '2. Marktchancen – Stärken' },
   { id: 'mok2-3', label: '3. Marktchancen – Herausforderungen' },
   { id: 'mok2-4', label: '4. Fazit & nächste Schritte' },
