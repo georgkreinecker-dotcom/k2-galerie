@@ -41,6 +41,9 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **KUNSTVEREINE-MULTIPLIKATOREN.md** – **Kunstvereine als Multiplikatoren:** Warum eindruckvolles Angebot lohnt; was wir haben (VK2); was eindruckvoll wirkt; nächste Schritte (Satz „Für Kunstvereine“, Pilot, Onboarding).
 
 ## Deployment, Vercel, Stand
+- **BERICHT-ISTZUSTAND-SYNC-VERCEL-27-02-26.md** – **Analytischer Bericht (27.02.26):** Istzustand Datenchaos & Vercel (2 Fotos Sync Mac↔iPad, Stand hängt bei 13:26), Ursachen, Weg zur Lösung (Vercel reparieren → Sync stabilisieren).
+- **VERCEL-CHECKLISTE-BEI-KEINEM-STAND.md** – **Wenn kein neuer Stand:** Vercel Dashboard (Deployments, Production Branch), Build-Fehler, danach refresh.html/QR.
+- **SYNC-ABLAUF-MAC-IPAD.md** – Sync eine Quelle (Vercel); Speichern → Vercel, anderes Gerät lädt von dort.
 - **WERKE-OEFFENTLICH-SICHTBAR.md** – **Zentral:** Änderungen (Werke, Design, Stammdaten, …) → öffentlich sichtbar (in jedem Netz). Veröffentlichen + Git Push.
 - **VERCEL-STAND-HANDY.md** – Warum Handy alten Stand zeigt (Branch, Cache).
 - **STAND-QR-SO-BLEIBT-ES.md** – Stand & QR richtig halten.
