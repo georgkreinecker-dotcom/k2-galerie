@@ -7348,7 +7348,9 @@ ${'='.repeat(60)}
           } catch (err) {
             console.warn('Freistellung fehlgeschlagen, verwende Original:', err)
             try {
-              sessionStorage.setItem('k2-freistellen-fallback-used', Date.now().toString())
+              const key = 'k2-freistellen-fallback-count'
+              const n = parseInt(sessionStorage.getItem(key) || '0', 10) + 1
+              sessionStorage.setItem(key, String(n))
             } catch (_) {}
           }
         }
@@ -7370,7 +7372,9 @@ ${'='.repeat(60)}
           } catch (err) {
             console.warn('Freistellung (Vorschau-Pfad) fehlgeschlagen, verwende Original:', err)
             try {
-              sessionStorage.setItem('k2-freistellen-fallback-used', Date.now().toString())
+              const key = 'k2-freistellen-fallback-count'
+              const n = parseInt(sessionStorage.getItem(key) || '0', 10) + 1
+              sessionStorage.setItem(key, String(n))
             } catch (_) {}
           }
         }
@@ -7732,10 +7736,12 @@ ${'='.repeat(60)}
       const reloaded = loadArtworks()
       console.log('📦 Reloaded artworks:', reloaded.length, 'Neues Werk gefunden:', artworkData?.number)
       
-      // Einheitliche Meldung, wenn keine Freistellung (Mobile oder Fehler) – keine Fehlermeldung, klare Option
+      // Einheitliche Meldung, wenn keine Freistellung (Mobile oder Fehler) – pro gespeichertes Werk einmal
       try {
-        if (sessionStorage.getItem('k2-freistellen-fallback-used')) {
-          sessionStorage.removeItem('k2-freistellen-fallback-used')
+        const countKey = 'k2-freistellen-fallback-count'
+        const count = parseInt(sessionStorage.getItem(countKey) || '0', 10)
+        if (count > 0) {
+          sessionStorage.setItem(countKey, String(count - 1))
           alert('Foto gespeichert. Auf diesem Gerät wurde keine Freistellung durchgeführt – das Foto hat einen professionellen Hintergrund.\n\nAm Mac: Werk bearbeiten → „Foto jetzt freistellen“ für echte Freistellung.')
         }
       } catch (_) {}
@@ -16600,7 +16606,9 @@ ${name}`
                             setPhotoUseFreistellen(true)
                           } catch (err) {
                             try {
-                              sessionStorage.setItem('k2-freistellen-fallback-used', Date.now().toString())
+                              const key = 'k2-freistellen-fallback-count'
+                              const n = parseInt(sessionStorage.getItem(key) || '0', 10) + 1
+                              sessionStorage.setItem(key, String(n))
                             } catch (_) {}
                             alert('Auf diesem Gerät wurde keine Freistellung durchgeführt.\n\nAm Mac: Werk bearbeiten → „Foto jetzt freistellen“ nutzen.')
                           } finally {

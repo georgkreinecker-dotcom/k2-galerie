@@ -129,7 +129,9 @@ export function compositeOnProfessionalBackground(
     // Auf Mobile: Freistellung weglassen – einheitlich, schnell, keine Fehlermeldungen
     if (isMobileDevice()) {
       try {
-        sessionStorage.setItem('k2-freistellen-fallback-used', Date.now().toString())
+        const key = 'k2-freistellen-fallback-count'
+        const n = parseInt(sessionStorage.getItem(key) || '0', 10) + 1
+        sessionStorage.setItem(key, String(n))
       } catch (_) {}
       return onlyProfessionalBackground(imageDataUrl, background)
     }
@@ -140,7 +142,9 @@ export function compositeOnProfessionalBackground(
     } catch (e) {
       console.warn('Freistellung fehlgeschlagen, verwende professionellen Hintergrund ohne Freistellung:', e)
       try {
-        sessionStorage.setItem('k2-freistellen-fallback-used', Date.now().toString())
+        const key = 'k2-freistellen-fallback-count'
+        const n = parseInt(sessionStorage.getItem(key) || '0', 10) + 1
+        sessionStorage.setItem(key, String(n))
       } catch (_) {}
       return onlyProfessionalBackground(imageDataUrl, background)
     }
