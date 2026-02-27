@@ -303,6 +303,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <li><strong>Datensouveränität und Backup</strong> – Lokale Speicherung, Backup & Wiederherstellung; K2 vs. Demo (ök2) strikt getrennt; keine Datenverluste durch Merge-Logik.</li>
           <li><strong>Professioneller Auftritt</strong> – Deutsche UI, anpassbares Design (Farben, Willkommensbild, Vita, Platzanordnung, Shop).</li>
           <li><strong>Vereinsfähig – die Plattform für Kunstvereine und Gruppen (VK2):</strong> Nicht nur Einzelkünstler:innen – <strong>Kunstvereine, Ateliergemeinschaften und künstlerische Gruppen</strong> haben eine eigene Lizenzvariante. Gemeinsame Vereinsgalerie, jedes Mitglied kann eigene Werke zeigen, Vereinskatalog mit den schönsten Werken aller (PDF, filterbar). Events und Werbung einheitlich für den Verein. Ab 10 registrierten Mitgliedern für den Verein kostenfrei. <em>Ein Verein entscheidet – viele Künstler:innen werden sichtbar.</em> Am Markt für diese Zielgruppe kaum vergleichbar.</li>
+          <li><strong>Empfehlungsprogramm – einzigartig:</strong> Nutzer:innen werben mit persönlicher Empfehler-ID; 10 % Rabatt für den Geworbenen, 10 % Gutschrift für den Empfehler. Vertrieb durch die Community – in dieser Branche (Galerie/Künstler:innen) kaum vergleichbar. Ein Klick: ID kopieren, Link teilen, Geworbene nutzt beim Lizenzabschluss – fertig.</li>
         </ul>
       </section>
 
@@ -332,12 +333,13 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <li><strong>Sprache und Begriffe für Künstler:innen:</strong> Werke, Vita, Events, Stammdaten, Öffentlichkeitsarbeit – kein abstraktes „CMS“ oder „Items“.</li>
           <li><strong>Branche:</strong> Künstler:innen und kleine Galerien sind mit „Webauftritt + Kasse + Events + Marketing aus einer Hand“ <strong>unterversorgt</strong>. Reine Kassensysteme oder reine Website-Baukästen decken den Bedarf nicht ab – ök2 füllt diese Lücke.</li>
           <li><strong>Vereinsfähig (VK2):</strong> <strong>Die Plattform für Kunstvereine und Gruppen.</strong> Gemeinsame Vereinsgalerie + Mitglieder mit eigener Galerie, Vereinskatalog (PDF), einheitliche Events und Werbung. Ab 10 Mitgliedern für den Verein kostenfrei – am Markt für Kunstvereine und Ateliergemeinschaften kaum vergleichbar.</li>
+          <li><strong>Empfehlungsprogramm:</strong> Vertrieb durch Nutzer:innen – persönliche Empfehler-ID, 10 % Rabatt für Geworbene, 10 % Gutschrift für Empfehler. In dieser Branche einzigartig; ein Klick zum Teilen, keine komplexen Partner-Portale.</li>
         </ul>
 
         <div style={{ padding: '1rem 1.25rem', background: 'rgba(95,251,241,0.1)', border: '1px solid rgba(95,251,241,0.35)', borderRadius: 10, marginTop: '1rem' }}>
           <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#5ffbf1', marginBottom: '0.5rem' }}>Kernvorteil auf einen Satz</div>
           <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.95)', lineHeight: 1.55 }}>
-            Statt Kasse hier, Galerie dort, Events woanders: <strong>eine Lösung für Webauftritt, Verkauf vor Ort, Lager, Events und Werbung</strong> – ein Preis, ein Stand, eine Datenbasis. Für Einzelkünstler:innen <em>und</em> für <strong>Kunstvereine und Gruppen (VK2)</strong>. Genau das fehlt am Markt.
+            Statt Kasse hier, Galerie dort, Events woanders: <strong>eine Lösung für Webauftritt, Verkauf vor Ort, Lager, Events und Werbung</strong> – ein Preis, ein Stand, eine Datenbasis. Für Einzelkünstler:innen <em>und</em> für <strong>Kunstvereine und Gruppen (VK2)</strong>, plus <strong>Empfehlungsprogramm</strong> (Vertrieb durch die Community). Genau das fehlt am Markt.
           </p>
         </div>
       </section>
@@ -350,6 +352,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
           <li>Klare Nische: Künstler:innen und kleine Galerien (Webauftritt + Events + Kasse + Marketing aus einer Hand) sind unterversorgt.</li>
           <li><strong>Vereinsfähig als Alleinstellungsmerkmal:</strong> Die Plattform für Kunstvereine und künstlerische Gruppen (VK2) – gemeinsame Galerie, Vereinskatalog, ab 10 Mitgliedern für den Verein kostenfrei. Am Markt für diese Zielgruppe kaum vergleichbar; ein Verein entscheidet, viele Künstler:innen werden sichtbar.</li>
+          <li><strong>Empfehlungsprogramm als Alleinstellungsmerkmal:</strong> Vertrieb durch Nutzer:innen – Empfehler-ID, 10 % Rabatt/Gutschrift, ein Klick zum Teilen. In der Galerie-/Künstler:innen-Branche einzigartig; kein vergleichbares „Empfehlen und profitieren“ aus einer App.</li>
           <li>PWA + plattformneutral: Keine App-Stores nötig; Nutzung auf Windows und Android ohne Mac.</li>
           <li>Produktvision und Konfiguration: Codebasis und Doku auf Mehrfachnutzung und Lizenz-Versionen vorbereitet.</li>
           <li>Echter Einsatz: K2 wird bereits genutzt – echte Anforderungen und Workflows abgebildet.</li>
@@ -363,7 +366,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </h2>
         <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
           <li>Bekanntheit: Ohne Vertrieb/Marketing erreicht man die Zielgruppe nur begrenzt.</li>
-          <li>Wettbewerb: Differenzierung über „Alles in einer App“, Galerie-Fokus, PR/Marketing aus einem Guss und <strong>Vereinsfähigkeit (VK2 – Plattform für Kunstvereine und Gruppen)</strong>.</li>
+          <li>Wettbewerb: Differenzierung über „Alles in einer App“, Galerie-Fokus, PR/Marketing aus einem Guss, <strong>Vereinsfähigkeit (VK2 – Plattform für Kunstvereine und Gruppen)</strong> und <strong>Empfehlungsprogramm</strong> (Vertrieb durch Nutzer:innen, in dieser Branche einzigartig).</li>
           <li>Betrieb/Recht: Klares Hosting-/Lizenz-Modell, AGB, Datenschutz, ggf. Support nötig.</li>
         </ul>
       </section>
@@ -521,6 +524,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <li><strong>Plattformneutral:</strong> Windows, Android, Mac, iOS – Browser/PWA, keine App-Store-Pflicht, keine Mac-Pflicht für Kunden.</li>
           <li><strong>Fotostudio in der App:</strong> Objektfreistellung und Pro-Hintergrund im Browser, ideal für Fotos vom Handy/Tablet – ohne externe Dienste.</li>
           <li><strong>Vereinsfähig (VK2):</strong> Die Plattform für Kunstvereine und Gruppen – gemeinsame Vereinsgalerie, Vereinskatalog, ab 10 Mitgliedern für den Verein kostenfrei. Am Markt kaum vergleichbar.</li>
+          <li><strong>Empfehlungsprogramm:</strong> Vertrieb durch Nutzer:innen – Empfehler-ID, 10 % Rabatt/Gutschrift, Link teilen. In dieser Branche einzigartig.</li>
         </ul>
         <p style={{ marginTop: '0.5rem', fontSize: '0.88rem' }}>
           <a href="#mok2-produkt-branchenvergleich" style={{ color: '#5ffbf1', textDecoration: 'none' }}>→ Ausführlicher <strong>Produkt- &amp; Branchenvergleich</strong> (Markt vs. ök2, Vorteile auf einen Blick)</a>
@@ -533,6 +537,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <li><strong>Kasse & Etiketten:</strong> Verkauf vor Ort direkt aus der App; Etikettendruck (z. B. Brother QL) mit Werk-Nummer, Titel, QR – WLAN-fähig. Verkaufs- und Lagerstatistik drucken, Bestand im Blick – einfache Kassa und Lagerhaltung in einer Oberfläche.</li>
           <li><strong>Datensouveränität:</strong> Lokale Speicherung, Backup & Wiederherstellung – deine Daten bleiben unter deiner Kontrolle.</li>
           <li><strong>Deutsche UI, seriös:</strong> Keine Anglizismen-Flut; klare, professionelle Oberfläche für Galerien und Ateliers.</li>
+          <li><strong>Empfehlungsprogramm:</strong> Vertrieb durch Nutzer:innen – persönliche Empfehler-ID, 10 % Rabatt für Geworbene, 10 % Gutschrift für Empfehler. In dieser Branche einzigartig.</li>
         </ul>
 
         <h3 style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.9)', marginTop: '1rem', marginBottom: '0.5rem' }}>Welchen Benefit hat der Nutzer?</h3>
