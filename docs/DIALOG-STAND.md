@@ -89,7 +89,7 @@ Werk verschwindet / Nummer wiederverwendet / Freistellen geht nicht. **Ursache:*
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **iPad-Stand: refresh.html Cache-Bust, Vercel-Checkliste, Stand 27.02.26 14:58.** Commit: 2ec7e9b ✅ auf GitHub
+- **Mobil: Button „Daten an Server senden“, Handbuch 16, DIALOG-STAND, Stand 27.02.26 20:02.** Commit: bfa0bb9 ✅ auf GitHub
 
 ## Nächster Schritt
 - **iPad/Mac:** Neues Werk speichern → in Galerie prüfen ob es sichtbar bleibt (Pending-Layer). Wenn ja: Problem gelöst; wenn nein: nächste Ursache suchen (z. B. welcher Pfad überschreibt).
