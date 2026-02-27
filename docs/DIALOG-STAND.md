@@ -8,7 +8,9 @@
 Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen. **Erledigt:** Raw-Liste beim Speichern (kein Filter zurückschreiben), Nummer aus Raw, Freistellen-Hinweis bei Fallback.
 
 ## Nächster Schritt
-iPad: **https://k2-galerie.vercel.app/refresh.html** einmal im Browser öffnen → leitet mit Cache-Bust zur Galerie weiter (umgeht Safari-Cache). Danach Stand/Sync prüfen.
+1. **Vercel:** 1–2 Min warten bis Deployment **Ready** + **Current** (nach Push 2ec7e9b).
+2. **iPad:** **https://k2-galerie.vercel.app/refresh.html** einmal im Browser öffnen → leitet mit Cache-Bust zur Galerie weiter. Danach Stand **27.02.26 14:58** prüfen.
+3. Wenn iPad weiter alt zeigt: **build-info.json** prüfen (siehe docs/VERCEL-STAND-HANDY.md „Wenn bei Vercel etwas festhängt“).
 
 ## Was zuletzt gemacht (27.02.26)
 - **iPad hängt trotzdem bei 13:26:** Neue **Refresh-URL** als letzter Ausweg: **https://k2-galerie.vercel.app/refresh.html** – einmal öffnen, leitet sofort mit Cache-Bust zur Galerie weiter. URL wird von Vercel-Rewrite ausgenommen, no-cache-Header; public/refresh.html → dist/refresh.html. Doku in VERCEL-STAND-HANDY.md ergänzt („Letzter Ausweg – frische URL“).
@@ -74,7 +76,7 @@ Werk verschwindet / Nummer wiederverwendet / Freistellen geht nicht. **Ursache:*
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Zentrale Stelle Vercel: Speichern = Sync, Nummern von dort, kein extra Veröffentlichen.** Commit: 1049b87 ✅ auf GitHub
+- **iPad-Stand: refresh.html Cache-Bust, Vercel-Checkliste, Stand 27.02.26 14:58.** Commit: 2ec7e9b ✅ auf GitHub
 
 ## Nächster Schritt
 - **iPad/Mac:** Neues Werk speichern → in Galerie prüfen ob es sichtbar bleibt (Pending-Layer). Wenn ja: Problem gelöst; wenn nein: nächste Ursache suchen (z. B. welcher Pfad überschreibt).
