@@ -56,10 +56,15 @@ Praxistest (Martina/Georg befüllen Galerie): Werk bearbeiten – neues Foto wur
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Bild-Bugs Praxistest: Bearbeiten übernimmt neues Foto; Fragezeichen → Kein-Bild-Platzhalter.** Commit: b93ac8e ✅ auf GitHub
+- **Admin K2: Link „Cursor am iPad öffnen“ (web.cursor.sh) unter dem Hub.** Commit: 85dfd99 ✅ auf GitHub
 
 ## Nächster Schritt
-- Praxistest: Werk erneut bearbeiten (neues Foto) und zweites neues Werk anlegen – prüfen ob Bilder jetzt korrekt gespeichert und angezeigt werden. Bei weiterem „?“: prüfen ob imageUrl beim Speichern abgeschnitten wird (localStorage-Größe).
+- **Georg geht wieder testen** (Bild-Fix, Werke bearbeiten/neu anlegen). Danach Rückmeldung ob alles passt.
+
+## Session 27.02.26 (vor dem Test)
+- Bild-Bugs behoben (Bearbeiten + neues Werk), gepusht.
+- Doku: docs/SCHNELLFIX-IPAD.md (Schnellfix per GitHub im Browser).
+- Cursor am iPad: Link im K2-Admin unter „Was möchtest du heute tun?“ → web.cursor.sh; alternativ Mac laufen lassen (Deckel zu mit Amphetamine/Clamshell), Cursor-Mobile-App vom iPad aus steuern.
 
 ## Was gerade gemacht (ök2: 7 fertige Musterdokumente)
 - **ök2 zeigt jetzt 7 fertige Musterdokumente:** 2 unter „Druckfertige Dokumente“ (Einladung, Presse aus MUSTER_EVENTS) + 5 PR-Dokumente (Newsletter, Plakat, Event-Flyer, Presseaussendung, Social Media) aus getOek2MusterPrDocuments(). Alle mit MUSTER_TEXTE (Lena Berg, Paul Weber, Galerie Muster, info@galerie-muster.example) und einheitlichem Design (#6b9080).
