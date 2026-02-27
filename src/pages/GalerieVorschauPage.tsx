@@ -838,6 +838,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     if (vk2) return () => {}
     adminLoadMountedRef.current = true
     let isMounted = true
+    let delayedReadTimeoutId: ReturnType<typeof setTimeout> | null = null
     
     // Backup beim Start erstellen – NUR LESEN, nie still filtern/zurückschreiben
     // 🔒 REGEL: Kein automatisches Löschen von Kundendaten – nur warnen wenn Muster-Nummern gefunden
@@ -869,7 +870,22 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         setTimeout(() => setLoadStatus(null), 2000)
         setIsLoading(false)
         console.log('✅ K2 Galerie: eine Quelle (localStorage + Pending), wie Musterwerke –', withImages.length, 'Werke')
-        return
+        // Kurz verzögert nochmal lesen: falls Admin-Save gerade fertig wurde (Navigation direkt nach Speichern)
+        delayedReadTimeoutId = setTimeout(() => {
+          if (!isMounted) return
+          const again = loadArtworks()
+          const againPending = mergeWithPending(again || [])
+          if (againPending.length > withImages.length) {
+            const againWithImages = againPending.map((a: any) => {
+              const out = { ...a }
+              if (!out.imageUrl && out.previewUrl) out.imageUrl = out.previewUrl
+              if (!out.imageUrl && !out.previewUrl) out.imageUrl = placeholder
+              return out
+            })
+            setArtworksDisplay(againWithImages)
+            console.log('✅ K2 Galerie: Nachzug –', againWithImages.length, 'Werke (nach Admin-Save)')
+          }
+        }, 200)
       }
       
       // Keine lokalen Daten: dann erst Supabase/gallery-data (z. B. anderes Gerät)
@@ -977,17 +993,36 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           }
         }
         
-        // Keine Daten gefunden
+        // Keine Daten gefunden – vor Backup: nochmal lesen (Admin-Save könnte gerade fertig geworden sein)
         if (isMounted) {
+          const currentNow = readArtworksRaw()
+          if (currentNow.length > 0) {
+            const withPendingNow = mergeWithPending(currentNow)
+            const withImages = (withPendingNow || []).map((a: any) => {
+              const out = { ...a }
+              if (!out.imageUrl && out.previewUrl) out.imageUrl = out.previewUrl
+              if (!out.imageUrl && !out.previewUrl) out.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+              return out
+            })
+            setArtworksDisplay(withImages)
+            setLoadStatus({ message: `✅ ${withImages.length} Werke`, success: true })
+            setTimeout(() => setLoadStatus(null), 2000)
+            setIsLoading(false)
+            return
+          }
           console.log('ℹ️ Keine Werke gefunden')
-          // KRITISCH: Prüfe Backup bevor wir leeren! (loadBackup liefert bereits gefilterte Liste)
+          // KRITISCH: Backup nur für Anzeige; NIE mit weniger Werken in localStorage überschreiben
           const backup = loadBackup()
           if (backup && backup.length > 0) {
-            console.log('💾 Backup gefunden - verwende Backup statt leeren:', backup.length, 'Werke (gefiltert)')
+            console.log('💾 Backup gefunden - verwende Backup für Anzeige:', backup.length, 'Werke')
             setArtworksDisplay(backup)
-            localStorage.setItem('k2-artworks', JSON.stringify(backup))
+            const currentCount = readArtworksRaw().length
+            if (backup.length >= currentCount) {
+              try { localStorage.setItem('k2-artworks', JSON.stringify(backup)) } catch (_) {}
+            } else {
+              console.warn('⚠️ Backup hat weniger Werke als aktuell – localStorage wird NICHT überschrieben')
+            }
           } else {
-            // Nur leeren wenn wirklich keine Daten vorhanden sind
             setArtworksDisplay([])
           }
           setIsLoading(false)
@@ -1288,6 +1323,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     return () => {
       isMounted = false
       adminLoadMountedRef.current = false
+      if (delayedReadTimeoutId) clearTimeout(delayedReadTimeoutId)
       if (initialCheckTimeoutId) {
         clearTimeout(initialCheckTimeoutId)
       }
