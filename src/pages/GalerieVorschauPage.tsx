@@ -853,22 +853,27 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     }
     
     const loadArtworksData = async () => {
-      // WICHTIG: Prüfe zuerst ob artworks bereits gesetzt sind (z.B. von initialArtworks)
-      // Wenn ja und localStorage hat die gleiche Anzahl, überspringe das Laden
-      const currentStored = loadArtworks()
-      if (artworks && artworks.length > 0 && currentStored && currentStored.length === artworks.length) {
-        // Vergleiche IDs um sicherzustellen dass es die gleichen Werke sind
-        const currentIds = new Set(artworks.map((a: any) => a.number || a.id).sort())
-        const storedIds = new Set(currentStored.map((a: any) => a.number || a.id).sort())
-        const idsMatch = currentIds.size === storedIds.size && [...currentIds].every(id => storedIds.has(id))
-        
-        if (idsMatch) {
-          console.log('⏭️ Überspringe Laden - artworks State ist bereits aktuell:', artworks.length, 'Werke')
-          setIsLoading(false)
-          return
-        }
+      // K2: Analog zu Musterwerken – EINE QUELLE (localStorage + Pending), kein Überschreiben durch Server
+      // Wie bei musterOnly: Anzeige kommt nur aus dieser einen Quelle, kein Supabase/gallery-data-Fetch beim ersten Laden
+      const localOnly = loadArtworks()
+      const withPending = mergeWithPending(localOnly || [])
+      if (withPending.length > 0) {
+        const placeholder = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+        const withImages = withPending.map((a: any) => {
+          const out = { ...a }
+          if (!out.imageUrl && out.previewUrl) out.imageUrl = out.previewUrl
+          if (!out.imageUrl && !out.previewUrl) out.imageUrl = placeholder
+          return out
+        })
+        setArtworksDisplay(withImages)
+        setLoadStatus({ message: `✅ ${withImages.length} Werke`, success: true })
+        setTimeout(() => setLoadStatus(null), 2000)
+        setIsLoading(false)
+        console.log('✅ K2 Galerie: eine Quelle (localStorage + Pending), wie Musterwerke –', withImages.length, 'Werke')
+        return
       }
       
+      // Keine lokalen Daten: dann erst Supabase/gallery-data (z. B. anderes Gerät)
       setIsLoading(true)
       setLoadStatus({ message: '🔄 Lade Werke...', success: false })
       
