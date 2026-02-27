@@ -2423,7 +2423,15 @@ function ScreenshotExportAdmin() {
                 return
               }
               
-              // Fallback nur bei explizitem Veröffentlichen: Download falls API nicht funktioniert (Server läuft nicht)
+              // Auf Mobil: NIEMALS link.click() mit JSON – öffnet sonst die gallery-data.json-Seite (BUG)
+              const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+              if (isMobileDevice) {
+                if (isMountedRef.current) setIsDeploying(false)
+                alert('⚠️ Daten konnten nicht an den Server gesendet werden.\n\nBitte prüfen: Ist die App von k2-galerie.vercel.app geöffnet? Ist das Internet verbunden? Einfach OK – du bleibst in der App, keine Seite öffnet sich.')
+                return
+              }
+              
+              // Fallback nur am Mac/Desktop: Download falls API nicht funktioniert (Server läuft nicht)
               try {
                 const blob = new Blob([json], { type: 'application/json' })
                 const url = URL.createObjectURL(blob)

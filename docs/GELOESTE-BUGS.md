@@ -8,6 +8,15 @@
 
 ---
 
+## BUG-016 · „Daten an Server senden“ auf Mobil öffnet gallery-data.json-Seite
+**Symptom:** Auf dem iPad/Handy auf „📤 Daten an Server senden“ tippen → statt Erfolg oder Fehlermeldung öffnet sich eine Seite mit dem rohen JSON (gallery-data.json).
+**Ursache:** Wie BUG-015: Bei API-Fehler wurde ein Fallback genutzt (Blob + Download-Link + link.click()). Auf Mobil interpretieren Browser das oft als „Seite öffnen“ → JSON wird als Seite angezeigt.
+**Lösung:** Im catch von publishMobile: Wenn Gerät Mobil ist (iPhone|iPad|iPod|Android), **niemals** link.click() mit der JSON – nur eine klare Alert-Meldung anzeigen („Daten konnten nicht gesendet werden … Einfach OK – du bleibst in der App.“). Fallback-Download nur am Mac/Desktop.
+**Betroffene Dateien:** `components/ScreenshotExportAdmin.tsx` (publishMobile, catch-Block, isMobileDevice-Check)
+**Status:** ✅ Behoben (27.02.26)
+
+---
+
 ## BUG-015 · Beim Klick „Werke speichern“ öffnet sich gallery-data.json in neuem Tab
 **Symptom:** Auf „Werke speichern“ klicken → eine Seite mit gallery-data.json (roher JSON-Text) öffnet sich, Nutzer muss schließen und über Umwege zurück.
 **Ursache:** Nach dem Speichern wird automatisch `publishMobile({ silent: true })` aufgerufen. Schlägt die API fehl, gab es einen Fallback: Blob-URL + programmatischer Klick auf einen Download-Link. Auf iPad/Safari öffnet das oft die JSON in einem neuen Tab statt sie herunterzuladen.
