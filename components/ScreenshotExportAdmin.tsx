@@ -7458,29 +7458,27 @@ ${'='.repeat(60)}
         totalArtworks: artworks.length
       })
       
-      // KRITISCH: Prüfe ob Werk wirklich gespeichert wurde
-      const verifyStored = loadArtworks()
-      const isStored = verifyStored.some((a: any) => 
-        (a.number && artworkData.number && a.number === artworkData.number) ||
-        (a.id && artworkData.id && a.id === artworkData.id)
+      // KRITISCH: Prüfe ob Werk wirklich in localStorage steht (ROH – kein ök2-Anzeige-Filter)
+      let verifyRaw: any[] = []
+      try {
+        const key = getArtworksKey()
+        const stored = localStorage.getItem(key)
+        if (stored) verifyRaw = JSON.parse(stored)
+        if (!Array.isArray(verifyRaw)) verifyRaw = []
+      } catch (_) {}
+      const isStored = verifyRaw.some((a: any) =>
+        (a?.number != null && artworkData?.number != null && String(a.number) === String(artworkData.number)) ||
+        (a?.id != null && artworkData?.id != null && String(a.id) === String(artworkData.id))
       )
-      
       if (!isStored) {
         console.error('❌ KRITISCH: Werk wurde NICHT gespeichert!', {
-          gesucht: artworkData.number || artworkData.id,
-          gespeichert: verifyStored.map((a: any) => a.number || a.id),
-          anzahl: verifyStored.length
+          gesucht: artworkData?.number || artworkData?.id,
+          anzahlRoh: verifyRaw.length
         })
-        alert(`⚠️ Fehler: Werk konnte nicht gespeichert werden!\n\nNummer: ${artworkData.number}\nGespeicherte Werke: ${verifyStored.length}\n\nBitte versuche es erneut.`)
+        alert(`⚠️ Fehler: Werk konnte nicht gespeichert werden!\n\nNummer: ${artworkData?.number ?? ''}\n\nBitte versuche es erneut.`)
         return
       }
-      
-      console.log('✅ Werk-Verifikation erfolgreich:', {
-        nummer: artworkData.number,
-        titel: artworkData.title,
-        gesamtAnzahl: verifyStored.length,
-        alleNummern: verifyStored.map((a: any) => a.number || a.id)
-      })
+      console.log('✅ Werk-Verifikation erfolgreich:', artworkData?.number, 'Anzahl:', verifyRaw.length)
       
       // KRITISCH: Markiere Nummer als verwendet für bessere Synchronisation
       // Speichere Nummer in separatem Index für schnelle Prüfung
@@ -7515,21 +7513,27 @@ ${'='.repeat(60)}
         }
       }
       
-      // KRITISCH: Aktualisiere lokale Liste SOFORT
-      const reloaded = loadArtworks()
-      console.log('📦 Reloaded artworks:', reloaded.length, 'Nummern:', reloaded.map((a: any) => a.number || a.id))
-      
-      // Prüfe ob das neue Werk wirklich drin ist
-      const containsNewArtwork = reloaded.some((a: any) => 
-        (a.number && artworkData.number && a.number === artworkData.number) ||
-        (a.id && artworkData.id && a.id === artworkData.id)
+      // KRITISCH: Prüfe ob das neue Werk wirklich in localStorage steht (ROH lesen – kein ök2-Anzeige-Filter)
+      // Im ök2-Kontext filtert loadArtworks() K2-M-*/K2-K-* für die Anzeige; das neue Werk wäre sonst „nicht gefunden“
+      let rawList: any[] = []
+      try {
+        const key = getArtworksKey()
+        const stored = localStorage.getItem(key)
+        if (stored) rawList = JSON.parse(stored)
+        if (!Array.isArray(rawList)) rawList = []
+      } catch (_) {}
+      const containsNewArtwork = rawList.some((a: any) =>
+        (a?.number != null && artworkData?.number != null && String(a.number) === String(artworkData.number)) ||
+        (a?.id != null && artworkData?.id != null && String(a.id) === String(artworkData.id))
       )
-      
       if (!containsNewArtwork) {
-        console.error('❌ KRITISCH: Neues Werk nicht in reloaded gefunden!')
-        alert(`⚠️ Fehler: Werk wurde gespeichert, aber nicht in Liste gefunden!\n\nNummer: ${artworkData.number}\n\nBitte Seite neu laden.`)
+        console.error('❌ KRITISCH: Neues Werk nicht in localStorage gefunden (roh):', artworkData?.number, 'Anzahl roh:', rawList.length)
+        alert(`⚠️ Fehler: Werk wurde gespeichert, aber nicht in Liste gefunden!\n\nNummer: ${artworkData?.number ?? ''}\n\nBitte Seite neu laden.`)
         return
       }
+      
+      const reloaded = loadArtworks()
+      console.log('📦 Reloaded artworks:', reloaded.length, 'Neues Werk gefunden:', artworkData?.number)
       
       console.log('✅ Neues Werk in reloaded gefunden:', artworkData.number)
       
