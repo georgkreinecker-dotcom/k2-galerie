@@ -8,7 +8,10 @@
 Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen. **Erledigt:** Raw-Liste beim Speichern (kein Filter zurückschreiben), Nummer aus Raw, Freistellen-Hinweis bei Fallback.
 
 ## Nächster Schritt
-Praxistest: Neues Werk anlegen → in Galerie/Vorschau sichtbar, Nummer eindeutig; bei Freistellen auf iPad ggf. Hinweis prüfen.
+Praxistest: Neues Werk anlegen → Admin verlassen → Vorschau/Galerie: Werk bleibt sichtbar.
+
+## Was zuletzt gemacht (27.02.26)
+- **Werk verschwindet beim Verlassen des Admins:** GalerieVorschauPage angepasst: (1) „Keine Daten gefunden“ – vor Backup nochmal readArtworksRaw(); wenn jetzt Daten da (Admin-Save gerade fertig), diese anzeigen. (2) Backup nur für Anzeige; localStorage nur überschreiben wenn backup.length >= currentCount (nie mit weniger Werken). (3) Nach erstem Anzeigen aus localStorage 200 ms verzögert nochmal lesen (Nachzug falls Save beim Navigieren fertig wurde); Cleanup clearTimeout im useEffect.
 
 ## Woran zuletzt gearbeitet (inhaltlicher Faden)
 Werk verschwindet / Nummer wiederverwendet / Freistellen geht nicht. **Ursache:** Beim Speichern wurde im ök2-Kontext die **gefilterte** Liste (loadArtworks) zurückgeschrieben → Werke gingen verloren, Nummern wurden „frei“. **Fix:** (1) **loadArtworksRaw()** – lädt Werke ohne Anzeige-Filter. (2) **saveArtworkData** und **generateArtworkNumber** nutzen nur noch Raw-Liste für Schreiben/Nummern – nie gefilterte Liste zurückschreiben. (3) **Freistellen:** Bei Fallback (z. B. iPad Speicher) setzt professionalImageBackground + Admin ein Flag; nach Speichern Hinweis: „Freistellung konnte auf diesem Gerät nicht durchgeführt werden. Bild wurde mit professionellem Hintergrund gespeichert.“
