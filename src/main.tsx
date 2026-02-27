@@ -7,6 +7,11 @@ import App from './App.tsx'
 // Kein zweiter Reload hier – sonst zwei Mechanismen gleichzeitig → Seite wechselt unerwartet.
 const notInIframe = typeof window !== 'undefined' && window.self === window.top
 
+// Refresh-URL /r/<timestamp>: Einstieg mit einzigartigem Pfad (Safari cached / nicht ?v=). Nach Laden sofort auf / wechseln.
+if (typeof window !== 'undefined' && window.location.pathname.startsWith('/r/')) {
+  window.history.replaceState(null, '', window.location.origin + '/' + (window.location.search || ''))
+}
+
 // Cache-Busting: Versions-Info für Debugging
 const BUILD_VERSION = '1.0.0-' + Date.now()
 if (typeof window !== 'undefined') {

@@ -22,8 +22,7 @@
   <script>
     (function() {
       var o = location.origin;
-      var v = Date.now();
-      location.replace(o + '/?v=' + v + '&_=' + v + '&refresh=1');
+      location.replace(o + '/r/' + Date.now());
     })();
   </script>
 </body>

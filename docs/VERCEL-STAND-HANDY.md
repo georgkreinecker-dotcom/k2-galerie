@@ -56,11 +56,13 @@ Der Production-Branch wird **nur** in Vercel gesetzt – nicht im Code. Im Repo 
 
 **Falls es dann noch hängt:** Safari → Einstellungen → Verlauf und Websitedaten löschen (oder nur für k2-galerie.vercel.app).
 
-**Letzter Ausweg – frische URL (umgeht Cache):** Auf dem iPad im Browser **genau diese Adresse** einmal öffnen:
+**Letzter Ausweg – frische URL (umgeht Safari-Cache):** Auf dem iPad im Browser **genau diese Adresse** einmal öffnen:
 
 **https://k2-galerie.vercel.app/refresh.html**
 
-Diese Seite leitet sofort mit Cache-Bust zur Galerie weiter. Weil die URL anders ist als die normale Galerie, hat Safari sie meist nicht gecacht – du bekommst die neueste Version. Danach kannst du wieder wie gewohnt die Galerie (oder Startbildschirm-Icon) nutzen.
+Diese Seite leitet sofort auf einen **einmaligen Pfad** (z. B. /r/1730123456) weiter – den hat Safari praktisch nie gecacht. Du bekommst die neueste Version, die Adresszeile springt danach auf die normale Galerie-URL. Danach wieder wie gewohnt nutzen.
+
+**Wenn trotzdem noch 13:26:** Dann liefert **Vercel** selbst noch einen alten Build. Prüfen: Im Browser (Mac oder iPad) **https://k2-galerie.vercel.app/build-info.json** öffnen – welche Zeit steht dort? Wenn dort auch 13:26 steht → im **Vercel Dashboard** prüfen: Production Branch = **main**, letztes Deployment **Ready** (nicht Error). Erst nach erfolgreichem Deploy zeigt refresh.html den neuen Stand.
 
 ---
 
