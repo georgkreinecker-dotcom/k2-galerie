@@ -468,9 +468,13 @@ function loadArtworks(): any[] {
   try {
     const key = getArtworksKey()
     const stored = localStorage.getItem(key)
-    // ök2: Wenn noch keine Daten, Musterwerke als Ausgangsbasis (K2-artworks nie anrühren)
-    if (!stored || stored === '[]') {
+    // ök2: Key fehlt = erste Nutzung → Musterwerke. Key '[]' = User hat alle gelöscht → leer lassen.
+    if (!stored) {
       if (isOeffentlichAdminContext()) return [...MUSTER_ARTWORKS]
+      return []
+    }
+    if (stored === '[]') {
+      if (isOeffentlichAdminContext()) return [] // Musterbilder wurden gelöscht, leer beibehalten
       return []
     }
     // SAFE MODE: Prüfe Größe bevor Parsen
@@ -2561,10 +2565,13 @@ function ScreenshotExportAdmin() {
     if (isOeffentlichAdminContext() || isVk2AdminContext()) return
     setIsLoadingFromServer(true)
     try {
-      const url = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&t=${Date.now()}&_=${Math.random()}`
+      // Auf Vercel: gleiche Origin nutzen (vermeidet CORS/Netzwerk-Probleme)
+      const isVercel = typeof window !== 'undefined' && (window.location.hostname.includes('vercel.app') || window.location.hostname.includes('k2-galerie'))
+      const base = isVercel ? window.location.origin : CENTRAL_GALLERY_DATA_URL.replace(/\/gallery-data\.json.*$/, '')
+      const url = `${base}/gallery-data.json?v=${Date.now()}&t=${Date.now()}&_=${Math.random()}`
       const res = await fetch(url, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache, no-store' } })
       if (!res.ok) {
-        alert('Laden fehlgeschlagen (Server nicht erreichbar). Bitte später erneut versuchen.')
+        alert(`Laden fehlgeschlagen (Server ${res.status}).\n\nBitte prüfen:\n• Internetverbindung\n• Falls du lokal (localhost) bist: App auf k2-galerie.vercel.app öffnen und dort „Bilder vom Server laden“ nutzen.`)
         return
       }
       const data = await res.json()
@@ -2606,7 +2613,13 @@ function ScreenshotExportAdmin() {
       }
     } catch (e) {
       console.error('Vom Server laden:', e)
-      alert('Fehler beim Laden. Bitte Verbindung prüfen und erneut versuchen.')
+      const msg = e instanceof Error ? e.message : String(e)
+      const isNetwork = /failed|network|load|cors|fetch/i.test(msg) || (e instanceof TypeError && msg.includes('fetch'))
+      alert(
+        isNetwork
+          ? 'Fehler beim Laden (Verbindung zum Server).\n\n• Bist du im Internet?\n• Falls du lokal (localhost) arbeitest: App auf k2-galerie.vercel.app im Browser öffnen und dort „Bilder vom Server laden“ klicken.'
+          : 'Fehler beim Laden. Bitte Verbindung prüfen und erneut versuchen.'
+      )
     } finally {
       setIsLoadingFromServer(false)
     }

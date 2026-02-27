@@ -58,11 +58,11 @@ function isPlaceholderImageUrl(url: string | undefined): boolean {
   return !url || (typeof url === 'string' && url.startsWith('data:image/svg+xml'))
 }
 
-/** ök2: Werke aus k2-oeffentlich-artworks (Admin-Demo). Ohne Bild/Platzhalter → kategoriepassendes Standardbild. Leer = Fallback auf MUSTER_ARTWORKS. */
-function loadOeffentlichArtworks(): any[] {
+/** ök2: Werke aus k2-oeffentlich-artworks. null = Key fehlt (erste Nutzung → Muster anzeigen), [] = User hat alle gelöscht. */
+function loadOeffentlichArtworks(): any[] | null {
   try {
     const raw = localStorage.getItem('k2-oeffentlich-artworks')
-    if (!raw) return []
+    if (!raw) return null
     const parsed = JSON.parse(raw)
     if (!Array.isArray(parsed) || parsed.length === 0) return []
     return parsed.map((a: any) => {
@@ -266,8 +266,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     }
     if (musterOnly) {
       const oef = loadOeffentlichArtworks()
-      if (oef.length > 0) return oef
-      return [...MUSTER_ARTWORKS]
+      if (oef === null) return [...MUSTER_ARTWORKS]
+      return oef
     }
     const list = loadForDisplay()
     const withPending = list.length > 0 || getPendingArtworks().length > 0 ? mergeWithPending(list) : []
@@ -373,7 +373,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     }
     if (musterOnly) {
       const oef = loadOeffentlichArtworks()
-      setArtworks(oef.length > 0 ? oef : [...MUSTER_ARTWORKS])
+      setArtworks(oef === null ? [...MUSTER_ARTWORKS] : oef)
     }
   }, [musterOnly, vk2])
 
@@ -406,7 +406,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       }
       if (musterOnly) {
         const oef = loadOeffentlichArtworks()
-        setArtworks(oef.length > 0 ? oef : [...MUSTER_ARTWORKS])
+        setArtworks(oef === null ? [...MUSTER_ARTWORKS] : oef)
         return
       }
       {
