@@ -18,7 +18,7 @@ import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
-import { addPendingArtwork } from '../src/utils/artworksStorage'
+import { addPendingArtwork, filterK2Only } from '../src/utils/artworksStorage'
 import { getWerbeliniePrDocCss, getWerbeliniePrDocCssVk2, WERBELINIE_FONTS_URL, WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../src/config/marketingWerbelinie'
 import '../src/App.css'
 
@@ -1250,6 +1250,7 @@ function ScreenshotExportAdmin() {
   const [reserveMethod, setReserveMethod] = useState<'scan' | 'manual'>('scan')
   const [reserveName, setReserveName] = useState('')
   const [allArtworks, setAllArtworks] = useState<any[]>([])
+  const [isLoadingFromServer, setIsLoadingFromServer] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string>('alle')
   const [showCameraView, setShowCameraView] = useState(false)
@@ -2554,6 +2555,62 @@ function ScreenshotExportAdmin() {
   
   // KEIN Auto-Sync (Supabase / gallery-data.json) mehr beim Admin-Start – verursacht Fenster-Abstürze.
   // Mobile-Werke kommen über artworks-updated Event beim Speichern; Werke werden nur aus localStorage geladen (siehe oben, 2 s Verzögerung).
+
+  /** K2: Werke von Vercel (gallery-data.json) laden und mit lokalen mergen – damit neue iPad-Werke am Mac erscheinen */
+  const handleLoadFromServer = async () => {
+    if (isOeffentlichAdminContext() || isVk2AdminContext()) return
+    setIsLoadingFromServer(true)
+    try {
+      const url = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&t=${Date.now()}&_=${Math.random()}`
+      const res = await fetch(url, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache, no-store' } })
+      if (!res.ok) {
+        alert('Laden fehlgeschlagen (Server nicht erreichbar). Bitte später erneut versuchen.')
+        return
+      }
+      const data = await res.json()
+      const serverArtworks = filterK2Only(Array.isArray(data.artworks) ? data.artworks : [])
+      const localArtworks = loadArtworksRaw()
+      const serverMap = new Map<string, any>()
+      serverArtworks.forEach((a: any) => { const k = a.number || a.id; if (k) serverMap.set(k, a) })
+      const merged: any[] = [...serverArtworks]
+      localArtworks.forEach((local: any) => {
+        const key = local?.number ?? local?.id
+        if (!key) return
+        const server = serverMap.get(key)
+        const isMobile = local.createdOnMobile || local.updatedOnMobile
+        if (!server) { merged.push(local); return }
+        if (isMobile) {
+          const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
+          if (idx >= 0) merged[idx] = local
+          else merged.push(local)
+        } else {
+          const lU = local.updatedAt ? new Date(local.updatedAt).getTime() : 0
+          const sU = server.updatedAt ? new Date(server.updatedAt).getTime() : 0
+          if (lU > sU) {
+            const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
+            if (idx >= 0) merged[idx] = local
+            else merged.push(local)
+          }
+        }
+      })
+      const toSave = filterK2Only(merged)
+      if (toSave.length >= localArtworks.length || toSave.length >= (loadArtworks().length || 0)) {
+        if (saveArtworks(toSave)) {
+          setAllArtworks(loadArtworks())
+          window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: toSave.length } }))
+          alert(`✅ ${toSave.length} Werke vom Server geladen.`)
+        }
+      } else {
+        console.warn('Merge würde weniger Werke ergeben – localStorage unverändert')
+        alert('Lokal sind mehr Werke als auf dem Server. Lokale Daten wurden beibehalten.')
+      }
+    } catch (e) {
+      console.error('Vom Server laden:', e)
+      alert('Fehler beim Laden. Bitte Verbindung prüfen und erneut versuchen.')
+    } finally {
+      setIsLoadingFromServer(false)
+    }
+  }
 
   // Dokumente aus localStorage laden (Key abhängig von K2 vs. ök2). ök2: 5 fertige Muster-PR-Dokumente (Newsletter, Plakat, Flyer, Presse, Social) + Event-Docs aus MUSTER_EVENTS = 7 Muster.
   const loadDocuments = () => {
@@ -9838,7 +9895,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     </div>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
                     <button
                       type="button"
                       onClick={() => {
@@ -9866,6 +9923,27 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       onMouseLeave={(e) => { e.currentTarget.style.borderColor = selectedForBatchPrint.size > 0 ? `${s.accent}44` : `${s.muted}44` }}
                     >
                       🖸️ Etiketten drucken{selectedForBatchPrint.size > 0 ? ` (${selectedForBatchPrint.size} ausgewählt)` : ''}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleLoadFromServer()}
+                      disabled={isLoadingFromServer}
+                      title="Lädt Werke von Vercel (z. B. nach Speichern am iPad)"
+                      style={{
+                        padding: '0.7rem 1.2rem',
+                        background: isLoadingFromServer ? s.muted + '22' : s.accent + '18',
+                        color: s.text,
+                        border: `1px solid ${s.accent}44`,
+                        borderRadius: '10px',
+                        fontSize: '0.88rem',
+                        fontWeight: 600,
+                        cursor: isLoadingFromServer ? 'wait' : 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.4rem'
+                      }}
+                    >
+                      {isLoadingFromServer ? '⏳ Lade…' : '🔄 Vom Server laden'}
                     </button>
                     {selectedForBatchPrint.size === 0 && (
                       <span style={{ fontSize: '0.72rem', color: s.muted, paddingLeft: '0.2rem' }}>

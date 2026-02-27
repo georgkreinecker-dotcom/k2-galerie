@@ -8,7 +8,7 @@
 Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen. **Erledigt:** Raw-Liste, Freistellen-Hinweis, „Foto jetzt freistellen“ am Mac. **Neu (27.02.26 Abend):** Vor-Ort-Test-Probleme adressiert – einheitliche Meldung, Mobile-Kompression, Platzhalter/Cleanup, Upload auch ohne selectedFile.
 
 ## Nächster Schritt
-- **Georg:** Am Mac: Galerie öffnen → unten rechts **„🔄 Vom Server laden“** klicken → die 7 iPad-Werke sollten erscheinen (nach 1–2 Min Verzögerung nach Speichern am iPad). Handbuch 16 angepasst.
+- **Georg:** Im Admin unter „Werke verwalten“ steht jetzt **„🔄 Vom Server laden“** neben „Etiketten drucken“ – ein Klick lädt die Werke von Vercel (z. B. die 7 vom iPad). Zusätzlich: Auf der Galerie-Seite unten rechts (nur am Mac) derselbe Button.
 1. **QR/Stand-Fix (27.02.26):** QR und Stand-Badge nutzen jetzt **/api/build-info** statt build-info.json – Serverless-API, beim Build mit aktuellem Stand beschrieben, umgeht CDN-Cache. Commit c5351e1.
 2. Nach Vercel-Build (1–2 Min): APf neu laden oder „QR neu“ → Vercel-Stand sollte aktuelle Zeit zeigen; iPad refresh.html oder QR scannen.
 3. Falls Vercel-Build fehlschlägt: docs/VERCEL-CHECKLISTE-BEI-KEINEM-STAND.md.
