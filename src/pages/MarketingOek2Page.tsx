@@ -610,28 +610,28 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </p>
       </section>
 
-      {/* Produktbewertung: Entwicklerkosten vs. Marktwert – für Bewertung/Pitch */}
+      {/* Produktbewertung: Entwicklerkosten vs. Marktwert – für Bewertung/Pitch und realistische Lizenzgebühren */}
       <section id="mok2-produktbewertung" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
-          Produktbewertung: Entwicklerkosten vs. Marktwert
+          Produktbewertung: Entwicklerkosten, Marktwert und realistische Lizenzgebühren
         </h2>
         <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
-          Wenn das Produkt bewertet werden soll, sind zwei Perspektiven wichtig – beide gehören in die Vertriebs- und Preisargumentation.
+          Drei Perspektiven: (1) Was steckt drin (Entwicklerkosten). (2) Was der Markt dafür gibt (Marktwert). (3) <strong>Wie hoch die Lizenzgebühren realistisch sein sollen</strong> – darum geht es für die Preisgestaltung.
         </p>
         <p style={{ marginBottom: '0.75rem', fontWeight: 600, color: '#5ffbf1' }}>1. Entwicklerkosten (was steckt drin)</p>
         <ul style={{ marginBottom: '1.25rem', paddingLeft: '1.5em', lineHeight: 1.65, fontSize: '0.95rem' }}>
           <li>Mehrjähriges Projekt: Full-Stack PWA (React, TypeScript, Vercel, Supabase), Multi-Tenant (K2, ök2, VK2), Galerie, Shop, Kassa, Events, Werbematerial, Empfehlungs-Programm, Vereinsplattform.</li>
           <li>Größenordnung: viele tausend Stunden Entwicklung, laufende Wartung und Erweiterung.</li>
-          <li>Bewertung: Vergleich zu typischen Stundensätzen (Entwicklung, Design, Doku) → ergibt einen <strong>Kostenwert</strong>, der zeigt, was „reingesteckt“ wurde. Wird z. B. für interne Rechenschaft, Partner oder Investoren genutzt.</li>
+          <li>Bewertung: Vergleich zu typischen Stundensätzen → <strong>Wiederbeschaffungswert</strong> (was ein Team kosten würde, das Ähnliches neu baut). Wichtig für interne Rechenschaft, Partner, Investoren – <em>nicht</em> die Grundlage für die Lizenzpreise. Die Lizenzgebühren leiten sich aus Markt und Zahlungsbereitschaft ab, nicht aus den Entwicklerkosten.</li>
         </ul>
         <p style={{ marginBottom: '0.75rem', fontWeight: 600, color: '#5ffbf1' }}>2. Marktwert (was es für Käufer wert ist)</p>
         <ul style={{ marginBottom: '0.5rem', paddingLeft: '1.5em', lineHeight: 1.65, fontSize: '0.95rem' }}>
           <li>Nutzen für Zielgruppe: Eigener Webauftritt, Werke präsentieren, Events bewerben, Verkauf/Kasse, Etiketten, Marketing aus einem Guss – ohne IT-Kenntnisse.</li>
-          <li>Vergleich zu Alternativen: Website-Baukasten + separate Tools vs. eine integrierte Lösung; Zeitersparnis und Einfachheit.</li>
-          <li>Bewertung: Was Künstler:innen und Vereine bereit sind zu zahlen (Preiswürdigkeit), was vergleichbare Angebote kosten → ergibt den <strong>Marktwert</strong>. Entscheidend für Lizenzpreise und Positionierung.</li>
+          <li>Vergleich zu Alternativen: KUNSTMATRIX (10–50 €/Monat), Wix/Squarespace (ca. 16–39 €), ArtCloud (ab 79 US-$). K2 bietet Galerie + Kasse + Events + Marketing in einer Oberfläche – vergleichbar eher Pro-Stufen, aber Zielgruppe Künstler:innen mit begrenztem Software-Budget.</li>
+          <li>Marktwert = was Künstler:innen und Vereine bereit sind zu zahlen und was vergleichbare Angebote kosten. <strong>Daraus leiten sich die realistischen Lizenzgebühren ab.</strong></li>
         </ul>
         <p style={{ marginTop: '0.75rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.75)' }}>
-          Kurz: <strong>Entwicklerkosten</strong> = was reingesteckt wurde; <strong>Marktwert</strong> = was der Markt (Käufer) dafür gibt.
+          Kurz: <strong>Entwicklerkosten</strong> = Wiederbeschaffungswert (Bewertung, nicht Preisvorlage). <strong>Marktwert</strong> = Zahlungsbereitschaft und Vergleichspreise → Grundlage für <strong>realistische Lizenzgebühren</strong>.
         </p>
 
         <h3 id="mok2-entwicklerkosten" style={{ fontSize: '1.1rem', color: '#5ffbf1', marginTop: '1.5rem', marginBottom: '0.5rem' }}>Geschätzte Entwicklerkosten-Rechnung (Orientierung)</h3>
@@ -696,15 +696,44 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <strong>Hinweis:</strong> Stundensätze orientieren sich an Freelancer/kleine Agentur (AT/DE). Je nach Region und Aufwand anpassbar. Gesamtsumme = Wiederbeschaffungswert („was müsste man zahlen, um das neu bauen zu lassen“), nicht das eigene Einkommen aus der Entwicklung – z. B. für Partner, Investoren, interne Rechenschaft.
         </p>
 
-        <h3 id="mok2-marktwert" style={{ fontSize: '1.1rem', color: '#5ffbf1', marginTop: '1.5rem', marginBottom: '0.5rem' }}>Grobe Marktwertberechnung (Orientierung)</h3>
-        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', marginBottom: '0.75rem' }}>
-          Was der Markt (Käufer) dafür gibt – Grundlage für Lizenzpreise und Erlöspotenzial.
+        <h3 id="mok2-marktwert" style={{ fontSize: '1.1rem', color: '#5ffbf1', marginTop: '1.5rem', marginBottom: '0.5rem' }}>Realistische Lizenzgebühren (Orientierung für die Preisgestaltung)</h3>
+        <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', marginBottom: '0.75rem', lineHeight: 1.55 }}>
+          Die Lizenzgebühren sollen <strong>marktgerecht und für die Zielgruppe (Künstler:innen, kleine Galerien, Vereine) plausibel</strong> sein. Künstler:innen haben oft begrenzte Software-Budgets; zu hohe Preise schrecken ab, zu niedrige wirken unseriös oder decken Betrieb nicht. Grundlage: Marktcheck (Vergleichspreise, Zahlungsbereitschaft) – siehe <code>docs/MARKTCHECK-PREISE-BASIC-PRO-VERGLEICH.md</code>.
         </p>
-        <ul style={{ marginBottom: '0.75rem', paddingLeft: '1.2em', lineHeight: 1.6, fontSize: '0.9rem' }}>
-          <li><strong>Zielgruppe:</strong> Künstler:innen (Einstieg bis Pro), kleine Galerien, Kunstvereine (VK2).</li>
-          <li><strong>Nutzen:</strong> Webauftritt, Werke, Events, Kasse, Etiketten, Marketing aus einer Hand – ohne IT-Kenntnisse.</li>
-          <li><strong>Vergleichspreise (Marktcheck):</strong> Basic 10–15 €/Monat, Pro 25–35 €/Monat (siehe <code>docs/MARKTCHECK-PREISE-BASIC-PRO-VERGLEICH.md</code>).</li>
-        </ul>
+        <table style={{ width: '100%', maxWidth: 600, borderCollapse: 'collapse', fontSize: '0.9rem', marginBottom: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '2px solid rgba(95,251,241,0.4)' }}>
+              <th style={{ textAlign: 'left', padding: '0.5rem 0.6rem', color: '#5ffbf1' }}>Stufe</th>
+              <th style={{ textAlign: 'left', padding: '0.5rem 0.6rem', color: '#5ffbf1' }}>Realistischer Korridor (€/Monat)</th>
+              <th style={{ textAlign: 'left', padding: '0.5rem 0.6rem', color: '#5ffbf1' }}>Begründung (kurz)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <td style={{ padding: '0.5rem 0.6rem', fontWeight: 600 }}>Basic</td>
+              <td style={{ padding: '0.5rem 0.6rem' }}><strong>10 – 15 €/Monat</strong></td>
+              <td style={{ padding: '0.5rem 0.6rem' }}>Vergleich: KUNSTMATRIX Basic 10 €, Wix/Squarespace 16–17 €. Galerie + Shop + Einstieg – für Künstler:innen mit kleinem Budget gut vertretbar.</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <td style={{ padding: '0.5rem 0.6rem', fontWeight: 600 }}>Pro</td>
+              <td style={{ padding: '0.5rem 0.6rem' }}><strong>25 – 35 €/Monat</strong> (Kernkorridor); mit klarer USP-Kommunikation <strong>35 – 50 €/Monat</strong> vertretbar</td>
+              <td style={{ padding: '0.5rem 0.6rem' }}>Alles in einer App (Galerie, Kasse, Events, Marketing, Etiketten) – KUNSTMATRIX Pro 50 €, ArtCloud 79 US-$. Einzigartigkeit (Arbeitsplattform, Kasse vor Ort, Vereinsfähigkeit, Empfehlungsprogramm) rechtfertigt oberen Bereich.</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <td style={{ padding: '0.5rem 0.6rem', fontWeight: 600 }}>VK2 (Verein)</td>
+              <td style={{ padding: '0.5rem 0.6rem' }}>Pro-Preis; <strong>ab 10 Mitgliedern für den Verein kostenfrei</strong>; Lizenzmitglieder 50 %</td>
+              <td style={{ padding: '0.5rem 0.6rem' }}>Kein direkter Marktvergleich; Multiplikator (ein Verein → viele sichtbar). Konditionen wie in Lizenzstruktur VK2.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)', marginBottom: '1rem', lineHeight: 1.5 }}>
+          <strong>Fazit:</strong> Basic <strong>10–15 €/Monat</strong>, Pro <strong>25–35 €/Monat</strong> sind realistische Zielkorridore. Wenn die USPs (Alles in einer App, Kasse, Vereinsfähigkeit, Empfehlungsprogramm) in Werbung und Pitch klar sind, ist Pro bis <strong>35–50 €/Monat</strong> begründbar. Preise „auf Anfrage“ sind möglich, bis ihr euch festgelegt habt.
+        </p>
+
+        <h4 style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.9)', marginTop: '1rem', marginBottom: '0.5rem' }}>Erlöspotenzial (Beispielrechnung bei diesen Gebühren)</h4>
+        <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', marginBottom: '0.5rem' }}>
+          Bei Basic 12 €/Monat (Mittelwert) und Pro 30 €/Monat: Basic 144 €/Jahr, Pro 360 €/Jahr.
+        </p>
         <table style={{ width: '100%', maxWidth: 560, borderCollapse: 'collapse', fontSize: '0.9rem', marginBottom: '1rem' }}>
           <thead>
             <tr style={{ borderBottom: '2px solid rgba(95,251,241,0.4)' }}>
@@ -732,7 +761,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           </tbody>
         </table>
         <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>
-          <strong>Rechnung:</strong> Basic 12 €/Monat × 12 = 144 €/Jahr; Pro 30 €/Monat × 12 = 360 €/Jahr (Mittelwerte). VK2 kann zusätzliche Erträge bringen (Verein zahlt Pro, Mitglieder 50 %). <strong>Marktwert</strong> = Erlöspotenzial + strategischer Wert (z. B. Alleinstellungsmerkmal, Skalierbarkeit).
+          VK2 bringt zusätzliche Erträge (Verein zahlt Pro bis 10 Mitglieder; Lizenzmitglieder 50 %). <strong>Marktwert</strong> = Erlöspotenzial + strategischer Wert (Alleinstellungsmerkmale, Skalierbarkeit).
         </p>
 
         <h3 id="mok2-faehigkeiten-mix" style={{ fontSize: '1.1rem', color: '#5ffbf1', marginTop: '1.5rem', marginBottom: '0.5rem' }}>Fähigkeiten-Mix: Was in einer Person das ermöglicht hat (Fakten)</h3>
@@ -790,7 +819,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           Preise konkretisieren und hier eintragen (oder „auf Anfrage“ beibehalten). Dann in Präsentationsmappe und bei „Lizenz anfragen“ nutzen.
         </p>
         <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>
-          <strong>Marktcheck:</strong> Was Nutzer zahlen würden &amp; was Vergleichsprodukte kosten → <code>docs/MARKTCHECK-PREISE-BASIC-PRO-VERGLEICH.md</code> (Orientierung: Basic 10–15 €/Monat, Pro 25–35 €/Monat).
+          <strong>Realistische Lizenzgebühren (Orientierung):</strong> Siehe Abschnitt <a href="#mok2-marktwert" style={{ color: '#5ffbf1', textDecoration: 'none' }}>Produktbewertung → Realistische Lizenzgebühren</a>: Basic <strong>10–15 €/Monat</strong>, Pro <strong>25–35 €/Monat</strong> (mit klarer USP-Kommunikation Pro bis 35–50 €). Ausführlich: <code>docs/MARKTCHECK-PREISE-BASIC-PRO-VERGLEICH.md</code>.
         </p>
       </section>
 
