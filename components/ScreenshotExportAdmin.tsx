@@ -7167,8 +7167,11 @@ ${'='.repeat(60)}
             // imageDataUrl bleibt komprimiertes Original
           }
         }
-      } else if (editingArtwork && editingArtwork.imageUrl) {
-        // Bei Bearbeitung ohne neues Bild: Altes Bild beibehalten
+      } else if (editingArtwork && previewUrl && typeof previewUrl === 'string' && previewUrl.startsWith('data:') && previewUrl !== editingArtwork.imageUrl) {
+        // Bearbeitung: neues Bild in der Vorschau (z. B. Kamera/Mobile), aber selectedFile war nicht gesetzt – Vorschau übernehmen
+        imageDataUrl = previewUrl
+      } else if (editingArtwork && editingArtwork.imageUrl && !String(editingArtwork.imageUrl).startsWith('blob:')) {
+        // Bei Bearbeitung ohne neues Bild: Altes Bild beibehalten (keine blob:-URLs – die werden ungültig)
         imageDataUrl = editingArtwork.imageUrl
       } else {
         setIsSavingArtwork(false)
@@ -10003,10 +10006,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   )
                 }
 
+                const PLACEHOLDER_KEIN_BILD = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
                 return filtered.map((artwork) => {
-                  const rawSrc = artwork.imageUrl || artwork.previewUrl
+                  let rawSrc = artwork.imageUrl || artwork.previewUrl
+                  // blob:-URLs werden ungültig (z. B. nach Reload) → nie anzeigen, Platzhalter nutzen
+                  if (typeof rawSrc === 'string' && rawSrc.startsWith('blob:')) rawSrc = ''
                   const isPlaceholder = !rawSrc || (typeof rawSrc === 'string' && rawSrc.startsWith('data:image/svg'))
-                  const imageSrc = (isOeffentlichAdminContext() && isPlaceholder) ? getOek2DefaultArtworkImage(artwork.category) : rawSrc
+                  const imageSrc = (isOeffentlichAdminContext() && isPlaceholder) ? getOek2DefaultArtworkImage(artwork.category) : (isPlaceholder ? PLACEHOLDER_KEIN_BILD : rawSrc)
                   return (
                   <div 
                     key={artwork.number || artwork.id} 
@@ -10039,11 +10045,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               target.src = OEK2_PLACEHOLDER_IMAGE
                               return
                             }
-                            target.style.display = 'none'
-                            const placeholder = document.createElement('div')
-                            placeholder.textContent = '🖼️'
-                            placeholder.style.cssText = 'width: 100%; height: clamp(180px, 30vw, 220px); display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border-radius: 12px; color: rgba(255, 255, 255, 0.3); font-size: clamp(2rem, 5vw, 3rem)'
-                            target.parentElement?.insertBefore(placeholder, target)
+                            // K2/VK2: Bild fehlgeschlagen (z. B. abgeschnitten, blob revoked) → „Kein Bild“-Platzhalter
+                            target.src = PLACEHOLDER_KEIN_BILD
+                            target.onerror = null
                           }}
                         />
                         {/* Nummer als Overlay auf dem Bild */}
@@ -10217,6 +10221,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           setArtworkVerkaufsstatus(artwork.verkaufsstatus || 'verfuegbar')
                             setArtworkNumber(artwork.number || '')
                             setArtworkFormVariantOek2((artwork.subcategoryFree || artwork.dimensionsFree || artwork.artist) ? 'ausfuehrlich' : 'schnell')
+                            setSelectedFile(null)
                             if (artwork.imageUrl) setPreviewUrl(artwork.imageUrl)
                             setShowAddModal(true)
                             return
@@ -10261,6 +10266,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           setArtworkYear(artwork.year || '')
                           setArtworkVerkaufsstatus(artwork.verkaufsstatus || 'verfuegbar')
                           setArtworkNumber(artwork.number || '')
+                          setSelectedFile(null)
                           if (artwork.imageUrl) setPreviewUrl(artwork.imageUrl)
                           setShowAddModal(true)
                         }}

@@ -5,12 +5,13 @@
 ## Datum: 27.02.26
 
 ## Thema
-mök2: Entwicklungskosten, Marktwert und realistische Lizenzgebühren überarbeitet
+Praxistest: Bild-Bugs beim Bearbeiten und bei neuen Werken behoben
 
 ## Woran zuletzt gearbeitet (inhaltlicher Faden)
-mök2/Preisgestaltung: Wie hoch sollen die Lizenzgebühren realistisch sein?
+Praxistest (Martina/Georg befüllen Galerie): Werk bearbeiten – neues Foto wurde nicht übernommen; neues Werk – Fragezeichen statt Bild.
 
 ## Was zuletzt gemacht
+- **Bild-Bugs (Praxistest):** (1) **Bearbeiten – neues Foto nicht übernommen:** Beim Öffnen des Bearbeitungsdialogs wird `selectedFile` jetzt zurückgesetzt; beim Speichern wird bei Bearbeitung zusätzlich geprüft: Wenn in der Vorschau ein neues Bild (data-URL) steht, das vom alten abweicht, wird dieses übernommen (Fallback, falls z. B. Kamera/Mobile selectedFile nicht setzt). blob:-URLs werden nicht mehr als „altes Bild“ beibehalten. (2) **Neues Werk – Fragezeichen statt Bild:** Werkliste zeigt blob:-URLs nicht mehr an (Platzhalter); bei fehlgeschlagenem Bild-Laden (onError) wird der „Kein Bild“-SVG-Platzhalter gesetzt statt Browser-Fragezeichen. ScreenshotExportAdmin.tsx.
 - **Einfache Kassa & Lagerhaltung (5 Punkte):** (1) Druck-Button „Verkaufs- & Lagerstatistik“ immer sichtbar (auch bei 0 Verkäufen). (2) **Verkauf stornieren:** In Verkaufsliste Button „Stornieren“ → Eintrag aus k2-sold-artworks entfernt, Stückzahl +1. (3) **CSV-Export:** Button „📥 CSV exportieren“ lädt verkaufsliste-YYYY-MM-DD.csv (Datum;Nr.;Titel;Preis; Gesamtumsatz). (4) **Galerie/Lager-Toggle:** Im Werkkatalog in der Status-Spalte Buttons „→ Lager“ / „→ Galerie“ – ein Klick wechselt ohne Werk zu bearbeiten. (5) **Umsatz heute:** Kachel „Umsatz heute“ in der Statistik. Commit: 787f57d ✅
 - **mök2 – Produkt- & Branchenvergleich:** Neue Sektion „Warum ök2?“ nach USPs: Am Markt (Kasse 15–35 €/Monat, Galerie/Events/Etiketten getrennt, mehrere hundert €/Jahr) vs. ök2 (eine Oberfläche, eine Datenbasis, Kasse & Lager integriert, ein Stand). Kernvorteil-Satz + Link in Promotion Sektion 7. Sidebar + Struktur-Liste ergänzt. Commit: 9f2df3c ✅
 - **USP vereinsfähig herausgestrichen:** (1) USPs: neuer Bullet „Vereinsfähig – die Plattform für Kunstvereine und Gruppen (VK2)“ mit Vereinsgalerie, Vereinskatalog, ab 10 Mitgliedern kostenfrei. (2) „Was kann die App?“: VK2-Box mit Untertitel „Die Plattform für Kunstvereine und Gruppen“, Punkt „Ab 10 Mitgliedern für den Verein kostenfrei“. (3) Produkt- & Branchenvergleich: Bullet Vereinsfähig (VK2) + Kernvorteil um „für Kunstvereine und Gruppen (VK2)“ ergänzt. (4) Marktchancen Stärken: „Vereinsfähig als Alleinstellungsmerkmal“. (5) Herausforderungen Wettbewerb: Differenzierung inkl. Vereinsfähigkeit. (6) Promotion Sektion 7 „Was macht den Unterschied“: Bullet Vereinsfähig (VK2). Commit: 46b13fa ✅ (Push: 51687cb)
@@ -55,7 +56,10 @@ mök2/Preisgestaltung: Wie hoch sollen die Lizenzgebühren realistisch sein?
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Admin-Hub: Mittlere Karte entfernt, nur Icons + Kurzinfo, zwei Spalten, größere Icons, One-Click.** Commit: 2edf426 ✅ auf GitHub
+- (wird nach Push eingetragen)
+
+## Nächster Schritt
+- Praxistest: Werk erneut bearbeiten (neues Foto) und zweites neues Werk anlegen – prüfen ob Bilder jetzt korrekt gespeichert und angezeigt werden. Bei weiterem „?“: prüfen ob imageUrl beim Speichern abgeschnitten wird (localStorage-Größe).
 
 ## Was gerade gemacht (ök2: 7 fertige Musterdokumente)
 - **ök2 zeigt jetzt 7 fertige Musterdokumente:** 2 unter „Druckfertige Dokumente“ (Einladung, Presse aus MUSTER_EVENTS) + 5 PR-Dokumente (Newsletter, Plakat, Event-Flyer, Presseaussendung, Social Media) aus getOek2MusterPrDocuments(). Alle mit MUSTER_TEXTE (Lena Berg, Paul Weber, Galerie Muster, info@galerie-muster.example) und einheitlichem Design (#6b9080).
@@ -67,10 +71,13 @@ mök2/Preisgestaltung: Wie hoch sollen die Lizenzgebühren realistisch sein?
 - **K2:** Unverändert – lädt nur k2-events, k2-documents; Stammdaten aus k2-stammdaten-* (State); Generatoren nutzen State.
 - **ök2:** Unverändert – Events/Docs nur Muster; State = MUSTER_TEXTE.
 
+## Praxistest gestartet (27.02.26)
+- **Jetzt:** Erste Bilder von Martina werden vor Ort in der Galerie angelegt. Paar Stunden Pause – danach weiter.
+- **Regeln im Kopf lassen:** docs/PRAXISTEST-BEFUELLEN-SICHERHEIT.md (keine Daten durcheinander, keine Daten verlieren, nichts irreversibel kaputtmachen). K2 = echte Daten; Kontext trennen.
+
 ## Nächster Schritt (für nächste Session)
-- **Lizenzstruktur umgesetzt (27.02.26):** Basic 15 €, Pro 35 €, Pro+ 45 € (gesamter Marketingbereich), VK2 wie Pro – überall in Kommunikation (LicencesPage, mök2, Lizenz-Pakete für Außen, Sektion 14, SmartPanel). Excellent → Pro+; alte erfasste Lizenzen „excellent“ werden beim Laden als Pro+ angezeigt.
-- **Verkaufsargument „Aus Österreich“ (27.02.26):** In mök2 eingebaut: (1) USPs – Bullet „Aus Österreich – kein Fernost-Produkt“ (EU-Datenschutz, Recht, nicht China/Indien, erreichbar). (2) Produkt- & Branchenvergleich – Bullet „Made in Austria“. (3) Lizenz-Pakete für Außen – Hinweis „Made in Austria – Datenschutz und Support aus Europa“.
-- **Test:** Admin-Hub am Handy; optional 📎-Icons Eventplanung.
+- **Nach der Pause:** Faden = Praxistest (Martina, erste Werke vor Ort). DIALOG-STAND lesen → ggf. Rückmeldung zu Bildern/Workflow, dann weitermachen.
+- **Lizenzstruktur (erledigt):** Basic 15 €, Pro 35 €, Pro+ 45 €, VK2 wie Pro; Verkaufsargument „Aus Österreich“ in mök2.
 
 ## Was zuvor (Event-Flyer-Icon)
 - **Vk2GaleriePage:** Bei „VEREINSTERMINE & EVENTS“ hat jedes Event ein klickbares 📄-Icon; Klick öffnet den Flyer (gespeichertes HTML oder minimal generiert) in einem Modal.
