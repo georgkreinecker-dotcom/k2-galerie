@@ -868,8 +868,6 @@ function ScreenshotExportAdmin() {
   const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'design' | 'einstellungen' | 'assistent'>(initialTab)
   const [guideBannerClosed, setGuideBannerClosed] = useState(false)
   const [guideBegleiterGeschlossen, setGuideBegleiterGeschlossen] = useState(false)
-  /** Hover im Admin-Hub: Mitte zeigt Beschreibung – gespeichert als tab (string), damit alle Icons zuverlässig reagieren */
-  const [hubHoveredTab, setHubHoveredTab] = useState<string | null>(null)
   const initialEventplanSubTab = (() => {
     try {
       const p = new URLSearchParams(window.location.search)
@@ -9363,82 +9361,42 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         Was möchtest du heute tun?
                       </h2>
                       <p style={{ color: s.muted, margin: 0, fontSize: '0.9rem', marginBottom: '1rem' }}>
-                        Das ist dein Guide – klick auf einen Bereich, dann siehst du was dich erwartet.
+                        Ein Klick – du bist im Bereich.
                       </p>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 'clamp(1.25rem, 3vw, 2rem)', alignItems: 'stretch' }} onMouseLeave={() => setHubHoveredTab(null)}>
-                        {/* Links: Bereiche – zIndex damit Hover (Werkkatalog, Events) nicht von Mitte überdeckt wird */}
-                        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: 'clamp(130px, 16vw, 160px)', justifySelf: 'end', position: 'relative' as const, zIndex: 2 }}>
-                          {linksBereiche.map((b) => (
-                            <button key={b.tab} type="button"
-                              onClick={() => { setActiveTab(b.tab as any); window.scrollTo({ top: 200, behavior: 'smooth' }) }}
-                              onDoubleClick={() => { setActiveTab(b.tab as any); window.scrollTo({ top: 200, behavior: 'smooth' }) }}
-                              onMouseEnter={() => setHubHoveredTab(b.tab)}
-                              onMouseLeave={() => setHubHoveredTab(null)}
-                              style={{
-                                padding: '0.65rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
-                                background: b.tab === 'werke' ? akzentGrad : s.bgCard,
-                                border: b.tab === 'werke' ? 'none' : `1px solid ${s.accent}22`,
-                                borderRadius: '12px', cursor: 'pointer', fontFamily: 'inherit',
-                                transition: 'all 0.15s', textAlign: 'left' as const,
-                                boxShadow: b.tab === 'werke' ? `0 3px 12px ${akzent}44` : '0 1px 3px rgba(0,0,0,0.06)',
-                                color: b.tab === 'werke' ? '#fff' : s.text,
-                                fontWeight: b.tab === 'werke' ? 700 : 400,
-                              }}>
-                              <span style={{ fontSize: '1.45rem', flexShrink: 0 }}>{b.emoji}</span>
-                              <span style={{ fontSize: '0.78rem', lineHeight: 1.3 }}>{b.name}</span>
-                            </button>
-                          ))}
-                        </div>
-                        {/* Mitte: zIndex 0 damit linke/rechte Spalte Hover erhalten */}
-                        {(() => {
-                          const allAreas = [...linksBereiche, ...rechtsBereiche]
-                          const fokus = (hubHoveredTab ? allAreas.find((a) => a.tab === hubHoveredTab) : null) ?? linksBereiche[0]
-                          const openFokus = () => {
-                            if (fokus.tab === 'kassa') openKasse()
-                            else if (fokus.tab === 'werke') scrollToWerke()
-                            else { setActiveTab(fokus.tab as any); window.scrollTo({ top: 200, behavior: 'smooth' }) }
-                          }
-                          return (
-                            <div style={{ justifySelf: 'center', maxWidth: 'clamp(240px, 28vw, 300px)', minWidth: 0, position: 'relative' as const, zIndex: 0, background: s.bgCard, border: `2px solid ${s.accent}33`, borderRadius: '16px', padding: 'clamp(0.85rem, 1.8vw, 1.1rem)', boxShadow: `0 4px 20px ${s.accent}18`, display: 'flex', flexDirection: 'column' as const, gap: '0.5rem' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <div style={{ width: 32, height: 32, borderRadius: '50%', background: akzentGrad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>{fokus.emoji}</div>
-                                <div>
-                                  <div style={{ fontSize: '0.55rem', color: s.accent, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em' }}>Galerie-Guide</div>
-                                  <div style={{ fontSize: '0.9rem', fontWeight: 700, color: s.text }}>{fokus.name}</div>
-                                </div>
+                      {/* Zwei Spalten, keine Doppelfunktion: nur Icons + kurze Funktionsinfo, One-Click */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'clamp(0.75rem, 2vw, 1rem)', maxWidth: '900px' }}>
+                        {[...linksBereiche, ...rechtsBereiche].map((b) => (
+                          <button key={b.tab} type="button"
+                            onClick={() => {
+                              if (b.tab === 'kassa') openKasse()
+                              else if (b.tab === 'werke') scrollToWerke()
+                              else { setActiveTab(b.tab as any); window.scrollTo({ top: 200, behavior: 'smooth' }) }
+                            }}
+                            style={{
+                              padding: 'clamp(0.75rem, 2vw, 1rem) clamp(0.9rem, 2.5vw, 1.1rem)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 'clamp(0.6rem, 1.5vw, 0.9rem)',
+                              background: b.tab === 'werke' ? akzentGrad : s.bgCard,
+                              border: b.tab === 'werke' ? 'none' : `1px solid ${s.accent}22`,
+                              borderRadius: '12px',
+                              cursor: 'pointer',
+                              fontFamily: 'inherit',
+                              transition: 'all 0.15s',
+                              textAlign: 'left' as const,
+                              boxShadow: b.tab === 'werke' ? `0 3px 12px ${akzent}44` : '0 1px 3px rgba(0,0,0,0.06)',
+                              color: b.tab === 'werke' ? '#fff' : s.text,
+                              fontWeight: b.tab === 'werke' ? 700 : 500,
+                            }}>
+                            <span style={{ fontSize: 'clamp(1.75rem, 4vw, 2.1rem)', flexShrink: 0, lineHeight: 1 }}>{b.emoji}</span>
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontSize: 'clamp(0.88rem, 1.8vw, 1rem)', lineHeight: 1.25 }}>{b.name}</div>
+                              <div style={{ fontSize: '0.72rem', color: b.tab === 'werke' ? 'rgba(255,255,255,0.85)' : s.muted, marginTop: '0.15rem', lineHeight: 1.3 }}>
+                                {b.beschreibung.length > 48 ? b.beschreibung.slice(0, 47) + '…' : b.beschreibung}
                               </div>
-                              <div style={{ fontSize: '0.8rem', color: s.muted, lineHeight: 1.5 }}>{fokus.beschreibung}</div>
-                              <button type="button" onClick={openFokus}
-                                style={{ width: '100%', padding: '0.6rem', background: akzentGrad, border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem', fontFamily: 'inherit', boxShadow: `0 4px 14px ${akzent}44` }}>
-                                {fokus.tab === 'werke' ? '↓ Direkt hier unten' : `↓ ${fokus.name} öffnen`}
-                              </button>
-                              <div style={{ fontSize: '0.65rem', color: s.muted, textAlign: 'center' as const }}>Kostenlos · Keine Anmeldung · Jederzeit kündbar</div>
                             </div>
-                          )
-                        })()}
-                        {/* Rechts: Schnellzugriffe – zIndex damit Hover nicht von Mitte überdeckt wird */}
-                        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: 'clamp(130px, 16vw, 160px)', justifySelf: 'start', position: 'relative' as const, zIndex: 2 }}>
-                          {rechtsBereiche.map((b) => (
-                            <button key={b.tab} type="button"
-                              onClick={() => { if (b.tab === 'kassa') openKasse(); else { setActiveTab(b.tab as any); window.scrollTo({ top: 200, behavior: 'smooth' }) } }}
-                              onDoubleClick={() => { if (b.tab === 'kassa') openKasse(); else { setActiveTab(b.tab as any); window.scrollTo({ top: 200, behavior: 'smooth' }) } }}
-                              onMouseEnter={(e) => { setHubHoveredTab(b.tab); e.currentTarget.style.borderColor = `${s.accent}66` }}
-                              onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}22` }}
-                              style={{
-                                padding: '0.65rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
-                                background: s.bgCard,
-                                border: `1px solid ${s.accent}22`,
-                                borderRadius: '12px', cursor: 'pointer', fontFamily: 'inherit',
-                                transition: 'all 0.15s', textAlign: 'left' as const,
-                                boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-                                color: s.text,
-                                fontWeight: 400,
-                              }}>
-                              <span style={{ fontSize: '1.45rem', flexShrink: 0 }}>{b.emoji}</span>
-                              <span style={{ fontSize: '0.78rem', lineHeight: 1.3 }}>{b.name}</span>
-                            </button>
-                          ))}
-                        </div>
+                          </button>
+                        ))}
                       </div>
                       {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
                         <div style={{ marginTop: '1rem', paddingTop: '0.6rem', borderTop: `1px solid ${s.accent}22` }}>
