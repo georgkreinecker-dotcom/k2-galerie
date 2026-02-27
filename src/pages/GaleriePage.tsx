@@ -8,7 +8,7 @@ import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie } from '../config/pageContentGalerie'
 import { getPageTexts, type GaleriePageTexts } from '../config/pageTexts'
 import { appendToHistory } from '../utils/artworkHistory'
-import { buildQrUrlWithBust, useServerBuildTimestamp } from '../hooks/useServerBuildTimestamp'
+import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { OK2_THEME } from '../config/ok2Theme'
 import '../App.css'
 
@@ -827,8 +827,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     }
   }, [mobileUrl, mobileUrlMemo])
 
-  // Server-Stand für QR – QR nur mit Server-Stand bauen, sonst zeigt Scan alte Version (Regel stand-qr-niemals-zurueck)
-  const { timestamp: serverBuildTs, serverLabel, refetch: refetchQrStand } = useServerBuildTimestamp()
+  // QR immer anzeigen: useQrVersionTimestamp liefert Server-Stand oder Fallback (BUILD_TIMESTAMP), nie null
+  const { versionTimestamp: qrVersionTs, serverLabel, refetch: refetchQrStand } = useQrVersionTimestamp()
   // ök2: QR MUSS auf Muster-Galerie zeigen (galerie-oeffentlich), nie auf K2 – sonst zeigt Scan die echte K2-Seite
   // VK2: QR muss auf VK2-Route zeigen, nicht auf K2-Galerie
   const vercelGalerieUrl = useMemo(() => {
@@ -848,21 +848,17 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   }, [])
   useEffect(() => {
     let cancelled = false
-    if (serverBuildTs == null) {
-      setVercelQrDataUrl('')
-      return
-    }
     const urlForQr = vercelGalerieUrl
     if (musterOnly && !urlForQr.includes('galerie-oeffentlich')) {
       if (!cancelled) setVercelQrDataUrl('')
       return
     }
-    const qrUrl = buildQrUrlWithBust(urlForQr, serverBuildTs)
+    const qrUrl = buildQrUrlWithBust(urlForQr, qrVersionTs)
     QRCode.toDataURL(qrUrl, { width: 100, margin: 1 })
       .then((url) => { if (!cancelled) setVercelQrDataUrl(url) })
       .catch(() => { if (!cancelled) setVercelQrDataUrl('') })
     return () => { cancelled = true }
-  }, [vercelGalerieUrl, serverBuildTs, musterOnly, qrBustTick])
+  }, [vercelGalerieUrl, qrVersionTs, musterOnly, qrBustTick])
 
   // Aktualisieren-Funktion für Mobile-Version - lädt neue Daten ohne Reload
   const [isRefreshing, setIsRefreshing] = React.useState(false)
