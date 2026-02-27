@@ -151,7 +151,7 @@ export default function PlatformStartPage() {
     }
   }, [])
 
-  const qrVersionTs = useQrVersionTimestamp()
+  const { versionTimestamp: qrVersionTs, serverLabel, refetch: refetchQr } = useQrVersionTimestamp()
   // QR-Code mit Server-Stand + Cache-Bust – Scan lädt immer aktuelle Version
   useEffect(() => {
     if (!galerieUrl) { setGalerieQrUrl(''); return }
@@ -351,12 +351,18 @@ export default function PlatformStartPage() {
             <div style={{ 
               fontSize: '1.1rem', 
               fontWeight: '600',
-              marginBottom: '1rem',
+              marginBottom: '0.5rem',
               color: '#fff'
             }}>
               📱 Galerie auf Mobile testen
             </div>
+            {serverLabel && (
+              <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.8)', marginBottom: '0.5rem' }}>
+                Vercel liefert gerade: <strong>{serverLabel}</strong> – Scan zeigt diesen Stand. Steht hier noch 13.26 → im Vercel-Dashboard prüfen (Deployment Ready?).
+              </div>
+            )}
             <div style={{ marginBottom: '1rem' }}>
+              <button type="button" onClick={() => refetchQr()} title="QR mit aktuellem Stand von Vercel neu laden" style={{ marginBottom: 8, padding: '6px 12px', fontSize: 12, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', cursor: 'pointer' }}>QR mit aktuellem Stand</button>
               <img 
                 src={galerieQrUrl} 
                 alt="Galerie QR Code" 

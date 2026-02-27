@@ -108,7 +108,7 @@ const Vk2GaleriePage: React.FC = () => {
   const [documents, setDocuments] = useState<any[]>(() => loadVk2Documents())
   const [flyerViewer, setFlyerViewer] = useState<{ html: string; title: string } | null>(null)
   const [qrDataUrl, setQrDataUrl] = useState<string>('')
-  const qrVersionTs = useQrVersionTimestamp()
+  const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
 
   // Neu laden wenn localStorage sich ändert (z.B. nach Admin-Speicherung)
   useEffect(() => {

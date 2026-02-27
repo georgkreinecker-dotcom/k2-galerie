@@ -62,7 +62,31 @@ Der Production-Branch wird **nur** in Vercel gesetzt – nicht im Code. Im Repo 
 
 Diese Seite leitet sofort auf einen **einmaligen Pfad** (z. B. /r/1730123456) weiter – den hat Safari praktisch nie gecacht. Du bekommst die neueste Version, die Adresszeile springt danach auf die normale Galerie-URL. Danach wieder wie gewohnt nutzen.
 
-**Wenn trotzdem noch 13:26:** Dann liefert **Vercel** selbst noch einen alten Build. Prüfen: Im Browser (Mac oder iPad) **https://k2-galerie.vercel.app/build-info.json** öffnen – welche Zeit steht dort? Wenn dort auch 13:26 steht → im **Vercel Dashboard** prüfen: Production Branch = **main**, letztes Deployment **Ready** (nicht Error). Erst nach erfolgreichem Deploy zeigt refresh.html den neuen Stand.
+**Wenn trotzdem noch 13:26:** Dann liefert **Vercel** selbst noch einen alten Build. → Siehe unten **„Wenn bei Vercel etwas festhängt“**.
+
+---
+
+## Wenn bei Vercel etwas festhängt (iPad-Stand kommt nicht an)
+
+**Systematisch prüfen:**
+
+1. **Was liefert Vercel wirklich?**  
+   Im Browser (Mac oder iPad) öffnen: **https://k2-galerie.vercel.app/build-info.json**  
+   - Steht dort eine **alte Zeit** (z. B. 13:26)? → Vercel liefert noch den alten Build. Weiter mit 2.  
+   - Steht dort die **neue Zeit**? → Vercel ist aktuell, das Problem ist **iPad-Cache**. Am iPad: **https://k2-galerie.vercel.app/refresh.html** einmal öffnen (leitet mit Cache-Bust weiter). Fertig.
+
+2. **Vercel Dashboard prüfen:**  
+   - **Settings → Git:** Production Branch = **main**?  
+   - **Deployments:** Ist das **neueste** Deployment **Ready** (grün) und **Current**?  
+   - Wenn **Error** (rot): Build-Log öffnen, Fehler beheben, dann erneut **Push** oder **Redeploy**.
+
+3. **Frischen Build zu Vercel bringen:**  
+   Am Mac: Stand aktualisieren (`node scripts/write-build-info.js`), dann `git add . && git commit -m "Stand …" && git push`.  
+   Warten bis Vercel **Ready** ist (1–2 Min). Danach am iPad **refresh.html** öffnen oder QR neu scannen.
+
+4. **refresh.html als letzter Ausweg:**  
+   Am iPad im Browser: **https://k2-galerie.vercel.app/refresh.html**  
+   Leitet auf eine einmalige URL weiter (kein Cache). Danach sollte der aktuelle Stand erscheinen.
 
 ---
 

@@ -34,7 +34,7 @@ const MobileConnectPage = () => {
     }
   }, [])
 
-  const qrVersionTs = useQrVersionTimestamp()
+  const { versionTimestamp: qrVersionTs, serverLabel } = useQrVersionTimestamp()
   // QR mit Server-Stand + Cache-Bust – Scan lädt immer aktuelle Version (auch im fremden WLAN)
   useEffect(() => {
     if (!url) { setQrUrl(''); return }

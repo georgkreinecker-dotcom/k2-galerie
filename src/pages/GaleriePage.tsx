@@ -8,7 +8,7 @@ import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie } from '../config/pageContentGalerie'
 import { getPageTexts, type GaleriePageTexts } from '../config/pageTexts'
 import { appendToHistory } from '../utils/artworkHistory'
-import { buildQrUrlWithBust, useServerBuildTimestamp, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { buildQrUrlWithBust, useServerBuildTimestamp } from '../hooks/useServerBuildTimestamp'
 import { OK2_THEME } from '../config/ok2Theme'
 import '../App.css'
 
@@ -828,8 +828,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   }, [mobileUrl, mobileUrlMemo])
 
   // Server-Stand für QR – QR nur mit Server-Stand bauen, sonst zeigt Scan alte Version (Regel stand-qr-niemals-zurueck)
-  const serverBuildTs = useServerBuildTimestamp()
-  const qrVersionTs = useQrVersionTimestamp()
+  const { timestamp: serverBuildTs, serverLabel, refetch: refetchQrStand } = useServerBuildTimestamp()
   // ök2: QR MUSS auf Muster-Galerie zeigen (galerie-oeffentlich), nie auf K2 – sonst zeigt Scan die echte K2-Seite
   // VK2: QR muss auf VK2-Route zeigen, nicht auf K2-Galerie
   const vercelGalerieUrl = useMemo(() => {
@@ -863,7 +862,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       .then((url) => { if (!cancelled) setVercelQrDataUrl(url) })
       .catch(() => { if (!cancelled) setVercelQrDataUrl('') })
     return () => { cancelled = true }
-  }, [vercelGalerieUrl, serverBuildTs, qrVersionTs, musterOnly, qrBustTick])
+  }, [vercelGalerieUrl, serverBuildTs, musterOnly, qrBustTick])
 
   // Aktualisieren-Funktion für Mobile-Version - lädt neue Daten ohne Reload
   const [isRefreshing, setIsRefreshing] = React.useState(false)
@@ -3570,6 +3569,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                         📱 QR scannen → öffnet diese Galerie auf dem Handy
                       </p>
                       <div style={{ background: '#fff', padding: '0.4rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+                        {serverLabel && <div style={{ fontSize: 10, color: '#666', marginBottom: 4 }}>Vercel-Stand: {serverLabel}</div>}
+                        <button type="button" onClick={() => refetchQrStand()} title="QR mit aktuellem Stand von Vercel neu laden" style={{ marginBottom: 4, padding: '2px 8px', fontSize: 11, background: 'rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.12)', borderRadius: 6, cursor: 'pointer' }}>QR neu</button>
                         <img src={vercelQrDataUrl} alt={`QR-Code: ${tenantConfig.galleryName}`} style={{ width: 100, height: 100, display: 'block' }} />
                       </div>
                       <p style={{ margin: 0, fontSize: 'clamp(0.55rem, 1.2vw, 0.65rem)', color: theme.muted, fontWeight: 500, maxWidth: 140 }}>
