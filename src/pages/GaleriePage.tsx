@@ -3239,12 +3239,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 )}
               </div>
 
-              {/* Tür: Virtueller Rundgang – auch für ök2 anzeigen */}
+              {/* Tür: Virtueller Rundgang – auch für ök2 anzeigen; ök2: Schriftkontrast (theme.text/muted) */}
               {(
               <div style={{
-                background: 'rgba(255, 255, 255, 0.04)',
+                background: musterOnly ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.04)',
                 backdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: musterOnly ? `1px solid color-mix(in srgb, ${theme.accent} 30%, transparent)` : '1px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: '16px',
                 padding: 'clamp(1rem, 3vw, 1.25rem)',
                 textAlign: 'center',
@@ -3300,14 +3300,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 <h3 style={{
                   fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
                   fontWeight: '600',
-                  color: 'rgba(255, 255, 255, 0.9)',
+                  color: musterOnly ? theme.text : 'rgba(255, 255, 255, 0.9)',
                   marginBottom: 'clamp(0.35rem, 1vw, 0.5rem)'
                 }}>
                   {galerieTexts.virtualTourButtonText || 'Virtueller Rundgang'}
                 </h3>
                 <p style={{
                   fontSize: 'clamp(0.8rem, 2vw, 0.85rem)',
-                  color: 'rgba(255, 255, 255, 0.55)',
+                  color: musterOnly ? theme.muted : 'rgba(255, 255, 255, 0.55)',
                   marginBottom: '0.35rem',
                   lineHeight: '1.4'
                 }}>
@@ -3315,7 +3315,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 </p>
                 <p style={{
                   fontSize: 'clamp(0.72rem, 1.8vw, 0.78rem)',
-                  color: 'rgba(255, 255, 255, 0.45)',
+                  color: musterOnly ? theme.muted : 'rgba(255, 255, 255, 0.45)',
                   marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
                   lineHeight: 1.4
                 }}>
@@ -3335,9 +3335,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                     alignItems: 'center',
                     gap: '0.4rem',
                     padding: 'clamp(0.5rem, 1.5vw, 0.65rem) clamp(1rem, 3vw, 1.25rem)',
-                    background: 'transparent',
-                    border: '1px solid rgba(255, 255, 255, 0.25)',
-                    color: 'rgba(255, 255, 255, 0.9)',
+                    background: musterOnly ? 'transparent' : 'transparent',
+                    border: musterOnly ? `1px solid ${theme.accent}` : '1px solid rgba(255, 255, 255, 0.25)',
+                    color: musterOnly ? theme.accent : 'rgba(255, 255, 255, 0.9)',
                     borderRadius: '6px',
                     fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
                     fontWeight: '500',
@@ -3345,8 +3345,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                     transition: 'all 0.2s ease',
                     fontFamily: 'inherit'
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)' }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)' }}
+                  onMouseEnter={(e) => {
+                    if (musterOnly) { e.currentTarget.style.background = 'rgba(107,144,128,0.1)'; e.currentTarget.style.borderColor = theme.accent }
+                    else { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)' }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (musterOnly) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = theme.accent }
+                    else { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)' }
+                  }}
                 >
                   Rundgang starten →
                 </button>

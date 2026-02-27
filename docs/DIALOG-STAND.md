@@ -5,12 +5,13 @@
 ## Datum: 27.02.26
 
 ## Thema
-Admin-Hub „Was möchtest du heute tun?“: One-Click, klare Icons + Kurzinfo, keine Doppelfunktion
+Kassa Statistik: Verkaufs- & Lagerstatistik drucken (inkl. Lagerhaltung)
 
 ## Woran zuletzt gearbeitet (inhaltlicher Faden)
-mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, Veröffentlichungsvorbereitung. Crash-Check war Unterbrechung in diesem Strom.
+Admin-Hub, Kassa/Statistik. Button „Liste drucken“ zu „Verkaufs- & Lagerstatistik drucken“ erweitert – ein Druck enthält Lagerstatistik + Verkaufsliste.
 
 ## Was zuletzt gemacht
+- **Verkaufs- & Lagerstatistik drucken (StatistikTab):** Button erweitert: Ein Klick druckt (1) **Lagerstatistik** (Werke gesamt, Verkaufte Werke, Im Bestand/Lager, In Galerie, Reserviert, Gesamtumsatz, Ø Verkaufspreis) und (2) **Verkaufsliste** (Tabelle aller Verkäufe). Druck auch ohne Verkäufe möglich (dann nur Lagerstatistik + „Keine Verkäufe erfasst“). Button-Label: „🖨️ Verkaufs- & Lagerstatistik drucken“. Commit folgt.
 - **Virtueller Rundgang (K2 + ök2):** Unter dem Rundgang-Text Hinweis ergänzt: „Eigenes Video (z. B. Atelier- oder Galerie-Rundgang) mit maximaler Länge in den Einstellungen unter Design → Seitengestaltung einbinden und positionieren.“ Der Block ist für ök2 bereits sichtbar (Bild/Video aus Seitengestaltung).
 - **PWA-Icon-Hinweis (Galerie + Vorschau):** Auf Mobile erscheint oben ein schließbarer Hinweis: „Das Icon legt sich nicht von selbst auf deinen Bildschirm – du musst es einmal aktiv hinzufügen.“ Kurzanleitung iOS (Teilen → Zum Home-Bildschirm) bzw. Android (Menü → Zum Startbildschirm hinzufügen). Nur wenn nicht schon als PWA geöffnet; einmal „OK“ = Hinweis weg (localStorage k2-pwa-icon-hint-closed).
 - **PR-Dokumente (Newsletter, Plakat, …) grün statt orange:** Wenn Dokumente schon Inhalt hatten, blieben die Balken „Noch nicht erstellt“. Ursache: eventId-Vergleich (String vs. Zahl nach JSON). Jetzt typensicher: String(d.eventId) === String(event.id); gleiche Logik in getNextWerbematerialVorschlagName. Commit: 8c5e846 ✅

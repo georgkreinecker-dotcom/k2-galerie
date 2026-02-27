@@ -43,6 +43,50 @@ export default function StatistikTab({ allArtworks, onMarkAsReserved, onRerender
     .slice(0, 5)
     .map((e: any) => ({ ...e, werk: allArtworks.find((a: any) => (a.number || a.id) === e.number) }))
 
+  const alleVerkaufe = [...soldEntries]
+    .sort((a, b) => (b.soldAt || '').localeCompare(a.soldAt || ''))
+    .map((e: any) => {
+      const werk = allArtworks.find((a: any) => (a.number || a.id) === e.number)
+      const preis = e.soldPrice ?? werk?.price ?? 0
+      return { ...e, werk, preis }
+    })
+
+  const lagerBestand = gesamtWerke - soldWerke.length // Noch im Bestand (nicht verkauft)
+
+  const printVerkaufsUndLagerstatistik = () => {
+    const summe = alleVerkaufe.reduce((s: number, e: any) => s + (e.preis || 0), 0)
+    const preiseVerkauf = alleVerkaufe.map((e: any) => e.preis || 0).filter((p: number) => p > 0)
+    const preisDurchForPrint = preiseVerkauf.length ? preiseVerkauf.reduce((a: number, b: number) => a + b, 0) / preiseVerkauf.length : 0
+    const lagerBlock = `
+      <h2 style="font-size:1.1rem;margin:0 0 0.5rem">📦 Lagerstatistik</h2>
+      <table style="width:auto;border-collapse:collapse;font-size:0.9rem;margin-bottom:1.5rem">
+        <tr><td style="padding:0.35rem 1rem 0.35rem 0">Werke gesamt</td><td style="padding:0.35rem 0;font-weight:700">${gesamtWerke}</td></tr>
+        <tr><td style="padding:0.35rem 1rem 0.35rem 0">Verkaufte Werke</td><td style="padding:0.35rem 0;font-weight:700">${soldWerke.length}</td></tr>
+        <tr><td style="padding:0.35rem 1rem 0.35rem 0">Im Bestand (Lager)</td><td style="padding:0.35rem 0;font-weight:700">${lagerBestand}</td></tr>
+        <tr><td style="padding:0.35rem 1rem 0.35rem 0">In Galerie</td><td style="padding:0.35rem 0;font-weight:700">${inGalerie}</td></tr>
+        <tr><td style="padding:0.35rem 1rem 0.35rem 0">Reserviert</td><td style="padding:0.35rem 0;font-weight:700">${reserviert}</td></tr>
+        <tr><td style="padding:0.35rem 1rem 0.35rem 0">Gesamtumsatz</td><td style="padding:0.35rem 0;font-weight:700">€ ${summe.toFixed(2)}</td></tr>
+        ${preiseVerkauf.length > 0 ? `<tr><td style="padding:0.35rem 1rem 0.35rem 0">Ø Verkaufspreis</td><td style="padding:0.35rem 0;font-weight:700">€ ${preisDurchForPrint.toFixed(2)}</td></tr>` : ''}
+      </table>`
+    const rows = alleVerkaufe.map((e: any, i: number) => {
+      const datum = e.soldAt ? new Date(e.soldAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '–'
+      const titel = e.werk?.title || e.number || '–'
+      const preis = (e.preis || 0).toFixed(2)
+      return `<tr><td>${i + 1}</td><td>${datum}</td><td>${e.number || '–'}</td><td>${titel}</td><td style="text-align:right">€ ${preis}</td></tr>`
+    }).join('')
+    const verkaufsBlock = alleVerkaufe.length === 0
+      ? '<h2 style="font-size:1.1rem;margin:0 0 0.5rem">📋 Verkaufsliste</h2><p style="color:#666;margin:0">Keine Verkäufe erfasst.</p>'
+      : `<h2 style="font-size:1.1rem;margin:0 0 0.5rem">📋 Verkaufsliste</h2><p class="meta">${new Date().toLocaleDateString('de-DE')} · ${alleVerkaufe.length} Verkauf/Verkäufe · Summe € ${summe.toFixed(2)}</p><table><thead><tr><th>#</th><th>Datum</th><th>Nr.</th><th>Titel</th><th style="text-align:right">Preis</th></tr></thead><tbody>${rows}</tbody></table><p class="summe">Gesamtumsatz: € ${summe.toFixed(2)}</p>`
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Verkaufs- und Lagerstatistik</title><style>body{font-family:system-ui,sans-serif;padding:1.5rem;max-width:900px;margin:0 auto}h1{font-size:1.35rem;margin-bottom:0.75rem}table{width:100%;border-collapse:collapse;font-size:0.9rem}th,td{padding:0.5rem 0.75rem;border:1px solid #ddd;text-align:left}th{background:#f5f5f5;font-weight:700}.summe{font-weight:700;font-size:1rem;margin-top:0.75rem}.meta{color:#666;font-size:0.85rem;margin-bottom:0.75rem}@media print{body{padding:0.5rem}}</style></head><body><h1>Verkaufs- und Lagerstatistik</h1><p style="color:#666;font-size:0.85rem;margin-bottom:1rem">Stand: ${new Date().toLocaleDateString('de-DE')}</p>${lagerBlock}${verkaufsBlock}</body></html>`
+    const w = window.open('', '_blank')
+    if (w) {
+      try { w.focus() } catch (_) {}
+      w.document.write(html)
+      w.document.close()
+      setTimeout(() => w.print(), 300)
+    }
+  }
+
   const preise = soldWerke.map((a: any) => a.price || 0).filter((p: number) => p > 0)
   const preisMin = preise.length ? Math.min(...preise) : 0
   const preisMax = preise.length ? Math.max(...preise) : 0
@@ -200,6 +244,51 @@ export default function StatistikTab({ allArtworks, onMarkAsReserved, onRerender
             </div>
           </div>
         )}
+
+        {/* Verkaufsliste – alle Umsätze ansehen & drucken */}
+        <div style={{ ...kachelStyle, gridColumn: '1 / -1', marginTop: '0.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: 0 }}>📋 Verkaufsliste</h3>
+            {alleVerkaufe.length > 0 && (
+              <button
+                type="button"
+                onClick={printVerkaufsUndLagerstatistik}
+                style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: s.gradientAccent, border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', boxShadow: s.shadow }}
+              >
+                🖨️ Verkaufs- & Lagerstatistik drucken
+              </button>
+            )}
+          </div>
+          {alleVerkaufe.length === 0 ? (
+            <div style={{ color: s.muted, fontSize: '0.9rem' }}>Noch keine Verkäufe. Verkäufe aus der Kassa erscheinen hier.</div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: `2px solid ${s.accent}44` }}>
+                    <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left', color: s.muted, fontWeight: 600 }}>#</th>
+                    <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left', color: s.muted, fontWeight: 600 }}>Datum</th>
+                    <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left', color: s.muted, fontWeight: 600 }}>Nr.</th>
+                    <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left', color: s.muted, fontWeight: 600 }}>Titel</th>
+                    <th style={{ padding: '0.5rem 0.75rem', textAlign: 'right', color: s.muted, fontWeight: 600 }}>Preis</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {alleVerkaufe.map((e: any, i: number) => (
+                    <tr key={i} style={{ borderBottom: `1px solid ${s.accent}18` }}>
+                      <td style={{ padding: '0.5rem 0.75rem', color: s.text }}>{i + 1}</td>
+                      <td style={{ padding: '0.5rem 0.75rem', color: s.text }}>{e.soldAt ? new Date(e.soldAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '–'}</td>
+                      <td style={{ padding: '0.5rem 0.75rem', color: s.text }}>{e.number || '–'}</td>
+                      <td style={{ padding: '0.5rem 0.75rem', color: s.text }}>{e.werk?.title || '–'}</td>
+                      <td style={{ padding: '0.5rem 0.75rem', textAlign: 'right', fontWeight: 600, color: '#15803d' }}>€ {(e.preis || 0).toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div style={{ marginTop: '0.75rem', fontSize: '0.9rem', fontWeight: 700, color: s.text }}>Gesamtumsatz: € {alleVerkaufe.reduce((sum: number, e: any) => sum + (e.preis || 0), 0).toFixed(2)}</div>
+            </div>
+          )}
+        </div>
 
         {/* Anfragen-Inbox */}
         {anfragen.length > 0 && (

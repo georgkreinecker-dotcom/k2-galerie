@@ -78,6 +78,25 @@ function isVk2AdminContext(): boolean {
   }
 }
 
+/** Maximale Videolänge für Virtuellen Rundgang (Sekunden) – 2 Min = gut vertretbar für Ladezeit/Speicher */
+const MAX_VIDEO_DURATION_SEC = 120
+function getVideoDurationSec(file: File): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const video = document.createElement('video')
+    video.preload = 'metadata'
+    video.onloadedmetadata = () => {
+      URL.revokeObjectURL(url)
+      resolve(video.duration)
+    }
+    video.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error('Metadaten fehlgeschlagen'))
+    }
+    video.src = url
+  })
+}
+
 // KRITISCH: Getrennte Storage-Keys für K2 vs. ök2 vs. VK2 – niemals Daten vermischen
 function getArtworksKey(): string {
   // VK2 hat KEINE Werke – nur Mitglieder in k2-vk2-stammdaten
@@ -261,9 +280,9 @@ const USER_LISTE_FUER_MITGLIEDER: Vk2Mitglied[] = [
   { name: 'Kunstverein Musterstadt', email: 'vorstand@kv-musterstadt.at', lizenz: 'VP-2026-1004', typ: 'Skulptur', mitgliedFotoUrl: MUSTER_MITGLIEDER_BILDER[3], imageUrl: MUSTER_WERKFOTO_BILDER[3], phone: '+43 732 771 000', website: 'https://kv-musterstadt.at', strasse: 'Vereinsweg 7', plz: '8010', ort: 'Graz', land: 'Österreich', geburtsdatum: '01.05.1970', eintrittsdatum: '05.02.2026', seit: '05.02.2026' },
   { name: 'Test Nutzer', email: 'test@beispiel.at', lizenz: 'KF-2026-1005', typ: 'Fotografie', mitgliedFotoUrl: MUSTER_MITGLIEDER_BILDER[4], imageUrl: MUSTER_WERKFOTO_BILDER[4], phone: '+43 699 000 9999', website: '', strasse: 'Testweg 99', plz: '6020', ort: 'Innsbruck', land: 'Österreich', geburtsdatum: '20.12.1982', eintrittsdatum: '12.02.2026', seit: '12.02.2026' }
 ]
-const EMPTY_MEMBER_FORM = { name: '', email: '', lizenz: '', typ: '', strasse: '', plz: '', ort: '', land: '', geburtsdatum: '', eintrittsdatum: '', phone: '', website: '', galerieLinkUrl: '', lizenzGalerieUrl: '', bio: '', vita: '', mitgliedFotoUrl: '', imageUrl: '', bankKontoinhaber: '', bankIban: '', bankBic: '', bankName: '', rolle: 'mitglied' as 'vorstand' | 'mitglied', pin: '' }
+const EMPTY_MEMBER_FORM = { name: '', email: '', lizenz: '', typ: '', strasse: '', plz: '', ort: '', land: '', geburtsdatum: '', eintrittsdatum: '', phone: '', website: '', galerieLinkUrl: '', lizenzGalerieUrl: '', bio: '', vita: '', mitgliedFotoUrl: '', imageUrl: '', rolle: 'mitglied' as 'vorstand' | 'mitglied', pin: '' }
 function memberToForm(m: Vk2Mitglied) {
-  return { name: m.name ?? '', email: m.email ?? '', lizenz: m.lizenz ?? '', typ: m.typ ?? '', strasse: m.strasse ?? '', plz: m.plz ?? '', ort: m.ort ?? '', land: m.land ?? '', geburtsdatum: m.geburtsdatum ?? '', eintrittsdatum: m.eintrittsdatum ?? m.seit ?? '', phone: m.phone ?? '', website: m.website ?? '', galerieLinkUrl: m.galerieLinkUrl ?? '', lizenzGalerieUrl: m.lizenzGalerieUrl ?? '', bio: m.bio ?? '', vita: m.vita ?? '', mitgliedFotoUrl: m.mitgliedFotoUrl ?? '', imageUrl: m.imageUrl ?? '', bankKontoinhaber: m.bankKontoinhaber ?? '', bankIban: m.bankIban ?? '', bankBic: m.bankBic ?? '', bankName: m.bankName ?? '', rolle: m.rolle ?? 'mitglied', pin: m.pin ?? '' }
+  return { name: m.name ?? '', email: m.email ?? '', lizenz: m.lizenz ?? '', typ: m.typ ?? '', strasse: m.strasse ?? '', plz: m.plz ?? '', ort: m.ort ?? '', land: m.land ?? '', geburtsdatum: m.geburtsdatum ?? '', eintrittsdatum: m.eintrittsdatum ?? m.seit ?? '', phone: m.phone ?? '', website: m.website ?? '', galerieLinkUrl: m.galerieLinkUrl ?? '', lizenzGalerieUrl: m.lizenzGalerieUrl ?? '', bio: m.bio ?? '', vita: m.vita ?? '', mitgliedFotoUrl: m.mitgliedFotoUrl ?? '', imageUrl: m.imageUrl ?? '', rolle: m.rolle ?? 'mitglied', pin: m.pin ?? '' }
 }
 /** CSV-Header (versch. Schreibweisen) → Vk2Mitglied-Feld */
 const CSV_HEADER_MAP: Record<string, keyof Vk2Mitglied> = {
@@ -1149,7 +1168,7 @@ function ScreenshotExportAdmin() {
   /** VK2: Index in vk2Stammdaten.mitglieder beim Bearbeiten; null = neues Mitglied */
   const [editingMemberIndex, setEditingMemberIndex] = useState<number | null>(null)
   /** VK2: Vollständige Mitglieder-Stammdaten im Modal */
-  const [memberForm, setMemberForm] = useState<{ name: string; email: string; lizenz: string; typ: string; strasse: string; plz: string; ort: string; land: string; geburtsdatum: string; eintrittsdatum: string; phone: string; website: string; galerieLinkUrl: string; lizenzGalerieUrl: string; bio: string; vita: string; mitgliedFotoUrl: string; imageUrl: string; bankKontoinhaber: string; bankIban: string; bankBic: string; bankName: string; rolle: 'vorstand' | 'mitglied'; pin: string }>({ ...EMPTY_MEMBER_FORM })
+  const [memberForm, setMemberForm] = useState<{ name: string; email: string; lizenz: string; typ: string; strasse: string; plz: string; ort: string; land: string; geburtsdatum: string; eintrittsdatum: string; phone: string; website: string; galerieLinkUrl: string; lizenzGalerieUrl: string; bio: string; vita: string; mitgliedFotoUrl: string; imageUrl: string; rolle: 'vorstand' | 'mitglied'; pin: string }>({ ...EMPTY_MEMBER_FORM })
   /** VK2: Drag-over für CSV-Import */
   const [csvDragOver, setCsvDragOver] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -10780,10 +10799,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 8 }}>
                               <label htmlFor="virtual-tour-video-input-p1" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}>
                                 📹 Video wählen oder aufnehmen
-                                <input id="virtual-tour-video-input-p1" type="file" accept="video/*" style={{ display: 'none' }} onChange={async (e) => {
+                                <input id="virtual-tour-video-input-p1" title="Max. 2 Min. Länge · max. 100 MB" type="file" accept="video/*" style={{ display: 'none' }} onChange={async (e) => {
                                   const f = e.target.files?.[0]
                                   if (!f) { e.target.value = ''; return }
                                   if (f.size > 100 * 1024 * 1024) { setVideoUploadMsg('Video ist zu groß (max. 100 MB).'); setVideoUploadStatus('error'); e.target.value = ''; return }
+                                  try {
+                                    const durationSec = await getVideoDurationSec(f)
+                                    if (durationSec > MAX_VIDEO_DURATION_SEC) { setVideoUploadMsg(`Video darf max. 2 Minuten lang sein (${Math.round(durationSec)} s) – für schnelles Laden.`); setVideoUploadStatus('error'); e.target.value = ''; return }
+                                  } catch { setVideoUploadMsg('Länge konnte nicht gelesen werden.'); setVideoUploadStatus('error'); e.target.value = ''; return }
                                   try {
                                     const localUrl = URL.createObjectURL(f)
                                     const tenantId = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
@@ -10815,6 +10838,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 }} />
                               </label>
                             </div>
+                            <p style={{ margin: '6px 0 0', fontSize: '0.75rem', color: 'var(--k2-muted)' }}>Max. 2 Min. Länge · max. 100 MB</p>
                             {videoUploadStatus !== 'idle' && videoUploadMsg && (
                               <p style={{ margin: '6px 0 0', fontSize: '0.82rem', color: videoUploadStatus === 'error' ? '#e05c5c' : videoUploadStatus === 'uploading' ? 'var(--k2-accent)' : '#4caf50', textAlign: 'center' }}>
                                 {videoUploadStatus === 'uploading' && '⏳ '}{videoUploadMsg}
@@ -10898,10 +10922,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             </label>
                             <label htmlFor="virtual-tour-video-input" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}>
                               📹 Video wählen oder aufnehmen
-                              <input id="virtual-tour-video-input" type="file" accept="video/*" style={{ display: 'none' }} onChange={async (e) => {
+                              <input id="virtual-tour-video-input" type="file" accept="video/*" title="Max. 2 Min. Länge · max. 100 MB" style={{ display: 'none' }} onChange={async (e) => {
                                 const f = e.target.files?.[0]
                                 if (!f) { e.target.value = ''; return }
                                 if (f.size > 100 * 1024 * 1024) { setVideoUploadMsg('Video ist zu groß (max. 100 MB). Bitte kürzer aufnehmen.'); setVideoUploadStatus('error'); e.target.value = ''; return }
+                                try {
+                                  const durationSec = await getVideoDurationSec(f)
+                                  if (durationSec > MAX_VIDEO_DURATION_SEC) { setVideoUploadMsg(`Video darf max. 2 Minuten lang sein (${Math.round(durationSec)} s) – für schnelles Laden.`); setVideoUploadStatus('error'); e.target.value = ''; return }
+                                } catch { setVideoUploadMsg('Länge konnte nicht gelesen werden.'); setVideoUploadStatus('error'); e.target.value = ''; return }
                                 try {
                                   const localUrl = URL.createObjectURL(f)
                                   const tenantId = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
@@ -10943,6 +10971,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               <button type="button" onClick={() => { const next = { ...pageContent, virtualTourVideo: '' }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); setVideoUploadStatus('idle'); setVideoUploadMsg('') }} style={{ padding: '0.4rem 0.8rem', background: 'transparent', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Video entfernen</button>
                             )}
                           </div>
+                          <p style={{ margin: '6px 0 0', fontSize: '0.75rem', color: 'var(--k2-muted)' }}>Max. 2 Min. Länge · max. 100 MB</p>
                           {videoUploadStatus !== 'idle' && videoUploadMsg && (
                             <p style={{ margin: '8px 0 0', fontSize: '0.82rem', color: videoUploadStatus === 'error' ? '#e05c5c' : videoUploadStatus === 'uploading' ? 'var(--k2-accent)' : '#4caf50', textAlign: 'center' }}>
                               {videoUploadStatus === 'uploading' && '⏳ '}{videoUploadMsg}
@@ -11881,9 +11910,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
 
                     {/* Vorstand & Beirat – gegendert; Vollzugang nur Vorsitzende:r + Kassier:in (siehe docs/VK2-ZUGANG-ROLLEN.md) */}
                     <div style={{ marginBottom: '1.5rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
-                      <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>👥 Vorstand & Beirat</h3>
-                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: s.muted }}>Vollzugang zum VK2-Admin haben nur Vorsitzende:r (Präsident:in) und Kassier:in. Vereinsmitglieder haben beschränkten Zugang (nur eigene Daten und Mitgliederlisten).</p>
-                      <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.accent }}>⭐ Wer hier eingetragen ist und zugleich in „Registrierte Mitglieder“ vorkommt (gleicher Name), wird in Galerie, Vorschau und Mitgliederkartei als Vorstand hervorgehoben – Anerkennung sichtbar.</p>
+                      <h3 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>👥 Vorstand & Beirat</h3>
+                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.82rem', color: s.muted }}>Vollzugang: nur Vorsitzende:r und Kassier:in. Wer hier <strong>und</strong> in „Registrierte Mitglieder“ steht, wird auf der Karte als Vorstand hervorgehoben.</p>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Vorsitzende:r / Präsident:in</label>
@@ -11909,17 +11937,15 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     </div>
                     {/* Registrierte Mitglieder – eine Wartung: Profil anlegen, User übernehmen, Bearbeiten (Unsere Mitglieder). */}
                     <div style={{ marginBottom: '1rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
-                      <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>📋 Registrierte Mitglieder</h3>
-                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted }}>Profile für die Unsere Mitglieder. <strong>Ab 10 registrierten Mitgliedern</strong> wird der Verein kostenfrei (Pro-Version).</p>
-                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: s.accent, fontStyle: 'italic' }}>💡 Was du hier siehst (Name, E-Mail, Kunstrichtung, Bild), erscheint auf den Karten in der Unsere Mitglieder – öffentlich sichtbar.</p>
-                      <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}><strong>Auf Karte:</strong> Hakerl = auf der Karte öffentlich sichtbar. Kein Hakerl = gesperrt, erscheint nicht auf der öffentlichen Karte.</p>
+                      <h3 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>📋 Registrierte Mitglieder</h3>
+                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted }}>Profile für die Karte „Unsere Mitglieder“. Ab 10 Mitgliedern: Verein kostenfrei. <strong>Hakerl = auf Karte sichtbar</strong>, kein Hakerl = nicht sichtbar.</p>
                       <div style={{ marginBottom: '0.75rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
                         <button
                           type="button"
                           onClick={() => { setEditingMemberIndex(null); setMemberForm(EMPTY_MEMBER_FORM); setShowAddModal(true) }}
-                          style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: s.gradientAccent, border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer' }}
+                          style={{ padding: '0.55rem 1.1rem', fontSize: '0.95rem', background: s.gradientAccent, border: 'none', borderRadius: 8, color: '#fff', fontWeight: 700, cursor: 'pointer', boxShadow: s.shadow }}
                         >
-                          + Profil für Unsere Mitglieder anlegen
+                          + Profil anlegen
                         </button>
                         <button
                           type="button"
@@ -11929,12 +11955,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             const neue = USER_LISTE_FUER_MITGLIEDER.filter(u => !namenBereits.has(u.name))
                             setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: [...bestehend, ...neue] })
                           }}
-                          style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: 8, color: s.accent, fontWeight: 600, cursor: 'pointer' }}
+                          style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: 8, color: s.accent, fontWeight: 600, cursor: 'pointer' }}
                         >
-                          👥 User aus „Meine User“ übernehmen
+                          👥 User übernehmen
                         </button>
-                        <span style={{ fontSize: '0.8rem', color: s.muted }}>Fügt User mit allen Daten hinzu (ohne Doppel).</span>
-                        {/* Export & Druck für Vorstand */}
+                        <span style={{ fontSize: '0.78rem', color: s.muted }}>Export & Druck:</span>
                         <button
                           type="button"
                           title="Mitgliederliste als CSV exportieren"
@@ -11958,9 +11983,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             a.href = url; a.download = 'mitgliederliste.csv'; a.click()
                             URL.revokeObjectURL(url)
                           }}
-                          style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: 8, color: s.accent, fontWeight: 600, cursor: 'pointer' }}
+                          style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: 8, color: s.accent, fontWeight: 600, cursor: 'pointer' }}
                         >
-                          📥 Liste exportieren (CSV)
+                          📥 CSV
                         </button>
                         <button
                           type="button"
@@ -11973,11 +11998,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             const w = window.open('', '_blank')
                             if (w) { try { w.focus() } catch (_) { }; w.document.write(html); w.document.close(); w.print() }
                           }}
-                          style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: 8, color: s.accent, fontWeight: 600, cursor: 'pointer' }}
+                          style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: 8, color: s.accent, fontWeight: 600, cursor: 'pointer' }}
                         >
-                          🖨️ Liste drucken
+                          🖨️ Liste
                         </button>
-                        {/* Karten drucken */}
                         <button
                           type="button"
                           title="Alle Mitgliedskarten drucken (Kreditkarten-Format, 3 pro Reihe)"
@@ -11991,16 +12015,28 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               })
                             printMitgliedskarten(mitglieder, vk2Stammdaten.verein?.name || 'Verein')
                           }}
-                          style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: `linear-gradient(135deg,${s.accent}33,${s.accent}22)`, border: `1px solid ${s.accent}66`, borderRadius: 8, color: s.accent, fontWeight: 700, cursor: 'pointer' }}
+                          style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: 8, color: s.accent, fontWeight: 600, cursor: 'pointer' }}
                         >
-                          🪪 Alle Mitgliedskarten drucken
+                          🪪 Karten drucken
                         </button>
                       </div>
 
-                      {/* QR-Code für Mitglied-Login */}
-                      <VK2LoginQrBlock s={s} />
+                      {/* QR-Code für Mitglied-Login – ausklappbar */}
+                      <details style={{ marginTop: '0.75rem', border: `1px solid ${s.accent}22`, borderRadius: 10, overflow: 'hidden' }}>
+                        <summary style={{ padding: '0.5rem 0.75rem', fontSize: '0.9rem', fontWeight: 600, color: s.accent, cursor: 'pointer', listStyle: 'none', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <span style={{ fontSize: '1rem' }}>🔑</span> Login für Mitglieder (QR-Code)
+                        </summary>
+                        <div style={{ padding: '0 0.75rem 0.75rem' }}>
+                          <VK2LoginQrBlock s={s} />
+                        </div>
+                      </details>
 
-                      {/* CSV-Import: Drag & Drop oder Datei wählen */}
+                      {/* CSV-Import – ausklappbar */}
+                      <details style={{ marginTop: '0.5rem', border: `1px solid ${s.accent}22`, borderRadius: 10, overflow: 'hidden' }}>
+                        <summary style={{ padding: '0.5rem 0.75rem', fontSize: '0.9rem', fontWeight: 600, color: s.accent, cursor: 'pointer', listStyle: 'none', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <span style={{ fontSize: '1rem' }}>📂</span> CSV oder Tabelle importieren
+                        </summary>
+                        <div style={{ padding: '0 0.75rem 0.75rem' }}>
                       <div
                         onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setCsvDragOver(true) }}
                         onDragLeave={() => setCsvDragOver(false)}
@@ -12056,11 +12092,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               e.target.value = ''
                             }}
                           />
-                          <span style={{ color: s.accent, fontWeight: 600 }}>📂 CSV oder Tabelle importieren</span>
-                          <span style={{ color: s.muted, fontSize: '0.9rem' }}> – Datei hierher ziehen (Drag & Drop) oder klicken zum Auswählen</span>
+                          <span style={{ color: s.accent, fontWeight: 600 }}>Datei hierher ziehen oder klicken</span>
+                          <span style={{ color: s.muted, fontSize: '0.85rem' }}> (CSV/Tabelle, erste Zeile = Kopfzeile, Komma oder Semikolon)</span>
                         </label>
-                        <p style={{ margin: '0.5rem 0 0', fontSize: '0.8rem', color: s.muted }}>Erste Zeile = Kopfzeile (z. B. Name, E-Mail, Straße, PLZ, Ort, Land, Geburtsdatum, Eintrittsdatum, Kunstrichtung, Telefon, Website). Trennzeichen: Komma oder Semikolon.</p>
+                        <p style={{ margin: '0.5rem 0 0', fontSize: '0.78rem', color: s.muted }}>Spalten z. B.: Name, E-Mail, Straße, PLZ, Ort, Land, Geburtsdatum, Eintrittsdatum, Kunstrichtung, Telefon, Website.</p>
                       </div>
+                        </div>
+                      </details>
                       <div style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                           <thead>
@@ -15697,26 +15735,30 @@ ${name}`
               flexDirection: 'column',
               gap: '1rem'
             }}>
-              {/* VK2: Profil-Formular – Foto, Werk, Vita, Name, Kontakt, Bank */}
+              {/* VK2: Profil-Formular – Foto, Werk, Vita, Name, Kontakt (Modal dunkel → heller Text, mehr Kontrast) */}
               {isVk2AdminContext() ? (
                 <>
-                  <p style={{ margin: 0, fontSize: '0.9rem', color: s.muted }}>Profil für die Mitglieder-Galerie – Foto, Werk und Vita separat bearbeitbar.</p>
+                  {(() => {
+                    const ms = { text: '#f0f6ff', muted: 'rgba(255,255,255,0.88)', accent: s.accent, bgElevated: 'rgba(255,255,255,0.1)', gradientAccent: s.gradientAccent, shadow: s.shadow }
+                    return (
+                <>
+                  <p style={{ margin: 0, fontSize: '1rem', color: ms.muted }}>Profil für die Mitglieder-Galerie – Foto, Werk und Vita separat bearbeitbar.</p>
 
                   {/* ── BILDER-BEREICH ── */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
 
                     {/* Porträt-Foto */}
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: s.accent, fontWeight: 600 }}>
-                        👤 Foto <span style={{ fontWeight: 400, color: s.muted, fontSize: '0.8rem' }}>(Porträt-Kreis)</span>
+                      <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.95rem', color: ms.accent, fontWeight: 600 }}>
+                        👤 Foto <span style={{ fontWeight: 400, color: ms.muted, fontSize: '0.9rem' }}>(Porträt-Kreis)</span>
                       </label>
                       {memberForm.mitgliedFotoUrl ? (
                         <div style={{ position: 'relative', display: 'inline-block' }}>
-                          <img src={memberForm.mitgliedFotoUrl} alt="Porträt" style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${s.accent}66`, display: 'block' }} />
+                          <img src={memberForm.mitgliedFotoUrl} alt="Porträt" style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${ms.accent}66`, display: 'block' }} />
                           <button type="button" onClick={() => setMemberForm(f => ({ ...f, mitgliedFotoUrl: '' }))} style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#b54a1e', border: 'none', color: '#fff', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>×</button>
                         </div>
                       ) : (
-                        <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', width: '100%', aspectRatio: '1', background: `${s.accent}0d`, border: `2px dashed ${s.accent}44`, borderRadius: 12, cursor: 'pointer', color: s.muted, fontSize: '0.8rem', textAlign: 'center', padding: '0.5rem' }}>
+                        <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', width: '100%', aspectRatio: '1', background: `${ms.accent}0d`, border: `2px dashed ${ms.accent}44`, borderRadius: 12, cursor: 'pointer', color: ms.muted, fontSize: '0.9rem', textAlign: 'center', padding: '0.5rem' }}>
                           <span style={{ fontSize: '1.8rem' }}>👤</span>
                           <span>Tippen oder ziehen</span>
                           <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={(e) => {
@@ -15746,16 +15788,16 @@ ${name}`
 
                     {/* Werkfoto */}
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: s.accent, fontWeight: 600 }}>
-                        🖼️ Werk <span style={{ fontWeight: 400, color: s.muted, fontSize: '0.8rem' }}>(Karte oben)</span>
+                      <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.95rem', color: ms.accent, fontWeight: 600 }}>
+                        🖼️ Werk <span style={{ fontWeight: 400, color: ms.muted, fontSize: '0.9rem' }}>(Karte oben)</span>
                       </label>
                       {memberForm.imageUrl ? (
                         <div style={{ position: 'relative' }}>
-                          <img src={memberForm.imageUrl} alt="Werk" style={{ width: '100%', aspectRatio: '3/2', objectFit: 'cover', borderRadius: 10, border: `1px solid ${s.accent}44`, display: 'block' }} />
+                          <img src={memberForm.imageUrl} alt="Werk" style={{ width: '100%', aspectRatio: '3/2', objectFit: 'cover', borderRadius: 10, border: `1px solid ${ms.accent}44`, display: 'block' }} />
                           <button type="button" onClick={() => setMemberForm(f => ({ ...f, imageUrl: '' }))} style={{ position: 'absolute', top: 4, right: 4, width: 24, height: 24, borderRadius: '50%', background: '#b54a1e', border: 'none', color: '#fff', fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
                         </div>
                       ) : (
-                        <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', width: '100%', aspectRatio: '3/2', background: `${s.accent}0d`, border: `2px dashed ${s.accent}44`, borderRadius: 12, cursor: 'pointer', color: s.muted, fontSize: '0.8rem', textAlign: 'center', padding: '0.5rem' }}>
+                        <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', width: '100%', aspectRatio: '3/2', background: `${ms.accent}0d`, border: `2px dashed ${ms.accent}44`, borderRadius: 12, cursor: 'pointer', color: ms.muted, fontSize: '0.9rem', textAlign: 'center', padding: '0.5rem' }}>
                           <span style={{ fontSize: '1.8rem' }}>🖼️</span>
                           <span>Tippen oder ziehen</span>
                           <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={(e) => {
@@ -15785,60 +15827,61 @@ ${name}`
                   </div>
 
                   {/* ── VITA-BEREICH ── */}
-                  <div style={{ borderTop: `1px solid ${s.accent}22`, paddingTop: '0.9rem' }}>
+                  <div style={{ borderTop: `1px solid ${ms.accent}22`, paddingTop: '0.9rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.6rem' }}>
                       <div>
-                        <div style={{ fontSize: '1rem', fontWeight: 700, color: s.text, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <div style={{ fontSize: '1.05rem', fontWeight: 700, color: ms.text, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                           📝 <span>Vita</span>
-                          {memberForm.vita?.trim() && <span style={{ fontSize: '0.72rem', background: `${s.accent}22`, color: s.accent, borderRadius: 20, padding: '0.1rem 0.5rem', fontWeight: 600 }}>✓ vorhanden</span>}
+                          {memberForm.vita?.trim() && <span style={{ fontSize: '0.8rem', background: `${ms.accent}22`, color: ms.accent, borderRadius: 20, padding: '0.1rem 0.5rem', fontWeight: 600 }}>✓ vorhanden</span>}
                         </div>
-                        <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.15rem' }}>Ausführlicher Lebenslauf – erscheint beim Aufklappen des Profils</div>
+                        <div style={{ fontSize: '0.9rem', color: ms.muted, marginTop: '0.15rem' }}>Ausführlicher Lebenslauf – erscheint beim Aufklappen des Profils</div>
                       </div>
                       <button
                         type="button"
                         onClick={() => setShowVitaEditor(true)}
-                        style={{ padding: '0.5rem 1.1rem', background: s.gradientAccent, border: 'none', borderRadius: 10, color: '#fff', fontSize: '0.88rem', fontWeight: 700, cursor: 'pointer', flexShrink: 0, boxShadow: s.shadow }}
+                        style={{ padding: '0.5rem 1.1rem', background: ms.gradientAccent, border: 'none', borderRadius: 10, color: '#fff', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer', flexShrink: 0, boxShadow: ms.shadow, display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
                       >
-                        {memberForm.vita?.trim() ? '✏️ Bearbeiten' : '+ Vita schreiben'}
+                        <span style={{ fontSize: '1.25rem', lineHeight: 1 }}>{memberForm.vita?.trim() ? '✏️' : '✍️'}</span>
+                        <span>{memberForm.vita?.trim() ? 'Bearbeiten' : 'Vita schreiben'}</span>
                       </button>
                     </div>
                     {memberForm.vita?.trim() && (
-                      <div style={{ background: s.bgElevated, borderRadius: 8, padding: '0.6rem 0.8rem', border: `1px solid ${s.accent}22`, maxHeight: 72, overflow: 'hidden', position: 'relative' }}>
-                        <p style={{ margin: 0, fontSize: '0.82rem', color: 'rgba(200,220,255,0.7)', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{memberForm.vita}</p>
-                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 28, background: `linear-gradient(transparent, ${s.bgElevated})` }} />
+                      <div style={{ background: ms.bgElevated, borderRadius: 8, padding: '0.6rem 0.8rem', border: `1px solid ${ms.accent}22`, maxHeight: 72, overflow: 'hidden', position: 'relative' }}>
+                        <p style={{ margin: 0, fontSize: '0.95rem', color: ms.text, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{memberForm.vita}</p>
+                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 28, background: `linear-gradient(transparent, ${ms.bgElevated})` }} />
                       </div>
                     )}
                   </div>
 
                   {/* ── BASIS-DATEN ── */}
-                  <div style={{ borderTop: `1px solid ${s.accent}22`, paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                    <div style={{ fontSize: '0.85rem', color: s.accent, fontWeight: 600 }}>Basisdaten</div>
+                  <div style={{ borderTop: `1px solid ${ms.accent}22`, paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                    <div style={{ fontSize: '0.95rem', color: ms.accent, fontWeight: 600 }}>Basisdaten</div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.muted, fontWeight: 600 }}>Name *</label>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.95rem', color: ms.muted, fontWeight: 600 }}>Name *</label>
                       <input
                         type="text"
                         value={memberForm.name}
                         onChange={(e) => setMemberForm(f => ({ ...f, name: e.target.value }))}
                         placeholder="z.B. Anna Beispiel"
-                        style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.95rem', outline: 'none' }}
+                        style={{ width: '100%', padding: '0.6rem', background: ms.bgElevated, border: `1px solid ${ms.accent}44`, borderRadius: '8px', color: ms.text, fontSize: '1rem', outline: 'none' }}
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.muted, fontWeight: 600 }}>E-Mail</label>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.95rem', color: ms.muted, fontWeight: 600 }}>E-Mail</label>
                       <input
                         type="email"
                         value={memberForm.email}
                         onChange={(e) => setMemberForm(f => ({ ...f, email: e.target.value }))}
                         placeholder="z.B. anna@beispiel.at"
-                        style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.95rem', outline: 'none' }}
+                        style={{ width: '100%', padding: '0.6rem', background: ms.bgElevated, border: `1px solid ${ms.accent}44`, borderRadius: '8px', color: ms.text, fontSize: '1rem', outline: 'none' }}
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.muted, fontWeight: 600 }}>Kunstrichtung / Kategorie</label>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.95rem', color: ms.muted, fontWeight: 600 }}>Kunstrichtung / Kategorie</label>
                       <select
                         value={memberForm.typ}
                         onChange={(e) => setMemberForm(f => ({ ...f, typ: e.target.value }))}
-                        style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.95rem', outline: 'none', cursor: 'pointer' }}
+                        style={{ width: '100%', padding: '0.6rem', background: ms.bgElevated, border: `1px solid ${ms.accent}44`, borderRadius: '8px', color: ms.text, fontSize: '1rem', outline: 'none', cursor: 'pointer' }}
                       >
                         <option value="">– Bitte wählen –</option>
                         {VK2_KUNSTBEREICHE.map((k) => (
@@ -15847,35 +15890,35 @@ ${name}`
                       </select>
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.muted, fontWeight: 600 }}>
-                        Kurz-Bio <span style={{ fontWeight: 400, color: s.muted }}>(1–2 Sätze für die Karte)</span>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.95rem', color: ms.muted, fontWeight: 600 }}>
+                        Kurz-Bio <span style={{ fontWeight: 400, color: ms.muted }}>(1–2 Sätze für die Karte)</span>
                       </label>
                       <textarea
                         value={memberForm.bio}
                         onChange={(e) => setMemberForm(f => ({ ...f, bio: e.target.value }))}
                         placeholder="Kurze Beschreibung: Schwerpunkte, Stil ..."
                         rows={2}
-                        style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
+                        style={{ width: '100%', padding: '0.6rem', background: ms.bgElevated, border: `1px solid ${ms.accent}44`, borderRadius: '8px', color: ms.text, fontSize: '1rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: s.muted, fontWeight: 600 }}>Galerie-Link / Website</label>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.95rem', color: ms.muted, fontWeight: 600 }}>Galerie-Link / Website</label>
                       <input
                         type="text"
                         value={memberForm.galerieLinkUrl}
                         onChange={(e) => setMemberForm(f => ({ ...f, galerieLinkUrl: e.target.value }))}
                         placeholder="z.B. https://k2-galerie.vercel.app/galerie oder eigene Website"
-                        style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.95rem', outline: 'none' }}
+                        style={{ width: '100%', padding: '0.6rem', background: ms.bgElevated, border: `1px solid ${ms.accent}44`, borderRadius: '8px', color: ms.text, fontSize: '1rem', outline: 'none' }}
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: '#fbbf24', fontWeight: 600 }}>🏆 Lizenz-Galerie URL (für Vereinskatalog)</label>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.95rem', color: '#fbbf24', fontWeight: 600 }}>🏆 Lizenz-Galerie URL (für Vereinskatalog)</label>
                       <input
                         type="text"
                         value={memberForm.lizenzGalerieUrl}
                         onChange={(e) => setMemberForm(f => ({ ...f, lizenzGalerieUrl: e.target.value }))}
                         placeholder="z.B. https://anna-k2.vercel.app"
-                        style={{ width: '100%', padding: '0.6rem', background: s.bgElevated, border: '1px solid rgba(251,191,36,0.3)', borderRadius: '8px', color: s.text, fontSize: '0.95rem', outline: 'none' }}
+                        style={{ width: '100%', padding: '0.6rem', background: ms.bgElevated, border: '1px solid rgba(251,191,36,0.3)', borderRadius: '8px', color: ms.text, fontSize: '1rem', outline: 'none' }}
                       />
                       <p style={{ margin: '0.3rem 0 0', fontSize: '0.72rem', color: 'rgba(251,191,36,0.5)' }}>
                         Wenn das Mitglied eine eigene K2-Lizenzgalerie hat – der Katalog holt sich die markierten Werke von dort.
@@ -15884,32 +15927,32 @@ ${name}`
                   </div>
 
                   {/* ── ZUGANGSBERECHTIGUNG ── */}
-                  <div style={{ borderTop: `1px solid ${s.accent}22`, paddingTop: '0.75rem' }}>
-                    <div style={{ fontSize: '0.85rem', color: s.accent, fontWeight: 600, marginBottom: '0.5rem' }}>🔑 Zugangsberechtigung</div>
-                    <p style={{ margin: '0 0 0.6rem', fontSize: '0.8rem', color: s.muted }}>Bestimmt was dieses Mitglied im Admin bearbeiten darf.</p>
+                  <div style={{ borderTop: `1px solid ${ms.accent}22`, paddingTop: '0.75rem' }}>
+                    <div style={{ fontSize: '0.95rem', color: ms.accent, fontWeight: 600, marginBottom: '0.5rem' }}>🔑 Zugangsberechtigung</div>
+                    <p style={{ margin: '0 0 0.6rem', fontSize: '0.9rem', color: ms.muted }}>Bestimmt was dieses Mitglied im Admin bearbeiten darf.</p>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
                       {/* Rolle */}
                       <div>
-                        <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.8rem', color: s.muted, fontWeight: 600 }}>Rolle</label>
+                        <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.9rem', color: ms.muted, fontWeight: 600 }}>Rolle</label>
                         <div style={{ display: 'flex', gap: '0.4rem' }}>
                           {(['mitglied', 'vorstand'] as const).map(r => (
                             <button
                               key={r}
                               type="button"
                               onClick={() => setMemberForm(f => ({ ...f, rolle: r }))}
-                              style={{ flex: 1, padding: '0.5rem', borderRadius: 8, border: `1px solid ${memberForm.rolle === r ? s.accent : s.accent + '33'}`, background: memberForm.rolle === r ? `${s.accent}22` : s.bgElevated, color: memberForm.rolle === r ? s.accent : s.muted, fontSize: '0.82rem', fontWeight: memberForm.rolle === r ? 700 : 400, cursor: 'pointer' }}
+                              style={{ flex: 1, padding: '0.5rem', borderRadius: 8, border: `1px solid ${memberForm.rolle === r ? ms.accent : ms.accent + '33'}`, background: memberForm.rolle === r ? `${ms.accent}22` : ms.bgElevated, color: memberForm.rolle === r ? ms.accent : ms.muted, fontSize: '0.9rem', fontWeight: memberForm.rolle === r ? 700 : 400, cursor: 'pointer' }}
                             >
                               {r === 'vorstand' ? '👑 Vorstand' : '👤 Mitglied'}
                             </button>
                           ))}
                         </div>
-                        <p style={{ margin: '0.25rem 0 0', fontSize: '0.75rem', color: s.muted }}>
+                        <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: ms.muted }}>
                           {memberForm.rolle === 'vorstand' ? 'Voll-Admin: alles bearbeiten, Liste exportieren' : 'Nur eigenes Profil bearbeiten'}
                         </p>
                       </div>
                       {/* PIN */}
                       <div>
-                        <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.8rem', color: s.muted, fontWeight: 600 }}>PIN (4-stellig)</label>
+                        <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.9rem', color: ms.muted, fontWeight: 600 }}>PIN (4-stellig)</label>
                         <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
                           <input
                             type="text"
@@ -15918,50 +15961,26 @@ ${name}`
                             value={memberForm.pin}
                             onChange={(e) => setMemberForm(f => ({ ...f, pin: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
                             placeholder="z.B. 1234"
-                            style={{ width: '100%', padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', color: s.text, fontSize: '1.1rem', outline: 'none', letterSpacing: '0.3em', textAlign: 'center', fontWeight: 700 }}
+                            style={{ width: '100%', padding: '0.5rem', background: ms.bgElevated, border: `1px solid ${ms.accent}44`, borderRadius: '6px', color: ms.text, fontSize: '1.1rem', outline: 'none', letterSpacing: '0.3em', textAlign: 'center', fontWeight: 700 }}
                           />
                           <button
                             type="button"
                             title="Zufälligen PIN generieren"
                             onClick={() => setMemberForm(f => ({ ...f, pin: String(Math.floor(1000 + Math.random() * 9000)) }))}
-                            style={{ padding: '0.5rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 6, color: s.accent, fontSize: '0.9rem', cursor: 'pointer', flexShrink: 0 }}
+                            style={{ padding: '0.5rem 0.6rem', background: ms.bgElevated, border: `1px solid ${ms.accent}33`, borderRadius: 6, color: ms.accent, fontSize: '0.95rem', cursor: 'pointer', flexShrink: 0 }}
                           >🎲</button>
                         </div>
-                        <p style={{ margin: '0.25rem 0 0', fontSize: '0.75rem', color: s.muted }}>Mitglied tippt beim Login: Name wählen → PIN eingeben</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* ── BANKVERBINDUNG ── */}
-                  <div style={{ borderTop: `1px solid ${s.accent}22`, paddingTop: '0.75rem' }}>
-                    <div style={{ fontSize: '0.85rem', color: s.accent, fontWeight: 600, marginBottom: '0.5rem' }}>Bankverbindung (für Bonussystem)</div>
-                    <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Nur für Mitglieder, die am Bonussystem teilnehmen.</p>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                      <div>
-                        <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.8rem', color: s.muted }}>Kontoinhaber</label>
-                        <input type="text" value={memberForm.bankKontoinhaber} onChange={(e) => setMemberForm(f => ({ ...f, bankKontoinhaber: e.target.value }))} placeholder="z.B. Lisa Muster" style={{ width: '100%', padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', color: s.text, fontSize: '0.9rem', outline: 'none' }} />
-                      </div>
-                      <div>
-                        <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.8rem', color: s.muted }}>IBAN</label>
-                        <input type="text" value={memberForm.bankIban} onChange={(e) => setMemberForm(f => ({ ...f, bankIban: e.target.value }))} placeholder="z.B. AT61 1904 3002 3457 3201" style={{ width: '100%', padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', color: s.text, fontSize: '0.9rem', outline: 'none' }} />
-                      </div>
-                      <div>
-                        <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.8rem', color: s.muted }}>BIC/SWIFT</label>
-                        <input type="text" value={memberForm.bankBic} onChange={(e) => setMemberForm(f => ({ ...f, bankBic: e.target.value }))} placeholder="z.B. RZOOAT2L" style={{ width: '100%', padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', color: s.text, fontSize: '0.9rem', outline: 'none' }} />
-                      </div>
-                      <div>
-                        <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.8rem', color: s.muted }}>Bank / Kreditinstitut</label>
-                        <input type="text" value={memberForm.bankName} onChange={(e) => setMemberForm(f => ({ ...f, bankName: e.target.value }))} placeholder="z.B. Raiffeisen Bank" style={{ width: '100%', padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', color: s.text, fontSize: '0.9rem', outline: 'none' }} />
+                        <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: ms.muted }}>Mitglied tippt beim Login: Name wählen → PIN eingeben</p>
                       </div>
                     </div>
                   </div>
 
                   {/* ── BUTTONS ── */}
-                  <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: `1px solid ${s.accent}22` }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: `1px solid ${ms.accent}22` }}>
                     <button
                       type="button"
                       onClick={() => { setShowAddModal(false); setEditingMemberIndex(null); setMemberForm({ ...EMPTY_MEMBER_FORM }) }}
-                      style={{ padding: '0.6rem 1.25rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', color: s.text, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}
+                      style={{ padding: '0.6rem 1.25rem', background: ms.bgElevated, border: `1px solid ${ms.accent}44`, borderRadius: '8px', color: ms.text, fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer' }}
                     >
                       Abbrechen
                     </button>
@@ -15970,7 +15989,31 @@ ${name}`
                       onClick={() => {
                         if (!memberForm.name.trim()) { alert('Bitte Name eintragen.'); return }
                         const mitglieder = [...(vk2Stammdaten.mitglieder || [])]
-                        const neu: Vk2Mitglied = { name: memberForm.name.trim(), email: memberForm.email.trim() || undefined, lizenz: memberForm.lizenz.trim() || undefined, typ: memberForm.typ || undefined, bio: memberForm.bio.trim() || undefined, vita: memberForm.vita.trim() || undefined, galerieLinkUrl: memberForm.galerieLinkUrl.trim() || undefined, lizenzGalerieUrl: memberForm.lizenzGalerieUrl.trim() || undefined, website: memberForm.website.trim() || undefined, phone: memberForm.phone.trim() || undefined, strasse: memberForm.strasse.trim() || undefined, plz: memberForm.plz.trim() || undefined, ort: memberForm.ort.trim() || undefined, land: memberForm.land.trim() || undefined, geburtsdatum: memberForm.geburtsdatum.trim() || undefined, eintrittsdatum: memberForm.eintrittsdatum.trim() || undefined, mitgliedFotoUrl: memberForm.mitgliedFotoUrl.trim() || undefined, imageUrl: memberForm.imageUrl.trim() || undefined, bankKontoinhaber: memberForm.bankKontoinhaber.trim() || undefined, bankIban: memberForm.bankIban.trim() || undefined, bankBic: memberForm.bankBic.trim() || undefined, bankName: memberForm.bankName.trim() || undefined, rolle: memberForm.rolle || 'mitglied', pin: memberForm.pin.trim() || undefined, oeffentlichSichtbar: true }
+                        const existing = editingMemberIndex !== null ? mitglieder[editingMemberIndex] : null
+                        const neu: Vk2Mitglied = {
+                          ...(existing ?? {}),
+                          name: memberForm.name.trim(),
+                          email: memberForm.email.trim() || undefined,
+                          lizenz: memberForm.lizenz.trim() || undefined,
+                          typ: memberForm.typ || undefined,
+                          bio: memberForm.bio.trim() || undefined,
+                          vita: memberForm.vita.trim() || undefined,
+                          galerieLinkUrl: memberForm.galerieLinkUrl.trim() || undefined,
+                          lizenzGalerieUrl: memberForm.lizenzGalerieUrl.trim() || undefined,
+                          website: memberForm.website.trim() || undefined,
+                          phone: memberForm.phone.trim() || undefined,
+                          strasse: memberForm.strasse.trim() || undefined,
+                          plz: memberForm.plz.trim() || undefined,
+                          ort: memberForm.ort.trim() || undefined,
+                          land: memberForm.land.trim() || undefined,
+                          geburtsdatum: memberForm.geburtsdatum.trim() || undefined,
+                          eintrittsdatum: memberForm.eintrittsdatum.trim() || undefined,
+                          mitgliedFotoUrl: memberForm.mitgliedFotoUrl.trim() || undefined,
+                          imageUrl: memberForm.imageUrl.trim() || undefined,
+                          rolle: memberForm.rolle || 'mitglied',
+                          pin: memberForm.pin.trim() || undefined,
+                          oeffentlichSichtbar: existing ? (existing.oeffentlichSichtbar !== false) : true
+                        }
                         if (editingMemberIndex !== null) {
                           mitglieder[editingMemberIndex] = neu
                         } else {
@@ -15982,11 +16025,13 @@ ${name}`
                         setEditingMemberIndex(null)
                         setMemberForm({ ...EMPTY_MEMBER_FORM })
                       }}
-                      style={{ padding: '0.6rem 1.25rem', background: s.gradientAccent, border: 'none', borderRadius: '8px', color: '#fff', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', boxShadow: s.shadow }}
+                      style={{ padding: '0.6rem 1.25rem', background: ms.gradientAccent, border: 'none', borderRadius: '8px', color: '#fff', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer', boxShadow: ms.shadow }}
                     >
                       💾 Speichern
                     </button>
                   </div>
+                </>
+              ); })() }
                 </>
               ) : (
               <>

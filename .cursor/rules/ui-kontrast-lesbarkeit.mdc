@@ -5,6 +5,10 @@ alwaysApply: true
 
 # 🔒 UI-Kontrast – Keine unlesbaren Farben (kritisch für Georg)
 
+## Grundsatz
+
+**Es darf keine Stellen geben, die unlesbar sind – und erst recht nicht unbemerkt.** Jeder Bereich (Seite, Modal, Overlay, Karte) muss bewusst auf Kontrast geprüft werden: Hintergrund hell → Text dunkel; Hintergrund dunkel → Text hell.
+
 ## Das Problem
 
 Der Admin-Bereich hat einen **hellen, warmen Hintergrund** (`WERBEUNTERLAGEN_STIL`):
@@ -42,8 +46,17 @@ Auf diesen Hintergründen sind folgende Farben **UNLESERLICH**:
 **Türkis / Weiß = nur auf dunklem Hintergrund.**
 **Auf hellem Hintergrund = dunkle Farben (`#1c1a18`, `#b54a1e`, `#5c5650`).**
 
+## Modals / Overlays
+
+Modals und Overlays haben oft einen **eigenen** Hintergrund (z. B. dunkles Glas, heller Kartenhintergrund). Nicht blind die gleichen Stil-Variablen wie die umgebende Seite nutzen:
+
+- [ ] **Hintergrund des Modals prüfen:** Ist er hell oder dunkel?
+- [ ] **Text/Labels im Modal** dazu passend wählen: heller Modal-Hintergrund → dunkle Textfarben (`#1c1a18`, `#5c5650`); dunkler Modal-Hintergrund → helle Textfarben (z. B. `#f0f6ff`, `rgba(255,255,255,0.88)`).
+- [ ] Keine Stelle unbemerkt unlesbar lassen – bei neuen Modals oder Layout-Änderungen immer Kontrast prüfen.
+
 ## Vor jeder UI-Änderung prüfen
 
 - [ ] Welche Hintergrundfarbe hat der Bereich? (hell oder dunkel?)
 - [ ] Textfarbe / Button-Farbe dazu passend? (heller Hintergrund → dunkle Farben; dunkler Hintergrund → helle Farben)
 - [ ] Türkis / Weiß nur auf dunklem Hintergrund verwenden
+- [ ] Bei Modals/Overlays: Eigenen Hintergrund des Modals prüfen, nicht den der Seite
