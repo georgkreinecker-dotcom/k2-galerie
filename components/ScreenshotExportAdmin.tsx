@@ -459,20 +459,19 @@ function loadArtworks(): any[] {
     let artworks = JSON.parse(stored)
     
     
-    // KRITISCH: Im ök2-Kontext nur echte K2-Galerie-Werke entfernen (K2-M-, K2-K-, … bzw. K2-0001), nicht ök2-eigene (K2-W-*)
+    // KRITISCH: Im ök2-Kontext nur Anzeige filtern – NIEMALS gefilterte Liste zurück in localStorage schreiben (Regel: niemals still löschen).
+    // Entfernte Werke wären sonst weg; Nutzer-Arbeit (z. B. am iPad angelegt) darf nicht durch Laden verschwinden.
     if (isOeffentlichAdminContext()) {
       const before = artworks.length
       artworks = artworks.filter((a: any) => {
         const num = a?.number != null ? String(a.number) : ''
         if (!num.startsWith('K2-')) return true // M1, M2, etc. behalten
         if (num.startsWith('K2-W-')) return true // ök2-Demo-Werke behalten
-        return false // K2-M-*, K2-K-*, K2-0001 etc. entfernen
+        return false // K2-M-*, K2-K-*, K2-0001 etc. nur für Anzeige ausblenden
       })
       if (artworks.length < before) {
-        console.log(`🧹 ök2: ${before - artworks.length} K2-Galerie-Werke entfernt (gehören nicht in Demo)`)
-        try {
-          localStorage.setItem(key, JSON.stringify(artworks))
-        } catch (_) {}
+        console.warn(`⚠️ ök2: ${before - artworks.length} K2-Galerie-Werke in Anzeige ausgeblendet (nur Anzeige gefiltert, localStorage unverändert)`)
+        // NICHT setItem – sonst gehen Daten verloren beim nächsten Laden
       }
     }
 

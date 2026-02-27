@@ -52,6 +52,16 @@
 
 ---
 
+## BUG-011 · iPad-Chaos: neues Werk weg, Musterwerke wieder da, Ersetzen übernimmt nicht
+**Symptom:** Am iPad: Verwaltung zeigt keine Musterbilder, Galerie schon; neues Werk erstellt → unter dem Werk öffnet sich 0001; Werk ersetzen nimmt nicht (altes bleibt); in Galerie neues Werk nicht sichtbar; zurück in Verwaltung → Musterwerke wieder da, eigenes Werk weg.
+**Ursache:** (1) **Admin loadArtworks() (ök2):** Gefilterte Liste (K2-M-/K2-K- entfernt) wurde in localStorage geschrieben → beim nächsten Laden weniger Werke. (2) **GalerieVorschauPage syncFromGalleryData:** Bei „Keine Server-Daten“ / „Server nicht erreichbar“ / Fehler wurde filterK2ArtworksOnly(localArtworks) in localStorage geschrieben; wenn Filter Werke entfernt, Reduktion. (3) Regel verletzt: niemals still mit weniger Werken überschreiben.
+**Lösung:** (1) Admin: Im ök2-Kontext nur Anzeige filtern, **kein** setItem nach Filter – localStorage bleibt unverändert. (2) GalerieVorschauPage: Bei „Keine Server-Daten“ und „Server nicht erreichbar“ nur setItem wenn toKeep.length >= localArtworks.length; bei Fehler-Polling gar kein setItem, nur setArtworks für Anzeige. (3) Kein automatisches Überschreiben mit weniger Werken (eine Quelle, keine stillen Löschungen).
+**Betroffene Dateien:** `components/ScreenshotExportAdmin.tsx` (loadArtworks), `src/pages/GalerieVorschauPage.tsx` (syncFromGalleryData)
+**Commit:** (27.02.26)
+**Status:** ✅ Behoben
+
+---
+
 ## BUG-004 · Admin-Kontext-Vergiftung (K2 sieht ök2-Daten nach Kontextwechsel)
 **Symptom:** Nach Besuch von `/admin?context=oeffentlich` → nächster Admin-Aufruf ohne `?context=` → K2-Fotos wurden in ök2-Keys gespeichert.
 **Ursache:** `sessionStorage['k2-admin-context']` blieb auf `'oeffentlich'` hängen.

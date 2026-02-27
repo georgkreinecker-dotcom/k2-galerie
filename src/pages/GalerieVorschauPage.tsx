@@ -1128,37 +1128,36 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 }
               }
             } else {
-              // Keine Server-Werke - behalte lokale Werke (gefiltert)
+              // Keine Server-Werke – nur Anzeige aktualisieren, localStorage NUR wenn wir nicht weniger Werke hätten (niemals still löschen)
               if (localArtworks.length > 0 && isMounted) {
                 const toKeep = filterK2ArtworksOnly(localArtworks)
-                console.log(`🔒 Keine Server-Daten - behalte ${toKeep.length} lokale Werke`)
-                localStorage.setItem('k2-artworks', JSON.stringify(toKeep))
-                if (artworks.length !== localArtworks.length) {
-                  setArtworks(localArtworks)
+                console.log(`🔒 Keine Server-Daten - ${toKeep.length} lokale Werke (Anzeige)`)
+                if (toKeep.length >= localArtworks.length) {
+                  try { localStorage.setItem('k2-artworks', JSON.stringify(toKeep)) } catch (_) {}
+                } else {
+                  console.warn(`⚠️ Sync: würde ${localArtworks.length} → ${toKeep.length} reduzieren – localStorage NICHT überschrieben`)
                 }
+                setArtworks(toKeep.length > 0 ? toKeep : localArtworks)
               }
             }
           } else {
-            // Server nicht erreichbar - behalte lokale Werke (gefiltert)
+            // Server nicht erreichbar – gleiche Regel: nicht mit weniger überschreiben
             if (localArtworks.length > 0 && isMounted) {
               const toKeep = filterK2ArtworksOnly(localArtworks)
-              console.log(`🔒 Server nicht erreichbar - behalte ${toKeep.length} lokale Werke`)
-              localStorage.setItem('k2-artworks', JSON.stringify(toKeep))
-              if (artworks.length !== localArtworks.length) {
-                setArtworks(localArtworks)
+              console.log(`🔒 Server nicht erreichbar - ${toKeep.length} lokale Werke`)
+              if (toKeep.length >= localArtworks.length) {
+                try { localStorage.setItem('k2-artworks', JSON.stringify(toKeep)) } catch (_) {}
               }
+              setArtworks(toKeep.length > 0 ? toKeep : localArtworks)
             }
           }
         } catch (error) {
           console.warn('⚠️ Admin-Bereich Auto-Polling fehlgeschlagen:', error)
-          // Bei Fehler: Behalte lokale Werke
           const localArtworks = loadArtworks()
           if (localArtworks.length > 0 && isMounted) {
-            console.log(`🔒 Fehler beim Polling - behalte ${localArtworks.length} lokale Werke`)
-            localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
-            if (artworks.length !== localArtworks.length) {
-              setArtworks(localArtworks)
-            }
+            console.log(`🔒 Fehler beim Polling - behalte ${localArtworks.length} lokale Werke (kein setItem, kein Datenverlust)`)
+            setArtworks(localArtworks)
+            // NICHT setItem – lokale Daten unverändert lassen
           }
         }
       }

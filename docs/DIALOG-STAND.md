@@ -11,7 +11,8 @@ Praxistest: Bild-Bugs beim Bearbeiten und bei neuen Werken behoben
 Praxistest (Martina/Georg befüllen Galerie): Werk bearbeiten – neues Foto wurde nicht übernommen; neues Werk – Fragezeichen statt Bild.
 
 ## Was zuletzt gemacht
-- **iPad Admin – neues Foto + Freistellung:** (1) **Neues Foto wird übernommen:** Beim Bearbeiten wird die aktuelle Vorschau (data-URL) immer als gespeichertes Bild genutzt – Bedingung „previewUrl !== altes Bild“ entfernt, damit auf iPad (wo selectedFile teils nicht gesetzt wird) das neue Kamera-Foto sicher übernommen wird. (2) **Vorschau-Pfad:** Data-URL wird vor dem Speichern komprimiert (dataUrlToFile + compressImage, max 720px, 1,2MB-Grenze) und Freistellung angewendet wie beim Datei-Pfad. (3) **Freistellung:** Wenn sie fehlschlägt (z. B. iPad Speicher), wird Original gespeichert (console.warn). ScreenshotExportAdmin.tsx.
+- **iPad-Chaos behoben (gründlich):** (1) **Admin loadArtworks() (ök2):** Gefilterte Liste (K2-M-/K2-K- nur Anzeige) wird **nicht mehr** in localStorage geschrieben – kein stilles Löschen beim Laden. (2) **GalerieVorschauPage syncFromGalleryData:** Bei „Keine Server-Daten“ / „Server nicht erreichbar“ wird localStorage nur geschrieben wenn toKeep.length >= localArtworks.length; bei Fehler-Polling gar kein setItem, nur setArtworks. (3) Eine Quelle, keine stillen Überschreibungen mit weniger Werken. BUG-011 in GELOESTE-BUGS.md.
+- **iPad Admin – neues Foto + Freistellung:** Vorschau-Pfad komprimiert + Freistellung; neues Foto beim Bearbeiten wird übernommen. ScreenshotExportAdmin.tsx.
 - **Bild-Bugs (Praxistest):** (1) **Bearbeiten – neues Foto nicht übernommen:** Beim Öffnen des Bearbeitungsdialogs wird `selectedFile` zurückgesetzt; beim Speichern wird bei Bearbeitung die Vorschau (data-URL) genutzt. blob:-URLs werden nicht mehr beibehalten. (2) **Neues Werk – Fragezeichen statt Bild:** Werkliste zeigt blob:-URLs nicht mehr (Platzhalter); onError = „Kein Bild“-Platzhalter. ScreenshotExportAdmin.tsx.
 - **Einfache Kassa & Lagerhaltung (5 Punkte):** (1) Druck-Button „Verkaufs- & Lagerstatistik“ immer sichtbar (auch bei 0 Verkäufen). (2) **Verkauf stornieren:** In Verkaufsliste Button „Stornieren“ → Eintrag aus k2-sold-artworks entfernt, Stückzahl +1. (3) **CSV-Export:** Button „📥 CSV exportieren“ lädt verkaufsliste-YYYY-MM-DD.csv (Datum;Nr.;Titel;Preis; Gesamtumsatz). (4) **Galerie/Lager-Toggle:** Im Werkkatalog in der Status-Spalte Buttons „→ Lager“ / „→ Galerie“ – ein Klick wechselt ohne Werk zu bearbeiten. (5) **Umsatz heute:** Kachel „Umsatz heute“ in der Statistik. Commit: 787f57d ✅
 - **mök2 – Produkt- & Branchenvergleich:** Neue Sektion „Warum ök2?“ nach USPs: Am Markt (Kasse 15–35 €/Monat, Galerie/Events/Etiketten getrennt, mehrere hundert €/Jahr) vs. ök2 (eine Oberfläche, eine Datenbasis, Kasse & Lager integriert, ein Stand). Kernvorteil-Satz + Link in Promotion Sektion 7. Sidebar + Struktur-Liste ergänzt. Commit: 9f2df3c ✅
@@ -57,10 +58,10 @@ Praxistest (Martina/Georg befüllen Galerie): Werk bearbeiten – neues Foto wur
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- (wird nach diesem Fix: iPad Admin – neues Foto übernommen, Vorschau-Pfad komprimiert + Freistellung)
+- (wird nach diesem Fix: iPad-Chaos – keine stillen Überschreibungen, BUG-011)
 
 ## Nächster Schritt
-- **iPad:** Erneut testen: Werk bearbeiten → neues Foto aufnehmen → Speichern → neues Bild sichtbar; Freistellung (wenn aktiviert) prüfen. Bei Fehlschlag Freistellung: Original wird gespeichert.
+- **iPad:** Nochmal testen: Neues Werk anlegen → in Galerie prüfen → zurück in Verwaltung → Werk muss bleiben; Musterwerke dürfen dein Werk nicht verdrängen.
 
 ## Session 27.02.26 (Bugs: verschwundene Werke, Freistellung)
 - **Verschwundene Werke nach Rückkehr in Verwaltung:** (1) Supabase: Wenn Supabase weniger Werke liefert als localStorage, wird localStorage nicht mehr überschrieben – lokale Neu-Anlagen bleiben erhalten. (2) GalerieVorschau: Beim Laden aus localStorage wird gefilterte Liste nicht mehr zurückgeschrieben (kein stilles Löschen). (3) Mobile-Polling (syncFromGalleryData): Schreibt nicht mehr, wenn das Ergebnis weniger Werke hätte als aktuell lokal. (4) Admin: Werke werden nach 0,4 s statt 3 s geladen, damit die Liste schnell erscheint.
