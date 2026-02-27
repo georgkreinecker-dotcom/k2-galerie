@@ -6767,6 +6767,41 @@ ${'='.repeat(60)}
     })
   }
 
+  // Galerie/Lager schnell umschalten (Werkkatalog)
+  const handleToggleInExhibition = (artwork: any) => {
+    const id = artwork.id
+    const num = artwork.number || artwork.id
+    const artworks = loadArtworks()
+    const idx = artworks.findIndex((a: any) => a.id === id || (a.number || a.id) === num)
+    if (idx === -1) return
+    const updated = [...artworks]
+    updated[idx] = { ...updated[idx], inExhibition: !updated[idx].inExhibition }
+    if (saveArtworks(updated)) {
+      setAllArtworks(loadArtworks())
+      window.dispatchEvent(new CustomEvent('artworks-updated'))
+    }
+  }
+
+  // Verkauf stornieren: aus k2-sold-artworks entfernen, Stückzahl +1
+  const handleStornoVerkauf = (artworkNumber: string) => {
+    const soldArtworks = JSON.parse(localStorage.getItem('k2-sold-artworks') || '[]')
+    const filtered = soldArtworks.filter((a: any) => a.number !== artworkNumber)
+    if (filtered.length === soldArtworks.length) return
+    localStorage.setItem('k2-sold-artworks', JSON.stringify(filtered))
+
+    const artworks = loadArtworks()
+    const idx = artworks.findIndex((a: any) => (a.number || a.id) === artworkNumber)
+    if (idx !== -1) {
+      const a = artworks[idx]
+      const q = a.quantity != null ? Number(a.quantity) : 0
+      artworks[idx] = { ...a, quantity: q + 1, inShop: true }
+      if (saveArtworks(artworks)) {
+        setAllArtworks(loadArtworks())
+        window.dispatchEvent(new CustomEvent('artworks-updated'))
+      }
+    }
+  }
+
   // Werk als verkauft markieren – Stückzahl automatisch um 1 verringern
   const handleMarkAsSold = (artworkNumber: string) => {
     const soldArtworks = JSON.parse(localStorage.getItem('k2-sold-artworks') || '[]')
@@ -9474,6 +9509,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               allArtworks={allArtworks}
               onMarkAsReserved={handleMarkAsReserved}
               onRerender={() => setAllArtworks(loadArtworks())}
+              onStorno={handleStornoVerkauf}
             />
           )}
 
@@ -9506,6 +9542,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               katalogSelectedWork={katalogSelectedWork}
               setKatalogSelectedWork={setKatalogSelectedWork}
               galleryData={galleryData}
+              onToggleInExhibition={handleToggleInExhibition}
             />
           )}
 

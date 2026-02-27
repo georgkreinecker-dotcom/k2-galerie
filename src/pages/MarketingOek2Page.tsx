@@ -265,7 +265,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             <ul style={{ margin: 0, paddingLeft: '1.2em', lineHeight: 1.55, fontSize: '0.88rem', color: 'rgba(255,255,255,0.9)' }}>
               <li>Eigene Galerie im Netz: Werke, Vita, Shop</li>
               <li>Events planen, Einladungen &amp; Flyer aus der App</li>
-              <li>Kasse &amp; Etiketten (Verkauf vor Ort, WLAN-Drucker)</li>
+              <li>Kasse &amp; Etiketten (Verkauf vor Ort, WLAN-Drucker); Verkaufs- &amp; Lagerstatistik</li>
               <li>Marketing aus einem Guss: Newsletter, Presse, Social</li>
               <li>Ein Stand auf allen Geräten (Handy, Tablet, Rechner)</li>
             </ul>
@@ -294,6 +294,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <li><strong>Marketing aus einem Guss</strong> – PR-Vorschläge aus Stammdaten und Event (Newsletter, Plakat, Presse, Social Media, Event-Flyer im Galerie-Design); mehrere Vorschläge pro Typ; A4/A3/A5; QR-Code-Plakat.</li>
           <li><strong>Technik ohne Vendor-Lock-in</strong> – Plattformneutral (Windows, Android, macOS, iOS, Browser/PWA); moderner Web-Stack; Konfiguration statt Festverdrahtung.</li>
           <li><strong>Kassafunktion & Etiketten</strong> – Kasse/Shop für Verkauf vor Ort (z. B. iPad/Handy); Etikettendruck (z. B. Brother QL) mit Werk-Nummer, Titel, QR-Code, WLAN-fähig; Kundenverwaltung (Kunden-Tab) für Erfassung und Tagesgeschäft.</li>
+          <li><strong>Einfache Kassa & Lagerhaltung</strong> – Verkauf erfassen, Kassenbeleg drucken (Etikett oder A4); Verkaufs- und Lagerstatistik (Werke gesamt, Bestand, Galerie, Reserviert, Umsatz) drucken; Werkkatalog mit Status Galerie/Lager/Verkauft; Stückzahl und Storno geplant – alles für Tagesgeschäft und Übersicht ohne Zusatz-Software.</li>
           <li><strong>Fotostudio</strong> – Professionelle Werkfotos in der App: Objektfreistellung und Pro-Hintergrund direkt im Browser (ohne API-Keys); ideal für Fotos von iPad/iPhone, automatisch aufgewertet beim Hereinladen.</li>
           <li><strong>Mobile und Stand</strong> – Ein Stand überall nach Deploy; Galerie-Assistent für neue Nutzer.</li>
           <li><strong>Datensouveränität und Backup</strong> – Lokale Speicherung, Backup & Wiederherstellung; K2 vs. Demo (ök2) strikt getrennt; keine Datenverluste durch Merge-Logik.</li>
@@ -484,7 +485,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
           <li><strong>Eine Oberfläche, alle Geräte:</strong> Admin am Rechner, Galerie und Kasse auf Tablet/Handy – gleicher Stand per QR, kein Chaos.</li>
           <li><strong>PR-Vorschläge aus deinen Daten:</strong> Event anlegen → fertige Texte und Formate für Newsletter, Presse, Social Media, Flyer, Plakat – im Galerie-Design.</li>
-          <li><strong>Kasse & Etiketten:</strong> Verkauf vor Ort direkt aus der App; Etikettendruck (z. B. Brother QL) mit Werk-Nummer, Titel, QR – WLAN-fähig.</li>
+          <li><strong>Kasse & Etiketten:</strong> Verkauf vor Ort direkt aus der App; Etikettendruck (z. B. Brother QL) mit Werk-Nummer, Titel, QR – WLAN-fähig. Verkaufs- und Lagerstatistik drucken, Bestand im Blick – einfache Kassa und Lagerhaltung in einer Oberfläche.</li>
           <li><strong>Datensouveränität:</strong> Lokale Speicherung, Backup & Wiederherstellung – deine Daten bleiben unter deiner Kontrolle.</li>
           <li><strong>Deutsche UI, seriös:</strong> Keine Anglizismen-Flut; klare, professionelle Oberfläche für Galerien und Ateliers.</li>
         </ul>

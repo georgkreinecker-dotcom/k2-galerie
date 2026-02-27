@@ -8,9 +8,11 @@ interface StatistikTabProps {
   allArtworks: any[]
   onMarkAsReserved: (number: string, reservedFor: string) => void
   onRerender: () => void
+  /** Verkauf stornieren: Eintrag entfernen, Stückzahl +1. Optional (z. B. ök2 ohne Storno). */
+  onStorno?: (number: string) => void
 }
 
-export default function StatistikTab({ allArtworks, onMarkAsReserved, onRerender }: StatistikTabProps) {
+export default function StatistikTab({ allArtworks, onMarkAsReserved, onRerender, onStorno }: StatistikTabProps) {
   let soldEntries: any[] = []
   try { soldEntries = JSON.parse(localStorage.getItem('k2-sold-artworks') || '[]') } catch (_) {}
   let reservedEntries: any[] = []
@@ -52,6 +54,28 @@ export default function StatistikTab({ allArtworks, onMarkAsReserved, onRerender
     })
 
   const lagerBestand = gesamtWerke - soldWerke.length // Noch im Bestand (nicht verkauft)
+
+  const umsatzHeute = alleVerkaufe
+    .filter((e: any) => e.soldAt && new Date(e.soldAt).toDateString() === new Date().toDateString())
+    .reduce((sum: number, e: any) => sum + (e.preis || 0), 0)
+
+  const exportVerkaufeCsv = () => {
+    const header = 'Datum;Nr.;Titel;Preis (€)'
+    const rows = alleVerkaufe.map((e: any) => {
+      const datum = e.soldAt ? new Date(e.soldAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''
+      const titel = (e.werk?.title || e.number || '').replace(/"/g, '""')
+      return `${datum};${e.number || ''};"${titel}";${(e.preis || 0).toFixed(2)}`
+    })
+    const summe = alleVerkaufe.reduce((s: number, e: any) => s + (e.preis || 0), 0)
+    const csv = [header, ...rows, '', `;Gesamtumsatz;${summe.toFixed(2)}`].join('\n')
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `verkaufsliste-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   const printVerkaufsUndLagerstatistik = () => {
     const summe = alleVerkaufe.reduce((s: number, e: any) => s + (e.preis || 0), 0)
@@ -139,6 +163,10 @@ export default function StatistikTab({ allArtworks, onMarkAsReserved, onRerender
         <div style={{ ...kachelStyle, textAlign: 'center' }}>
           <div style={{ fontSize: '2rem', fontWeight: 800, color: '#d97706' }}>{reserviert}</div>
           <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4 }}>Reserviert</div>
+        </div>
+        <div style={{ ...kachelStyle, textAlign: 'center' }}>
+          <div style={{ fontSize: '2rem', fontWeight: 800, color: umsatzHeute > 0 ? '#15803d' : s.muted }}>€ {umsatzHeute.toFixed(0)}</div>
+          <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4 }}>Umsatz heute</div>
         </div>
         {preise.length > 0 && (
           <div style={{ ...kachelStyle, textAlign: 'center' }}>
@@ -249,7 +277,7 @@ export default function StatistikTab({ allArtworks, onMarkAsReserved, onRerender
         <div style={{ ...kachelStyle, gridColumn: '1 / -1', marginTop: '0.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
             <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: 0 }}>📋 Verkaufsliste</h3>
-            {alleVerkaufe.length > 0 && (
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <button
                 type="button"
                 onClick={printVerkaufsUndLagerstatistik}
@@ -257,7 +285,16 @@ export default function StatistikTab({ allArtworks, onMarkAsReserved, onRerender
               >
                 🖨️ Verkaufs- & Lagerstatistik drucken
               </button>
-            )}
+              {alleVerkaufe.length > 0 && (
+                <button
+                  type="button"
+                  onClick={exportVerkaufeCsv}
+                  style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: 8, color: s.text, fontWeight: 600, cursor: 'pointer' }}
+                >
+                  📥 CSV exportieren
+                </button>
+              )}
+            </div>
           </div>
           {alleVerkaufe.length === 0 ? (
             <div style={{ color: s.muted, fontSize: '0.9rem' }}>Noch keine Verkäufe. Verkäufe aus der Kassa erscheinen hier.</div>
@@ -271,6 +308,7 @@ export default function StatistikTab({ allArtworks, onMarkAsReserved, onRerender
                     <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left', color: s.muted, fontWeight: 600 }}>Nr.</th>
                     <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left', color: s.muted, fontWeight: 600 }}>Titel</th>
                     <th style={{ padding: '0.5rem 0.75rem', textAlign: 'right', color: s.muted, fontWeight: 600 }}>Preis</th>
+                    {onStorno && <th style={{ padding: '0.5rem 0.75rem', color: s.muted, fontWeight: 600 }}>Aktion</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -281,6 +319,22 @@ export default function StatistikTab({ allArtworks, onMarkAsReserved, onRerender
                       <td style={{ padding: '0.5rem 0.75rem', color: s.text }}>{e.number || '–'}</td>
                       <td style={{ padding: '0.5rem 0.75rem', color: s.text }}>{e.werk?.title || '–'}</td>
                       <td style={{ padding: '0.5rem 0.75rem', textAlign: 'right', fontWeight: 600, color: '#15803d' }}>€ {(e.preis || 0).toFixed(2)}</td>
+                      {onStorno && (
+                        <td style={{ padding: '0.5rem 0.75rem' }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(`Verkauf von „${e.werk?.title || e.number}“ (Nr. ${e.number}) stornieren? Das Werk gilt wieder als verfügbar.`)) {
+                                onStorno(e.number)
+                                onRerender()
+                              }
+                            }}
+                            style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem', background: 'transparent', border: `1px solid ${s.muted}`, borderRadius: 6, color: s.muted, cursor: 'pointer' }}
+                          >
+                            Stornieren
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

@@ -24,6 +24,8 @@ interface WerkkatalogTabProps {
   katalogSelectedWork: any
   setKatalogSelectedWork: (w: any) => void
   galleryData: any
+  /** Schnell umschalten: In Galerie ↔ Lager (nur bei nicht verkauften Werken). Optional. */
+  onToggleInExhibition?: (artwork: any) => void
 }
 
 const ALLE_SPALTEN = [
@@ -44,6 +46,7 @@ export default function WerkkatalogTab({
   katalogSelectedWork,
   setKatalogSelectedWork,
   galleryData,
+  onToggleInExhibition,
 }: WerkkatalogTabProps) {
   // Sold-Status + Reservierung aus separaten Keys holen
   const soldMap = new Map<string, any>()
@@ -315,11 +318,31 @@ export default function WerkkatalogTab({
                   {katalogSpalten.includes('masse') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.dimensions || '–'}</td>}
                   {katalogSpalten.includes('technik') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.technik || '–'}</td>}
                   {katalogSpalten.includes('preis') && <td style={{ padding: '7px 10px', color: s.text, textAlign: 'right', borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.price ? `€ ${Number(a.price).toFixed(2)}` : '–'}</td>}
-                  {katalogSpalten.includes('status') && <td style={{ padding: '7px 10px', borderBottom: `1px solid ${s.accent}18` }}>
+                  {katalogSpalten.includes('status') && <td style={{ padding: '7px 10px', borderBottom: `1px solid ${s.accent}18` }} onClick={e => e.stopPropagation()}>
                     {a.sold ? <span style={{ color: '#b91c1c', fontWeight: 700, fontSize: '0.82rem' }}>● Verkauft</span>
                       : a.reserved ? <span style={{ color: '#d97706', fontWeight: 700, fontSize: '0.82rem' }} title={a.reservedFor ? `Reserviert für ${a.reservedFor}` : ''}>🔶 Reserviert{a.reservedFor ? ` – ${a.reservedFor}` : ''}</span>
-                      : a.inExhibition ? <span style={{ color: '#15803d', fontWeight: 600, fontSize: '0.82rem' }}>● Galerie</span>
-                      : <span style={{ color: s.muted, fontSize: '0.82rem' }}>○ Lager</span>}
+                      : onToggleInExhibition ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ color: a.inExhibition ? '#15803d' : s.muted, fontSize: '0.82rem', fontWeight: 600 }}>{a.inExhibition ? '● Galerie' : '○ Lager'}</span>
+                          <button
+                            type="button"
+                            onClick={() => onToggleInExhibition(a)}
+                            title={a.inExhibition ? 'Ins Lager' : 'In Galerie'}
+                            style={{
+                              padding: '2px 6px',
+                              fontSize: '0.75rem',
+                              border: `1px solid ${s.accent}44`,
+                              borderRadius: 4,
+                              background: s.bgElevated,
+                              color: s.accent,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {a.inExhibition ? '→ Lager' : '→ Galerie'}
+                          </button>
+                        </span>
+                        ) : a.inExhibition ? <span style={{ color: '#15803d', fontWeight: 600, fontSize: '0.82rem' }}>● Galerie</span>
+                        : <span style={{ color: s.muted, fontSize: '0.82rem' }}>○ Lager</span>}
                   </td>}
                   {katalogSpalten.includes('datum') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.createdAt ? new Date(a.createdAt).toLocaleDateString('de-DE') : '–'}</td>}
                   {katalogSpalten.includes('kaeufer') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.buyer || '–'}</td>}
