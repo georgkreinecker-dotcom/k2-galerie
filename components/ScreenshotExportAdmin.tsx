@@ -9503,6 +9503,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Neu hier? Der Assistent führt dich durch die Einrichtung.', tab: 'assistent' },
                   ] : [
                     { emoji: '🧾', name: 'Kassa & Verkauf', beschreibung: 'Werk verkauft? Eintragen, Beleg drucken – vom Handy direkt.', tab: 'kassa' },
+                    { emoji: '📊', name: 'Verkaufsstatistik', beschreibung: 'Umsatz, Verkäufe, Lager – komplette Kassa-Statistik einsehen und drucken.', tab: 'statistik' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Meine Daten, Drucker, Sicherheit, Backup.', tab: 'einstellungen' },
                     { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Neu hier? Der Assistent führt dich durch die Einrichtung.', tab: 'assistent' },
                   ]
