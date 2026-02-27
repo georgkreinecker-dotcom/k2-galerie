@@ -3308,10 +3308,18 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 <p style={{
                   fontSize: 'clamp(0.8rem, 2vw, 0.85rem)',
                   color: 'rgba(255, 255, 255, 0.55)',
-                  marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
+                  marginBottom: '0.35rem',
                   lineHeight: '1.4'
                 }}>
                   {musterOnly ? 'Galerie virtuell erkunden' : 'Galerie auch bei geschlossener Tür erkunden'}
+                </p>
+                <p style={{
+                  fontSize: 'clamp(0.72rem, 1.8vw, 0.78rem)',
+                  color: 'rgba(255, 255, 255, 0.45)',
+                  marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
+                  lineHeight: 1.4
+                }}>
+                  Eigenes Video (z. B. Atelier- oder Galerie-Rundgang) mit maximaler Länge in den Einstellungen unter Design → Seitengestaltung einbinden und positionieren.
                 </p>
                 <button
                   onClick={() => {
