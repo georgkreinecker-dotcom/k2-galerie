@@ -6998,6 +6998,13 @@ ${'='.repeat(60)}
 
 
 
+  // Data-URL → File (für Komprimierung bei Vorschau-Pfad, z. B. iPad Kamera)
+  const dataUrlToFile = async (dataUrl: string): Promise<File> => {
+    const res = await fetch(dataUrl)
+    const blob = await res.blob()
+    return new File([blob], 'preview.jpg', { type: blob.type || 'image/jpeg' })
+  }
+
   // Bild komprimieren - AGRESSIV komprimiert für viele Bilder (wenig Speicher)
   const compressImage = (file: File, maxWidth: number = 600, quality: number = 0.5): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -7164,12 +7171,18 @@ ${'='.repeat(60)}
             imageDataUrl = await compositeOnProfessionalBackground(imageDataUrl, photoBackgroundPreset)
           } catch (err) {
             console.warn('Freistellung fehlgeschlagen, verwende Original:', err)
-            // imageDataUrl bleibt komprimiertes Original
+            // Auf iPad/Mobile kann Freistellung fehlschlagen (z. B. Speicher) – Original wird gespeichert
           }
         }
-      } else if (editingArtwork && previewUrl && typeof previewUrl === 'string' && previewUrl.startsWith('data:') && previewUrl !== editingArtwork.imageUrl) {
-        // Bearbeitung: neues Bild in der Vorschau (z. B. Kamera/Mobile), aber selectedFile war nicht gesetzt – Vorschau übernehmen
-        imageDataUrl = previewUrl
+      } else if (editingArtwork && previewUrl && typeof previewUrl === 'string' && previewUrl.startsWith('data:')) {
+        // Bearbeitung: neues Bild in der Vorschau (z. B. iPad Kamera) – Vorschau immer verwenden, auch wenn selectedFile auf iPad nicht gesetzt wurde
+        const fileFromPreview = await dataUrlToFile(previewUrl)
+        let compressed = await compressImage(fileFromPreview, 720, 0.6)
+        if (compressed.length > 1200000) {
+          const more = await compressImage(fileFromPreview, 600, 0.5)
+          compressed = more.length > 1200000 ? compressed : more
+        }
+        imageDataUrl = compressed
         if (photoUseFreistellen) {
           try {
             const { compositeOnProfessionalBackground } = await import('../src/utils/professionalImageBackground')
