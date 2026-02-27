@@ -2526,6 +2526,11 @@ function ScreenshotExportAdmin() {
           if (isMounted) setAllArtworks([])
           return
         }
+        // ök2: Gespeichert leer = leer anzeigen (kein Rückfall auf Musterwerke bei späterem Re-Run)
+        if (isOeffentlichAdminContext() && stored === '[]') {
+          if (isMounted) setAllArtworks([])
+          return
+        }
         const artworks = loadArtworks()
         if (isMounted && Array.isArray(artworks)) setAllArtworks(artworks)
       } catch (_) {
@@ -2540,6 +2545,11 @@ function ScreenshotExportAdmin() {
     const handleArtworksUpdate = () => {
       console.log('🔄 artworks-updated Event empfangen - lade Werke neu...')
       try {
+        // ök2: Gespeichert leer = wirklich leer anzeigen (kein Rückfall auf Musterwerke)
+        if (isOeffentlichAdminContext() && localStorage.getItem('k2-oeffentlich-artworks') === '[]') {
+          setAllArtworks([])
+          return
+        }
         const artworks = loadArtworks()
         console.log('📦 Geladene Werke:', artworks.length)
         if (Array.isArray(artworks)) {
@@ -10511,8 +10521,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             const filtered = artworks.filter((a: any) => a.number !== artwork.number && a.id !== artwork.id)
                             const saved = saveArtworks(filtered)
                             if (saved) {
+                              // ök2: Bei leerer Liste Key explizit '[]' setzen, damit kein Rückfall auf Musterwerke
+                              if (isOeffentlichAdminContext() && filtered.length === 0) {
+                                try { localStorage.setItem('k2-oeffentlich-artworks', '[]') } catch (_) {}
+                                setAllArtworks([])
+                              } else {
+                                setAllArtworks(filtered)
+                              }
                               window.dispatchEvent(new CustomEvent('artworks-updated'))
-                              setAllArtworks(filtered)
                             } else {
                               alert('⚠️ Fehler beim Löschen! Bitte versuche es erneut.')
                             }
