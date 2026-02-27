@@ -1880,15 +1880,23 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       loadData(true)
       return
     }
-    // Erst nach kurzer Verzögerung prüfen: sucht neue Werke, die ein Mobilgerät möglicherweise eingespielt hat (Server/gallery-data).
-    // Haupt-Load (erster useEffect) soll zuerst aus localStorage/Supabase laden; sonst bleibt der rote „Lade Werke…“-Balken hängen.
+    // Erst nach kurzer Verzögerung prüfen: sucht neue Werke vom Server (gallery-data.json).
+    // Wenn lokal leer (z. B. iPad nach Neuöffnen): schnell vom Server laden (500 ms), nicht 2,8 s warten.
+    const delayMs = (() => {
+      const current = loadArtworks()
+      const filtered = filterK2ArtworksOnly(current)
+      const isVercel = typeof window !== 'undefined' && (window.location.hostname.includes('vercel.app') || window.location.hostname.includes('k2-galerie'))
+      if (filtered.length === 0 && isVercel) return 500
+      if (filtered.length === 0) return 800
+      return 2800
+    })()
     const timer = setTimeout(() => {
       const current = loadArtworks()
       const filtered = filterK2ArtworksOnly(current)
       if (filtered.length === 0) {
         loadData()
       }
-    }, 2800)
+    }, delayMs)
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- nur einmal beim Mount ausführen
   }, [])

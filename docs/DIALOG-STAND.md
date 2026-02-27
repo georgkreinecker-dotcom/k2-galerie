@@ -8,9 +8,10 @@
 Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen. **Erledigt:** Raw-Liste beim Speichern (kein Filter zurückschreiben), Nummer aus Raw, Freistellen-Hinweis bei Fallback.
 
 ## Nächster Schritt
-Praxistest: Neues Werk anlegen → Admin verlassen → Vorschau/Galerie: Werk bleibt sichtbar. Optional: Mac↔iPad-Ablauf mit Handbuch-Kapitel 16 durchgehen.
+iPad testen: K2-Vorschau (Seite wo Werke als Karten) öffnen – nach ~0,5 s sollten Werke vom Server erscheinen, wenn gallery-data.json auf Vercel befüllt ist. Optional: Mac↔iPad-Ablauf mit Handbuch-Kapitel 16 durchgehen.
 
 ## Was zuletzt gemacht (27.02.26)
+- **iPad „keine Werke“:** Auf der Vorschau-Seite (wo die Werke als Karten stehen) wurde bei leerem localStorage erst nach 2,8 s vom Server geladen. Jetzt: Wenn lokal leer und auf Vercel → 500 ms Verzögerung, sonst 800 ms (leer) bzw. 2,8 s (wenn lokal schon Werke da). GalerieVorschauPage.tsx.
 - **Zentrale Stelle Vercel (Hausverstand):** (1) Nummern: generateArtworkNumber lädt immer von CENTRAL_GALLERY_DATA_URL (k2-galerie.vercel.app/gallery-data.json), damit Mac und iPad nie dieselbe Nummer vergeben. (2) Speichern = automatisch an Vercel: Nach saveArtworkData (K2) wird publishMobile({ silent: true }) aufgerufen – kein extra „Veröffentlichen“ nötig. (3) Handbuch 16 angepasst: Speichern reicht, Daten gehen automatisch an die zentrale Stelle; Laden von dort (Galerie/Vorschau nutzen bereits Vercel-URL). Button „Veröffentlichen“ in Einstellungen bleibt optional.
 - **BUG-013:** Altes iPad-Werk verschwindet am iPad nach „Vom Server laden“ (zeitverzögert). Ursache: In GalerieVorschauPage handleRefresh wurden lokale Werke, die nicht auf dem Server sind, nur übernommen wenn isMobileWork && isVeryNew (< 10 Min). Fix: Wie BUG-012 – lokale Werke ohne Server-Eintrag **immer** in merged (mergedArtworks.push(localArtwork)). GELOESTE-BUGS.md + GalerieVorschauPage.tsx.
 - **Mac ↔ iPad Sync – Schritt-für-Schritt-Anleitung:** Neues Handbuch-Kapitel `k2team-handbuch/16-MAC-IPAD-SYNC-SCHRITT-FUER-SCHRITT.md`: Richtung 1 Mac→iPad (Werk speichern → Veröffentlichen am Mac → am iPad Stand-Badge tippen/neu laden), Richtung 2 iPad→Mac (Werk speichern → Veröffentlichen am iPad → am Mac Stand-Badge/neu laden). Kurzfassung-Tabelle + Merksatz. In 00-INDEX als Nr. 6 eingetragen.
