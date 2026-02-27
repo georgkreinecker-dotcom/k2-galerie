@@ -43,6 +43,21 @@ Der Production-Branch wird **nur** in Vercel gesetzt – nicht im Code. Im Repo 
 2. **Production Branch** = **main** setzen und speichern.
 3. Ab dann: **nur auf main** arbeiten und pushen. Siehe **`docs/DEPLOYMENT-EIN-BRANCH.md`**.
 
+## iPad/Handy hängt bei altem Stand (z. B. 13:26) – keine Synchronisation
+
+**Ursache:** Safari/iOS cached oft stark. Die geladene Seite (und build-info.json) sind dann alt → angezeigter Stand bleibt 13:26.
+
+**Sofort probieren (eine der beiden reicht meist):**
+
+1. **Stand-Badge tippen:** Unten links auf **„Stand: 13.26“** (oder die angezeigte Zeit) tippen. Das lädt die Seite mit Cache-Bypass neu. Danach sollte der neue Stand erscheinen.
+2. **QR-Code neu scannen:** Neuen QR von der APf (Mission Control / Mac) scannen – der QR enthält immer Server-Stand + Cache-Bust.
+
+**Ab diesem Deployment:** Beim Öffnen der Seite prüft ein Script, ob die geladene Version älter als 2 Minuten ist → dann erfolgt automatisch ein Reload. So bleibt das iPad nicht mehr dauerhaft hängen. Beim **ersten** Mal nach dem Update musst du aber einmal Stand tippen oder QR neu scannen, damit die neue Seite (mit diesem Script) geladen wird.
+
+**Falls es dann noch hängt:** Safari → Einstellungen → Verlauf und Websitedaten löschen (oder nur für k2-galerie.vercel.app).
+
+---
+
 ## Schnell-Check: Was liefert Vercel wirklich?
 
 **Am Handy im Browser öffnen (nicht in der App):**
