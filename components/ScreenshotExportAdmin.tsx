@@ -9810,6 +9810,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       + Neues Werk
                     </button>
                     <span style={{ fontSize: '0.72rem', color: s.muted }}>Hier können die neuen Werke angelegt werden</span>
+                    {isOeffentlichAdminContext() && (
+                      <span style={{ fontSize: '0.72rem', color: s.muted }}>Musterwerke entfernen: Werk in der Liste öffnen → unten „Löschen“ (alle nacheinander = Galerie leer)</span>
+                    )}
                   </div>
                 )}
                 {isVk2AdminContext() ? (
