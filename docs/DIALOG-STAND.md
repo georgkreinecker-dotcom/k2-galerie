@@ -60,7 +60,7 @@ Fehlermeldung weg, aber Werk verschwindet in der Galerie wieder. **Pending-Layer
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Pending-Layer: K2-Anzeige = Hauptliste + Pending, addPendingArtwork nach Speichern (Admin + GalerieVorschau).** (wird gleich committed)
+- **Pending-Layer: K2-Anzeige = Hauptliste + Pending, addPendingArtwork nach Speichern (Admin + GalerieVorschau).** Commit: c834f85 ✅ auf GitHub
 
 ## Nächster Schritt
 - **iPad/Mac:** Neues Werk speichern → in Galerie prüfen ob es sichtbar bleibt (Pending-Layer). Wenn ja: Problem gelöst; wenn nein: nächste Ursache suchen (z. B. welcher Pfad überschreibt).
