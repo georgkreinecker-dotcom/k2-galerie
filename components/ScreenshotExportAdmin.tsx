@@ -9457,9 +9457,16 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         ))}
                       </div>
                       {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
-                        <div style={{ marginTop: '1rem', paddingTop: '0.6rem', borderTop: `1px solid ${s.accent}22` }}>
-                          <div style={{ fontSize: '0.8rem', color: s.muted }}>Erweiterte Funktionen (Premium): <strong style={{ color: s.text }}>Vorerst noch nicht verfügbar</strong> – daran wird gearbeitet.</div>
-                        </div>
+                        <>
+                          <div style={{ marginTop: '1rem', paddingTop: '0.6rem', borderTop: `1px solid ${s.accent}22` }}>
+                            <a href="https://web.cursor.sh" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem', color: s.accent, textDecoration: 'none', fontWeight: 500 }}>
+                              Cursor am iPad öffnen (im Browser – Code bearbeiten ohne Mac)
+                            </a>
+                          </div>
+                          <div style={{ marginTop: '0.5rem', paddingTop: '0.6rem', borderTop: `1px solid ${s.accent}22` }}>
+                            <div style={{ fontSize: '0.8rem', color: s.muted }}>Erweiterte Funktionen (Premium): <strong style={{ color: s.text }}>Vorerst noch nicht verfügbar</strong> – daran wird gearbeitet.</div>
+                          </div>
+                        </>
                       )}
                     </div>
                   )
