@@ -14,6 +14,8 @@ import '../App.css'
 
 /** SessionStorage: Willkommens-Fenster auf Galerieseite (QR-Einstieg) schon gesehen */
 const KEY_GALERIE_WELCOME_SEEN = 'k2-galerie-welcome-seen'
+/** localStorage: Hinweis „Icon zum Startbildschirm hinzufügen“ einmal geschlossen – nicht wieder anzeigen */
+const KEY_PWA_ICON_HINT_CLOSED = 'k2-pwa-icon-hint-closed'
 
 /** Fallback-URL für Aktualisierung in anderem Netzwerk (z. B. zuerst Mac-WLAN, dann Mobilfunk) */
 const GALLERY_DATA_PUBLIC_URL = 'https://k2-galerie.vercel.app'
@@ -429,6 +431,17 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   const [forgotEmailOrPhone, setForgotEmailOrPhone] = useState('')
   const [forgotSent, setForgotSent] = useState(false)
   const [fullscreenMedia, setFullscreenMedia] = useState<{ type: 'video' | 'image', src: string } | null>(null)
+  // PWA-Icon-Hinweis: Nur auf Mobile, wenn noch nicht als „App“ am Startbildschirm – Nutzer muss Icon aktiv hinzufügen
+  const [showPwaIconHint, setShowPwaIconHint] = useState(false)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
+    const standalone = (window.navigator as any).standalone === true || window.matchMedia('(display-mode: standalone)').matches
+    try {
+      const closed = localStorage.getItem(KEY_PWA_ICON_HINT_CLOSED) === '1'
+      setShowPwaIconHint(mobile && !standalone && !closed)
+    } catch (_) { setShowPwaIconHint(false) }
+  }, [])
 
   useEffect(() => {
     const handleResize = () => {
@@ -2820,6 +2833,64 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           maxWidth: '1400px',
           margin: '0 auto'
         }}>
+
+          {/* PWA-Icon-Hinweis: Symbol legt sich nicht von selbst auf den Bildschirm – einmal aktiv hinzufügen (nur Mobile, nicht Standalone) */}
+          {showPwaIconHint && (
+            <div style={{
+              marginTop: 'clamp(0.75rem, 2vw, 1rem)',
+              marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
+              padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1rem, 2.5vw, 1.25rem)',
+              background: musterOnly ? 'rgba(107, 144, 128, 0.15)' : vk2 ? 'rgba(255, 140, 66, 0.12)' : 'rgba(255, 255, 255, 0.08)',
+              border: musterOnly ? '1px solid rgba(107, 144, 128, 0.35)' : vk2 ? '1px solid rgba(255, 140, 66, 0.3)' : '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '12px',
+              fontSize: 'clamp(0.82rem, 2vw, 0.9rem)',
+              lineHeight: 1.45,
+              color: musterOnly ? 'var(--k2-text)' : 'rgba(255, 255, 255, 0.95)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.5rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
+                <div>
+                  <strong style={{ display: 'block', marginBottom: '0.25rem', color: musterOnly ? '#6b9080' : vk2 ? 'var(--k2-accent)' : 'rgba(255,255,255,0.95)' }}>
+                    📱 Symbol auf den Startbildschirm
+                  </strong>
+                  <p style={{ margin: 0, opacity: 0.92 }}>
+                    Das Icon legt sich nicht von selbst auf deinen Bildschirm – du musst es einmal aktiv hinzufügen. Dann findest du uns schnell wieder.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    try { localStorage.setItem(KEY_PWA_ICON_HINT_CLOSED, '1') } catch (_) {}
+                    setShowPwaIconHint(false)
+                  }}
+                  style={{
+                    flexShrink: 0,
+                    padding: '0.35rem 0.6rem',
+                    background: 'transparent',
+                    border: musterOnly ? '1px solid rgba(107,144,128,0.5)' : '1px solid rgba(255,255,255,0.35)',
+                    borderRadius: '8px',
+                    color: 'inherit',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontFamily: 'inherit'
+                  }}
+                  aria-label="Hinweis schließen"
+                >
+                  OK
+                </button>
+              </div>
+              <div style={{ fontSize: '0.8em', opacity: 0.85 }}>
+                <strong>So geht’s:</strong>{' '}
+                {/iPhone|iPad|iPod/.test(navigator.userAgent)
+                  ? 'Teilen (□↑) → „Zum Home-Bildschirm“ → Hinzufügen.'
+                  : 'Menü (⋮) → „Zum Startbildschirm hinzufügen“ oder „App installieren“.'
+                }
+              </div>
+            </div>
+          )}
 
           {/* Aktuelles aus den Eventplanungen – zwischen Foto und Kunstschaffende (K2, ök2, VK2) */}
           {((musterOnly && upcomingEventsOeffentlich.length > 0) || (!musterOnly && !vk2 && upcomingEvents.length > 0) || (vk2 && vk2UpcomingEvents.length > 0)) && (

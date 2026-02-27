@@ -26,6 +26,9 @@ function loadArtworks(): any[] {
   }
 }
 
+/** localStorage: Hinweis „Icon zum Startbildschirm hinzufügen“ geschlossen – gleicher Key wie GaleriePage (einmal OK reicht) */
+const KEY_PWA_ICON_HINT_CLOSED = 'k2-pwa-icon-hint-closed'
+
 /** Nummern der Seed-Musterwerke (ök2) – dürfen nie in K2-Galerie oder Backup landen. */
 const MUSTER_NUMMERN = new Set(['M1', 'M2', 'M3', 'M4', 'M5', 'G1', 'S1', 'O1'])
 
@@ -326,6 +329,17 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   const [willkommenBannerDismissed, setWillkommenBannerDismissed] = useState(false)
   // Guide (Otto) erst nach kurzer Verzögerung – zuerst die Galerie sehen, nicht sofort überfordern
   const [showGuideAfterDelay, setShowGuideAfterDelay] = useState(false)
+  // PWA-Icon-Hinweis: nur Mobile, nicht Standalone, gleicher Key wie GaleriePage
+  const [showPwaIconHint, setShowPwaIconHint] = useState(false)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
+    const standalone = (window.navigator as any).standalone === true || window.matchMedia('(display-mode: standalone)').matches
+    try {
+      const closed = localStorage.getItem(KEY_PWA_ICON_HINT_CLOSED) === '1'
+      setShowPwaIconHint(mobile && !standalone && !closed)
+    } catch (_) { setShowPwaIconHint(false) }
+  }, [])
   useEffect(() => {
     if (!musterOnly || !willkommenName || willkommenBannerDismissed) return
     const t = setTimeout(() => setShowGuideAfterDelay(true), 3000)
@@ -2313,6 +2327,62 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       }} />
       
       <div style={{ position: 'relative', zIndex: 1 }}>
+        {/* PWA-Icon-Hinweis: Symbol aktiv zum Startbildschirm hinzufügen (nur Mobile, nicht Standalone) */}
+        {showPwaIconHint && (
+          <div style={{
+            margin: 'clamp(0.75rem, 2vw, 1rem)',
+            padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1rem, 2.5vw, 1.25rem)',
+            background: musterOnly ? 'rgba(107, 144, 128, 0.15)' : vk2 ? 'rgba(255, 140, 66, 0.12)' : 'rgba(255, 255, 255, 0.08)',
+            border: musterOnly ? '1px solid rgba(107, 144, 128, 0.35)' : vk2 ? '1px solid rgba(255, 140, 66, 0.3)' : '1px solid rgba(255, 255, 255, 0.15)',
+            borderRadius: '12px',
+            fontSize: 'clamp(0.82rem, 2vw, 0.9rem)',
+            lineHeight: 1.45,
+            color: musterOnly ? 'var(--k2-text)' : 'rgba(255, 255, 255, 0.95)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.5rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
+              <div>
+                <strong style={{ display: 'block', marginBottom: '0.25rem', color: musterOnly ? '#6b9080' : vk2 ? 'var(--k2-accent)' : 'rgba(255,255,255,0.95)' }}>
+                  📱 Symbol auf den Startbildschirm
+                </strong>
+                <p style={{ margin: 0, opacity: 0.92 }}>
+                  Das Icon legt sich nicht von selbst auf deinen Bildschirm – du musst es einmal aktiv hinzufügen. Dann findest du uns schnell wieder.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  try { localStorage.setItem(KEY_PWA_ICON_HINT_CLOSED, '1') } catch (_) {}
+                  setShowPwaIconHint(false)
+                }}
+                style={{
+                  flexShrink: 0,
+                  padding: '0.35rem 0.6rem',
+                  background: 'transparent',
+                  border: musterOnly ? '1px solid rgba(107,144,128,0.5)' : '1px solid rgba(255,255,255,0.35)',
+                  borderRadius: '8px',
+                  color: 'inherit',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }}
+                aria-label="Hinweis schließen"
+              >
+                OK
+              </button>
+            </div>
+            <div style={{ fontSize: '0.8em', opacity: 0.85 }}>
+              <strong>So geht's:</strong>{' '}
+              {/iPhone|iPad|iPod/.test(navigator.userAgent)
+                ? 'Teilen (□↑) → „Zum Home-Bildschirm“ → Hinzufügen.'
+                : 'Menü (⋮) → „Zum Startbildschirm hinzufügen“ oder „App installieren“.'
+              }
+            </div>
+          </div>
+        )}
         {/* Guide-Avatar – geführter Rundgang (nur ök2, wenn mit Namen angekommen) */}
         {musterOnly && willkommenName && !willkommenBannerDismissed && showGuideAfterDelay && (
           <GalerieGuide name={willkommenName} onDismiss={dismissWillkommenBanner} />
