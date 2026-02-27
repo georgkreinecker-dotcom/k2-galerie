@@ -9771,30 +9771,33 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </p>
               )}
               {/* Werke-Aktionen: Primär klar, Sekundär zurückhaltend */}
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
                 {!isVk2AdminContext() && (
-                  <button
-                    onClick={() => { setEditingArtwork(null); setShowAddModal(true) }}
-                    style={{
-                      padding: '0.7rem 1.4rem',
-                      background: s.gradientAccent,
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '10px',
-                      fontSize: '0.95rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.4rem',
-                      boxShadow: '0 2px 8px rgba(181,74,30,0.18)',
-                      transition: 'all 0.2s'
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(181,74,30,0.28)' }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(181,74,30,0.18)' }}
-                  >
-                    + Neues Werk
-                  </button>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <button
+                      onClick={() => { setEditingArtwork(null); setShowAddModal(true) }}
+                      style={{
+                        padding: '0.7rem 1.4rem',
+                        background: s.gradientAccent,
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '10px',
+                        fontSize: '0.95rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                        boxShadow: '0 2px 8px rgba(181,74,30,0.18)',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(181,74,30,0.28)' }}
+                      onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(181,74,30,0.18)' }}
+                    >
+                      + Neues Werk
+                    </button>
+                    <span style={{ fontSize: '0.72rem', color: s.muted }}>Hier können die neuen Werke angelegt werden</span>
+                  </div>
                 )}
                 {isVk2AdminContext() ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
