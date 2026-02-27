@@ -68,8 +68,8 @@ mök2/Preisgestaltung: Wie hoch sollen die Lizenzgebühren realistisch sein?
 - **ök2:** Unverändert – Events/Docs nur Muster; State = MUSTER_TEXTE.
 
 ## Nächster Schritt (für nächste Session)
-- **Test:** Admin-Hub am Handy/Browser – zwei Spalten, größere Icons, Kurzinfo, ein Klick pro Bereich; keine mittlere Karte mehr.
-- Optional: 📎-Icons unter „Aktuelles aus den Eventplanungen“ durchklicken (Einladung/Presse).
+- **Lizenzstruktur umgesetzt (27.02.26):** Basic 15 €, Pro 35 €, Pro+ 45 € (gesamter Marketingbereich), VK2 wie Pro – überall in Kommunikation (LicencesPage, mök2, Lizenz-Pakete für Außen, Sektion 14, SmartPanel). Excellent → Pro+; alte erfasste Lizenzen „excellent“ werden beim Laden als Pro+ angezeigt.
+- **Test:** Admin-Hub am Handy; optional 📎-Icons Eventplanung.
 
 ## Was zuvor (Event-Flyer-Icon)
 - **Vk2GaleriePage:** Bei „VEREINSTERMINE & EVENTS“ hat jedes Event ein klickbares 📄-Icon; Klick öffnet den Flyer (gespeichertes HTML oder minimal generiert) in einem Modal.
@@ -85,6 +85,10 @@ mök2/Preisgestaltung: Wie hoch sollen die Lizenzgebühren realistisch sein?
 ## Heute außerdem
 - **Zurück aus Dokumenten:** goBack() in generierten Dokumenten nutzt Opener-URL inkl. context (Commit 192d544).
 - **CI:** GitHub Actions führt jetzt vollen Build bei jedem Push (Commit f8f0a7c).
+
+## Crash / Wiedereinstieg 27.02.26
+- **Nach Crash:** Build geprüft ✅ (npm run build), Stand 27.02.26 08:29. Kein neuer App-Fix nötig (Crash = Cursor/HMR, siehe WEITERARBEITEN-NACH-ABSTURZ).
+- **Faden:** mök2/Preisgestaltung erledigt; Admin-Hub (2 Spalten, Icons) committed. Nächster Schritt: Admin-Hub am Handy testen; optional 📎-Icons Eventplanung; Vor Veröffentlichung Checkliste.
 
 ## Session-Ende 27.02.26
 - **Code:** Commit 2edf426 gepusht (Admin-Hub: Mittlere Karte weg, Icons + Kurzinfo, zwei Spalten, größere Icons). Stand 27.02.26 05:39.

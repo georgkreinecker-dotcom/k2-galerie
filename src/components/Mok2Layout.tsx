@@ -32,7 +32,7 @@ const mok2Sections = [
   { id: 'mok2-lizenz-pakete-aussen', label: 'Lizenzpakete (Außensicht)' },
   { id: 'mok2-10b-vk2-lizenz', label: 'Lizenzstruktur VK2 (Vereinsplattform)' },
   { id: 'mok2-13', label: '13. Werkkatalog & Werkkarte' },
-  { id: 'mok2-14', label: '14. 💎 Excellent-Lizenz' },
+  { id: 'mok2-14', label: '14. 💎 Pro+-Lizenz' },
   { id: 'mok2-15-gruender', label: '15. 🌱 Gründer-Galerie & Leitkünstler' },
   { id: 'mok2-16-leitkuenstler', label: '16. 📋 Leitkünstler:innen – Meine Liste' },
   { id: 'mok2-17-guide-avatar', label: '17. 🎙️ Guide-Avatar Vision (Option A)' },
@@ -52,6 +52,7 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
   const isMarketingPage = location.pathname === PROJECT_ROUTES['k2-galerie'].marketingOek2
   const isWerbeunterlagen = location.pathname === PROJECT_ROUTES['k2-galerie'].werbeunterlagen
   const isLicences = location.pathname === PROJECT_ROUTES['k2-galerie'].licences
+  const isSoftwareentwicklung = location.pathname === PROJECT_ROUTES['k2-galerie'].softwareentwicklung
   const isEmpfehlungstool = location.pathname === PROJECT_ROUTES['k2-galerie'].empfehlungstool
   const isVerguetung = location.pathname === PROJECT_ROUTES['k2-galerie'].verguetung
   const isWillkommen = location.pathname === WILLKOMMEN_ROUTE
@@ -113,6 +114,20 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
           }}
         >
           Marketing ök2
+        </Link>
+        <Link
+          to={PROJECT_ROUTES['k2-galerie'].softwareentwicklung}
+          style={{
+            padding: '0.4rem 0.8rem',
+            background: isSoftwareentwicklung ? 'var(--k2-accent, #5ffbf1)' : '#444',
+            color: isSoftwareentwicklung ? '#000' : '#fff',
+            textDecoration: 'none',
+            borderRadius: '6px',
+            fontSize: '0.9rem',
+            fontWeight: isSoftwareentwicklung ? 600 : 400,
+          }}
+        >
+          K2 Softwareentwicklung
         </Link>
         <Link
           to={PROJECT_ROUTES['k2-galerie'].werbeunterlagen}

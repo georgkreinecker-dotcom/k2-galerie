@@ -236,7 +236,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             <li><Link to={PROJECT_ROUTES['k2-galerie'].empfehlungstool} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Empfehlungstool</strong> (ID + Empfehlungstext an Freund:innen)</Link></li>
             <li><Link to={WILLKOMMEN_ROUTE} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Willkommensseite</strong> (Zugangsbereich, AGB-Bestätigung)</Link></li>
             <li><Link to={AGB_ROUTE} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>AGB</strong> (Allgemeine Geschäftsbedingungen)</Link></li>
-            <li><a href="#mok2-11" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>11. Sicherheit & Vor Veröffentlichung</strong> (Checklisten, Auth, RLS – wo alles steht)</a></li>
+            <li><Link to={PROJECT_ROUTES['k2-galerie'].softwareentwicklung} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>11. K2 Softwareentwicklung</strong> (Sicherheit, Vor Veröffentlichung, Auth, RLS)</Link></li>
             <li><a href="#mok2-12" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>12. Musterbilder für die ök2-Galerie</strong> (zum Einfügen)</a></li>
             <li><a href="#mok2-13" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>13. Werkkatalog &amp; Werkkarte</strong> – USP &amp; Verkaufsargumente</a></li>
           </ol>
@@ -601,7 +601,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           10. Lizenzen (Konditionen & Vergebung)
         </h2>
         <p style={{ marginBottom: '1rem', lineHeight: 1.6 }}>
-          Lizenz-Stufen (Basic, Pro, Enterprise), Preismodelle und die <strong>Vergabe von Lizenzen</strong> gehören zur Vertriebs-Arbeitsplattform. Beim Vergeben kann optional eine <strong>Empfehler-ID</strong> erfasst werden – Grundlage für die automatisierte Abrechnung des Empfehlungs-Programms (Multi-Level-Vergütung). Doku: <code>docs/LICENCE-STRUKTUR.md</code>, <code>docs/ABRECHNUNGSSTRUKTUR-EMPFEHLUNGSPROGRAMM.md</code>.
+          Lizenz-Stufen (Basic, Pro, Pro+, VK2), Preismodelle und die <strong>Vergabe von Lizenzen</strong> gehören zur Vertriebs-Arbeitsplattform. Beim Vergeben kann optional eine <strong>Empfehler-ID</strong> erfasst werden – Grundlage für die automatisierte Abrechnung des Empfehlungs-Programms (Multi-Level-Vergütung). Doku: <code>docs/LICENCE-STRUKTUR.md</code>, <code>docs/ABRECHNUNGSSTRUKTUR-EMPFEHLUNGSPROGRAMM.md</code>.
         </p>
         <p>
           <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>
@@ -711,28 +711,33 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <tbody>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.5rem 0.6rem', fontWeight: 600 }}>Basic</td>
-              <td style={{ padding: '0.5rem 0.6rem' }}><strong>10 – 15 €/Monat</strong></td>
-              <td style={{ padding: '0.5rem 0.6rem' }}>Vergleich: KUNSTMATRIX Basic 10 €, Wix/Squarespace 16–17 €. Galerie + Shop + Einstieg – für Künstler:innen mit kleinem Budget gut vertretbar.</td>
+              <td style={{ padding: '0.5rem 0.6rem' }}><strong>15 €/Monat</strong></td>
+              <td style={{ padding: '0.5rem 0.6rem' }}>Galerie + Shop + Einstieg (bis 30 Werke, Events, Kasse, Etiketten) – für Künstler:innen mit kleinem Budget. Vergleich: KUNSTMATRIX Basic 10 €, Wix 16–17 €.</td>
             </tr>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.5rem 0.6rem', fontWeight: 600 }}>Pro</td>
-              <td style={{ padding: '0.5rem 0.6rem' }}><strong>25 – 35 €/Monat</strong> (Kernkorridor); mit klarer USP-Kommunikation <strong>35 – 50 €/Monat</strong> vertretbar</td>
-              <td style={{ padding: '0.5rem 0.6rem' }}>Alles in einer App (Galerie, Kasse, Events, Marketing, Etiketten) – KUNSTMATRIX Pro 50 €, ArtCloud 79 US-$. Einzigartigkeit (Arbeitsplattform, Kasse vor Ort, Vereinsfähigkeit, Empfehlungsprogramm) rechtfertigt oberen Bereich.</td>
+              <td style={{ padding: '0.5rem 0.6rem' }}><strong>35 €/Monat</strong></td>
+              <td style={{ padding: '0.5rem 0.6rem' }}>Alles aus Basic + unbegrenzte Werke, Custom Domain – ohne vollen Marketingbereich. Alles in einer App (Galerie, Kasse, Events, Etiketten).</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <td style={{ padding: '0.5rem 0.6rem', fontWeight: 600 }}>Pro+</td>
+              <td style={{ padding: '0.5rem 0.6rem' }}><strong>45 €/Monat</strong></td>
+              <td style={{ padding: '0.5rem 0.6rem' }}>Alles aus Pro + <strong>gesamter Marketingbereich</strong>: Events, Galeriepräsentation, Flyer, Presse, Social Media, Plakat, PR-Dokumente aus einem Guss.</td>
             </tr>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.5rem 0.6rem', fontWeight: 600 }}>VK2 (Verein)</td>
-              <td style={{ padding: '0.5rem 0.6rem' }}>Pro-Preis; <strong>ab 10 Mitgliedern für den Verein kostenfrei</strong>; Lizenzmitglieder 50 %</td>
+              <td style={{ padding: '0.5rem 0.6rem' }}>Wie Pro (35 €); <strong>ab 10 Mitgliedern für den Verein kostenfrei</strong>; Lizenzmitglieder 50 %</td>
               <td style={{ padding: '0.5rem 0.6rem' }}>Kein direkter Marktvergleich; Multiplikator (ein Verein → viele sichtbar). Konditionen wie in Lizenzstruktur VK2.</td>
             </tr>
           </tbody>
         </table>
         <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)', marginBottom: '1rem', lineHeight: 1.5 }}>
-          <strong>Fazit:</strong> Basic <strong>10–15 €/Monat</strong>, Pro <strong>25–35 €/Monat</strong> sind realistische Zielkorridore. Wenn die USPs (Alles in einer App, Kasse, Vereinsfähigkeit, Empfehlungsprogramm) in Werbung und Pitch klar sind, ist Pro bis <strong>35–50 €/Monat</strong> begründbar. Preise „auf Anfrage“ sind möglich, bis ihr euch festgelegt habt.
+          <strong>Fazit (Stand Start):</strong> Basic <strong>15 €/Monat</strong>, Pro <strong>35 €/Monat</strong>, Pro+ <strong>45 €/Monat</strong> (mit vollem Marketingbereich), VK2 wie Pro – ab 10 Mitgliedern für den Verein kostenfrei. Damit ist die Preisgestaltung für den Start entschieden und wird in der Kommunikation überall einheitlich genutzt.
         </p>
 
         <h4 style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.9)', marginTop: '1rem', marginBottom: '0.5rem' }}>Erlöspotenzial (Beispielrechnung bei diesen Gebühren)</h4>
         <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', marginBottom: '0.5rem' }}>
-          Bei Basic 12 €/Monat (Mittelwert) und Pro 30 €/Monat: Basic 144 €/Jahr, Pro 360 €/Jahr.
+          Bei Basic 15 €, Pro 35 €, Pro+ 45 €/Monat: Basic 180 €/Jahr, Pro 420 €/Jahr, Pro+ 540 €/Jahr.
         </p>
         <table style={{ width: '100%', maxWidth: 560, borderCollapse: 'collapse', fontSize: '0.9rem', marginBottom: '1rem' }}>
           <thead>
@@ -745,18 +750,18 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <tbody>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.4rem 0.6rem' }}>Konservativ (Einstieg)</td>
-              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>20 Basic, 10 Pro</td>
-              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>ca. 4.200 – 6.600 €</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>20 Basic, 10 Pro, 5 Pro+</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>ca. 7.200 €</td>
             </tr>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.4rem 0.6rem' }}>Mittleres Szenario</td>
-              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>50 Basic, 25 Pro</td>
-              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>ca. 10.500 – 16.500 €</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>50 Basic, 25 Pro, 15 Pro+</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>ca. 18.000 €</td>
             </tr>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.4rem 0.6rem' }}>Starkes Wachstum</td>
-              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>150 Basic, 75 Pro</td>
-              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>ca. 31.500 – 49.500 €</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>150 Basic, 75 Pro, 50 Pro+</td>
+              <td style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>ca. 54.000 €</td>
             </tr>
           </tbody>
         </table>
@@ -800,26 +805,31 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <tbody>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600 }}>Basic</td>
-              <td style={{ padding: '0.5rem 0.75rem' }}>Galerie-Webauftritt, Werke, einfacher Shop</td>
-              <td style={{ padding: '0.5rem 0.75rem' }}>auf Anfrage</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>Galerie-Webauftritt, Werke, einfacher Shop (bis 30 Werke, Events, Kasse, Etiketten)</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>15 €/Monat</td>
             </tr>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600 }}>Pro</td>
-              <td style={{ padding: '0.5rem 0.75rem' }}>Alles in Basic + Events, Kasse, Etiketten, Marketing aus einem Guss</td>
-              <td style={{ padding: '0.5rem 0.75rem' }}>auf Anfrage</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>Alles aus Basic + unbegrenzte Werke, Custom Domain – ohne vollen Marketingbereich</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>35 €/Monat</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600 }}>Pro+</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>Alles aus Pro + gesamter Marketingbereich (Events, Galeriepräsentation, Flyer, Presse, Social Media, PR-Dokumente)</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>45 €/Monat</td>
             </tr>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600 }}>VK2 (Verein)</td>
-              <td style={{ padding: '0.5rem 0.75rem' }}>Pro für Kunstvereine; ab 10 Mitgliedern kostenfrei, Lizenzmitglieder 50 %</td>
-              <td style={{ padding: '0.5rem 0.75rem' }}>auf Anfrage</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>Pro für Kunstvereine; ab 10 Mitgliedern für den Verein kostenfrei, Lizenzmitglieder 50 %</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>wie Pro (35 €); ab 10 Mitgliedern kostenfrei</td>
             </tr>
           </tbody>
         </table>
         <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>
-          Preise konkretisieren und hier eintragen (oder „auf Anfrage“ beibehalten). Dann in Präsentationsmappe und bei „Lizenz anfragen“ nutzen.
+          Preise für den Start festgelegt. In Präsentationsmappe, Werbeunterlagen und bei „Lizenz anfragen“ einheitlich nutzen.
         </p>
         <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>
-          <strong>Realistische Lizenzgebühren (Orientierung):</strong> Siehe Abschnitt <a href="#mok2-marktwert" style={{ color: '#5ffbf1', textDecoration: 'none' }}>Produktbewertung → Realistische Lizenzgebühren</a>: Basic <strong>10–15 €/Monat</strong>, Pro <strong>25–35 €/Monat</strong> (mit klarer USP-Kommunikation Pro bis 35–50 €). Ausführlich: <code>docs/MARKTCHECK-PREISE-BASIC-PRO-VERGLEICH.md</code>.
+          <strong>Details:</strong> Siehe Abschnitt <a href="#mok2-marktwert" style={{ color: '#5ffbf1', textDecoration: 'none' }}>Produktbewertung → Realistische Lizenzgebühren</a>: Basic <strong>15 €/Monat</strong>, Pro <strong>35 €/Monat</strong>, Pro+ <strong>45 €/Monat</strong>, VK2 wie Pro. Ausführlich: <code>docs/MARKTCHECK-PREISE-BASIC-PRO-VERGLEICH.md</code>.
         </p>
       </section>
 
@@ -874,23 +884,18 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </p>
       </section>
 
-      {/* 11. Sicherheit & Vor Veröffentlichung – alle Infos dokumentiert, jederzeit abrufbar */}
+      {/* 11. Sicherheit & Vor Veröffentlichung → ausgelagert in K2 Softwareentwicklung */}
       <section id="mok2-11" style={{ marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
-          11. Sicherheit & Vor Veröffentlichung
+          11. Sicherheit &amp; Vor Veröffentlichung (→ K2 Softwareentwicklung)
         </h2>
-        <p style={{ marginBottom: '1rem', lineHeight: 1.6 }}>
-          Alle Infos zu <strong>Sicherheit, Produkt-Label, Admin-Auth und Vor Veröffentlichung</strong> sind im Projekt dokumentiert und jederzeit abrufbar. Einstieg: <strong>HAUS-INDEX.md</strong> (Root) und <strong>docs/00-INDEX.md</strong>.
+        <p style={{ marginBottom: '0.5rem', lineHeight: 1.6 }}>
+          Alle Inhalte zu <strong>Sicherheit, Admin-Auth, RLS, Vor Veröffentlichung</strong> und technischen Checklisten liegen in der eigenen Rubrik <strong>K2 Softwareentwicklung</strong> – dort findest du die Links zu allen Docs (VOR-VEROEFFENTLICHUNG.md, ADMIN-AUTH-SETUP.md, Produkt-Label, Stabilität, Supabase RLS).
         </p>
-        <ul style={{ lineHeight: 1.7, paddingLeft: '1.5em', margin: '0 0 1rem' }}>
-          <li><strong>Vor Veröffentlichung:</strong> <code>docs/VOR-VEROEFFENTLICHUNG.md</code> – Checkliste vor Go-Live (Auth, Migration 002, npm audit, AGB/DSGVO, Deployment). Nicht vergessen.</li>
-          <li><strong>Admin-Auth einrichten:</strong> <code>docs/ADMIN-AUTH-SETUP.md</code> – Nutzer in Supabase anlegen, RLS-Migration anwenden.</li>
-          <li><strong>Produkt-Label / Regress:</strong> <code>docs/PRODUKT-LABEL-SICHERHEIT-ROADMAP.md</code> – Ziele, Maßnahmen, Nachweis für Zahlungen/Vergütung.</li>
-          <li><strong>Stabilität & Einbruch:</strong> <code>docs/SICHERHEIT-STABILITAET-CHECKLISTE.md</code> – 5 Punkte Einsturz, 5 Punkte Einbruch, Skala.</li>
-          <li><strong>Supabase RLS:</strong> <code>docs/SUPABASE-RLS-SICHERHEIT.md</code> – Status, später schärfen.</li>
-        </ul>
-        <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.75)' }}>
-          Beim Drucken dieser mök2-Seite („Als PDF drucken“) ist dieser Verweis mit dabei – so bleibt er griffbereit.
+        <p>
+          <Link to={PROJECT_ROUTES['k2-galerie'].softwareentwicklung} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>
+            → K2 Softwareentwicklung öffnen
+          </Link>
         </p>
       </section>
 
@@ -1085,10 +1090,10 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
 
       <section id="mok2-14" style={{ marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(251,191,36,0.4)', pageBreakInside: 'avoid' as const }}>
         <h2 style={{ fontSize: '1.25rem', color: '#fbbf24', marginBottom: '0.5rem', borderBottom: '1px solid rgba(251,191,36,0.4)', paddingBottom: '0.35rem' }}>
-          14. 💎 Excellent-Lizenz – das Premium-Paket für professionelle Künstler:innen
+          14. 💎 Pro+-Lizenz – gesamter Marketingbereich (Events, Galeriepräsentation, PR-Dokumente)
         </h2>
         <p style={{ lineHeight: 1.7, marginBottom: '1rem', color: 'rgba(255,255,255,0.85)' }}>
-          Neben Basic (49 €), Pro (99 €) und Kunstvereine (VK2) gibt es ab sofort die <strong style={{ color: '#fbbf24' }}>Excellent-Lizenz (149 €/Monat)</strong> – das Rundum-Paket für professionelle Galerien und Künstler:innen mit gehobenem Anspruch.
+          Neben Basic (15 €), Pro (35 €) und Kunstvereine (VK2, wie Pro) gibt es die <strong style={{ color: '#fbbf24' }}>Pro+-Lizenz (45 €/Monat)</strong> – Pro inklusive gesamten Marketingbereich: Events, Galeriepräsentation, Flyer, Presse, Social Media, Plakat, PR-Dokumente aus einem Guss.
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>

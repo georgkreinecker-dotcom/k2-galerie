@@ -11,6 +11,7 @@ import K2TeamHandbuchPage from './pages/K2TeamHandbuchPage'
 import MobileConnectPage from './pages/MobileConnectPage'
 import ProduktVorschauPage from './pages/ProduktVorschauPage'
 import MarketingOek2Page from './pages/MarketingOek2Page'
+import K2SoftwareentwicklungPage from './pages/K2SoftwareentwicklungPage'
 import WerbeunterlagenPage from './pages/WerbeunterlagenPage'
 import Mok2Layout from './components/Mok2Layout'
 import GaleriePage from './pages/GaleriePage'
@@ -443,6 +444,7 @@ function getApfPageFromPath(pathname: string, search: string): string {
   if (pathname === PROJECT_ROUTES['k2-galerie'].plan) return 'mission'
   if (pathname === PROJECT_ROUTES['k2-galerie'].produktVorschau) return 'produkt-vorschau'
   if (pathname === PROJECT_ROUTES['k2-galerie'].marketingOek2) return 'marketing-oek2'
+  if (pathname === PROJECT_ROUTES['k2-galerie'].softwareentwicklung) return 'k2-softwareentwicklung'
   if (pathname.startsWith('/projects/k2-galerie')) return 'galerie' // z. B. Projekt-Start → Galerie
   return 'platform'
 }
@@ -554,6 +556,7 @@ function App() {
       <Route path="/projects/k2-galerie/vita/:artistId" element={<VitaPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].produktVorschau} element={<ProduktVorschauPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].marketingOek2} element={<Mok2Layout><MarketingOek2Page embeddedInMok2Layout /></Mok2Layout>} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].softwareentwicklung} element={<Mok2Layout><K2SoftwareentwicklungPage /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].werbeunterlagen} element={<Mok2Layout><WerbeunterlagenPage embeddedInMok2Layout /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].licences} element={<Mok2Layout><LicencesPage embeddedInMok2Layout /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].empfehlungstool} element={<Mok2Layout><EmpfehlungstoolPage /></Mok2Layout>} />
