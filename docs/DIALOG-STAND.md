@@ -8,9 +8,9 @@
 Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen. **Erledigt:** Raw-Liste beim Speichern (kein Filter zurückschreiben), Nummer aus Raw, Freistellen-Hinweis bei Fallback.
 
 ## Nächster Schritt
-1. **Vercel (du):** docs/VERCEL-CHECKLISTE-BEI-KEINEM-STAND.md – im Vercel Dashboard prüfen: Deployments (Ready/Error), Production Branch = main. Bei Error: Build-Log, Fix, Push.
-2. **Sync-Ablauf:** docs/SYNC-ABLAUF-MAC-IPAD.md – eine Quelle = Vercel; nach Fix von 1. sollte Sync wieder ankommen.
-3. **Bericht:** docs/BERICHT-ISTZUSTAND-SYNC-VERCEL-27-02-26.md – Gesamtanalyse; Schritte 1–3 heute abgearbeitet (Build lokal OK, vercel.json OK, Checkliste + Sync-Doku ergänzt).
+1. **QR/Stand-Fix (27.02.26):** QR und Stand-Badge nutzen jetzt **/api/build-info** statt build-info.json – Serverless-API, beim Build mit aktuellem Stand beschrieben, umgeht CDN-Cache. Commit c5351e1.
+2. Nach Vercel-Build (1–2 Min): APf neu laden oder „QR neu“ → Vercel-Stand sollte aktuelle Zeit zeigen; iPad refresh.html oder QR scannen.
+3. Falls Vercel-Build fehlschlägt: docs/VERCEL-CHECKLISTE-BEI-KEINEM-STAND.md.
 
 ## Was zuletzt gemacht (27.02.26)
 - **iPad hängt trotzdem bei 13:26:** Neue **Refresh-URL** als letzter Ausweg: **https://k2-galerie.vercel.app/refresh.html** – einmal öffnen, leitet sofort mit Cache-Bust zur Galerie weiter. URL wird von Vercel-Rewrite ausgenommen, no-cache-Header; public/refresh.html → dist/refresh.html. Doku in VERCEL-STAND-HANDY.md ergänzt („Letzter Ausweg – frische URL“).

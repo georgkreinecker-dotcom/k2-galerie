@@ -840,10 +840,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     }
     return GALLERY_DATA_PUBLIC_URL + PROJECT_ROUTES['k2-galerie'].galerie
   }, [vk2, musterOnly])
-  // QR alle 45 s neu bauen mit frischem _= (Cache-Bust), damit Scan am Handy nicht gecachte alte Version lädt
+  // QR alle 15 s neu bauen mit frischem Date.now() (Cache-Bust), damit Scan immer aktuelle Version lädt
   const [qrBustTick, setQrBustTick] = useState(0)
   useEffect(() => {
-    const t = setInterval(() => setQrBustTick((k) => k + 1), 45000)
+    const t = setInterval(() => setQrBustTick((k) => k + 1), 15000)
     return () => clearInterval(t)
   }, [])
   useEffect(() => {
@@ -853,12 +853,13 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       if (!cancelled) setVercelQrDataUrl('')
       return
     }
-    const qrUrl = buildQrUrlWithBust(urlForQr, qrVersionTs)
+    // Immer frischer Cache-Bust (Date.now()), damit Scan sofort die aktuell ausgelieferte Version lädt – unabhängig vom Build-Stand
+    const qrUrl = buildQrUrlWithBust(urlForQr, Date.now())
     QRCode.toDataURL(qrUrl, { width: 100, margin: 1 })
       .then((url) => { if (!cancelled) setVercelQrDataUrl(url) })
       .catch(() => { if (!cancelled) setVercelQrDataUrl('') })
     return () => { cancelled = true }
-  }, [vercelGalerieUrl, qrVersionTs, musterOnly, qrBustTick])
+  }, [vercelGalerieUrl, musterOnly, qrBustTick])
 
   // Aktualisieren-Funktion für Mobile-Version - lädt neue Daten ohne Reload
   const [isRefreshing, setIsRefreshing] = React.useState(false)
