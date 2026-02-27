@@ -2574,17 +2574,25 @@ function ScreenshotExportAdmin() {
   const handleLoadFromServer = async () => {
     if (isOeffentlichAdminContext() || isVk2AdminContext()) return
     setIsLoadingFromServer(true)
+    const url = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&t=${Date.now()}&_=${Math.random()}`
     try {
-      // Auf Vercel: gleiche Origin nutzen (vermeidet CORS/Netzwerk-Probleme)
-      const isVercel = typeof window !== 'undefined' && (window.location.hostname.includes('vercel.app') || window.location.hostname.includes('k2-galerie'))
-      const base = isVercel ? window.location.origin : CENTRAL_GALLERY_DATA_URL.replace(/\/gallery-data\.json.*$/, '')
-      const url = `${base}/gallery-data.json?v=${Date.now()}&t=${Date.now()}&_=${Math.random()}`
-      const res = await fetch(url, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache, no-store' } })
+      const res = await fetch(url, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache, no-store' }, mode: 'cors' })
       if (!res.ok) {
-        alert(`Laden fehlgeschlagen (Server ${res.status}).\n\nBitte prüfen:\n• Internetverbindung\n• Falls du lokal (localhost) bist: App auf k2-galerie.vercel.app öffnen und dort „Bilder vom Server laden“ nutzen.`)
+        alert(`Laden fehlgeschlagen (Server ${res.status}).\n\nBitte prüfen:\n• Internetverbindung\n• App auf k2-galerie.vercel.app öffnen und dort „Bilder vom Server laden“ klicken.`)
         return
       }
-      const data = await res.json()
+      const text = await res.text()
+      if (text.trim().startsWith('<')) {
+        alert('Der Server hat eine Webseite statt Daten geliefert.\n\nÖffne https://k2-galerie.vercel.app im Browser und klicke dort unter „Werke verwalten“ auf „Bilder vom Server laden“.')
+        return
+      }
+      let data: any
+      try {
+        data = JSON.parse(text)
+      } catch (_) {
+        alert('Antwort vom Server war kein gültiges JSON.\n\nBitte auf k2-galerie.vercel.app „Bilder vom Server laden“ versuchen.')
+        return
+      }
       const serverArtworks = filterK2Only(Array.isArray(data.artworks) ? data.artworks : [])
       const localArtworks = loadArtworksRaw()
       const serverMap = new Map<string, any>()
@@ -2622,12 +2630,12 @@ function ScreenshotExportAdmin() {
         alert('Lokal sind mehr Werke als auf dem Server. Lokale Daten wurden beibehalten.')
       }
     } catch (e) {
-      console.error('Vom Server laden:', e)
+      console.error('Vom Server laden:', url, e)
       const msg = e instanceof Error ? e.message : String(e)
       const isNetwork = /failed|network|load|cors|fetch/i.test(msg) || (e instanceof TypeError && msg.includes('fetch'))
       alert(
         isNetwork
-          ? 'Fehler beim Laden (Verbindung zum Server).\n\n• Bist du im Internet?\n• Falls du lokal (localhost) arbeitest: App auf k2-galerie.vercel.app im Browser öffnen und dort „Bilder vom Server laden“ klicken.'
+          ? 'Fehler beim Laden (Verbindung zum Server).\n\n• Bist du im Internet?\n• Öffne im Browser: https://k2-galerie.vercel.app – dort unter „Werke verwalten“ auf „Bilder vom Server laden“ klicken.\n• Tipp: In der Konsole (F12) siehst du den genauen Fehler.'
           : 'Fehler beim Laden. Bitte Verbindung prüfen und erneut versuchen.'
       )
     } finally {
