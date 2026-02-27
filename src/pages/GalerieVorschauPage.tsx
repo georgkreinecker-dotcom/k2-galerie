@@ -12,7 +12,7 @@ import {
 import { sortArtworksFavoritesFirstThenNewest } from '../utils/artworkSort'
 import { appendToHistory } from '../utils/artworkHistory'
 import { tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from '../../components/SafeMode'
-import { readArtworksRaw, loadForDisplay, filterK2Only as filterK2OnlyStorage, saveArtworksOnly as saveArtworksStorage, mayWriteServerList, mergeAndMaybeWrite, mergeWithPending, addPendingArtwork, clearPendingIfInList } from '../utils/artworksStorage'
+import { readArtworksRaw, loadForDisplay, filterK2Only as filterK2OnlyStorage, saveArtworksOnly as saveArtworksStorage, mayWriteServerList, mergeAndMaybeWrite, mergeWithPending, getPendingArtworks, addPendingArtwork, clearPendingIfInList } from '../utils/artworksStorage'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
 import '../App.css'
 
@@ -261,6 +261,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   
   // ök2 (musterOnly): k2-oeffentlich-artworks; VK2 (vk2): Mitglieder aus k2-vk2-stammdaten; K2: k2-artworks
   // K2: Eine Quelle – nur lesen, nie beim Init zurückschreiben (Regel: niemals still löschen)
+  // K2: initialArtworks = Hauptliste + Pending, damit neu gespeicherte Werke sofort sichtbar sind
   const initialArtworks = (() => {
     if (vk2) {
       return loadVk2Mitglieder()
@@ -271,8 +272,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       return [...MUSTER_ARTWORKS]
     }
     const list = loadForDisplay()
-    if (list.length > 0) {
-      return list.map((a: any) => {
+    const withPending = list.length > 0 || getPendingArtworks().length > 0 ? mergeWithPending(list) : []
+    if (withPending.length > 0) {
+      return withPending.map((a: any) => {
         const out = { ...a }
         if (!out.imageUrl && out.previewUrl) out.imageUrl = out.previewUrl
         if (!out.imageUrl && !out.previewUrl) {
@@ -375,6 +377,26 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       const oef = loadOeffentlichArtworks()
       setArtworks(oef.length > 0 ? oef : [...MUSTER_ARTWORKS])
     }
+  }, [musterOnly, vk2])
+
+  // K2: Direkt nach Mount einmal aus localStorage + Pending nachziehen (z. B. nach Speichern → Galerie öffnen)
+  useEffect(() => {
+    if (musterOnly || vk2) return
+    const placeholder = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+    const t = setTimeout(() => {
+      const stored = loadArtworks()
+      const withPending = mergeWithPending(stored || [])
+      if (withPending.length > 0) {
+        const withImages = withPending.map((a: any) => {
+          const out = { ...a }
+          if (!out.imageUrl && out.previewUrl) out.imageUrl = out.previewUrl
+          if (!out.imageUrl && !out.previewUrl) out.imageUrl = placeholder
+          return out
+        })
+        setArtworksDisplay(withImages)
+      }
+    }, 150)
+    return () => clearTimeout(t)
   }, [musterOnly, vk2])
 
   // K2 / ök2 / VK2: Nach Speichern im Admin aktualisieren
