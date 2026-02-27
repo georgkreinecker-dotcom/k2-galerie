@@ -42,6 +42,16 @@
 
 ---
 
+## BUG-005 · Neu angelegte Werke verschwinden nach Rückkehr in die Verwaltung
+**Symptom:** Zwei Werke in Galerievorschau angelegt, überall sichtbar – nach Wechsel in Admin/Verwaltung waren sie weg.
+**Ursache:** (1) Beim Laden aus Supabase wurde localStorage mit Supabase-Liste überschrieben – Supabase hatte die neuen Werke noch nicht (nur lokal gespeichert). (2) Beim Laden aus localStorage wurde gefilterte Liste (Muster/VK2 raus) zurück in localStorage geschrieben und konnte Werke reduzieren. (3) Mobile-Polling (gallery-data.json) konnte mit weniger Werken überschreiben.
+**Lösung:** (1) Supabase: Wenn Supabase weniger Werke liefert als aktuell in localStorage, localStorage nicht überschreiben, lokale Daten behalten. (2) Beim Laden aus localStorage gefilterte Liste nicht mehr zurückschreiben (nur Anzeige filtern, Regel „niemals still löschen“). (3) syncFromGalleryData: Nur schreiben wenn toSave.length >= localCount. (4) Admin: Werke nach 0,4 s statt 3 s laden.
+**Betroffene Dateien:** `src/pages/GalerieVorschauPage.tsx`, `components/ScreenshotExportAdmin.tsx`
+**Commit:** (27.02.26)
+**Status:** ✅ Behoben
+
+---
+
 ## BUG-004 · Admin-Kontext-Vergiftung (K2 sieht ök2-Daten nach Kontextwechsel)
 **Symptom:** Nach Besuch von `/admin?context=oeffentlich` → nächster Admin-Aufruf ohne `?context=` → K2-Fotos wurden in ök2-Keys gespeichert.
 **Ursache:** `sessionStorage['k2-admin-context']` blieb auf `'oeffentlich'` hängen.

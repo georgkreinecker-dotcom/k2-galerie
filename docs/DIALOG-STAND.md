@@ -59,7 +59,11 @@ Praxistest (Martina/Georg befüllen Galerie): Werk bearbeiten – neues Foto wur
 - **Admin K2: Link „Cursor am iPad öffnen“ (web.cursor.sh) unter dem Hub.** Commit: 85dfd99 ✅ auf GitHub
 
 ## Nächster Schritt
-- **Georg geht wieder testen** (Bild-Fix, Werke bearbeiten/neu anlegen). Danach Rückmeldung ob alles passt.
+- Erneut testen: Werke anlegen → in Verwaltung wechseln (sollten sichtbar bleiben); Freistellung beim Speichern prüfen.
+
+## Session 27.02.26 (Bugs: verschwundene Werke, Freistellung)
+- **Verschwundene Werke nach Rückkehr in Verwaltung:** (1) Supabase: Wenn Supabase weniger Werke liefert als localStorage, wird localStorage nicht mehr überschrieben – lokale Neu-Anlagen bleiben erhalten. (2) GalerieVorschau: Beim Laden aus localStorage wird gefilterte Liste nicht mehr zurückgeschrieben (kein stilles Löschen). (3) Mobile-Polling (syncFromGalleryData): Schreibt nicht mehr, wenn das Ergebnis weniger Werke hätte als aktuell lokal. (4) Admin: Werke werden nach 0,4 s statt 3 s geladen, damit die Liste schnell erscheint.
+- **Freistellung beim Bearbeiten:** Wenn neues Bild über „Vorschau“-Pfad übernommen wird (Kamera/Mobile), wird Freistellung (compositeOnProfessionalBackground) jetzt ebenfalls angewendet.
 
 ## Session 27.02.26 (vor dem Test)
 - Bild-Bugs behoben (Bearbeiten + neues Werk), gepusht.

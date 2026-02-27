@@ -874,10 +874,19 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               if (filteredSupabase.length < supabaseArtworks.length) {
                 console.log(`🔒 Muster/VK2 aus Supabase entfernt: ${filteredSupabase.length} Werke`)
               }
-              console.log(`✅ ${filteredSupabase.length} Werke aus Supabase geladen`)
-              setArtworks(filteredSupabase)
-              try { localStorage.setItem('k2-artworks', JSON.stringify(filteredSupabase)) } catch (_) {}
-              setLoadStatus({ message: `✅ ${filteredSupabase.length} Werke geladen`, success: true })
+              // KRITISCH: Nie localStorage mit weniger Werken überschreiben (lokale Neu-Anlagen gehen sonst verloren)
+              const currentLocal = loadArtworks()
+              const lokalAnzahl = currentLocal?.length ?? 0
+              if (filteredSupabase.length < lokalAnzahl) {
+                console.warn(`⚠️ Supabase hat ${filteredSupabase.length} Werke, lokal ${lokalAnzahl} – behalte lokale Daten, überschreibe NICHT`)
+                setArtworks(currentLocal)
+                setLoadStatus({ message: `✅ ${lokalAnzahl} Werke (lokal)`, success: true })
+              } else {
+                console.log(`✅ ${filteredSupabase.length} Werke aus Supabase geladen`)
+                setArtworks(filteredSupabase)
+                try { localStorage.setItem('k2-artworks', JSON.stringify(filteredSupabase)) } catch (_) {}
+                setLoadStatus({ message: `✅ ${filteredSupabase.length} Werke geladen`, success: true })
+              }
               setTimeout(() => setLoadStatus(null), 2000)
               setIsLoading(false)
               return
@@ -915,12 +924,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           const raw = loadArtworks()
           const stored = raw && raw.length > 0 ? filterK2ArtworksOnly(raw) : []
           if (stored.length > 0) {
+            // KRITISCH: Nie beim Laden gefilterte Liste zurück in localStorage schreiben – sonst gehen neu angelegte Werke verloren (Regel: niemals still löschen)
             if (stored.length < (raw?.length ?? 0)) {
-              try {
-                localStorage.setItem('k2-artworks', JSON.stringify(stored))
-                createBackup(stored)
-                console.log('🔒 Muster/VK2 aus localStorage entfernt, Backup überschrieben,', stored.length, 'Werke verbleiben')
-              } catch (_) {}
+              console.warn('⚠️ Muster/VK2-Einträge in k2-artworks – nur Anzeige gefiltert, localStorage wird NICHT überschrieben')
             }
             const nummern = stored.map((a: any) => a.number || a.id).join(', ')
             const mobileWorks = stored.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
@@ -1109,13 +1115,17 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               
               if (currentHash !== newHash && isMounted) {
                 const toSave = filterK2ArtworksOnly(merged)
-                console.log(`🔄 Admin-Bereich: ${toSave.length} Werke synchronisiert (${localArtworks.length} lokal + ${toSave.length - localArtworks.length} Server, Muster/VK2 entfernt)`)
-                console.log(`🔒 Lokale Werke geschützt: ${localArtworks.length} Werke bleiben erhalten`)
-                localStorage.setItem('k2-artworks', JSON.stringify(toSave))
-                setArtworks(toSave)
-                window.dispatchEvent(new CustomEvent('artworks-updated', { 
-                  detail: { count: toSave.length, autoSync: true, fromAdmin: true } 
-                }))
+                if (toSave.length < localCount) {
+                  console.warn(`⚠️ Sync würde ${localCount} → ${toSave.length} reduzieren – überschreibe NICHT (lokale Werke schützen)`)
+                } else {
+                  console.log(`🔄 Admin-Bereich: ${toSave.length} Werke synchronisiert (${localArtworks.length} lokal + ${toSave.length - localArtworks.length} Server, Muster/VK2 entfernt)`)
+                  console.log(`🔒 Lokale Werke geschützt: ${localArtworks.length} Werke bleiben erhalten`)
+                  localStorage.setItem('k2-artworks', JSON.stringify(toSave))
+                  setArtworks(toSave)
+                  window.dispatchEvent(new CustomEvent('artworks-updated', {
+                    detail: { count: toSave.length, autoSync: true, fromAdmin: true }
+                  }))
+                }
               }
             } else {
               // Keine Server-Werke - behalte lokale Werke (gefiltert)

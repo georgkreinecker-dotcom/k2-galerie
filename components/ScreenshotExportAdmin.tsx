@@ -2495,7 +2495,7 @@ function ScreenshotExportAdmin() {
       } catch (_) {
         if (isMounted) setAllArtworks([])
       }
-    }, 3000)
+    }, 400)
     return () => { isMounted = false; clearTimeout(t) }
   }, [location.search])
   
@@ -7170,6 +7170,14 @@ ${'='.repeat(60)}
       } else if (editingArtwork && previewUrl && typeof previewUrl === 'string' && previewUrl.startsWith('data:') && previewUrl !== editingArtwork.imageUrl) {
         // Bearbeitung: neues Bild in der Vorschau (z. B. Kamera/Mobile), aber selectedFile war nicht gesetzt – Vorschau übernehmen
         imageDataUrl = previewUrl
+        if (photoUseFreistellen) {
+          try {
+            const { compositeOnProfessionalBackground } = await import('../src/utils/professionalImageBackground')
+            imageDataUrl = await compositeOnProfessionalBackground(imageDataUrl, photoBackgroundPreset)
+          } catch (err) {
+            console.warn('Freistellung (Vorschau-Pfad) fehlgeschlagen, verwende Original:', err)
+          }
+        }
       } else if (editingArtwork && editingArtwork.imageUrl && !String(editingArtwork.imageUrl).startsWith('blob:')) {
         // Bei Bearbeitung ohne neues Bild: Altes Bild beibehalten (keine blob:-URLs – die werden ungültig)
         imageDataUrl = editingArtwork.imageUrl
