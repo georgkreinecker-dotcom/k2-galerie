@@ -441,6 +441,25 @@ function saveArtworks(artworks: any[]): boolean {
   }
 }
 
+/** Lädt Werke ROH aus localStorage – ohne Anzeige-Filter. NUR für Schreibvorgänge (saveArtworkData), damit nie eine gefilterte Liste zurückgeschrieben wird. */
+function loadArtworksRaw(): any[] {
+  if (isVk2AdminContext()) return []
+  try {
+    const key = getArtworksKey()
+    const stored = localStorage.getItem(key)
+    if (!stored || stored === '[]') {
+      if (isOeffentlichAdminContext()) return [...MUSTER_ARTWORKS]
+      return []
+    }
+    if (stored.length > 10000000) return []
+    const parsed = JSON.parse(stored)
+    return Array.isArray(parsed) ? parsed : []
+  } catch (e) {
+    console.warn('loadArtworksRaw Fehler:', e)
+    return []
+  }
+}
+
 function loadArtworks(): any[] {
   // VK2 hat KEINE Werke – nur Mitglieder (in k2-vk2-stammdaten)
   if (isVk2AdminContext()) return []
@@ -6625,8 +6644,8 @@ ${'='.repeat(60)}
     const categoryPrefix = forVk2 ? `VK2-${letter}` : forOek2 ? 'K2-W-' : `K2-${letter}-`
     const prefix = forOek2 ? 'W' : letter
 
-    // Lade alle artworks (lokal)
-    const localArtworks = loadArtworks()
+    // Lade alle artworks ROH (lokal) – damit keine Nummer doppelt vergeben wird
+    const localArtworks = loadArtworksRaw()
     
     // Versuche auch gallery-data.json zu laden (für Synchronisation ohne Supabase)
     let serverArtworks: any[] = []
@@ -7171,7 +7190,9 @@ ${'='.repeat(60)}
             imageDataUrl = await compositeOnProfessionalBackground(imageDataUrl, photoBackgroundPreset)
           } catch (err) {
             console.warn('Freistellung fehlgeschlagen, verwende Original:', err)
-            // Auf iPad/Mobile kann Freistellung fehlschlagen (z. B. Speicher) – Original wird gespeichert
+            try {
+              sessionStorage.setItem('k2-freistellen-fallback-used', Date.now().toString())
+            } catch (_) {}
           }
         }
       } else if (editingArtwork && previewUrl && typeof previewUrl === 'string' && previewUrl.startsWith('data:')) {
@@ -7189,6 +7210,9 @@ ${'='.repeat(60)}
             imageDataUrl = await compositeOnProfessionalBackground(imageDataUrl, photoBackgroundPreset)
           } catch (err) {
             console.warn('Freistellung (Vorschau-Pfad) fehlgeschlagen, verwende Original:', err)
+            try {
+              sessionStorage.setItem('k2-freistellen-fallback-used', Date.now().toString())
+            } catch (_) {}
           }
         }
       } else if (editingArtwork && editingArtwork.imageUrl && !String(editingArtwork.imageUrl).startsWith('blob:')) {
@@ -7225,7 +7249,8 @@ ${'='.repeat(60)}
       finalTitle = subcategoryLabels[artworkCeramicSubcategory] || 'Keramik'
     }
     
-    const existingArtworks = loadArtworks()
+    // ROH laden – alle Werke, damit Nummer nicht wiederverwendet wird und nichts überschrieben wird
+    const existingArtworks = loadArtworksRaw()
     const existingWithSameNumber = existingArtworks.find((a: any) => a.number === newArtworkNumber && (!editingArtwork || (a.id !== editingArtwork.id && a.number !== editingArtwork.number)))
     
     let finalArtworkNumber = newArtworkNumber
@@ -7290,8 +7315,8 @@ ${'='.repeat(60)}
       }
     }
     
-    // Werk in localStorage speichern
-    const artworks = loadArtworks()
+    // Werk in localStorage speichern – immer ROH-Liste (nie gefiltert), sonst gehen Werke verloren
+    const artworks = loadArtworksRaw()
     
     // KRITISCH: Prüfe auf doppelte Nummern und behebe Konflikte
     const duplicateNumbers = new Map<string, any[]>()
@@ -7544,6 +7569,14 @@ ${'='.repeat(60)}
       
       const reloaded = loadArtworks()
       console.log('📦 Reloaded artworks:', reloaded.length, 'Neues Werk gefunden:', artworkData?.number)
+      
+      // Hinweis anzeigen, wenn Freistellung nicht möglich war (z. B. iPad Speicher)
+      try {
+        if (sessionStorage.getItem('k2-freistellen-fallback-used')) {
+          sessionStorage.removeItem('k2-freistellen-fallback-used')
+          alert('Hinweis: Freistellung konnte auf diesem Gerät nicht durchgeführt werden. Das Bild wurde mit professionellem Hintergrund gespeichert.')
+        }
+      } catch (_) {}
       
       console.log('✅ Neues Werk in reloaded gefunden:', artworkData.number)
       

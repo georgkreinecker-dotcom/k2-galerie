@@ -125,6 +125,9 @@ export function compositeOnProfessionalBackground(
       return drawOnProfessionalBackground(blob, true, background)
     } catch (e) {
       console.warn('Freistellung fehlgeschlagen, verwende professionellen Hintergrund ohne Freistellung:', e)
+      try {
+        sessionStorage.setItem('k2-freistellen-fallback-used', Date.now().toString())
+      } catch (_) {}
       return onlyProfessionalBackground(imageDataUrl, background)
     }
   })()
