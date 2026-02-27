@@ -11,6 +11,8 @@ import WerkkatalogTab from './tabs/WerkkatalogTab'
 
 /** Feste Galerie-URL für Etiketten-QR (unabhängig vom Router/WLAN) – gleiche Basis wie Mobile Connect */
 const GALERIE_QR_BASE = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
+/** Zentrale Datenquelle (Vercel) – für Nummern und Sync; eine Stelle für alle Geräte */
+const CENTRAL_GALLERY_DATA_URL = 'https://k2-galerie.vercel.app/gallery-data.json'
 import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, type TenantId, type ArtworkCategoryId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
@@ -2084,17 +2086,19 @@ function ScreenshotExportAdmin() {
     }
   }
   
-  const publishMobile = () => {
-    if (isDeploying) return
+  /** options.silent = true: kein isDeploying, kein Erfolgs-Alert – für automatisches Sync nach Speichern (zentrale Stelle Vercel) */
+  const publishMobile = (options?: { silent?: boolean }) => {
+    const silent = options?.silent === true
+    if (!silent && isDeploying) return
     if (isOeffentlichAdminContext()) {
-      alert('Veröffentlichen ist nur in der K2-Galerie verfügbar. Wechsle zur K2-Galerie, um die echte Galerie zu veröffentlichen.')
+      if (!silent) alert('Veröffentlichen ist nur in der K2-Galerie verfügbar. Wechsle zur K2-Galerie, um die echte Galerie zu veröffentlichen.')
       return
     }
     if (!isMountedRef.current) {
-      console.warn('⚠️ publishMobile: Component ist unmounted')
+      if (!silent) console.warn('⚠️ publishMobile: Component ist unmounted')
       return
     }
-    setIsDeploying(true)
+    if (!silent) setIsDeploying(true)
     
     // KOMPLETT NEUE LÖSUNG: Web Worker für JSON.stringify um UI nicht zu blockieren
     const executeExport = () => {
@@ -2143,8 +2147,8 @@ function ScreenshotExportAdmin() {
         const hasArtworksInState = Array.isArray(artworks) && artworks.length > 0
         const hasArtworksInStorage = Array.isArray(_artworksCheck) && _artworksCheck.length > 0
         if (!hasArtworksInState && !hasArtworksInStorage) {
-          if (isMountedRef.current) setIsDeploying(false)
-          alert('⚠️ KEINE WERKE GEFUNDEN!\n\nBitte zuerst Werke speichern bevor veröffentlicht wird.\n\n📋 Prüfe:\n1. Sind Werke in "Werke verwalten" vorhanden?\n2. Werden Werke korrekt gespeichert?\n3. Prüfe Browser-Konsole für Fehler')
+          if (isMountedRef.current && !silent) setIsDeploying(false)
+          if (!silent) alert('⚠️ KEINE WERKE GEFUNDEN!\n\nBitte zuerst Werke speichern bevor veröffentlicht wird.\n\n📋 Prüfe:\n1. Sind Werke in "Werke verwalten" vorhanden?\n2. Werden Werke korrekt gespeichert?\n3. Prüfe Browser-Konsole für Fehler')
           return
         }
         
@@ -2210,8 +2214,8 @@ function ScreenshotExportAdmin() {
             dataArtworksCount: data.artworks.length,
             dataKeys: Object.keys(data)
           })
-          if (isMountedRef.current) setIsDeploying(false)
-          alert('⚠️ FEHLER: Keine Werke im Export!\n\nBitte prüfe Browser-Konsole für Details.')
+          if (isMountedRef.current && !silent) setIsDeploying(false)
+          if (!silent) alert('⚠️ FEHLER: Keine Werke im Export!\n\nBitte prüfe Browser-Konsole für Details.')
           return
         }
         
@@ -2222,8 +2226,8 @@ function ScreenshotExportAdmin() {
           try {
             const json = JSON.stringify(data)
             if (json.length > 5000000) { // Max 5MB
-              if (isMountedRef.current) setIsDeploying(false)
-              alert('⚠️ Daten zu groß. Bitte reduziere die Anzahl der Werke.')
+              if (isMountedRef.current && !silent) setIsDeploying(false)
+              if (!silent) alert('⚠️ Daten zu groß. Bitte reduziere die Anzahl der Werke.')
               return
             }
             
@@ -2233,8 +2237,8 @@ function ScreenshotExportAdmin() {
             const controller = new AbortController()
             const timeoutId = setTimeout(() => {
               controller.abort()
-              if (isMountedRef.current) setIsDeploying(false)
-              alert('⚠️ Speichern dauert gerade zu lange.\n\nBitte kurz warten und nochmal auf „Speichern“ klicken.\nFalls es wieder passiert: Bitte dem Assistenten Bescheid geben.')
+              if (isMountedRef.current && !silent) setIsDeploying(false)
+              if (!silent) alert('⚠️ Speichern dauert gerade zu lange.\n\nBitte kurz warten und nochmal auf „Speichern“ klicken.\nFalls es wieder passiert: Bitte dem Assistenten Bescheid geben.')
             }, 30000)
             
             let timeoutCleared = false
@@ -2280,8 +2284,7 @@ function ScreenshotExportAdmin() {
                 })
                 
                 // WICHTIG: Setze isDeploying IMMER auf false, auch bei Fehlern!
-                // Das verhindert dass die Seite hängen bleibt
-                setIsDeploying(false)
+                if (!silent) setIsDeploying(false)
                 
                 // WICHTIG: Prüfe zuerst ob gitSuccess explizit false ist
                 // Das ist die zuverlässigste Quelle
@@ -2314,7 +2317,8 @@ function ScreenshotExportAdmin() {
                   
                   // Zeige Fehlermeldung mit Kopier-Button (für Mobile: an Cursor schicken)
                   const msg = `⚠️ Galerie konnte nicht veröffentlicht werden.\n\nBitte nochmal auf Speichern klicken. Falls es wieder nicht klappt: Bitte dem Assistenten Bescheid geben.`
-                  setPublishErrorMsg(msg)
+                  if (!silent) setPublishErrorMsg(msg)
+                  else console.warn('Sync (silent) fehlgeschlagen:', msg)
                   return
                 }
                 
@@ -2359,20 +2363,21 @@ function ScreenshotExportAdmin() {
                   })
                   
                   const msg = `⚠️ Galerie konnte nicht veröffentlicht werden.\n\nBitte nochmal auf Speichern klicken. Falls es wieder nicht klappt: Bitte dem Assistenten Bescheid geben.`
-                  setPublishErrorMsg(msg)
+                  if (!silent) setPublishErrorMsg(msg)
+                  else console.warn('Sync (silent) fehlgeschlagen:', msg)
                   return
                 }
                 
-                // Erfolg - zeige Erfolgsmeldung
+                // Erfolg - zeige Erfolgsmeldung (oder nur Console bei silent)
                 if (hasSuccessMessage || gitSuccess) {
-                  // WICHTIG: Erhöhe Versionsnummer für Cache-Busting
                   const currentVersion = parseInt(localStorage.getItem('k2-data-version') || '0')
                   const newVersion = currentVersion + 1
                   localStorage.setItem('k2-data-version', newVersion.toString())
-                  
-                  // Zeige Modal mit Button statt confirm+window.open (Popup-Blocker umgehen)
-                  // Nutzer klickt Button → window.open ist direkt user-initiiert → kein Block
-                  setPublishSuccessModal({ size: result.size, version: newVersion })
+                  if (silent) {
+                    console.log('✅ Daten an zentrale Stelle (Vercel) gesendet:', result.size, 'Bytes')
+                  } else {
+                    setPublishSuccessModal({ size: result.size, version: newVersion })
+                  }
                 } else {
                   // Unklarer Status - zeige Warnung
                   console.warn('⚠️ Unklarer Git Push Status:', {
@@ -2383,24 +2388,24 @@ function ScreenshotExportAdmin() {
                   })
                   
                   const msg = `⚠️ Speichern möglicherweise nicht abgeschlossen.\n\nBitte Seite neu laden und nochmal auf Speichern klicken.`
-                  setPublishErrorMsg(msg)
+                  if (!silent) setPublishErrorMsg(msg)
+                  else console.warn('Sync (silent) unklarer Status:', msg)
                 }
               } else {
                 throw new Error(result.error || 'Unbekannter Fehler')
               }
             })
             .catch(error => {
-              // WICHTIG: Setze isDeploying IMMER auf false bei Fehlern!
-              setIsDeploying(false)
+              if (!silent) setIsDeploying(false)
               
               if (!timeoutCleared) {
                 clearTimeout(timeoutId)
                 timeoutCleared = true
               }
               
-              // Prüfe ob es ein Timeout war
               if (error.name === 'AbortError') {
-                alert('⚠️ Speichern dauert zu lange.\n\nBitte kurz warten und nochmal auf „Speichern“ klicken.')
+                if (!silent) alert('⚠️ Speichern dauert zu lange.\n\nBitte kurz warten und nochmal auf „Speichern“ klicken.')
+                else console.warn('Sync (silent) Timeout')
                 return
               }
               
@@ -2415,51 +2420,51 @@ function ScreenshotExportAdmin() {
                 document.body.appendChild(link)
                 link.click()
                 
-                // WICHTIG: isDeploying SOFORT zurücksetzen, nicht erst nach Timeout! - NUR wenn gemountet
-                if (isMountedRef.current) setIsDeploying(false)
+                if (isMountedRef.current && !silent) setIsDeploying(false)
                 
                 setTimeout(() => {
                   try {
                     document.body.removeChild(link)
                     URL.revokeObjectURL(url)
                   } catch {}
-                  alert('⚠️ Automatisches Speichern nicht möglich (Server nicht aktiv).\n\nBitte dem Assistenten Bescheid geben – einmalige Einrichtung nötig.')
+                  if (!silent) alert('⚠️ Automatisches Speichern nicht möglich (Server nicht aktiv).\n\nBitte dem Assistenten Bescheid geben – einmalige Einrichtung nötig.')
+                  else console.warn('Sync (silent): Server nicht aktiv')
                 }, 100)
               } catch (downloadError) {
-                if (isMountedRef.current) setIsDeploying(false)
-                alert('❌ Fehler:\n\nAPI nicht verfügbar UND Download fehlgeschlagen\n\n' + (error instanceof Error ? error.message : String(error)))
+                if (isMountedRef.current && !silent) setIsDeploying(false)
+                if (!silent) alert('❌ Fehler:\n\nAPI nicht verfügbar UND Download fehlgeschlagen\n\n' + (error instanceof Error ? error.message : String(error)))
+                else console.warn('Sync (silent) Fehler:', error)
               }
             })
             .finally(() => {
-              // SICHERHEIT: Stelle sicher dass isDeploying IMMER zurückgesetzt wird - NUR wenn gemountet
               setTimeout(() => {
-                if (isMountedRef.current) setIsDeploying(false)
+                if (isMountedRef.current && !silent) setIsDeploying(false)
               }, 100)
             })
           } catch (e) {
-            if (isMountedRef.current) setIsDeploying(false)
-            alert('Fehler: ' + (e instanceof Error ? e.message : String(e)))
+            if (isMountedRef.current && !silent) setIsDeploying(false)
+            if (!silent) alert('Fehler: ' + (e instanceof Error ? e.message : String(e)))
+            else console.warn('Sync (silent) Fehler:', e)
           }
         }
         
-        // Verwende requestIdleCallback wenn verfügbar, sonst setTimeout
         if (typeof window.requestIdleCallback !== 'undefined') {
           window.requestIdleCallback(stringifyData, { timeout: 5000 })
         } else {
           setTimeout(stringifyData, 100)
         }
       } catch (error) {
-        if (isMountedRef.current) setIsDeploying(false)
-        alert('Fehler: ' + (error instanceof Error ? error.message : String(error)))
+        if (isMountedRef.current && !silent) setIsDeploying(false)
+        if (!silent) alert('Fehler: ' + (error instanceof Error ? error.message : String(error)))
+        else console.warn('Sync (silent) Fehler:', error)
       }
     }
     
-    // Starte Export nach kurzer Verzögerung - MIT Cleanup
     const executeTimeout = setTimeout(() => {
       if (isMountedRef.current) {
         executeExport()
       } else {
-        if (isMountedRef.current) setIsDeploying(false)
+        if (isMountedRef.current && !silent) setIsDeploying(false)
       }
     }, 50)
     
@@ -6647,10 +6652,11 @@ ${'='.repeat(60)}
     // Lade alle artworks ROH (lokal) – damit keine Nummer doppelt vergeben wird
     const localArtworks = loadArtworksRaw()
     
-    // Versuche auch gallery-data.json zu laden (für Synchronisation ohne Supabase)
+    // Zentrale Stelle (Vercel): Laufende Nummern von dort, damit Mac und iPad nie dieselbe Nummer vergeben
     let serverArtworks: any[] = []
     try {
-      const response = await fetch('/gallery-data.json?' + Date.now(), {
+      const url = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&_=${Math.random()}`
+      const response = await fetch(url, {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -6660,10 +6666,10 @@ ${'='.repeat(60)}
       if (response.ok) {
         const data = await response.json()
         serverArtworks = data.artworks || []
-        console.log('📡 Server-Nummern geladen (gallery-data.json):', serverArtworks.length, 'Werke')
+        console.log('📡 Zentrale Nummern (Vercel) geladen:', serverArtworks.length, 'Werke')
       }
     } catch (e) {
-      console.log('⚠️ Server-Check fehlgeschlagen, verwende nur lokale Nummer')
+      console.log('⚠️ Zentrale Datenquelle nicht erreichbar, verwende lokale Nummer')
     }
     
     // Finde maximale Nummer aus artworks der GLEICHEN Kategorie
@@ -7655,8 +7661,14 @@ ${'='.repeat(60)}
         detail: { count: reloaded.length, newArtwork: artworkData.number } 
       }))
       
-      // WICHTIG: Dispatch Event für automatisches Veröffentlichen
-      // DevViewPage hört auf dieses Event und ruft publishMobile() auf
+      // Zentrale Stelle (Vercel): Nach jedem Speichern automatisch Daten dorthin – kein extra „Veröffentlichen“ nötig
+      if (!forOek2 && !isVk2AdminContext()) {
+        try {
+          publishMobile({ silent: true })
+        } catch (e) {
+          console.warn('Automatisches Sync nach Speichern fehlgeschlagen:', e)
+        }
+      }
       window.dispatchEvent(new CustomEvent('artwork-saved-needs-publish', { 
         detail: { artworkCount: reloaded.length } 
       }))

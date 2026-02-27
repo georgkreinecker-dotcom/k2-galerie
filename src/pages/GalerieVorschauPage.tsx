@@ -2000,8 +2000,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
             const isVeryNew = createdAt > Date.now() - 600000
             
             if (!serverArtwork) {
-              if (isMobileWork && isVeryNew) mergedArtworks.push(localArtwork)
-              else toHistory.push(localArtwork)
+              // BUG-012 analog: Lokale Werke die nicht auf dem Server sind IMMER behalten (nicht nur wenn „very new“)
+              mergedArtworks.push(localArtwork)
+              if (!isMobileWork || !isVeryNew) toHistory.push(localArtwork)
             } else {
               if (isMobileWork) {
                 const idx = mergedArtworks.findIndex((a: any) => (a.number || a.id) === key)

@@ -18,6 +18,15 @@
 
 ---
 
+## BUG-013 · Altes iPad-Werk verschwindet am iPad nach zeitverzögertem „Vom Server laden“
+**Symptom:** Werk vor einiger Zeit am iPad erstellt → am Mac erscheint es (z. B. aus gallery-data.json); am iPad ist es plötzlich weg. Nutzer vermutet: „Prozess im Hintergrund zeitverzögert“.
+**Ursache:** In GalerieVorschauPage läuft bei „Vom Server laden“ (handleRefresh / Stand-Badge / Aktualisieren) eine Merge-Logik: Start mit Server-Werken, lokale nur hinzufügen wenn `isMobileWork && isVeryNew` (< 10 Min). Ältere lokale Werke (nicht auf Server) landeten nur in toHistory, nicht in merged → beim Speichern von merged gingen sie am iPad verloren.
+**Lösung:** Gleiche Regel wie BUG-012 (GaleriePage): Lokale Werke, die **nicht** auf dem Server sind, **immer** in merged übernehmen (nicht nur bei „very new“). In GalerieVorschauPage handleRefresh-Merge: `if (!serverArtwork) { mergedArtworks.push(localArtwork); … }`.
+**Betroffene Dateien:** `src/pages/GalerieVorschauPage.tsx` (handleRefresh, Merge mit serverArtworks)
+**Status:** ✅ Behoben (27.02.26)
+
+---
+
 ## BUG-001 · Bilder in Seitengestaltung verschwinden (localStorage-Verlust)
 **Symptom:** Willkommensbild, Galerie-Karte, Rundgang-Bild verschwinden nach einiger Zeit.
 **Ursache:** Bilder wurden als Base64 im localStorage gespeichert. Bei vollem Speicher (QuotaExceeded) → SafeMode löscht andere Keys → Bilder weg.

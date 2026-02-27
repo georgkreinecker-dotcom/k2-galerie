@@ -11,6 +11,8 @@ Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen. **Erl
 Praxistest: Neues Werk anlegen → Admin verlassen → Vorschau/Galerie: Werk bleibt sichtbar. Optional: Mac↔iPad-Ablauf mit Handbuch-Kapitel 16 durchgehen.
 
 ## Was zuletzt gemacht (27.02.26)
+- **Zentrale Stelle Vercel (Hausverstand):** (1) Nummern: generateArtworkNumber lädt immer von CENTRAL_GALLERY_DATA_URL (k2-galerie.vercel.app/gallery-data.json), damit Mac und iPad nie dieselbe Nummer vergeben. (2) Speichern = automatisch an Vercel: Nach saveArtworkData (K2) wird publishMobile({ silent: true }) aufgerufen – kein extra „Veröffentlichen“ nötig. (3) Handbuch 16 angepasst: Speichern reicht, Daten gehen automatisch an die zentrale Stelle; Laden von dort (Galerie/Vorschau nutzen bereits Vercel-URL). Button „Veröffentlichen“ in Einstellungen bleibt optional.
+- **BUG-013:** Altes iPad-Werk verschwindet am iPad nach „Vom Server laden“ (zeitverzögert). Ursache: In GalerieVorschauPage handleRefresh wurden lokale Werke, die nicht auf dem Server sind, nur übernommen wenn isMobileWork && isVeryNew (< 10 Min). Fix: Wie BUG-012 – lokale Werke ohne Server-Eintrag **immer** in merged (mergedArtworks.push(localArtwork)). GELOESTE-BUGS.md + GalerieVorschauPage.tsx.
 - **Mac ↔ iPad Sync – Schritt-für-Schritt-Anleitung:** Neues Handbuch-Kapitel `k2team-handbuch/16-MAC-IPAD-SYNC-SCHRITT-FUER-SCHRITT.md`: Richtung 1 Mac→iPad (Werk speichern → Veröffentlichen am Mac → am iPad Stand-Badge tippen/neu laden), Richtung 2 iPad→Mac (Werk speichern → Veröffentlichen am iPad → am Mac Stand-Badge/neu laden). Kurzfassung-Tabelle + Merksatz. In 00-INDEX als Nr. 6 eingetragen.
 - **Ursache: GaleriePage-Merge hat Mac-Neu-Anlagen verworfen.** Beim Klick „Zur Galerie“ lädt GaleriePage gallery-data.json und merged Server + lokal. Lokale Werke, die nicht auf dem Server waren, wurden nur übernommen wenn isMobileWork && isVeryNew – am Mac (Bild aus Datei) haben sie createdOnMobile: false → landeten nur in toHistory, nicht in merged → beim Schreiben gingen sie verloren. **Fix:** GaleriePage an beiden Merge-Stellen: wenn lokales Werk nicht auf Server → immer merged.push(local).
 - **Werk verschwindet beim Verlassen des Admins:** GalerieVorschauPage angepasst: (1) „Keine Daten gefunden“ – vor Backup nochmal readArtworksRaw(); wenn jetzt Daten da (Admin-Save gerade fertig), diese anzeigen. (2) Backup nur für Anzeige; localStorage nur überschreiben wenn backup.length >= currentCount (nie mit weniger Werken). (3) Nach erstem Anzeigen aus localStorage 200 ms verzögert nochmal lesen (Nachzug falls Save beim Navigieren fertig wurde); Cleanup clearTimeout im useEffect.
@@ -69,7 +71,7 @@ Werk verschwindet / Nummer wiederverwendet / Freistellen geht nicht. **Ursache:*
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Pending-Layer: K2-Anzeige = Hauptliste + Pending, addPendingArtwork nach Speichern (Admin + GalerieVorschau).** Commit: c834f85 ✅ auf GitHub
+- **BUG-013: Vom-Server-laden-Merge in GalerieVorschau – lokale Werke immer behalten.** (wird nach Push hier eingetragen)
 
 ## Nächster Schritt
 - **iPad/Mac:** Neues Werk speichern → in Galerie prüfen ob es sichtbar bleibt (Pending-Layer). Wenn ja: Problem gelöst; wenn nein: nächste Ursache suchen (z. B. welcher Pfad überschreibt).
