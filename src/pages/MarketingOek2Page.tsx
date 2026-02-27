@@ -304,6 +304,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <li><strong>Professioneller Auftritt</strong> – Deutsche UI, anpassbares Design (Farben, Willkommensbild, Vita, Platzanordnung, Shop).</li>
           <li><strong>Vereinsfähig – die Plattform für Kunstvereine und Gruppen (VK2):</strong> Nicht nur Einzelkünstler:innen – <strong>Kunstvereine, Ateliergemeinschaften und künstlerische Gruppen</strong> haben eine eigene Lizenzvariante. Gemeinsame Vereinsgalerie, jedes Mitglied kann eigene Werke zeigen, Vereinskatalog mit den schönsten Werken aller (PDF, filterbar). Events und Werbung einheitlich für den Verein. Ab 10 registrierten Mitgliedern für den Verein kostenfrei. <em>Ein Verein entscheidet – viele Künstler:innen werden sichtbar.</em> Am Markt für diese Zielgruppe kaum vergleichbar.</li>
           <li><strong>Empfehlungsprogramm – einzigartig:</strong> Nutzer:innen werben mit persönlicher Empfehler-ID; 10 % Rabatt für den Geworbenen, 10 % Gutschrift für den Empfehler. Vertrieb durch die Community – in dieser Branche (Galerie/Künstler:innen) kaum vergleichbar. Ein Klick: ID kopieren, Link teilen, Geworbene nutzt beim Lizenzabschluss – fertig.</li>
+          <li><strong>Aus Österreich – kein Fernost-Produkt:</strong> Entwicklung und Betrieb aus Österreich. EU-Datenschutz (DSGVO), österreichisches Recht, Daten nicht in China oder Indien. Erreichbar, gleiche Zeitzone, deutsche Sprache – Vertrauen und Nähe statt anonymem Cloud-Anbieter.</li>
         </ul>
       </section>
 
@@ -334,6 +335,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <li><strong>Branche:</strong> Künstler:innen und kleine Galerien sind mit „Webauftritt + Kasse + Events + Marketing aus einer Hand“ <strong>unterversorgt</strong>. Reine Kassensysteme oder reine Website-Baukästen decken den Bedarf nicht ab – ök2 füllt diese Lücke.</li>
           <li><strong>Vereinsfähig (VK2):</strong> <strong>Die Plattform für Kunstvereine und Gruppen.</strong> Gemeinsame Vereinsgalerie + Mitglieder mit eigener Galerie, Vereinskatalog (PDF), einheitliche Events und Werbung. Ab 10 Mitgliedern für den Verein kostenfrei – am Markt für Kunstvereine und Ateliergemeinschaften kaum vergleichbar.</li>
           <li><strong>Empfehlungsprogramm:</strong> Vertrieb durch Nutzer:innen – persönliche Empfehler-ID, 10 % Rabatt für Geworbene, 10 % Gutschrift für Empfehler. In dieser Branche einzigartig; ein Klick zum Teilen, keine komplexen Partner-Portale.</li>
+          <li><strong>Made in Austria:</strong> Entwicklung und Betrieb aus Österreich – EU-Datenschutz, Rechtssicherheit, erreichbar. Nicht aus China oder Indien; Vertrauen und Nähe für Künstler:innen und Galerien.</li>
         </ul>
 
         <div style={{ padding: '1rem 1.25rem', background: 'rgba(95,251,241,0.1)', border: '1px solid rgba(95,251,241,0.35)', borderRadius: 10, marginTop: '1rem' }}>
@@ -791,8 +793,11 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
           Lizenz-Pakete für Außen (Werbung, Pitch, Flyer)
         </h2>
-        <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
+        <p style={{ marginBottom: '0.5rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
           Kurzüberblick für Interessent:innen – hier prüfen und anpassen; dann in Werbeunterlagen und bei Anfragen nutzen.
+        </p>
+        <p style={{ marginBottom: '1rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)', fontStyle: 'italic' }}>
+          Made in Austria – Datenschutz und Support aus Europa. Entwicklung und Betrieb aus Österreich, nicht aus China oder Indien.
         </p>
         <table style={{ width: '100%', maxWidth: 560, borderCollapse: 'collapse', fontSize: '0.9rem' }}>
           <thead>

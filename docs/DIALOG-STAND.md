@@ -69,6 +69,7 @@ mök2/Preisgestaltung: Wie hoch sollen die Lizenzgebühren realistisch sein?
 
 ## Nächster Schritt (für nächste Session)
 - **Lizenzstruktur umgesetzt (27.02.26):** Basic 15 €, Pro 35 €, Pro+ 45 € (gesamter Marketingbereich), VK2 wie Pro – überall in Kommunikation (LicencesPage, mök2, Lizenz-Pakete für Außen, Sektion 14, SmartPanel). Excellent → Pro+; alte erfasste Lizenzen „excellent“ werden beim Laden als Pro+ angezeigt.
+- **Verkaufsargument „Aus Österreich“ (27.02.26):** In mök2 eingebaut: (1) USPs – Bullet „Aus Österreich – kein Fernost-Produkt“ (EU-Datenschutz, Recht, nicht China/Indien, erreichbar). (2) Produkt- & Branchenvergleich – Bullet „Made in Austria“. (3) Lizenz-Pakete für Außen – Hinweis „Made in Austria – Datenschutz und Support aus Europa“.
 - **Test:** Admin-Hub am Handy; optional 📎-Icons Eventplanung.
 
 ## Was zuvor (Event-Flyer-Icon)
