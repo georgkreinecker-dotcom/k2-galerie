@@ -46,13 +46,21 @@ try {
 } catch (_) {}
 if (jsonChanged) fs.writeFileSync(publicPath, jsonContent, 'utf8')
 
+// api/build-info.js: Placeholder durch aktuellen Stand ersetzen – QR/Stand nutzen /api/build-info (umgeht CDN-Cache)
+const apiBuildInfoPath = path.join(__dirname, '..', 'api', 'build-info.js')
+try {
+  let apiContent = fs.readFileSync(apiBuildInfoPath, 'utf8')
+  apiContent = apiContent.replace('__BUILD_LABEL__', label).replace('__BUILD_TIMESTAMP__', String(now.getTime()))
+  fs.writeFileSync(apiBuildInfoPath, apiContent, 'utf8')
+} catch (_) {}
+
 // index.html IMMER aktualisieren (nicht nur beim --inject-html Flag) – sonst bleibt alter Timestamp drin und Mac lädt nie neu
 {
   const ts = now.getTime()
   // Im iframe (Cursor Preview) KEIN location.replace – verhindert Reload-Schleifen und Totalabsturz
 // Beim Reload bestehende Search-Params erhalten (z. B. empfehler=K2-E-XXX), nur v=Bust setzen – sonst bleibt Empfehlungs-Link hängen / verliert ID
   // Stale-Check: HTML älter als 2 Min → einmal Reload (iPad/Handy bekommen sonst nie neuen Stand). Bei Fetch-Fehler: einmal Reload. Regel: stand-qr-niemals-zurueck.mdc
-  const injectScript = '<script>(function(){if(window.self!==window.top)return;var b=' + ts + ';var o=location.origin;var p=location.pathname;var bust=function(){var q=location.search?location.search.slice(1):"";var params=new URLSearchParams(q);params.set("v",Date.now());params.set("_",Date.now());location.replace(o+p+"?"+params.toString());};if(Date.now()-b>120000){if(!sessionStorage.getItem("k2_stale_reload")){sessionStorage.setItem("k2_stale_reload","1");bust();}return;}var url=o+"/build-info.json?t="+Date.now()+"&r="+Math.random();fetch(url,{cache:"no-store",headers:{"Pragma":"no-cache","Cache-Control":"no-cache"}}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b){try{if(!sessionStorage.getItem("k2_updated")){sessionStorage.setItem("k2_updated","1");bust();}}catch(e){}}}).catch(function(){if(!sessionStorage.getItem("k2_error_reload")){sessionStorage.setItem("k2_error_reload","1");bust();}});})();</script>'
+  const injectScript = '<script>(function(){if(window.self!==window.top)return;var b=' + ts + ';var o=location.origin;var p=location.pathname;var bust=function(){var q=location.search?location.search.slice(1):"";var params=new URLSearchParams(q);params.set("v",Date.now());params.set("_",Date.now());location.replace(o+p+"?"+params.toString());};if(Date.now()-b>120000){if(!sessionStorage.getItem("k2_stale_reload")){sessionStorage.setItem("k2_stale_reload","1");bust();}return;}var url=o+"/api/build-info?t="+Date.now()+"&r="+Math.random();fetch(url,{cache:"no-store",headers:{"Pragma":"no-cache","Cache-Control":"no-cache"}}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b){try{if(!sessionStorage.getItem("k2_updated")){sessionStorage.setItem("k2_updated","1");bust();}}catch(e){}}}).catch(function(){if(!sessionStorage.getItem("k2_error_reload")){sessionStorage.setItem("k2_error_reload","1");bust();}});})();</script>'
   const indexPath = path.join(__dirname, '..', 'index.html')
   let indexHtml = fs.readFileSync(indexPath, 'utf8')
   if (indexHtml.includes('<!-- BUILD_TS_INJECT -->')) {

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { BUILD_TIMESTAMP } from '../buildInfo.generated'
 
-const BUILD_INFO_URL = 'https://k2-galerie.vercel.app/build-info.json'
+const BUILD_INFO_URL = 'https://k2-galerie.vercel.app/api/build-info'
 
 export type BuildInfo = { timestamp: number; label: string } | null
 
