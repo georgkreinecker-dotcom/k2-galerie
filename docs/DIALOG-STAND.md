@@ -11,6 +11,8 @@ Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen. **Erl
 1. **QR/Stand-Fix (27.02.26):** QR und Stand-Badge nutzen jetzt **/api/build-info** statt build-info.json – Serverless-API, beim Build mit aktuellem Stand beschrieben, umgeht CDN-Cache. Commit c5351e1.
 2. Nach Vercel-Build (1–2 Min): APf neu laden oder „QR neu“ → Vercel-Stand sollte aktuelle Zeit zeigen; iPad refresh.html oder QR scannen.
 3. Falls Vercel-Build fehlschlägt: docs/VERCEL-CHECKLISTE-BEI-KEINEM-STAND.md.
+4. **„Was bei 13:26 bei Vercel gemacht?“** – Kurzdoku: **docs/WAS-AB-13-26-BEI-VERCEL.md**. Kurz: Im Repo wurde bei Vercel nichts „konfiguriert“; 13:26 = letzter erfolgreicher Production-Build. Ursache nur im Vercel-Dashboard (Build-Log bei Error, Production Branch = main).
+5. **Schritt für Schritt (Screenshot Vercel):** **docs/SCHRITT-FUER-SCHRITT-STAND-AKTUELL.md** – 6 Schritte: pushen → Current prüfen → ggf. Promote/Redeploy → build-info auf Vercel prüfen → iPad refresh/QR → Kontrolle. Passt zum Befund: Vercel zeigt Ready, aber „Current“ kann alter Commit sein.
 
 ## Was zuletzt gemacht (27.02.26)
 - **iPad hängt trotzdem bei 13:26:** Neue **Refresh-URL** als letzter Ausweg: **https://k2-galerie.vercel.app/refresh.html** – einmal öffnen, leitet sofort mit Cache-Bust zur Galerie weiter. URL wird von Vercel-Rewrite ausgenommen, no-cache-Header; public/refresh.html → dist/refresh.html. Doku in VERCEL-STAND-HANDY.md ergänzt („Letzter Ausweg – frische URL“).
