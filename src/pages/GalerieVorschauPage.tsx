@@ -1101,40 +1101,53 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               
               if (currentHash !== newHash && isMounted) {
                 const toSave = filterK2ArtworksOnly(merged)
+                // KRITISCH: Re-Lesen VOR dem Schreiben – zwischen Start des Syncs und jetzt könnte ein neues Werk gespeichert worden sein
+                const nowCount = readArtworksRaw().length
+                if (toSave.length < nowCount) {
+                  console.warn(`⚠️ Sync würde ${nowCount} → ${toSave.length} reduzieren (neue Werke seit Sync-Start?) – überschreibe NICHT`)
+                  setArtworks(loadArtworks())
+                  return
+                }
                 if (toSave.length < localCount) {
                   console.warn(`⚠️ Sync würde ${localCount} → ${toSave.length} reduzieren – überschreibe NICHT (lokale Werke schützen)`)
-                } else {
-                  console.log(`🔄 Admin-Bereich: ${toSave.length} Werke synchronisiert (${localArtworks.length} lokal + ${toSave.length - localArtworks.length} Server, Muster/VK2 entfernt)`)
-                  console.log(`🔒 Lokale Werke geschützt: ${localArtworks.length} Werke bleiben erhalten`)
-                  localStorage.setItem('k2-artworks', JSON.stringify(toSave))
-                  setArtworks(toSave)
+                  return
+                }
+                const ok = saveArtworksStorage(toSave, { allowReduce: false })
+                if (ok) {
+                  console.log(`🔄 Admin-Bereich: ${toSave.length} Werke synchronisiert`)
+                  setArtworks(loadArtworks())
                   window.dispatchEvent(new CustomEvent('artworks-updated', {
                     detail: { count: toSave.length, autoSync: true, fromAdmin: true }
                   }))
+                } else {
+                  setArtworks(loadArtworks())
                 }
               }
             } else {
-              // Keine Server-Werke – nur Anzeige aktualisieren, localStorage NUR wenn wir nicht weniger Werke hätten (niemals still löschen)
+              // Keine Server-Werke – nur Anzeige aktualisieren; vor Schreiben aktuellen Stand prüfen (kein Stale-Overwrite)
               if (localArtworks.length > 0 && isMounted) {
                 const toKeep = filterK2ArtworksOnly(localArtworks)
-                console.log(`🔒 Keine Server-Daten - ${toKeep.length} lokale Werke (Anzeige)`)
-                if (toKeep.length >= localArtworks.length) {
-                  try { localStorage.setItem('k2-artworks', JSON.stringify(toKeep)) } catch (_) {}
-                } else {
-                  console.warn(`⚠️ Sync: würde ${localArtworks.length} → ${toKeep.length} reduzieren – localStorage NICHT überschrieben`)
+                const nowCount = readArtworksRaw().length
+                console.log(`🔒 Keine Server-Daten - ${toKeep.length} lokale Werke (Anzeige), aktuell ${nowCount} im Storage`)
+                if (toKeep.length >= nowCount && toKeep.length >= localArtworks.length) {
+                  saveArtworksStorage(toKeep, { allowReduce: false })
+                } else if (toKeep.length < nowCount) {
+                  console.warn(`⚠️ Sync: würde ${nowCount} → ${toKeep.length} reduzieren – localStorage NICHT überschrieben`)
                 }
-                setArtworks(toKeep.length > 0 ? toKeep : localArtworks)
+                setArtworks(loadArtworks())
               }
             }
           } else {
-            // Server nicht erreichbar – gleiche Regel: nicht mit weniger überschreiben
+            // Server nicht erreichbar – vor Schreiben aktuellen Stand prüfen
             if (localArtworks.length > 0 && isMounted) {
               const toKeep = filterK2ArtworksOnly(localArtworks)
-              console.log(`🔒 Server nicht erreichbar - ${toKeep.length} lokale Werke`)
-              if (toKeep.length >= localArtworks.length) {
-                try { localStorage.setItem('k2-artworks', JSON.stringify(toKeep)) } catch (_) {}
+              const nowCount = readArtworksRaw().length
+              if (toKeep.length >= nowCount && toKeep.length >= localArtworks.length) {
+                saveArtworksStorage(toKeep, { allowReduce: false })
+              } else if (toKeep.length < nowCount) {
+                console.warn(`⚠️ Sync: würde ${nowCount} → ${toKeep.length} reduzieren – localStorage NICHT überschrieben`)
               }
-              setArtworks(toKeep.length > 0 ? toKeep : localArtworks)
+              setArtworks(loadArtworks())
             }
           }
         } catch (error) {
@@ -1193,22 +1206,27 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       
       console.log('🔄 Werke wurden aktualisiert (Admin/Galerie), lade neu...', event?.detail)
       
-      // Lade aus Supabase wenn konfiguriert, sonst localStorage
+      // Lade aus Supabase wenn konfiguriert, sonst localStorage. Niemals mit weniger Werken anzeigen als lokal vorhanden.
       setTimeout(async () => {
         if (!isMounted) return
-        
+        const localCount = readArtworksRaw().length
         if (isSupabaseConfigured()) {
           try {
             const updatedArtworks = await loadArtworksFromSupabase()
             if (updatedArtworks && updatedArtworks.length > 0 && isMounted) {
-              setArtworks(updatedArtworks)
+              if (updatedArtworks.length >= localCount) {
+                setArtworks(updatedArtworks)
+              } else {
+                console.warn(`⚠️ Supabase hat ${updatedArtworks.length} Werke, lokal ${localCount} – Anzeige aus localStorage`)
+                setArtworks(loadArtworks())
+              }
+            } else if (localCount > 0 && isMounted) {
+              setArtworks(loadArtworks())
             }
           } catch (error) {
             console.warn('⚠️ Supabase-Update fehlgeschlagen:', error)
             const stored = loadArtworks()
-            if (stored && stored.length > 0 && isMounted) {
-              setArtworks(stored)
-            }
+            if (stored && stored.length > 0 && isMounted) setArtworks(stored)
           }
         } else {
           const stored = loadArtworks()
