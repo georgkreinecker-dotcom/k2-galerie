@@ -2526,8 +2526,9 @@ function ScreenshotExportAdmin() {
     werbematerialTyp: string,
     baseName: string
   ): string => {
+    const eventIdNorm = eventId != null ? String(eventId) : ''
     const existing = loadDocuments().filter(
-      (d: any) => d.category === 'pr-dokumente' && d.eventId === eventId && d.werbematerialTyp === werbematerialTyp
+      (d: any) => d.category === 'pr-dokumente' && d.eventId != null && String(d.eventId) === eventIdNorm && d.werbematerialTyp === werbematerialTyp
     )
     const num = existing.length + 1
     return num === 1 ? `${baseName} – ${eventTitle}` : `${baseName} – ${eventTitle} (Vorschlag ${num})`
@@ -14650,7 +14651,11 @@ ${name}`
                         const k2PresseDoc = event.type === 'galerieeröffnung' ? { id: 'k2-galerie-presse', name: 'Presse-Einladung (Druckversion)', documentUrl: '/presse-einladung-k2-galerie' } : null
                         const hiddenIds = event.hiddenDocIds || []
                         const docList = [k2FlyerDoc, k2PresseDoc, ...(event.documents || [])].filter(Boolean).filter((d: any) => !hiddenIds.includes(d.id))
-                        const prDocsForEvent = (documents || []).filter((d: any) => d.category === 'pr-dokumente' && d.eventId === event.id)
+                        // eventId/event.id typensicher vergleichen (JSON kann Zahl→String ändern), damit vorhandene Docs grün werden
+                        const eventIdStr = event.id != null ? String(event.id) : ''
+                        const prDocsForEvent = (documents || []).filter((d: any) =>
+                          d.category === 'pr-dokumente' && d.eventId != null && String(d.eventId) === eventIdStr
+                        )
                         const WERBEMATERIAL_TYPEN = ['qr-plakat', 'newsletter', 'plakat', 'event-flyer', 'presse', 'social'] as const
                         const byTyp: Record<string, any[]> = {}
                         WERBEMATERIAL_TYPEN.forEach(t => { byTyp[t] = [] })
