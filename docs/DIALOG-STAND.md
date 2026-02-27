@@ -71,7 +71,7 @@ Werk verschwindet / Nummer wiederverwendet / Freistellen geht nicht. **Ursache:*
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **BUG-013: Vom-Server-laden-Merge in GalerieVorschau – lokale Werke immer behalten.** (wird nach Push hier eingetragen)
+- **Zentrale Stelle Vercel: Speichern = Sync, Nummern von dort, kein extra Veröffentlichen.** Commit: 1049b87 ✅ auf GitHub
 
 ## Nächster Schritt
 - **iPad/Mac:** Neues Werk speichern → in Galerie prüfen ob es sichtbar bleibt (Pending-Layer). Wenn ja: Problem gelöst; wenn nein: nächste Ursache suchen (z. B. welcher Pfad überschreibt).

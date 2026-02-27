@@ -51,7 +51,7 @@
 
 ## Technik (für Assistenten)
 
-- **Zentrale Stelle:** Vercel (gallery-data.json). Nummern werden beim neuen Werk von dort + lokal ermittelt (CENTRAL_GALLERY_DATA_URL).
-- **Nach Speichern:** `publishMobile({ silent: true })` wird automatisch aufgerufen (nur K2), schreibt an `/api/write-gallery-data`.
+- **Zentrale Stelle:** Vercel (gallery-data.json). **Nur für K2:** Nummern beim neuen Werk von dort + lokal (CENTRAL_GALLERY_DATA_URL). ök2 = Demo (keine zentrale Datei), VK2 = keine Werke im Admin → Nummern nur lokal.
+- **Nach Speichern:** `publishMobile({ silent: true })` nur bei K2; ök2/VK2 schreiben nicht an die zentrale Stelle.
 - **Laden:** Galerie/Vorschau lädt gallery-data.json von Vercel (baseUrl wenn nicht auf Vercel), merged mit lokal falls nötig (BUG-012/013).
 - **Stand-Badge:** Reload mit Cache-Bypass für neueste Daten/App-Version.

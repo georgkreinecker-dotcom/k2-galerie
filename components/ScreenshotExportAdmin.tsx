@@ -6652,24 +6652,27 @@ ${'='.repeat(60)}
     // Lade alle artworks ROH (lokal) – damit keine Nummer doppelt vergeben wird
     const localArtworks = loadArtworksRaw()
     
-    // Zentrale Stelle (Vercel): Laufende Nummern von dort, damit Mac und iPad nie dieselbe Nummer vergeben
+    // Zentrale Stelle (Vercel) nur für K2: eine Produktions-Galerie, Mac + iPad nutzen dieselbe Nummernquelle.
+    // ök2 = Demo (keine zentrale Datei), VK2 = keine Werke im Admin → nur lokal.
     let serverArtworks: any[] = []
-    try {
-      const url = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&_=${Math.random()}`
-      const response = await fetch(url, {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache'
+    if (!forOek2 && !forVk2) {
+      try {
+        const url = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&_=${Math.random()}`
+        const response = await fetch(url, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+          }
+        })
+        if (response.ok) {
+          const data = await response.json()
+          serverArtworks = data.artworks || []
+          console.log('📡 Zentrale Nummern (Vercel, K2) geladen:', serverArtworks.length, 'Werke')
         }
-      })
-      if (response.ok) {
-        const data = await response.json()
-        serverArtworks = data.artworks || []
-        console.log('📡 Zentrale Nummern (Vercel) geladen:', serverArtworks.length, 'Werke')
+      } catch (e) {
+        console.log('⚠️ Zentrale Datenquelle nicht erreichbar, verwende lokale Nummer')
       }
-    } catch (e) {
-      console.log('⚠️ Zentrale Datenquelle nicht erreichbar, verwende lokale Nummer')
     }
     
     // Finde maximale Nummer aus artworks der GLEICHEN Kategorie
