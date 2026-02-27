@@ -121,3 +121,12 @@ a {
     border: none !important;
   }
 }
+
+/* Sync-Statusbalken (Senden/Empfangen): Laufbalken wenn „Daten senden“ oder „Vom Server laden“ */
+@keyframes syncBarMove {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(250%); }
+}
+.k2-sync-bar-fill {
+  animation: syncBarMove 1.4s ease-in-out infinite;
+}

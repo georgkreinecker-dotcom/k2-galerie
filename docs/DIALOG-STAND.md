@@ -16,6 +16,7 @@ Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen. **Erl
 5. **Schritt für Schritt (Screenshot Vercel):** **docs/SCHRITT-FUER-SCHRITT-STAND-AKTUELL.md** – 6 Schritte: pushen → Current prüfen → ggf. Promote/Redeploy → build-info auf Vercel prüfen → iPad refresh/QR → Kontrolle. Passt zum Befund: Vercel zeigt Ready, aber „Current“ kann alter Commit sein.
 
 ## Was zuletzt gemacht (27.02.26)
+- **Sync-Statusbalken (Senden/Empfangen):** Beim Klick auf „Daten an Server senden“ oder „Bilder vom Server laden“ erscheint unter den Buttons ein **Balken** mit Erfüllungszustand: „Daten werden gesendet…“ / „Daten werden geladen…“ (animierter Laufbalken), danach „Gesendet.“ / „Geladen.“ (grün) oder „Fehler beim Senden.“ / „Fehler beim Laden.“ (rot). Nach 5 Sekunden blendet der Balken wieder aus. So siehst du sofort, was passiert. ScreenshotExportAdmin.tsx, src/index.css (Animation).
 - **BUG-016: „Daten an Server senden“ auf Mobil öffnete gallery-data.json-Seite:** Beim Fehler (API nicht erreichbar) wurde Fallback mit link.click() auf JSON-Blob ausgeführt – auf iPad/Handy öffnet das die JSON als Seite. Fix: Auf Mobil (iPhone|iPad|iPod|Android) **niemals** link.click() mit JSON – nur Alert-Meldung („Daten konnten nicht gesendet werden … OK – du bleibst in der App.“). Fallback-Download nur am Mac. ScreenshotExportAdmin.tsx, GELOESTE-BUGS.md BUG-016.
 - **Mobil: „Daten an Server senden“ (kein Auto-Publish):** Im Admin unter Werke verwalten (nur K2) neuer Button **„📤 Daten an Server senden“** – sichtbar auch auf iPad. Nach Speichern am iPad muss Georg diesen Button tippen, damit Daten auf Vercel landen; am Mac „Vom Server laden“. Handbuch **k2team-handbuch/16-MAC-IPAD-SYNC-SCHRITT-FUER-SCHRITT.md** angepasst: iPad→Mac = Speichern + „Daten an Server senden“; Mac = „Vom Server laden“. Klarstellung: Auf Mobil gibt es keine Veröffentlichungsfunktion – Nutzer tippt bewusst.
 - **Neue Regel: Verbindlich = zuverlässig:** Georg: Befehle/Anforderungen müssen funktionieren, nicht „hoffen“. Regel **.cursor/rules/verbindlich-zuverlaessig-nicht-hoffnung.mdc** (alwaysApply): Buttons/Befehle/Anleitungen so bauen, dass man sich darauf verlassen kann; Hauptweg robust, „andere Option“ nur Zusatz. In STRUKTUR-HANDELN-QUELLEN.md verankert.
@@ -90,7 +91,7 @@ Werk verschwindet / Nummer wiederverwendet / Freistellen geht nicht. **Ursache:*
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Mobil: Button „Daten an Server senden“, Handbuch 16, DIALOG-STAND, Stand 27.02.26 20:02.** Commit: bfa0bb9 ✅ auf GitHub
+- **BUG-016: „Daten an Server senden“ auf Mobil öffnet keine JSON-Seite mehr, nur Meldung. Stand 27.02.26 20:09.** Commit: 44bc41b ✅ auf GitHub
 
 ## Nächster Schritt
 - **iPad/Mac:** Neues Werk speichern → in Galerie prüfen ob es sichtbar bleibt (Pending-Layer). Wenn ja: Problem gelöst; wenn nein: nächste Ursache suchen (z. B. welcher Pfad überschreibt).

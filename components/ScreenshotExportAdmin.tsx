@@ -1961,6 +1961,8 @@ function ScreenshotExportAdmin() {
   const [isDeploying, setIsDeploying] = React.useState(false)
   const [publishErrorMsg, setPublishErrorMsg] = React.useState<string | null>(null)
   const [publishSuccessModal, setPublishSuccessModal] = React.useState<{ size: number; version: number } | null>(null)
+  /** Balken für Senden/Empfangen: phase idle | sending | loading | success | error – Nutzer sieht sofort was passiert */
+  const [syncStatusBar, setSyncStatusBar] = React.useState<{ phase: 'idle' | 'sending' | 'loading' | 'success' | 'error'; message: string }>({ phase: 'idle', message: '' })
   
   // SICHERHEIT: Stelle sicher dass isDeploying nach 60 Sekunden zurückgesetzt wird
   React.useEffect(() => {
@@ -1978,6 +1980,15 @@ function ScreenshotExportAdmin() {
       }
     }
   }, [isDeploying])
+
+  // Sync-Statusbalken: Erfolg/Fehler nach 5 Sekunden wieder ausblenden
+  React.useEffect(() => {
+    if (syncStatusBar.phase !== 'success' && syncStatusBar.phase !== 'error') return
+    const t = setTimeout(() => {
+      if (isMountedRef.current) setSyncStatusBar({ phase: 'idle', message: '' })
+    }, 5000)
+    return () => clearTimeout(t)
+  }, [syncStatusBar.phase])
   
   // KEINE automatische Prüfung mehr - verursacht Abstürze!
   // Verwende nur den manuellen "🔍 Vercel-Status" Button
@@ -2105,7 +2116,10 @@ function ScreenshotExportAdmin() {
       if (!silent) console.warn('⚠️ publishMobile: Component ist unmounted')
       return
     }
-    if (!silent) setIsDeploying(true)
+    if (!silent) {
+      setIsDeploying(true)
+      setSyncStatusBar({ phase: 'sending', message: 'Daten werden gesendet…' })
+    }
     
     // KOMPLETT NEUE LÖSUNG: Web Worker für JSON.stringify um UI nicht zu blockieren
     const executeExport = () => {
@@ -2324,8 +2338,10 @@ function ScreenshotExportAdmin() {
                   
                   // Zeige Fehlermeldung mit Kopier-Button (für Mobile: an Cursor schicken)
                   const msg = `⚠️ Galerie konnte nicht veröffentlicht werden.\n\nBitte nochmal auf Speichern klicken. Falls es wieder nicht klappt: Bitte dem Assistenten Bescheid geben.`
-                  if (!silent) setPublishErrorMsg(msg)
-                  else console.warn('Sync (silent) fehlgeschlagen:', msg)
+                  if (!silent) {
+                    setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
+                    setPublishErrorMsg(msg)
+                  } else console.warn('Sync (silent) fehlgeschlagen:', msg)
                   return
                 }
                 
@@ -2383,6 +2399,7 @@ function ScreenshotExportAdmin() {
                   if (silent) {
                     console.log('✅ Daten an zentrale Stelle (Vercel) gesendet:', result.size, 'Bytes')
                   } else {
+                    setSyncStatusBar({ phase: 'success', message: 'Gesendet.' })
                     setPublishSuccessModal({ size: result.size, version: newVersion })
                   }
                 } else {
@@ -2395,8 +2412,10 @@ function ScreenshotExportAdmin() {
                   })
                   
                   const msg = `⚠️ Speichern möglicherweise nicht abgeschlossen.\n\nBitte Seite neu laden und nochmal auf Speichern klicken.`
-                  if (!silent) setPublishErrorMsg(msg)
-                  else console.warn('Sync (silent) unklarer Status:', msg)
+                  if (!silent) {
+                    setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
+                    setPublishErrorMsg(msg)
+                  } else console.warn('Sync (silent) unklarer Status:', msg)
                 }
               } else {
                 throw new Error(result.error || 'Unbekannter Fehler')
@@ -2411,8 +2430,10 @@ function ScreenshotExportAdmin() {
               }
               
               if (error.name === 'AbortError') {
-                if (!silent) alert('⚠️ Speichern dauert zu lange.\n\nBitte kurz warten und nochmal auf „Speichern“ klicken.')
-                else console.warn('Sync (silent) Timeout')
+                if (!silent) {
+                  setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
+                  alert('⚠️ Speichern dauert zu lange.\n\nBitte kurz warten und nochmal auf „Speichern“ klicken.')
+                } else console.warn('Sync (silent) Timeout')
                 return
               }
               
@@ -2426,7 +2447,10 @@ function ScreenshotExportAdmin() {
               // Auf Mobil: NIEMALS link.click() mit JSON – öffnet sonst die gallery-data.json-Seite (BUG)
               const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
               if (isMobileDevice) {
-                if (isMountedRef.current) setIsDeploying(false)
+                if (isMountedRef.current) {
+                  setIsDeploying(false)
+                  setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
+                }
                 alert('⚠️ Daten konnten nicht an den Server gesendet werden.\n\nBitte prüfen: Ist die App von k2-galerie.vercel.app geöffnet? Ist das Internet verbunden? Einfach OK – du bleibst in der App, keine Seite öffnet sich.')
                 return
               }
@@ -2449,10 +2473,14 @@ function ScreenshotExportAdmin() {
                     document.body.removeChild(link)
                     URL.revokeObjectURL(url)
                   } catch {}
+                  if (isMountedRef.current) setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
                   alert('⚠️ Automatisches Speichern nicht möglich (Server nicht aktiv).\n\nBitte dem Assistenten Bescheid geben – einmalige Einrichtung nötig.')
                 }, 100)
               } catch (downloadError) {
-                if (isMountedRef.current) setIsDeploying(false)
+                if (isMountedRef.current) {
+                  setIsDeploying(false)
+                  setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
+                }
                 alert('❌ Fehler:\n\nAPI nicht verfügbar UND Download fehlgeschlagen\n\n' + (error instanceof Error ? error.message : String(error)))
               }
             })
@@ -2462,7 +2490,10 @@ function ScreenshotExportAdmin() {
               }, 100)
             })
           } catch (e) {
-            if (isMountedRef.current && !silent) setIsDeploying(false)
+            if (isMountedRef.current && !silent) {
+              setIsDeploying(false)
+              setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
+            }
             if (!silent) alert('Fehler: ' + (e instanceof Error ? e.message : String(e)))
             else console.warn('Sync (silent) Fehler:', e)
           }
@@ -2474,7 +2505,10 @@ function ScreenshotExportAdmin() {
           setTimeout(stringifyData, 100)
         }
       } catch (error) {
-        if (isMountedRef.current && !silent) setIsDeploying(false)
+        if (isMountedRef.current && !silent) {
+          setIsDeploying(false)
+          setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
+        }
         if (!silent) alert('Fehler: ' + (error instanceof Error ? error.message : String(error)))
         else console.warn('Sync (silent) Fehler:', error)
       }
@@ -2582,15 +2616,18 @@ function ScreenshotExportAdmin() {
   const handleLoadFromServer = async () => {
     if (isOeffentlichAdminContext() || isVk2AdminContext()) return
     setIsLoadingFromServer(true)
+    setSyncStatusBar({ phase: 'loading', message: 'Daten werden geladen…' })
     const url = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&t=${Date.now()}&_=${Math.random()}`
     try {
       const res = await fetch(url, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache, no-store' }, mode: 'cors' })
       if (!res.ok) {
+        setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
         alert(`Laden fehlgeschlagen (Server ${res.status}).\n\nBitte prüfen:\n• Internetverbindung\n• App auf k2-galerie.vercel.app öffnen und dort „Bilder vom Server laden“ klicken.`)
         return
       }
       const text = await res.text()
       if (text.trim().startsWith('<')) {
+        setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
         alert('Der Server hat eine Webseite statt Daten geliefert.\n\nÖffne https://k2-galerie.vercel.app im Browser und klicke dort unter „Werke verwalten“ auf „Bilder vom Server laden“.')
         return
       }
@@ -2598,6 +2635,7 @@ function ScreenshotExportAdmin() {
       try {
         data = JSON.parse(text)
       } catch (_) {
+        setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
         alert('Antwort vom Server war kein gültiges JSON.\n\nBitte auf k2-galerie.vercel.app „Bilder vom Server laden“ versuchen.')
         return
       }
@@ -2631,14 +2669,19 @@ function ScreenshotExportAdmin() {
         if (saveArtworks(toSave)) {
           setAllArtworks(loadArtworks())
           window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: toSave.length } }))
+          setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
           alert(`✅ ${toSave.length} Werke vom Server geladen.`)
+        } else {
+          setSyncStatusBar({ phase: 'error', message: 'Fehler beim Speichern.' })
         }
       } else {
         console.warn('Merge würde weniger Werke ergeben – localStorage unverändert')
+        setSyncStatusBar({ phase: 'success', message: 'Lokal beibehalten.' })
         alert('Lokal sind mehr Werke als auf dem Server. Lokale Daten wurden beibehalten.')
       }
     } catch (e) {
       console.error('Vom Server laden:', url, e)
+      setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
       const msg = e instanceof Error ? e.message : String(e)
       const isNetwork = /failed|network|load|cors|fetch/i.test(msg) || (e instanceof TypeError && msg.includes('fetch'))
       alert(
@@ -9940,6 +9983,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     </div>
                   </div>
                 ) : (
+                  <>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'flex-start' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                     <button
@@ -10027,6 +10071,33 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     </div>
                     )}
                   </div>
+                  {syncStatusBar.phase !== 'idle' && (
+                    <div style={{ width: '100%', marginTop: '0.5rem' }}>
+                      <div style={{
+                        height: '8px',
+                        borderRadius: '4px',
+                        backgroundColor: syncStatusBar.phase === 'sending' || syncStatusBar.phase === 'loading' ? (s.muted + '44') : syncStatusBar.phase === 'success' ? '#22c55e' : '#dc2626',
+                        overflow: 'hidden'
+                      }}>
+                        {(syncStatusBar.phase === 'sending' || syncStatusBar.phase === 'loading') && (
+                          <div
+                            className="k2-sync-bar-fill"
+                            style={{
+                              height: '100%',
+                              width: '30%',
+                              borderRadius: '4px',
+                              background: syncStatusBar.phase === 'sending' ? 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)' : `linear-gradient(90deg, ${s.accent} 0%, ${s.accent}88 100%)`
+                            }}
+                          />
+                        )}
+                        {(syncStatusBar.phase === 'success' || syncStatusBar.phase === 'error') && (
+                          <div style={{ width: '100%', height: '100%' }} />
+                        )}
+                      </div>
+                      <span style={{ fontSize: '0.8rem', color: syncStatusBar.phase === 'error' ? '#dc2626' : syncStatusBar.phase === 'success' ? '#22c55e' : s.text, marginTop: '0.25rem', display: 'inline-block' }}>{syncStatusBar.message}</span>
+                    </div>
+                  )}
+                  </>
                 )}
               </div>
               <div style={{
