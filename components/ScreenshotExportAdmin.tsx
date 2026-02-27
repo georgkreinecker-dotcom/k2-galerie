@@ -9990,6 +9990,34 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     </button>
                     <span style={{ fontSize: '0.72rem', color: s.muted }}>Hier sind die Bilder von den Mobilgeräten</span>
                     </div>
+                    {/* Auf Mobil: Daten an Server senden (Veröffentlichen) – verbindlicher Weg, damit Daten auf Vercel liegen */}
+                    {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => publishMobile()}
+                      disabled={isDeploying || allArtworks.length === 0}
+                      title="Aktuelle Werke und Daten an Vercel senden – danach auf allen Geräten sichtbar"
+                      style={{
+                        padding: '0.7rem 1.2rem',
+                        background: isDeploying || allArtworks.length === 0 ? s.bgElevated : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                        color: isDeploying || allArtworks.length === 0 ? s.muted : '#ffffff',
+                        border: 'none',
+                        borderRadius: '10px',
+                        fontSize: '0.88rem',
+                        fontWeight: 600,
+                        cursor: isDeploying || allArtworks.length === 0 ? 'not-allowed' : 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                        boxShadow: allArtworks.length > 0 && !isDeploying ? '0 2px 8px rgba(245,158,11,0.3)' : 'none'
+                      }}
+                    >
+                      {isDeploying ? '⏳ Wird gesendet…' : '📤 Daten an Server senden'}
+                    </button>
+                    <span style={{ fontSize: '0.72rem', color: s.muted }}>Damit Mac und andere Geräte die aktuellen Werke sehen</span>
+                    </div>
+                    )}
                   </div>
                 )}
               </div>

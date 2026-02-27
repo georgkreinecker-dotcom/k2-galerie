@@ -1,6 +1,6 @@
 # Mac ↔ iPad Sync – Schritt für Schritt
 
-**Eine zentrale Stelle = Vercel.** Dort liegen die Daten (gallery-data.json). Beim **Speichern** eines Werks werden die Daten automatisch dorthin geschickt – ein extra „Veröffentlichen“ ist nicht nötig. Beim **Öffnen** der Galerie/Vorschau wird von dort geladen. Laufende Nummern kommen ebenfalls von dort, damit Mac und iPad nie dieselbe Nummer vergeben.
+**Eine zentrale Stelle = Vercel.** Dort liegen die Daten (gallery-data.json). **Am Mac** gehen sie beim Speichern automatisch dorthin. **Am iPad** musst du nach dem Speichern **„Daten an Server senden“** tippen (unter Werke verwalten). Beim **Öffnen** der Galerie/Vorschau wird von dort geladen. Laufende Nummern kommen von dort, damit Mac und iPad nie dieselbe Nummer vergeben.
 
 ---
 
@@ -25,13 +25,14 @@
 ### Am iPad
 
 1. **Werk anlegen oder bearbeiten** (z. B. Foto mit Kamera, Speichern).
-2. **Speichern** – die Daten gehen **automatisch** an Vercel. Kein extra „Veröffentlichen“ nötig.
+2. **Speichern** – die Daten liegen erst auf dem iPad.
+3. **„📤 Daten an Server senden“** tippen (unter „Werke verwalten“). Damit gehen die Werke an Vercel. Ohne diesen Schritt liegen die Daten nur auf dem iPad.
 
 ### Am Mac
 
-3. **Galerie öffnen** (z. B. k2-galerie.vercel.app/galerie). Beim ersten Öffnen wird einmal von Vercel geladen.
-4. **Damit neue Werke vom iPad erscheinen:** Unten rechts auf **„🔄 Vom Server laden“** klicken. (1–2 Minuten nach dem Speichern am iPad warten, dann klicken – Vercel braucht kurz zum Aktualisieren.)
-5. Alternativ: Seite **neu laden** (F5 oder Cmd+R).
+4. **Galerie öffnen** (z. B. k2-galerie.vercel.app/galerie). Beim ersten Öffnen wird einmal von Vercel geladen.
+5. **Damit neue Werke vom iPad erscheinen:** Unter „Werke verwalten“ auf **„🔄 Bilder vom Server laden“** klicken. (1–2 Minuten nach „Daten an Server senden“ am iPad warten – Vercel braucht kurz.)
+6. Alternativ: Seite **neu laden** (F5 oder Cmd+R).
 
 → Das neue/geänderte Werk vom iPad erscheint am Mac.
 
@@ -42,17 +43,17 @@
 | Richtung   | Was du machst | Auf dem anderen Gerät |
 |-----------|----------------|------------------------|
 | **Mac → iPad**   | Werk **speichern** (geht automatisch an Vercel). | Galerie/Vorschau öffnen; bei Bedarf Stand-Badge tippen. |
-| **iPad → Mac**   | Werk **speichern** (geht automatisch an Vercel). | Galerie öffnen; **„Vom Server laden“** klicken (unten rechts) oder Seite neu laden. |
+| **iPad → Mac**   | Werk **speichern**, dann **„Daten an Server senden“** tippen. | Galerie öffnen; **„Bilder vom Server laden“** klicken oder Seite neu laden. |
 
-**Merksatz:** Speichern = Daten an die zentrale Stelle. Öffnen/Laden = Daten von dort. Kein extra „Veröffentlichen“ nötig.
+**Merksatz:** Am iPad: Speichern + **„Daten an Server senden“** = Daten auf Vercel. Am Mac: **„Bilder vom Server laden“** = Daten von Vercel holen.
 
-**Optional:** In Einstellungen gibt es weiterhin den Button **„Veröffentlichen“**, falls du z. B. viele Änderungen auf einmal gemacht hast und den Stand explizit sichern willst.
+**Am Mac** in Einstellungen gibt es zusätzlich **„Veröffentlichen“**; am iPad reicht **„Daten an Server senden“** unter Werke verwalten.
 
 ---
 
 ## Technik (für Assistenten)
 
 - **Zentrale Stelle:** Vercel (gallery-data.json). **Nur für K2:** Nummern beim neuen Werk von dort + lokal (CENTRAL_GALLERY_DATA_URL). ök2 = Demo (keine zentrale Datei), VK2 = keine Werke im Admin → Nummern nur lokal.
-- **Nach Speichern:** `publishMobile({ silent: true })` nur bei K2; ök2/VK2 schreiben nicht an die zentrale Stelle.
+- **Nach Speichern (Mac):** `publishMobile({ silent: true })` bei K2. **Am iPad:** Kein Auto-Publish – Nutzer tippt **„Daten an Server senden“** (ruft `publishMobile()` auf). ök2/VK2 schreiben nicht an die zentrale Stelle.
 - **Laden:** Galerie/Vorschau lädt gallery-data.json von Vercel (baseUrl wenn nicht auf Vercel), merged mit lokal falls nötig (BUG-012/013).
 - **Stand-Badge:** Reload mit Cache-Bypass für neueste Daten/App-Version.
