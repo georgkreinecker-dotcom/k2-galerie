@@ -2411,7 +2411,14 @@ function ScreenshotExportAdmin() {
                 return
               }
               
-              // Fallback: Download falls API nicht funktioniert (Server läuft nicht)
+              // Bei silent (z. B. nach „Werke speichern“): KEIN Fallback-Download – sonst öffnet iPad/Handy die JSON in neuem Tab
+              if (silent) {
+                if (isMountedRef.current) setIsDeploying(false)
+                console.warn('Sync (silent): Server nicht aktiv oder Fehler – kein Download-Fallback')
+                return
+              }
+              
+              // Fallback nur bei explizitem Veröffentlichen: Download falls API nicht funktioniert (Server läuft nicht)
               try {
                 const blob = new Blob([json], { type: 'application/json' })
                 const url = URL.createObjectURL(blob)
@@ -2422,20 +2429,18 @@ function ScreenshotExportAdmin() {
                 document.body.appendChild(link)
                 link.click()
                 
-                if (isMountedRef.current && !silent) setIsDeploying(false)
+                if (isMountedRef.current) setIsDeploying(false)
                 
                 setTimeout(() => {
                   try {
                     document.body.removeChild(link)
                     URL.revokeObjectURL(url)
                   } catch {}
-                  if (!silent) alert('⚠️ Automatisches Speichern nicht möglich (Server nicht aktiv).\n\nBitte dem Assistenten Bescheid geben – einmalige Einrichtung nötig.')
-                  else console.warn('Sync (silent): Server nicht aktiv')
+                  alert('⚠️ Automatisches Speichern nicht möglich (Server nicht aktiv).\n\nBitte dem Assistenten Bescheid geben – einmalige Einrichtung nötig.')
                 }, 100)
               } catch (downloadError) {
-                if (isMountedRef.current && !silent) setIsDeploying(false)
-                if (!silent) alert('❌ Fehler:\n\nAPI nicht verfügbar UND Download fehlgeschlagen\n\n' + (error instanceof Error ? error.message : String(error)))
-                else console.warn('Sync (silent) Fehler:', error)
+                if (isMountedRef.current) setIsDeploying(false)
+                alert('❌ Fehler:\n\nAPI nicht verfügbar UND Download fehlgeschlagen\n\n' + (error instanceof Error ? error.message : String(error)))
               }
             })
             .finally(() => {

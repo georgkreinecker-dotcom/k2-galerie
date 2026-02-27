@@ -8,6 +8,15 @@
 
 ---
 
+## BUG-015 · Beim Klick „Werke speichern“ öffnet sich gallery-data.json in neuem Tab
+**Symptom:** Auf „Werke speichern“ klicken → eine Seite mit gallery-data.json (roher JSON-Text) öffnet sich, Nutzer muss schließen und über Umwege zurück.
+**Ursache:** Nach dem Speichern wird automatisch `publishMobile({ silent: true })` aufgerufen. Schlägt die API fehl, gab es einen Fallback: Blob-URL + programmatischer Klick auf einen Download-Link. Auf iPad/Safari öffnet das oft die JSON in einem neuen Tab statt sie herunterzuladen.
+**Lösung:** Bei `silent === true` (automatischer Sync nach „Werke speichern“) keinen Fallback-Download mehr – weder link.click() noch neuer Tab. Nur isDeploying zurücksetzen und in der Konsole loggen. Fallback-Download nur bei explizitem „Veröffentlichen“ (nicht silent).
+**Betroffene Dateien:** `components/ScreenshotExportAdmin.tsx` (publishMobile, catch-Block)
+**Status:** ✅ Behoben (27.02.26)
+
+---
+
 ## BUG-014 · In Vorschau nur „?“ statt Bild nach Werk auf iPad fotografieren
 **Symptom:** Werk auf iPad fotografieren, ausfüllen, speichern → in der Vorschau erscheint nur „?“ (kaputtes Bild) statt des Fotos.
 **Ursache:** Wenn das Bild als `blob:`-URL gespeichert oder angezeigt wird, ist die URL in der Vorschau oft ungültig (z. B. nach Navigation/Reload). Der Browser zeigt dann das kaputte-Bild-Symbol („?“).
