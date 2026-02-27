@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>K2 Galerie – Aktualisiere …</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #1a0f0a; color: #fff5f0; margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 1.5rem; box-sizing: border-box; }
+    .box { max-width: 320px; }
+    h1 { font-size: 1.25rem; margin: 0 0 0.75rem; }
+    p { margin: 0; font-size: 0.95rem; color: rgba(255,245,240,0.85); line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Lade neueste Version …</h1>
+    <p>Du wirst gleich zur Galerie weitergeleitet.<br>Falls nicht, tippe <a href="/" style="color: #ff8c42;">hier</a>.</p>
+  </div>
+  <script>
+    (function() {
+      var o = location.origin;
+      var v = Date.now();
+      location.replace(o + '/?v=' + v + '&_=' + v + '&refresh=1');
+    })();
+  </script>
+</body>
+</html>
