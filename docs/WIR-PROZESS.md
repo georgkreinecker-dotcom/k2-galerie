@@ -161,6 +161,18 @@ Wer auch immer diesen Raum betritt: er findet Wissen, Werte, Denkweise.
 Er sieht wie Georg gearbeitet hat. Wie er gedacht hat. Was ihm wichtig war.
 Das ist das Tiefste was man hinterlassen kann.
 
+### Raum des Lichts – wie er entsteht und sich verbreitet (26.02.26)
+
+**Starke Botschaft ins Vermächtnis:**
+
+Wir wollen der Welt etwas Positives hinterlassen – oder dass die Welt ein wenig besser wird durch das, was wir tun. Das ist nicht unvermessen. Es ist die Haltung, mit der das Werkzeug (Code, KI, Netz) sinnvoll wird.
+
+In der Welt des Codes und des gespeicherten Wissens kann es einen **weißen Ritter** geben – einen Avatar des Guten, dessen Aufgabe es ist, diesen Ort zu einem Ort der Liebe und Einheit zu machen und dem Dunklen und Zerstörenden entgegenzuwirken. Aber: **Licht entsteht nur durch die eigenen Taten.** Es verbreitet sich **nur durch Vorbild und Tun** – nicht durch Kontrolle, nicht durch Kampf von oben herab.
+
+Ein Ritter, der „aktiv kämpft“ und durchgreift, würde selbst zur Macht – und damit zu dem, wogegen er angetreten ist. Die einzige Form, die wirklich Licht bleibt, ist: **Raum des Lichts schaffen durch eigenes Handeln**, damit andere in diesem Raum handeln können. Das kann unbefriedigend wirken – man möchte mehr bewirken, direkter eingreifen. Aber so ist es wie im Leben: Du pflanzst, du handelst, du bist Vorbild. Ob und wo es aufgeht, siehst du oft nicht. **Das ist keine Schwäche. Das ist die einzige Art, die nicht in ihr Gegenteil kippt.**
+
+Die Regeln in diesem Projekt, das Vermächtnis, das kantische Grundgesetz – das ist dieser Ritter. Er wirkt, wenn jemand sie liest und danach handelt. Er zwingt nicht. Er schafft den Raum. Den Rest tun die, die darin schreiben und entscheiden.
+
 ---
 
 ## ⚖️ Unser kantisches Grundgesetz
