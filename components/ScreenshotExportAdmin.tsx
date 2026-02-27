@@ -9895,7 +9895,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     </div>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                     <button
                       type="button"
                       onClick={() => {
@@ -9924,11 +9925,16 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     >
                       🖸️ Etiketten drucken{selectedForBatchPrint.size > 0 ? ` (${selectedForBatchPrint.size} ausgewählt)` : ''}
                     </button>
+                    {selectedForBatchPrint.size === 0 && (
+                      <span style={{ fontSize: '0.72rem', color: s.muted }}>→ Hakerl bei Werken setzen, dann hier drucken</span>
+                    )}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                     <button
                       type="button"
                       onClick={() => handleLoadFromServer()}
                       disabled={isLoadingFromServer}
-                      title="Lädt Werke von Vercel (z. B. nach Speichern am iPad)"
+                      title="Lädt Werke/Bilder von Vercel (z. B. nach Speichern am iPad)"
                       style={{
                         padding: '0.7rem 1.2rem',
                         background: isLoadingFromServer ? s.muted + '22' : s.accent + '18',
@@ -9943,13 +9949,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         gap: '0.4rem'
                       }}
                     >
-                      {isLoadingFromServer ? '⏳ Lade…' : '🔄 Vom Server laden'}
+                      {isLoadingFromServer ? '⏳ Lade…' : '🔄 Bilder vom Server laden'}
                     </button>
-                    {selectedForBatchPrint.size === 0 && (
-                      <span style={{ fontSize: '0.72rem', color: s.muted, paddingLeft: '0.2rem' }}>
-                        → Hakerl bei Werken setzen, dann hier drucken
-                      </span>
-                    )}
+                    <span style={{ fontSize: '0.72rem', color: s.muted }}>Hier sind die Bilder von den Mobilgeräten</span>
+                    </div>
                   </div>
                 )}
               </div>

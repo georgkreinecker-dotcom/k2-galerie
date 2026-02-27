@@ -2329,7 +2329,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               minHeight: '44px'
             }}
           >
-            {isRefreshing ? '⏳ Lade…' : '🔄 Vom Server laden'}
+            {isRefreshing ? '⏳ Lade…' : '🔄 Bilder vom Server laden'}
           </button>
         )}
 
