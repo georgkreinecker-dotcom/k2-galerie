@@ -7494,19 +7494,28 @@ ${'='.repeat(60)}
       }
       
       // K2: Werk-Bild automatisch via GitHub hochladen → überall sichtbar
+      // WICHTIG: Liste ROH aus localStorage lesen (nicht loadArtworks()) – sonst filtert/umbenannt und neues Werk geht verloren
       if (!forOek2 && selectedFile && imageDataUrl) {
         try {
           const { uploadImageToGitHub } = await import('../src/utils/githubImageUpload')
           const safeNumber = (artworkData.number || artworkData.id || 'werk').replace(/[^a-zA-Z0-9-]/g, '-')
           const filename = `werk-${safeNumber}.jpg`
           const url = await uploadImageToGitHub(selectedFile, filename, (msg) => console.log(msg))
-          // Werk mit URL statt Base64 aktualisieren
           artworkData.imageUrl = url
-          const updatedArtworks = loadArtworks().map((a: any) =>
-            (a.id === artworkData.id || a.number === artworkData.number) ? { ...a, imageUrl: url } : a
+          const key = getArtworksKey()
+          const raw = localStorage.getItem(key)
+          let list: any[] = []
+          try {
+            if (raw) {
+              const parsed = JSON.parse(raw)
+              list = Array.isArray(parsed) ? parsed : []
+            }
+          } catch (_) {}
+          const updatedArtworks = list.map((a: any) =>
+            (a?.id === artworkData.id || a?.number === artworkData.number) ? { ...a, imageUrl: url } : a
           )
           saveArtworks(updatedArtworks)
-          setAllArtworks(updatedArtworks)
+          setAllArtworks(loadArtworks())
           console.log('✅ Werk-Bild auf GitHub hochgeladen:', url)
         } catch (uploadErr) {
           console.warn('GitHub Upload für Werk fehlgeschlagen (Bild bleibt lokal):', uploadErr)
