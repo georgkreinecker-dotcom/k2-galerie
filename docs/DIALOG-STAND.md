@@ -56,7 +56,7 @@ Praxistest (Martina/Georg befüllen Galerie): Werk bearbeiten – neues Foto wur
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- (wird nach Push eingetragen)
+- **Bild-Bugs Praxistest: Bearbeiten übernimmt neues Foto; Fragezeichen → Kein-Bild-Platzhalter.** Commit: b93ac8e ✅ auf GitHub
 
 ## Nächster Schritt
 - Praxistest: Werk erneut bearbeiten (neues Foto) und zweites neues Werk anlegen – prüfen ob Bilder jetzt korrekt gespeichert und angezeigt werden. Bei weiterem „?“: prüfen ob imageUrl beim Speichern abgeschnitten wird (localStorage-Größe).
