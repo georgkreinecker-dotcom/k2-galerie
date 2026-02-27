@@ -2,15 +2,16 @@
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
-## Datum: 26.02.26
+## Datum: 27.02.26
 
 ## Thema
-Favoriten (max 5): Vorreihung in Galerie, Option beim Anlegen, VK2 wie gehabt
+Admin-Hub „Was möchtest du heute tun?“: One-Click, klare Icons + Kurzinfo, keine Doppelfunktion
 
 ## Woran zuletzt gearbeitet (inhaltlicher Faden)
 mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, Veröffentlichungsvorbereitung. Crash-Check war Unterbrechung in diesem Strom.
 
 ## Was zuletzt gemacht
+- **Admin-Hub „Was möchtest du heute tun?“:** Mittlere Galerie-Guide-Karte entfernt (Doppelfunktion). Nur noch zwei Spalten mit allen Bereichen (Meine Werke, Werkkatalog, Events, Aussehen & Design | Kassa, Einstellungen, Schritt-für-Schritt); je Icon + kurze Funktionsinfo (beschreibung), Icons größer (clamp 1.75rem–2.1rem). One-Click pro Bereich. hubHoveredTab-State entfernt. Commit: 2edf426 ✅
 - **LicencesPage 10 %-Rabatt sichtbar:** Bei gültiger Empfehler-ID: Label „Du erhältst 10 % Rabatt“, Hinweis „✓ Empfehlungs-Rabatt: 10 %“ und Preiszeile (z. B. 99 € → 89,10 €). URL-Prefill ?empfehler= und addGutschrift beim Speichern bereits vorhanden.
 - **mök2/App auf 10 % umgestellt:** MarketingOek2Page, EmpfehlungstoolPage, VerguetungPage – alle Empfehlungs-„50 %“ durch „10 % Rabatt“ / „10 % Gutschrift“. VK2-Lizenzmitglieder 50 % unverändert.
 - **mök2: Fähigkeiten-Mix (Fakten):** Sektion „Was in einer Person das ermöglicht hat“ – Unternehmererfahrung, Domänenwissen, Arbeit mit AI, Struktur/Prozess, UX aus Nutzersicht, Pragmatismus; ausdrücklich als Aufzählung von Faktoren, keine Wertung.
@@ -46,7 +47,7 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Galerie: Event-Dokument-Icons (📎) öffnen + Stand 26.02.26 20:06.** Commit: 4946bef ✅ auf GitHub
+- **Admin-Hub: Mittlere Karte entfernt, nur Icons + Kurzinfo, zwei Spalten, größere Icons, One-Click.** Commit: 2edf426 ✅ auf GitHub
 
 ## Was gerade gemacht (ök2: 7 fertige Musterdokumente)
 - **ök2 zeigt jetzt 7 fertige Musterdokumente:** 2 unter „Druckfertige Dokumente“ (Einladung, Presse aus MUSTER_EVENTS) + 5 PR-Dokumente (Newsletter, Plakat, Event-Flyer, Presseaussendung, Social Media) aus getOek2MusterPrDocuments(). Alle mit MUSTER_TEXTE (Lena Berg, Paul Weber, Galerie Muster, info@galerie-muster.example) und einheitlichem Design (#6b9080).
@@ -59,8 +60,8 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 - **ök2:** Unverändert – Events/Docs nur Muster; State = MUSTER_TEXTE.
 
 ## Nächster Schritt (für nächste Session)
-- **Test:** 📎-Icons unter „Aktuelles aus den Eventplanungen“ – Einladung/Presse klicken, Dokument soll sich öffnen.
-- Optional: Admin context=oeffentlich/vk2/K2 – Eventplan → Öffentlichkeitsarbeit, Kontext-Daten prüfen.
+- **Test:** Admin-Hub am Handy/Browser – zwei Spalten, größere Icons, Kurzinfo, ein Klick pro Bereich; keine mittlere Karte mehr.
+- Optional: 📎-Icons unter „Aktuelles aus den Eventplanungen“ durchklicken (Einladung/Presse).
 
 ## Was zuvor (Event-Flyer-Icon)
 - **Vk2GaleriePage:** Bei „VEREINSTERMINE & EVENTS“ hat jedes Event ein klickbares 📄-Icon; Klick öffnet den Flyer (gespeichertes HTML oder minimal generiert) in einem Modal.
@@ -69,13 +70,17 @@ mök2 (Fähigkeiten-Mix, Wiederbeschaffung, Marktwert), Favoriten/VK2-Katalog, V
 
 ## Nächste Schritte (offen)
 - **Test:** Event-Flyer-Icon auf VK2-Galerie und Galerie (K2/ök2) durchklicken – Flyer öffnet.
-- **Admin im Hub-Design (Phase 1):** Startansicht „Was möchtest du heute tun?“ durch 3-Spalten-Hub ersetzt – links Bereiche (Meine Werke, Werkkatalog, Events), Mitte Fokus-Karte + „↓ Direkt hier unten“, rechts Kassa/Einstellungen/Assistent + Galerie ansehen. K2/ök2/VK2 berücksichtigt.
+- **Admin-Hub (erledigt 27.02.26):** Zwei Spalten, Icons + Kurzinfo, größere Icons, keine mittlere Karte – One-Click. Commit 2edf426.
 4. **Vor Veröffentlichung:** Erster Durchgang in **docs/VOR-VEROEFFENTLICHUNG.md** erledigt (Stand-Tabelle für Georg). **Mit Georg:** Checkboxen durchgehen, npm audit + AGB/Impressum-Inhalte prüfen und abhaken.
 5. **Praxis-Test gestartet (26.02.26):** Git-Teil erledigt (Commit 16283ea, Tag vor-praxistest-2026-02-26). Noch empfohlen: App-Vollbackup herunterladen; backupmicro Hard-Backup wenn angesteckt. **Ab jetzt:** Galerien befüllen + testen; weitere Änderungen wie bisher (commit, push, drei Regeln).
 
 ## Heute außerdem
 - **Zurück aus Dokumenten:** goBack() in generierten Dokumenten nutzt Opener-URL inkl. context (Commit 192d544).
 - **CI:** GitHub Actions führt jetzt vollen Build bei jedem Push (Commit f8f0a7c).
+
+## Session-Ende 27.02.26
+- **Code:** Commit 2edf426 gepusht (Admin-Hub: Mittlere Karte weg, Icons + Kurzinfo, zwei Spalten, größere Icons). Stand 27.02.26 05:39.
+- **Nächste Session:** DIALOG-STAND lesen → Admin-Hub am Handy testen; optional 📎-Icons Eventplanung.
 
 ## Session-Ende 26.02.26
 - **Code:** Commit 4946bef gepusht (Event-Dokument-Icons + Stand 20:06). Vercel baut automatisch.
