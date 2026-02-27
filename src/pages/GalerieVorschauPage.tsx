@@ -259,9 +259,7 @@ type Filter = 'alle' | ArtworkCategoryId
 const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }: { initialFilter?: Filter; musterOnly?: boolean; vk2?: boolean }) => {
   const navigate = useNavigate()
   
-  // ök2 (musterOnly): k2-oeffentlich-artworks; VK2 (vk2): Mitglieder aus k2-vk2-stammdaten; K2: k2-artworks
-  // K2: Eine Quelle – nur lesen, nie beim Init zurückschreiben (Regel: niemals still löschen)
-  // K2: initialArtworks = Hauptliste + Pending, damit neu gespeicherte Werke sofort sichtbar sind
+  // EINE QUELLE je Kontext (von Mac oder Mobil gespeist): K2 = k2-artworks + Pending, ök2 = k2-oeffentlich-artworks / MUSTER_ARTWORKS, VK2 = k2-vk2-stammdaten. Nur lesen, nie still überschreiben.
   const initialArtworks = (() => {
     if (vk2) {
       return loadVk2Mitglieder()
@@ -831,8 +829,10 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     }
   }
 
-  // PROFESSIONELL: Lade Werke aus Supabase (primär) oder localStorage (Fallback)
-  // musterOnly (ök2) und vk2: keine K2-Daten laden
+  // EINE QUELLE für K2 und ök2 – kann von Mac oder Mobil gespeist werden, kein Überschreiben durch Server beim Laden
+  // K2: k2-artworks + Pending (Admin/Neues Werk auf Mac oder Mobil schreibt in k2-artworks)
+  // ök2: k2-oeffentlich-artworks bzw. MUSTER_ARTWORKS (Admin context=oeffentlich auf Mac oder Mobil)
+  // musterOnly (ök2) und vk2: eigener useEffect setzt Liste; hier nur K2-Daten laden
   useEffect(() => {
     if (musterOnly) return () => {}
     if (vk2) return () => {}
@@ -853,8 +853,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     }
     
     const loadArtworksData = async () => {
-      // K2: Analog zu Musterwerken – EINE QUELLE (localStorage + Pending), kein Überschreiben durch Server
-      // Wie bei musterOnly: Anzeige kommt nur aus dieser einen Quelle, kein Supabase/gallery-data-Fetch beim ersten Laden
+      // K2: Eine Quelle (wie ök2/Musterwerke) – localStorage + Pending; gespeist von Mac oder Mobil, kein Server-Überschreiben
       const localOnly = loadArtworks()
       const withPending = mergeWithPending(localOnly || [])
       if (withPending.length > 0) {
