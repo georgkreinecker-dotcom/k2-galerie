@@ -59,7 +59,7 @@ iPad: Zwei Werke angelegt → in Galerie teils Fragezeichen, nach Zurück in Ver
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **iPad-Chaos behoben: keine stillen Überschreibungen, BUG-011.** Commit: 8c2e3bf ✅ auf GitHub
+- **Werke: eine Quelle (artworksStorage), Supabase + syncFromGalleryData abgesichert.** Commit: 66312b1 ✅ auf GitHub
 
 ## Nächster Schritt
 - **iPad:** Nochmal testen: Neues Werk anlegen → in Galerie prüfen → zurück in Verwaltung → Werk muss bleiben; Musterwerke dürfen dein Werk nicht verdrängen.
