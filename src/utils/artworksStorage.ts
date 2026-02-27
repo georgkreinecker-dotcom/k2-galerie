@@ -132,3 +132,59 @@ export function mayWriteServerList(serverList: any[], currentCount: number): boo
   const filtered = filterK2Only(serverList)
   return filtered.length >= currentCount
 }
+
+// ─── Pending-Werke (Alternative: neu gespeicherte Werke bleiben sichtbar auch wenn etwas überschreibt) ───
+const PENDING_KEY = 'k2-artworks-pending'
+const PENDING_MAX = 30
+
+/** Liest die Pending-Liste (Werke die gerade hinzugefügt wurden und immer angezeigt werden sollen). */
+export function getPendingArtworks(): any[] {
+  try {
+    const raw = localStorage.getItem(PENDING_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+/** Hängt ein neu gespeichertes Werk an Pending an – es bleibt in der Anzeige, auch wenn k2-artworks überschrieben wird. */
+export function addPendingArtwork(artwork: any): void {
+  if (!artwork || (artwork.number == null && artwork.id == null)) return
+  try {
+    const pending = getPendingArtworks()
+    const key = artwork.number ?? artwork.id
+    if (pending.some((a: any) => (a.number ?? a.id) === key)) return
+    const next = [...pending, { ...artwork, _pending: true }].slice(-PENDING_MAX)
+    localStorage.setItem(PENDING_KEY, JSON.stringify(next))
+  } catch (e) {
+    console.warn('addPendingArtwork:', e)
+  }
+}
+
+/** Entfernt Werke aus Pending, die bereits in der übergebenen Liste vorkommen (by number/id). */
+export function clearPendingIfInList(mainList: any[]): void {
+  const mainKeys = new Set((mainList || []).map((a: any) => a?.number ?? a?.id).filter(Boolean))
+  const pending = getPendingArtworks().filter((a: any) => !mainKeys.has(a?.number ?? a?.id))
+  try {
+    if (pending.length === 0) localStorage.removeItem(PENDING_KEY)
+    else localStorage.setItem(PENDING_KEY, JSON.stringify(pending))
+  } catch (_) {}
+}
+
+/**
+ * Für Anzeige: Hauptliste mit Pending mergen. Werke aus Pending die noch nicht in main sind, werden angehängt.
+ * So bleibt ein gerade gespeichertes Werk sichtbar, auch wenn k2-artworks woanders überschrieben wurde.
+ */
+export function mergeWithPending(mainList: any[]): any[] {
+  const main = Array.isArray(mainList) ? mainList : []
+  const mainKeys = new Set(main.map((a: any) => a?.number ?? a?.id).filter(Boolean))
+  const pending = getPendingArtworks()
+  const toAdd = pending.filter((a: any) => {
+    const k = a?.number ?? a?.id
+    return k && !mainKeys.has(k)
+  })
+  if (toAdd.length === 0) return main
+  return [...main, ...toAdd]
+}

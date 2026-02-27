@@ -16,6 +16,7 @@ import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
+import { addPendingArtwork } from '../src/utils/artworksStorage'
 import { getWerbeliniePrDocCss, getWerbeliniePrDocCssVk2, WERBELINIE_FONTS_URL, WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../src/config/marketingWerbelinie'
 import '../src/App.css'
 
@@ -7545,6 +7546,15 @@ ${'='.repeat(60)}
       console.log('📦 Reloaded artworks:', reloaded.length, 'Neues Werk gefunden:', artworkData?.number)
       
       console.log('✅ Neues Werk in reloaded gefunden:', artworkData.number)
+      
+      // K2: Pending-Layer – neues Werk bleibt in Galerie sichtbar, auch wenn Liste woanders überschrieben wird
+      if (!forOek2) {
+        try {
+          addPendingArtwork(artworkData)
+        } catch (e) {
+          console.warn('Pending-Layer fehlgeschlagen:', e)
+        }
+      }
       
       // KRITISCH: Setze Filter auf 'alle' damit das neue Werk sichtbar ist
       // Oder setze Filter auf die Kategorie des neuen Werks

@@ -5,12 +5,13 @@
 ## Datum: 27.02.26
 
 ## Thema
-Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen (iPad-Werke weg)
+Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen (iPad-Werke weg). **Alternative: Pending-Layer** – neu gespeicherte Werke bleiben in der Galerie sichtbar.
 
 ## Woran zuletzt gearbeitet (inhaltlicher Faden)
-iPad: Zwei Werke angelegt → in Galerie teils Fragezeichen, nach Zurück in Verwaltung beide weg. Ursache: mehrere Pfade haben `k2-artworks` mit weniger Einträgen überschrieben. Lösung: **artworksStorage** als einzige Schreibstelle, alle Lade-/Sync-Pfade daran angebunden.
+Fehlermeldung weg, aber Werk verschwindet in der Galerie wieder. **Pending-Layer** umgesetzt: (1) **artworksStorage:** getPendingArtworks, addPendingArtwork, clearPendingIfInList, mergeWithPending (Key k2-artworks-pending). (2) **GalerieVorschauPage:** Alle K2-Anzeige-Pfade setzen die Liste über setArtworksDisplay (= mergeWithPending + clearPendingIfInList). (3) **Nach Speichern:** ScreenshotExportAdmin ruft addPendingArtwork(artworkData) auf (nur K2); GalerieVorschauPage bei neuem Werk (Mobile) addPendingArtwork(newEntry). So bleibt das Werk sichtbar, auch wenn etwas die Hauptliste überschreibt.
 
 ## Was zuletzt gemacht
+- **Pending-Layer (Alternative):** K2-Anzeige = Hauptliste + Pending. Alle setArtworks in GalerieVorschauPage (Laden, Sync, handleArtworksUpdate, loadData, handleRefresh, Speichern) für K2 auf setArtworksDisplay umgestellt. Admin + GalerieVorschau rufen nach Speichern addPendingArtwork auf. Tests + Build ✅.
 - **Artworks-Storage (eine Quelle):** Supabase-Primärladung und syncFromGalleryData „Server = Quelle“ schreiben nur noch über `saveArtworksStorage` / `mayWriteServerList`; bei „Merge würde weniger Werke“ bleibt localStorage unverändert, Anzeige aus lokalen Daten. TS-Fehler im Catch (isMounted): `adminLoadMountedRef` auf Komponentenebene, im Catch `adminLoadMountedRef.current` statt `isMounted`. Build ✅.
 - **iPad-Chaos behoben (gründlich):** (1) **Admin loadArtworks() (ök2):** Gefilterte Liste (K2-M-/K2-K- nur Anzeige) wird **nicht mehr** in localStorage geschrieben – kein stilles Löschen beim Laden. (2) **GalerieVorschauPage syncFromGalleryData:** Bei „Keine Server-Daten“ / „Server nicht erreichbar“ wird localStorage nur geschrieben wenn toKeep.length >= localArtworks.length; bei Fehler-Polling gar kein setItem, nur setArtworks. (3) Eine Quelle, keine stillen Überschreibungen mit weniger Werken. BUG-011 in GELOESTE-BUGS.md.
 - **iPad Admin – neues Foto + Freistellung:** Vorschau-Pfad komprimiert + Freistellung; neues Foto beim Bearbeiten wird übernommen. ScreenshotExportAdmin.tsx.
@@ -59,10 +60,10 @@ iPad: Zwei Werke angelegt → in Galerie teils Fragezeichen, nach Zurück in Ver
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Werke: eine Quelle (artworksStorage), Supabase + syncFromGalleryData abgesichert.** Commit: 66312b1 ✅ auf GitHub
+- **Pending-Layer: K2-Anzeige = Hauptliste + Pending, addPendingArtwork nach Speichern (Admin + GalerieVorschau).** (wird gleich committed)
 
 ## Nächster Schritt
-- **iPad:** Nochmal testen: Neues Werk anlegen → in Galerie prüfen → zurück in Verwaltung → Werk muss bleiben; Musterwerke dürfen dein Werk nicht verdrängen.
+- **iPad/Mac:** Neues Werk speichern → in Galerie prüfen ob es sichtbar bleibt (Pending-Layer). Wenn ja: Problem gelöst; wenn nein: nächste Ursache suchen (z. B. welcher Pfad überschreibt).
 
 ## Session 27.02.26 (Bugs: verschwundene Werke, Freistellung)
 - **Verschwundene Werke nach Rückkehr in Verwaltung:** (1) Supabase: Wenn Supabase weniger Werke liefert als localStorage, wird localStorage nicht mehr überschrieben – lokale Neu-Anlagen bleiben erhalten. (2) GalerieVorschau: Beim Laden aus localStorage wird gefilterte Liste nicht mehr zurückgeschrieben (kein stilles Löschen). (3) Mobile-Polling (syncFromGalleryData): Schreibt nicht mehr, wenn das Ergebnis weniger Werke hätte als aktuell lokal. (4) Admin: Werke werden nach 0,4 s statt 3 s geladen, damit die Liste schnell erscheint.
