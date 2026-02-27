@@ -11,6 +11,7 @@ Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen. **Erl
 Praxistest: Neues Werk anlegen → Admin verlassen → Vorschau/Galerie: Werk bleibt sichtbar.
 
 ## Was zuletzt gemacht (27.02.26)
+- **Ursache: GaleriePage-Merge hat Mac-Neu-Anlagen verworfen.** Beim Klick „Zur Galerie“ lädt GaleriePage gallery-data.json und merged Server + lokal. Lokale Werke, die nicht auf dem Server waren, wurden nur übernommen wenn isMobileWork && isVeryNew – am Mac (Bild aus Datei) haben sie createdOnMobile: false → landeten nur in toHistory, nicht in merged → beim Schreiben gingen sie verloren. **Fix:** GaleriePage an beiden Merge-Stellen: wenn lokales Werk nicht auf Server → immer merged.push(local).
 - **Werk verschwindet beim Verlassen des Admins:** GalerieVorschauPage angepasst: (1) „Keine Daten gefunden“ – vor Backup nochmal readArtworksRaw(); wenn jetzt Daten da (Admin-Save gerade fertig), diese anzeigen. (2) Backup nur für Anzeige; localStorage nur überschreiben wenn backup.length >= currentCount (nie mit weniger Werken). (3) Nach erstem Anzeigen aus localStorage 200 ms verzögert nochmal lesen (Nachzug falls Save beim Navigieren fertig wurde); Cleanup clearTimeout im useEffect.
 
 ## Woran zuletzt gearbeitet (inhaltlicher Faden)

@@ -1029,11 +1029,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               const isVeryNew = createdAt > Date.now() - 600000
               
               if (!serverArtwork) {
-                if (isMobileWork && isVeryNew) {
-                  merged.push(local)
-                } else {
-                  toHistory.push(local)
-                }
+                // KRITISCH: Immer in merged – sonst gehen neu angelegte Werke (z. B. am Mac aus Datei) beim Merge verloren
+                merged.push(local)
+                if (!isMobileWork || !isVeryNew) toHistory.push(local)
               } else {
                 if (isMobileWork) {
                   const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
@@ -1467,8 +1465,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 const isVeryNew = createdAt > Date.now() - 600000
                 
                 if (!serverArtwork) {
-                  if (isMobileWork && isVeryNew) merged.push(local)
-                  else toHistory.push(local)
+                  // KRITISCH: Immer in merged – sonst gehen neu angelegte Werke (z. B. am Mac) beim Initial-Load verloren
+                  merged.push(local)
+                  if (!isMobileWork || !isVeryNew) toHistory.push(local)
                 } else {
                   if (isMobileWork) {
                     const idx = merged.findIndex((a: any) => (a.number || a.id) === key)

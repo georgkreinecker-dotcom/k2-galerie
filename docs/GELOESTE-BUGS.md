@@ -8,6 +8,16 @@
 
 ---
 
+## BUG-012 · Neu angelegtes Werk (Mac, Bild aus Datei) verschwindet nach „Zur Galerie“
+**Symptom:** Werk im Admin speichern (auch am Mac, Bild aus Datei) → „Zur Galerie“ klicken → Werk ist weg.
+**Ursache:** GaleriePage lädt gallery-data.json und merged Server + lokal. Lokale Werke, die **nicht** auf dem Server standen, wurden nur in merged übernommen wenn `isMobileWork && isVeryNew`. Am Mac gespeicherte Werke haben `createdOnMobile: false` → kamen nur in toHistory, nicht in merged → beim Schreiben von merged in localStorage gingen sie verloren.
+**Lösung:** In GaleriePage an beiden Merge-Stellen (loadData + Initial-Load): Wenn ein lokales Werk nicht auf dem Server ist, **immer** `merged.push(local)` (nicht nur bei Mobile+sehr neu). toHistory für Logging unverändert.
+**Betroffene Dateien:** `src/pages/GaleriePage.tsx` (Merge mit serverArtworks)
+**Commit:** (27.02.26)
+**Status:** ✅ Behoben
+
+---
+
 ## BUG-001 · Bilder in Seitengestaltung verschwinden (localStorage-Verlust)
 **Symptom:** Willkommensbild, Galerie-Karte, Rundgang-Bild verschwinden nach einiger Zeit.
 **Ursache:** Bilder wurden als Base64 im localStorage gespeichert. Bei vollem Speicher (QuotaExceeded) → SafeMode löscht andere Keys → Bilder weg.
