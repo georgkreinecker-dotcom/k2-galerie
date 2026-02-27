@@ -9,7 +9,8 @@ Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen. **Erl
 
 ## Session-Ende 27.02.26 (Abend) – morgen genau da weiter
 - **Heute gemacht:** Crash-Check (GalerieVorschauPage 5s-Cleanup, Admin location.href iframe-gesichert). **Datentransport iPad ↔ Vercel ↔ Mac** professionell umgesetzt: eine feste API-URL (WRITE_GALLERY_DATA_API_URL), Erfolg/Fehler nur aus API-Response, „Bilder vom Server laden“ mit Retry und klaren Meldungen, Erfolgs-Modal angepasst, Doku docs/DATENTRANSPORT-IPAD-MAC-VERCEL.md + Handbuch 16.
-- **Nächste Session (morgen):** DIALOG-STAND lesen → **genau da weiter:** Datentransport testen. 1) Commit/Push von heute ausführen (falls noch nicht). 2) Am iPad (App von k2-galerie.vercel.app): Werk speichern → „📤 Daten an Server senden“ tippen – kommt Fehlermeldung „GITHUB_TOKEN fehlt“, in Vercel Token setzen (docs/DATENTRANSPORT-IPAD-MAC-VERCEL.md). 3) Am Mac: 1–2 Min warten → „🔄 Bilder vom Server laden“ – prüfen ob Werke ankommen. Faden = Datentransport funktionssicher machen.
+- **Commit:** 4f316bd ✅ auf GitHub (gepusht).
+- **Nächste Session (morgen):** DIALOG-STAND lesen → **genau da weiter:** Datentransport testen. 1) Am iPad (App von k2-galerie.vercel.app): Werk speichern → „📤 Daten an Server senden“ tippen – kommt Fehlermeldung „GITHUB_TOKEN fehlt“, in Vercel Token setzen (docs/DATENTRANSPORT-IPAD-MAC-VERCEL.md). 2) Am Mac: 1–2 Min warten → „🔄 Bilder vom Server laden“ – prüfen ob Werke ankommen. Faden = Datentransport funktionssicher machen.
 
 ## Crash-Check 27.02.26
 - **GalerieVorschauPage:** 5s-SetTimeout für Mobile-Polling wurde im Cleanup nicht gecleart → behoben (initialSyncTimeoutId + clearTimeout).
