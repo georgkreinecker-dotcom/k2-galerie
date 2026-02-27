@@ -55,3 +55,4 @@ terminal-startup-error.log
 k2-export.json
 *.json.backup
 public/gallery-data.json.backup.*
+.vercel

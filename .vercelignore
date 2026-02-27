@@ -1,0 +1,11 @@
+# Vercel: Upload unter 100 MB halten (CLI-Limit)
+# reference-screenshots nur für lokale Tests, nicht für Production-Build
+reference-screenshots/
+# Sicherheit: Große/Backup-Ordner nie hochladen
+release/
+.git.backup/
+*.backup
+# Falls CLI mehr hochlädt als Git
+node_modules/
+dist/
+.git/

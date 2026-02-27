@@ -44,7 +44,8 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **SCHRITT-FUER-SCHRITT-STAND-AKTUELL.md** – **Stand überall aktuell:** 6 Schritte (pushen → Vercel Current prüfen → ggf. Promote/Redeploy → build-info prüfen → iPad refresh/QR → Kontrolle).
 - **WAS-AB-13-26-BEI-VERCEL.md** – Was ab 13:26 bei Vercel passiert ist; Schlussfolgerung (Ursache im Dashboard, nicht im Repo).
 - **BERICHT-ISTZUSTAND-SYNC-VERCEL-27-02-26.md** – **Analytischer Bericht (27.02.26):** Istzustand Datenchaos & Vercel (2 Fotos Sync Mac↔iPad, Stand hängt bei 13:26), Ursachen, Weg zur Lösung (Vercel reparieren → Sync stabilisieren).
-- **VERCEL-CHECKLISTE-BEI-KEINEM-STAND.md** – **Wenn kein neuer Stand:** Vercel Dashboard (Deployments, Production Branch), Build-Fehler, danach refresh.html/QR.
+- **VERCEL-CHECKLISTE-BEI-KEINEM-STAND.md** – **Wenn kein neuer Stand:** Vercel Dashboard (Deployments, Production Branch), Build-Fehler, **Vercel CLI** (direkt vom Mac deployen), danach refresh.html/QR.
+- **VERCEL-DEPLOY-HOOK-ANLEITUNG.md** – Deploy Hook (URL aufrufen) + **Vercel CLI Schritt-für-Schritt** (Login, `npx vercel --prod`, Link zu k2-galerie) – für nächstes Vercel-Problem parat.
 - **SYNC-ABLAUF-MAC-IPAD.md** – Sync eine Quelle (Vercel); Speichern → Vercel, anderes Gerät lädt von dort.
 - **WERKE-OEFFENTLICH-SICHTBAR.md** – **Zentral:** Änderungen (Werke, Design, Stammdaten, …) → öffentlich sichtbar (in jedem Netz). Veröffentlichen + Git Push.
 - **VERCEL-STAND-HANDY.md** – Warum Handy alten Stand zeigt (Branch, Cache).

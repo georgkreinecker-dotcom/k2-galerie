@@ -49,14 +49,23 @@
    - **GitHub prüfen:** Repo **k2-galerie** → **Settings** → **Webhooks**. Gibt es einen Eintrag von Vercel? Bei „Recent Deliveries“: Letzte Lieferungen grün (200) oder rot (Fehler)? Bei Fehlern: Webhook löschen; in Vercel unter Git einmal **Disconnect** → wieder **Connect** (erstellt neuen Webhook).
    - **Workaround – Deploy Hook:** Vercel → Projekt **k2-galerie** → **Settings** → **Git** → Abschnitt **Deploy Hooks**. Neuen Hook anlegen (z. B. Name „Manuell“), Branch **main** → Vercel zeigt eine **URL**. Diese URL einmal im Browser aufrufen (oder mit `curl <URL>`) → löst sofort ein Deployment aus, unabhängig vom GitHub-Webhook.
 
+5. **Direkt vom Mac deployen (Vercel CLI) – für nächstes Vercel-Problem**
+   - **Im Mac-Terminal** (nicht Cursor-Terminal): in den Projektordner wechseln, dann:
+   - Einmalig Login: `npx vercel login` (Browser öffnet sich, bei Vercel anmelden → „Authorization successful“).
+   - Jedes Mal für Deployment: `npx vercel --prod`
+   - Bei „Set up and deploy?“ → **Enter** (yes). Bei „Which scope?“ → **georg's projects** (Enter). Bei „Link to existing project?“ → **Y**, dann **k2-galerie** wählen.
+   - Vercel baut den **aktuellen Ordnerstand** und stellt ihn als Production live. Unabhängig von GitHub/Webhook/Deploy Hook. Dauer ca. 1–2 Min.
+   - **Vollständige Anleitung:** **docs/VERCEL-DEPLOY-HOOK-ANLEITUNG.md** (Abschnitt „Vercel CLI – direkter Zugang“).
+
 ---
 
-## 4. Kurz
+## 5. Kurz
 
-| Problem | Prüfen |
-|--------|--------|
+| Problem | Prüfen / Tun |
+|--------|----------------|
 | Stand bleibt alt | Deployments → neuestes **Ready**? Sonst Build-Log, Fehler beheben. |
 | Kein neues Deployment | Settings → Git → **richtiges Repo?** Production Branch = **main**? |
+| Webhook/Hook bringt nichts | **Vercel CLI:** Mac-Terminal → `cd .../k2Galerie` → `npx vercel --prod` (siehe Abschnitt 5 oben). |
 | Build fehlgeschlagen | Build-Log lesen, lokal `npm run build`, Fix pushen. |
 
-Siehe auch: **docs/BERICHT-ISTZUSTAND-SYNC-VERCEL-27-02-26.md**, **docs/VERCEL-STAND-HANDY.md**.
+Siehe auch: **docs/VERCEL-DEPLOY-HOOK-ANLEITUNG.md** (inkl. Vercel CLI), **docs/BERICHT-ISTZUSTAND-SYNC-VERCEL-27-02-26.md**, **docs/VERCEL-STAND-HANDY.md**.

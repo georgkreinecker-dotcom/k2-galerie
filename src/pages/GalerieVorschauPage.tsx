@@ -3110,7 +3110,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       justifyContent: 'center'
                     }}>
                       {(() => {
-                        const rawSrc = artwork.imageUrl || artwork.previewUrl || ''
+                        let rawSrc = artwork.imageUrl || artwork.previewUrl || ''
+                        // blob:-URLs (z. B. nach iPad-Foto) sind in Vorschau oft ungültig → Platzhalter, sonst "?" als kaputtes Bild
+                        if (typeof rawSrc === 'string' && rawSrc.startsWith('blob:')) rawSrc = ''
                         const displaySrc = musterOnly && (!rawSrc || isPlaceholderImageUrl(rawSrc))
                           ? getOek2DefaultArtworkImage(artwork.category)
                           : rawSrc

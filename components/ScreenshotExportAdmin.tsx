@@ -1198,6 +1198,8 @@ function ScreenshotExportAdmin() {
   const [photoUseFreistellen, setPhotoUseFreistellen] = useState(true)
   // Hintergrund-Variante bei Freistellung: hell | weiss | warm | kuehl | dunkel
   const [photoBackgroundPreset, setPhotoBackgroundPreset] = useState<'hell' | 'weiss' | 'warm' | 'kuehl' | 'dunkel'>('hell')
+  /** Läuft gerade „Jetzt freistellen“ (nachträglich für bestehendes Bild)? */
+  const [freistellenInProgress, setFreistellenInProgress] = useState(false)
   const [artworkTitle, setArtworkTitle] = useState('')
   const [artworkCategory, setArtworkCategory] = useState<string>('malerei')
   const [artworkCeramicSubcategory, setArtworkCeramicSubcategory] = useState<'vase' | 'teller' | 'skulptur' | 'sonstig'>('vase')
@@ -16306,6 +16308,75 @@ ${name}`
                       Original benutzen
                     </label>
                   </div>
+                  {/* Nachträglich freistellen: z. B. wenn Foto vom iPad ohne Freistellung gespeichert wurde */}
+                  {previewUrl && (
+                    <div style={{ marginTop: '0.75rem' }}>
+                      <button
+                        type="button"
+                        disabled={freistellenInProgress}
+                        onClick={async () => {
+                          if (!previewUrl) return
+                          let src = previewUrl
+                          if (previewUrl.startsWith('blob:')) {
+                            try {
+                              const r = await fetch(previewUrl)
+                              const blob = await r.blob()
+                              src = await new Promise<string>((res, rej) => {
+                                const fr = new FileReader()
+                                fr.onload = () => res(String(fr.result))
+                                fr.onerror = rej
+                                fr.readAsDataURL(blob)
+                              })
+                            } catch {
+                              alert('Blob-Bild konnte nicht gelesen werden.')
+                              return
+                            }
+                          } else if (!previewUrl.startsWith('data:')) {
+                            /* URL (z. B. /img/k2/… oder Vercel-URL) – laden und als Data-URL verwenden */
+                            try {
+                              const url = previewUrl.startsWith('http') ? previewUrl : (window.location.origin + (previewUrl.startsWith('/') ? '' : '/') + previewUrl)
+                              const r = await fetch(url)
+                              const blob = await r.blob()
+                              src = await new Promise<string>((res, rej) => {
+                                const fr = new FileReader()
+                                fr.onload = () => res(String(fr.result))
+                                fr.onerror = rej
+                                fr.readAsDataURL(blob)
+                              })
+                            } catch {
+                              alert('Bild konnte nicht vom Server geladen werden.')
+                              return
+                            }
+                          }
+                          setFreistellenInProgress(true)
+                          try {
+                            const { compositeOnProfessionalBackground } = await import('../src/utils/professionalImageBackground')
+                            const result = await compositeOnProfessionalBackground(src, photoBackgroundPreset)
+                            setPreviewUrl(result)
+                            setPhotoUseFreistellen(true)
+                          } catch (err) {
+                            try {
+                              sessionStorage.setItem('k2-freistellen-fallback-used', Date.now().toString())
+                            } catch (_) {}
+                            alert('Freistellung konnte auf diesem Gerät nicht durchgeführt werden. Bitte am Mac mit starkem Browser versuchen.')
+                          } finally {
+                            setFreistellenInProgress(false)
+                          }
+                        }}
+                        style={{
+                          padding: '0.5rem 0.75rem',
+                          background: freistellenInProgress ? 'rgba(255,255,255,0.1)' : 'rgba(95, 251, 241, 0.2)',
+                          border: '1px solid rgba(95, 251, 241, 0.5)',
+                          borderRadius: '8px',
+                          color: '#f4f7ff',
+                          fontSize: '0.85rem',
+                          cursor: freistellenInProgress ? 'wait' : 'pointer'
+                        }}
+                      >
+                        {freistellenInProgress ? '⏳ Bitte warten…' : '✨ Foto jetzt freistellen'}
+                      </button>
+                    </div>
+                  )}
                   {photoUseFreistellen && (
                     <div style={{ marginTop: '0.75rem' }}>
                       <span style={{ fontSize: '0.8rem', color: '#8fa0c9', display: 'block', marginBottom: '0.35rem' }}>

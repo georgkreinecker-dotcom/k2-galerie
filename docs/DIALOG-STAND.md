@@ -5,7 +5,7 @@
 ## Datum: 27.02.26
 
 ## Thema
-Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen. **Erledigt:** Raw-Liste beim Speichern (kein Filter zurückschreiben), Nummer aus Raw, Freistellen-Hinweis bei Fallback.
+Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen. **Erledigt:** Raw-Liste beim Speichern, Freistellen-Hinweis bei Fallback. **Neu:** „Foto jetzt freistellen“ im Admin – Fotos vom iPad (ohne Freistellung) am Mac nachträglich freistellen.
 
 ## Nächster Schritt
 1. **QR/Stand-Fix (27.02.26):** QR und Stand-Badge nutzen jetzt **/api/build-info** statt build-info.json – Serverless-API, beim Build mit aktuellem Stand beschrieben, umgeht CDN-Cache. Commit c5351e1.
@@ -15,6 +15,7 @@ Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen. **Erl
 5. **Schritt für Schritt (Screenshot Vercel):** **docs/SCHRITT-FUER-SCHRITT-STAND-AKTUELL.md** – 6 Schritte: pushen → Current prüfen → ggf. Promote/Redeploy → build-info auf Vercel prüfen → iPad refresh/QR → Kontrolle. Passt zum Befund: Vercel zeigt Ready, aber „Current“ kann alter Commit sein.
 
 ## Was zuletzt gemacht (27.02.26)
+- **Foto vom iPad nicht freigestellt – am Mac nachträglich:** Im Admin unter „Werk bearbeiten“ gibt es bei vorhandenem Bild einen Button **„✨ Foto jetzt freistellen“**. Damit kannst du ein bereits gespeichertes Foto (z. B. vom iPad ohne Freistellung) am Mac nachträglich freistellen; danach **Speichern** klicken, dann ist das Werk überall mit freigestelltem Bild. Unterstützt data-URL, blob-URL und Server-URL (/img/k2/…). ScreenshotExportAdmin.tsx.
 - **iPad hängt trotzdem bei 13:26:** Neue **Refresh-URL** als letzter Ausweg: **https://k2-galerie.vercel.app/refresh.html** – einmal öffnen, leitet sofort mit Cache-Bust zur Galerie weiter. URL wird von Vercel-Rewrite ausgenommen, no-cache-Header; public/refresh.html → dist/refresh.html. Doku in VERCEL-STAND-HANDY.md ergänzt („Letzter Ausweg – frische URL“).
 - **iPad bekommt neuen Stand nicht (hängt bei 13:26):** Inject-Script in index.html erweitert (write-build-info.js): (1) **Stale-Check** – wenn geladenes HTML älter als 2 Min ist → einmal Reload mit Cache-Bust (sessionStorage k2_stale_reload gegen Loop). (2) **Bei Fetch-Fehler** von build-info.json → einmal Reload (k2_error_reload). Doku: VERCEL-STAND-HANDY.md (Abschnitt „iPad/Handy hängt bei altem Stand“).
 - **iPad „keine Werke“:** Auf der Vorschau-Seite (wo die Werke als Karten stehen) wurde bei leerem localStorage erst nach 2,8 s vom Server geladen. Jetzt: Wenn lokal leer und auf Vercel → 500 ms Verzögerung, sonst 800 ms (leer) bzw. 2,8 s (wenn lokal schon Werke da). GalerieVorschauPage.tsx.

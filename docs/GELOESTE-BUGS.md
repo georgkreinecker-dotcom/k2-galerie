@@ -8,6 +8,15 @@
 
 ---
 
+## BUG-014 · In Vorschau nur „?“ statt Bild nach Werk auf iPad fotografieren
+**Symptom:** Werk auf iPad fotografieren, ausfüllen, speichern → in der Vorschau erscheint nur „?“ (kaputtes Bild) statt des Fotos.
+**Ursache:** Wenn das Bild als `blob:`-URL gespeichert oder angezeigt wird, ist die URL in der Vorschau oft ungültig (z. B. nach Navigation/Reload). Der Browser zeigt dann das kaputte-Bild-Symbol („?“).
+**Lösung:** In GalerieVorschauPage bei der Werkkarten-Anzeige: `blob:`-URLs wie „kein Bild“ behandeln → sofort Platzhalter „Kein Bild“ anzeigen, kein `<img src="blob:...">` (dadurch kein „?“).
+**Betroffene Dateien:** `src/pages/GalerieVorschauPage.tsx` (rawSrc vor displaySrc prüfen, blob: auf '' setzen)
+**Status:** ✅ Behoben (27.02.26)
+
+---
+
 ## BUG-012 · Neu angelegtes Werk (Mac, Bild aus Datei) verschwindet nach „Zur Galerie“
 **Symptom:** Werk im Admin speichern (auch am Mac, Bild aus Datei) → „Zur Galerie“ klicken → Werk ist weg.
 **Ursache:** GaleriePage lädt gallery-data.json und merged Server + lokal. Lokale Werke, die **nicht** auf dem Server standen, wurden nur in merged übernommen wenn `isMobileWork && isVeryNew`. Am Mac gespeicherte Werke haben `createdOnMobile: false` → kamen nur in toHistory, nicht in merged → beim Schreiben von merged in localStorage gingen sie verloren.
