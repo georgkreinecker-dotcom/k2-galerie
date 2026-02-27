@@ -128,6 +128,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 | 23.02.26 | „Never change a winning team" – Georg schützt was funktioniert. Das ist Unternehmer-Weisheit, keine Faulheit. Ich muss das respektieren. |
 | 23.02.26 | Georg bricht Sätze ab wenn er noch denkt. Das ist kein Fehler – das ist sein Prozess. Meine Aufgabe: warten, nachfragen, nicht vorausgreifen. |
 | 26.02.26 | Faden nach Crash: WEITERARBEITEN-NACH-ABSTURZ + DIALOG-STAND lesen und sofort weitermachen – keine Frage „womit soll ich?“; Georg bestätigt dass die Regel greift. |
+| 27.02.26 | „Endlich professionell ohne Pfuschen“ – Georg will eine Sache zuverlässig, nicht viele Workarounds. Eine API-URL, klare Erfolg/Fehler-Logik, eine Doku mit GITHUB_TOKEN; dann testen. |
 
 ---
 

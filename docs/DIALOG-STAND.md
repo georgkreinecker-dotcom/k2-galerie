@@ -7,6 +7,23 @@
 ## Thema
 Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen. **Erledigt:** Raw-Liste, Freistellen-Hinweis, „Foto jetzt freistellen“ am Mac. **Neu (27.02.26 Abend):** Vor-Ort-Test-Probleme adressiert – einheitliche Meldung, Mobile-Kompression, Platzhalter/Cleanup, Upload auch ohne selectedFile.
 
+## Session-Ende 27.02.26 (Abend) – morgen genau da weiter
+- **Heute gemacht:** Crash-Check (GalerieVorschauPage 5s-Cleanup, Admin location.href iframe-gesichert). **Datentransport iPad ↔ Vercel ↔ Mac** professionell umgesetzt: eine feste API-URL (WRITE_GALLERY_DATA_API_URL), Erfolg/Fehler nur aus API-Response, „Bilder vom Server laden“ mit Retry und klaren Meldungen, Erfolgs-Modal angepasst, Doku docs/DATENTRANSPORT-IPAD-MAC-VERCEL.md + Handbuch 16.
+- **Nächste Session (morgen):** DIALOG-STAND lesen → **genau da weiter:** Datentransport testen. 1) Commit/Push von heute ausführen (falls noch nicht). 2) Am iPad (App von k2-galerie.vercel.app): Werk speichern → „📤 Daten an Server senden“ tippen – kommt Fehlermeldung „GITHUB_TOKEN fehlt“, in Vercel Token setzen (docs/DATENTRANSPORT-IPAD-MAC-VERCEL.md). 3) Am Mac: 1–2 Min warten → „🔄 Bilder vom Server laden“ – prüfen ob Werke ankommen. Faden = Datentransport funktionssicher machen.
+
+## Crash-Check 27.02.26
+- **GalerieVorschauPage:** 5s-SetTimeout für Mobile-Polling wurde im Cleanup nicht gecleart → behoben (initialSyncTimeoutId + clearTimeout).
+- **ScreenshotExportAdmin:** VK2 Vorstand→Admin, Abmelden, „Zurück zur Übersicht“, Kassa-Links – alle `location.href` nur noch wenn `window.self === window.top` (kein Redirect in Cursor Preview). CRASH-BEREITS-GEPRUEFT.md ergänzt.
+
+## Datentransport iPad ↔ Vercel ↔ Mac (27.02.26) – professionell umgesetzt
+- **Eine API-URL:** Immer `https://k2-galerie.vercel.app/api/write-gallery-data` (WRITE_GALLERY_DATA_API_URL) – iPad, Mac, lokal nutzen denselben Endpoint, kein relativer Pfad mehr.
+- **Erfolg/Fehler:** Auswertung nur noch über `result.success` und `result.error`/`result.hint` (API-Response); alte Git-Output-Logik entfernt.
+- **„Bilder vom Server laden“:** Feste URL, ein Retry bei Netzwerkfehler, klarere Meldungen (404, HTML statt JSON, Stand-Anzeige nach Laden).
+- **Erfolgs-Modal:** Text angepasst: „In 1–2 Min auf dem anderen Gerät ‚Bilder vom Server laden‘ tippen bzw. Galerie neu laden.“
+- **Doku:** docs/DATENTRANSPORT-IPAD-MAC-VERCEL.md (Ablauf, GITHUB_TOKEN, Fehlerfälle); Handbuch 16 Technik-Abschnitt ergänzt.
+
+**Wichtig:** In Vercel muss **GITHUB_TOKEN** gesetzt sein (Settings → Environment Variables), sonst schlägt „Daten an Server senden“ mit Hinweis darauf fehl.
+
 ## Nächster Schritt
 - **Georg:** Am iPad: Nach Speichern **„📤 Daten an Server senden“** tippen (Admin → Werke verwalten), damit Vercel aktuell ist. Am Mac: **„🔄 Vom Server laden“** holt die Werke. Handbuch 16: iPad → Mac = Speichern + „Daten an Server senden“; Mac = „Vom Server laden“. (Auf Mobil gibt es keine Auto-Veröffentlichung – Nutzer tippt den Button.)
 1. **QR/Stand-Fix (27.02.26):** QR und Stand-Badge nutzen jetzt **/api/build-info** statt build-info.json – Serverless-API, beim Build mit aktuellem Stand beschrieben, umgeht CDN-Cache. Commit c5351e1.
@@ -92,7 +109,7 @@ Werk verschwindet / Nummer wiederverwendet / Freistellen geht nicht. **Ursache:*
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Sync-Statusbalken: Erfüllungszustand bei Senden/Empfangen. Stand 27.02.26 20:18.** Commit: a7aec20 ✅ auf GitHub
+- **Freistellungs-Hinweis iPad: Zähler, Meldung pro Werk. Stand 27.02.26 20:25.** Commit: 6dfa901 ✅ auf GitHub
 
 ## Nächster Schritt
 - **iPad/Mac:** Neues Werk speichern → in Galerie prüfen ob es sichtbar bleibt (Pending-Layer). Wenn ja: Problem gelöst; wenn nein: nächste Ursache suchen (z. B. welcher Pfad überschreibt).

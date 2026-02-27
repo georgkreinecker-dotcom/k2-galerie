@@ -138,4 +138,7 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 | 26.02.26 | index.html | (1) root-div onclick (Laden … tippen): location.reload() ohne iframe-Check. (2) Timeout-Fehler-HTML „Galerie lädt nicht“ – Button onclick="location.reload()" ohne iframe-Check. **Fix:** Beide nur wenn window.self===window.top. |
 | 26.02.26 | App.tsx, Vk2GaleriePage, Vk2GalerieVorschauPage | **Neue Prüfung:** doHardReload() (Stand-Badge-Klick) ohne iframe-Check → Reload im Preview möglich. VK2 Stand-Badges (Vk2GaleriePage, Vk2GalerieVorschauPage) onClick mit location.href ohne iframe-Check. **Fix:** doHardReload am Anfang `if (window.self !== window.top) return`; beide VK2-Stand-Badges nur wenn `window.self === window.top` dann location.href. |
 
-*Zuletzt ergänzt: 26.02.26 (Crash-Check: doHardReload + VK2 Stand-Badges iframe-gesichert)*
+| 27.02.26 | GalerieVorschauPage | Mobile-Polling: setTimeout(5000) wurde im Cleanup nicht gecleart → nach Unmount konnte setState laufen. **Fix:** initialSyncTimeoutId + clearTimeout im Cleanup. |
+| 27.02.26 | ScreenshotExportAdmin | location.href ohne iframe-Check: VK2 Vorstand→Admin (8873), Abmelden→/vk2-login (8890), „Zurück zur Übersicht“ Entdecken (9099), Kassa-Links Hub (9572, 9665). **Fix:** Alle nur wenn window.self === window.top. |
+
+*Zuletzt ergänzt: 27.02.26 (Crash-Check: GalerieVorschauPage 5s-Cleanup, ScreenshotExportAdmin location.href iframe-gesichert)*

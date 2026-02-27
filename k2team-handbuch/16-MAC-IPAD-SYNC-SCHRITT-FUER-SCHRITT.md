@@ -54,6 +54,8 @@
 ## Technik (für Assistenten)
 
 - **Zentrale Stelle:** Vercel (gallery-data.json). **Nur für K2:** Nummern beim neuen Werk von dort + lokal (CENTRAL_GALLERY_DATA_URL). ök2 = Demo (keine zentrale Datei), VK2 = keine Werke im Admin → Nummern nur lokal.
-- **Nach Speichern (Mac):** `publishMobile({ silent: true })` bei K2. **Am iPad:** Kein Auto-Publish – Nutzer tippt **„Daten an Server senden“** (ruft `publishMobile()` auf). ök2/VK2 schreiben nicht an die zentrale Stelle.
-- **Laden:** Galerie/Vorschau lädt gallery-data.json von Vercel (baseUrl wenn nicht auf Vercel), merged mit lokal falls nötig (BUG-012/013).
+- **Senden:** Immer `https://k2-galerie.vercel.app/api/write-gallery-data` (WRITE_GALLERY_DATA_API_URL) – iPad, Mac und lokal nutzen denselben Endpoint. API schreibt per GitHub API in public/gallery-data.json; Vercel baut neu (1–2 Min).
+- **Nach Speichern (Mac):** `publishMobile({ silent: true })` bei K2. **Am iPad:** Nutzer tippt **„Daten an Server senden“** (ruft `publishMobile()` auf). ök2/VK2 schreiben nicht an die zentrale Stelle.
+- **Laden:** „Bilder vom Server laden“ holt CENTRAL_GALLERY_DATA_URL mit Cache-Bust, ein Retry bei Netzwerkfehler; Merge mit lokal (lokale Werke haben Priorität).
+- **Einmalig:** In Vercel GITHUB_TOKEN setzen (siehe docs/DATENTRANSPORT-IPAD-MAC-VERCEL.md).
 - **Stand-Badge:** Reload mit Cache-Bypass für neueste Daten/App-Version.

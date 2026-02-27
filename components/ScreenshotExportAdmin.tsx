@@ -11,8 +11,12 @@ import WerkkatalogTab from './tabs/WerkkatalogTab'
 
 /** Feste Galerie-URL für Etiketten-QR (unabhängig vom Router/WLAN) – gleiche Basis wie Mobile Connect */
 const GALERIE_QR_BASE = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
+/** Basis-URL der App auf Vercel – eine Quelle für alle Geräte (iPad, Mac, lokal) */
+const VERCEL_APP_BASE = 'https://k2-galerie.vercel.app'
+/** API: gallery-data an Vercel senden (GitHub API) – immer diese URL, damit iPad/Mac/lokal denselben Endpoint nutzen */
+const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
 /** Zentrale Datenquelle (Vercel) – für Nummern und Sync; eine Stelle für alle Geräte */
-const CENTRAL_GALLERY_DATA_URL = 'https://k2-galerie.vercel.app/gallery-data.json'
+const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/gallery-data.json`
 import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, type TenantId, type ArtworkCategoryId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
@@ -2263,162 +2267,50 @@ function ScreenshotExportAdmin() {
             }, 30000)
             
             let timeoutCleared = false
-            fetch('/api/write-gallery-data', {
+            fetch(WRITE_GALLERY_DATA_API_URL, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: json,
               signal: controller.signal
             })
-            .then(response => {
+            .then(async response => {
               if (!timeoutCleared) {
                 clearTimeout(timeoutId)
                 timeoutCleared = true
               }
-              if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+              const text = await response.text()
+              let result: any
+              try {
+                result = text ? JSON.parse(text) : {}
+              } catch {
+                result = { error: text ? text.slice(0, 300) : 'Keine Antwort' }
               }
-              return response.json()
+              return { ok: response.ok, status: response.status, result }
             })
-            .then(result => {
-              // Timeout bereits gelöscht
-              
-              if (result.success) {
-                // ANSI-Escape-Codes entfernen (033/034 = Farben aus git-push Script)
-                const stripAnsi = (s: string) => String(s)
-                  .replace(/\x1b\[[0-9;]*[a-zA-Z]?/g, '')
-                  .replace(/[\u001b\u009b]\[[0-9;]*[a-zA-Z]?/g, '')
-                  .replace(/\[0?;?3[0-9]m/g, '')  // orphaned ";33m" ";34m" etc
-                  .replace(/\r/g, '')
-                const gitOutput = stripAnsi(result.git?.output || '')
-                const gitError = stripAnsi(result.git?.error || '')
-                const gitSuccess = result.git?.success !== false // Default true wenn nicht gesetzt
-                const gitExitCode = result.git?.exitCode || 0
-                
-                console.log('🔍 Git Push Ergebnis:', {
-                  gitSuccess,
-                  gitExitCode,
-                  gitOutputLength: gitOutput.length,
-                  gitErrorLength: gitError.length,
-                  gitOutputPreview: gitOutput.substring(0, 300),
-                  gitErrorPreview: gitError.substring(0, 300),
-                  fullResult: result.git
-                })
-                
-                // WICHTIG: Setze isDeploying IMMER auf false, auch bei Fehlern!
-                if (!silent) setIsDeploying(false)
-                
-                // WICHTIG: Prüfe zuerst ob gitSuccess explizit false ist
-                // Das ist die zuverlässigste Quelle
-                if (!gitSuccess || gitExitCode !== 0) {
-                  // Git push fehlgeschlagen - zeige IMMER Fehlermeldung
-                  const gitExitCodeStr = gitExitCode !== 0 ? `\nExit Code: ${gitExitCode}` : ''
-                  const gitOutputFull = gitOutput || ''
-                  const gitErrorFull = gitError || 'Git Push fehlgeschlagen (keine Details verfügbar)'
-                  
-                  // Vollständige Fehlermeldung zusammenstellen
-                  let fullErrorMsg = gitErrorFull
-                  
-                  // Zeige Output IMMER wenn vorhanden
-                  if (gitOutputFull && gitOutputFull.trim().length > 0) {
-                    fullErrorMsg += `\n\n📋 SCRIPT OUTPUT:\n${gitOutputFull.substring(0, 2000)}`
-                  }
-                  
-                  if (gitExitCodeStr) {
-                    fullErrorMsg += gitExitCodeStr
-                  }
-                  
-                  console.error('❌ Git Push Fehler Details:', {
-                    exitCode: gitExitCode,
-                    error: gitErrorFull,
-                    output: gitOutputFull,
-                    fullResult: result.git,
-                    resultSize: result.size,
-                    artworksCount: result.artworksCount
-                  })
-                  
-                  // Zeige Fehlermeldung mit Kopier-Button (für Mobile: an Cursor schicken)
-                  const msg = `⚠️ Galerie konnte nicht veröffentlicht werden.\n\nBitte nochmal auf Speichern klicken. Falls es wieder nicht klappt: Bitte dem Assistenten Bescheid geben.`
-                  if (!silent) {
-                    setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
-                    setPublishErrorMsg(msg)
-                  } else console.warn('Sync (silent) fehlgeschlagen:', msg)
-                  return
-                }
-                
-                // Prüfe ob git push wirklich erfolgreich war - ZUSÄTZLICHE PRÜFUNG
-                // WICHTIG: Prüfe auf verschiedene Erfolgs-Indikatoren
-                const hasSuccessMessage = gitOutput.includes('git push erfolgreich') || 
-                                         gitOutput.includes('✅✅✅ Git Push erfolgreich') ||
-                                         gitOutput.includes('To https://') ||
-                                         gitOutput.includes('Enumerating objects') ||
-                                         gitOutput.includes('Counting objects') ||
-                                         gitOutput.includes('Writing objects') ||
-                                         gitOutput.includes('remote:')
-                
-                const hasError = gitError.includes('GIT PUSH FEHLER') ||
-                               gitError.includes('FEHLER') ||
-                               gitError.toLowerCase().includes('error') ||
-                               gitError.toLowerCase().includes('failed') ||
-                               gitError.toLowerCase().includes('authentication') ||
-                               gitError.toLowerCase().includes('credential') ||
-                               gitError.toLowerCase().includes('denied') ||
-                               gitError.toLowerCase().includes('fehlgeschlagen')
-                
-                // Prüfe ob Fehler vorhanden ist
-                if (hasError || (gitError && gitError.trim().length > 0)) {
-                  // Fehler gefunden - zeige Fehlermeldung
-                  const gitExitCodeStr = gitExitCode !== 0 ? `\nExit Code: ${gitExitCode}` : ''
-                  let fullErrorMsg = gitError
-                  
-                  if (gitOutput && gitOutput.trim().length > 0) {
-                    fullErrorMsg += `\n\n📋 SCRIPT OUTPUT:\n${gitOutput.substring(0, 1500)}`
-                  }
-                  
-                  if (gitExitCodeStr) {
-                    fullErrorMsg += gitExitCodeStr
-                  }
-                  
-                  console.error('❌ Git Push Fehler erkannt:', {
-                    hasError,
-                    gitError,
-                    gitOutput,
-                    exitCode: gitExitCode
-                  })
-                  
-                  const msg = `⚠️ Galerie konnte nicht veröffentlicht werden.\n\nBitte nochmal auf Speichern klicken. Falls es wieder nicht klappt: Bitte dem Assistenten Bescheid geben.`
-                  if (!silent) setPublishErrorMsg(msg)
-                  else console.warn('Sync (silent) fehlgeschlagen:', msg)
-                  return
-                }
-                
-                // Erfolg - zeige Erfolgsmeldung (oder nur Console bei silent)
-                if (hasSuccessMessage || gitSuccess) {
-                  const currentVersion = parseInt(localStorage.getItem('k2-data-version') || '0')
-                  const newVersion = currentVersion + 1
-                  localStorage.setItem('k2-data-version', newVersion.toString())
-                  if (silent) {
-                    console.log('✅ Daten an zentrale Stelle (Vercel) gesendet:', result.size, 'Bytes')
-                  } else {
-                    setSyncStatusBar({ phase: 'success', message: 'Gesendet.' })
-                    setPublishSuccessModal({ size: result.size, version: newVersion })
-                  }
+            .then(({ ok, status, result }) => {
+              if (!silent) setIsDeploying(false)
+
+              // Einheitliche Auswertung: API liefert success: true oder error (+ optional hint)
+              if (ok && result.success === true) {
+                const newVersion = parseInt(localStorage.getItem('k2-data-version') || '0') + 1
+                localStorage.setItem('k2-data-version', String(newVersion))
+                if (silent) {
+                  console.log('✅ Daten an Vercel gesendet:', result.size, 'Bytes,', result.artworksCount, 'Werke')
                 } else {
-                  // Unklarer Status - zeige Warnung
-                  console.warn('⚠️ Unklarer Git Push Status:', {
-                    gitSuccess,
-                    gitExitCode,
-                    gitOutput,
-                    gitError
-                  })
-                  
-                  const msg = `⚠️ Speichern möglicherweise nicht abgeschlossen.\n\nBitte Seite neu laden und nochmal auf Speichern klicken.`
-                  if (!silent) {
-                    setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
-                    setPublishErrorMsg(msg)
-                  } else console.warn('Sync (silent) unklarer Status:', msg)
+                  setSyncStatusBar({ phase: 'success', message: 'Gesendet.' })
+                  setPublishSuccessModal({ size: result.size, version: newVersion })
                 }
+                return
+              }
+
+              // Fehler: von API (error/hint) oder HTTP-Status
+              const errMsg = result?.error || (status !== 200 ? `Server ${status}` : 'Unbekannter Fehler')
+              const hint = result?.hint ? `\n\n${result.hint}` : ''
+              if (!silent) {
+                setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
+                setPublishErrorMsg(`Daten konnten nicht gesendet werden.\n\n${errMsg}${hint}`)
               } else {
-                throw new Error(result.error || 'Unbekannter Fehler')
+                console.warn('Sync (silent) fehlgeschlagen:', errMsg, result)
               }
             })
             .catch(error => {
@@ -2444,9 +2336,11 @@ function ScreenshotExportAdmin() {
                 return
               }
               
-              // Auf Mobil: NIEMALS link.click() mit JSON – öffnet sonst die gallery-data.json-Seite (BUG)
-              const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-              if (isMobileDevice) {
+              // Auf Vercel (inkl. iPad): NIEMALS link.click() mit JSON – öffnet sonst die gallery-data.json-Seite (BUG)
+              // Fallback-Download NUR auf localhost (Mac Dev), wenn API nicht läuft – sonst öffnet iPad die JSON
+              const isVercelOrProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+              const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0 && typeof window !== 'undefined' && window.innerWidth <= 1024)
+              if (isVercelOrProduction || isMobileDevice) {
                 if (isMountedRef.current) {
                   setIsDeploying(false)
                   setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
@@ -2455,7 +2349,7 @@ function ScreenshotExportAdmin() {
                 return
               }
               
-              // Fallback nur am Mac/Desktop: Download falls API nicht funktioniert (Server läuft nicht)
+              // Nur auf localhost (Mac, Dev): Fallback-Download falls API nicht läuft
               try {
                 const blob = new Blob([json], { type: 'application/json' })
                 const url = URL.createObjectURL(blob)
@@ -2465,15 +2359,13 @@ function ScreenshotExportAdmin() {
                 link.style.display = 'none'
                 document.body.appendChild(link)
                 link.click()
-                
                 if (isMountedRef.current) setIsDeploying(false)
-                
                 setTimeout(() => {
                   try {
                     document.body.removeChild(link)
                     URL.revokeObjectURL(url)
                   } catch {}
-                  if (isMountedRef.current) setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
+                  setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
                   alert('⚠️ Automatisches Speichern nicht möglich (Server nicht aktiv).\n\nBitte dem Assistenten Bescheid geben – einmalige Einrichtung nötig.')
                 }, 100)
               } catch (downloadError) {
@@ -2617,78 +2509,95 @@ function ScreenshotExportAdmin() {
     if (isOeffentlichAdminContext() || isVk2AdminContext()) return
     setIsLoadingFromServer(true)
     setSyncStatusBar({ phase: 'loading', message: 'Daten werden geladen…' })
-    const url = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&t=${Date.now()}&_=${Math.random()}`
-    try {
-      const res = await fetch(url, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache, no-store' }, mode: 'cors' })
-      if (!res.ok) {
-        setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
-        alert(`Laden fehlgeschlagen (Server ${res.status}).\n\nBitte prüfen:\n• Internetverbindung\n• App auf k2-galerie.vercel.app öffnen und dort „Bilder vom Server laden“ klicken.`)
-        return
-      }
-      const text = await res.text()
-      if (text.trim().startsWith('<')) {
-        setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
-        alert('Der Server hat eine Webseite statt Daten geliefert.\n\nÖffne https://k2-galerie.vercel.app im Browser und klicke dort unter „Werke verwalten“ auf „Bilder vom Server laden“.')
-        return
-      }
-      let data: any
+    const url = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&_=${Math.random()}`
+    const fetchOpts: RequestInit = { cache: 'no-store', headers: { 'Cache-Control': 'no-cache, no-store' }, mode: 'cors' }
+
+    const doFetch = (): Promise<Response> => fetch(url, fetchOpts)
+
+    const tryLoad = async (attempt: number): Promise<void> => {
       try {
-        data = JSON.parse(text)
-      } catch (_) {
-        setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
-        alert('Antwort vom Server war kein gültiges JSON.\n\nBitte auf k2-galerie.vercel.app „Bilder vom Server laden“ versuchen.')
-        return
-      }
-      const serverArtworks = filterK2Only(Array.isArray(data.artworks) ? data.artworks : [])
-      const localArtworks = loadArtworksRaw()
-      const serverMap = new Map<string, any>()
-      serverArtworks.forEach((a: any) => { const k = a.number || a.id; if (k) serverMap.set(k, a) })
-      const merged: any[] = [...serverArtworks]
-      localArtworks.forEach((local: any) => {
-        const key = local?.number ?? local?.id
-        if (!key) return
-        const server = serverMap.get(key)
-        const isMobile = local.createdOnMobile || local.updatedOnMobile
-        if (!server) { merged.push(local); return }
-        if (isMobile) {
-          const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
-          if (idx >= 0) merged[idx] = local
-          else merged.push(local)
-        } else {
-          const lU = local.updatedAt ? new Date(local.updatedAt).getTime() : 0
-          const sU = server.updatedAt ? new Date(server.updatedAt).getTime() : 0
-          if (lU > sU) {
+        const res = await doFetch()
+        if (!res.ok) {
+          setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
+          const hint = res.status === 404 ? ' Datei gallery-data.json fehlt auf Vercel – zuerst am iPad „Daten an Server senden“ tippen.' : ''
+          alert(`Server antwortet mit ${res.status}.\n\n• Prüfe: Ist die App von k2-galerie.vercel.app geöffnet? Internet verbunden?${hint}`)
+          return
+        }
+        const text = await res.text()
+        if (text.trim().startsWith('<')) {
+          setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
+          alert('Vercel liefert eine Webseite statt Daten.\n\nÖffne direkt: https://k2-galerie.vercel.app und dort unter Werke verwalten „Bilder vom Server laden“ – oder warte 1–2 Min nach „Daten an Server senden“ am iPad.')
+          return
+        }
+        let data: any
+        try {
+          data = JSON.parse(text)
+        } catch (_) {
+          setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
+          alert('Antwort war kein gültiges JSON. Bitte 1–2 Min nach dem Senden vom iPad warten und erneut „Bilder vom Server laden“ klicken.')
+          return
+        }
+        const serverArtworks = filterK2Only(Array.isArray(data.artworks) ? data.artworks : [])
+        const localArtworks = loadArtworksRaw()
+        const serverMap = new Map<string, any>()
+        serverArtworks.forEach((a: any) => { const k = a.number || a.id; if (k) serverMap.set(k, a) })
+        const merged: any[] = [...serverArtworks]
+        localArtworks.forEach((local: any) => {
+          const key = local?.number ?? local?.id
+          if (!key) return
+          const server = serverMap.get(key)
+          const isMobile = local.createdOnMobile || local.updatedOnMobile
+          if (!server) { merged.push(local); return }
+          if (isMobile) {
             const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
             if (idx >= 0) merged[idx] = local
             else merged.push(local)
+          } else {
+            const lU = local.updatedAt ? new Date(local.updatedAt).getTime() : 0
+            const sU = server.updatedAt ? new Date(server.updatedAt).getTime() : 0
+            if (lU > sU) {
+              const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
+              if (idx >= 0) merged[idx] = local
+              else merged.push(local)
+            }
           }
-        }
-      })
-      const toSave = filterK2Only(merged)
-      if (toSave.length >= localArtworks.length || toSave.length >= (loadArtworks().length || 0)) {
-        if (saveArtworks(toSave)) {
-          setAllArtworks(loadArtworks())
-          window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: toSave.length } }))
-          setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
-          alert(`✅ ${toSave.length} Werke vom Server geladen.`)
+        })
+        const toSave = filterK2Only(merged)
+        if (toSave.length >= localArtworks.length || toSave.length >= (loadArtworks().length || 0)) {
+          if (saveArtworks(toSave)) {
+            setAllArtworks(loadArtworks())
+            window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: toSave.length } }))
+            setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
+            const exportedAt = data.exportedAt ? ` (Stand: ${new Date(data.exportedAt).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })})` : ''
+            alert(`✅ ${toSave.length} Werke vom Server geladen${exportedAt}.`)
+          } else {
+            setSyncStatusBar({ phase: 'error', message: 'Fehler beim Speichern.' })
+          }
         } else {
-          setSyncStatusBar({ phase: 'error', message: 'Fehler beim Speichern.' })
+          console.warn('Merge würde weniger Werke ergeben – localStorage unverändert')
+          setSyncStatusBar({ phase: 'success', message: 'Lokal beibehalten.' })
+          alert('Lokal sind mehr Werke als auf dem Server. Lokale Daten wurden beibehalten.')
         }
-      } else {
-        console.warn('Merge würde weniger Werke ergeben – localStorage unverändert')
-        setSyncStatusBar({ phase: 'success', message: 'Lokal beibehalten.' })
-        alert('Lokal sind mehr Werke als auf dem Server. Lokale Daten wurden beibehalten.')
+      } catch (e) {
+        console.error('Vom Server laden:', url, e)
+        setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
+        const msg = e instanceof Error ? e.message : String(e)
+        const isNetwork = /failed|network|load|cors|fetch|typeerror/i.test(msg) || (e instanceof TypeError)
+        if (attempt < 2 && isNetwork) {
+          setSyncStatusBar({ phase: 'loading', message: 'Erneuter Versuch…' })
+          await new Promise(r => setTimeout(r, 2000))
+          return tryLoad(attempt + 1)
+        }
+        alert(
+          isNetwork
+            ? 'Verbindung zum Server fehlgeschlagen.\n\n• Bist du im Internet? (WLAN oder Mobil)\n• App von k2-galerie.vercel.app geöffnet? Dann erneut „Bilder vom Server laden“ klicken.'
+            : `Fehler beim Laden: ${msg}\n\nBitte Verbindung prüfen und erneut versuchen.`
+        )
       }
-    } catch (e) {
-      console.error('Vom Server laden:', url, e)
-      setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
-      const msg = e instanceof Error ? e.message : String(e)
-      const isNetwork = /failed|network|load|cors|fetch/i.test(msg) || (e instanceof TypeError && msg.includes('fetch'))
-      alert(
-        isNetwork
-          ? 'Fehler beim Laden (Verbindung zum Server).\n\n• Bist du im Internet?\n• Öffne im Browser: https://k2-galerie.vercel.app – dort unter „Werke verwalten“ auf „Bilder vom Server laden“ klicken.\n• Tipp: In der Konsole (F12) siehst du den genauen Fehler.'
-          : 'Fehler beim Laden. Bitte Verbindung prüfen und erneut versuchen.'
-      )
+    }
+
+    try {
+      await tryLoad(1)
     } finally {
       setIsLoadingFromServer(false)
     }
@@ -8869,8 +8778,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
     const istVorstand = mitglied?.rolle === 'vorstand'
 
     if (istVorstand && !devBypass) {
-      // Vorstand → normaler Admin (URL ohne mitglied=1 öffnen)
-      window.location.href = '/admin?context=vk2'
+      // Vorstand → normaler Admin (URL ohne mitglied=1 öffnen); im iframe (Cursor Preview) kein Redirect
+      if (typeof window !== 'undefined' && window.self === window.top) {
+        window.location.href = '/admin?context=vk2'
+      }
       return null
     }
 
@@ -8887,7 +8798,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
           </div>
           <button
             type="button"
-            onClick={() => { try { sessionStorage.removeItem(VK2_MITGLIED_SESSION_KEY) } catch (_) {}; setVk2EingeloggtMitglied(null); window.location.href = '/vk2-login' }}
+            onClick={() => { try { sessionStorage.removeItem(VK2_MITGLIED_SESSION_KEY) } catch (_) {}; setVk2EingeloggtMitglied(null); if (typeof window !== 'undefined' && window.self === window.top) window.location.href = '/vk2-login' }}
             style={{ padding: '0.4rem 0.9rem', background: 'transparent', border: '1px solid rgba(160,200,255,0.2)', borderRadius: 8, color: 'rgba(160,200,255,0.5)', fontSize: '0.8rem', cursor: 'pointer' }}
           >{devBypass ? '← Zurück' : 'Abmelden'}</button>
         </div>
@@ -9096,9 +9007,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             type="button"
             onClick={() => {
               try { sessionStorage.removeItem('k2-hub-from') } catch (_) {}
-              window.location.href = isVk2AdminContext()
-                ? '/entdecken?step=hub&q1=verein'
-                : '/entdecken?step=hub'
+              if (typeof window !== 'undefined' && window.self === window.top) {
+                window.location.href = isVk2AdminContext()
+                  ? '/entdecken?step=hub&q1=verein'
+                  : '/entdecken?step=hub'
+              }
             }}
             style={{
               background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.4)',
@@ -9569,7 +9482,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               setGuideBannerClosed(true)
                               if (b.tab === 'kassa') {
                                 try { sessionStorage.setItem('k2-admin-context', isOeffentlichAdminContext() ? 'oeffentlich' : 'k2') } catch (_) {}
-                                window.location.href = '/projects/k2-galerie/shop?openAsKasse=1'
+                                if (typeof window !== 'undefined' && window.self === window.top) window.location.href = '/projects/k2-galerie/shop?openAsKasse=1'
                               } else {
                                 const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','design','einstellungen','assistent'] as const
                                 type AdminTab = typeof validTabs[number]
@@ -9662,7 +9575,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   const scrollToWerke = () => document.getElementById('admin-werke-inhalt')?.scrollIntoView({ behavior: 'smooth' })
                   const openKasse = () => {
                     try { sessionStorage.setItem('k2-admin-context', isOeffentlichAdminContext() ? 'oeffentlich' : 'k2') } catch (_) {}
-                    window.location.href = '/projects/k2-galerie/shop?openAsKasse=1'
+                    if (typeof window !== 'undefined' && window.self === window.top) window.location.href = '/projects/k2-galerie/shop?openAsKasse=1'
                   }
                   return (
                     <div style={{ marginBottom: 'clamp(2rem, 4vw, 2.5rem)' }}>
@@ -15786,13 +15699,13 @@ ${name}`
             })() ? (
               <>
                 <p style={{ margin: '0 0 0.75rem', color: '#e2e8f0', fontSize: '0.95rem' }}>
-                  Stammdaten, Werke, Events, Dokumente und Seitentexte sind veröffentlicht ({((publishSuccessModal.size || 0) / 1024).toFixed(1)} KB). In 2–3 Min auf allen Geräten aktuell.
+                  Daten sind an Vercel gesendet ({((publishSuccessModal.size || 0) / 1024).toFixed(1)} KB). In 1–2 Min auf dem anderen Gerät „Bilder vom Server laden“ tippen bzw. Galerie neu laden.
                 </p>
                 <p style={{ margin: '0 0 0.5rem', color: 'rgba(255,255,255,0.85)', fontSize: '1rem', fontWeight: '600' }}>
                   Einfach OK drücken.
                 </p>
                 <p style={{ margin: 0, color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>
-                  E-Mail bei Ready/Fehler? → vercel.com/account/notifications (evtl. Spam prüfen)
+                  Am anderen Gerät: „Bilder vom Server laden“ oder Galerie neu laden (1–2 Min warten).
                 </p>
               </>
             ) : (
@@ -15801,12 +15714,12 @@ ${name}`
                   Fertig. Einfach OK drücken.
                 </p>
                 <p style={{ margin: 0, color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>
-                  E-Mail bei Ready/Fehler? → vercel.com/account/notifications (evtl. Spam prüfen)
+                  Am Mac: in 1–2 Min „Bilder vom Server laden“ klicken – dann siehst du die Werke.
                 </p>
               </>
             )}
             <p style={{ margin: '0.75rem 0 0', color: 'rgba(255,255,255,0.55)', fontSize: '0.8rem' }}>
-              Vercel baut in 1–2 Min. E-Mail kommt nur, wenn unter Vercel → Notifications aktiviert.
+              Vercel stellt in 1–2 Min um. Danach auf dem anderen Gerät „Bilder vom Server laden“ bzw. Galerie neu laden.
             </p>
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
               {typeof window !== 'undefined' && (() => {

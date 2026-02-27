@@ -1091,6 +1091,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
     const isVercel = window.location.hostname.includes('vercel.app')
     let mobilePollingInterval: ReturnType<typeof setInterval> | null = null
+    let initialSyncTimeoutId: ReturnType<typeof setTimeout> | null = null
     
     if (isMobile && !isVercel && isMounted && notInIframe) {
       console.log('✅ Automatisches Mobile-Polling im Admin-Bereich aktiviert (alle 10 Sekunden)')
@@ -1235,8 +1236,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       // Automatisches Polling alle 10 Sekunden
       mobilePollingInterval = setInterval(syncFromGalleryData, 10000)
       
-      // Erste Prüfung nach 5 Sekunden
-      setTimeout(syncFromGalleryData, 5000)
+      // Erste Prüfung nach 5 Sekunden (Cleanup nötig – kein setState nach Unmount)
+      initialSyncTimeoutId = setTimeout(syncFromGalleryData, 5000)
     }
     
     // Event Listener für Updates von Admin oder GaleriePage
@@ -1334,6 +1335,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         console.log('🛑 Automatisches Mobile-Polling im Admin-Bereich gestoppt')
         clearInterval(mobilePollingInterval)
       }
+      if (initialSyncTimeoutId) clearTimeout(initialSyncTimeoutId)
       window.removeEventListener('artworks-updated', handleArtworksUpdate)
     }
   }, [musterOnly])
