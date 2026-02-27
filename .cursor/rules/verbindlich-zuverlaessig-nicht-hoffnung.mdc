@@ -1,0 +1,50 @@
+---
+description: Verbindliche Anforderungen und Befehle müssen zuverlässig funktionieren – nicht „hoffen“, sondern „sich darauf verlassen können“. Gilt überall.
+alwaysApply: true
+---
+
+# 🔒 VERBINDLICH = ZUVERLÄSSIG (ohne Wenn und Aber)
+
+## Grundsatz (unveränderlich)
+
+**Was als verbindlich oder als „der Weg“ dargestellt wird, muss funktionieren – ohne Ausrede, ohne „vielleicht“, ohne dass der Nutzer darauf hoffen muss.**
+
+- **Verlassen können** = es passiert, wenn man den angezeigten Befehl/Button/Ablauf ausführt.
+- **Hoffen müssen** = unsicher, ob es klappt; „noch eine Option“, „falls nicht, dann …“ als Hauptweg = falsch.
+
+Diese Regel gilt **überall**: Code (Buttons, APIs, Abläufe), Doku (Anleitungen), Fehlermeldungen, Build/Deploy, und wie die AI Anweisungen formuliert.
+
+## Konkret
+
+### 1. Buttons und Aktionen in der App
+
+- Ein Button wie **„Bilder vom Server laden“** oder **„Veröffentlichen“** oder **„Stand aktualisieren“** ist eine **verbindliche Aktion**. Sie muss unter den angegebenen Bedingungen **funktionieren** – nicht „im Idealfall“ oder „wenn alles passt“.
+- **Nicht erlaubt:** Den Hauptweg so bauen, dass er oft fehlschlägt, und in der Fehlermeldung „öffne doch k2-galerie.vercel.app und versuche es dort“ als Standard-Lösung anbieten. Dann ist der Hauptweg (z. B. lokal arbeiten) nicht verbindlich.
+- **Pflicht:** Den **primären Anwendungsfall** so implementieren, dass die Aktion zuverlässig ausgeführt werden kann (z. B. feste URL, CORS, Rewrite-Ausnahme, klare Fehlerbehandlung). Zusatzoptionen („falls lokal: auf Vercel öffnen“) sind **Zusatz**, nicht Ersatz für einen funktionierenden Hauptweg.
+
+### 2. Anleitungen und Befehle (Doku, AI-Antworten)
+
+- Wenn die AI oder die Doku sagt „Führe X aus“ oder „Klicke auf Y“, dann muss **X bzw. Y** der Weg sein, der **funktioniert** – nicht einer von mehreren, bei dem man hofft, dass er greift.
+- **Nicht erlaubt:** Formulierungen wie „Du könntest auch …“, „Falls das nicht klappt, versuche …“ als **Hauptlösung** für etwas, das verbindlich sein soll. Dann ist die Hauptlösung nicht verbindlich.
+- **Pflicht:** Den **einen** verbindlichen Befehl/Ablauf so wählen und so implementieren, dass man sich darauf verlassen kann. Zusätzliche Hinweise („im Zweifel F12 prüfen“) sind erlaubt, ersetzen aber nicht einen zuverlässigen Hauptweg.
+
+### 3. Build, Deploy, Stand
+
+- **Stand aktualisieren**, **QR mit Server-Stand**, **gallery-data.json ausliefern** usw. sind **verbindliche** Abläufe. Sie müssen nach Push/Build **tatsächlich** den erwarteten Zustand erzeugen (z. B. Handy sieht neuen Stand, „Bilder vom Server laden“ liefert JSON).
+- **Nicht erlaubt:** Implementierung, die „eigentlich“ stimmt, aber in der Praxis oft scheitert (z. B. Rewrite fängt Datei ab, CORS fehlt, Cache verhindert Update) und der Nutzer mit „öffne mal auf Vercel“ oder „warte nochmal“ abgespeist wird.
+- **Pflicht:** Technisch so absichern (Rewrite-Ausnahmen, Header, Cache-Bust, feste URLs wo nötig), dass der **angegebene** Ablauf zuverlässig funktioniert.
+
+### 4. Fehlermeldungen
+
+- Eine Fehlermeldung wie „Falls du lokal arbeitest: App auf k2-galerie.vercel.app öffnen …“ darf **nicht** die **Standard**-Lösung für einen fehlgeschlagenen Hauptweg sein. Sonst ist der Hauptweg (lokal arbeiten) nicht verbindlich.
+- **Pflicht:** Den Hauptweg so robust machen, dass er auch lokal (oder in der üblichen Nutzung) funktioniert; Fehlermeldungen für echte Ausnahmen (Offline, Server down), nicht für „haben wir nicht richtig angebunden“.
+
+### 5. Eine Quelle, ein Weg
+
+- Wo **eine** Aufgabe (z. B. Werke vom Server holen, Musterwerke löschen, Stand sehen) erledigt werden soll, gibt es **einen** verbindlichen Weg, der **funktioniert**. Kein „entweder so oder so, hoffentlich passt’s“.
+
+## Kurzfassung
+
+- **Verbindlich** = man kann sich darauf **verlassen**, nicht darauf **hoffen**.
+- **Überall anwenden:** Buttons, Befehle, Anleitungen, Build/Deploy, Fehlermeldungen.
+- **Hauptweg** so bauen, dass er zuverlässig funktioniert; „andere Option“ ist nur Zusatz, kein Ersatz.

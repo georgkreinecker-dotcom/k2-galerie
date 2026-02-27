@@ -23,6 +23,7 @@ Damit alle Informationen **jederzeit aktuell und hier verfügbar** sind, gilt di
 - **Handbuch** = zentrale Ablage für **alle wichtigen Abläufe und Entscheidungen** – für alle Kontexte dieselbe.
 - **Keine getrennten Regeln:** Was für K2 gilt, gilt auch für ök2, VK2 und Tom.
 - **Ein Standard pro Problemstellung:** Gleiche Aufgabe = eine Lösung, keine verschiedenen Wege pro Fall. Verschiedene Standards sind automatische Fehlerquellen (wie im Maschinenbau). Regel: **.cursor/rules/ein-standard-problem.mdc**.
+- **Verbindlich = zuverlässig:** Was als verbindlicher Befehl oder Weg dargestellt wird, muss funktionieren – man muss sich darauf verlassen können, nicht darauf hoffen. Regel: **.cursor/rules/verbindlich-zuverlaessig-nicht-hoffnung.mdc**.
 - Bei Fragen „wo steht X?“ oder „wie machen wir Y?“: zuerst **k2team-handbuch/00-INDEX.md**, **mök2** (AGB, Marketing ök2), **docs/00-INDEX.md**, **HAUS-INDEX.md** prüfen.
 - Neue wichtige Infos: in der passenden Quelle (mök2, Handbuch, docs) eintragen, damit sie **hier immer aktuell zur Verfügung stehen**.
 
@@ -33,6 +34,7 @@ Damit alle Informationen **jederzeit aktuell und hier verfügbar** sind, gilt di
 - **HAUS-INDEX.md** (Root) – Projekt-Übersicht, Schnellfinder
 - **.cursor/rules/struktur-handeln-quellen.mdc** – Regel für Cursor/AI, diese Quellen zu nutzen
 - **.cursor/rules/ein-standard-problem.mdc** – Ein Standard pro Problemstellung (keine verschiedenen Wege für dieselbe Aufgabe)
+- **.cursor/rules/verbindlich-zuverlaessig-nicht-hoffnung.mdc** – Verbindliche Anforderungen/Befehle müssen zuverlässig funktionieren (nicht „hoffen“, sondern „sich darauf verlassen können“)
 - **.cursor/rules/team-hebel-unternehmer-persoenlichkeit-ki.mdc** – Team-Hebel (Unternehmer + Persönlichkeit + KI), Regelwerk und Vermächtnis für maximale Lernkurve
 - **docs/WIR-PROZESS.md** – Abschnitt „Team-Hebel und Lernkurve“ im Vermächtnis
 - **docs/MOK2-EIGENER-BEREICH.md** – mök2 als eigener Bereich
