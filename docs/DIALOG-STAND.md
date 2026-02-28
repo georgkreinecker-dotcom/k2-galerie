@@ -10,12 +10,13 @@
 - **Lösung:** Nur schreiben wenn Inhalt/Label geändert (buildInfo.generated.ts, build-info.json, api/build-info.js, index.html). Regel: **.cursor/rules/build-skripte-nur-schreiben-wenn-geaendert.mdc** (alwaysApply). In STRUKTUR-HANDELN-QUELLEN verlinkt.
 
 ## Thema
-**Prototyp → Sportwagen – systematisch:** Phase **5.1** ✅, **5.2** ✅, **5.3** ✅ (28.02.26). 5.3: oeffentlichContext.isOeffentlichDisplayContext; Shop/Vita Stammdaten über Schicht. Nächster Schritt: **Phase 6.1** (APf: safeReload, keine Produkt-Daten).
+**Prototyp → Sportwagen – systematisch:** Phase **5.1–5.3** ✅, **6.1** ✅ (28.02.26). 6.1: APf geprüft (keine Reload in DevView/PlatformStart/MobileConnect; keine k2-artworks/k2-stammdaten-Schreibzugriffe). Nächster Schritt: Phase 6.2 oder 7.
 **Grundregel Ziel vor Anstrengung (28.02.26):** Ohne richtiges Ziel kann hundertmal „richtig machen“ trotzdem falsch sein. Immer wieder Ziel vor Augen. Regel: .cursor/rules/ziel-vor-anstrengung.mdc (alwaysApply); in STRUKTUR-HANDELN-QUELLEN + WIR-PROZESS verankert.
 **Regel Schritt für Schritt – konsequent (28.02.26):** Ein Schritt fertig, dann der nächste; nicht springen, nicht halb machen. .cursor/rules/schritt-fuer-schritt-konsequent.mdc (alwaysApply); in STRUKTUR-HANDELN-QUELLEN.
 **Phase 5.2 erledigt (28.02.26):** GaleriePage & GalerieVorschauPage nur über Artworks-Schicht; VK2 ohne Artwork-Key.
-**Phase 5.3 erledigt (28.02.26):** Shop & Vita: Stammdaten nur über Schicht (loadStammdaten/saveStammdaten); fromOeffentlich zentral (oeffentlichContext.isOeffentlichDisplayContext).
-**Nächster Sportwagen-Schritt:** Phase 6.1 (DevView, Mission Control, Mobile Connect – safeReload, keine Produkt-Daten in APf).
+**Phase 5.3 erledigt (28.02.26):** Shop & Vita: Stammdaten nur über Schicht; fromOeffentlich zentral.
+**Phase 6.1 erledigt (28.02.26):** APf geprüft – keine Reload-Stellen in DevView/PlatformStart/MobileConnect; keine Produkt-Daten-Schreibzugriffe aus APf.
+**Nächster Sportwagen-Schritt:** Phase 6.2 (mök2, Handbuch – laufend) oder Phase 7 (Build & Stand).
 
 ## Grundregel: Profi statt Dilettant – Rad nicht zweimal erfinden (28.02.26)
 - **Regel:** .cursor/rules/profi-statt-dilettant-rad-nicht-zweimal.mdc (alwaysApply). Kern: Was andere schon erfunden haben, nicht neu bauen. Normen kennen, zukaufen/auslagern, am Markt beste Lösungen nutzen. Vor dem Bauen: „Gibt es das schon?“ – dann nutzen oder begründen.
@@ -40,7 +41,7 @@
 **Wichtig:** In Vercel muss **GITHUB_TOKEN** gesetzt sein (Settings → Environment Variables), sonst schlägt „Daten an Server senden“ mit Hinweis darauf fehl.
 
 ## Nächster Schritt
-- **Sportwagen:** Phase 5.1 ✅, 5.2 ✅, 5.3 ✅. Als Nächstes **Phase 6.1** (DevView, Mission Control, Mobile Connect).
+- **Sportwagen:** Phase 5.1–5.3 ✅, 6.1 ✅. Als Nächstes Phase 6.2 (laufend) oder Phase 7 (Build & Stand).
 - **Optional:** iPad/Mac Datentransport testen.
 1. **QR/Stand-Fix (27.02.26):** QR und Stand-Badge nutzen jetzt **/api/build-info** statt build-info.json – Serverless-API, beim Build mit aktuellem Stand beschrieben, umgeht CDN-Cache. Commit c5351e1.
 2. Nach Vercel-Build (1–2 Min): APf neu laden oder „QR neu“ → Vercel-Stand sollte aktuelle Zeit zeigen; iPad refresh.html oder QR scannen.

@@ -172,7 +172,7 @@
 | **Prototyp** | QR/Stand-Logik, Links zu Galerie/Vorschau; teils iframe-Checks. |
 | **Sportwagen** | Reload über safeReload (3.1); QR-URLs über buildQrUrlWithBust + useQrVersionTimestamp (bleibt). Keine Produkt-Daten in APf schreiben. Regel apf-werkzeug-vs-produkt.mdc. |
 | **Schritte** | 1) Alle Reload/Redirect in DevViewPage, PlatformStartPage, MobileConnectPage auf safeReload umstellen. 2) Prüfen: Keine localStorage-Schreibzugriffe auf k2-artworks etc. aus APf. |
-| **Erledigt** | [ ] |
+| **Erledigt** | [x] 28.02.26 (Geprüft: keine Reload-Stellen in den drei Seiten – safeReload bereits in App/ErrorBoundary/Galerie/VK2; keine Schreibzugriffe auf k2-artworks/k2-stammdaten aus APf, nur Metadaten k2-last-*, k2-artworks-hash) |
 
 ### 6.2 mök2, Handbuch, Projekte
 
