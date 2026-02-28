@@ -2,6 +2,12 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
+import { safeReload } from './utils/env'
+
+// Sofort global, damit Fehler-Buttons (index.html, Bootstrap) safeReload nutzen können
+if (typeof window !== 'undefined') {
+  (window as any).safeReload = safeReload
+}
 
 // Cache-Busting wird vom index.html Inject-Script erledigt (build-info.json Vergleich).
 // Kein zweiter Reload hier – sonst zwei Mechanismen gleichzeitig → Seite wechselt unerwartet.
@@ -179,7 +185,7 @@ try {
         2. Browser-Cache leeren<br />
         3. Anderen Browser verwenden
       </p>
-      <button onclick="if(window.self===window.top)window.location.reload();" style="padding: 0.75rem 1.5rem; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
+      <button onclick="window.safeReload&&window.safeReload();" style="padding: 0.75rem 1.5rem; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
         🔃 Seite neu laden
       </button>
     </div>
@@ -208,7 +214,7 @@ try {
           <summary style="cursor: pointer; margin-bottom: 0.5rem;">Fehler-Details</summary>
           <pre style="white-space: pre-wrap; word-break: break-word; font-size: 0.875rem; margin-top: 0.5rem;">${escapeHtml(errStack ?? '')}</pre>
         </details>`}
-        <button onclick="if(window.self===window.top)window.location.reload();" style="padding: 0.75rem 1.5rem; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
+        <button onclick="window.safeReload&&window.safeReload();" style="padding: 0.75rem 1.5rem; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
           🔃 Seite neu laden
         </button>
       </div>

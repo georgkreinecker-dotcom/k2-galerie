@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, lazy, Suspense } from 'react'
+import { safeReload } from './utils/env'
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import './App.css'
 import ProjectsPage from './pages/ProjectsPage'
@@ -127,12 +128,7 @@ class AppErrorBoundary extends Component<{ children: ReactNode }, { hasError: bo
                   SAFE_TO_DELETE.forEach(k => { try { localStorage.removeItem(k) } catch (_) {} })
                   sessionStorage.clear()
                 } catch (_) {}
-                // Im iframe (Cursor Preview) kein Reload – verhindert Loop/Crash
-                if (typeof window !== 'undefined' && window.self !== window.top) {
-                  this.setState({ hasError: false })
-                  return
-                }
-                window.location.reload()
+                safeReload()
               }}
               style={{
                 padding: '0.75rem 1.5rem',
@@ -147,13 +143,7 @@ class AppErrorBoundary extends Component<{ children: ReactNode }, { hasError: bo
               Reset &amp; neu laden
             </button>
             <button
-              onClick={() => {
-                if (typeof window !== 'undefined' && window.self !== window.top) {
-                  this.setState({ hasError: false })
-                  return
-                }
-                window.location.reload()
-              }}
+              onClick={() => safeReload()}
               style={{
                 padding: '0.75rem 1.5rem',
                 background: '#667eea',
@@ -232,13 +222,7 @@ class AdminErrorBoundary extends Component<{ children: ReactNode }, { hasError: 
             )}
           </div>
           <button
-            onClick={() => {
-              if (typeof window !== 'undefined' && window.self !== window.top) {
-                this.setState({ hasError: false })
-                return
-              }
-              window.location.reload()
-            }}
+            onClick={() => safeReload()}
             style={{
               padding: '0.75rem 1.5rem',
               background: '#667eea',
@@ -259,15 +243,6 @@ class AdminErrorBoundary extends Component<{ children: ReactNode }, { hasError: 
   }
 }
 
-/** Cache-Bypass: komplette Seite mit neuem URL-Parameter laden (umgeht Browser-Cache). Kontext (z. B. context=vk2) bleibt erhalten. Im iframe (Cursor Preview) kein Reload – verhindert Loop/Crash. */
-function doHardReload() {
-  if (typeof window !== 'undefined' && window.self !== window.top) return
-  const w = typeof window !== 'undefined' ? window : null
-  if (!w?.location) return
-  const params = new URLSearchParams(w.location.search || '')
-  params.set('v', String(Date.now()))
-  w.location.href = w.location.origin + w.location.pathname + '?' + params.toString()
-}
 
 function StandBadgeSync() {
   const [serverNewer, setServerNewer] = useState(false)
@@ -294,7 +269,7 @@ function StandBadgeSync() {
   }, [isLocal])
 
   // KEIN automatischer Reload bei serverNewer – verursacht in Cursor Preview Reload-Loop (Server neuer → Reload → wieder Server neuer → wieder Reload → Code-5-Crash). Nur Badge anzeigen, Nutzer tippt selbst.
-  // useEffect(() => { if (!serverNewer) return; const t = setTimeout(doHardReload, 1200); return () => clearTimeout(t) }, [serverNewer])  ← entfernt
+  // KEIN Auto-Reload bei serverNewer (nur Badge, Nutzer tippt) – verhindert Reload-Loop in Cursor Preview.
 
   const isMobile = typeof window !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768)
   const label = serverNewer
@@ -313,8 +288,8 @@ function StandBadgeSync() {
         <div
           role="button"
           tabIndex={0}
-          onClick={doHardReload}
-          onKeyDown={(e) => e.key === 'Enter' && doHardReload()}
+          onClick={safeReload}
+          onKeyDown={(e) => e.key === 'Enter' && safeReload()}
           style={{
             position: 'fixed',
             top: 12,
@@ -339,7 +314,7 @@ function StandBadgeSync() {
       <div
         id="app-stand-badge"
         role="status"
-        onClick={doHardReload}
+        onClick={safeReload}
         title={title}
         style={{
           position: 'fixed',

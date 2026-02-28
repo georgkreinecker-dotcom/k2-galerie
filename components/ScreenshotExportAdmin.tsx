@@ -27,6 +27,7 @@ import { addPendingArtwork, filterK2Only, readArtworksRawByKey, saveArtworksByKe
 import { loadEvents as loadEventsFromStorage } from '../src/utils/eventsStorage'
 import { loadDocuments as loadDocumentsFromStorage } from '../src/utils/documentsStorage'
 import { apiPost, apiGet } from '../src/utils/apiClient'
+import { safeReload } from '../src/utils/env'
 import { getWerbeliniePrDocCss, getWerbeliniePrDocCssVk2, WERBELINIE_FONTS_URL, WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../src/config/marketingWerbelinie'
 import '../src/App.css'
 
@@ -11447,7 +11448,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       }
                       if (restored.length > 0) console.log('💾 Wiederhergestellt:', restored.join(', '))
                       setRestoreProgress('done')
-                      setTimeout(() => { if (window.self === window.top) window.location.reload() }, 800)
+                      setTimeout(() => safeReload(), 800)
                     } catch (err) {
                       setRestoreProgress('idle')
                       alert('❌ Datei konnte nicht gelesen werden: ' + (err instanceof Error ? err.message : String(err)))
@@ -11560,7 +11561,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           return
                         }
                         setRestoreProgress('done')
-                        setTimeout(() => { if (window.self === window.top) window.location.reload() }, 800)
+                        setTimeout(() => safeReload(), 800)
                       })
                     }}
                     style={{

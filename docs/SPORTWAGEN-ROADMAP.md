@@ -88,7 +88,7 @@
 | **Prototyp** | Viele Einzelprüfungen `window.self === window.top`; Reload an verschiedenen Stellen (Stand-Badge, Error Boundaries, Refresh-URL). |
 | **Sportwagen** | **Eine** Funktion `safeReload(options?)` (z. B. in utils/env.ts): iframe-Check drin, ggf. Cache-Bust. Alle Reload-Buttons und Stand-Badge rufen nur diese auf. |
 | **Schritte** | 1) safeReload() implementieren (iframe → kein Reload; sonst location.replace mit aktuellem Pfad + v=Date.now()). 2) Alle Stellen mit location.reload / location.replace / doHardReload suchen und auf safeReload umstellen. 3) Error Boundaries: Reload-Button ruft safeReload auf. |
-| **Erledigt** | [ ] |
+| **Erledigt** | [x] 28.02.26 (src/utils/env.ts safeReload; App, ErrorBoundary, main, appBootstrap, index.html, GaleriePage Pull-to-Refresh, Vk2 Stand-Badges, ScreenshotExportAdmin Backup-Reloads) |
 
 ### 3.2 Error Boundaries – ein Standard
 
@@ -97,7 +97,7 @@
 | **Prototyp** | ErrorBoundary, AdminErrorBoundary; Reload-Buttons teils mit, teils ohne iframe-Check. |
 | **Sportwagen** | Beide Boundaries nutzen **dieselbe** Reload-Logik (safeReload). Keine Duplikation der iframe-Prüfung. |
 | **Schritte** | 1) In beiden Boundaries Reload-Handler durch safeReload ersetzen. 2) Prüfen, ob weitere Fehler-UI (z. B. main.tsx) vereinheitlicht werden kann. |
-| **Erledigt** | [ ] |
+| **Erledigt** | [x] 28.02.26 (ErrorBoundary + App AdminErrorBoundary nutzen safeReload; main.tsx/appBootstrap Buttons nutzen window.safeReload) |
 
 ### 3.3 Theming & Kontrast (Design Tokens)
 

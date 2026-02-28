@@ -1,4 +1,5 @@
 import React, { Component, type ErrorInfo, type ReactNode } from 'react'
+import { safeReload } from '../utils/env'
 
 interface Props {
   children: ReactNode
@@ -61,12 +62,11 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   handleReload = () => {
-    // Im iframe (Cursor Preview) kein Reload – verhindert Loop/Crash; nur State zurücksetzen oder Hinweis
     if (typeof window !== 'undefined' && window.self !== window.top) {
       this.handleReset()
       return
     }
-    window.location.reload()
+    safeReload()
   }
 
   render() {

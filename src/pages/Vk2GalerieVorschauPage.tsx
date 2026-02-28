@@ -5,6 +5,7 @@ import { PROJECT_ROUTES } from '../config/navigation'
 import { getPageContentGalerie } from '../config/pageContentGalerie'
 import { getPageTexts } from '../config/pageTexts'
 import { BUILD_LABEL } from '../buildInfo.generated'
+import { safeReload } from '../utils/env'
 import '../App.css'
 
 // ─── Eingangskarten (gleiche Logik wie Vk2GaleriePage) ───────────────────────
@@ -290,7 +291,7 @@ const Vk2GalerieVorschauPage: React.FC = () => {
 
       {/* Stand-Badge – im iframe (Cursor Preview) kein Reload */}
       <div style={{ position: 'fixed', bottom: 8, left: 8, fontSize: '0.65rem', color: 'rgba(0,0,0,0.25)', cursor: 'pointer', zIndex: 50, fontFamily: 'system-ui, sans-serif' }}
-        onClick={() => { if (typeof window !== 'undefined' && window.self !== window.top) return; window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now() }}
+        onClick={safeReload}
         title="Tippen für Cache-Bypass">
         Stand: {BUILD_LABEL}
       </div>

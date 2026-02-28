@@ -13,6 +13,7 @@ import { mergeServerWithLocal } from '../utils/syncMerge'
 import { loadEvents, saveEvents } from '../utils/eventsStorage'
 import { loadDocuments, saveDocuments } from '../utils/documentsStorage'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { safeReload } from '../utils/env'
 import { OK2_THEME } from '../config/ok2Theme'
 import '../App.css'
 
@@ -1170,14 +1171,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       // Wenn weit genug nach unten gezogen wurde → Reload (nur außerhalb iframe – Cursor Preview sonst Crash/Loop)
       if (pullDistance > 80 && window.scrollY === 0 && window.self === window.top) {
         console.log('🔄 Pull-to-Refresh: Lade Seite neu...')
-        // Kompletter Cache-Clear
         if ('caches' in window) {
-          caches.keys().then(names => {
-            names.forEach(name => caches.delete(name))
-          })
+          caches.keys().then(names => { names.forEach(name => caches.delete(name)) })
         }
-        // Hard Reload mit Cache-Busting
-        window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now() + '&reload=' + Math.random()
+        safeReload()
       }
       
       isPulling = false

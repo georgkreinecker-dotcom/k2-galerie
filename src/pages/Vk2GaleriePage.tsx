@@ -9,6 +9,7 @@ import { loadDocuments } from '../utils/documentsStorage'
 import { getPageContentGalerie } from '../config/pageContentGalerie'
 import { BUILD_LABEL } from '../buildInfo.generated'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { safeReload } from '../utils/env'
 import '../App.css'
 
 // Lädt VK2-Stammdaten aus localStorage – NUR eigener Key, keine K2/ök2-Daten
@@ -454,7 +455,7 @@ const Vk2GaleriePage: React.FC = () => {
       {/* Stand-Badge – im iframe (Cursor Preview) kein Reload */}
       <div
         style={{ position: 'fixed', bottom: 8, left: 8, fontSize: '0.65rem', color: 'rgba(0,0,0,0.25)', cursor: 'pointer', zIndex: 50, fontFamily: 'system-ui, sans-serif' }}
-        onClick={() => { if (typeof window !== 'undefined' && window.self !== window.top) return; window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now() }}
+        onClick={safeReload}
         title="Tippen für Cache-Bypass"
       >
         Stand: {BUILD_LABEL}
