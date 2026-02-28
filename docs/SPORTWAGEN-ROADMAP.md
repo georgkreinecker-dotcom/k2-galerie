@@ -225,7 +225,7 @@
 | **Prototyp** | Regeln in niemals-kundendaten-loeschen.mdc, datentrennung-localstorage-niemals-loeschen.mdc. |
 | **Sportwagen** | Persistenz-Schichten (1.2, 1.3, 1.4) schreiben **nie** nach Filter/„Aufräumen“; nur nach expliziter User-Aktion. Tests decken geschützte Keys ab. |
 | **Schritte** | 1) Nach Phase 1: Alle Schreibzugriffe in den Schichten auf „nur bei User-Aktion / explizitem Save“ prüfen. 2) Kein automatisches setItem mit gefilterter Liste. |
-| **Erledigt** | [ ] |
+| **Erledigt** | [x] 28.02.26 – Schichten (artworksStorage, stammdatenStorage, events/documentsStorage, pageContentGalerie) geprüft: Schreiben nur bei User-Aktion, explizitem Save, Merge (merge behält Daten) oder Backup-Wiederherstellung. Kein „load → filter → setItem“ für k2-artworks/k2-stammdaten. artworkStorage: Schutz „nicht mit weniger überschreiben“. Tests kundendaten-schutz + datentrennung grün. |
 
 ---
 
