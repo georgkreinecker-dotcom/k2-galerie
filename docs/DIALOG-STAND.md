@@ -10,7 +10,7 @@
 - **Lösung:** Nur schreiben wenn Inhalt/Label geändert (buildInfo.generated.ts, build-info.json, api/build-info.js, index.html). Regel: **.cursor/rules/build-skripte-nur-schreiben-wenn-geaendert.mdc** (alwaysApply). In STRUKTUR-HANDELN-QUELLEN verlinkt.
 
 ## Thema
-**Prototyp → Sportwagen – systematisch:** Phase **5.1** erledigt (28.02.26): Admin Stammdaten nur noch über loadStammdaten/persistStammdaten/loadVk2Stammdaten/saveVk2Stammdaten; Namenskonflikt mit persistStammdaten gelöst. Commit: 5907f8e ✅. Nächster Schritt: **Phase 5.2** GaleriePage/GalerieVorschauPage oder **5.3** Shop/Willkommen/Vita.
+**Prototyp → Sportwagen – systematisch:** Phase **5.1** ✅, **5.2** ✅ (28.02.26). 5.2: GaleriePage/GalerieVorschauPage nur über Artworks-Schicht (readArtworksRawForContext, saveArtworksForContext). Nächster Schritt: **Phase 5.3** (Shop, Willkommen, Vita – Stammdaten aus Schicht, fromOeffentlich zentral).
 **Grundregel Ziel vor Anstrengung (28.02.26):** Ohne richtiges Ziel kann hundertmal „richtig machen“ trotzdem falsch sein. Immer wieder Ziel vor Augen. Regel: .cursor/rules/ziel-vor-anstrengung.mdc (alwaysApply); in STRUKTUR-HANDELN-QUELLEN + WIR-PROZESS verankert.
 **Regel Schritt für Schritt – konsequent (28.02.26):** Ein Schritt fertig, dann der nächste; nicht springen, nicht halb machen. .cursor/rules/schritt-fuer-schritt-konsequent.mdc (alwaysApply); in STRUKTUR-HANDELN-QUELLEN.
 **Phase 5.2 erledigt (28.02.26):** GaleriePage & GalerieVorschauPage nur über Artworks-Schicht (readArtworksRawForContext, saveArtworksForContext); mergeServerWithLocal unverändert genutzt; VK2 ohne Artwork-Key.
@@ -39,7 +39,7 @@
 **Wichtig:** In Vercel muss **GITHUB_TOKEN** gesetzt sein (Settings → Environment Variables), sonst schlägt „Daten an Server senden“ mit Hinweis darauf fehl.
 
 ## Nächster Schritt
-- **Sportwagen:** Phase 5.1 ✅. Als Nächstes **Phase 5.2** (GaleriePage/Vorschau auf Schichten) oder **5.3** (Shop, Willkommen, Vita).
+- **Sportwagen:** Phase 5.1 ✅, 5.2 ✅. Als Nächstes **Phase 5.3** (Shop, Willkommen, Vita – Stammdaten aus Schicht, fromOeffentlich zentral).
 - **Optional:** iPad/Mac Datentransport testen.
 1. **QR/Stand-Fix (27.02.26):** QR und Stand-Badge nutzen jetzt **/api/build-info** statt build-info.json – Serverless-API, beim Build mit aktuellem Stand beschrieben, umgeht CDN-Cache. Commit c5351e1.
 2. Nach Vercel-Build (1–2 Min): APf neu laden oder „QR neu“ → Vercel-Stand sollte aktuelle Zeit zeigen; iPad refresh.html oder QR scannen.
