@@ -44,7 +44,7 @@
 | **Prototyp** | Viele Keys `k2-stammdaten-*`; `autoSave.ts` mit mergeStammdatenPerson, mergeStammdatenGallery; teils direkte Zugriffe. |
 | **Sportwagen** | **Eine** Schicht: z. B. `stammdatenStorage.ts` mit `loadStammdaten(tenant)`, `saveStammdaten(tenant, data)`. Merge-Logik nur hier. Keine leeren Werte überschreiben (kein-datenverlust). |
 | **Schritte** | 1) Bestehende Merge-Logik in autoSave als Referenz nehmen. 2) Eine Datei `stammdatenStorage.ts` (oder Erweiterung autoSave) mit klarer API. 3) Alle direkten getItem/setItem für Stammdaten auf diese Schicht umstellen. 4) K2_STAMMDATEN_DEFAULTS als Fallback beibehalten. |
-| **Erledigt** | [ ] |
+| **Erledigt** | [x] 28.02.26 (Schicht steht: stammdatenStorage.ts mit loadStammdaten, saveStammdaten, loadVk2Stammdaten, saveVk2Stammdaten; autoSave + pageContentGalerie umgestellt; übrige Stellen können schrittweise folgen) |
 
 ### 1.4 Events & Dokumente – eine Quelle pro Kontext
 

@@ -5,7 +5,7 @@
 ## Datum: 28.02.26
 
 ## Thema
-**Prototyp → Sportwagen – systematisch:** Phase **1.1** (Tenant-Context) und **Phase 1.2** (Artworks-Persistenz) erledigt (28.02.26). Artworks: eine Schicht über `artworksStorage.ts` – `readArtworksRawByKey`, `readArtworksRawByKeyOrNull`, `saveArtworksByKey`; GaleriePage, GalerieVorschauPage, autoSave, supabaseClient, DevViewPage, PlatzanordnungPage nutzen nur noch diese Schicht für k2-artworks/k2-oeffentlich-artworks. Nächster Schritt: **Phase 1.3** Stammdaten-Persistenz (eine Schicht) oder Phase 2 (Sync-Regel).
+**Prototyp → Sportwagen – systematisch:** Phase **1.1**–**1.3** umgesetzt (28.02.26). 1.3 Stammdaten: `stammdatenStorage.ts` mit loadStammdaten, saveStammdaten, loadVk2Stammdaten, saveVk2Stammdaten; Merge-Logik nur dort; autoSave und pageContentGalerie nutzen die Schicht. Übrige Stammdaten-Zugriffe (Admin, GaleriePage, Shop, etc.) können schrittweise auf die Schicht umgestellt werden. Nächster Schritt: **Phase 1.4** Events & Dokumente oder **Phase 2.1** Sync-Regel.
 
 ## Grundregel: Profi statt Dilettant – Rad nicht zweimal erfinden (28.02.26)
 - **Regel:** .cursor/rules/profi-statt-dilettant-rad-nicht-zweimal.mdc (alwaysApply). Kern: Was andere schon erfunden haben, nicht neu bauen. Normen kennen, zukaufen/auslagern, am Markt beste Lösungen nutzen. Vor dem Bauen: „Gibt es das schon?“ – dann nutzen oder begründen.
@@ -30,7 +30,7 @@
 **Wichtig:** In Vercel muss **GITHUB_TOKEN** gesetzt sein (Settings → Environment Variables), sonst schlägt „Daten an Server senden“ mit Hinweis darauf fehl.
 
 ## Nächster Schritt
-- **Sportwagen:** Phase 1.1 + 1.2 ✅. Als Nächstes **Phase 1.3** Stammdaten-Persistenz (eine Schicht) oder **Phase 2.1** Sync-Regel dokumentieren und durchsetzen.
+- **Sportwagen:** Phase 1.1–1.3 ✅. Als Nächstes **Phase 1.4** Events & Dokumente (eine Schicht) oder **Phase 2.1** Sync-Regel; optional restliche Stammdaten-Aufrufer auf stammdatenStorage umstellen.
 - **Optional:** iPad/Mac Datentransport testen.
 1. **QR/Stand-Fix (27.02.26):** QR und Stand-Badge nutzen jetzt **/api/build-info** statt build-info.json – Serverless-API, beim Build mit aktuellem Stand beschrieben, umgeht CDN-Cache. Commit c5351e1.
 2. Nach Vercel-Build (1–2 Min): APf neu laden oder „QR neu“ → Vercel-Stand sollte aktuelle Zeit zeigen; iPad refresh.html oder QR scannen.

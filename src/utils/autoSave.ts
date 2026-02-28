@@ -5,6 +5,12 @@
 
 import { K2_STAMMDATEN_DEFAULTS, MUSTER_TEXTE } from '../config/tenantConfig'
 import { saveArtworksByKey } from './artworksStorage'
+import {
+  loadStammdaten,
+  saveStammdaten,
+  mergeStammdatenPerson,
+  mergeStammdatenGallery,
+} from './stammdatenStorage'
 
 // Auto-Save alle 5 Sekunden
 const AUTO_SAVE_INTERVAL = 5000
@@ -21,18 +27,6 @@ export interface AutoSaveData {
   documents?: any[]
   designSettings?: any
   pageTexts?: any
-}
-
-/** Niemals leere Kontaktfelder persistieren: vorhanden > Repo-Standard */
-function mergeStammdatenPerson(incoming: any, existing: any, defaults: { name: string; email: string; phone: string; website?: string }) {
-  const e = existing && typeof existing === 'object' ? existing : {}
-  return {
-    ...incoming,
-    name: (incoming?.name && String(incoming.name).trim()) || e.name || defaults.name,
-    email: (incoming?.email && String(incoming.email).trim()) || (e.email && String(e.email).trim()) || defaults.email,
-    phone: (incoming?.phone && String(incoming.phone).trim()) || (e.phone && String(e.phone).trim()) || defaults.phone,
-    website: (incoming?.website && String(incoming.website).trim()) || (e.website && String(e.website).trim()) || (defaults.website || '')
-  }
 }
 
 /** Muster (nur ök2-Kontext: id muster-* ohne _isMuster) und VK2 – nie in k2-artworks.
@@ -53,24 +47,6 @@ export function filterK2ArtworksOnly(artworks: any[]): any[] {
   })
 }
 
-function mergeStammdatenGallery(incoming: any, existing: any, defaults: typeof K2_STAMMDATEN_DEFAULTS.gallery) {
-  const e = existing && typeof existing === 'object' ? existing : {}
-  return {
-    ...incoming,
-    name: (incoming?.name && String(incoming.name).trim()) || e.name || defaults.name,
-    address: (incoming?.address != null && String(incoming.address).trim()) ? incoming.address : (e.address || defaults.address),
-    city: (incoming?.city != null && String(incoming.city).trim()) ? incoming.city : (e.city || defaults.city),
-    country: (incoming?.country != null && String(incoming.country).trim()) ? incoming.country : (e.country || defaults.country),
-    phone: (incoming?.phone && String(incoming.phone).trim()) || (e.phone && String(e.phone).trim()) || defaults.phone,
-    email: (incoming?.email && String(incoming.email).trim()) || (e.email && String(e.email).trim()) || defaults.email,
-    website: (incoming?.website != null && String(incoming.website).trim()) ? incoming.website : (e.website || defaults.website || ''),
-    internetadresse: (incoming?.internetadresse != null && String(incoming.internetadresse).trim()) ? incoming.internetadresse : (e.internetadresse || defaults.internetadresse || ''),
-    openingHours: (incoming?.openingHours != null && String(incoming.openingHours).trim()) ? incoming.openingHours : ((e as any)?.openingHours || defaults.openingHours || ''),
-    bankverbindung: (incoming?.bankverbindung != null && String(incoming.bankverbindung).trim()) ? incoming.bankverbindung : (e.bankverbindung || defaults.bankverbindung || ''),
-    gewerbebezeichnung: (incoming?.gewerbebezeichnung != null && String(incoming.gewerbebezeichnung).trim()) ? incoming.gewerbebezeichnung : ((e as any)?.gewerbebezeichnung || (defaults as any)?.gewerbebezeichnung || 'freie Kunstschaffende')
-  }
-}
-
 /**
  * Starte Auto-Save für alle Daten
  */
@@ -85,25 +61,9 @@ export function startAutoSave(getData: () => AutoSaveData) {
     try {
       const data = getData()
       
-      // Stammdaten: Niemals vorhandene E-Mail/Telefon mit leer überschreiben (Quelle: vorhanden > Repo-Standard)
-      if (data.martina) {
-        let existing: any = null
-        try { existing = JSON.parse(localStorage.getItem('k2-stammdaten-martina') || 'null') } catch (_) {}
-        const merged = mergeStammdatenPerson(data.martina, existing, K2_STAMMDATEN_DEFAULTS.martina)
-        localStorage.setItem('k2-stammdaten-martina', JSON.stringify({ ...data.martina, ...merged }))
-      }
-      if (data.georg) {
-        let existing: any = null
-        try { existing = JSON.parse(localStorage.getItem('k2-stammdaten-georg') || 'null') } catch (_) {}
-        const merged = mergeStammdatenPerson(data.georg, existing, K2_STAMMDATEN_DEFAULTS.georg)
-        localStorage.setItem('k2-stammdaten-georg', JSON.stringify({ ...data.georg, ...merged }))
-      }
-      if (data.gallery) {
-        let existing: any = null
-        try { existing = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || 'null') } catch (_) {}
-        const merged = mergeStammdatenGallery(data.gallery, existing, K2_STAMMDATEN_DEFAULTS.gallery)
-        localStorage.setItem('k2-stammdaten-galerie', JSON.stringify({ ...data.gallery, ...merged }))
-      }
+      if (data.martina) saveStammdaten('k2', 'martina', data.martina, { merge: true })
+      if (data.georg) saveStammdaten('k2', 'georg', data.georg, { merge: true })
+      if (data.gallery) saveStammdaten('k2', 'gallery', data.gallery, { merge: true })
       if (data.artworks) {
         try {
           const toSave = filterK2ArtworksOnly(data.artworks)
@@ -186,24 +146,9 @@ export function saveNow(getData: () => AutoSaveData) {
   try {
     const data = getData()
 
-    if (data.martina) {
-      let existing: any = null
-      try { existing = JSON.parse(localStorage.getItem('k2-stammdaten-martina') || 'null') } catch (_) {}
-      const merged = mergeStammdatenPerson(data.martina, existing, K2_STAMMDATEN_DEFAULTS.martina)
-      localStorage.setItem('k2-stammdaten-martina', JSON.stringify({ ...data.martina, ...merged }))
-    }
-    if (data.georg) {
-      let existing: any = null
-      try { existing = JSON.parse(localStorage.getItem('k2-stammdaten-georg') || 'null') } catch (_) {}
-      const merged = mergeStammdatenPerson(data.georg, existing, K2_STAMMDATEN_DEFAULTS.georg)
-      localStorage.setItem('k2-stammdaten-georg', JSON.stringify({ ...data.georg, ...merged }))
-    }
-    if (data.gallery) {
-      let existing: any = null
-      try { existing = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || 'null') } catch (_) {}
-      const merged = mergeStammdatenGallery(data.gallery, existing, K2_STAMMDATEN_DEFAULTS.gallery)
-      localStorage.setItem('k2-stammdaten-galerie', JSON.stringify({ ...data.gallery, ...merged }))
-    }
+    if (data.martina) saveStammdaten('k2', 'martina', data.martina, { merge: true })
+    if (data.georg) saveStammdaten('k2', 'georg', data.georg, { merge: true })
+    if (data.gallery) saveStammdaten('k2', 'gallery', data.gallery, { merge: true })
     if (data.artworks) {
       try {
         const toSave = filterK2ArtworksOnly(data.artworks)
@@ -296,23 +241,16 @@ export function restoreFromBackup(): boolean {
     const dgal = K2_STAMMDATEN_DEFAULTS.gallery
 
     if (backup.martina) {
-      const m = { ...backup.martina }
-      if (!m.email?.trim()) m.email = dm.email
-      if (!m.phone?.trim()) m.phone = dm.phone
-      if (!m.name?.trim()) m.name = dm.name
-      localStorage.setItem('k2-stammdaten-martina', JSON.stringify(m))
+      const m = mergeStammdatenPerson(backup.martina, {}, dm)
+      saveStammdaten('k2', 'martina', m, { merge: false })
     }
     if (backup.georg) {
-      const g = { ...backup.georg }
-      if (!g.email?.trim()) g.email = dg.email
-      if (!g.phone?.trim()) g.phone = dg.phone
-      if (!g.name?.trim()) g.name = dg.name
-      localStorage.setItem('k2-stammdaten-georg', JSON.stringify(g))
+      const g = mergeStammdatenPerson(backup.georg, {}, dg)
+      saveStammdaten('k2', 'georg', g, { merge: false })
     }
     if (backup.gallery) {
-      const merged = mergeStammdatenGallery(backup.gallery, {}, dgal)
-      const gal = { ...backup.gallery, ...merged }
-      localStorage.setItem('k2-stammdaten-galerie', JSON.stringify(gal))
+      const gal = mergeStammdatenGallery(backup.gallery, {}, dgal)
+      saveStammdaten('k2', 'gallery', gal, { merge: false })
     }
     // Nur echte K2-Werke wiederherstellen – niemals VK2-Werke in k2-artworks schreiben
     if (Array.isArray(backup.artworks)) {
@@ -376,23 +314,16 @@ export function restoreFromBackupFile(backup: {
     const dgal = K2_STAMMDATEN_DEFAULTS.gallery
 
     if (backup.martina && typeof backup.martina === 'object') {
-      const m = { ...backup.martina }
-      if (!m.email?.trim()) m.email = dm.email
-      if (!m.phone?.trim()) m.phone = dm.phone
-      if (!m.name?.trim()) m.name = dm.name
-      localStorage.setItem('k2-stammdaten-martina', JSON.stringify(m))
+      const m = mergeStammdatenPerson(backup.martina, {}, dm)
+      saveStammdaten('k2', 'martina', m, { merge: false })
     }
     if (backup.georg && typeof backup.georg === 'object') {
-      const g = { ...backup.georg }
-      if (!g.email?.trim()) g.email = dg.email
-      if (!g.phone?.trim()) g.phone = dg.phone
-      if (!g.name?.trim()) g.name = dg.name
-      localStorage.setItem('k2-stammdaten-georg', JSON.stringify(g))
+      const g = mergeStammdatenPerson(backup.georg, {}, dg)
+      saveStammdaten('k2', 'georg', g, { merge: false })
     }
     if (backup.gallery && typeof backup.gallery === 'object') {
-      const merged = mergeStammdatenGallery(backup.gallery, {}, dgal)
-      const gal = { ...backup.gallery, ...merged }
-      localStorage.setItem('k2-stammdaten-galerie', JSON.stringify(gal))
+      const gal = mergeStammdatenGallery(backup.gallery, {}, dgal)
+      saveStammdaten('k2', 'gallery', gal, { merge: false })
     }
     // Nur echte K2-Werke wiederherstellen – niemals VK2-Werke in k2-artworks schreiben
     if (Array.isArray(backup.artworks)) {
@@ -490,24 +421,9 @@ export function restoreK2AndOek2StammdatenFromRepo(): void {
   const km = K2_STAMMDATEN_DEFAULTS.martina
   const kg = K2_STAMMDATEN_DEFAULTS.georg
   const kGal = K2_STAMMDATEN_DEFAULTS.gallery
-
-  localStorage.setItem('k2-stammdaten-martina', JSON.stringify({
-    name: km.name,
-    email: km.email,
-    phone: km.phone,
-    website: km.website ?? '',
-    category: 'malerei',
-    bio: '',
-  }))
-  localStorage.setItem('k2-stammdaten-georg', JSON.stringify({
-    name: kg.name,
-    email: kg.email,
-    phone: kg.phone,
-    website: kg.website ?? '',
-    category: 'keramik',
-    bio: '',
-  }))
-  localStorage.setItem('k2-stammdaten-galerie', JSON.stringify({
+  saveStammdaten('k2', 'martina', { name: km.name, email: km.email, phone: km.phone, website: km.website ?? '', category: 'malerei', bio: '' }, { merge: false })
+  saveStammdaten('k2', 'georg', { name: kg.name, email: kg.email, phone: kg.phone, website: kg.website ?? '', category: 'keramik', bio: '' }, { merge: false })
+  saveStammdaten('k2', 'gallery', {
     name: kGal.name,
     address: kGal.address ?? '',
     city: kGal.city ?? '',
@@ -525,29 +441,14 @@ export function restoreK2AndOek2StammdatenFromRepo(): void {
     galerieCardImage: '',
     soldArtworksDisplayDays: 30,
     internetShopNotSetUp: true,
-  }))
+  }, { merge: false })
 
   const om = MUSTER_TEXTE.martina
   const og = MUSTER_TEXTE.georg
   const oGal = MUSTER_TEXTE.gallery
-
-  localStorage.setItem('k2-oeffentlich-stammdaten-martina', JSON.stringify({
-    name: om.name,
-    email: om.email,
-    phone: om.phone,
-    website: om.website ?? '',
-    category: 'malerei',
-    bio: '',
-  }))
-  localStorage.setItem('k2-oeffentlich-stammdaten-georg', JSON.stringify({
-    name: og.name,
-    email: og.email,
-    phone: og.phone,
-    website: og.website ?? '',
-    category: 'keramik',
-    bio: '',
-  }))
-  localStorage.setItem('k2-oeffentlich-stammdaten-galerie', JSON.stringify({
+  saveStammdaten('oeffentlich', 'martina', { name: om.name, email: om.email, phone: om.phone, website: om.website ?? '', category: 'malerei', bio: '' }, { merge: false })
+  saveStammdaten('oeffentlich', 'georg', { name: og.name, email: og.email, phone: og.phone, website: og.website ?? '', category: 'keramik', bio: '' }, { merge: false })
+  saveStammdaten('oeffentlich', 'gallery', {
     name: 'Galerie Muster',
     address: oGal.address ?? '',
     city: oGal.city ?? '',
@@ -565,7 +466,7 @@ export function restoreK2AndOek2StammdatenFromRepo(): void {
     galerieCardImage: oGal.galerieCardImage ?? '',
     soldArtworksDisplayDays: 30,
     internetShopNotSetUp: true,
-  }))
+  }, { merge: false })
 
   try {
     if (typeof window !== 'undefined') {

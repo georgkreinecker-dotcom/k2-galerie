@@ -4,6 +4,8 @@
  * K2: k2-page-content-galerie. ök2: k2-oeffentlich-page-content-galerie. VK2: k2-vk2-page-content-galerie.
  */
 
+import { loadStammdaten } from '../utils/stammdatenStorage'
+
 const STORAGE_KEY_K2 = 'k2-page-content-galerie'
 const STORAGE_KEY_OEFFENTLICH = 'k2-oeffentlich-page-content-galerie'
 const STORAGE_KEY_VK2 = 'k2-vk2-page-content-galerie'
@@ -24,15 +26,14 @@ export interface PageContentGalerie {
 
 const defaults: PageContentGalerie = {}
 
-/** Einmal-Migration (nur K2): Bilder aus Stammdaten in Seitengestaltung übernehmen, falls leer. */
+/** Einmal-Migration (nur K2): Bilder aus Stammdaten in Seitengestaltung übernehmen, falls leer. Phase 1.3: über Schicht. */
 function migrateFromStammdatenIfNeeded(): void {
   try {
     const key = getStorageKey(undefined)
     const existing = localStorage.getItem(key)
     if (existing && existing.length > 10) return
-    const raw = localStorage.getItem('k2-stammdaten-galerie')
-    if (!raw) return
-    const gallery = JSON.parse(raw) as Record<string, unknown>
+    const gallery = loadStammdaten('k2', 'gallery') as Record<string, unknown>
+    if (!gallery || typeof gallery !== 'object') return
     const out: PageContentGalerie = {}
     if (gallery.welcomeImage && typeof gallery.welcomeImage === 'string') out.welcomeImage = gallery.welcomeImage
     if (gallery.galerieCardImage && typeof gallery.galerieCardImage === 'string') out.galerieCardImage = gallery.galerieCardImage
