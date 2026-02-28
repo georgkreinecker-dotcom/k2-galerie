@@ -47,12 +47,21 @@ try {
 if (jsonChanged) fs.writeFileSync(publicPath, jsonContent, 'utf8')
 
 // api/build-info.js: nur schreiben wenn sich Build-Label (Minute) geändert hat → weniger Reopen in Cursor
+// Bei mehreren return res.json(...)-Zeilen: alle durch genau eine ersetzen (keine Duplikate)
 const apiBuildInfoPath = path.join(__dirname, '..', 'api', 'build-info.js')
 let apiChanged = false
 try {
   let apiContent = fs.readFileSync(apiBuildInfoPath, 'utf8')
+  const singleReturnLine = "  return res.json({ label: '" + label + "', timestamp: " + now.getTime() + " })"
+  const returnLineRe = /\s*return res\.json\(\s*\{\s*label:\s*'[^']*',\s*timestamp:\s*\d+\s*\}\s*\)\s*\n?/g
+  const returnMatches = apiContent.match(returnLineRe) || []
   const alreadyHasLabel = apiContent.includes("label: '" + label + "'")
-  if (!alreadyHasLabel) {
+  if (returnMatches.length > 1) {
+    let first = true
+    apiContent = apiContent.replace(returnLineRe, () => (first ? (first = false, singleReturnLine + '\n') : ''))
+    fs.writeFileSync(apiBuildInfoPath, apiContent, 'utf8')
+    apiChanged = true
+  } else if (!alreadyHasLabel) {
     const newApiContent = apiContent
       .replace(/__BUILD_LABEL__/g, label)
       .replace(/__BUILD_TIMESTAMP__/g, String(now.getTime()))
