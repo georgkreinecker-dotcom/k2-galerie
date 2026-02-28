@@ -120,7 +120,7 @@ Werk verschwindet / Nummer wiederverwendet / Freistellen geht nicht. **Ursache:*
 - **Phase 2.1 Sync-Regel:** docs/SYNC-REGEL.md, syncMerge.mergeServerWithLocal; GaleriePage (2×) + GalerieVorschauPage handleRefresh. Roadmap 2.1 [x].
 
 ## Letzter Commit
-- **Phase 2.2 API-Client – publishMobile/handleLoadFromServer umgestellt. Stand 28.02.26 06:27.** (wird gleich committed + gepusht)
+- **Phase 2.2 API-Client – TS-Fix, Roadmap/Dialog-Stand. Stand 28.02.26 06:28.** Commit: b8692ee ✅ auf GitHub
 
 ## Nächster Schritt
 - **Sportwagen:** Phase 3.1 safeReload oder 3.2 Fehlerbehandlung. Optional: iPad/Mac – neues Werk speichern, in Galerie prüfen ob sichtbar (Pending-Layer).
