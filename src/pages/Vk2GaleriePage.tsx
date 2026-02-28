@@ -4,6 +4,8 @@ import QRCode from 'qrcode'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { initVk2DemoStammdatenIfEmpty, type Vk2Stammdaten } from '../config/tenantConfig'
 import { getPageTexts } from '../config/pageTexts'
+import { loadEvents } from '../utils/eventsStorage'
+import { loadDocuments } from '../utils/documentsStorage'
 import { getPageContentGalerie } from '../config/pageContentGalerie'
 import { BUILD_LABEL } from '../buildInfo.generated'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
@@ -31,28 +33,14 @@ function loadVk2PageContent() {
   return getPageContentGalerie('vk2')
 }
 
-// Lädt VK2-Events – NUR eigener Key
+// Lädt VK2-Events – NUR eigener Key (Phase 1.4: über Schicht)
 function loadVk2Events(): any[] {
-  try {
-    const raw = localStorage.getItem('k2-vk2-events')
-    if (!raw) return []
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
+  return loadEvents('vk2')
 }
 
-// Lädt VK2-Dokumente – NUR eigener Key (für Flyer pro Event)
+// Lädt VK2-Dokumente – NUR eigener Key (für Flyer pro Event) (Phase 1.4: über Schicht)
 function loadVk2Documents(): any[] {
-  try {
-    const raw = localStorage.getItem('k2-vk2-documents')
-    if (!raw) return []
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
+  return loadDocuments('vk2')
 }
 
 /** Flyer-Dokument für ein Event finden (werbematerialTyp flyer oder Name enthält Flyer/Einladung) */

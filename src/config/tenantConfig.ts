@@ -3,6 +3,9 @@
  * Basis für vermarktbare Version: K2 = deine Galerie, Demo = Beispiel für Lizenz-Version
  */
 
+import { loadEvents, saveEvents } from '../utils/eventsStorage'
+import { loadDocuments, saveDocuments } from '../utils/documentsStorage'
+
 /** Markenname des Produkts – festgeschrieben, einheitlich in der gesamten App verwenden */
 export const PRODUCT_BRAND_NAME = 'K2 Galerie'
 
@@ -472,18 +475,14 @@ export function initVk2DemoEventAndDocumentsIfEmpty(): void {
     const stamm = JSON.parse(rawStamm) as Vk2Stammdaten
     if (stamm?.verein?.name !== 'Kunstverein Muster') return
 
-    const eventsRaw = localStorage.getItem('k2-vk2-events')
-    const events: unknown[] = eventsRaw ? JSON.parse(eventsRaw) : []
+    const events = loadEvents('vk2')
     if (Array.isArray(events) && events.length === 0) {
-      const demoEvent = getVk2DemoEvent()
-      localStorage.setItem('k2-vk2-events', JSON.stringify([demoEvent]))
+      saveEvents('vk2', [getVk2DemoEvent()])
     }
 
-    const docsRaw = localStorage.getItem('k2-vk2-documents')
-    const docs: unknown[] = docsRaw ? JSON.parse(docsRaw) : []
+    const docs = loadDocuments('vk2')
     if (Array.isArray(docs) && docs.length === 0) {
-      const demoDocs = getVk2DemoDocuments('vk2-demo-gemeinschaftsausstellung')
-      localStorage.setItem('k2-vk2-documents', JSON.stringify(demoDocs))
+      saveDocuments('vk2', getVk2DemoDocuments('vk2-demo-gemeinschaftsausstellung'))
     }
   } catch (_) {}
 }

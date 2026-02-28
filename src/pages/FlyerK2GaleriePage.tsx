@@ -4,6 +4,7 @@ import { getPageTexts } from '../config/pageTexts'
 import { getWerbelinieCss, WERBELINIE_FONTS_URL } from '../config/marketingWerbelinie'
 import { K2_STAMMDATEN_DEFAULTS } from '../config/tenantConfig'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
+import { loadEvents } from '../utils/eventsStorage'
 
 const DOC_CLASS = 'flyer-k2-page'
 
@@ -96,16 +97,13 @@ export default function FlyerK2GaleriePage() {
     } catch (_) {}
 
     try {
-      const eventsRaw = localStorage.getItem('k2-events')
-      if (eventsRaw && eventsRaw.length < 500000 && isMounted) {
-        const list = JSON.parse(eventsRaw) as any[]
-        if (Array.isArray(list)) {
-          const eroeffnung = list.find((e: any) => e?.type === 'galerieeröffnung' && e?.date)
-          const event = eroeffnung || list.find((e: any) => e?.date)
-          if (event?.date && isMounted) {
-            const text = formatEventDate(event.date, event.endDate)
-            if (text) setEventDateText(text)
-          }
+      const list = loadEvents('k2')
+      if (Array.isArray(list) && list.length > 0 && isMounted) {
+        const eroeffnung = list.find((e: any) => e?.type === 'galerieeröffnung' && e?.date)
+        const event = eroeffnung || list.find((e: any) => e?.date)
+        if (event?.date && isMounted) {
+          const text = formatEventDate(event.date, event.endDate)
+          if (text) setEventDateText(text)
         }
       }
     } catch (_) {}

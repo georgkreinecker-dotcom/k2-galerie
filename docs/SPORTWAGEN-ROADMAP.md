@@ -53,7 +53,7 @@
 | **Prototyp** | Events: `k2-events`, `k2-vk2-events`; Dokumente: `k2-documents`, `k2-vk2-documents`; ök2 nur MUSTER. Laden/Schreiben an mehreren Stellen. |
 | **Sportwagen** | **Eine** Schicht pro Typ: `eventsStorage.ts`, `documentsStorage.ts` mit Kontext aus 1.1. Keine direkten setItem in Komponenten. Regel dokumente-kontext-eine-quelle.mdc bleibt. |
 | **Schritte** | 1) Alle Lese-/Schreibstellen für Events und Dokumente erfassen. 2) Zentrale load/save mit tenant aus Context. 3) Umstellen, Doku prüfen. |
-| **Erledigt** | [ ] |
+| **Erledigt** | [x] 28.02.26 (eventsStorage, documentsStorage; GaleriePage, GalerieVorschauPage, Flyer, Presse, Vk2, DevView, Admin, tenantConfig initVk2) |
 
 ---
 

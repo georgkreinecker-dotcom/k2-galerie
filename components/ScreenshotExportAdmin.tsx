@@ -24,6 +24,8 @@ import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
 import { addPendingArtwork, filterK2Only, readArtworksRawByKey, saveArtworksByKey } from '../src/utils/artworksStorage'
+import { loadEvents as loadEventsFromStorage } from '../src/utils/eventsStorage'
+import { loadDocuments as loadDocumentsFromStorage } from '../src/utils/documentsStorage'
 import { getWerbeliniePrDocCss, getWerbeliniePrDocCssVk2, WERBELINIE_FONTS_URL, WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../src/config/marketingWerbelinie'
 import '../src/App.css'
 
@@ -1959,8 +1961,8 @@ function ScreenshotExportAdmin() {
           return JSON.parse(item)
         } catch { return def }
       }
-      const eventsForBackup = (Array.isArray(events) && events.length > 0) ? events : (getItemSafe('k2-events', []) || [])
-      const documentsForBackup = (Array.isArray(documents) && documents.length > 0) ? documents : (getItemSafe('k2-documents', []) || [])
+      const eventsForBackup = (Array.isArray(events) && events.length > 0) ? events : loadEventsFromStorage('k2')
+      const documentsForBackup = (Array.isArray(documents) && documents.length > 0) ? documents : loadDocumentsFromStorage('k2')
       const customersForBackup = getItemSafe('k2-customers', []) || []
       let pageContentGalerieRaw: string | undefined
       try {

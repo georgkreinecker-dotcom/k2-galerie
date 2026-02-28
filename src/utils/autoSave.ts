@@ -11,6 +11,8 @@ import {
   mergeStammdatenPerson,
   mergeStammdatenGallery,
 } from './stammdatenStorage'
+import { loadEvents, saveEvents } from './eventsStorage'
+import { loadDocuments, saveDocuments } from './documentsStorage'
 
 // Auto-Save alle 5 Sekunden
 const AUTO_SAVE_INTERVAL = 5000
@@ -74,30 +76,20 @@ export function startAutoSave(getData: () => AutoSaveData) {
       }
       if (data.events) {
         try {
-          const existingRaw = localStorage.getItem('k2-events')
-          const existingArr = existingRaw ? JSON.parse(existingRaw) : []
-          const hasExisting = Array.isArray(existingArr) && existingArr.length > 0
+          const existingArr = loadEvents('k2')
+          const hasExisting = existingArr.length > 0
           const incomingEmpty = !Array.isArray(data.events) || data.events.length === 0
-          if (hasExisting && incomingEmpty) {
-            // Niemals vorhandene Eventplanung mit leerem Zustand überschreiben
-          } else {
-            localStorage.setItem('k2-events', JSON.stringify(data.events))
-          }
+          if (!hasExisting || !incomingEmpty) saveEvents('k2', data.events)
         } catch (e) {
           console.warn('⚠️ Events zu groß für Auto-Save')
         }
       }
       if (data.documents) {
         try {
-          const existingRaw = localStorage.getItem('k2-documents')
-          const existingArr = existingRaw ? JSON.parse(existingRaw) : []
-          const hasExisting = Array.isArray(existingArr) && existingArr.length > 0
+          const existingArr = loadDocuments('k2')
+          const hasExisting = existingArr.length > 0
           const incomingEmpty = !Array.isArray(data.documents) || data.documents.length === 0
-          if (hasExisting && incomingEmpty) {
-            // Niemals vorhandene Dokumente mit leerem Zustand überschreiben
-          } else {
-            localStorage.setItem('k2-documents', JSON.stringify(data.documents))
-          }
+          if (!hasExisting || !incomingEmpty) saveDocuments('k2', data.documents)
         } catch (e) {
           console.warn('⚠️ Documents zu groß für Auto-Save')
         }
@@ -160,30 +152,20 @@ export function saveNow(getData: () => AutoSaveData) {
     // KRITISCH: Niemals vorhandene Events/Dokumente mit leerem State überschreiben (verhindert Datenverlust beim Tab-Wechsel/Reload)
     if (data.events) {
       try {
+        const existing = loadEvents('k2')
+        const hasExisting = existing.length > 0
         const incomingEmpty = !Array.isArray(data.events) || data.events.length === 0
-        const existingRaw = localStorage.getItem('k2-events')
-        const existing = existingRaw ? JSON.parse(existingRaw) : []
-        const hasExisting = Array.isArray(existing) && existing.length > 0
-        if (hasExisting && incomingEmpty) {
-          // Lokale Events behalten – State war vielleicht noch nicht geladen
-        } else {
-          localStorage.setItem('k2-events', JSON.stringify(data.events))
-        }
+        if (!hasExisting || !incomingEmpty) saveEvents('k2', data.events)
       } catch (e) {
         console.warn('⚠️ Events zu groß für Sofort-Save')
       }
     }
     if (data.documents) {
       try {
+        const existing = loadDocuments('k2')
+        const hasExisting = existing.length > 0
         const incomingEmpty = !Array.isArray(data.documents) || data.documents.length === 0
-        const existingRaw = localStorage.getItem('k2-documents')
-        const existing = existingRaw ? JSON.parse(existingRaw) : []
-        const hasExisting = Array.isArray(existing) && existing.length > 0
-        if (hasExisting && incomingEmpty) {
-          // Lokale Dokumente behalten
-        } else {
-          localStorage.setItem('k2-documents', JSON.stringify(data.documents))
-        }
+        if (!hasExisting || !incomingEmpty) saveDocuments('k2', data.documents)
       } catch (e) {
         console.warn('⚠️ Documents zu groß für Sofort-Save')
       }
@@ -263,12 +245,8 @@ export function restoreFromBackup(): boolean {
         console.warn('⚠️ Backup enthält VK2-Werke – k2-artworks wurde nicht überschrieben (K2/VK2-Trennung).')
       }
     }
-    if (Array.isArray(backup.events)) {
-      localStorage.setItem('k2-events', JSON.stringify(backup.events))
-    }
-    if (Array.isArray(backup.documents)) {
-      localStorage.setItem('k2-documents', JSON.stringify(backup.documents))
-    }
+    if (Array.isArray(backup.events)) saveEvents('k2', backup.events)
+    if (Array.isArray(backup.documents)) saveDocuments('k2', backup.documents)
     if (Array.isArray(backup.customers)) {
       localStorage.setItem('k2-customers', JSON.stringify(backup.customers))
     }
@@ -336,12 +314,8 @@ export function restoreFromBackupFile(backup: {
         console.warn('⚠️ Backup-Datei enthält VK2-Werke – k2-artworks wurde nicht überschrieben (K2/VK2-Trennung).')
       }
     }
-    if (Array.isArray(backup.events)) {
-      localStorage.setItem('k2-events', JSON.stringify(backup.events))
-    }
-    if (Array.isArray(backup.documents)) {
-      localStorage.setItem('k2-documents', JSON.stringify(backup.documents))
-    }
+    if (Array.isArray(backup.events)) saveEvents('k2', backup.events)
+    if (Array.isArray(backup.documents)) saveDocuments('k2', backup.documents)
     if (Array.isArray(backup.customers)) {
       localStorage.setItem('k2-customers', JSON.stringify(backup.customers))
     }

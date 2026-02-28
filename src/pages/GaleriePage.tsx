@@ -9,6 +9,8 @@ import { getGalerieImages, getPageContentGalerie } from '../config/pageContentGa
 import { getPageTexts, type GaleriePageTexts } from '../config/pageTexts'
 import { appendToHistory } from '../utils/artworkHistory'
 import { readArtworksRawByKey, saveArtworksByKey } from '../utils/artworksStorage'
+import { loadEvents, saveEvents } from '../utils/eventsStorage'
+import { loadDocuments, saveDocuments } from '../utils/documentsStorage'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { OK2_THEME } from '../config/ok2Theme'
 import '../App.css'
@@ -111,13 +113,11 @@ function saveArtworksForKey(key: string, data: any[]): void {
   }
 }
 
-/** Nächste/geplante Events aus k2-events laden (Datum oder Enddatum >= heute), sortiert, max. 5 */
+/** Nächste/geplante Events aus k2-events laden (Phase 1.4: über Schicht). */
 function getUpcomingEvents(): any[] {
   try {
-    const raw = localStorage.getItem('k2-events')
-    if (!raw) return []
-    const list = JSON.parse(raw)
-    if (!Array.isArray(list)) return []
+    const list = loadEvents('k2')
+    if (!Array.isArray(list) || list.length === 0) return []
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const upcoming = list.filter((e: any) => {
@@ -133,27 +133,22 @@ function getUpcomingEvents(): any[] {
   }
 }
 
-/** ök2: Nächste Events aus k2-oeffentlich-events; wenn leer, MUSTER_EVENTS (Vernissage etc.). */
+/** ök2: Nächste Events aus k2-oeffentlich-events; wenn leer, MUSTER_EVENTS (Phase 1.4: über Schicht). */
 function getUpcomingEventsOeffentlich(): any[] {
   try {
-    const raw = typeof window !== 'undefined' ? localStorage.getItem('k2-oeffentlich-events') : null
-    if (raw && raw.trim()) {
-      const list = JSON.parse(raw)
-      if (Array.isArray(list) && list.length > 0) {
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
-        const upcoming = list.filter((e: any) => {
-          if (!e || !e.date) return false
-          const end = e.endDate ? new Date(e.endDate) : new Date(e.date)
-          end.setHours(23, 59, 59, 999)
-          return end >= today
-        })
-        upcoming.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        return upcoming.slice(0, 5)
-      }
-    }
+    const list = loadEvents('oeffentlich')
     const today = new Date()
     today.setHours(0, 0, 0, 0)
+    if (Array.isArray(list) && list.length > 0) {
+      const upcoming = list.filter((e: any) => {
+        if (!e || !e.date) return false
+        const end = e.endDate ? new Date(e.endDate) : new Date(e.date)
+        end.setHours(23, 59, 59, 999)
+        return end >= today
+      })
+      upcoming.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      return upcoming.slice(0, 5)
+    }
     const fromMuster = MUSTER_EVENTS.filter((e: any) => {
       if (!e || !e.date) return false
       const end = e.endDate ? new Date(e.endDate) : new Date(e.date)
@@ -170,10 +165,8 @@ function getUpcomingEventsOeffentlich(): any[] {
 /** VK2: Events aus k2-vk2-events – KEIN Fallback auf k2-events (K2-Datentrennung). */
 function getUpcomingEventsVk2(): any[] {
   try {
-    const raw = localStorage.getItem('k2-vk2-events')
-    if (!raw) return []
-    const list = JSON.parse(raw)
-    if (!Array.isArray(list)) return []
+    const list = loadEvents('vk2')
+    if (!Array.isArray(list) || list.length === 0) return []
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const upcoming = list.filter((e: any) => {
@@ -589,26 +582,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     return () => window.removeEventListener('storage', load)
   }, [vk2])
 
-  // Event-Dokumente für Flyer-Icon (K2 / ök2 / VK2 – Key je nach Kontext)
-  const eventDocumentsKey = vk2 ? 'k2-vk2-documents' : musterOnly ? 'k2-oeffentlich-documents' : 'k2-documents'
-  const [eventDocuments, setEventDocuments] = useState<any[]>(() => {
-    try {
-      const raw = typeof window !== 'undefined' ? localStorage.getItem(eventDocumentsKey) : null
-      if (!raw) return []
-      const parsed = JSON.parse(raw)
-      return Array.isArray(parsed) ? parsed : []
-    } catch { return [] }
-  })
+  const eventDocumentsTenantId = vk2 ? 'vk2' : musterOnly ? 'oeffentlich' : 'k2'
+  const [eventDocuments, setEventDocuments] = useState<any[]>(() => loadDocuments(eventDocumentsTenantId))
   useEffect(() => {
-    const load = () => {
-      try {
-        const key = vk2 ? 'k2-vk2-documents' : musterOnly ? 'k2-oeffentlich-documents' : 'k2-documents'
-        const raw = localStorage.getItem(key)
-        if (!raw) { setEventDocuments([]); return }
-        const parsed = JSON.parse(raw)
-        setEventDocuments(Array.isArray(parsed) ? parsed : [])
-      } catch { setEventDocuments([]) }
-    }
+    const load = () => setEventDocuments(loadDocuments(eventDocumentsTenantId))
     load()
     window.addEventListener('storage', load)
     return () => window.removeEventListener('storage', load)
@@ -1099,15 +1076,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           }
         }
         
-        // Lade auch Events wenn vorhanden – NIEMALS lokale Eventplanung mit leerem Server überschreiben
         if (data.events && Array.isArray(data.events)) {
           try {
-            const localRaw = localStorage.getItem('k2-events')
-            const localEvents = localRaw ? JSON.parse(localRaw) : []
-            const localHasEvents = Array.isArray(localEvents) && localEvents.length > 0
-            const serverHasEvents = data.events.length > 0
-            if (serverHasEvents || !localHasEvents) {
-              localStorage.setItem('k2-events', JSON.stringify(data.events))
+            const localEvents = loadEvents('k2')
+            const localHasEvents = localEvents.length > 0
+            if (data.events.length > 0 || !localHasEvents) {
+              saveEvents('k2', data.events)
               window.dispatchEvent(new CustomEvent('k2-events-updated'))
               console.log('✅ Events aktualisiert:', data.events.length)
             }
@@ -1115,15 +1089,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             console.warn('⚠️ Events zu groß für localStorage')
           }
         }
-        // Dokumente (Öffentlichkeitsarbeit) – NIEMALS lokale mit leerem Server überschreiben
         if (data.documents && Array.isArray(data.documents)) {
           try {
-            const localRaw = localStorage.getItem('k2-documents')
-            const localDocs = localRaw ? JSON.parse(localRaw) : []
-            const localHasDocs = Array.isArray(localDocs) && localDocs.length > 0
-            const serverHasDocs = data.documents.length > 0
-            if (serverHasDocs || !localHasDocs) {
-              localStorage.setItem('k2-documents', JSON.stringify(data.documents))
+            const localDocs = loadDocuments('k2')
+            const localHasDocs = localDocs.length > 0
+            if (data.documents.length > 0 || !localHasDocs) {
+              saveDocuments('k2', data.documents)
               console.log('✅ Dokumente aktualisiert:', data.documents.length)
             }
           } catch (e) {
@@ -1521,25 +1492,20 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             }
           }
           
-          // Beim Initial-Load: Events/Dokumente nur überschreiben wenn Server echte Daten hat oder lokal leer
           if (data.events && Array.isArray(data.events)) {
             try {
-              const localRaw = localStorage.getItem('k2-events')
-              const localEvents = localRaw ? JSON.parse(localRaw) : []
-              const localHasEvents = Array.isArray(localEvents) && localEvents.length > 0
-              if (data.events.length > 0 || !localHasEvents) {
-                localStorage.setItem('k2-events', JSON.stringify(data.events))
+              const localEvents = loadEvents('k2')
+              if (data.events.length > 0 || localEvents.length === 0) {
+                saveEvents('k2', data.events)
                 window.dispatchEvent(new CustomEvent('k2-events-updated'))
               }
             } catch (_) {}
           }
           if (data.documents && Array.isArray(data.documents)) {
             try {
-              const localRaw = localStorage.getItem('k2-documents')
-              const localDocs = localRaw ? JSON.parse(localRaw) : []
-              const localHasDocs = Array.isArray(localDocs) && localDocs.length > 0
-              if (data.documents.length > 0 || !localHasDocs) {
-                localStorage.setItem('k2-documents', JSON.stringify(data.documents))
+              const localDocs = loadDocuments('k2')
+              if (data.documents.length > 0 || localDocs.length === 0) {
+                saveDocuments('k2', data.documents)
               }
             } catch (_) {}
           }

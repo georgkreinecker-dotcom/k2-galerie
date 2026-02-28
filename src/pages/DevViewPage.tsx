@@ -20,6 +20,8 @@ import PlatformStartPage from './PlatformStartPage'
 import SmartPanel from '../components/SmartPanel'
 import { BUILD_TIMESTAMP } from '../buildInfo.generated'
 import { getPageContentGalerie } from '../config/pageContentGalerie'
+import { loadEvents } from '../utils/eventsStorage'
+import { loadDocuments } from '../utils/documentsStorage'
 
 // Helper: Lese persistent Boolean ohne Hook (für useMemo)
 function getPersistentBoolean(key: string): boolean {
@@ -264,8 +266,8 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       
       let artworks = readArtworksRawByKey('k2-artworks')
       if (!Array.isArray(artworks)) artworks = []
-      const events = getItemSafe('k2-events', [])
-      const documents = getItemSafe('k2-documents', [])
+      const events = loadEvents('k2')
+      const documents = loadDocuments('k2')
       
       // WICHTIG: Lade Mobile-Werke von Supabase BEVOR veröffentlicht wird
       // Das stellt sicher, dass alle Mobile-Werke in gallery-data.json enthalten sind

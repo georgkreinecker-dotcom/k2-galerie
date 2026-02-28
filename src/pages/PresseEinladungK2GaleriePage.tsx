@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { getWerbelinieCss, WERBELINIE_FONTS_URL } from '../config/marketingWerbelinie'
 import { K2_STAMMDATEN_DEFAULTS } from '../config/tenantConfig'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
+import { loadEvents } from '../utils/eventsStorage'
 
 const DOC_CLASS = 'presse-k2-page'
 
@@ -70,22 +71,19 @@ export default function PresseEinladungK2GaleriePage() {
   useEffect(() => {
     let isMounted = true
     try {
-      const raw = localStorage.getItem('k2-events')
-      if (raw && raw.length < 500000) {
-        const list = JSON.parse(raw) as any[]
-        if (Array.isArray(list) && list.length > 0) {
-          const eroeffnung = list.find((e: any) => e?.type === 'galerieeröffnung' && e?.date)
-          const ev = eroeffnung || list.find((e: any) => e?.date) || list[0]
-          if (ev && isMounted) {
-            const location = ev.location || ''
-            setEvent({
-              title: ev.title || 'Einladung',
-              type: ev.type || 'sonstiges',
-              date: formatEventDate(ev.date || '', ev.endDate),
-              location: location.trim(),
-              description: (ev.description || 'Wir freuen uns auf deinen Besuch.').trim(),
-            })
-          }
+      const list = loadEvents('k2')
+      if (Array.isArray(list) && list.length > 0) {
+        const eroeffnung = list.find((e: any) => e?.type === 'galerieeröffnung' && e?.date)
+        const ev = eroeffnung || list.find((e: any) => e?.date) || list[0]
+        if (ev && isMounted) {
+          const location = ev.location || ''
+          setEvent({
+            title: ev.title || 'Einladung',
+            type: ev.type || 'sonstiges',
+            date: formatEventDate(ev.date || '', ev.endDate),
+            location: location.trim(),
+            description: (ev.description || 'Wir freuen uns auf deinen Besuch.').trim(),
+          })
         }
       }
       setStammdaten(loadStammdaten())

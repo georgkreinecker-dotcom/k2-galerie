@@ -13,6 +13,8 @@ import { sortArtworksFavoritesFirstThenNewest } from '../utils/artworkSort'
 import { appendToHistory } from '../utils/artworkHistory'
 import { tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from '../../components/SafeMode'
 import { readArtworksRaw, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, loadForDisplay, filterK2Only as filterK2OnlyStorage, saveArtworksOnly as saveArtworksStorage, mayWriteServerList, mergeAndMaybeWrite, mergeWithPending, getPendingArtworks, addPendingArtwork, clearPendingIfInList } from '../utils/artworksStorage'
+import { loadEvents } from '../utils/eventsStorage'
+import { loadDocuments } from '../utils/documentsStorage'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
 import '../App.css'
 
@@ -4263,8 +4265,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                               georg: JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}'),
                               gallery: JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}'),
                               artworks: allArtworks,
-                              events: JSON.parse(localStorage.getItem('k2-events') || '[]'),
-                              documents: JSON.parse(localStorage.getItem('k2-documents') || '[]'),
+                              events: loadEvents('k2'),
+                              documents: loadDocuments('k2'),
                               designSettings: JSON.parse(localStorage.getItem('k2-design-settings') || '{}'),
                               version: Date.now(),
                               buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
@@ -4512,8 +4514,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                             georg: JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}'),
                             gallery: JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}'),
                             artworks: allArtworks,
-                            events: JSON.parse(localStorage.getItem('k2-events') || '[]'),
-                            documents: JSON.parse(localStorage.getItem('k2-documents') || '[]'),
+                            events: loadEvents('k2'),
+                            documents: loadDocuments('k2'),
                             designSettings: JSON.parse(localStorage.getItem('k2-design-settings') || '{}'),
                             version: Date.now(),
                             buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
