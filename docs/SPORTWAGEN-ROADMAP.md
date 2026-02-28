@@ -119,7 +119,7 @@
 | **Prototyp** | Komprimierung in professionalImageBackground, MarketingOek2Page, ScreenshotExportAdmin mit unterschiedlichen Parametern. |
 | **Sportwagen** | **Eine** Utility `compressImageForStorage(options)` (maxBreite, Qualität, Kontext mobil/desktop). Alle Aufrufer nutzen sie. Regel komprimierung-fotos-videos.mdc. |
 | **Schritte** | 1) Bestehende Logik in professionalImageBackground bzw. Admin auslagern/erweitern zu einer gemeinsamen Funktion. 2) Parameter pro Kontext (mobil: 600, 0.5; desktop: 800, 0.65) festlegen. 3) Alle Stellen umstellen. |
-| **Erledigt** | [ ] |
+| **Erledigt** | [x] 28.02.26 (src/utils/compressImageForStorage.ts; githubImageUpload, ScreenshotExportAdmin, MarketingOek2Page umgestellt) |
 
 ### 4.2 Bild-Upload (GitHub → Vercel) – eine Einstiegs-API
 

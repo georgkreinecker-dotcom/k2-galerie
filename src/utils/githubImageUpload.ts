@@ -3,6 +3,8 @@
  * Vercel deployt automatisch → Bild sofort überall sichtbar.
  */
 
+import { compressImageForStorage } from './compressImageForStorage'
+
 const GITHUB_API = 'https://api.github.com'
 const REPO = 'georgkreinecker-dotcom/k2-galerie'
 const BRANCH = 'main'
@@ -41,8 +43,7 @@ export async function uploadImageToGitHub(
 
   onStatus?.('Bild wird vorbereitet…')
 
-  // Bild komprimieren (max 800px, JPEG 0.75)
-  const compressed = await compressImage(file, 800, 0.75)
+  const compressed = await compressImageForStorage(file, { maxWidth: 800, quality: 0.75 })
   const base64 = compressed.replace(/^data:image\/\w+;base64,/, '')
 
   const path = `public/img/${subfolder}/${filename}`
@@ -132,24 +133,3 @@ export async function uploadVideoToGitHub(
   return `/img/k2/${filename}`
 }
 
-/** Komprimiert ein Bild auf maxWidth px und JPEG-Qualität quality */
-function compressImage(file: File, maxWidth: number, quality: number): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    const url = URL.createObjectURL(file)
-    img.onload = () => {
-      URL.revokeObjectURL(url)
-      const scale = Math.min(1, maxWidth / img.width)
-      const w = Math.round(img.width * scale)
-      const h = Math.round(img.height * scale)
-      const canvas = document.createElement('canvas')
-      canvas.width = w
-      canvas.height = h
-      const ctx = canvas.getContext('2d')!
-      ctx.drawImage(img, 0, 0, w, h)
-      resolve(canvas.toDataURL('image/jpeg', quality))
-    }
-    img.onerror = reject
-    img.src = url
-  })
-}

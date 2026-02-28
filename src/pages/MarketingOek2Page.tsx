@@ -8,6 +8,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES, WILLKOMMEN_ROUTE, AGB_ROUTE, BASE_APP_URL } from '../config/navigation'
 import { PRODUCT_WERBESLOGAN, PRODUCT_BOTSCHAFT_2, PRODUCT_ZIELGRUPPE } from '../config/tenantConfig'
 import ProductCopyright from '../components/ProductCopyright'
+import { compressImageForStorage } from '../utils/compressImageForStorage'
 
 const MOK2_SLOGAN_KEY = 'k2-mok2-werbeslogan'
 const MOK2_BOTSCHAFT_KEY = 'k2-mok2-botschaft2'
@@ -39,41 +40,12 @@ function getStoredOefImage(key: string): string {
   return ''
 }
 
-function compressImageAsDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file)
-    const img = new Image()
-    img.onload = () => {
-      URL.revokeObjectURL(url)
-      // Maximale Breite 600px – klein genug für localStorage, gut genug für Vorschau
-      const maxW = 600
-      const w = img.width
-      const h = img.height
-      const scale = w > maxW ? maxW / w : 1
-      const c = document.createElement('canvas')
-      c.width = Math.round(w * scale)
-      c.height = Math.round(h * scale)
-      const ctx = c.getContext('2d')
-      if (!ctx) {
-        const r = new FileReader()
-        r.onload = () => resolve(String(r.result))
-        r.readAsDataURL(file)
-        return
-      }
-      ctx.drawImage(img, 0, 0, c.width, c.height)
-      // Qualität 0.55 – reicht für Galerie-Vorschau, spart deutlich Speicher
-      let dataUrl = c.toDataURL('image/jpeg', 0.55)
-      if (dataUrl.length > MAX_DATA_URL_LENGTH) dataUrl = c.toDataURL('image/jpeg', 0.4)
-      resolve(dataUrl)
-    }
-    img.onerror = () => {
-      URL.revokeObjectURL(url)
-      const r = new FileReader()
-      r.onload = () => resolve(String(r.result))
-      r.readAsDataURL(file)
-    }
-    img.src = url
-  })
+async function compressImageAsDataUrl(file: File): Promise<string> {
+  let dataUrl = await compressImageForStorage(file, { context: 'mobile' })
+  if (dataUrl.length > MAX_DATA_URL_LENGTH) {
+    dataUrl = await compressImageForStorage(file, { maxWidth: 600, quality: 0.4 })
+  }
+  return dataUrl
 }
 
 const printStyles = `

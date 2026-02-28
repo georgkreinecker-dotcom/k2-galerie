@@ -115,14 +115,14 @@ Werk verschwindet / Nummer wiederverwendet / Freistellen geht nicht. **Ursache:*
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Was zuletzt gemacht (28.02.26)
-- **Phase 3.1 + 3.2 safeReload & Error Boundaries:** src/utils/env.ts mit safeReload(); alle Reload-Stellen umgestellt (App, ErrorBoundary, main, appBootstrap, index.html, GaleriePage Pull-to-Refresh, Vk2 Stand-Badges, ScreenshotExportAdmin Backup). Roadmap 3.1 + 3.2 [x]. Tests + Build ✅.
-- **Phase 2.2 API-Client:** apiClient.ts; publishMobile/handleLoadFromServer. Phase 1.4, 2.1 [x].
+- **Phase 4.1 Bild-Komprimierung:** src/utils/compressImageForStorage.ts (context mobile 600/0.5, desktop 800/0.65); githubImageUpload, ScreenshotExportAdmin, MarketingOek2Page nutzen eine Utility. Roadmap 4.1 [x]. Tests + Build ✅.
+- **Phase 3.1 + 3.2 safeReload:** env.ts safeReload; alle Reload-Stellen umgestellt. Phase 2.2, 1.4, 2.1 [x].
 
 ## Letzter Commit
-- **Phase 3.1/3.2 safeReload – eine Reload-Funktion überall. Stand 28.02.26 06:34.** Commit: 90e39bd ✅ auf GitHub
+- **Phase 4.1 compressImageForStorage – eine Komprimierungs-Utility. Stand 28.02.26 06:41.** (wird gleich committed + gepusht)
 
 ## Nächster Schritt
-- **Sportwagen:** Phase 3.3 Theming/Kontrast oder Phase 4 Bilder & Medien. Optional: iPad/Mac testen.
+- **Sportwagen:** Phase 4.2 Bild-Upload (uploadPageImage-Wrapper) oder Phase 3.3 Theming. Optional: iPad/Mac testen.
 
 ## Session 27.02.26 (Bugs: verschwundene Werke, Freistellung)
 - **Verschwundene Werke nach Rückkehr in Verwaltung:** (1) Supabase: Wenn Supabase weniger Werke liefert als localStorage, wird localStorage nicht mehr überschrieben – lokale Neu-Anlagen bleiben erhalten. (2) GalerieVorschau: Beim Laden aus localStorage wird gefilterte Liste nicht mehr zurückgeschrieben (kein stilles Löschen). (3) Mobile-Polling (syncFromGalleryData): Schreibt nicht mehr, wenn das Ergebnis weniger Werke hätte als aktuell lokal. (4) Admin: Werke werden nach 0,4 s statt 3 s geladen, damit die Liste schnell erscheint.
