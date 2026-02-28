@@ -1,0 +1,32 @@
+---
+description: Build-Skripte schreiben nur bei Änderung – weniger Cursor-Reopen
+alwaysApply: true
+---
+
+# Build-Skripte: Nur schreiben wenn geändert (Cursor-Reopen vermeiden)
+
+## Erfahrung (28.02.26)
+
+**Problem:** Reopen-Meldungen in Cursor wurden immer häufiger (Intervalle kürzer).
+
+**Ursache:** `scripts/write-build-info.js` läuft bei jedem `npm run dev` und hat **bei jedem Lauf** Dateien überschrieben (api/build-info.js, index.html, buildInfo.generated.ts, build-info.json). Cursor meldet „Reopen“, wenn offene Dateien auf der Platte geändert werden → viele Läufe = viele Reopen.
+
+## Regel (unveränderlich)
+
+**Build-Skripte, die bei dev/build laufen, dürfen Dateien nur schreiben, wenn sich der Inhalt tatsächlich geändert hat.**
+
+- **buildInfo.generated.ts:** Vor dem Schreiben bestehende Datei lesen; nur schreiben wenn `existing !== newContent`.
+- **build-info.json:** Gleich – nur schreiben wenn Inhalt anders.
+- **api/build-info.js:** Nur schreiben, wenn sich das **Build-Label (Minute)** geändert hat (`alreadyHasLabel = apiContent.includes("label: '" + label + "'")` → wenn true, nicht schreiben).
+- **index.html:** Neuen HTML-String bauen, mit aktuellem vergleichen; nur bei `indexHtml !== newIndexHtml` schreiben.
+
+So bleibt das Verhalten (Stand, Inject-Script, no-cache) erhalten, aber Cursor wird nicht bei jedem Lauf mit Reopen konfrontiert.
+
+## Bei neuen Build-Skripten
+
+- Vor dem Schreiben: Prüfen ob Ziel-Datei schon den gleichen Inhalt hat (oder bei Zeit-basierten Werten: gleiche „logische“ Einheit, z. B. Minute).
+- Nur bei Änderung `fs.writeFileSync` ausführen.
+
+## Kurzfassung
+
+**Immer schreiben = viele Reopen. Nur bei Änderung schreiben = ruhigeres Cursor-Verhalten. Diese Erfahrung gilt für alle Build-Skripte.**

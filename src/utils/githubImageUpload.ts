@@ -31,6 +31,26 @@ async function getFileSha(path: string, token: string): Promise<string | null> {
   }
 }
 
+/** Kontext für Seitengestaltung: bestimmt Subfolder (k2, oeffentlich, vk2→k2). */
+export type PageImageContext = 'k2' | 'oeffentlich' | 'vk2'
+
+function contextToSubfolder(context: PageImageContext): 'k2' | 'oeffentlich' {
+  return context === 'oeffentlich' ? 'oeffentlich' : 'k2'
+}
+
+/**
+ * Eine Aufruf-Schicht für Seiten-Bilder: Kontext statt Subfolder.
+ * Subfolder-Logik nur hier – Aufrufer geben nur Kontext an.
+ */
+export async function uploadPageImage(
+  file: File,
+  context: PageImageContext,
+  filename: string = 'willkommen.jpg',
+  onStatus?: (msg: string) => void
+): Promise<string> {
+  return uploadImageToGitHub(file, filename, onStatus, contextToSubfolder(context))
+}
+
 /** Lädt ein Bild (File-Objekt) via GitHub API hoch. Gibt die öffentliche URL zurück. */
 export async function uploadImageToGitHub(
   file: File,

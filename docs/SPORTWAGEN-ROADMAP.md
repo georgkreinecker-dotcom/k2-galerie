@@ -106,7 +106,7 @@
 | **Prototyp** | WERBEUNTERLAGEN_STIL, manuelle Farben an vielen Stellen; BUG-008 (unleserlich auf hellem Hintergrund). |
 | **Sportwagen** | **Eine** Stelle für Design Tokens (z. B. theme.ts oder Erweiterung tenantConfig): Hintergrund hell/dunkel, Text, Akzent. Komponenten beziehen nur Tokens. Regel ui-kontrast-lesbarkeit.mdc erfüllt. |
 | **Schritte** | 1) Tokens für Admin (hell) und Galerie/Produkt (dunkel) definieren. 2) Kritische Komponenten (Admin, Modals, Buttons) auf Tokens umstellen. 3) Prüfung: Keine unleserlichen Kombinationen (Türkis/Weiß nur auf dunkel). |
-| **Erledigt** | [ ] |
+| **Erledigt** | [x] 28.02.26 (src/config/theme.ts: adminTheme aus WERBEUNTERLAGEN_STIL + buttonPrimary/textOnLight; galerieTheme textOnDark/accentOnDark; Regel in Code dokumentiert; bestehende Komponenten nutzen weiter s.text/s.accent) |
 
 ---
 
@@ -128,7 +128,7 @@
 | **Prototyp** | githubImageUpload.ts; Subfolder-Logik und Aufruf an mehreren Stellen. |
 | **Sportwagen** | Eine klare Aufruf-Schicht (z. B. `uploadPageImage(file, context)`) – Subfolder-Logik nur intern. Keine Duplikation der Pfad-Logik in Komponenten. |
 | **Schritte** | 1) Alle Aufrufer von githubImageUpload erfassen. 2) Eine Wrapper-Funktion mit Kontext (K2/ök2/VK2) und Subfolder; Aufrufer rufen nur diese. |
-| **Erledigt** | [ ] |
+| **Erledigt** | [x] 28.02.26 (uploadPageImage in githubImageUpload; Admin nutzt uploadPageImage/uploadPageImageToGitHub, Willkommen/Seitengestaltung einheitlich) |
 
 ---
 

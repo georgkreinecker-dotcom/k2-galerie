@@ -46,42 +46,52 @@ try {
 } catch (_) {}
 if (jsonChanged) fs.writeFileSync(publicPath, jsonContent, 'utf8')
 
-// api/build-info.js: Placeholder durch aktuellen Stand ersetzen – QR/Stand nutzen /api/build-info (umgeht CDN-Cache)
+// api/build-info.js: nur schreiben wenn sich Build-Label (Minute) geändert hat → weniger Reopen in Cursor
 const apiBuildInfoPath = path.join(__dirname, '..', 'api', 'build-info.js')
+let apiChanged = false
 try {
   let apiContent = fs.readFileSync(apiBuildInfoPath, 'utf8')
-  apiContent = apiContent.replace('__BUILD_LABEL__', label).replace('__BUILD_TIMESTAMP__', String(now.getTime()))
-  fs.writeFileSync(apiBuildInfoPath, apiContent, 'utf8')
+  const alreadyHasLabel = apiContent.includes("label: '" + label + "'")
+  if (!alreadyHasLabel) {
+    const newApiContent = apiContent
+      .replace(/__BUILD_LABEL__/g, label)
+      .replace(/__BUILD_TIMESTAMP__/g, String(now.getTime()))
+      .replace(/label:\s*'[^']*'/, "label: '" + label + "'")
+      .replace(/timestamp:\s*\d+/, 'timestamp: ' + now.getTime())
+    fs.writeFileSync(apiBuildInfoPath, newApiContent, 'utf8')
+    apiChanged = true
+  }
 } catch (_) {}
 
-// index.html IMMER aktualisieren (nicht nur beim --inject-html Flag) – sonst bleibt alter Timestamp drin und Mac lädt nie neu
+// index.html: nur schreiben wenn sich Timestamp (var b=) geändert hat → weniger Reopen in Cursor
+let indexChanged = false
 {
   const ts = now.getTime()
-  // Im iframe (Cursor Preview) KEIN location.replace – verhindert Reload-Schleifen und Totalabsturz
-// Beim Reload bestehende Search-Params erhalten (z. B. empfehler=K2-E-XXX), nur v=Bust setzen – sonst bleibt Empfehlungs-Link hängen / verliert ID
-  // Stale-Check: HTML älter als 2 Min → einmal Reload (iPad/Handy bekommen sonst nie neuen Stand). Bei Fetch-Fehler: einmal Reload. Regel: stand-qr-niemals-zurueck.mdc
   const injectScript = '<script>(function(){if(window.self!==window.top)return;var b=' + ts + ';var o=location.origin;var p=location.pathname;var bust=function(){var q=location.search?location.search.slice(1):"";var params=new URLSearchParams(q);params.set("v",Date.now());params.set("_",Date.now());location.replace(o+p+"?"+params.toString());};if(Date.now()-b>120000){if(!sessionStorage.getItem("k2_stale_reload")){sessionStorage.setItem("k2_stale_reload","1");bust();}return;}var url=o+"/api/build-info?t="+Date.now()+"&r="+Math.random();fetch(url,{cache:"no-store",headers:{"Pragma":"no-cache","Cache-Control":"no-cache"}}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b){try{if(!sessionStorage.getItem("k2_updated")){sessionStorage.setItem("k2_updated","1");bust();}}catch(e){}}}).catch(function(){if(!sessionStorage.getItem("k2_error_reload")){sessionStorage.setItem("k2_error_reload","1");bust();}});})();</script>'
   const indexPath = path.join(__dirname, '..', 'index.html')
   let indexHtml = fs.readFileSync(indexPath, 'utf8')
+  let newIndexHtml
   if (indexHtml.includes('<!-- BUILD_TS_INJECT -->')) {
-    indexHtml = indexHtml.replace('<!-- BUILD_TS_INJECT -->', injectScript)
+    newIndexHtml = indexHtml.replace('<!-- BUILD_TS_INJECT -->', injectScript)
   } else {
-    // Fallback: bereits injiziertes Script komplett durch neues ersetzen (var b=alterTimestamp → aktueller Build)
-    // Breiter Regex: erkennt jedes Script das mit (function(){ beginnt und var b=<zahl> enthält
     const oldScriptRe = /<script>\(function\(\)\{[^<]*var b=\d+;[^<]*\}\);?<\/script>/
+    const broadRe = /<script>\(function[^<]*var b=\d+[^<]*<\/script>/
     if (oldScriptRe.test(indexHtml)) {
-      indexHtml = indexHtml.replace(oldScriptRe, injectScript)
+      newIndexHtml = indexHtml.replace(oldScriptRe, injectScript)
+    } else if (broadRe.test(indexHtml)) {
+      newIndexHtml = indexHtml.replace(broadRe, injectScript)
     } else {
-      // Noch breiter: alles zwischen <script>(function und </script> das var b= enthält
-      const broadRe = /<script>\(function[^<]*var b=\d+[^<]*<\/script>/
-      if (broadRe.test(indexHtml)) indexHtml = indexHtml.replace(broadRe, injectScript)
+      newIndexHtml = indexHtml
     }
   }
-  fs.writeFileSync(indexPath, indexHtml, 'utf8')
+  if (indexHtml !== newIndexHtml) {
+    fs.writeFileSync(indexPath, newIndexHtml, 'utf8')
+    indexChanged = true
+  }
 }
 
-if (tsChanged || jsonChanged) {
+if (tsChanged || jsonChanged || apiChanged || indexChanged) {
   console.log('✅ Build-Info geschrieben:', label)
 } else {
-  console.log('✅ Build-Info unverändert (kein Schreiben → kein HMR-Stoß):', label)
+  console.log('✅ Build-Info unverändert (kein Schreiben → weniger Reopen):', label)
 }

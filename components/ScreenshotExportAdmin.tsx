@@ -6889,18 +6889,17 @@ ${'='.repeat(60)}
     return new File([blob], 'preview.jpg', { type: blob.type || 'image/jpeg' })
   }
 
-  // Hilfsfunktion: Seiten-Bild via GitHub hochladen (K2-Kontext) + localStorage aktualisieren
+  // Hilfsfunktion: Seiten-Bild via GitHub hochladen + localStorage aktualisieren (eine Schicht: uploadPageImage)
   const uploadPageImageToGitHub = async (
     file: File,
     field: 'galerieCardImage' | 'virtualTourImage',
     filename: string
   ) => {
-    // K2 und ök2 laden auf GitHub hoch – Base64 wird durch dauerhaften Vercel-Pfad ersetzt
-    const subfolder = tenant.isOeffentlich ? 'oeffentlich' : 'k2'
+    const context = tenant.isOeffentlich ? ('oeffentlich' as const) : tenant.isVk2 ? ('vk2' as const) : ('k2' as const)
     const tenantId = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
     try {
-      const { uploadImageToGitHub } = await import('../src/utils/githubImageUpload')
-      const url = await uploadImageToGitHub(file, filename, (msg) => console.log(msg), subfolder)
+      const { uploadPageImage } = await import('../src/utils/githubImageUpload')
+      const url = await uploadPageImage(file, context, filename, (msg) => console.log(msg))
       // Vercel-Pfad im State + localStorage setzen → Base64 weg → kein Speicher-Problem mehr
       const next = { ...pageContent, [field]: url }
       setPageContent(next)
@@ -7351,11 +7350,11 @@ ${'='.repeat(60)}
       // K2: Werk-Bild automatisch via GitHub hochladen → überall sichtbar (auch ohne selectedFile, z. B. iPad-Vorschau)
       if (!forOek2 && imageDataUrl) {
         try {
-          const { uploadImageToGitHub } = await import('../src/utils/githubImageUpload')
+          const { uploadPageImage } = await import('../src/utils/githubImageUpload')
           const safeNumber = (artworkData.number || artworkData.id || 'werk').replace(/[^a-zA-Z0-9-]/g, '-')
           const filename = `werk-${safeNumber}.jpg`
           const fileToUpload = selectedFile || (await dataUrlToFile(imageDataUrl))
-          const url = await uploadImageToGitHub(fileToUpload, filename, (msg) => console.log(msg))
+          const url = await uploadPageImage(fileToUpload, 'k2', filename, (msg) => console.log(msg))
           artworkData.imageUrl = url
           const key = tenant.getArtworksKey()
           const raw = localStorage.getItem(key)
@@ -10513,7 +10512,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               // Foto auf GitHub hochladen – damit es dauerhaft auf Vercel gespeichert ist
                               // Gilt für K2 UND ök2 – Base64 wird durch Vercel-Pfad ersetzt → kein localStorage-Verlust mehr
                               {
-                                const subfolder = tenant.isOeffentlich ? 'oeffentlich' : 'k2'
+                                const context = tenant.isOeffentlich ? ('oeffentlich' as const) : tenant.isVk2 ? ('vk2' as const) : ('k2' as const)
                                 const tenantForUpload = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
                                 const fileToUpload = pendingWelcomeFileRef.current
                                 const base64Image = pageContent.welcomeImage
@@ -10522,8 +10521,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 const doWelcomeUpload = async (uploadFile: File) => {
                                   setImageUploadStatus('⏳ Foto wird dauerhaft gespeichert…')
                                   try {
-                                    const { uploadImageToGitHub } = await import('../src/utils/githubImageUpload')
-                                    const url = await uploadImageToGitHub(uploadFile, 'willkommen.jpg', () => {}, subfolder)
+                                    const { uploadPageImage } = await import('../src/utils/githubImageUpload')
+                                    const url = await uploadPageImage(uploadFile, context, 'willkommen.jpg', () => {})
                                     const next2 = { ...pageContent, welcomeImage: url }
                                     setPageContent(next2)
                                     setPageContentGalerie(next2, tenantForUpload)

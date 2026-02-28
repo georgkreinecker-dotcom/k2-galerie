@@ -37,6 +37,7 @@ Damit alle Informationen **jederzeit aktuell und hier verfügbar** sind, gilt di
 - **.cursor/rules/profi-statt-dilettant-rad-nicht-zweimal.mdc** – Profi-Denken: Rad nicht zweimal erfinden, zukaufen/normen/auslagern
 - **.cursor/rules/ein-standard-problem.mdc** – Ein Standard pro Problemstellung (keine verschiedenen Wege für dieselbe Aufgabe)
 - **.cursor/rules/verbindlich-zuverlaessig-nicht-hoffnung.mdc** – Verbindliche Anforderungen/Befehle müssen zuverlässig funktionieren (nicht „hoffen“, sondern „sich darauf verlassen können“)
+- **.cursor/rules/build-skripte-nur-schreiben-wenn-geaendert.mdc** – Build-Skripte schreiben nur bei Änderung → weniger Cursor-Reopen (Erfahrung 28.02.26)
 - **.cursor/rules/team-hebel-unternehmer-persoenlichkeit-ki.mdc** – Team-Hebel (Unternehmer + Persönlichkeit + KI), Regelwerk und Vermächtnis für maximale Lernkurve
 - **docs/WIR-PROZESS.md** – Abschnitt „Team-Hebel und Lernkurve“ im Vermächtnis
 - **docs/MOK2-EIGENER-BEREICH.md** – mök2 als eigener Bereich
