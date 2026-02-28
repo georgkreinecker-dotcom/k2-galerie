@@ -1,9 +1,5 @@
-/**
- * Build-Stand für QR und Stand-Badge. Placeholder werden beim Build von write-build-info.js ersetzt.
- * So liefert jeder Deployment den aktuellen Build-Zeitpunkt (kein CDN-Cache-Problem).
- */
 export default async function handler(req, res) {
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+  res.setHeader('Cache-Control', 'no-store')
   res.setHeader('Access-Control-Allow-Origin', '*')
-  return res.json({ label: '28.02.26 09:16', timestamp: 1772266560610 })
+  return res.json({ label: '28.02.26 09:25', timestamp: 1772267127673 })
 }

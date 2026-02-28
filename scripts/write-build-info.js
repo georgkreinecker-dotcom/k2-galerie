@@ -46,8 +46,7 @@ try {
 } catch (_) {}
 if (jsonChanged) fs.writeFileSync(publicPath, jsonContent, 'utf8')
 
-// api/build-info.js: nur schreiben wenn sich Build-Label (Minute) geändert hat → weniger Reopen in Cursor
-// Bei mehreren return res.json(...)-Zeilen: alle durch genau eine ersetzen (keine Duplikate)
+// api/build-info.js: immer genau EINE return-Zeile (Duplikate komplett entfernen)
 const apiBuildInfoPath = path.join(__dirname, '..', 'api', 'build-info.js')
 let apiChanged = false
 try {
@@ -55,19 +54,14 @@ try {
   const singleReturnLine = "  return res.json({ label: '" + label + "', timestamp: " + now.getTime() + " })"
   const returnLineRe = /\s*return res\.json\(\s*\{\s*label:\s*'[^']*',\s*timestamp:\s*\d+\s*\}\s*\)\s*\n?/g
   const returnMatches = apiContent.match(returnLineRe) || []
-  const alreadyHasLabel = apiContent.includes("label: '" + label + "'")
-  if (returnMatches.length > 1) {
+  const alreadyCorrect = returnMatches.length === 1 && apiContent.includes("label: '" + label + "'")
+  if (alreadyCorrect) {
+    // Nichts tun
+  } else {
+    // Immer: alle return-Zeilen durch genau eine ersetzen (ob 0, 1 oder 2+). Erste Ersetzung mit \n davor (regex frisst \s* inkl. Newline).
     let first = true
-    apiContent = apiContent.replace(returnLineRe, () => (first ? (first = false, singleReturnLine + '\n') : ''))
-    fs.writeFileSync(apiBuildInfoPath, apiContent, 'utf8')
-    apiChanged = true
-  } else if (!alreadyHasLabel) {
-    const newApiContent = apiContent
-      .replace(/__BUILD_LABEL__/g, label)
-      .replace(/__BUILD_TIMESTAMP__/g, String(now.getTime()))
-      .replace(/label:\s*'[^']*'/, "label: '" + label + "'")
-      .replace(/timestamp:\s*\d+/, 'timestamp: ' + now.getTime())
-    fs.writeFileSync(apiBuildInfoPath, newApiContent, 'utf8')
+    const normalized = apiContent.replace(returnLineRe, () => (first ? (first = false, '\n' + singleReturnLine + '\n') : ''))
+    fs.writeFileSync(apiBuildInfoPath, normalized, 'utf8')
     apiChanged = true
   }
 } catch (_) {}
