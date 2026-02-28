@@ -203,7 +203,7 @@
 | **Prototyp** | api/write-gallery-data.js, api/build-info.js; Rewrites, CORS, GITHUB_TOKEN. |
 | **Sportwagen** | API-Endpoints stabil; eine Doku (DATENTRANSPORT-IPAD-MAC-VERCEL, Vercel-Checklisten). Kein Reload/Redirect in API. |
 | **Schritte** | 1) Prüfen: Alle Aufrufer nutzen feste URL und API-Client (nach 2.2). 2) Doku auf „eine Quelle“ trimmen. |
-| **Erledigt** | [ ] |
+| **Erledigt** | [x] 27.02.26 – API ohne Reload/Redirect; Admin: apiPost(WRITE_GALLERY_DATA_API_URL), apiGet(CENTRAL_GALLERY_DATA_URL); docs/00-INDEX: DATENTRANSPORT-IPAD-MAC-VERCEL als eine Quelle eingetragen. |
 
 ---
 
@@ -216,7 +216,7 @@
 | **Prototyp** | Regeln in k2-oek2-trennung.mdc, dokumente-kontext-eine-quelle.mdc; teils Duplikation der Prüfung. |
 | **Sportwagen** | **Eine** technische Quelle: Tenant-Context (1.1). Regeln bleiben; Implementierung nutzt überall den Context – keine vergessene Stelle. |
 | **Schritte** | 1) Nach 1.1: Checkliste K2-OEK2-DATENTRENNUNG.md durchgehen, alle Einträge „Kontext aus Context“ erfüllt. 2) Tests (datentrennung.test.ts, kundendaten-schutz.test.ts) grün und erweitern falls nötig. |
-| **Erledigt** | [ ] |
+| **Erledigt** | [x] 27.02.26 – Checkliste geprüft: GaleriePage getPageTexts(pageTextsTenant), getPageContentGalerie(musterOnly?'oeffentlich':undefined); Shop fromOeffentlich=isOeffentlichDisplayContext; Admin-Links tenant.isOeffentlich→galerieOeffentlich/Vorschau. Tests 13/13 grün. |
 
 ### 8.2 Kundendaten nie automatisch löschen
 

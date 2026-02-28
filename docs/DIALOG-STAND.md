@@ -11,14 +11,14 @@
 - **Reopen-Check 28.02.26:** write-build-info.js prüft weiterhin vor jedem Schreiben (existing === content / Label / indexHtml); bei Gleichheit kein Schreiben → „Build-Info unverändert“. Regel aktiv.
 
 ## Thema
-**Prototyp → Sportwagen – systematisch:** Phase **5.1–5.3** ✅, **6.1** ✅ (28.02.26). 6.1: APf geprüft (keine Reload in DevView/PlatformStart/MobileConnect; keine k2-artworks/k2-stammdaten-Schreibzugriffe). Nächster Schritt: Phase 6.2 oder 7.
+**Prototyp → Sportwagen – systematisch:** Phase **5.1–5.3** ✅, **6.1–6.2** ✅, **7.1–7.2** ✅, **8.1** ✅ (28.02.26). 7.2: API write-gallery-data/build-info ohne Reload; Admin nutzt apiClient + feste URL; docs/00-INDEX DATENTRANSPORT-IPAD-MAC-VERCEL als eine Quelle. 8.1: Checkliste K2-OEK2-DATENTRENNUNG durchgegangen (getPageTexts/getPageContentGalerie mit Tenant, Shop fromOeffentlich, Admin-Links); Tests 13/13 (datentrennung + kundendaten-schutz) grün. Nächster Schritt: Phase 8.2 (Kundendaten nie automatisch löschen) oder 9.
 **Grundregel Ziel vor Anstrengung (28.02.26):** Ohne richtiges Ziel kann hundertmal „richtig machen“ trotzdem falsch sein. Immer wieder Ziel vor Augen. Regel: .cursor/rules/ziel-vor-anstrengung.mdc (alwaysApply); in STRUKTUR-HANDELN-QUELLEN + WIR-PROZESS verankert.
 **Regel Schritt für Schritt – konsequent (28.02.26):** Ein Schritt fertig, dann der nächste; nicht springen, nicht halb machen. .cursor/rules/schritt-fuer-schritt-konsequent.mdc (alwaysApply); in STRUKTUR-HANDELN-QUELLEN.
 **Phase 5.2 erledigt (28.02.26):** GaleriePage & GalerieVorschauPage nur über Artworks-Schicht; VK2 ohne Artwork-Key.
 **Phase 5.3 erledigt (28.02.26):** Shop & Vita: Stammdaten nur über Schicht; fromOeffentlich zentral.
 **Phase 6.1 erledigt (28.02.26):** APf geprüft – keine Reload-Stellen; keine Produkt-Daten-Schreibzugriffe aus APf.
 **Phasen 6.2 + 7.1 gründlich abgeschlossen (28.02.26):** 6.2 mök2/Handbuch geprüft (keine k2-artworks/k2-stammdaten-Schreibzugriffe); 7.1 Build/Stand (Doku + Regel stand-qr-niemals-zurueck.mdc bestätigt). Jede Phase mit Prüfung und Eintrag in Roadmap abgeschlossen.
-**Nächster Sportwagen-Schritt:** Phase 7.2 (Vercel & API) oder Phase 8 (Datentrennung, Kundendaten).
+**Nächster Sportwagen-Schritt:** Phase 8.2 (Kundendaten nie automatisch löschen) oder Phase 9 (Tests & Doku).
 
 ## Grundregel: Profi statt Dilettant – Rad nicht zweimal erfinden (28.02.26)
 - **Regel:** .cursor/rules/profi-statt-dilettant-rad-nicht-zweimal.mdc (alwaysApply). Kern: Was andere schon erfunden haben, nicht neu bauen. Normen kennen, zukaufen/auslagern, am Markt beste Lösungen nutzen. Vor dem Bauen: „Gibt es das schon?“ – dann nutzen oder begründen.
@@ -43,7 +43,7 @@
 **Wichtig:** In Vercel muss **GITHUB_TOKEN** gesetzt sein (Settings → Environment Variables), sonst schlägt „Daten an Server senden“ mit Hinweis darauf fehl.
 
 ## Nächster Schritt
-- **Sportwagen:** Phasen 5.1–5.3, 6.1, 6.2, 7.1 ✅ gründlich abgeschlossen. Nächste: 7.2 (Vercel & API) oder 8 (Datentrennung, Kundendaten).
+- **Sportwagen:** Phasen 5.1–5.3, 6.1, 6.2, 7.1, 7.2, 8.1 ✅ gründlich abgeschlossen. Nächste: 8.2 (Kundendaten nie automatisch löschen) oder 9 (Tests & Doku).
 - **Optional:** iPad/Mac Datentransport testen.
 1. **QR/Stand-Fix (27.02.26):** QR und Stand-Badge nutzen jetzt **/api/build-info** statt build-info.json – Serverless-API, beim Build mit aktuellem Stand beschrieben, umgeht CDN-Cache. Commit c5351e1.
 2. Nach Vercel-Build (1–2 Min): APf neu laden oder „QR neu“ → Vercel-Stand sollte aktuelle Zeit zeigen; iPad refresh.html oder QR scannen.

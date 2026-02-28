@@ -41,6 +41,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **KUNSTVEREINE-MULTIPLIKATOREN.md** – **Kunstvereine als Multiplikatoren:** Warum eindruckvolles Angebot lohnt; was wir haben (VK2); was eindruckvoll wirkt; nächste Schritte (Satz „Für Kunstvereine“, Pilot, Onboarding).
 
 ## Deployment, Vercel, Stand
+- **DATENTRANSPORT-IPAD-MAC-VERCEL.md** – **Eine Quelle:** API write-gallery-data, gallery-data.json, iPad↔Mac↔Vercel; GITHUB_TOKEN; „Daten an Server senden“ / „Bilder vom Server laden“.
 - **SCHRITT-FUER-SCHRITT-STAND-AKTUELL.md** – **Stand überall aktuell:** 6 Schritte (pushen → Vercel Current prüfen → ggf. Promote/Redeploy → build-info prüfen → iPad refresh/QR → Kontrolle).
 - **WAS-AB-13-26-BEI-VERCEL.md** – Was ab 13:26 bei Vercel passiert ist; Schlussfolgerung (Ursache im Dashboard, nicht im Repo).
 - **BERICHT-ISTZUSTAND-SYNC-VERCEL-27-02-26.md** – **Analytischer Bericht (27.02.26):** Istzustand Datenchaos & Vercel (2 Fotos Sync Mac↔iPad, Stand hängt bei 13:26), Ursachen, Weg zur Lösung (Vercel reparieren → Sync stabilisieren).
