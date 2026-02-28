@@ -115,7 +115,7 @@ Werk verschwindet / Nummer wiederverwendet / Freistellen geht nicht. **Ursache:*
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Letzter Commit
-- **Freistellungs-Hinweis iPad: Zähler, Meldung pro Werk. Stand 27.02.26 20:25.** Commit: 6dfa901 ✅ auf GitHub
+- **Phase 1.2 Artworks-Persistenz + try-Fix ScreenshotExportAdmin. Stand 28.02.26 05:58.** Commit: 7e23b3e ✅ auf GitHub
 
 ## Nächster Schritt
 - **iPad/Mac:** Neues Werk speichern → in Galerie prüfen ob es sichtbar bleibt (Pending-Layer). Wenn ja: Problem gelöst; wenn nein: nächste Ursache suchen (z. B. welcher Pfad überschreibt).
