@@ -13,14 +13,14 @@ alwaysApply: true
 
 ## Regel (unveränderlich)
 
-**Build-Skripte, die bei dev/build laufen, dürfen Dateien nur schreiben, wenn sich der Inhalt tatsächlich geändert hat.**
+**Build-Skripte, die bei dev/build laufen, dürfen Dateien nur schreiben, wenn sich der Inhalt tatsächlich geändert hat. Maßstab = Build-Minute (Label), nicht Millisekunde.**
 
-- **buildInfo.generated.ts:** Vor dem Schreiben bestehende Datei lesen; nur schreiben wenn `existing !== newContent`.
-- **build-info.json:** Gleich – nur schreiben wenn Inhalt anders.
-- **api/build-info.js:** Nur schreiben, wenn sich das **Build-Label (Minute)** geändert hat (`alreadyHasLabel = apiContent.includes("label: '" + label + "'")` → wenn true, nicht schreiben).
-- **index.html:** Neuen HTML-String bauen, mit aktuellem vergleichen; nur bei `indexHtml !== newIndexHtml` schreiben.
+- **buildInfo.generated.ts:** Nur schreiben wenn `existing !== newContent` oder **BUILD_LABEL (Minute)** sich geändert hat. Gleiche Minute → nicht schreiben.
+- **build-info.json:** Nur schreiben wenn sich das **Label (Minute)** geändert hat; gleiche Minute → nicht schreiben (nicht nur exakter JSON-Vergleich).
+- **api/build-info.js:** Nur schreiben wenn nicht bereits eine return-Zeile mit aktuellem Label vorhanden (Duplikate bereinigen nur bei Bedarf).
+- **index.html:** Altes `var b=` auslesen, **Minute** des alten Timestamps mit aktuellem Label vergleichen. Gleiche Minute → **nicht schreiben**. Nur bei neuer Minute Inject-Script ersetzen.
 
-So bleibt das Verhalten (Stand, Inject-Script, no-cache) erhalten, aber Cursor wird nicht bei jedem Lauf mit Reopen konfrontiert.
+So wird bei `npm run dev` in derselben Minute **keine** der vier Dateien geschrieben → Cursor meldet kein Reopen. Zweiter Lauf im gleichen Zeitraum: „Build-Info unverändert“.
 
 ## Bei neuen Build-Skripten
 

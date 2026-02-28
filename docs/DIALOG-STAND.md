@@ -52,6 +52,7 @@
 5. **Schritt für Schritt (Screenshot Vercel):** **docs/SCHRITT-FUER-SCHRITT-STAND-AKTUELL.md** – 6 Schritte: pushen → Current prüfen → ggf. Promote/Redeploy → build-info auf Vercel prüfen → iPad refresh/QR → Kontrolle. Passt zum Befund: Vercel zeigt Ready, aber „Current“ kann alter Commit sein.
 
 ## Was zuletzt gemacht (28.02.26)
+- **Cursor-Reopen endgültig reduziert:** write-build-info.js schreibt alle vier Dateien (buildInfo.generated.ts, build-info.json, api/build-info.js, index.html) **nur noch wenn sich die Build-Minute (Label) geändert hat**. Gleiche Minute = kein Schreiben → „Build-Info unverändert“, Cursor meldet kein Reopen. Regel build-skripte-nur-schreiben-wenn-geaendert.mdc angepasst (Maßstab = Minute). Stand 28.02.26 15:57.
 - **api/build-info.js: eine return-Zeile + Newline:** write-build-info.js ersetzt alle return-Zeilen durch genau eine; Ersetzung mit „\n“ davor, damit die Newline vor return erhalten bleibt (Regex frisst \s*). Stand 28.02.26 09:25.
 - **api/build-info.js: keine doppelten return-Zeilen:** write-build-info.js bereinigt versehentliche Duplikate (zwei `return res.json(...)` → genau eine). Skript ersetzt bei mehreren Treffern alle durch eine Zeile; sonst wie bisher Label/Timestamp ersetzen. Stand 28.02.26 09:16.
 - **Praxistest iPad → Server:** Fehlermeldung „Daten konnten nicht …“ zeigte nur generischen Hinweis. Fix: Auf iPad/Mobil zeigt die Meldung jetzt den **echten Grund** (z. B. GITHUB_TOKEN fehlt) + Hinweis Vercel Token. Nach Push erneut testen.

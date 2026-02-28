@@ -29,20 +29,26 @@ export function urlWithBuildVersion(url: string): string {
   return \`\${url}\${sep}v=\${BUILD_TIMESTAMP}\`
 }
 `
-// Nur schreiben wenn sich Inhalt geändert hat – verhindert HMR-Stoß / Crash direkt nach "Fertig"-Meldung
+// Nur schreiben wenn sich die Build-MINUTE (label) geändert hat – verhindert Reopen bei jedem dev-Start
 let tsChanged = true
 try {
   const existing = fs.readFileSync(outPath, 'utf8')
   if (existing === content) tsChanged = false
+  else if (existing.includes("BUILD_LABEL = '" + label + "'")) tsChanged = false
 } catch (_) {}
 if (tsChanged) fs.writeFileSync(outPath, content, 'utf8')
 
-// build-info.json für Abruf im Browser (Cache-Check, immer no-cache)
+// build-info.json: nur schreiben wenn Label (Minute) geändert – gleiche Minute = kein Schreiben
 const publicPath = path.join(__dirname, '..', 'public', 'build-info.json')
 const jsonContent = JSON.stringify({ label, timestamp: now.getTime() })
 let jsonChanged = true
 try {
-  if (fs.readFileSync(publicPath, 'utf8') === jsonContent) jsonChanged = false
+  const existingJson = fs.readFileSync(publicPath, 'utf8')
+  if (existingJson === jsonContent) jsonChanged = false
+  else {
+    const parsed = JSON.parse(existingJson)
+    if (parsed && parsed.label === label) jsonChanged = false
+  }
 } catch (_) {}
 if (jsonChanged) fs.writeFileSync(publicPath, jsonContent, 'utf8')
 
@@ -66,30 +72,41 @@ try {
   }
 } catch (_) {}
 
-// index.html: nur schreiben wenn sich Timestamp (var b=) geändert hat → weniger Reopen in Cursor
+// index.html: nur schreiben wenn sich die Build-MINUTE geändert hat (nicht jede Millisekunde) → Reopen nur 1× pro Minute
 let indexChanged = false
 {
   const ts = now.getTime()
   const injectScript = '<script>(function(){if(window.self!==window.top)return;var b=' + ts + ';var o=location.origin;var p=location.pathname;var bust=function(){var q=location.search?location.search.slice(1):"";var params=new URLSearchParams(q);params.set("v",Date.now());params.set("_",Date.now());location.replace(o+p+"?"+params.toString());};if(Date.now()-b>120000){if(!sessionStorage.getItem("k2_stale_reload")){sessionStorage.setItem("k2_stale_reload","1");bust();}return;}var url=o+"/api/build-info?t="+Date.now()+"&r="+Math.random();fetch(url,{cache:"no-store",headers:{"Pragma":"no-cache","Cache-Control":"no-cache"}}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.timestamp>b){try{if(!sessionStorage.getItem("k2_updated")){sessionStorage.setItem("k2_updated","1");bust();}}catch(e){}}}).catch(function(){if(!sessionStorage.getItem("k2_error_reload")){sessionStorage.setItem("k2_error_reload","1");bust();}});})();</script>'
   const indexPath = path.join(__dirname, '..', 'index.html')
   let indexHtml = fs.readFileSync(indexPath, 'utf8')
-  let newIndexHtml
-  if (indexHtml.includes('<!-- BUILD_TS_INJECT -->')) {
-    newIndexHtml = indexHtml.replace('<!-- BUILD_TS_INJECT -->', injectScript)
-  } else {
-    const oldScriptRe = /<script>\(function\(\)\{[^<]*var b=\d+;[^<]*\}\);?<\/script>/
-    const broadRe = /<script>\(function[^<]*var b=\d+[^<]*<\/script>/
-    if (oldScriptRe.test(indexHtml)) {
-      newIndexHtml = indexHtml.replace(oldScriptRe, injectScript)
-    } else if (broadRe.test(indexHtml)) {
-      newIndexHtml = indexHtml.replace(broadRe, injectScript)
-    } else {
-      newIndexHtml = indexHtml
-    }
+  // Gleiche Minute = nicht schreiben (Cursor-Reopen vermeiden). Altes var b= auslesen, Minute vergleichen.
+  const oldB = indexHtml.match(/var b=(\d+)/)
+  let sameMinute = false
+  if (oldB && oldB[1]) {
+    const oldDate = new Date(parseInt(oldB[1], 10))
+    const oldParts = Object.fromEntries(fmt.formatToParts(oldDate).filter(p => p.type !== 'literal').map(p => [p.type, p.value]))
+    const oldLabel = `${oldParts.day}.${oldParts.month}.${String(oldParts.year).slice(-2)} ${oldParts.hour}:${oldParts.minute}`
+    if (oldLabel === label) sameMinute = true
   }
-  if (indexHtml !== newIndexHtml) {
-    fs.writeFileSync(indexPath, newIndexHtml, 'utf8')
-    indexChanged = true
+  if (!sameMinute) {
+    let newIndexHtml
+    if (indexHtml.includes('<!-- BUILD_TS_INJECT -->')) {
+      newIndexHtml = indexHtml.replace('<!-- BUILD_TS_INJECT -->', injectScript)
+    } else {
+      const oldScriptRe = /<script>\(function\(\)\{[^<]*var b=\d+;[^<]*\}\);?<\/script>/
+      const broadRe = /<script>\(function[^<]*var b=\d+[^<]*<\/script>/
+      if (oldScriptRe.test(indexHtml)) {
+        newIndexHtml = indexHtml.replace(oldScriptRe, injectScript)
+      } else if (broadRe.test(indexHtml)) {
+        newIndexHtml = indexHtml.replace(broadRe, injectScript)
+      } else {
+        newIndexHtml = indexHtml
+      }
+    }
+    if (indexHtml !== newIndexHtml) {
+      fs.writeFileSync(indexPath, newIndexHtml, 'utf8')
+      indexChanged = true
+    }
   }
 }
 
