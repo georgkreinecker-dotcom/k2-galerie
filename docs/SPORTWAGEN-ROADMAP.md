@@ -75,7 +75,7 @@
 | **Prototyp** | Eigener fetch zu write-gallery-data und gallery-data.json; eigenes Retry, eigene Fehlerauswertung an mehreren Stellen. |
 | **Sportwagen** | **Ein** API-Client: z. B. `apiClient.ts` mit `api.post(url, body)`, `api.get(url)` – Retry, Timeout, einheitliches Fehler-Objekt. publishMobile und handleLoadFromServer nutzen ihn. |
 | **Schritte** | 1) apiClient.ts anlegen (fetch-Wrapper, Retry 1x, Timeout, Rückgabe { success, data, error, hint }). 2) publishMobile und handleLoadFromServer umstellen. 3) Weitere fetch-Aufrufe (build-info, etc.) prüfen und ggf. anbinden. |
-| **Erledigt** | [ ] |
+| **Erledigt** | [x] 28.02.26 (apiClient.ts apiGet/apiPost, Retry, Timeout; publishMobile + handleLoadFromServer umgestellt) |
 
 ---
 

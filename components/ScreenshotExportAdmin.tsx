@@ -26,6 +26,7 @@ import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie }
 import { addPendingArtwork, filterK2Only, readArtworksRawByKey, saveArtworksByKey } from '../src/utils/artworksStorage'
 import { loadEvents as loadEventsFromStorage } from '../src/utils/eventsStorage'
 import { loadDocuments as loadDocumentsFromStorage } from '../src/utils/documentsStorage'
+import { apiPost, apiGet } from '../src/utils/apiClient'
 import { getWerbeliniePrDocCss, getWerbeliniePrDocCssVk2, WERBELINIE_FONTS_URL, WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../src/config/marketingWerbelinie'
 import '../src/App.css'
 
@@ -2148,100 +2149,37 @@ function ScreenshotExportAdmin() {
               return
             }
             
-            // Versuche direkt in public Ordner zu schreiben über API
-            // WICHTIG: Nur EINMAL aufrufen, nicht mehrfach!
-            // MIT TIMEOUT-Schutz (30 Sekunden)
-            const controller = new AbortController()
-            const timeoutId = setTimeout(() => {
-              controller.abort()
-              if (isMountedRef.current && !silent) setIsDeploying(false)
-              if (!silent) alert('⚠️ Speichern dauert gerade zu lange.\n\nBitte kurz warten und nochmal auf „Speichern“ klicken.\nFalls es wieder passiert: Bitte dem Assistenten Bescheid geben.')
-            }, 30000)
-            
-            let timeoutCleared = false
-            fetch(WRITE_GALLERY_DATA_API_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: json,
-              signal: controller.signal
-            })
-            .then(async response => {
-              if (!timeoutCleared) {
-                clearTimeout(timeoutId)
-                timeoutCleared = true
-              }
-              const text = await response.text()
-              let result: any
-              try {
-                result = text ? JSON.parse(text) : {}
-              } catch {
-                result = { error: text ? text.slice(0, 300) : 'Keine Antwort' }
-              }
-              return { ok: response.ok, status: response.status, result }
-            })
-            .then(({ ok, status, result }) => {
-              if (!silent) setIsDeploying(false)
-
-              // Einheitliche Auswertung: API liefert success: true oder error (+ optional hint)
-              if (ok && result.success === true) {
+            // Phase 2.2: Ein API-Client (Timeout, einheitliche Rückgabe)
+            apiPost(WRITE_GALLERY_DATA_API_URL, json, { timeoutMs: 30000 }).then(result => {
+              if (!silent && isMountedRef.current) setIsDeploying(false)
+              if (result.success && result.data) {
+                const payload = (result.data as { size?: number; artworksCount?: number }) || {}
                 const newVersion = parseInt(localStorage.getItem('k2-data-version') || '0') + 1
                 localStorage.setItem('k2-data-version', String(newVersion))
                 if (silent) {
-                  console.log('✅ Daten an Vercel gesendet:', result.size, 'Bytes,', result.artworksCount, 'Werke')
+                  console.log('✅ Daten an Vercel gesendet:', payload.size, 'Bytes,', payload.artworksCount, 'Werke')
                 } else {
                   setSyncStatusBar({ phase: 'success', message: 'Gesendet.' })
-                  setPublishSuccessModal({ size: result.size, version: newVersion })
+                  setPublishSuccessModal({ size: payload.size ?? 0, version: newVersion })
                 }
                 return
               }
-
-              // Fehler: von API (error/hint) oder HTTP-Status
-              const errMsg = result?.error || (status !== 200 ? `Server ${status}` : 'Unbekannter Fehler')
-              const hint = result?.hint ? `\n\n${result.hint}` : ''
+              const errMsg = result.error || 'Unbekannter Fehler'
+              const hint = result.hint ? `\n\n${result.hint}` : ''
               if (!silent) {
                 setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
                 setPublishErrorMsg(`Daten konnten nicht gesendet werden.\n\n${errMsg}${hint}`)
               } else {
-                console.warn('Sync (silent) fehlgeschlagen:', errMsg, result)
+                console.warn('Sync (silent) fehlgeschlagen:', errMsg)
               }
-            })
-            .catch(error => {
-              if (!silent) setIsDeploying(false)
-              
-              if (!timeoutCleared) {
-                clearTimeout(timeoutId)
-                timeoutCleared = true
-              }
-              
-              if (error.name === 'AbortError') {
-                if (!silent) {
-                  setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
-                  alert('⚠️ Speichern dauert zu lange.\n\nBitte kurz warten und nochmal auf „Speichern“ klicken.')
-                } else console.warn('Sync (silent) Timeout')
-                return
-              }
-              
-              // Bei silent (z. B. nach „Werke speichern“): KEIN Fallback-Download – sonst öffnet iPad/Handy die JSON in neuem Tab
-              if (silent) {
-                if (isMountedRef.current) setIsDeploying(false)
-                console.warn('Sync (silent): Server nicht aktiv oder Fehler – kein Download-Fallback')
-                return
-              }
-              
-              // Auf Vercel (inkl. iPad): NIEMALS link.click() mit JSON – öffnet sonst die gallery-data.json-Seite (BUG)
-              // Fallback-Download NUR auf localhost (Mac Dev), wenn API nicht läuft – sonst öffnet iPad die JSON
+              if (silent) return
               const isVercelOrProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
               const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0 && typeof window !== 'undefined' && window.innerWidth <= 1024)
               if (isVercelOrProduction || isMobileDevice) {
-                if (isMountedRef.current) {
-                  setIsDeploying(false)
-                  setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
-                }
+                if (isMountedRef.current) setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
                 alert('⚠️ Daten konnten nicht an den Server gesendet werden.\n\nBitte prüfen: Ist die App von k2-galerie.vercel.app geöffnet? Ist das Internet verbunden? Einfach OK – du bleibst in der App, keine Seite öffnet sich.')
                 return
               }
-              
-              // Nur auf localhost (Mac, Dev): Fallback-Download falls API nicht läuft
               try {
                 const blob = new Blob([json], { type: 'application/json' })
                 const url = URL.createObjectURL(blob)
@@ -2253,25 +2191,17 @@ function ScreenshotExportAdmin() {
                 link.click()
                 if (isMountedRef.current) setIsDeploying(false)
                 setTimeout(() => {
-                  try {
-                    document.body.removeChild(link)
-                    URL.revokeObjectURL(url)
-                  } catch {}
+                  try { document.body.removeChild(link); URL.revokeObjectURL(url) } catch {}
                   setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
                   alert('⚠️ Automatisches Speichern nicht möglich (Server nicht aktiv).\n\nBitte dem Assistenten Bescheid geben – einmalige Einrichtung nötig.')
                 }, 100)
               } catch (downloadError) {
-                if (isMountedRef.current) {
-                  setIsDeploying(false)
-                  setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
-                }
-                alert('❌ Fehler:\n\nAPI nicht verfügbar UND Download fehlgeschlagen\n\n' + (error instanceof Error ? error.message : String(error)))
+                if (isMountedRef.current) setIsDeploying(false)
+                setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
+                alert('❌ Fehler:\n\nAPI nicht verfügbar UND Download fehlgeschlagen\n\n' + errMsg)
               }
-            })
-            .finally(() => {
-              setTimeout(() => {
-                if (isMountedRef.current && !silent) setIsDeploying(false)
-              }, 100)
+            }).finally(() => {
+              setTimeout(() => { if (isMountedRef.current && !silent) setIsDeploying(false) }, 100)
             })
           } catch (e) {
             if (isMountedRef.current && !silent) {
@@ -2396,40 +2326,27 @@ function ScreenshotExportAdmin() {
   // KEIN Auto-Sync (Supabase / gallery-data.json) mehr beim Admin-Start – verursacht Fenster-Abstürze.
   // Mobile-Werke kommen über artworks-updated Event beim Speichern; Werke werden nur aus localStorage geladen (siehe oben, 2 s Verzögerung).
 
-  /** K2: Werke von Vercel (gallery-data.json) laden und mit lokalen mergen – damit neue iPad-Werke am Mac erscheinen */
+  /** K2: Werke von Vercel (gallery-data.json) laden und mit lokalen mergen – damit neue iPad-Werke am Mac erscheinen (Phase 2.2: apiGet) */
   const handleLoadFromServer = async () => {
     if (tenant.isOeffentlich || tenant.isVk2) return
     setIsLoadingFromServer(true)
     setSyncStatusBar({ phase: 'loading', message: 'Daten werden geladen…' })
     const url = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&_=${Math.random()}`
-    const fetchOpts: RequestInit = { cache: 'no-store', headers: { 'Cache-Control': 'no-cache, no-store' }, mode: 'cors' }
-
-    const doFetch = (): Promise<Response> => fetch(url, fetchOpts)
-
-    const tryLoad = async (attempt: number): Promise<void> => {
-      try {
-        const res = await doFetch()
-        if (!res.ok) {
-          setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
-          const hint = res.status === 404 ? ' Datei gallery-data.json fehlt auf Vercel – zuerst am iPad „Daten an Server senden“ tippen.' : ''
-          alert(`Server antwortet mit ${res.status}.\n\n• Prüfe: Ist die App von k2-galerie.vercel.app geöffnet? Internet verbunden?${hint}`)
-          return
-        }
-        const text = await res.text()
-        if (text.trim().startsWith('<')) {
-          setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
-          alert('Vercel liefert eine Webseite statt Daten.\n\nÖffne direkt: https://k2-galerie.vercel.app und dort unter Werke verwalten „Bilder vom Server laden“ – oder warte 1–2 Min nach „Daten an Server senden“ am iPad.')
-          return
-        }
-        let data: any
-        try {
-          data = JSON.parse(text)
-        } catch (_) {
-          setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
-          alert('Antwort war kein gültiges JSON. Bitte 1–2 Min nach dem Senden vom iPad warten und erneut „Bilder vom Server laden“ klicken.')
-          return
-        }
-        const serverArtworks = filterK2Only(Array.isArray(data.artworks) ? data.artworks : [])
+    try {
+      const result = await apiGet(url, { retryOnce: true })
+      if (!result.success) {
+        setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
+        const hint = result.hint ? ` ${result.hint}` : (result.error && result.error.includes('404') ? ' Datei gallery-data.json fehlt auf Vercel – zuerst am iPad „Daten an Server senden“ tippen.' : '')
+        alert(`Server: ${result.error || 'Fehler'}.\n\n• Prüfe: Ist die App von k2-galerie.vercel.app geöffnet? Internet verbunden?${hint}`)
+        return
+      }
+      const data = result.data as { artworks?: unknown[]; exportedAt?: string }
+      if (!data || typeof data !== 'object') {
+        setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
+        alert('Antwort war kein gültiges JSON.')
+        return
+      }
+      const serverArtworks = filterK2Only(Array.isArray(data.artworks) ? data.artworks : [])
         const localArtworks = loadArtworksRaw(tenant)
         const serverMap = new Map<string, any>()
         serverArtworks.forEach((a: any) => { const k = a.number || a.id; if (k) serverMap.set(k, a) })
@@ -2467,29 +2384,19 @@ function ScreenshotExportAdmin() {
           }
         } else {
           console.warn('Merge würde weniger Werke ergeben – localStorage unverändert')
-          setSyncStatusBar({ phase: 'success', message: 'Lokal beibehalten.' })
+            setSyncStatusBar({ phase: 'success', message: 'Lokal beibehalten.' })
           alert('Lokal sind mehr Werke als auf dem Server. Lokale Daten wurden beibehalten.')
         }
-      } catch (e) {
-        console.error('Vom Server laden:', url, e)
-        setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
-        const msg = e instanceof Error ? e.message : String(e)
-        const isNetwork = /failed|network|load|cors|fetch|typeerror/i.test(msg) || (e instanceof TypeError)
-        if (attempt < 2 && isNetwork) {
-          setSyncStatusBar({ phase: 'loading', message: 'Erneuter Versuch…' })
-          await new Promise(r => setTimeout(r, 2000))
-          return tryLoad(attempt + 1)
-        }
-        alert(
-          isNetwork
-            ? 'Verbindung zum Server fehlgeschlagen.\n\n• Bist du im Internet? (WLAN oder Mobil)\n• App von k2-galerie.vercel.app geöffnet? Dann erneut „Bilder vom Server laden“ klicken.'
-            : `Fehler beim Laden: ${msg}\n\nBitte Verbindung prüfen und erneut versuchen.`
-        )
-      }
-    }
-
-    try {
-      await tryLoad(1)
+    } catch (e) {
+      console.error('Vom Server laden:', url, e)
+      setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
+      const msg = e instanceof Error ? e.message : String(e)
+      const isNetwork = /failed|network|load|cors|fetch|typeerror/i.test(msg) || (e instanceof TypeError)
+      alert(
+        isNetwork
+          ? 'Verbindung zum Server fehlgeschlagen.\n\n• Bist du im Internet? (WLAN oder Mobil)\n• App von k2-galerie.vercel.app geöffnet? Dann erneut „Bilder vom Server laden“ klicken.'
+          : `Fehler beim Laden: ${msg}\n\nBitte Verbindung prüfen und erneut versuchen.`
+      )
     } finally {
       setIsLoadingFromServer(false)
     }

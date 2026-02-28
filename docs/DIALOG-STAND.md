@@ -5,7 +5,7 @@
 ## Datum: 28.02.26
 
 ## Thema
-**Prototyp → Sportwagen – systematisch:** Phase **1.1**–**1.4** und **2.1** umgesetzt (28.02.26). 2.1 Sync-Regel: docs/SYNC-REGEL.md, syncMerge.mergeServerWithLocal; GaleriePage (2×) und GalerieVorschauPage handleRefresh nutzen eine Funktion. Nächster Schritt: **Phase 2.2** API-Client oder **Phase 3.1** safeReload.
+**Prototyp → Sportwagen – systematisch:** Phase **1.1**–**1.4**, **2.1** und **2.2** umgesetzt (28.02.26). 2.2 API-Client: apiClient.ts (apiGet/apiPost, Retry, Timeout); publishMobile und handleLoadFromServer nutzen ihn. Nächster Schritt: **Phase 3.1** safeReload oder **Phase 3.2** Fehlerbehandlung.
 
 ## Grundregel: Profi statt Dilettant – Rad nicht zweimal erfinden (28.02.26)
 - **Regel:** .cursor/rules/profi-statt-dilettant-rad-nicht-zweimal.mdc (alwaysApply). Kern: Was andere schon erfunden haben, nicht neu bauen. Normen kennen, zukaufen/auslagern, am Markt beste Lösungen nutzen. Vor dem Bauen: „Gibt es das schon?“ – dann nutzen oder begründen.
@@ -30,7 +30,7 @@
 **Wichtig:** In Vercel muss **GITHUB_TOKEN** gesetzt sein (Settings → Environment Variables), sonst schlägt „Daten an Server senden“ mit Hinweis darauf fehl.
 
 ## Nächster Schritt
-- **Sportwagen:** Phase 1.1–1.4 + 2.1 ✅. Als Nächstes **Phase 2.2** API-Client (ein fetch-Wrapper für Senden/Empfangen) oder **Phase 3.1** safeReload.
+- **Sportwagen:** Phase 1.1–1.4 + 2.1 + 2.2 ✅. Als Nächstes **Phase 3.1** safeReload oder **Phase 3.2** Fehlerbehandlung.
 - **Optional:** iPad/Mac Datentransport testen.
 1. **QR/Stand-Fix (27.02.26):** QR und Stand-Badge nutzen jetzt **/api/build-info** statt build-info.json – Serverless-API, beim Build mit aktuellem Stand beschrieben, umgeht CDN-Cache. Commit c5351e1.
 2. Nach Vercel-Build (1–2 Min): APf neu laden oder „QR neu“ → Vercel-Stand sollte aktuelle Zeit zeigen; iPad refresh.html oder QR scannen.
@@ -115,14 +115,15 @@ Werk verschwindet / Nummer wiederverwendet / Freistellen geht nicht. **Ursache:*
 - **Zurück / VK2-Design / Dokumente öffnen** – Admin-URL injiziert, helles VK2-Design, Blob + Fallback.
 
 ## Was zuletzt gemacht (28.02.26)
-- **Phase 1.4 Events & Dokumente:** Alle Zugriffe auf Events/Dokumente laufen über `eventsStorage` und `documentsStorage`. Umgestellt: GaleriePage (bereits zuvor), GalerieVorschauPage, FlyerK2GaleriePage, PresseEinladungK2GaleriePage, Vk2GaleriePage, DevViewPage, ScreenshotExportAdmin (Backup = loadEventsFromStorage/loadDocumentsFromStorage), tenantConfig initVk2DemoEventAndDocumentsIfEmpty. Roadmap Phase 1.4 [x]. Tests + Build ✅.
-- **Phase 2.1 Sync-Regel:** docs/SYNC-REGEL.md (verbindliche Regel: Server = Quelle, lokale Neu-Anlagen geschützt, Konflikt Mobile > neuer). src/utils/syncMerge.ts mit mergeServerWithLocal(serverList, localList, options?). GaleriePage (Merge nach gallery-data + Initial-Load) und GalerieVorschauPage handleRefresh nutzen eine Funktion. Keine lokalen Merge-Varianten mehr an diesen Stellen. Roadmap 2.1 [x]. Tests + Build ✅.
+- **Phase 2.2 API-Client:** src/utils/apiClient.ts mit apiGet (Retry 1x, Timeout) und apiPost (Timeout); Rückgabe { success, data?, error?, hint? }. publishMobile und handleLoadFromServer in ScreenshotExportAdmin nutzen apiPost/apiGet; TS-Fix payload.size ?? 0. Roadmap 2.2 [x]. Tests + Build ✅.
+- **Phase 1.4 Events & Dokumente:** Alle Zugriffe auf Events/Dokumente laufen über `eventsStorage` und `documentsStorage`. Roadmap Phase 1.4 [x].
+- **Phase 2.1 Sync-Regel:** docs/SYNC-REGEL.md, syncMerge.mergeServerWithLocal; GaleriePage (2×) + GalerieVorschauPage handleRefresh. Roadmap 2.1 [x].
 
 ## Letzter Commit
-- **Phase 2.1 Sync-Regel – eine Merge-Funktion. Stand 28.02.26 06:21.** (wird nach Push eingetragen)
+- **Phase 2.2 API-Client – publishMobile/handleLoadFromServer umgestellt. Stand 28.02.26 06:27.** (wird gleich committed + gepusht)
 
 ## Nächster Schritt
-- **iPad/Mac:** Neues Werk speichern → in Galerie prüfen ob es sichtbar bleibt (Pending-Layer). Wenn ja: Problem gelöst; wenn nein: nächste Ursache suchen (z. B. welcher Pfad überschreibt).
+- **Sportwagen:** Phase 3.1 safeReload oder 3.2 Fehlerbehandlung. Optional: iPad/Mac – neues Werk speichern, in Galerie prüfen ob sichtbar (Pending-Layer).
 
 ## Session 27.02.26 (Bugs: verschwundene Werke, Freistellung)
 - **Verschwundene Werke nach Rückkehr in Verwaltung:** (1) Supabase: Wenn Supabase weniger Werke liefert als localStorage, wird localStorage nicht mehr überschrieben – lokale Neu-Anlagen bleiben erhalten. (2) GalerieVorschau: Beim Laden aus localStorage wird gefilterte Liste nicht mehr zurückgeschrieben (kein stilles Löschen). (3) Mobile-Polling (syncFromGalleryData): Schreibt nicht mehr, wenn das Ergebnis weniger Werke hätte als aktuell lokal. (4) Admin: Werke werden nach 0,4 s statt 3 s geladen, damit die Liste schnell erscheint.
