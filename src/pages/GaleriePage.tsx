@@ -9,6 +9,7 @@ import { getGalerieImages, getPageContentGalerie } from '../config/pageContentGa
 import { getPageTexts, type GaleriePageTexts } from '../config/pageTexts'
 import { appendToHistory } from '../utils/artworkHistory'
 import { readArtworksRawByKey, saveArtworksByKey } from '../utils/artworksStorage'
+import { mergeServerWithLocal } from '../utils/syncMerge'
 import { loadEvents, saveEvents } from '../utils/eventsStorage'
 import { loadDocuments, saveDocuments } from '../utils/documentsStorage'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
@@ -986,55 +987,20 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           try {
             const serverArtworks = data.artworks
             
-            // Erstelle Map für schnelle Suche (unterstützt verschiedene Formate)
+            // Map für schnelle Suche (unterstützt alte Key-Varianten -K-/-M-)
             const serverMap = new Map<string, any>()
             serverArtworks.forEach((a: any) => {
               const key = a.number || a.id
               if (key) {
                 serverMap.set(key, a)
-                // Auch ohne K/M Präfix prüfen (für alte Nummern)
-                if (key.includes('-K-') || key.includes('-M-')) {
-                  const oldFormat = key.replace('-K-', '-').replace('-M-', '-')
-                  if (oldFormat !== key) {
-                    serverMap.set(oldFormat, a)
-                  }
+                const keyStr = String(key)
+                if (keyStr.includes('-K-') || keyStr.includes('-M-')) {
+                  const oldFormat = keyStr.replace(/-K-/g, '-').replace(/-M-/g, '-')
+                  if (oldFormat !== keyStr) serverMap.set(oldFormat, a)
                 }
               }
             })
-            
-            // SERVER = QUELLE DER WAHRHEIT nach Veröffentlichung (wie GalerieVorschauPage)
-            const merged: any[] = [...serverArtworks]
-            const toHistory: any[] = []
-            
-            localArtworks.forEach((local: any) => {
-              const key = local.number || local.id
-              if (!key) return
-              const serverArtwork = serverMap.get(key)
-              const isMobileWork = local.createdOnMobile || local.updatedOnMobile
-              const createdAt = local.createdAt ? new Date(local.createdAt).getTime() : 0
-              const isVeryNew = createdAt > Date.now() - 600000
-              
-              if (!serverArtwork) {
-                // KRITISCH: Immer in merged – sonst gehen neu angelegte Werke (z. B. am Mac aus Datei) beim Merge verloren
-                merged.push(local)
-                if (!isMobileWork || !isVeryNew) toHistory.push(local)
-              } else {
-                if (isMobileWork) {
-                  const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
-                  if (idx >= 0) merged[idx] = local
-                  else merged.push(local)
-                } else {
-                  const localUpdated = local.updatedAt ? new Date(local.updatedAt).getTime() : 0
-                  const serverUpdated = serverArtwork.updatedAt ? new Date(serverArtwork.updatedAt).getTime() : 0
-                  if (localUpdated > serverUpdated) {
-                    const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
-                    if (idx >= 0) merged[idx] = local
-                    else merged.push(local)
-                  }
-                }
-              }
-            })
-            
+            const { merged, toHistory } = mergeServerWithLocal(serverArtworks, localArtworks, { serverMap })
             if (toHistory.length > 0) appendToHistory(toHistory)
             
             console.log('✅ Werke gemergt (Server = Quelle):', merged.length, 'Gesamt,', toHistory.length, 'in History')
@@ -1424,47 +1390,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             try {
               const localArtworks = safeParseArtworks(artworksKey)
               const serverArtworks = data.artworks
-              
-              const serverMap = new Map<string, any>()
-              serverArtworks.forEach((a: any) => {
-                const key = a.number || a.id
-                if (key) serverMap.set(key, a)
-              })
-              
-              const merged: any[] = [...serverArtworks]
-              const toHistory: any[] = []
-              
-              localArtworks.forEach((local: any) => {
-                const key = local.number || local.id
-                if (!key) return
-                const serverArtwork = serverMap.get(key)
-                const isMobileWork = local.createdOnMobile || local.updatedOnMobile
-                const createdAt = local.createdAt ? new Date(local.createdAt).getTime() : 0
-                const isVeryNew = createdAt > Date.now() - 600000
-                
-                if (!serverArtwork) {
-                  // KRITISCH: Immer in merged – sonst gehen neu angelegte Werke (z. B. am Mac) beim Initial-Load verloren
-                  merged.push(local)
-                  if (!isMobileWork || !isVeryNew) toHistory.push(local)
-                } else {
-                  if (isMobileWork) {
-                    const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
-                    if (idx >= 0) merged[idx] = local
-                    else merged.push(local)
-                  } else {
-                    const localUpdated = local.updatedAt ? new Date(local.updatedAt).getTime() : 0
-                    const serverUpdated = serverArtwork.updatedAt ? new Date(serverArtwork.updatedAt).getTime() : 0
-                    if (localUpdated > serverUpdated) {
-                      const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
-                      if (idx >= 0) merged[idx] = local
-                      else merged.push(local)
-                    }
-                  }
-                }
-              })
-              
+              const { merged, toHistory } = mergeServerWithLocal(serverArtworks, localArtworks)
               if (toHistory.length > 0) appendToHistory(toHistory)
-              
               saveArtworksForKey(artworksKey, merged)
               console.log('✅ Werke gemergt beim Initial-Load (Server = Quelle):', merged.length, 'Gesamt,', toHistory.length, 'in History')
               console.log('📋 Lokale Nummern:', localArtworks.map((a: any) => a.number || a.id).join(', '))

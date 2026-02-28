@@ -15,6 +15,7 @@ import { tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from '../../component
 import { readArtworksRaw, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, loadForDisplay, filterK2Only as filterK2OnlyStorage, saveArtworksOnly as saveArtworksStorage, mayWriteServerList, mergeAndMaybeWrite, mergeWithPending, getPendingArtworks, addPendingArtwork, clearPendingIfInList } from '../utils/artworksStorage'
 import { loadEvents } from '../utils/eventsStorage'
 import { loadDocuments } from '../utils/documentsStorage'
+import { mergeServerWithLocal } from '../utils/syncMerge'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
 import '../App.css'
 
@@ -1918,44 +1919,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           // K2: Muster/VK2 vom Server nicht in K2 übernehmen
           const serverArtworks = filterK2ArtworksOnly(data.artworks)
           
-          const serverMap = new Map<string, any>()
-          serverArtworks.forEach((a: any) => {
-            const key = a.number || a.id
-            if (key) serverMap.set(key, a)
-          })
-          
-          const mergedArtworks: any[] = [...serverArtworks]
-          const toHistory: any[] = []
-          
-          localArtworks.forEach((localArtwork: any) => {
-            const key = localArtwork.number || localArtwork.id
-            if (!key) return
-            const serverArtwork = serverMap.get(key)
-            const isMobileWork = localArtwork.createdOnMobile || localArtwork.updatedOnMobile
-            const createdAt = localArtwork.createdAt ? new Date(localArtwork.createdAt).getTime() : 0
-            const isVeryNew = createdAt > Date.now() - 600000
-            
-            if (!serverArtwork) {
-              // BUG-012 analog: Lokale Werke die nicht auf dem Server sind IMMER behalten (nicht nur wenn „very new“)
-              mergedArtworks.push(localArtwork)
-              if (!isMobileWork || !isVeryNew) toHistory.push(localArtwork)
-            } else {
-              if (isMobileWork) {
-                const idx = mergedArtworks.findIndex((a: any) => (a.number || a.id) === key)
-                if (idx >= 0) mergedArtworks[idx] = localArtwork
-                else mergedArtworks.push(localArtwork)
-              } else {
-                const localUpdated = localArtwork.updatedAt ? new Date(localArtwork.updatedAt).getTime() : 0
-                const serverUpdated = serverArtwork.updatedAt ? new Date(serverArtwork.updatedAt).getTime() : 0
-                if (localUpdated > serverUpdated) {
-                  const idx = mergedArtworks.findIndex((a: any) => (a.number || a.id) === key)
-                  if (idx >= 0) mergedArtworks[idx] = localArtwork
-                  else mergedArtworks.push(localArtwork)
-                }
-              }
-            }
-          })
-          
+          const { merged: mergedArtworks, toHistory } = mergeServerWithLocal(serverArtworks, localArtworks)
           if (toHistory.length > 0) appendToHistory(toHistory)
           const toSaveServer = filterK2ArtworksOnly(mergedArtworks)
           const localCountHere = localArtworks.length

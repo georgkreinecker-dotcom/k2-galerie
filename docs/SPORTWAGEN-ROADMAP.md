@@ -66,7 +66,7 @@
 | **Prototyp** | Verschiedene Merge-Logiken in GaleriePage, GalerieVorschauPage, ScreenshotExportAdmin; „nie mit weniger überschreiben“, „lokale Priorität“, createdOnMobile, isVeryNew – mehrfach Bugs (BUG-011 bis 016). |
 | **Sportwagen** | **Eine** verbindliche Regel (z. B. „Server = Quelle; lokale Neu-Anlagen werden vor Merge geschützt“) in einer Doku. **Eine** zentrale Merge-Funktion `mergeServerWithLocal(serverList, localList, options)`, alle Aufrufer nutzen sie. |
 | **Schritte** | 1) Regel in docs (z. B. SYNC-REGEL.md) festhalten. 2) Eine Funktion in utils (z. B. `syncMerge.ts`) mit klaren Parametern und gleichem Verhalten wie gewünscht. 3) GaleriePage, GalerieVorschauPage, Admin (handleLoadFromServer, handleRefresh, etc.) auf diese Funktion umstellen. 4) Keine lokalen Merge-Varianten mehr. |
-| **Erledigt** | [ ] |
+| **Erledigt** | [x] 28.02.26 (SYNC-REGEL.md, syncMerge.mergeServerWithLocal, GaleriePage 2× + GalerieVorschauPage handleRefresh) |
 
 ### 2.2 Datentransport (Senden/Empfangen) – ein API-Client
 
