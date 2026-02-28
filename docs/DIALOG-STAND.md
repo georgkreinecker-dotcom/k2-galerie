@@ -4,6 +4,9 @@
 
 ## Datum: 28.02.26
 
+## Zuletzt (28.02.26)
+- **Etikett mit Preis:** Wenn ein Werk einen Preis hat, wird dieser auf dem Etikett gedruckt (€ X,XX, de-DE). Gilt für Einzeletikett und Sammeldruck. Typ für artwork.price um `| string` ergänzt (Sammeldruck).
+
 ## Erfahrung: Cursor-Reopen durch Build-Skripte (28.02.26)
 - **Problem:** Reopen-Meldungen wurden immer häufiger (Intervalle kürzer).
 - **Ursache:** write-build-info.js hat bei jedem `npm run dev` Dateien überschrieben → Cursor meldet Reopen bei Disk-Änderung.

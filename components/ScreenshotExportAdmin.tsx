@@ -7757,9 +7757,18 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
       ctx.font = `${fs3}px Arial,sans-serif`
       const title = ((savedArtwork.title || '').substring(0, 18)) + ((savedArtwork.title || '').length > 18 ? '…' : '')
       ctx.fillText(title, w / 2, h * 0.21)
+      let yNext = 0.26
       if (savedArtwork.category === 'malerei' && savedArtwork.paintingWidth && savedArtwork.paintingHeight) {
         ctx.font = `${fs4}px Arial,sans-serif`
-        ctx.fillText(`${savedArtwork.paintingWidth} × ${savedArtwork.paintingHeight} cm`, w / 2, h * 0.26)
+        ctx.fillText(`${savedArtwork.paintingWidth} × ${savedArtwork.paintingHeight} cm`, w / 2, h * yNext)
+        yNext += 0.05
+      }
+      const priceVal = typeof savedArtwork.price === 'number' ? savedArtwork.price : parseFloat(String(savedArtwork.price || '').replace(',', '.'))
+      if (!isNaN(priceVal) && priceVal > 0) {
+        ctx.font = `bold ${fs4}px Arial,sans-serif`
+        ctx.fillStyle = '#1a1a1a'
+        ctx.fillText('€ ' + priceVal.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), w / 2, h * yNext)
+        ctx.fillStyle = '#666'
       }
       const qrSize = Math.min(w * 0.75, h * 0.25)
       const qrX = (w - qrSize) / 2
@@ -7801,7 +7810,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
   }
 
   /** Etikett für beliebiges Werk (für Sammeldruck). Gleiche Logik wie getEtikettBlob, aber mit übergebenem artwork. */
-  const getEtikettBlobForArtwork = (artwork: { number?: string; id?: string; title?: string; category?: string; paintingWidth?: number; paintingHeight?: number; artist?: string }, widthMm = 29, heightMm = 90.3): Promise<Blob> => {
+  const getEtikettBlobForArtwork = (artwork: { number?: string; id?: string; title?: string; category?: string; paintingWidth?: number; paintingHeight?: number; artist?: string; price?: number | string }, widthMm = 29, heightMm = 90.3): Promise<Blob> => {
     const num = artwork?.number || artwork?.id
     if (!num) return Promise.reject(new Error('Werk ohne Nummer'))
     const pxPerMm = 300 / 25.4
@@ -7833,9 +7842,18 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
       ctx.font = `${fs3}px Arial,sans-serif`
       const title = ((artwork.title || '').substring(0, 18)) + ((artwork.title || '').length > 18 ? '…' : '')
       ctx.fillText(title, w / 2, h * 0.21)
+      let yNext = 0.26
       if (artwork.category === 'malerei' && artwork.paintingWidth && artwork.paintingHeight) {
         ctx.font = `${fs4}px Arial,sans-serif`
-        ctx.fillText(`${artwork.paintingWidth} × ${artwork.paintingHeight} cm`, w / 2, h * 0.26)
+        ctx.fillText(`${artwork.paintingWidth} × ${artwork.paintingHeight} cm`, w / 2, h * yNext)
+        yNext += 0.05
+      }
+      const priceVal = typeof artwork.price === 'number' ? artwork.price : parseFloat(String(artwork.price || '').replace(',', '.'))
+      if (!isNaN(priceVal) && priceVal > 0) {
+        ctx.font = `bold ${fs4}px Arial,sans-serif`
+        ctx.fillStyle = '#1a1a1a'
+        ctx.fillText('€ ' + priceVal.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), w / 2, h * yNext)
+        ctx.fillStyle = '#666'
       }
       const qrSize = Math.min(w * 0.75, h * 0.25)
       const qrX = (w - qrSize) / 2
