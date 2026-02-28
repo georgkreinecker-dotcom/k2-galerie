@@ -119,7 +119,7 @@ Werk verschwindet / Nummer wiederverwendet / Freistellen geht nicht. **Ursache:*
 - **Phase 2.2 API-Client:** apiClient.ts; publishMobile/handleLoadFromServer. Phase 1.4, 2.1 [x].
 
 ## Letzter Commit
-- **Phase 3.1/3.2 safeReload – eine Reload-Funktion überall. Stand 28.02.26 06:34.** (wird gleich committed + gepusht)
+- **Phase 3.1/3.2 safeReload – eine Reload-Funktion überall. Stand 28.02.26 06:34.** Commit: 90e39bd ✅ auf GitHub
 
 ## Nächster Schritt
 - **Sportwagen:** Phase 3.3 Theming/Kontrast oder Phase 4 Bilder & Medien. Optional: iPad/Mac testen.
