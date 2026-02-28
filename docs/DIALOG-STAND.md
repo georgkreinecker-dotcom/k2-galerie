@@ -4,10 +4,11 @@
 
 ## Datum: 28.02.26
 
-## Crash Code 5 – bei jedem Reopen prüfen (Faden behalten)
-- **Regel:** Bei jedem Reopen diese Datei + **docs/CRASH-BEREITS-GEPRUEFT.md** lesen → nur **neue** Ursachen suchen. Nach Check: CRASH-BEREITS-GEPRUEFT.md ergänzen.
-- **Sofort-Workaround (28.02.26):** Preview **zu**, App **nur im Browser** (npm run dev → Chrome/Safari → localhost:5177). Doku: CRASH-BEREITS-GEPRUEFT.md Abschnitt „SO ARBEITEN BIS CRASH WEG IST“.
-- **Zuletzt (28.02.26):** GaleriePage Stammdaten-Intervall (2 s) im iframe deaktiviert – nur noch wenn window.self === window.top. DevViewPage 10s-Intervall bereits mit iframe-Check.
+## Crash Code 5 – bei jedem Reopen / „check the crash“ (Faden behalten)
+- **Wenn Georg „check the crash“ sagt:** Feste Routine ausführen: **docs/CRASH-LETZTER-KONTEXT.md** lesen → **CRASH-BEREITS-GEPRUEFT.md** lesen → gezielt in zuletzt genutzten Bereichen + neue Intervalle/Listener suchen → beide Dokus ergänzen. So eingrenzen wir den Punkt Schritt für Schritt.
+- **Regel:** Am Ende jeder Coding-Session **CRASH-LETZTER-KONTEXT.md** aktualisieren (Thema, geänderte Dateien), damit beim nächsten „check the crash“ Kontext da ist.
+- **Sofort-Workaround:** Preview zu, App nur im Browser (localhost:5177). Doku: CRASH-BEREITS-GEPRUEFT.md „SO ARBEITEN BIS CRASH WEG IST“.
+- **Zuletzt (28.02.26):** GaleriePage Stammdaten-Intervall im iframe aus; DevViewPage 10s-Intervall im iframe aus; Routine + CRASH-LETZTER-KONTEXT.md eingerichtet.
 
 ## Zuletzt (28.02.26)
 - **Etikett mit Preis:** Wenn ein Werk einen Preis hat, wird dieser auf dem Etikett gedruckt (€ X,XX, de-DE). Gilt für Einzeletikett und Sammeldruck. Typ für artwork.price um `| string` ergänzt (Sammeldruck).

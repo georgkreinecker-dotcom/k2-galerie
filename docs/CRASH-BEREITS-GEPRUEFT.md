@@ -4,6 +4,17 @@
 
 ---
 
+## Wenn Georg „check the crash“ sagt – sofort-Routine
+
+1. **docs/CRASH-LETZTER-KONTEXT.md** lesen → was war zuletzt gemacht, welche Dateien, Hinweis von Georg?
+2. **Diese Datei** (CRASH-BEREITS-GEPRUEFT.md) lesen → bereits geprüfte/behobene Stellen nicht wieder durchgehen.
+3. **Gezielt suchen:** In den zuletzt genutzten Bereichen + im Repo nach **neuen** setInterval, setTimeout ohne Cleanup, location.reload/replace, useEffects ohne Cleanup.
+4. **Eintragen:** Prüfung/Fund in diese Datei; CRASH-LETZTER-KONTEXT.md aktualisieren („Letzte Session“ + ggf. „Hinweis von Georg“).
+
+So können wir den Punkt Schritt für Schritt eingrenzen.
+
+---
+
 ## Bereits geprüfte Stellen (nicht erneut durchgehen)
 
 | Datum   | Bereich | Was geprüft |
@@ -152,8 +163,9 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 | 28.02.26 | GaleriePage Admin-Weiterleitung | Guide/Assistent: window.location.href zu /admin (2 Stellen) ohne iframe-Check. In Preview → Navigation im iframe. **Fix:** Nur wenn window.self === window.top dann location.href; sonst window.open(adminUrl, '_blank'). |
 | 28.02.26 | DevViewPage Mobile-Update-Intervall | setInterval(checkForMobileUpdates, 10000) lief auch im iframe (nur isMac-Check). **Fix:** Am Anfang des useEffects: if (window.self !== window.top) return – in Cursor Preview kein 10-Sek-Intervall. |
 | 28.02.26 | GaleriePage Stammdaten-Intervall | setInterval(checkStammdatenUpdate, 2000) lief auch im iframe → alle 2 s setState in Preview. **Fix:** Intervall nur starten wenn window.self === window.top; in Cursor Preview nur einmal loadData(), kein 2s-Polling. |
+| 28.02.26 | Check „check the crash“ | Routine ausgeführt. Alle setInterval in src: GaleriePage (QR, Stammdaten, Mobile-Polling), DevViewPage, useServerBuildTimestamp, GalerieVorschauPage – iframe/notInIframe-Absicherungen **intakt**. PlatzanordnungPage, ShopPage: Intervall nur bei Nutzer auf Seite (Kamera/QR), kein iframe-Check (bei Bedarf nachrüstbar). Kein neuer Fix; Cursor-Crash weiterhin IDE-seitig. |
 
-*Zuletzt ergänzt: 28.02.26 (Crash-Check: GaleriePage Stammdaten 2s-Intervall im iframe deaktiviert)*
+*Zuletzt ergänzt: 28.02.26 (Check-the-crash-Routine: alle Intervalle geprüft, Absicherungen intakt)*
 
 ---
 
@@ -166,3 +178,5 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 3. **In Cursor:** Nur Editor + Terminal + Chat – keine laufende App im Preview.
 
 **Warum:** Der Absturz kommt von der Preview/iframe-Umgebung. Im normalen Browser ist die App stabil. Wir bauen weiter Fixes ein; bis es reicht, ist Browser = sicherer Arbeitsplatz.
+
+**Code 5 wiederkehrend (28.02.26):** Crashes passieren im Cursor-Dialog (nicht in der App), unvorhersehbar – mal kurz nach Neustart, mal nach 10 Minuten. Kein klares Muster. Alle App-Fixes (Intervalle/Reload im iframe) sind intakt. **Pragmatisch:** Oft committen, dann geht bei Crash wenig verloren; Preview zu, App im Browser – reduziert Last. Wenn ein Muster auftaucht (z. B. immer beim Speichern), notieren.
