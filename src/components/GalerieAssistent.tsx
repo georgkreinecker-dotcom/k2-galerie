@@ -3,7 +3,7 @@
  * Kennt den Guide-Pfad und begrüßt persönlich.
  */
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { PRODUCT_BRAND_NAME } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL } from '../config/marketingWerbelinie'
 
@@ -80,11 +80,19 @@ export function GalerieAssistent({ onGoToStep, productName = PRODUCT_BRAND_NAME,
   const steps = baueSchritte(guidePfad)
   const [aktiverSchritt, setAktiverSchritt] = useState(0)
   const [erledigteSchritte, setErledigteSchritte] = useState<Set<number>>(new Set())
+  const stepTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Beim ersten Laden: sofort Schritt 1 markieren als "läuft gerade"
   useEffect(() => {
     // Kleines Scroll nach oben damit der erste Schritt sichtbar ist
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
+
+  // Cleanup: kein setState nach Unmount (Timeout in markiereErledigt)
+  useEffect(() => {
+    return () => {
+      if (stepTimeoutRef.current) clearTimeout(stepTimeoutRef.current)
+    }
   }, [])
 
   const geheZuSchritt = (index: number) => {
@@ -98,7 +106,9 @@ export function GalerieAssistent({ onGoToStep, productName = PRODUCT_BRAND_NAME,
     // Automatisch zum nächsten Schritt weitergehen
     const naechster = index + 1
     if (naechster < steps.length) {
-      setTimeout(() => {
+      if (stepTimeoutRef.current) clearTimeout(stepTimeoutRef.current)
+      stepTimeoutRef.current = setTimeout(() => {
+        stepTimeoutRef.current = null
         setAktiverSchritt(naechster)
         const next = steps[naechster]
         onGoToStep(next.tab, next.subTab)

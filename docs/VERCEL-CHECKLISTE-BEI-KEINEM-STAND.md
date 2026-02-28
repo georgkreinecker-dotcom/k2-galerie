@@ -49,12 +49,13 @@
    - **GitHub prüfen:** Repo **k2-galerie** → **Settings** → **Webhooks**. Gibt es einen Eintrag von Vercel? Bei „Recent Deliveries“: Letzte Lieferungen grün (200) oder rot (Fehler)? Bei Fehlern: Webhook löschen; in Vercel unter Git einmal **Disconnect** → wieder **Connect** (erstellt neuen Webhook).
    - **Workaround – Deploy Hook:** Vercel → Projekt **k2-galerie** → **Settings** → **Git** → Abschnitt **Deploy Hooks**. Neuen Hook anlegen (z. B. Name „Manuell“), Branch **main** → Vercel zeigt eine **URL**. Diese URL einmal im Browser aufrufen (oder mit `curl <URL>`) → löst sofort ein Deployment aus, unabhängig vom GitHub-Webhook.
 
-5. **Direkt vom Mac deployen (Vercel CLI) – für nächstes Vercel-Problem**
-   - **Im Mac-Terminal** (nicht Cursor-Terminal): in den Projektordner wechseln, dann:
-   - Einmalig Login: `npx vercel login` (Browser öffnet sich, bei Vercel anmelden → „Authorization successful“).
-   - Jedes Mal für Deployment: `npx vercel --prod`
-   - Bei „Set up and deploy?“ → **Enter** (yes). Bei „Which scope?“ → **georg's projects** (Enter). Bei „Link to existing project?“ → **Y**, dann **k2-galerie** wählen.
-   - Vercel baut den **aktuellen Ordnerstand** und stellt ihn als Production live. Unabhängig von GitHub/Webhook/Deploy Hook. Dauer ca. 1–2 Min.
+5. **Stand aktualisieren + deployen – ein Befehl zum Kopieren**
+   - **Im Mac-Terminal** (oder Cursor-Terminal): diesen Befehl **als Ganzes** kopieren und ausführen:
+   ```bash
+   cd /Users/georgkreinecker/k2Galerie && node scripts/write-build-info.js && npx vercel --prod
+   ```
+   - Macht: Stand neu (Datum/Zeit) → deployt zu Vercel (Production). Danach am iPad **refresh.html** oder QR neu scannen.
+   - Einmalig vorher: `npx vercel login` (Browser). Beim ersten `vercel --prod`: „Link to existing project?“ → **Y** → **k2-galerie**.
    - **Vollständige Anleitung:** **docs/VERCEL-DEPLOY-HOOK-ANLEITUNG.md** (Abschnitt „Vercel CLI – direkter Zugang“).
 
 ---

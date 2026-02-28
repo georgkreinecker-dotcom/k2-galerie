@@ -2,7 +2,11 @@
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
-## Datum: 28.02.26
+## Datum: 27.02.26 (Session-Ende – Schluss für heute)
+
+## Session-Ende 27.02.26 (heute)
+- **Heute gemacht:** „check the crash“ – GalerieAssistent setTimeout-Cleanup; danach **wieder Reopen** (Cursor).
+- **Nächster Schritt (morgen):** DIALOG-STAND lesen → optional Vercel/Stand (ein Befehl zum Kopieren) oder weiter am Crash beobachten.
 
 ## Crash Code 5 – bei jedem Reopen / „check the crash“ (Faden behalten)
 - **Wenn Georg „check the crash“ sagt:** Feste Routine ausführen: **docs/CRASH-LETZTER-KONTEXT.md** lesen → **CRASH-BEREITS-GEPRUEFT.md** lesen → gezielt in zuletzt genutzten Bereichen + neue Intervalle/Listener suchen → beide Dokus ergänzen. So eingrenzen wir den Punkt Schritt für Schritt.
@@ -14,6 +18,11 @@
 - **Stand iPad:** Zeigt 11:07, Sync klappt nicht. Vercel baut nach Push nicht (wie gestern) – letztes Deploy war vor Stunden. **Ursache unklar** (keine Einstellungen geändert). Fix jetzt: Vercel CLI (`npx vercel --prod`) oder Git Disconnect/Connect; **Ursache** noch finden (docs/VERCEL-CHECKLISTE-BEI-KEINEM-STAND.md Abschnitt 3).
 - **Check the crash:** Erneut ausgeführt – Absicherungen intakt, kein neuer Code-Fix. Cursor-Crash weiter IDE-seitig.
 - **Faden:** DIALOG-STAND lesen → Vercel-Ursache angehen oder weiterarbeiten.
+
+## Wo wir stehengeblieben (28.02.26 – vor Cursor-Neustart)
+- **Stand iPad:** Mobil zeigt 11:07, Sync klappt nicht. Push (c081c83, Stand 16:53) – Vercel baut nicht (letzter Deploy vor 6 h). **Ursache unklar** (keine Einstellungsänderung; evtl. Webhook/Git). **Sofort-Lösung:** Vercel CLI `npx vercel --prod` oder Deploy Hook / Git Disconnect+Connect. Doku: VERCEL-CHECKLISTE-BEI-KEINEM-STAND.md.
+- **Crash:** „check the crash“ erneut – Absicherungen intakt, kein neuer Code-Fix. Workaround: Preview zu, App im Browser.
+- **Nächster Schritt:** Vercel wieder zum Bauen bringen (Ursache klären oder CLI/Hook dauerhaft nutzen), dann iPad refresh.html.
 
 ## Zuletzt (28.02.26)
 - **Etikett mit Preis:** Wenn ein Werk einen Preis hat, wird dieser auf dem Etikett gedruckt (€ X,XX, de-DE). Gilt für Einzeletikett und Sammeldruck. Typ für artwork.price um `| string` ergänzt (Sammeldruck).

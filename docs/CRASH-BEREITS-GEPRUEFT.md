@@ -58,6 +58,7 @@ So können wir den Punkt Schritt für Schritt eingrenzen.
 | GaleriePage QR-Bust-Intervall in iframe | 28.02.26: setInterval(15s) nur wenn window.self === window.top (kein 15s-Re-Render in Preview) |
 | GaleriePage Admin-Weiterleitung im iframe | 28.02.26: location.href zu /admin nur bei window.self === window.top; sonst window.open(..., '_blank') |
 | GaleriePage Stammdaten-Intervall im iframe | 28.02.26: setInterval(checkStammdatenUpdate, 2000) nur wenn window.self === window.top; in Preview nur einmal loadData() |
+| GalerieAssistent setTimeout nach Unmount | 27.02.26: markiereErledigt nutzte setTimeout(400) ohne Cleanup → setState/onGoToStep nach Unmount möglich. **Fix:** stepTimeoutRef, clearTimeout im useEffect-Cleanup, in markiereErledigt Ref setzen und vor neuem Timeout clearen. |
 
 ---
 
@@ -165,8 +166,9 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 | 28.02.26 | GaleriePage Stammdaten-Intervall | setInterval(checkStammdatenUpdate, 2000) lief auch im iframe → alle 2 s setState in Preview. **Fix:** Intervall nur starten wenn window.self === window.top; in Cursor Preview nur einmal loadData(), kein 2s-Polling. |
 | 28.02.26 | Check „check the crash“ | Routine ausgeführt. Alle setInterval in src: GaleriePage (QR, Stammdaten, Mobile-Polling), DevViewPage, useServerBuildTimestamp, GalerieVorschauPage – iframe/notInIframe-Absicherungen **intakt**. PlatzanordnungPage, ShopPage: Intervall nur bei Nutzer auf Seite (Kamera/QR), kein iframe-Check (bei Bedarf nachrüstbar). Kein neuer Fix; Cursor-Crash weiterhin IDE-seitig. |
 | 28.02.26 | Check (erneut) | Kontext: seit letztem Check nur Vercel/Stand-Thema (kein neuer App-Code). write-build-info.js (iframe + localhost) ✓, GaleriePage iframe-Checks ✓. Keine neuen Stellen. |
+| 27.02.26 | GalerieAssistent | setTimeout(400) in markiereErledigt ohne Cleanup → bei Unmount setState/onGoToStep nach Ablauf. **Fix:** stepTimeoutRef + clearTimeout im useEffect-Cleanup; in markiereErledigt Ref setzen und vor neuem Timeout clearen. |
 
-*Zuletzt ergänzt: 28.02.26 (Crash-Check erneut: keine neuen Änderungen, Absicherungen intakt)*
+*Zuletzt ergänzt: 27.02.26 (Crash-Check: GalerieAssistent setTimeout-Cleanup)*
 
 ---
 
