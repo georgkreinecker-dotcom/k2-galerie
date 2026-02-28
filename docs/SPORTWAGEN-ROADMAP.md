@@ -159,7 +159,7 @@
 | **Prototyp** | Stammdaten/Kontakt teils direkt, teils aus State; fromOeffentlich an mehreren Stellen. |
 | **Sportwagen** | Stammdaten nur aus Stammdaten-Schicht (1.3); Kontext aus 1.1. Ein Standard für „Kontakt anzeigen“ (fromOeffentlich-Logik einmal zentral). |
 | **Schritte** | 1) Nach Phase 1+1.3: ShopPage, WillkommenPage, VitaPage, AGBPage etc. auf Schicht + Context umstellen. 2) fromOeffentlich in eine Hilfsfunktion oder Context auslagern. |
-| **Erledigt** | [x] 28.02.26 (oeffentlichContext.isOeffentlichDisplayContext; ShopPage/VitaPage Stammdaten über loadStammdaten/saveStammdaten; Shop fromOeffentlich zentral) |
+| **Erledigt** | [x] 28.02.26 (oeffentlichContext; Shop/Vita über Schicht; Willkommen/AGB geprüft – keine Stammdaten-Zugriffe. GaleriePage Stammdaten beim gallery-data-Merge optional später auf Schicht.) |
 
 ---
 
@@ -181,7 +181,7 @@
 | **Prototyp** | Eigene Layouts, Navigation; Inhalte in MarketingOek2Page, K2TeamHandbuchPage. |
 | **Sportwagen** | Klar getrennt von Galerie-Daten; nur Lesen aus öffentlichen Quellen/Muster. Regel mok2-vk2-inhalte-nicht-entfernen.mdc. Keine neuen handwerklichen Duplikate. |
 | **Schritte** | 1) Bei Änderungen: keine K2/ök2-Daten in mök2 schreiben. 2) Inhalte (Lizenz VK2, etc.) nicht „nebenbei“ entfernen. |
-| **Erledigt** | [ ] (laufend) |
+| **Erledigt** | [x] 28.02.26 (Geprüft: MarketingOek2Page/K2TeamHandbuch schreiben keine k2-artworks/k2-stammdaten; Regel mok2-vk2-inhalte-nicht-entfernen.mdc aktiv. Bei Änderungen weiter beachten.) |
 
 ---
 
@@ -194,7 +194,7 @@
 | **Prototyp** | write-build-info.js, index.html Inject, buildInfo.generated.ts, vercel.json no-cache; mehrfach angefasst (BUG-006). |
 | **Sportwagen** | **Ein** dokumentierter Ablauf: Build schreibt Stand; QR nutzt Server-Stand + Cache-Bust; keine Änderung ohne Regel stand-qr-niemals-zurueck.mdc. |
 | **Schritte** | 1) Doku (VERCEL-STAND-HANDY, STAND-QR-SO-BLEIBT-ES) aktuell halten. 2) Bei Änderungen: Checkliste in stand-qr-niemals-zurueck.mdc durchgehen. |
-| **Erledigt** | [ ] (laufend) |
+| **Erledigt** | [x] 28.02.26 (Doku: VERCEL-STAND-HANDY, STAND-QR-SO-BLEIBT-ES, SCHRITT-FUER-SCHRITT-STAND-AKTUELL; Regel stand-qr-niemals-zurueck.mdc alwaysApply; Checkliste bei Build/QR-Änderungen. Laufend einhalten.) |
 
 ### 7.2 Vercel & API (write-gallery-data, build-info)
 
