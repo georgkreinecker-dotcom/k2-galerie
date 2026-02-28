@@ -8,6 +8,7 @@
 - **Problem:** Reopen-Meldungen wurden immer häufiger (Intervalle kürzer).
 - **Ursache:** write-build-info.js hat bei jedem `npm run dev` Dateien überschrieben → Cursor meldet Reopen bei Disk-Änderung.
 - **Lösung:** Nur schreiben wenn Inhalt/Label geändert (buildInfo.generated.ts, build-info.json, api/build-info.js, index.html). Regel: **.cursor/rules/build-skripte-nur-schreiben-wenn-geaendert.mdc** (alwaysApply). In STRUKTUR-HANDELN-QUELLEN verlinkt.
+- **Reopen-Check 28.02.26:** write-build-info.js prüft weiterhin vor jedem Schreiben (existing === content / Label / indexHtml); bei Gleichheit kein Schreiben → „Build-Info unverändert“. Regel aktiv.
 
 ## Thema
 **Prototyp → Sportwagen – systematisch:** Phase **5.1–5.3** ✅, **6.1** ✅ (28.02.26). 6.1: APf geprüft (keine Reload in DevView/PlatformStart/MobileConnect; keine k2-artworks/k2-stammdaten-Schreibzugriffe). Nächster Schritt: Phase 6.2 oder 7.
