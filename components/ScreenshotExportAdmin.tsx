@@ -24,6 +24,7 @@ import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
 import { addPendingArtwork, filterK2Only, readArtworksRawByKey, saveArtworksByKey } from '../src/utils/artworksStorage'
+import { loadStammdaten, saveStammdaten as persistStammdaten, loadVk2Stammdaten, saveVk2Stammdaten } from '../src/utils/stammdatenStorage'
 import { loadEvents as loadEventsFromStorage } from '../src/utils/eventsStorage'
 import { loadDocuments as loadDocumentsFromStorage } from '../src/utils/documentsStorage'
 import { apiPost, apiGet } from '../src/utils/apiClient'
@@ -1025,7 +1026,7 @@ function ScreenshotExportAdmin() {
       const K2_HERO = 'K2 Galerie'
       const K2_TAGLINE = 'Kunst & Keramik – Martina und Georg Kreinecker'
       const K2_INTRO = 'Ein Neuanfang mit Leidenschaft'
-      const vk2Vereinsname = (() => { try { const s = localStorage.getItem('k2-vk2-stammdaten'); return s ? (JSON.parse(s)?.verein?.name || '') : '' } catch { return '' } })()
+      const vk2Vereinsname = (() => { try { const s = loadVk2Stammdaten(); return (s && typeof s === 'object' && (s as any)?.verein?.name) || '' } catch { return '' } })()
       const galerie = raw.galerie ?? {}
       const heroTitle = (!galerie.heroTitle || galerie.heroTitle === K2_HERO) ? (vk2Vereinsname || 'VK2 Vereinsplattform') : galerie.heroTitle
       const welcomeSubtext = (!galerie.welcomeSubtext || galerie.welcomeSubtext === K2_TAGLINE) ? 'Kunstverein' : galerie.welcomeSubtext
@@ -1555,24 +1556,23 @@ function ScreenshotExportAdmin() {
       if (!isMounted) return
       
       try {
-        // Einmalig: Wenn K2-Stammdaten leer sind, aber der Kunde in der Muster-Galerie schon etwas eingegeben hat → übernehmen
-        const k2Martina = localStorage.getItem('k2-stammdaten-martina')
-        const oefMartina = localStorage.getItem(KEY_OEF_STAMMDATEN_MARTINA)
-        if ((!k2Martina || k2Martina.length < 10) && oefMartina && oefMartina.length > 0) {
+        // Einmalig: Wenn K2-Stammdaten leer sind, aber der Kunde in der Muster-Galerie schon etwas eingegeben hat → übernehmen (Schicht: stammdatenStorage)
+        const k2MartinaObj = loadStammdaten('k2', 'martina')
+        const oefMartinaObj = loadStammdaten('oeffentlich', 'martina')
+        const k2MartinaEmpty = !k2MartinaObj || (typeof k2MartinaObj === 'object' && (!k2MartinaObj.name || !k2MartinaObj.email))
+        if (k2MartinaEmpty && oefMartinaObj && typeof oefMartinaObj === 'object' && (oefMartinaObj.name || oefMartinaObj.email)) {
           try {
-            localStorage.setItem('k2-stammdaten-martina', oefMartina)
-            const oefGeorg = localStorage.getItem(KEY_OEF_STAMMDATEN_GEORG)
-            const oefGalerie = localStorage.getItem(KEY_OEF_STAMMDATEN_GALERIE)
-            if (oefGeorg) localStorage.setItem('k2-stammdaten-georg', oefGeorg)
-            if (oefGalerie) localStorage.setItem('k2-stammdaten-galerie', oefGalerie)
+            persistStammdaten('k2', 'martina', oefMartinaObj)
+            persistStammdaten('k2', 'georg', loadStammdaten('oeffentlich', 'georg'))
+            persistStammdaten('k2', 'gallery', loadStammdaten('oeffentlich', 'gallery'))
           } catch (_) {}
         }
         
-        const storedMartina = localStorage.getItem('k2-stammdaten-martina')
+        const storedMartina = loadStammdaten('k2', 'martina') as Record<string, unknown>
         const d = K2_STAMMDATEN_DEFAULTS.martina
         let mergedMartina: any
-        if (storedMartina && storedMartina.length < 100000) {
-          const parsed = JSON.parse(storedMartina)
+        if (storedMartina && typeof storedMartina === 'object' && JSON.stringify(storedMartina).length < 100000) {
+          const parsed = storedMartina
           mergedMartina = {
             ...parsed,
             name: (parsed.name && String(parsed.name).trim()) ? parsed.name : d.name,
@@ -1587,12 +1587,11 @@ function ScreenshotExportAdmin() {
           mergedMartina = { name: d.name, email: d.email, phone: d.phone, website: d.website || '', category: 'malerei', bio: '', vita: MUSTER_VITA_MARTINA }
         }
         if (isMounted) setMartinaData(mergedMartina)
-        // Nur Kontaktfelder reparieren – niemals komplette Stammdaten überschreiben (sonst gehen Adresse, Bio, Bilder verloren)
-        if (storedMartina && storedMartina.length < 100000) {
+        // Nur Kontaktfelder reparieren – niemals komplette Stammdaten überschreiben (sonst gehen Adresse, Bio, Bilder verloren). Schicht: saveStammdaten.
+        if (storedMartina && typeof storedMartina === 'object' && JSON.stringify(storedMartina).length < 100000) {
           try {
-            const prev = JSON.parse(storedMartina)
-            const toWrite = { ...prev, name: mergedMartina.name, email: mergedMartina.email, phone: mergedMartina.phone, website: mergedMartina.website }
-            localStorage.setItem('k2-stammdaten-martina', JSON.stringify(toWrite))
+            const toWrite = { ...storedMartina, name: mergedMartina.name, email: mergedMartina.email, phone: mergedMartina.phone, website: mergedMartina.website }
+            persistStammdaten('k2', 'martina', toWrite)
           } catch (_) {}
         }
       } catch (error) {
@@ -1602,11 +1601,11 @@ function ScreenshotExportAdmin() {
       if (!isMounted) return
       
       try {
-        const storedGeorg = localStorage.getItem('k2-stammdaten-georg')
+        const storedGeorg = loadStammdaten('k2', 'georg') as Record<string, unknown>
         const d = K2_STAMMDATEN_DEFAULTS.georg
         let mergedGeorg: any
-        if (storedGeorg && storedGeorg.length < 100000) {
-          const parsed = JSON.parse(storedGeorg)
+        if (storedGeorg && typeof storedGeorg === 'object' && JSON.stringify(storedGeorg).length < 100000) {
+          const parsed = storedGeorg
           mergedGeorg = {
             ...parsed,
             name: (parsed.name && String(parsed.name).trim()) ? parsed.name : d.name,
@@ -1621,11 +1620,10 @@ function ScreenshotExportAdmin() {
           mergedGeorg = { name: d.name, email: d.email, phone: d.phone, website: d.website || '', category: 'keramik', bio: '', vita: MUSTER_VITA_GEORG }
         }
         if (isMounted) setGeorgData(mergedGeorg)
-        if (storedGeorg && storedGeorg.length < 100000) {
+        if (storedGeorg && typeof storedGeorg === 'object' && JSON.stringify(storedGeorg).length < 100000) {
           try {
-            const prev = JSON.parse(storedGeorg)
-            const toWrite = { ...prev, name: mergedGeorg.name, email: mergedGeorg.email, phone: mergedGeorg.phone, website: mergedGeorg.website }
-            localStorage.setItem('k2-stammdaten-georg', JSON.stringify(toWrite))
+            const toWrite = { ...storedGeorg, name: mergedGeorg.name, email: mergedGeorg.email, phone: mergedGeorg.phone, website: mergedGeorg.website }
+            persistStammdaten('k2', 'georg', toWrite)
           } catch (_) {}
         }
       } catch (error) {
@@ -1635,12 +1633,8 @@ function ScreenshotExportAdmin() {
       if (!isMounted) return
       
       try {
-        const storedGallery = localStorage.getItem('k2-stammdaten-galerie')
+        const data = loadStammdaten('k2', 'gallery') as Record<string, unknown> | null
         const g = K2_STAMMDATEN_DEFAULTS.gallery
-        let data: any = null
-        if (storedGallery) {
-          try { data = JSON.parse(storedGallery) } catch (_) {}
-        }
         let mergedGallery: any
         if (data && typeof data === 'object') {
           // Bestehende Daten behalten (Adresse, welcomeImage, virtualTourImage, soldArtworksDisplayDays, etc.) – nur leere Kontaktfelder aus Defaults füllen
@@ -1675,11 +1669,11 @@ function ScreenshotExportAdmin() {
             welcomeImage: '',
             virtualTourImage: '',
             galerieCardImage: '',
-            internetShopNotSetUp: data.internetShopNotSetUp !== false
+            internetShopNotSetUp: true
           }
         }
         if (isMounted) setGalleryData(mergedGallery)
-        // Nur Kontakt/Name reparieren – niemals welcomeImage, virtualTourImage, Adresse etc. überschreiben
+        // Nur Kontakt/Name reparieren – niemals welcomeImage, virtualTourImage, Adresse etc. überschreiben. Schicht: saveStammdaten.
         if (data && typeof data === 'object') {
           try {
             const toWrite = {
@@ -1695,7 +1689,7 @@ function ScreenshotExportAdmin() {
               openingHours: mergedGallery.openingHours,
               bankverbindung: mergedGallery.bankverbindung
             }
-            localStorage.setItem('k2-stammdaten-galerie', JSON.stringify(toWrite))
+            persistStammdaten('k2', 'gallery', toWrite)
           } catch (_) {}
         }
       } catch (error) {
@@ -1720,9 +1714,8 @@ function ScreenshotExportAdmin() {
     const t = setTimeout(() => {
       if (!isMounted) return
       try {
-        const raw = localStorage.getItem(KEY_VK2_STAMMDATEN)
-        if (raw && raw.length < 500000) {
-          const parsed = JSON.parse(raw) as Partial<Vk2Stammdaten>
+        const parsed = loadVk2Stammdaten() as Partial<Vk2Stammdaten> | null
+        if (parsed && typeof parsed === 'object' && JSON.stringify(parsed).length < 500000) {
           const parsedMitglieder: Vk2Mitglied[] = Array.isArray(parsed.mitglieder) ? parsed.mitglieder.map((m: any) => typeof m === 'string' ? { name: m, oeffentlichSichtbar: true } : { name: m?.name ?? '', email: m?.email, lizenz: m?.lizenz, typ: m?.typ, mitgliedFotoUrl: m?.mitgliedFotoUrl, imageUrl: m?.imageUrl, phone: m?.phone, website: m?.website, seit: m?.seit, strasse: m?.strasse, plz: m?.plz, ort: m?.ort, land: m?.land, geburtsdatum: m?.geburtsdatum, eintrittsdatum: m?.eintrittsdatum ?? m?.seit, oeffentlichSichtbar: m?.oeffentlichSichtbar !== false, bankKontoinhaber: m?.bankKontoinhaber, bankIban: m?.bankIban, bankBic: m?.bankBic, bankName: m?.bankName }) : []
           const merged: Vk2Stammdaten = {
             verein: { ...VK2_STAMMDATEN_DEFAULTS.verein, ...parsed.verein },
@@ -1784,14 +1777,11 @@ function ScreenshotExportAdmin() {
   const saveAllForVorschau = () => {
     try {
       if (tenant.isVk2) {
-        localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify(vk2Stammdaten))
+        saveVk2Stammdaten(vk2Stammdaten)
       } else if (!tenant.isOeffentlich) {
-        const martinaStr = JSON.stringify(martinaData)
-        const georgStr = JSON.stringify(georgData)
-        const galleryStr = JSON.stringify(galleryData)
-        if (martinaStr.length < 100000) localStorage.setItem('k2-stammdaten-martina', martinaStr)
-        if (georgStr.length < 100000) localStorage.setItem('k2-stammdaten-georg', georgStr)
-        if (galleryStr.length < 5000000) localStorage.setItem('k2-stammdaten-galerie', galleryStr)
+        if (JSON.stringify(martinaData).length < 100000) persistStammdaten('k2', 'martina', martinaData)
+        if (JSON.stringify(georgData).length < 100000) persistStammdaten('k2', 'georg', georgData)
+        if (JSON.stringify(galleryData).length < 5000000) persistStammdaten('k2', 'gallery', galleryData)
       }
       // Werke über Schicht (Phase 1.2)
       if (!tenant.isVk2) {
@@ -1816,7 +1806,7 @@ function ScreenshotExportAdmin() {
       }
       if (tenant.isVk2) {
         try {
-          localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify(vk2Stammdaten))
+          saveVk2Stammdaten(vk2Stammdaten)
           resolve()
         } catch (e) {
           reject(e)
@@ -1828,24 +1818,22 @@ function ScreenshotExportAdmin() {
       }, 5000) // Max 5 Sekunden
       
       try {
-        // Stammdaten Galerie: Bilder nicht mitschreiben (leben nur in Seitengestaltung k2-page-content-galerie)
+        // Stammdaten Galerie: Bilder nicht mitschreiben (leben nur in Seitengestaltung k2-page-content-galerie). Schicht: saveStammdaten.
         const { welcomeImage: _w, galerieCardImage: _c, virtualTourImage: _v, ...galleryStammdaten } = galleryData
         const galleryToSave = galleryStammdaten as typeof galleryData
 
-        // Prüfe Größe bevor speichern
         const martinaStr = JSON.stringify(martinaData)
         const georgStr = JSON.stringify(georgData)
         const galleryStr = JSON.stringify(galleryToSave)
-
         if (martinaStr.length > 100000 || georgStr.length > 100000 || galleryStr.length > 5000000) {
           clearTimeout(timeoutId)
           reject(new Error('Daten zu groß zum Speichern'))
           return
         }
 
-        localStorage.setItem('k2-stammdaten-martina', martinaStr)
-        localStorage.setItem('k2-stammdaten-georg', georgStr)
-        localStorage.setItem('k2-stammdaten-galerie', galleryStr)
+        persistStammdaten('k2', 'martina', martinaData)
+        persistStammdaten('k2', 'georg', georgData)
+        persistStammdaten('k2', 'gallery', galleryToSave)
         
         clearTimeout(timeoutId)
         resolve()
@@ -2079,9 +2067,10 @@ function ScreenshotExportAdmin() {
         const newVersion = currentVersion + 1
         localStorage.setItem('k2-data-version', newVersion.toString())
 
-        const martinaStored = getItemSafe('k2-stammdaten-martina', {})
-        const georgStored = getItemSafe('k2-stammdaten-georg', {})
-        const galleryStamm = getItemSafe('k2-stammdaten-galerie', {})
+        const stammTenant = tenant.isOeffentlich ? ('oeffentlich' as const) : ('k2' as const)
+        const martinaStored = loadStammdaten(stammTenant, 'martina') as Record<string, unknown>
+        const georgStored = loadStammdaten(stammTenant, 'georg') as Record<string, unknown>
+        const galleryStamm = loadStammdaten(stammTenant, 'gallery') as Record<string, unknown>
         const oeffentlich = tenant.isOeffentlich
         const pageContent = getPageContentGalerie(oeffentlich ? 'oeffentlich' : undefined)
         const eventsStored = getItemSafe(tenant.getEventsKey(), []) || []
@@ -2935,7 +2924,7 @@ function ScreenshotExportAdmin() {
     const ort = event.location || ''
     if (tenant.isVk2) {
       try {
-        const stamm = JSON.parse(localStorage.getItem(KEY_VK2_STAMMDATEN) || '{}') as Vk2Stammdaten
+        const stamm = (loadVk2Stammdaten() || {}) as Vk2Stammdaten
         const v = stamm?.verein
         const adr = [v?.address, v?.city].filter(Boolean).join(', ')
         return {
@@ -3563,8 +3552,8 @@ ${'='.repeat(60)}
     const desc = event?.description || 'Malerei, Keramik und Skulptur in einem außergewöhnlichen Galerieraum.'
 
     if (tenant.isVk2) {
-      const raw = localStorage.getItem(KEY_VK2_STAMMDATEN)
-      const stamm = raw ? (JSON.parse(raw) as Vk2Stammdaten) : null
+      const raw = loadVk2Stammdaten()
+      const stamm = raw && typeof raw === 'object' ? (raw as Vk2Stammdaten) : null
       const verein = stamm?.verein || { name: 'Kunstverein Muster', address: 'Musterstraße 12', city: 'Wien', email: '', website: '' }
       const mitglieder = (stamm?.mitglieder || []).filter((m: any) => m?.name)
       const vName = verein.name || 'Kunstverein Muster'
@@ -3670,8 +3659,8 @@ ${'='.repeat(60)}
     const desc = event?.description || 'Malerei, Keramik und Skulptur in einer einzigartigen Galerieatmosphäre.'
 
     if (tenant.isVk2) {
-      const raw = localStorage.getItem(KEY_VK2_STAMMDATEN)
-      const stamm = raw ? (JSON.parse(raw) as Vk2Stammdaten) : null
+      const raw = loadVk2Stammdaten()
+      const stamm = raw && typeof raw === 'object' ? (raw as Vk2Stammdaten) : null
       const verein = stamm?.verein || { name: 'Kunstverein Muster', address: 'Musterstraße 12', city: 'Wien', email: 'office@kunstverein-muster.at', website: '' }
       const mitglieder = (stamm?.mitglieder || []).filter((m: any) => m?.name)
       const vName = verein.name || 'Kunstverein Muster'
@@ -3764,7 +3753,7 @@ ${'='.repeat(60)}
     const galleryName = (() => {
       if (isVk2) {
         try {
-          const stamm = JSON.parse(localStorage.getItem(KEY_VK2_STAMMDATEN) || '{}') as Vk2Stammdaten
+          const stamm = (loadVk2Stammdaten() || {}) as Vk2Stammdaten
           return stamm?.verein?.name || 'Kunstverein Muster'
         } catch { return 'Kunstverein Muster' }
       }
@@ -4907,7 +4896,7 @@ ${'='.repeat(60)}
           const v = vk2Stammdaten?.verein
           return v ? { name: v.name, address: v.address, city: v.city, website: v.website || '', phone: (v as any).phone || '', email: v.email || '' } : {}
         }
-        return JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
+        return loadStammdaten('k2', 'gallery') as Record<string, unknown>
       })()
       const freshSuggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
       const freshEventSuggestion = freshSuggestions.find((s: any) => s.eventId === event.id)
@@ -6070,8 +6059,8 @@ ${'='.repeat(60)}
 
     if (tenant.isVk2 && (isEinladung || isPresse || isFlyer)) {
       try {
-        const raw = localStorage.getItem('k2-vk2-stammdaten')
-        const stamm = raw ? JSON.parse(raw) as Vk2Stammdaten : null
+        const raw = loadVk2Stammdaten()
+        const stamm = raw && typeof raw === 'object' ? (raw as Vk2Stammdaten) : null
         const verein = stamm?.verein ? { name: stamm.verein.name, address: stamm.verein.address, city: stamm.verein.city, email: stamm.verein.email, website: stamm.verein.website } : { name: 'Kunstverein Muster', address: 'Musterstraße 12', city: 'Wien', email: 'office@kunstverein-muster.at', website: 'www.kunstverein-muster.at' }
         const mitglieder = (stamm?.mitglieder || []).filter((m: any) => m?.name).map((m: any) => ({ name: m.name, typ: m.typ, kurzVita: m.kurzVita, bio: m.bio }))
         const docKind = isEinladung ? 'einladung' : isPresse ? 'presse' : 'flyer'
@@ -8577,14 +8566,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               {mitglied?.mitgliedFotoUrl ? (
                 <div style={{ position: 'relative', display: 'inline-block' }}>
                   <img src={mitglied.mitgliedFotoUrl} alt="Foto" style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(37,99,235,0.5)', display: 'block' }} />
-                  <button type="button" onClick={() => { const neu = [...(vk2Stammdaten.mitglieder||[])]; if (neu[mitgliedIdx]) { neu[mitgliedIdx] = { ...neu[mitgliedIdx], mitgliedFotoUrl: undefined }; setVk2Stammdaten({...vk2Stammdaten, mitglieder:neu}); try{localStorage.setItem(KEY_VK2_STAMMDATEN,JSON.stringify({...vk2Stammdaten,mitglieder:neu}))}catch(_){} }}} style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#b54a1e', border: 'none', color: '#fff', fontSize: '0.75rem', cursor: 'pointer', display:'flex',alignItems:'center',justifyContent:'center' }}>×</button>
+                  <button type="button" onClick={() => { const neu = [...(vk2Stammdaten.mitglieder||[])]; if (neu[mitgliedIdx]) { neu[mitgliedIdx] = { ...neu[mitgliedIdx], mitgliedFotoUrl: undefined }; setVk2Stammdaten({...vk2Stammdaten, mitglieder:neu}); try{saveVk2Stammdaten({...vk2Stammdaten,mitglieder:neu})}catch(_){} }}} style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: '#b54a1e', border: 'none', color: '#fff', fontSize: '0.75rem', cursor: 'pointer', display:'flex',alignItems:'center',justifyContent:'center' }}>×</button>
                 </div>
               ) : (
                 <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', width: '100%', aspectRatio: '1', background: 'rgba(37,99,235,0.08)', border: '2px dashed rgba(37,99,235,0.3)', borderRadius: 12, cursor: 'pointer', color: 'rgba(160,200,255,0.5)', fontSize: '0.8rem', textAlign: 'center' }}>
                   <span style={{ fontSize: '1.8rem' }}>👤</span><span>Foto hinzufügen</span>
                   <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={(e) => {
                     const file = e.target.files?.[0]; if (!file) return
-                    const reader = new FileReader(); reader.onload = () => { const dataUrl = reader.result as string; const img = new Image(); img.onload = () => { const maxW=400; const scale=img.width>maxW?maxW/img.width:1; const c=document.createElement('canvas'); c.width=Math.round(img.width*scale); c.height=Math.round(img.height*scale); const ctx=c.getContext('2d'); const url=ctx?c.toDataURL('image/jpeg',0.6):dataUrl; if(ctx)ctx.drawImage(img,0,0,c.width,c.height); const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],mitgliedFotoUrl:url};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{localStorage.setItem(KEY_VK2_STAMMDATEN,JSON.stringify({...vk2Stammdaten,mitglieder:neu}))}catch(_){}} }; img.src=dataUrl }; reader.readAsDataURL(file)
+                    const reader = new FileReader(); reader.onload = () => { const dataUrl = reader.result as string; const img = new Image(); img.onload = () => { const maxW=400; const scale=img.width>maxW?maxW/img.width:1; const c=document.createElement('canvas'); c.width=Math.round(img.width*scale); c.height=Math.round(img.height*scale); const ctx=c.getContext('2d'); const url=ctx?c.toDataURL('image/jpeg',0.6):dataUrl; if(ctx)ctx.drawImage(img,0,0,c.width,c.height); const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],mitgliedFotoUrl:url};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{saveVk2Stammdaten({...vk2Stammdaten,mitglieder:neu})}catch(_){}} }; img.src=dataUrl }; reader.readAsDataURL(file)
                   }} />
                 </label>
               )}
@@ -8594,14 +8583,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               {mitglied?.imageUrl ? (
                 <div style={{ position: 'relative' }}>
                   <img src={mitglied.imageUrl} alt="Werk" style={{ width: '100%', aspectRatio: '3/2', objectFit: 'cover', borderRadius: 10, border: '1px solid rgba(37,99,235,0.3)', display: 'block' }} />
-                  <button type="button" onClick={() => { const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],imageUrl:undefined};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{localStorage.setItem(KEY_VK2_STAMMDATEN,JSON.stringify({...vk2Stammdaten,mitglieder:neu}))}catch(_){}} }} style={{ position: 'absolute', top: 4, right: 4, width: 24, height: 24, borderRadius: '50%', background: '#b54a1e', border: 'none', color: '#fff', fontSize: '0.8rem', cursor: 'pointer', display:'flex',alignItems:'center',justifyContent:'center' }}>×</button>
+                  <button type="button" onClick={() => { const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],imageUrl:undefined};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{saveVk2Stammdaten({...vk2Stammdaten,mitglieder:neu})}catch(_){}} }} style={{ position: 'absolute', top: 4, right: 4, width: 24, height: 24, borderRadius: '50%', background: '#b54a1e', border: 'none', color: '#fff', fontSize: '0.8rem', cursor: 'pointer', display:'flex',alignItems:'center',justifyContent:'center' }}>×</button>
                 </div>
               ) : (
                 <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', width: '100%', aspectRatio: '3/2', background: 'rgba(37,99,235,0.08)', border: '2px dashed rgba(37,99,235,0.3)', borderRadius: 12, cursor: 'pointer', color: 'rgba(160,200,255,0.5)', fontSize: '0.8rem', textAlign: 'center' }}>
                   <span style={{ fontSize: '1.8rem' }}>🖼️</span><span>Werk hinzufügen</span>
                   <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={(e) => {
                     const file = e.target.files?.[0]; if (!file) return
-                    const reader = new FileReader(); reader.onload = () => { const dataUrl = reader.result as string; const img = new Image(); img.onload = () => { const maxW=600; const scale=img.width>maxW?maxW/img.width:1; const c=document.createElement('canvas'); c.width=Math.round(img.width*scale); c.height=Math.round(img.height*scale); const ctx=c.getContext('2d'); const url=ctx?c.toDataURL('image/jpeg',0.6):dataUrl; if(ctx)ctx.drawImage(img,0,0,c.width,c.height); const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],imageUrl:url};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{localStorage.setItem(KEY_VK2_STAMMDATEN,JSON.stringify({...vk2Stammdaten,mitglieder:neu}))}catch(_){}} }; img.src=dataUrl }; reader.readAsDataURL(file)
+                    const reader = new FileReader(); reader.onload = () => { const dataUrl = reader.result as string; const img = new Image(); img.onload = () => { const maxW=600; const scale=img.width>maxW?maxW/img.width:1; const c=document.createElement('canvas'); c.width=Math.round(img.width*scale); c.height=Math.round(img.height*scale); const ctx=c.getContext('2d'); const url=ctx?c.toDataURL('image/jpeg',0.6):dataUrl; if(ctx)ctx.drawImage(img,0,0,c.width,c.height); const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],imageUrl:url};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{saveVk2Stammdaten({...vk2Stammdaten,mitglieder:neu})}catch(_){}} }; img.src=dataUrl }; reader.readAsDataURL(file)
                   }} />
                 </label>
               )}
@@ -8615,7 +8604,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             </label>
             <textarea
               value={mitglied?.bio || ''}
-              onChange={(e) => { const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],bio:e.target.value};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{localStorage.setItem(KEY_VK2_STAMMDATEN,JSON.stringify({...vk2Stammdaten,mitglieder:neu}))}catch(_){}} }}
+              onChange={(e) => { const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],bio:e.target.value};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{saveVk2Stammdaten({...vk2Stammdaten,mitglieder:neu})}catch(_){}} }}
               placeholder="1–2 Sätze für die öffentliche Mitglieder-Karte ..."
               rows={2}
               style={{ width: '100%', padding: '0.65rem', background: '#1e2f47', border: '1px solid rgba(37,99,235,0.25)', borderRadius: 10, color: '#f0f6ff', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
@@ -8629,7 +8618,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             </label>
             <textarea
               value={mitglied?.vita || ''}
-              onChange={(e) => { const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],vita:e.target.value};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{localStorage.setItem(KEY_VK2_STAMMDATEN,JSON.stringify({...vk2Stammdaten,mitglieder:neu}))}catch(_){}} }}
+              onChange={(e) => { const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],vita:e.target.value};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{saveVk2Stammdaten({...vk2Stammdaten,mitglieder:neu})}catch(_){}} }}
               placeholder={'Ausführlicher Lebenslauf, Ausstellungen, Technik, Inspiration ...'}
               rows={8}
               style={{ width: '100%', padding: '0.65rem', background: '#1e2f47', border: '1px solid rgba(37,99,235,0.25)', borderRadius: 10, color: '#f0f6ff', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Georgia, serif', lineHeight: 1.7 }}
@@ -8644,7 +8633,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             <input
               type="text"
               value={mitglied?.galerieLinkUrl || mitglied?.website || ''}
-              onChange={(e) => { const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],galerieLinkUrl:e.target.value};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{localStorage.setItem(KEY_VK2_STAMMDATEN,JSON.stringify({...vk2Stammdaten,mitglieder:neu}))}catch(_){}} }}
+              onChange={(e) => { const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],galerieLinkUrl:e.target.value};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{saveVk2Stammdaten({...vk2Stammdaten,mitglieder:neu})}catch(_){}} }}
               placeholder="https://meine-seite.at"
               style={{ width: '100%', padding: '0.65rem', background: '#1e2f47', border: '1px solid rgba(37,99,235,0.25)', borderRadius: 10, color: '#f0f6ff', fontSize: '0.9rem', outline: 'none' }}
             />
@@ -9942,7 +9931,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
                           <button type="button" onClick={() => { setEditingMemberIndex(indexInFull); setMemberForm(memberToForm(m)); setShowAddModal(true) }} style={{ padding: '0.5rem 1rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: '8px', color: s.accent, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>Bearbeiten</button>
                           <button type="button" title="Zeigt wie das Mitglied seinen eigenen Bereich sieht" onClick={() => { try { sessionStorage.setItem(VK2_MITGLIED_SESSION_KEY, m.name) } catch (_) {}; window.open('/admin?context=vk2&mitglied=1', '_blank') }} style={{ padding: '0.5rem 0.85rem', background: 'rgba(37,99,235,0.15)', border: '1px solid rgba(37,99,235,0.4)', borderRadius: '8px', color: '#93c5fd', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>👁️ Als Mitglied sehen</button>
-                          <button type="button" onClick={() => { const neu = mitglieder.filter((_, j) => j !== indexInFull); setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }); try { localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify({ ...vk2Stammdaten, mitglieder: neu })) } catch (_) {} }} style={{ padding: '0.5rem', background: 'transparent', border: 'none', color: s.muted, cursor: 'pointer', fontSize: '1.2rem' }} title="Entfernen">×</button>
+                          <button type="button" onClick={() => { const neu = mitglieder.filter((_, j) => j !== indexInFull); setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }); try { saveVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }) } catch (_) {} }} style={{ padding: '0.5rem', background: 'transparent', border: 'none', color: s.muted, cursor: 'pointer', fontSize: '1.2rem' }} title="Entfernen">×</button>
                         </div>
                       </div>
                     )
@@ -9976,7 +9965,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
                           <button type="button" onClick={() => { setEditingMemberIndex(indexInFull); setMemberForm(memberToForm(m)); setShowAddModal(true) }} style={{ padding: '0.5rem 1rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: '8px', color: s.accent, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>Bearbeiten</button>
                           <button type="button" title="Zeigt wie das Mitglied seinen eigenen Bereich sieht" onClick={() => { try { sessionStorage.setItem(VK2_MITGLIED_SESSION_KEY, m.name) } catch (_) {}; window.open('/admin?context=vk2&mitglied=1', '_blank') }} style={{ padding: '0.5rem 0.85rem', background: 'rgba(37,99,235,0.15)', border: '1px solid rgba(37,99,235,0.4)', borderRadius: '8px', color: '#93c5fd', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>👁️ Als Mitglied sehen</button>
-                          <button type="button" onClick={() => { const neu = mitglieder.filter((_, j) => j !== indexInFull); setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }); try { localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify({ ...vk2Stammdaten, mitglieder: neu })) } catch (_) {} }} style={{ padding: '0.5rem', background: 'transparent', border: 'none', color: s.muted, cursor: 'pointer', fontSize: '1.2rem' }} title="Entfernen">×</button>
+                          <button type="button" onClick={() => { const neu = mitglieder.filter((_, j) => j !== indexInFull); setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }); try { saveVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }) } catch (_) {} }} style={{ padding: '0.5rem', background: 'transparent', border: 'none', color: s.muted, cursor: 'pointer', fontSize: '1.2rem' }} title="Entfernen">×</button>
                         </div>
                       </div>
                     )
@@ -11181,13 +11170,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     const ohneAlteMuster = existing.filter((a: any) => !String(a.id || '').startsWith('muster-') && !(a as any)._isMuster)
                     const withMuster = [...MUSTER_ARTWORKS.map((a: any) => ({ ...a, _isMuster: true })), ...ohneAlteMuster]
                     saveArtworksByKey('k2-artworks', withMuster, { filterK2Only: true, allowReduce: true })
-                    // Musterstammdaten nur wenn leer
-                    const gallStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}') } catch { return {} } })()
-                    if (!gallStamm.name) localStorage.setItem('k2-stammdaten-galerie', JSON.stringify({ ...MUSTER_TEXTE.gallery, _isMuster: true }))
-                    const martinaStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}') } catch { return {} } })()
-                    if (!martinaStamm.name) localStorage.setItem('k2-stammdaten-martina', JSON.stringify({ ...MUSTER_TEXTE.martina, _isMuster: true }))
-                    const georgStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}') } catch { return {} } })()
-                    if (!georgStamm.name) localStorage.setItem('k2-stammdaten-georg', JSON.stringify({ ...MUSTER_TEXTE.georg, _isMuster: true }))
+                    // Musterstammdaten nur wenn leer (Schicht: stammdatenStorage)
+                    const gallStamm = loadStammdaten('k2', 'gallery') as Record<string, unknown>
+                    if (!(gallStamm && (gallStamm as any).name)) persistStammdaten('k2', 'gallery', { ...MUSTER_TEXTE.gallery, _isMuster: true })
+                    const martinaStamm = loadStammdaten('k2', 'martina') as Record<string, unknown>
+                    if (!(martinaStamm && (martinaStamm as any).name)) persistStammdaten('k2', 'martina', { ...MUSTER_TEXTE.martina, _isMuster: true })
+                    const georgStamm = loadStammdaten('k2', 'georg') as Record<string, unknown>
+                    if (!(georgStamm && (georgStamm as any).name)) persistStammdaten('k2', 'georg', { ...MUSTER_TEXTE.georg, _isMuster: true })
                     // State direkt aktualisieren + Tab wechseln (iframe-sicher, kein Reload)
                     setAllArtworks(withMuster)
                     setActiveTab('werke')
@@ -11203,12 +11192,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     const ohne = existing.filter((a: any) => !String(a.id || '').startsWith('muster-') && !(a as any)._isMuster)
                     if (ohne.length === existing.length) { alert('Keine Musterdaten gefunden – nichts zu löschen.'); return }
                     saveArtworksByKey('k2-artworks', ohne, { filterK2Only: true, allowReduce: true })
-                    const gallStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}') } catch { return {} } })()
-                    if ((gallStamm as any)._isMuster) localStorage.removeItem('k2-stammdaten-galerie')
-                    const martinaStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}') } catch { return {} } })()
-                    if ((martinaStamm as any)._isMuster) localStorage.removeItem('k2-stammdaten-martina')
-                    const georgStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}') } catch { return {} } })()
-                    if ((georgStamm as any)._isMuster) localStorage.removeItem('k2-stammdaten-georg')
+                    const gallStamm = loadStammdaten('k2', 'gallery') as Record<string, unknown>
+                    if ((gallStamm as any)?._isMuster) localStorage.removeItem('k2-stammdaten-galerie')
+                    const martinaStamm = loadStammdaten('k2', 'martina') as Record<string, unknown>
+                    if ((martinaStamm as any)?._isMuster) localStorage.removeItem('k2-stammdaten-martina')
+                    const georgStamm = loadStammdaten('k2', 'georg') as Record<string, unknown>
+                    if ((georgStamm as any)?._isMuster) localStorage.removeItem('k2-stammdaten-georg')
                     // State aktualisieren statt Reload (iframe-sicher)
                     setAllArtworks(ohne)
                     alert('✅ Musterdaten entfernt.\n\nEigene Werke und Daten sind unberührt.')
@@ -11450,7 +11439,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     try {
                       if (tenant.isVk2) {
                         const result = createVk2Backup()
-                        const m = (() => { try { return JSON.parse(localStorage.getItem('k2-vk2-stammdaten') || '{}') } catch { return {} } })()
+                        const m = loadVk2Stammdaten() || {}
                         const mitglieder = Array.isArray(m.mitglieder) ? m.mitglieder.length : 0
                         downloadBackupAsFile(result.data, result.filename)
                         alert(`✅ VK2 Vereins-Backup heruntergeladen.\n\nEnthält: Vereins-Stammdaten, Vorstand, ${mitglieder} Mitglieder, Events, Design.\n\nAuf backupmicro speichern!`)
@@ -11957,7 +11946,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end' }}>
                         <button
                           type="button"
-                          onClick={() => { try { localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify(vk2Stammdaten)) } catch (_) {}; alert('Kommunikations-Einstellungen gespeichert ✅') }}
+                          onClick={() => { try { saveVk2Stammdaten(vk2Stammdaten) } catch (_) {}; alert('Kommunikations-Einstellungen gespeichert ✅') }}
                           style={{ padding: '0.5rem 1.25rem', background: s.gradientAccent, border: 'none', borderRadius: 8, color: '#fff', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer' }}
                         >
                           Speichern
@@ -12117,7 +12106,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             })
                             const merged = Array.from(byName.values())
                             setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: merged })
-                            try { localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify({ ...vk2Stammdaten, mitglieder: merged })) } catch (_) {}
+                            try { saveVk2Stammdaten({ ...vk2Stammdaten, mitglieder: merged }) } catch (_) {}
                           }
                           reader.readAsText(file, 'utf-8')
                         }}
@@ -12143,7 +12132,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 neu.forEach(n => { const key = n.name?.trim().toLowerCase(); if (byName.has(key)) { const old = byName.get(key)!; byName.set(key, { ...old, ...n, mitgliedFotoUrl: old.mitgliedFotoUrl || n.mitgliedFotoUrl, imageUrl: old.imageUrl || n.imageUrl, oeffentlichSichtbar: old.oeffentlichSichtbar }) } else byName.set(key, { ...n, oeffentlichSichtbar: n.oeffentlichSichtbar !== false }) })
                                 const merged = Array.from(byName.values())
                                 setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: merged })
-                                try { localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify({ ...vk2Stammdaten, mitglieder: merged })) } catch (_) {}
+                                try { saveVk2Stammdaten({ ...vk2Stammdaten, mitglieder: merged }) } catch (_) {}
                               }
                               reader.readAsText(file, 'utf-8')
                               e.target.value = ''
@@ -12192,7 +12181,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               const toggleAufKarte = () => {
                                 const neu = (vk2Stammdaten.mitglieder || []).map((mm, j) => j === i ? { ...mm, oeffentlichSichtbar: !aufKarte } : mm)
                                 setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu })
-                                try { localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify({ ...vk2Stammdaten, mitglieder: neu })) } catch (_) {}
+                                try { saveVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }) } catch (_) {}
                               }
                               return (
                                 <tr key={i} style={{ borderBottom: `1px solid ${s.accent}22`, opacity: aufKarte ? 1 : 0.75, background: vorstandRole ? s.accent + '0a' : undefined }}>
@@ -12215,7 +12204,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 <td style={{ padding: '0.5rem', display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
                                   <button type="button" onClick={() => { setEditingMemberIndex(i); setMemberForm(memberToForm(m)); setShowAddModal(true) }} style={{ padding: '0.35rem 0.6rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: 6, color: s.accent, fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>Bearbeiten</button>
                                   <button type="button" title="Mitgliedskarte drucken" onClick={() => printMitgliedskarten([m], vk2Stammdaten.verein?.name || 'Verein')} style={{ padding: '0.35rem 0.5rem', background: 'none', border: `1px solid ${s.accent}33`, borderRadius: 6, color: s.accent, fontSize: '0.95rem', cursor: 'pointer' }}>🪪</button>
-                                  <button type="button" onClick={() => { const neu = (vk2Stammdaten.mitglieder || []).filter((_, j) => j !== i); setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }); try { localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify({ ...vk2Stammdaten, mitglieder: neu })) } catch (_) {} }} style={{ background: 'none', border: 'none', color: s.muted, cursor: 'pointer', fontSize: '1.1rem' }} title="Entfernen">×</button>
+                                  <button type="button" onClick={() => { const neu = (vk2Stammdaten.mitglieder || []).filter((_, j) => j !== i); setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }); try { saveVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }) } catch (_) {} }} style={{ background: 'none', border: 'none', color: s.muted, cursor: 'pointer', fontSize: '1.1rem' }} title="Entfernen">×</button>
                                 </td>
                               </tr>
                             ); })) }
@@ -12777,16 +12766,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           if (adminContactEmail.trim()) localStorage.setItem(KEY_OEF_ADMIN_EMAIL, adminContactEmail.trim())
                           if (adminContactPhone.trim()) localStorage.setItem(KEY_OEF_ADMIN_PHONE, adminContactPhone.trim())
                         } else if (tenant.isVk2) {
-                          const vk2Stored = localStorage.getItem('k2-vk2-stammdaten')
-                          const data = vk2Stored ? JSON.parse(vk2Stored) : {}
+                          const data = loadVk2Stammdaten() || {}
                           if (!data.vorstand) data.vorstand = {}
                           data.vorstand.adminPassword = adminNewPw
-                          localStorage.setItem('k2-vk2-stammdaten', JSON.stringify(data))
+                          saveVk2Stammdaten(data)
                         } else {
-                          const galleryStored = localStorage.getItem('k2-stammdaten-galerie')
-                          const data = galleryStored ? JSON.parse(galleryStored) : {}
-                          data.adminPassword = adminNewPw
-                          localStorage.setItem('k2-stammdaten-galerie', JSON.stringify(data))
+                          const data = loadStammdaten('k2', 'gallery') as Record<string, unknown>
+                          const toSave = { ...data, adminPassword: adminNewPw }
+                          persistStammdaten('k2', 'gallery', toSave)
                         }
                         alert('✅ Passwort wurde gespeichert.')
                         setAdminNewPw('')
@@ -16077,7 +16064,7 @@ ${name}`
                           mitglieder.push(neu)
                         }
                         setVk2Stammdaten({ ...vk2Stammdaten, mitglieder })
-                        try { localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify({ ...vk2Stammdaten, mitglieder })) } catch (_) {}
+                        try { saveVk2Stammdaten({ ...vk2Stammdaten, mitglieder }) } catch (_) {}
                         setShowAddModal(false)
                         setEditingMemberIndex(null)
                         setMemberForm({ ...EMPTY_MEMBER_FORM })

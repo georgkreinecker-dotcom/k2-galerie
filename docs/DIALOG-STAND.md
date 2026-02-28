@@ -10,7 +10,7 @@
 - **Lösung:** Nur schreiben wenn Inhalt/Label geändert (buildInfo.generated.ts, build-info.json, api/build-info.js, index.html). Regel: **.cursor/rules/build-skripte-nur-schreiben-wenn-geaendert.mdc** (alwaysApply). In STRUKTUR-HANDELN-QUELLEN verlinkt.
 
 ## Thema
-**Prototyp → Sportwagen – systematisch:** Phase **1.1**–**1.4**, **2.1**, **2.2**, **3.1**–**3.3**, **4.1**, **4.2** umgesetzt (28.02.26). Heute: 4.2 Roadmap [x], 3.3 theme.ts (adminTheme/galerieTheme), Reopen-Regel + Doku. Nächster Schritt: **Phase 4.3** (falls in Roadmap) oder **Phase 5** Admin/Galerie Daten-Schicht.
+**Prototyp → Sportwagen – systematisch:** Phase **5.1** erledigt (28.02.26): Admin Stammdaten nur noch über loadStammdaten/persistStammdaten/loadVk2Stammdaten/saveVk2Stammdaten; Namenskonflikt mit persistStammdaten gelöst. Nächster Schritt: **Phase 5.2** GaleriePage/GalerieVorschauPage oder **5.3** Shop/Willkommen/Vita.
 
 ## Grundregel: Profi statt Dilettant – Rad nicht zweimal erfinden (28.02.26)
 - **Regel:** .cursor/rules/profi-statt-dilettant-rad-nicht-zweimal.mdc (alwaysApply). Kern: Was andere schon erfunden haben, nicht neu bauen. Normen kennen, zukaufen/auslagern, am Markt beste Lösungen nutzen. Vor dem Bauen: „Gibt es das schon?“ – dann nutzen oder begründen.
@@ -35,7 +35,7 @@
 **Wichtig:** In Vercel muss **GITHUB_TOKEN** gesetzt sein (Settings → Environment Variables), sonst schlägt „Daten an Server senden“ mit Hinweis darauf fehl.
 
 ## Nächster Schritt
-- **Sportwagen:** Phase 3.3, 4.2 ✅. Als Nächstes **Phase 4.3** (Roadmap prüfen) oder **Phase 5** Admin/Galerie Daten-Schicht.
+- **Sportwagen:** Phase 5.1 ✅. Als Nächstes **Phase 5.2** (GaleriePage/Vorschau auf Schichten) oder **5.3** (Shop, Willkommen, Vita).
 - **Optional:** iPad/Mac Datentransport testen.
 1. **QR/Stand-Fix (27.02.26):** QR und Stand-Badge nutzen jetzt **/api/build-info** statt build-info.json – Serverless-API, beim Build mit aktuellem Stand beschrieben, umgeht CDN-Cache. Commit c5351e1.
 2. Nach Vercel-Build (1–2 Min): APf neu laden oder „QR neu“ → Vercel-Stand sollte aktuelle Zeit zeigen; iPad refresh.html oder QR scannen.

@@ -141,7 +141,7 @@
 | **Prototyp** | Lädt/speichert Werke, Stammdaten, Events, Dokumente teils direkt, teils über Hilfsfunktionen; Merge und „Vom Server laden“ eigen. |
 | **Sportwagen** | **Nur** über Persistenz-Schichten (1.2, 1.3, 1.4) und Sync-Merge (2.1); API-Client (2.2) für Senden/Empfangen. Keine direkten localStorage-Key-Zugriffe für Werke/Stammdaten. |
 | **Schritte** | 1) Nach Phase 1+2: Admin auf loadArtworks/saveArtworksStorage, Stammdaten-Schicht, mergeServerWithLocal, apiClient umstellen. 2) loadArtworksRaw/loadArtworks nur noch mit Kontext aus Tenant-Context. |
-| **Erledigt** | [ ] |
+| **Erledigt** | [x] 28.02.26 (Stammdaten: loadStammdaten/persistStammdaten/loadVk2Stammdaten/saveVk2Stammdaten; Admin nutzt Schicht, keine direkten k2-stammdaten-* / k2-vk2-stammdaten Zugriffe mehr; Werke/Events/Documents bereits über Schichten) |
 
 ### 5.2 GaleriePage & GalerieVorschauPage
 
