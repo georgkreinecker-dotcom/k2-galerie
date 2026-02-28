@@ -4,6 +4,11 @@
 
 ## Datum: 28.02.26
 
+## Crash Code 5 – bei jedem Reopen prüfen (Faden behalten)
+- **Regel:** Bei jedem Reopen diese Datei + **docs/CRASH-BEREITS-GEPRUEFT.md** lesen → nur **neue** Ursachen suchen. Nach Check: CRASH-BEREITS-GEPRUEFT.md ergänzen.
+- **Sofort-Workaround (28.02.26):** Preview **zu**, App **nur im Browser** (npm run dev → Chrome/Safari → localhost:5177). Doku: CRASH-BEREITS-GEPRUEFT.md Abschnitt „SO ARBEITEN BIS CRASH WEG IST“.
+- **Zuletzt (28.02.26):** GaleriePage Stammdaten-Intervall (2 s) im iframe deaktiviert – nur noch wenn window.self === window.top. DevViewPage 10s-Intervall bereits mit iframe-Check.
+
 ## Zuletzt (28.02.26)
 - **Etikett mit Preis:** Wenn ein Werk einen Preis hat, wird dieser auf dem Etikett gedruckt (€ X,XX, de-DE). Gilt für Einzeletikett und Sammeldruck. Typ für artwork.price um `| string` ergänzt (Sammeldruck).
 

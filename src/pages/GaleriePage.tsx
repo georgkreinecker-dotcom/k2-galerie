@@ -795,6 +795,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   // QR alle 15 s neu bauen mit frischem Date.now() (Cache-Bust), damit Scan immer aktuelle Version lädt
   const [qrBustTick, setQrBustTick] = useState(0)
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.self !== window.top) return
     const t = setInterval(() => setQrBustTick((k) => k + 1), 15000)
     return () => clearInterval(t)
   }, [])
@@ -1672,11 +1673,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     }
     
     // Crash-Schutz: Erst nach 1 s laden (fetch + viel setState), damit erste Anzeige fertig ist
+    // Im iframe (Cursor Preview) kein 2s-Intervall – verhindert periodische setState und Crash
     let intervalId: ReturnType<typeof setInterval> | null = null
     const startId = setTimeout(() => {
       if (!isMounted) return
       loadData()
-      intervalId = setInterval(checkStammdatenUpdate, 2000)
+      if (typeof window !== 'undefined' && window.self === window.top) {
+        intervalId = setInterval(checkStammdatenUpdate, 2000)
+      }
     }, 1000)
 
     return () => {
@@ -4178,7 +4182,9 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
         window.dispatchEvent(new CustomEvent('guide-flow-update'))
         const vornamePart = name ? `&vorname=${encodeURIComponent(name)}` : ''
         const pfadPart = neu.pfad ? `&pfad=${neu.pfad}` : ''
-        window.location.href = `/admin?context=oeffentlich${vornamePart}${pfadPart}`
+        const adminUrl = `/admin?context=oeffentlich${vornamePart}${pfadPart}`
+        if (window.self === window.top) window.location.href = adminUrl
+        else window.open(adminUrl, '_blank')
       }, 800)
       setSichtbar(false)
       return
@@ -4203,8 +4209,10 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
     const vornamePart = name ? `&vorname=${encodeURIComponent(name)}` : ''
     const pfadPart = antworten.pfad ? `&pfad=${antworten.pfad}` : ''
     const assistentPart = assistent ? '&assistent=1' : ''
+    const adminUrl = `/admin?context=oeffentlich${vornamePart}${pfadPart}${assistentPart}`
     setTimeout(() => {
-      window.location.href = `/admin?context=oeffentlich${vornamePart}${pfadPart}${assistentPart}`
+      if (window.self === window.top) window.location.href = adminUrl
+      else window.open(adminUrl, '_blank')
     }, 300)
   }
 

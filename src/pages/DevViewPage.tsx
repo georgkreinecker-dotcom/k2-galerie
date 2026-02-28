@@ -536,8 +536,9 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   }, [publishMobile])
 
   
-  // Prüfe regelmäßig ob es neue Mobile-Daten gibt (nur auf Mac)
+  // Prüfe regelmäßig ob es neue Mobile-Daten gibt (nur auf Mac, nicht im iframe/Cursor Preview)
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.self !== window.top) return
     const isMac = !/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && window.innerWidth > 768
     if (!isMac) return // Nur auf Mac prüfen
     

@@ -43,6 +43,10 @@
 | GalerieVorschauPage Polling im iframe | 20.02.26: Beide Intervalle (checkForMobileUpdates, syncFromGalleryData) nur wenn notInIframe |
 | Inject-Script Reload auf localhost | 28.02.26: write-build-info.js – Inject-Script bricht bei location.origin enthält "localhost" sofort ab, kein bust() → kein automatischer Reload in Cursor/Entwicklung |
 | useServerBuildTimestamp Intervall im iframe | 28.02.26: Kein 2-Min-Intervall wenn window.self !== window.top; nur einmaliger Fetch beim Mount in Preview |
+| DevViewPage Mobile-Update-Intervall im iframe | 28.02.26: Am Anfang des useEffects if (window.self !== window.top) return – kein 10-Sek-Intervall in Cursor Preview |
+| GaleriePage QR-Bust-Intervall in iframe | 28.02.26: setInterval(15s) nur wenn window.self === window.top (kein 15s-Re-Render in Preview) |
+| GaleriePage Admin-Weiterleitung im iframe | 28.02.26: location.href zu /admin nur bei window.self === window.top; sonst window.open(..., '_blank') |
+| GaleriePage Stammdaten-Intervall im iframe | 28.02.26: setInterval(checkStammdatenUpdate, 2000) nur wenn window.self === window.top; in Preview nur einmal loadData() |
 
 ---
 
@@ -144,5 +148,21 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 | 27.02.26 | ScreenshotExportAdmin | location.href ohne iframe-Check: VK2 Vorstand→Admin (8873), Abmelden→/vk2-login (8890), „Zurück zur Übersicht“ Entdecken (9099), Kassa-Links Hub (9572, 9665). **Fix:** Alle nur wenn window.self === window.top. |
 | 28.02.26 | write-build-info.js (Inject-Script) | In Cursor Preview kann Fenster top sein → Script lief komplett → nach 2 Min oder bei neuem Build bust() → location.replace → Reload → Crash. **Fix:** Am Anfang des Inject-Scripts: `var o=location.origin; if(o.indexOf("localhost")!==-1)return;` – bei localhost kein bust(), kein automatischer Reload in der Entwicklung. |
 | 28.02.26 | useServerBuildTimestamp | 2-Min-Intervall (fetch build-info) lief auch im iframe → alle 2 Min setState in Preview. **Fix:** Wenn inIframe (window.self!==window.top) kein setInterval, nur einmal fetch beim Mount. |
+| 28.02.26 | GaleriePage QR-Bust-Intervall | setInterval(15s) für setQrBustTick lief auch in Preview → alle 15 s Re-Render. **Fix:** Intervall nur starten wenn window.self === window.top. |
+| 28.02.26 | GaleriePage Admin-Weiterleitung | Guide/Assistent: window.location.href zu /admin (2 Stellen) ohne iframe-Check. In Preview → Navigation im iframe. **Fix:** Nur wenn window.self === window.top dann location.href; sonst window.open(adminUrl, '_blank'). |
+| 28.02.26 | DevViewPage Mobile-Update-Intervall | setInterval(checkForMobileUpdates, 10000) lief auch im iframe (nur isMac-Check). **Fix:** Am Anfang des useEffects: if (window.self !== window.top) return – in Cursor Preview kein 10-Sek-Intervall. |
+| 28.02.26 | GaleriePage Stammdaten-Intervall | setInterval(checkStammdatenUpdate, 2000) lief auch im iframe → alle 2 s setState in Preview. **Fix:** Intervall nur starten wenn window.self === window.top; in Cursor Preview nur einmal loadData(), kein 2s-Polling. |
 
-*Zuletzt ergänzt: 28.02.26 (Inject-Script localhost-Skip, useServerBuildTimestamp kein Intervall im iframe)*
+*Zuletzt ergänzt: 28.02.26 (Crash-Check: GaleriePage Stammdaten 2s-Intervall im iframe deaktiviert)*
+
+---
+
+## SO ARBEITEN BIS CRASH WEG IST (sofort anwendbar)
+
+**Cursor Preview ist instabil (Code 5). Du kannst sofort wieder arbeiten:**
+
+1. **Preview in Cursor komplett schließen** (Tab/Panel schließen, nicht nur minimieren).
+2. **App nur im Browser:** Im Cursor-Terminal `npm run dev` starten, dann **Chrome oder Safari** öffnen → **http://localhost:5177** (oder angezeigter Port). Galerie, Admin, alles dort.
+3. **In Cursor:** Nur Editor + Terminal + Chat – keine laufende App im Preview.
+
+**Warum:** Der Absturz kommt von der Preview/iframe-Umgebung. Im normalen Browser ist die App stabil. Wir bauen weiter Fixes ein; bis es reicht, ist Browser = sicherer Arbeitsplatz.
