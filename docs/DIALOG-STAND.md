@@ -52,7 +52,7 @@
 5. **Schritt für Schritt (Screenshot Vercel):** **docs/SCHRITT-FUER-SCHRITT-STAND-AKTUELL.md** – 6 Schritte: pushen → Current prüfen → ggf. Promote/Redeploy → build-info auf Vercel prüfen → iPad refresh/QR → Kontrolle. Passt zum Befund: Vercel zeigt Ready, aber „Current“ kann alter Commit sein.
 
 ## Was zuletzt gemacht (28.02.26)
-- **Drei Admin-Fixes (in Arbeit, noch nicht committed):** (1) Neues Werk „nicht gefunden“ – Verifizierung mit 100ms-Retry. (2) Bild ersetzen bei bestehendem Werk – pendingImageDataUrlRef, damit gewähltes Bild nicht verloren geht. (3) Bilder in Werkliste – ein Retry bei onError vor Platzhalter. Nach Crash-Check: Tests, Commit, Push.
+- **Crash Code 5 + Admin-Fixes committed:** (1) **Crash:** Inject-Script in write-build-info.js – bei localhost kein bust()/Reload (Cursor Preview kann top sein → alle 2 Min Reload → Crash). useServerBuildTimestamp – im iframe kein 2-Min-Intervall, nur einmaliger Fetch. (2) **Admin:** Neues Werk „nicht gefunden“ – Verifizierung mit 100ms-Retry. Bild ersetzen – pendingImageDataUrlRef. Bilder in Werkliste – ein Retry bei onError. **Commit:** c63f482 ✅ auf GitHub. Stand 28.02.26 16:13.
 - **Cursor-Reopen endgültig reduziert:** write-build-info.js schreibt alle vier Dateien (buildInfo.generated.ts, build-info.json, api/build-info.js, index.html) **nur noch wenn sich die Build-Minute (Label) geändert hat**. Gleiche Minute = kein Schreiben → „Build-Info unverändert“, Cursor meldet kein Reopen. Regel build-skripte-nur-schreiben-wenn-geaendert.mdc angepasst (Maßstab = Minute). Commit: 13164af ✅ auf GitHub. Stand 28.02.26 15:57.
 - **api/build-info.js: eine return-Zeile + Newline:** write-build-info.js ersetzt alle return-Zeilen durch genau eine; Ersetzung mit „\n“ davor, damit die Newline vor return erhalten bleibt (Regex frisst \s*). Stand 28.02.26 09:25.
 - **api/build-info.js: keine doppelten return-Zeilen:** write-build-info.js bereinigt versehentliche Duplikate (zwei `return res.json(...)` → genau eine). Skript ersetzt bei mehreren Treffern alle durch eine Zeile; sonst wie bisher Label/Timestamp ersetzen. Stand 28.02.26 09:16.
@@ -140,10 +140,10 @@ Werk verschwindet / Nummer wiederverwendet / Freistellen geht nicht. **Ursache:*
 - **Phase 3.1 + 3.2 safeReload:** env.ts safeReload; alle Reload-Stellen umgestellt. Phase 2.2, 1.4, 2.1 [x].
 
 ## Letzter Commit
-- **Phase 4.1 compressImageForStorage – eine Komprimierungs-Utility. Stand 28.02.26 06:41.** Commit: c4b5c68 ✅ auf GitHub
+- **Crash Code 5 (Inject localhost, useServerBuildTimestamp iframe) + Admin-Fixes (Verifizierungs-Retry, pendingImageDataUrlRef, Bild-Retry). Stand 28.02.26 16:13.** Commit: c63f482 ✅ auf GitHub
 
 ## Nächster Schritt
-- **Sportwagen:** Phase 4.2 Bild-Upload (uploadPageImage-Wrapper) oder Phase 3.3 Theming. Optional: iPad/Mac testen.
+- **Crash beobachten:** Nach den Fixes (localhost kein Reload, iframe kein 2-Min-Intervall) – Cursor Preview sollte seltener crashen. Optional: Admin (neues Werk, Bild ersetzen, Werkliste) testen; Sportwagen-Phasen oder iPad/Mac.
 
 ## Session 27.02.26 (Bugs: verschwundene Werke, Freistellung)
 - **Verschwundene Werke nach Rückkehr in Verwaltung:** (1) Supabase: Wenn Supabase weniger Werke liefert als localStorage, wird localStorage nicht mehr überschrieben – lokale Neu-Anlagen bleiben erhalten. (2) GalerieVorschau: Beim Laden aus localStorage wird gefilterte Liste nicht mehr zurückgeschrieben (kein stilles Löschen). (3) Mobile-Polling (syncFromGalleryData): Schreibt nicht mehr, wenn das Ergebnis weniger Werke hätte als aktuell lokal. (4) Admin: Werke werden nach 0,4 s statt 3 s geladen, damit die Liste schnell erscheint.
