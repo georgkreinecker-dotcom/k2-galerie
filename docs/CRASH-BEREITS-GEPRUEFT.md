@@ -164,8 +164,9 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 | 28.02.26 | DevViewPage Mobile-Update-Intervall | setInterval(checkForMobileUpdates, 10000) lief auch im iframe (nur isMac-Check). **Fix:** Am Anfang des useEffects: if (window.self !== window.top) return – in Cursor Preview kein 10-Sek-Intervall. |
 | 28.02.26 | GaleriePage Stammdaten-Intervall | setInterval(checkStammdatenUpdate, 2000) lief auch im iframe → alle 2 s setState in Preview. **Fix:** Intervall nur starten wenn window.self === window.top; in Cursor Preview nur einmal loadData(), kein 2s-Polling. |
 | 28.02.26 | Check „check the crash“ | Routine ausgeführt. Alle setInterval in src: GaleriePage (QR, Stammdaten, Mobile-Polling), DevViewPage, useServerBuildTimestamp, GalerieVorschauPage – iframe/notInIframe-Absicherungen **intakt**. PlatzanordnungPage, ShopPage: Intervall nur bei Nutzer auf Seite (Kamera/QR), kein iframe-Check (bei Bedarf nachrüstbar). Kein neuer Fix; Cursor-Crash weiterhin IDE-seitig. |
+| 28.02.26 | Check (erneut) | Kontext: seit letztem Check nur Vercel/Stand-Thema (kein neuer App-Code). write-build-info.js (iframe + localhost) ✓, GaleriePage iframe-Checks ✓. Keine neuen Stellen. |
 
-*Zuletzt ergänzt: 28.02.26 (Check-the-crash-Routine: alle Intervalle geprüft, Absicherungen intakt)*
+*Zuletzt ergänzt: 28.02.26 (Crash-Check erneut: keine neuen Änderungen, Absicherungen intakt)*
 
 ---
 

@@ -10,6 +10,11 @@
 - **Sofort-Workaround:** Preview zu, App nur im Browser (localhost:5177). Doku: CRASH-BEREITS-GEPRUEFT.md „SO ARBEITEN BIS CRASH WEG IST“.
 - **Zuletzt (28.02.26):** GaleriePage Stammdaten-Intervall im iframe aus; DevViewPage 10s-Intervall im iframe aus; Routine + CRASH-LETZTER-KONTEXT.md eingerichtet.
 
+## Session-Ende / Cursor-Neustart (28.02.26)
+- **Stand iPad:** Zeigt 11:07, Sync klappt nicht. Vercel baut nach Push nicht (wie gestern) – letztes Deploy war vor Stunden. **Ursache unklar** (keine Einstellungen geändert). Fix jetzt: Vercel CLI (`npx vercel --prod`) oder Git Disconnect/Connect; **Ursache** noch finden (docs/VERCEL-CHECKLISTE-BEI-KEINEM-STAND.md Abschnitt 3).
+- **Check the crash:** Erneut ausgeführt – Absicherungen intakt, kein neuer Code-Fix. Cursor-Crash weiter IDE-seitig.
+- **Faden:** DIALOG-STAND lesen → Vercel-Ursache angehen oder weiterarbeiten.
+
 ## Zuletzt (28.02.26)
 - **Etikett mit Preis:** Wenn ein Werk einen Preis hat, wird dieser auf dem Etikett gedruckt (€ X,XX, de-DE). Gilt für Einzeletikett und Sammeldruck. Typ für artwork.price um `| string` ergänzt (Sammeldruck).
 
@@ -51,9 +56,16 @@
 
 **Wichtig:** In Vercel muss **GITHUB_TOKEN** gesetzt sein (Settings → Environment Variables), sonst schlägt „Daten an Server senden“ mit Hinweis darauf fehl.
 
+## Vercel: Kein Deployment nach 11:07 – Ursache finden (27.02.26)
+- **Georg:** „Wir haben nichts an den Einstellungen geändert; bis 11:07 hat alles funktioniert. Die Ursache nicht gefunden → morgen dasselbe Problem.“
+- **Doku:** **docs/VERCEL-DEPLOY-AUSBLEIBEN-URSACHEN.md** – nur zwei Ursachen: **(A)** Build wird gar nicht gestartet (Webhook/Git/Branch) oder **(B)** Build wird gestartet, schlägt aber fehl (rot in Deployments → Build-Log lesen, lokal fixen).
+- **Erster Check für Georg:** Vercel → Deployments – gibt es **nach** 11:07 **neue** Einträge (auch mit Status Error)? **Nein** → Ursache A (Webhook/Git). **Ja, mit Error** → Ursache B (Build-Log, dann `npm run build` lokal, Fix pushen).
+- Im Repo steht **nichts**, was Builds „abschaltet“ (vercel.json nur buildCommand/rewrites/headers). Wenn keine neuen Deployments erscheinen, liegt es an GitHub/Vercel-Verbindung, nicht an unserem Code.
+
 ## Nächster Schritt
 - **Sportwagen:** Phasen 5.1–5.3, 6.1, 6.2, 7.1, 7.2, 8.1, 8.2, 9.1, 9.2 ✅ (28.02.26).
 - **Optional:** iPad/Mac Datentransport testen.
+- **Vercel:** Wenn „kein neues Deployment“ – zuerst **docs/VERCEL-DEPLOY-AUSBLEIBEN-URSACHEN.md** durchgehen (A oder B?), dann gezielt beheben.
 1. **QR/Stand-Fix (27.02.26):** QR und Stand-Badge nutzen jetzt **/api/build-info** statt build-info.json – Serverless-API, beim Build mit aktuellem Stand beschrieben, umgeht CDN-Cache. Commit c5351e1.
 2. Nach Vercel-Build (1–2 Min): APf neu laden oder „QR neu“ → Vercel-Stand sollte aktuelle Zeit zeigen; iPad refresh.html oder QR scannen.
 3. Falls Vercel-Build fehlschlägt: docs/VERCEL-CHECKLISTE-BEI-KEINEM-STAND.md.

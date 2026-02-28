@@ -9,10 +9,10 @@
 | Was | Inhalt |
 |-----|--------|
 | **Datum** | 28.02.26 |
-| **Thema** | „check the crash“ ausgeführt – alle Intervalle geprüft |
-| **Zuletzt geändert/geöffnet** | CRASH-BEREITS-GEPRUEFT.md, CRASH-LETZTER-KONTEXT.md (dieser Check) |
-| **Hinweis von Georg** | (keiner bei diesem Check) |
-| **Ergebnis** | Alle bekannten setInterval-Absicherungen intakt. Kein neuer Code-Fix. Cursor-Crash = IDE-seitig. |
+| **Thema** | „check the crash“ (erneut) – Vercel/Stand dazwischen, kein neuer App-Code |
+| **Zuletzt geändert/geöffnet** | Vercel-Checkliste, write-build-info (Stand), DIALOG-STAND; keine Crash-relevanten Dateien |
+| **Hinweis von Georg** | (keiner) |
+| **Ergebnis** | Absicherungen (Inject localhost, Intervalle iframe) unverändert. Kein neuer Fix nötig. Session-Ende: Cursor-Neustart – DIALOG-STAND + alle Änderungen committed. |
 
 ---
 

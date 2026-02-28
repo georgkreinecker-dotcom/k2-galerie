@@ -69,3 +69,5 @@
 | Build fehlgeschlagen | Build-Log lesen, lokal `npm run build`, Fix pushen. |
 
 Siehe auch: **docs/VERCEL-DEPLOY-HOOK-ANLEITUNG.md** (inkl. Vercel CLI), **docs/BERICHT-ISTZUSTAND-SYNC-VERCEL-27-02-26.md**, **docs/VERCEL-STAND-HANDY.md**.
+
+**Ursache finden (kein neues Deployment trotz Push):** **docs/VERCEL-DEPLOY-AUSBLEIBEN-URSACHEN.md** – zwei mögliche Ursachen (A: Build wird nicht gestartet / B: Build schlägt fehl), klare Prüfung in Vercel → Deployments, dann gezielt beheben.
