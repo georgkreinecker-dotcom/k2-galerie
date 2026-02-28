@@ -2168,7 +2168,8 @@ function ScreenshotExportAdmin() {
               const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0 && typeof window !== 'undefined' && window.innerWidth <= 1024)
               if (isVercelOrProduction || isMobileDevice) {
                 if (isMountedRef.current) setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
-                alert('⚠️ Daten konnten nicht an den Server gesendet werden.\n\nBitte prüfen: Ist die App von k2-galerie.vercel.app geöffnet? Ist das Internet verbunden? Einfach OK – du bleibst in der App, keine Seite öffnet sich.')
+                const detail = (errMsg + (result.hint ? ' ' + result.hint : '')).trim()
+                alert('⚠️ Daten konnten nicht an den Server gesendet werden.\n\n' + (detail ? 'Grund: ' + detail + '\n\n' : '') + 'Bitte prüfen: App von k2-galerie.vercel.app geöffnet? Internet verbunden? Steht „GITHUB_TOKEN fehlt“ → in Vercel unter Einstellungen den Token setzen (siehe Doku).\n\nEinfach OK – du bleibst in der App.')
                 return
               }
               try {

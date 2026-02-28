@@ -30,6 +30,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 
 ## Produkt & Vision
 - **PRODUKT-VISION.md** – Produkt-Vision K2 Galerie.
+- **PRODUKT-STANDARD-NACH-SPORTWAGEN.md** – **Erreichter Standard (28.02.26):** Architektur (eine Quelle/Schicht/Regel), Sicherheit (Kundendaten, Datentrennung, Stand/QR), Tests (38), Doku & Prozess. Eine feste Stelle für „worauf das Produkt jetzt aufbaut“.
 - **PLATTFORM-UNTERSTUETZUNG.md** – Welche Plattformen (Windows, Android, Mac).
 - **USP-UND-MARKTCHANCEN.md** – USPs und Marktchancen.
 - **VERMARKTUNGSKONZEPT-EMPFEHLUNGSPROGRAMM.md** – Empfehlungsprogramm / Vermarktung (50 %-Gebühr).
@@ -84,7 +85,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **Profi statt Dilettant – Rad nicht zweimal erfinden** – Was andere schon erfunden haben, nicht neu bauen; Normen kennen, zukaufen/auslagern, am Markt beste Lösungen nutzen. Vor dem Bauen: „Gibt es das schon?“ Verbindlich: **.cursor/rules/profi-statt-dilettant-rad-nicht-zweimal.mdc**.
 - **Ein Standard pro Problemstellung** – Gleiche Aufgabe = eine Lösung; verschiedene Standards = automatische Fehlerquellen. Verbindlich: **.cursor/rules/ein-standard-problem.mdc**. Siehe auch **STRUKTUR-HANDELN-QUELLEN.md** (Abschnitt Regel).
 - **ANALYSE-HANDWERK-VS-STANDARD-KOMPONENTEN.md** – **Zeit Fehlersuche/Behebung** (aus GELOESTE-BUGS, CRASH-Doku) + **handwerklich gebaute Bereiche** (Sync/Merge, localStorage, Kontext, Reload, API) und **empfohlene Standard-Komponenten**; Priorisierung für Refactoring (Profi statt Dilettant).
-- **SPORTWAGEN-ROADMAP.md** – **Prototyp → Sportwagen:** Systematische Durchführung des gesamten Programms ohne vergessene Aspekte. 9 Phasen (Fundament Daten/Kontext → Sync/Merge → UI/Reload/Theming → Medien → Admin/Galerie → APf → Build/Stand → Sicherheit → Tests/Doku); pro Bereich Prototyp-Zustand, Sportwagen-Ziel, konkrete Schritte, Erledigt-Checkbox. Start: Phase 1.1 Tenant-Context.
+- **SPORTWAGEN-ROADMAP.md** – **Prototyp → Sportwagen:** Systematische Durchführung des gesamten Programms ohne vergessene Aspekte. 9 Phasen (Fundament Daten/Kontext → Sync/Merge → UI/Reload/Theming → Medien → Admin/Galerie → APf → Build/Stand → Sicherheit → Tests/Doku); pro Bereich Prototyp-Zustand, Sportwagen-Ziel, konkrete Schritte, Erledigt-Checkbox. **Erreichter Standard:** siehe **PRODUKT-STANDARD-NACH-SPORTWAGEN.md**.
 - **SYNC-REGEL.md** – **Verbindliche Sync-Regel (Phase 2.1):** Server = Quelle; lokale Neu-Anlagen geschützt; Konflikt: Mobile > neuer. Eine Funktion `syncMerge.mergeServerWithLocal`. Alle Merge-Aufrufer (GaleriePage, GalerieVorschauPage) nutzen sie.
 
 ## Setup & Qualität

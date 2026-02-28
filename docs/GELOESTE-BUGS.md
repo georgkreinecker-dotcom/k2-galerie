@@ -8,6 +8,15 @@
 
 ---
 
+## BUG-017 · „Daten an Server senden“ auf iPad zeigt nur „prüfen ob vercel.app geöffnet“, nicht den echten Fehler
+**Symptom:** Beim 1. Versuch „Daten an Server senden“ auf iPad: Fehlermeldung „Daten konnten nicht an den Server gesendet werden … Prüfen ob k2-galerie.vercel.app geöffnet ist“ – der tatsächliche Grund (z. B. GITHUB_TOKEN fehlt, Zeitüberschreitung) wurde nicht angezeigt.
+**Ursache:** Auf Mobil/Vercel wurde bei API-Fehler immer eine generische Alert-Meldung gezeigt, ohne `result.error` und `result.hint` einzubauen.
+**Lösung:** In der Alert-Meldung für Mobil/Vercel den echten Grund anzeigen: `Grund: ${errMsg} ${hint}`. Zusätzlich Hinweis: „Steht GITHUB_TOKEN fehlt → in Vercel unter Einstellungen Token setzen.“
+**Betroffene Dateien:** `components/ScreenshotExportAdmin.tsx` (publishMobile, apiPost-.then, Alert bei isMobileDevice/isVercelOrProduction)
+**Status:** ✅ Behoben (28.02.26)
+
+---
+
 ## BUG-016 · „Daten an Server senden“ auf Mobil öffnet gallery-data.json-Seite
 **Symptom:** Auf dem iPad/Handy auf „📤 Daten an Server senden“ tippen → statt Erfolg oder Fehlermeldung öffnet sich eine Seite mit dem rohen JSON (gallery-data.json).
 **Ursache:** Wie BUG-015: Bei API-Fehler wurde ein Fallback genutzt (Blob + Download-Link + link.click()). Auf Mobil interpretieren Browser das oft als „Seite öffnen“ → JSON wird als Seite angezeigt.

@@ -16,6 +16,7 @@ Damit alle Informationen **jederzeit aktuell und hier verfügbar** sind, gilt di
 | **Projekt-Übersicht** | **HAUS-INDEX.md** (Root). | Schnellfinder: wo liegt was (Keller bis Dachboden). Enthält den Abschnitt „Struktur für unser Handeln“. |
 | **Tenant-Context (K2 \| ök2 \| VK2)** | **.cursor/rules/k2-oek2-trennung.mdc**, **docs/K2-OEK2-DATENTRENNUNG.md**, `src/config/tenantConfig.ts`. | Eine Stelle: Kontext steuert Keys und Anzeige; keine vergessene Stelle. |
 | **Sync-Regel (Merge Server + lokal)** | **docs/SYNC-REGEL.md**, `src/utils/syncMerge.ts`. | Eine Funktion `mergeServerWithLocal`; alle Aufrufer nutzen sie. |
+| **Produkt-Standard (nach Sportwagen)** | **docs/PRODUKT-STANDARD-NACH-SPORTWAGEN.md**. | Erreichter Standard: Architektur, Sicherheit, Tests, Doku & Prozess; eine feste Stelle für „worauf das Produkt aufbaut“. |
 
 ---
 
