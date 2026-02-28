@@ -3,6 +3,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import jsQR from 'jsqr'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { getCategoryLabel, MUSTER_TEXTE, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
+import { loadStammdaten } from '../utils/stammdatenStorage'
+import { isOeffentlichDisplayContext } from '../utils/oeffentlichContext'
 import { getCustomers, createCustomer, updateCustomer, type Customer } from '../utils/customers'
 import { PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import '../App.css'
@@ -79,19 +81,18 @@ const ShopPage = () => {
   // Mobil: Wenn Besucher-Ansicht, aber Admin-Login gespeichert → „Als Kasse öffnen“ anzeigen und nach Klick Kasse aktivieren
   const [forceKasseOpen, setForceKasseOpen] = useState(false)
 
-  // Galerie-Stammdaten: Bankverbindung, Kontakt, Internetshop-Hinweis
+  // Galerie-Stammdaten: nur über Schicht (Phase 5.3)
   const [internetShopNotSetUp, setInternetShopNotSetUp] = useState(true)
   const [galleryEmail, setGalleryEmail] = useState('')
   const [galleryPhone, setGalleryPhone] = useState('')
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('k2-stammdaten-galerie')
-      if (stored) {
-        const data = JSON.parse(stored)
-        setBankverbindung(data.bankverbindung || '')
-        setGalleryEmail(data.email || '')
-        setGalleryPhone(data.phone || '')
-        setInternetShopNotSetUp(data.internetShopNotSetUp !== false)
+      const data = loadStammdaten('k2', 'gallery')
+      if (data && typeof data === 'object') {
+        setBankverbindung((data as any).bankverbindung || '')
+        setGalleryEmail((data as any).email || '')
+        setGalleryPhone((data as any).phone || '')
+        setInternetShopNotSetUp((data as any).internetShopNotSetUp !== false)
       }
     } catch (_) {}
   }, [])
@@ -105,13 +106,8 @@ const ShopPage = () => {
     fromStorage ||
     (location.state as { fromGalerieView?: boolean } | null)?.fromGalerieView === true ||
     fromReferrer
-  // Ök2: „Zur Galerie“ und Kontakt (Telefon/E-Mail) immer aus fromOeffentlich. Vier Quellen (robust gegen State-Verlust):
-  // 1) location.state.fromOeffentlich, 2) k2-shop-from-oeffentlich, 3) k2-admin-context === 'oeffentlich' (ök2-Kassa), 4) Referrer von galerie-oeffentlich.
-  const fromOeffentlich =
-    (location.state as { fromOeffentlich?: boolean } | null)?.fromOeffentlich === true ||
-    (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-shop-from-oeffentlich') === '1') ||
-    (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'oeffentlich') ||
-    (typeof document !== 'undefined' && document.referrer.includes('galerie-oeffentlich'))
+  // Ök2: „Zur Galerie“ und Kontakt – eine zentrale Quelle (Phase 5.3)
+  const fromOeffentlich = isOeffentlichDisplayContext(location.state)
   const galerieLink = fromOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerieVorschau
   const displayPhone = fromOeffentlich ? MUSTER_TEXTE.gallery.phone : galleryPhone
   const displayEmail = fromOeffentlich ? MUSTER_TEXTE.gallery.email : galleryEmail
@@ -448,8 +444,8 @@ const ShopPage = () => {
 
     let bankForReceipt = ''
     try {
-      const g = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
-      bankForReceipt = (g.bankverbindung || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      const g = loadStammdaten('k2', 'gallery')
+      bankForReceipt = ((g && (g as any).bankverbindung) || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     } catch (_) {}
 
     const paymentMethodText = order.paymentMethod === 'cash' ? 'Bar' : order.paymentMethod === 'card' ? 'Karte' : 'Überweisung'
@@ -671,8 +667,8 @@ const ShopPage = () => {
 
     let bankForReceipt = ''
     try {
-      const g = JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}')
-      bankForReceipt = (g.bankverbindung || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      const g = loadStammdaten('k2', 'gallery')
+      bankForReceipt = ((g && (g as any).bankverbindung) || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     } catch (_) {}
 
     const paymentMethodText = order.paymentMethod === 'cash' ? 'Bar' : order.paymentMethod === 'card' ? 'Karte' : 'Überweisung'

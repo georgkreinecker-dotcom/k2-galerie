@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useParams, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { getCurrentTenantId } from '../config/tenantConfig'
 import { MUSTER_TEXTE } from '../config/tenantConfig'
+import { loadStammdaten, saveStammdaten } from '../utils/stammdatenStorage'
+import { isOeffentlichDisplayContext } from '../utils/oeffentlichContext'
 import '../App.css'
 
-const STORAGE_KEYS = { martina: 'k2-stammdaten-martina', georg: 'k2-stammdaten-georg' } as const
+// K2: Stammdaten nur über Schicht (Phase 5.3). ök2: Vita-eigene Keys (Inhalt nur hier).
 const OEFFENTLICH_VITA_KEYS = { martina: 'k2-oeffentlich-vita-martina', georg: 'k2-oeffentlich-vita-georg' } as const
 const DEFAULT_BIO = {
   martina: 'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.',
@@ -31,9 +32,9 @@ export default function VitaPage() {
   const { artistId } = useParams<{ artistId: string }>()
   const location = useLocation()
   const id = (artistId === 'martina' || artistId === 'georg' ? artistId : 'martina') as 'martina' | 'georg'
-  // Guide/Demo: von Guide mit fromOeffentlich → ök2-Vita anzeigen
-  const isOeffentlich = getCurrentTenantId() === 'oeffentlich' || (location.state as { fromOeffentlich?: boolean })?.fromOeffentlich === true
-  const storageKey = isOeffentlich ? OEFFENTLICH_VITA_KEYS[id] : STORAGE_KEYS[id]
+  // Phase 5.3: eine zentrale Quelle für „Anzeige als ök2“
+  const isOeffentlich = isOeffentlichDisplayContext(location.state)
+  const oeffentlichStorageKey = OEFFENTLICH_VITA_KEYS[id]
   const [vita, setVita] = useState('')
   const [saved, setSaved] = useState(false)
   const [loaded, setLoaded] = useState(false)
@@ -41,7 +42,7 @@ export default function VitaPage() {
   useEffect(() => {
     try {
       if (isOeffentlich) {
-        const raw = localStorage.getItem(storageKey)
+        const raw = localStorage.getItem(oeffentlichStorageKey)
         let loaded = ''
         if (raw) {
           try {
@@ -57,35 +58,32 @@ export default function VitaPage() {
           setVita(buildInitialVita(id, { name: muster.name, email: muster.email, phone: muster.phone, bio }))
         }
       } else {
-        const raw = localStorage.getItem(storageKey)
-        const data = raw ? JSON.parse(raw) : {}
-        const existing = typeof data.vita === 'string' && data.vita.trim() !== ''
-        setVita(existing ? data.vita : buildInitialVita(id, data))
+        const data = loadStammdaten('k2', id) as { name?: string; email?: string; phone?: string; bio?: string; vita?: string }
+        const existing = typeof data?.vita === 'string' && data.vita.trim() !== ''
+        setVita(existing ? data.vita! : buildInitialVita(id, data || {}))
       }
     } catch {
       setVita(buildInitialVita(id, isOeffentlich ? (id === 'martina' ? MUSTER_TEXTE.martina : MUSTER_TEXTE.georg) : {}))
     }
     setLoaded(true)
-  }, [id, isOeffentlich, storageKey])
+  }, [id, isOeffentlich])
 
   const save = () => {
     try {
       if (isOeffentlich) {
-        localStorage.setItem(storageKey, JSON.stringify({ vita }))
+        localStorage.setItem(oeffentlichStorageKey, JSON.stringify({ vita }))
         setSaved(true)
         setTimeout(() => setSaved(false), 2000)
         return
       }
-      // K2: Niemals Stammdaten mit nur { vita } überschreiben – immer bestehende Daten erhalten
-      const raw = localStorage.getItem(storageKey)
-      const data = raw ? JSON.parse(raw) : {}
-      const hasRealStammdaten = typeof data.name === 'string' && data.name.trim() !== ''
-      if (!hasRealStammdaten && Object.keys(data).length <= 1) {
+      // K2: nur über Schicht – bestehende Stammdaten laden, vita ergänzen, zurück schreiben
+      const data = loadStammdaten('k2', id) as any
+      const hasRealStammdaten = typeof data?.name === 'string' && data.name.trim() !== ''
+      if (!hasRealStammdaten && (!data || Object.keys(data).length <= 1)) {
         alert('Stammdaten fehlen. Bitte zuerst im Admin (Galerie Vorschau → Stammdaten) Name, E-Mail usw. speichern. Dann kannst du hier die Vita ergänzen.')
         return
       }
-      const updated = { ...data, vita }
-      localStorage.setItem(storageKey, JSON.stringify(updated))
+      saveStammdaten('k2', id, { ...data, vita })
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
     } catch (e) {

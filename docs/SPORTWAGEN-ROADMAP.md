@@ -159,7 +159,7 @@
 | **Prototyp** | Stammdaten/Kontakt teils direkt, teils aus State; fromOeffentlich an mehreren Stellen. |
 | **Sportwagen** | Stammdaten nur aus Stammdaten-Schicht (1.3); Kontext aus 1.1. Ein Standard für „Kontakt anzeigen“ (fromOeffentlich-Logik einmal zentral). |
 | **Schritte** | 1) Nach Phase 1+1.3: ShopPage, WillkommenPage, VitaPage, AGBPage etc. auf Schicht + Context umstellen. 2) fromOeffentlich in eine Hilfsfunktion oder Context auslagern. |
-| **Erledigt** | [ ] |
+| **Erledigt** | [x] 28.02.26 (oeffentlichContext.isOeffentlichDisplayContext; ShopPage/VitaPage Stammdaten über loadStammdaten/saveStammdaten; Shop fromOeffentlich zentral) |
 
 ---
 
