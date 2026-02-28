@@ -14,6 +14,8 @@ Damit alle Informationen **jederzeit aktuell und hier verfügbar** sind, gilt di
 | **Handbuch (alle wichtigen Sachen)** | **k2team-handbuch/** – Inhaltsverzeichnis `00-INDEX.md`. Spiegel in `public/k2team-handbuch/` für die App. | Backup, Sicherheit, Skalierung, Team-Grundlagen, Arbeitsgewohnheiten – alles Wichtige für Zusammenarbeit und Betrieb. |
 | **Projekt-Doku (technisch)** | **docs/** – Liste `docs/00-INDEX.md`. | K2/ök2, Vercel, Supabase, Crash, Deployment. |
 | **Projekt-Übersicht** | **HAUS-INDEX.md** (Root). | Schnellfinder: wo liegt was (Keller bis Dachboden). Enthält den Abschnitt „Struktur für unser Handeln“. |
+| **Tenant-Context (K2 \| ök2 \| VK2)** | **.cursor/rules/k2-oek2-trennung.mdc**, **docs/K2-OEK2-DATENTRENNUNG.md**, `src/config/tenantConfig.ts`. | Eine Stelle: Kontext steuert Keys und Anzeige; keine vergessene Stelle. |
+| **Sync-Regel (Merge Server + lokal)** | **docs/SYNC-REGEL.md**, `src/utils/syncMerge.ts`. | Eine Funktion `mergeServerWithLocal`; alle Aufrufer nutzen sie. |
 
 ---
 

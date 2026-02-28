@@ -238,7 +238,7 @@
 | **Prototyp** | Tests für Datentrennung, Kundendaten, Bild-Upload; nicht für Merge/Sync. |
 | **Sportwagen** | Zusätzlich: Tests für mergeServerWithLocal (2.1) und für Persistenz-Schicht (1.2) – z. B. „nie mit weniger überschreiben“, Kontext-Keys. |
 | **Schritte** | 1) Nach 2.1: Unit-Tests für mergeServerWithLocal. 2) Nach 1.2: Tests für load/save mit Kontext (Keys korrekt). 3) npm run test bleibt grün. |
-| **Erledigt** | [ ] |
+| **Erledigt** | [x] 28.02.26 – syncMerge.test.ts (mergeServerWithLocal: Server-Basis, lokale hinzu, Mobile/neuer gewinnt, toHistory). artworksStorage.test.ts (Kontext-Keys K2/ök2/VK2, saveArtworksByKey allowReduce, mergeAndMaybeWrite). 38 Tests grün. |
 
 ### 9.2 Doku – eine Stelle pro Thema
 
@@ -247,7 +247,7 @@
 | **Prototyp** | Viele Docs (00-INDEX, STRUKTUR-HANDELN-QUELLEN, HAUS-INDEX); teils Überschneidung. |
 | **Sportwagen** | 00-INDEX und HAUS-INDEX aktuell; neue Themen (Sync-Regel, Tenant-Context, API-Client) in je **einer** Doku. Kein verstreutes Wissen. |
 | **Schritte** | 1) SYNC-REGEL.md anlegen (nach 2.1). 2) Tenant-Context in STRUKTUR-HANDELN oder eigene Kurzdoku. 3) 00-INDEX und HAUS-INDEX verweisen darauf. |
-| **Erledigt** | [ ] |
+| **Erledigt** | [x] 28.02.26 – SYNC-REGEL.md vorhanden (00-INDEX). Tenant-Context + Sync-Regel in STRUKTUR-HANDELN-QUELLEN „Wo was liegt“ ergänzt. |
 
 ---
 

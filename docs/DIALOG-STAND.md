@@ -11,14 +11,14 @@
 - **Reopen-Check 28.02.26:** write-build-info.js prüft weiterhin vor jedem Schreiben (existing === content / Label / indexHtml); bei Gleichheit kein Schreiben → „Build-Info unverändert“. Regel aktiv.
 
 ## Thema
-**Prototyp → Sportwagen – systematisch:** Phase **5.1–5.3** ✅, **6.1–6.2** ✅, **7.1–7.2** ✅, **8.1–8.2** ✅ (28.02.26). 8.2: Schichten geprüft – Schreiben nur bei User-Aktion/explizitem Save/Merge/Backup; kein „load→filter→setItem“ für k2-artworks/stammdaten; artworkStorage-Schutz „nicht mit weniger überschreiben“. Nächster Schritt: Phase 9 (Tests & Doku).
+**Prototyp → Sportwagen – systematisch:** Phase **5.1–5.3** ✅, **6.1–6.2** ✅, **7.1–7.2** ✅, **8.1–8.2** ✅, **9.1–9.2** ✅ (28.02.26). 9.1: syncMerge.test.ts + artworksStorage.test.ts (mergeServerWithLocal, Kontext-Keys, nie mit weniger); 38 Tests grün. 9.2: Tenant-Context + Sync-Regel in STRUKTUR-HANDELN-QUELLEN. Sportwagen-Phasen 1–9 abgeschlossen.
 **Grundregel Ziel vor Anstrengung (28.02.26):** Ohne richtiges Ziel kann hundertmal „richtig machen“ trotzdem falsch sein. Immer wieder Ziel vor Augen. Regel: .cursor/rules/ziel-vor-anstrengung.mdc (alwaysApply); in STRUKTUR-HANDELN-QUELLEN + WIR-PROZESS verankert.
 **Regel Schritt für Schritt – konsequent (28.02.26):** Ein Schritt fertig, dann der nächste; nicht springen, nicht halb machen. .cursor/rules/schritt-fuer-schritt-konsequent.mdc (alwaysApply); in STRUKTUR-HANDELN-QUELLEN.
 **Phase 5.2 erledigt (28.02.26):** GaleriePage & GalerieVorschauPage nur über Artworks-Schicht; VK2 ohne Artwork-Key.
 **Phase 5.3 erledigt (28.02.26):** Shop & Vita: Stammdaten nur über Schicht; fromOeffentlich zentral.
 **Phase 6.1 erledigt (28.02.26):** APf geprüft – keine Reload-Stellen; keine Produkt-Daten-Schreibzugriffe aus APf.
 **Phasen 6.2 + 7.1 gründlich abgeschlossen (28.02.26):** 6.2 mök2/Handbuch geprüft (keine k2-artworks/k2-stammdaten-Schreibzugriffe); 7.1 Build/Stand (Doku + Regel stand-qr-niemals-zurueck.mdc bestätigt). Jede Phase mit Prüfung und Eintrag in Roadmap abgeschlossen.
-**Nächster Sportwagen-Schritt:** Phase **9** (Tests & Doku – mergeServerWithLocal, Persistenz-Schicht-Tests).
+**Nächster Sportwagen-Schritt:** Phasen 1–9 ✅. Optional: weitere Roadmap-Phasen (Übersicht in SPORTWAGEN-ROADMAP.md).
 
 ## Grundregel: Profi statt Dilettant – Rad nicht zweimal erfinden (28.02.26)
 - **Regel:** .cursor/rules/profi-statt-dilettant-rad-nicht-zweimal.mdc (alwaysApply). Kern: Was andere schon erfunden haben, nicht neu bauen. Normen kennen, zukaufen/auslagern, am Markt beste Lösungen nutzen. Vor dem Bauen: „Gibt es das schon?“ – dann nutzen oder begründen.
@@ -43,7 +43,7 @@
 **Wichtig:** In Vercel muss **GITHUB_TOKEN** gesetzt sein (Settings → Environment Variables), sonst schlägt „Daten an Server senden“ mit Hinweis darauf fehl.
 
 ## Nächster Schritt
-- **Sportwagen:** Phasen 5.1–5.3, 6.1, 6.2, 7.1, 7.2, 8.1, 8.2 ✅. Nächste: **Phase 9** (Tests & Doku).
+- **Sportwagen:** Phasen 5.1–5.3, 6.1, 6.2, 7.1, 7.2, 8.1, 8.2, 9.1, 9.2 ✅ (28.02.26).
 - **Optional:** iPad/Mac Datentransport testen.
 1. **QR/Stand-Fix (27.02.26):** QR und Stand-Badge nutzen jetzt **/api/build-info** statt build-info.json – Serverless-API, beim Build mit aktuellem Stand beschrieben, umgeht CDN-Cache. Commit c5351e1.
 2. Nach Vercel-Build (1–2 Min): APf neu laden oder „QR neu“ → Vercel-Stand sollte aktuelle Zeit zeigen; iPad refresh.html oder QR scannen.
