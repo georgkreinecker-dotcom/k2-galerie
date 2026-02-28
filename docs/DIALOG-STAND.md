@@ -52,6 +52,7 @@
 5. **Schritt für Schritt (Screenshot Vercel):** **docs/SCHRITT-FUER-SCHRITT-STAND-AKTUELL.md** – 6 Schritte: pushen → Current prüfen → ggf. Promote/Redeploy → build-info auf Vercel prüfen → iPad refresh/QR → Kontrolle. Passt zum Befund: Vercel zeigt Ready, aber „Current“ kann alter Commit sein.
 
 ## Was zuletzt gemacht (28.02.26)
+- **Praxistest iPad → Server:** Fehlermeldung „Daten konnten nicht …“ zeigte nur generischen Hinweis. Fix: Auf iPad/Mobil zeigt die Meldung jetzt den **echten Grund** (z. B. GITHUB_TOKEN fehlt) + Hinweis Vercel Token. Nach Push erneut testen.
 - **Phase 7.2 + 8.1 gründlich** – Commit: 8dc6630 ✅ auf GitHub. 7.2: API-Endpoints ohne Reload; Admin apiClient + feste URL; docs/00-INDEX DATENTRANSPORT-IPAD-MAC-VERCEL als eine Quelle. 8.1: Checkliste K2-OEK2-DATENTRENNUNG geprüft; datentrennung.test.ts + kundendaten-schutz.test.ts 13/13 grün.
 
 ## Was zuletzt gemacht (27.02.26)
