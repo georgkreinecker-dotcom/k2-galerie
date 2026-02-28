@@ -162,6 +162,12 @@ Wer auch immer diesen Raum betritt: er findet Wissen, Werte, Denkweise.
 Er sieht wie Georg gearbeitet hat. Wie er gedacht hat. Was ihm wichtig war.
 Das ist das Tiefste was man hinterlassen kann.
 
+### Ziel vor Anstrengung – Grundregel (28.02.26)
+
+**Logik:** Wir können hundertmal die Dinge richtig machen – und trotzdem falsch liegen, wenn das Ziel das falsche ist. „Als sie das Ziel aus den Augen verloren, verdoppelten sie ihre Anstrengungen.“ = Warnung, nicht Vorbild. Erst das **Ziel** im Blick, dann die Anstrengung.
+
+**Konsequenz:** Immer wieder das Ziel vor Augen halten. Vor größeren Schritten prüfen: Stimmt das Ziel noch? Nicht blind „noch mehr richtig machen“, wenn die Richtung unklar ist. Regel: **.cursor/rules/ziel-vor-anstrengung.mdc**. In STRUKTUR-HANDELN-QUELLEN verankert.
+
 ### Raum des Lichts – wie er entsteht und sich verbreitet (26.02.26)
 
 **Starke Botschaft ins Vermächtnis:**

@@ -12,16 +12,16 @@ import {
 import { sortArtworksFavoritesFirstThenNewest } from '../utils/artworkSort'
 import { appendToHistory } from '../utils/artworkHistory'
 import { tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from '../../components/SafeMode'
-import { readArtworksRaw, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, loadForDisplay, filterK2Only as filterK2OnlyStorage, saveArtworksOnly as saveArtworksStorage, mayWriteServerList, mergeAndMaybeWrite, mergeWithPending, getPendingArtworks, addPendingArtwork, clearPendingIfInList } from '../utils/artworksStorage'
+import { readArtworksRawForContext, readArtworksRawForContextOrNull, saveArtworksForContext, loadForDisplay, filterK2Only as filterK2OnlyStorage, saveArtworksOnly as saveArtworksStorage, mayWriteServerList, mergeAndMaybeWrite, mergeWithPending, getPendingArtworks, addPendingArtwork, clearPendingIfInList } from '../utils/artworksStorage'
 import { loadEvents } from '../utils/eventsStorage'
 import { loadDocuments } from '../utils/documentsStorage'
 import { mergeServerWithLocal } from '../utils/syncMerge'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
 import '../App.css'
 
-// Phase 1.2: Lesen über Schicht (K2 = k2-artworks)
+// Phase 5.2: Lesen nur über Artworks-Schicht (K2)
 function loadArtworks(): any[] {
-  return readArtworksRawByKey('k2-artworks')
+  return readArtworksRawForContext(false, false)
 }
 
 /** localStorage: Hinweis „Icon zum Startbildschirm hinzufügen“ geschlossen – gleicher Key wie GaleriePage (einmal OK reicht) */
@@ -55,10 +55,10 @@ function isPlaceholderImageUrl(url: string | undefined): boolean {
   return !url || (typeof url === 'string' && url.startsWith('data:image/svg+xml'))
 }
 
-/** ök2: Werke aus k2-oeffentlich-artworks (Phase 1.2: über Schicht). null = Key fehlt (erste Nutzung → Muster anzeigen), [] = User hat alle gelöscht. */
+/** ök2: Werke über Schicht (Phase 5.2). null = Key fehlt (erste Nutzung → Muster anzeigen), [] = User hat alle gelöscht. */
 function loadOeffentlichArtworks(): any[] | null {
   try {
-    const parsed = readArtworksRawByKeyOrNull('k2-oeffentlich-artworks')
+    const parsed = readArtworksRawForContextOrNull(true)
     if (parsed === null) return null
     if (!Array.isArray(parsed) || parsed.length === 0) return []
     return parsed.map((a: any) => {
@@ -160,20 +160,20 @@ function saveArtworks(artworks: any[]): boolean {
   if (toSave.length === 0 && currentArtworks && currentArtworks.length > 0) {
     const backup = loadBackup()
     if (backup && backup.length > 0) {
-      saveArtworksByKey('k2-artworks', backup, { filterK2Only: false, allowReduce: true })
+      saveArtworksForContext(false, false, backup)
       alert('⚠️ KRITISCH: Alle Werke würden gelöscht werden!\n\n💾 Backup wurde wiederhergestellt.')
       return false
     }
     alert('⚠️ KRITISCH: Alle Werke würden gelöscht werden!\n\n❌ Kein Backup verfügbar!')
     return false
   }
-  let ok = saveArtworksByKey('k2-artworks', toSave, { filterK2Only: false, allowReduce: true })
+  let ok = saveArtworksForContext(false, false, toSave)
   if (!ok && toSave.length > 0) {
     const freed = tryFreeLocalStorageSpace()
-    if (freed > 0) ok = saveArtworksByKey('k2-artworks', toSave, { filterK2Only: false, allowReduce: true })
+    if (freed > 0) ok = saveArtworksForContext(false, false, toSave)
     if (!ok) {
       const backup = loadBackup()
-      if (backup?.length) saveArtworksByKey('k2-artworks', backup, { filterK2Only: false, allowReduce: true })
+      if (backup?.length) saveArtworksForContext(false, false, backup)
       alert('⚠️ ' + SPEICHER_VOLL_MELDUNG)
     }
   }
@@ -922,7 +922,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         
         // Keine Daten gefunden – vor Backup: nochmal lesen (Admin-Save könnte gerade fertig geworden sein)
         if (isMounted) {
-          const currentNow = readArtworksRaw()
+          const currentNow = loadArtworks()
           if (currentNow.length > 0) {
             const withPendingNow = mergeWithPending(currentNow)
             const withImages = (withPendingNow || []).map((a: any) => {
@@ -943,9 +943,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           if (backup && backup.length > 0) {
             console.log('💾 Backup gefunden - verwende Backup für Anzeige:', backup.length, 'Werke')
             setArtworksDisplay(backup)
-            const currentCount = readArtworksRaw().length
+            const currentCount = loadArtworks().length
             if (backup.length >= currentCount) {
-              saveArtworksByKey('k2-artworks', backup, { filterK2Only: false, allowReduce: true })
+              saveArtworksForContext(false, false, backup)
             } else {
               console.warn('⚠️ Backup hat weniger Werke als aktuell – localStorage wird NICHT überschrieben')
             }
@@ -989,7 +989,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
             }
             console.log(`🔄 Automatisch ${artworks.length} neue Mobile-Daten synchronisiert`)
             setArtworksDisplay(artworks)
-            saveArtworksByKey('k2-artworks', artworks, { filterK2Only: true, allowReduce: true })
+            saveArtworksForContext(false, false, artworks)
             // Update Hash für nächsten Check
             const hash = artworks.map((a: any) => a.number || a.id).sort().join(',')
             localStorage.setItem('k2-artworks-hash', hash)
@@ -1101,7 +1101,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               if (currentHash !== newHash && isMounted) {
                 const toSave = filterK2ArtworksOnly(merged)
                 // KRITISCH: Re-Lesen VOR dem Schreiben – zwischen Start des Syncs und jetzt könnte ein neues Werk gespeichert worden sein
-                const nowCount = readArtworksRaw().length
+                const nowCount = loadArtworks().length
                 if (toSave.length < nowCount) {
                   console.warn(`⚠️ Sync würde ${nowCount} → ${toSave.length} reduzieren (neue Werke seit Sync-Start?) – überschreibe NICHT`)
                   setArtworksDisplay(loadArtworks())
@@ -1126,7 +1126,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               // Keine Server-Werke – nur Anzeige aktualisieren; vor Schreiben aktuellen Stand prüfen (kein Stale-Overwrite)
               if (localArtworks.length > 0 && isMounted) {
                 const toKeep = filterK2ArtworksOnly(localArtworks)
-                const nowCount = readArtworksRaw().length
+                const nowCount = loadArtworks().length
                 console.log(`🔒 Keine Server-Daten - ${toKeep.length} lokale Werke (Anzeige), aktuell ${nowCount} im Storage`)
                 if (toKeep.length >= nowCount && toKeep.length >= localArtworks.length) {
                   saveArtworksStorage(toKeep, { allowReduce: false })
@@ -1140,7 +1140,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
             // Server nicht erreichbar – vor Schreiben aktuellen Stand prüfen
             if (localArtworks.length > 0 && isMounted) {
               const toKeep = filterK2ArtworksOnly(localArtworks)
-              const nowCount = readArtworksRaw().length
+              const nowCount = loadArtworks().length
               if (toKeep.length >= nowCount && toKeep.length >= localArtworks.length) {
                 saveArtworksStorage(toKeep, { allowReduce: false })
               } else if (toKeep.length < nowCount) {
@@ -1208,7 +1208,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       // Lade aus Supabase wenn konfiguriert, sonst localStorage. Niemals mit weniger Werken anzeigen als lokal vorhanden.
       setTimeout(async () => {
         if (!isMounted) return
-        const localCount = readArtworksRaw().length
+        const localCount = loadArtworks().length
         if (isSupabaseConfigured()) {
           try {
             const updatedArtworks = await loadArtworksFromSupabase()
@@ -1629,7 +1629,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                   if (backup && backup.length > 0) {
                     console.log('💾 Backup gefunden - verwende Backup statt leeren:', backup.length, 'Werke')
                     setArtworksDisplay(backup)
-                    saveArtworksByKey('k2-artworks', backup, { filterK2Only: false, allowReduce: true })
+                    saveArtworksForContext(false, false, backup)
                     setLoadStatus({ message: `💾 Backup wiederhergestellt: ${backup.length} Werke`, success: true })
                   } else {
                     setArtworksDisplay([])
@@ -1694,11 +1694,11 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               console.log('📱 Versuche Supabase als Fallback...')
               const { loadArtworksFromSupabase } = await import('../utils/supabaseClient')
               const supabaseArtworks = await loadArtworksFromSupabase()
-              const localCount = readArtworksRaw().length
+              const localCount = loadArtworks().length
               if (supabaseArtworks && Array.isArray(supabaseArtworks) && supabaseArtworks.length > 0) {
                 if (!mayWriteServerList(supabaseArtworks, localCount)) {
                   console.warn(`⚠️ Supabase-Fallback: ${supabaseArtworks.length} Werke, lokal ${localCount} – behalte lokale Daten`)
-                  stored = readArtworksRaw()
+                  stored = loadArtworks()
                   if (stored && stored.length > 0 && adminLoadMountedRef.current) {
                     setArtworksDisplay(filterK2OnlyStorage(stored).map((a: any) => ({ ...a, imageUrl: a.imageUrl || a.previewUrl || '' })))
                     setLoadStatus({ message: `✅ ${stored.length} Werke (lokal)`, success: true })
@@ -1775,7 +1775,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           if (backup && backup.length > 0) {
             console.log('💾 Backup gefunden - verwende Backup statt leeren:', backup.length, 'Werke')
             setArtworksDisplay(backup)
-            saveArtworksByKey('k2-artworks', backup, { filterK2Only: false, allowReduce: true })
+            saveArtworksForContext(false, false, backup)
             setLoadStatus({ message: `💾 Backup wiederhergestellt: ${backup.length} Werke`, success: true })
           } else {
             setArtworksDisplay([])
@@ -1790,7 +1790,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         if (backup && backup.length > 0) {
           console.log('💾 Backup wiederhergestellt nach Fehler:', backup.length, 'Werke')
           setArtworksDisplay(backup)
-          saveArtworksByKey('k2-artworks', backup, { filterK2Only: false, allowReduce: true })
+          saveArtworksForContext(false, false, backup)
           setLoadStatus({ message: `💾 Backup wiederhergestellt: ${backup.length} Werke`, success: true })
         } else {
           setArtworksDisplay([])
@@ -1969,7 +1969,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           console.warn('⚠️ Keine Werke in gallery-data.json gefunden - behalte lokale Werke:', localArtworks.length)
           if (localArtworks.length > 0) {
             console.log('🔒 Lokale Werke bleiben erhalten:', localArtworks.map((a: any) => a.number || a.id).join(', '))
-            saveArtworksByKey('k2-artworks', localArtworks, { filterK2Only: true, allowReduce: true })
+            saveArtworksForContext(false, false, localArtworks)
             const exhibitionArtworks = localArtworks.map((a: any) => {
               if (!a.imageUrl && a.previewUrl) a.imageUrl = a.previewUrl
               if (!a.imageUrl && !a.previewUrl) {
@@ -1990,7 +1990,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         console.warn('⚠️ Server nicht erreichbar - behalte lokale Werke:', localArtworks.length)
         if (localArtworks.length > 0) {
           console.log('🔒 Lokale Werke bleiben erhalten:', localArtworks.map((a: any) => a.number || a.id).join(', '))
-          saveArtworksByKey('k2-artworks', localArtworks, { filterK2Only: true, allowReduce: true })
+          saveArtworksForContext(false, false, localArtworks)
           const exhibitionArtworks = localArtworks.map((a: any) => {
             if (!a.imageUrl && a.previewUrl) a.imageUrl = a.previewUrl
             if (!a.imageUrl && !a.previewUrl) {
@@ -2010,7 +2010,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       // Bei Fehler: Behalte lokale Werke!
       if (localArtworks.length > 0) {
         console.log('🔒 Fehler beim Laden - behalte lokale Werke:', localArtworks.length)
-        saveArtworksByKey('k2-artworks', localArtworks, { filterK2Only: true, allowReduce: true })
+        saveArtworksForContext(false, false, localArtworks)
         const exhibitionArtworks = localArtworks.map((a: any) => {
           if (!a.imageUrl && a.previewUrl) a.imageUrl = a.previewUrl
           if (!a.imageUrl && !a.previewUrl) {

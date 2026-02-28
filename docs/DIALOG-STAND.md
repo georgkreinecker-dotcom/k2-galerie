@@ -10,7 +10,11 @@
 - **Lösung:** Nur schreiben wenn Inhalt/Label geändert (buildInfo.generated.ts, build-info.json, api/build-info.js, index.html). Regel: **.cursor/rules/build-skripte-nur-schreiben-wenn-geaendert.mdc** (alwaysApply). In STRUKTUR-HANDELN-QUELLEN verlinkt.
 
 ## Thema
-**Prototyp → Sportwagen – systematisch:** Phase **5.1** erledigt (28.02.26): Admin Stammdaten nur noch über loadStammdaten/persistStammdaten/loadVk2Stammdaten/saveVk2Stammdaten; Namenskonflikt mit persistStammdaten gelöst. Nächster Schritt: **Phase 5.2** GaleriePage/GalerieVorschauPage oder **5.3** Shop/Willkommen/Vita.
+**Prototyp → Sportwagen – systematisch:** Phase **5.1** erledigt (28.02.26): Admin Stammdaten nur noch über loadStammdaten/persistStammdaten/loadVk2Stammdaten/saveVk2Stammdaten; Namenskonflikt mit persistStammdaten gelöst. Commit: 5907f8e ✅. Nächster Schritt: **Phase 5.2** GaleriePage/GalerieVorschauPage oder **5.3** Shop/Willkommen/Vita.
+**Grundregel Ziel vor Anstrengung (28.02.26):** Ohne richtiges Ziel kann hundertmal „richtig machen“ trotzdem falsch sein. Immer wieder Ziel vor Augen. Regel: .cursor/rules/ziel-vor-anstrengung.mdc (alwaysApply); in STRUKTUR-HANDELN-QUELLEN + WIR-PROZESS verankert.
+**Regel Schritt für Schritt – konsequent (28.02.26):** Ein Schritt fertig, dann der nächste; nicht springen, nicht halb machen. .cursor/rules/schritt-fuer-schritt-konsequent.mdc (alwaysApply); in STRUKTUR-HANDELN-QUELLEN.
+**Phase 5.2 erledigt (28.02.26):** GaleriePage & GalerieVorschauPage nur über Artworks-Schicht (readArtworksRawForContext, saveArtworksForContext); mergeServerWithLocal unverändert genutzt; VK2 ohne Artwork-Key.
+**Nächster Sportwagen-Schritt:** Phase 5.3 (Shop, Willkommen, Vita – Stammdaten aus Schicht, fromOeffentlich zentral).
 
 ## Grundregel: Profi statt Dilettant – Rad nicht zweimal erfinden (28.02.26)
 - **Regel:** .cursor/rules/profi-statt-dilettant-rad-nicht-zweimal.mdc (alwaysApply). Kern: Was andere schon erfunden haben, nicht neu bauen. Normen kennen, zukaufen/auslagern, am Markt beste Lösungen nutzen. Vor dem Bauen: „Gibt es das schon?“ – dann nutzen oder begründen.

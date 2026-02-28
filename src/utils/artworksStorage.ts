@@ -10,10 +10,44 @@
 const K2_ARTWORKS_KEY = 'k2-artworks'
 const OEF_ARTWORKS_KEY = 'k2-oeffentlich-artworks'
 
-/** Key für Artworks je Kontext (VK2 hat keine Werke). */
+/** Key für Artworks je Kontext. VK2 hat keinen Artwork-Key (Regel: datentrennung-localstorage-niemals-loeschen). */
 export function getArtworksStorageKey(tenant: 'k2' | 'oeffentlich' | 'vk2'): string | null {
   if (tenant === 'vk2') return null
   return tenant === 'oeffentlich' ? OEF_ARTWORKS_KEY : K2_ARTWORKS_KEY
+}
+
+/**
+ * Phase 5.2: Kontextbezogenes Lesen – eine API, Key intern.
+ * musterOnly = ök2, vk2 = VK2 (kein Artwork-Key → immer []), sonst K2.
+ */
+export function readArtworksRawForContext(musterOnly: boolean, vk2: boolean): any[] {
+  if (vk2) return [] // VK2 hat keinen Artwork-Key
+  const key = musterOnly ? OEF_ARTWORKS_KEY : K2_ARTWORKS_KEY
+  return readArtworksRawByKey(key)
+}
+
+/**
+ * Phase 5.2: Kontextbezogenes Lesen – ök2: null wenn Key fehlt (erste Nutzung → Muster).
+ */
+export function readArtworksRawForContextOrNull(musterOnly: boolean): any[] | null {
+  if (!musterOnly) return readArtworksRawForContext(false, false)
+  return readArtworksRawByKeyOrNull(OEF_ARTWORKS_KEY)
+}
+
+/**
+ * Phase 5.2: Kontextbezogenes Schreiben – eine API, Key intern.
+ * K2: filterK2Only; ök2: keine Filterung; VK2: no-op (kein Artwork-Key).
+ */
+export function saveArtworksForContext(
+  musterOnly: boolean,
+  vk2: boolean,
+  data: any[],
+  options: { allowReduce?: boolean } = {}
+): boolean {
+  if (vk2) return false // VK2 hat keinen Artwork-Key
+  const key = musterOnly ? OEF_ARTWORKS_KEY : K2_ARTWORKS_KEY
+  const filterK2Only = key === K2_ARTWORKS_KEY
+  return saveArtworksByKey(key, data, { filterK2Only, allowReduce: options.allowReduce ?? true })
 }
 
 /**

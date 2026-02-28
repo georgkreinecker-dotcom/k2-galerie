@@ -150,7 +150,7 @@
 | **Prototyp** | Eigenes Laden/Merge von gallery-data.json und localStorage; verschiedene Keys je Kontext. |
 | **Sportwagen** | Lesen/Schreiben nur über Artworks-Schicht und Sync-Merge. Kontext aus 1.1. Kein eigener Merge-Code mehr. |
 | **Schritte** | 1) Nach Phase 1+2: GaleriePage und GalerieVorschauPage auf Persistenz-Schicht + mergeServerWithLocal umstellen. 2) QR/Stand nutzt weiterhin useServerBuildTimestamp + buildQrUrlWithBust (unverändert). |
-| **Erledigt** | [ ] |
+| **Erledigt** | [x] 28.02.26 (artworksStorage: readArtworksRawForContext, saveArtworksForContext; GaleriePage/GalerieVorschauPage nur Schicht + mergeServerWithLocal; VK2 kein Artwork-Key) |
 
 ### 5.3 Shop, Willkommen, Vita, weitere Produkt-Seiten
 
