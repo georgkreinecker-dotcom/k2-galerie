@@ -119,7 +119,7 @@ Werk verschwindet / Nummer wiederverwendet / Freistellen geht nicht. **Ursache:*
 - **Phase 3.1 + 3.2 safeReload:** env.ts safeReload; alle Reload-Stellen umgestellt. Phase 2.2, 1.4, 2.1 [x].
 
 ## Letzter Commit
-- **Phase 4.1 compressImageForStorage – eine Komprimierungs-Utility. Stand 28.02.26 06:41.** (wird gleich committed + gepusht)
+- **Phase 4.1 compressImageForStorage – eine Komprimierungs-Utility. Stand 28.02.26 06:41.** Commit: c4b5c68 ✅ auf GitHub
 
 ## Nächster Schritt
 - **Sportwagen:** Phase 4.2 Bild-Upload (uploadPageImage-Wrapper) oder Phase 3.3 Theming. Optional: iPad/Mac testen.
