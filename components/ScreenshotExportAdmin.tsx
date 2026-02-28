@@ -1167,6 +1167,8 @@ function ScreenshotExportAdmin() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const inAppViewerIframeRef = useRef<HTMLIFrameElement>(null)
+  /** Pending-Bild beim Ersetzen: bleibt erhalten, auch wenn State (selectedFile/previewUrl) kurz nicht aktualisiert ist */
+  const pendingImageDataUrlRef = useRef<string | null>(null)
   
   // Eventplan
   const [events, setEvents] = useState<any[]>([])
@@ -6743,15 +6745,14 @@ ${'='.repeat(60)}
     const file = e.target.files?.[0]
     if (file && file.type.startsWith('image/')) {
       setSelectedFile(file)
-      // Sofort als Data URL konvertieren für Preview (nicht Blob URL!)
       const reader = new FileReader()
       reader.onloadend = () => {
         const dataUrl = reader.result as string
-        setPreviewUrl(dataUrl) // Data URL statt Blob URL
+        setPreviewUrl(dataUrl)
+        pendingImageDataUrlRef.current = dataUrl
       }
       reader.readAsDataURL(file)
     }
-    // Reset für erneute Nutzung
     e.target.value = ''
   }
 
@@ -6845,15 +6846,13 @@ ${'='.repeat(60)}
           if (blob) {
             const file = new File([blob], `kamera-${Date.now()}.jpg`, { type: 'image/jpeg' })
             setSelectedFile(file)
-            
-            // Preview erstellen
             const reader = new FileReader()
             reader.onloadend = () => {
-              setPreviewUrl(reader.result as string)
+              const dataUrl = reader.result as string
+              setPreviewUrl(dataUrl)
+              pendingImageDataUrlRef.current = dataUrl
             }
             reader.readAsDataURL(file)
-            
-            // Kamera schließen
             closeCamera()
           }
         }, 'image/jpeg', 0.9)
@@ -7009,8 +7008,10 @@ ${'='.repeat(60)}
             } catch (_) {}
           }
         }
-      } else if (editingArtwork && previewUrl && typeof previewUrl === 'string' && previewUrl.startsWith('data:')) {
-        const fileFromPreview = await dataUrlToFile(previewUrl)
+      } else if (editingArtwork && (previewUrl?.startsWith('data:') || pendingImageDataUrlRef.current?.startsWith('data:'))) {
+        const src = previewUrl?.startsWith('data:') ? previewUrl : pendingImageDataUrlRef.current
+        if (!src) { setIsSavingArtwork(false); alert('Bitte ein Bild auswählen'); return }
+        const fileFromPreview = await dataUrlToFile(src)
         let compressed = await compressImageForStorage(fileFromPreview, { context })
         if (compressed.length > 1200000) {
           const more = await compressImageForStorage(fileFromPreview, { context: 'mobile' })
@@ -7031,7 +7032,6 @@ ${'='.repeat(60)}
           }
         }
       } else if (editingArtwork && editingArtwork.imageUrl && !String(editingArtwork.imageUrl).startsWith('blob:')) {
-        // Bei Bearbeitung ohne neues Bild: Altes Bild beibehalten (keine blob:-URLs – die werden ungültig)
         imageDataUrl = editingArtwork.imageUrl
       } else {
         setIsSavingArtwork(false)
@@ -7367,21 +7367,28 @@ ${'='.repeat(60)}
       }
       
       // KRITISCH: Prüfe ob das neue Werk wirklich in localStorage steht (ROH lesen – kein ök2-Anzeige-Filter)
-      // Im ök2-Kontext filtert loadArtworks(tenant) K2-M-*/K2-K-* für die Anzeige; das neue Werk wäre sonst „nicht gefunden“
-      let rawList: any[] = []
-      try {
-        const key = tenant.getArtworksKey()
-        const stored = localStorage.getItem(key)
-        if (stored) rawList = JSON.parse(stored)
-        if (!Array.isArray(rawList)) rawList = []
-      } catch (_) {}
-      const containsNewArtwork = rawList.some((a: any) =>
-        (a?.number != null && artworkData?.number != null && String(a.number) === String(artworkData.number)) ||
-        (a?.id != null && artworkData?.id != null && String(a.id) === String(artworkData.id))
-      )
+      // Einmal Retry nach 100ms – manchmal braucht localStorage einen Moment (v. a. Mobile)
+      const verifyNewInStorage = (): boolean => {
+        let raw: any[] = []
+        try {
+          const key = tenant.getArtworksKey()
+          const stored = localStorage.getItem(key)
+          if (stored) raw = JSON.parse(stored)
+          if (!Array.isArray(raw)) raw = []
+        } catch (_) {}
+        return raw.some((a: any) =>
+          (a?.number != null && artworkData?.number != null && String(a.number) === String(artworkData.number)) ||
+          (a?.id != null && artworkData?.id != null && String(a.id) === String(artworkData.id))
+        )
+      }
+      let containsNewArtwork = verifyNewInStorage()
       if (!containsNewArtwork) {
-        console.error('❌ KRITISCH: Neues Werk nicht in localStorage gefunden (roh):', artworkData?.number, 'Anzahl roh:', rawList.length)
-        alert(`⚠️ Fehler: Werk wurde gespeichert, aber nicht in Liste gefunden!\n\nNummer: ${artworkData?.number ?? ''}\n\nBitte Seite neu laden.`)
+        await new Promise(r => setTimeout(r, 100))
+        containsNewArtwork = verifyNewInStorage()
+      }
+      if (!containsNewArtwork) {
+        console.error('❌ KRITISCH: Neues Werk nicht in localStorage gefunden (roh):', artworkData?.number)
+        alert(`⚠️ Fehler: Werk wurde gespeichert, aber nicht in Liste gefunden!\n\nNummer: ${artworkData?.number ?? ''}\n\nBitte Seite neu laden oder ein zweites Mal speichern.`)
         return
       }
       
@@ -7446,11 +7453,11 @@ ${'='.repeat(60)}
         file: selectedFile // Für QR-Code-Generierung behalten
       })
       
-      // Modal schließen und zurücksetzen
       setShowAddModal(false)
       setEditingArtwork(null)
       setSelectedFile(null)
       setPreviewUrl(null)
+      pendingImageDataUrlRef.current = null
       setArtworkTitle('')
       setArtworkCategory('malerei')
       setArtworkCeramicSubcategory('vase')
@@ -10041,11 +10048,17 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           style={{ width: '100%', height: 'clamp(180px, 30vw, 220px)', objectFit: 'cover', borderRadius: '12px' }}
                           onError={(e) => {
                             const target = e.target as HTMLImageElement
+                            const retried = target.getAttribute('data-img-retry') === '1'
+                            if (!retried) {
+                              target.setAttribute('data-img-retry', '1')
+                              const orig = target.src
+                              setTimeout(() => { target.src = orig }, 400)
+                              return
+                            }
                             if (tenant.isOeffentlich && target.src !== OEK2_PLACEHOLDER_IMAGE) {
                               target.src = OEK2_PLACEHOLDER_IMAGE
                               return
                             }
-                            // K2/VK2: Bild fehlgeschlagen (z. B. abgeschnitten, blob revoked) → „Kein Bild“-Platzhalter
                             target.src = PLACEHOLDER_KEIN_BILD
                             target.onerror = null
                           }}
@@ -10222,6 +10235,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             setArtworkNumber(artwork.number || '')
                             setArtworkFormVariantOek2((artwork.subcategoryFree || artwork.dimensionsFree || artwork.artist) ? 'ausfuehrlich' : 'schnell')
                             setSelectedFile(null)
+                            pendingImageDataUrlRef.current = null
                             if (artwork.imageUrl) setPreviewUrl(artwork.imageUrl)
                             setShowAddModal(true)
                             return
@@ -10267,6 +10281,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           setArtworkVerkaufsstatus(artwork.verkaufsstatus || 'verfuegbar')
                           setArtworkNumber(artwork.number || '')
                           setSelectedFile(null)
+                          pendingImageDataUrlRef.current = null
                           if (artwork.imageUrl) setPreviewUrl(artwork.imageUrl)
                           setShowAddModal(true)
                         }}
@@ -15652,6 +15667,7 @@ ${name}`
             setShowAddModal(false)
             setEditingArtwork(null)
             setEditingMemberIndex(null)
+            pendingImageDataUrlRef.current = null
             setMemberForm({ ...EMPTY_MEMBER_FORM })
             setArtworkCategory('malerei')
             setArtworkCeramicSubcategory('vase')
@@ -15720,6 +15736,7 @@ ${name}`
                   setShowAddModal(false)
                   setEditingArtwork(null)
                   setEditingMemberIndex(null)
+                  pendingImageDataUrlRef.current = null
                   setMemberForm({ ...EMPTY_MEMBER_FORM })
                   setArtworkTitle('')
                   setArtworkCategory('malerei')
@@ -16105,6 +16122,7 @@ ${name}`
                     onClick={() => {
                       setSelectedFile(null)
                       setPreviewUrl(null)
+                      pendingImageDataUrlRef.current = null
                     }}
                     style={{
                       padding: '0.4rem 0.75rem',

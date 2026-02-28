@@ -23,7 +23,9 @@ export function useServerBuildTimestamp(): { timestamp: number | null; serverLab
   }, [])
   useEffect(() => {
     let cancelled = false
+    const inIframe = typeof window !== 'undefined' && window.self !== window.top
     fetchBuildInfo().then((i) => { if (!cancelled && i) setInfo(i) })
+    if (inIframe) return () => { cancelled = true }
     const interval = setInterval(() => {
       fetchBuildInfo().then((i) => { if (!cancelled && i) setInfo(i) })
     }, 2 * 60 * 1000)

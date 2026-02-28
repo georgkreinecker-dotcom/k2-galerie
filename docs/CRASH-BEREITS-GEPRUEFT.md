@@ -41,6 +41,8 @@
 | DevViewPage Mobile-Intervall im iframe | setInterval(checkForMobileUpdates) startet nicht, wenn window.self !== window.top (20.02.26) |
 | App.tsx „Reset & neu laden“ im iframe | 20.02.26: iframe-Check ergänzt – im iframe nur setState(hasError: false), kein location.reload() |
 | GalerieVorschauPage Polling im iframe | 20.02.26: Beide Intervalle (checkForMobileUpdates, syncFromGalleryData) nur wenn notInIframe |
+| Inject-Script Reload auf localhost | 28.02.26: write-build-info.js – Inject-Script bricht bei location.origin enthält "localhost" sofort ab, kein bust() → kein automatischer Reload in Cursor/Entwicklung |
+| useServerBuildTimestamp Intervall im iframe | 28.02.26: Kein 2-Min-Intervall wenn window.self !== window.top; nur einmaliger Fetch beim Mount in Preview |
 
 ---
 
@@ -140,5 +142,7 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 
 | 27.02.26 | GalerieVorschauPage | Mobile-Polling: setTimeout(5000) wurde im Cleanup nicht gecleart → nach Unmount konnte setState laufen. **Fix:** initialSyncTimeoutId + clearTimeout im Cleanup. |
 | 27.02.26 | ScreenshotExportAdmin | location.href ohne iframe-Check: VK2 Vorstand→Admin (8873), Abmelden→/vk2-login (8890), „Zurück zur Übersicht“ Entdecken (9099), Kassa-Links Hub (9572, 9665). **Fix:** Alle nur wenn window.self === window.top. |
+| 28.02.26 | write-build-info.js (Inject-Script) | In Cursor Preview kann Fenster top sein → Script lief komplett → nach 2 Min oder bei neuem Build bust() → location.replace → Reload → Crash. **Fix:** Am Anfang des Inject-Scripts: `var o=location.origin; if(o.indexOf("localhost")!==-1)return;` – bei localhost kein bust(), kein automatischer Reload in der Entwicklung. |
+| 28.02.26 | useServerBuildTimestamp | 2-Min-Intervall (fetch build-info) lief auch im iframe → alle 2 Min setState in Preview. **Fix:** Wenn inIframe (window.self!==window.top) kein setInterval, nur einmal fetch beim Mount. |
 
-*Zuletzt ergänzt: 27.02.26 (Crash-Check: GalerieVorschauPage 5s-Cleanup, ScreenshotExportAdmin location.href iframe-gesichert)*
+*Zuletzt ergänzt: 28.02.26 (Inject-Script localhost-Skip, useServerBuildTimestamp kein Intervall im iframe)*
