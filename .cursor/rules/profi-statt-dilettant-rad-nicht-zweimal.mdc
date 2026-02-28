@@ -1,0 +1,71 @@
+---
+description: Profi-Denken statt Dilettant – Rad nicht zweimal erfinden. Normen kennen, zukaufen/auslagern, am Markt beste Lösungen nutzen.
+alwaysApply: true
+---
+
+# Profi statt Dilettant – Rad nicht zweimal erfinden
+
+## Grundlage (von Georg, unveränderlich)
+
+**Wachstum und Entwicklung** bauen auf Profi-Denken, nicht auf Dilettanten-Denken.
+
+**Quintessenz:** Was andere schon erfunden haben, **nicht ein zweites Mal erfinden.** Du sollst das Rad nicht zweimal erfinden.
+
+- **Erfolgreiche Maschinenbauer:** Kennen Normen. Wissen, welche Komponenten sie zukaufen oder besorgen können. Lagern Kompetenzen aus. Suchen am Markt nach den besten Lösungen. Sie denken nicht: „Wir können alles selber machen.“
+- **Dilettanten / gute Handwerker:** Sind geschickt und können viel selber – aber sie bauen oft nach, was es schon gibt, und skalieren nicht, weil alles in ihrer Hand bleibt.
+- **Für uns:** Wir verhalten uns in dem, was wir machen, oft wie Dilettanten und gute Handwerker – **nicht** wie wirklich erfolgreiche Maschinenbauer. Diese Regel stellt sicher, dass die AI sich wie ein Profi verhält: zukaufen, normen, auslagern, nicht neu erfinden.
+
+---
+
+## Regeln (die AI hält sie ein)
+
+### 1. Vor dem Bauen: „Gibt es das schon?“
+
+**Vor jeder neuen Implementierung** (Feature, Sync, Auth, Upload, Export, …):
+
+- **Prüfen:** Gibt es eine **Norm**, eine **Bibliothek**, einen **Service** oder eine **bewährte Lösung** (im Projekt, im Ökosystem, am Markt), die das löst?
+- **Wenn ja:** Diese nutzen oder integrieren. **Nicht** eine zweite, eigene Lösung bauen.
+- **Kurz festhalten:** Wenn die Prüfung gemacht wurde (z. B. „XY nutzen wir nicht, weil …“ oder „Wir nutzen Lib Z“), in Doku oder Kommentar notieren – damit das Rad beim nächsten Mal nicht doch neu erfunden wird.
+
+### 2. Zukaufen / Integrieren vor Selberbauen
+
+- **Komponenten zukaufen:** Wo es sinnvolle Bausteine gibt (Libs, APIs, SaaS, Open Source) → **erst prüfen**, dann entscheiden. Nicht reflexartig „bauen wir selbst“.
+- **Kompetenzen auslagern:** Nicht alles im eigenen Code lösen. Markt und Ökosystem nutzen (z. B. Auth: Supabase; Bilder: bestehende Libs; Zahlung: bewährte Anbieter). Nur dann selbst bauen, wenn es einen klaren Grund gibt (Kosten, Datenschutz, keine passende Lösung).
+
+### 3. Am Markt nach den besten Lösungen umsehen
+
+- Bei neuen Anforderungen (Sync, Speicher, Druck, Export, …): **kurz recherchieren**, was es bereits gibt (npm, Vercel, Supabase, Standards wie OAuth, REST, …). Nicht sofort in den Code gehen.
+- **Normen kennen:** Wo es Standards gibt (z. B. OAuth, JWT, REST, CORS) – diese einhalten, nicht eigene Wege gehen, außer es gibt einen zwingenden Grund.
+
+### 4. Übertragbarkeit (Profi vs. Dilettant)
+
+- Wissen und Ablauf **aus dem Kopf raus**: Doku, Handbuch, klare Regeln. So dass andere (oder wir in einem Jahr) es wiederholen und erweitern können – ohne „nur der eine kann das“.
+- **Ein Standard pro Problemstellung** (siehe ein-standard-problem.mdc) – keine verschiedenen Räder für dieselbe Aufgabe.
+
+---
+
+## Konkret für unser Projekt
+
+| Bereich | Profi-Verhalten | Vermeiden |
+|--------|------------------|-----------|
+| **Datentransport/Sync** | Eine API, ein Ablauf, bewährte Muster (z. B. GitHub API, Vercel Serverless). Nicht viele Ad-hoc-Wege. | Eigenes Sync-Protokoll erfinden, wo es Standardlösungen gibt. |
+| **Auth** | Supabase Auth oder bewährte Anbieter nutzen. | Eigenes Login-System bauen, wenn es keinen klaren Grund gibt. |
+| **Bilder/Upload** | Bestehende Libs (z. B. Komprimierung, Background-Removal) nutzen. Bei neuem Bedarf: zuerst „was gibt es?“ | Immer selbst implementieren. |
+| **Neue Features** | Vor dem Codieren: „Gibt es Lib/Service/Norm?“ → nutzen oder begründen warum nicht. | Sofort codieren ohne Prüfung. |
+| **Doku** | Abläufe und Entscheidungen so festhalten, dass sie übertragbar sind (Handbuch, docs, Regeln). | Wissen nur im Kopf oder im Code versteckt lassen. |
+
+---
+
+## Checkliste vor neuer Implementierung
+
+- [ ] Gibt es dafür schon eine **Norm**, **Bibliothek** oder **Service**? Wenn ja → nutzen.
+- [ ] Können wir **zukaufen / integrieren** statt selbst bauen? Wenn ja → prüfen und ggf. so entscheiden.
+- [ ] Ist die Entscheidung **dokumentiert** (warum selbst gebaut / warum Lib X), damit wir das Rad nicht beim nächsten Mal neu erfinden?
+
+---
+
+## Kurzfassung
+
+**Profi = Rad nicht zweimal erfinden. Normen kennen. Zukaufen, auslagern, am Markt beste Lösungen nutzen. Vor dem Bauen: „Gibt es das schon?“ – dann übertragbar festhalten. Dilettant = alles selber machen können; Profi = das Richtige selber machen und das Übrige zukaufen und normen.**
+
+Verknüpfung: **ein-standard-problem.mdc** (eine Lösung pro Problem), **skalierungsprinzip.mdc** (skalierbar bauen), **verbindlich-zuverlaessig-nicht-hoffnung.mdc** (zuverlässig, nicht „hoffen“).

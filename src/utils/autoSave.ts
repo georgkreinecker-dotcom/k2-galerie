@@ -4,6 +4,7 @@
  */
 
 import { K2_STAMMDATEN_DEFAULTS, MUSTER_TEXTE } from '../config/tenantConfig'
+import { saveArtworksByKey } from './artworksStorage'
 
 // Auto-Save alle 5 Sekunden
 const AUTO_SAVE_INTERVAL = 5000
@@ -106,7 +107,7 @@ export function startAutoSave(getData: () => AutoSaveData) {
       if (data.artworks) {
         try {
           const toSave = filterK2ArtworksOnly(data.artworks)
-          localStorage.setItem('k2-artworks', JSON.stringify(toSave))
+          saveArtworksByKey('k2-artworks', toSave, { filterK2Only: false, allowReduce: true })
         } catch (e) {
           console.warn('⚠️ Artworks zu groß für Auto-Save')
         }
@@ -206,7 +207,7 @@ export function saveNow(getData: () => AutoSaveData) {
     if (data.artworks) {
       try {
         const toSave = filterK2ArtworksOnly(data.artworks)
-        localStorage.setItem('k2-artworks', JSON.stringify(toSave))
+        saveArtworksByKey('k2-artworks', toSave, { filterK2Only: false, allowReduce: true })
       } catch (e) {
         console.warn('⚠️ Artworks zu groß für Sofort-Save')
       }
@@ -319,7 +320,7 @@ export function restoreFromBackup(): boolean {
         (a?.id && String(a.id).startsWith('vk2-seed-')) || (a?.number && String(a.number).startsWith('VK2-'))
       )
       if (!looksLikeVk2) {
-        localStorage.setItem('k2-artworks', JSON.stringify(backup.artworks))
+        saveArtworksByKey('k2-artworks', backup.artworks, { filterK2Only: false, allowReduce: true })
       } else {
         console.warn('⚠️ Backup enthält VK2-Werke – k2-artworks wurde nicht überschrieben (K2/VK2-Trennung).')
       }
@@ -399,7 +400,7 @@ export function restoreFromBackupFile(backup: {
         (a?.id && String(a.id).startsWith('vk2-seed-')) || (a?.number && String(a.number).startsWith('VK2-'))
       )
       if (!looksLikeVk2) {
-        localStorage.setItem('k2-artworks', JSON.stringify(backup.artworks))
+        saveArtworksByKey('k2-artworks', backup.artworks, { filterK2Only: false, allowReduce: true })
       } else {
         console.warn('⚠️ Backup-Datei enthält VK2-Werke – k2-artworks wurde nicht überschrieben (K2/VK2-Trennung).')
       }

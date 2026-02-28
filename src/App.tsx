@@ -41,6 +41,7 @@ import FlyerK2GaleriePage from './pages/FlyerK2GaleriePage'
 import PresseEinladungK2GaleriePage from './pages/PresseEinladungK2GaleriePage'
 import KundenPage from './pages/KundenPage'
 import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUTE, ENTDECKEN_ROUTE } from './config/navigation'
+import { TenantProvider } from './context/TenantContext'
 import WillkommenPage from './pages/WillkommenPage'
 import EntdeckenPage from './pages/EntdeckenPage'
 import AGBPage from './pages/AGBPage'
@@ -461,6 +462,7 @@ function App() {
   }, [])
 
   return (
+    <TenantProvider>
     <AppErrorBoundary>
     <StandBadgeSync />
     {/* Brand-Button entfernt – bei der Arbeit nicht nötig; bei Bedarf in BrandLogo.tsx wieder einbinden */}
@@ -600,6 +602,7 @@ function App() {
     <PrintFooter />
 
     </AppErrorBoundary>
+    </TenantProvider>
   )
 }
 

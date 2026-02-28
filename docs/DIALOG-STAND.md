@@ -2,10 +2,14 @@
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
-## Datum: 27.02.26
+## Datum: 28.02.26
 
 ## Thema
-Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen. **Erledigt:** Raw-Liste, Freistellen-Hinweis, „Foto jetzt freistellen“ am Mac. **Neu (27.02.26 Abend):** Vor-Ort-Test-Probleme adressiert – einheitliche Meldung, Mobile-Kompression, Platzhalter/Cleanup, Upload auch ohne selectedFile.
+**Prototyp → Sportwagen – systematisch:** Phase **1.1** (Tenant-Context) und **Phase 1.2** (Artworks-Persistenz) erledigt (28.02.26). Artworks: eine Schicht über `artworksStorage.ts` – `readArtworksRawByKey`, `readArtworksRawByKeyOrNull`, `saveArtworksByKey`; GaleriePage, GalerieVorschauPage, autoSave, supabaseClient, DevViewPage, PlatzanordnungPage nutzen nur noch diese Schicht für k2-artworks/k2-oeffentlich-artworks. Nächster Schritt: **Phase 1.3** Stammdaten-Persistenz (eine Schicht) oder Phase 2 (Sync-Regel).
+
+## Grundregel: Profi statt Dilettant – Rad nicht zweimal erfinden (28.02.26)
+- **Regel:** .cursor/rules/profi-statt-dilettant-rad-nicht-zweimal.mdc (alwaysApply). Kern: Was andere schon erfunden haben, nicht neu bauen. Normen kennen, zukaufen/auslagern, am Markt beste Lösungen nutzen. Vor dem Bauen: „Gibt es das schon?“ – dann nutzen oder begründen.
+- **Eingehängt in:** STRUKTUR-HANDELN-QUELLEN.md, docs/00-INDEX.md (Prinzipien & Regeln). Gehört zum Grundlagenrepertoire unserer Arbeit.
 
 ## Session-Ende 27.02.26 (Abend) – morgen genau da weiter
 - **Heute gemacht:** Crash-Check (GalerieVorschauPage 5s-Cleanup, Admin location.href iframe-gesichert). **Datentransport iPad ↔ Vercel ↔ Mac** professionell umgesetzt: eine feste API-URL (WRITE_GALLERY_DATA_API_URL), Erfolg/Fehler nur aus API-Response, „Bilder vom Server laden“ mit Retry und klaren Meldungen, Erfolgs-Modal angepasst, Doku docs/DATENTRANSPORT-IPAD-MAC-VERCEL.md + Handbuch 16.
@@ -26,7 +30,8 @@ Werke anlegen bis Speichern: eine Quelle, keine stillen Überschreibungen. **Erl
 **Wichtig:** In Vercel muss **GITHUB_TOKEN** gesetzt sein (Settings → Environment Variables), sonst schlägt „Daten an Server senden“ mit Hinweis darauf fehl.
 
 ## Nächster Schritt
-- **Georg:** Am iPad: Nach Speichern **„📤 Daten an Server senden“** tippen (Admin → Werke verwalten), damit Vercel aktuell ist. Am Mac: **„🔄 Vom Server laden“** holt die Werke. Handbuch 16: iPad → Mac = Speichern + „Daten an Server senden“; Mac = „Vom Server laden“. (Auf Mobil gibt es keine Auto-Veröffentlichung – Nutzer tippt den Button.)
+- **Sportwagen:** Phase 1.1 + 1.2 ✅. Als Nächstes **Phase 1.3** Stammdaten-Persistenz (eine Schicht) oder **Phase 2.1** Sync-Regel dokumentieren und durchsetzen.
+- **Optional:** iPad/Mac Datentransport testen.
 1. **QR/Stand-Fix (27.02.26):** QR und Stand-Badge nutzen jetzt **/api/build-info** statt build-info.json – Serverless-API, beim Build mit aktuellem Stand beschrieben, umgeht CDN-Cache. Commit c5351e1.
 2. Nach Vercel-Build (1–2 Min): APf neu laden oder „QR neu“ → Vercel-Stand sollte aktuelle Zeit zeigen; iPad refresh.html oder QR scannen.
 3. Falls Vercel-Build fehlschlägt: docs/VERCEL-CHECKLISTE-BEI-KEINEM-STAND.md.

@@ -4,6 +4,7 @@ import { PROJECT_ROUTES, PLATFORM_ROUTES, getAllProjectIds } from '../config/nav
 import { usePersistentBoolean } from '../hooks/usePersistentState'
 import { checkMobileUpdates } from '../utils/supabaseClient'
 import { filterK2ArtworksOnly } from '../utils/autoSave'
+import { readArtworksRawByKey, saveArtworksByKey } from '../utils/artworksStorage'
 import '../App.css'
 import GaleriePage from './GaleriePage'
 import GalerieVorschauPage from './GalerieVorschauPage'
@@ -261,7 +262,8 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
         }
       }
       
-      let artworks = getItemSafe('k2-artworks', [])
+      let artworks = readArtworksRawByKey('k2-artworks')
+      if (!Array.isArray(artworks)) artworks = []
       const events = getItemSafe('k2-events', [])
       const documents = getItemSafe('k2-documents', [])
       
@@ -328,9 +330,8 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
             const toSave = filterK2ArtworksOnly(merged)
             console.log(`✅ ${toSave.length - localArtworks.length} Mobile-Werke zu Veröffentlichung hinzugefügt`)
             artworks = toSave
-            // Speichere auch lokal für nächste Veröffentlichung (nur echte K2-Werke)
             try {
-              localStorage.setItem('k2-artworks', JSON.stringify(toSave))
+              saveArtworksByKey('k2-artworks', toSave, { filterK2Only: false, allowReduce: true })
             } catch (e) {
               console.warn('⚠️ Konnte merged Werke nicht speichern:', e)
             }
@@ -607,11 +608,8 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       const { hasUpdates, artworks } = await checkMobileUpdates()
       if (hasUpdates && artworks) {
         const toSave = filterK2ArtworksOnly(artworks)
-        // Speichere in localStorage (nur echte K2-Werke)
-        localStorage.setItem('k2-artworks', JSON.stringify(toSave))
+        saveArtworksByKey('k2-artworks', toSave, { filterK2Only: false, allowReduce: true })
         localStorage.setItem('k2-last-load-time', Date.now().toString())
-        
-        // Update Hash für bessere Update-Erkennung
         const hash = toSave.map((a: any) => a.number || a.id).sort().join(',')
         localStorage.setItem('k2-artworks-hash', hash)
         

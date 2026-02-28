@@ -7,6 +7,7 @@
 
 import { getAuthToken } from './supabaseAuth'
 import { filterK2ArtworksOnly } from './autoSave'
+import { readArtworksRawByKey, saveArtworksByKey } from './artworksStorage'
 
 // Sicherer Zugriff auf import.meta.env
 let SUPABASE_URL = ''
@@ -80,10 +81,9 @@ export async function loadArtworksFromSupabase(): Promise<any[]> {
 
     console.log(`✅ ${artworks.length} Werke aus Supabase geladen`)
     
-    // Backup in localStorage – nur echte K2-Werke (Muster/VK2 raus)
     try {
       const toStore = filterK2ArtworksOnly(artworks)
-      localStorage.setItem('k2-artworks', JSON.stringify(toStore))
+      saveArtworksByKey('k2-artworks', toStore, { filterK2Only: false, allowReduce: true })
     } catch (e) {
       console.warn('⚠️ localStorage Backup fehlgeschlagen:', e)
     }
@@ -148,10 +148,9 @@ export async function saveArtworksToSupabase(artworks: any[]): Promise<boolean> 
     const data = await response.json()
     console.log(`✅ ${data.count || artworks.length} Werke in Supabase gespeichert`)
     
-    // Backup in localStorage – nur echte K2-Werke
     try {
       const toStore = filterK2ArtworksOnly(artworks)
-      localStorage.setItem('k2-artworks', JSON.stringify(toStore))
+      saveArtworksByKey('k2-artworks', toStore, { filterK2Only: false, allowReduce: true })
     } catch (e) {
       console.warn('⚠️ localStorage Backup fehlgeschlagen:', e)
     }
@@ -159,7 +158,6 @@ export async function saveArtworksToSupabase(artworks: any[]): Promise<boolean> 
     return true
   } catch (error) {
     console.error('❌ Fehler beim Speichern in Supabase:', error)
-    // Fallback zu localStorage
     saveToLocalStorage(artworks)
     return false
   }
@@ -338,16 +336,10 @@ export async function autoSyncMobileToSupabase(): Promise<void> {
   }
 }
 
-// Helper: localStorage Fallback
 function loadFromLocalStorage(): any[] {
   try {
-    const stored = localStorage.getItem('k2-artworks')
-    if (stored) {
-      const parsed = JSON.parse(stored)
-      if (Array.isArray(parsed)) {
-        return parsed
-      }
-    }
+    const list = readArtworksRawByKey('k2-artworks')
+    return Array.isArray(list) ? list : []
   } catch (error) {
     console.warn('⚠️ localStorage parse error:', error)
   }
@@ -357,8 +349,7 @@ function loadFromLocalStorage(): any[] {
 function saveToLocalStorage(artworks: any[]): boolean {
   try {
     const toSave = filterK2ArtworksOnly(artworks)
-    localStorage.setItem('k2-artworks', JSON.stringify(toSave))
-    return true
+    return saveArtworksByKey('k2-artworks', toSave, { filterK2Only: false, allowReduce: true })
   } catch (error) {
     console.error('❌ localStorage save error:', error)
     return false

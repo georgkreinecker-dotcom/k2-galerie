@@ -8,6 +8,7 @@ import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie } from '../config/pageContentGalerie'
 import { getPageTexts, type GaleriePageTexts } from '../config/pageTexts'
 import { appendToHistory } from '../utils/artworkHistory'
+import { readArtworksRawByKey, saveArtworksByKey } from '../utils/artworksStorage'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { OK2_THEME } from '../config/ok2Theme'
 import '../App.css'
@@ -77,16 +78,18 @@ function artworksToSave(key: string, list: any[]): any[] {
   return key === 'k2-artworks' ? filterK2ArtworksOnly(list) : list
 }
 
-/** Liest Werke aus localStorage – NUR LESEN, nie still filtern oder zurückschreiben.
- * 🔒 REGEL: Kein automatisches Löschen von Kundendaten beim Laden. */
+/** Liest Werke – Phase 1.2: k2-artworks/k2-oeffentlich über Schicht, sonst direkt. NUR LESEN, nie still löschen. */
 function safeParseArtworks(storageKey: string = 'k2-artworks'): any[] {
   try {
-    const raw = localStorage.getItem(storageKey)
-    if (!raw) return []
-    const parsed = JSON.parse(raw)
-    const list = Array.isArray(parsed) ? parsed : []
+    const list = (storageKey === 'k2-artworks' || storageKey === 'k2-oeffentlich-artworks')
+      ? readArtworksRawByKey(storageKey)
+      : (() => {
+          const raw = localStorage.getItem(storageKey)
+          if (!raw) return []
+          const parsed = JSON.parse(raw)
+          return Array.isArray(parsed) ? parsed : []
+        })()
     if (storageKey === 'k2-artworks') {
-      // Nur warnen – niemals still löschen
       const verdaechtig = list.filter((a: any) => isMusterArtwork(a))
       if (verdaechtig.length > 0) {
         console.warn('⚠️ Verdächtige Muster-Einträge in k2-artworks:', verdaechtig.map((a: any) => a.number || a.id))
@@ -95,6 +98,16 @@ function safeParseArtworks(storageKey: string = 'k2-artworks'): any[] {
     return list
   } catch {
     return []
+  }
+}
+
+/** Schreibt Werke – Phase 1.2: k2-artworks/k2-oeffentlich über Schicht, VK2 direkt. */
+function saveArtworksForKey(key: string, data: any[]): void {
+  const toSave = artworksToSave(key, data)
+  if (key === 'k2-artworks' || key === 'k2-oeffentlich-artworks') {
+    saveArtworksByKey(key, toSave, { filterK2Only: key === 'k2-artworks', allowReduce: true })
+  } else {
+    try { localStorage.setItem(key, JSON.stringify(toSave)) } catch (_) {}
   }
 }
 
@@ -1052,8 +1065,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             console.log('📋 Server Nummern:', serverArtworks.map((a: any) => a.number || a.id).join(', '))
             console.log('📋 Gemergte Nummern:', merged.map((a: any) => a.number || a.id).join(', '))
             
-            // KRITISCH: Speichere merged Liste - Mobile-Werke sind geschützt!
-            localStorage.setItem(artworksKey, JSON.stringify(artworksToSave(artworksKey, merged)))
+            // KRITISCH: Speichere merged Liste - Mobile-Werke sind geschützt! (Phase 1.2: über Schicht)
+            saveArtworksForKey(artworksKey, merged)
             
             // ZUSÄTZLICH: Prüfe ob neue Mobile-Werke vom Server geladen wurden
             const newMobileWorks = merged.filter((a: any) => 
@@ -1074,15 +1087,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             console.warn('⚠️ Werke zu groß für localStorage:', e)
             // Bei Fehler: Behalte lokale Werke!
             console.log('🔒 Fehler beim Merge - behalte lokale Werke:', localArtworks.length)
-            localStorage.setItem(artworksKey, JSON.stringify(artworksToSave(artworksKey, localArtworks)))
+            saveArtworksForKey(artworksKey, localArtworks)
           }
         } else {
           // KEINE Server-Daten - behalte ALLE lokalen Werke!
           console.warn('⚠️ Keine Werke in gallery-data.json gefunden - behalte lokale Werke:', localArtworks.length)
           if (localArtworks.length > 0) {
             console.log('🔒 Lokale Werke bleiben erhalten:', localArtworks.map((a: any) => a.number || a.id).join(', '))
-            // Stelle sicher dass lokale Werke gespeichert bleiben
-            localStorage.setItem(artworksKey, JSON.stringify(artworksToSave(artworksKey, localArtworks)))
+            saveArtworksForKey(artworksKey, localArtworks)
             window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: localArtworks.length, fromGaleriePage: true, localOnly: true } }))
           }
         }
@@ -1292,9 +1304,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       
       if (!exists) {
         console.log(`✅ Neues Mobile-Werk synchronisiert: ${artwork.number || artwork.id}`)
-        // Füge Werk hinzu
         localArtworks.push(artwork)
-        localStorage.setItem(artworksKey, JSON.stringify(artworksToSave(artworksKey, localArtworks)))
+        saveArtworksForKey(artworksKey, localArtworks)
         
         // Trigger Event für UI-Update
         window.dispatchEvent(new CustomEvent('artworks-updated', { 
@@ -1483,7 +1494,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               
               if (toHistory.length > 0) appendToHistory(toHistory)
               
-              localStorage.setItem(artworksKey, JSON.stringify(artworksToSave(artworksKey, merged)))
+              saveArtworksForKey(artworksKey, merged)
               console.log('✅ Werke gemergt beim Initial-Load (Server = Quelle):', merged.length, 'Gesamt,', toHistory.length, 'in History')
               console.log('📋 Lokale Nummern:', localArtworks.map((a: any) => a.number || a.id).join(', '))
               console.log('📋 Server Nummern:', serverArtworks.map((a: any) => a.number || a.id).join(', '))
@@ -1496,7 +1507,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               const localArtworks = safeParseArtworks(artworksKey)
               if (localArtworks.length > 0) {
                 console.log('🔒 Fehler beim Merge beim Initial-Load - behalte lokale Werke:', localArtworks.length)
-                localStorage.setItem(artworksKey, JSON.stringify(artworksToSave(artworksKey, localArtworks)))
+                saveArtworksForKey(artworksKey, localArtworks)
               }
             }
           } else {
@@ -1505,8 +1516,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             if (localArtworks.length > 0) {
               console.warn('⚠️ Keine Werke in gallery-data.json gefunden beim Initial-Load - behalte lokale Werke:', localArtworks.length)
               console.log('🔒 Lokale Werke bleiben erhalten beim Initial-Load:', localArtworks.map((a: any) => a.number || a.id).join(', '))
-              // Stelle sicher dass lokale Werke gespeichert bleiben
-              localStorage.setItem(artworksKey, JSON.stringify(artworksToSave(artworksKey, localArtworks)))
+              saveArtworksForKey(artworksKey, localArtworks)
               window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: localArtworks.length, fromGaleriePage: true, localOnly: true, initialLoad: true } }))
             }
           }

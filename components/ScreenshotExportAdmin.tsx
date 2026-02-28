@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useTenant } from '../src/context/TenantContext'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, WILLKOMMEN_ROUTE } from '../src/config/navigation'
 import ZertifikatTab from './tabs/ZertifikatTab'
@@ -22,10 +23,11 @@ import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
-import { addPendingArtwork, filterK2Only } from '../src/utils/artworksStorage'
+import { addPendingArtwork, filterK2Only, readArtworksRawByKey, saveArtworksByKey } from '../src/utils/artworksStorage'
 import { getWerbeliniePrDocCss, getWerbeliniePrDocCssVk2, WERBELINIE_FONTS_URL, WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../src/config/marketingWerbelinie'
 import '../src/App.css'
 
+/** Session-Key für Admin-Kontext (K2/ök2/VK2) – wird von TenantContext gesetzt; hier nur noch für gezielte Schreibzugriffe beim Navigieren. */
 const ADMIN_CONTEXT_KEY = 'k2-admin-context'
 /** Session-Key: eingeloggtes VK2-Mitglied (Name) – nur eigenes Profil bearbeitbar */
 const VK2_MITGLIED_SESSION_KEY = 'k2-vk2-mitglied-eingeloggt'
@@ -37,52 +39,6 @@ function getVk2EingeloggtesM(): string | null {
 /** Ist ein Mitglied (nicht Vorstand) eingeloggt? */
 function isVk2MitgliedEingeloggt(): boolean {
   return !!getVk2EingeloggtesM()
-}
-
-/**
- * Setzt den Admin-Kontext SOFORT synchron aus der URL – muss am Anfang aufgerufen werden.
- * Dadurch ist isOeffentlichAdminContext() von Beginn an korrekt (auch beim useState-Init).
- */
-function syncAdminContextFromUrl(): void {
-  try {
-    if (typeof window === 'undefined') return
-    const params = new URLSearchParams(window.location.search)
-    const ctx = params.get('context')
-    if (ctx === 'oeffentlich') {
-      sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'oeffentlich')
-    } else if (ctx === 'vk2') {
-      sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'vk2')
-    } else {
-      // Kein context-Parameter oder anderer Wert → K2-Admin → alten Kontext löschen
-      // (verhindert: nach ök2-Admin-Besuch bleibt 'oeffentlich' im sessionStorage hängen)
-      sessionStorage.removeItem(ADMIN_CONTEXT_KEY)
-    }
-  } catch (_) {}
-}
-
-function isOeffentlichAdminContext(): boolean {
-  try {
-    if (typeof window !== 'undefined' && window.location.search) {
-      const params = new URLSearchParams(window.location.search)
-      if (params.get('context') === 'oeffentlich') return true
-      // Wenn ein anderer context explizit gesetzt ist → definitiv nicht ök2
-      if (params.get('context') === 'vk2' || params.get('context') === 'k2') return false
-    }
-    return typeof sessionStorage !== 'undefined' && sessionStorage.getItem(ADMIN_CONTEXT_KEY) === 'oeffentlich'
-  } catch {
-    return false
-  }
-}
-function isVk2AdminContext(): boolean {
-  try {
-    if (typeof window !== 'undefined' && window.location.search) {
-      const params = new URLSearchParams(window.location.search)
-      if (params.get('context') === 'vk2') return true
-    }
-    return typeof sessionStorage !== 'undefined' && sessionStorage.getItem(ADMIN_CONTEXT_KEY) === 'vk2'
-  } catch {
-    return false
-  }
 }
 
 /** Maximale Videolänge für Virtuellen Rundgang (Sekunden) – 2 Min = gut vertretbar für Ladezeit/Speicher */
@@ -104,19 +60,6 @@ function getVideoDurationSec(file: File): Promise<number> {
   })
 }
 
-// KRITISCH: Getrennte Storage-Keys für K2 vs. ök2 vs. VK2 – niemals Daten vermischen
-function getArtworksKey(): string {
-  // VK2 hat KEINE Werke – nur Mitglieder in k2-vk2-stammdaten
-  return isOeffentlichAdminContext() ? 'k2-oeffentlich-artworks' : 'k2-artworks'
-}
-function getEventsKey(): string {
-  if (isVk2AdminContext()) return 'k2-vk2-events'
-  return isOeffentlichAdminContext() ? 'k2-oeffentlich-events' : 'k2-events'
-}
-function getDocumentsKey(): string {
-  if (isVk2AdminContext()) return 'k2-vk2-documents'
-  return isOeffentlichAdminContext() ? 'k2-oeffentlich-documents' : 'k2-documents'
-}
 /** Admin-URL inkl. Tab + Eventplan-Untertab – „Zurück“ landet in der Dokumenten-Vorschau (Flyer & Werbedokumente), nicht in der Übersicht. */
 function getAdminReturnUrl(activeTab?: string, eventplanSubTab?: string): string {
   if (typeof window === 'undefined') return ''
@@ -399,115 +342,72 @@ try {
   // Ignoriere Import-Fehler
 }
 
-// Einfache localStorage-Funktionen für Werke-Verwaltung (Key abhängig von K2 vs. ök2 – K2 wird nie in ök2 überschrieben)
-function saveArtworks(artworks: any[]): boolean {
-  const key = getArtworksKey()
-  const json = JSON.stringify(artworks)
-  try {
-    // Prüfe Größe
-    if (json.length > 10000000) { // Über 10MB = zu groß
-      console.error('❌ Daten zu groß für localStorage:', json.length, 'Bytes')
-      alert('⚠️ Zu viele Werke! Bitte einige löschen.')
-      return false
+// Phase 1.2: Eine Schicht – Schreiben nur über artworksStorage.
+function saveArtworks(tenant: ReturnType<typeof useTenant>, artworks: any[]): boolean {
+  if (tenant.isVk2) return false
+  const key = tenant.getArtworksKey()
+  const ok = saveArtworksByKey(key, artworks, { filterK2Only: tenant.tenantId === 'k2', allowReduce: true })
+  if (ok) console.log('✅ Gespeichert:', artworks.length, 'Werke', key === 'k2-oeffentlich-artworks' ? '(ök2)' : '')
+  else if (artworks.length > 0) {
+    const freed = tryFreeLocalStorageSpace()
+    if (freed > 0) {
+      const retry = saveArtworksByKey(key, artworks, { filterK2Only: tenant.tenantId === 'k2', allowReduce: true })
+      if (retry) console.log('✅ Nach Speicher-Freigabe gespeichert')
+      else alert('⚠️ ' + SPEICHER_VOLL_MELDUNG)
+      return retry
     }
-    
-    localStorage.setItem(key, json)
-    console.log('✅ Gespeichert:', artworks.length, 'Werke, Größe:', json.length, 'Bytes', key === 'k2-oeffentlich-artworks' ? '(ök2)' : '')
-    
-    // KRITISCH: Verifiziere Speicherung
-    const verify = localStorage.getItem(key)
-    if (!verify || verify !== json) {
-      console.error('❌ Verifikation fehlgeschlagen!')
-      return false
-    }
-    
-    return true
-  } catch (error: any) {
-    console.error('❌ Fehler beim Speichern:', error)
-    
-    if (error.name === 'QuotaExceededError') {
-      const freed = tryFreeLocalStorageSpace()
-      if (freed > 0) {
-        try {
-          localStorage.setItem(key, json)
-          console.log('✅ Nach Speicher-Freigabe gespeichert')
-          return true
-        } catch (retryErr: any) {
-          if (retryErr.name === 'QuotaExceededError') alert('⚠️ ' + SPEICHER_VOLL_MELDUNG)
-          else alert('⚠️ Fehler beim Speichern: ' + (retryErr.message || retryErr))
-          return false
-        }
-      }
-      alert('⚠️ ' + SPEICHER_VOLL_MELDUNG)
-    } else {
-      alert('⚠️ Fehler beim Speichern: ' + (error.message || error))
-    }
-    
-    return false
+    alert('⚠️ Zu viele Werke oder Speicher voll. Bitte einige löschen.')
   }
+  return ok
 }
 
-/** Lädt Werke ROH aus localStorage – ohne Anzeige-Filter. NUR für Schreibvorgänge (saveArtworkData), damit nie eine gefilterte Liste zurückgeschrieben wird. */
-function loadArtworksRaw(): any[] {
-  if (isVk2AdminContext()) return []
-  try {
-    const key = getArtworksKey()
-    const stored = localStorage.getItem(key)
-    if (!stored || stored === '[]') {
-      if (isOeffentlichAdminContext()) return [...MUSTER_ARTWORKS]
-      return []
-    }
-    if (stored.length > 10000000) return []
-    const parsed = JSON.parse(stored)
-    return Array.isArray(parsed) ? parsed : []
-  } catch (e) {
-    console.warn('loadArtworksRaw Fehler:', e)
+/** Lädt Werke ROH – über artworksStorage (Phase 1.2). Ohne Anzeige-Filter, für Schreibvorgänge. */
+function loadArtworksRaw(tenant: ReturnType<typeof useTenant>): any[] {
+  if (tenant.isVk2) return []
+  const key = tenant.getArtworksKey()
+  const raw = readArtworksRawByKey(key)
+  if ((!raw || raw.length === 0) && tenant.isOeffentlich) return [...MUSTER_ARTWORKS]
+  return Array.isArray(raw) ? raw : []
+}
+
+function loadArtworks(tenant: ReturnType<typeof useTenant>): any[] {
+  if (tenant.isVk2) return []
+  const key = tenant.getArtworksKey()
+  const stored = readArtworksRawByKey(key)
+  if (!stored || stored.length === 0) {
+    if (tenant.isOeffentlich) return [...MUSTER_ARTWORKS]
     return []
   }
-}
-
-function loadArtworks(): any[] {
-  // VK2 hat KEINE Werke – nur Mitglieder (in k2-vk2-stammdaten)
-  if (isVk2AdminContext()) return []
+  if (Array.isArray(stored) && stored.length === 0 && tenant.isOeffentlich) return []
+  let artworks = Array.isArray(stored) ? stored : []
+  if (artworks.length > 0 && artworks.some((a: any) => a === null || typeof a !== 'object')) {
+    artworks = artworks.filter((a: any) => a && typeof a === 'object')
+  }
+  // SAFE: zu große Daten nicht verarbeiten
   try {
-    const key = getArtworksKey()
-    const stored = localStorage.getItem(key)
-    // ök2: Key fehlt = erste Nutzung → Musterwerke. Key '[]' = User hat alle gelöscht → leer lassen.
-    if (!stored) {
-      if (isOeffentlichAdminContext()) return [...MUSTER_ARTWORKS]
-      return []
-    }
-    if (stored === '[]') {
-      if (isOeffentlichAdminContext()) return [] // Musterbilder wurden gelöscht, leer beibehalten
-      return []
-    }
-    // SAFE MODE: Prüfe Größe bevor Parsen
-    if (stored.length > 10000000) { // Über 10MB = zu groß
+    if (JSON.stringify(artworks).length > 10000000) {
       console.warn('Werke-Daten zu groß, überspringe Laden')
       return []
     }
-    let artworks = JSON.parse(stored)
-    
-    
-    // KRITISCH: Im ök2-Kontext nur Anzeige filtern – NIEMALS gefilterte Liste zurück in localStorage schreiben (Regel: niemals still löschen).
-    // Entfernte Werke wären sonst weg; Nutzer-Arbeit (z. B. am iPad angelegt) darf nicht durch Laden verschwinden.
-    if (isOeffentlichAdminContext()) {
-      const before = artworks.length
-      artworks = artworks.filter((a: any) => {
-        const num = a?.number != null ? String(a.number) : ''
-        if (!num.startsWith('K2-')) return true // M1, M2, etc. behalten
-        if (num.startsWith('K2-W-')) return true // ök2-Demo-Werke behalten
-        return false // K2-M-*, K2-K-*, K2-0001 etc. nur für Anzeige ausblenden
-      })
-      if (artworks.length < before) {
-        console.warn(`⚠️ ök2: ${before - artworks.length} K2-Galerie-Werke in Anzeige ausgeblendet (nur Anzeige gefiltert, localStorage unverändert)`)
-        // NICHT setItem – sonst gehen Daten verloren beim nächsten Laden
-      }
+  } catch (_) {
+    return []
+  }
+  // KRITISCH: Im ök2-Kontext nur Anzeige filtern – NIEMALS gefilterte Liste zurück in localStorage schreiben.
+  if (tenant.isOeffentlich) {
+    const before = artworks.length
+    artworks = artworks.filter((a: any) => {
+      const num = a?.number != null ? String(a.number) : ''
+      if (!num.startsWith('K2-')) return true // M1, M2, etc. behalten
+      if (num.startsWith('K2-W-')) return true // ök2-Demo-Werke behalten
+      return false // K2-M-*, K2-K-*, K2-0001 etc. nur für Anzeige ausblenden
+    })
+    if (artworks.length < before) {
+      console.warn(`⚠️ ök2: ${before - artworks.length} K2-Galerie-Werke in Anzeige ausgeblendet (nur Anzeige gefiltert, localStorage unverändert)`)
     }
+  }
 
-    // VK2 hat keine Artworks – loadArtworks() wird im VK2-Kontext nicht verwendet
-    
-    // KRITISCH: Behebe automatisch doppelte Nummern beim Laden
+  // KRITISCH: Behebe automatisch doppelte Nummern beim Laden
+  try {
     const numberMap = new Map<string, any[]>()
     artworks.forEach((a: any) => {
       if (a.number) {
@@ -614,7 +514,7 @@ function loadArtworks(): any[] {
     if (hasDuplicates && fixedNumbers.length > 0) {
       try {
         console.log(`💾 Speichere ${fixedNumbers.length} umbenannte Werke...`)
-        const saved = saveArtworks(artworks)
+        const saved = saveArtworks(tenant, artworks)
         if (saved) {
           console.log('✅ Doppelte Nummern automatisch behoben und gespeichert')
           console.log(`📝 ${fixedNumbers.length} Werke umbenannt:`, fixedNumbers)
@@ -642,21 +542,21 @@ function loadArtworks(): any[] {
   }
 }
 
-// localStorage-Funktionen für Events (Key abhängig von K2 vs. ök2)
-function saveEvents(events: any[]): void {
+// localStorage-Funktionen für Events (Key abhängig von K2 vs. ök2). Tenant aus useTenant().
+function saveEvents(tenant: ReturnType<typeof useTenant>, events: any[]): void {
   try {
-    localStorage.setItem(getEventsKey(), JSON.stringify(events))
+    localStorage.setItem(tenant.getEventsKey(), JSON.stringify(events))
   } catch (error) {
     console.error('Fehler beim Speichern der Events:', error)
   }
 }
 
-function loadEvents(): any[] {
+function loadEvents(tenant: ReturnType<typeof useTenant>): any[] {
   try {
     // ök2: Immer Muster-Events aus einer Quelle – keine gespeicherten Events/Dokumente (verhindert K2-Daten in Demo)
-    if (isOeffentlichAdminContext()) return JSON.parse(JSON.stringify(MUSTER_EVENTS))
-    if (isVk2AdminContext()) initVk2DemoEventAndDocumentsIfEmpty()
-    const key = getEventsKey()
+    if (tenant.isOeffentlich) return JSON.parse(JSON.stringify(MUSTER_EVENTS))
+    if (tenant.isVk2) initVk2DemoEventAndDocumentsIfEmpty()
+    const key = tenant.getEventsKey()
     const stored = localStorage.getItem(key)
     if (!stored || stored === '[]') return []
     return JSON.parse(stored)
@@ -667,22 +567,14 @@ function loadEvents(): any[] {
 }
 
 // Minimale Cleanup-Funktion - komplett vereinfacht um Abstürze zu vermeiden
-// Wird nur noch manuell aufgerufen, nicht automatisch
-function cleanupUnnecessaryData() {
-  // Keine komplexen Operationen mehr - nur minimale Bereinigung
-  // Wird nur noch bei Bedarf aufgerufen, nicht automatisch
+// Wird nur noch manuell aufgerufen, nicht automatisch. Tenant aus useTenant().
+function cleanupUnnecessaryData(tenant: ReturnType<typeof useTenant>) {
   try {
-    const events = loadEvents()
-    if (!Array.isArray(events) || events.length === 0) {
-      return // Nichts zu bereinigen
-    }
+    const events = loadEvents(tenant)
+    if (!Array.isArray(events) || events.length === 0) return
     const cleanedEvents = events.filter((event: any) => event && event.id && event.title)
-    if (cleanedEvents.length !== events.length) {
-      saveEvents(cleanedEvents)
-    }
-  } catch (error) {
-    // Fehler komplett ignorieren um Abstürze zu vermeiden
-  }
+    if (cleanedEvents.length !== events.length) saveEvents(tenant, cleanedEvents)
+  } catch (_) {}
 }
 
 // Tracking für offene PDF-Fenster - verhindert zu viele gleichzeitige Fenster
@@ -788,10 +680,7 @@ let globalAdminInstance: any = null
 let globalMountCount = 0
 
 function ScreenshotExportAdmin() {
-  // KRITISCH: Kontext sofort aus URL synchronisieren – muss vor jedem useState stehen
-  // Dadurch ist isOeffentlichAdminContext() beim ersten useState-Aufruf bereits korrekt
-  syncAdminContextFromUrl()
-
+  const tenant = useTenant()
   const navigate = useNavigate()
   const location = useLocation()
   // Singleton-Check: Verhindere doppeltes Mounten - KRITISCH gegen Crashes
@@ -1125,8 +1014,8 @@ function ScreenshotExportAdmin() {
   
   // Seitentexte (bearbeitbare Texte pro Seite) – K2 vs. ök2 vs. VK2 getrennt
   const [pageTexts, setPageTextsState] = useState<PageTextsConfig>(() => {
-    const raw = getPageTexts(isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined)
-    if (isVk2AdminContext()) {
+    const raw = getPageTexts(tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
+    if (tenant.isVk2) {
       // VK2: K2-Standardtexte erkennen und mit VK2-Defaults überschreiben
       const K2_HERO = 'K2 Galerie'
       const K2_TAGLINE = 'Kunst & Keramik – Martina und Georg Kreinecker'
@@ -1155,7 +1044,7 @@ function ScreenshotExportAdmin() {
   const OLD_BLUE_BG_LIST = ['#0a0e27', '#03040a', '#1a1f3a', '#0d1426', '#111c33', '#0f1419']
   const isOldBlueDesign = (d: Record<string, string>) => OLD_BLUE_BG_LIST.includes((d.backgroundColor1 || '').toLowerCase().trim())
 
-  const getDesignStorageKey = () => isOeffentlichAdminContext() ? KEY_OEF_DESIGN : isVk2AdminContext() ? KEY_VK2_DESIGN : 'k2-design-settings'
+  const getDesignStorageKey = () => tenant.isOeffentlich ? KEY_OEF_DESIGN : tenant.isVk2 ? KEY_VK2_DESIGN : 'k2-design-settings'
   // Design-Einstellungen – aus localStorage; K2: altes Blau → K2-Orange; ök2: eigener Key, Standard = OEF_DESIGN_DEFAULT
   const [designSettings, setDesignSettings] = useState(() => {
     try {
@@ -1164,11 +1053,11 @@ function ScreenshotExportAdmin() {
       if (stored && stored.length > 0 && stored.length < 50000) {
         const parsed = JSON.parse(stored)
         if (parsed && typeof parsed === 'object' && (parsed.accentColor || parsed.backgroundColor1)) {
-          if (!isOeffentlichAdminContext() && !isVk2AdminContext() && isOldBlueDesign(parsed)) {
+          if (!tenant.isOeffentlich && !tenant.isVk2 && isOldBlueDesign(parsed)) {
             try { localStorage.setItem('k2-design-settings', JSON.stringify(K2_ORANGE_DESIGN)) } catch (_) {}
             return K2_ORANGE_DESIGN
           }
-          const defaults = isOeffentlichAdminContext() ? OEF_DESIGN_DEFAULT : isVk2AdminContext() ? K2_ORANGE_DESIGN : K2_ORANGE_DESIGN
+          const defaults = tenant.isOeffentlich ? OEF_DESIGN_DEFAULT : tenant.isVk2 ? K2_ORANGE_DESIGN : K2_ORANGE_DESIGN
           return {
             accentColor: parsed.accentColor ?? (defaults as Record<string, string>).accentColor,
             backgroundColor1: parsed.backgroundColor1 ?? (defaults as Record<string, string>).backgroundColor1,
@@ -1182,7 +1071,7 @@ function ScreenshotExportAdmin() {
         }
       }
     } catch (_) {}
-    return { ...(isOeffentlichAdminContext() ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN) }
+    return { ...(tenant.isOeffentlich ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN) }
   })
   const [showAddModal, setShowAddModal] = useState(false)
   const [showVitaEditor, setShowVitaEditor] = useState(false)
@@ -1345,8 +1234,8 @@ function ScreenshotExportAdmin() {
   // Seitentexte laden (K2 oder ök2 je nach Kontext)
   useEffect(() => {
     let isMounted = true
-    const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
-    const key = isOeffentlichAdminContext() ? 'k2-oeffentlich-page-texts' : isVk2AdminContext() ? 'k2-vk2-page-texts' : 'k2-page-texts'
+    const pageTextsTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+    const key = tenant.isOeffentlich ? 'k2-oeffentlich-page-texts' : tenant.isVk2 ? 'k2-vk2-page-texts' : 'k2-page-texts'
     const t = setTimeout(() => {
       if (!isMounted) return
       try {
@@ -1354,8 +1243,8 @@ function ScreenshotExportAdmin() {
         if (stored && stored.length < 50000) {
           const saved = JSON.parse(stored) as PageTextsConfig
           if (isMounted) setPageTextsState(saved)
-        } else if (tenant) {
-          if (isMounted) setPageTextsState(getPageTexts(tenant))
+        } else if (pageTextsTenant) {
+          if (isMounted) setPageTextsState(getPageTexts(pageTextsTenant))
         }
       } catch (_) {}
     }, 100)
@@ -1460,7 +1349,7 @@ function ScreenshotExportAdmin() {
   const [imageUploadStatus, setImageUploadStatus] = useState<string | null>(null)
   const pendingWelcomeFileRef = React.useRef<File | null>(null)
 
-  const DESIGN_VARIANT_KEYS = isOeffentlichAdminContext()
+  const DESIGN_VARIANT_KEYS = tenant.isOeffentlich
     ? { a: 'k2-oeffentlich-design-variant-a', b: 'k2-oeffentlich-design-variant-b' } as const
     : { a: 'k2-design-variant-a', b: 'k2-design-variant-b' } as const
   const saveDesignVariant = (slot: 'a' | 'b') => {
@@ -1493,7 +1382,7 @@ function ScreenshotExportAdmin() {
   
   // Stammdaten – bei ök2-Kontext nur Musterdaten (keine Vermischung mit K2); K2 nutzt K2_STAMMDATEN_DEFAULTS
   const [martinaData, setMartinaData] = useState(() =>
-    isOeffentlichAdminContext()
+    tenant.isOeffentlich
       ? { name: MUSTER_TEXTE.martina.name, email: MUSTER_TEXTE.martina.email || '', phone: MUSTER_TEXTE.martina.phone || '', category: 'malerei' as const, bio: MUSTER_TEXTE.artist1Bio, website: MUSTER_TEXTE.martina.website || '', vita: MUSTER_VITA_MARTINA }
       : {
           name: K2_STAMMDATEN_DEFAULTS.martina.name,
@@ -1506,7 +1395,7 @@ function ScreenshotExportAdmin() {
         }
   )
   const [georgData, setGeorgData] = useState(() =>
-    isOeffentlichAdminContext()
+    tenant.isOeffentlich
       ? { name: MUSTER_TEXTE.georg.name, email: MUSTER_TEXTE.georg.email || '', phone: MUSTER_TEXTE.georg.phone || '', category: 'keramik' as const, bio: MUSTER_TEXTE.artist2Bio, website: MUSTER_TEXTE.georg.website || '', vita: MUSTER_VITA_GEORG }
       : {
           name: K2_STAMMDATEN_DEFAULTS.georg.name,
@@ -1519,7 +1408,7 @@ function ScreenshotExportAdmin() {
         }
   )
   const [galleryData, setGalleryData] = useState<any>(() =>
-    isOeffentlichAdminContext()
+    tenant.isOeffentlich
       ? {
           name: 'Galerie Muster',
           subtitle: 'Malerei & Skulptur',
@@ -1563,13 +1452,13 @@ function ScreenshotExportAdmin() {
   )
 
   // Seitengestaltung (Willkommensseite & Galerie-Vorschau) – K2 vs. ök2 getrennt
-  const [pageContent, setPageContent] = useState<PageContentGalerie>(() => getPageContentGalerie(isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined))
+  const [pageContent, setPageContent] = useState<PageContentGalerie>(() => getPageContentGalerie(tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined))
   const [videoUploadStatus, setVideoUploadStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle')
   const [videoUploadMsg, setVideoUploadMsg] = useState('')
   useEffect(() => {
-    const pc = getPageContentGalerie(isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined)
+    const pc = getPageContentGalerie(tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
     // Wenn kein Bild im localStorage: aus gallery-data.json nachladen
-    if (!pc.welcomeImage && !isOeffentlichAdminContext()) {
+    if (!pc.welcomeImage && !tenant.isOeffentlich) {
       fetch(`/gallery-data.json?_=${Date.now()}`)
         .then(r => r.json())
         .then(data => {
@@ -1592,17 +1481,17 @@ function ScreenshotExportAdmin() {
   // Beim Wechsel in den Design-Tab: Seitentexte, Seitengestaltung und Design aus Speicher nachladen
   useEffect(() => {
     if (activeTab !== 'design') return
-    const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
-    setPageTextsState(getPageTexts(tenant))
-    setPageContent(getPageContentGalerie(tenant))
+    const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+    setPageTextsState(getPageTexts(designTenant))
+    setPageContent(getPageContentGalerie(designTenant))
     try {
       const key = getDesignStorageKey()
       const stored = localStorage.getItem(key)
       if (stored && stored.length > 0 && stored.length < 50000) {
         const parsed = JSON.parse(stored)
         if (parsed && typeof parsed === 'object' && (parsed.accentColor || parsed.backgroundColor1)) {
-          const defaults = isOeffentlichAdminContext() ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN
-          if (!isOeffentlichAdminContext() && isOldBlueDesign(parsed)) {
+          const defaults = tenant.isOeffentlich ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN
+          if (!tenant.isOeffentlich && isOldBlueDesign(parsed)) {
             setDesignSettings(K2_ORANGE_DESIGN)
           } else {
             setDesignSettings({
@@ -1635,13 +1524,13 @@ function ScreenshotExportAdmin() {
 
   // ök2: Lager-Tab nicht verfügbar. VK2: Sicherheit und Lager nicht – auf Stammdaten wechseln
   useEffect(() => {
-    if (isOeffentlichAdminContext() && settingsSubTab === 'lager') setSettingsSubTab('stammdaten')
-    if (isVk2AdminContext() && (settingsSubTab === 'lager' || settingsSubTab === 'sicherheit')) setSettingsSubTab('stammdaten')
+    if (tenant.isOeffentlich && settingsSubTab === 'lager') setSettingsSubTab('stammdaten')
+    if (tenant.isVk2 && (settingsSubTab === 'lager' || settingsSubTab === 'sicherheit')) setSettingsSubTab('stammdaten')
   }, [settingsSubTab])
 
   // ök2: Verkaufte-Werke-Anzeige (Tage) aus k2-oeffentlich-galerie-settings laden
   useEffect(() => {
-    if (!isOeffentlichAdminContext()) return
+    if (!tenant.isOeffentlich) return
     try {
       const raw = localStorage.getItem('k2-oeffentlich-galerie-settings')
       if (raw) {
@@ -1653,8 +1542,8 @@ function ScreenshotExportAdmin() {
 
   // Stammdaten aus localStorage laden – bei ök2-Kontext aus k2-oeffentlich-stammdaten-*; bei VK2 aus k2-vk2-stammdaten
   useEffect(() => {
-    if (isOeffentlichAdminContext()) return
-    if (isVk2AdminContext()) return // VK2 lädt in separatem Effect
+    if (tenant.isOeffentlich) return
+    if (tenant.isVk2) return // VK2 lädt in separatem Effect
     let isMounted = true
     
     const timeoutId = setTimeout(() => {
@@ -1821,7 +1710,7 @@ function ScreenshotExportAdmin() {
 
   // VK2-Stammdaten aus localStorage laden (nur bei VK2-Kontext)
   useEffect(() => {
-    if (!isVk2AdminContext()) return
+    if (!tenant.isVk2) return
     let isMounted = true
     const t = setTimeout(() => {
       if (!isMounted) return
@@ -1859,7 +1748,7 @@ function ScreenshotExportAdmin() {
     const t = setTimeout(() => {
       if (!isMounted) return
       try {
-        const key = isVk2AdminContext() ? KEY_VK2_REGISTRIERUNG : isOeffentlichAdminContext() ? KEY_OEF_REGISTRIERUNG : KEY_REGISTRIERUNG
+        const key = tenant.isVk2 ? KEY_VK2_REGISTRIERUNG : tenant.isOeffentlich ? KEY_OEF_REGISTRIERUNG : KEY_REGISTRIERUNG
         const raw = localStorage.getItem(key)
         if (raw && raw.length < 5000) {
           const parsed = JSON.parse(raw) as Partial<RegistrierungConfig>
@@ -1882,16 +1771,16 @@ function ScreenshotExportAdmin() {
       cfg = { ...cfg, lizenznummer: `${praefix}-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}` }
       setRegistrierungConfig(cfg)
     }
-    const key = isVk2AdminContext() ? KEY_VK2_REGISTRIERUNG : isOeffentlichAdminContext() ? KEY_OEF_REGISTRIERUNG : KEY_REGISTRIERUNG
+    const key = tenant.isVk2 ? KEY_VK2_REGISTRIERUNG : tenant.isOeffentlich ? KEY_OEF_REGISTRIERUNG : KEY_REGISTRIERUNG
     localStorage.setItem(key, JSON.stringify(cfg))
   }
 
   /** Speichert alle aktuellen Admin-Daten in localStorage (K2/ök2/VK2-Key), damit „Seiten prüfen“ die neuesten Änderungen anzeigt. Design wird hier nicht mitgeschrieben – nur über „Speichern“ im Design-Tab. */
   const saveAllForVorschau = () => {
     try {
-      if (isVk2AdminContext()) {
+      if (tenant.isVk2) {
         localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify(vk2Stammdaten))
-      } else if (!isOeffentlichAdminContext()) {
+      } else if (!tenant.isOeffentlich) {
         const martinaStr = JSON.stringify(martinaData)
         const georgStr = JSON.stringify(georgData)
         const galleryStr = JSON.stringify(galleryData)
@@ -1899,13 +1788,14 @@ function ScreenshotExportAdmin() {
         if (georgStr.length < 100000) localStorage.setItem('k2-stammdaten-georg', georgStr)
         if (galleryStr.length < 5000000) localStorage.setItem('k2-stammdaten-galerie', galleryStr)
       }
-      // Werke, Events, Dokumente: Kontext-Key (K2 = k2-artworks, ök2 = k2-oeffentlich-artworks)
-      const artworksStr = JSON.stringify(allArtworks)
-      if (artworksStr.length < 10000000) localStorage.setItem(getArtworksKey(), artworksStr)
-      localStorage.setItem(getEventsKey(), JSON.stringify(events))
-      localStorage.setItem(getDocumentsKey(), JSON.stringify(documents))
-      setPageTexts(pageTexts, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined)
-      setPageContentGalerie(pageContent, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined)
+      // Werke über Schicht (Phase 1.2)
+      if (!tenant.isVk2) {
+        saveArtworksByKey(tenant.getArtworksKey(), allArtworks, { filterK2Only: tenant.tenantId === 'k2', allowReduce: true })
+      }
+      localStorage.setItem(tenant.getEventsKey(), JSON.stringify(events))
+      localStorage.setItem(tenant.getDocumentsKey(), JSON.stringify(documents))
+      setPageTexts(pageTexts, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
+      setPageContentGalerie(pageContent, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
     } catch (e) {
       console.warn('Vorschau-Speichern:', e)
     }
@@ -1914,12 +1804,12 @@ function ScreenshotExportAdmin() {
   // Stammdaten speichern - bei ök2-Kontext nicht in echte K2-Daten schreiben; bei VK2 in k2-vk2-stammdaten
   const saveStammdaten = () => {
     return new Promise<void>((resolve, reject) => {
-      if (isOeffentlichAdminContext()) {
+      if (tenant.isOeffentlich) {
         alert('Demo-Modus (ök2): Es werden keine echten Daten gespeichert. Wechsle zur K2-Galerie für echte Stammdaten.')
         resolve()
         return
       }
-      if (isVk2AdminContext()) {
+      if (tenant.isVk2) {
         try {
           localStorage.setItem(KEY_VK2_STAMMDATEN, JSON.stringify(vk2Stammdaten))
           resolve()
@@ -2112,7 +2002,7 @@ function ScreenshotExportAdmin() {
   const publishMobile = (options?: { silent?: boolean }) => {
     const silent = options?.silent === true
     if (!silent && isDeploying) return
-    if (isOeffentlichAdminContext()) {
+    if (tenant.isOeffentlich) {
       if (!silent) alert('Veröffentlichen ist nur in der K2-Galerie verfügbar. Wechsle zur K2-Galerie, um die echte Galerie zu veröffentlichen.')
       return
     }
@@ -2141,7 +2031,7 @@ function ScreenshotExportAdmin() {
         
         // SEHR aggressive Begrenzung um Hänger zu vermeiden
         // KRITISCH: Lade ALLE Werke inkl. Mobile-Werke für Synchronisation! Key = Kontext (K2 vs. ök2)
-        const artworksKey = getArtworksKey()
+        const artworksKey = tenant.getArtworksKey()
         let artworks = getItemSafe(artworksKey, [])
         
         // WICHTIG: Prüfe ob Werke vorhanden sind
@@ -2187,11 +2077,11 @@ function ScreenshotExportAdmin() {
         const martinaStored = getItemSafe('k2-stammdaten-martina', {})
         const georgStored = getItemSafe('k2-stammdaten-georg', {})
         const galleryStamm = getItemSafe('k2-stammdaten-galerie', {})
-        const oeffentlich = isOeffentlichAdminContext()
+        const oeffentlich = tenant.isOeffentlich
         const pageContent = getPageContentGalerie(oeffentlich ? 'oeffentlich' : undefined)
-        const eventsStored = getItemSafe(getEventsKey(), []) || []
-        const documentsStored = getItemSafe(getDocumentsKey(), []) || []
-        const artworksStored = getItemSafe(getArtworksKey(), []) || []
+        const eventsStored = getItemSafe(tenant.getEventsKey(), []) || []
+        const documentsStored = getItemSafe(tenant.getDocumentsKey(), []) || []
+        const artworksStored = getItemSafe(tenant.getArtworksKey(), []) || []
         const designStored = getItemSafe(getDesignStorageKey(), {})
         const pageTextsStored = getItemSafe(oeffentlich ? 'k2-oeffentlich-page-texts' : 'k2-page-texts', null)
 
@@ -2454,18 +2344,18 @@ function ScreenshotExportAdmin() {
     const t = setTimeout(() => {
       if (!isMounted) return
       try {
-        const key = getArtworksKey()
+        const key = tenant.getArtworksKey()
         const stored = localStorage.getItem(key)
         if (stored && stored.length > 10000000) {
           if (isMounted) setAllArtworks([])
           return
         }
         // ök2: Gespeichert leer = leer anzeigen (kein Rückfall auf Musterwerke bei späterem Re-Run)
-        if (isOeffentlichAdminContext() && stored === '[]') {
+        if (tenant.isOeffentlich && stored === '[]') {
           if (isMounted) setAllArtworks([])
           return
         }
-        const artworks = loadArtworks()
+        const artworks = loadArtworks(tenant)
         if (isMounted && Array.isArray(artworks)) setAllArtworks(artworks)
       } catch (_) {
         if (isMounted) setAllArtworks([])
@@ -2480,11 +2370,11 @@ function ScreenshotExportAdmin() {
       console.log('🔄 artworks-updated Event empfangen - lade Werke neu...')
       try {
         // ök2: Gespeichert leer = wirklich leer anzeigen (kein Rückfall auf Musterwerke)
-        if (isOeffentlichAdminContext() && localStorage.getItem('k2-oeffentlich-artworks') === '[]') {
+        if (tenant.isOeffentlich && readArtworksRawByKey('k2-oeffentlich-artworks').length === 0) {
           setAllArtworks([])
           return
         }
-        const artworks = loadArtworks()
+        const artworks = loadArtworks(tenant)
         console.log('📦 Geladene Werke:', artworks.length)
         if (Array.isArray(artworks)) {
           setAllArtworks(artworks)
@@ -2506,7 +2396,7 @@ function ScreenshotExportAdmin() {
 
   /** K2: Werke von Vercel (gallery-data.json) laden und mit lokalen mergen – damit neue iPad-Werke am Mac erscheinen */
   const handleLoadFromServer = async () => {
-    if (isOeffentlichAdminContext() || isVk2AdminContext()) return
+    if (tenant.isOeffentlich || tenant.isVk2) return
     setIsLoadingFromServer(true)
     setSyncStatusBar({ phase: 'loading', message: 'Daten werden geladen…' })
     const url = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&_=${Math.random()}`
@@ -2538,7 +2428,7 @@ function ScreenshotExportAdmin() {
           return
         }
         const serverArtworks = filterK2Only(Array.isArray(data.artworks) ? data.artworks : [])
-        const localArtworks = loadArtworksRaw()
+        const localArtworks = loadArtworksRaw(tenant)
         const serverMap = new Map<string, any>()
         serverArtworks.forEach((a: any) => { const k = a.number || a.id; if (k) serverMap.set(k, a) })
         const merged: any[] = [...serverArtworks]
@@ -2563,9 +2453,9 @@ function ScreenshotExportAdmin() {
           }
         })
         const toSave = filterK2Only(merged)
-        if (toSave.length >= localArtworks.length || toSave.length >= (loadArtworks().length || 0)) {
-          if (saveArtworks(toSave)) {
-            setAllArtworks(loadArtworks())
+        if (toSave.length >= localArtworks.length || toSave.length >= (loadArtworks(tenant).length || 0)) {
+          if (saveArtworks(tenant, toSave)) {
+            setAllArtworks(loadArtworks(tenant))
             window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: toSave.length } }))
             setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
             const exportedAt = data.exportedAt ? ` (Stand: ${new Date(data.exportedAt).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })})` : ''
@@ -2606,9 +2496,9 @@ function ScreenshotExportAdmin() {
   // Dokumente aus localStorage laden (Key abhängig von K2 vs. ök2). ök2: 5 fertige Muster-PR-Dokumente (Newsletter, Plakat, Flyer, Presse, Social) + Event-Docs aus MUSTER_EVENTS = 7 Muster.
   const loadDocuments = () => {
     try {
-      if (isOeffentlichAdminContext()) return getOek2MusterPrDocuments()
-      if (isVk2AdminContext()) initVk2DemoEventAndDocumentsIfEmpty()
-      const stored = localStorage.getItem(getDocumentsKey())
+      if (tenant.isOeffentlich) return getOek2MusterPrDocuments()
+      if (tenant.isVk2) initVk2DemoEventAndDocumentsIfEmpty()
+      const stored = localStorage.getItem(tenant.getDocumentsKey())
       if (stored) return JSON.parse(stored)
       return []
     } catch (error) {
@@ -2657,7 +2547,7 @@ function ScreenshotExportAdmin() {
     const timeoutId = setTimeout(() => {
       if (!isMounted) return
       try {
-        const loadedEvents = loadEvents()
+        const loadedEvents = loadEvents(tenant)
         if (isMounted) setEvents(loadedEvents)
       } catch (error) {
         console.error('Fehler beim Laden der Events:', error)
@@ -2687,7 +2577,7 @@ function ScreenshotExportAdmin() {
     })
     
     // KRITISCH: Auto-Save nur in K2 – in ök2 niemals in K2-Keys schreiben
-    if (!isOeffentlichAdminContext()) {
+    if (!tenant.isOeffentlich) {
       startAutoSave(getAllData)
       setupBeforeUnloadSave(getAllData)
     }
@@ -2732,7 +2622,7 @@ function ScreenshotExportAdmin() {
     updatedEvents.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
     setEvents(updatedEvents)
-    saveEvents(updatedEvents)
+    saveEvents(tenant, updatedEvents)
     
     // PR-Vorschläge: Bei Bearbeitung eventTitle in localStorage aktualisieren; bei neuem Event automatisch generieren
     const existingSuggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
@@ -2906,7 +2796,7 @@ function ScreenshotExportAdmin() {
     const evType = eventTypeLabels[event.type] || 'Veranstaltung'
     const evDate = formatEventDates(event)
 
-    if (isVk2AdminContext()) {
+    if (tenant.isVk2) {
       const verein = vk2Stammdaten?.verein || { name: 'Kunstverein Muster', address: '', city: '', email: '', website: '' }
       const mitglieder = (vk2Stammdaten?.mitglieder || []).filter((m: any) => m?.name)
       const gName = verein.name || 'Kunstverein Muster'
@@ -3013,7 +2903,7 @@ function ScreenshotExportAdmin() {
     const typeName = typeNameMap[event.type] || 'Veranstaltung'
     const hashtags = hashtagMap[event.type] || '#Kunst #Galerie'
 
-    if (isVk2AdminContext()) {
+    if (tenant.isVk2) {
       const verein = vk2Stammdaten?.verein || { name: 'Kunstverein Muster', address: '', city: '', email: '', website: '' }
       const gName = verein.name || 'Kunstverein Muster'
       const adr = [verein.address, verein.city].filter(Boolean).join(', ')
@@ -3095,7 +2985,7 @@ function ScreenshotExportAdmin() {
   }
 
   const generateFlyerContent = (event: any) => {
-    if (isVk2AdminContext()) {
+    if (tenant.isVk2) {
       const v = vk2Stammdaten?.verein
       const adr = v ? [v.address, v.city].filter(Boolean).join(', ') : ''
       return {
@@ -3132,7 +3022,7 @@ function ScreenshotExportAdmin() {
       sonstiges: 'Veranstaltung'
     }
     const ort = event.location || ''
-    if (isVk2AdminContext()) {
+    if (tenant.isVk2) {
       try {
         const stamm = JSON.parse(localStorage.getItem(KEY_VK2_STAMMDATEN) || '{}') as Vk2Stammdaten
         const v = stamm?.verein
@@ -3190,7 +3080,7 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
       öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
       sonstiges: 'Veranstaltung'
     }
-    if (isVk2AdminContext()) {
+    if (tenant.isVk2) {
       const v = vk2Stammdaten?.verein
       const g = v ? { address: v.address, city: v.city, website: v.website || '', phone: (v as any).phone || '', email: v.email || '' } : {}
       const adr = [g.address, g.city].filter(Boolean).join(', ')
@@ -3224,12 +3114,12 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
   // Leichtgewichtige Text-Export Funktionen (statt PDF) - viel weniger Memory-Belastung
   const exportPresseaussendungAsText = (presseaussendung: any, event: any) => {
     const galleryName = (() => {
-      if (isVk2AdminContext()) return vk2Stammdaten?.verein?.name || 'Kunstverein Muster'
+      if (tenant.isVk2) return vk2Stammdaten?.verein?.name || 'Kunstverein Muster'
       const g = galleryData || {}
-      return g.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
+      return g.name || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
     })()
     const g = (() => {
-      if (isVk2AdminContext()) {
+      if (tenant.isVk2) {
         const v = vk2Stammdaten?.verein
         return v ? { address: v.address, city: v.city, phone: (v as any).phone || '', email: v.email || '' } : {}
       }
@@ -3350,11 +3240,11 @@ ${'='.repeat(60)}
   const generateEditablePresseaussendungPDF = (presseaussendung: any, event: any) => {
     let blob: Blob | null = null // WICHTIG: Außerhalb try-catch definieren
     let presseDocId: string | null = null
-    const isVk2 = isVk2AdminContext()
+    const isVk2 = tenant.isVk2
     const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
     const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getWerbeliniePrDocCss('k2-pr-doc')
     const g = galleryData || {}
-    const galleryName = g.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
+    const galleryName = g.name || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
     const galleryAddress = g.address || ''
     const galleryPhone = g.phone || ''
     const galleryEmail = g.email || ''
@@ -3551,13 +3441,13 @@ ${'='.repeat(60)}
   const generateEditableSocialMediaPDF = (socialMedia: any, event: any) => {
     let blob: Blob | null = null
     let socialDocId: string | null = null
-    const isVk2 = isVk2AdminContext()
+    const isVk2 = tenant.isVk2
     const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
     const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getWerbeliniePrDocCss('k2-pr-doc')
     const galleryName = (() => {
       if (isVk2) return vk2Stammdaten?.verein?.name || 'Kunstverein Muster'
       const g = galleryData || {}
-      return g.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
+      return g.name || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
     })()
     
     const html = `
@@ -3761,7 +3651,7 @@ ${'='.repeat(60)}
     const title = event?.title || 'Vernissage'
     const desc = event?.description || 'Malerei, Keramik und Skulptur in einem außergewöhnlichen Galerieraum.'
 
-    if (isVk2AdminContext()) {
+    if (tenant.isVk2) {
       const raw = localStorage.getItem(KEY_VK2_STAMMDATEN)
       const stamm = raw ? (JSON.parse(raw) as Vk2Stammdaten) : null
       const verein = stamm?.verein || { name: 'Kunstverein Muster', address: 'Musterstraße 12', city: 'Wien', email: '', website: '' }
@@ -3814,9 +3704,9 @@ ${'='.repeat(60)}
     const g = galleryData || {}
     const m = martinaData || {}
     const p = georgData || {}
-    const gName = g.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
-    const mName = m.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.artist1Name : 'Martina Kreinecker')
-    const pName = p.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.artist2Name : 'Georg Kreinecker')
+    const gName = g.name || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
+    const mName = m.name || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.artist1Name : 'Martina Kreinecker')
+    const pName = p.name || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.artist2Name : 'Georg Kreinecker')
     const adresse = [g.address, g.city].filter(Boolean).join(', ') || ''
     return {
       subject: `✦ ${title} – Event-Flyer | ${gName}`,
@@ -3868,7 +3758,7 @@ ${'='.repeat(60)}
     const title = event?.title || 'Vernissage'
     const desc = event?.description || 'Malerei, Keramik und Skulptur in einer einzigartigen Galerieatmosphäre.'
 
-    if (isVk2AdminContext()) {
+    if (tenant.isVk2) {
       const raw = localStorage.getItem(KEY_VK2_STAMMDATEN)
       const stamm = raw ? (JSON.parse(raw) as Vk2Stammdaten) : null
       const verein = stamm?.verein || { name: 'Kunstverein Muster', address: 'Musterstraße 12', city: 'Wien', email: 'office@kunstverein-muster.at', website: '' }
@@ -3913,9 +3803,9 @@ ${'='.repeat(60)}
     const g = galleryData || {}
     const m = martinaData || {}
     const p = georgData || {}
-    const gName = g.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
-    const mName = m.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.artist1Name : 'Martina Kreinecker')
-    const pName = p.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.artist2Name : 'Georg Kreinecker')
+    const gName = g.name || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
+    const mName = m.name || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.artist1Name : 'Martina Kreinecker')
+    const pName = p.name || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.artist2Name : 'Georg Kreinecker')
     const adresse = [g.address, g.city].filter(Boolean).join(', ') || ''
     return {
       subject: `Einladung: ${title} – ${gName}`,
@@ -3951,13 +3841,13 @@ ${'='.repeat(60)}
         `${gName}`,
         adresse ? adresse : '',
         ``,
-        isOeffentlichAdminContext() ? (g.website || 'www.k2-galerie.at') : `www.k2-galerie.at`,
+        tenant.isOeffentlich ? (g.website || 'www.k2-galerie.at') : `www.k2-galerie.at`,
       ].filter(line => line !== null && line !== undefined).join('\n')
     }
   }
 
   const generateEditableNewsletterPDF = (newsletter: any, event: any) => {
-    const isVk2 = isVk2AdminContext()
+    const isVk2 = tenant.isVk2
     const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
     const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getWerbeliniePrDocCss('k2-pr-doc')
     const galleryName = (() => {
@@ -3967,7 +3857,7 @@ ${'='.repeat(60)}
           return stamm?.verein?.name || 'Kunstverein Muster'
         } catch { return 'Kunstverein Muster' }
       }
-      return (galleryData?.name) || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
+      return (galleryData?.name) || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
     })()
     const html = `
 <!DOCTYPE html>
@@ -4130,13 +4020,13 @@ ${'='.repeat(60)}
 
   // Bearbeitbare PR-Vorschläge als PDF generieren
   const generateEditablePRSuggestionsPDF = (suggestions: any, event: any) => {
-    const isVk2 = isVk2AdminContext()
+    const isVk2 = tenant.isVk2
     const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
     const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getWerbeliniePrDocCss('k2-pr-doc')
     const galleryName = (() => {
       if (isVk2) return vk2Stammdaten?.verein?.name || 'Kunstverein Muster'
       const g = galleryData || {}
-      return g.name || (isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
+      return g.name || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
     })()
     
     const html = `
@@ -5101,8 +4991,8 @@ ${'='.repeat(60)}
       
       // Immer nur eigene Kontext-Daten: ök2 = State (Muster), VK2 = Verein, K2 = localStorage
       const freshGalleryData = (() => {
-        if (isOeffentlichAdminContext()) return galleryData || {}
-        if (isVk2AdminContext()) {
+        if (tenant.isOeffentlich) return galleryData || {}
+        if (tenant.isVk2) {
           const v = vk2Stammdaten?.verein
           return v ? { name: v.name, address: v.address, city: v.city, website: v.website || '', phone: (v as any).phone || '', email: v.email || '' } : {}
         }
@@ -5873,7 +5763,7 @@ ${'='.repeat(60)}
 
   // Katalog generieren
   const generateKatalog = () => {
-    const artworks = loadArtworks()
+    const artworks = loadArtworks(tenant)
     if (artworks.length === 0) {
       alert('Bitte zuerst Werke hinzufügen')
       return
@@ -6139,7 +6029,7 @@ ${'='.repeat(60)}
         })
 
         setEvents(updatedEvents)
-        saveEvents(updatedEvents)
+        saveEvents(tenant, updatedEvents)
         
         // Zurücksetzen
         setShowDocumentModal(false)
@@ -6171,7 +6061,7 @@ ${'='.repeat(60)}
       })
 
       setEvents(updatedEvents)
-      saveEvents(updatedEvents)
+      saveEvents(tenant, updatedEvents)
       alert('✅ Dokument gelöscht!')
     }
   }
@@ -6184,7 +6074,7 @@ ${'='.repeat(60)}
       return { ...event, hiddenDocIds: hidden }
     })
     setEvents(updatedEvents)
-    saveEvents(updatedEvents)
+    saveEvents(tenant, updatedEvents)
   }
 
   // Fertiges Dummy-Dokument zum Absenden: Nutzer-Design + Stammdaten + Foto (wie versprochen).
@@ -6267,7 +6157,7 @@ ${'='.repeat(60)}
     const isPresse = document.name && String(document.name).toLowerCase().includes('presse')
     const isFlyer = document.name && String(document.name).toLowerCase().includes('flyer')
 
-    if (isVk2AdminContext() && (isEinladung || isPresse || isFlyer)) {
+    if (tenant.isVk2 && (isEinladung || isPresse || isFlyer)) {
       try {
         const raw = localStorage.getItem('k2-vk2-stammdaten')
         const stamm = raw ? JSON.parse(raw) as Vk2Stammdaten : null
@@ -6399,7 +6289,7 @@ ${'='.repeat(60)}
     if (confirm('Möchtest du dieses Event wirklich löschen?')) {
       const updatedEvents = events.filter(e => e.id !== eventId)
       setEvents(updatedEvents)
-      saveEvents(updatedEvents)
+      saveEvents(tenant, updatedEvents)
       alert('✅ Event gelöscht!')
     }
   }
@@ -6424,7 +6314,7 @@ ${'='.repeat(60)}
     }
     const updated = [...events, newEvent].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     setEvents(updated)
-    saveEvents(updated)
+    saveEvents(tenant, updated)
     alert('✅ Eröffnungsevent 24.–26. April wieder angelegt!\n\nDokumente zu diesem Event: Marketing → Öffentlichkeitsarbeit → Rubrik dieses Events → „Dokument zu dieser Rubrik hinzufügen“. Danach „Veröffentlichen“.')
   }
 
@@ -6454,7 +6344,7 @@ ${'='.repeat(60)}
     }
     const updated = [...events, newEvent].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     setEvents(updated)
-    saveEvents(updated)
+    saveEvents(tenant, updated)
     alert('✅ Ateliersbesichtigung bei Paul Weber angelegt (Datum vor 1 Woche). Sie erscheint unter „Veranstaltungen der Vergangenheit“ mit Einladung und Presse – anklicken zum Ansehen.')
   }
 
@@ -6501,7 +6391,7 @@ ${'='.repeat(60)}
   // Dokumente speichern (Key abhängig von K2 vs. ök2 – K2-Daten werden in ök2 nie überschrieben)
   const saveDocuments = (docs: any[]) => {
     try {
-      localStorage.setItem(getDocumentsKey(), JSON.stringify(docs))
+      localStorage.setItem(tenant.getDocumentsKey(), JSON.stringify(docs))
       setDocuments(docs)
     } catch (error: any) {
       console.error('Fehler beim Speichern:', error)
@@ -6509,7 +6399,7 @@ ${'='.repeat(60)}
         const freed = tryFreeLocalStorageSpace()
         if (freed > 0) {
           try {
-            localStorage.setItem(getDocumentsKey(), JSON.stringify(docs))
+            localStorage.setItem(tenant.getDocumentsKey(), JSON.stringify(docs))
             setDocuments(docs)
             return
           } catch (_) {}
@@ -6698,14 +6588,14 @@ ${'='.repeat(60)}
   // Laufende Nummer generieren - WICHTIG: Finde maximale Nummer aus ALLEN artworks
   // K2: Kategorie-basiert (M/K/G/S/O). ök2: W (Werk). VK2: VK2-M1, VK2-F1 usw. (7 Kunstbereiche)
   const generateArtworkNumber = async (category: string = 'malerei') => {
-    const forVk2 = isVk2AdminContext()
-    const forOek2 = isOeffentlichAdminContext()
+    const forVk2 = tenant.isVk2
+    const forOek2 = tenant.isOeffentlich
     const letter = getCategoryPrefixLetter(category)
     const categoryPrefix = forVk2 ? `VK2-${letter}` : forOek2 ? 'K2-W-' : `K2-${letter}-`
     const prefix = forOek2 ? 'W' : letter
 
     // Lade alle artworks ROH (lokal) – damit keine Nummer doppelt vergeben wird
-    const localArtworks = loadArtworksRaw()
+    const localArtworks = loadArtworksRaw(tenant)
     
     // Zentrale Stelle (Vercel) nur für K2: eine Produktions-Galerie, Mac + iPad nutzen dieselbe Nummernquelle.
     // ök2 = Demo (keine zentrale Datei), VK2 = keine Werke im Admin → nur lokal.
@@ -6854,13 +6744,13 @@ ${'='.repeat(60)}
   const handleToggleInExhibition = (artwork: any) => {
     const id = artwork.id
     const num = artwork.number || artwork.id
-    const artworks = loadArtworks()
+    const artworks = loadArtworks(tenant)
     const idx = artworks.findIndex((a: any) => a.id === id || (a.number || a.id) === num)
     if (idx === -1) return
     const updated = [...artworks]
     updated[idx] = { ...updated[idx], inExhibition: !updated[idx].inExhibition }
-    if (saveArtworks(updated)) {
-      setAllArtworks(loadArtworks())
+    if (saveArtworks(tenant, updated)) {
+      setAllArtworks(loadArtworks(tenant))
       window.dispatchEvent(new CustomEvent('artworks-updated'))
     }
   }
@@ -6872,14 +6762,14 @@ ${'='.repeat(60)}
     if (filtered.length === soldArtworks.length) return
     localStorage.setItem('k2-sold-artworks', JSON.stringify(filtered))
 
-    const artworks = loadArtworks()
+    const artworks = loadArtworks(tenant)
     const idx = artworks.findIndex((a: any) => (a.number || a.id) === artworkNumber)
     if (idx !== -1) {
       const a = artworks[idx]
       const q = a.quantity != null ? Number(a.quantity) : 0
       artworks[idx] = { ...a, quantity: q + 1, inShop: true }
-      if (saveArtworks(artworks)) {
-        setAllArtworks(loadArtworks())
+      if (saveArtworks(tenant, artworks)) {
+        setAllArtworks(loadArtworks(tenant))
         window.dispatchEvent(new CustomEvent('artworks-updated'))
       }
     }
@@ -6903,7 +6793,7 @@ ${'='.repeat(60)}
     }
 
     // Stückzahl in Werke-Verwaltung um 1 verringern (gleicher Key wie Admin: K2 bzw. ök2)
-    const artworks = loadArtworks()
+    const artworks = loadArtworks(tenant)
     const idx = artworks.findIndex((a: any) => (a.number || a.id) === artworkNumber)
     if (idx !== -1) {
       const a = artworks[idx]
@@ -6913,8 +6803,8 @@ ${'='.repeat(60)}
       } else {
         artworks[idx] = { ...a, quantity: 0, inShop: false }
       }
-      if (saveArtworks(artworks)) {
-        setAllArtworks(loadArtworks())
+      if (saveArtworks(tenant, artworks)) {
+        setAllArtworks(loadArtworks(tenant))
         window.dispatchEvent(new CustomEvent('artworks-updated'))
       }
     }
@@ -6939,7 +6829,7 @@ ${'='.repeat(60)}
       localStorage.setItem('k2-reserved-artworks', JSON.stringify(reserved))
       alert(`✅ Werk ${artworkNumber} ist reserviert${name.trim() ? ` für ${name.trim()}` : ''}.`)
     }
-    setAllArtworks(loadArtworks())
+    setAllArtworks(loadArtworks(tenant))
     window.dispatchEvent(new CustomEvent('artworks-updated'))
     setShowReserveModal(false)
     setReserveInput('')
@@ -7136,15 +7026,15 @@ ${'='.repeat(60)}
     filename: string
   ) => {
     // K2 und ök2 laden auf GitHub hoch – Base64 wird durch dauerhaften Vercel-Pfad ersetzt
-    const subfolder = isOeffentlichAdminContext() ? 'oeffentlich' : 'k2'
-    const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
+    const subfolder = tenant.isOeffentlich ? 'oeffentlich' : 'k2'
+    const tenantId = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
     try {
       const { uploadImageToGitHub } = await import('../src/utils/githubImageUpload')
       const url = await uploadImageToGitHub(file, filename, (msg) => console.log(msg), subfolder)
       // Vercel-Pfad im State + localStorage setzen → Base64 weg → kein Speicher-Problem mehr
       const next = { ...pageContent, [field]: url }
       setPageContent(next)
-      setPageContentGalerie(next, tenant)
+      setPageContentGalerie(next, tenantId)
       localStorage.removeItem('k2-last-publish-signature')
       alert('✅ Foto dauerhaft gespeichert!\n\nIn ca. 2 Minuten auf allen Geräten sichtbar.')
     } catch (err) {
@@ -7157,7 +7047,7 @@ ${'='.repeat(60)}
   const handleSaveArtwork = async () => {
     if (isSavingArtwork) return
     setIsSavingArtwork(true)
-    const forOek2 = isOeffentlichAdminContext()
+    const forOek2 = tenant.isOeffentlich
     
     if (!editingArtwork && !selectedFile) {
       setIsSavingArtwork(false)
@@ -7308,7 +7198,7 @@ ${'='.repeat(60)}
 
   // Werk-Daten speichern
   const saveArtworkData = async (imageDataUrl: string, newArtworkNumber: string) => {
-    const forOek2 = isOeffentlichAdminContext()
+    const forOek2 = tenant.isOeffentlich
     
     let finalTitle = artworkTitle
     if (!forOek2 && artworkCategory === 'keramik') {
@@ -7322,7 +7212,7 @@ ${'='.repeat(60)}
     }
     
     // ROH laden – alle Werke, damit Nummer nicht wiederverwendet wird und nichts überschrieben wird
-    const existingArtworks = loadArtworksRaw()
+    const existingArtworks = loadArtworksRaw(tenant)
     const existingWithSameNumber = existingArtworks.find((a: any) => a.number === newArtworkNumber && (!editingArtwork || (a.id !== editingArtwork.id && a.number !== editingArtwork.number)))
     
     let finalArtworkNumber = newArtworkNumber
@@ -7341,7 +7231,7 @@ ${'='.repeat(60)}
       description: artworkDescription,
       technik: artworkTechnik.trim() || undefined,
       year: artworkYear.trim() || undefined,
-      verkaufsstatus: isVk2AdminContext() ? artworkVerkaufsstatus : undefined,
+      verkaufsstatus: tenant.isVk2 ? artworkVerkaufsstatus : undefined,
       dimensions: artworkDimensions.trim() || undefined,
       price: parseFloat(artworkPrice) || 0,
       quantity: quantityNum,
@@ -7388,7 +7278,7 @@ ${'='.repeat(60)}
     }
     
     // Werk in localStorage speichern – immer ROH-Liste (nie gefiltert), sonst gehen Werke verloren
-    const artworks = loadArtworksRaw()
+    const artworks = loadArtworksRaw(tenant)
     
     // KRITISCH: Prüfe auf doppelte Nummern und behebe Konflikte
     const duplicateNumbers = new Map<string, any[]>()
@@ -7531,7 +7421,7 @@ ${'='.repeat(60)}
           }
         }
         
-        const saved = saveArtworks(keptArtworks)
+        const saved = saveArtworks(tenant, keptArtworks)
         if (!saved) {
           console.error('❌ Speichern fehlgeschlagen!')
           alert('⚠️ Fehler beim Speichern! Bitte versuche es erneut.')
@@ -7543,7 +7433,7 @@ ${'='.repeat(60)}
           alert(`⚠️ localStorage war zu voll!\n\nDie ältesten ${removedCount} Werke wurden automatisch gelöscht.\n\nBitte verwende kleinere Bilder um Platz zu sparen.`)
         }
       } else {
-        const saved = saveArtworks(artworks)
+        const saved = saveArtworks(tenant, artworks)
         if (!saved) {
           console.error('❌ Speichern fehlgeschlagen!')
           alert('⚠️ Fehler beim Speichern! Bitte versuche es erneut.')
@@ -7562,7 +7452,7 @@ ${'='.repeat(60)}
       // KRITISCH: Prüfe ob Werk wirklich in localStorage steht (ROH – kein ök2-Anzeige-Filter)
       let verifyRaw: any[] = []
       try {
-        const key = getArtworksKey()
+        const key = tenant.getArtworksKey()
         const stored = localStorage.getItem(key)
         if (stored) verifyRaw = JSON.parse(stored)
         if (!Array.isArray(verifyRaw)) verifyRaw = []
@@ -7603,7 +7493,7 @@ ${'='.repeat(60)}
           const fileToUpload = selectedFile || (await dataUrlToFile(imageDataUrl))
           const url = await uploadImageToGitHub(fileToUpload, filename, (msg) => console.log(msg))
           artworkData.imageUrl = url
-          const key = getArtworksKey()
+          const key = tenant.getArtworksKey()
           const raw = localStorage.getItem(key)
           let list: any[] = []
           try {
@@ -7615,8 +7505,8 @@ ${'='.repeat(60)}
           const updatedArtworks = list.map((a: any) =>
             (a?.id === artworkData.id || a?.number === artworkData.number) ? { ...a, imageUrl: url } : a
           )
-          saveArtworks(updatedArtworks)
-          setAllArtworks(loadArtworks())
+          saveArtworks(tenant, updatedArtworks)
+          setAllArtworks(loadArtworks(tenant))
           console.log('✅ Werk-Bild auf GitHub hochgeladen:', url)
         } catch (uploadErr) {
           console.warn('GitHub Upload für Werk fehlgeschlagen (Bild bleibt lokal):', uploadErr)
@@ -7624,10 +7514,10 @@ ${'='.repeat(60)}
       }
       
       // KRITISCH: Prüfe ob das neue Werk wirklich in localStorage steht (ROH lesen – kein ök2-Anzeige-Filter)
-      // Im ök2-Kontext filtert loadArtworks() K2-M-*/K2-K-* für die Anzeige; das neue Werk wäre sonst „nicht gefunden“
+      // Im ök2-Kontext filtert loadArtworks(tenant) K2-M-*/K2-K-* für die Anzeige; das neue Werk wäre sonst „nicht gefunden“
       let rawList: any[] = []
       try {
-        const key = getArtworksKey()
+        const key = tenant.getArtworksKey()
         const stored = localStorage.getItem(key)
         if (stored) rawList = JSON.parse(stored)
         if (!Array.isArray(rawList)) rawList = []
@@ -7642,7 +7532,7 @@ ${'='.repeat(60)}
         return
       }
       
-      const reloaded = loadArtworks()
+      const reloaded = loadArtworks(tenant)
       console.log('📦 Reloaded artworks:', reloaded.length, 'Neues Werk gefunden:', artworkData?.number)
       
       // Einheitliche Meldung, wenn keine Freistellung (Mobile oder Fehler) – pro gespeichertes Werk einmal
@@ -7682,7 +7572,7 @@ ${'='.repeat(60)}
       
       // WICHTIG: Kurze Verzögerung damit React State aktualisiert wird
       setTimeout(() => {
-        const afterUpdate = loadArtworks()
+        const afterUpdate = loadArtworks(tenant)
         const filteredAfterUpdate = afterUpdate.filter((a: any) => {
           if (!a) return false
           if (categoryFilter !== 'alle' && a.category !== categoryFilter) return false
@@ -7733,7 +7623,7 @@ ${'='.repeat(60)}
       }))
       
       // Zentrale Stelle (Vercel): Nach jedem Speichern automatisch Daten dorthin – kein extra „Veröffentlichen“ nötig
-      if (!forOek2 && !isVk2AdminContext()) {
+      if (!forOek2 && !tenant.isVk2) {
         try {
           publishMobile({ silent: true })
         } catch (e) {
@@ -8681,7 +8571,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
   const s = WERBEUNTERLAGEN_STIL
 
   // ── VK2 MITGLIED-LOGIN-BEREICH ──
-  const isMitgliedRoute = isVk2AdminContext() && typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mitglied') === '1'
+  const isMitgliedRoute = tenant.isVk2 && typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mitglied') === '1'
   // Programmierer-Bypass: ?dev=k2dev2026 → Login-Screen überspringen
   const devBypass = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('dev') === 'k2dev2026'
 
@@ -9008,7 +8898,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             onClick={() => {
               try { sessionStorage.removeItem('k2-hub-from') } catch (_) {}
               if (typeof window !== 'undefined' && window.self === window.top) {
-                window.location.href = isVk2AdminContext()
+                window.location.href = tenant.isVk2
                   ? '/entdecken?step=hub&q1=verein'
                   : '/entdecken?step=hub'
               }
@@ -9069,7 +8959,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
           }}>
             {/* Logo + Admin-Badge */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              {isOeffentlichAdminContext() ? (
+              {tenant.isOeffentlich ? (
                 // ök2: Kein K2-Logo – nur Kontext-Badge damit klar ist wo man ist
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                   <span style={{ fontFamily: s.fontHeading, fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 700, color: s.accent, letterSpacing: '-0.02em', lineHeight: 1.1 }}>
@@ -9080,9 +8970,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   </span>
                 </div>
               ) : (
-                <AdminBrandLogo title={isVk2AdminContext() ? 'VK2 Vereinsplattform' : undefined} />
+                <AdminBrandLogo title={tenant.isVk2 ? 'VK2 Vereinsplattform' : undefined} />
               )}
-              {!isOeffentlichAdminContext() && (
+              {!tenant.isOeffentlich && (
                 <span style={{
                   padding: '0.25rem 0.65rem',
                   background: `${s.accent}18`,
@@ -9093,7 +8983,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   fontWeight: 600,
                   letterSpacing: '0.03em'
                 }}>
-                  {isVk2AdminContext() ? 'VK2 ADMIN' : 'K2 ADMIN'}
+                  {tenant.isVk2 ? 'VK2 ADMIN' : 'K2 ADMIN'}
                 </span>
               )}
             </div>
@@ -9102,7 +8992,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
 
               {/* VK2: Zurück zur Vereins-Galerie */}
-              {isVk2AdminContext() && (
+              {tenant.isVk2 && (
                 <Link
                   to={PROJECT_ROUTES.vk2.galerie}
                   title="Zur Vereins-Galerie"
@@ -9127,7 +9017,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
 
               {/* Galerie / Mitglieder ansehen */}
               <Link
-                to={isVk2AdminContext() ? PROJECT_ROUTES.vk2.galerieVorschau : isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerie}
+                to={tenant.isVk2 ? PROJECT_ROUTES.vk2.galerieVorschau : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerie}
                 state={{ fromAdmin: true }}
                 style={{
                   padding: '0.5rem 1rem',
@@ -9146,14 +9036,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.background = s.bgElevated }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}28`; e.currentTarget.style.background = s.bgCard }}
               >
-                {isVk2AdminContext() ? '👥 Unsere Mitglieder' : '🖼️ Galerie ansehen'}
+                {tenant.isVk2 ? '👥 Unsere Mitglieder' : '🖼️ Galerie ansehen'}
               </Link>
 
               {/* Kasse – primäre Aktion, deutlich hervorgehoben */}
-              {!isVk2AdminContext() && (
+              {!tenant.isVk2 && (
                 <Link
                   to={PROJECT_ROUTES['k2-galerie'].shop}
-                  state={{ openAsKasse: true, fromOeffentlich: isOeffentlichAdminContext() || undefined }}
+                  state={{ openAsKasse: true, fromOeffentlich: tenant.isOeffentlich || undefined }}
                   style={{
                     padding: '0.55rem 1.1rem',
                     background: s.gradientAccent,
@@ -9176,7 +9066,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               )}
 
               {/* Reservieren – nur K2, nicht VK2/ök2 */}
-              {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
+              {!tenant.isOeffentlich && !tenant.isVk2 && (
                 <button type="button" onClick={() => setShowReserveModal(true)}
                   style={{ padding: '0.5rem 1rem', background: s.bgCard, border: `1px solid #d9770688`, color: '#d97706', borderRadius: '10px', fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s' }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = '#fef3c7' }}
@@ -9187,7 +9077,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               )}
 
               {/* Kundendaten – nur für K2 und ök2, nicht für VK2 (Mitglieder sind in Stammdaten) */}
-              {!isVk2AdminContext() && (
+              {!tenant.isVk2 && (
                 <Link
                   to={PROJECT_ROUTES['k2-galerie'].kunden}
                   style={{
@@ -9212,7 +9102,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               )}
 
               {/* Abmelden – klein und zurückhaltend */}
-              {!isOeffentlichAdminContext() && (
+              {!tenant.isOeffentlich && (
                 <button
                   type="button"
                   onClick={() => {
@@ -9221,7 +9111,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       localStorage.removeItem('k2-admin-unlocked')
                       localStorage.removeItem('k2-admin-unlocked-expiry')
                     } catch (_) {}
-                    if (isVk2AdminContext()) navigate(PROJECT_ROUTES.vk2.galerie)
+                    if (tenant.isVk2) navigate(PROJECT_ROUTES.vk2.galerie)
                     else navigate(PROJECT_ROUTES['k2-galerie'].galerie)
                   }}
                   style={{
@@ -9271,7 +9161,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               <div>
 
                 {/* Großer Willkommens-Hub wenn Guide-Flow aktiv */}
-                {guideFlowAktiv && isOeffentlichAdminContext() && !guideBannerClosed && (() => {
+                {guideFlowAktiv && tenant.isOeffentlich && !guideBannerClosed && (() => {
                   const istVerein = guidePfad === 'gemeinschaft'
                   const akzent = istVerein ? '#1e5cb5' : '#b54a1e'
                   const akzentHell = istVerein ? '#42a4ff' : '#ff8c42'
@@ -9431,7 +9321,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 })()}
 
                 {/* Guide-Willkommensbanner – nur wenn kein globaler Guide-Flow aktiv */}
-                {guideVorname && isOeffentlichAdminContext() && !guideBannerClosed && !guideFlowAktiv && (() => {
+                {guideVorname && tenant.isOeffentlich && !guideBannerClosed && !guideFlowAktiv && (() => {
                   const istVerein = guidePfad === 'gemeinschaft'
                   type BannerBereich = { emoji: string; name: string; text: string; tab: string }
                   const bereiche: BannerBereich[] = istVerein ? [
@@ -9447,7 +9337,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '📢', name: 'Veranstaltungen', text: 'Events planen, Einladungen erstellen, Presse informieren', tab: 'eventplan' },
                     { emoji: '✨', name: 'Aussehen', text: 'Farben, Texte, dein Foto – die Galerie wird zu dir', tab: 'design' },
                   ]
-                  const galerieUrl = isOeffentlichAdminContext()
+                  const galerieUrl = tenant.isOeffentlich
                     ? '/projects/k2-galerie/galerie-oeffentlich'
                     : '/projects/k2-galerie/galerie'
                   return (
@@ -9481,7 +9371,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             onClick={() => {
                               setGuideBannerClosed(true)
                               if (b.tab === 'kassa') {
-                                try { sessionStorage.setItem('k2-admin-context', isOeffentlichAdminContext() ? 'oeffentlich' : 'k2') } catch (_) {}
+                                try { sessionStorage.setItem('k2-admin-context', tenant.isOeffentlich ? 'oeffentlich' : 'k2') } catch (_) {}
                                 if (typeof window !== 'undefined' && window.self === window.top) window.location.href = '/projects/k2-galerie/shop?openAsKasse=1'
                               } else {
                                 const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','design','einstellungen','assistent'] as const
@@ -9545,11 +9435,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 })()}
 
                 {/* Hub-Layout (wie Entdecken): nur wenn kein Guide aktiv – 3 Spalten, zielsicher, eine Hauptaktion */}
-                {!(guideVorname && isOeffentlichAdminContext() && !guideBannerClosed) && !guideFlowAktiv && (() => {
+                {!(guideVorname && tenant.isOeffentlich && !guideBannerClosed) && !guideFlowAktiv && (() => {
                   const akzent = s.accent
                   const akzentGrad = `linear-gradient(135deg, ${s.accent} 0%, #d96b35 100%)`
                   type HubArea = { emoji: string; name: string; beschreibung: string; tab: string }
-                  const linksBereiche: HubArea[] = isVk2AdminContext() ? [
+                  const linksBereiche: HubArea[] = tenant.isVk2 ? [
                     { emoji: '🖼️', name: 'Vereinsmitglieder', beschreibung: 'Mitglieder hinzufügen, bearbeiten, verwalten – Fotos, Profile.', tab: 'werke' },
                     { emoji: '🎟️', name: 'Events & Werbung', beschreibung: 'Events planen, Flyer und Newsletter für den Verein erstellen.', tab: 'eventplan' },
                     { emoji: '✨', name: 'Aussehen & Design', beschreibung: 'Farben, Texte, Bilder – die Galerie nach euren Wünschen.', tab: 'design' },
@@ -9557,13 +9447,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '🖼️', name: 'Meine Werke', beschreibung: 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist live in deiner Galerie.', tab: 'werke' },
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke filtern, suchen, drucken – nach Status, Kategorie, Datum, Preis.', tab: 'katalog' },
                     { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Events planen, Einladungen und Flyer erstellen, Presse, Social Media.', tab: 'eventplan' },
-                    { emoji: '✨', name: 'Aussehen & Design', beschreibung: isOeffentlichAdminContext() ? 'Farben, Texte, dein Foto – die Galerie wird zu dir.' : 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
+                    { emoji: '✨', name: 'Aussehen & Design', beschreibung: tenant.isOeffentlich ? 'Farben, Texte, dein Foto – die Galerie wird zu dir.' : 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
                   ]
-                  const rechtsBereiche: HubArea[] = isVk2AdminContext() ? [
+                  const rechtsBereiche: HubArea[] = tenant.isVk2 ? [
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Vereinsdaten, Kontakt, Mitglieder verwalten.', tab: 'einstellungen' },
                     { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Der Assistent führt euch durch die Einrichtung.', tab: 'assistent' },
-                  ] : isOeffentlichAdminContext() ? [
+                  ] : tenant.isOeffentlich ? [
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Meine Daten, Kontakt, Backup.', tab: 'einstellungen' },
                     { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Neu hier? Der Assistent führt dich durch die Einrichtung.', tab: 'assistent' },
                   ] : [
@@ -9574,7 +9464,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   ]
                   const scrollToWerke = () => document.getElementById('admin-werke-inhalt')?.scrollIntoView({ behavior: 'smooth' })
                   const openKasse = () => {
-                    try { sessionStorage.setItem('k2-admin-context', isOeffentlichAdminContext() ? 'oeffentlich' : 'k2') } catch (_) {}
+                    try { sessionStorage.setItem('k2-admin-context', tenant.isOeffentlich ? 'oeffentlich' : 'k2') } catch (_) {}
                     if (typeof window !== 'undefined' && window.self === window.top) window.location.href = '/projects/k2-galerie/shop?openAsKasse=1'
                   }
                   return (
@@ -9620,7 +9510,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           </button>
                         ))}
                       </div>
-                      {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
+                      {!tenant.isOeffentlich && !tenant.isVk2 && (
                         <>
                           <div style={{ marginTop: '1rem', paddingTop: '0.6rem', borderTop: `1px solid ${s.accent}22` }}>
                             <a href="https://web.cursor.sh" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem', color: s.accent, textDecoration: 'none', fontWeight: 500 }}>
@@ -9639,7 +9529,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 {/* Trennlinie vor Werke-Inhalt */}
                 <div id="admin-werke-inhalt" style={{ margin: 'clamp(2rem, 5vw, 3rem) 0 clamp(1rem, 3vw, 1.5rem)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <div style={{ flex: 1, height: 1, background: `${s.accent}22` }} />
-                  <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>🎨 {isVk2AdminContext() ? 'Vereinsmitglieder' : 'Meine Werke'}</span>
+                  <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>🎨 {tenant.isVk2 ? 'Vereinsmitglieder' : 'Meine Werke'}</span>
                   <div style={{ flex: 1, height: 1, background: `${s.accent}22` }} />
                 </div>
               </div>
@@ -9654,8 +9544,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   {activeTab === 'zertifikat' && '🔏 Echtheitszertifikate'}
                   {activeTab === 'newsletter' && '📬 Newsletter & Einladungen'}
                   {activeTab === 'pressemappe' && '📰 Pressemappe'}
-                  {activeTab === 'eventplan' && (isVk2AdminContext() ? '📢 Vereins-Events & Werbematerial' : '📢 Veranstaltungen & Werbung')}
-                  {activeTab === 'design' && (isVk2AdminContext() ? '✨ Aussehen – nach euren Wünschen anpassen' : '✨ Aussehen der Galerie – nach deinen Wünschen anpassen')}
+                  {activeTab === 'eventplan' && (tenant.isVk2 ? '📢 Vereins-Events & Werbematerial' : '📢 Veranstaltungen & Werbung')}
+                  {activeTab === 'design' && (tenant.isVk2 ? '✨ Aussehen – nach euren Wünschen anpassen' : '✨ Aussehen der Galerie – nach deinen Wünschen anpassen')}
                   {activeTab === 'einstellungen' && '⚙️ Einstellungen'}
                 </h2>
               </div>
@@ -9682,7 +9572,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             <StatistikTab
               allArtworks={allArtworks}
               onMarkAsReserved={handleMarkAsReserved}
-              onRerender={() => setAllArtworks(loadArtworks())}
+              onRerender={() => setAllArtworks(loadArtworks(tenant))}
               onStorno={handleStornoVerkauf}
             />
           )}
@@ -9737,9 +9627,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
                 letterSpacing: '-0.01em'
               }}>
-                {isVk2AdminContext() ? 'Vereinsmitglieder' : 'Werke verwalten'}
+                {tenant.isVk2 ? 'Vereinsmitglieder' : 'Werke verwalten'}
               </h2>
-              {!isVk2AdminContext() && (() => {
+              {!tenant.isVk2 && (() => {
                 const galerieWert = allArtworks.reduce((sum: number, a: any) => sum + (Number(a.price) || 0), 0)
                 const werkeMitPreis = allArtworks.filter((a: any) => (Number(a.price) || 0) > 0).length
                 return (
@@ -9766,14 +9656,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   </div>
                 )
               })()}
-              {isVk2AdminContext() && (
+              {tenant.isVk2 && (
                 <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted }}>
                   <button type="button" onClick={() => { setActiveTab('einstellungen'); setSettingsSubTab('stammdaten') }} style={{ background: 'none', border: 'none', padding: 0, color: s.accent, textDecoration: 'underline', cursor: 'pointer', fontSize: 'inherit' }}>Stammdaten (Verein, Vorstand, Mitglieder) bearbeiten → Einstellungen</button>
                 </p>
               )}
               {/* Werke-Aktionen: Primär klar, Sekundär zurückhaltend */}
               <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
-                {!isVk2AdminContext() && (
+                {!tenant.isVk2 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                     <button
                       onClick={() => { setEditingArtwork(null); setShowAddModal(true) }}
@@ -9798,12 +9688,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       + Neues Werk
                     </button>
                     <span style={{ fontSize: '0.72rem', color: s.muted }}>Hier können die neuen Werke angelegt werden</span>
-                    {isOeffentlichAdminContext() && (
+                    {tenant.isOeffentlich && (
                       <span style={{ fontSize: '0.72rem', color: s.muted }}>Musterwerke entfernen: Werk in der Liste öffnen → unten „Löschen“ (alle nacheinander = Galerie leer)</span>
                     )}
                   </div>
                 )}
-                {isVk2AdminContext() ? (
+                {tenant.isVk2 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
                       <button
@@ -9962,7 +9852,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     <span style={{ fontSize: '0.72rem', color: s.muted }}>Hier sind die Bilder von den Mobilgeräten</span>
                     </div>
                     {/* Auf Mobil: Daten an Server senden (Veröffentlichen) – verbindlicher Weg, damit Daten auf Vercel liegen */}
-                    {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
+                    {!tenant.isOeffentlich && !tenant.isVk2 && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                     <button
                       type="button"
@@ -10030,7 +9920,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   <span style={{ fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: s.muted, whiteSpace: 'nowrap' }}>Suchen</span>
                   <input 
                     type="text" 
-                    placeholder={isVk2AdminContext() ? 'Name, E-Mail, Lizenz…' : 'Titel oder Nummer…'} 
+                    placeholder={tenant.isVk2 ? 'Name, E-Mail, Lizenz…' : 'Titel oder Nummer…'} 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     style={{
@@ -10052,7 +9942,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     }}
                   />
                 </label>
-                {!isVk2AdminContext() && (
+                {!tenant.isVk2 && (
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <span style={{ fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: s.muted, whiteSpace: 'nowrap' }}>Kategorie</span>
                   <select 
@@ -10077,7 +9967,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </label>
                 )}
               </div>
-              {!isVk2AdminContext() && selectedForBatchPrint.size > 0 && (
+              {!tenant.isVk2 && selectedForBatchPrint.size > 0 && (
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -10132,7 +10022,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               }}>
               {(() => {
                 /* VK2: Liste der registrierten Mitglieder (Anmeldedaten) mit Bearbeiten – Vorstand zuerst und prominent */
-                if (isVk2AdminContext()) {
+                if (tenant.isVk2) {
                   const mitglieder = vk2Stammdaten.mitglieder || []
                   const such = searchQuery.trim().toLowerCase()
                   const gefiltert = such ? mitglieder.filter(m => (m.name?.toLowerCase().includes(such)) || (m.email?.toLowerCase().includes(such)) || (m.lizenz?.toLowerCase().includes(such)) || (m.typ?.toLowerCase().includes(such))) : mitglieder
@@ -10269,7 +10159,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   // blob:-URLs werden ungültig (z. B. nach Reload) → nie anzeigen, Platzhalter nutzen
                   if (typeof rawSrc === 'string' && rawSrc.startsWith('blob:')) rawSrc = ''
                   const isPlaceholder = !rawSrc || (typeof rawSrc === 'string' && rawSrc.startsWith('data:image/svg'))
-                  const imageSrc = (isOeffentlichAdminContext() && isPlaceholder) ? getOek2DefaultArtworkImage(artwork.category) : (isPlaceholder ? PLACEHOLDER_KEIN_BILD : rawSrc)
+                  const imageSrc = (tenant.isOeffentlich && isPlaceholder) ? getOek2DefaultArtworkImage(artwork.category) : (isPlaceholder ? PLACEHOLDER_KEIN_BILD : rawSrc)
                   return (
                   <div 
                     key={artwork.number || artwork.id} 
@@ -10298,7 +10188,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           style={{ width: '100%', height: 'clamp(180px, 30vw, 220px)', objectFit: 'cover', borderRadius: '12px' }}
                           onError={(e) => {
                             const target = e.target as HTMLImageElement
-                            if (isOeffentlichAdminContext() && target.src !== OEK2_PLACEHOLDER_IMAGE) {
+                            if (tenant.isOeffentlich && target.src !== OEK2_PLACEHOLDER_IMAGE) {
                               target.src = OEK2_PLACEHOLDER_IMAGE
                               return
                             }
@@ -10395,7 +10285,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         const katalogAnzahl = allArtworks.filter((a: any) => a.imVereinskatalog).length
                         const istDrin = !!artwork.imVereinskatalog
                         const limitErreicht = !istDrin && katalogAnzahl >= 5
-                        const vk2 = isVk2AdminContext()
+                        const vk2 = tenant.isVk2
                         return (
                           <button
                             type="button"
@@ -10403,7 +10293,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             onClick={() => {
                               if (limitErreicht) return
                               const updated = allArtworks.map((a: any) => a.id === artwork.id ? { ...a, imVereinskatalog: !istDrin } : a)
-                              saveArtworks(updated)
+                              saveArtworks(tenant, updated)
                               setAllArtworks(updated)
                             }}
                             style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.3rem', padding: '0.2rem 0.5rem', background: istDrin ? 'rgba(251,191,36,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${istDrin ? 'rgba(251,191,36,0.5)' : 'rgba(255,255,255,0.15)'}`, borderRadius: 6, color: istDrin ? '#fbbf24' : 'rgba(255,255,255,0.3)', fontSize: '0.72rem', cursor: limitErreicht ? 'not-allowed' : 'pointer', opacity: limitErreicht ? 0.5 : 1 }}
@@ -10461,7 +10351,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           // Setze editingArtwork State für Bearbeitung
                           setEditingArtwork(artwork)
                           
-                          if (isOeffentlichAdminContext()) {
+                          if (tenant.isOeffentlich) {
                             setArtworkTitle(artwork.title || '')
                             setArtworkCategory((ARTWORK_CATEGORIES.some((c) => c.id === artwork.category) || VK2_KUNSTBEREICHE.some((c) => c.id === artwork.category)) ? (artwork.category || 'malerei') : 'malerei')
                             setArtworkSubcategoryFree(artwork.subcategoryFree || artwork.ceramicSubcategory || '')
@@ -10486,7 +10376,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           
                           const category = (ARTWORK_CATEGORIES.some((c) => c.id === artwork.category) || VK2_KUNSTBEREICHE.some((c) => c.id === artwork.category)) ? (artwork.category || 'malerei') : 'malerei'
                           setArtworkCategory(category)
-                          if (!isVk2AdminContext() && category === 'keramik') {
+                          if (!tenant.isVk2 && category === 'keramik') {
                             const subcategory = artwork.ceramicSubcategory || 'vase'
                             setArtworkCeramicSubcategory(subcategory as 'vase' | 'teller' | 'skulptur' | 'sonstig')
                             const subcategoryLabels: Record<string, string> = {
@@ -10551,13 +10441,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       <button 
                         onClick={async () => {
                           if (confirm(`Möchtest du "${artwork.title || artwork.number}" wirklich löschen?`)) {
-                            const artworks = loadArtworks()
+                            const artworks = loadArtworks(tenant)
                             const filtered = artworks.filter((a: any) => a.number !== artwork.number && a.id !== artwork.id)
-                            const saved = saveArtworks(filtered)
+                            const saved = saveArtworks(tenant, filtered)
                             if (saved) {
-                              // ök2: Bei leerer Liste Key explizit '[]' setzen, damit kein Rückfall auf Musterwerke
-                              if (isOeffentlichAdminContext() && filtered.length === 0) {
-                                try { localStorage.setItem('k2-oeffentlich-artworks', '[]') } catch (_) {}
+                              // ök2: saveArtworks hat bereits '[]' geschrieben (über Schicht)
+                              if (tenant.isOeffentlich && filtered.length === 0) {
                                 setAllArtworks([])
                               } else {
                                 setAllArtworks(filtered)
@@ -10685,15 +10574,15 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   {designSaveFeedback === 'ok' && <span style={{ fontSize: '0.9rem', color: '#10b981', fontWeight: 600 }}>✓ Gespeichert</span>}
                   <button type="button" className="btn-primary" onClick={() => {
                     try {
-                      const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
-                      setPageContentGalerie(pageContent, tenant)
-                      setPageTexts(pageTexts, tenant)
+                      const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+                      setPageContentGalerie(pageContent, designTenant)
+                      setPageTexts(pageTexts, designTenant)
                       if (designSettings && Object.keys(designSettings).length > 0) {
                         const ds = JSON.stringify(designSettings)
                         if (ds.length < 50000) localStorage.setItem(getDesignStorageKey(), ds)
                       }
                       localStorage.removeItem('k2-last-publish-signature')
-                      if (!isOeffentlichAdminContext()) window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
+                      if (!tenant.isOeffentlich) window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
                       setDesignSaveFeedback('ok')
                       setTimeout(() => setDesignSaveFeedback(null), 4000)
                     } catch (e) {
@@ -10726,17 +10615,17 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     <button type="button" onClick={() => {
                       // Erst alles in localStorage sichern, dann Galerie im gleichen Tab öffnen
                       // (gleicher Tab = localStorage sofort lesbar, neues Foto wird sofort angezeigt)
-                      const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
-                      setPageContentGalerie(pageContent, tenant)
-                      setPageTexts(pageTexts, tenant)
-                      const route = isVk2AdminContext()
+                      const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+                      setPageContentGalerie(pageContent, designTenant)
+                      setPageTexts(pageTexts, designTenant)
+                      const route = tenant.isVk2
                         ? PROJECT_ROUTES.vk2.galerie
-                        : isOeffentlichAdminContext()
+                        : tenant.isOeffentlich
                         ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
                         : PROJECT_ROUTES['k2-galerie'].galerie
                       navigate(route + '?vorschau=1')
                     }} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1.1rem', fontSize: '1rem', fontWeight: 700, background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: 10, color: '#10b981', cursor: 'pointer', fontFamily: 'inherit' }}>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>2</span> {isVk2AdminContext() ? '👁 Unsere Mitglieder-Seite ansehen – gefällt es?' : '👁 Galerie ansehen – gefällt es?'}
+                      <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>2</span> {tenant.isVk2 ? '👁 Unsere Mitglieder-Seite ansehen – gefällt es?' : '👁 Galerie ansehen – gefällt es?'}
                     </button>
                     <span style={{ color: s.muted, fontSize: '1.2rem' }}>→</span>
                     {/* Schritt 3: Speichern */}
@@ -10746,22 +10635,22 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         ? <span style={{ fontSize: '1rem', color: '#10b981', fontWeight: 700, padding: '0.5rem 1.1rem', background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: 10 }}>✅ Gespeichert!</span>
                         : <button type="button" className="btn-primary" onClick={async () => {
                             try {
-                              const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
-                              setPageContentGalerie(pageContent, tenant)
-                              setPageTexts(pageTexts, tenant)
+                              const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+                              setPageContentGalerie(pageContent, designTenant)
+                              setPageTexts(pageTexts, designTenant)
                               if (designSettings && Object.keys(designSettings).length > 0) {
                                 const ds = JSON.stringify(designSettings)
                                 if (ds.length < 50000) localStorage.setItem(getDesignStorageKey(), ds)
                               }
                               localStorage.removeItem('k2-last-publish-signature')
-                              if (!isOeffentlichAdminContext()) window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
+                              if (!tenant.isOeffentlich) window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
                               setDesignSaveFeedback('ok')
                               setTimeout(() => setDesignSaveFeedback(null), 6000)
                               // Foto auf GitHub hochladen – damit es dauerhaft auf Vercel gespeichert ist
                               // Gilt für K2 UND ök2 – Base64 wird durch Vercel-Pfad ersetzt → kein localStorage-Verlust mehr
                               {
-                                const subfolder = isOeffentlichAdminContext() ? 'oeffentlich' : 'k2'
-                                const tenantForUpload = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
+                                const subfolder = tenant.isOeffentlich ? 'oeffentlich' : 'k2'
+                                const tenantForUpload = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
                                 const fileToUpload = pendingWelcomeFileRef.current
                                 const base64Image = pageContent.welcomeImage
                                 pendingWelcomeFileRef.current = null
@@ -10814,13 +10703,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     </div>
                   </div>
                 </div>
-                <input type="file" accept="image/*" ref={galerieImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
-                <input type="file" accept="image/*" ref={virtualTourImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                <input type="file" accept="image/*" ref={galerieImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                <input type="file" accept="image/*" ref={virtualTourImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                 {(() => {
-                  const tc = isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich : isVk2AdminContext() ? TENANT_CONFIGS.vk2 : TENANT_CONFIGS.k2
-                  const galleryName = isVk2AdminContext() ? (vk2Stammdaten.verein?.name || tc.galleryName) : tc.galleryName
-                  const tagline = isVk2AdminContext() ? (vk2Stammdaten.vorstand?.name ? `Obfrau/Obmann: ${vk2Stammdaten.vorstand.name}` : tc.tagline) : tc.tagline
-                  const welcomeIntroDefault = isVk2AdminContext()
+                  const tc = tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich : tenant.isVk2 ? TENANT_CONFIGS.vk2 : TENANT_CONFIGS.k2
+                  const galleryName = tenant.isVk2 ? (vk2Stammdaten.verein?.name || tc.galleryName) : tc.galleryName
+                  const tagline = tenant.isVk2 ? (vk2Stammdaten.vorstand?.name ? `Obfrau/Obmann: ${vk2Stammdaten.vorstand.name}` : tc.tagline) : tc.tagline
+                  const welcomeIntroDefault = tenant.isVk2
                     ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.'
                     : (defaultPageTexts.galerie.welcomeIntroText || 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.')
                   return (
@@ -10881,12 +10770,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             if (f && f.type.startsWith('image/')) {
                               try {
                                 const img = await compressImage(f, 800, 0.6)
-                                const tenant = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
+                                const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
                                 const next = { ...pageContent, welcomeImage: img }
                                 setPageContent(next)
-                                setPageContentGalerie(next, tenant)
+                                setPageContentGalerie(next, designTenant)
                                 // Datei für späteren Upload beim Speichern merken (K2 + ök2, nicht VK2)
-                                if (!isVk2AdminContext()) pendingWelcomeFileRef.current = f
+                                if (!tenant.isVk2) pendingWelcomeFileRef.current = f
                                 setImageUploadStatus('✓ Foto bereit – erst ansehen, dann Speichern')
                                 setTimeout(() => setImageUploadStatus(null), 6000)
                               } catch (_) { alert('Fehler beim Bild') }
@@ -10900,9 +10789,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 const img = await compressImage(f, 800, 0.6)
                                 const next = { ...pageContent, welcomeImage: img }
                                 setPageContent(next)
-                                setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined)
+                                setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
                                 // Datei für späteren Upload beim Speichern merken (K2 + ök2, nicht VK2)
-                                if (!isVk2AdminContext()) pendingWelcomeFileRef.current = f
+                                if (!tenant.isVk2) pendingWelcomeFileRef.current = f
                                 setImageUploadStatus('✓ Foto bereit – erst ansehen, dann Speichern')
                                 setTimeout(() => setImageUploadStatus(null), 6000)
                               } catch (_) { alert('Fehler beim Bild') }
@@ -10922,7 +10811,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         )}
                       </section>
                       {/* VK2 Eingangskarten – 2 editierbare Bildkarten */}
-                      {isVk2AdminContext() && (
+                      {tenant.isVk2 && (
                         <section style={{ marginTop: '1.5rem', padding: '1.25rem', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 14 }}>
                           <h3 style={{ margin: '0 0 0.9rem', fontSize: '1rem', fontWeight: 700, color: s.text }}>🖼️ Eingangskarten (2 Bilder)</h3>
                           <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: s.muted }}>Erscheinen auf der Startseite zwischen Willkommensfoto und Vereinsname. Je ein Foto + editierbarer Text.</p>
@@ -11039,7 +10928,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         )
                       })()}
                       {/* Die Kunstschaffenden + Eingangshalle – nur K2/ök2, nicht VK2 */}
-                      {!isVk2AdminContext() && <><section style={{ marginTop: 32 }}>
+                      {!tenant.isVk2 && <><section style={{ marginTop: 32 }}>
                         {designPreviewEdit === 'p2-kunstschaffendeHeading' ? (
                           <input autoFocus value={pageTexts.galerie?.kunstschaffendeHeading ?? defaultPageTexts.galerie.kunstschaffendeHeading ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, kunstschaffendeHeading: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '1.5rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, marginBottom: 24, textAlign: 'center', boxSizing: 'border-box' }} />
                         ) : (
@@ -11077,9 +10966,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             <label htmlFor="galerie-card-image-input-p1" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.galerieCardImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-accent)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
                               onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
                               onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-                              onDrop={async (e) => { e.preventDefault(); e.stopPropagation(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } }}
+                              onDrop={async (e) => { e.preventDefault(); e.stopPropagation(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } }}
                             >
-                              <input id="galerie-card-image-input-p1" ref={galerieImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                              <input id="galerie-card-image-input-p1" ref={galerieImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                               {pageContent.galerieCardImage ? <img src={pageContent.galerieCardImage} alt="In die Galerie" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>}
                             </label>
                             {designPreviewEdit === 'p1-galerieButtonText' ? (
@@ -11092,9 +10981,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             <label htmlFor="virtual-tour-image-input-p1" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
                               onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
                               onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-                              onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } }}
+                              onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } }}
                             >
-                              <input id="virtual-tour-image-input-p1" ref={virtualTourImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                              <input id="virtual-tour-image-input-p1" ref={virtualTourImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                               {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>}
                             </label>
                             {designPreviewEdit === 'p1-virtualTourButtonText' ? (
@@ -11115,11 +11004,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                   } catch { setVideoUploadMsg('Länge konnte nicht gelesen werden.'); setVideoUploadStatus('error'); e.target.value = ''; return }
                                   try {
                                     const localUrl = URL.createObjectURL(f)
-                                    const tenantId = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
+                                    const tenantId = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
                                     const nextLocal = { ...pageContent, virtualTourVideo: localUrl }
                                     setPageContent(nextLocal)
                                     setPageContentGalerie(nextLocal, tenantId)
-                                    if (!isOeffentlichAdminContext()) {
+                                    if (!tenant.isOeffentlich) {
                                       setVideoUploadStatus('uploading')
                                       setVideoUploadMsg('Video wird hochgeladen… Bitte warten.')
                                       try {
@@ -11127,7 +11016,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                         const url = await uploadVideoToGitHub(f, 'virtual-tour.mp4', (msg) => setVideoUploadMsg(msg))
                                         const nextVercel = { ...nextLocal, virtualTourVideo: url }
                                         setPageContent(nextVercel)
-                                        setPageContentGalerie(nextVercel, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined)
+                                        setPageContentGalerie(nextVercel, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
                                         localStorage.removeItem('k2-last-publish-signature')
                                         setVideoUploadStatus('done')
                                         setVideoUploadMsg('✅ Video hochgeladen – in ca. 2 Min. überall sichtbar.')
@@ -11196,9 +11085,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           <label htmlFor="galerie-card-image-input-p2" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.galerieCardImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-accent)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
                             onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
                             onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-                            onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } }}
+                            onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } }}
                           >
-                            <input id="galerie-card-image-input-p2" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                            <input id="galerie-card-image-input-p2" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                             {pageContent.galerieCardImage ? <img src={pageContent.galerieCardImage} alt="Galerie Innenansicht" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>}
                           </label>
                           <p style={{ fontSize: '0.9rem', color: 'var(--k2-accent)', margin: 0, fontWeight: '500' }}>Galerie Innenansicht</p>
@@ -11213,9 +11102,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             <label htmlFor="virtual-tour-image-input-p2" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 8, overflow: 'hidden', marginBottom: 6, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
                               onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
                               onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-                              onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } }}
+                              onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } }}
                             >
-                              <input id="virtual-tour-image-input-p2" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                              <input id="virtual-tour-image-input-p2" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                               {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.85rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>}
                             </label>
                           )}
@@ -11224,7 +11113,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
                             <label htmlFor="virtual-tour-image-input-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-card-bg-2, #e8e4dd)', color: 'var(--k2-text)', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600', border: '1px solid var(--k2-muted)' }}>
                               📸 Foto wählen oder aufnehmen
-                              <input id="virtual-tour-image-input-btn" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                              <input id="virtual-tour-image-input-btn" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImage(f, 800, 0.6); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                             </label>
                             <label htmlFor="virtual-tour-video-input" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}>
                               📹 Video wählen oder aufnehmen
@@ -11238,12 +11127,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 } catch { setVideoUploadMsg('Länge konnte nicht gelesen werden.'); setVideoUploadStatus('error'); e.target.value = ''; return }
                                 try {
                                   const localUrl = URL.createObjectURL(f)
-                                  const tenantId = isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined
+                                  const tenantId = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
                                   // Sofort lokal speichern → sofort im Admin sichtbar
                                   const nextLocal = { ...pageContent, virtualTourVideo: localUrl }
                                   setPageContent(nextLocal)
                                   setPageContentGalerie(nextLocal, tenantId)
-                                  if (!isOeffentlichAdminContext()) {
+                                  if (!tenant.isOeffentlich) {
                                     // K2: Video via GitHub hochladen → auf Vercel dauerhaft
                                     setVideoUploadStatus('uploading')
                                     setVideoUploadMsg('Video wird hochgeladen… Bitte warten.')
@@ -11274,7 +11163,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               }} />
                             </label>
                             {pageContent.virtualTourVideo && (
-                              <button type="button" onClick={() => { const next = { ...pageContent, virtualTourVideo: '' }; setPageContent(next); setPageContentGalerie(next, isOeffentlichAdminContext() ? 'oeffentlich' : isVk2AdminContext() ? 'vk2' : undefined); setVideoUploadStatus('idle'); setVideoUploadMsg('') }} style={{ padding: '0.4rem 0.8rem', background: 'transparent', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Video entfernen</button>
+                              <button type="button" onClick={() => { const next = { ...pageContent, virtualTourVideo: '' }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); setVideoUploadStatus('idle'); setVideoUploadMsg('') }} style={{ padding: '0.4rem 0.8rem', background: 'transparent', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Video entfernen</button>
                             )}
                           </div>
                           <p style={{ margin: '6px 0 0', fontSize: '0.75rem', color: 'var(--k2-muted)' }}>Max. 2 Min. Länge · max. 100 MB</p>
@@ -11342,7 +11231,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       )
                     })}
 
-                    <button type="button" onClick={() => setDesignSettings({ ...(isOeffentlichAdminContext() ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN) })} style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: 'transparent', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer', marginTop: '0.5rem' }}>↩ Zum Originalzustand</button>
+                    <button type="button" onClick={() => setDesignSettings({ ...(tenant.isOeffentlich ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN) })} style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: 'transparent', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer', marginTop: '0.5rem' }}>↩ Zum Originalzustand</button>
                     <h3 style={{ fontSize: '1rem', color: 'var(--k2-accent)', marginBottom: '0.5rem', marginTop: '0.5rem' }}>Varianten</h3>
                     <p style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', margin: '0 0 0.5rem' }}>Zum Experimentieren: aktuellen Stand als A oder B speichern, später anwenden. Die aktuelle Einstellung gilt – jederzeit änderbar.</p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -11357,10 +11246,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     <h3 style={{ fontSize: '1rem', color: 'var(--k2-accent)', marginBottom: '0.75rem' }}>Vorschau (Kundengröße)</h3>
                     <div style={{ overflow: 'auto', maxHeight: 'min(85vh, 640px)', borderRadius: 16, border: '2px solid var(--k2-accent)', background: 'var(--k2-bg-1)' }}>
                       {(() => {
-                        const tc = isOeffentlichAdminContext() ? TENANT_CONFIGS.oeffentlich : isVk2AdminContext() ? TENANT_CONFIGS.vk2 : TENANT_CONFIGS.k2
-                        const galleryName = isVk2AdminContext() ? (vk2Stammdaten.verein?.name || tc.galleryName) : tc.galleryName
-                        const tagline = isVk2AdminContext() ? (vk2Stammdaten.vorstand?.name ? `Obfrau/Obmann: ${vk2Stammdaten.vorstand.name}` : tc.tagline) : tc.tagline
-                        const welcomeIntroDefault = isVk2AdminContext()
+                        const tc = tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich : tenant.isVk2 ? TENANT_CONFIGS.vk2 : TENANT_CONFIGS.k2
+                        const galleryName = tenant.isVk2 ? (vk2Stammdaten.verein?.name || tc.galleryName) : tc.galleryName
+                        const tagline = tenant.isVk2 ? (vk2Stammdaten.vorstand?.name ? `Obfrau/Obmann: ${vk2Stammdaten.vorstand.name}` : tc.tagline) : tc.tagline
+                        const welcomeIntroDefault = tenant.isVk2
                           ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.'
                           : (defaultPageTexts.galerie.welcomeIntroText || 'Ein Neuanfang mit Leidenschaft …')
                         const scale = 1
@@ -11415,7 +11304,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             </h2>
 
             {/* Musterdaten laden / löschen – nur K2 */}
-            {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
+            {!tenant.isOeffentlich && !tenant.isVk2 && (
             <div style={{ marginBottom: '2rem', padding: '1.25rem', background: 'rgba(95,251,241,0.07)', border: '1px solid rgba(95,251,241,0.25)', borderRadius: '16px' }}>
               <h3 style={{ fontSize: '1.1rem', color: s.accent, marginBottom: '0.5rem' }}>🧪 Musterdaten</h3>
               <p style={{ color: s.muted, fontSize: '0.85rem', marginBottom: '1rem' }}>
@@ -11425,11 +11314,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <button
                   type="button"
                   onClick={() => {
-                    // Immer frisch laden: alte Muster raus, neue rein
-                    const existing = (() => { try { return JSON.parse(localStorage.getItem('k2-artworks') || '[]') } catch { return [] } })()
+                    const existing = readArtworksRawByKey('k2-artworks')
                     const ohneAlteMuster = existing.filter((a: any) => !String(a.id || '').startsWith('muster-') && !(a as any)._isMuster)
-                    const withMuster = [...MUSTER_ARTWORKS.map(a => ({ ...a, _isMuster: true })), ...ohneAlteMuster]
-                    localStorage.setItem('k2-artworks', JSON.stringify(withMuster))
+                    const withMuster = [...MUSTER_ARTWORKS.map((a: any) => ({ ...a, _isMuster: true })), ...ohneAlteMuster]
+                    saveArtworksByKey('k2-artworks', withMuster, { filterK2Only: true, allowReduce: true })
                     // Musterstammdaten nur wenn leer
                     const gallStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}') } catch { return {} } })()
                     if (!gallStamm.name) localStorage.setItem('k2-stammdaten-galerie', JSON.stringify({ ...MUSTER_TEXTE.gallery, _isMuster: true }))
@@ -11448,10 +11336,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <button
                   type="button"
                   onClick={() => {
-                    const existing = (() => { try { return JSON.parse(localStorage.getItem('k2-artworks') || '[]') } catch { return [] } })()
+                    const existing = readArtworksRawByKey('k2-artworks')
                     const ohne = existing.filter((a: any) => !String(a.id || '').startsWith('muster-') && !(a as any)._isMuster)
                     if (ohne.length === existing.length) { alert('Keine Musterdaten gefunden – nichts zu löschen.'); return }
-                    localStorage.setItem('k2-artworks', JSON.stringify(ohne))
+                    saveArtworksByKey('k2-artworks', ohne, { filterK2Only: true, allowReduce: true })
                     const gallStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}') } catch { return {} } })()
                     if ((gallStamm as any)._isMuster) localStorage.removeItem('k2-stammdaten-galerie')
                     const martinaStamm = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}') } catch { return {} } })()
@@ -11471,7 +11359,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             )}
 
             {/* Veröffentlichung – nur K2 (ök2 und VK2 brauchen das nicht) */}
-            {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
+            {!tenant.isOeffentlich && !tenant.isVk2 && (
             <div style={{
               marginBottom: '2rem',
               padding: '1.25rem',
@@ -11492,8 +11380,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     type="button"
                     onClick={() => {
                       saveAllForVorschau()
-                      const seite1Route = isVk2AdminContext() ? PROJECT_ROUTES.vk2.galerie : isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie
-                      const state = { fromAdminTab: 'einstellungen' as const, fromAdminContext: isVk2AdminContext() ? 'vk2' : isOeffentlichAdminContext() ? 'oeffentlich' : null }
+                      const seite1Route = tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie
+                      const state = { fromAdminTab: 'einstellungen' as const, fromAdminContext: tenant.isVk2 ? 'vk2' : tenant.isOeffentlich ? 'oeffentlich' : null }
                       requestAnimationFrame(() => { navigate(seite1Route + '?vorschau=1', { state }) })
                     }}
                     style={{ padding: '0.5rem 0.9rem', fontSize: '0.9rem', background: `${s.accent}20`, border: `1px solid ${s.accent}66`, borderRadius: 8, color: s.accent, fontWeight: 500, cursor: 'pointer' }}
@@ -11504,8 +11392,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     type="button"
                     onClick={() => {
                       saveAllForVorschau()
-                      const vorschauRoute = isVk2AdminContext() ? PROJECT_ROUTES.vk2.galerieVorschau : isOeffentlichAdminContext() ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerieVorschau
-                      const state = { fromAdminTab: 'einstellungen' as const, fromAdminContext: isVk2AdminContext() ? 'vk2' : isOeffentlichAdminContext() ? 'oeffentlich' : null }
+                      const vorschauRoute = tenant.isVk2 ? PROJECT_ROUTES.vk2.galerieVorschau : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerieVorschau
+                      const state = { fromAdminTab: 'einstellungen' as const, fromAdminContext: tenant.isVk2 ? 'vk2' : tenant.isOeffentlich ? 'oeffentlich' : null }
                       requestAnimationFrame(() => { navigate(vorschauRoute + '?vorschau=1', { state }) })
                     }}
                     style={{ padding: '0.5rem 0.9rem', fontSize: '0.9rem', background: `${s.accent}20`, border: `1px solid ${s.accent}66`, borderRadius: 8, color: s.accent, fontWeight: 500, cursor: 'pointer' }}
@@ -11590,12 +11478,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 border: `1px solid ${s.accent}33`
               }}>
                 <div style={{ color: s.accent, fontWeight: '700', fontSize: '0.95rem', marginBottom: '0.25rem' }}>
-                  {isVk2AdminContext() ? '🏛️ VK2 Vereins-Backup' : isOeffentlichAdminContext() ? '🎨 ök2 Demo-Backup' : '🖼️ K2 Galerie-Backup'}
+                  {tenant.isVk2 ? '🏛️ VK2 Vereins-Backup' : tenant.isOeffentlich ? '🎨 ök2 Demo-Backup' : '🖼️ K2 Galerie-Backup'}
                 </div>
                 <div style={{ color: s.muted, fontSize: '0.85rem' }}>
-                  {isVk2AdminContext()
+                  {tenant.isVk2
                     ? 'Enthält: Vereins-Stammdaten, Vorstand, alle Mitglieder, Events, Design. Komplett wiederherstellbar.'
-                    : isOeffentlichAdminContext()
+                    : tenant.isOeffentlich
                     ? 'Enthält: Demo-Stammdaten, Demo-Werke, Demo-Events, Demo-Design. Separat von K2 und VK2.'
                     : 'Enthält: Stammdaten (Martina, Georg, Galerie), alle Werke, Events, Dokumente, Kunden, Design.'}
                 </div>
@@ -11621,7 +11509,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       const raw = reader.result as string
                       const backup = JSON.parse(raw)
                       const kontext = detectBackupKontext(backup)
-                      const currentKontext = isVk2AdminContext() ? 'vk2' : isOeffentlichAdminContext() ? 'oeffentlich' : 'k2'
+                      const currentKontext = tenant.isVk2 ? 'vk2' : tenant.isOeffentlich ? 'oeffentlich' : 'k2'
                       if (kontext !== currentKontext && kontext !== 'unbekannt') {
                         const kontextName = kontext === 'vk2' ? 'VK2 Verein' : kontext === 'oeffentlich' ? 'ök2 Demo' : 'K2 Galerie'
                         const currentName = currentKontext === 'vk2' ? 'VK2 Verein' : currentKontext === 'oeffentlich' ? 'ök2 Demo' : 'K2 Galerie'
@@ -11697,20 +11585,20 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <button
                   onClick={() => {
                     try {
-                      if (isVk2AdminContext()) {
+                      if (tenant.isVk2) {
                         const result = createVk2Backup()
                         const m = (() => { try { return JSON.parse(localStorage.getItem('k2-vk2-stammdaten') || '{}') } catch { return {} } })()
                         const mitglieder = Array.isArray(m.mitglieder) ? m.mitglieder.length : 0
                         downloadBackupAsFile(result.data, result.filename)
                         alert(`✅ VK2 Vereins-Backup heruntergeladen.\n\nEnthält: Vereins-Stammdaten, Vorstand, ${mitglieder} Mitglieder, Events, Design.\n\nAuf backupmicro speichern!`)
-                      } else if (isOeffentlichAdminContext()) {
+                      } else if (tenant.isOeffentlich) {
                         const result = createOek2Backup()
                         downloadBackupAsFile(result.data, result.filename)
                         alert(`✅ ök2 Demo-Backup heruntergeladen.\n\nEnthält: Demo-Stammdaten, Demo-Werke, Demo-Events, Demo-Design.\n\nAuf backupmicro speichern!`)
                       } else {
                         const result = createK2Backup()
                         downloadBackupAsFile(result.data, result.filename)
-                        const artworks = (() => { try { return JSON.parse(localStorage.getItem('k2-artworks') || '[]') } catch { return [] } })()
+                        const artworks = readArtworksRawByKey('k2-artworks')
                         alert(`✅ K2 Galerie-Backup heruntergeladen.\n\nEnthält: Stammdaten, ${Array.isArray(artworks) ? artworks.length : 0} Werke, Events, Dokumente, Design.\n\nAuf backupmicro speichern!`)
                       }
                     } catch (e) {
@@ -11749,7 +11637,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   📂 Aus Backup-Datei wiederherstellen
                 </button>
 
-                {!isOeffentlichAdminContext() && !isVk2AdminContext() && hasBackup() && (
+                {!tenant.isOeffentlich && !tenant.isVk2 && hasBackup() && (
                   <button
                     disabled={restoreProgress !== 'idle'}
                     onClick={() => {
@@ -11786,7 +11674,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   </button>
                 )}
 
-                {!isOeffentlichAdminContext() && !isVk2AdminContext() && !hasBackup() && (
+                {!tenant.isOeffentlich && !tenant.isVk2 && !hasBackup() && (
                   <span style={{ color: s.muted, fontSize: '0.9rem' }}>
                     Kein Auto-Backup im Browser. Backup-Datei von backupmicro hochladen.
                   </span>
@@ -11818,7 +11706,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </button>
               </div>
 
-              {!isOeffentlichAdminContext() && !isVk2AdminContext() && backupTimestamps.length > 0 && (
+              {!tenant.isOeffentlich && !tenant.isVk2 && backupTimestamps.length > 0 && (
                 <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: `1px solid ${s.accent}22` }}>
                   <div style={{ fontSize: '0.85rem', color: s.muted, marginBottom: '0.5rem' }}>Auto-Backup Verlauf (neueste zuerst)</div>
                   <ul style={{
@@ -11844,7 +11732,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             )}
 
             {/* PDFs & Speicherdaten – nur K2 und ök2 (VK2 braucht das nicht) */}
-            {!isVk2AdminContext() && (
+            {!tenant.isVk2 && (
             <div style={{
               marginBottom: '2rem',
               padding: '1.25rem',
@@ -11897,13 +11785,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     <div style={{ fontSize: '0.8rem', color: s.muted, padding: '0.5rem', borderTop: `1px solid ${s.accent}22`, borderBottom: `1px solid ${s.accent}22` }}>Speicherdaten</div>
                     <button type="button" onClick={() => {
                       try {
-                        const artworks = JSON.parse(localStorage.getItem(getArtworksKey()) || '[]')
+                        const artworks = JSON.parse(localStorage.getItem(tenant.getArtworksKey()) || '[]')
                         const exportData = { artworks, exportedAt: new Date().toISOString(), version: '1.0' }
                         const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
                         const url = URL.createObjectURL(blob)
                         const a = document.createElement('a')
                         a.href = url
-                        a.download = `${getArtworksKey()}-export-${new Date().toISOString().split('T')[0]}.json`
+                        a.download = `${tenant.getArtworksKey()}-export-${new Date().toISOString().split('T')[0]}.json`
                         document.body.appendChild(a)
                         a.click()
                         document.body.removeChild(a)
@@ -11924,12 +11812,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           try {
                             const importData = JSON.parse(ev.target?.result as string)
                             if (importData.artworks && Array.isArray(importData.artworks)) {
-                              const existing = loadArtworks()
+                              const existing = loadArtworks(tenant)
                               const existingIds = new Set(existing.map((a: any) => a.id || a.number))
                               const newArtworks = importData.artworks.filter((a: any) => !existingIds.has(a.id || a.number))
                               if (newArtworks.length === 0) { alert('Keine neuen Werke zum Importieren.'); return }
                               const merged = [...existing, ...newArtworks]
-                              if (saveArtworks(merged)) { setAllArtworks(merged); window.dispatchEvent(new CustomEvent('artworks-updated')); alert(`✅ ${newArtworks.length} Werke importiert!`) }
+                              if (saveArtworks(tenant, merged)) { setAllArtworks(merged); window.dispatchEvent(new CustomEvent('artworks-updated')); alert(`✅ ${newArtworks.length} Werke importiert!`) }
                               else alert('⚠️ Fehler beim Speichern.')
                             } else alert('Ungültiges Format.')
                           } catch (_) { alert('Fehler beim Importieren.') }
@@ -11948,7 +11836,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       setShowExportMenu(false)
                     }} style={{ padding: '0.6rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}22`, borderRadius: '8px', color: s.text, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left' }}>📊 Speicher prüfen</button>
                     <button type="button" onClick={() => {
-                      try { cleanupUnnecessaryData(); alert('✅ Cleanup abgeschlossen.') } catch (_) { alert('⚠️ Cleanup mit Fehlern.') }
+                      try { cleanupUnnecessaryData(tenant); alert('✅ Cleanup abgeschlossen.') } catch (_) { alert('⚠️ Cleanup mit Fehlern.') }
                       setShowExportMenu(false)
                     }} style={{ padding: '0.6rem 1rem', background: `${s.accent}20`, border: `1px solid ${s.accent}55`, borderRadius: '8px', color: s.accent, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', fontWeight: '600' }}>🧹 Cleanup durchführen</button>
                   </div>
@@ -11976,7 +11864,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Anmeldung</div>
                 <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Wie melden sich Nutzer an?</div>
               </button>
-              {!isVk2AdminContext() && (
+              {!tenant.isVk2 && (
               <button type="button" onClick={() => setSettingsSubTab('sicherheit')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'sicherheit' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'sicherheit' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'sicherheit' ? s.accent : `${s.accent}22` }}
@@ -11986,7 +11874,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Admin-Passwort ändern</div>
               </button>
               )}
-              {!isOeffentlichAdminContext() && !isVk2AdminContext() && (
+              {!tenant.isOeffentlich && !tenant.isVk2 && (
               <button type="button" onClick={() => setSettingsSubTab('lager')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'lager' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'lager' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'lager' ? s.accent : `${s.accent}22` }}
@@ -12003,7 +11891,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>🖨️</div>
                 <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Drucker</div>
                 <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>
-                  {isVk2AdminContext() ? 'Drucken (Standard-Drucker)' : 'Etikettendrucker einrichten'}
+                  {tenant.isVk2 ? 'Drucken (Standard-Drucker)' : 'Etikettendrucker einrichten'}
                 </div>
               </button>
               <button type="button" onClick={() => setSettingsSubTab('empfehlung')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'empfehlung' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'empfehlung' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
@@ -12019,7 +11907,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             {/* Stammdaten Sub-Tab */}
             {settingsSubTab === 'stammdaten' && (
               <div>
-                {isVk2AdminContext() ? (
+                {tenant.isVk2 ? (
                   /* VK2: Verein, Vorstand, Beirat, Mitglieder */
                   <div>
                     <div style={{ padding: '0.75rem 1rem', marginBottom: '1rem', background: s.bgCard, border: `1px solid ${s.accent}33`, borderRadius: s.radius, color: s.text, fontSize: '0.9rem' }}>
@@ -12493,7 +12381,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   </div>
                 ) : (
                   <>
-                    {isOeffentlichAdminContext() && (
+                    {tenant.isOeffentlich && (
                       <div style={{
                         padding: '0.75rem 1rem',
                         marginBottom: '1rem',
@@ -12544,7 +12432,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       👩‍🎨 Person 1 (Hauptansprechpartner)
                     </h3>
                     <p style={{ margin: '0 0 clamp(0.75rem, 2vw, 1rem)', fontSize: '0.8rem', color: s.muted }}>
-                      {isOeffentlichAdminContext() ? MUSTER_TEXTE.martina.name : (martinaData.name || 'Name im Design-Tab festlegen')}
+                      {tenant.isOeffentlich ? MUSTER_TEXTE.martina.name : (martinaData.name || 'Name im Design-Tab festlegen')}
                     </p>
                     <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', color: s.text }}>
                       <div className="field">
@@ -12603,7 +12491,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       👨‍🎨 Person 2 (optional)
                     </h3>
                     <p style={{ margin: '0 0 clamp(0.75rem, 2vw, 1rem)', fontSize: '0.8rem', color: s.muted }}>
-                      {isOeffentlichAdminContext() ? MUSTER_TEXTE.georg.name : (georgData.name || 'Name im Design-Tab festlegen')}
+                      {tenant.isOeffentlich ? MUSTER_TEXTE.georg.name : (georgData.name || 'Name im Design-Tab festlegen')}
                     </p>
 <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: s.muted }}>
                     Für Anzeige einer zweiten Person: E-Mail und Telefon ausfüllen, dann „Stammdaten speichern“. Name ggf. im Design-Tab anpassen.
@@ -12861,7 +12749,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     </div>
                   </div>
                 </div>
-                {isVk2AdminContext() ? (
+                {tenant.isVk2 ? (
                   /* VK2: Verein, Vorstand, Beirat, Mitglieder – gleiche Daten wie Stammdaten */
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <div style={{ padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
@@ -12990,7 +12878,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             )}
 
             {/* Sicherheit Sub-Tab – nur K2 und ök2 (VK2 braucht das nicht) */}
-            {settingsSubTab === 'sicherheit' && !isVk2AdminContext() && (
+            {settingsSubTab === 'sicherheit' && !tenant.isVk2 && (
               <div>
                 <h3 style={{ fontSize: '1.1rem', color: s.accent, marginBottom: '1rem' }}>🔒 Sicherheitsabteilung</h3>
                 <p style={{ color: s.muted, marginBottom: '1rem' }}>
@@ -13021,11 +12909,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       if (adminNewPw.length < 6) { alert('Passwort muss mindestens 6 Zeichen haben.'); return }
                       if (adminNewPw !== adminNewPwConfirm) { alert('Passwort und Wiederholung stimmen nicht überein.'); return }
                       try {
-                        if (isOeffentlichAdminContext()) {
+                        if (tenant.isOeffentlich) {
                           localStorage.setItem(KEY_OEF_ADMIN_PASSWORD, adminNewPw)
                           if (adminContactEmail.trim()) localStorage.setItem(KEY_OEF_ADMIN_EMAIL, adminContactEmail.trim())
                           if (adminContactPhone.trim()) localStorage.setItem(KEY_OEF_ADMIN_PHONE, adminContactPhone.trim())
-                        } else if (isVk2AdminContext()) {
+                        } else if (tenant.isVk2) {
                           const vk2Stored = localStorage.getItem('k2-vk2-stammdaten')
                           const data = vk2Stored ? JSON.parse(vk2Stored) : {}
                           if (!data.vorstand) data.vorstand = {}
@@ -13134,7 +13022,7 @@ ${name}`
             })()}
 
             {/* Drucker Sub-Tab */}
-            {settingsSubTab === 'drucker' && isVk2AdminContext() && (
+            {settingsSubTab === 'drucker' && tenant.isVk2 && (
               <div>
                 <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', fontWeight: '600', color: s.text, marginBottom: '1.5rem' }}>
                   🖨️ Drucken
@@ -13156,7 +13044,7 @@ ${name}`
                 </div>
               </div>
             )}
-            {settingsSubTab === 'drucker' && !isVk2AdminContext() && (
+            {settingsSubTab === 'drucker' && !tenant.isVk2 && (
               <div>
                 <h3 style={{
                   fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
@@ -13650,9 +13538,9 @@ ${name}`
                   Noch keine Events vorhanden
                 </p>
                 <p style={{ fontSize: 'clamp(0.85rem, 2vw, 1rem)', marginTop: '0.5rem', color: s.muted }}>
-                  {isOeffentlichAdminContext() ? 'Klicke auf „Event hinzufügen“.' : 'Klicke auf „Event hinzufügen“ oder stelle das Eröffnungsevent 24.–26. April wieder her.'}
+                  {tenant.isOeffentlich ? 'Klicke auf „Event hinzufügen“.' : 'Klicke auf „Event hinzufügen“ oder stelle das Eröffnungsevent 24.–26. April wieder her.'}
                 </p>
-                {!isOeffentlichAdminContext() && (
+                {!tenant.isOeffentlich && (
                 <button
                   type="button"
                   onClick={handleCreateEröffnungsevent}
@@ -13932,7 +13820,7 @@ ${name}`
                               <p style={{ margin: '0 0 1rem 0' }}>
                                 Noch keine vergangenen Veranstaltungen. Sobald ein Event vorbei ist, erscheint es hier.
                               </p>
-                              {!isOeffentlichAdminContext() && (
+                              {!tenant.isOeffentlich && (
                                 <button
                                   type="button"
                                   onClick={handleCreateAteliersbesichtigungPaulWeber}
@@ -14382,7 +14270,7 @@ ${name}`
                               : e
                           )
                           setEvents(updatedEvents)
-                          saveEvents(updatedEvents)
+                          saveEvents(tenant, updatedEvents)
                           
                           // Erstelle ein Dokument mit den täglichen Zeiten
                           const days = getEventDays(eventDate, eventEndDate || eventDate)
@@ -14539,7 +14427,7 @@ ${name}`
                               })
                               
                               setEvents(finalEvents)
-                              saveEvents(finalEvents)
+                              saveEvents(tenant, finalEvents)
                               alert('✅ Tägliche Zeiten gespeichert und als Dokument hinzugefügt!')
                             }
                             reader.readAsDataURL(blob)
@@ -15095,7 +14983,7 @@ ${name}`
                                 },
                                 onErstellen: null as null | (() => void)
                               },
-                              ...(isVk2AdminContext() ? [] : [qrPlakatKarte]),
+                              ...(tenant.isVk2 ? [] : [qrPlakatKarte]),
                               {
                                 typ: 'newsletter' as const,
                                 icon: '📧',
@@ -15177,7 +15065,7 @@ ${name}`
                             return (
                               <div>
                                 {/* VK2: Hinweis bei vermischten Daten (L3 o.ä.) – Dokument aus Liste entfernen, dann Neu erstellen */}
-                                {isVk2AdminContext() && (
+                                {tenant.isVk2 && (
                                   <div style={{ marginBottom: '0.75rem', padding: '0.5rem 0.75rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 8, fontSize: '0.8rem', color: s.muted }}>
                                     Falls ein Dokument noch K2-Daten enthält: Auf <strong>×</strong> neben dem Dokument klicken (aus Liste entfernen), dann <strong>Neu erstellen</strong> – dann nur VK2-Daten.
                                   </div>
@@ -15974,7 +15862,7 @@ ${name}`
                 fontWeight: '600',
                 color: '#ffffff'
               }}>
-                {isVk2AdminContext() ? (editingMemberIndex !== null ? 'Profil für Unsere Mitglieder bearbeiten' : 'Profil für Unsere Mitglieder anlegen') : (editingArtwork ? 'Werk bearbeiten' : 'Neues Werk')}
+                {tenant.isVk2 ? (editingMemberIndex !== null ? 'Profil für Unsere Mitglieder bearbeiten' : 'Profil für Unsere Mitglieder anlegen') : (editingArtwork ? 'Werk bearbeiten' : 'Neues Werk')}
               </h2>
               <button 
                 onClick={() => {
@@ -16042,7 +15930,7 @@ ${name}`
               gap: '1rem'
             }}>
               {/* VK2: Profil-Formular – Foto, Werk, Vita, Name, Kontakt (Modal dunkel → heller Text, mehr Kontrast) */}
-              {isVk2AdminContext() ? (
+              {tenant.isVk2 ? (
                 <>
                   {(() => {
                     const ms = { text: '#f0f6ff', muted: 'rgba(255,255,255,0.88)', accent: s.accent, bgElevated: 'rgba(255,255,255,0.1)', gradientAccent: s.gradientAccent, shadow: s.shadow }
@@ -16572,7 +16460,7 @@ ${name}`
                 </div>
               )}
 
-              {isVk2AdminContext() ? (
+              {tenant.isVk2 ? (
                 /* VK2 Verkaufs-Formular: alle für den Katalog relevanten Felder */
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
                   {/* Zeile 1: Künstler:in */}
@@ -16623,7 +16511,7 @@ ${name}`
                     </div>
                   </div>
                 </div>
-              ) : isOeffentlichAdminContext() ? (
+              ) : tenant.isOeffentlich ? (
                 /* ök2 Künstler: Schnellversion oder Ausführliche Version – bei Änderungsarbeit jederzeit umschaltbar */
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -16640,7 +16528,7 @@ ${name}`
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Kategorie *</label>
                     <select value={artworkCategory} onChange={(e) => setArtworkCategory(e.target.value)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
-                      {(isVk2AdminContext() ? VK2_KUNSTBEREICHE : ARTWORK_CATEGORIES).map((c) => (
+                      {(tenant.isVk2 ? VK2_KUNSTBEREICHE : ARTWORK_CATEGORIES).map((c) => (
                         <option key={c.id} value={c.id}>{c.label}</option>
                       ))}
                     </select>
@@ -16679,9 +16567,9 @@ ${name}`
                   </label>
                   {/* Favorit (max 5): Vorreihung in Galerie; bei VK2 zusätzlich im Vereinskatalog */}
                   {(() => {
-                    const katalogAnzahl = loadArtworks().filter((a: any) => a.imVereinskatalog && (!editingArtwork || a.id !== editingArtwork.id)).length
+                    const katalogAnzahl = loadArtworks(tenant).filter((a: any) => a.imVereinskatalog && (!editingArtwork || a.id !== editingArtwork.id)).length
                     const limitErreicht = !isImVereinskatalog && katalogAnzahl >= 5
-                    const vk2 = isVk2AdminContext()
+                    const vk2 = tenant.isVk2
                     return (
                       <div style={{ marginTop: '0.25rem' }}>
                         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: limitErreicht ? 'rgba(255,140,66,0.5)' : '#fbbf24', cursor: limitErreicht ? 'not-allowed' : 'pointer', opacity: limitErreicht ? 0.6 : 1 }}>
@@ -16708,11 +16596,11 @@ ${name}`
               {/* Formular - Kompakt Grid (K2); VK2: immer Titel + Kategorie (7 Kunstbereiche) */}
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: (isVk2AdminContext() || artworkCategory !== 'keramik') ? '1fr 140px' : '140px',
+                gridTemplateColumns: (tenant.isVk2 || artworkCategory !== 'keramik') ? '1fr 140px' : '140px',
                 gap: '0.75rem',
                 alignItems: 'start'
               }}>
-                {(isVk2AdminContext() || artworkCategory !== 'keramik') && (
+                {(tenant.isVk2 || artworkCategory !== 'keramik') && (
                   <div>
                     <label style={{
                       display: 'block',
@@ -16756,7 +16644,7 @@ ${name}`
                     onChange={(e) => {
                       const val = e.target.value
                       setArtworkCategory(val)
-                      if (!isVk2AdminContext() && val === 'keramik') {
+                      if (!tenant.isVk2 && val === 'keramik') {
                         const subcategoryLabels: Record<string, string> = {
                           'vase': 'Gefäße - Vasen',
                           'teller': 'Schalen - Teller',
@@ -16780,14 +16668,14 @@ ${name}`
                       cursor: 'pointer'
                     }}
                   >
-                    {(isVk2AdminContext() ? VK2_KUNSTBEREICHE : ARTWORK_CATEGORIES).map((c) => (
+                    {(tenant.isVk2 ? VK2_KUNSTBEREICHE : ARTWORK_CATEGORIES).map((c) => (
                       <option key={c.id} value={c.id}>{c.label}</option>
                     ))}
                   </select>
                 </div>
               </div>
               {/* Keramik-Unterkategorie (nur K2, nicht VK2) */}
-              {!isVk2AdminContext() && artworkCategory === 'keramik' && (
+              {!tenant.isVk2 && artworkCategory === 'keramik' && (
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
@@ -16903,7 +16791,7 @@ ${name}`
                 </div>
               )}
               {/* Keramik-Maße (nur K2, nicht VK2) */}
-              {!isVk2AdminContext() && artworkCategory === 'keramik' && (
+              {!tenant.isVk2 && artworkCategory === 'keramik' && (
                 <>
                   {(artworkCeramicSubcategory === 'vase' || artworkCeramicSubcategory === 'skulptur') && (
                     <div style={{ minWidth: '120px' }}>
@@ -17387,9 +17275,9 @@ ${name}`
 
               {/* Favorit (max 5): direkt unter Shop – zu meinen 5 Top-Favoriten */}
               {(() => {
-                const katalogAnzahl = loadArtworks().filter((a: any) => a.imVereinskatalog && (!editingArtwork || a.id !== editingArtwork.id)).length
+                const katalogAnzahl = loadArtworks(tenant).filter((a: any) => a.imVereinskatalog && (!editingArtwork || a.id !== editingArtwork.id)).length
                 const limitErreicht = !isImVereinskatalog && katalogAnzahl >= 5
-                const vk2 = isVk2AdminContext()
+                const vk2 = tenant.isVk2
                 return (
                   <div style={{ marginTop: '0.5rem' }}>
                     <label style={{

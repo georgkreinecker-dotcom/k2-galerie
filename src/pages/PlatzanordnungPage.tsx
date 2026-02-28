@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
+import { readArtworksRawByKey, saveArtworksByKey } from '../utils/artworksStorage'
 import '../App.css'
 
-// Einfache localStorage-Funktion
 function loadArtworks(): any[] {
   try {
-    const stored = localStorage.getItem('k2-artworks')
-    return stored ? JSON.parse(stored) : []
+    return readArtworksRawByKey('k2-artworks')
   } catch (error) {
     console.error('Fehler beim Laden:', error)
     return []
@@ -16,7 +15,7 @@ function loadArtworks(): any[] {
 
 function saveArtworks(artworks: any[]): void {
   try {
-    localStorage.setItem('k2-artworks', JSON.stringify(artworks))
+    saveArtworksByKey('k2-artworks', artworks, { filterK2Only: true, allowReduce: true })
   } catch (error) {
     console.error('Fehler beim Speichern:', error)
   }

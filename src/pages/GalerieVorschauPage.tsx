@@ -12,19 +12,13 @@ import {
 import { sortArtworksFavoritesFirstThenNewest } from '../utils/artworkSort'
 import { appendToHistory } from '../utils/artworkHistory'
 import { tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from '../../components/SafeMode'
-import { readArtworksRaw, loadForDisplay, filterK2Only as filterK2OnlyStorage, saveArtworksOnly as saveArtworksStorage, mayWriteServerList, mergeAndMaybeWrite, mergeWithPending, getPendingArtworks, addPendingArtwork, clearPendingIfInList } from '../utils/artworksStorage'
+import { readArtworksRaw, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, loadForDisplay, filterK2Only as filterK2OnlyStorage, saveArtworksOnly as saveArtworksStorage, mayWriteServerList, mergeAndMaybeWrite, mergeWithPending, getPendingArtworks, addPendingArtwork, clearPendingIfInList } from '../utils/artworksStorage'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
 import '../App.css'
 
-// Einfache localStorage-Funktion (K2 = k2-artworks)
+// Phase 1.2: Lesen über Schicht (K2 = k2-artworks)
 function loadArtworks(): any[] {
-  try {
-    const stored = localStorage.getItem('k2-artworks')
-    return stored ? JSON.parse(stored) : []
-  } catch (error) {
-    console.error('Fehler beim Laden:', error)
-    return []
-  }
+  return readArtworksRawByKey('k2-artworks')
 }
 
 /** localStorage: Hinweis „Icon zum Startbildschirm hinzufügen“ geschlossen – gleicher Key wie GaleriePage (einmal OK reicht) */
@@ -58,12 +52,11 @@ function isPlaceholderImageUrl(url: string | undefined): boolean {
   return !url || (typeof url === 'string' && url.startsWith('data:image/svg+xml'))
 }
 
-/** ök2: Werke aus k2-oeffentlich-artworks. null = Key fehlt (erste Nutzung → Muster anzeigen), [] = User hat alle gelöscht. */
+/** ök2: Werke aus k2-oeffentlich-artworks (Phase 1.2: über Schicht). null = Key fehlt (erste Nutzung → Muster anzeigen), [] = User hat alle gelöscht. */
 function loadOeffentlichArtworks(): any[] | null {
   try {
-    const raw = localStorage.getItem('k2-oeffentlich-artworks')
-    if (!raw) return null
-    const parsed = JSON.parse(raw)
+    const parsed = readArtworksRawByKeyOrNull('k2-oeffentlich-artworks')
+    if (parsed === null) return null
     if (!Array.isArray(parsed) || parsed.length === 0) return []
     return parsed.map((a: any) => {
       const out = { ...a }
@@ -156,102 +149,33 @@ function loadBackup(): any[] | null {
   return null
 }
 
+// Phase 1.2: Schreiben nur über Schicht (k2-artworks).
 function saveArtworks(artworks: any[]): boolean {
-  // K2: Nur echte Werke speichern – Muster/VK2 nie in k2-artworks schreiben
   const toSave = filterK2ArtworksOnly(artworks)
-  const json = JSON.stringify(toSave)
-  try {
-    // KRITISCH: Erstelle Backup VOR dem Speichern (besonders wichtig für Mobile-Werke!)
-    const currentArtworks = loadArtworks()
-    if (currentArtworks && currentArtworks.length > 0) {
-      createBackup(currentArtworks)
-    }
-    
-    // KRITISCH: Prüfe ob Mobile-Werke vorhanden sind
-    const mobileWorks = toSave.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
-    if (mobileWorks.length > 0) {
-      console.log(`🔒 ${mobileWorks.length} Mobile-Werke werden geschützt beim Speichern`)
-    }
-    
-    // Prüfe Größe
-    if (json.length > 5000000) {
-      console.error('❌ Daten zu groß für localStorage:', json.length, 'Bytes')
-      alert('⚠️ Zu viele Werke! Bitte einige löschen.')
+  const currentArtworks = loadArtworks()
+  if (currentArtworks && currentArtworks.length > 0) createBackup(currentArtworks)
+  if (toSave.length === 0 && currentArtworks && currentArtworks.length > 0) {
+    const backup = loadBackup()
+    if (backup && backup.length > 0) {
+      saveArtworksByKey('k2-artworks', backup, { filterK2Only: false, allowReduce: true })
+      alert('⚠️ KRITISCH: Alle Werke würden gelöscht werden!\n\n💾 Backup wurde wiederhergestellt.')
       return false
     }
-    
-    // KRITISCH: Prüfe ob wir versehentlich alle Werke löschen wollen
-    if (toSave.length === 0 && currentArtworks && currentArtworks.length > 0) {
-      console.error('❌ KRITISCH: Versuch alle Werke zu löschen!')
-      console.error('Aktuelle Werke:', currentArtworks.length)
-      console.error('Mobile-Werke:', currentArtworks.filter((a: any) => a.createdOnMobile || a.updatedOnMobile).length)
-      
-      // Stelle Backup wieder her
-      const backup = loadBackup()
-      if (backup && backup.length > 0) {
-        console.log('💾 Backup wiederhergestellt:', backup.length, 'Werke')
-        localStorage.setItem('k2-artworks', JSON.stringify(backup))
-        alert('⚠️ KRITISCH: Alle Werke würden gelöscht werden!\n\n💾 Backup wurde wiederhergestellt.\n\nBitte prüfe was passiert ist!')
-        return false
-      } else {
-        alert('⚠️ KRITISCH: Alle Werke würden gelöscht werden!\n\n❌ Kein Backup verfügbar!\n\nVorgang abgebrochen!')
-        return false
-      }
-    }
-    
-    localStorage.setItem('k2-artworks', json)
-    console.log('✅ Gespeichert:', toSave.length, 'Werke, Größe:', json.length, 'Bytes', toSave.length < artworks.length ? '(Muster/VK2 entfernt)' : '')
-    
-    // Verifiziere Speicherung
-    const verify = localStorage.getItem('k2-artworks')
-    if (!verify || verify !== json) {
-      console.error('❌ Verifikation fehlgeschlagen!')
-      // Stelle Backup wieder her
-      const backup = loadBackup()
-      if (backup && backup.length > 0) {
-        console.log('💾 Backup wiederhergestellt nach Verifikationsfehler')
-        localStorage.setItem('k2-artworks', JSON.stringify(backup))
-      }
-      return false
-    }
-    
-    return true
-  } catch (error: any) {
-    console.error('❌ Fehler beim Speichern:', error)
-    
-    if (error.name === 'QuotaExceededError') {
-      const freed = tryFreeLocalStorageSpace()
-      if (freed > 0) {
-        try {
-          localStorage.setItem('k2-artworks', json)
-          const verify = localStorage.getItem('k2-artworks')
-          if (verify && verify === json) {
-            console.log('✅ Nach Speicher-Freigabe gespeichert')
-            return true
-          }
-        } catch (retryErr: any) {
-          // Fall through to backup restore and alert
-        }
-      }
-      // Stelle Backup wieder her bei Fehler
-      const backup = loadBackup()
-      if (backup && backup.length > 0) {
-        console.log('💾 Backup wiederhergestellt nach Fehler')
-        try { localStorage.setItem('k2-artworks', JSON.stringify(backup)) } catch (_) {}
-      }
-      alert('⚠️ ' + SPEICHER_VOLL_MELDUNG)
-    } else {
-      // Stelle Backup wieder her bei Fehler
-      const backup = loadBackup()
-      if (backup && backup.length > 0) {
-        console.log('💾 Backup wiederhergestellt nach Fehler')
-        localStorage.setItem('k2-artworks', JSON.stringify(backup))
-      }
-      alert('⚠️ Fehler beim Speichern: ' + (error.message || error))
-    }
-    
+    alert('⚠️ KRITISCH: Alle Werke würden gelöscht werden!\n\n❌ Kein Backup verfügbar!')
     return false
   }
+  let ok = saveArtworksByKey('k2-artworks', toSave, { filterK2Only: false, allowReduce: true })
+  if (!ok && toSave.length > 0) {
+    const freed = tryFreeLocalStorageSpace()
+    if (freed > 0) ok = saveArtworksByKey('k2-artworks', toSave, { filterK2Only: false, allowReduce: true })
+    if (!ok) {
+      const backup = loadBackup()
+      if (backup?.length) saveArtworksByKey('k2-artworks', backup, { filterK2Only: false, allowReduce: true })
+      alert('⚠️ ' + SPEICHER_VOLL_MELDUNG)
+    }
+  }
+  if (ok) console.log('✅ Gespeichert:', toSave.length, 'Werke', toSave.length < artworks.length ? '(Muster/VK2 entfernt)' : '')
+  return ok
 }
 
 type Filter = 'alle' | ArtworkCategoryId
@@ -1018,7 +942,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
             setArtworksDisplay(backup)
             const currentCount = readArtworksRaw().length
             if (backup.length >= currentCount) {
-              try { localStorage.setItem('k2-artworks', JSON.stringify(backup)) } catch (_) {}
+              saveArtworksByKey('k2-artworks', backup, { filterK2Only: false, allowReduce: true })
             } else {
               console.warn('⚠️ Backup hat weniger Werke als aktuell – localStorage wird NICHT überschrieben')
             }
@@ -1062,7 +986,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
             }
             console.log(`🔄 Automatisch ${artworks.length} neue Mobile-Daten synchronisiert`)
             setArtworksDisplay(artworks)
-            try { localStorage.setItem('k2-artworks', JSON.stringify(artworks)) } catch (_) {}
+            saveArtworksByKey('k2-artworks', artworks, { filterK2Only: true, allowReduce: true })
             // Update Hash für nächsten Check
             const hash = artworks.map((a: any) => a.number || a.id).sort().join(',')
             localStorage.setItem('k2-artworks-hash', hash)
@@ -1702,7 +1626,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                   if (backup && backup.length > 0) {
                     console.log('💾 Backup gefunden - verwende Backup statt leeren:', backup.length, 'Werke')
                     setArtworksDisplay(backup)
-                    localStorage.setItem('k2-artworks', JSON.stringify(backup))
+                    saveArtworksByKey('k2-artworks', backup, { filterK2Only: false, allowReduce: true })
                     setLoadStatus({ message: `💾 Backup wiederhergestellt: ${backup.length} Werke`, success: true })
                   } else {
                     setArtworksDisplay([])
@@ -1848,7 +1772,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           if (backup && backup.length > 0) {
             console.log('💾 Backup gefunden - verwende Backup statt leeren:', backup.length, 'Werke')
             setArtworksDisplay(backup)
-            localStorage.setItem('k2-artworks', JSON.stringify(backup))
+            saveArtworksByKey('k2-artworks', backup, { filterK2Only: false, allowReduce: true })
             setLoadStatus({ message: `💾 Backup wiederhergestellt: ${backup.length} Werke`, success: true })
           } else {
             setArtworksDisplay([])
@@ -1863,7 +1787,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         if (backup && backup.length > 0) {
           console.log('💾 Backup wiederhergestellt nach Fehler:', backup.length, 'Werke')
           setArtworksDisplay(backup)
-          localStorage.setItem('k2-artworks', JSON.stringify(backup))
+          saveArtworksByKey('k2-artworks', backup, { filterK2Only: false, allowReduce: true })
           setLoadStatus({ message: `💾 Backup wiederhergestellt: ${backup.length} Werke`, success: true })
         } else {
           setArtworksDisplay([])
@@ -2079,8 +2003,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           console.warn('⚠️ Keine Werke in gallery-data.json gefunden - behalte lokale Werke:', localArtworks.length)
           if (localArtworks.length > 0) {
             console.log('🔒 Lokale Werke bleiben erhalten:', localArtworks.map((a: any) => a.number || a.id).join(', '))
-            // Stelle sicher dass lokale Werke gespeichert bleiben
-            localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
+            saveArtworksByKey('k2-artworks', localArtworks, { filterK2Only: true, allowReduce: true })
             const exhibitionArtworks = localArtworks.map((a: any) => {
               if (!a.imageUrl && a.previewUrl) a.imageUrl = a.previewUrl
               if (!a.imageUrl && !a.previewUrl) {
@@ -2101,7 +2024,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         console.warn('⚠️ Server nicht erreichbar - behalte lokale Werke:', localArtworks.length)
         if (localArtworks.length > 0) {
           console.log('🔒 Lokale Werke bleiben erhalten:', localArtworks.map((a: any) => a.number || a.id).join(', '))
-          localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
+          saveArtworksByKey('k2-artworks', localArtworks, { filterK2Only: true, allowReduce: true })
           const exhibitionArtworks = localArtworks.map((a: any) => {
             if (!a.imageUrl && a.previewUrl) a.imageUrl = a.previewUrl
             if (!a.imageUrl && !a.previewUrl) {
@@ -2121,7 +2044,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       // Bei Fehler: Behalte lokale Werke!
       if (localArtworks.length > 0) {
         console.log('🔒 Fehler beim Laden - behalte lokale Werke:', localArtworks.length)
-        localStorage.setItem('k2-artworks', JSON.stringify(localArtworks))
+        saveArtworksByKey('k2-artworks', localArtworks, { filterK2Only: true, allowReduce: true })
         const exhibitionArtworks = localArtworks.map((a: any) => {
           if (!a.imageUrl && a.previewUrl) a.imageUrl = a.previewUrl
           if (!a.imageUrl && !a.previewUrl) {

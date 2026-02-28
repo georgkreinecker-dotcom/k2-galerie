@@ -1,5 +1,6 @@
 /**
- * Eine Quelle für Werke (K2): k2-artworks.
+ * Eine Quelle für Werke (K2 | ök2): k2-artworks, k2-oeffentlich-artworks.
+ * Phase 1.2: Alle Lese-/Schreibzugriffe für Werke laufen über diese Schicht – keine direkten setItem in Pages/Admin.
  * Regeln (unveränderlich):
  * 1. Lesen: immer aus localStorage, für Anzeige ggf. filtern (nie zurück schreiben).
  * 2. Schreiben: nur bei expliziter Aktion (Speichern/Löschen) oder wenn Merge mindestens so viele Werke hat wie aktuell.
@@ -7,14 +8,76 @@
  */
 
 const K2_ARTWORKS_KEY = 'k2-artworks'
+const OEF_ARTWORKS_KEY = 'k2-oeffentlich-artworks'
 
-export function readArtworksRaw(): any[] {
+/** Key für Artworks je Kontext (VK2 hat keine Werke). */
+export function getArtworksStorageKey(tenant: 'k2' | 'oeffentlich' | 'vk2'): string | null {
+  if (tenant === 'vk2') return null
+  return tenant === 'oeffentlich' ? OEF_ARTWORKS_KEY : K2_ARTWORKS_KEY
+}
+
+/**
+ * Liest Werke ROH aus einem Key – keine Filterung. Eine Schicht für alle Kontexte.
+ */
+export function readArtworksRawByKey(key: string): any[] {
   try {
-    const stored = localStorage.getItem(K2_ARTWORKS_KEY)
+    const stored = localStorage.getItem(key)
     return stored ? JSON.parse(stored) : []
   } catch {
     return []
   }
+}
+
+/** Wie readArtworksRawByKey, aber null wenn Key fehlt (z. B. ök2 erste Nutzung → Muster anzeigen). */
+export function readArtworksRawByKeyOrNull(key: string): any[] | null {
+  try {
+    const stored = localStorage.getItem(key)
+    if (stored === null || stored === undefined) return null
+    const parsed = JSON.parse(stored)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Speichert Werke in einen Key. Schutz: nicht mit weniger überschreiben (außer allowReduce).
+ * Für k2-artworks wird optional filterK2Only angewendet (Standard: true bei K2-Key).
+ */
+export function saveArtworksByKey(
+  key: string,
+  toSave: any[],
+  options: { allowReduce?: boolean; filterK2Only?: boolean } = {}
+): boolean {
+  const filterK2 = options.filterK2Only ?? (key === K2_ARTWORKS_KEY)
+  const list = filterK2 ? filterK2Only(toSave) : (Array.isArray(toSave) ? toSave : [])
+  const current = readArtworksRawByKey(key)
+  const currentCount = current.length
+
+  if (list.length === 0 && currentCount > 0 && !options.allowReduce) {
+    console.warn('⚠️ artworksStorage: Speichern mit 0 Werken abgelehnt (Schutz)')
+    return false
+  }
+  if (list.length < currentCount && !options.allowReduce) {
+    console.warn(`⚠️ artworksStorage: Speichern würde ${currentCount} → ${list.length} reduzieren, abgelehnt`)
+    return false
+  }
+  try {
+    const json = JSON.stringify(list)
+    if (json.length > 10000000) {
+      console.error('❌ artworksStorage: Daten zu groß')
+      return false
+    }
+    localStorage.setItem(key, json)
+    return true
+  } catch (e) {
+    console.error('❌ artworksStorage: Fehler beim Schreiben', e)
+    return false
+  }
+}
+
+export function readArtworksRaw(): any[] {
+  return readArtworksRawByKey(K2_ARTWORKS_KEY)
 }
 
 /** Muster/VK2-Nummern – gehören nicht in K2-artworks. Nur für Anzeige filtern, nie automatisch zurückschreiben. */
@@ -54,31 +117,7 @@ export function saveArtworksOnly(
   toSave: any[],
   options: { allowReduce?: boolean } = {}
 ): boolean {
-  const filtered = filterK2Only(toSave)
-  const current = readArtworksRaw()
-  const currentCount = current.length
-
-  if (filtered.length === 0 && currentCount > 0 && !options.allowReduce) {
-    console.warn('⚠️ artworksStorage: Speichern mit 0 Werken abgelehnt (Schutz)')
-    return false
-  }
-  if (filtered.length < currentCount && !options.allowReduce) {
-    console.warn(`⚠️ artworksStorage: Speichern würde ${currentCount} → ${filtered.length} reduzieren, abgelehnt`)
-    return false
-  }
-
-  try {
-    const json = JSON.stringify(filtered)
-    if (json.length > 5000000) {
-      console.error('❌ artworksStorage: Daten zu groß')
-      return false
-    }
-    localStorage.setItem(K2_ARTWORKS_KEY, json)
-    return true
-  } catch (e) {
-    console.error('❌ artworksStorage: Fehler beim Schreiben', e)
-    return false
-  }
+  return saveArtworksByKey(K2_ARTWORKS_KEY, toSave, { ...options, filterK2Only: true })
 }
 
 /**
@@ -120,7 +159,7 @@ export function mergeAndMaybeWrite(
   if (merged.length < currentCount) {
     return { list: localFiltered, written: false }
   }
-  const ok = saveArtworksOnly(merged, { allowReduce: false })
+  const ok = saveArtworksByKey(K2_ARTWORKS_KEY, merged, { allowReduce: false, filterK2Only: true })
   return { list: merged, written: ok }
 }
 
