@@ -9,10 +9,10 @@
 | Was | Inhalt |
 |-----|--------|
 | **Datum** | 01.03.26 |
-| **Thema** | Code 5 nach langer Session – Check Ursache |
-| **Zuletzt geändert/geöffnet** | ScreenshotExportAdmin (soldArtworksDisplayDaysK2 State + useEffect für „Verkaufte Werke X Tage“), CRASH-BEREITS-GEPRUEFT.md |
-| **Hinweis von Georg** | „check crash … ganz lange super gearbeitet … was war der Grund für Fehler 5“ |
-| **Ergebnis** | Neuer useEffect (K2 soldArtworksDisplayDays) mit isMounted-Cleanup abgesichert. Kein setInterval/reload. Wahrscheinliche Ursache: lange Session (Speicher/HMR) oder Cursor Preview – Workaround: Preview zu, App im Browser. |
+| **Thema** | Code-5-Check (Georg: „check crash fehler 5“) |
+| **Zuletzt geändert/geöffnet** | PilotStartPage.tsx (neu), MarketingOek2Page (Pilot-Rubrik, QR für Handy), navigation.ts (pilotStart), App.tsx (Route), CRASH-BEREITS-GEPRUEFT.md |
+| **Hinweis von Georg** | „check crash fehler 5“ |
+| **Ergebnis** | PilotStartPage + MarketingOek2Page QR-useEffects geprüft: alle mit `cancelled`-Cleanup, kein setInterval/reload. Eintrag in CRASH-BEREITS-GEPRUEFT.md. Kein neuer Fix. |
 
 ---
 

@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, WILLKOMMEN_ROUTE, AGB_ROUTE, BASE_APP_URL, PILOT_SCHREIBEN_ROUTE } from '../config/navigation'
+import { mok2Groups } from '../config/mok2Structure'
 import { PRODUCT_WERBESLOGAN, PRODUCT_BOTSCHAFT_2, PRODUCT_ZIELGRUPPE } from '../config/tenantConfig'
 import ProductCopyright from '../components/ProductCopyright'
 import { compressImageForStorage } from '../utils/compressImageForStorage'
@@ -49,10 +50,33 @@ async function compressImageAsDataUrl(file: File): Promise<string> {
   return dataUrl
 }
 
+/** Druckbare Kapitelseite – auf Bildschirm kompakt, beim Druck eigene A4-Seite mit Titel */
+function Mok2ChapterPage({ title }: { title: string }) {
+  return (
+    <div
+      className="mok2-chapter-page mok2-chapter-page-print"
+      style={{
+        marginBottom: '1.5rem',
+        padding: '1rem 1.25rem',
+        background: 'rgba(95,251,241,0.06)',
+        border: '1px solid rgba(95,251,241,0.25)',
+        borderRadius: 12,
+        borderLeftWidth: 4,
+      }}
+    >
+      <h2 style={{ margin: 0, fontSize: '1.1rem', color: '#5ffbf1', fontWeight: 700 }}>
+        {title}
+      </h2>
+    </div>
+  )
+}
+
 const printStyles = `
   @media print {
-    @page { margin: 10mm; size: A4; }
+    @page { margin: 12mm; size: A4; }
     .marketing-oek2-no-print { display: none !important; }
+    .mok2-chapter-page-print { display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; min-height: 100vh !important; page-break-after: always !important; padding: 0 !important; margin: 0 !important; background: #fff !important; color: #111 !important; box-sizing: border-box !important; }
+    .mok2-chapter-page-print h2 { font-size: 1.4rem !important; margin: 0 !important; color: #0d9488 !important; text-align: center !important; }
     .marketing-oek2-page { padding: 0 2mm !important; max-width: none !important; background: #fff; color: #111; font-size: 9pt; line-height: 1.32; }
     .marketing-oek2-page a { color: #1a0f0a; }
     .marketing-oek2-page section { break-inside: avoid; margin-bottom: 0.5rem !important; margin-top: 0 !important; padding-top: 0 !important; border-top: none !important; }
@@ -83,8 +107,6 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
   const [oefGalerieInnen, setOefGalerieInnen] = useState(getStoredOefImage(OEF_GALERIE_INNEN_KEY))
   const [dropTarget, setDropTarget] = useState<'welcome' | 'innen' | null>(null)
   const [oefSaving, setOefSaving] = useState(false)
-  const [pilotStartQrUrl, setPilotStartQrUrl] = useState('')
-
   useEffect(() => {
     if (location.pathname === PROJECT_ROUTES['k2-galerie'].marketingOek2) {
       setSlogan(getStoredSlogan())
@@ -94,18 +116,9 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
     }
   }, [location.pathname])
 
-  const pilotGalerieUrl = BASE_APP_URL + (PROJECT_ROUTES['k2-galerie']?.galerieOeffentlich ?? '')
-  /** Eine URL, eine Seite: nur Schreiben an Michael (Begleitschreiben + Einstiegscodes), nichts anderes */
+  /** Eine URL, eine Seite: nur Schreiben an Michael (Begleitschreiben + Einstiegscodes). Alle QR/Links „für Michael“ zeigen darauf – nie auf die Galerie. */
   const pilotSchreibenAufHandyUrl = BASE_APP_URL + PILOT_SCHREIBEN_ROUTE
   const [pilotHandyLinkQrUrl, setPilotHandyLinkQrUrl] = useState('')
-  useEffect(() => {
-    if (!pilotGalerieUrl.startsWith('http')) return
-    let cancelled = false
-    QRCode.toDataURL(pilotGalerieUrl, { width: 280, margin: 1 })
-      .then((url) => { if (!cancelled) setPilotStartQrUrl(url) })
-      .catch(() => {})
-    return () => { cancelled = true }
-  }, [pilotGalerieUrl])
   useEffect(() => {
     if (!pilotSchreibenAufHandyUrl.startsWith('http')) return
     let cancelled = false
@@ -207,7 +220,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           </button>
         </div>
         <p style={{ color: 'rgba(255,255,255,0.7)', marginTop: '0.5rem', fontSize: '0.95rem' }}>
-          Vertrieb von ök2: Ideen, Konzepte, Werbeunterlagen – im Browser „Als PDF drucken“ wählen oder drucken.
+          Vertrieb von ök2: Ideen, Konzepte, Werbeunterlagen – im Browser „Als PDF drucken“ wählen oder drucken. <strong>Seitenformat: A4.</strong> Jedes Kapitel druckt mit eigener Titelseite (Kern, Vertrieb, Bewertung & Lizenzen, Konzepte, Praktisch).
         </p>
 
         {/* Sichtbare Struktur – alle Sektionen auf einen Blick, mit Sprunglinks */}
@@ -247,6 +260,8 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </div>
       )}
 
+      {/* Kapitel: Kern – Überblick & Stärken */}
+      <Mok2ChapterPage title={mok2Groups[0].chapterTitle} />
       {/* 0. Was kann die App? – ganz kurz für Interessenten (ök2 | VK2) */}
       <section id="mok2-was-kann-die-app" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
@@ -380,6 +395,8 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </ul>
       </section>
 
+      {/* Kapitel: Vertrieb – Kanäle, Empfehlung, Werbung */}
+      <Mok2ChapterPage title={mok2Groups[1].chapterTitle} />
       {/* 4a. Kanäle 2026 – kurze Liste zum Ausfüllen und Prüfen */}
       <section id="mok2-kanale-2026" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
@@ -607,6 +624,8 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </p>
       </section>
 
+      {/* Kapitel: Bewertung & Lizenzen */}
+      <Mok2ChapterPage title={mok2Groups[2].chapterTitle} />
       {/* Produktbewertung: Entwicklerkosten vs. Marktwert – für Bewertung/Pitch und realistische Lizenzgebühren */}
       <section id="mok2-produktbewertung" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
@@ -1043,6 +1062,8 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </p>
       </section>
 
+      {/* Kapitel: Konzepte – Pro+, Leitkünstler, Guide */}
+      <Mok2ChapterPage title={mok2Groups[3].chapterTitle} />
       {/* 13. Werkkatalog & Werkkarte – USP für Marketing */}
       <section id="mok2-13" style={{ marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(95,251,241,0.2)', pageBreakInside: 'avoid' as const }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
@@ -1401,6 +1422,8 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </div>
       </section>
 
+      {/* Kapitel: Praktisch */}
+      <Mok2ChapterPage title={mok2Groups[4].chapterTitle} />
       {/* Start-Anleitung für erste Pro+-Piloten (z.B. Michael) – Begleitschreiben + Link (PC) + QR (Handy) zum Verschicken */}
       <section id="mok2-pilot-start-michael" style={{ marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(95,251,241,0.2)', pageBreakInside: 'avoid' as const }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
@@ -1464,26 +1487,9 @@ Wichtig: Immer denselben Link bzw. denselben QR nutzen (PC und Handy), dann blei
 Viel Erfolg!`}
         </div>
 
-        <h3 style={{ fontSize: '1rem', color: '#5ffbf1', marginBottom: '0.5rem' }}>Zum Verschicken an Michael – Link (PC) + QR (Handy)</h3>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'flex-start', padding: '1.25rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.25)', borderRadius: '12px' }}>
-          <div style={{ flex: '1 1 280px', minWidth: 0 }}>
-            <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#5ffbf1', marginBottom: '0.35rem' }}>Für PC (Link zum Kopieren)</div>
-            <p style={{ margin: 0, fontSize: '0.9rem', wordBreak: 'break-all', color: 'rgba(255,255,255,0.9)' }}>
-              {pilotGalerieUrl}
-            </p>
-          </div>
-          <div style={{ flex: '0 0 auto' }}>
-            <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#5ffbf1', marginBottom: '0.35rem' }}>Für Handy (QR-Code scannen)</div>
-            {pilotStartQrUrl ? (
-              <img src={pilotStartQrUrl} alt="QR-Code zur Galerie (Handy)" style={{ display: 'block', width: 200, height: 200, borderRadius: 8, background: '#fff' }} />
-            ) : (
-              <div style={{ width: 200, height: 200, background: 'rgba(255,255,255,0.15)', borderRadius: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', padding: '0.5rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.8)', textAlign: 'center' }}>
-                <span>QR wird geladen …</span>
-                <span style={{ fontSize: '0.75rem' }}>Oder Link links nutzen</span>
-              </div>
-            )}
-          </div>
-        </div>
+        <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)', marginTop: '1rem' }}>
+          <strong>Wichtig:</strong> An Michael schickst du immer nur den einen Link bzw. QR oben („So kommt es auf dein Handy“) – der führt zur Seite „Schreiben an Michael“. Dort tippt Michael auf „Galerie öffnen“ und ist drin. Kein anderer Link und kein anderer QR gehört an Michael.
+        </p>
       </section>
 
       <footer style={{ marginTop: '2rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>
