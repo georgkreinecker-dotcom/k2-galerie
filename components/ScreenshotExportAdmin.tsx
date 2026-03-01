@@ -869,6 +869,7 @@ function ScreenshotExportAdmin() {
   const virtualTourImageInputRef = React.useRef<HTMLInputElement>(null)
   const [backupTimestamps, setBackupTimestamps] = useState<string[]>([])
   const [restoreProgress, setRestoreProgress] = useState<'idle' | 'running' | 'done'>('idle')
+  const [isRestoringWerkeFromPublished, setIsRestoringWerkeFromPublished] = useState(false)
   const [backupPanelMinimized, setBackupPanelMinimized] = useState(true)
   const backupFileInputRef = useRef<HTMLInputElement>(null)
   const [adminNewPw, setAdminNewPw] = useState('')
@@ -2423,6 +2424,44 @@ function ScreenshotExportAdmin() {
       )
     } finally {
       setIsLoadingFromServer(false)
+    }
+  }
+
+  /** K2: Werke aus der veröffentlichten gallery-data.json (Vercel) laden und in k2-artworks wiederherstellen. */
+  const handleRestoreWerkeFromPublished = async () => {
+    if (tenant.isOeffentlich || tenant.isVk2) return
+    setIsRestoringWerkeFromPublished(true)
+    const urlPrimary = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&_=${Math.random()}`
+    const urlFallback = `${CENTRAL_GALLERY_DATA_FALLBACK_URL}?v=${Date.now()}&_=${Math.random()}`
+    try {
+      let res = await fetch(urlPrimary, { cache: 'no-store' })
+      if (!res.ok) res = await fetch(urlFallback, { cache: 'no-store' })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      const list = Array.isArray(data?.artworks) ? data.artworks : []
+      if (list.length === 0) {
+        alert('Die Veröffentlichung enthält keine Werke. Bitte zuerst veröffentlichen oder eine Backup-Datei nutzen.')
+        return
+      }
+      const ok = saveArtworksByKey('k2-artworks', list, { filterK2Only: true, allowReduce: true })
+      if (!ok) {
+        alert('Speichern fehlgeschlagen (z. B. Daten zu groß). Bitte Backup-Datei nutzen.')
+        return
+      }
+      setAllArtworks(loadArtworks(tenant))
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated'))
+      alert(`✅ ${list.length} Werke aus der Veröffentlichung wiederhergestellt.`)
+    } catch (e) {
+      console.error('Werke aus Veröffentlichung wiederherstellen:', e)
+      const msg = e instanceof Error ? e.message : String(e)
+      const isNetwork = /failed|network|load|cors|fetch|typeerror/i.test(msg) || (e instanceof TypeError)
+      alert(
+        isNetwork
+          ? 'Verbindung zum Server fehlgeschlagen.\n\nBist du im Internet? App von k2-galerie.vercel.app öffnen und erneut versuchen.'
+          : `Fehler: ${msg}\n\nBitte Verbindung prüfen.`
+      )
+    } finally {
+      setIsRestoringWerkeFromPublished(false)
     }
   }
 
@@ -7156,7 +7195,25 @@ ${'='.repeat(60)}
     }
     
     // Werk in localStorage speichern – immer ROH-Liste (nie gefiltert), sonst gehen Werke verloren
-    const artworks = loadArtworksRaw(tenant)
+    let artworks = loadArtworksRaw(tenant)
+    // SCHUTZ: Wenn geladene Liste leer ist, aber im Speicher noch Werke stehen → nicht überschreiben (sonst wären alle anderen weg)
+    if (!forOek2 && !tenant.isVk2 && artworks.length === 0) {
+      try {
+        const key = tenant.getArtworksKey()
+        const raw = key ? localStorage.getItem(key) : null
+        if (raw && raw.length > 2) {
+          const parsed = JSON.parse(raw)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            console.warn('⚠️ loadArtworksRaw war leer, Speicher hat', parsed.length, 'Werke – nutze direkten Lesewert')
+            artworks = parsed
+          }
+        }
+      } catch (_) {}
+    }
+    if (!forOek2 && !tenant.isVk2 && artworks.length === 0 && editingArtwork) {
+      alert('⚠️ Aktuelle Werkliste konnte nicht geladen werden. Bitte Seite neu laden (Stand tippen oder Cmd+R) und erneut speichern.')
+      return
+    }
     
     // KRITISCH: Prüfe auf doppelte Nummern und behebe Konflikte
     const duplicateNumbers = new Map<string, any[]>()
@@ -11422,6 +11479,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               <p style={{ color: s.muted, fontSize: '0.9rem', marginBottom: '1rem' }}>
                 Backup auf backupmicro aufbewahren. Bei Systemchaos: Backup-Datei hochladen – alles wird wiederhergestellt.
               </p>
+              {!tenant.isOeffentlich && !tenant.isVk2 && (
+                <p style={{ color: s.accent, fontSize: '0.88rem', marginBottom: '1rem', padding: '0.5rem 0.75rem', background: `${s.accent}12`, borderRadius: '8px', border: `1px solid ${s.accent}33` }}>
+                  Nach dem Bearbeiten veröffentlichen – dann sind die Werke auf dem Server und können hier bei Bedarf wiederhergestellt werden.
+                </p>
+              )}
 
               <input
                 ref={backupFileInputRef}
@@ -11566,6 +11628,27 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 >
                   📂 Aus Backup-Datei wiederherstellen
                 </button>
+
+                {!tenant.isOeffentlich && !tenant.isVk2 && (
+                  <button
+                    type="button"
+                    disabled={restoreProgress !== 'idle' || isRestoringWerkeFromPublished}
+                    onClick={() => handleRestoreWerkeFromPublished()}
+                    title="Lädt die Werke aus der auf Vercel veröffentlichten Galerie (gallery-data.json) und schreibt sie in den lokalen Speicher."
+                    style={{
+                      padding: '0.75rem 1.25rem',
+                      background: isRestoringWerkeFromPublished ? s.muted + '22' : s.accent + '18',
+                      border: `1px solid ${s.accent}66`,
+                      borderRadius: '10px',
+                      color: s.accent,
+                      fontSize: '0.95rem',
+                      fontWeight: '600',
+                      cursor: restoreProgress !== 'idle' || isRestoringWerkeFromPublished ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    {isRestoringWerkeFromPublished ? '⏳ Lade…' : '🌐 Werke aus Veröffentlichung wiederherstellen'}
+                  </button>
+                )}
 
                 {!tenant.isOeffentlich && !tenant.isVk2 && hasBackup() && (
                   <button
