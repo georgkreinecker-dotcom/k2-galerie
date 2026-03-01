@@ -7008,9 +7008,10 @@ ${'='.repeat(60)}
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
       const context = isMobile ? ('mobile' as const) : ('desktop' as const)
 
-      const hasPreviewDataUrl = previewUrl?.startsWith('data:') || pendingImageDataUrlRef.current?.startsWith('data:')
+      // Ref zuerst: wird beim „Zuschnitt übernehmen“ sofort gesetzt; previewUrl (State) kann beim ersten Mal noch das alte Bild sein
+      const hasPreviewDataUrl = pendingImageDataUrlRef.current?.startsWith('data:') || previewUrl?.startsWith('data:')
       if (hasPreviewDataUrl) {
-        const src = previewUrl?.startsWith('data:') ? previewUrl : pendingImageDataUrlRef.current
+        const src = pendingImageDataUrlRef.current?.startsWith('data:') ? pendingImageDataUrlRef.current : (previewUrl?.startsWith('data:') ? previewUrl : undefined)
         if (!src) { setIsSavingArtwork(false); alert('Bitte ein Bild auswählen'); return }
         const fileFromPreview = await dataUrlToFile(src)
         let compressed = await compressImageForStorage(fileFromPreview, { context })
