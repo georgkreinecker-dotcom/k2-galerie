@@ -37,6 +37,7 @@ const mok2Sections = [
   { id: 'mok2-16-leitkuenstler', label: '16. 📋 Leitkünstler:innen – Meine Liste' },
   { id: 'mok2-17-guide-avatar', label: '17. 🎙️ Guide-Avatar Vision (Option A)' },
   { id: 'mok2-18-empfehlung', label: '18. 🤝 Empfehlung – die richtige Sprache' },
+  { id: 'mok2-pilot-start-michael', label: 'Start-Anleitung Piloten (z.B. Michael)' },
 ] as const
 
 const printStyles = `
