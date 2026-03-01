@@ -6,8 +6,46 @@
  */
 
 const MAX_SIDE = 1200
+/** Freistellung (ONNX) läuft auf verkleinertem Bild → deutlich schneller; Ausgabe reicht für Galerie. */
+const MAX_SIDE_FOR_REMOVAL = 800
 /** Mehr Rand wie im Studio – Objekt hat „Luft“, wirkt professionell */
 const PADDING_PERCENT = 0.1
+
+/**
+ * Verkleinert Data-URL auf max. Kantenlänge (für schnellere Freistellung).
+ */
+function resizeDataUrlMax(dataUrl: string, maxSide: number, quality = 0.82): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      let w = img.width
+      let h = img.height
+      if (w <= maxSide && h <= maxSide) {
+        resolve(dataUrl)
+        return
+      }
+      if (w >= h) {
+        h = Math.round((h * maxSide) / w)
+        w = maxSide
+      } else {
+        w = Math.round((w * maxSide) / h)
+        h = maxSide
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = w
+      canvas.height = h
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        reject(new Error('Canvas nicht verfügbar'))
+        return
+      }
+      ctx.drawImage(img, 0, 0, w, h)
+      resolve(canvas.toDataURL('image/jpeg', quality))
+    }
+    img.onerror = reject
+    img.src = dataUrl
+  })
+}
 
 /**
  * Studio-Hintergründe: weiche Verläufe wie bei Studiobühnen/Galerie-Fotos.
@@ -65,7 +103,7 @@ function drawOnProfessionalBackground(
         ctx.fillStyle = gradient
         ctx.fillRect(0, 0, canvasW, canvasH)
         ctx.drawImage(img, pad, pad, w, h)
-        resolve(canvas.toDataURL('image/jpeg', 0.92))
+        resolve(canvas.toDataURL('image/jpeg', 0.85))
       } catch (e) {
         reject(e)
       }
@@ -136,8 +174,10 @@ export function compositeOnProfessionalBackground(
       return onlyProfessionalBackground(imageDataUrl, background)
     }
     try {
+      // Vor Freistellung verkleinern → ONNX läuft auf weniger Pixeln, Prozess spürbar schneller
+      const inputForRemoval = await resizeDataUrlMax(imageDataUrl, MAX_SIDE_FOR_REMOVAL)
       const { removeBackground } = await import('@imgly/background-removal')
-      const blob = await removeBackground(imageDataUrl)
+      const blob = await removeBackground(inputForRemoval)
       return drawOnProfessionalBackground(blob, true, background)
     } catch (e) {
       console.warn('Freistellung fehlgeschlagen, verwende professionellen Hintergrund ohne Freistellung:', e)

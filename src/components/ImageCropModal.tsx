@@ -173,7 +173,7 @@ export default function ImageCropModal({
   const handleApply = useCallback(async () => {
     setApplying(true)
     try {
-      const dataUrl = await cropImageToDataUrl(imageSrc, crop, { maxSize: 1200, quality: 0.85 })
+      const dataUrl = await cropImageToDataUrl(imageSrc, crop, { maxSize: 1000, quality: 0.8 })
       onApply(dataUrl)
     } catch (err) {
       console.warn('Zuschnitt fehlgeschlagen:', err)
