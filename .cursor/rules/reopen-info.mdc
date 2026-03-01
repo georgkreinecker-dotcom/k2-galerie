@@ -1,0 +1,16 @@
+---
+description: Wenn Georg "reopen info" schreibt – feste Routine, Georg nicht belasten
+alwaysApply: true
+---
+
+# Reopen Info – feste Routine
+
+**Wenn Georg im Chat „reopen info“ (oder „reopen“) schreibt:**
+
+1. **Kurz prüfen (ohne Georg zu fragen):**
+   - `package.json`: Script `"dev": "vite"` (kein write-build-info beim dev) – bleibt so.
+   - Keine Änderung nötig, die Dateien beim Entwickeln schreibt (Build-Skripte nur bei `npm run build`).
+2. **Kurz antworten:** z. B. „Reopen-Routine: dev schreibt nicht, Stand nur beim Build. Nichts geändert – wir fahren im Dialog fort.“
+3. **Nicht:** Lange Erklärungen, Checklisten durchgehen, Georg um Infos bitten. Ein Satz, dann weiter.
+
+**Ziel:** Georg muss sich mit Reopen nicht mehr belasten. Er schreibt „reopen info“, ich bestätige knapp und wir machen im Dialog weiter.

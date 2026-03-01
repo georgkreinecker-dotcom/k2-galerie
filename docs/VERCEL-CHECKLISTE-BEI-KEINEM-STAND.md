@@ -20,6 +20,8 @@ Damit wird **ohne** Abhängigkeit vom Webhook deployt. Du pushst wie gewohnt; **
 
 **Wenn du willst, dass es wieder automatisch geht (ohne den Befehl):** Siehe **docs/VERCEL-DEPLOY-AUSBLEIBEN-URSACHEN.md** – dort prüfen (Webhook, Production Branch, verbundenes Repo) und einmalig reparieren. Danach löst jeder Push auf main wieder ein Deployment aus.
 
+**Weitere Schlüsselfunktion:** **Datenabgleich** (iPad ↔ Mac über Vercel Blob) – muss 100 % funktionieren. Verbindlicher Ablauf und Checkliste: **docs/DATENTRANSPORT-IPAD-MAC-VERCEL.md** (Abschnitt „Datenabgleich = Schlüsselfunktion“).
+
 ---
 
 ## 1. Im Vercel Dashboard prüfen

@@ -4,6 +4,22 @@
 
 ---
 
+## 🔑 Datenabgleich = Schlüsselfunktion (wie Standangleichung)
+
+**Datenabgleich muss 100 % funktionieren.** Kein „vielleicht“, kein „im Idealfall“ – der verbindliche Weg funktioniert.
+
+**Verbindlicher Ablauf (ein Weg):**
+1. **iPad:** Werk speichern → **„📤 Daten an Server senden“** tippen.
+2. **Vercel:** Schreibt sofort in den Blob (kein Build, keine Wartezeit).
+3. **Mac:** **„🔄 Bilder vom Server laden“** tippen → Daten sind da.
+
+**Einmalig:** In Vercel **Storage → Blob Store** anlegen. Danach ist dieser Ablauf zuverlässig.  
+→ **Blob noch nicht angelegt?** Siehe unten: **„Blob anlegen – Schritt für Schritt“** (unter „Einmalige Einrichtung“).
+
+Wenn es nicht funktioniert: **Checkliste „Datenabgleich 100 %“** weiter unten (Abschnitt „Was tun, wenn etwas nicht funktioniert?“).
+
+---
+
 ## Zum Verständnis: Wo liegen die Daten?
 
 - **Primär: Vercel Blob.** Die API schreibt die Daten in einen **Blob Store** (Vercel Storage). Kein GitHub-Token nötig – der Token `BLOB_READ_WRITE_TOKEN` wird von Vercel automatisch gesetzt, sobald ein Blob Store angelegt ist. **Daten sind sofort** abrufbar (kein Build, keine Wartezeit).
@@ -41,23 +57,36 @@
 
 ---
 
-## Einmalige Einrichtung: Blob Store in Vercel
+## Einmalige Einrichtung: Blob Store in Vercel (Datenabgleich Mac ↔ Mobil)
 
-Damit „Daten an Server senden“ funktioniert, muss im **Vercel-Projekt** ein **Blob Store** angelegt sein (nur einmal).
+**Ohne Blob Store** erscheint „Blob-Speicher nicht eingerichtet“ – dann funktioniert „Daten an Server senden“ nicht. Einmal anlegen, danach läuft der Datenabgleich.
 
-1. **Vercel:** Projekt **k2-galerie** öffnen → **Storage** (oder **Tab „Storage“**) → **Create Database** bzw. **Add Storage** → **Blob** wählen → Store anlegen (Name z. B. `k2-galerie-blob`).
-2. **Automatisch:** Vercel setzt die Variable **BLOB_READ_WRITE_TOKEN** für das Projekt. Ein neues Deployment (z. B. nach dem nächsten Push) nutzt sie.
-3. **Optional – Backup ins Repo:** Wenn du zusätzlich **GITHUB_TOKEN** in Vercel setzt (Settings → Environment Variables), wird dieselbe Datei ins GitHub-Repo geschrieben (Backup). **Nicht nötig** für den normalen Ablauf.
+### Blob anlegen – Schritt für Schritt (wichtig: im Projekt k2-galerie)
+
+Der Store muss **im Projekt k2-galerie** angelegt werden, sonst bekommt die API keinen Token und das iPad meldet „Blob-Speicher nicht eingerichtet“.
+
+1. **https://vercel.com** öffnen, einloggen.
+2. **Projekt k2-galerie** öffnen (Dashboard → k2-galerie anklicken).
+3. Im **Projekt** oben **Storage** anklicken (Tab neben Deployments, Settings, …).
+4. **Create Database** / **Add Storage** → **Blob** wählen.
+5. Store Name z. B. `k2-galerie-blob`, **Region** beliebig, **Access: Public** → **Create**.
+6. Vercel setzt dann **BLOB_READ_WRITE_TOKEN** automatisch **für dieses Projekt**.
+7. **Redeploy:** Deployments → beim neuesten Deployment **⋯** → **Redeploy**. Nach 1–2 Min ist „Daten an Server senden“ aktiv.
+
+**Falls du den Store woanders angelegt hast** (z. B. unter „Create a database“ ohne vorher k2-galerie gewählt zu haben): In **k2-galerie** → **Storage** gehen und den Blob dort **neu** anlegen (oder prüfen, ob es „Connect existing store“ o. Ä. gibt und den Store mit k2-galerie verbinden).
+
+**Optional – Backup ins Repo:** Wenn du **GITHUB_TOKEN** in Vercel unter Settings → Environment Variables setzt, wird dieselbe Datei zusätzlich ins Repo geschrieben. Für den Datenabgleich **nicht nötig**.
 
 ---
 
-## Was tun, wenn etwas nicht funktioniert?
+## Was tun, wenn etwas nicht funktioniert? (Checkliste „Datenabgleich 100 %“)
 
-| Problem | Prüfen / Tun |
+| Problem | Prüfen / Tun (verbindlich) |
 |--------|----------------|
-| **„Daten konnten nicht gesendet werden“** | Fehlermeldung lesen. Steht „Blob-Speicher nicht eingerichtet“? → In Vercel: Storage → Blob Store anlegen. App von k2-galerie.vercel.app? Internet (WLAN/Mobil) OK? |
-| **„Bilder vom Server laden“ liefert nichts / 404** | Zuerst am iPad „Daten an Server senden“ tippen (dann liegt etwas im Blob). Dann am Mac „Bilder vom Server laden“. Bei Blob sofort, keine Wartezeit. |
+| **„Daten konnten nicht gesendet werden“** | Fehlermeldung lesen. Steht „Blob-Speicher nicht eingerichtet“? → In Vercel: **Storage → Blob Store anlegen** (einmalig). App von **k2-galerie.vercel.app** öffnen? Internet (WLAN/Mobil) OK? |
+| **„Bilder vom Server laden“ liefert nichts / 404** | **Zuerst** am iPad „Daten an Server senden“ tippen (dann liegt etwas im Blob). **Dann** am Mac „Bilder vom Server laden“. Bei Blob sofort, keine Wartezeit. |
 | **Server antwortet mit 404** | Blob noch leer → zuerst „Daten an Server senden“ ausführen. App nutzt danach automatisch Fallback auf gallery-data.json, wenn vorhanden. |
+| **Immer noch keine Daten** | 1) Vercel → Storage: Blob Store vorhanden? 2) App auf beiden Geräten von **k2-galerie.vercel.app**? 3) Nach „Daten an Server senden“ Erfolgsmeldung gesehen? Dann „Bilder vom Server laden“ erneut. |
 
 ---
 

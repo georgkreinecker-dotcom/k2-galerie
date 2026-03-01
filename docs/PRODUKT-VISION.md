@@ -63,6 +63,12 @@
 
 ---
 
+## Im Hinterkopf: Skalierung & Kosten
+
+**Viele Nutzer mit eigenen Domains** → Vercel-Kosten werden Thema (Pro-Plan, Bandbreite, Blob, Functions). Derzeit kein Handlungsbedarf; wenn Lizenznehmer und eigene Domains zunehmen: Kosten modellieren, ggf. Pro-Plan oder alternatives Hosting prüfen. (Notiert 01.03.26.)
+
+---
+
 ## Parallele Ansicht (jederzeit einsehbar)
 
 - **Route:** `/projects/k2-galerie/produkt-vorschau`

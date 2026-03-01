@@ -2,12 +2,17 @@
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
-## Datum: 27.02.26
+## Datum: 01.03.26
+
+## Wo wir stehengeblieben (aktuell)
+- **Datenabgleich 100 % (Schlüsselfunktion):** GaleriePage „Bilder vom Server laden“ ruft **zuerst** `/api/gallery-data` (Blob) ab, danach Fallback auf `gallery-data.json`. Daten sind sofort nach „Daten an Server senden“ verfügbar. Doku: Datenabgleich = Schlüsselfunktion in DATENTRANSPORT-IPAD-MAC-VERCEL.md; Checkliste „Datenabgleich 100 %“; Verweis in VERCEL-CHECKLISTE. Noch nicht committed – siehe nächster Schritt.
+- **Datentransport:** Blob primär, kein GITHUB_TOKEN nötig. Einmalig: Vercel Storage → Blob Store anlegen.
+- **Stand-Abgleich:** Schlüsselfunktion, ein Befehl nach Push in VERCEL-CHECKLISTE.
+- **Reopen:** Georg schreibt nur **„ro“** – dann Reopen-Routine (DIALOG-STAND + GRAFIKER-TISCH lesen, orientieren, weitermachen). Regel: .cursor/rules/gemeinsamer-arbeitsraum.mdc.
+- **Nächster Schritt:** Tests + Build + Stand-Update → commit + push. Optional: Blob Store in Vercel anlegen und Datentransport testen (iPad → Mac).
 
 ## Faden: Datentransport mobil (existenzielle Grundfunktion)
-- **Ziel:** „Daten an Server senden“ / „Bilder vom Server laden“ muss **einfach und überall** funktionieren (iPad ↔ Mac ↔ Vercel).
-- **Reopen-Fix gemerkt:** `npm run dev` schreibt nicht mehr (nur `vite`); write-build-info nur bei `npm run build`. Regel: build-skripte-nur-schreiben-wenn-geaendert.mdc.
-- **Nächster Schritt:** Doku „Zum Verständnis“ (Speicher = GitHub, Vercel = Tür) ergänzen; Transport robuster machen (Fehler, Hinweise, ggf. Ablauf prüfen).
+- **Erledigt:** Blob als Hauptspeicher; GaleriePage lädt zuerst API (Blob), dann Fallback; Datenabgleich als Schlüsselfunktion in Doku verankert; Checkliste „Datenabgleich 100 %“.
 
 ## Crash Code 5 – bei jedem Reopen / „check the crash“ (Faden behalten)
 - **Wenn Georg „check the crash“ sagt:** Feste Routine ausführen: **docs/CRASH-LETZTER-KONTEXT.md** lesen → **CRASH-BEREITS-GEPRUEFT.md** lesen → gezielt in zuletzt genutzten Bereichen + neue Intervalle/Listener suchen → beide Dokus ergänzen. So eingrenzen wir den Punkt Schritt für Schritt.

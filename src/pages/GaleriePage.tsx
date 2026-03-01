@@ -864,21 +864,27 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
 
       const origin = typeof window !== 'undefined' ? window.location.origin : ''
       const isLocalLan = /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.|10\.)/.test(origin)
+      // Verbindlicher Datenabgleich: Zuerst API (Blob) – Daten sind sofort nach „Daten an Server senden“
+      const apiPath = '/api/gallery-data'
+      const apiBase = origin.includes('vercel.app') ? '' : GALLERY_DATA_PUBLIC_URL
+      const apiUrl = `${apiBase || origin}${apiPath}?t=${timestamp}&_=${Date.now()}&v=${newVersion}`
 
       let response: Response | null = null
       try {
-        response = await fetch(pathAndQuery, fetchOpts)
-      } catch (_) {
-        // Netzwerkfehler (z. B. Mobilgerät im LAN kann gleiche Origin nicht erreichen)
+        response = await fetch(apiUrl, fetchOpts)
+      } catch (_) {}
+      // Fallback: statische gallery-data.json (z. B. nach Git-Push/Build)
+      if (!response?.ok) {
+        try {
+          response = await fetch(pathAndQuery, fetchOpts)
+        } catch (_) {}
       }
-      // Im lokalen LAN: Bei Fehler auch volle Origin-URL versuchen (manche Mobile Browser)
       if (!response?.ok && isLocalLan && origin) {
         try {
           const fullUrlRes = await fetch(origin + pathAndQuery, fetchOpts)
           if (fullUrlRes.ok) response = fullUrlRes
         } catch (_) {}
       }
-      // Fallback: Vercel (funktioniert wenn Handy Internet hat)
       if (!response?.ok) {
         try {
           const fallbackRes = await fetch(GALLERY_DATA_PUBLIC_URL + pathAndQuery, fetchOpts)
@@ -1061,8 +1067,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       } else {
         const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
         const onLocalLan = isLocalOrPrivateOrigin()
+        const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)/.test(origin)
         const localHint = onLocalLan
           ? '\n• Im LAN (192.168.0.x): Auf dem Mac „Veröffentlichen“ klicken, damit gallery-data.json existiert. Dev-Server muss laufen (npm run dev).'
+          : ''
+        const localhostHint = isLocalhost
+          ? '\n• App von localhost? Dann https://k2-galerie.vercel.app im Browser öffnen und dort „Bilder vom Server laden“ versuchen.'
           : ''
         if (!response) {
           alert(
@@ -1070,6 +1080,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             '• Verbindung prüfen (WLAN/Mobilfunk)\n' +
             (isMobileDevice ? '• QR-Code NEU scannen (lädt aktuelle Version)\n' : '') +
             localHint +
+            localhostHint +
             '\n• Oder in 1–2 Min. erneut versuchen'
           )
         } else {
@@ -1084,7 +1095,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       }
       } catch (error) {
         console.error('❌ Fehler beim Aktualisieren:', error)
-        alert('⚠️ Aktualisieren fehlgeschlagen.\n\nBitte Verbindung prüfen oder später erneut versuchen.')
+        const o = typeof window !== 'undefined' ? window.location.origin : ''
+        const fromLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)/.test(o)
+        const hint = fromLocalhost
+          ? '\n\nTipp: App von localhost? Öffne https://k2-galerie.vercel.app und versuche dort „Bilder vom Server laden“.'
+          : ''
+        alert('⚠️ Aktualisieren fehlgeschlagen.\n\nBitte Verbindung prüfen oder später erneut versuchen.' + hint)
         setIsRefreshing(false)
       } finally {
         setIsRefreshing(false)

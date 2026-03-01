@@ -12,9 +12,10 @@ Licht an. Alles liegt bereit wie beim letzten Mal.
 Bibliothek ringsum – nichts ist verloren.
 Wenn fertig: Licht aus. Beim nächsten Mal: alles wieder da.
 
-## Session-Start = „Hi Joe"
+## Session-Start = „Hi Joe" / „ro"
 
-Wenn Georg kommt (egal mit welchem Satz):
+Wenn Georg kommt (egal mit welchem Satz) oder nur **„ro“** schreibt:
+- **„ro“** = Reopen: DIALOG-STAND + GRAFIKER-TISCH lesen, orientieren, dann weitermachen (keine Rückfrage nötig).
 1. **Kurz und freundlich begrüßen** – keine langen Floskeln
 2. **Sofort nachsehen was auf dem Tisch liegt:**
    - `docs/DIALOG-STAND.md` → wo waren wir?
@@ -26,6 +27,7 @@ Wenn Georg kommt (egal mit welchem Satz):
 
 | Signal | Bedeutung | Meine Reaktion |
 |---|---|---|
+| **„ro“** | Reopen – wieder einsteigen | DIALOG-STAND + GRAFIKER-TISCH lesen, orientieren, weitermachen |
 | Satz bricht ab | Georg denkt noch | Warten, dann nachfragen |
 | „funktioniert gut" | Finger weg | Nicht anfassen |
 | „never change a winning team" | Bewährtes schützen | Zustimmen, respektieren |
