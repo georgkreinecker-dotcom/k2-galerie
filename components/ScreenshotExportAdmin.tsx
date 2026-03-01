@@ -7008,10 +7008,12 @@ ${'='.repeat(60)}
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
       const context = isMobile ? ('mobile' as const) : ('desktop' as const)
 
-      // Ref zuerst: wird beim „Zuschnitt übernehmen“ sofort gesetzt; previewUrl (State) kann beim ersten Mal noch das alte Bild sein
-      const hasPreviewDataUrl = pendingImageDataUrlRef.current?.startsWith('data:') || previewUrl?.startsWith('data:')
+      // Snapshot sofort beim Klick: Ref + previewUrl in lokale Variablen, damit async/Re-Render nichts überschreibt
+      const refSnapshot = pendingImageDataUrlRef.current?.startsWith('data:') ? pendingImageDataUrlRef.current : null
+      const previewSnapshot = previewUrl?.startsWith('data:') ? previewUrl : null
+      const hasPreviewDataUrl = !!refSnapshot || !!previewSnapshot
       if (hasPreviewDataUrl) {
-        const src = pendingImageDataUrlRef.current?.startsWith('data:') ? pendingImageDataUrlRef.current : (previewUrl?.startsWith('data:') ? previewUrl : undefined)
+        const src = refSnapshot ?? previewSnapshot ?? undefined
         if (!src) { setIsSavingArtwork(false); alert('Bitte ein Bild auswählen'); return }
         const fileFromPreview = await dataUrlToFile(src)
         let compressed = await compressImageForStorage(fileFromPreview, { context })
@@ -7334,11 +7336,11 @@ ${'='.repeat(60)}
         if (stored) verifyRaw = JSON.parse(stored)
         if (!Array.isArray(verifyRaw)) verifyRaw = []
       } catch (_) {}
-      const isStored = verifyRaw.some((a: any) =>
+      const storedArtwork = verifyRaw.find((a: any) =>
         (a?.number != null && artworkData?.number != null && String(a.number) === String(artworkData.number)) ||
         (a?.id != null && artworkData?.id != null && String(a.id) === String(artworkData.id))
       )
-      if (!isStored) {
+      if (!storedArtwork) {
         console.error('❌ KRITISCH: Werk wurde NICHT gespeichert!', {
           gesucht: artworkData?.number || artworkData?.id,
           anzahlRoh: verifyRaw.length
@@ -7346,7 +7348,15 @@ ${'='.repeat(60)}
         alert(`⚠️ Fehler: Werk konnte nicht gespeichert werden!\n\nNummer: ${artworkData?.number ?? ''}\n\nBitte versuche es erneut.`)
         return
       }
-      console.log('✅ Werk-Verifikation erfolgreich:', artworkData?.number, 'Anzahl:', verifyRaw.length)
+      // Prüfen ob das gespeicherte Werk das Bild hat (Zuschnitt/Freistellung darf nicht verloren gehen)
+      const expectedLen = typeof artworkData.imageUrl === 'string' ? artworkData.imageUrl.length : 0
+      const storedLen = typeof storedArtwork.imageUrl === 'string' ? storedArtwork.imageUrl.length : 0
+      if (expectedLen > 100 && storedLen < 100) {
+        console.error('❌ Gespeichertes Werk hat kein Bild (imageUrl fehlt oder leer)', { expectedLen, storedLen })
+        alert('⚠️ Das Bild wurde nicht mitgespeichert.\n\nBitte „Zuschnitt übernehmen“ oder „Foto freistellen“ erneut ausführen und dann Speichern.')
+        return
+      }
+      console.log('✅ Werk-Verifikation erfolgreich:', artworkData?.number, 'Anzahl:', verifyRaw.length, 'Bild:', storedLen > 0 ? 'OK' : '—')
       
       // KRITISCH: Markiere Nummer als verwendet für bessere Synchronisation
       // Speichere Nummer in separatem Index für schnelle Prüfung
@@ -7793,9 +7803,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
         ctx.fillText(`${savedArtwork.paintingWidth} × ${savedArtwork.paintingHeight} cm`, w / 2, h * yNext)
         yNext += 0.05
       }
-      const priceVal = typeof savedArtwork.price === 'number' ? savedArtwork.price : parseFloat(String(savedArtwork.price || '').replace(',', '.'))
+      const priceVal = typeof savedArtwork.price === 'number' ? savedArtwork.price : parseFloat(String(savedArtwork.price ?? '').replace(',', '.'))
       if (!isNaN(priceVal) && priceVal > 0) {
-        ctx.font = `bold ${fs4}px Arial,sans-serif`
+        yNext += 0.05
+        ctx.font = `bold ${fs3}px Arial,sans-serif`
         ctx.fillStyle = '#1a1a1a'
         ctx.fillText('€ ' + priceVal.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), w / 2, h * yNext)
         ctx.fillStyle = '#666'
@@ -7878,9 +7889,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
         ctx.fillText(`${artwork.paintingWidth} × ${artwork.paintingHeight} cm`, w / 2, h * yNext)
         yNext += 0.05
       }
-      const priceVal = typeof artwork.price === 'number' ? artwork.price : parseFloat(String(artwork.price || '').replace(',', '.'))
+      const priceVal = typeof artwork.price === 'number' ? artwork.price : parseFloat(String(artwork.price ?? '').replace(',', '.'))
       if (!isNaN(priceVal) && priceVal > 0) {
-        ctx.font = `bold ${fs4}px Arial,sans-serif`
+        yNext += 0.05
+        ctx.font = `bold ${fs3}px Arial,sans-serif`
         ctx.fillStyle = '#1a1a1a'
         ctx.fillText('€ ' + priceVal.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), w / 2, h * yNext)
         ctx.fillStyle = '#666'
@@ -17128,6 +17140,12 @@ ${name}`
                 <div style={{ fontSize: isMobile ? '0.9rem' : '1rem', fontWeight: 'bold', color: '#8b6914', marginBottom: isMobile ? '0.5rem' : '0.75rem' }}>
                   {savedArtwork.number}
                 </div>
+                {savedArtwork.title && <div style={{ fontSize: '0.85rem', color: '#555', marginBottom: '0.25rem' }}>{savedArtwork.title}</div>}
+                {(typeof savedArtwork.price === 'number' ? savedArtwork.price : parseFloat(String(savedArtwork.price ?? '').replace(',', '.'))) > 0 && (
+                  <div style={{ fontSize: '1rem', fontWeight: 700, color: '#1a1a1a', marginBottom: isMobile ? '0.5rem' : '0.75rem' }}>
+                    € {(typeof savedArtwork.price === 'number' ? savedArtwork.price : parseFloat(String(savedArtwork.price || '').replace(',', '.'))).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                )}
                 {/* Ein Button – universeller Weg für alle Drucker */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: isMobile ? '1rem' : '1.5rem' }}>
                   <button
