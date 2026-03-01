@@ -5,11 +5,11 @@
 ## Datum: 01.03.26
 
 ## Wo wir stehengeblieben (aktuell)
-- **Datenabgleich 100 % (Schlüsselfunktion):** GaleriePage „Bilder vom Server laden“ ruft **zuerst** `/api/gallery-data` (Blob) ab, danach Fallback auf `gallery-data.json`. Daten sind sofort nach „Daten an Server senden“ verfügbar. Doku: Datenabgleich = Schlüsselfunktion in DATENTRANSPORT-IPAD-MAC-VERCEL.md; Checkliste „Datenabgleich 100 %“; Verweis in VERCEL-CHECKLISTE. Noch nicht committed – siehe nächster Schritt.
-- **Datentransport:** Blob primär, kein GITHUB_TOKEN nötig. Einmalig: Vercel Storage → Blob Store anlegen.
+- **Datenabgleich 100 % (Schlüsselfunktion):** GaleriePage „Bilder vom Server laden“ ruft **zuerst** `/api/gallery-data` (Blob) ab, danach Fallback auf `gallery-data.json`. Daten sind sofort nach „Daten an Server senden“ verfügbar. Doku: DATENTRANSPORT-IPAD-MAC-VERCEL.md (Blob anlegen im Projekt, Connect-Button); localhost-Hinweis in Fehlermeldung. **Commit:** 6de6bea ✅ (01.03.26).
+- **Datentransport:** Blob in Vercel angelegt und mit Projekt verbunden (Connect). Mac: „Bilder vom Server laden“ von **k2-galerie.vercel.app** aus nutzen (nicht von localhost).
 - **Stand-Abgleich:** Schlüsselfunktion, ein Befehl nach Push in VERCEL-CHECKLISTE.
-- **Reopen:** Georg schreibt nur **„ro“** – dann Reopen-Routine (DIALOG-STAND + GRAFIKER-TISCH lesen, orientieren, weitermachen). Regel: .cursor/rules/gemeinsamer-arbeitsraum.mdc.
-- **Nächster Schritt:** Tests + Build + Stand-Update → commit + push. Optional: Blob Store in Vercel anlegen und Datentransport testen (iPad → Mac).
+- **Reopen:** Georg schreibt nur **„ro“** – Reopen-Routine. Regel: gemeinsamer-arbeitsraum.mdc.
+- **Nächster Schritt:** Nach Belieben weiter testen (iPad → Mac über vercel.app) oder anderes Thema.
 
 ## Faden: Datentransport mobil (existenzielle Grundfunktion)
 - **Erledigt:** Blob als Hauptspeicher; GaleriePage lädt zuerst API (Blob), dann Fallback; Datenabgleich als Schlüsselfunktion in Doku verankert; Checkliste „Datenabgleich 100 %“.
