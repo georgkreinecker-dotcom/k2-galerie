@@ -5,7 +5,9 @@
 ## Datum: 01.03.26
 
 ## Wo wir stehengeblieben (aktuell) – **HIER EINSTEIGEN**
-- **Werke wiederherstellen (01.03.26):** Button **„Werke aus Veröffentlichung wiederherstellen“** in Admin → Einstellungen → Backup & Wiederherstellung. Lädt gallery-data.json von Vercel und schreibt die Werke in k2-artworks (nur K2). Georg: Ein Klick dort stellt die Werke wieder her, wenn sie weg waren (Vercel muss die aktuelle gallery-data haben).
+- **Komprimierung optimiert (01.03.26):** `compressImageForStorage` mit Preset **artwork** (640px, 0.55) für Werke im Admin; mobile/desktop leicht verschärft (560/0.48, 760/0.6). Beim Speichern von Werken: immer „artwork“, Obergrenze ~900KB; bei Überschreitung Nachkomprimierung mit „mobile“. Weniger Speicher, loadArtworks/JSON bleibt handhabbar.
+- **Lehre Werke weg/iPad (01.03.26):** Doku **docs/LEHRE-WERKE-WEG-IPAD-NOCH-DA.md** + Hinweis im Backup-Bereich. Commit 3ef36f0, Push ✅.
+- **Werke wiederherstellen:** Button „Werke aus Veröffentlichung wiederherstellen“ in Admin → Einstellungen → Backup & Wiederherstellung.
 - **Datentransport = State of the Art:** Eine Quelle (Vercel Blob), Merge statt Überschreiben, Mobile-Werke geschützt, kein Auto-Reload. API immer über feste URL; „Stand & Daten“-Button = Stand + Daten in einem Klick; beim Öffnen der Galerie (Mac/Desktop) nach 2 s automatisch Daten vom Server. Für den User unsichtbar: speichern → bei Vercel; Mac öffnen / aktualisieren → Daten da.
 - **Datenabgleich 100 %:** GaleriePage lädt zuerst `/api/gallery-data` (Blob), Fallback `gallery-data.json`. **Localhost = gleiche Werke wie Vercel:** Beim Öffnen der Galerie auf localhost wird zuerst von Vercel-API geladen (eine Adresse = eine Datenquelle). Doku: DATENTRANSPORT-IPAD-MAC-VERCEL.md.
 - **Stand-Abgleich:** Schlüsselfunktion, ein Befehl nach Push in VERCEL-CHECKLISTE.

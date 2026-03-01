@@ -1,13 +1,13 @@
 /**
  * Eine zentrale Utility für Bildkomprimierung vor dem Speichern.
  * Regel: komprimierung-fotos-videos.mdc – maximale Komprimierung überall.
- * Kontext mobil: stärker (600px, 0.5); desktop: 800px, 0.65.
+ * artwork = für Werke in localStorage (viele Bilder → klein halten).
  */
 
-export type CompressContext = 'mobile' | 'desktop'
+export type CompressContext = 'mobile' | 'desktop' | 'artwork'
 
 export interface CompressImageOptions {
-  /** Kontext: mobile = 600/0.5, desktop = 800/0.65 */
+  /** Kontext: mobile = stärker, desktop = Standard, artwork = für Werke (localStorage) */
   context?: CompressContext
   /** Max. Breite in px (überschreibt context) */
   maxWidth?: number
@@ -16,8 +16,10 @@ export interface CompressImageOptions {
 }
 
 const DEFAULTS: Record<CompressContext, { maxWidth: number; quality: number }> = {
-  mobile: { maxWidth: 600, quality: 0.5 },
-  desktop: { maxWidth: 800, quality: 0.65 }
+  mobile: { maxWidth: 560, quality: 0.48 },
+  desktop: { maxWidth: 760, quality: 0.6 },
+  /** Für Werke im Admin: klein halten, damit viele Werke in localStorage und loadArtworks nicht zu groß werden */
+  artwork: { maxWidth: 640, quality: 0.55 }
 }
 
 /**
@@ -30,9 +32,9 @@ export function compressImageForStorage(
 ): Promise<string> {
   const context = options.context ?? 'desktop'
   const { maxWidth: optW, quality: optQ } = options
-  const { maxWidth: defW, quality: defQ } = DEFAULTS[context]
-  const maxWidth = optW ?? defW
-  const quality = optQ ?? defQ
+  const defs = DEFAULTS[context as keyof typeof DEFAULTS] ?? DEFAULTS.desktop
+  const maxWidth = optW ?? defs.maxWidth
+  const quality = optQ ?? defs.quality
 
   return new Promise((resolve, reject) => {
     const run = (dataUrl: string) => {

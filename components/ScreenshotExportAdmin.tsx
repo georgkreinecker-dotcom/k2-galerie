@@ -2318,6 +2318,9 @@ function ScreenshotExportAdmin() {
   }, [location.search])
   
   // WICHTIG: Event-Listener für Mobile-Updates (damit Mobile-Werke im Admin angezeigt werden)
+  // KRITISCH: K2 nie mit leerer Liste überschreiben – verhindert „alle Werke verschwunden“ nach Speichern
+  const allArtworksRef = useRef<any[]>([])
+  allArtworksRef.current = allArtworks
   useEffect(() => {
     const handleArtworksUpdate = () => {
       console.log('🔄 artworks-updated Event empfangen - lade Werke neu...')
@@ -2329,6 +2332,11 @@ function ScreenshotExportAdmin() {
         }
         const artworks = loadArtworks(tenant)
         console.log('📦 Geladene Werke:', artworks.length)
+        // K2: Niemals nicht-leere Anzeige durch leeres Neuladen ersetzen (verhindert „alle weg“ nach Speichern)
+        if (!tenant.isOeffentlich && !tenant.isVk2 && artworks.length === 0 && allArtworksRef.current.length > 0) {
+          console.warn('⚠️ loadArtworks leer, aber Anzeige hat Werke – nicht überschreiben')
+          return
+        }
         if (Array.isArray(artworks)) {
           setAllArtworks(artworks)
         }
@@ -7041,11 +7049,10 @@ ${'='.repeat(60)}
     const newArtworkNumber = editingArtwork ? (editingArtwork.number || editingArtwork.id) : await generateArtworkNumber(artworkCategory)
     setArtworkNumber(newArtworkNumber)
     
-    // Bild komprimieren bevor es gespeichert wird (eine Utility: compressImageForStorage)
+    // Bild komprimieren bevor es gespeichert wird (artwork = klein halten für viele Werke in localStorage)
+    const MAX_ARTWORK_BYTES = 900000 // ~900KB – damit loadArtworks/JSON nicht zu groß werden
     try {
       let imageDataUrl: string
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-      const context = isMobile ? ('mobile' as const) : ('desktop' as const)
 
       // Snapshot sofort beim Klick: Ref + previewUrl in lokale Variablen, damit async/Re-Render nichts überschreibt
       const refSnapshot = pendingImageDataUrlRef.current?.startsWith('data:') ? pendingImageDataUrlRef.current : null
@@ -7055,10 +7062,10 @@ ${'='.repeat(60)}
         const src = refSnapshot ?? previewSnapshot ?? undefined
         if (!src) { setIsSavingArtwork(false); alert('Bitte ein Bild auswählen'); return }
         const fileFromPreview = await dataUrlToFile(src)
-        let compressed = await compressImageForStorage(fileFromPreview, { context })
-        if (compressed.length > 1200000) {
+        let compressed = await compressImageForStorage(fileFromPreview, { context: 'artwork' })
+        if (compressed.length > MAX_ARTWORK_BYTES) {
           const more = await compressImageForStorage(fileFromPreview, { context: 'mobile' })
-          compressed = more.length > 1200000 ? compressed : more
+          compressed = more.length > MAX_ARTWORK_BYTES ? compressed : more
         }
         imageDataUrl = compressed
         if (photoImageMode === 'freigestellt') {
@@ -7075,12 +7082,12 @@ ${'='.repeat(60)}
           }
         }
       } else if (selectedFile) {
-        const compressedDataUrl = await compressImageForStorage(selectedFile, { context })
-        if (compressedDataUrl.length > 1200000) {
+        const compressedDataUrl = await compressImageForStorage(selectedFile, { context: 'artwork' })
+        if (compressedDataUrl.length > MAX_ARTWORK_BYTES) {
           const moreCompressed = await compressImageForStorage(selectedFile, { context: 'mobile' })
-          if (moreCompressed.length > 1200000) {
+          if (moreCompressed.length > MAX_ARTWORK_BYTES) {
             setIsSavingArtwork(false)
-            alert('Bild ist auch nach Kompression zu groß. Bitte kleineres Bild wählen (max. ~1.2MB nach Kompression).')
+            alert('Bild ist auch nach Kompression zu groß. Bitte kleineres Bild wählen (max. ~900KB nach Kompression).')
             return
           }
           imageDataUrl = moreCompressed
@@ -7483,7 +7490,12 @@ ${'='.repeat(60)}
         return
       }
       
-      const reloaded = loadArtworks(tenant)
+      let reloaded = loadArtworks(tenant)
+      // KRITISCH: Wenn loadArtworks nach dem Speichern leer liefert (z. B. Größen-Check), Anzeige nicht leeren – nutze die soeben gespeicherte Liste
+      if (reloaded.length === 0 && artworks.length > 0) {
+        console.warn('⚠️ loadArtworks nach Speichern leer – nutze gespeicherte Liste für Anzeige')
+        reloaded = artworks
+      }
       console.log('📦 Reloaded artworks:', reloaded.length, 'Neues Werk gefunden:', artworkData?.number)
       
       // Einheitliche Meldung, wenn keine Freistellung (Mobile oder Fehler) – pro gespeichertes Werk einmal
