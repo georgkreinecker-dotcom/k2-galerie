@@ -14,10 +14,12 @@ import WerkkatalogTab from './tabs/WerkkatalogTab'
 const GALERIE_QR_BASE = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
 /** Basis-URL der App auf Vercel – eine Quelle für alle Geräte (iPad, Mac, lokal) */
 const VERCEL_APP_BASE = 'https://k2-galerie.vercel.app'
-/** API: gallery-data an Vercel senden (GitHub API) – immer diese URL, damit iPad/Mac/lokal denselben Endpoint nutzen */
+/** API: gallery-data an Vercel senden (Blob + optional GitHub-Backup) – eine URL für alle Geräte */
 const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
-/** Zentrale Datenquelle (Vercel) – für Nummern und Sync; eine Stelle für alle Geräte */
-const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/gallery-data.json`
+/** Primäre Datenquelle: Vercel Blob (sofort verfügbar, kein Build nötig) */
+const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/api/gallery-data`
+/** Fallback wenn Blob noch leer (z. B. erste Deploy): statische Datei aus Build */
+const CENTRAL_GALLERY_DATA_FALLBACK_URL = `${VERCEL_APP_BASE}/gallery-data.json`
 import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, type TenantId, type ArtworkCategoryId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
@@ -2171,7 +2173,7 @@ function ScreenshotExportAdmin() {
               if (isVercelOrProduction || isMobileDevice) {
                 if (isMountedRef.current) setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
                 const detail = (errMsg + (result.hint ? ' ' + result.hint : '')).trim()
-                alert('⚠️ Daten konnten nicht an den Server gesendet werden.\n\n' + (detail ? 'Grund: ' + detail + '\n\n' : '') + 'Bitte prüfen: App von k2-galerie.vercel.app geöffnet? Internet verbunden? Steht „GITHUB_TOKEN fehlt“ → in Vercel unter Einstellungen den Token setzen (siehe Doku).\n\nEinfach OK – du bleibst in der App.')
+                alert('⚠️ Daten konnten nicht an den Server gesendet werden.\n\n' + (detail ? 'Grund: ' + detail + '\n\n' : '') + 'Bitte prüfen: App von k2-galerie.vercel.app geöffnet? Internet verbunden? Steht „Blob-Speicher nicht eingerichtet“ → in Vercel unter Storage einen Blob Store anlegen (siehe Doku).\n\nEinfach OK – du bleibst in der App.')
                 return
               }
               try {
@@ -2320,18 +2322,22 @@ function ScreenshotExportAdmin() {
   // KEIN Auto-Sync (Supabase / gallery-data.json) mehr beim Admin-Start – verursacht Fenster-Abstürze.
   // Mobile-Werke kommen über artworks-updated Event beim Speichern; Werke werden nur aus localStorage geladen (siehe oben, 2 s Verzögerung).
 
-  /** K2: Werke von Vercel (gallery-data.json) laden und mit lokalen mergen – damit neue iPad-Werke am Mac erscheinen (Phase 2.2: apiGet) */
+  /** K2: Werke von Vercel laden (Blob-API zuerst, Fallback statische Datei) und mit lokalen mergen */
   const handleLoadFromServer = async () => {
     if (tenant.isOeffentlich || tenant.isVk2) return
     setIsLoadingFromServer(true)
     setSyncStatusBar({ phase: 'loading', message: 'Daten werden geladen…' })
-    const url = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&_=${Math.random()}`
+    const urlPrimary = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&_=${Math.random()}`
+    const urlFallback = `${CENTRAL_GALLERY_DATA_FALLBACK_URL}?v=${Date.now()}&_=${Math.random()}`
     try {
-      const result = await apiGet(url, { retryOnce: true })
+      let result = await apiGet(urlPrimary, { retryOnce: true })
+      if (!result.success && (result.error?.includes('404') || result.error?.includes('Noch keine'))) {
+        result = await apiGet(urlFallback, { retryOnce: true })
+      }
       if (!result.success) {
         setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
-        const hint = result.hint ? ` ${result.hint}` : (result.error && result.error.includes('404') ? ' Datei gallery-data.json fehlt auf Vercel – zuerst am iPad „Daten an Server senden“ tippen.' : '')
-        alert(`Server: ${result.error || 'Fehler'}.\n\n• Prüfe: Ist die App von k2-galerie.vercel.app geöffnet? Internet verbunden?${hint}`)
+        const hint = result.hint ? ` ${result.hint}` : (result.error && result.error.includes('404') ? ' Zuerst am iPad „Daten an Server senden“ tippen.' : '')
+        alert(`Server: ${result.error || 'Fehler'}.\n\n• App von k2-galerie.vercel.app? Internet verbunden?${hint}`)
         return
       }
       const data = result.data as { artworks?: unknown[]; exportedAt?: string }
@@ -2382,7 +2388,7 @@ function ScreenshotExportAdmin() {
           alert('Lokal sind mehr Werke als auf dem Server. Lokale Daten wurden beibehalten.')
         }
     } catch (e) {
-      console.error('Vom Server laden:', url, e)
+      console.error('Vom Server laden:', urlPrimary, e)
       setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
       const msg = e instanceof Error ? e.message : String(e)
       const isNetwork = /failed|network|load|cors|fetch|typeerror/i.test(msg) || (e instanceof TypeError)
@@ -6504,22 +6510,19 @@ ${'='.repeat(60)}
     // ök2 = Demo (keine zentrale Datei), VK2 = keine Werke im Admin → nur lokal.
     let serverArtworks: any[] = []
     if (!forOek2 && !forVk2) {
-      try {
-        const url = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&_=${Math.random()}`
-        const response = await fetch(url, {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache'
+      const urls = [`${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}`, `${CENTRAL_GALLERY_DATA_FALLBACK_URL}?v=${Date.now()}`]
+      for (const url of urls) {
+        try {
+          const response = await fetch(url, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache, no-store', 'Pragma': 'no-cache' } })
+          if (response.ok) {
+            const data = await response.json()
+            serverArtworks = data.artworks || []
+            console.log('📡 Zentrale Nummern (Vercel, K2) geladen:', serverArtworks.length, 'Werke')
+            break
           }
-        })
-        if (response.ok) {
-          const data = await response.json()
-          serverArtworks = data.artworks || []
-          console.log('📡 Zentrale Nummern (Vercel, K2) geladen:', serverArtworks.length, 'Werke')
+        } catch (e) {
+          if (url === urls[urls.length - 1]) console.log('⚠️ Zentrale Datenquelle nicht erreichbar, verwende lokale Nummer')
         }
-      } catch (e) {
-        console.log('⚠️ Zentrale Datenquelle nicht erreichbar, verwende lokale Nummer')
       }
     }
     

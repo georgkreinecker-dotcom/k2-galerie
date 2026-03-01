@@ -2,11 +2,12 @@
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
-## Datum: 27.02.26 (Session-Ende – Schluss für heute)
+## Datum: 27.02.26
 
-## Session-Ende 27.02.26 (heute)
-- **Heute gemacht:** „check the crash“ – GalerieAssistent setTimeout-Cleanup; danach **wieder Reopen** (Cursor).
-- **Nächster Schritt (morgen):** DIALOG-STAND lesen → optional Vercel/Stand (ein Befehl zum Kopieren) oder weiter am Crash beobachten.
+## Faden: Datentransport mobil (existenzielle Grundfunktion)
+- **Ziel:** „Daten an Server senden“ / „Bilder vom Server laden“ muss **einfach und überall** funktionieren (iPad ↔ Mac ↔ Vercel).
+- **Reopen-Fix gemerkt:** `npm run dev` schreibt nicht mehr (nur `vite`); write-build-info nur bei `npm run build`. Regel: build-skripte-nur-schreiben-wenn-geaendert.mdc.
+- **Nächster Schritt:** Doku „Zum Verständnis“ (Speicher = GitHub, Vercel = Tür) ergänzen; Transport robuster machen (Fehler, Hinweise, ggf. Ablauf prüfen).
 
 ## Crash Code 5 – bei jedem Reopen / „check the crash“ (Faden behalten)
 - **Wenn Georg „check the crash“ sagt:** Feste Routine ausführen: **docs/CRASH-LETZTER-KONTEXT.md** lesen → **CRASH-BEREITS-GEPRUEFT.md** lesen → gezielt in zuletzt genutzten Bereichen + neue Intervalle/Listener suchen → beide Dokus ergänzen. So eingrenzen wir den Punkt Schritt für Schritt.

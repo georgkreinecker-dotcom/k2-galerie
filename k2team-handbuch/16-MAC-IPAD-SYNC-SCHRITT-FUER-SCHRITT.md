@@ -31,7 +31,7 @@
 ### Am Mac
 
 4. **Galerie öffnen** (z. B. k2-galerie.vercel.app/galerie). Beim ersten Öffnen wird einmal von Vercel geladen.
-5. **Damit neue Werke vom iPad erscheinen:** Unter „Werke verwalten“ auf **„🔄 Bilder vom Server laden“** klicken. (1–2 Minuten nach „Daten an Server senden“ am iPad warten – Vercel braucht kurz.)
+5. **Damit neue Werke vom iPad erscheinen:** Unter „Werke verwalten“ auf **„🔄 Bilder vom Server laden“** klicken. (Daten sind nach „Daten an Server senden“ sofort verfügbar – keine Wartezeit.)
 6. Alternativ: Seite **neu laden** (F5 oder Cmd+R).
 
 → Das neue/geänderte Werk vom iPad erscheint am Mac.
@@ -53,9 +53,8 @@
 
 ## Technik (für Assistenten)
 
-- **Zentrale Stelle:** Vercel (gallery-data.json). **Nur für K2:** Nummern beim neuen Werk von dort + lokal (CENTRAL_GALLERY_DATA_URL). ök2 = Demo (keine zentrale Datei), VK2 = keine Werke im Admin → Nummern nur lokal.
-- **Senden:** Immer `https://k2-galerie.vercel.app/api/write-gallery-data` (WRITE_GALLERY_DATA_API_URL) – iPad, Mac und lokal nutzen denselben Endpoint. API schreibt per GitHub API in public/gallery-data.json; Vercel baut neu (1–2 Min).
-- **Nach Speichern (Mac):** `publishMobile({ silent: true })` bei K2. **Am iPad:** Nutzer tippt **„Daten an Server senden“** (ruft `publishMobile()` auf). ök2/VK2 schreiben nicht an die zentrale Stelle.
-- **Laden:** „Bilder vom Server laden“ holt CENTRAL_GALLERY_DATA_URL mit Cache-Bust, ein Retry bei Netzwerkfehler; Merge mit lokal (lokale Werke haben Priorität).
-- **Einmalig:** In Vercel GITHUB_TOKEN setzen (siehe docs/DATENTRANSPORT-IPAD-MAC-VERCEL.md).
+- **Zentrale Stelle:** Vercel Blob (api/gallery-data). **Nur für K2:** Nummern beim neuen Werk von dort + lokal. ök2 = Demo, VK2 = keine Werke im Admin.
+- **Senden:** `https://k2-galerie.vercel.app/api/write-gallery-data` – API schreibt in Vercel Blob (sofort), optional Backup ins Repo bei GITHUB_TOKEN.
+- **Laden:** „Bilder vom Server laden“ holt zuerst /api/gallery-data (Blob), Fallback gallery-data.json; Merge mit lokal.
+- **Einmalig:** In Vercel einen Blob Store anlegen (Storage → Blob). Siehe docs/DATENTRANSPORT-IPAD-MAC-VERCEL.md.
 - **Stand-Badge:** Reload mit Cache-Bypass für neueste Daten/App-Version.

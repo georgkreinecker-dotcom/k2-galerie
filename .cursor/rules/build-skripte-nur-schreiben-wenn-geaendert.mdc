@@ -20,7 +20,7 @@ alwaysApply: true
 - **api/build-info.js:** Nur schreiben wenn nicht bereits eine return-Zeile mit aktuellem Label vorhanden (Duplikate bereinigen nur bei Bedarf).
 - **index.html:** Altes `var b=` auslesen, **Minute** des alten Timestamps mit aktuellem Label vergleichen. Gleiche Minute → **nicht schreiben**. Nur bei neuer Minute Inject-Script ersetzen.
 
-So wird bei `npm run dev` in derselben Minute **keine** der vier Dateien geschrieben → Cursor meldet kein Reopen. Zweiter Lauf im gleichen Zeitraum: „Build-Info unverändert“.
+**Zusätzlich (Reopen dauerhaft vermeiden):** `npm run dev` führt **write-build-info.js nicht aus** – nur `vite`. Stand wird **nur** bei `npm run build` geschrieben. package.json: `"dev": "vite"` (ohne write-build-info). **Nicht zurückändern.**
 
 ## Bei neuen Build-Skripten
 

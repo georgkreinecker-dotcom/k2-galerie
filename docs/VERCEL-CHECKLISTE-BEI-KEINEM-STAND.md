@@ -4,6 +4,24 @@
 
 ---
 
+## 🔑 Stand-Abgleich Mac → Mobil = Schlüsselfunktion (darf nicht zur Gewohnheit werden)
+
+**Ziel:** Mobil hat **immer** denselben Stand wie der Mac – ohne dass du zweimal deployen oder raten musst.
+
+**Warum es manchmal hakt:** Nach Push **sollte** Vercel automatisch ein neues Deployment starten (Webhook von GitHub). Wenn das nicht passiert, erscheint unter Deployments nichts Neues → Production bleibt alt → Mobil zeigt alten Stand.
+
+**Verbindlicher Weg, der immer funktioniert (ein Befehl nach Push):**
+
+```bash
+cd /Users/georgkreinecker/k2Galerie && node scripts/write-build-info.js && npx vercel --prod
+```
+
+Damit wird **ohne** Abhängigkeit vom Webhook deployt. Du pushst wie gewohnt; **danach** diesen einen Befehl ausführen → Production ist garantiert aktuell, Mobil bekommt den Stand beim nächsten Öffnen oder wenn du unten links auf „Stand“ tippst.
+
+**Wenn du willst, dass es wieder automatisch geht (ohne den Befehl):** Siehe **docs/VERCEL-DEPLOY-AUSBLEIBEN-URSACHEN.md** – dort prüfen (Webhook, Production Branch, verbundenes Repo) und einmalig reparieren. Danach löst jeder Push auf main wieder ein Deployment aus.
+
+---
+
 ## 1. Im Vercel Dashboard prüfen
 
 1. **https://vercel.com** → Projekt **k2-galerie** öffnen.
