@@ -1231,7 +1231,8 @@ const ShopPage = () => {
           maxWidth: '960px',
           margin: '0 auto'
         }}>
-          {internetShopNotSetUp && (
+          {/* Termin-Hinweis nur für Besucher (Internetshop), nicht in der Kasse – in der Kasse ist man ja schon vor Ort */}
+          {internetShopNotSetUp && !isAdminContext && (
             <div style={{
               marginBottom: '1.25rem',
               padding: '0.9rem 1.25rem',

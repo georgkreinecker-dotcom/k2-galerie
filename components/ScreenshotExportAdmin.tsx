@@ -1178,6 +1178,8 @@ function ScreenshotExportAdmin() {
   const [showExportMenu, setShowExportMenu] = useState(false)
   /** ök2: Verkaufte Werke in Galerie anzeigen (Tage) – Speicher: k2-oeffentlich-galerie-settings */
   const [soldArtworksDisplayDaysOek2, setSoldArtworksDisplayDaysOek2] = useState<number>(30)
+  /** K2: Verkaufte Werke in Galerie anzeigen (Tage) – Speicher: k2-stammdaten-galerie */
+  const [soldArtworksDisplayDaysK2, setSoldArtworksDisplayDaysK2] = useState<number>(30)
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -1562,6 +1564,17 @@ function ScreenshotExportAdmin() {
       }
     } catch (_) {}
   }, [])
+
+  // K2: Verkaufte-Werke-Anzeige (Tage) aus k2-stammdaten-galerie laden (bei Werke-Tab) – isMounted gegen setState nach Unmount (HMR/Code 5)
+  useEffect(() => {
+    if (tenant.isOeffentlich || tenant.isVk2) return
+    let isMounted = true
+    try {
+      const g = loadStammdaten('k2', 'gallery') as { soldArtworksDisplayDays?: number }
+      if (isMounted && g && typeof g.soldArtworksDisplayDays === 'number') setSoldArtworksDisplayDaysK2(g.soldArtworksDisplayDays)
+    } catch (_) {}
+    return () => { isMounted = false }
+  }, [activeTab, tenant.isOeffentlich, tenant.isVk2])
 
   // Stammdaten aus localStorage laden – bei ök2-Kontext aus k2-oeffentlich-stammdaten-*; bei VK2 aus k2-vk2-stammdaten
   useEffect(() => {
@@ -2012,10 +2025,7 @@ function ScreenshotExportAdmin() {
   const publishMobile = (options?: { silent?: boolean }) => {
     const silent = options?.silent === true
     if (!silent && isDeploying) return
-    if (tenant.isOeffentlich) {
-      if (!silent) alert('Veröffentlichen ist nur in der K2-Galerie verfügbar. Wechsle zur K2-Galerie, um die echte Galerie zu veröffentlichen.')
-      return
-    }
+    // Tenantfähig: Veröffentlichen für K2, ök2 und VK2 (jeweils eigener Blob auf dem Server)
     if (!isMountedRef.current) {
       if (!silent) console.warn('⚠️ publishMobile: Component ist unmounted')
       return
@@ -2028,7 +2038,6 @@ function ScreenshotExportAdmin() {
     // KOMPLETT NEUE LÖSUNG: Web Worker für JSON.stringify um UI nicht zu blockieren
     const executeExport = () => {
       try {
-        // Minimale Datenmenge - nur das Nötigste
         const getItemSafe = (key: string, defaultValue: any) => {
           try {
             const item = localStorage.getItem(key)
@@ -2038,9 +2047,36 @@ function ScreenshotExportAdmin() {
             return defaultValue
           }
         }
+
+        // VK2: eigener Export (Stammdaten, Events, Dokumente, Design – keine Werke)
+        if (tenant.isVk2) {
+          const { data: vk2Data, filename: _fn } = createVk2Backup()
+          const data = { ...vk2Data, tenantId: 'vk2' }
+          const json = JSON.stringify(data)
+          if (json.length > 5000000) {
+            if (isMountedRef.current && !silent) setIsDeploying(false)
+            if (!silent) alert('⚠️ Daten zu groß. Bitte reduzieren.')
+            return
+          }
+          apiPost(WRITE_GALLERY_DATA_API_URL, json, { timeoutMs: 30000 }).then(result => {
+            if (!silent && isMountedRef.current) setIsDeploying(false)
+            if (result.success && result.data) {
+              if (silent) console.log('✅ VK2-Daten an Server gesendet')
+              else {
+                setSyncStatusBar({ phase: 'success', message: 'Gesendet.' })
+                setPublishSuccessModal({ size: json.length, version: 1 })
+              }
+            } else {
+              if (!silent) {
+                setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
+                setPublishErrorMsg(result.error || 'VK2-Daten konnten nicht gesendet werden.')
+              }
+            }
+          }).finally(() => { if (isMountedRef.current && !silent) setIsDeploying(false) })
+          return
+        }
         
-        // SEHR aggressive Begrenzung um Hänger zu vermeiden
-        // KRITISCH: Lade ALLE Werke inkl. Mobile-Werke für Synchronisation! Key = Kontext (K2 vs. ök2)
+        // K2 / ök2: Werke inkl. Mobile-Werke für Synchronisation
         const artworksKey = tenant.getArtworksKey()
         let artworks = getItemSafe(artworksKey, [])
         
@@ -2067,11 +2103,11 @@ function ScreenshotExportAdmin() {
           console.log(`📱 ${mobileWorks.length} Mobile-Werke werden mit exportiert:`, mobileWorks.map((a: any) => a.number || a.id).join(', '))
         }
         
-        // WICHTIG: Export nur wenn irgendwo Werke sind (State oder localStorage)
+        // K2: Export nur wenn Werke vorhanden. ök2: 0 Werke erlaubt (z. B. Test-Galerie leer).
         const _artworksCheck = getItemSafe(artworksKey, [])
         const hasArtworksInState = Array.isArray(artworks) && artworks.length > 0
         const hasArtworksInStorage = Array.isArray(_artworksCheck) && _artworksCheck.length > 0
-        if (!hasArtworksInState && !hasArtworksInStorage) {
+        if (!tenant.isOeffentlich && !hasArtworksInState && !hasArtworksInStorage) {
           if (isMountedRef.current && !silent) setIsDeploying(false)
           if (!silent) alert('⚠️ KEINE WERKE GEFUNDEN!\n\nBitte zuerst Werke speichern bevor veröffentlicht wird.\n\n📋 Prüfe:\n1. Sind Werke in "Werke verwalten" vorhanden?\n2. Werden Werke korrekt gespeichert?\n3. Prüfe Browser-Konsole für Fehler')
           return
@@ -2130,22 +2166,19 @@ function ScreenshotExportAdmin() {
           pageTexts: pageTextsExport,
           exportedAt: exportedAt,
           version: newVersion,
-          buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`
+          buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
+          tenantId: tenant.isOeffentlich ? 'oeffentlich' : 'k2'
         }
         
-        // WICHTIG: Prüfe nochmal ob Werke im Export vorhanden sind
-        if (!data.artworks || data.artworks.length === 0) {
-          console.error('❌ FEHLER: Keine Werke im Export-Objekt!', {
-            artworksCount: artworks.length,
-            dataArtworksCount: data.artworks.length,
-            dataKeys: Object.keys(data)
-          })
+        // K2: Mindestens ein Werk nötig. ök2: 0 Werke erlaubt.
+        if (!tenant.isOeffentlich && (!data.artworks || data.artworks.length === 0)) {
+          console.error('❌ FEHLER: Keine Werke im Export-Objekt!', { dataKeys: Object.keys(data) })
           if (isMountedRef.current && !silent) setIsDeploying(false)
           if (!silent) alert('⚠️ FEHLER: Keine Werke im Export!\n\nBitte prüfe Browser-Konsole für Details.')
           return
         }
         
-        console.log(`✅ Export vorbereitet: ${data.artworks.length} Werke werden exportiert`)
+        console.log(`✅ Export vorbereitet: ${data.artworks?.length ?? 0} Werke, tenantId=${data.tenantId}`)
         
         // JSON.stringify in separatem Frame mit Progress-Check
         const stringifyData = () => {
@@ -2361,71 +2394,125 @@ function ScreenshotExportAdmin() {
   // KEIN Auto-Sync (Supabase / gallery-data.json) mehr beim Admin-Start – verursacht Fenster-Abstürze.
   // Mobile-Werke kommen über artworks-updated Event beim Speichern; Werke werden nur aus localStorage geladen (siehe oben, 2 s Verzögerung).
 
-  /** K2: Werke von Vercel laden (Blob-API zuerst, Fallback statische Datei) und mit lokalen mergen */
+  /** Tenantfähig: Daten von Vercel laden (K2/ök2: Werke mergen; ök2/VK2: Backup-Format in Keys schreiben) */
   const handleLoadFromServer = async () => {
-    if (tenant.isOeffentlich || tenant.isVk2) return
+    const tenantId = tenant.isVk2 ? 'vk2' : tenant.isOeffentlich ? 'oeffentlich' : 'k2'
     setIsLoadingFromServer(true)
     setSyncStatusBar({ phase: 'loading', message: 'Daten werden geladen…' })
-    const urlPrimary = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&_=${Math.random()}`
-    const urlFallback = `${CENTRAL_GALLERY_DATA_FALLBACK_URL}?v=${Date.now()}&_=${Math.random()}`
+    const urlPrimary = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&_=${Math.random()}&tenantId=${tenantId}`
+    const urlFallback = tenantId === 'k2' ? `${CENTRAL_GALLERY_DATA_FALLBACK_URL}?v=${Date.now()}&_=${Math.random()}` : null
     try {
       let result = await apiGet(urlPrimary, { retryOnce: true })
-      if (!result.success && (result.error?.includes('404') || result.error?.includes('Noch keine'))) {
+      if (urlFallback && !result.success && (result.error?.includes('404') || result.error?.includes('Noch keine'))) {
         result = await apiGet(urlFallback, { retryOnce: true })
       }
       if (!result.success) {
         setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
-        const hint = result.hint ? ` ${result.hint}` : (result.error && result.error.includes('404') ? ' Zuerst am iPad „Daten an Server senden“ tippen.' : '')
+        const hint = result.hint ? ` ${result.hint}` : (result.error && result.error.includes('404') ? ' Zuerst „Daten an Server senden“ tippen.' : '')
         alert(`Server: ${result.error || 'Fehler'}.\n\n• App von k2-galerie.vercel.app? Internet verbunden?${hint}`)
         return
       }
-      const data = result.data as { artworks?: unknown[]; exportedAt?: string }
+      const data = result.data as Record<string, unknown> & { artworks?: unknown[]; exportedAt?: string; kontext?: string }
       if (!data || typeof data !== 'object') {
         setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
         alert('Antwort war kein gültiges JSON.')
         return
       }
+
+      // ök2: Server-Daten in k2-oeffentlich-* Keys schreiben (Export- oder Backup-Format)
+      if (tenant.isOeffentlich) {
+        const { restoreOek2FromBackup } = await import('../src/utils/autoSave')
+        let ok = false
+        if (data.kontext === 'oeffentlich' && ('k2-oeffentlich-artworks' in data || 'k2-oeffentlich-stammdaten-martina' in data)) {
+          const r = restoreOek2FromBackup(data as Record<string, any>)
+          ok = r.ok
+        } else {
+          // Export-Format (martina, georg, gallery, artworks, …) in Keys überführen
+          try {
+            const keys: Array<[string, unknown]> = []
+            if (Array.isArray(data.artworks)) keys.push(['k2-oeffentlich-artworks', data.artworks])
+            if (data.martina != null) keys.push(['k2-oeffentlich-stammdaten-martina', data.martina])
+            if (data.georg != null) keys.push(['k2-oeffentlich-stammdaten-georg', data.georg])
+            if (data.gallery != null) keys.push(['k2-oeffentlich-stammdaten-galerie', data.gallery])
+            if (data.events != null) keys.push(['k2-oeffentlich-events', data.events])
+            if (data.documents != null) keys.push(['k2-oeffentlich-documents', data.documents])
+            if (data.designSettings != null) keys.push(['k2-oeffentlich-design-settings', data.designSettings])
+            if (data.pageTexts != null) keys.push(['k2-oeffentlich-page-texts', data.pageTexts])
+            if (data.pageContent != null) keys.push(['k2-oeffentlich-page-content-galerie', data.pageContent])
+            keys.forEach(([k, v]) => { try { localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v)) } catch (_) {} })
+            ok = keys.length > 0
+          } catch (_) {}
+        }
+        if (ok) {
+          setAllArtworks(loadArtworks(tenant))
+          window.dispatchEvent(new CustomEvent('artworks-updated', { detail: {} }))
+          setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
+          const exportedAt = data.exportedAt ? ` (Stand: ${new Date(String(data.exportedAt)).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })})` : ''
+          alert(`✅ Daten vom Server geladen${exportedAt}.`)
+        } else {
+          setSyncStatusBar({ phase: 'error', message: 'Fehler beim Speichern.' })
+          alert('Daten konnten nicht in den Speicher übernommen werden.')
+        }
+        return
+      }
+
+      // VK2: Backup-Format vom Server in k2-vk2-* Keys schreiben
+      if (tenant.isVk2) {
+        const { restoreVk2FromBackup } = await import('../src/utils/autoSave')
+        const { ok, restored } = restoreVk2FromBackup(data as Record<string, any>)
+        if (ok) {
+          setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
+          const exportedAt = data.exportedAt ? ` (Stand: ${new Date(String(data.exportedAt)).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })})` : ''
+          alert(`✅ VK2-Daten vom Server geladen${exportedAt}.`)
+        } else {
+          setSyncStatusBar({ phase: 'error', message: 'Fehler beim Speichern.' })
+          alert('Daten konnten nicht in den Speicher übernommen werden.')
+        }
+        return
+      }
+
+      // K2: Werke mergen wie bisher
       const serverArtworks = filterK2Only(Array.isArray(data.artworks) ? data.artworks : [])
-        const localArtworks = loadArtworksRaw(tenant)
-        const serverMap = new Map<string, any>()
-        serverArtworks.forEach((a: any) => { const k = a.number || a.id; if (k) serverMap.set(k, a) })
-        const merged: any[] = [...serverArtworks]
-        localArtworks.forEach((local: any) => {
-          const key = local?.number ?? local?.id
-          if (!key) return
-          const server = serverMap.get(key)
-          const isMobile = local.createdOnMobile || local.updatedOnMobile
-          if (!server) { merged.push(local); return }
-          if (isMobile) {
+      const localArtworks = loadArtworksRaw(tenant)
+      const serverMap = new Map<string, any>()
+      serverArtworks.forEach((a: any) => { const k = a.number || a.id; if (k) serverMap.set(k, a) })
+      const merged: any[] = [...serverArtworks]
+      localArtworks.forEach((local: any) => {
+        const key = local?.number ?? local?.id
+        if (!key) return
+        const server = serverMap.get(key)
+        const isMobile = local.createdOnMobile || local.updatedOnMobile
+        if (!server) { merged.push(local); return }
+        if (isMobile) {
+          const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
+          if (idx >= 0) merged[idx] = local
+          else merged.push(local)
+        } else {
+          const lU = local.updatedAt ? new Date(local.updatedAt).getTime() : 0
+          const sU = server.updatedAt ? new Date(server.updatedAt).getTime() : 0
+          if (lU > sU) {
             const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
             if (idx >= 0) merged[idx] = local
             else merged.push(local)
-          } else {
-            const lU = local.updatedAt ? new Date(local.updatedAt).getTime() : 0
-            const sU = server.updatedAt ? new Date(server.updatedAt).getTime() : 0
-            if (lU > sU) {
-              const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
-              if (idx >= 0) merged[idx] = local
-              else merged.push(local)
-            }
           }
-        })
-        const toSave = filterK2Only(merged)
-        if (toSave.length >= localArtworks.length || toSave.length >= (loadArtworks(tenant).length || 0)) {
-          if (saveArtworks(tenant, toSave)) {
-            setAllArtworks(loadArtworks(tenant))
-            window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: toSave.length } }))
-            setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
-            const exportedAt = data.exportedAt ? ` (Stand: ${new Date(data.exportedAt).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })})` : ''
-            alert(`✅ ${toSave.length} Werke vom Server geladen${exportedAt}.`)
-          } else {
-            setSyncStatusBar({ phase: 'error', message: 'Fehler beim Speichern.' })
-          }
-        } else {
-          console.warn('Merge würde weniger Werke ergeben – localStorage unverändert')
-            setSyncStatusBar({ phase: 'success', message: 'Lokal beibehalten.' })
-          alert('Lokal sind mehr Werke als auf dem Server. Lokale Daten wurden beibehalten.')
         }
+      })
+      const toSave = filterK2Only(merged)
+      if (toSave.length >= localArtworks.length || toSave.length >= (loadArtworks(tenant).length || 0)) {
+        if (saveArtworks(tenant, toSave)) {
+          setAllArtworks(loadArtworks(tenant))
+          window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: toSave.length } }))
+          setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
+          const exportedAt = data.exportedAt ? ` (Stand: ${new Date(data.exportedAt).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })})` : ''
+          alert(`✅ ${toSave.length} Werke vom Server geladen${exportedAt}.`)
+        } else {
+          setSyncStatusBar({ phase: 'error', message: 'Fehler beim Speichern.' })
+        }
+      } else {
+        console.warn('Merge würde weniger Werke ergeben – localStorage unverändert')
+        setSyncStatusBar({ phase: 'success', message: 'Lokal beibehalten.' })
+        alert('Lokal sind mehr Werke als auf dem Server. Lokale Daten wurden beibehalten.')
+      }
     } catch (e) {
       console.error('Vom Server laden:', urlPrimary, e)
       setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
@@ -7605,8 +7692,9 @@ ${'='.repeat(60)}
       }))
       setTimeout(() => { ignoreArtworksUpdatedRef.current = false }, 400)
       
-      // Zentrale Stelle (Vercel): Nach jedem Speichern automatisch Daten dorthin – kein extra „Veröffentlichen“ nötig
-      if (!forOek2 && !tenant.isVk2) {
+      // Zentrale Stelle (Vercel): Nach jedem Speichern automatisch Daten dorthin (tenantfähig: K2, ök2, VK2).
+      // Im iframe (Cursor Preview) überspringen – reduziert Last und Crash-Risiko (Code 5).
+      if (typeof window !== 'undefined' && window.self === window.top) {
         try {
           publishMobile({ silent: true })
         } catch (e) {
@@ -9513,18 +9601,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           </button>
                         ))}
                       </div>
-                      {!tenant.isOeffentlich && !tenant.isVk2 && (
-                        <>
-                          <div style={{ marginTop: '1rem', paddingTop: '0.6rem', borderTop: `1px solid ${s.accent}22` }}>
-                            <a href="https://web.cursor.sh" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem', color: s.accent, textDecoration: 'none', fontWeight: 500 }}>
-                              Cursor am iPad öffnen (zum Testen – im Browser)
-                            </a>
-                          </div>
-                          <div style={{ marginTop: '0.5rem', paddingTop: '0.6rem', borderTop: `1px solid ${s.accent}22` }}>
-                            <div style={{ fontSize: '0.8rem', color: s.muted }}>Erweiterte Funktionen (Premium): <strong style={{ color: s.text }}>Vorerst noch nicht verfügbar</strong> – daran wird gearbeitet.</div>
-                          </div>
-                        </>
-                      )}
                     </div>
                   )
                 })()}
@@ -9632,33 +9708,64 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               }}>
                 {tenant.isVk2 ? 'Vereinsmitglieder' : 'Werke verwalten'}
               </h2>
-              {!tenant.isVk2 && (() => {
-                const galerieWert = allArtworks.reduce((sum: number, a: any) => sum + (Number(a.price) || 0), 0)
-                const werkeMitPreis = allArtworks.filter((a: any) => (Number(a.price) || 0) > 0).length
-                return (
-                  <div style={{
-                    marginBottom: '1.25rem',
-                    padding: '0.75rem 1rem',
-                    background: galerieWert > 0 ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.04)',
-                    border: `1px solid ${galerieWert > 0 ? 'rgba(34,197,94,0.25)' : s.accent + '22'}`,
-                    borderRadius: '12px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    flexWrap: 'wrap'
-                  }}>
-                    <span style={{ fontSize: '0.9rem', color: s.muted }}>Wert der Galerie (Summe aller Galeriepreise):</span>
-                    <strong style={{ fontSize: '1.25rem', color: galerieWert > 0 ? '#16a34a' : s.text }}>
-                      € {(galerieWert || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </strong>
-                    {werkeMitPreis > 0 && (
-                      <span style={{ fontSize: '0.8rem', color: s.muted }}>
-                        ({werkeMitPreis} {werkeMitPreis === 1 ? 'Werk' : 'Werke'} mit Preis)
-                      </span>
-                    )}
+              {/* Verkaufte Werke: wie lange noch in Galerie sichtbar (Balken/Slider) – K2 + ök2 */}
+              {!tenant.isVk2 && (
+                <div style={{
+                  marginBottom: '1.25rem',
+                  padding: '0.75rem 1rem',
+                  background: s.bgElevated + '99',
+                  border: `1px solid ${s.accent}22`,
+                  borderRadius: '12px',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  gap: '0.75rem'
+                }}>
+                  <span style={{ fontSize: '0.9rem', color: s.text, fontWeight: 500 }}>Verkaufte Werke in Galerie anzeigen:</span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', alignItems: 'center' }}>
+                    {([0, 7, 14, 30, 60, 90] as const).map((days) => {
+                      const isK2 = !tenant.isOeffentlich
+                      const value = isK2 ? soldArtworksDisplayDaysK2 : soldArtworksDisplayDaysOek2
+                      const setValue = isK2 ? setSoldArtworksDisplayDaysK2 : setSoldArtworksDisplayDaysOek2
+                      const active = value === days
+                      return (
+                        <button
+                          key={days}
+                          type="button"
+                          onClick={() => {
+                            setValue(days)
+                            if (isK2) {
+                              try {
+                                const g = loadStammdaten('k2', 'gallery') as Record<string, unknown>
+                                persistStammdaten('k2', 'gallery', { ...g, soldArtworksDisplayDays: days })
+                              } catch (_) {}
+                            } else {
+                              try {
+                                const raw = localStorage.getItem('k2-oeffentlich-galerie-settings')
+                                const o = raw ? JSON.parse(raw) : {}
+                                localStorage.setItem('k2-oeffentlich-galerie-settings', JSON.stringify({ ...o, soldArtworksDisplayDays: days }))
+                              } catch (_) {}
+                            }
+                          }}
+                          style={{
+                            padding: '0.4rem 0.75rem',
+                            background: active ? s.accent : 'transparent',
+                            color: active ? '#fff' : s.muted,
+                            border: `1px solid ${active ? s.accent : s.muted + '44'}`,
+                            borderRadius: '8px',
+                            fontSize: '0.85rem',
+                            fontWeight: active ? 600 : 400,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {days === 0 ? '0 (sofort ausblenden)' : `${days} Tage`}
+                        </button>
+                      )
+                    })}
                   </div>
-                )
-              })()}
+                  <span style={{ fontSize: '0.78rem', color: s.muted }}>Nach Verkauf: wie lange das Werk noch in der Galerie-Vorschau sichtbar bleibt</span>
+                </div>
+              )}
               {tenant.isVk2 && (
                 <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted }}>
                   <button type="button" onClick={() => { setActiveTab('einstellungen'); setSettingsSubTab('stammdaten') }} style={{ background: 'none', border: 'none', padding: 0, color: s.accent, textDecoration: 'underline', cursor: 'pointer', fontSize: 'inherit' }}>Stammdaten (Verein, Vorstand, Mitglieder) bearbeiten → Einstellungen</button>
@@ -9830,19 +9937,35 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       <span style={{ fontSize: '0.72rem', color: s.muted }}>→ Hakerl bei Werken setzen, dann hier drucken</span>
                     )}
                     </div>
+                  </div>
+                  {/* Sync-Notfall: eigenes Feld, abgesetzt */}
+                  <div style={{
+                    marginTop: '1.25rem',
+                    padding: '1rem 1.25rem',
+                    background: s.bgElevated + '99',
+                    border: `1px solid ${s.muted}44`,
+                    borderRadius: '12px',
+                    maxWidth: '420px'
+                  }}>
+                    {(!tenant.isOeffentlich && !tenant.isVk2) && (
+                      <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.8rem', color: s.muted, lineHeight: 1.4 }}>
+                        Mac ↔ iPad/Handy: <strong style={{ color: s.text }}>Normalerweise musst du nichts tun</strong> – beim Speichern gehen die Daten automatisch mit. Nur im Notfall:
+                      </p>
+                    )}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'flex-end' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                     <button
                       type="button"
                       onClick={() => handleLoadFromServer()}
                       disabled={isLoadingFromServer}
-                      title="Lädt Werke/Bilder von Vercel (z. B. nach Speichern am iPad)"
+                      title="Aktuellen Stand vom Server holen (z. B. nach Speichern am iPad)"
                       style={{
-                        padding: '0.7rem 1.2rem',
+                        padding: '0.6rem 1rem',
                         background: isLoadingFromServer ? s.muted + '22' : s.accent + '18',
                         color: s.text,
                         border: `1px solid ${s.accent}44`,
                         borderRadius: '10px',
-                        fontSize: '0.88rem',
+                        fontSize: '0.85rem',
                         fontWeight: 600,
                         cursor: isLoadingFromServer ? 'wait' : 'pointer',
                         display: 'inline-flex',
@@ -9850,38 +9973,38 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         gap: '0.4rem'
                       }}
                     >
-                      {isLoadingFromServer ? '⏳ Lade…' : '🔄 Bilder vom Server laden'}
+                      {isLoadingFromServer ? '⏳ Lade…' : '🔄 Vom Server laden'}
                     </button>
-                    <span style={{ fontSize: '0.72rem', color: s.muted }}>Hier sind die Bilder von den Mobilgeräten</span>
+                    <span style={{ fontSize: '0.7rem', color: s.muted }}>Aktuellen Stand holen</span>
                     </div>
-                    {/* Auf Mobil: Daten an Server senden (Veröffentlichen) – verbindlicher Weg, damit Daten auf Vercel liegen */}
                     {!tenant.isOeffentlich && !tenant.isVk2 && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                     <button
                       type="button"
                       onClick={() => publishMobile()}
                       disabled={isDeploying || allArtworks.length === 0}
-                      title="Aktuelle Werke und Daten an Vercel senden – danach auf allen Geräten sichtbar"
+                      title="Jetzt an Server senden (z. B. nach Speichern am iPad, damit Mac es sieht)"
                       style={{
-                        padding: '0.7rem 1.2rem',
-                        background: isDeploying || allArtworks.length === 0 ? s.bgElevated : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                        padding: '0.6rem 1rem',
+                        background: isDeploying || allArtworks.length === 0 ? s.bgCard : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                         color: isDeploying || allArtworks.length === 0 ? s.muted : '#ffffff',
                         border: 'none',
                         borderRadius: '10px',
-                        fontSize: '0.88rem',
+                        fontSize: '0.85rem',
                         fontWeight: 600,
                         cursor: isDeploying || allArtworks.length === 0 ? 'not-allowed' : 'pointer',
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '0.4rem',
-                        boxShadow: allArtworks.length > 0 && !isDeploying ? '0 2px 8px rgba(245,158,11,0.3)' : 'none'
+                        boxShadow: allArtworks.length > 0 && !isDeploying ? '0 2px 6px rgba(245,158,11,0.25)' : 'none'
                       }}
                     >
-                      {isDeploying ? '⏳ Wird gesendet…' : '📤 Daten an Server senden'}
+                      {isDeploying ? '⏳ Wird gesendet…' : '📤 An Server senden'}
                     </button>
-                    <span style={{ fontSize: '0.72rem', color: s.muted }}>Damit Mac und andere Geräte die aktuellen Werke sehen</span>
+                    <span style={{ fontSize: '0.7rem', color: s.muted }}>Jetzt an alle Geräte senden</span>
                     </div>
                     )}
+                    </div>
                   </div>
                   {syncStatusBar.phase !== 'idle' && (
                     <div style={{ width: '100%', marginTop: '0.5rem' }}>

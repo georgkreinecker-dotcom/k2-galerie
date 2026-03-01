@@ -1,16 +1,20 @@
 /**
  * Vercel Serverless: gallery-data speichern – primär in Vercel Blob (kein Token nötig),
- * optional zusätzlich ins GitHub-Repo (Backup, wenn GITHUB_TOKEN gesetzt).
- *
- * Blob: BLOB_READ_WRITE_TOKEN wird von Vercel automatisch gesetzt, sobald ein Blob Store
- * im Projekt angelegt ist (Vercel Dashboard → Storage → Create Database/Blob).
+ * optional für K2 zusätzlich ins GitHub-Repo (Backup, wenn GITHUB_TOKEN gesetzt).
+ * Tenantfähig: body.tenantId oder body.kontext = k2|oeffentlich|vk2 → Blob gallery-data-{tenantId}.json.
  */
 import { put } from '@vercel/blob'
 
 const REPO_OWNER = 'georgkreinecker-dotcom'
 const REPO_NAME = 'k2-galerie'
 const FILE_PATH = 'public/gallery-data.json'
-const BLOB_PATHNAME = 'gallery-data.json'
+const ALLOWED_TENANTS = ['k2', 'oeffentlich', 'vk2']
+
+function getBlobPath(tenantId) {
+  if (tenantId === 'oeffentlich') return 'gallery-data-oeffentlich.json'
+  if (tenantId === 'vk2') return 'gallery-data-vk2.json'
+  return 'gallery-data.json'
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -28,19 +32,23 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Body leer oder zu groß (max 6MB)' })
   }
 
+  let parsed
   try {
-    JSON.parse(body)
+    parsed = JSON.parse(body)
   } catch {
     return res.status(400).json({ error: 'Ungültiges JSON' })
   }
 
+  const tenantIdRaw = parsed?.tenantId ?? parsed?.kontext ?? 'k2'
+  const tenantId = ALLOWED_TENANTS.includes(tenantIdRaw) ? tenantIdRaw : 'k2'
+  const BLOB_PATHNAME = getBlobPath(tenantId)
+
   let artworksCount = 0
   try {
-    const parsed = JSON.parse(body)
     artworksCount = Array.isArray(parsed.artworks) ? parsed.artworks.length : 0
   } catch {}
 
-  // 1. Primär: Vercel Blob (kein GITHUB_TOKEN nötig – BLOB_READ_WRITE_TOKEN kommt von Vercel)
+  // 1. Primär: Vercel Blob
   try {
     await put(BLOB_PATHNAME, body, {
       access: 'public',
@@ -60,9 +68,9 @@ export default async function handler(req, res) {
     })
   }
 
-  // 2. Optional: Backup ins GitHub-Repo (wenn GITHUB_TOKEN gesetzt)
+  // 2. Optional: Backup ins GitHub-Repo nur für K2 (wenn GITHUB_TOKEN gesetzt)
   const token = process.env.GITHUB_TOKEN
-  if (token) {
+  if (token && tenantId === 'k2') {
     try {
       const contentBase64 = Buffer.from(body, 'utf8').toString('base64')
       const getRes = await fetch(

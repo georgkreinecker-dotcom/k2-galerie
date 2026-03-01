@@ -9,10 +9,10 @@
 | Was | Inhalt |
 |-----|--------|
 | **Datum** | 01.03.26 |
-| **Thema** | Code-5-Check („crash again“) – nur neue Stellen geprüft |
-| **Zuletzt geändert/geöffnet** | SeitengestaltungPage.tsx (setTimeout-Cleanup), CRASH-BEREITS-GEPRUEFT.md, CRASH-LETZTER-KONTEXT.md |
-| **Hinweis von Georg** | „code 5 check crash again“ |
-| **Ergebnis** | Neue Prüfung: ImageCropModal ✓, env.ts ✓. **Fix:** SeitengestaltungPage – handleSave setTimeout(1800) für setSaved(false) mit Ref + clearTimeout im useEffect-Cleanup (kein setState nach Unmount bei HMR/Navigation). |
+| **Thema** | Code 5 nach langer Session – Check Ursache |
+| **Zuletzt geändert/geöffnet** | ScreenshotExportAdmin (soldArtworksDisplayDaysK2 State + useEffect für „Verkaufte Werke X Tage“), CRASH-BEREITS-GEPRUEFT.md |
+| **Hinweis von Georg** | „check crash … ganz lange super gearbeitet … was war der Grund für Fehler 5“ |
+| **Ergebnis** | Neuer useEffect (K2 soldArtworksDisplayDays) mit isMounted-Cleanup abgesichert. Kein setInterval/reload. Wahrscheinliche Ursache: lange Session (Speicher/HMR) oder Cursor Preview – Workaround: Preview zu, App im Browser. |
 
 ---
 

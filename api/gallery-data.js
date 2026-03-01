@@ -1,15 +1,21 @@
 /**
  * Vercel Serverless: gallery-data aus Vercel Blob lesen und ausliefern.
- * Wird von „Bilder vom Server laden“ genutzt. Kein Build nötig – Daten sind sofort verfügbar.
+ * Wird von „Bilder vom Server laden“ genutzt. Tenantfähig: ?tenantId=k2|oeffentlich|vk2.
+ * k2 oder fehlend = gallery-data.json (Abwärtskompatibilität).
  */
 import { get } from '@vercel/blob'
 
-const BLOB_PATHNAME = 'gallery-data.json'
+const ALLOWED_TENANTS = ['k2', 'oeffentlich', 'vk2']
+
+function getBlobPath(tenantId) {
+  if (tenantId === 'oeffentlich') return 'gallery-data-oeffentlich.json'
+  if (tenantId === 'vk2') return 'gallery-data-vk2.json'
+  return 'gallery-data.json'
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0')
-  // CORS Preflight (von localhost/anderen Origins): Browser braucht diese Header, sonst blockiert er den GET
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Cache-Control, Pragma, Expires, If-None-Match, If-Modified-Since, X-Requested-With, X-Data-Version, X-Build-ID, X-Timestamp')
@@ -21,8 +27,11 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Nur GET erlaubt' })
   }
 
+  const tenantId = (req.query?.tenantId || req.query?.tenant || 'k2').toLowerCase()
+  const pathname = ALLOWED_TENANTS.includes(tenantId) ? getBlobPath(tenantId) : getBlobPath('k2')
+
   try {
-    const result = await get(BLOB_PATHNAME, { access: 'public' })
+    const result = await get(pathname, { access: 'public' })
     if (!result || result.statusCode !== 200 || !result.stream) {
       return res.status(404).json({ error: 'Noch keine Daten', hint: 'Zuerst am iPad/Mac „Daten an Server senden“ tippen.' })
     }

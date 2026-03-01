@@ -55,6 +55,26 @@ export default function StatistikTab({ allArtworks, onMarkAsReserved, onRerender
 
   const lagerBestand = gesamtWerke - soldWerke.length // Noch im Bestand (nicht verkauft)
 
+  // Wert der Galerie: Werke die in Galerie hängen und nicht verkauft
+  const galerieWerke = allArtworks.filter((a: any) => a.inExhibition && !soldNumbers.has(a.number || a.id))
+  const galerieWert = galerieWerke.reduce((sum: number, a: any) => sum + (Number(a.price) || 0), 0)
+  const galerieNachKuenstler: Record<string, { count: number; wert: number }> = {}
+  galerieWerke.forEach((a: any) => {
+    const name = (a.artist || 'Ohne Künstler').trim() || 'Ohne Künstler'
+    if (!galerieNachKuenstler[name]) galerieNachKuenstler[name] = { count: 0, wert: 0 }
+    galerieNachKuenstler[name].count++
+    galerieNachKuenstler[name].wert += Number(a.price) || 0
+  })
+  const galerieNachKategorie: Record<string, { count: number; wert: number }> = {}
+  galerieWerke.forEach((a: any) => {
+    const kat = getCategoryLabel(a.category || 'malerei')
+    if (!galerieNachKategorie[kat]) galerieNachKategorie[kat] = { count: 0, wert: 0 }
+    galerieNachKategorie[kat].count++
+    galerieNachKategorie[kat].wert += Number(a.price) || 0
+  })
+  const galerieKuenstlerSorted = Object.entries(galerieNachKuenstler).sort((a, b) => b[1].wert - a[1].wert)
+  const galerieKategorieSorted = Object.entries(galerieNachKategorie).sort((a, b) => b[1].wert - a[1].wert)
+
   const umsatzHeute = alleVerkaufe
     .filter((e: any) => e.soldAt && new Date(e.soldAt).toDateString() === new Date().toDateString())
     .reduce((sum: number, e: any) => sum + (e.preis || 0), 0)
@@ -168,6 +188,10 @@ export default function StatistikTab({ allArtworks, onMarkAsReserved, onRerender
           <div style={{ fontSize: '2rem', fontWeight: 800, color: umsatzHeute > 0 ? '#15803d' : s.muted }}>€ {umsatzHeute.toFixed(0)}</div>
           <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4 }}>Umsatz heute</div>
         </div>
+        <div style={{ ...kachelStyle, textAlign: 'center' }}>
+          <div style={{ fontSize: '2rem', fontWeight: 800, color: galerieWert > 0 ? '#16a34a' : s.muted }}>€ {galerieWert.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
+          <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4 }}>Wert der Galerie</div>
+        </div>
         {preise.length > 0 && (
           <div style={{ ...kachelStyle, textAlign: 'center' }}>
             <div style={{ fontSize: '1.4rem', fontWeight: 800, color: s.text }}>€ {preisDurch.toFixed(0)}</div>
@@ -195,6 +219,56 @@ export default function StatistikTab({ allArtworks, onMarkAsReserved, onRerender
                     </div>
                     <div style={{ height: 8, background: s.bgElevated, borderRadius: 4, overflow: 'hidden' }}>
                       <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${s.accent}, #d96b35)`, borderRadius: 4, transition: 'width 0.5s' }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Wert der Galerie – nach Künstler */}
+        <div style={kachelStyle}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: '0 0 1rem' }}>🖼️ Wert der Galerie – nach Künstler</h3>
+          {galerieKuenstlerSorted.length === 0 ? (
+            <div style={{ color: s.muted, fontSize: '0.9rem' }}>Keine Werke in Galerie</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+              {galerieKuenstlerSorted.map(([name, data]) => {
+                const pct = galerieWert > 0 ? (data.wert / galerieWert) * 100 : 0
+                return (
+                  <div key={name}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', marginBottom: 4 }}>
+                      <span style={{ color: s.text, fontWeight: 600 }}>{name}</span>
+                      <span style={{ color: s.muted }}>{data.count}× · € {data.wert.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+                    </div>
+                    <div style={{ height: 8, background: s.bgElevated, borderRadius: 4, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, #16a34a, #22c55e)', borderRadius: 4, transition: 'width 0.5s' }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Wert der Galerie – nach Artikel (Kategorie) */}
+        <div style={kachelStyle}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: '0 0 1rem' }}>📂 Wert der Galerie – nach Artikel</h3>
+          {galerieKategorieSorted.length === 0 ? (
+            <div style={{ color: s.muted, fontSize: '0.9rem' }}>Keine Werke in Galerie</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+              {galerieKategorieSorted.map(([kat, data]) => {
+                const pct = galerieWert > 0 ? (data.wert / galerieWert) * 100 : 0
+                return (
+                  <div key={kat}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', marginBottom: 4 }}>
+                      <span style={{ color: s.text, fontWeight: 600 }}>{kat}</span>
+                      <span style={{ color: s.muted }}>{data.count}× · € {data.wert.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+                    </div>
+                    <div style={{ height: 8, background: s.bgElevated, borderRadius: 4, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, #16a34a, #22c55e)', borderRadius: 4, transition: 'width 0.5s' }} />
                     </div>
                   </div>
                 )

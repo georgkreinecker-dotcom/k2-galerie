@@ -31,6 +31,7 @@ So können wir den Punkt Schritt für Schritt eingrenzen.
 | 19.02.26 | ScreenshotExportAdmin | Kontext-Effect [location.search]: nur setState, kein Reload/Redirect; isMounted-Check + Cleanup ergänzt (kein setState nach Unmount) |
 | 19.02.26 | Crash-Check (neu) | location.reload/replace: main.tsx, appBootstrap nur bei !inIframe ✓. Vk2GaleriePage, VirtuellerRundgangPage: Listener-Cleanup ✓. DevViewPage: iframe-Check vor Intervall, Listener-Cleanup ✓. |
 | 20.02.26 | App.tsx, GalerieVorschauPage | App.tsx: „Reset & neu laden“ hatte keinen iframe-Check → ergänzt (im iframe nur setState, kein reload). GalerieVorschauPage: Beide Polling-Intervalle (Mac Mobile-Updates, Mobile-zu-Mobile) nur wenn notInIframe (wie DevViewPage). |
+| 01.03.26 | Tenant-Sync (ScreenshotExportAdmin, API) | Kein Auto-Reload; keine neuen setInterval. publishMobile nach Speichern nur bei window.self === window.top. handleLoadFromServer/executeExport: dynamischer Import, einmalige API-Calls. env.ts safeReload bereits iframe-geprüft. |
 
 ---
 
@@ -61,6 +62,8 @@ So können wir den Punkt Schritt für Schritt eingrenzen.
 | GalerieAssistent setTimeout nach Unmount | 27.02.26: markiereErledigt nutzte setTimeout(400) ohne Cleanup → setState/onGoToStep nach Unmount möglich. **Fix:** stepTimeoutRef, clearTimeout im useEffect-Cleanup, in markiereErledigt Ref setzen und vor neuem Timeout clearen. |
 | main.tsx Console in iframe (01.03.26) | MAX_LOGS in Cursor Preview (iframe) auf 15 reduziert – weniger Speicher/Churn (crash-beim-programmieren-vermeiden.mdc). |
 | SeitengestaltungPage setSaved-Timeout (01.03.26) | setTimeout(1800) für setSaved(false) ohne Cleanup → bei Unmount (HMR, Navigation) setState nach Ablauf. **Fix:** savedTimeoutRef, clearTimeout im useEffect-Cleanup, in handleSave vor neuem Timeout altes clearen. |
+| ScreenshotExportAdmin soldArtworksDisplayDaysK2 (01.03.26) | Neuer useEffect lädt K2-Wert bei Werke-Tab; kein setInterval/reload. **Absicherung:** isMounted-Cleanup im useEffect (kein setState nach Unmount bei HMR/Tab-Wechsel). |
+| Tenant-Sync / Veröffentlichen (01.03.26) | Veröffentlichen für ök2/VK2 freigeschaltet; „Bilder vom Server laden“ für alle Mandanten. **Kein** neuer location.reload/setInterval. **Absicherung:** publishMobile({ silent: true }) nach Speichern nur wenn window.self === window.top (nicht im iframe), um Cursor Preview zu entlasten. |
 
 ---
 
