@@ -5,7 +5,7 @@
 ## Datum: 01.03.26
 
 ## Wo wir stehengeblieben (aktuell) – **HIER EINSTEIGEN**
-- **Tenant-Sync ök2/VK2 (01.03.26):** Veröffentlichen und „Bilder vom Server laden“ für alle Mandanten (K2, ök2, VK2). API GET/POST mit tenantId; Blob pro Mandant (gallery-data.json, gallery-data-oeffentlich.json, gallery-data-vk2.json). Admin: ök2 ohne Alert, VK2 eigener Export-Zweig; handleLoadFromServer für ök2/VK2 mit Restore in Keys. Auto-Publish nach Speichern nur außerhalb iframe (Crash-Schutz). Doku: docs/TENANT-SYNC-DOMAIN.md. Tests 38 grün, Build ✅. Commit folgt.
+- **Tenant-Sync ök2/VK2 (01.03.26):** Veröffentlichen und „Bilder vom Server laden“ für alle Mandanten (K2, ök2, VK2). API GET/POST mit tenantId; Blob pro Mandant (gallery-data.json, gallery-data-oeffentlich.json, gallery-data-vk2.json). Admin: ök2 ohne Alert, VK2 eigener Export-Zweig; handleLoadFromServer für ök2/VK2 mit Restore in Keys. Auto-Publish nach Speichern nur außerhalb iframe (Crash-Schutz). Doku: docs/TENANT-SYNC-DOMAIN.md. Tests 38 grün, Build ✅. Commit: 12dda77 ✅ auf GitHub.
 - **Performance Zuschnitt/Freistellen (01.03.26):** Verkleinerung vor ONNX auf max. 800 px Kantenlänge → Freistellen schneller; Zuschnitt maxSize 1000 / quality 0,8; Composite-Qualität 0,85. Commit 34e411b ✅ gepusht. Stand kommt mit Build.
 - **Speichern nach Bearbeitung (01.03.26):** Nach mehreren Speicherungen wurden keine neuen Änderungen mehr angenommen. Fixes: (1) Verifikation „Bild nicht mitgespeichert“ blockiert nicht mehr – nur noch Warnung, Save zählt als erfolgreich. (2) Cleanup auch bei nahe 10MB (9.5MB), damit artworksStorage nicht ablehnt; Fallback „artworks = keptArtworks“ für Anzeige. (3) Nach eigenem Save wird „artworks-updated“ 400ms ignoriert, damit loadArtworks (evtl. leer) die soeben gesetzte Liste nicht überschreibt.
 - **Komprimierung optimiert (01.03.26):** `compressImageForStorage` mit Preset **artwork** (640px, 0.55) für Werke im Admin; mobile/desktop verschärft. Obergrenze ~900KB pro Werk.
@@ -196,10 +196,10 @@ Werk verschwindet / Nummer wiederverwendet / Freistellen geht nicht. **Ursache:*
 - **Phase 3.1 + 3.2 safeReload:** env.ts safeReload; alle Reload-Stellen umgestellt. Phase 2.2, 1.4, 2.1 [x].
 
 ## Letzter Commit
-- **Crash Code 5 (Inject localhost, useServerBuildTimestamp iframe) + Admin-Fixes (Verifizierungs-Retry, pendingImageDataUrlRef, Bild-Retry). Stand 28.02.26 16:13.** Commit: c63f482 ✅ auf GitHub
+- **Tenant-Sync ök2/VK2: Veröffentlichen + Vom-Server-laden für alle Mandanten; API tenantId; Blob pro Mandant; iframe-Crash-Schutz. Stand 01.03.26 17:59.** Commit: 12dda77 ✅ auf GitHub
 
 ## Nächster Schritt
-- **Crash beobachten:** Nach den Fixes (localhost kein Reload, iframe kein 2-Min-Intervall) – Cursor Preview sollte seltener crashen. Optional: Admin (neues Werk, Bild ersetzen, Werkliste) testen; Sportwagen-Phasen oder iPad/Mac.
+- **ök2-Test für Freund:** Link zu Test-Galerie (galerie-oeffentlich); am PC Werke einpflegen, Veröffentlichen, „Bilder vom Server laden“ – Werke sollen nicht verloren gehen. Optional: GRAFIKER-TISCH-NOTIZEN (Vollkachel, Crop) abarbeiten.
 
 ## Session 27.02.26 (Bugs: verschwundene Werke, Freistellung)
 - **Verschwundene Werke nach Rückkehr in Verwaltung:** (1) Supabase: Wenn Supabase weniger Werke liefert als localStorage, wird localStorage nicht mehr überschrieben – lokale Neu-Anlagen bleiben erhalten. (2) GalerieVorschau: Beim Laden aus localStorage wird gefilterte Liste nicht mehr zurückgeschrieben (kein stilles Löschen). (3) Mobile-Polling (syncFromGalleryData): Schreibt nicht mehr, wenn das Ergebnis weniger Werke hätte als aktuell lokal. (4) Admin: Werke werden nach 0,4 s statt 3 s geladen, damit die Liste schnell erscheint.
