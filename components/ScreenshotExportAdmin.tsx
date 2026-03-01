@@ -7120,7 +7120,6 @@ ${'='.repeat(60)}
         alert('Bitte ein Bild auswählen')
         return
       }
-      
       await saveArtworkData(imageDataUrl, newArtworkNumber)
     } catch (error) {
       console.error('Fehler beim Komprimieren:', error)
@@ -7340,14 +7339,15 @@ ${'='.repeat(60)}
           return artwork
         })
         
-        // 2. Sortiere nach Datum (neueste zuerst)
-        const sortedArtworks = cleanedArtworks.sort((a: any, b: any) => {
-          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
-          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+        // 2. Sortiere nach Aktualität (updatedAt oder createdAt) – neueste zuerst
+        // WICHTIG: Bei Bearbeitung hat das Werk updatedAt = jetzt, sonst würde es nach altem createdAt sortiert und beim Kürzen rausfallen
+        const sortedArtworks = [...cleanedArtworks].sort((a: any, b: any) => {
+          const dateA = (a.updatedAt || a.createdAt) ? new Date(a.updatedAt || a.createdAt).getTime() : 0
+          const dateB = (b.updatedAt || b.createdAt) ? new Date(b.updatedAt || b.createdAt).getTime() : 0
           return dateB - dateA
         })
         
-        // 3. Behalte nur die 20 neuesten Werke
+        // 3. Behalte nur die 20 neuesten/zuletzt bearbeiteten Werke
         let keptArtworks = sortedArtworks.slice(0, 20)
         let keptData = JSON.stringify(keptArtworks)
         let keptSize = new Blob([keptData]).size
@@ -7536,12 +7536,19 @@ ${'='.repeat(60)}
         setSearchQuery('')
       }
       
-      // Sofortige UI-Aktualisierung: reloaded nutzen, aber das gerade gespeicherte Werk durch artworkData ersetzen,
-      // damit die Anzeige garantiert das zugeschnittene/bearbeitete Bild zeigt (kein veralteter Cache/Ref)
+      // Sofortige UI-Aktualisierung: Bild für Anzeige = imageDataUrl (Parameter), nicht artworkData.imageUrl!
+      // artworkData.imageUrl wird im GitHub-Upload-Block durch die kurze URL ersetzt – die ist beim ersten Mal
+      // oft noch nicht geladen → Nutzer sah „alte Version“. Anzeige immer mit dem soeben gespeicherten Bild.
       const idNum = String(artworkData?.number ?? artworkData?.id ?? '')
-      const listToShow = reloaded.map((a: any) =>
-        String(a?.number ?? a?.id ?? '') === idNum ? { ...a, ...artworkData, imageUrl: artworkData.imageUrl } : a
+      let listToShow = reloaded.map((a: any) =>
+        String(a?.number ?? a?.id ?? '') === idNum ? { ...a, ...artworkData, imageUrl: imageDataUrl } : a
       )
+      // Bearbeitung: Falls die neue Version nicht in der Liste ist (z. B. reloaded veraltet), alte Version ersetzen oder neue anhängen
+      if (editingArtwork && !listToShow.some((a: any) => String(a?.number ?? a?.id ?? '') === idNum)) {
+        const editKey = String(editingArtwork?.number ?? editingArtwork?.id ?? '')
+        listToShow = listToShow.filter((a: any) => String(a?.number ?? a?.id ?? '') !== editKey)
+        listToShow = [...listToShow, { ...artworkData, imageUrl: imageDataUrl }]
+      }
       setAllArtworks(listToShow)
       
       // WICHTIG: Kurze Verzögerung damit React State aktualisiert wird
