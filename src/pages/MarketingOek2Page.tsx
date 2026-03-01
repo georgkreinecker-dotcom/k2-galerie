@@ -95,6 +95,9 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
   }, [location.pathname])
 
   const pilotGalerieUrl = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+  /** URL nur für „So kommt es auf dein Handy“ – führt zu PilotStartPage (Schreiben + Einstiegscodes), NICHT zur Galerie */
+  const pilotSchreibenAufHandyUrl = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].pilotStart
+  const [pilotHandyLinkQrUrl, setPilotHandyLinkQrUrl] = useState('')
   useEffect(() => {
     let cancelled = false
     QRCode.toDataURL(pilotGalerieUrl, { width: 280, margin: 1 })
@@ -102,6 +105,13 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
       .catch(() => {})
     return () => { cancelled = true }
   }, [pilotGalerieUrl])
+  useEffect(() => {
+    let cancelled = false
+    QRCode.toDataURL(pilotSchreibenAufHandyUrl, { width: 200, margin: 1 })
+      .then((url) => { if (!cancelled) setPilotHandyLinkQrUrl(url) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [pilotSchreibenAufHandyUrl])
 
   const saveOefImage = async (key: 'welcome' | 'innen', file: File) => {
     setOefSaving(true)
@@ -1389,25 +1399,45 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </div>
       </section>
 
-      {/* Start-Anleitung für erste Pro+-Piloten (z.B. Michael) – Schreiben + QR zum Verschicken */}
+      {/* Start-Anleitung für erste Pro+-Piloten (z.B. Michael) – Begleitschreiben + Link (PC) + QR (Handy) zum Verschicken */}
       <section id="mok2-pilot-start-michael" style={{ marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(95,251,241,0.2)', pageBreakInside: 'avoid' as const }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
           Start-Anleitung für Piloten (z.B. Michael)
         </h2>
         <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', marginBottom: '1.25rem' }}>
-          Schreiben zum Absenden + QR-Code (auf Handy laden, ggf. etwas dazuschreiben, dann an den Piloten senden).
+          Begleitschreiben + Link für PC + QR-Code für Handy – alles zusammen kopieren bzw. Screenshot und an Michael senden.
         </p>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'flex-start' }}>
-          <div style={{ flex: '1 1 280px', minWidth: 0 }}>
-            <h3 style={{ fontSize: '1rem', color: '#5ffbf1', marginBottom: '0.5rem' }}>Schreiben (Schritt-für-Schritt-Anleitung)</h3>
-            <div style={{ background: 'rgba(0,0,0,0.25)', borderRadius: '10px', padding: '1.25rem', fontSize: '0.95rem', lineHeight: 1.75, color: 'rgba(255,255,255,0.9)', whiteSpace: 'pre-wrap' }}>
+        <div style={{ padding: '0.75rem 1rem', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '10px', marginBottom: '1.25rem', display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start' }}>
+          <div style={{ flex: '1 1 200px', minWidth: 0 }}>
+            <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#22c55e', marginBottom: '0.35rem' }}>So kommt es auf dein Handy</div>
+            <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)' }}>
+              QR-Code mit dem Handy scannen → auf dem Handy öffnet sich nur das Schreiben an Michael (Begleitschreiben + Link/QR), keine ganze mök2-Seite. Dann Screenshot(s) machen und an Michael senden. Oder Link unten tippen und aufs Handy schicken.
+            </p>
+            <a href={pilotSchreibenAufHandyUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem', wordBreak: 'break-all', color: '#5ffbf1' }}>
+              {pilotSchreibenAufHandyUrl}
+            </a>
+          </div>
+          <div style={{ flex: '0 0 auto' }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#22c55e', marginBottom: '0.25rem' }}>QR: Mit Handy scannen</div>
+            {pilotHandyLinkQrUrl ? (
+              <img src={pilotHandyLinkQrUrl} alt="QR-Code: diese Rubrik auf dem Handy öffnen" style={{ display: 'block', width: 160, height: 160, borderRadius: 8, background: '#fff' }} />
+            ) : (
+              <div style={{ width: 160, height: 160, background: 'rgba(255,255,255,0.1)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>QR wird geladen …</div>
+            )}
+          </div>
+        </div>
+
+        <h3 style={{ fontSize: '1rem', color: '#5ffbf1', marginBottom: '0.5rem' }}>Begleitschreiben (Schritt-für-Schritt)</h3>
+        <div style={{ background: 'rgba(0,0,0,0.25)', borderRadius: '10px', padding: '1.25rem', fontSize: '0.95rem', lineHeight: 1.75, color: 'rgba(255,255,255,0.9)', whiteSpace: 'pre-wrap', marginBottom: '1.5rem' }}>
 {`Hallo Michael,
 
 hier dein Zugang zur K2 Galerie (Pro+ zum Start kostenlos). So startest du ohne Aufwand:
 
-Schritt 1 – Link öffnen
-Öffne den Link unter dieser Nachricht (oder scanne den QR-Code). Am besten am PC oder Laptop; Handy geht genauso.
+Unten findest du den Link für deinen PC und einen QR-Code fürs Handy – beides führt in deine Galerie.
+
+Schritt 1 – Galerie öffnen
+PC: Link unten in den Browser kopieren. Handy: QR-Code mit der Kamera scannen.
 
 Schritt 2 – In den Admin
 Auf der Galerie-Seite auf „Admin“ tippen bzw. klicken. Passwort-Feld in den ersten 2 Wochen leer lassen – du kommst sofort rein.
@@ -1422,23 +1452,25 @@ Schritt 5 – Veröffentlichen
 In Einstellungen „Veröffentlichen“ tippen (oder es läuft nach dem Speichern automatisch). Dann sind deine Daten auf dem Server – nichts geht verloren, wenn du das Gerät wechselst.
 
 Schritt 6 – Am anderen Gerät
-Am Handy oder zweitem Rechner denselben Link öffnen → in Einstellungen „Bilder vom Server laden“ tippen → deine Werke erscheinen.
+Am Handy oder zweitem Rechner: wieder Link nutzen bzw. QR scannen → in Einstellungen „Bilder vom Server laden“ tippen → deine Werke erscheinen.
 
-Wichtig: Immer denselben Link nutzen (PC und Handy), dann bleibt alles in deiner Galerie. Bei Fragen melde dich einfach.
+Wichtig: Immer denselben Link bzw. denselben QR nutzen (PC und Handy), dann bleibt alles in deiner Galerie. Bei Fragen melde dich einfach.
 
 Viel Erfolg!`}
-            </div>
-            <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>
-              Link zum Kopieren: {pilotGalerieUrl}
+        </div>
+
+        <h3 style={{ fontSize: '1rem', color: '#5ffbf1', marginBottom: '0.5rem' }}>Zum Verschicken an Michael – Link (PC) + QR (Handy)</h3>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'flex-start', padding: '1.25rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.25)', borderRadius: '12px' }}>
+          <div style={{ flex: '1 1 280px', minWidth: 0 }}>
+            <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#5ffbf1', marginBottom: '0.35rem' }}>Für PC (Link zum Kopieren)</div>
+            <p style={{ margin: 0, fontSize: '0.9rem', wordBreak: 'break-all', color: 'rgba(255,255,255,0.9)' }}>
+              {pilotGalerieUrl}
             </p>
           </div>
           <div style={{ flex: '0 0 auto' }}>
-            <h3 style={{ fontSize: '1rem', color: '#5ffbf1', marginBottom: '0.5rem' }}>QR-Code (fürs Handy laden & senden)</h3>
-            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginBottom: '0.5rem' }}>
-              Diesen QR auf dein Handy laden (mök2 öffnen → diese Rubrik → QR abfotografieren oder Screenshot), dann etwas dazuschreiben und an Michael senden. Er scannt den QR und landet in seiner Galerie.
-            </p>
+            <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#5ffbf1', marginBottom: '0.35rem' }}>Für Handy (QR-Code scannen)</div>
             {pilotStartQrUrl ? (
-              <img src={pilotStartQrUrl} alt="QR-Code zur Galerie" style={{ display: 'block', width: 200, height: 200, borderRadius: 8, background: '#fff' }} />
+              <img src={pilotStartQrUrl} alt="QR-Code zur Galerie (Handy)" style={{ display: 'block', width: 200, height: 200, borderRadius: 8, background: '#fff' }} />
             ) : (
               <div style={{ width: 200, height: 200, background: 'rgba(255,255,255,0.1)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>QR wird geladen …</div>
             )}
