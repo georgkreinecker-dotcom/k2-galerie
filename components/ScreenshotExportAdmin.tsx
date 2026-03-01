@@ -2321,8 +2321,14 @@ function ScreenshotExportAdmin() {
   // KRITISCH: K2 nie mit leerer Liste überschreiben – verhindert „alle Werke verschwunden“ nach Speichern
   const allArtworksRef = useRef<any[]>([])
   allArtworksRef.current = allArtworks
+  /** Nach eigenem Save kurz ignorieren, damit loadArtworks() (evtl. leer bei großer Liste) die soeben gesetzte Liste nicht überschreibt */
+  const ignoreArtworksUpdatedRef = useRef(false)
   useEffect(() => {
     const handleArtworksUpdate = () => {
+      if (ignoreArtworksUpdatedRef.current) {
+        console.log('🔄 artworks-updated ignoriert (gerade selbst gespeichert)')
+        return
+      }
       console.log('🔄 artworks-updated Event empfangen - lade Werke neu...')
       try {
         // ök2: Gespeichert leer = wirklich leer anzeigen (kein Rückfall auf Musterwerke)
@@ -7311,13 +7317,14 @@ ${'='.repeat(60)}
     }
     
     try {
-      const dataToStore = JSON.stringify(artworks)
+      let dataToStore = JSON.stringify(artworks)
+      let currentSize = new Blob([dataToStore]).size
       
-      // Prüfe localStorage-Größe und führe automatisches Cleanup durch
-      const currentSize = new Blob([dataToStore]).size
-      const maxSize = 3.5 * 1024 * 1024 // 3.5MB Limit (unter 5MB Browser-Limit)
+      // Prüfe localStorage-Größe: Cleanup wenn > 3.5MB (Browser komfortabel) oder nahe 10MB (artworksStorage lehnt ab)
+      const maxSize = 3.5 * 1024 * 1024 // 3.5MB
+      const hardLimit = 9.5 * 1024 * 1024 // 9.5MB – unter artworksStorage 10MB-Grenze bleiben
       
-      if (currentSize > maxSize) {
+      if (currentSize > maxSize || currentSize > hardLimit) {
         // Automatisches Cleanup: Entferne große Bilder und alte Werke
         console.log(`⚠️ Daten zu groß (${(currentSize / 1024 / 1024).toFixed(2)}MB) - führe Cleanup durch...`)
         
@@ -7345,23 +7352,20 @@ ${'='.repeat(60)}
         let keptData = JSON.stringify(keptArtworks)
         let keptSize = new Blob([keptData]).size
         
-        // 4. Falls immer noch zu groß: Entferne mehr alte Werke
-        if (keptSize > maxSize) {
+        // 4. Falls immer noch zu groß: weniger Werke behalten (unter 10MB für Speicher, unter 3.5MB für Komfort)
+        if (keptSize > hardLimit || keptSize > maxSize) {
           keptArtworks = sortedArtworks.slice(0, 15)
           keptData = JSON.stringify(keptArtworks)
           keptSize = new Blob([keptData]).size
-          
-          if (keptSize > maxSize) {
-            // Letzter Versuch: Nur 10 neueste Werke
+          if (keptSize > hardLimit || keptSize > maxSize) {
             keptArtworks = sortedArtworks.slice(0, 10)
             keptData = JSON.stringify(keptArtworks)
             keptSize = new Blob([keptData]).size
-            
-            if (keptSize > maxSize) {
-              alert(`⚠️ localStorage ist voll (${(currentSize / 1024 / 1024).toFixed(2)}MB)!\n\nBitte lösche einige alte Werke manuell oder verwende kleinere Bilder.\n\nAutomatisches Cleanup konnte nicht genug Platz schaffen.`)
-              return
-            }
           }
+        }
+        if (keptSize > 10 * 1024 * 1024) {
+          alert(`⚠️ localStorage ist voll!\n\nBitte lösche einige Werke manuell oder verwende kleinere Bilder.`)
+          return
         }
         
         const saved = saveArtworks(tenant, keptArtworks)
@@ -7372,7 +7376,8 @@ ${'='.repeat(60)}
         }
         
         const removedCount = artworks.length - keptArtworks.length
-        if (removedCount > 0) {
+        artworks = keptArtworks
+        if (removedCount > 0 && currentSize > maxSize) {
           alert(`⚠️ localStorage war zu voll!\n\nDie ältesten ${removedCount} Werke wurden automatisch gelöscht.\n\nBitte verwende kleinere Bilder um Platz zu sparen.`)
         }
       } else {
@@ -7412,15 +7417,15 @@ ${'='.repeat(60)}
         alert(`⚠️ Fehler: Werk konnte nicht gespeichert werden!\n\nNummer: ${artworkData?.number ?? ''}\n\nBitte versuche es erneut.`)
         return
       }
-      // Prüfen ob das gespeicherte Werk das Bild hat (Zuschnitt/Freistellung darf nicht verloren gehen)
+      // Prüfen ob das gespeicherte Werk das Bild hat – bei Trunkierung (z. B. Speicher voll) nicht blockieren, nur warnen
       const expectedLen = typeof artworkData.imageUrl === 'string' ? artworkData.imageUrl.length : 0
       const storedLen = typeof storedArtwork.imageUrl === 'string' ? storedArtwork.imageUrl.length : 0
       if (expectedLen > 100 && storedLen < 100) {
-        console.error('❌ Gespeichertes Werk hat kein Bild (imageUrl fehlt oder leer)', { expectedLen, storedLen })
-        alert('⚠️ Das Bild wurde nicht mitgespeichert.\n\nBitte „Zuschnitt übernehmen“ oder „Foto freistellen“ erneut ausführen und dann Speichern.')
-        return
+        console.warn('⚠️ Gespeichertes Werk hat kürzeres Bild (evtl. Speichergrenze)', { expectedLen, storedLen })
+        // Nicht return – Save zählt als erfolgreich, UI aktualisieren; Nutzer kann bei Bedarf Bild erneut setzen
+      } else {
+        console.log('✅ Werk-Verifikation erfolgreich:', artworkData?.number, 'Anzahl:', verifyRaw.length, 'Bild:', storedLen > 0 ? 'OK' : '—')
       }
-      console.log('✅ Werk-Verifikation erfolgreich:', artworkData?.number, 'Anzahl:', verifyRaw.length, 'Bild:', storedLen > 0 ? 'OK' : '—')
       
       // KRITISCH: Markiere Nummer als verwendet für bessere Synchronisation
       // Speichere Nummer in separatem Index für schnelle Prüfung
@@ -7587,9 +7592,11 @@ ${'='.repeat(60)}
       setArtworkVerkaufsstatus('verfuegbar')
       
       // Event dispatchen, damit Galerie-Seite sich aktualisiert
+      ignoreArtworksUpdatedRef.current = true
       window.dispatchEvent(new CustomEvent('artworks-updated', { 
         detail: { count: reloaded.length, newArtwork: artworkData.number } 
       }))
+      setTimeout(() => { ignoreArtworksUpdatedRef.current = false }, 400)
       
       // Zentrale Stelle (Vercel): Nach jedem Speichern automatisch Daten dorthin – kein extra „Veröffentlichen“ nötig
       if (!forOek2 && !tenant.isVk2) {

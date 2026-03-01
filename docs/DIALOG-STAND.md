@@ -5,7 +5,8 @@
 ## Datum: 01.03.26
 
 ## Wo wir stehengeblieben (aktuell) – **HIER EINSTEIGEN**
-- **Komprimierung optimiert (01.03.26):** `compressImageForStorage` mit Preset **artwork** (640px, 0.55) für Werke im Admin; mobile/desktop leicht verschärft (560/0.48, 760/0.6). Beim Speichern von Werken: immer „artwork“, Obergrenze ~900KB; bei Überschreitung Nachkomprimierung mit „mobile“. Weniger Speicher, loadArtworks/JSON bleibt handhabbar.
+- **Speichern nach Bearbeitung (01.03.26):** Nach mehreren Speicherungen wurden keine neuen Änderungen mehr angenommen. Fixes: (1) Verifikation „Bild nicht mitgespeichert“ blockiert nicht mehr – nur noch Warnung, Save zählt als erfolgreich. (2) Cleanup auch bei nahe 10MB (9.5MB), damit artworksStorage nicht ablehnt; Fallback „artworks = keptArtworks“ für Anzeige. (3) Nach eigenem Save wird „artworks-updated“ 400ms ignoriert, damit loadArtworks (evtl. leer) die soeben gesetzte Liste nicht überschreibt.
+- **Komprimierung optimiert (01.03.26):** `compressImageForStorage` mit Preset **artwork** (640px, 0.55) für Werke im Admin; mobile/desktop verschärft. Obergrenze ~900KB pro Werk.
 - **Lehre Werke weg/iPad (01.03.26):** Doku **docs/LEHRE-WERKE-WEG-IPAD-NOCH-DA.md** + Hinweis im Backup-Bereich. Commit 3ef36f0, Push ✅.
 - **Werke wiederherstellen:** Button „Werke aus Veröffentlichung wiederherstellen“ in Admin → Einstellungen → Backup & Wiederherstellung.
 - **Datentransport = State of the Art:** Eine Quelle (Vercel Blob), Merge statt Überschreiben, Mobile-Werke geschützt, kein Auto-Reload. API immer über feste URL; „Stand & Daten“-Button = Stand + Daten in einem Klick; beim Öffnen der Galerie (Mac/Desktop) nach 2 s automatisch Daten vom Server. Für den User unsichtbar: speichern → bei Vercel; Mac öffnen / aktualisieren → Daten da.
