@@ -24,6 +24,9 @@ export const WILLKOMMEN_ENTWURF_KEY = 'k2-willkommen-entwurf'
 /** Basis-URL der App (für QR/Links auf Flyern – immer Produktion) */
 export const BASE_APP_URL = 'https://k2-galerie.vercel.app'
 
+/** Nur Schreiben an Michael (Begleitschreiben + Einstiegscodes) – eine URL, eine Seite, nichts anderes */
+export const PILOT_SCHREIBEN_ROUTE = '/schreiben-michael'
+
 export const PLATFORM_ROUTES = {
   home: '/',
   projects: '/projects',
@@ -54,6 +57,8 @@ export const PROJECT_ROUTES = {
     platzanordnung: '/projects/k2-galerie/platzanordnung',
     produktVorschau: '/projects/k2-galerie/produkt-vorschau',
     marketingOek2: '/projects/k2-galerie/marketing-oek2',
+    /** Nur Schreiben an Michael – gleicher Inhalt wie PILOT_SCHREIBEN_ROUTE, Redirect dorthin */
+    pilotStart: '/projects/k2-galerie/pilot-start',
     softwareentwicklung: '/projects/k2-galerie/softwareentwicklung',
     werbeunterlagen: '/projects/k2-galerie/werbeunterlagen',
     licences: '/projects/k2-galerie/licences',

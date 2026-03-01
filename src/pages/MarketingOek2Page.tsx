@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES, WILLKOMMEN_ROUTE, AGB_ROUTE, BASE_APP_URL } from '../config/navigation'
+import { PROJECT_ROUTES, WILLKOMMEN_ROUTE, AGB_ROUTE, BASE_APP_URL, PILOT_SCHREIBEN_ROUTE } from '../config/navigation'
 import { PRODUCT_WERBESLOGAN, PRODUCT_BOTSCHAFT_2, PRODUCT_ZIELGRUPPE } from '../config/tenantConfig'
 import ProductCopyright from '../components/ProductCopyright'
 import { compressImageForStorage } from '../utils/compressImageForStorage'
@@ -94,11 +94,12 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
     }
   }, [location.pathname])
 
-  const pilotGalerieUrl = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
-  /** URL nur für „So kommt es auf dein Handy“ – führt zu PilotStartPage (Schreiben + Einstiegscodes), NICHT zur Galerie */
-  const pilotSchreibenAufHandyUrl = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].pilotStart
+  const pilotGalerieUrl = BASE_APP_URL + (PROJECT_ROUTES['k2-galerie']?.galerieOeffentlich ?? '')
+  /** Eine URL, eine Seite: nur Schreiben an Michael (Begleitschreiben + Einstiegscodes), nichts anderes */
+  const pilotSchreibenAufHandyUrl = BASE_APP_URL + PILOT_SCHREIBEN_ROUTE
   const [pilotHandyLinkQrUrl, setPilotHandyLinkQrUrl] = useState('')
   useEffect(() => {
+    if (!pilotGalerieUrl.startsWith('http')) return
     let cancelled = false
     QRCode.toDataURL(pilotGalerieUrl, { width: 280, margin: 1 })
       .then((url) => { if (!cancelled) setPilotStartQrUrl(url) })
@@ -106,6 +107,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
     return () => { cancelled = true }
   }, [pilotGalerieUrl])
   useEffect(() => {
+    if (!pilotSchreibenAufHandyUrl.startsWith('http')) return
     let cancelled = false
     QRCode.toDataURL(pilotSchreibenAufHandyUrl, { width: 200, margin: 1 })
       .then((url) => { if (!cancelled) setPilotHandyLinkQrUrl(url) })
@@ -1421,9 +1423,12 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <div style={{ flex: '0 0 auto' }}>
             <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#22c55e', marginBottom: '0.25rem' }}>QR: Mit Handy scannen</div>
             {pilotHandyLinkQrUrl ? (
-              <img src={pilotHandyLinkQrUrl} alt="QR-Code: diese Rubrik auf dem Handy öffnen" style={{ display: 'block', width: 160, height: 160, borderRadius: 8, background: '#fff' }} />
+              <img src={pilotHandyLinkQrUrl} alt="QR-Code: Schreiben an Michael auf Handy öffnen" style={{ display: 'block', width: 160, height: 160, borderRadius: 8, background: '#fff' }} />
             ) : (
-              <div style={{ width: 160, height: 160, background: 'rgba(255,255,255,0.1)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>QR wird geladen …</div>
+              <div style={{ width: 160, height: 160, background: 'rgba(255,255,255,0.15)', borderRadius: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', padding: '0.5rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.8)', textAlign: 'center' }}>
+                <span>QR wird geladen …</span>
+                <span style={{ fontSize: '0.7rem', wordBreak: 'break-all' }}>Oder Link unten nutzen</span>
+              </div>
             )}
           </div>
         </div>
@@ -1472,7 +1477,10 @@ Viel Erfolg!`}
             {pilotStartQrUrl ? (
               <img src={pilotStartQrUrl} alt="QR-Code zur Galerie (Handy)" style={{ display: 'block', width: 200, height: 200, borderRadius: 8, background: '#fff' }} />
             ) : (
-              <div style={{ width: 200, height: 200, background: 'rgba(255,255,255,0.1)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>QR wird geladen …</div>
+              <div style={{ width: 200, height: 200, background: 'rgba(255,255,255,0.15)', borderRadius: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', padding: '0.5rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.8)', textAlign: 'center' }}>
+                <span>QR wird geladen …</span>
+                <span style={{ fontSize: '0.75rem' }}>Oder Link links nutzen</span>
+              </div>
             )}
           </div>
         </div>
