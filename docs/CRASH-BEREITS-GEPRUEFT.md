@@ -59,6 +59,8 @@ So können wir den Punkt Schritt für Schritt eingrenzen.
 | GaleriePage Admin-Weiterleitung im iframe | 28.02.26: location.href zu /admin nur bei window.self === window.top; sonst window.open(..., '_blank') |
 | GaleriePage Stammdaten-Intervall im iframe | 28.02.26: setInterval(checkStammdatenUpdate, 2000) nur wenn window.self === window.top; in Preview nur einmal loadData() |
 | GalerieAssistent setTimeout nach Unmount | 27.02.26: markiereErledigt nutzte setTimeout(400) ohne Cleanup → setState/onGoToStep nach Unmount möglich. **Fix:** stepTimeoutRef, clearTimeout im useEffect-Cleanup, in markiereErledigt Ref setzen und vor neuem Timeout clearen. |
+| main.tsx Console in iframe (01.03.26) | MAX_LOGS in Cursor Preview (iframe) auf 15 reduziert – weniger Speicher/Churn (crash-beim-programmieren-vermeiden.mdc). |
+| SeitengestaltungPage setSaved-Timeout (01.03.26) | setTimeout(1800) für setSaved(false) ohne Cleanup → bei Unmount (HMR, Navigation) setState nach Ablauf. **Fix:** savedTimeoutRef, clearTimeout im useEffect-Cleanup, in handleSave vor neuem Timeout altes clearen. |
 
 ---
 
@@ -132,6 +134,8 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 
 **Fix (18.02.26):** In `scripts/write-build-info.js` wird **nur noch geschrieben, wenn sich der Inhalt geändert hat**. Vorher: bestehende Datei lesen, mit neuem Inhalt vergleichen. Gleich → **kein Schreiben** → keine Datei-Änderung → **kein HMR** → Crash-Moment entfällt. Beim echten Build (neue Minute) wird wie bisher geschrieben.
 
+**Pflichtregel (verbindlich):** Georg hat festgelegt: **write-build-info wird am Ende jeder AI-Antwort nicht ausgeführt.** Das ist die verbindliche Missetäter-Regel. Stand kommt **nur** beim Commit-Push (dann läuft write-build-info im Build) oder wenn Georg explizit „Stand aktualisieren“ sagt. In .cursorrules und auto-commit-push-nach-aufgabe.mdc ist das so umgesetzt. **Nicht umsetzen = Problem bleibt.**
+
 **Empfehlung:** Workaround wie oben (Browser-Tab mit localhost schließen vor Cursor-Schließen; nach Cursor-Öffnen zuerst `npm run dev`, dann Browser). Bei Vercel: nach Crash Deployment-Status prüfen und bei Bedarf erneut pushen.
 
 ---
@@ -167,8 +171,11 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 | 28.02.26 | Check „check the crash“ | Routine ausgeführt. Alle setInterval in src: GaleriePage (QR, Stammdaten, Mobile-Polling), DevViewPage, useServerBuildTimestamp, GalerieVorschauPage – iframe/notInIframe-Absicherungen **intakt**. PlatzanordnungPage, ShopPage: Intervall nur bei Nutzer auf Seite (Kamera/QR), kein iframe-Check (bei Bedarf nachrüstbar). Kein neuer Fix; Cursor-Crash weiterhin IDE-seitig. |
 | 28.02.26 | Check (erneut) | Kontext: seit letztem Check nur Vercel/Stand-Thema (kein neuer App-Code). write-build-info.js (iframe + localhost) ✓, GaleriePage iframe-Checks ✓. Keine neuen Stellen. |
 | 27.02.26 | GalerieAssistent | setTimeout(400) in markiereErledigt ohne Cleanup → bei Unmount setState/onGoToStep nach Ablauf. **Fix:** stepTimeoutRef + clearTimeout im useEffect-Cleanup; in markiereErledigt Ref setzen und vor neuem Timeout clearen. |
+| 01.03.26 | Check „ro check the crash“ | Reopen: dev = vite, Missetäter-Regel (write-build-info nicht am Ende). Crash: Keine neuen Stellen; env.ts safeReload bereits mit iframe-Check. Kein neuer Fix. |
+| 01.03.26 | Intensiv-Test (Georg Pause) | Systematische Prüfung: location.reload/replace/href, setInterval/setTimeout, addEventListener-Cleanup, write-build-info, App-Start. Alle bekannten Stellen mit iframe-Check bzw. Cleanup. **Fix:** main.tsx – in iframe MAX_LOGS = 15 (statt 100) zur Crash-Vermeidung in Cursor Preview. Doku: docs/CRASH-INTENSIV-TEST.md. |
+| 01.03.26 | Code-5-Check (erneut) | **Neue Prüfung:** ImageCropModal (neu) – addEventListener mousemove/mouseup mit Cleanup ✓. env.ts safeReload – iframe-Check ✓. SeitengestaltungPage – setTimeout(1800) für setSaved(false) ohne Cleanup → bei HMR/Navigation setState nach Unmount. **Fix:** savedTimeoutRef + clearTimeout im useEffect-Cleanup. |
 
-*Zuletzt ergänzt: 27.02.26 (Crash-Check: GalerieAssistent setTimeout-Cleanup)*
+*Zuletzt ergänzt: 01.03.26 (Code-5-Check + SeitengestaltungPage setTimeout-Cleanup)*
 
 ---
 
@@ -183,3 +190,64 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 **Warum:** Der Absturz kommt von der Preview/iframe-Umgebung. Im normalen Browser ist die App stabil. Wir bauen weiter Fixes ein; bis es reicht, ist Browser = sicherer Arbeitsplatz.
 
 **Code 5 wiederkehrend (28.02.26):** Crashes passieren im Cursor-Dialog (nicht in der App), unvorhersehbar – mal kurz nach Neustart, mal nach 10 Minuten. Kein klares Muster. Alle App-Fixes (Intervalle/Reload im iframe) sind intakt. **Pragmatisch:** Oft committen, dann geht bei Crash wenig verloren; Preview zu, App im Browser – reduziert Last. Wenn ein Muster auftaucht (z. B. immer beim Speichern), notieren.
+
+---
+
+## Hauptursache nach vielen Reopens (01.03.26)
+
+**Georg:** „Ro hat nichts mit der App zu tun – passiert hauptsächlich beim Codieren.“
+
+**Daraus abgeleitet – die Hauptursache:**
+
+1. **Codieren/Speichern, nicht die laufende App**  
+   Reopen tritt vor allem auf beim **Schreiben und Speichern von Code** (Cursor-Editor, Datei speichern, evtl. AI-Antwort mit Dateiänderungen). Nicht primär beim Nutzen der Galerie im Browser oder in der Preview.
+
+2. **Bekannter Auslöser: Datei-Schreibvorgänge**  
+   Wenn am Ende einer AI-Antwort Skripte laufen und **Dateien geschrieben** werden (z. B. `write-build-info.js`), feuern **Dateiwächter** und ggf. **Vite HMR** → Lastspitze → Cursor/Electron kann kippen.  
+   **Deshalb die Missetäter-Regel:** `write-build-info` **nicht** am Ende jeder AI-Antwort; nur beim Build/Commit oder auf explizite Aufforderung.  
+   Zusätzlich: `write-build-info` schreibt nur, wenn sich der Inhalt **wirklich geändert** hat → weniger unnötige Schreibvorgänge.
+
+3. **Cursor/Electron unter Last**  
+   Gleichzeitig: Editor, Sprachserver, Linter, Dateiwächter, ggf. Preview, AI – das kann die IDE an ihre Grenzen bringen. Die **App** ist nicht der Treiber; der **Ablauf beim Codieren** (Speichern + Reaktion der IDE) ist es.
+
+**Konsequenz:**  
+- App-seitige Crash-Fixes (iframe, Intervalle, Reload) bleiben sinnvoll, beheben aber nicht die **Hauptursache** (Codieren/Speichern/Dateiänderungen).  
+- **Reduzieren von Schreibvorgängen** (Missetäter-Regel, nur bei Änderung schreiben) und **weniger Last in Cursor** (Preview zu, ggf. Watcher-Ausnahmen) sind die Hebel.  
+- Eine „finale“ Lösung liegt bei **Cursor/Electron** (Stabilität bei vielen Dateiänderungen/HMR); wir können nur entlasten und Regeln einhalten.
+
+**Cursor-weit bekannt:** Code 5 („window terminated unexpectedly, reason: crashed“) wird von vielen Nutzern gemeldet (Cursor Forum, z. B. Error Code 5 – Frequent Window Crashes macOS). Auslöser u. a.: große Chat-Historie, große .cursorrules, Speicherprobleme in manchen Versionen, kaputter Cache. Wir haben das bei uns durch App-Entlastung + Missetäter-Regel ergänzt; die Ursache liegt in der IDE.
+
+---
+
+## Cursor-Community-Empfehlungen (und was wir daraus ableiten)
+
+**Was die Community konkret empfiehlt:**
+
+1. **Cache leeren** – Cursor-Cache-Ordner löschen (z. B. macOS: Application Support/Cursor/Cache). Oft erste Empfehlung bei Code 5.
+2. **Einstellungen anpassen** (in Cursor `settings.json`):
+   - `"git.autoRefresh": false` – weniger Last durch Git-Status
+   - `"files.autoSave": "afterDelay"` – nicht bei jedem Tastendruck speichern
+   - `"cursor.server.memoryLimit": 4096` – Speicherlimit für Cursor-Server (MB)
+   - `"window.restoreWindows": "none"` – beim Start keine alten Fenster wiederherstellen (weniger Last)
+3. **Dateiwächter entlasten** – `files.watcherExclude`: `node_modules`, `dist`, `.git`, generierte Dateien nicht beobachten.
+4. **Chat-Historie reduzieren** – große Verläufe können Code 5 auslösen; alte Chats löschen oder neues Projekt testen.
+5. **Erweiterungen prüfen** – Cursor mit `--disable-extensions` starten, ob Crashes seltener werden.
+6. **Saubere Neuinstallation** – Cursor deinstallieren, Cache/Preferences-Ordner löschen, neu installieren.
+7. **Vor Fixes: Stash** – Änderungen sichern (z. B. Git Stash), damit bei Neustart/Reinstall nichts verloren geht.
+
+**Was wir daraus bereits umsetzen / ableiten:**
+
+| Community-Tipp | Unser Stand / Ableitung |
+|----------------|-------------------------|
+| Cache leeren | Kein Automatismus – Georg kann bei Bedarf manuell leeren. |
+| git.autoRefresh: false | In .vscode/settings.json gesetzt (01.03.26). |
+| files.watcherExclude | Bereits gesetzt (buildInfo, dist, node_modules, .vite, …) – weniger HMR-/Watcher-Last. |
+| Chat-Historie | Keine technische Maßnahme im Projekt; Hinweis: alte Chats ggf. löschen oder Projekt-Chats reduzieren. |
+| Kein Auto-Save bei jeder Änderung | Cursor-Einstellung – `files.autoSave: "afterDelay"` empfohlen. |
+| write-build-info nicht am Ende jeder Antwort | **Missetäter-Regel** – weniger Dateischreibvorgänge, weniger Watcher-Last. |
+| cursor.server.memoryLimit | Optional in settings.json setzbar (z. B. 4096). |
+| window.restoreWindows: none | Optional – weniger Last beim Start. |
+
+**Konkret ableitbar:** In `.vscode/settings.json` (oder Cursor-User-Settings) können wir bzw. Georg ergänzen: `git.autoRefresh: false`, ggf. `cursor.server.memoryLimit: 4096`, `window.restoreWindows: "none"`. Dateiwatcher-Ausnahmen sind schon drin. Rest (Cache, Reinstall, Chat reduzieren) ist manuelle Cursor-Pflege.
+
+**Georgs Beobachtung (01.03.26):** Reopen/Crash hat laut Empfinden **nichts mit der App zu tun**, sondern passiert **hauptsächlich beim Codieren** (Speichern, Schreiben). → Ursache liegt eher bei **Cursor/Editor** (Dateiwächter, HMR beim Speichern, IDE-Stabilität) als bei der laufenden App. App-seitige Abschaltungen (iframe, Preview) können trotzdem entlasten; die Hauptquelle ist aber das Schreiben/Speichern im Editor.

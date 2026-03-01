@@ -50,7 +50,7 @@ const PREVIEW_PAGES: PreviewPage[] = [
     emoji: '🎨',
     url: '/projects/k2-galerie/galerie-oeffentlich-vorschau',
     description: 'Alle Musterwerke in der Galerieansicht',
-    editHint: 'Werke, Filter, Kauf-Buttons',
+    editHint: 'Werke, Filter, Erwerb-Buttons',
   },
   {
     id: 'galerie-k2',
@@ -134,13 +134,23 @@ export default function SeitengestaltungPage() {
     saveNotizen(updated)
   }
 
+  const savedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const handleSave = () => {
     saveNotizen(notizen)
     setSaved(true)
-    setTimeout(() => setSaved(false), 1800)
+    if (savedTimeoutRef.current) clearTimeout(savedTimeoutRef.current)
+    savedTimeoutRef.current = setTimeout(() => {
+      savedTimeoutRef.current = null
+      setSaved(false)
+    }, 1800)
   }
 
-  useEffect(() => { setNotizenState(loadNotizen()) }, [])
+  useEffect(() => {
+    setNotizenState(loadNotizen())
+    return () => {
+      if (savedTimeoutRef.current) clearTimeout(savedTimeoutRef.current)
+    }
+  }, [])
 
   const frameWidth = deviceSize.width === '100%' ? '100%' : `${deviceSize.width}px`
 

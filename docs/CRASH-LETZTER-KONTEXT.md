@@ -8,11 +8,11 @@
 
 | Was | Inhalt |
 |-----|--------|
-| **Datum** | 27.02.26 |
-| **Thema** | „check the crash“ – Routine: CRASH-BEREITS-GEPRUEFT + CRASH-LETZTER-KONTEXT gelesen, gezielt nach neuen setInterval/setTimeout/location ohne Cleanup/iframe-Check gesucht |
-| **Zuletzt geändert/geöffnet** | GalerieAssistent.tsx (setTimeout in markiereErledigt), CRASH-BEREITS-GEPRUEFT.md, CRASH-LETZTER-KONTEXT.md |
-| **Hinweis von Georg** | „mach ich Schluss für heute“ |
-| **Ergebnis** | SmartPanel, env.ts, index.html, ScreenshotExportAdmin (location.href) bereits abgesichert. **Fix:** GalerieAssistent – stepTimeoutRef + clearTimeout im Cleanup, damit nach Unmount kein setState/onGoToStep mehr läuft. |
+| **Datum** | 01.03.26 |
+| **Thema** | Code-5-Check („crash again“) – nur neue Stellen geprüft |
+| **Zuletzt geändert/geöffnet** | SeitengestaltungPage.tsx (setTimeout-Cleanup), CRASH-BEREITS-GEPRUEFT.md, CRASH-LETZTER-KONTEXT.md |
+| **Hinweis von Georg** | „code 5 check crash again“ |
+| **Ergebnis** | Neue Prüfung: ImageCropModal ✓, env.ts ✓. **Fix:** SeitengestaltungPage – handleSave setTimeout(1800) für setSaved(false) mit Ref + clearTimeout im useEffect-Cleanup (kein setState nach Unmount bei HMR/Navigation). |
 
 ---
 

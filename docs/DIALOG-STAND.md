@@ -4,12 +4,26 @@
 
 ## Datum: 01.03.26
 
-## Wo wir stehengeblieben (aktuell)
-- **Datenabgleich 100 % (Schlüsselfunktion):** GaleriePage „Bilder vom Server laden“ ruft **zuerst** `/api/gallery-data` (Blob) ab, danach Fallback auf `gallery-data.json`. Daten sind sofort nach „Daten an Server senden“ verfügbar. Doku: DATENTRANSPORT-IPAD-MAC-VERCEL.md (Blob anlegen im Projekt, Connect-Button); localhost-Hinweis in Fehlermeldung. **Commit:** 6de6bea ✅ (01.03.26).
-- **Datentransport:** Blob in Vercel angelegt und mit Projekt verbunden (Connect). Mac: „Bilder vom Server laden“ von **k2-galerie.vercel.app** aus nutzen (nicht von localhost).
+## Wo wir stehengeblieben (aktuell) – **HIER EINSTEIGEN**
+- **Datentransport = State of the Art:** Eine Quelle (Vercel Blob), Merge statt Überschreiben, Mobile-Werke geschützt, kein Auto-Reload. API immer über feste URL; „Stand & Daten“-Button = Stand + Daten in einem Klick; beim Öffnen der Galerie (Mac/Desktop) nach 2 s automatisch Daten vom Server. Für den User unsichtbar: speichern → bei Vercel; Mac öffnen / aktualisieren → Daten da.
+- **Datenabgleich 100 %:** GaleriePage lädt zuerst `/api/gallery-data` (Blob), Fallback `gallery-data.json`. **Localhost = gleiche Werke wie Vercel:** Beim Öffnen der Galerie auf localhost wird zuerst von Vercel-API geladen (eine Adresse = eine Datenquelle). Doku: DATENTRANSPORT-IPAD-MAC-VERCEL.md.
 - **Stand-Abgleich:** Schlüsselfunktion, ein Befehl nach Push in VERCEL-CHECKLISTE.
-- **Reopen:** Georg schreibt nur **„ro“** – Reopen-Routine. Regel: gemeinsamer-arbeitsraum.mdc.
-- **Nächster Schritt:** Nach Belieben weiter testen (iPad → Mac über vercel.app) oder anderes Thema.
+- **Reopen:** „ro“ = Reopen-Routine. Regel: gemeinsamer-arbeitsraum.mdc. **Fix 01.03.26:** `.vscode/settings.json` mit `files.watcherExclude` für generierte/Build-Dateien (buildInfo.generated.ts, build-info.json, api/build-info.js, dist/, node_modules/, .vite/) → Cursor meldet seltener „Reopen“. Regel build-skripte-nur-schreiben-wenn-geaendert.mdc ergänzt.
+- **Merge-Schutz (erledigt):** GaleriePage handleRefresh + Initial-Load: Server leer → lokale behalten; Server < 50 % lokal → Sync übersprungen; Speichern nach Merge mit `allowReduce: false`. Build 01.03.26 08:17 ✅.
+- **Bilder vom Server laden (01.03.26):** Funktioniert von **localhost** ohne Wechsel zu vercel.app. Fix: GET ohne Custom-Header → einfacher CORS-Request, kein Preflight. apiClient.ts apiGet; Doku DATENTRANSPORT-IPAD-MAC-VERCEL.md.
+- **Nächster Schritt:** Bei „ro“ arbeitet die KI sofort weiter (Gesetz, keine Bestätigung nötig). Georg testet automatische Sync selbst mehrfach.
+- **Info (Georg):** Gestern mit Android + Chrome die Seiten geöffnet – funktioniert problemlos.
+- **Vollkachelform / Bildverarbeitung:** Offene Punkte (Vollkachel-Anzeige, Freistellen zerlegt Bild, Retour auf Original, Crop-Option) in docs/GRAFIKER-TISCH-NOTIZEN.md unter „Offene Wünsche“ notiert – nächste Session dort abarbeiten.
+
+## Reopen – Code behalten, KI kann weitermachen
+- **Bei „Reopen“ (evtl. mit Restore/Hackerl):** Cursor zeigt bei dir nicht „Undo All“/„Keep All“. **Sicher:** **Zuerst alle Dateien speichern** (Cmd+S oder File → Save All). Dann sind die Änderungen auf der Platte – „Reopen“ lädt dann die gespeicherte Version, nichts geht verloren. Nicht die Option wählen, die die aktuellen Editor-Inhalte verwirft.
+- **Damit die KI weitermacht:** DIALOG-STAND.md lesen („Nächster Schritt“) und WEITERARBEITEN-NACH-ABSTURZ.md.
+
+## 26 Bilder am Mac weg (01.03.26) – iPad noch voll
+- Nach Vercel-Redeploy + „Bilder vom Server laden“ waren am Mac alle 26 Werke weg; am iPad noch vorhanden. **Merge-Schutz ist drin** – das passiert so nicht wieder. Wiederherstellung: Am iPad „Daten an Server senden“ (oder Vollbackup exportieren); dann am Mac Galerie öffnen und „Bilder vom Server laden“ – Merge-Schutz behält lokale, wenn Server leer/zu wenig ist; wenn iPad-Daten schon auf Vercel sind, kommen sie beim Laden dazu.
+
+## Vollkachelform (01.03.26) – umgesetzt, Build offen
+- Dritte Option bei Werke erstellen (Original | Freigestellt | Vollkachelform); imageDisplayMode wird gespeichert; Bearbeiten lädt photoImageMode; GalerieVorschauPage objectFit nach imageDisplayMode. setPhotoUseFreistellen → setPhotoImageMode ersetzt. **Noch:** `npm run build` prüfen, ggf. Commit.
 
 ## Faden: Datentransport mobil (existenzielle Grundfunktion)
 - **Erledigt:** Blob als Hauptspeicher; GaleriePage lädt zuerst API (Blob), dann Fallback; Datenabgleich als Schlüsselfunktion in Doku verankert; Checkliste „Datenabgleich 100 %“.

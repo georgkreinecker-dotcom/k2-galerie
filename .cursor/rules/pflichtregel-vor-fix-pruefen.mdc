@@ -1,0 +1,56 @@
+---
+description: Vor jedem Fix zu wiederkehrenden Problemen bestehende Pflichtregeln prüfen und verbindlich umsetzen – keine Ausnahme statt Regel
+alwaysApply: true
+---
+
+# Pflichtregel vor Fix prüfen – Wiederholungsprobleme vermeiden
+
+## Hintergrund (Lehre aus Missetäter/Reopen, 01.03.26)
+
+Der Nutzer hatte eine **Pflichtregel** gesetzt (write-build-info nicht am Ende jeder AI-Antwort). Bei der Fehlersuche („Missetäter suchen“) wurde **nicht** nach dieser Regel gesucht; stattdessen wurde eine **„Reopen-Ausnahme“** eingebaut (weglassen, wenn Reopen). Das war falsch: Die verbindliche Regel war **niemals** ausführen, nicht „ausnahmsweise weglassen“. Analyse: **docs/ANALYSE-FEHLER-MISSETAETER-REOPEN.md**.
+
+---
+
+## Regel 1: Vor Fix zu wiederkehrenden Themen – bestehende Regeln prüfen
+
+**Vor jedem „Fix“ oder jeder Maßnahme zu einem wiederkehrenden Problem** (Crash, Reopen, Missetäter, „hatten wir schon“, „das war doch so entschieden“):
+
+1. **Suchen** in: `.cursorrules`, `.cursor/rules/*.mdc`, `docs/CRASH-BEREITS-GEPRUEFT.md`, `docs/DIALOG-STAND.md`, ggf. `docs/STRUKTUR-HANDELN-QUELLEN.md` und thematisch passenden Docs.
+2. **Frage:** Gibt es eine **bereits gesetzte Pflichtregel** oder **verbindliche Entscheidung** des Nutzers zu genau diesem Thema?
+3. **Wenn ja:** Die Maßnahme muss diese Regel **vollständig umsetzen** (Implementierung in Code/Regeln/Doku anpassen). **Nicht** eine neue „Ausnahme“ oder abgeschwächte Formulierung einführen.
+
+---
+
+## Regel 2: „Ich habe X als Pflichtregel gesetzt“
+
+**Wenn der Nutzer sagt, er habe etwas als Pflichtregel gesetzt (oder es sei verbindlich vereinbart):**
+
+1. **Regel lokalisieren:** In .cursorrules und .cursor/rules (und Doku) die Stelle finden, die diese Regel enthält oder enthalten sollte.
+2. **Umsetzung an die Regel anpassen:** Code, Ablauf und weitere Regeln so ändern, dass das Verhalten der **Regel entspricht** (nicht einer Ausnahme). „Niemals X“ = Default ist „X nicht tun“, nicht „X tun, außer wenn Y“.
+
+---
+
+## Regel 3: Ursache gefunden – Regel oder Ausnahme?
+
+**Nach der Identifikation einer Ursache** (z. B. „X verursacht Reopen“):
+
+- **Wenn der Nutzer oder die Doku sagt „niemals X“ / „X ist verboten“:** In den Regeln und im Ablauf **„niemals X“** als Standard verankern (kein „X weglassen nur wenn Reopen“).
+- **Nicht:** Eine „Ausnahme“ formulieren („wenn Reopen, dann X weglassen“), die den Normal fall „X wird getan“ bestehen lässt.
+
+---
+
+## Regel 4: Verweis auf schon Beschlossenes
+
+**Bei Formulierungen wie „Missetäter“, „hatten wir schon“, „das war die Regel“:**
+
+1. Zuerst in **Doku und Regeln** nach dem bereits Beschlossenen oder Dokumentierten suchen.
+2. Die aktuelle Maßnahme **daran ausrichten** – nicht eine zweite, abweichende oder weichere Formulierung einführen.
+
+---
+
+## Kurzfassung
+
+- **Vor Fix** zu Crash/Reopen/Missetäter/wiederkehrendem Thema: **bestehende Pflichtregeln prüfen**.
+- **Nutzer-Regel „als Pflicht gesetzt“:** Regel finden, **verbindlich umsetzen** (nicht als Ausnahme).
+- **„Niemals X“** = Default „X nicht tun“, nicht Ausnahme „X weglassen wenn Y“.
+- **Wiederholung vermeiden:** An bereits Beschlossenes anknüpfen, nicht neu erfinden.

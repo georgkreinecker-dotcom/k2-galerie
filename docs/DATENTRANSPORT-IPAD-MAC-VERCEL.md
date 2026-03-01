@@ -55,6 +55,8 @@ Wenn es nicht funktioniert: **Checkliste „Datenabgleich 100 %“** weiter un
 
 **Kurz:** iPad „Daten an Server senden“ → Vercel schreibt in den Blob → **sofort** am Mac „Bilder vom Server laden“ → Daten sind da.
 
+**Von localhost:** „Bilder vom Server laden“ fragt immer die Vercel-URL an (`https://k2-galerie.vercel.app/api/gallery-data`). **Fix 01.03.26:** Der GET-Request sendet keine Custom-Header (z. B. Cache-Control), damit der Browser einen **einfachen** CORS-Request ausführt (kein Preflight). So funktioniert „Bilder vom Server laden“ auch von localhost – **kein Wechsel zu vercel.app nötig**. API sendet weiterhin `Access-Control-Allow-Origin: *`; Code: `src/utils/apiClient.ts` (apiGet ohne Request-Header).
+
 ---
 
 ## Einmalige Einrichtung: Blob Store in Vercel (Datenabgleich Mac ↔ Mobil)
@@ -76,6 +78,22 @@ Der Store muss **im Projekt k2-galerie** angelegt werden, sonst bekommt die API 
 **Falls du den Store woanders angelegt hast** (z. B. unter „Create a database“ ohne vorher k2-galerie gewählt zu haben): In **k2-galerie** → **Storage** gehen und den Blob dort **neu** anlegen (oder prüfen, ob es „Connect existing store“ o. Ä. gibt und den Store mit k2-galerie verbinden).
 
 **Optional – Backup ins Repo:** Wenn du **GITHUB_TOKEN** in Vercel unter Settings → Environment Variables setzt, wird dieselbe Datei zusätzlich ins Repo geschrieben. Für den Datenabgleich **nicht nötig**.
+
+---
+
+## Wiederherstellung: Bilder am Mac weg (z. B. nach Deployment)
+
+**Situation:** Am Mac sind nach „Bilder vom Server laden“ oder nach Deployment alle Werke weg; am iPad sind sie noch da.
+
+**Merge-Schutz (im Code):** Das Überschreiben mit leerem/zu kleinem Server passiert nicht mehr (GaleriePage: Server leer oder &lt; 50 % lokal → Sync übersprungen, lokale bleiben). Für die **einmalige Wiederherstellung** gilt:
+
+| Schritt | Wo | Was tun |
+|--------|-----|--------|
+| 1 | **iPad** | App von **k2-galerie.vercel.app** öffnen. Unter „Werke verwalten“ **„📤 Daten an Server senden“** tippen. Warten bis „Gesendet.“ erscheint. |
+| 2 | **Mac** | App von **k2-galerie.vercel.app** öffnen (oder Galerie-Seite neu laden). **„🔄 Bilder vom Server laden“** tippen. |
+| 3 | **Mac** | Die App lädt vom Server (Blob bzw. gallery-data.json). Enthält der Server jetzt die iPad-Daten, werden sie gemergt; der Merge-Schutz verhindert, dass lokale Werke durch leeren Server gelöscht werden. |
+
+**Alternative (Vollbackup):** Am iPad Admin → Einstellungen → **Vollbackup exportieren** (JSON-Datei). Am Mac dasselbe Menü → **Aus Backup wiederherstellen** und die Datei wählen. Danach ggf. noch „Bilder vom Server laden“, wenn du den Server aktualisieren willst.
 
 ---
 

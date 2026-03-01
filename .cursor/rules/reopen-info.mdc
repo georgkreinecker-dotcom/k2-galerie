@@ -5,12 +5,14 @@ alwaysApply: true
 
 # Reopen Info – feste Routine
 
-**Wenn Georg im Chat „reopen info“ (oder „reopen“) schreibt:**
+**Wenn Georg „ro“ schreibt (Gesetz, unveränderlich):**
 
-1. **Kurz prüfen (ohne Georg zu fragen):**
-   - `package.json`: Script `"dev": "vite"` (kein write-build-info beim dev) – bleibt so.
-   - Keine Änderung nötig, die Dateien beim Entwickeln schreibt (Build-Skripte nur bei `npm run build`).
-2. **Kurz antworten:** z. B. „Reopen-Routine: dev schreibt nicht, Stand nur beim Build. Nichts geändert – wir fahren im Dialog fort.“
-3. **Nicht:** Lange Erklärungen, Checklisten durchgehen, Georg um Infos bitten. Ein Satz, dann weiter.
+- Georg: „ro dann möchte ich dass du am Code weiterarbeitest und der Dialog weiterläuft – keine Bestätigung von mir notwendig, du bleibst am Weiterarbeiten ohne meine Hilfe. Das ist Gesetz.“
+- **Kurz zur Kenntnis:** Reopen – „Preview zu, App im Browser“ (docs/LOSUNG-CRASH-SPIRALE.md). **Sofort danach:** Am Code weiterarbeiten, Dialog weiterführen. DIALOG-STAND.md → „Nächster Schritt“ abarbeiten oder letzte Aufgabe fortsetzen. **Keine** Bestätigung von Georg abwarten, **keine** „soll ich …?“ – ich arbeite weiter.
+- **Ziel:** ro = kurzer Hinweis + ich mache sofort weiter. Keine Spirale aus Warten und Bestätigen.
 
-**Ziel:** Georg muss sich mit Reopen nicht mehr belasten. Er schreibt „reopen info“, ich bestätige knapp und wir machen im Dialog weiter.
+---
+
+## Missetäter – Pflichtregel (verbindlich)
+
+**write-build-info am Ende jeder AI-Antwort ist verboten.** Das war der Missetäter für Reopen. Georg hat das als Pflichtregel gesetzt: **niemals** write-build-info am Ende einer Aufgabe ausführen. Stand kommt nur beim **Commit-Push** (dann im Build) oder wenn Georg explizit „Stand aktualisieren“ sagt. Siehe .cursorrules PFLICHT-ABSCHLUSS und docs/CRASH-BEREITS-GEPRUEFT.md.

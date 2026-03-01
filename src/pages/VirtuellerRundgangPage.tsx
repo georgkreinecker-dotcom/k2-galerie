@@ -457,7 +457,7 @@ const VirtuellerRundgangPage = () => {
           onMouseUp={() => setIsDragging(false)}
           onMouseLeave={() => setIsDragging(false)}
         >
-          {/* Header mit Titel, Like, Kaufen und Schließen */}
+          {/* Header mit Zurück, Titel, Like, Erwerben und Schließen */}
           <div style={{
             position: 'absolute',
             top: 0,
@@ -469,14 +469,40 @@ const VirtuellerRundgangPage = () => {
             alignItems: 'center',
             background: 'linear-gradient(to bottom, rgba(0,0,0,0.8), transparent)',
             zIndex: 1,
-            gap: '1rem'
+            gap: '0.75rem'
           }}>
+            <button
+              type="button"
+              onClick={() => {
+                setLightboxImage(null)
+                setImageZoom(1)
+                setImagePosition({ x: 0, y: 0 })
+              }}
+              aria-label="Zurück zur Galerie"
+              style={{
+                flexShrink: 0,
+                background: 'rgba(255, 255, 255, 0.2)',
+                border: '1px solid rgba(255, 255, 255, 0.35)',
+                color: '#ffffff',
+                fontSize: 'clamp(0.85rem, 2.5vw, 1rem)',
+                padding: '0.5rem 0.75rem',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                fontWeight: 600
+              }}
+            >
+              ← Zurück
+            </button>
             <h3 style={{
               color: '#ffffff',
               margin: 0,
               fontSize: 'clamp(1rem, 3vw, 1.5rem)',
               fontWeight: '600',
-              flex: 1
+              flex: 1,
+              minWidth: 0
             }}>
               {lightboxImage.title}
             </h3>
@@ -521,7 +547,7 @@ const VirtuellerRundgangPage = () => {
               </button>
             )}
 
-            {/* Möchte ich kaufen Button – alle mit Preis, sofern nicht explizit "nur Ausstellung" */}
+            {/* Möchte ich erwerben Button – alle mit Preis, sofern nicht explizit "nur Ausstellung" */}
             {lightboxImage.artwork && lightboxImage.artwork.inShop !== false && (parseFloat(String(lightboxImage.artwork.price)) || 0) > 0 && (
               <button
                 onClick={(e) => {
@@ -556,7 +582,7 @@ const VirtuellerRundgangPage = () => {
                   e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.3)'
                 }}
               >
-                🛒 Möchte ich kaufen
+                🛒 Möchte ich erwerben
               </button>
             )}
 

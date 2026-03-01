@@ -16,6 +16,7 @@ import { readArtworksRawForContext, readArtworksRawForContextOrNull, saveArtwork
 import { loadEvents } from '../utils/eventsStorage'
 import { loadDocuments } from '../utils/documentsStorage'
 import { mergeServerWithLocal } from '../utils/syncMerge'
+import { artworksForExport } from '../utils/artworkExport'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
 import '../App.css'
 
@@ -3013,9 +3014,15 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                             src={displaySrc} 
                             alt={artwork.title || artwork.number}
                             style={{ 
+                              position: 'absolute',
+                              inset: 0,
                               width: '100%', 
-                              height: '100%', 
-                              objectFit: 'cover', 
+                              height: '100%',
+                              minWidth: '100%',
+                              minHeight: '100%',
+                              /* Vollkachel: Bild füllt Kachel (cover); sonst enthalten mit Rand. imageDisplayMode muss am Werk gespeichert sein (Admin: Bildverarbeitung → Vollkachelform). */
+                              objectFit: artwork.imageDisplayMode === 'vollkachel' ? 'cover' : 'contain',
+                              objectPosition: artwork.imageDisplayMode === 'vollkachel' ? 'center' : 'center',
                               display: 'block',
                               cursor: 'pointer',
                               transition: 'transform 0.3s ease'
@@ -3368,7 +3375,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           onMouseUp={() => setIsDragging(false)}
           onMouseLeave={() => setIsDragging(false)}
         >
-          {/* Header mit Titel, Like, Kaufen und Schließen */}
+          {/* Header mit Zurück, Titel, Like, Erwerben und Schließen */}
           <div style={{
             position: 'absolute',
             top: 0,
@@ -3380,9 +3387,35 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
             alignItems: 'center',
             background: 'linear-gradient(to bottom, rgba(0,0,0,0.8), transparent)',
             zIndex: 1,
-            gap: '1rem'
+            gap: '0.75rem'
           }}>
-            <div style={{ flex: 1 }}>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                setLightboxImage(null)
+                setImageZoom(1)
+                setImagePosition({ x: 0, y: 0 })
+              }}
+              aria-label="Zurück zur Galerie"
+              style={{
+                flexShrink: 0,
+                background: 'rgba(255, 255, 255, 0.2)',
+                border: '1px solid rgba(255, 255, 255, 0.35)',
+                color: '#ffffff',
+                fontSize: 'clamp(0.85rem, 2.5vw, 1rem)',
+                padding: '0.5rem 0.75rem',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                fontWeight: 600
+              }}
+            >
+              ← Zurück
+            </button>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <h3 style={{
                 color: '#ffffff',
                 margin: 0,
@@ -3524,7 +3557,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               </button>
             )}
 
-            {/* Möchte ich kaufen Button */}
+            {/* Möchte ich erwerben Button */}
             {lightboxImage.artwork && lightboxImage.artwork.inShop !== false && (
               <button
                 onClick={(e) => {
@@ -3560,7 +3593,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                   e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.3)'
                 }}
               >
-                🛒 Möchte ich kaufen
+                🛒 Möchte ich erwerben
               </button>
             )}
 
@@ -4228,7 +4261,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                               martina: JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}'),
                               georg: JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}'),
                               gallery: JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}'),
-                              artworks: allArtworks,
+                              artworks: artworksForExport(allArtworks),
                               events: loadEvents('k2'),
                               documents: loadDocuments('k2'),
                               designSettings: JSON.parse(localStorage.getItem('k2-design-settings') || '{}'),
@@ -4477,7 +4510,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                             martina: JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}'),
                             georg: JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}'),
                             gallery: JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}'),
-                            artworks: allArtworks,
+                            artworks: artworksForExport(allArtworks),
                             events: loadEvents('k2'),
                             documents: loadDocuments('k2'),
                             designSettings: JSON.parse(localStorage.getItem('k2-design-settings') || '{}'),

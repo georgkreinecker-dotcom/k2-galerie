@@ -20,11 +20,12 @@ alwaysApply: true
 ## Reihenfolge am Ende jeder Aufgabe
 
 ```
-1. node scripts/write-build-info.js   ← Stand aktualisieren
-2. git add .                          ← alle Änderungen markieren
-3. git commit -m "Kurzbeschreibung"   ← Snapshot erstellen
-4. git push                           ← zu GitHub + Vercel
+1. git add .                          ← alle Änderungen markieren
+2. git commit -m "Kurzbeschreibung"   ← Snapshot erstellen
+3. git push                           ← zu GitHub + Vercel
 ```
+
+**Stand:** write-build-info wird **nicht** vor dem Push ausgeführt. Es läuft **nur** im `npm run build` (beim Push/Deploy). So bleibt Cursor ruhig (kein Reopen durch Datei-Schreiben). Nur wenn Georg explizit „Stand aktualisieren“ sagt, einmalig `node scripts/write-build-info.js` ausführen.
 
 ## Commit-Text Regeln
 

@@ -864,15 +864,15 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
 
       const origin = typeof window !== 'undefined' ? window.location.origin : ''
       const isLocalLan = /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.|10\.)/.test(origin)
-      // Verbindlicher Datenabgleich: Zuerst API (Blob) – Daten sind sofort nach „Daten an Server senden“
-      const apiPath = '/api/gallery-data'
-      const apiBase = origin.includes('vercel.app') ? '' : GALLERY_DATA_PUBLIC_URL
-      const apiUrl = `${apiBase || origin}${apiPath}?t=${timestamp}&_=${Date.now()}&v=${newVersion}`
+      // Verbindlicher Datenabgleich: Immer feste Vercel-URL für API (funktioniert von überall – vercel.app, localhost, iPad)
+      const apiUrl = `${GALLERY_DATA_PUBLIC_URL}/api/gallery-data?t=${timestamp}&_=${Date.now()}&v=${newVersion}`
 
       let response: Response | null = null
       try {
         response = await fetch(apiUrl, fetchOpts)
-      } catch (_) {}
+      } catch (e) {
+        if (isLocalLan) console.warn('🔄 Fetch Vercel API fehlgeschlagen (von localhost/LAN):', e instanceof Error ? e.message : e, '– Fallbacks werden versucht.')
+      }
       // Fallback: statische gallery-data.json (z. B. nach Git-Push/Build)
       if (!response?.ok) {
         try {
@@ -954,7 +954,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
         if (data.artworks && Array.isArray(data.artworks)) {
           try {
             const serverArtworks = data.artworks
-            
+            // SCHUTZ: Server leer oder drastisch weniger als lokal → nicht überschreiben (niemals-kundendaten-loeschen)
+            if (serverArtworks.length === 0 && localArtworks.length > 0) {
+              console.warn('⚠️ Server lieferte 0 Werke – lokale Werke bleiben erhalten:', localArtworks.length)
+              window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: localArtworks.length, fromGaleriePage: true, serverEmpty: true } }))
+            } else if (serverArtworks.length < localArtworks.length * 0.5 && localArtworks.length > 0) {
+              console.warn(`⚠️ Server ${serverArtworks.length} vs. lokal ${localArtworks.length} – zu großer Unterschied, Sync übersprungen`)
+              window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: localArtworks.length, fromGaleriePage: true, syncSkipped: true } }))
+            } else {
             // Map für schnelle Suche (unterstützt alte Key-Varianten -K-/-M-)
             const serverMap = new Map<string, any>()
             serverArtworks.forEach((a: any) => {
@@ -976,8 +983,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             console.log('📋 Server Nummern:', serverArtworks.map((a: any) => a.number || a.id).join(', '))
             console.log('📋 Gemergte Nummern:', merged.map((a: any) => a.number || a.id).join(', '))
             
-            // KRITISCH: Speichere merged Liste - Mobile-Werke sind geschützt! (Phase 1.2: über Schicht)
-            saveArtworksForContext(musterOnly, vk2, merged)
+            // KRITISCH: Speichere merged Liste – allowReduce: false verhindert Reduzierung (Schutz)
+            saveArtworksForContext(musterOnly, vk2, merged, { allowReduce: false })
             
             // ZUSÄTZLICH: Prüfe ob neue Mobile-Werke vom Server geladen wurden
             const newMobileWorks = merged.filter((a: any) => 
@@ -994,6 +1001,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             
             // Trigger Event für andere Komponenten - mit Flag dass es von GaleriePage kommt
             window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: merged.length, fromGaleriePage: true, newMobileWorks: newMobileWorks.length } }))
+            }
           } catch (e) {
             console.warn('⚠️ Werke zu groß für localStorage:', e)
             // Bei Fehler: Behalte lokale Werke!
@@ -1195,6 +1203,16 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       }
     }
   }, [handleRefresh])
+
+  // Beim Öffnen der Galerie (Mac/Desktop): einmal im Hintergrund Daten vom Server holen – dann sind neue Werke (z. B. vom iPad) automatisch da
+  React.useEffect(() => {
+    if (musterOnly || vk2) return
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
+    const notInIframe = window.self === window.top
+    if (!notInIframe || isMobile) return // Nur Desktop, nicht in Cursor-Preview
+    const t = setTimeout(() => handleRefresh(), 2000)
+    return () => clearTimeout(t)
+  }, [musterOnly, vk2, handleRefresh])
   
   // KRITISCH: Event-Listener für Mobile-Werke Synchronisation zwischen Geräten
   React.useEffect(() => {
@@ -1279,21 +1297,33 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           }
         }
 
+        const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        // Bei localhost zuerst von Vercel (API = Blob) laden, damit die gleichen Werke wie auf vercel.app sichtbar sind – eine Adresse = eine Datenquelle
+        const apiUrl = `${GALLERY_DATA_PUBLIC_URL}/api/gallery-data?t=${timestamp}&_=${Date.now()}`
         let response: Response | null = null
-        try {
-          response = await fetch(pathAndQuery, fetchOpts)
-        } catch (_) {
-          response = null
+        if (isLocal) {
+          try {
+            response = await fetch(apiUrl, fetchOpts)
+          } catch (_) {
+            response = null
+          }
+        }
+        if (!response?.ok && !isLocal) {
+          try {
+            response = await fetch(pathAndQuery, fetchOpts)
+          } catch (_) {
+            response = null
+          }
         }
         if (timeoutId) {
           clearTimeout(timeoutId)
           timeoutId = null
         }
-        if ((!response || !response.ok) && !window.location.hostname.includes('vercel.app')) {
+        if (!response?.ok && !window.location.hostname.includes('vercel.app')) {
           try {
             controller = new AbortController()
             timeoutId = setTimeout(() => { if (controller) controller.abort() }, 8000)
-            response = await fetch(GALLERY_DATA_PUBLIC_URL + pathAndQuery, { ...fetchOpts, signal: controller.signal })
+            response = await fetch(isLocal ? (GALLERY_DATA_PUBLIC_URL + pathAndQuery) : apiUrl, { ...fetchOpts, signal: controller.signal })
           } catch (_) {
             response = response || null
           }
@@ -1356,20 +1386,28 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             })
           }
           
-          // Lade auch Werke - SERVER = QUELLE DER WAHRHEIT (wie handleRefresh)
+          // Lade auch Werke - SERVER = QUELLE DER WAHRHEIT (wie handleRefresh), mit Schutz bei leerem/drastisch kleinerem Server
           if (data.artworks && Array.isArray(data.artworks)) {
             try {
               const localArtworks = loadArtworksFromContext(musterOnly, vk2)
               const serverArtworks = data.artworks
+              if (serverArtworks.length === 0 && localArtworks.length > 0) {
+                console.warn('⚠️ Initial-Load: Server 0 Werke – lokale Werke bleiben erhalten:', localArtworks.length)
+                window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: localArtworks.length, fromGaleriePage: true, initialLoad: true, serverEmpty: true } }))
+              } else if (serverArtworks.length < localArtworks.length * 0.5 && localArtworks.length > 0) {
+                console.warn(`⚠️ Initial-Load: Server ${serverArtworks.length} vs. lokal ${localArtworks.length} – Sync übersprungen`)
+                window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: localArtworks.length, fromGaleriePage: true, initialLoad: true, syncSkipped: true } }))
+              } else {
               const { merged, toHistory } = mergeServerWithLocal(serverArtworks, localArtworks)
               if (toHistory.length > 0) appendToHistory(toHistory)
-              saveArtworksForContext(musterOnly, vk2, merged)
+              saveArtworksForContext(musterOnly, vk2, merged, { allowReduce: false })
               console.log('✅ Werke gemergt beim Initial-Load (Server = Quelle):', merged.length, 'Gesamt,', toHistory.length, 'in History')
               console.log('📋 Lokale Nummern:', localArtworks.map((a: any) => a.number || a.id).join(', '))
               console.log('📋 Server Nummern:', serverArtworks.map((a: any) => a.number || a.id).join(', '))
               console.log('📋 Gemergte Nummern:', merged.map((a: any) => a.number || a.id).join(', '))
               // Trigger Event für andere Komponenten (z.B. GalerieVorschauPage)
               window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: merged.length, fromGaleriePage: true, initialLoad: true } }))
+              }
             } catch (e) {
               console.warn('⚠️ Werke zu groß für localStorage:', e)
               // Bei Fehler: Behalte lokale Werke!
@@ -2206,7 +2244,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               minHeight: '44px'
             }}
           >
-            {isRefreshing ? '⏳ Lade…' : '🔄 Bilder vom Server laden'}
+            {isRefreshing ? '⏳ Lade vom Server…' : '🔄 Bilder vom Server laden'}
           </button>
         )}
 
@@ -3468,7 +3506,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                       </p>
                       <div style={{ background: '#fff', padding: '0.4rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
                         {serverLabel && <div style={{ fontSize: 10, color: '#666', marginBottom: 4 }}>Vercel-Stand: {serverLabel}</div>}
-                        <button type="button" onClick={() => refetchQrStand()} title="QR mit aktuellem Stand von Vercel neu laden" style={{ marginBottom: 4, padding: '2px 8px', fontSize: 11, background: 'rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.12)', borderRadius: 6, cursor: 'pointer' }}>QR neu</button>
+                        <button type="button" onClick={() => { refetchQrStand(); handleRefresh(); }} title="Stand und Daten von Vercel abrufen (QR + Werke/Daten)" style={{ marginBottom: 4, padding: '2px 8px', fontSize: 11, background: 'rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.12)', borderRadius: 6, cursor: 'pointer' }}>Stand & Daten</button>
                         <img src={vercelQrDataUrl} alt={`QR-Code: ${tenantConfig.galleryName}`} style={{ width: 100, height: 100, display: 'block' }} />
                       </div>
                       <p style={{ margin: 0, fontSize: 'clamp(0.55rem, 1.2vw, 0.65rem)', color: theme.muted, fontWeight: 500, maxWidth: 140 }}>

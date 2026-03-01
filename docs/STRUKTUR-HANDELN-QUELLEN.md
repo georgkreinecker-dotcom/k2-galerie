@@ -30,6 +30,7 @@ Damit alle Informationen **jederzeit aktuell und hier verfügbar** sind, gilt di
 - **Verbindlich = zuverlässig:** Was als verbindlicher Befehl oder Weg dargestellt wird, muss funktionieren – man muss sich darauf verlassen können, nicht darauf hoffen. Regel: **.cursor/rules/verbindlich-zuverlaessig-nicht-hoffnung.mdc**.
 - **Ziel vor Anstrengung:** Ohne richtiges Ziel kann hundertmal „richtig machen“ trotzdem falsch sein. Immer wieder das Ziel vor Augen – nicht Anstrengung verdoppeln, wenn das Ziel aus den Augen ist. Regel: **.cursor/rules/ziel-vor-anstrengung.mdc**.
 - **Schritt für Schritt – konsequent:** Ein Schritt fertig, dann der nächste. Nicht springen, nicht halb machen. Roadmap Phase für Phase. Regel: **.cursor/rules/schritt-fuer-schritt-konsequent.mdc**.
+- **Pflichtregel vor Fix prüfen:** Bei wiederkehrenden Themen (Crash, Reopen, Missetäter, „hatten wir schon“) zuerst bestehende Pflichtregeln in .cursorrules und .cursor/rules prüfen; Nutzer-Regel verbindlich umsetzen, keine „Ausnahme“ statt Regel. Analyse: **docs/ANALYSE-FEHLER-MISSETAETER-REOPEN.md**. Regel: **.cursor/rules/pflichtregel-vor-fix-pruefen.mdc**.
 - Bei Fragen „wo steht X?“ oder „wie machen wir Y?“: zuerst **k2team-handbuch/00-INDEX.md**, **mök2** (AGB, Marketing ök2), **docs/00-INDEX.md**, **HAUS-INDEX.md** prüfen.
 - Neue wichtige Infos: in der passenden Quelle (mök2, Handbuch, docs) eintragen, damit sie **hier immer aktuell zur Verfügung stehen**.
 
@@ -45,6 +46,7 @@ Damit alle Informationen **jederzeit aktuell und hier verfügbar** sind, gilt di
 - **.cursor/rules/ziel-vor-anstrengung.mdc** – Ziel vor Anstrengung; ohne richtiges Ziel kann hundertmal richtig machen trotzdem falsch sein (Grundregel, DNA)
 - **.cursor/rules/schritt-fuer-schritt-konsequent.mdc** – Schritt für Schritt, konsequent bleiben; nicht springen, nicht halb machen (DNA)
 - **.cursor/rules/build-skripte-nur-schreiben-wenn-geaendert.mdc** – Build-Skripte schreiben nur bei Änderung → weniger Cursor-Reopen (Erfahrung 28.02.26)
+- **.cursor/rules/pflichtregel-vor-fix-pruefen.mdc** – Vor Fix zu wiederkehrenden Themen bestehende Pflichtregeln prüfen; Regel verbindlich umsetzen (Analyse: docs/ANALYSE-FEHLER-MISSETAETER-REOPEN.md)
 - **.cursor/rules/team-hebel-unternehmer-persoenlichkeit-ki.mdc** – Team-Hebel (Unternehmer + Persönlichkeit + KI), Regelwerk und Vermächtnis für maximale Lernkurve
 - **docs/WIR-PROZESS.md** – Abschnitt „Team-Hebel und Lernkurve“ im Vermächtnis
 - **docs/MOK2-EIGENER-BEREICH.md** – mök2 als eigener Bereich

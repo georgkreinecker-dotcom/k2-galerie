@@ -25,13 +25,15 @@ import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
-import { addPendingArtwork, filterK2Only, readArtworksRawByKey, saveArtworksByKey } from '../src/utils/artworksStorage'
+import { addPendingArtwork, filterK2Only, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey } from '../src/utils/artworksStorage'
 import { loadStammdaten, saveStammdaten as persistStammdaten, loadVk2Stammdaten, saveVk2Stammdaten } from '../src/utils/stammdatenStorage'
 import { loadEvents as loadEventsFromStorage } from '../src/utils/eventsStorage'
 import { loadDocuments as loadDocumentsFromStorage } from '../src/utils/documentsStorage'
 import { apiPost, apiGet } from '../src/utils/apiClient'
 import { safeReload } from '../src/utils/env'
 import { compressImageForStorage } from '../src/utils/compressImageForStorage'
+import ImageCropModal from '../src/components/ImageCropModal'
+import AdminBildZuschneidenButton from '../src/components/AdminBildZuschneidenButton'
 import { getWerbeliniePrDocCss, getWerbeliniePrDocCssVk2, WERBELINIE_FONTS_URL, WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../src/config/marketingWerbelinie'
 import '../src/App.css'
 
@@ -369,25 +371,33 @@ function saveArtworks(tenant: ReturnType<typeof useTenant>, artworks: any[]): bo
   return ok
 }
 
-/** Lädt Werke ROH – über artworksStorage (Phase 1.2). Ohne Anzeige-Filter, für Schreibvorgänge. */
+/** Lädt Werke ROH – über artworksStorage (Phase 1.2). Ohne Anzeige-Filter, für Schreibvorgänge.
+ * ök2: Nur wenn Key fehlt (null) → Muster. Wenn Key existiert und ist [] (User hat alle gelöscht) → [] behalten, Muster nie wieder anzeigen. */
 function loadArtworksRaw(tenant: ReturnType<typeof useTenant>): any[] {
   if (tenant.isVk2) return []
   const key = tenant.getArtworksKey()
-  const raw = readArtworksRawByKey(key)
-  if ((!raw || raw.length === 0) && tenant.isOeffentlich) return [...MUSTER_ARTWORKS]
+  if (tenant.isOeffentlich) {
+    const rawOrNull = readArtworksRawByKeyOrNull(key ?? 'k2-oeffentlich-artworks')
+    if (rawOrNull === null) return [...MUSTER_ARTWORKS]
+    return Array.isArray(rawOrNull) ? rawOrNull : []
+  }
+  const raw = readArtworksRawByKey(key!)
   return Array.isArray(raw) ? raw : []
 }
 
 function loadArtworks(tenant: ReturnType<typeof useTenant>): any[] {
   if (tenant.isVk2) return []
   const key = tenant.getArtworksKey()
-  const stored = readArtworksRawByKey(key)
-  if (!stored || stored.length === 0) {
-    if (tenant.isOeffentlich) return [...MUSTER_ARTWORKS]
-    return []
+  if (tenant.isOeffentlich) {
+    const storedOrNull = readArtworksRawByKeyOrNull(key ?? 'k2-oeffentlich-artworks')
+    if (storedOrNull === null) return [...MUSTER_ARTWORKS]
+    if (!Array.isArray(storedOrNull) || storedOrNull.length === 0) return []
+    var artworks = storedOrNull
+  } else {
+    const stored = readArtworksRawByKey(key!)
+    if (!stored || stored.length === 0) return []
+    var artworks = Array.isArray(stored) ? stored : []
   }
-  if (Array.isArray(stored) && stored.length === 0 && tenant.isOeffentlich) return []
-  let artworks = Array.isArray(stored) ? stored : []
   if (artworks.length > 0 && artworks.some((a: any) => a === null || typeof a !== 'object')) {
     artworks = artworks.filter((a: any) => a && typeof a === 'object')
   }
@@ -1099,12 +1109,14 @@ function ScreenshotExportAdmin() {
   const [csvDragOver, setCsvDragOver] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  // Nur im Admin: Foto freistellen (mit Pro-Hintergrund) oder Original unverändert benutzen
-  const [photoUseFreistellen, setPhotoUseFreistellen] = useState(true)
+  // Nur im Admin: Bilddarstellung – Original | Freigestellt (Pro-Hintergrund) | Vollkachelform (Bild füllt Kachel)
+  const [photoImageMode, setPhotoImageMode] = useState<'original' | 'freigestellt' | 'vollkachel'>('freigestellt')
   // Hintergrund-Variante bei Freistellung: hell | weiss | warm | kuehl | dunkel
   const [photoBackgroundPreset, setPhotoBackgroundPreset] = useState<'hell' | 'weiss' | 'warm' | 'kuehl' | 'dunkel'>('hell')
   /** Läuft gerade „Jetzt freistellen“ (nachträglich für bestehendes Bild)? */
   const [freistellenInProgress, setFreistellenInProgress] = useState(false)
+  /** Zuschnitt-Modal: Bild als Data-URL zum Zuschneiden (null = geschlossen) */
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null)
   const [artworkTitle, setArtworkTitle] = useState('')
   const [artworkCategory, setArtworkCategory] = useState<string>('malerei')
   const [artworkCeramicSubcategory, setArtworkCeramicSubcategory] = useState<'vase' | 'teller' | 'skulptur' | 'sonstig'>('vase')
@@ -2265,6 +2277,18 @@ function ScreenshotExportAdmin() {
     }
   }, [artworkCategory]) // NUR Kategorie - verhindert Render-Loop!
 
+  // Letzte Kategorie merken: beim Öffnen „Neues Werk“ wiederherstellen (Serien-Eingabe)
+  const K2_LAST_ARTWORK_CATEGORY_KEY = 'k2-last-artwork-category'
+  useEffect(() => {
+    if (showAddModal && !editingArtwork) {
+      try {
+        const last = localStorage.getItem(K2_LAST_ARTWORK_CATEGORY_KEY)
+        if (last && (ARTWORK_CATEGORIES.some((c) => c.id === last) || (tenant.isVk2 && VK2_KUNSTBEREICHE.some((c) => c.id === last)))) {
+          setArtworkCategory(last)
+        }
+      } catch (_) {}
+    }
+  }, [showAddModal, editingArtwork])
 
   // Werke aus localStorage laden – bei Kontextwechsel (K2/ök2/VK2) neu laden, sonst zeigt Admin nach Guide-Klick weiter K2-Daten
   useEffect(() => {
@@ -6984,7 +7008,31 @@ ${'='.repeat(60)}
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
       const context = isMobile ? ('mobile' as const) : ('desktop' as const)
 
-      if (selectedFile) {
+      const hasPreviewDataUrl = previewUrl?.startsWith('data:') || pendingImageDataUrlRef.current?.startsWith('data:')
+      if (hasPreviewDataUrl) {
+        const src = previewUrl?.startsWith('data:') ? previewUrl : pendingImageDataUrlRef.current
+        if (!src) { setIsSavingArtwork(false); alert('Bitte ein Bild auswählen'); return }
+        const fileFromPreview = await dataUrlToFile(src)
+        let compressed = await compressImageForStorage(fileFromPreview, { context })
+        if (compressed.length > 1200000) {
+          const more = await compressImageForStorage(fileFromPreview, { context: 'mobile' })
+          compressed = more.length > 1200000 ? compressed : more
+        }
+        imageDataUrl = compressed
+        if (photoImageMode === 'freigestellt') {
+          try {
+            const { compositeOnProfessionalBackground } = await import('../src/utils/professionalImageBackground')
+            imageDataUrl = await compositeOnProfessionalBackground(imageDataUrl, photoBackgroundPreset)
+          } catch (err) {
+            console.warn('Freistellung (Vorschau-Pfad) fehlgeschlagen, verwende Original:', err)
+            try {
+              const key = 'k2-freistellen-fallback-count'
+              const n = parseInt(sessionStorage.getItem(key) || '0', 10) + 1
+              sessionStorage.setItem(key, String(n))
+            } catch (_) {}
+          }
+        }
+      } else if (selectedFile) {
         const compressedDataUrl = await compressImageForStorage(selectedFile, { context })
         if (compressedDataUrl.length > 1200000) {
           const moreCompressed = await compressImageForStorage(selectedFile, { context: 'mobile' })
@@ -6997,36 +7045,12 @@ ${'='.repeat(60)}
         } else {
           imageDataUrl = compressedDataUrl
         }
-        // Option im Admin: Foto freistellen (Pro-Hintergrund) oder Original unverändert
-        if (photoUseFreistellen) {
+        if (photoImageMode === 'freigestellt') {
           try {
             const { compositeOnProfessionalBackground } = await import('../src/utils/professionalImageBackground')
             imageDataUrl = await compositeOnProfessionalBackground(imageDataUrl, photoBackgroundPreset)
           } catch (err) {
             console.warn('Freistellung fehlgeschlagen, verwende Original:', err)
-            try {
-              const key = 'k2-freistellen-fallback-count'
-              const n = parseInt(sessionStorage.getItem(key) || '0', 10) + 1
-              sessionStorage.setItem(key, String(n))
-            } catch (_) {}
-          }
-        }
-      } else if (editingArtwork && (previewUrl?.startsWith('data:') || pendingImageDataUrlRef.current?.startsWith('data:'))) {
-        const src = previewUrl?.startsWith('data:') ? previewUrl : pendingImageDataUrlRef.current
-        if (!src) { setIsSavingArtwork(false); alert('Bitte ein Bild auswählen'); return }
-        const fileFromPreview = await dataUrlToFile(src)
-        let compressed = await compressImageForStorage(fileFromPreview, { context })
-        if (compressed.length > 1200000) {
-          const more = await compressImageForStorage(fileFromPreview, { context: 'mobile' })
-          compressed = more.length > 1200000 ? compressed : more
-        }
-        imageDataUrl = compressed
-        if (photoUseFreistellen) {
-          try {
-            const { compositeOnProfessionalBackground } = await import('../src/utils/professionalImageBackground')
-            imageDataUrl = await compositeOnProfessionalBackground(imageDataUrl, photoBackgroundPreset)
-          } catch (err) {
-            console.warn('Freistellung (Vorschau-Pfad) fehlgeschlagen, verwende Original:', err)
             try {
               const key = 'k2-freistellen-fallback-count'
               const n = parseInt(sessionStorage.getItem(key) || '0', 10) + 1
@@ -7095,6 +7119,7 @@ ${'='.repeat(60)}
       inShop: isInShop,
       imVereinskatalog: isImVereinskatalog || false,
       imageUrl: imageDataUrl,
+      imageDisplayMode: photoImageMode === 'original' ? 'normal' : photoImageMode === 'freigestellt' ? 'freigestellt' : 'vollkachel',
       createdAt: new Date().toISOString(),
       addedToGalleryAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -7122,15 +7147,9 @@ ${'='.repeat(60)}
       artworkData.ceramicSubcategory = artworkCeramicSubcategory
       artworkData.ceramicType = artworkCeramicType
       artworkData.ceramicSurface = artworkCeramicSurface
-      if (artworkCeramicSubcategory === 'vase' || artworkCeramicSubcategory === 'skulptur') {
-        artworkData.ceramicHeight = artworkCeramicHeight ? parseFloat(artworkCeramicHeight) : undefined
-      }
-      if (artworkCeramicSubcategory === 'teller') {
-        artworkData.ceramicDiameter = artworkCeramicDiameter ? parseFloat(artworkCeramicDiameter) : undefined
-      }
-      if (artworkCeramicSubcategory === 'sonstig') {
-        artworkData.ceramicDescription = artworkCeramicDescription || undefined
-      }
+      // Keramik: Breite + Höhe wie bei Bildern (gleiche Felder)
+      if (artworkPaintingWidth) artworkData.paintingWidth = parseFloat(artworkPaintingWidth)
+      if (artworkPaintingHeight) artworkData.paintingHeight = parseFloat(artworkPaintingHeight)
     }
     
     // Werk in localStorage speichern – immer ROH-Liste (nie gefiltert), sonst gehen Werke verloren
@@ -7183,10 +7202,11 @@ ${'='.repeat(60)}
     })
     
     if (editingArtwork) {
-      // Bestehendes Werk aktualisieren
-      const index = artworks.findIndex((a: any) => 
-        (a.id === editingArtwork.id || a.number === editingArtwork.number) ||
-        (a.id === editingArtwork.id && a.number === editingArtwork.number)
+      // Bestehendes Werk aktualisieren – String-Vergleich damit id/number-Typ (string vs number) nicht fehlschlägt
+      const editId = String(editingArtwork?.id ?? '')
+      const editNum = String(editingArtwork?.number ?? '')
+      const index = artworks.findIndex((a: any) =>
+        (a?.id != null && String(a.id) === editId) || (a?.number != null && String(a.number) === editNum)
       )
       if (index !== -1) {
         // Behalte createdAt und addedToGalleryAt wenn vorhanden
@@ -7431,7 +7451,13 @@ ${'='.repeat(60)}
         setSearchQuery('')
       }
       
-      setAllArtworks(reloaded)
+      // Sofortige UI-Aktualisierung: reloaded nutzen, aber das gerade gespeicherte Werk durch artworkData ersetzen,
+      // damit die Anzeige garantiert das zugeschnittene/bearbeitete Bild zeigt (kein veralteter Cache/Ref)
+      const idNum = String(artworkData?.number ?? artworkData?.id ?? '')
+      const listToShow = reloaded.map((a: any) =>
+        String(a?.number ?? a?.id ?? '') === idNum ? { ...a, ...artworkData, imageUrl: artworkData.imageUrl } : a
+      )
+      setAllArtworks(listToShow)
       
       // WICHTIG: Kurze Verzögerung damit React State aktualisiert wird
       setTimeout(() => {
@@ -10258,6 +10284,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             setSelectedFile(null)
                             pendingImageDataUrlRef.current = null
                             if (artwork.imageUrl) setPreviewUrl(artwork.imageUrl)
+                            setPhotoImageMode(artwork.imageDisplayMode === 'vollkachel' ? 'vollkachel' : artwork.imageDisplayMode === 'normal' ? 'original' : 'freigestellt')
                             setShowAddModal(true)
                             return
                           }
@@ -10304,6 +10331,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           setSelectedFile(null)
                           pendingImageDataUrlRef.current = null
                           if (artwork.imageUrl) setPreviewUrl(artwork.imageUrl)
+                          setPhotoImageMode(artwork.imageDisplayMode === 'vollkachel' ? 'vollkachel' : artwork.imageDisplayMode === 'normal' ? 'original' : 'freigestellt')
                           setShowAddModal(true)
                         }}
                         style={{
@@ -15708,7 +15736,7 @@ ${name}`
             setArtworkQuantity('1')
             setSelectedFile(null)
             setPreviewUrl(null)
-            setPhotoUseFreistellen(true)
+            setPhotoImageMode('freigestellt')
             setPhotoBackgroundPreset('hell')
             setIsInShop(true)
       setIsImVereinskatalog(false)
@@ -15773,7 +15801,7 @@ ${name}`
                   setArtworkQuantity('1')
                   setSelectedFile(null)
                   setPreviewUrl(null)
-                  setPhotoUseFreistellen(true)
+                  setPhotoImageMode('freigestellt')
                   setPhotoBackgroundPreset('hell')
                   setIsInShop(true)
       setIsImVereinskatalog(false)
@@ -16218,7 +16246,7 @@ ${name}`
                 </div>
               )}
 
-              {/* Option: Foto freistellen oder Original – nur anzeigen wenn Bild gewählt */}
+              {/* Option: Original | Freigestellt (Pro-Hintergrund) | Vollkachelform – nur anzeigen wenn Bild gewählt */}
               {previewUrl && (
                 <div style={{
                   padding: '0.75rem',
@@ -16234,8 +16262,8 @@ ${name}`
                       <input
                         type="radio"
                         name="photo-option"
-                        checked={photoUseFreistellen}
-                        onChange={() => setPhotoUseFreistellen(true)}
+                        checked={photoImageMode === 'freigestellt'}
+                        onChange={() => setPhotoImageMode('freigestellt')}
                       />
                       Foto freistellen (mit Pro-Hintergrund)
                     </label>
@@ -16243,10 +16271,19 @@ ${name}`
                       <input
                         type="radio"
                         name="photo-option"
-                        checked={!photoUseFreistellen}
-                        onChange={() => setPhotoUseFreistellen(false)}
+                        checked={photoImageMode === 'original'}
+                        onChange={() => setPhotoImageMode('original')}
                       />
                       Original benutzen
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#f4f7ff' }}>
+                      <input
+                        type="radio"
+                        name="photo-option"
+                        checked={photoImageMode === 'vollkachel'}
+                        onChange={() => setPhotoImageMode('vollkachel')}
+                      />
+                      Vollkachelform (Bild füllt Kachel)
                     </label>
                   </div>
                   {/* Nachträglich freistellen: z. B. wenn Foto vom iPad ohne Freistellung gespeichert wurde */}
@@ -16294,7 +16331,8 @@ ${name}`
                             const { compositeOnProfessionalBackground } = await import('../src/utils/professionalImageBackground')
                             const result = await compositeOnProfessionalBackground(src, photoBackgroundPreset)
                             setPreviewUrl(result)
-                            setPhotoUseFreistellen(true)
+                            pendingImageDataUrlRef.current = result
+                            setPhotoImageMode('freigestellt')
                           } catch (err) {
                             try {
                               const key = 'k2-freistellen-fallback-count'
@@ -16318,9 +16356,10 @@ ${name}`
                       >
                         {freistellenInProgress ? '⏳ Bitte warten…' : '✨ Foto jetzt freistellen'}
                       </button>
+                      <AdminBildZuschneidenButton previewUrl={previewUrl} onOpenCrop={setCropImageSrc} />
                     </div>
                   )}
-                  {photoUseFreistellen && (
+                  {photoImageMode === 'freigestellt' && (
                     <div style={{ marginTop: '0.75rem' }}>
                       <span style={{ fontSize: '0.8rem', color: '#8fa0c9', display: 'block', marginBottom: '0.35rem' }}>
                         Hintergrund (wirkt wie im professionellen Studio)
@@ -16348,6 +16387,19 @@ ${name}`
                     </div>
                   )}
                 </div>
+              )}
+
+              {cropImageSrc && (
+                <ImageCropModal
+                  imageSrc={cropImageSrc}
+                  onApply={(dataUrl) => {
+                    setPreviewUrl(dataUrl)
+                    pendingImageDataUrlRef.current = dataUrl
+                    setPhotoImageMode('vollkachel')
+                    setCropImageSrc(null)
+                  }}
+                  onCancel={() => setCropImageSrc(null)}
+                />
               )}
 
               {tenant.isVk2 ? (
@@ -16417,7 +16469,7 @@ ${name}`
                   </div>
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Kategorie *</label>
-                    <select value={artworkCategory} onChange={(e) => setArtworkCategory(e.target.value)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
+                    <select value={artworkCategory} onChange={(e) => { const v = e.target.value; setArtworkCategory(v); try { localStorage.setItem(K2_LAST_ARTWORK_CATEGORY_KEY, v) } catch (_) {} }} style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
                       {(tenant.isVk2 ? VK2_KUNSTBEREICHE : ARTWORK_CATEGORIES).map((c) => (
                         <option key={c.id} value={c.id}>{c.label}</option>
                       ))}
@@ -16680,241 +16732,8 @@ ${name}`
                   </div>
                 </div>
               )}
-              {/* Keramik-Maße (nur K2, nicht VK2) */}
-              {!tenant.isVk2 && artworkCategory === 'keramik' && (
-                <>
-                  {(artworkCeramicSubcategory === 'vase' || artworkCeramicSubcategory === 'skulptur') && (
-                    <div style={{ minWidth: '120px' }}>
-                      <label style={{
-                        display: 'block',
-                        marginBottom: '0.4rem',
-                        fontSize: '0.8rem',
-                        color: '#8fa0c9',
-                        fontWeight: '500'
-                      }}>
-                        Höhe (cm) *
-                      </label>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        <input
-                          type="range"
-                          min="10"
-                          max="100"
-                          step="5"
-                          value={artworkCeramicHeight || '10'}
-                          onChange={(e) => setArtworkCeramicHeight(e.target.value)}
-                          style={{
-                            width: '100%',
-                            height: '6px',
-                            borderRadius: '3px',
-                            background: 'rgba(255, 255, 255, 0.2)',
-                            outline: 'none',
-                            cursor: 'pointer'
-                          }}
-                        />
-                        <div style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          gap: '0.2rem',
-                          flexWrap: 'wrap'
-                        }}>
-                          {[10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((val) => (
-                            <div
-                              key={val}
-                              style={{
-                                flex: '0 0 auto',
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                padding: '0.2rem 0.3rem',
-                                background: artworkCeramicHeight === String(val) 
-                                  ? 'rgba(95, 251, 241, 0.3)' 
-                                  : 'rgba(255, 255, 255, 0.05)',
-                                border: artworkCeramicHeight === String(val)
-                                  ? '1px solid rgba(95, 251, 241, 0.5)'
-                                  : '1px solid rgba(255, 255, 255, 0.1)',
-                                borderRadius: '4px',
-                                fontSize: '0.65rem',
-                                color: artworkCeramicHeight === String(val) ? '#5ffbf1' : '#8fa0c9',
-                                fontWeight: artworkCeramicHeight === String(val) ? '600' : '400',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                                minWidth: '28px'
-                              }}
-                              onClick={() => setArtworkCeramicHeight(String(val))}
-                            >
-                              {val}
-                            </div>
-                          ))}
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <input
-                            type="number"
-                            min="10"
-                            max="100"
-                            step="5"
-                            value={artworkCeramicHeight || '10'}
-                            onChange={(e) => {
-                              const val = e.target.value
-                              const numVal = parseFloat(val)
-                              // Nur 5cm-Schritte erlauben
-                              if (val === '' || (numVal >= 10 && numVal <= 100 && numVal % 5 === 0)) {
-                                setArtworkCeramicHeight(val)
-                              } else if (numVal >= 10 && numVal <= 100) {
-                                // Runde auf nächsten 5cm-Schritt
-                                const rounded = Math.round(numVal / 5) * 5
-                                setArtworkCeramicHeight(String(rounded))
-                              }
-                            }}
-                            style={{
-                              width: '70px',
-                              padding: '0.4rem',
-                              background: 'rgba(255, 255, 255, 0.1)',
-                              border: '1px solid rgba(255, 255, 255, 0.2)',
-                              borderRadius: '6px',
-                              color: '#ffffff',
-                              fontSize: '0.85rem'
-                            }}
-                          />
-                          <span style={{ color: '#8fa0c9', fontSize: '0.8rem', fontWeight: '600' }}>{artworkCeramicHeight || '10'} cm</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {artworkCeramicSubcategory === 'teller' && (
-                    <div style={{ minWidth: '120px' }}>
-                      <label style={{
-                        display: 'block',
-                        marginBottom: '0.4rem',
-                        fontSize: '0.8rem',
-                        color: '#8fa0c9',
-                        fontWeight: '500'
-                      }}>
-                        Durchmesser (cm) *
-                      </label>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        <input
-                          type="range"
-                          min="10"
-                          max="100"
-                          step="5"
-                          value={artworkCeramicDiameter || '10'}
-                          onChange={(e) => setArtworkCeramicDiameter(e.target.value)}
-                          style={{
-                            width: '100%',
-                            height: '6px',
-                            borderRadius: '3px',
-                            background: 'rgba(255, 255, 255, 0.2)',
-                            outline: 'none',
-                            cursor: 'pointer'
-                          }}
-                        />
-                        <div style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          gap: '0.2rem',
-                          flexWrap: 'wrap'
-                        }}>
-                          {[10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((val) => (
-                            <div
-                              key={val}
-                              style={{
-                                flex: '0 0 auto',
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                padding: '0.2rem 0.3rem',
-                                background: artworkCeramicDiameter === String(val) 
-                                  ? 'rgba(95, 251, 241, 0.3)' 
-                                  : 'rgba(255, 255, 255, 0.05)',
-                                border: artworkCeramicDiameter === String(val)
-                                  ? '1px solid rgba(95, 251, 241, 0.5)'
-                                  : '1px solid rgba(255, 255, 255, 0.1)',
-                                borderRadius: '4px',
-                                fontSize: '0.65rem',
-                                color: artworkCeramicDiameter === String(val) ? '#5ffbf1' : '#8fa0c9',
-                                fontWeight: artworkCeramicDiameter === String(val) ? '600' : '400',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                                minWidth: '28px'
-                              }}
-                              onClick={() => setArtworkCeramicDiameter(String(val))}
-                            >
-                              {val}
-                            </div>
-                          ))}
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <input
-                            type="number"
-                            min="10"
-                            max="100"
-                            step="5"
-                            value={artworkCeramicDiameter || '10'}
-                            onChange={(e) => {
-                              const val = e.target.value
-                              const numVal = parseFloat(val)
-                              // Nur 5cm-Schritte erlauben
-                              if (val === '' || (numVal >= 10 && numVal <= 100 && numVal % 5 === 0)) {
-                                setArtworkCeramicDiameter(val)
-                              } else if (numVal >= 10 && numVal <= 100) {
-                                // Runde auf nächsten 5cm-Schritt
-                                const rounded = Math.round(numVal / 5) * 5
-                                setArtworkCeramicDiameter(String(rounded))
-                              }
-                            }}
-                            style={{
-                              width: '70px',
-                              padding: '0.4rem',
-                              background: 'rgba(255, 255, 255, 0.1)',
-                              border: '1px solid rgba(255, 255, 255, 0.2)',
-                              borderRadius: '6px',
-                              color: '#ffffff',
-                              fontSize: '0.85rem'
-                            }}
-                          />
-                          <span style={{ color: '#8fa0c9', fontSize: '0.8rem', fontWeight: '600' }}>{artworkCeramicDiameter || '10'} cm</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {artworkCeramicSubcategory === 'sonstig' && (
-                    <div style={{ gridColumn: '1 / -1' }}>
-                      <label style={{
-                        display: 'block',
-                        marginBottom: '0.4rem',
-                        fontSize: '0.8rem',
-                        color: '#8fa0c9',
-                        fontWeight: '500'
-                      }}>
-                        Beschreibung *
-                      </label>
-                      <textarea
-                        value={artworkCeramicDescription}
-                        onChange={(e) => setArtworkCeramicDescription(e.target.value)}
-                        placeholder="Beschreibe das Werk..."
-                        rows={2}
-                        style={{
-                          width: '100%',
-                          padding: '0.6rem',
-                          background: 'rgba(255, 255, 255, 0.05)',
-                          border: '1px solid rgba(255, 255, 255, 0.15)',
-                          borderRadius: '8px',
-                          color: '#ffffff',
-                          fontSize: '0.9rem',
-                          outline: 'none',
-                          resize: 'vertical',
-                          fontFamily: 'inherit'
-                        }}
-                      />
-                    </div>
-                  )}
-                </>
-              )}
-
-              {/* Malerei Bildgröße */}
-              {artworkCategory !== 'keramik' && (
+              {/* Breite + Höhe für alle Kategorien (Bilder und Keramik gleich) */}
+              {(
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: '1fr 1fr',

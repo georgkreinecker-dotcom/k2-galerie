@@ -14,6 +14,11 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **ZENTRALE-THEMEN-FUER-NUTZER.md** – **Eine Übersicht:** Änderungen sichtbar, Geräte, Drucker, Stand/Handy, Backup, Echte Galerie vs. Demo, Admin, Kassa. Kurz + Verweise auf die Einzel-Dokus.
 
 ## Stabilität & Crash
+- **WIE-PROFIS-ARBEITEN.md** – **Was Profis anders machen:** Kleine Dateien, App im Browser, weniger Always-On-Kontext, stabile Tools, kleine Schritte. Damit es funktioniert.
+- **CODE-5-WAS-GEAENDERT-WURDE.md** – Welche Änderungen im Repo stehen; was Code 5 plausibel auslöst (große Datei + Speichern); Sofort-Checks.
+- **NACH-CODE-5-DEIN-TEIL.md** – **Nach Code 5:** Deine 3 Schritte (Reopen, Save All, „weiter“ sagen). Die KI liest DIALOG-STAND und arbeitet am Nächsten Schritt weiter.
+- **ARBEITSWEG-STABIL.md** – **Code 5 vermeiden:** Cursor nur Editor + Terminal + Chat; App nur im Browser (localhost). Täglicher Ablauf Schritt für Schritt. Wenn es nicht besser wird: Ausstieg planen.
+- **REGELWERK-LAST-UND-UMSTRUKTURIERUNG.md** – **Programmier-Last durch Regeln:** Analyse (~150 KB Kontext pro Request), Vorschlag Kern-Regel + alwaysApply reduzieren, Schritte 1–6.
 - **CRASH-FIXES-STAND-17-02-26.md** – Was wir für Admin-Stabilität geändert haben (Safe-Mode, Verzögerungen). Nicht rückgängig machen.
 - **SICHERHEIT-STABILITAET-CHECKLISTE.md** – 5 Punkte Einsturzsicher, 5 Punkte Einbruchsicher; Skala innen/außen; bei Änderungen im Blick behalten.
 - **VERBESSERUNGEN-OHNE-MEHRKOSTEN.md** – Was ohne Mehrkosten umgesetzt wurde + was du regelmäßig tun kannst (npm audit, CORS, RLS).

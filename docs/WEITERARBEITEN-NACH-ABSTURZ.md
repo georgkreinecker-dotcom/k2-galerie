@@ -4,6 +4,8 @@
 
 **💬 Wo im Dialog?** Wenn du nach einem Absturz wieder **genau dort weiterarbeiten** willst, wo ihr im Gespräch aufgehört habt (z. B. Marketingkonzept, Plan): **`docs/DIALOG-STAND.md`** – dort steht immer der letzte Dialog-Stand und der nächste Schritt. Sag einfach „weiter nach Absturz“, dann liest die KI diese eine Datei und macht dort weiter.
 
+**🔄 Reopen – Code nicht verlieren:** Bei Cursor siehst du oft nur „Reopen“ und z. B. „Restore“. **Sicherer Weg:** **Zuerst alle Dateien speichern** (Cmd+S oder „File → Save All“). Dann sind die Änderungen schon auf der Platte. Wenn du danach „Reopen“ klickst, lädt Cursor die Datei von der Platte – und die enthält dann deine gespeicherten Änderungen. So geht nichts verloren. Nicht die Option wählen, die die **aktuellen Editor-Inhalte verwirft** (je nach UI kann das „Restore“ oder anders heißen – im Zweifel: immer zuerst speichern). Damit die KI weitermachen kann: **`docs/DIALOG-STAND.md`** lesen („Nächster Schritt“).
+
 ---
 
 ## 🔒 WICHTIG: Crash während Programmieren ≠ App-Fehler (nicht im Kreis drehen)

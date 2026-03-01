@@ -176,7 +176,7 @@ function VariantA({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
             Gib deinen Namen ein – und sieh sofort, wie deine eigene Galerie aussehen würde.
           </p>
 
-          {/* Nur: Meine Galerie ausprobieren („Galerie ansehen“ / „Kaufen“ nicht hier – würden nur verwirren) */}
+          {/* Nur: Meine Galerie ausprobieren („Galerie ansehen“ / „Erwerben“ nicht hier – würden nur verwirren) */}
           <div style={{ background: bgCard, border: `2px solid ${accent}`, borderRadius: '14px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(181,74,30,0.10)', marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', marginBottom: '1.1rem' }}>
               <span style={{ width: 52, height: 52, borderRadius: '12px', background: `${accent}15`, border: `1px solid ${accent}33`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', flexShrink: 0 }}>✏️</span>

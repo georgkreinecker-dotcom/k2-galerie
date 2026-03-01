@@ -9,7 +9,13 @@ const BLOB_PATHNAME = 'gallery-data.json'
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0')
-  if (req.method === 'OPTIONS') return res.status(200).end()
+  // CORS Preflight (von localhost/anderen Origins): Browser braucht diese Header, sonst blockiert er den GET
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Cache-Control, Pragma, Expires, If-None-Match, If-Modified-Since, X-Requested-With, X-Data-Version, X-Build-ID, X-Timestamp')
+    res.setHeader('Access-Control-Max-Age', '86400')
+    return res.status(200).end()
+  }
 
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Nur GET erlaubt' })

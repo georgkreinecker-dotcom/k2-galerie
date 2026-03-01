@@ -48,7 +48,7 @@ Wenn Georg kommt (egal mit welchem Satz) oder nur **„ro“** schreibt:
 Nach jeder Aufgabe als **letzter Schritt:**
 1. `docs/DIALOG-STAND.md` aktualisieren
 2. `docs/WIR-PROZESS.md` Session-Reflexion ergänzen (1 Satz was ich gelernt habe)
-3. Stand aktualisieren + commit + push
+3. Commit + push (Stand kommt mit dem Build; write-build-info nicht vorher ausführen – Missetäter-Regel)
 4. Georg kurz sagen: „Raum ist bereit – bis zum nächsten Mal 💚"
 
 ## Der Grundsatz

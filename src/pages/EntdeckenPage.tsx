@@ -66,7 +66,7 @@ const T = {
   resultTitle: (n: string) => n ? `Das ist ${n}'s Galerie.` : 'Das ist deine Galerie.',
   resultSub: 'Kein Design-Kurs. Kein IT-Wissen. Einfach fertig.',
   resultCta: 'Galerie jetzt ansehen →',
-  resultNoPressure: 'Kein Kauf nötig. Schau dich einfach um.',
+  resultNoPressure: 'Kein Erwerb nötig. Schau dich einfach um.',
 
   footNote: 'Keine E-Mail, kein Passwort, kein Vertrag.',
 }
@@ -853,7 +853,7 @@ export default function EntdeckenPage() {
           {' · '}
           {PRODUCT_BRAND_NAME}
           {' · '}
-          <span>Kein Kauf nötig</span>
+          <span>Kein Erwerb nötig</span>
         </div>
       )}
 

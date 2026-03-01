@@ -4,6 +4,7 @@ import { PROJECT_ROUTES, PLATFORM_ROUTES, getAllProjectIds } from '../config/nav
 import { usePersistentBoolean } from '../hooks/usePersistentState'
 import { checkMobileUpdates } from '../utils/supabaseClient'
 import { filterK2ArtworksOnly } from '../utils/autoSave'
+import { artworksForExport } from '../utils/artworkExport'
 import { readArtworksRawByKey, saveArtworksByKey } from '../utils/artworksStorage'
 import '../App.css'
 import GaleriePage from './GaleriePage'
@@ -369,7 +370,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
           galerieCardImage: pageContent.galerieCardImage || galleryStamm.galerieCardImage || '',
           virtualTourImage: pageContent.virtualTourImage || galleryStamm.virtualTourImage || ''
         },
-        artworks: allArtworks,
+        artworks: artworksForExport(allArtworks),
         events: Array.isArray(events) ? events.slice(0, maxList) : [],
         documents: Array.isArray(documents) ? documents.slice(0, maxList) : [],
         designSettings: getItemSafe('k2-design-settings', {}),

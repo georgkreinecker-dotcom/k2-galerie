@@ -386,6 +386,12 @@ const PlatzanordnungPage = () => {
               color: #666;
               margin-top: 0.5mm;
             }
+            .artwork-price {
+              font-size: ${parseInt(formatSpec.fontSize) - 1}pt;
+              font-weight: bold;
+              color: #1a1a1a;
+              margin: 0;
+            }
           </style>
         </head>
         <body>
@@ -393,6 +399,7 @@ const PlatzanordnungPage = () => {
             <img src="${qrUrl}" alt="QR-Code" class="qr-code" />
             <p class="label-text">${location.label}</p>
             ${artwork ? `<p class="artwork-info">${(artwork.title || artwork.number).substring(0, 20)}</p>` : ''}
+            ${artwork && (typeof artwork.price === 'number' ? artwork.price : parseFloat(String(artwork.price || '').replace(',', '.'))) > 0 ? `<p class="artwork-price">€ ${(typeof artwork.price === 'number' ? artwork.price : parseFloat(String(artwork.price || '').replace(',', '.'))).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>` : ''}
           </div>
         </body>
       </html>
@@ -1117,6 +1124,20 @@ const PlatzanordnungPage = () => {
                       {(artwork.title || artwork.number || '').substring(0, 20)}
                     </p>
                   )}
+                  {artwork && (() => {
+                    const p = typeof artwork.price === 'number' ? artwork.price : parseFloat(String(artwork.price || '').replace(',', '.'))
+                    return !isNaN(p) && p > 0 ? (
+                      <p style={{
+                        fontSize: `${parseInt(formatSpec.fontSize) - 1}pt`,
+                        fontWeight: 'bold',
+                        color: '#1a1a1a',
+                        margin: 0,
+                        textAlign: 'center'
+                      }}>
+                        € {p.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </p>
+                    ) : null
+                  })()}
                 </div>
               </div>
 
@@ -1130,11 +1151,17 @@ const PlatzanordnungPage = () => {
                 <div style={{ color: '#5ffbf1', fontWeight: '600', marginBottom: '0.5rem' }}>
                   {printLocationState.label}
                 </div>
-                {printLocationState.artworkId && (
-                  <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem' }}>
-                    Objekt: {artworks.find(a => (a.id || a.number) === printLocationState.artworkId)?.title || printLocationState.artworkId}
-                  </div>
-                )}
+                {printLocationState.artworkId && (() => {
+                  const a = artworks.find(ar => (ar.id || ar.number) === printLocationState.artworkId)
+                  const priceVal = a && (typeof a.price === 'number' ? a.price : parseFloat(String(a.price || '').replace(',', '.')))
+                  const hasPrice = priceVal != null && !isNaN(priceVal) && priceVal > 0
+                  return (
+                    <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem' }}>
+                      Objekt: {a?.title || printLocationState.artworkId}
+                      {hasPrice && <span style={{ marginLeft: '0.5rem', fontWeight: 600 }}>€ {priceVal.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
+                    </div>
+                  )
+                })()}
               </div>
             
               <div style={{ display: 'flex', gap: '0.5rem' }}>

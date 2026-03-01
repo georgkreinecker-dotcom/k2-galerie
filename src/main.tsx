@@ -12,6 +12,7 @@ if (typeof window !== 'undefined') {
 // Cache-Busting wird vom index.html Inject-Script erledigt (build-info.json Vergleich).
 // Kein zweiter Reload hier – sonst zwei Mechanismen gleichzeitig → Seite wechselt unerwartet.
 const notInIframe = typeof window !== 'undefined' && window.self === window.top
+const inIframe = typeof window !== 'undefined' && window.self !== window.top
 
 // Refresh-URL /r/<timestamp>: Einstieg mit einzigartigem Pfad (Safari cached / nicht ?v=). Nach Laden sofort auf / wechseln.
 if (typeof window !== 'undefined' && window.location.pathname.startsWith('/r/')) {
@@ -102,7 +103,7 @@ if (typeof window !== 'undefined') {
   const originalConsoleWarn = console.warn
   
   let logCount = 0
-  const MAX_LOGS = 100 // Max 100 Logs pro Session
+  const MAX_LOGS = inIframe ? 15 : 100 // In Cursor Preview stark reduzieren (Crash-Vermeidung)
   
   console.error = (...args: any[]) => {
     if (logCount++ < MAX_LOGS) {
@@ -137,75 +138,34 @@ if (typeof window !== 'undefined') {
   // Kein setInterval mehr hier – verursachte unnötige Timer und konnte bei HMR/Reload zu Mehrfach-Intervallen führen
 }
 
-// Design-Farben aus Admin sofort anwenden (damit „So sehen Kunden die Galerie“ und alle Seiten die gespeicherten Farben zeigen)
-function applyDesignFromStorageSync() {
-  try {
-    const stored = typeof localStorage !== 'undefined' ? localStorage.getItem('k2-design-settings') : null
-    if (!stored || stored.length > 50000) return
-    const design = JSON.parse(stored) as Record<string, string>
-    const root = document.documentElement
-    if (design.accentColor) root.style.setProperty('--k2-accent', design.accentColor)
-    if (design.backgroundColor1) root.style.setProperty('--k2-bg-1', design.backgroundColor1)
-    if (design.backgroundColor2) root.style.setProperty('--k2-bg-2', design.backgroundColor2)
-    if (design.backgroundColor3) root.style.setProperty('--k2-bg-3', design.backgroundColor3)
-    if (design.textColor) root.style.setProperty('--k2-text', design.textColor)
-    if (design.mutedColor) root.style.setProperty('--k2-muted', design.mutedColor)
-    if (design.cardBg1) root.style.setProperty('--k2-card-bg-1', design.cardBg1)
-    if (design.cardBg2) root.style.setProperty('--k2-card-bg-2', design.cardBg2)
-  } catch (_) {}
-}
-
-// App immer starten (kein bedingter Start mehr nötig)
-{
-try {
-  applyDesignFromStorageSync()
-
-  const rootElement = document.getElementById('root')
-  if (!rootElement) {
-    throw new Error('Root element nicht gefunden')
-  }
-  
-  // createRoot nur EINMAL pro Seite – kein Retry mit zweitem createRoot (verursacht Crashes)
-  try {
-    const root = createRoot(rootElement)
-    root.render(
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>,
-    )
-    console.log('✅ App erfolgreich gerendert')
-  } catch (renderError) {
-    console.error('FEHLER beim Rendern:', renderError)
-    rootElement.innerHTML = `
-    <div style="padding: 2rem; color: white; background: #1a0f0a; min-height: 100vh; font-family: system-ui; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-      <h1 style="color: #ff6b6b; margin-bottom: 1rem;">⚠️ App konnte nicht gestartet werden</h1>
-      <p style="margin-bottom: 2rem; text-align: center; max-width: 600px;">
-        Bitte versuche:<br />
-        1. Seite neu laden<br />
-        2. Browser-Cache leeren<br />
-        3. Anderen Browser verwenden
-      </p>
-      <button onclick="window.safeReload&&window.safeReload();" style="padding: 0.75rem 1.5rem; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
-        🔃 Seite neu laden
-      </button>
+// Finale Lösung Crash: Im iframe (Cursor Preview) die App NICHT laden – nur Hinweis. Kein React, kein HMR, keine Last → keine Crashes.
+const rootElement = typeof document !== 'undefined' ? document.getElementById('root') : null
+if (rootElement && inIframe) {
+  const port = typeof window !== 'undefined' && window.location.port ? window.location.port : '5177'
+  const url = typeof window !== 'undefined' ? (window.location.origin.includes('localhost') ? `http://localhost:${port}` : window.location.origin) : 'http://localhost:5177'
+  rootElement.innerHTML = `
+    <div style="padding: 2rem; color: rgba(255,245,240,0.95); background: #1a0f0a; min-height: 100vh; font-family: system-ui; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+      <h1 style="color: #ff8c42; margin-bottom: 1rem; font-size: 1.25rem;">K2 Galerie</h1>
+      <p style="margin-bottom: 1rem; max-width: 420px; line-height: 1.5;">Die App wird in der Vorschau nicht geladen – so bleibt Cursor stabil.</p>
+      <p style="margin-bottom: 1.5rem; font-size: 0.95rem; color: rgba(212,165,116,0.9);">Bitte im Browser öffnen:</p>
+      <a href="${url}" target="_blank" rel="noopener" style="display: inline-block; padding: 0.75rem 1.5rem; background: #ff8c42; color: #1a0f0a; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; text-decoration: none; cursor: pointer;">Im Browser öffnen</a>
+      <p style="margin-top: 1.5rem; font-size: 0.8rem; color: rgba(255,255,255,0.5);">${url}</p>
     </div>
-    `
-  }
-} catch (error) {
-  console.error('FEHLER beim App-Start:', error)
-  // Escapen für XSS-Schutz: Fehlermeldungen nie ungefiltert in innerHTML
-  const escapeHtml = (s: string) =>
-    String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;')
-  const errMsg = error instanceof Error ? error.message : String(error)
-  const errStack = error instanceof Error ? error.stack : String(error)
-  const isProd = typeof import.meta !== 'undefined' && import.meta.env?.PROD
-  const rootElement = document.getElementById('root')
-  if (rootElement) {
+  `
+} else if (rootElement) {
+  // Nicht im iframe: volle App per dynamischem Import (React/App-Bundle erst hier geladen)
+  import('./appBootstrap').then((m) => m.run()).catch((error) => {
+    console.error('FEHLER beim App-Start:', error)
+    const escapeHtml = (s: string) =>
+      String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+    const errMsg = error instanceof Error ? error.message : String(error)
+    const errStack = error instanceof Error ? error.stack : String(error)
+    const isProd = typeof import.meta !== 'undefined' && import.meta.env?.PROD
     rootElement.innerHTML = `
       <div style="padding: 2rem; color: white; background: #1a0f0a; min-height: 100vh; font-family: system-ui; display: flex; flex-direction: column; align-items: center; justify-content: center;">
         <h1 style="color: #ff6b6b; margin-bottom: 1rem;">⚠️ App-Fehler</h1>
@@ -219,6 +179,7 @@ try {
         </button>
       </div>
     `
-  }
-}
+  })
+} else {
+  throw new Error('Root element nicht gefunden')
 }

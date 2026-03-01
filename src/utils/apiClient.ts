@@ -33,9 +33,9 @@ export async function apiGet(
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
     try {
+      // Keine Custom-Header → einfacher GET, kein CORS-Preflight; funktioniert von localhost zu Vercel
       const res = await fetch(url, {
         cache: 'no-store',
-        headers: { 'Cache-Control': 'no-cache, no-store' },
         mode: 'cors',
         signal: controller.signal
       })

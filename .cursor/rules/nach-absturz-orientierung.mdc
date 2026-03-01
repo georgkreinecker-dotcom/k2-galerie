@@ -10,7 +10,7 @@ alwaysApply: true
 Wenn der Nutzer sagt, es gab einen Absturz, Neustart, oder du bist „orientierungslos“:
 
 1. **Sofort lesen:** `docs/WEITERARBEITEN-NACH-ABSTURZ.md` – dort steht der aktuelle Stand (Datenfluss, Komprimierung, Git-Button) und die **konkreten nächsten Schritte**.
-2. **Weiterarbeiten:** Die „Nächste Schritte“ in dieser Doku abarbeiten – **ohne** auf einen neuen Befehl des Nutzers zu warten. Zuerst Build prüfen, dann die dort genannten optionalen Punkte (z. B. Event-Dokumente beim Speichern komprimieren, ChatDialog-Bild komprimieren), Stand aktualisieren.
+2. **Weiterarbeiten:** Die „Nächste Schritte“ in dieser Doku abarbeiten – **ohne** auf einen neuen Befehl des Nutzers zu warten. Zuerst Build prüfen, dann die dort genannten optionalen Punkte (z. B. Event-Dokumente beim Speichern komprimieren, ChatDialog-Bild komprimieren). Stand kommt mit Commit-Push (Build); write-build-info nicht am Ende ausführen (Missetäter-Regel).
 3. **Nicht neu anfragen:** Nicht „Woran soll ich weiterarbeiten?“ – die Doku sagt es. Kurz bestätigen („Weiterarbeit aus WEITERARBEITEN-NACH-ABSTURZ.md: …“) und die Schritte ausführen.
 
 ## Kurzfassung

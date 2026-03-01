@@ -22,6 +22,8 @@ alwaysApply: true
 
 **Zusätzlich (Reopen dauerhaft vermeiden):** `npm run dev` führt **write-build-info.js nicht aus** – nur `vite`. Stand wird **nur** bei `npm run build` geschrieben. package.json: `"dev": "vite"` (ohne write-build-info). **Nicht zurückändern.**
 
+**Watcher-Ausschluss (Cursor/VSCode):** In `.vscode/settings.json` sind `files.watcherExclude` für generierte/Build-Dateien gesetzt (`buildInfo.generated.ts`, `public/build-info.json`, `api/build-info.js`, `index.html`, plus `dist/`, `node_modules/`, `.vite/`). So meldet Cursor seltener „Reopen“, wenn nur diese Dateien auf der Platte geändert werden. **Nicht entfernen.** Falls Reopen trotzdem oft kommt: In Cursor unter Einstellungen nach „watcher exclude“ suchen und prüfen, ob die gleichen Muster auch in den **User-Einstellungen** stehen (Cursor kann Workspace- und User-Settings anders mergen).
+
 ## Bei neuen Build-Skripten
 
 - Vor dem Schreiben: Prüfen ob Ziel-Datei schon den gleichen Inhalt hat (oder bei Zeit-basierten Werten: gleiche „logische“ Einheit, z. B. Minute).
