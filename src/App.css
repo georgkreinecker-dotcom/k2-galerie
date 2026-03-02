@@ -2298,4 +2298,32 @@ header h1 {
   .mission-wrapper button {
     color: #1c1a18 !important;
   }
+
+  /* Stammbaum reine Druckansicht (?druck=1): nur dieser Block, hell, formatfreundlich */
+  body:has(.stammbaum-druck-view) {
+    background: #fff !important;
+  }
+  .stammbaum-druck-view {
+    background: #fff !important;
+    color: #1c1a18 !important;
+    padding: 1rem;
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+  .stammbaum-druck-view .stammbaum-druck-titel {
+    margin: 0 0 1rem;
+    font-size: 1.5rem;
+    color: #0d9488 !important;
+    text-align: center;
+  }
+  .stammbaum-druck-view .family-tree-graph-wrapper {
+    margin: 0 auto;
+  }
+  .stammbaum-druck-view .family-tree-graph {
+    max-height: none !important;
+  }
+  @page {
+    size: auto;
+    margin: 12mm;
+  }
 }

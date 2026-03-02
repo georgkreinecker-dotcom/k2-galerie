@@ -3,24 +3,81 @@
  * Route: /projects/k2-familie/stammbaum
  */
 
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useMemo, useEffect, useCallback, useState } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { loadPersonen, savePersonen, K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
 import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import type { K2FamiliePerson } from '../types/k2Familie'
-import { useMemo } from 'react'
 import FamilyTreeGraph from '../components/FamilyTreeGraph'
 
 function generateId(): string {
   return 'person-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8)
 }
 
+type PrintFormat = 'a4' | 'a3' | 'poster'
+type PrintFotos = '1' | '0'
+
 export default function K2FamilieStammbaumPage() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { currentTenantId, tenantList, setCurrentTenantId, addTenant } = useFamilieTenant()
   const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId])
+
+  const druck = searchParams.get('druck') === '1'
+  const formatFromUrl = (searchParams.get('format') as PrintFormat) || 'a4'
+  const fotosFromUrl = (searchParams.get('fotos') as PrintFotos) || '1'
+  const titelFromUrl = searchParams.get('titel') || getFamilieTenantDisplayName(currentTenantId, 'Familie')
+  const format = druck ? formatFromUrl : (searchParams.get('format') as PrintFormat) || 'a4'
+  const fotos = druck ? fotosFromUrl : (searchParams.get('fotos') as PrintFotos) || '1'
+  const titel = druck ? titelFromUrl : (searchParams.get('titel') || getFamilieTenantDisplayName(currentTenantId, 'Familie'))
+
+  const [druckFormat, setDruckFormat] = useState<PrintFormat>(formatFromUrl)
+  const [druckFotos, setDruckFotos] = useState<PrintFotos>(fotosFromUrl)
+  const [druckTitel, setDruckTitel] = useState(titelFromUrl)
+
+  useEffect(() => {
+    if (!druck || personen.length === 0) return
+    const t = setTimeout(() => window.print(), 300)
+    return () => clearTimeout(t)
+  }, [druck, personen.length])
+
+  const handleAfterPrint = useCallback(() => {
+    if (druck) setSearchParams({}, { replace: true })
+  }, [druck, setSearchParams])
+
+  useEffect(() => {
+    window.addEventListener('afterprint', handleAfterPrint)
+    return () => window.removeEventListener('afterprint', handleAfterPrint)
+  }, [handleAfterPrint])
+
+  const openDruck = (opts: { format: PrintFormat; fotos: PrintFotos; titel?: string }) => {
+    const p = new URLSearchParams()
+    p.set('druck', '1')
+    p.set('format', opts.format)
+    p.set('fotos', opts.fotos)
+    if (opts.titel?.trim()) p.set('titel', opts.titel.trim())
+    setSearchParams(p)
+  }
+
+  const printScale = format === 'poster' ? 1.5 : format === 'a3' ? 1.2 : 1
+
+  if (druck && personen.length > 0) {
+    return (
+      <div className="stammbaum-druck-view">
+        <h1 className="stammbaum-druck-titel">{titel}</h1>
+        <FamilyTreeGraph
+          personen={personen}
+          personPathPrefix={PROJECT_ROUTES['k2-familie'].personen}
+          printMode
+          noPhotos={fotos === '0'}
+          scale={printScale}
+        />
+      </div>
+    )
+  }
 
   const addPerson = () => {
     const neu: K2FamiliePerson = {
@@ -58,10 +115,55 @@ export default function K2FamilieStammbaumPage() {
         </header>
 
         {personen.length > 0 && (
-          <div className="card familie-card-enter" style={{ padding: '1rem', overflow: 'hidden' }}>
-            <h2 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}>Stammbaum</h2>
-            <FamilyTreeGraph personen={personen} personPathPrefix={PROJECT_ROUTES['k2-familie'].personen} />
-          </div>
+          <>
+            <div className="card familie-card-enter" style={{ padding: '1rem', overflow: 'hidden' }}>
+              <h2 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}>Stammbaum</h2>
+              <FamilyTreeGraph personen={personen} personPathPrefix={PROJECT_ROUTES['k2-familie'].personen} />
+            </div>
+            <section className="card familie-card-enter" style={{ padding: '1rem', marginTop: '1rem' }} aria-label="Druckvorlagen">
+              <h2 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}>Als Plakat drucken</h2>
+              <p className="meta" style={{ marginBottom: '1rem' }}>Format und Darstellung wählen, dann Drucken – die Grafik öffnet sich druckoptimiert.</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end' }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <span className="meta">Format</span>
+                  <select
+                    id="druck-format"
+                    value={druckFormat}
+                    onChange={(e) => setDruckFormat(e.target.value as PrintFormat)}
+                  >
+                    <option value="a4">A4</option>
+                    <option value="a3">A3</option>
+                    <option value="poster">Poster (größer)</option>
+                  </select>
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <span className="meta">Darstellung</span>
+                  <select
+                    id="druck-fotos"
+                    value={druckFotos}
+                    onChange={(e) => setDruckFotos(e.target.value as PrintFotos)}
+                  >
+                    <option value="1">Mit Fotos</option>
+                    <option value="0">Nur Namen (sparsam)</option>
+                  </select>
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <span className="meta">Titel (optional)</span>
+                  <input
+                    type="text"
+                    id="druck-titel"
+                    placeholder={getFamilieTenantDisplayName(currentTenantId, 'Familie')}
+                    value={druckTitel}
+                    onChange={(e) => setDruckTitel(e.target.value)}
+                    style={{ minWidth: 160 }}
+                  />
+                </label>
+                <button type="button" className="btn" onClick={() => openDruck({ format: druckFormat, fotos: druckFotos, titel: druckTitel || undefined })}>
+                  Druckvorschau &amp; Drucken
+                </button>
+              </div>
+            </section>
+          </>
         )}
 
         {personen.length === 0 && (

@@ -57,9 +57,18 @@ function orderInGeneration(
 export default function FamilyTreeGraph({
   personen,
   personPathPrefix = PERSON_LINK_PATH,
+  noPhotos = false,
+  printMode = false,
+  scale = 1,
 }: {
   personen: K2FamiliePerson[]
   personPathPrefix?: string
+  /** Für Druck: nur Namen, keine Fotos (spart Tinte, schlank) */
+  noPhotos?: boolean
+  /** Druckansicht: keine Klick-Links, druckfreundliche Farben */
+  printMode?: boolean
+  /** Skalierung (z. B. 1.2 für Poster) */
+  scale?: number
 }) {
   const { levelMap, rows, width, height, nodePos, connectors, partnerLinks } = useMemo(() => {
     if (personen.length === 0) {
@@ -127,16 +136,22 @@ export default function FamilyTreeGraph({
 
   if (personen.length === 0) return null
 
-  const stroke = 'rgba(20, 184, 166, 0.5)'
-  const strokePartner = 'rgba(20, 184, 166, 0.7)'
+  const stroke = printMode ? '#0d9488' : 'rgba(20, 184, 166, 0.5)'
+  const strokePartner = printMode ? '#0d9488' : 'rgba(20, 184, 166, 0.7)'
+  const nodeFill = printMode ? '#f8fafc' : 'rgba(15, 20, 25, 0.9)'
+  const nodeStroke = printMode ? '#0d9488' : 'rgba(20, 184, 166, 0.5)'
+  const textFill = printMode ? '#1e293b' : 'rgba(255,255,255,0.95)'
 
   return (
-    <div className="family-tree-graph-wrapper" style={{ width: '100%', overflow: 'auto', marginBottom: '1.5rem' }}>
+    <div
+      className={`family-tree-graph-wrapper ${printMode ? 'family-tree-graph-print' : ''}`}
+      style={{ width: '100%', overflow: 'auto', marginBottom: printMode ? 0 : '1.5rem', transform: scale !== 1 ? `scale(${scale})` : undefined, transformOrigin: 'top center' }}
+    >
       <svg
         className="family-tree-graph"
         viewBox={`0 0 ${width} ${height}`}
         preserveAspectRatio="xMidYMid meet"
-        style={{ width: '100%', minHeight: 280, maxHeight: 520 }}
+        style={{ width: '100%', minHeight: printMode ? 400 : 280, maxHeight: printMode ? 'none' : 520 }}
       >
         <defs>
           <filter id="tree-node-shadow" x="-20%" y="-20%" width="140%" height="140%">
@@ -169,54 +184,59 @@ export default function FamilyTreeGraph({
           const pos = nodePos.get(p.id)
           if (!pos) return null
           const to = `${personPathPrefix}/${p.id}`
+          const showPhoto = !noPhotos && p.photo
+          const initial = p.name.trim().charAt(0).toUpperCase() || '?'
+          const nodeContent = (
+            <>
+              <g filter={printMode ? undefined : 'url(#tree-node-shadow)'}>
+                <ellipse
+                  cx={NODE_W / 2}
+                  cy={NODE_H / 2 - 4}
+                  rx={NODE_W / 2 - 2}
+                  ry={NODE_H / 2 - 8}
+                  fill={nodeFill}
+                  stroke={nodeStroke}
+                  strokeWidth="2"
+                />
+                {showPhoto && (
+                  <image
+                    href={p.photo}
+                    x={2}
+                    y={2}
+                    width={NODE_W - 4}
+                    height={NODE_H - 16}
+                    preserveAspectRatio="xMidYMid slice"
+                    clipPath="url(#tree-node-clip)"
+                  />
+                )}
+                {!showPhoto && (
+                  <text
+                    x={NODE_W / 2}
+                    y={NODE_H / 2}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill={printMode ? '#64748b' : 'rgba(255,255,255,0.9)'}
+                    fontSize="18"
+                  >
+                    {printMode ? initial : '👤'}
+                  </text>
+                )}
+              </g>
+              <text
+                x={NODE_W / 2}
+                y={NODE_H - 2}
+                textAnchor="middle"
+                fill={textFill}
+                fontSize="10"
+                fontWeight="600"
+              >
+                {p.name.split(' ')[0]}
+              </text>
+            </>
+          )
           return (
             <g key={p.id} transform={`translate(${pos.x - NODE_W / 2}, ${pos.y - NODE_H / 2})`}>
-              <Link to={to} style={{ cursor: 'pointer', display: 'block' }}>
-                <g filter="url(#tree-node-shadow)">
-                  <ellipse
-                    cx={NODE_W / 2}
-                    cy={NODE_H / 2 - 4}
-                    rx={NODE_W / 2 - 2}
-                    ry={NODE_H / 2 - 8}
-                    fill="rgba(15, 20, 25, 0.9)"
-                    stroke="rgba(20, 184, 166, 0.5)"
-                    strokeWidth="2"
-                  />
-                  {p.photo && (
-                    <image
-                      href={p.photo}
-                      x={2}
-                      y={2}
-                      width={NODE_W - 4}
-                      height={NODE_H - 16}
-                      preserveAspectRatio="xMidYMid slice"
-                      clipPath="url(#tree-node-clip)"
-                    />
-                  )}
-                  {!p.photo && (
-                    <text
-                      x={NODE_W / 2}
-                      y={NODE_H / 2}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      fill="rgba(255,255,255,0.9)"
-                      fontSize="18"
-                    >
-                      👤
-                    </text>
-                  )}
-                </g>
-                <text
-                  x={NODE_W / 2}
-                  y={NODE_H - 2}
-                  textAnchor="middle"
-                  fill="rgba(255,255,255,0.95)"
-                  fontSize="10"
-                  fontWeight="600"
-                >
-                  {p.name.split(' ')[0]}
-                </text>
-              </Link>
+              {printMode ? <g>{nodeContent}</g> : <Link to={to} style={{ cursor: 'pointer', display: 'block' }}>{nodeContent}</Link>}
             </g>
           )
         })}
