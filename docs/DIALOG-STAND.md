@@ -35,6 +35,7 @@
 - **Nächster Schritt:** Georg trifft Entscheidung 4.0 (3 Fragen in RECHTE-ZWEIGE beantworten) → danach Datenmodell & UI ableiten. Oder anderes Thema. Bei „ro“: DIALOG-STAND + GRAFIKER-TISCH lesen.
 - **Info (Georg):** Gestern mit Android + Chrome die Seiten geöffnet – funktioniert problemlos.
 - **Vollkachelform / Bildverarbeitung:** Offene Punkte in docs/GRAFIKER-TISCH-NOTIZEN.md unter „Offene Wünsche“.
+- **Vollbackup (02.03.26):** Git Commit 0b709f1 + Tag **full-backup-2026-03-02** auf GitHub. Hard-Backup auf backupmicro: v004 (gallery-data.json). Druck-Kontrast K2 Familie (Print-CSS) im Commit. Optional: Im Admin einmal „Vollbackup herunterladen“; Code-Spiegelung auf backupmicro bei Bedarf: backupmicro anstecken → im Terminal `bash scripts/backup-code-to-backupmicro.sh`.
 
 ## Reopen – Code behalten, KI kann weitermachen
 - **Bei „Reopen“ (evtl. mit Restore/Hackerl):** **Zuerst alle Dateien speichern** (Cmd+S oder File → Save All). Dann „Reopen“ lädt die gespeicherte Version.
