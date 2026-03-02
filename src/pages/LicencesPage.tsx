@@ -236,8 +236,13 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
           <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem', color: 'var(--k2-text)' }}>
             ➕ Neue Lizenz vergeben
           </h2>
-          <p style={{ fontSize: '0.85rem', color: 'var(--k2-muted)', margin: '0 0 1rem' }}>
+          <p style={{ fontSize: '0.85rem', color: 'var(--k2-muted)', margin: '0 0 0.5rem' }}>
             🤝 <strong style={{ color: 'var(--k2-text)' }}>Empfehlungsprogramm:</strong> Empfehler-ID eintragen → 10 % Rabatt für den Geworbenen, 10 % Gutschrift für den Empfehler.
+          </p>
+          <p style={{ fontSize: '0.85rem', margin: '0 0 1rem' }}>
+            <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ color: 'var(--k2-accent)', fontWeight: 600 }}>
+              💳 Lizenz online kaufen (Kunde zahlt mit Karte) →
+            </Link>
           </p>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', maxWidth: '400px' }}>
             <div>

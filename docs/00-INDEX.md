@@ -56,6 +56,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **VERBESSERUNGEN-VERMARKTUNG-GEMEINSAM.md** – **Vorschlag:** Was wir gemeinsam verbessern können (Zielgruppe, Kanäle, Customer Journey, Trust; priorisierte Liste).
 - **MARKETING-EROEFFNUNG-K2-OEK2.md** – **Galerie-Eröffnung:** K2 und ök2 gemeinsam einführen; gezielte Marketinglinie in 2 Wochen; Texte für gemeinsame Lounge (Kernbotschaft, Einladung, Presse, Social); Checkliste; Verweis in mök2.
 - **ABRECHNUNGSSTRUKTUR-EMPFEHLUNGSPROGRAMM.md** – Abrechnungsstruktur Empfehlungsprogramm.
+- **ZAHLUNGSSYSTEM-LIZENZEN-TECHNIK-PLAN.md** – **Zahlungssystem Lizenzen (nur online):** Konkreter Technik-Plan – Kreditkarte/PayPal über Stripe (o. ä.), Backend Checkout + Webhook, DB Lizenzen/Zahlungen/Gutschriften, Frontend Redirect + Success, Abrechnung/Export. Lizenzen nur im Internet, nicht in der Galerie.
 - **MARKTCHECK-PREISE-BASIC-PRO-VERGLEICH.md** – Marktcheck: Was Nutzer für Basic/Pro pro Monat zahlen würden, Vergleichsprodukte (KUNSTMATRIX, Wix, Squarespace, ArtCloud), Orientierung für Preisgestaltung; Einzigartigkeit & höherer Preis.
 - **FEATURES-ABHEBUNG-ZIELGRUPPE.md** – **Feature-Ideen:** Was die Zielgruppe (Künstler:innen mit Verkauf) noch mehr anspricht und uns abhebt; Priorität, Aufwand, empfohlene Reihenfolge zum Einbauen.
 - **KUNSTVEREINE-MULTIPLIKATOREN.md** – **Kunstvereine als Multiplikatoren:** Warum eindruckvolles Angebot lohnt; was wir haben (VK2); was eindruckvoll wirkt; nächste Schritte (Satz „Für Kunstvereine“, Pilot, Onboarding).

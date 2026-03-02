@@ -229,6 +229,7 @@ const LicenseManager = () => {
         <span style={{ display: 'block', marginBottom: '0.35rem', color: '#5ffbf1', fontWeight: 600 }}>🤝 Empfehlungsprogramm</span>
         <p style={{ margin: '0 0 0.5rem' }}>10 % Rabatt für Geworbene, 10 % Gutschrift für Empfehler. Beim Vergeben einer Lizenz optional Empfehler-ID eintragen.</p>
         <span style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ color: '#5ffbf1', textDecoration: 'none', fontWeight: 600 }}>Lizenz online kaufen (Stripe) →</Link>
           <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: '#5ffbf1', textDecoration: 'none', fontWeight: 600 }}>Lizenzen vergeben →</Link>
           <Link to={PROJECT_ROUTES['k2-galerie'].empfehlungstool} style={{ color: '#5ffbf1', textDecoration: 'none', fontWeight: 600 }}>Empfehlungstool (ID & Link) →</Link>
         </span>
