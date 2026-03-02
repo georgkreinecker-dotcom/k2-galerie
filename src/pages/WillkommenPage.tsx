@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, AGB_ROUTE, ENTDECKEN_ROUTE } from '../config/navigation'
+import { PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, AGB_ROUTE } from '../config/navigation'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 
@@ -30,13 +30,6 @@ type PendingAction = 'ansicht' | 'entwurf' | null
 export default function WillkommenPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-
-  // Neuer Interessent: gleich mit der emotionalen Begrüßung („Für Künstler:innen …“, „Jetzt entdecken“)
-  // → /willkommen leitet auf /entdecken weiter; alle Links/QR bleiben unverändert
-  useEffect(() => {
-    const q = window.location.search
-    navigate(q ? `${ENTDECKEN_ROUTE}${q}` : ENTDECKEN_ROUTE, { replace: true })
-  }, [navigate])
 
   const variant = searchParams.get('variant') === 'a' ? 'a' : 'c'
   const slogan = loadSlogan()
@@ -77,12 +70,20 @@ export default function WillkommenPage() {
     else { setPendingAction(action); setShowAgbModal(true); setAgbCheckbox(false) }
   }
 
-  // Nach Redirect wird diese Seite nicht mehr gerendert; Fallback für kurzen Moment
-  return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'system-ui', color: '#666' }}>
-      Weiterleitung …
-    </div>
-  )
+  const props: VariantProps = {
+    name,
+    setName,
+    slogan,
+    startEntry,
+    showAgbModal,
+    setShowAgbModal,
+    agbCheckbox,
+    setAgbCheckbox,
+    pendingAction,
+    setPendingAction,
+    doNavigate,
+  }
+  return variant === 'a' ? <VariantA {...props} /> : <VariantC {...props} />
 }
 
 // ─── Gemeinsame Props ──────────────────────────────────────────────────────────
@@ -200,11 +201,13 @@ function VariantA({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
             </button>
           </div>
 
-          {/* Weitere Optionen nur dezent – nicht für den allerersten Blick */}
+          {/* Weitere Optionen nur dezent – CTA Lizenz sichtbar (Priorität 3 OEK2) */}
           <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.8rem', color: muted }}>
             <button type="button" onClick={() => startEntry('ansicht')} style={{ background: 'none', border: 'none', color: muted, textDecoration: 'underline', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>Nur Galerie ansehen</button>
             {' · '}
             <a href={`mailto:${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_EMAIL)}?subject=${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_BETREFF)}`} style={{ color: muted, textDecoration: 'underline' }}>Lizenz anfragen</a>
+            {' · '}
+            <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ color: muted, textDecoration: 'underline' }}>Lizenz online kaufen</Link>
           </p>
 
           {/* Fußzeile – AGB/Legal nur unten, nicht im Fokus */}
@@ -298,11 +301,13 @@ function VariantC({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
             </button>
           </div>
 
-          {/* Weitere Optionen dezent – neuer Interessent soll zuerst „Galerie starten“ sehen */}
+          {/* Weitere Optionen dezent – CTA Lizenz sichtbar (Priorität 3 OEK2) */}
           <p style={{ textAlign: 'center', marginTop: '0.5rem', marginBottom: '1.5rem', fontSize: '0.8rem', color: muted }}>
             <button type="button" onClick={() => startEntry('ansicht')} style={{ background: 'none', border: 'none', color: muted, textDecoration: 'underline', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>Nur Galerie ansehen</button>
             {' · '}
             <a href={`mailto:${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_EMAIL)}?subject=${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_BETREFF)}`} style={{ color: muted, textDecoration: 'underline' }}>Lizenz anfragen</a>
+            {' · '}
+            <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ color: muted, textDecoration: 'underline' }}>Lizenz online kaufen</Link>
           </p>
 
           {/* Fußzeile */}

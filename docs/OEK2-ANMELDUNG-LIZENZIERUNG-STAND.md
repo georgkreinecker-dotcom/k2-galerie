@@ -36,7 +36,7 @@
 | Stelle | Inhalt / Verhalten |
 |--------|---------------------|
 | **tenantConfig** | `PRODUCT_LIZENZ_ANFRAGE_EMAIL` (info@kgm.at), `PRODUCT_LIZENZ_ANFRAGE_BETREFF` – werden für **mailto:-Links** „Lizenz anfragen“ genutzt. |
-| **WillkommenPage** | Enthält **mailto-Link „Lizenz anfragen“** – wird aber **nie angezeigt**, weil die Seite sofort auf /entdecken redirectet. |
+| **WillkommenPage** | **Einstieg wieder aktiv (02.03.26):** Zeigt Variante A/C mit „Galerie ausprobieren“, „Lizenz anfragen“ (mailto), „Lizenz online kaufen“ (Stripe). Kein Redirect mehr zu /entdecken. |
 | **EntdeckenPage** | **Kein** „Lizenz anfragen“-Button/Link. Nur Feedback-Mail (andere E-Mail) am Ende. |
 | **GalerieVorschauPage (ök2)** | Kein expliziter CTA „Lizenz anfragen“ im sichtbaren Flow (Guide zeigt nur Preise). |
 | **GlobaleGuideBegleitung** | Lizenz-Schritt: **LizenzInfo** (Basic/Pro/Pro+/VK2) aus **LIZENZPREISE** (15/35/45 €, VK2 „ab 10 Mitgl. kostenfrei“) + Link „Lizenz anfragen →“ (mailto). |
@@ -74,7 +74,7 @@
 |-----------|----------|--------|
 | 1 | **CTA „Lizenz anfragen“** in EntdeckenPage und im Guide (Lizenz-Schritt) einbauen. **Erledigt (02.03.26):** Guide (GlobaleGuideBegleitung): unter LizenzInfo Link „Lizenz anfragen →“ (mailto). EntdeckenPage (Hub): beim Schritt „Galerie jetzt öffnen“ Link „Lizenz anfragen →“ (mailto). Beide nutzen tenantConfig PRODUCT_LIZENZ_ANFRAGE_*. | ✅ |
 | 2 | **Preise vereinheitlichen:** Eine Quelle definieren; Guide und LicenseManager darauf abstimmen. **Erledigt (02.03.26):** `src/config/licencePricing.ts` (LIZENZPREISE); LicencesPage, Guide, LicenseManager nutzen dieselben Werte (15/35/45 €, VK2). | ✅ |
-| 3 | **WillkommenPage:** Entweder Redirect beibehalten und „Lizenz anfragen“ nur auf Entdecken/Guide setzen – oder Redirect entfernen und WillkommenPage wieder als Einstieg mit klarem „Lizenz anfragen“ anzeigen. | Gering (nur CTA) / Mittel (wenn Willkommen wieder aktiv) |
+| 3 | **WillkommenPage:** Entweder Redirect beibehalten und „Lizenz anfragen“ nur auf Entdecken/Guide setzen – oder Redirect entfernen und WillkommenPage wieder als Einstieg mit klarem „Lizenz anfragen“ anzeigen. | **Erledigt (02.03.26):** Redirect entfernt. /willkommen zeigt wieder Variante A oder C (variant=a/c) mit „Meine Galerie ausprobieren“, „Nur Galerie ansehen“, **„Lizenz anfragen“** (mailto) und **„Lizenz online kaufen“** (Link zu Stripe-Checkout). |
 | 4 | **LicencesPage:** Optional Backend/ E-Mail (z. B. bei „Lizenz vergeben“ E-Mail an Kund:in) – produktionsreif erst mit klarem Prozess. | Mittel |
 
 ---
@@ -93,4 +93,4 @@
 
 ---
 
-**Kurz:** Anmeldung im ök2 = bewusst **keine** (Entdecken ohne Account). Lizenzierung = mailto „Lizenz anfragen“ vorgesehen, aber der Link ist derzeit **nicht sichtbar** (WillkommenPage wird übersprungen). State of the art wäre: ein sichtbarer CTA „Lizenz anfragen“ nach der Demo + einheitliche Preise überall.
+**Kurz:** Anmeldung im ök2 = bewusst **keine** (Entdecken ohne Account). Lizenzierung = **sichtbar** auf WillkommenPage (Lizenz anfragen + Lizenz online kaufen), in Entdecken und im Guide (Priorität 1–3 erledigt). Einheitliche Preise aus licencePricing.ts.
