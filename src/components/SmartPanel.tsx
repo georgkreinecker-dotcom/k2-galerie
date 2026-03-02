@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { PROJECT_ROUTES, MOK2_ROUTE, ENTDECKEN_ROUTE } from '../config/navigation'
 import { ERKUNDUNGS_NOTIZEN_KEY, type ErkundungsNotiz } from '../pages/EntdeckenPage'
 
@@ -86,7 +87,16 @@ const DEFAULT_ITEMS: PanelItem[] = [
 function loadOrder(): string[] {
   try {
     const saved = localStorage.getItem(PANEL_ORDER_KEY)
-    if (saved) return JSON.parse(saved)
+    if (saved) {
+      const order = JSON.parse(saved) as string[]
+      // Duplikate entfernen (erster Eintrag zählt), damit nicht zweimal „K2 Familie“ erscheint
+      const deduped = order.filter((id, idx) => order.indexOf(id) === idx)
+      if (deduped.length !== order.length) {
+        try { localStorage.setItem(PANEL_ORDER_KEY, JSON.stringify(deduped)) } catch { /* ignore */ }
+        return deduped
+      }
+      return order
+    }
   } catch { /* ignore */ }
   return ['k2', 'oek2', 'k2-familie', 'vk2', 'mok2', 'notizen', 'handbuch']
 }
@@ -139,7 +149,10 @@ interface SmartPanelProps {
   onNavigate?: (page: string) => void
 }
 
+const K2_FAMILIE_HOME = PROJECT_ROUTES['k2-familie'].home
+
 export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps) {
+  const navigate = useNavigate()
   // Aktiven Button per URL erkennen – überschreibt den prop wenn Seite direkt per URL geöffnet wurde
   const [browserPath, setBrowserPath] = useState(() => typeof window !== 'undefined' ? window.location.pathname : '')
   useEffect(() => {
@@ -264,9 +277,14 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
   const dragId = useRef<string | null>(null)
   const dragOverId = useRef<string | null>(null)
 
+  // Duplikate aus Order entfernen (jeder Eintrag nur einmal), damit nicht zweimal „K2 Familie“ o.ä. erscheint
   const sortedItems = itemOrder
-    .map(id => DEFAULT_ITEMS.find(i => i.id === id))
-    .filter(Boolean) as PanelItem[]
+    .reduce((acc, id) => {
+      if (acc.some(i => i.id === id)) return acc
+      const item = DEFAULT_ITEMS.find(i => i.id === id)
+      if (item) acc.push(item)
+      return acc
+    }, [] as PanelItem[])
 
   const handleDragStart = (id: string) => { dragId.current = id }
   const handleDragOver = (e: React.DragEvent, id: string) => {
@@ -511,32 +529,82 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
             {editMode && (
               <span style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.3)', cursor: 'grab', userSelect: 'none', flexShrink: 0 }}>☰</span>
             )}
-            <button
-              type="button"
-              onClick={() => { if (editMode) return; if (typeof window !== 'undefined' && window.self !== window.top) return; window.location.href = item.url }}
-              style={{
-                flex: 1,
-                padding: '0.85rem 1rem',
-                background: activePage === item.page
-                  ? item.color.replace(/0\.\d+\)/g, m => String(Math.min(parseFloat(m) * 2.5, 1)) + ')')
-                  : item.color,
-                border: activePage === item.page
-                  ? `2px solid ${item.border.replace(/0\.\d+\)/, '1)')}`
-                  : `1px solid ${item.border}`,
-                borderRadius: '8px',
-                color: item.id === 'oek2' || item.id === 'admin' || item.id === 'handbuch' ? '#5ffbf1' : item.id === 'mok2' ? '#fbbf24' : item.id === 'k2-familie' ? '#14b8a6' : '#ff8c42',
-                fontWeight: activePage === item.page ? 800 : 600,
-                fontSize: '0.95rem',
-                textAlign: 'center',
-                cursor: editMode ? 'grab' : 'pointer',
-                fontFamily: 'inherit',
-                transition: 'all 0.2s ease',
-                boxShadow: activePage === item.page ? `0 0 12px ${item.border}` : 'none',
-              }}
-            >
-              {activePage === item.page && <span style={{ marginRight: '0.4rem', fontSize: '0.75rem' }}>▶</span>}
-              {item.label}
-            </button>
+            {editMode ? (
+              <span
+                style={{
+                  flex: 1,
+                  padding: '0.85rem 1rem',
+                  background: item.color,
+                  border: `1px solid ${item.border}`,
+                  borderRadius: '8px',
+                  color: item.id === 'oek2' || item.id === 'admin' || item.id === 'handbuch' ? '#5ffbf1' : item.id === 'mok2' ? '#fbbf24' : item.id === 'k2-familie' ? '#14b8a6' : '#ff8c42',
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  textAlign: 'center',
+                  fontFamily: 'inherit',
+                }}
+              >
+                {item.label}
+              </span>
+            ) : item.id === 'k2-familie' && onNavigate ? (
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={() => navigate(K2_FAMILIE_HOME)}
+                onKeyDown={(e) => e.key === 'Enter' && navigate(K2_FAMILIE_HOME)}
+                style={{
+                  flex: 1,
+                  padding: '0.85rem 1rem',
+                  background: activePage === item.page
+                    ? item.color.replace(/0\.\d+\)/g, m => String(Math.min(parseFloat(m) * 2.5, 1)) + ')')
+                    : item.color,
+                  border: activePage === item.page
+                    ? `2px solid ${item.border.replace(/0\.\d+\)/, '1)')}`
+                    : `1px solid ${item.border}`,
+                  borderRadius: '8px',
+                  color: '#14b8a6',
+                  fontWeight: activePage === item.page ? 800 : 600,
+                  fontSize: '0.95rem',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  transition: 'all 0.2s ease',
+                  boxShadow: activePage === item.page ? `0 0 12px ${item.border}` : 'none',
+                  display: 'block',
+                }}
+              >
+                {activePage === item.page && <span style={{ marginRight: '0.4rem', fontSize: '0.75rem' }}>▶</span>}
+                {item.label}
+              </span>
+            ) : (
+              <Link
+                to={item.id === 'k2-familie' ? K2_FAMILIE_HOME : item.url}
+                style={{
+                  flex: 1,
+                  padding: '0.85rem 1rem',
+                  background: activePage === item.page
+                    ? item.color.replace(/0\.\d+\)/g, m => String(Math.min(parseFloat(m) * 2.5, 1)) + ')')
+                    : item.color,
+                  border: activePage === item.page
+                    ? `2px solid ${item.border.replace(/0\.\d+\)/, '1)')}`
+                    : `1px solid ${item.border}`,
+                  borderRadius: '8px',
+                  color: item.id === 'oek2' || item.id === 'admin' || item.id === 'handbuch' ? '#5ffbf1' : item.id === 'mok2' ? '#fbbf24' : item.id === 'k2-familie' ? '#14b8a6' : '#ff8c42',
+                  fontWeight: activePage === item.page ? 800 : 600,
+                  fontSize: '0.95rem',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  transition: 'all 0.2s ease',
+                  boxShadow: activePage === item.page ? `0 0 12px ${item.border}` : 'none',
+                  textDecoration: 'none',
+                  display: 'block',
+                }}
+              >
+                {activePage === item.page && <span style={{ marginRight: '0.4rem', fontSize: '0.75rem' }}>▶</span>}
+                {item.label}
+              </Link>
+            )}
           </div>
         ))}
 
@@ -558,8 +626,8 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
           Eigenes Projekt – keine Ausgrenzung, Respekt für jeden. Religion & Politik haben hier nichts zu suchen (hat mit K2 Galerie nichts zu tun).
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-          <a
-            href={PROJECT_ROUTES['k2-familie'].home}
+          <Link
+            to={PROJECT_ROUTES['k2-familie'].home}
             style={{
               display: 'block',
               padding: '0.5rem 0.75rem',
@@ -574,7 +642,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
             }}
           >
             → Start & Vision
-          </a>
+          </Link>
         </div>
       </div>
 

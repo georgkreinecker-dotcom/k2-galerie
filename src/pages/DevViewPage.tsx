@@ -1327,7 +1327,8 @@ end tell`
               currentPageData.id === 'control' ? PROJECT_ROUTES['k2-galerie'].controlStudio :
               currentPageData.id === 'mission' ? PROJECT_ROUTES['k2-galerie'].plan :
               currentPageData.id === 'admin' ? '/admin' :
-              currentPageData.id === 'projects' ? '/projects' : '/'}
+              currentPageData.id === 'projects' ? '/projects' :
+              currentPageData.id === 'k2-familie' ? PROJECT_ROUTES['k2-familie'].home : '/'}
           style={{
             padding: '0.5rem 1rem',
             background: '#33a1ff',
