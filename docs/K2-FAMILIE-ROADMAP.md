@@ -58,8 +58,8 @@
 **Datenschutz (unveränderlich):** K2-Familie-Daten (Personen, Momente, Beziehungen) unterliegen denselben Schutzprinzipien wie K2: keine automatischen Löschungen, keine Filter die still Daten entfernen, Schreiben nur nach expliziter User-Aktion. Backup vor kritischen Änderungen. Siehe Regeln `niemals-kundendaten-loeschen`, `datentrennung-localstorage-niemals-loeschen`.
 
 - [x] **1.1** Beziehungsmodell definieren: Person hat `parentIds`, `childIds`, Partner*innen (evtl. mehrere, mit Zeitraum – wechselnde Partnerschaften), `siblingIds`, Wahlfamilie. **Erledigt:** `docs/K2-FAMILIE-DATENMODELL.md` + `src/types/k2Familie.ts` (K2FamiliePerson, K2FamiliePartnerRef, K2FamilieMoment, getK2FamiliePersonenKey).
-- [ ] **1.2** Ein Tenant „K2 Familie“ (oder erste Test-Familie) anlegen – gleiche Infrastruktur wie K2/ök2/VK2 (tenantId, Keys pro Familie).
-- [ ] **1.3** Personen-Liste pro Familie speichern und laden (Name, Foto, Kurztext, Beziehungen).
+- [x] **1.2** Ein Tenant „K2 Familie“ (oder erste Test-Familie) anlegen – **erledigt:** `K2_FAMILIE_DEFAULT_TENANT = 'default'` in `src/utils/familieStorage.ts`; Key-Schema `k2-familie-{tenantId}-personen`.
+- [x] **1.3** Personen-Liste pro Familie speichern und laden – **erledigt:** `src/utils/familieStorage.ts` mit `loadPersonen(tenantId)`, `savePersonen(tenantId, list, { allowReduce })`; gleiche Schutzregeln wie artworksStorage.
 
 ### Phase 2: Erste UI – Stammbaum & Personen-Seite
 - [ ] **2.1** Stammbaum-Ansicht (erst einfach: Liste oder Baum-Visualisierung). Klick auf Person → ihre Seite.

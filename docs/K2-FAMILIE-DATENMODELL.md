@@ -61,9 +61,9 @@ Speicher: pro Familie z. B. `k2-familie-{tenantId}-momente` oder in Person einge
 
 ## 4. Speicher (localStorage) – Tenant-basiert
 
-- **Personen:** `k2-familie-{tenantId}-personen` → Array von Person.
+- **Personen:** `k2-familie-{tenantId}-personen` → Array von Person. Lade/Schreib über `familieStorage.ts`: `loadPersonen(tenantId)`, `savePersonen(tenantId, list, { allowReduce })`.
 - **Momente:** (Phase 3) `k2-familie-{tenantId}-momente` oder pro Person – noch offen.
-- **Erster Tenant:** z. B. `k2-familie` oder `default` (eine Familie für den Start).
+- **Erster Tenant:** `default` (Konstante `K2_FAMILIE_DEFAULT_TENANT` in `src/utils/familieStorage.ts`). Später mehrere Familien = mehrere TenantIds.
 
 **Regeln (unveränderlich):**
 - Keine automatischen Löschungen. Kein Filter, der still Einträge entfernt und zurückschreibt.
@@ -80,9 +80,11 @@ Wenn Person A `childIds: [B]` hat, soll Person B `parentIds: [A]` haben (oder um
 
 ## 6. Nächste Schritte (nach 1.1)
 
-- **1.2** Tenant anlegen (tenantId für erste Familie, Key-Schema nutzen).
-- **1.3** `familieStorage.ts`: `loadPersonen(tenantId)`, `savePersonen(tenantId, list)` – mit gleichen Schutzregeln wie artworksStorage (kein Überschreiben mit weniger ohne allowReduce nach User-Aktion).
+- **1.2** Tenant anlegen – **erledigt:** `K2_FAMILIE_DEFAULT_TENANT = 'default'` in `src/utils/familieStorage.ts`.
+- **1.3** `familieStorage.ts` – **erledigt:** `loadPersonen(tenantId)`, `savePersonen(tenantId, list, { allowReduce })` mit gleichen Schutzregeln wie artworksStorage.
+
+**Weiter:** Phase 2 – erste UI (Stammbaum-Ansicht, Personen-Seite).
 
 ---
 
-**Quelle:** `docs/K2-FAMILIE-ROADMAP.md` Phase 1. Typen in Code: `src/types/k2Familie.ts`.
+**Quelle:** `docs/K2-FAMILIE-ROADMAP.md` Phase 1. Typen: `src/types/k2Familie.ts`. Storage: `src/utils/familieStorage.ts`.

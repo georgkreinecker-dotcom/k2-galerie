@@ -17,7 +17,8 @@
 - **Tenant-Sync ök2/VK2 (01.03.26):** Veröffentlichen und „Bilder vom Server laden“ für alle Mandanten (K2, ök2, VK2). API GET/POST mit tenantId; Blob pro Mandant. Doku: docs/TENANT-SYNC-DOMAIN.md. Tests 38 grün, Build ✅.
 - **Vor dem Weg – Gepäck-Check (02.03.26):** Grundbotschaft, Raumschiff-Anspruch, Gegenseitige Kontrolle, Dokumentation – in Grundbotschaft + Regel verankert. HAUS-INDEX um K2 Familie ergänzt (Schnellfinder + Obergeschoss). Datenschutz-Prinzip für K2-Familie-Daten in Roadmap Phase 1 vermerkt (keine Auto-Löschung, Backup). Nichts Wichtiges vergessen.
 - **K2 Familie Phase 1.1 erledigt (02.03.26):** Beziehungsmodell definiert in `docs/K2-FAMILIE-DATENMODELL.md` und `src/types/k2Familie.ts` (K2FamiliePerson, K2FamiliePartnerRef, K2FamilieMoment, getK2FamiliePersonenKey). Roadmap 1.1 abgehakt.
-- **Nächster Schritt:** K2 Familie – **Phase 1.2** Tenant anlegen (tenantId für erste Familie), **1.3** `familieStorage.ts`: loadPersonen/savePersonen mit gleichen Schutzregeln wie artworksStorage. Bei „ro“: DIALOG-STAND + GRAFIKER-TISCH lesen, dann 1.2/1.3.
+- **K2 Familie Phase 1.2 & 1.3 erledigt (02.03.26):** Tenant `default` (K2_FAMILIE_DEFAULT_TENANT), `src/utils/familieStorage.ts` mit loadPersonen/savePersonen, Schutz wie artworksStorage. Roadmap 1.2/1.3 abgehakt.
+- **Nächster Schritt:** K2 Familie – **Phase 2** erste UI: 2.1 Stammbaum-Ansicht (Liste oder Baum), 2.2 Personen-Seite (Foto, Text, Momente), 2.3 Beziehungen im UI pflegbar. Bei „ro“: DIALOG-STAND + GRAFIKER-TISCH lesen, dann Phase 2.
 - **Info (Georg):** Gestern mit Android + Chrome die Seiten geöffnet – funktioniert problemlos.
 - **Vollkachelform / Bildverarbeitung:** Offene Punkte in docs/GRAFIKER-TISCH-NOTIZEN.md unter „Offene Wünsche“.
 
