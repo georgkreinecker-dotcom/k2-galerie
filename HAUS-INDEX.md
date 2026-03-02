@@ -38,6 +38,7 @@ Nichts wurde weggeschmissen oder verlegt – nur diese Übersicht zum Wiederfind
 | **docs/K2-OEK2-DATENTRENNUNG.md** | K2 vs. ök2 Regeln | Pflicht bei Änderungen an Daten/Keys. |
 | **docs/K2-FAMILIE-GRUNDBOTSCHAFT.md** | K2 Familie – moralisches Fundament | Grundbotschaft, Raumschiff-Anspruch, Gegenseitige Kontrolle, Dokumentation. Verbindlich für alle K2-Familie-Arbeit. |
 | **docs/K2-FAMILIE-ROADMAP.md** | K2 Familie – Vision & Phasen | Raumschiff-Phasen (Fundament → Stammbaum → Momente → Skalierung). Startseite: /projects/k2-familie. |
+| **docs/K2-FAMILIE-DATENMODELL.md** | K2 Familie – Datenmodell | Person, PartnerRef (Zeitraum), Moment, Speicher-Keys. Typen: src/types/k2Familie.ts. |
 
 ---
 

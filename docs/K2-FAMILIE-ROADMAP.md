@@ -57,7 +57,7 @@
 
 **Datenschutz (unveränderlich):** K2-Familie-Daten (Personen, Momente, Beziehungen) unterliegen denselben Schutzprinzipien wie K2: keine automatischen Löschungen, keine Filter die still Daten entfernen, Schreiben nur nach expliziter User-Aktion. Backup vor kritischen Änderungen. Siehe Regeln `niemals-kundendaten-loeschen`, `datentrennung-localstorage-niemals-loeschen`.
 
-- [ ] **1.1** Beziehungsmodell definieren: Person hat `parentIds`, `childIds`, Partner*innen (evtl. mehrere, mit Zeitraum – wechselnde Partnerschaften), `siblingIds`, Wahlfamilie. Eine Quelle (z. B. `familieStorage.ts` oder Erweiterung Stammdaten).
+- [x] **1.1** Beziehungsmodell definieren: Person hat `parentIds`, `childIds`, Partner*innen (evtl. mehrere, mit Zeitraum – wechselnde Partnerschaften), `siblingIds`, Wahlfamilie. **Erledigt:** `docs/K2-FAMILIE-DATENMODELL.md` + `src/types/k2Familie.ts` (K2FamiliePerson, K2FamiliePartnerRef, K2FamilieMoment, getK2FamiliePersonenKey).
 - [ ] **1.2** Ein Tenant „K2 Familie“ (oder erste Test-Familie) anlegen – gleiche Infrastruktur wie K2/ök2/VK2 (tenantId, Keys pro Familie).
 - [ ] **1.3** Personen-Liste pro Familie speichern und laden (Name, Foto, Kurztext, Beziehungen).
 
@@ -87,7 +87,7 @@
 
 ## Nächster konkreter Schritt (Raumschiff)
 
-1. **Datenmodell** in einer Doku oder in Code festhalten: Person + Beziehungen (minimal: Eltern, Kinder, Partner).
+1. **Datenmodell** in einer Doku oder in Code festhalten: Person + Beziehungen (minimal: Eltern, Kinder, Partner). **Erledigt:** siehe K2-FAMILIE-DATENMODELL.md und src/types/k2Familie.ts.
 2. **Erste Route** `/projects/k2-familie` mit Startseite (Vision, Link zu dieser Roadmap) – **erledigt mit Projektkarte + Startseite**.
 3. **Erste Datenstruktur** für eine Familie (z. B. `k2-familie-mitglieder` oder pro Tenant `k2-familie-{tenantId}-personen`) und Beziehungen skizzieren.
 
