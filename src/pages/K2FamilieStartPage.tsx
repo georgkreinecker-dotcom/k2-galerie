@@ -66,6 +66,21 @@ export default function K2FamilieStartPage() {
           → Stammbaum öffnen
         </Link>
         <Link
+          to={PROJECT_ROUTES['k2-familie'].events}
+          style={{
+            padding: '0.75rem 1.25rem',
+            background: 'rgba(13,148,136,0.2)',
+            color: '#14b8a6',
+            border: '1px solid rgba(13,148,136,0.45)',
+            borderRadius: 10,
+            textDecoration: 'none',
+            fontWeight: 600,
+            fontSize: '1rem',
+          }}
+        >
+          → Events (Geburtstage, Treffen)
+        </Link>
+        <Link
           to={PROJECT_ROUTES['k2-galerie'].plan}
           style={{
             padding: '0.75rem 1.25rem',

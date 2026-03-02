@@ -59,10 +59,28 @@ Speicher: `k2-familie-{tenantId}-momente` (eigener Key pro Tenant). Lade/Schreib
 
 ---
 
-## 4. Speicher (localStorage) – Tenant-basiert
+## 4. Familien-Event (Phase 3.2)
+
+Geburtstage, Treffen, Feste – mit Datum und Teilnehmern (Personen-IDs).
+
+| Feld | Typ | Beschreibung |
+|------|-----|--------------|
+| `id` | string | Eindeutige ID |
+| `title` | string | Titel (z. B. „Geburtstag Anna“, „Familientreffen“) |
+| `date` | string | Datum (ISO, z. B. YYYY-MM-DD) |
+| `participantIds` | string[] | IDs der teilnehmenden Personen (aus Stammbaum) |
+| `note` | string | Optional: Ort, Hinweise |
+| `createdAt` / `updatedAt` | string (ISO) | Optional |
+
+Speicher: `k2-familie-{tenantId}-events`. `loadEvents(tenantId)`, `saveEvents(tenantId, list, { allowReduce })`. **Erledigt Phase 3.2.**
+
+---
+
+## 5. Speicher (localStorage) – Tenant-basiert
 
 - **Personen:** `k2-familie-{tenantId}-personen` → Array von Person. Lade/Schreib über `familieStorage.ts`: `loadPersonen(tenantId)`, `savePersonen(tenantId, list, { allowReduce })`.
 - **Momente:** `k2-familie-{tenantId}-momente` → Array von Moment. `loadMomente(tenantId)`, `saveMomente(tenantId, list, { allowReduce })`.
+- **Events (Phase 3.2):** `k2-familie-{tenantId}-events` → Array von Event (title, date, participantIds, note). `loadEvents(tenantId)`, `saveEvents(tenantId, list, { allowReduce })`.
 - **Erster Tenant:** `default` (Konstante `K2_FAMILIE_DEFAULT_TENANT` in `src/utils/familieStorage.ts`). Später mehrere Familien = mehrere TenantIds.
 
 **Regeln (unveränderlich):**

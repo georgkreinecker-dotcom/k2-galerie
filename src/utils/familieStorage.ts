@@ -5,8 +5,8 @@
  * Siehe docs/K2-FAMILIE-DATENMODELL.md, Regel niemals-kundendaten-loeschen.
  */
 
-import type { K2FamiliePerson, K2FamilieMoment } from '../types/k2Familie'
-import { getK2FamiliePersonenKey, getK2FamilieMomenteKey } from '../types/k2Familie'
+import type { K2FamiliePerson, K2FamilieMoment, K2FamilieEvent } from '../types/k2Familie'
+import { getK2FamiliePersonenKey, getK2FamilieMomenteKey, getK2FamilieEventsKey } from '../types/k2Familie'
 
 /** Erster Tenant (eine Familie) für den Start. Später: mehrere TenantIds pro Lizenz. */
 export const K2_FAMILIE_DEFAULT_TENANT = 'default'
@@ -107,6 +107,53 @@ export function saveMomente(
     return true
   } catch (e) {
     console.error('❌ familieStorage: Fehler beim Schreiben (Momente)', e)
+    return false
+  }
+}
+
+/**
+ * Lädt Events für einen Tenant. Keine Filterung, keine automatische Änderung.
+ */
+export function loadEvents(tenantId: string): K2FamilieEvent[] {
+  const key = getK2FamilieEventsKey(tenantId)
+  try {
+    const stored = localStorage.getItem(key)
+    if (!stored) return []
+    const parsed = JSON.parse(stored)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Speichert Events für einen Tenant. Schutz: nicht mit weniger überschreiben,
+ * außer allowReduce (z. B. nach explizitem Löschen durch User).
+ */
+export function saveEvents(
+  tenantId: string,
+  list: K2FamilieEvent[],
+  options: { allowReduce?: boolean } = {}
+): boolean {
+  const key = getK2FamilieEventsKey(tenantId)
+  const current = loadEvents(tenantId)
+  const currentCount = current.length
+  const arr = Array.isArray(list) ? list : []
+
+  if (arr.length < currentCount && !options.allowReduce) {
+    console.warn(`⚠️ familieStorage: Events speichern würde ${currentCount} → ${arr.length} reduzieren, abgelehnt`)
+    return false
+  }
+  try {
+    const json = JSON.stringify(arr)
+    if (json.length > MAX_JSON_SIZE) {
+      console.error('❌ familieStorage: Events-Daten zu groß')
+      return false
+    }
+    localStorage.setItem(key, json)
+    return true
+  } catch (e) {
+    console.error('❌ familieStorage: Fehler beim Schreiben (Events)', e)
     return false
   }
 }

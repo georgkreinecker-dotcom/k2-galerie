@@ -106,6 +106,7 @@ export const PROJECT_ROUTES = {
     home: '/projects/k2-familie',
     stammbaum: '/projects/k2-familie/stammbaum',
     personen: '/projects/k2-familie/personen',
+    events: '/projects/k2-familie/events',
     galerie: '/projects/k2-familie',
     galerieOeffentlich: '/projects/k2-galerie/galerie-oeffentlich',
     galerieOeffentlichVorschau: '/projects/k2-galerie/galerie-oeffentlich-vorschau',

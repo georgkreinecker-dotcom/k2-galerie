@@ -40,6 +40,17 @@ export interface K2FamilieMoment {
   updatedAt?: string
 }
 
+/** Familien-Event (Phase 3.2) – Geburtstage, Treffen, Feste. */
+export interface K2FamilieEvent {
+  id: string
+  title: string
+  date: string
+  participantIds: string[]
+  note?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
 /** Storage-Key für Personen pro Tenant. */
 export function getK2FamiliePersonenKey(tenantId: string): string {
   return `k2-familie-${tenantId}-personen`
@@ -48,4 +59,9 @@ export function getK2FamiliePersonenKey(tenantId: string): string {
 /** Storage-Key für Momente pro Tenant (Phase 3). */
 export function getK2FamilieMomenteKey(tenantId: string): string {
   return `k2-familie-${tenantId}-momente`
+}
+
+/** Storage-Key für Events pro Tenant (Phase 3.2). */
+export function getK2FamilieEventsKey(tenantId: string): string {
+  return `k2-familie-${tenantId}-events`
 }
