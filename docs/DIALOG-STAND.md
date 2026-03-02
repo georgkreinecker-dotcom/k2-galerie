@@ -5,6 +5,7 @@
 ## Datum: 02.03.26
 
 ## Wo wir stehengeblieben (aktuell) – **HIER EINSTEIGEN**
+- **Fertige Homepage K2 Familie umgesetzt (02.03.26):** Nutzer-Homepage = Index (/projects/k2-familie). Config: `pageContentFamilie.ts` + `pageTextsFamilie.ts` pro Tenant (welcomeImage, cardImage; welcomeTitle, introText, Buttons). **K2FamilieHomePage.tsx:** Hero, Willkommenstext, drei Buttons (Stammbaum, Events, Kalender), Link „Leitbild & Vision“. Route **uebersicht** = Leitbild & Vision (K2FamilieStartPage). Nav: Start (Homepage) | Leitbild & Vision | Stammbaum | Events | Kalender. Tests + Build grün.
 - **Kommandozentrale (02.03.26):** `docs/KOMMANDOZENTRALE.md` – gemeinsamer Zugang für Georg und KI. Steuerung jederzeit: Sofort-Zugriff auf DIALOG-STAND, GRAFIKER-TISCH, GELOESTE-BUGS; Definitionen & Konzepte (Homepage, K2-Familie-Konzept, Skalierung, Raumschiff); Roadmap & Regeln. In HAUS-INDEX Schnellfinder und docs/00-INDEX + STRUKTUR-HANDELN-QUELLEN verankert.
 - **Definitionen & Konzepte (02.03.26):** HOMEPAGE-DEFINITION.md (fertige Homepage vs. Projekt-Startseite), K2-FAMILIE-HOMEPAGE-KONZEPT.md (Orientierung ök2, einheitliche Struktur, Gestaltung pro Tenant), SKALIERUNG-KONZEPT.md (stimmig, nach oben unendlich skalierbar; Raumschiff-Qualitätskriterien beim Skalieren). Roadmap + 00-INDEX verweisen darauf.
 - **Smart Panel – Zur Startseite (02.03.26):** K2-Familie-Mappe: Button umbenannt in „→ Zur Startseite (erste Seite)“ (war „Start & Vision“), damit klar ist: ein Klick = erste Seite der Homepage.
@@ -39,7 +40,7 @@
 - **K2 Familie Phase 4.2 erledigt (02.03.26):** Doku & Onboarding – „Erste Schritte“ auf Startseite (5 Schritte), Handbuch 17-K2-FAMILIE-ERSTE-SCHRITTE.md, Eintrag im Handbuch-Index. Roadmap 4.2 abgehakt.
 - **Crash-Check (02.03.26):** ro check crash – K2-Familie-Seiten geprüft, keine neuen Crash-Quellen (kein setInterval/setTimeout/reload in *familie*). CRASH-BEREITS-GEPRUEFT.md + CRASH-LETZTER-KONTEXT.md aktualisiert.
 - **Weiter K2 Familie (02.03.26):** Phase 4.0 vorbereitet – in RECHTE-ZWEIGE Abschnitt „Entscheidung 4.0 – in 3 Fragen“ ergänzt (Zweig A/B/C, Rechte 1/2/3, Empfehlung C + Option 3). Startseite: Card „Nächster Meilenstein: Rechte & Zweige“ mit Verweis auf docs/K2-FAMILIE-RECHTE-ZWEIGE.md. Commit: a99358f ✅ auf GitHub.
-- **Nächster Schritt:** Bei Wiedereinstieg: **Kommandozentrale** (`docs/KOMMANDOZENTRALE.md`) oder DIALOG-STAND + GRAFIKER-TISCH lesen. Optional: Smart-Panel-Änderung („Zur Startseite“) committen; Phase „Fertige Homepage“ K2 Familie planen; oder Entscheidung 4.0 (RECHTE-ZWEIGE).
+- **Nächster Schritt:** Bei Wiedereinstieg: **Kommandozentrale** oder DIALOG-STAND + GRAFIKER-TISCH lesen. Optional: Homepage-Inhalte bearbeitbar machen (Seitengestaltung/Admin pro Familie); oder Entscheidung 4.0 (RECHTE-ZWEIGE).
 - **Info (Georg):** Gestern mit Android + Chrome die Seiten geöffnet – funktioniert problemlos.
 - **Vollkachelform / Bildverarbeitung:** Offene Punkte in docs/GRAFIKER-TISCH-NOTIZEN.md unter „Offene Wünsche“.
 - **Vollbackup (02.03.26):** Git Commit 0b709f1 + Tag **full-backup-2026-03-02** auf GitHub. Hard-Backup auf backupmicro: v004 (gallery-data.json). Druck-Kontrast K2 Familie (Print-CSS) im Commit. Optional: Im Admin einmal „Vollbackup herunterladen“; Code-Spiegelung auf backupmicro bei Bedarf: backupmicro anstecken → im Terminal `bash scripts/backup-code-to-backupmicro.sh`.

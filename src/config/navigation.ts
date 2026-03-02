@@ -104,6 +104,7 @@ export const PROJECT_ROUTES = {
     id: 'k2-familie',
     name: 'K2 Familie',
     home: '/projects/k2-familie',
+    uebersicht: '/projects/k2-familie/uebersicht',
     stammbaum: '/projects/k2-familie/stammbaum',
     personen: '/projects/k2-familie/personen',
     events: '/projects/k2-familie/events',

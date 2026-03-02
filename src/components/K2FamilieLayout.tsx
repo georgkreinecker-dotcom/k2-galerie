@@ -10,6 +10,7 @@ import { PROJECT_ROUTES } from '../config/navigation'
 
 const FAMILIE_NAV = [
   { to: PROJECT_ROUTES['k2-familie'].home, label: 'Start (Homepage)' },
+  { to: PROJECT_ROUTES['k2-familie'].uebersicht, label: 'Leitbild & Vision' },
   { to: PROJECT_ROUTES['k2-familie'].stammbaum, label: 'Stammbaum' },
   { to: PROJECT_ROUTES['k2-familie'].events, label: 'Events' },
   { to: PROJECT_ROUTES['k2-familie'].kalender, label: 'Kalender' },
@@ -32,7 +33,10 @@ function FamilieNav() {
     }}>
       {FAMILIE_NAV.map(({ to, label }) => {
         const isStart = to === PROJECT_ROUTES['k2-familie'].home
-        const isActive = isStart ? path === to || path === to + '/' : path.startsWith(to)
+        const isUebersicht = to === PROJECT_ROUTES['k2-familie'].uebersicht
+        const isActive = isStart || isUebersicht
+          ? (path === to || path === to + '/')
+          : path.startsWith(to)
         return (
           <Link
             key={to}

@@ -23,6 +23,7 @@ import Vk2KatalogPage from './pages/Vk2KatalogPage'
 import Vk2GalerieVorschauPage from './pages/Vk2GalerieVorschauPage'
 import Vk2MitgliedLoginPage from './pages/Vk2MitgliedLoginPage'
 import K2FamilieStartPage from './pages/K2FamilieStartPage'
+import K2FamilieHomePage from './pages/K2FamilieHomePage'
 import K2FamilieStammbaumPage from './pages/K2FamilieStammbaumPage'
 import K2FamiliePersonPage from './pages/K2FamiliePersonPage'
 import K2FamilieEventsPage from './pages/K2FamilieEventsPage'
@@ -529,7 +530,8 @@ function App() {
       <Route path={PROJECT_ROUTES.vk2.kunden} element={<KundenPage vk2 />} />
       <Route path={PROJECT_ROUTES.vk2.vollversion} element={<Navigate to="/admin?context=vk2" replace />} />
       <Route path={PROJECT_ROUTES['k2-familie'].home} element={<K2FamilieLayout />}>
-        <Route index element={<K2FamilieStartPage />} />
+        <Route index element={<K2FamilieHomePage />} />
+        <Route path="uebersicht" element={<K2FamilieStartPage />} />
         <Route path="stammbaum" element={<K2FamilieStammbaumPage />} />
         <Route path="events" element={<K2FamilieEventsPage />} />
         <Route path="kalender" element={<K2FamilieKalenderPage />} />

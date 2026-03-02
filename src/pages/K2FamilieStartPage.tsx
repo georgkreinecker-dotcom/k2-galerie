@@ -27,7 +27,7 @@ export default function K2FamilieStartPage() {
               </select>
               <button type="button" className="btn-outline" onClick={() => addTenant()}>Neue Familie</button>
             </div>
-            <h1>K2 Familie</h1>
+            <h1>Leitbild & Vision</h1>
             <div className="meta">Zusammenleben sichtbar machen – jede Form von Familie, wechselnde Partnerschaften, Freud, Leid und Alltag. Basis: K2-Struktur, tenantfähig.</div>
           </div>
         </header>
