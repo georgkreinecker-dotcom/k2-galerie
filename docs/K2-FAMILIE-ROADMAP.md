@@ -69,7 +69,7 @@
 ### Phase 3: Momente & Events
 - [x] **3.1** „Momente“ pro Person (Hochzeit, Geburt, Umzug, Abschied, Neuanfang, Alltägliches, …) – gleiche Struktur wie Werke, andere Semantik. **Erledigt:** Speicher `k2-familie-{tenantId}-momente`, loadMomente/saveMomente in familieStorage; auf Personen-Seite Liste, Hinzufügen/Bearbeiten/Löschen (Titel, Datum, Bild-URL, Text).
 - [x] **3.2** Familien-Events (Geburtstage, Treffen) aus Beziehungen ableiten oder manuell anlegen. **Erledigt:** Speicher `k2-familie-{tenantId}-events`, loadEvents/saveEvents; Events-Seite mit Liste (nach Datum), Hinzufügen/Bearbeiten/Löschen, Teilnehmer aus Personen auswählbar. Link von K2-Familie-Start.
-- [ ] **3.3** Kalender/Übersicht (optional).
+- [x] **3.3** Kalender/Übersicht (optional). **Erledigt:** Kalender-Seite (/projects/k2-familie/kalender) mit Events + Momente (mit Datum), nach Monat gruppiert, Links zu Events bzw. Person. Link von K2-Familie-Start.
 
 ### Phase 4: Skalierung & Produkt
 - [ ] **4.0** **Rechte & Zweige (Konzept):** Organisches Wachstum + Schreib-/Löschrechte pro Zweig – Optionen und Entscheidung in `docs/K2-FAMILIE-RECHTE-ZWEIGE.md`. Danach Datenmodell/UI ableiten.

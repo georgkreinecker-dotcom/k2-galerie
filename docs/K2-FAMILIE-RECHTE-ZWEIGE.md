@@ -1,7 +1,7 @@
 # K2 Familie – Organisches Wachstum & Rechte pro Zweig
 
 **Stand:** 02.03.26  
-**Zweck:** Konzept, wie eine Familie wachsen kann und wer in welchem „Zweig“ schreiben/löschen darf. Noch keine Implementierung – erst Entscheidung, dann bauen.
+**Zweck:** Konzept, wie eine Familie wachsen kann und wer in welchem „Zweig“ schreiben/löschen darf. **Wir arbeiten an der Architektur – der Baumeister (konkrete Umsetzung) kommt später.** Erst Struktur und Entscheidungen, dann bauen.
 
 ---
 
@@ -59,6 +59,20 @@ Drei mögliche Definitionen (eine davon wählen oder kombinieren):
 | **Rechte** | Zugang = Recht | Rolle + Zweig-Definition | Verwalter pro Zweig |
 | **Wachstum** | Neuer Tenant pro Zweig | Neue Person, Zweig zuordnen | Neue Person, Zweig zuordnen |
 | **Komplexität** | Mittlere (Verknüpfung) | Höhere (Rollen + Zweig) | Mittlere (Zweig = Menge + Verwalter) |
+
+---
+
+## Events betreffen immer nur einen Teil (Äste/Zweige)
+
+**Realität bei großen Familien:** Ein Event (Geburtstag, Treffen, Fest) informiert oder betrifft **nicht** die ganze Familie, sondern immer nur einen **Teil** – einen Ast, einen Zweig, eine bestimmte Gruppe. Die anderen Äste bekommen davon nichts mit oder sind bewusst nicht dabei.
+
+**Konsequenz für die App:**
+
+1. **Teilnehmer = betroffener Kreis:** Schon heute: Ein Event hat `participantIds` – das *ist* der Teil, der informiert/dabei ist. Die übrigen Personen (andere Äste) sind nicht Teilnehmer und brauchen das Event nicht zu sehen.
+2. **Sichtbarkeit (später):** Wenn wir Sichtbarkeit pro Person/Zweig einführen: Nur Events anzeigen, bei denen man Teilnehmer ist (oder zu einem betroffenen Zweig gehört). Nicht „alle Events der ganzen Familie“ für alle.
+3. **Beim Anlegen (später):** Statt 30 Einzelpersonen zu wählen: „Zweig auswählen“ (z. B. „alle Nachkommen von Person X“) oder eine gespeicherte Gruppe – dann sind automatisch die richtigen Leute Teilnehmer. Skaliert für große Familien.
+
+**Kurz:** Events sind von vornherein „teilbezogen“. Wer Phase 4 (Zweige/Rechte) umsetzt, kann Sichtbarkeit und Auswahl (Zweig/Gruppe) daran anbinden.
 
 ---
 

@@ -81,6 +81,21 @@ export default function K2FamilieStartPage() {
           → Events (Geburtstage, Treffen)
         </Link>
         <Link
+          to={PROJECT_ROUTES['k2-familie'].kalender}
+          style={{
+            padding: '0.75rem 1.25rem',
+            background: 'rgba(13,148,136,0.15)',
+            color: '#14b8a6',
+            border: '1px solid rgba(13,148,136,0.4)',
+            borderRadius: 10,
+            textDecoration: 'none',
+            fontWeight: 600,
+            fontSize: '1rem',
+          }}
+        >
+          → Kalender & Übersicht
+        </Link>
+        <Link
           to={PROJECT_ROUTES['k2-galerie'].plan}
           style={{
             padding: '0.75rem 1.25rem',
