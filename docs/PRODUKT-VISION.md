@@ -69,6 +69,12 @@
 
 ---
 
+## Gesetz: Kein direkter Kundenkontakt
+
+**In der K2-Welt bauen wir keinen direkten Kundenkontakt auf.** Bei den angestrebten Skalierungen ist das weder möglich noch sinnvoll. Alles sachlich und automatisch: Lizenzabschluss, Bestätigung (z. B. ausdruckbar), Abrechnung – über System, nicht über persönliche E-Mail oder Betreuung. Verbindliche Regel: `.cursor/rules/k2-kein-direkter-kundenkontakt.mdc`.
+
+---
+
 ## Parallele Ansicht (jederzeit einsehbar)
 
 - **Route:** `/projects/k2-galerie/produkt-vorschau`

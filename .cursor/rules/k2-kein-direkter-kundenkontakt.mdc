@@ -1,0 +1,26 @@
+---
+description: K2-Welt – kein direkter Kundenkontakt; bei Skalierung weder möglich noch sinnvoll.
+alwaysApply: true
+---
+
+# K2-Welt – kein direkter Kundenkontakt (Gesetz)
+
+## Grundsatz (unveränderlich)
+
+**Wir bauen bei K2 keinen direkten Kundenkontakt auf.** Bei den angestrebten Skalierungen ist das weder möglich noch sinnvoll.
+
+- **Kein persönlicher Austausch** mit Lizenznehmern/Kunden als Standard (keine individuellen E-Mail-Antworten, kein Beziehungsaufbau pro Kunde).
+- **Automatisch und sachlich:** Lizenzabschluss, Bestätigung, Abrechnung – über System (Stripe, Erfolgsseite, ausdruckbare Bestätigung). Druck hat etwas Verbindliches und Vertrauenserweckendes, ohne dass wir pro Kunde in Kontakt treten.
+- **Skalierung:** Direkter Kundenkontakt skaliert nicht; deshalb von vornherein nicht als Kanal etablieren.
+
+## Was die AI daraus ableitet
+
+- **Lizenzen / Zahlung:** Keine „Schreib uns eine E-Mail“-Aufforderungen für Upgrade oder Rückfragen als Hauptweg. Erfolgsseite, Druckbestätigung, Stripe – ja; persönliche Antwort von euch – nein.
+- **Neue Features:** Keine Funktionen, die direkten 1:1-Kontakt (E-Mail-Schleifen, individuelle Betreuung) voraussetzen oder fördern.
+- **Texte / UI:** Keine Formulierungen, die Erwartung an persönliche Antwort wecken („wir melden uns“, „kontaktiere uns für …“ als Standard).
+
+## Kurzfassung
+
+**K2 = keine direkte Kundenbeziehung aufbauen. Skalierung braucht Automatik und Sachlichkeit – kein persönlicher Kontakt als Gesetz.**
+
+Verknüpfung: **skalierungsprinzip.mdc** (skalierbar bauen), **georg-keine-eingaben.mdc** (keine unnötigen Eingaben).

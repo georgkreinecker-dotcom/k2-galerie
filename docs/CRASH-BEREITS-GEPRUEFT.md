@@ -181,8 +181,9 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 | 01.03.26 | PilotStartPage, MarketingOek2Page (Pilot-Rubrik) | **Neue Datei:** PilotStartPage.tsx – ein useEffect (QRCode.toDataURL), Cleanup mit `cancelled`. Kein setInterval/reload. **MarketingOek2Page:** zwei weitere useEffects für QR (pilotStartQrUrl, pilotHandyLinkQrUrl), beide mit `cancelled`-Cleanup. Route pilotStart ohne Mok2Layout. Kein neuer Fix nötig. |
 | 02.03.26 | K2 Familie (alle Seiten + familie*) | **ro check crash:** K2FamiliePersonPage, K2FamilieEventsPage, K2FamilieStammbaumPage, K2FamilieKalenderPage, K2FamilieStartPage + alle src *familie* durchsucht. Kein setInterval, setTimeout, addEventListener, location.reload/replace/href. useEffects nur sync (load/setState), kein Cleanup nötig. Kein neuer Fix. |
 | 02.03.26 | Code-5-Check (check the crash 5) | location.reload: nur in patch-backup-panel.js, beide mit iframe-Check ✓. location.replace/href: SmartPanel (startFremderModus + nav) mit iframe-Check ✓. env.ts safeReload ✓. write-build-info.js Inject: iframe + localhost ✓. index.html: root/Button-Reload mit iframe-Check ✓. **Fix:** VitaPage – setTimeout(2000) für setSaved(false) ohne Cleanup → bei Unmount/HMR setState nach Ablauf. savedTimeoutRef + clearTimeout im useEffect-Cleanup, in save() vor neuem Timeout altes clearen. |
+| 02.03.26 | ro check crash | Letzte Änderung: Upgrade-Info in ScreenshotExportAdmin (Lizenzinformation) – nur statischer Block + mailto-Link, kein neuer useEffect/setTimeout/setInterval/reload. K2-Familie-Seiten bereits 02.03.26 geprüft. Kein neuer Fix. |
 
-*Zuletzt ergänzt: 02.03.26 (Code-5-Check, VitaPage setTimeout-Cleanup)*
+*Zuletzt ergänzt: 02.03.26 (ro check crash, Upgrade-Info statisch)*
 
 ---
 

@@ -833,7 +833,7 @@ function ScreenshotExportAdmin() {
   })()
   const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>(initialEventplanSubTab)
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false) // kleine Leiste „Vergangenheit“, bei Klick aufklappen
-  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager' | 'empfehlung' | 'lizenz'>('stammdaten')
+  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager' | 'empfehlung' | 'lizenz' | 'lizenzinfo'>('stammdaten')
   const [lizenzLicenceType, setLizenzLicenceType] = useState<'basic' | 'pro' | 'proplus'>('pro')
   const [lizenzName, setLizenzName] = useState('')
   const [lizenzEmail, setLizenzEmail] = useState('')
@@ -901,6 +901,9 @@ function ScreenshotExportAdmin() {
   const [katalogAnsicht, setKatalogAnsicht] = useState<'tabelle' | 'karten'>('tabelle')
   const [katalogSpalten, setKatalogSpalten] = useState<string[]>(['nummer', 'titel', 'kategorie', 'kuenstler', 'masse', 'technik', 'preis', 'status', 'datum', 'kaeufer'])
   const [katalogSelectedWork, setKatalogSelectedWork] = useState<any>(null)
+
+  // Besucher-Ticker: Zahl der Hompage-Besucher für aktuellen Kontext (K2 / ök2 / VK2)
+  const [besucherCount, setBesucherCount] = useState<number | null>(null)
 
   // Bei laufender Wiederherstellung automatisch aufklappen, damit der Balkenverlauf sichtbar ist
   useEffect(() => {
@@ -1560,6 +1563,23 @@ function ScreenshotExportAdmin() {
     if (tenant.isOeffentlich && settingsSubTab === 'lager') setSettingsSubTab('stammdaten')
     if (tenant.isVk2 && (settingsSubTab === 'lager' || settingsSubTab === 'sicherheit')) setSettingsSubTab('stammdaten')
   }, [settingsSubTab])
+
+  // Besucher-Ticker: Zahl für aktuellen Kontext laden (K2 / ök2 / VK2 Summe)
+  useEffect(() => {
+    let isMounted = true
+    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    if (tenant.isVk2) {
+      Promise.all([
+        fetch(`${origin}/api/visit?tenant=vk2-members`).then((r) => r.json()).then((d) => d.count ?? 0),
+        fetch(`${origin}/api/visit?tenant=vk2-external`).then((r) => r.json()).then((d) => d.count ?? 0),
+      ]).then(([m, e]) => { if (isMounted) setBesucherCount(m + e) }).catch(() => { if (isMounted) setBesucherCount(null) })
+    } else if (tenant.isOeffentlich) {
+      fetch(`${origin}/api/visit?tenant=oeffentlich`).then((r) => r.json()).then((d) => { if (isMounted) setBesucherCount(d.count ?? 0) }).catch(() => { if (isMounted) setBesucherCount(null) })
+    } else {
+      fetch(`${origin}/api/visit?tenant=k2`).then((r) => r.json()).then((d) => { if (isMounted) setBesucherCount(d.count ?? 0) }).catch(() => { if (isMounted) setBesucherCount(null) })
+    }
+    return () => { isMounted = false }
+  }, [tenant.isOeffentlich, tenant.isVk2])
 
   // ök2: Verkaufte-Werke-Anzeige (Tage) aus k2-oeffentlich-galerie-settings laden
   useEffect(() => {
@@ -9009,12 +9029,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               display: 'flex', alignItems: 'center', gap: '0.4rem',
               fontFamily: s.fontBody,
             }}
-            title="Zurück zur Übersicht mit allen Bereichen (Meine Werke, Events, Kassa, …)">
+            title="Zurück zur Übersicht mit allen Bereichen (Werke hinzufügen und bearbeiten, Events, Kassa, …)">
             ← Zurück zur Übersicht
           </button>
           <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.82rem' }}>
             Du schaust dir gerade an: <strong style={{ color: '#fff' }}>
-              {activeTab === 'werke' ? '🖼️ Meine Werke' :
+              {activeTab === 'werke' ? '🖼️ Werke hinzufügen und bearbeiten' :
                activeTab === 'eventplan' ? '🎟️ Events & Ausstellungen' :
                activeTab === 'design' ? '✨ Aussehen & Design' :
                activeTab === 'katalog' ? '📋 Werkkatalog' :
@@ -9200,6 +9220,25 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </Link>
               )}
 
+              {/* Besucher-Ticker – nur die Zahl der Hompage-Besucher für diesen Kontext */}
+              <span
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: s.bgCard,
+                  border: `1px solid ${s.accent}28`,
+                  color: s.text,
+                  borderRadius: '10px',
+                  fontSize: '0.88rem',
+                  fontWeight: 500,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem'
+                }}
+                title={typeof besucherCount === 'number' ? `Hompage-Besucher: ${besucherCount}` : 'Besucherzahl wird geladen…'}
+              >
+                👁 {typeof besucherCount === 'number' ? besucherCount : '–'}
+              </span>
+
               {/* Abmelden – klein und zurückhaltend */}
               {!tenant.isOeffentlich && (
                 <button
@@ -9285,7 +9324,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
                     { emoji: '🚀', name: 'Jetzt starten', beschreibung: 'Daten ausfüllen und die Galerie live schalten.', tab: 'assistent' },
                   ] : [
-                    { emoji: '🖼️', name: 'Meine Werke', beschreibung: 'Fotos hochladen, Titel, Preis – ein Klick und es ist live.', tab: 'werke' },
+                    { emoji: '🖼️', name: 'Werke hinzufügen und bearbeiten', beschreibung: 'Fotos hochladen, Titel, Preis – ein Klick und es ist live.', tab: 'werke' },
                     { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Vernissage planen, Einladungen & QR-Codes erstellen.', tab: 'eventplan' },
                     { emoji: '✨', name: 'Aussehen & Design', beschreibung: 'Farben, Texte, dein Foto – die Galerie wird zu dir.', tab: 'design' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Kontakt, Adresse, Öffnungszeiten – deine Stammdaten.', tab: 'einstellungen' },
@@ -9430,7 +9469,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '✨', name: 'Aussehen', text: 'Farben, Texte, Foto – eure Mitglieder-Seite nach euren Wünschen', tab: 'design' },
                     { emoji: '⚙️', name: 'Einstellungen', text: 'Vereinsdaten, Kontakt, Mitglieder verwalten', tab: 'einstellungen' },
                   ] : [
-                    { emoji: '🎨', name: 'Meine Werke', text: 'Fotos hochladen, Titel, Preis, Beschreibung – deine Galerie füllen', tab: 'werke' },
+                    { emoji: '🎨', name: 'Werke hinzufügen und bearbeiten', text: 'Fotos hochladen, Titel, Preis, Beschreibung – deine Galerie füllen', tab: 'werke' },
                     { emoji: '📋', name: 'Werkkatalog', text: 'Alle Werke auf einen Blick – filtern, suchen, drucken', tab: 'katalog' },
                     { emoji: '💰', name: 'Kassa', text: 'Direkt verkaufen – Beleg drucken, Übersicht behalten', tab: 'kassa' },
                     { emoji: '📢', name: 'Veranstaltungen', text: 'Events planen, Einladungen erstellen, Presse informieren', tab: 'eventplan' },
@@ -9543,8 +9582,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '🎟️', name: 'Events & Werbung', beschreibung: 'Events planen, Flyer und Newsletter für den Verein erstellen.', tab: 'eventplan' },
                     { emoji: '✨', name: 'Aussehen & Design', beschreibung: 'Farben, Texte, Bilder – die Galerie nach euren Wünschen.', tab: 'design' },
                   ] : [
-                    { emoji: '🖼️', name: 'Meine Werke', beschreibung: 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist live in deiner Galerie.', tab: 'werke' },
-                    { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke filtern, suchen, drucken – nach Status, Kategorie, Datum, Preis.', tab: 'katalog' },
+                    { emoji: '🖼️', name: 'Werke hinzufügen und bearbeiten', beschreibung: 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist live in deiner Galerie.', tab: 'werke' },
                     { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Events planen, Einladungen und Flyer erstellen, Presse, Social Media.', tab: 'eventplan' },
                     { emoji: '✨', name: 'Aussehen & Design', beschreibung: tenant.isOeffentlich ? 'Farben, Texte, dein Foto – die Galerie wird zu dir.' : 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
                   ]
@@ -9553,12 +9591,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Vereinsdaten, Kontakt, Mitglieder verwalten.', tab: 'einstellungen' },
                     { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Der Assistent führt euch durch die Einrichtung.', tab: 'assistent' },
                   ] : tenant.isOeffentlich ? [
-                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Meine Daten, Kontakt, Backup.', tab: 'einstellungen' },
+                    { emoji: '📋📊', name: 'Kassa, Lager, Listen & Werkkatalog', beschreibung: 'Werkkatalog, Verkaufsstatistik, PDF-Export, Speicherdaten – alles an einem Ort.', tab: 'statistik' },
+                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Meine Daten, Kontakt, Backup. Lizenz & Empfehlungsprogramm.', tab: 'einstellungen' },
                     { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Neu hier? Der Assistent führt dich durch die Einrichtung.', tab: 'assistent' },
                   ] : [
-                    { emoji: '🧾', name: 'Kassa & Verkauf', beschreibung: 'Werk verkauft? Eintragen, Beleg drucken – vom Handy direkt.', tab: 'kassa' },
-                    { emoji: '📊', name: 'Kassa, Lager & Listen', beschreibung: 'Verkaufsstatistik, PDF-Export, Speicherdaten – Kassa- und Lagerdaten an einem Ort.', tab: 'statistik' },
-                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Meine Daten, Drucker, Sicherheit, Backup.', tab: 'einstellungen' },
+                    { emoji: '📋📊', name: 'Kassa, Lager, Listen & Werkkatalog', beschreibung: 'Werkkatalog, Verkaufsstatistik, PDF-Export, Speicherdaten – alles an einem Ort.', tab: 'statistik' },
+                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Meine Daten, Drucker, Sicherheit, Backup. Lizenz & Empfehlungsprogramm.', tab: 'einstellungen' },
                     { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Neu hier? Der Assistent führt dich durch die Einrichtung.', tab: 'assistent' },
                   ]
                   const scrollToWerke = () => document.getElementById('admin-werke-inhalt')?.scrollIntoView({ behavior: 'smooth' })
@@ -9616,7 +9654,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 {/* Trennlinie vor Werke-Inhalt */}
                 <div id="admin-werke-inhalt" style={{ margin: 'clamp(2rem, 5vw, 3rem) 0 clamp(1rem, 3vw, 1.5rem)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <div style={{ flex: 1, height: 1, background: `${s.accent}22` }} />
-                  <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>🎨 {tenant.isVk2 ? 'Vereinsmitglieder' : 'Meine Werke'}</span>
+                  <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>🎨 {tenant.isVk2 ? 'Vereinsmitglieder' : 'Werke hinzufügen und bearbeiten'}</span>
                   <div style={{ flex: 1, height: 1, background: `${s.accent}22` }} />
                 </div>
               </div>
@@ -9626,8 +9664,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             {activeTab !== 'werke' && (
               <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
                 <h2 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', fontWeight: 700, color: s.text, margin: 0 }}>
-                  {activeTab === 'katalog' && '📋 Werkkatalog'}
-                  {activeTab === 'statistik' && '📊 Kassa, Lager & Listen'}
+                  {activeTab === 'katalog' && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <button type="button" onClick={() => setActiveTab('statistik')} style={{ background: 'none', border: 'none', padding: 0, color: s.muted, cursor: 'pointer', fontSize: '0.85rem' }} title="Zurück zu Kassa, Lager & Listen">←</button>
+                    {' '}
+                    📋 Werkkatalog
+                  </span>
+                )}
+                  {activeTab === 'statistik' && '📋📊 Kassa, Lager, Listen & Werkkatalog'}
                   {activeTab === 'zertifikat' && '🔏 Echtheitszertifikate'}
                   {activeTab === 'newsletter' && '📬 Newsletter & Einladungen'}
                   {activeTab === 'pressemappe' && '📰 Pressemappe'}
@@ -9636,7 +9680,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   {activeTab === 'einstellungen' && '⚙️ Einstellungen'}
                 </h2>
                 {activeTab === 'statistik' && (
-                  <p style={{ margin: '0.4rem 0 0', fontSize: '0.9rem', color: s.muted }}>Verkaufsstatistik, PDF-Export und Speicherdaten – alles an einem Ort.</p>
+                  <p style={{ margin: '0.4rem 0 0', fontSize: '0.9rem', color: s.muted }}>
+                    Verkaufsstatistik, PDF-Export, Speicherdaten – alles an einem Ort.
+                    {' '}
+                    <button type="button" onClick={() => setActiveTab('katalog')} style={{ background: 'none', border: 'none', padding: 0, color: s.accent, textDecoration: 'underline', cursor: 'pointer', fontSize: 'inherit' }}>→ Werkkatalog</button>
+                  </p>
                 )}
               </div>
             )}
@@ -9651,7 +9699,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               guidePfad={guidePfad || undefined}
               onGoToStep={(tab, subTab) => {
                 setActiveTab(tab)
-                if (subTab && tab === 'einstellungen') setSettingsSubTab(subTab as 'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager' | 'empfehlung' | 'lizenz')
+                if (subTab && tab === 'einstellungen') setSettingsSubTab(subTab as 'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager' | 'empfehlung' | 'lizenz' | 'lizenzinfo')
                 if (subTab && tab === 'eventplan') setEventplanSubTab(subTab as 'events' | 'öffentlichkeitsarbeit')
               }}
             />
@@ -11989,9 +12037,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: s.muted }}>Verwaltung: <Link to={PROJECT_ROUTES['k2-galerie'].uebersicht} style={{ color: s.accent }}>Übersicht-Board</Link>, <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: s.accent }}>Lizenzen</Link>, <Link to={PROJECT_ROUTES['k2-galerie'].empfehlungstool} style={{ color: s.accent }}>Empfehlungstool</Link>.</p>
             )}
 
-            {/* Einstellungen: Karten statt Sub-Tab-Leiste */}
+            {/* Einstellungen: Karten – Reihenfolge 1. Meine Daten, 2. Lizenz abschließen (ök2), 3. Lizenzinformation, 4. Empfehlungs-Programm, 5. Drucker, 6. Passwort */}
             {!settingsSubTab || settingsSubTab === 'stammdaten' ? null : null /* subtab aktiv = kein Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', marginBottom: '2rem' }}>
+              {/* 1. Meine Daten */}
               <button type="button" onClick={() => setSettingsSubTab('stammdaten')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'stammdaten' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'stammdaten' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'stammdaten' ? s.accent : `${s.accent}22` }}
@@ -12000,34 +12049,36 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Meine Daten</div>
                 <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Name, Kontakt, Adresse, Öffnungszeiten</div>
               </button>
-              <button type="button" onClick={() => setSettingsSubTab('registrierung')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'registrierung' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'registrierung' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+              {/* 2. Lizenz abschließen (nur ök2) */}
+              {tenant.isOeffentlich && (
+              <button type="button" onClick={() => setSettingsSubTab('lizenz')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'lizenz' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'lizenz' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'registrierung' ? s.accent : `${s.accent}22` }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'lizenz' ? s.accent : `${s.accent}22` }}
               >
-                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📝</div>
-                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Anmeldung</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Wie melden sich Nutzer an?</div>
-              </button>
-              {!tenant.isVk2 && (
-              <button type="button" onClick={() => setSettingsSubTab('sicherheit')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'sicherheit' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'sicherheit' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'sicherheit' ? s.accent : `${s.accent}22` }}
-              >
-                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>🔒</div>
-                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Passwort & Sicherheit</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Admin-Passwort ändern</div>
+                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📄</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Lizenz abschließen</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Lizenz wählen, bezahlen – evtl. mit deinen Daten aus Einstellungen</div>
               </button>
               )}
-              {!tenant.isOeffentlich && !tenant.isVk2 && (
-              <button type="button" onClick={() => setSettingsSubTab('lager')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'lager' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'lager' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+              {/* 3. Lizenzinformation */}
+              <button type="button" onClick={() => setSettingsSubTab('lizenzinfo')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'lizenzinfo' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'lizenzinfo' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'lager' ? s.accent : `${s.accent}22` }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'lizenzinfo' ? s.accent : `${s.accent}22` }}
               >
-                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📦</div>
-                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Backup & Lager</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Sicherheitskopie, Speicherverwaltung</div>
+                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📋</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Lizenzinformation</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Stufen, Preise, Übersicht-Board & Lizenzen</div>
               </button>
-              )}
+              {/* 4. Empfehlungs-Programm */}
+              <button type="button" onClick={() => setSettingsSubTab('empfehlung')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'empfehlung' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'empfehlung' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'empfehlung' ? s.accent : `${s.accent}22` }}
+              >
+                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>🤝</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Empfehlungs-Programm</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Deine Rabattstufe, geworbene User</div>
+              </button>
+              {/* 5. Drucker */}
               <button type="button" onClick={() => setSettingsSubTab('drucker')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'drucker' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'drucker' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'drucker' ? s.accent : `${s.accent}22` }}
@@ -12038,22 +12089,37 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   {tenant.isVk2 ? 'Drucken (Standard-Drucker)' : 'Etikettendrucker einrichten'}
                 </div>
               </button>
-              <button type="button" onClick={() => setSettingsSubTab('empfehlung')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'empfehlung' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'empfehlung' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+              {/* 6. Passwort & Sicherheit */}
+              {!tenant.isVk2 && (
+              <button type="button" onClick={() => setSettingsSubTab('sicherheit')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'sicherheit' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'sicherheit' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'empfehlung' ? s.accent : `${s.accent}22` }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'sicherheit' ? s.accent : `${s.accent}22` }}
               >
-                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>🤝</div>
-                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Empfehlungs-Programm</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Deine Rabattstufe, geworbene User</div>
+                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>🔒</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Passwort & Sicherheit</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Admin-Passwort ändern</div>
               </button>
-              {tenant.isOeffentlich && (
-              <button type="button" onClick={() => setSettingsSubTab('lizenz')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'lizenz' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'lizenz' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+              )}
+              {/* Anmeldung (nur K2 + VK2) */}
+              {!tenant.isOeffentlich && (
+              <button type="button" onClick={() => setSettingsSubTab('registrierung')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'registrierung' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'registrierung' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'lizenz' ? s.accent : `${s.accent}22` }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'registrierung' ? s.accent : `${s.accent}22` }}
               >
-                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📄</div>
-                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Lizenz abschließen</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Lizenz wählen, bezahlen – evtl. mit deinen Daten aus Einstellungen</div>
+                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📝</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Anmeldung</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Wie melden sich Nutzer an?</div>
+              </button>
+              )}
+              {/* Backup & Lager (nur K2) */}
+              {!tenant.isOeffentlich && !tenant.isVk2 && (
+              <button type="button" onClick={() => setSettingsSubTab('lager')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'lager' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'lager' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'lager' ? s.accent : `${s.accent}22` }}
+              >
+                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📦</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Backup & Lager</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Sicherheitskopie, Speicherverwaltung</div>
               </button>
               )}
             </div>
@@ -12826,8 +12892,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               </div>
             )}
 
-            {/* Registrierung Sub-Tab – Lizenznummer + Lizenz/Verein + Stammdaten, keine doppelten Eingaben */}
-            {settingsSubTab === 'registrierung' && (
+            {/* Registrierung Sub-Tab – nur K2/VK2; ök2 nutzt „Lizenz abschließen“ */}
+            {!tenant.isOeffentlich && settingsSubTab === 'registrierung' && (
               <div>
                 <h3 style={{ fontSize: '1.1rem', color: s.accent, marginBottom: '0.5rem' }}>📝 Registrierung</h3>
                 <p style={{ color: s.muted, marginBottom: '1.25rem', fontSize: '0.9rem' }}>
@@ -13227,7 +13293,7 @@ ${name}`
                     📄 Lizenz abschließen
                   </h3>
                   <p style={{ margin: '0 0 1.25rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.6 }}>
-                    Lizenz wählen, Zahlung per Karte (Stripe). Wenn du in „Meine Daten“ schon Name und E-Mail eingetragen hast, können wir diese übernehmen.
+                    Lizenz wählen, Zahlung per Karte (Stripe). Wenn du in „Meine Daten“ schon Name und E-Mail eingetragen hast, können wir diese übernehmen. Die <strong>Lizenznummer wird nach erfolgreicher Zahlung vom System vergeben</strong>.
                   </p>
 
                   {hatStammdaten && lizenzUseStammdaten === 'ask' && (
@@ -13282,6 +13348,79 @@ ${name}`
                 </div>
               )
             })()}
+
+            {/* Lizenzinformation – was jedes Paket enthält, Unterschiede und Mehrkosten auf einen Blick */}
+            {settingsSubTab === 'lizenzinfo' && (
+              <div style={{ maxWidth: 640 }}>
+                <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', fontWeight: 600, color: s.text, marginBottom: '0.5rem' }}>
+                  📋 Lizenzinformation
+                </h3>
+                <p style={{ margin: '0 0 1.25rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.6 }}>
+                  Was jedes Paket enthält – Unterschiede auf einen Blick, damit die Mehrkosten nachvollziehbar sind.
+                </p>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1.25rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Basic</span>
+                      <span style={{ fontSize: '1rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.basic.price}</span>
+                    </div>
+                    <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
+                      <li>Galerie + Shop (bis 30 Werke)</li>
+                      <li>Events, Kasse, Etiketten</li>
+                      <li>Für den Einstieg – alles in einer App</li>
+                    </ul>
+                  </div>
+
+                  <div style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1.25rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Pro</span>
+                      <span style={{ fontSize: '1rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.pro.price}</span>
+                    </div>
+                    <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Alles aus Basic, plus:</p>
+                    <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
+                      <li><strong>Unbegrenzte Werke</strong></li>
+                      <li><strong>Custom Domain</strong> (eigene Adresse)</li>
+                      <li>Weiterhin ohne vollen Marketingbereich</li>
+                    </ul>
+                  </div>
+
+                  <div style={{ background: s.bgCard, border: `2px solid ${s.accent}44`, borderRadius: '12px', padding: '1.25rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Pro+</span>
+                      <span style={{ fontSize: '1rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.proplus.price}</span>
+                    </div>
+                    <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Alles aus Pro, plus:</p>
+                    <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
+                      <li><strong>Gesamter Marketingbereich</strong></li>
+                      <li>Events, Galeriepräsentation, Flyer, Presse</li>
+                      <li>Social Media, Plakat, PR-Dokumente aus einem Guss</li>
+                    </ul>
+                  </div>
+
+                  <div style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1.25rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Kunstvereine (VK2)</span>
+                      <span style={{ fontSize: '0.95rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.vk2.priceLabel}</span>
+                    </div>
+                    <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
+                      <li>Wie Pro; ab 10 registrierten Mitgliedern für den Verein kostenfrei</li>
+                      <li>Lizenzmitglieder: <strong>50 % Rabatt</strong> – dafür wird eine Lizenznummer vom Kunstverein benötigt</li>
+                    </ul>
+                    <p style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: s.muted, lineHeight: 1.6, padding: '0.6rem', background: `${s.accent}08`, borderRadius: 8 }}>
+                      <strong style={{ color: s.text }}>Wie bekomme ich die Lizenznummer?</strong> Der Kunstverein erhält vom System Lizenznummern für seine Mitglieder. Einfach beim Vorstand oder in der Vereinsverwaltung anfragen – die Nummer wird dir dort zugewiesen.
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '1.25rem', padding: '1rem', background: `${s.accent}0c`, borderRadius: 12, border: `1px solid ${s.accent}33` }}>
+                  <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text, margin: '0 0 0.5rem' }}>Wie kann ich upgraden?</h4>
+                  <p style={{ margin: 0, fontSize: '0.9rem', color: s.text, lineHeight: 1.6 }}>
+                    Von Basic auf Pro oder Pro auf Pro+: Gehe zu <strong>Einstellungen → Lizenz abschließen</strong>, wähle die höhere Stufe und schließe die Zahlung ab. Deine Lizenz wird automatisch aktualisiert.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Drucker Sub-Tab */}
             {settingsSubTab === 'drucker' && tenant.isVk2 && (

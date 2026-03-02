@@ -4,6 +4,13 @@
 
 ## Datum: 02.03.26
 
+## Heute diese Session (Schluss für heute) – **WAS WIR GEMACHT HABEN**
+- **Upgrade-Info in Lizenzinformation:** Einstellungen → Lizenzinformation: Block „Wie kann ich upgraden?“ (Einstellungen → Lizenz abschließen, höhere Stufe wählen). Kein E-Mail-Hinweis mehr („keine mail rückantwort“).
+- **Lizenz-Erfolg: ausdruckbare Bestätigung:** Nach Stripe-Checkout zeigt LizenzErfolgPage eine Lizenzbestätigung (K2 Galerie, Datum, Referenz) und Button „Bestätigung drucken“ – verbindlich und vertrauenserweckend, ohne dass ihr in Kontakt tretet.
+- **Gesetz: Kein direkter Kundenkontakt:** Regel `.cursor/rules/k2-kein-direkter-kundenkontakt.mdc` (alwaysApply): K2-Welt baut keinen direkten Kundenkontakt auf; bei Skalierung weder möglich noch sinnvoll. Automatik und Sachlichkeit; Druckbestätigung ja, persönliche E-Mail/Betreuung nein. PRODUKT-VISION.md um Abschnitt „Gesetz: Kein direkter Kundenkontakt“ ergänzt.
+- **ro check crash:** Keine neuen Crash-Quellen; Upgrade-Info nur statischer JSX. CRASH-BEREITS-GEPRUEFT + CRASH-LETZTER-KONTEXT aktualisiert.
+- **Noch nicht committed:** Alle Änderungen dieser Session (ScreenshotExportAdmin, LizenzErfolgPage, neue Regel, PRODUKT-VISION). Vor Feierabend: Commit + Push, dann Stand kommt mit Build.
+
 ## Wo wir stehengeblieben (aktuell) – **HIER EINSTEIGEN**
 - **PDFs & Speicherdaten + Kassa/Lager im Admin (02.03.26):** Georg: „PDFs & Speicherdaten“ gehört nicht in Einstellungen, sondern zu Kassa/Lagerdaten; Werkkatalog und „die ganzen Kassa- und Lagerdaten und Listen“ sollen im Admin sichtbar sein. **Umsetzung:** (1) Block „PDFs & Speicherdaten“ aus Einstellungen entfernt und in den **Statistik-Tab** verschoben (unter Verkaufsstatistik, nur K2/ök2). (2) Hub-Karte und Bereichs-Kopf: „Verkaufsstatistik“ → **„Kassa, Lager & Listen“** mit Untertitel „Verkaufsstatistik, PDF-Export und Speicherdaten – alles an einem Ort.“ So findet Georg Kassa, Lager, Werkkatalog und PDFs/Speicherdaten an einer Stelle im Admin. **Commit:** 871fe4f ✅ auf GitHub.
 - **Besucherzähler VK2 getrennt: Mitglieder / Extern (02.03.26):** VK2-Besucher werden getrennt gezählt: **Mitglieder** (nach Mitglied-Login, sessionStorage k2-vk2-mitglied-eingeloggt) und **externe Besucher**. **Erfassung:** Vk2GaleriePage meldet einmal pro Session an POST /api/visit mit tenant `vk2-members` oder `vk2-external`; GaleriePage bei tenantId vk2 ebenso (gleicher Session-Key). **API:** tenant_id `vk2-members` und `vk2-external` erlaubt; Migration 005 erweitert visits-Check und legt Zeilen an. **Anzeige:** Übersicht-Board und Arbeitsplattform zeigen „VK2 Mitglieder: X · VK2 Extern: Y“. **Nächster Schritt:** Migration 005 im Supabase-Dashboard ausführen (nach 004).
@@ -58,7 +65,7 @@
 - **K2 Familie Phase 4.2 erledigt (02.03.26):** Doku & Onboarding – „Erste Schritte“ auf Startseite (5 Schritte), Handbuch 17-K2-FAMILIE-ERSTE-SCHRITTE.md, Eintrag im Handbuch-Index. Roadmap 4.2 abgehakt.
 - **Crash-Check (02.03.26):** ro check crash – K2-Familie-Seiten geprüft, keine neuen Crash-Quellen (kein setInterval/setTimeout/reload in *familie*). CRASH-BEREITS-GEPRUEFT.md + CRASH-LETZTER-KONTEXT.md aktualisiert.
 - **Weiter K2 Familie (02.03.26):** Phase 4.0 vorbereitet – in RECHTE-ZWEIGE Abschnitt „Entscheidung 4.0 – in 3 Fragen“ ergänzt (Zweig A/B/C, Rechte 1/2/3, Empfehlung C + Option 3). Startseite: Card „Nächster Meilenstein: Rechte & Zweige“ mit Verweis auf docs/K2-FAMILIE-RECHTE-ZWEIGE.md. Commit: a99358f ✅ auf GitHub.
-- **Nächster Schritt:** Bei Wiedereinstieg: **Kommandozentrale** oder DIALOG-STAND + GRAFIKER-TISCH lesen. Optional: Homepage-Inhalte bearbeitbar machen (Seitengestaltung/Admin pro Familie); oder Entscheidung 4.0 (RECHTE-ZWEIGE).
+- **Nächster Schritt:** Bei Wiedereinstieg: **Commit + Push** falls noch nicht erledigt (Änderungen dieser Session). Dann: Kommandozentrale oder DIALOG-STAND + GRAFIKER-TISCH lesen. Optional: STRIPE-LIZENZEN-GO-LIVE (3 Schritte), K2 Familie Entscheidung 4.0, oder anderes.
 - **Info (Georg):** Gestern mit Android + Chrome die Seiten geöffnet – funktioniert problemlos.
 - **Vollkachelform / Bildverarbeitung:** Offene Punkte in docs/GRAFIKER-TISCH-NOTIZEN.md unter „Offene Wünsche“.
 - **Vollbackup (02.03.26):** Git Commit 0b709f1 + Tag **full-backup-2026-03-02** auf GitHub. Hard-Backup auf backupmicro: v004 (gallery-data.json). Druck-Kontrast K2 Familie (Print-CSS) im Commit. Optional: Im Admin einmal „Vollbackup herunterladen“; Code-Spiegelung auf backupmicro bei Bedarf: backupmicro anstecken → im Terminal `bash scripts/backup-code-to-backupmicro.sh`.

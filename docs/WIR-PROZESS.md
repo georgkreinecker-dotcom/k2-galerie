@@ -130,6 +130,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 | 26.02.26 | Faden nach Crash: WEITERARBEITEN-NACH-ABSTURZ + DIALOG-STAND lesen und sofort weitermachen – keine Frage „womit soll ich?“; Georg bestätigt dass die Regel greift. |
 | 01.03.26 | „Warum nicht gleich?“ – QR/Links „für Michael“ müssen auf die Schreiben-Seite führen, nie auf die Galerie. Prozess durchdenken (was muss Michael tun?) und Kontrast-Regeln einhalten, dann stimmt die Lösung. |
 | 27.02.26 | „Endlich professionell ohne Pfuschen“ – Georg will eine Sache zuverlässig, nicht viele Workarounds. Eine API-URL, klare Erfolg/Fehler-Logik, eine Doku mit GITHUB_TOKEN; dann testen. |
+| 02.03.26 | K2-Welt: Kein direkter Kundenkontakt als Gesetz – bei Skalierung weder möglich noch sinnvoll. Druckbestätigung = verbindlich und vertrauenserweckend, ohne dass wir Beziehungen aufbauen. Wenn Georg etwas als „Gesetz“ formuliert, als Regel mit alwaysApply speichern und in PRODUKT-VISION verankern. |
 
 ---
 
