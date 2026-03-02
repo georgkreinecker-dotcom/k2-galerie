@@ -76,6 +76,10 @@
 - [x] **4.1** Jede Familie = eigener Tenant (wie Galerie pro Künstler:in). **Erledigt:** FamilieTenantContext (aktueller Tenant + Liste), K2FamilieLayout mit Provider, nested Routes; Familien-Auswahl (Dropdown + „Neue Familie“) auf Start- und Stammbaum-Seite; alle Seiten (Person, Events, Kalender) nutzen currentTenantId. Tenant-Liste in localStorage, aktueller Tenant in sessionStorage.
 - [x] **4.2** Doku, Onboarding, evtl. Lizenzmodell „K2 Familie“. **Erledigt:** „Erste Schritte“ auf K2-Familie-Startseite (nummerierte Schritte); Handbuch-Kapitel `k2team-handbuch/17-K2-FAMILIE-ERSTE-SCHRITTE.md` mit Nutzer-Anleitung und Verweis im Index. Lizenzmodell bleibt evtl. (mök2) für später.
 
+**Definition „Fertige Homepage“:** Die aktuelle K2-Familie-Seite ist eine **Projekt-Übersicht** (Liste, Leitbild, Links). Eine **fertige Homepage** im Sinne von K2 Galerie ist eine **designte Einstiegsseite für Nutzer:innen** (Willkommen, Bild, klare erste Aktion). Verbindliche Definition: **docs/HOMEPAGE-DEFINITION.md**.
+
+**Konzept Fertige Homepage (02.03.26):** Orientierung am **Design von ök2**. Einheitliche Struktur für alle Familien, aber **pro Tenant (pro Familie) freie Gestaltung** – eigene Texte, Bilder, evtl. Farben. Ergebnis: ein **buntes Bild der Familie** in fester Struktur. Details: **docs/K2-FAMILIE-HOMEPAGE-KONZEPT.md**.
+
 **Phase 4 – Nächste Schritte (für den Baumeister):**
 - **4.0:** Entscheidung: Zweig-Definition (A/B/C) und Rechte-Modell (Option 1/2/3) in RECHTE-ZWEIGE. Danach konkrete Felder (z. B. branchId, managedBy) und UI ableiten.
 - **4.1:** Heute nur `K2_FAMILIE_DEFAULT_TENANT`; alle Keys `k2-familie-{tenantId}-*`. Später: Tenant-Auswahl („Familie wechseln“), Liste der Familien, Einladung/Lizenz pro Familie – analog K2 Galerie pro Künstler:in.

@@ -5,9 +5,13 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 ---
 
 ## Plan & nächste Schritte
+- **KOMMANDOZENTRALE.md** – **Steuerung jederzeit:** Zugang für Georg und KI. Sofort-Zugriff auf DIALOG-STAND, GRAFIKER-TISCH, GELOESTE-BUGS; Definitionen (Homepage, K2-Familie-Konzept, Skalierung, Raumschiff); Roadmap & Regeln. Von hier aus steuernd eingreifen.
 - **K2-FAMILIE-ROADMAP.md** – **K2 Familie (Raumschiff):** Vision, Phasen (Fundament → Stammbaum & Personen → Momente & Events → Skalierung). Start 01.03.26. Projektkarte auf Projekte-Seite, Startseite unter /projects/k2-familie.
 - **K2-FAMILIE-GRUNDBOTSCHAFT.md** – **K2 Familie – moralisches Fundament:** Grundbotschaft (keine Ausgrenzung, Respekt, Religion/Politik raus) gilt für Form der App, Sprache und jede zukünftige KI/Agent-Kommunikation. Georgs Vermächtnis. Verbindlich für alle, die an K2 Familie arbeiten.
 - **K2-FAMILIE-DATENMODELL.md** – **K2 Familie – Datenmodell (Phase 1.1):** Person, PartnerRef (mit Zeitraum), Moment, Speicher-Keys, Regeln. Typen in `src/types/k2Familie.ts`.
+- **HOMEPAGE-DEFINITION.md** – **Fertige Homepage vs. Projekt-Startseite:** Damit wir dieselbe Sprache sprechen. Fertige Homepage = designte Einstiegsseite für Nutzer:innen (wie K2 Galerie). Projekt-Startseite = aktuelle Übersicht (Liste, Links). K2 Familie hat heute eine Projekt-Startseite, keine fertige Homepage.
+- **K2-FAMILIE-HOMEPAGE-KONZEPT.md** – **Fertige Homepage K2 Familie:** Orientierung Design ök2. Einheitliche Struktur, pro Familie (Tenant) freie Gestaltung (Texte, Bilder) → buntes Bild in fester Struktur. Technisch analog pageTexts/pageContentGalerie pro tenantId.
+- **SKALIERUNG-KONZEPT.md** – **Stimmig und nach oben unendlich skalierbar:** Ein Prinzip (eine Struktur, viele Tenant-Instanzen, Gestaltung pro tenantId). Skalierung „breit“ (mehr Mandanten pro Produkt) und „hoch“ (mehr Produktlinien wie Galerie, K2 Familie). Kein Sonderbau pro Kunde.
 - **PLAN-SCHRITT-FUER-SCHRITT.md** – **Unser gemeinsamer Plan:** Schritte 1–10 in Reihenfolge (Basis abhaken → ein Feature wählen → Pilot-Verein → Onboarding → optional Preise → später Rest). Ein Schritt nach dem anderen.
 - **ADMIN-STRUKTUR-HUB-DESIGN-IDEE.md** – **Idee/Prüfauftrag:** Admin-Einstieg („Was möchtest du tun?“) im gleichen Hub-Layout wie Entdecken – 3 Spalten, Fokus Mitte, zielsicherer und optisch überzeugend. Wann umsetzen offen.
 - **DIALOG-STAND.md** – **Nach Absturz:** Eine Datei = ein Anker. Steht immer: letzte Session, Thema, was zuletzt dran, nächster Schritt. Sag „weiter nach Absturz“ → KI liest sie und arbeitet dort weiter. Kein Suchen im Konzept.

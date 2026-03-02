@@ -107,6 +107,7 @@ Alle anderen Dateien bleiben; bei Unsicherheit wurde nichts gelöscht.
 
 ## Schnellfinder
 
+- **Kommandozentrale (Steuerung jederzeit):** `docs/KOMMANDOZENTRALE.md` – Georg und KI: Zugriff, Überblick, steuernd eingreifen. DIALOG-STAND, GRAFIKER-TISCH, Definitionen, Konzepte, Roadmap.
 - **App starten:** `npm run dev` (siehe README.md / START_HIER.md)
 - **Stand aktualisieren:** `node scripts/write-build-info.js`
 - **Vor Veröffentlichung:** `docs/VOR-VEROEFFENTLICHUNG.md` – Checkliste vor Go-Live (nicht vergessen).

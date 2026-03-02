@@ -414,11 +414,11 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                     {onNavigate ? (
                       <span role="button" tabIndex={0} onClick={() => navigate(K2_FAMILIE_HOME)} onKeyDown={(e) => e.key === 'Enter' && navigate(K2_FAMILIE_HOME)}
                         style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(13,148,136,0.15)', border: '1px solid rgba(13,148,136,0.4)', borderRadius: '8px', color: '#14b8a6', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'inherit' }}>
-                        → Start & Vision
+                        → Zur Startseite (erste Seite)
                       </span>
                     ) : (
                       <Link to={K2_FAMILIE_HOME} style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(13,148,136,0.15)', border: '1px solid rgba(13,148,136,0.4)', borderRadius: '8px', color: '#14b8a6', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', fontFamily: 'inherit' }}>
-                        → Start & Vision
+                        → Zur Startseite (erste Seite)
                       </Link>
                     )}
                     <Link to="/k2team-handbuch?doc=17-K2-FAMILIE-ERSTE-SCHRITTE.md" style={{ display: 'block', padding: '0.5rem 0.7rem', background: 'rgba(13,148,136,0.08)', border: '1px solid rgba(13,148,136,0.3)', borderRadius: '8px', color: '#14b8a6', fontWeight: 500, fontSize: '0.82rem', textDecoration: 'none', fontFamily: 'inherit' }}>

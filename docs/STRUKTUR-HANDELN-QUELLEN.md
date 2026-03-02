@@ -10,6 +10,7 @@ Damit alle Informationen **jederzeit aktuell und hier verfügbar** sind, gilt di
 
 | Was | Wo | Wofür |
 |-----|-----|--------|
+| **Kommandozentrale (Steuerung)** | **docs/KOMMANDOZENTRALE.md** | Georg und KI: Zugriff jederzeit, Überblick, steuernd eingreifen. Sofort-Zugriff DIALOG-STAND, GRAFIKER-TISCH, Definitionen, Konzepte, Roadmap. |
 | **AGB (Allgemeine Geschäftsbedingungen)** | **mök2** (Marketing ök2). In der App: Route `/agb`, Seite `src/pages/AGBPage.tsx`. Links und Rechtliches auf der Marketing-ök2-Seite (`MarketingOek2Page.tsx`). | Rechtliches, Vertrieb, Willkommensseite (AGB-Bestätigung). |
 | **Handbuch (alle wichtigen Sachen)** | **k2team-handbuch/** – Inhaltsverzeichnis `00-INDEX.md`. Spiegel in `public/k2team-handbuch/` für die App. | Backup, Sicherheit, Skalierung, Team-Grundlagen, Arbeitsgewohnheiten – alles Wichtige für Zusammenarbeit und Betrieb. |
 | **Projekt-Doku (technisch)** | **docs/** – Liste `docs/00-INDEX.md`. | K2/ök2, Vercel, Supabase, Crash, Deployment. |
