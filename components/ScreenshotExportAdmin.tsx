@@ -330,7 +330,8 @@ import { GalerieAssistent } from '../src/components/GalerieAssistent'
 import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps, createK2Backup, createOek2Backup, createVk2Backup, downloadBackupAsFile, restoreK2FromBackup, restoreOek2FromBackup, restoreVk2FromBackup, detectBackupKontext } from '../src/utils/autoSave'
 import { sortArtworksNewestFirst, sortArtworksFavoritesFirstThenNewest } from '../src/utils/artworkSort'
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
-import { getOrCreateEmpfehlerId } from '../src/utils/empfehlerId'
+import { getOrCreateEmpfehlerId, isValidEmpfehlerIdFormat } from '../src/utils/empfehlerId'
+import { LIZENZPREISE } from '../src/config/licencePricing'
 import { getGutschriftSumme } from '../src/utils/empfehlerGutschrift'
 import { writePngDpi } from 'png-dpi-reader-writer'
 
@@ -832,7 +833,14 @@ function ScreenshotExportAdmin() {
   })()
   const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>(initialEventplanSubTab)
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false) // kleine Leiste „Vergangenheit“, bei Klick aufklappen
-  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager' | 'empfehlung'>('stammdaten')
+  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager' | 'empfehlung' | 'lizenz'>('stammdaten')
+  const [lizenzLicenceType, setLizenzLicenceType] = useState<'basic' | 'pro' | 'proplus'>('pro')
+  const [lizenzName, setLizenzName] = useState('')
+  const [lizenzEmail, setLizenzEmail] = useState('')
+  const [lizenzEmpfehlerId, setLizenzEmpfehlerId] = useState('')
+  const [lizenzUseStammdaten, setLizenzUseStammdaten] = useState<'ask' | 'yes' | 'no'>('ask')
+  const [lizenzLoading, setLizenzLoading] = useState(false)
+  const [lizenzError, setLizenzError] = useState<string | null>(null)
   const [designSubTab, setDesignSubTab] = useState<'vorschau' | 'farben'>('vorschau')
   const [designPreviewEdit, setDesignPreviewEdit] = useState<string | null>(null) // z. B. 'p1-title' | 'p2-martinaBio' – alles auf der Seite klickbar
   const [previewContainerWidth, setPreviewContainerWidth] = useState(412) // für bildausfüllende Skalierung
@@ -9549,7 +9557,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Neu hier? Der Assistent führt dich durch die Einrichtung.', tab: 'assistent' },
                   ] : [
                     { emoji: '🧾', name: 'Kassa & Verkauf', beschreibung: 'Werk verkauft? Eintragen, Beleg drucken – vom Handy direkt.', tab: 'kassa' },
-                    { emoji: '📊', name: 'Verkaufsstatistik', beschreibung: 'Umsatz, Verkäufe, Lager – komplette Kassa-Statistik einsehen und drucken.', tab: 'statistik' },
+                    { emoji: '📊', name: 'Kassa, Lager & Listen', beschreibung: 'Verkaufsstatistik, PDF-Export, Speicherdaten – Kassa- und Lagerdaten an einem Ort.', tab: 'statistik' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Meine Daten, Drucker, Sicherheit, Backup.', tab: 'einstellungen' },
                     { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Neu hier? Der Assistent führt dich durch die Einrichtung.', tab: 'assistent' },
                   ]
@@ -9619,7 +9627,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
                 <h2 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', fontWeight: 700, color: s.text, margin: 0 }}>
                   {activeTab === 'katalog' && '📋 Werkkatalog'}
-                  {activeTab === 'statistik' && '📊 Verkaufsstatistik'}
+                  {activeTab === 'statistik' && '📊 Kassa, Lager & Listen'}
                   {activeTab === 'zertifikat' && '🔏 Echtheitszertifikate'}
                   {activeTab === 'newsletter' && '📬 Newsletter & Einladungen'}
                   {activeTab === 'pressemappe' && '📰 Pressemappe'}
@@ -9627,6 +9635,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   {activeTab === 'design' && (tenant.isVk2 ? '✨ Aussehen – nach euren Wünschen anpassen' : '✨ Aussehen der Galerie – nach deinen Wünschen anpassen')}
                   {activeTab === 'einstellungen' && '⚙️ Einstellungen'}
                 </h2>
+                {activeTab === 'statistik' && (
+                  <p style={{ margin: '0.4rem 0 0', fontSize: '0.9rem', color: s.muted }}>Verkaufsstatistik, PDF-Export und Speicherdaten – alles an einem Ort.</p>
+                )}
               </div>
             )}
 
@@ -9640,20 +9651,100 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               guidePfad={guidePfad || undefined}
               onGoToStep={(tab, subTab) => {
                 setActiveTab(tab)
-                if (subTab && tab === 'einstellungen') setSettingsSubTab(subTab as 'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager' | 'empfehlung')
+                if (subTab && tab === 'einstellungen') setSettingsSubTab(subTab as 'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager' | 'empfehlung' | 'lizenz')
                 if (subTab && tab === 'eventplan') setEventplanSubTab(subTab as 'events' | 'öffentlichkeitsarbeit')
               }}
             />
           )}
 
-          {/* ===== VERKAUFSSTATISTIK ===== */}
+          {/* ===== VERKAUFSSTATISTIK (Kassa, Lager, Listen) + PDFs & Speicherdaten ===== */}
           {activeTab === 'statistik' && (
-            <StatistikTab
-              allArtworks={allArtworks}
-              onMarkAsReserved={handleMarkAsReserved}
-              onRerender={() => setAllArtworks(loadArtworks(tenant))}
-              onStorno={handleStornoVerkauf}
-            />
+            <>
+              <StatistikTab
+                allArtworks={allArtworks}
+                onMarkAsReserved={handleMarkAsReserved}
+                onRerender={() => setAllArtworks(loadArtworks(tenant))}
+                onStorno={handleStornoVerkauf}
+              />
+              {/* PDFs & Speicherdaten – hier bei Kassa/Statistik, nicht in Einstellungen */}
+              {!tenant.isVk2 && (
+              <div style={{ marginTop: '2rem', padding: '1.25rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '16px', boxShadow: s.shadow }}>
+                <h3 style={{ fontSize: '1.1rem', color: s.text, marginBottom: '0.5rem' }}>📄 PDFs & Speicherdaten</h3>
+                <p style={{ color: s.muted, fontSize: '0.9rem', marginBottom: '1rem' }}>
+                  PDF-Export (Galerie, verkaufte Werke), Werke-Daten exportieren/importieren, Speicher prüfen, Cleanup.
+                </p>
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                  <button type="button" onClick={() => setShowExportMenu(!showExportMenu)} style={{ padding: '0.75rem 1.25rem', background: s.bgElevated, border: `1px solid ${s.accent}40`, color: s.text, borderRadius: '10px', fontSize: '0.95rem', fontWeight: '600', cursor: 'pointer' }}>
+                    📄 PDFs & Speicherdaten {showExportMenu ? '▲' : '▼'}
+                  </button>
+                  {showExportMenu && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: '0.5rem', background: s.bgCard, border: `1px solid ${s.accent}33`, borderRadius: '12px', padding: '0.75rem', minWidth: '240px', boxShadow: s.shadow, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ fontSize: '0.8rem', color: s.muted, padding: '0.5rem', borderBottom: `1px solid ${s.accent}22` }}>PDFs</div>
+                    <button type="button" onClick={() => { printPDF('galerie'); setShowExportMenu(false) }} style={{ padding: '0.6rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}22`, borderRadius: '8px', color: s.text, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left' }}>📄 Werke in Galerie</button>
+                    <button type="button" onClick={() => { printPDF('verkauft'); setShowExportMenu(false) }} style={{ padding: '0.6rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}22`, borderRadius: '8px', color: s.text, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left' }}>📄 Verkaufte Werke</button>
+                    <div style={{ fontSize: '0.8rem', color: s.muted, padding: '0.5rem', borderTop: `1px solid ${s.accent}22`, borderBottom: `1px solid ${s.accent}22` }}>Speicherdaten</div>
+                    <button type="button" onClick={() => {
+                      try {
+                        const artworks = JSON.parse(localStorage.getItem(tenant.getArtworksKey()) || '[]')
+                        const exportData = { artworks, exportedAt: new Date().toISOString(), version: '1.0' }
+                        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+                        const url = URL.createObjectURL(blob)
+                        const a = document.createElement('a')
+                        a.href = url
+                        a.download = `${tenant.getArtworksKey()}-export-${new Date().toISOString().split('T')[0]}.json`
+                        document.body.appendChild(a)
+                        a.click()
+                        document.body.removeChild(a)
+                        setTimeout(() => { try { URL.revokeObjectURL(url) } catch (_) {} }, 1000)
+                        alert(`✅ ${artworks.length} Werke exportiert!`)
+                      } catch (e) { console.error(e); alert('Fehler beim Export.') }
+                      setShowExportMenu(false)
+                    }} style={{ padding: '0.6rem 1rem', background: `${s.accent}18`, border: `1px solid ${s.accent}55`, borderRadius: '8px', color: s.accent, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', fontWeight: '600' }}>📤 Daten exportieren</button>
+                    <button type="button" onClick={() => {
+                      const input = document.createElement('input')
+                      input.type = 'file'
+                      input.accept = 'application/json'
+                      input.onchange = (e) => {
+                        const file = (e.target as HTMLInputElement).files?.[0]
+                        if (!file) return
+                        const reader = new FileReader()
+                        reader.onload = (ev) => {
+                          try {
+                            const importData = JSON.parse(ev.target?.result as string)
+                            if (importData.artworks && Array.isArray(importData.artworks)) {
+                              const existing = loadArtworks(tenant)
+                              const existingIds = new Set(existing.map((a: any) => a.id || a.number))
+                              const newArtworks = importData.artworks.filter((a: any) => !existingIds.has(a.id || a.number))
+                              if (newArtworks.length === 0) { alert('Keine neuen Werke zum Importieren.'); return }
+                              const merged = [...existing, ...newArtworks]
+                              if (saveArtworks(tenant, merged)) { setAllArtworks(merged); window.dispatchEvent(new CustomEvent('artworks-updated')); alert(`✅ ${newArtworks.length} Werke importiert!`) }
+                              else alert('⚠️ Fehler beim Speichern.')
+                            } else alert('Ungültiges Format.')
+                          } catch (_) { alert('Fehler beim Importieren.') }
+                        }
+                        reader.readAsText(file)
+                      }
+                      input.click()
+                      setShowExportMenu(false)
+                    }} style={{ padding: '0.6rem 1rem', background: `${s.accent}18`, border: `1px solid ${s.accent}55`, borderRadius: '8px', color: s.accent, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', fontWeight: '600' }}>📥 Daten importieren</button>
+                    <button type="button" onClick={() => {
+                      try {
+                        let totalSize = 0
+                        for (let key in localStorage) { if (localStorage.hasOwnProperty(key)) totalSize += localStorage[key].length + key.length }
+                        alert(`localStorage: ${(totalSize / (1024 * 1024)).toFixed(2)} MB (max. ~5–10 MB)`)
+                      } catch (_) { alert('Fehler.') }
+                      setShowExportMenu(false)
+                    }} style={{ padding: '0.6rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}22`, borderRadius: '8px', color: s.text, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left' }}>📊 Speicher prüfen</button>
+                    <button type="button" onClick={() => {
+                      try { cleanupUnnecessaryData(tenant); alert('✅ Cleanup abgeschlossen.') } catch (_) { alert('⚠️ Cleanup mit Fehlern.') }
+                      setShowExportMenu(false)
+                    }} style={{ padding: '0.6rem 1rem', background: `${s.accent}20`, border: `1px solid ${s.accent}55`, borderRadius: '8px', color: s.accent, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', fontWeight: '600' }}>🧹 Cleanup durchführen</button>
+                  </div>
+                  )}
+                </div>
+              </div>
+              )}
+            </>
           )}
 
           {/* ===== ECHTHEITSZERTIFIKAT ===== */}
@@ -11893,118 +11984,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             </div>
             )}
 
-            {/* PDFs & Speicherdaten – nur K2 und ök2 (VK2 braucht das nicht) */}
-            {!tenant.isVk2 && (
-            <div style={{
-              marginBottom: '2rem',
-              padding: '1.25rem',
-              background: s.bgCard,
-              border: `1px solid ${s.accent}22`,
-              borderRadius: '16px',
-              boxShadow: s.shadow
-            }}>
-              <h3 style={{ fontSize: '1.1rem', color: s.text, marginBottom: '0.5rem' }}>📄 PDFs & Speicherdaten</h3>
-              <p style={{ color: s.muted, fontSize: '0.9rem', marginBottom: '1rem' }}>
-                PDF-Export (Galerie, verkaufte Werke), Werke-Daten exportieren/importieren, Speicher prüfen, Cleanup.
-              </p>
-              <div style={{ position: 'relative', display: 'inline-block' }}>
-                <button
-                  type="button"
-                  onClick={() => setShowExportMenu(!showExportMenu)}
-                  style={{
-                    padding: '0.75rem 1.25rem',
-                    background: s.bgElevated,
-                    border: `1px solid ${s.accent}40`,
-                    color: s.text,
-                    borderRadius: '10px',
-                    fontSize: '0.95rem',
-                    fontWeight: '600',
-                    cursor: 'pointer'
-                  }}
-                >
-                  📄 PDFs & Speicherdaten {showExportMenu ? '▲' : '▼'}
-                </button>
-                {showExportMenu && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: 0,
-                    marginTop: '0.5rem',
-                    background: s.bgCard,
-                    border: `1px solid ${s.accent}33`,
-                    borderRadius: '12px',
-                    padding: '0.75rem',
-                    minWidth: '240px',
-                    boxShadow: s.shadow,
-                    zIndex: 1000,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.5rem'
-                  }}>
-                    <div style={{ fontSize: '0.8rem', color: s.muted, padding: '0.5rem', borderBottom: `1px solid ${s.accent}22` }}>PDFs</div>
-                    <button type="button" onClick={() => { printPDF('galerie'); setShowExportMenu(false) }} style={{ padding: '0.6rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}22`, borderRadius: '8px', color: s.text, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left' }}>📄 Werke in Galerie</button>
-                    <button type="button" onClick={() => { printPDF('verkauft'); setShowExportMenu(false) }} style={{ padding: '0.6rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}22`, borderRadius: '8px', color: s.text, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left' }}>📄 Verkaufte Werke</button>
-                    <div style={{ fontSize: '0.8rem', color: s.muted, padding: '0.5rem', borderTop: `1px solid ${s.accent}22`, borderBottom: `1px solid ${s.accent}22` }}>Speicherdaten</div>
-                    <button type="button" onClick={() => {
-                      try {
-                        const artworks = JSON.parse(localStorage.getItem(tenant.getArtworksKey()) || '[]')
-                        const exportData = { artworks, exportedAt: new Date().toISOString(), version: '1.0' }
-                        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
-                        const url = URL.createObjectURL(blob)
-                        const a = document.createElement('a')
-                        a.href = url
-                        a.download = `${tenant.getArtworksKey()}-export-${new Date().toISOString().split('T')[0]}.json`
-                        document.body.appendChild(a)
-                        a.click()
-                        document.body.removeChild(a)
-                        setTimeout(() => { try { URL.revokeObjectURL(url) } catch (_) {} }, 1000)
-                        alert(`✅ ${artworks.length} Werke exportiert!`)
-                      } catch (e) { console.error(e); alert('Fehler beim Export.') }
-                      setShowExportMenu(false)
-                    }} style={{ padding: '0.6rem 1rem', background: `${s.accent}18`, border: `1px solid ${s.accent}55`, borderRadius: '8px', color: s.accent, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', fontWeight: '600' }}>📤 Daten exportieren</button>
-                    <button type="button" onClick={() => {
-                      const input = document.createElement('input')
-                      input.type = 'file'
-                      input.accept = 'application/json'
-                      input.onchange = (e) => {
-                        const file = (e.target as HTMLInputElement).files?.[0]
-                        if (!file) return
-                        const reader = new FileReader()
-                        reader.onload = (ev) => {
-                          try {
-                            const importData = JSON.parse(ev.target?.result as string)
-                            if (importData.artworks && Array.isArray(importData.artworks)) {
-                              const existing = loadArtworks(tenant)
-                              const existingIds = new Set(existing.map((a: any) => a.id || a.number))
-                              const newArtworks = importData.artworks.filter((a: any) => !existingIds.has(a.id || a.number))
-                              if (newArtworks.length === 0) { alert('Keine neuen Werke zum Importieren.'); return }
-                              const merged = [...existing, ...newArtworks]
-                              if (saveArtworks(tenant, merged)) { setAllArtworks(merged); window.dispatchEvent(new CustomEvent('artworks-updated')); alert(`✅ ${newArtworks.length} Werke importiert!`) }
-                              else alert('⚠️ Fehler beim Speichern.')
-                            } else alert('Ungültiges Format.')
-                          } catch (_) { alert('Fehler beim Importieren.') }
-                        }
-                        reader.readAsText(file)
-                      }
-                      input.click()
-                      setShowExportMenu(false)
-                    }} style={{ padding: '0.6rem 1rem', background: `${s.accent}18`, border: `1px solid ${s.accent}55`, borderRadius: '8px', color: s.accent, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', fontWeight: '600' }}>📥 Daten importieren</button>
-                    <button type="button" onClick={() => {
-                      try {
-                        let totalSize = 0
-                        for (let key in localStorage) { if (localStorage.hasOwnProperty(key)) totalSize += localStorage[key].length + key.length }
-                        alert(`localStorage: ${(totalSize / (1024 * 1024)).toFixed(2)} MB (max. ~5–10 MB)`)
-                      } catch (_) { alert('Fehler.') }
-                      setShowExportMenu(false)
-                    }} style={{ padding: '0.6rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}22`, borderRadius: '8px', color: s.text, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left' }}>📊 Speicher prüfen</button>
-                    <button type="button" onClick={() => {
-                      try { cleanupUnnecessaryData(tenant); alert('✅ Cleanup abgeschlossen.') } catch (_) { alert('⚠️ Cleanup mit Fehlern.') }
-                      setShowExportMenu(false)
-                    }} style={{ padding: '0.6rem 1rem', background: `${s.accent}20`, border: `1px solid ${s.accent}55`, borderRadius: '8px', color: s.accent, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', fontWeight: '600' }}>🧹 Cleanup durchführen</button>
-                  </div>
-                )}
-              </div>
-            </div>
+            {/* Für K2: Verwaltung (Board, Lizenzen) – dezent. Für ök2: Lizenz/Empfehlung hauptsächlich in Einstellungen (Lizenz abschließen, Empfehlungs-Programm). */}
+            {!tenant.isVk2 && !tenant.isOeffentlich && (
+              <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: s.muted }}>Verwaltung: <Link to={PROJECT_ROUTES['k2-galerie'].uebersicht} style={{ color: s.accent }}>Übersicht-Board</Link>, <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: s.accent }}>Lizenzen</Link>, <Link to={PROJECT_ROUTES['k2-galerie'].empfehlungstool} style={{ color: s.accent }}>Empfehlungstool</Link>.</p>
             )}
 
             {/* Einstellungen: Karten statt Sub-Tab-Leiste */}
@@ -12064,6 +12046,16 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Empfehlungs-Programm</div>
                 <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Deine Rabattstufe, geworbene User</div>
               </button>
+              {tenant.isOeffentlich && (
+              <button type="button" onClick={() => setSettingsSubTab('lizenz')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'lizenz' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'lizenz' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'lizenz' ? s.accent : `${s.accent}22` }}
+              >
+                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📄</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Lizenz abschließen</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Lizenz wählen, bezahlen – evtl. mit deinen Daten aus Einstellungen</div>
+              </button>
+              )}
             </div>
 
             {/* Stammdaten Sub-Tab */}
@@ -13177,6 +13169,116 @@ ${name}`
                       )}
                     </div>
                   </div>
+                </div>
+              )
+            })()}
+
+            {/* Lizenz abschließen (ök2): Produkt per Klick, evtl. Daten aus Einstellungen verwenden, dann Stripe */}
+            {tenant.isOeffentlich && settingsSubTab === 'lizenz' && (() => {
+              const stammdatenName = (galleryData?.name && galleryData?.email) ? (galleryData as any).name : (martinaData?.name && martinaData?.email) ? (martinaData as any).name : (georgData?.name && georgData?.email) ? (georgData as any).name : ''
+              const stammdatenEmail = (galleryData?.name && galleryData?.email) ? (galleryData as any).email : (martinaData?.name && martinaData?.email) ? (martinaData as any).email : (georgData?.name && georgData?.email) ? (georgData as any).email : ''
+              const hatStammdaten = !!(stammdatenName && stammdatenEmail)
+              const LIZENZ_OPTIONS = [
+                { id: 'basic' as const, ...LIZENZPREISE.basic },
+                { id: 'pro' as const, ...LIZENZPREISE.pro },
+                { id: 'proplus' as const, ...LIZENZPREISE.proplus },
+              ]
+              const handleLizenzSubmit = async (e: React.FormEvent) => {
+                e.preventDefault()
+                const name = lizenzName.trim()
+                const email = lizenzEmail.trim()
+                setLizenzError(null)
+                if (!name || !email) {
+                  setLizenzError('Bitte Name und E-Mail angeben.')
+                  return
+                }
+                setLizenzLoading(true)
+                try {
+                  const base = typeof window !== 'undefined' ? window.location.origin : ''
+                  const res = await fetch(`${base}/api/create-checkout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      licenceType: lizenzLicenceType,
+                      email,
+                      name,
+                      ...(lizenzEmpfehlerId.trim() && isValidEmpfehlerIdFormat(lizenzEmpfehlerId) ? { empfehlerId: lizenzEmpfehlerId.trim() } : {}),
+                    }),
+                  })
+                  const data = await res.json().catch(() => ({}))
+                  if (!res.ok) {
+                    setLizenzError(data?.error || data?.hint || 'Checkout konnte nicht gestartet werden.')
+                    setLizenzLoading(false)
+                    return
+                  }
+                  if (data?.url) {
+                    window.location.href = data.url
+                    return
+                  }
+                  setLizenzError('Keine Zahlungs-URL erhalten.')
+                } catch (_) {
+                  setLizenzError('Verbindungsfehler. Bitte später erneut versuchen.')
+                }
+                setLizenzLoading(false)
+              }
+              return (
+                <div>
+                  <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', fontWeight: 600, color: s.text, marginBottom: '0.5rem' }}>
+                    📄 Lizenz abschließen
+                  </h3>
+                  <p style={{ margin: '0 0 1.25rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.6 }}>
+                    Lizenz wählen, Zahlung per Karte (Stripe). Wenn du in „Meine Daten“ schon Name und E-Mail eingetragen hast, können wir diese übernehmen.
+                  </p>
+
+                  {hatStammdaten && lizenzUseStammdaten === 'ask' && (
+                    <div style={{ marginBottom: '1.5rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}44`, borderRadius: 12 }}>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 600, color: s.text, marginBottom: '0.5rem' }}>Daten aus Einstellungen verwenden?</div>
+                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted }}>In deinen Einstellungen stehen: <strong>{stammdatenName}</strong>, {stammdatenEmail}. Sollen wir diese für den Lizenzvertrag verwenden?</p>
+                      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                        <button type="button" onClick={() => { setLizenzName(stammdatenName); setLizenzEmail(stammdatenEmail); setLizenzUseStammdaten('yes') }} style={{ padding: '0.5rem 1rem', background: s.accent, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>Ja, verwenden</button>
+                        <button type="button" onClick={() => setLizenzUseStammdaten('no') } style={{ padding: '0.5rem 1rem', background: s.bgElevated, color: s.text, border: `1px solid ${s.accent}44`, borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>Nein, neue eingeben</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {(lizenzUseStammdaten !== 'ask' || !hatStammdaten) && (
+                    <>
+                      <div style={{ marginBottom: '1rem' }}>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.5rem' }}>Lizenz wählen</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem' }}>
+                          {LIZENZ_OPTIONS.map((opt) => {
+                            const selected = lizenzLicenceType === opt.id
+                            return (
+                              <button key={opt.id} type="button" onClick={() => setLizenzLicenceType(opt.id)}
+                                style={{ padding: '0.85rem 0.5rem', background: selected ? `${s.accent}18` : s.bgCard, border: selected ? `2px solid ${s.accent}` : `1px solid ${s.accent}33`, borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'center', color: s.text, fontSize: '0.9rem' }}>
+                                <div style={{ fontWeight: 700 }}>{opt.name}</div>
+                                <div style={{ color: s.accent, fontWeight: 600, fontSize: '0.85rem' }}>{opt.price}</div>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                      <form onSubmit={handleLizenzSubmit} style={{ maxWidth: 400 }}>
+                        <div style={{ marginBottom: '0.75rem' }}>
+                          <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.3rem', color: s.muted }}>Name *</label>
+                          <input type="text" value={lizenzName} onChange={(e) => setLizenzName(e.target.value)} placeholder="Dein Name" required style={{ width: '100%', padding: '0.6rem 0.9rem', border: `1px solid ${s.accent}44`, borderRadius: 8, fontSize: '0.95rem', background: s.bgElevated, color: s.text, boxSizing: 'border-box' }} />
+                        </div>
+                        <div style={{ marginBottom: '0.75rem' }}>
+                          <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.3rem', color: s.muted }}>E-Mail *</label>
+                          <input type="email" value={lizenzEmail} onChange={(e) => setLizenzEmail(e.target.value)} placeholder="E-Mail" required style={{ width: '100%', padding: '0.6rem 0.9rem', border: `1px solid ${s.accent}44`, borderRadius: 8, fontSize: '0.95rem', background: s.bgElevated, color: s.text, boxSizing: 'border-box' }} />
+                        </div>
+                        <div style={{ marginBottom: '1rem' }}>
+                          <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.3rem', color: s.muted }}>Empfehler-ID (optional) – 10 % Rabatt</label>
+                          <input type="text" value={lizenzEmpfehlerId} onChange={(e) => setLizenzEmpfehlerId(e.target.value)} placeholder="z. B. K2-E-XXXXXX" style={{ width: '100%', padding: '0.6rem 0.9rem', border: `1px solid ${s.accent}44`, borderRadius: 8, fontSize: '0.95rem', background: s.bgElevated, color: s.text, boxSizing: 'border-box' }} />
+                          {lizenzEmpfehlerId && !isValidEmpfehlerIdFormat(lizenzEmpfehlerId) && <p style={{ fontSize: '0.78rem', color: s.muted, margin: '0.25rem 0 0' }}>Format: K2-E- und 6 Zeichen</p>}
+                        </div>
+                        {lizenzError && <p style={{ color: '#c53030', fontSize: '0.9rem', margin: '0 0 0.75rem' }}>{lizenzError}</p>}
+                        <button type="submit" disabled={lizenzLoading} style={{ padding: '0.7rem 1.25rem', background: lizenzLoading ? s.muted : s.accent, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: lizenzLoading ? 'not-allowed' : 'pointer', fontSize: '0.95rem' }}>
+                          {lizenzLoading ? 'Wird weitergeleitet …' : 'Jetzt bezahlen (Karte/Stripe) →'}
+                        </button>
+                      </form>
+                    </>
+                  )}
                 </div>
               )
             })()}
