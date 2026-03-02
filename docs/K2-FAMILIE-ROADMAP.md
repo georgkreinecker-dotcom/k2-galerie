@@ -14,7 +14,7 @@
 - **Schicksalsschläge und freudige Ereignisse** – Verlust, Neuanfang, Geburt, Hochzeit, Umzug, Krankheit, Heilung … alles, was wir gemeinsam erleben, bekommt seinen Platz.
 - **Der ganz normale Alltag** – nicht nur die großen Momente, sondern das tägliche Miteinander.
 
-All das soll in K2 Familie seinen Platz haben: sichtbar, respektvoll, ohne Schubladen.
+**Keine Ausgrenzung – in keiner Form.** Religion und Politik haben hier nichts zu suchen. Jeder respektiert den anderen so, wie er ist. Das ist die Basis von K2 Familie: sichtbar, respektvoll, ohne Schubladen.
 
 ---
 
@@ -81,3 +81,5 @@ All das soll in K2 Familie seinen Platz haben: sichtbar, respektvoll, ohne Schub
 *„Mir läuft es kalt über den Rücken, wenn ich mir vorstelle, was so ein Tool bewirken kann.“ – Georg, 01.03.26*
 
 *„Wir sind nicht im Mittelalter – wir sind eine offene Gesellschaft. Jede Art von Zusammenleben ist Familie, wechselnde Partnerschaften, Schicksalsschläge, Freud und Alltag sollen alle ihren Platz bekommen.“ – Georg, 02.03.26*
+
+*„Es darf keine Ausgrenzung stattfinden, egal in welcher Form. Religion und Politik haben hier nichts zu suchen – jeder respektiert den anderen so, wie er ist.“ – Georg, 02.03.26*

@@ -5,7 +5,8 @@
 ## Datum: 02.03.26
 
 ## Wo wir stehengeblieben (aktuell) – **HIER EINSTEIGEN**
-- **K2 Familie Leitbild – offene Gesellschaft (02.03.26):** Leitbild in Roadmap, Startseite und APf verankert: keine Mittelalter-App, jede Art des Zusammenlebens = Familie, wechselnde Partnerschaften, Schicksalsschläge, Freud und Alltag haben Platz. Roadmap: neuer Abschnitt „Leitbild“, Vision und Phasen sprachlich inklusiv (Partner*innen, wechselnde Partnerschaften, Wahlfamilie). Startseite: Leitbild-Block + angepasste Vision. APf-Block: Kurztext angepasst.
+- **K2 Familie Leitbild – keine Ausgrenzung, Respekt (02.03.26):** Ergänzt: Keine Ausgrenzung in keiner Form; Religion und Politik haben hier nichts zu suchen; jeder respektiert den anderen so, wie er ist. In Roadmap, Startseite (Leitbild-Text) und APf-Block (Kurztext) eingearbeitet.
+- **K2 Familie Leitbild – offene Gesellschaft (02.03.26):** Leitbild in Roadmap, Startseite und APf: jede Form des Zusammenlebens = Familie, wechselnde Partnerschaften, Freud/Leid/Alltag.
 - **APf – K2 Familie eigene Struktur (02.03.26):** Im Smart Panel: K2 Familie als eigener Eintrag mit eigener Farbe (Teal), eigener Block mit Link „→ Start & Vision“. Klar getrennt von K2-Galerie-Themen.
 - **Session-Ende 01.03.26:** Schreiben an Michael (Prozess + Kontrast + QR), mök2-Struktur gruppiert, druckbare Kapitelseiten. Alle Änderungen committed und gepusht.
 - **Schreiben an Michael (01.03.26):** Eine Seite, ein Klick zur Galerie. Kontrast: heller Hintergrund, dunkle Schrift. QR „Adresse aufs Handy“ führt auf **diese** Seite (schreiben-michael), nicht auf die Galerie – in mök2 war vorher ein falscher QR (Galerie) entfernt. Georg: Link per WhatsApp an Michael → Michael tippt Link → tippt „Galerie öffnen“ → fertig.

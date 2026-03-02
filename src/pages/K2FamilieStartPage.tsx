@@ -25,7 +25,7 @@ export default function K2FamilieStartPage() {
       <div style={{ padding: '1.25rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 12, marginBottom: '1rem' }}>
         <h2 style={{ fontSize: '1.1rem', margin: '0 0 0.75rem', color: '#5ffbf1' }}>Leitbild</h2>
         <p style={{ margin: 0, lineHeight: 1.6, color: 'rgba(255,255,255,0.9)' }}>
-          Wir sind eine offene Gesellschaft – nicht Mittelalter. Jede Art des Zusammenlebens ist Familie und soll abgebildet werden können: wechselnde Partnerschaften, Schicksalsschläge und freudige Ereignisse, die wir gemeinsam erleben, und der ganz normale Alltag. All das bekommt hier seinen Platz.
+          Wir sind eine offene Gesellschaft – nicht Mittelalter. Jede Art des Zusammenlebens ist Familie und soll abgebildet werden können: wechselnde Partnerschaften, Schicksalsschläge und freudige Ereignisse, die wir gemeinsam erleben, und der ganz normale Alltag. All das bekommt hier seinen Platz. Keine Ausgrenzung – in keiner Form. Religion und Politik haben hier nichts zu suchen. Jeder respektiert den anderen so, wie er ist.
         </p>
       </div>
 
