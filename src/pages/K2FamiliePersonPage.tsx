@@ -3,7 +3,7 @@
  * Route: /projects/k2-familie/personen/:id
  */
 
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { loadPersonen, savePersonen, K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
@@ -21,7 +21,6 @@ const STYLE = {
 
 export default function K2FamiliePersonPage() {
   const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
   const [personen, setPersonen] = useState<K2FamiliePerson[]>(() => loadPersonen(K2_FAMILIE_DEFAULT_TENANT))
   const [edit, setEdit] = useState(false)
   const [name, setName] = useState('')
@@ -56,6 +55,129 @@ export default function K2FamiliePersonPage() {
   }
 
   const getPersonName = (personId: string) => personen.find((p) => p.id === personId)?.name ?? personId
+  const otherPersonen = personen.filter((p) => p.id !== id)
+
+  const updateAndSave = (next: K2FamiliePerson[]) => {
+    if (savePersonen(K2_FAMILIE_DEFAULT_TENANT, next, { allowReduce: false })) setPersonen(next)
+  }
+
+  const addParent = (otherId: string) => {
+    if (!id || !person || person.parentIds.includes(otherId)) return
+    const other = personen.find((p) => p.id === otherId)
+    if (!other) return
+    const thisId = id
+    const next = personen.map((p) => {
+      if (p.id === thisId) return { ...p, parentIds: [...p.parentIds, otherId], updatedAt: new Date().toISOString() }
+      if (p.id === otherId) return { ...p, childIds: [...p.childIds, thisId], updatedAt: new Date().toISOString() }
+      return p
+    })
+    updateAndSave(next)
+  }
+  const removeParent = (otherId: string) => {
+    if (!id || !person) return
+    const other = personen.find((p) => p.id === otherId)
+    if (!other) return
+    const thisId = id
+    const next = personen.map((p) => {
+      if (p.id === thisId) return { ...p, parentIds: p.parentIds.filter((x) => x !== otherId), updatedAt: new Date().toISOString() }
+      if (p.id === otherId) return { ...p, childIds: p.childIds.filter((x) => x !== thisId), updatedAt: new Date().toISOString() }
+      return p
+    })
+    updateAndSave(next)
+  }
+
+  const addChild = (otherId: string) => {
+    if (!id || !person || person.childIds.includes(otherId)) return
+    const other = personen.find((p) => p.id === otherId)
+    if (!other) return
+    const thisId = id
+    const next = personen.map((p) => {
+      if (p.id === thisId) return { ...p, childIds: [...p.childIds, otherId], updatedAt: new Date().toISOString() }
+      if (p.id === otherId) return { ...p, parentIds: [...p.parentIds, thisId], updatedAt: new Date().toISOString() }
+      return p
+    })
+    updateAndSave(next)
+  }
+  const removeChild = (otherId: string) => {
+    if (!id || !person) return
+    const thisId = id
+    const next = personen.map((p) => {
+      if (p.id === thisId) return { ...p, childIds: p.childIds.filter((x) => x !== otherId), updatedAt: new Date().toISOString() }
+      if (p.id === otherId) return { ...p, parentIds: p.parentIds.filter((x) => x !== thisId), updatedAt: new Date().toISOString() }
+      return p
+    })
+    updateAndSave(next)
+  }
+
+  const addPartner = (otherId: string) => {
+    if (!id || !person || person.partners.some((pr) => pr.personId === otherId)) return
+    const other = personen.find((p) => p.id === otherId)
+    if (!other) return
+    const entry = { personId: otherId, from: null as string | null, to: null as string | null }
+    const entryOther = { personId: id, from: null as string | null, to: null as string | null }
+    const next = personen.map((p) => {
+      if (p.id === id) return { ...p, partners: [...p.partners, entry], updatedAt: new Date().toISOString() }
+      if (p.id === otherId) return { ...p, partners: [...p.partners, entryOther], updatedAt: new Date().toISOString() }
+      return p
+    })
+    updateAndSave(next)
+  }
+  const removePartner = (otherId: string) => {
+    if (!id || !person) return
+    const thisId = id
+    const next = personen.map((p) => {
+      if (p.id === thisId) return { ...p, partners: p.partners.filter((pr) => pr.personId !== otherId), updatedAt: new Date().toISOString() }
+      if (p.id === otherId) return { ...p, partners: p.partners.filter((pr) => pr.personId !== thisId), updatedAt: new Date().toISOString() }
+      return p
+    })
+    updateAndSave(next)
+  }
+
+  const addSibling = (otherId: string) => {
+    if (!id || !person || person.siblingIds.includes(otherId)) return
+    const other = personen.find((p) => p.id === otherId)
+    if (!other) return
+    const thisId = id
+    const next = personen.map((p) => {
+      if (p.id === thisId) return { ...p, siblingIds: [...p.siblingIds, otherId], updatedAt: new Date().toISOString() }
+      if (p.id === otherId) return { ...p, siblingIds: [...p.siblingIds, thisId], updatedAt: new Date().toISOString() }
+      return p
+    })
+    updateAndSave(next)
+  }
+  const removeSibling = (otherId: string) => {
+    if (!id || !person) return
+    const thisId = id
+    const next = personen.map((p) => {
+      if (p.id === thisId) return { ...p, siblingIds: p.siblingIds.filter((x) => x !== otherId), updatedAt: new Date().toISOString() }
+      if (p.id === otherId) return { ...p, siblingIds: p.siblingIds.filter((x) => x !== thisId), updatedAt: new Date().toISOString() }
+      return p
+    })
+    updateAndSave(next)
+  }
+
+  const addWahlfamilie = (otherId: string) => {
+    if (!id || !person || person.wahlfamilieIds.includes(otherId)) return
+    const other = personen.find((p) => p.id === otherId)
+    if (!other) return
+    const thisId = id
+    const next = personen.map((p) => {
+      if (p.id === thisId) return { ...p, wahlfamilieIds: [...p.wahlfamilieIds, otherId], updatedAt: new Date().toISOString() }
+      if (p.id === otherId) return { ...p, wahlfamilieIds: [...p.wahlfamilieIds, thisId], updatedAt: new Date().toISOString() }
+      return p
+    })
+    updateAndSave(next)
+  }
+  const removeWahlfamilie = (otherId: string) => {
+    if (!id || !person) return
+    const thisId = id
+    const next = personen.map((p) => {
+      if (p.id === thisId) return { ...p, wahlfamilieIds: p.wahlfamilieIds.filter((x) => x !== otherId), updatedAt: new Date().toISOString() }
+      if (p.id === otherId) return { ...p, wahlfamilieIds: p.wahlfamilieIds.filter((x) => x !== thisId), updatedAt: new Date().toISOString() }
+      return p
+    })
+    updateAndSave(next)
+  }
 
   if (!id) {
     return (
@@ -109,33 +231,68 @@ export default function K2FamiliePersonPage() {
 
       <section style={STYLE.section}>
         <h2 style={{ fontSize: '1.1rem', margin: '0 0 0.75rem', color: '#14b8a6' }}>Beziehungen</h2>
-        <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>Beziehungen bearbeiten (Phase 2.3) – kommende Version.</p>
-        {person.parentIds.length > 0 && <div style={STYLE.label}>Eltern</div>}
-        {person.parentIds.map((pid) => (
-          <Link key={pid} to={`${PROJECT_ROUTES['k2-familie'].personen}/${pid}`} style={{ ...STYLE.link, display: 'inline-block', marginRight: '0.5rem', marginBottom: '0.25rem' }}>{getPersonName(pid)}</Link>
-        ))}
-        {person.childIds.length > 0 && <div style={{ ...STYLE.label, marginTop: '0.5rem' }}>Kinder</div>}
-        {person.childIds.map((pid) => (
-          <Link key={pid} to={`${PROJECT_ROUTES['k2-familie'].personen}/${pid}`} style={{ ...STYLE.link, display: 'inline-block', marginRight: '0.5rem', marginBottom: '0.25rem' }}>{getPersonName(pid)}</Link>
-        ))}
-        {person.partners.length > 0 && <div style={{ ...STYLE.label, marginTop: '0.5rem' }}>Partner*innen</div>}
-        {person.partners.map((pr, i) => (
-          <span key={i}>
-            <Link to={`${PROJECT_ROUTES['k2-familie'].personen}/${pr.personId}`} style={STYLE.link}>{getPersonName(pr.personId)}</Link>
-            {pr.from || pr.to ? ` (${pr.from ?? '?'} – ${pr.to ?? 'heute'})` : ''}
-          </span>
-        ))}
-        {person.siblingIds.length > 0 && <div style={{ ...STYLE.label, marginTop: '0.5rem' }}>Geschwister</div>}
-        {person.siblingIds.map((pid) => (
-          <Link key={pid} to={`${PROJECT_ROUTES['k2-familie'].personen}/${pid}`} style={{ ...STYLE.link, display: 'inline-block', marginRight: '0.5rem', marginBottom: '0.25rem' }}>{getPersonName(pid)}</Link>
-        ))}
-        {person.wahlfamilieIds.length > 0 && <div style={{ ...STYLE.label, marginTop: '0.5rem' }}>Wahlfamilie</div>}
-        {person.wahlfamilieIds.map((pid) => (
-          <Link key={pid} to={`${PROJECT_ROUTES['k2-familie'].personen}/${pid}`} style={{ ...STYLE.link, display: 'inline-block', marginRight: '0.5rem', marginBottom: '0.25rem' }}>{getPersonName(pid)}</Link>
-        ))}
-        {person.parentIds.length === 0 && person.childIds.length === 0 && person.partners.length === 0 && person.siblingIds.length === 0 && person.wahlfamilieIds.length === 0 && (
-          <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)' }}>Noch keine Beziehungen eingetragen.</p>
-        )}
+
+        {(() => {
+          const sel = { padding: '0.35rem 0.5rem', background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(13,148,136,0.4)', borderRadius: 6, color: '#fff5f0', fontSize: '0.9rem', fontFamily: 'inherit' as const }
+          const smallBtn = { background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '0.8rem', padding: '0.2rem 0.4rem', fontFamily: 'inherit' }
+          const row = (label: string, ids: string[], addFn: (oid: string) => void, removeFn: (oid: string) => void, getIds: () => string[]) => (
+            <div key={label} style={{ marginBottom: '1rem' }}>
+              <div style={STYLE.label}>{label}</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', alignItems: 'center' }}>
+                {ids.map((pid) => (
+                  <span key={pid} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(13,148,136,0.15)', padding: '0.25rem 0.5rem', borderRadius: 6 }}>
+                    <Link to={`${PROJECT_ROUTES['k2-familie'].personen}/${pid}`} style={STYLE.link}>{getPersonName(pid)}</Link>
+                    <button type="button" onClick={() => removeFn(pid)} style={smallBtn} title="Entfernen">✕</button>
+                  </span>
+                ))}
+                {otherPersonen.filter((p) => !getIds().includes(p.id)).length > 0 && (
+                  <select
+                    style={sel}
+                    value=""
+                    onChange={(e) => { const v = e.target.value; if (v) { addFn(v); e.target.value = ''; } }}
+                  >
+                    <option value="">+ Hinzufügen</option>
+                    {otherPersonen.filter((p) => !getIds().includes(p.id)).map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            </div>
+          )
+          return (
+            <>
+              {row('Eltern', person.parentIds, addParent, removeParent, () => person.parentIds)}
+              {row('Kinder', person.childIds, addChild, removeChild, () => person.childIds)}
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={STYLE.label}>Partner*innen</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', alignItems: 'center' }}>
+                  {person.partners.map((pr, i) => (
+                    <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(13,148,136,0.15)', padding: '0.25rem 0.5rem', borderRadius: 6 }}>
+                      <Link to={`${PROJECT_ROUTES['k2-familie'].personen}/${pr.personId}`} style={STYLE.link}>{getPersonName(pr.personId)}</Link>
+                      {(pr.from || pr.to) && <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>({pr.from ?? '?'} – {pr.to ?? 'heute'})</span>}
+                      <button type="button" onClick={() => removePartner(pr.personId)} style={smallBtn} title="Entfernen">✕</button>
+                    </span>
+                  ))}
+                  {otherPersonen.filter((p) => !person.partners.some((pr) => pr.personId === p.id)).length > 0 && (
+                    <select
+                      style={sel}
+                      value=""
+                      onChange={(e) => { const v = e.target.value; if (v) { addPartner(v); e.target.value = ''; } }}
+                    >
+                      <option value="">+ Hinzufügen</option>
+                      {otherPersonen.filter((p) => !person.partners.some((pr) => pr.personId === p.id)).map((p) => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              </div>
+              {row('Geschwister', person.siblingIds, addSibling, removeSibling, () => person.siblingIds)}
+              {row('Wahlfamilie', person.wahlfamilieIds, addWahlfamilie, removeWahlfamilie, () => person.wahlfamilieIds)}
+            </>
+          )
+        })()}
       </section>
 
       <section style={STYLE.section}>

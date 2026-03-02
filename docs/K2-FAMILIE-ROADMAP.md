@@ -64,7 +64,7 @@
 ### Phase 2: Erste UI – Stammbaum & Personen-Seite
 - [x] **2.1** Stammbaum-Ansicht (erst einfach: Liste). Klick auf Person → ihre Seite. **Erledigt:** K2FamilieStammbaumPage, Route /projects/k2-familie/stammbaum, „Person hinzufügen“.
 - [x] **2.2** Personen-Seite: Foto, Text, Name & Kurztext bearbeitbar, „Meine Momente“ Platzhalter. **Erledigt:** K2FamiliePersonPage, Route /projects/k2-familie/personen/:id.
-- [ ] **2.3** Beziehungen im UI pflegbar (Eltern/Kinder/Partner*innen/Geschwister/Wahlfamilie hinzufügen/entfernen) – Anzeige als Links erledigt, Bearbeitung folgt.
+- [x] **2.3** Beziehungen im UI pflegbar – **erledigt:** Auf der Personen-Seite pro Beziehungsart (Eltern, Kinder, Partner*innen, Geschwister, Wahlfamilie) „+ Hinzufügen“ (Dropdown) und „✕ Entfernen“. Beidseitig aktualisiert (z. B. Eltern ↔ Kinder).
 
 ### Phase 3: Momente & Events
 - [ ] **3.1** „Momente“ pro Person (Hochzeit, Geburt, Umzug, Abschied, Neuanfang, Alltägliches, …) – gleiche Struktur wie Werke, andere Semantik. Schicksalsschläge und freudige Ereignisse gleichwertig abbildbar.
