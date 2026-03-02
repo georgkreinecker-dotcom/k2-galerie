@@ -27,7 +27,8 @@
 - **K2 Familie – Architektur zuerst (02.03.26):** Wir arbeiten an der Architektur; der Baumeister (konkrete Umsetzung) kommt später. In RECHTE-ZWEIGE festgehalten.
 - **Baumeister (02.03.26):** Wenn es ans konkrete Bauen geht, geht Georg selber ran und kontrolliert die Details.
 - **K2 Familie Phase 3.3 erledigt (02.03.26):** Kalender & Übersicht – Seite mit Events + Momente (mit Datum), nach Monat gruppiert, Links zu Events/Person. Roadmap 3.3 abgehakt.
-- **Nächster Schritt:** K2 Familie – **Phase 4** (Zweige/Rechte, Skalierung) oder anderes Thema. Bei „ro“: DIALOG-STAND + GRAFIKER-TISCH lesen.
+- **K2 Familie Phase 4 – Vorbereitung (02.03.26):** In Roadmap „Nächste Schritte für den Baumeister“ ergänzt (4.0 Entscheidung, 4.1 Tenant-Auswahl, 4.2 Doku/Onboarding). Kein Code – nur Pfad für Phase 4 klar.
+- **Nächster Schritt:** K2 Familie Phase 4 umsetzen (wenn Baumeister: 4.0 entscheiden, dann 4.1/4.2) oder anderes Thema. Bei „ro“: DIALOG-STAND + GRAFIKER-TISCH lesen.
 - **Info (Georg):** Gestern mit Android + Chrome die Seiten geöffnet – funktioniert problemlos.
 - **Vollkachelform / Bildverarbeitung:** Offene Punkte in docs/GRAFIKER-TISCH-NOTIZEN.md unter „Offene Wünsche“.
 

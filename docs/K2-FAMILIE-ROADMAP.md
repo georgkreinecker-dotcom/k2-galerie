@@ -76,6 +76,11 @@
 - [ ] **4.1** Jede Familie = eigener Tenant (wie Galerie pro Künstler:in). Einladung/Lizenz pro Familie.
 - [ ] **4.2** Doku, Onboarding, evtl. Lizenzmodell „K2 Familie“.
 
+**Phase 4 – Nächste Schritte (für den Baumeister):**
+- **4.0:** Entscheidung: Zweig-Definition (A/B/C) und Rechte-Modell (Option 1/2/3) in RECHTE-ZWEIGE. Danach konkrete Felder (z. B. branchId, managedBy) und UI ableiten.
+- **4.1:** Heute nur `K2_FAMILIE_DEFAULT_TENANT`; alle Keys `k2-familie-{tenantId}-*`. Später: Tenant-Auswahl („Familie wechseln“), Liste der Familien, Einladung/Lizenz pro Familie – analog K2 Galerie pro Künstler:in.
+- **4.2:** Nutzer-Doku, Onboarding (erste Schritte), ggf. Lizenzmodell „K2 Familie“ in mök2/Handbuch.
+
 ---
 
 ## Warum das groß werden kann
