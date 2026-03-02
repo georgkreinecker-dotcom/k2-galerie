@@ -421,6 +421,23 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
+  // Besucherzähler: einmal pro Session pro Tenant an API melden (nur echte Besucher, nicht in iframe/Cursor Preview)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (window.self !== window.top) return
+    try {
+      if (tenantId === 'k2' && localStorage.getItem('k2-admin-unlocked') === 'k2') return
+      const key = 'k2-visit-sent-' + tenantId
+      if (sessionStorage.getItem(key)) return
+      const origin = window.location.origin
+      fetch(`${origin}/api/visit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenant: tenantId }),
+      }).then(() => sessionStorage.setItem(key, '1')).catch(() => {})
+    } catch (_) {}
+  }, [tenantId])
+
   // Design-Farben aus Admin anwenden – NUR für K2 (nicht für ök2/musterOnly!)
   // ök2 hat eigene Design-Einstellungen unter k2-oeffentlich-design-settings
   const applyDesignFromStorage = React.useCallback(() => {

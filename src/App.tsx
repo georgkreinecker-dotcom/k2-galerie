@@ -40,6 +40,7 @@ import KeyPage from './pages/KeyPage'
 import KostenPage from './pages/KostenPage'
 import GitHubTokenPage from './pages/GitHubTokenPage'
 import LicencesPage from './pages/LicencesPage'
+import UebersichtBoardPage from './pages/UebersichtBoardPage'
 import LizenzKaufenPage from './pages/LizenzKaufenPage'
 import LizenzErfolgPage from './pages/LizenzErfolgPage'
 import EmpfehlungstoolPage from './pages/EmpfehlungstoolPage'
@@ -559,6 +560,7 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].pilotStart} element={<Navigate to={PILOT_SCHREIBEN_ROUTE} replace />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].softwareentwicklung} element={<Mok2Layout><K2SoftwareentwicklungPage /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].werbeunterlagen} element={<Mok2Layout><WerbeunterlagenPage embeddedInMok2Layout /></Mok2Layout>} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].uebersicht} element={<Mok2Layout><UebersichtBoardPage /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].licences} element={<Mok2Layout><LicencesPage embeddedInMok2Layout /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} element={<Mok2Layout><LizenzKaufenPage /></Mok2Layout>} />
       <Route path="/lizenz-erfolg" element={<LizenzErfolgPage />} />

@@ -51,6 +51,13 @@ const secondaryFeatures = [
     icon: '📢',
   },
   {
+    title: 'Übersicht-Board',
+    description: 'Lizenznehmer, Empfehler, Abrechnung auf einen Blick – ein Klick zu Details',
+    to: PROJECT_ROUTES['k2-galerie'].uebersicht,
+    cta: 'Board öffnen →',
+    icon: '📊',
+  },
+  {
     title: 'Lizenzen',
     description: 'Wer nutzt die App? Lizenzen verwalten',
     to: PROJECT_ROUTES['k2-galerie'].licences,
@@ -83,10 +90,19 @@ export default function PlatformStartPage() {
   const [isMobile, setIsMobile] = useState(false)
   const [apiKeySet, setApiKeySet] = useState(false)
   const [githubTokenSet, setGithubTokenSet] = useState(false)
+  const [visits, setVisits] = useState<{ k2: number; oeffentlich: number } | null>(null)
 
   useEffect(() => {
     setApiKeySet(!!(localStorage.getItem('k2-openai-api-key') || localStorage.getItem('openai-api-key') || localStorage.getItem('k2-api-key')))
     setGithubTokenSet(!!localStorage.getItem('k2-github-token'))
+  }, [])
+
+  useEffect(() => {
+    const origin = window.location.origin
+    Promise.all([
+      fetch(`${origin}/api/visit?tenant=k2`).then((r) => r.json()).then((d) => d.count ?? 0),
+      fetch(`${origin}/api/visit?tenant=oeffentlich`).then((r) => r.json()).then((d) => d.count ?? 0),
+    ]).then(([k2, oef]) => setVisits({ k2, oeffentlich: oef })).catch(() => setVisits(null))
   }, [])
 
   // Prüfe ob iOS und ob bereits installiert
@@ -176,6 +192,25 @@ export default function PlatformStartPage() {
             <div className="meta" style={{ fontSize: '1rem', marginTop: '0.25rem', opacity: 0.8 }}>
               Dein Einstieg – Galerie, Projekte & alle Werkzeuge
             </div>
+            {visits !== null && (
+              <Link
+                to={PROJECT_ROUTES['k2-galerie'].uebersicht}
+                style={{
+                  display: 'inline-block',
+                  marginTop: '1rem',
+                  padding: '0.5rem 1rem',
+                  background: 'rgba(99,102,241,0.2)',
+                  borderRadius: '12px',
+                  color: '#a5b4fc',
+                  fontSize: '0.95rem',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  border: '1px solid rgba(129,140,248,0.4)',
+                }}
+              >
+                👁 Besucher: K2 {visits.k2} · ök2 {visits.oeffentlich} → Details
+              </Link>
+            )}
           </div>
         </header>
 

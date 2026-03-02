@@ -18,6 +18,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **PLAN-SCHRITT-FUER-SCHRITT.md** – **Unser gemeinsamer Plan:** Schritte 1–10 in Reihenfolge (Basis abhaken → ein Feature wählen → Pilot-Verein → Onboarding → optional Preise → später Rest). Ein Schritt nach dem anderen.
 - **ADMIN-STRUKTUR-HUB-DESIGN-IDEE.md** – **Idee/Prüfauftrag:** Admin-Einstieg („Was möchtest du tun?“) im gleichen Hub-Layout wie Entdecken – 3 Spalten, Fokus Mitte, zielsicherer und optisch überzeugend. Wann umsetzen offen.
 - **DIALOG-STAND.md** – **Nach Absturz:** Eine Datei = ein Anker. Steht immer: letzte Session, Thema, was zuletzt dran, nächster Schritt. Sag „weiter nach Absturz“ → KI liest sie und arbeitet dort weiter. Kein Suchen im Konzept.
+- **START-NUR-NOCH-OFFEN.md** – **Eine Stelle: was noch offen, was startbereit.** Nur die 3 Stripe-Schritte (+ optional AGB/npm audit) offen; Galerie, Willkommen, Lizenzen-Code, Export etc. vorbereitet. Verweis von VOR-VEROEFFENTLICHUNG.
 - **STRIPE-LIZENZEN-GO-LIVE.md** – **Die nächsten 3 Schritte (Stripe/Lizenzen):** 1) Supabase Migration 003 ausführen. 2) Vercel Env (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY). 3) Stripe Webhook konfigurieren. Sportwagen Phase 7.3; eine Quelle Technik-Plan.
 - **WIR-PROZESS.md** – **Gemeinsamer Arbeitsraum, Vermächtnis, Team-Hebel:** Wer Georg ist, Wachstums-Vereinbarungen, Session-Reflexion; Abschnitt „Team-Hebel und Lernkurve“ (Unternehmer + Persönlichkeit + KI = außergewöhnliche Hebelwirkung; Regelwerk + Vermächtnis für maximale Lernkurve). Regel: `.cursor/rules/team-hebel-unternehmer-persoenlichkeit-ki.mdc`.
 
@@ -35,6 +36,8 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **VERBESSERUNGEN-OHNE-MEHRKOSTEN.md** – Was ohne Mehrkosten umgesetzt wurde + was du regelmäßig tun kannst (npm audit, CORS, RLS).
 - **PRODUKT-LABEL-SICHERHEIT-ROADMAP.md** – Verkaufbares Produkt: sehr gutes Label, Zahlungen/Vergütungen sicher, Nachweis für Regress; Prioritäten (Auth, RLS, Zahlungsprovider, Audit-Log, Rechtliches).
 - **VOR-VEROEFFENTLICHUNG.md** – **Checkliste vor Go-Live** (Auth aktivieren, Migration 002, npm audit, AGB/DSGVO, Deployment) – nicht vergessen vor Veröffentlichung.
+- **WARTUNG-PROJEKT.md** – **Wartungsheft:** Notwendige Wartung mit Intervallen – § 1 Einmal vor Start (Supabase-Registrierung, 3 Schritte, Backup), § 2 Monatlich, § 3 Quartalsweise, § 4 Bei Ereignis. Abhakbar.
+- **SUPABASE-WOZU-KOSTEN-WARTUNG.md** – **Supabase Klarstellung:** Wozu (nur Lizenzen-DB), Vorteile, Kosten (Free/Paid), Wartung (einmal + kaum); Alternative ohne Supabase.
 - **PRAXISTEST-BEFUELLEN-SICHERHEIT.md** – **Vor dem Befüllen der Galerien (Eferding, K2):** Absolute Regeln (keine Vermischung, kein Datenverlust, nichts Unreparierbares) + Vollbackup-Anleitung (App, Git-Tag, Vercel, backupmicro). „Ab jetzt beginnt der Praxis-Test.“
 - **ADMIN-AUTH-SETUP.md** – Admin-Nutzer in Supabase anlegen, Migration 002 anwenden, testen.
 
@@ -46,6 +49,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **MOK2-EIGENER-BEREICH.md** – Marketing ök2 als eigener Bereich (mök2).
 - **WARUM-EVENTS-DOKUMENTE-WEG-WAREN.md** – Erklärung zu Events/Dokumenten.
 - **OEK2-ANMELDUNG-LIZENZIERUNG-STAND.md** – **ök2 Anmeldung & Lizenzierung – State of the Art:** Was es gibt (Entdecken, Guide, Willkommen-Redirect, LicencesPage, mailto), was fehlt (sichtbarer CTA „Lizenz anfragen“, einheitliche Preise), nächste Schritte; Code-Stellen.
+- **UEBERSICHT-BESUCHER-EMPFEHLER-LIZENZNEHMER.md** – **Überblick für Georg:** Wo Besucher (K2/ök2/VK2), Empfehler, ganze Lizenznehmer-Geschichte? Ist-Stand + Pro-Board-Ansatz (optik wie K2 Familie). **Umsetzung:** Übersicht-Board unter `/projects/k2-galerie/uebersicht` – 4 Kacheln, ein Klick zu Details.
 
 ## Produkt & Vision
 - **PRODUKT-VISION.md** – Produkt-Vision K2 Galerie.

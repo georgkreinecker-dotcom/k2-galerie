@@ -75,6 +75,7 @@ type PanelItem = {
 }
 
 const DEFAULT_ITEMS: PanelItem[] = [
+  { id: 'uebersicht', label: '📊 Übersicht-Board', page: 'uebersicht', url: PROJECT_ROUTES['k2-galerie'].uebersicht, color: 'linear-gradient(135deg, rgba(13,148,136,0.2), rgba(45,212,191,0.12))', border: 'rgba(45,212,191,0.4)' },
   { id: 'k2', label: '🎨 K2 Galerie Kunst&Keramik', page: 'galerie', url: PROJECT_ROUTES['k2-galerie'].galerie, color: 'linear-gradient(135deg, rgba(255,140,66,0.2), rgba(230,122,42,0.15))', border: 'rgba(255,140,66,0.4)' },
   { id: 'oek2', label: '🌐 Öffentliche Galerie K2', page: 'galerie-oeffentlich', url: PROJECT_ROUTES['k2-galerie'].galerieOeffentlich, color: 'linear-gradient(135deg, rgba(95,251,241,0.12), rgba(60,200,190,0.08))', border: 'rgba(95,251,241,0.3)' },
   { id: 'k2-familie', label: '👨‍👩‍👧‍👦 K2 Familie', page: 'k2-familie', url: PROJECT_ROUTES['k2-familie'].home, color: 'linear-gradient(135deg, rgba(13,148,136,0.22), rgba(20,184,166,0.12))', border: 'rgba(13,148,136,0.5)' },
@@ -107,7 +108,7 @@ function saveOrder(order: string[]) {
 
 const MAPPEN_OPEN_KEY = 'smartpanel-mappen-open'
 /** Arbeitsmappen – Themen gebündelt (K2 Galerie, K2 Familie, Notizen, Vermächtnis) */
-const GALERIE_ITEM_IDS = ['k2', 'oek2', 'vk2', 'mok2'] as const
+const GALERIE_ITEM_IDS = ['uebersicht', 'k2', 'oek2', 'vk2', 'mok2'] as const
 const MAPPEN = [
   { id: 'galerie', label: 'K2 Galerie', icon: '🎨', itemIds: [...GALERIE_ITEM_IDS] },
   { id: 'familie', label: 'K2 Familie', icon: '👨‍👩‍👧‍👦', itemIds: ['k2-familie'] },
@@ -185,6 +186,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
   const activePage = useMemo(() => {
     if (browserPath.startsWith('/projects/vk2')) return 'vk2'
     if (browserPath.startsWith('/projects/k2-familie')) return 'k2-familie'
+    if (browserPath.startsWith('/projects/k2-galerie/uebersicht')) return 'uebersicht'
     if (browserPath.startsWith('/projects/k2-galerie/galerie-oeffentlich') || browserPath.startsWith('/galerie-oeffentlich')) return 'galerie-oeffentlich'
     if (browserPath.startsWith('/galerie') || browserPath.startsWith('/projects/k2-galerie/galerie')) return 'galerie'
     if (browserPath.startsWith('/mok2') || browserPath.startsWith('/projects/k2-galerie/marketing')) return 'mok2'
@@ -377,7 +379,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                             background: item.color,
                             border: `1px solid ${item.border}`,
                             borderRadius: '8px',
-                            color: item.id === 'oek2' ? '#5ffbf1' : item.id === 'mok2' ? '#fbbf24' : '#ff8c42',
+                            color: item.id === 'uebersicht' ? '#2dd4bf' : item.id === 'oek2' ? '#5ffbf1' : item.id === 'mok2' ? '#fbbf24' : '#ff8c42',
                             fontWeight: 600,
                             fontSize: '0.88rem',
                             textAlign: 'center',

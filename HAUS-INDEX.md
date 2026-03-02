@@ -111,6 +111,7 @@ Alle anderen Dateien bleiben; bei Unsicherheit wurde nichts gelöscht.
 - **App starten:** `npm run dev` (siehe README.md / START_HIER.md)
 - **Stand aktualisieren:** `node scripts/write-build-info.js`
 - **Vor Veröffentlichung:** `docs/VOR-VEROEFFENTLICHUNG.md` – Checkliste vor Go-Live (nicht vergessen).
+- **Wartungsheft:** `docs/WARTUNG-PROJEKT.md` – Wartung mit Intervallen (§ 1 Einmal vor Start, § 2 Monatlich, § 3 Quartalsweise, § 4 Bei Ereignis). Supabase: `docs/SUPABASE-WOZU-KOSTEN-WARTUNG.md`.
 - **Admin-Auth einrichten:** `docs/ADMIN-AUTH-SETUP.md`
 - **Crash-Fixes:** `docs/CRASH-FIXES-STAND-17-02-26.md`
 - **K2 vs. ök2:** `docs/K2-OEK2-DATENTRENNUNG.md`

@@ -5,6 +5,12 @@
 
 ---
 
+## Vor dem Start: Supabase-Registrierung
+
+**Fazit:** Free Tier ist am Anfang ausreichend und wichtiger Baustein für den Sportwagen. **Vor dem Start** Registrierung auf supabase.com (Free Tier), Projekt anlegen – dann die 3 Schritte unten.
+
+---
+
 ## Die nächsten 3 Schritte (nichts vergessen)
 
 | # | Schritt | Wo / Was | Erledigt |

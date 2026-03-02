@@ -218,6 +218,7 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
           ) : (
             <>
               <Link to={PLATFORM_ROUTES.home} className="meta">← Plattform</Link>
+              <Link to={PROJECT_ROUTES['k2-galerie'].uebersicht} className="meta" style={{ color: 'var(--k2-accent)' }}>📊 Übersicht-Board</Link>
               <Link to={PLATFORM_ROUTES.kosten} className="meta">Kosten</Link>
             </>
           )}

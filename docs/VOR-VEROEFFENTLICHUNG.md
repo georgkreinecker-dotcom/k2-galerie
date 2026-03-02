@@ -3,6 +3,8 @@
 **Alles ist vorbereitet; vor dem Go-Live diese Punkte abhaken.**  
 Damit nichts vergessen wird: Diese Datei vor dem Veröffentlichen durchgehen.
 
+**→ Was genau noch offen ist (minimal):** **docs/START-NUR-NOCH-OFFEN.md** – dort steht: nur die 3 Stripe-Schritte (+ optional AGB/npm audit); alles andere ist startbereit.
+
 ---
 
 ## ✅ Erster Durchgang (26.02.26) – Stand für Georg
