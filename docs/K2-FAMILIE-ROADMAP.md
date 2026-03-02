@@ -18,6 +18,16 @@
 
 ---
 
+## Grundbotschaft als Fundament – Form, Sprache, KI/Agent
+
+**Die Grundbotschaft soll sich in der Form der App und in der Sprache niederschlagen** – in der Oberfläche, in jedem Text, in der Art, wie wir untereinander und mit Nutzer*innen kommunizieren.
+
+**Zukunft mit KI/Agent:** Sollte K2 Familie eines Tages von KI gesteuert werden (z. B. ein Agent, ein assistierendes System), **muss diese Grundbotschaft die Grundlage seiner Kommunikation sein.** Keine Ausgrenzung, Respekt, keine Religion/Politik – jede Äußerung des Systems baut darauf auf. Es gibt viel Platz für Visionen nach oben; der Grundstein, den wir jetzt legen, soll das Haus auf **sicherem moralischen Fundament** stehen lassen. Das ist Georgs Anspruch und sein Vermächtnis.
+
+**Verbindliche Quelle:** `docs/K2-FAMILIE-GRUNDBOTSCHAFT.md` – gilt für alle, die an K2 Familie arbeiten (Menschen wie KI/Agenten).
+
+---
+
 ## Vision in einem Satz
 
 **Ein tenantfähiges Familien-Tool für die offene Gesellschaft:** Jede „Familie“ (in welcher Form auch immer Menschen zusammenleben) = ein Mandant. Jede Person = eine Seite (Foto, Text, Momente). Beziehungen (Eltern, Kinder, Partner*innen, Geschwister, Wahlfamilie …) = der Baum. Wechselnde Partnerschaften, Schicksalsschläge, Freud und Alltag – alles hat Platz. Modern, app-tauglich, für jede Konstellation skalierbar.
@@ -83,3 +93,5 @@
 *„Wir sind nicht im Mittelalter – wir sind eine offene Gesellschaft. Jede Art von Zusammenleben ist Familie, wechselnde Partnerschaften, Schicksalsschläge, Freud und Alltag sollen alle ihren Platz bekommen.“ – Georg, 02.03.26*
 
 *„Es darf keine Ausgrenzung stattfinden, egal in welcher Form. Religion und Politik haben hier nichts zu suchen – jeder respektiert den anderen so, wie er ist.“ – Georg, 02.03.26*
+
+*„Diese Grundbotschaft soll sich in der Form der App und in der Sprache niederschlagen. Sollte das Tool einmal von KI gesteuert werden – ein Agent oder so –, muss das die Grundlage seiner Kommunikation sein. Wenn wir jetzt den Grundstein legen, soll das Haus auf sicherem moralischen Fundament stehen. Das ist mein Anspruch, mein Vermächtnis.“ – Georg, 02.03.26*

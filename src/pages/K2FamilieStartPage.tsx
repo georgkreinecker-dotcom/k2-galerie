@@ -67,7 +67,10 @@ export default function K2FamilieStartPage() {
         </Link>
       </div>
 
-      <p style={{ marginTop: '2rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>
+      <p style={{ marginTop: '2rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}>
+        Die Grundbotschaft prägt Form der App, Sprache und jede zukünftige KI-Kommunikation. Moralisches Fundament: <code style={{ background: 'rgba(0,0,0,0.2)', padding: '0.15rem 0.4rem', borderRadius: 4 }}>docs/K2-FAMILIE-GRUNDBOTSCHAFT.md</code>
+      </p>
+      <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>
         Projekt gestartet 01.03.26 – Let&apos;s go.
       </p>
     </div>
