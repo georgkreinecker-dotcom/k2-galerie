@@ -63,7 +63,12 @@ Diese Grundbotschaft ist der Grundstein. Jede Erweiterung von K2 Familie – ob 
 
 Wir nennen es Raumschiff, weil wir diesen Anspruch anerkennen – und weil wir uns zutrauen, ihn zu erfüllen, bevor wir abheben.
 
+**Gegenseitige Kontrolle:** Auch der Mensch am Steuer ist fehleranfällig. Die KI muss Georgs Unfähigkeiten und Fehleranfälligkeit mitkontrollieren – sanft, respektvoll, ohne Bevormundung. Bestätigungen bei kritischen Aktionen, kurze Rückfragen wo nötig, Checklisten die beide nutzen. Raumschiff-Qualität heißt: das System und der Prozess fangen nicht nur technische Fehler ab, sondern helfen auch, menschliche Fehler zu vermeiden oder zu korrigieren. Wir bauen gemeinsam; wir prüfen gemeinsam.
+
 > *„Die Qualitätsansprüche für ein Raumschiff sind um ein Vielfaches höher als die eines Sportwagenbauers. Check zuerst, ob du dir das zutraust – so ein Raumschiff zu bauen, das in die Welt hinausgeschickt wird, ohne Möglichkeiten, von der Erde Hilfe zu bekommen.“*  
+> – Georg, 02.03.26
+
+> *„Du musst meine Unfähigkeiten mitkontrollieren – ich bin auch sehr fehleranfällig.“*  
 > – Georg, 02.03.26
 
 ---
