@@ -11,6 +11,7 @@ import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import type { K2FamiliePerson } from '../types/k2Familie'
 import { useMemo } from 'react'
+import FamilyTreeGraph from '../components/FamilyTreeGraph'
 
 function generateId(): string {
   return 'person-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8)
@@ -52,9 +53,16 @@ export default function K2FamilieStammbaumPage() {
               <button type="button" className="btn-outline" onClick={() => addTenant()}>Neue Familie</button>
             </div>
             <h1>Stammbaum</h1>
-            <div className="meta">Alle Personen – Klick öffnet die Seite der Person.</div>
+            <div className="meta">Grafik der Familienstruktur – Klick auf eine Person öffnet ihre Seite. Darunter: alle Personen als Kacheln.</div>
           </div>
         </header>
+
+        {personen.length > 0 && (
+          <div className="card familie-card-enter" style={{ padding: '1rem', overflow: 'hidden' }}>
+            <h2 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}>Stammbaum</h2>
+            <FamilyTreeGraph personen={personen} personPathPrefix={PROJECT_ROUTES['k2-familie'].personen} />
+          </div>
+        )}
 
         {personen.length === 0 && (
           <div className="card familie-card-enter" style={{ animationDelay: '0s' }}>

@@ -2211,6 +2211,26 @@ header h1 {
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
 }
 
+/* Stammbaum-Grafik */
+.family-tree-graph-wrapper {
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.15);
+}
+.family-tree-graph-wrapper a {
+  text-decoration: none;
+  color: inherit;
+}
+.family-tree-graph ellipse[fill="rgba(15, 20, 25, 0.9)"] {
+  transition: stroke 0.2s, filter 0.2s;
+}
+.family-tree-graph a:hover ellipse[fill="rgba(15, 20, 25, 0.9)"] {
+  stroke: rgba(20, 184, 166, 0.9);
+  filter: brightness(1.15);
+}
+.family-tree-graph text {
+  pointer-events: none;
+}
+
 /* ========== Druck: K2 Familie & Projektseiten – gut lesbar ========== */
 @media print {
   .mission-wrapper {
