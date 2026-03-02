@@ -44,6 +44,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **UMZUG-K2-GALERIE-KUNST-KERAMIK.md** – Plattform = K2 Galerie, erste Galerie = K2 Galerie Kunst&Keramik; Backup für backupmicro.
 - **MOK2-EIGENER-BEREICH.md** – Marketing ök2 als eigener Bereich (mök2).
 - **WARUM-EVENTS-DOKUMENTE-WEG-WAREN.md** – Erklärung zu Events/Dokumenten.
+- **OEK2-ANMELDUNG-LIZENZIERUNG-STAND.md** – **ök2 Anmeldung & Lizenzierung – State of the Art:** Was es gibt (Entdecken, Guide, Willkommen-Redirect, LicencesPage, mailto), was fehlt (sichtbarer CTA „Lizenz anfragen“, einheitliche Preise), nächste Schritte; Code-Stellen.
 
 ## Produkt & Vision
 - **PRODUKT-VISION.md** – Produkt-Vision K2 Galerie.

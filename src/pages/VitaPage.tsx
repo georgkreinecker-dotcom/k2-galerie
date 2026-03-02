@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link, useParams, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { MUSTER_TEXTE } from '../config/tenantConfig'
@@ -38,6 +38,7 @@ export default function VitaPage() {
   const [vita, setVita] = useState('')
   const [saved, setSaved] = useState(false)
   const [loaded, setLoaded] = useState(false)
+  const savedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     try {
@@ -68,12 +69,19 @@ export default function VitaPage() {
     setLoaded(true)
   }, [id, isOeffentlich])
 
+  useEffect(() => {
+    return () => {
+      if (savedTimeoutRef.current) clearTimeout(savedTimeoutRef.current)
+    }
+  }, [])
+
   const save = () => {
     try {
       if (isOeffentlich) {
         localStorage.setItem(oeffentlichStorageKey, JSON.stringify({ vita }))
+        if (savedTimeoutRef.current) clearTimeout(savedTimeoutRef.current)
         setSaved(true)
-        setTimeout(() => setSaved(false), 2000)
+        savedTimeoutRef.current = setTimeout(() => setSaved(false), 2000)
         return
       }
       // K2: nur über Schicht – bestehende Stammdaten laden, vita ergänzen, zurück schreiben
@@ -84,8 +92,9 @@ export default function VitaPage() {
         return
       }
       saveStammdaten('k2', id, { ...data, vita })
+      if (savedTimeoutRef.current) clearTimeout(savedTimeoutRef.current)
       setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
+      savedTimeoutRef.current = setTimeout(() => setSaved(false), 2000)
     } catch (e) {
       alert('Speichern fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
     }

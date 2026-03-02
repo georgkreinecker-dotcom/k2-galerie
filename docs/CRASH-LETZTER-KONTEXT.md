@@ -9,10 +9,10 @@
 | Was | Inhalt |
 |-----|--------|
 | **Datum** | 02.03.26 |
-| **Thema** | ro check crash |
-| **Zuletzt geändert/geöffnet** | K2 Familie (Start, Stammbaum, Person, Events, Kalender), FamilieTenantContext, DIALOG-STAND, CRASH-BEREITS-GEPRUEFT.md |
-| **Hinweis von Georg** | „ro check crash“ |
-| **Ergebnis** | K2-Familie-Seiten + alle *familie* durchsucht: kein setInterval/setTimeout/reload/addEventListener. useEffects nur sync load/setState. Kein neuer Fix. Eintrag in CRASH-BEREITS-GEPRUEFT.md. |
+| **Thema** | check the crash 5 |
+| **Zuletzt geändert/geöffnet** | CRASH-BEREITS-GEPRUEFT, CRASH-LETZTER-KONTEXT, location.reload/replace/href, setInterval/setTimeout, write-build-info, index.html, VitaPage |
+| **Hinweis von Georg** | „check the crash 5“ |
+| **Ergebnis** | Reload/Replace/Href alle mit iframe-Check. Inject-Script (localhost + iframe) ✓. **Fix:** VitaPage – setTimeout(2000) für setSaved(false) ohne Cleanup → savedTimeoutRef + clearTimeout (Unmount + vor neuem Timeout). Eintrag in CRASH-BEREITS-GEPRUEFT.md. |
 
 ---
 

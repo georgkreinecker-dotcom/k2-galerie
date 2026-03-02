@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import '../App.css'
 import { PLATFORM_ROUTES, PROJECT_ROUTES } from '../config/navigation'
+import { LIZENZPREISE } from '../config/licencePricing'
 import TermWithExplanation from '../components/TermWithExplanation'
 import { isValidEmpfehlerIdFormat } from '../utils/empfehlerId'
 import { addGutschrift } from '../utils/empfehlerGutschrift'
@@ -19,10 +20,10 @@ export interface LicenceGrant {
 }
 
 const LICENCE_TYPES: { id: 'basic' | 'pro' | 'proplus' | 'vk2'; name: string; price: string; priceEur: number | null; summary: string; icon: string; highlight?: boolean }[] = [
-  { id: 'basic',     name: 'Basic',              price: '15 €/Monat',   priceEur: 15,   icon: '🎨',  summary: 'Bis 30 Werke, 1 Galerie, Events, Kasse, Etiketten, Standard-URL' },
-  { id: 'pro',       name: 'Pro',                price: '35 €/Monat',   priceEur: 35,   icon: '⭐',  summary: 'Alles aus Basic + unbegrenzte Werke, Custom Domain – ohne vollen Marketingbereich' },
-  { id: 'proplus',   name: 'Pro+',               price: '45 €/Monat',   priceEur: 45,   icon: '💎',  summary: 'Alles aus Pro + gesamter Marketingbereich (Events, Galeriepräsentation, Flyer, Presse, Social Media)', highlight: true },
-  { id: 'vk2',       name: 'Kunstvereine (VK2)', price: 'ab 10 Mitgliedern kostenfrei', priceEur: null, icon: '🏛️', summary: 'Verein nutzt Pro; ab 10 Mitgliedern für den Verein kostenfrei; Vereinsmitglieder 50 % Rabatt' },
+  { id: 'basic',   name: LIZENZPREISE.basic.name,   price: LIZENZPREISE.basic.price,   priceEur: LIZENZPREISE.basic.priceEur,   icon: '🎨',  summary: 'Bis 30 Werke, 1 Galerie, Events, Kasse, Etiketten, Standard-URL' },
+  { id: 'pro',     name: LIZENZPREISE.pro.name,    price: LIZENZPREISE.pro.price,     priceEur: LIZENZPREISE.pro.priceEur,     icon: '⭐',  summary: 'Alles aus Basic + unbegrenzte Werke, Custom Domain – ohne vollen Marketingbereich' },
+  { id: 'proplus', name: LIZENZPREISE.proplus.name, price: LIZENZPREISE.proplus.price, priceEur: LIZENZPREISE.proplus.priceEur, icon: '💎',  summary: 'Alles aus Pro + gesamter Marketingbereich (Events, Galeriepräsentation, Flyer, Presse, Social Media)', highlight: true },
+  { id: 'vk2',     name: LIZENZPREISE.vk2.name,    price: LIZENZPREISE.vk2.priceLabel ?? '', priceEur: LIZENZPREISE.vk2.priceEur, icon: '🏛️', summary: 'Verein nutzt Pro; ab 10 Mitgliedern für den Verein kostenfrei; Vereinsmitglieder 50 % Rabatt' },
 ]
 
 function loadGrants(): LicenceGrant[] {

@@ -1,5 +1,5 @@
-import { useState } from 'react'
 import { usePersistentString } from '../hooks/usePersistentState'
+import { LIZENZPREISE } from '../config/licencePricing'
 
 interface PricingPlan {
   id: string
@@ -14,50 +14,54 @@ interface PricingPlan {
 
 const LicenseManager = () => {
   const [pricingModel, setPricingModel] = usePersistentString('k2-license-model', 'saas')
-  const [basicPrice, setBasicPrice] = usePersistentString('k2-license-basic-price', '49')
-  const [proPrice, setProPrice] = usePersistentString('k2-license-pro-price', '99')
 
   const pricingPlans: PricingPlan[] = [
     {
       id: 'basic',
-      name: 'Basic',
-      price: basicPrice,
+      name: LIZENZPREISE.basic.name,
+      price: String(LIZENZPREISE.basic.priceEur),
       period: 'monatlich',
       features: [
-        'Bis zu 50 Werke',
+        'Bis 30 Werke',
         '1 Galerie-Website',
-        'Eventplanung',
-        'E-Mail-Support',
-        'Standard-Templates'
+        'Eventplanung, Kasse, Etiketten',
+        'Standard-URL'
       ]
     },
     {
       id: 'pro',
-      name: 'Pro',
-      price: proPrice,
+      name: LIZENZPREISE.pro.name,
+      price: String(LIZENZPREISE.pro.priceEur),
+      period: 'monatlich',
+      features: [
+        'Unbegrenzte Werke',
+        'Custom Domain',
+        'Eventplanung + Öffentlichkeitsarbeit',
+        'Prioritäts-Support'
+      ]
+    },
+    {
+      id: 'proplus',
+      name: LIZENZPREISE.proplus.name,
+      price: String(LIZENZPREISE.proplus.priceEur),
       period: 'monatlich',
       popular: true,
       features: [
-        'Unbegrenzte Werke',
-        'Mehrere Galerien',
-        'Eventplanung + Öffentlichkeitsarbeit',
-        'Social Media Integration',
-        'Prioritäts-Support',
-        'Custom Domain',
-        'Analytics & Statistiken'
+        'Alles aus Pro',
+        'Gesamter Marketingbereich',
+        'Flyer, Presse, Social Media'
       ]
     },
     {
       id: 'vk2',
-      name: 'Kunstvereine',
+      name: LIZENZPREISE.vk2.name,
       price: '0',
       period: 'monatlich',
-      priceLabel: 'Verein nutzt Pro; ab 10 registrierten Mitgliedern kostenfrei',
+      priceLabel: LIZENZPREISE.vk2.priceLabel ?? undefined,
       features: [
         'Vereinsplattform (VK2) – alle Künstler:innen des Vereins',
-        'Verein erwirbt Pro-Version; ab 10 registrierten Mitgliedern kostenfrei',
-        'Lizenzmitglied: 50 % Lizenzgebühr, Update möglich',
-        'Nicht registrierte Mitglieder können aufgenommen werden (im System erfasst, Datenschutz)',
+        'Verein nutzt Pro; ab 10 registrierten Mitgliedern kostenfrei',
+        'Lizenzmitglied: 50 % Lizenzgebühr',
         'Gleiche App, eigener Kontext (Verein vs. Einzelkünstler)'
       ]
     }
@@ -197,79 +201,17 @@ const LicenseManager = () => {
         ))}
       </div>
 
-      {/* Preis-Anpassung */}
+      {/* Festgelegte Preise (eine Quelle: src/config/licencePricing.ts) */}
       <div style={{
         marginTop: '1.5rem',
         padding: '1rem',
         background: 'rgba(255, 255, 255, 0.03)',
-        borderRadius: '8px'
+        borderRadius: '8px',
+        fontSize: '0.85rem',
+        color: '#8fa0c9'
       }}>
-        <h4 style={{
-          fontSize: '1rem',
-          fontWeight: '600',
-          color: '#ffffff',
-          margin: '0 0 1rem 0'
-        }}>
-          Preise anpassen:
-        </h4>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-          gap: '1rem'
-        }}>
-          <div>
-            <label style={{
-              display: 'block',
-              fontSize: '0.85rem',
-              color: '#8fa0c9',
-              marginBottom: '0.25rem'
-            }}>
-              Basic (€)
-            </label>
-            <input
-              type="number"
-              value={basicPrice}
-              onChange={(e) => setBasicPrice(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '6px',
-                color: '#ffffff',
-                fontSize: '0.9rem'
-              }}
-            />
-          </div>
-          <div>
-            <label style={{
-              display: 'block',
-              fontSize: '0.85rem',
-              color: '#8fa0c9',
-              marginBottom: '0.25rem'
-            }}>
-              Pro (€)
-            </label>
-            <input
-              type="number"
-              value={proPrice}
-              onChange={(e) => setProPrice(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '6px',
-                color: '#ffffff',
-                fontSize: '0.9rem'
-              }}
-            />
-          </div>
-          <div style={{ fontSize: '0.85rem', color: '#8fa0c9' }}>
-            <span style={{ display: 'block', marginBottom: '0.25rem' }}>Kunstvereine (VK2)</span>
-            <span style={{ color: 'var(--k2-accent)' }}>Verein nutzt Pro; ab 10 registrierten Mitgliedern kostenfrei. Nicht registrierte Mitglieder können aufgenommen werden (im System erfasst, Datenschutz). Siehe mök2 → Lizenzstruktur VK2.</span>
-          </div>
-        </div>
+        <span style={{ display: 'block', marginBottom: '0.25rem', color: '#ffffff', fontWeight: 600 }}>Festgelegte Preise</span>
+        <span>Basic {LIZENZPREISE.basic.price}, Pro {LIZENZPREISE.pro.price}, Pro+ {LIZENZPREISE.proplus.price}. VK2: {LIZENZPREISE.vk2.priceLabel}. Quelle: licencePricing.ts. Siehe mök2 → Lizenzstruktur VK2.</span>
       </div>
 
       {/* Feature-Vergleich */}

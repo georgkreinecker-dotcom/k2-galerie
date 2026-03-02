@@ -10,7 +10,7 @@
 import { useState, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { PROJECT_ROUTES, AGB_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY } from '../config/navigation'
-import { PRODUCT_BRAND_NAME, PRODUCT_FEEDBACK_EMAIL, PRODUCT_FEEDBACK_BETREFF } from '../config/tenantConfig'
+import { PRODUCT_BRAND_NAME, PRODUCT_FEEDBACK_EMAIL, PRODUCT_FEEDBACK_BETREFF, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 
 // ─── Erkundungs-Notizen ───────────────────────────────────────────────────────
@@ -491,10 +491,15 @@ function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, 
 
           {/* Aktions-Buttons – One-Click-Regel: eine klare Hauptaktion, keine drei konkurrierenden Buttons */}
           {'istStart' in aktivStation && aktivStation.istStart ? (
-            <button type="button" onClick={onStarten}
-              style={{ width: '100%', padding: '0.95rem', background: akzentGrad, border: 'none', borderRadius: '14px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', boxShadow: `0 6px 24px ${hubAccent}55`, letterSpacing: '0.01em' }}>
-              🚀 {istVerein ? (name ? `${name} – Vereinsgalerie` : 'Vereinsgalerie') : (name ? `${name}'s Galerie` : 'Galerie')} jetzt öffnen →
-            </button>
+            <>
+              <button type="button" onClick={onStarten}
+                style={{ width: '100%', padding: '0.95rem', background: akzentGrad, border: 'none', borderRadius: '14px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', boxShadow: `0 6px 24px ${hubAccent}55`, letterSpacing: '0.01em' }}>
+                🚀 {istVerein ? (name ? `${name} – Vereinsgalerie` : 'Vereinsgalerie') : (name ? `${name}'s Galerie` : 'Galerie')} jetzt öffnen →
+              </button>
+              <a href={`mailto:${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_EMAIL)}?subject=${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_BETREFF)}`} style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: hubAccent, textDecoration: 'none', display: 'inline-block' }}>
+                Lizenz anfragen →
+              </a>
+            </>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.6rem' }}>
               {'tab' in aktivStation && (aktivStation as { tab?: string }).tab && (

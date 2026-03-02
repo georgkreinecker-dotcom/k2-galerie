@@ -62,6 +62,7 @@ So können wir den Punkt Schritt für Schritt eingrenzen.
 | GalerieAssistent setTimeout nach Unmount | 27.02.26: markiereErledigt nutzte setTimeout(400) ohne Cleanup → setState/onGoToStep nach Unmount möglich. **Fix:** stepTimeoutRef, clearTimeout im useEffect-Cleanup, in markiereErledigt Ref setzen und vor neuem Timeout clearen. |
 | main.tsx Console in iframe (01.03.26) | MAX_LOGS in Cursor Preview (iframe) auf 15 reduziert – weniger Speicher/Churn (crash-beim-programmieren-vermeiden.mdc). |
 | SeitengestaltungPage setSaved-Timeout (01.03.26) | setTimeout(1800) für setSaved(false) ohne Cleanup → bei Unmount (HMR, Navigation) setState nach Ablauf. **Fix:** savedTimeoutRef, clearTimeout im useEffect-Cleanup, in handleSave vor neuem Timeout altes clearen. |
+| VitaPage setSaved-Timeout (02.03.26) | Zwei setTimeout(2000) für setSaved(false) in save() ohne Cleanup → bei Unmount (HMR, Navigation) setState nach Ablauf. **Fix:** savedTimeoutRef, clearTimeout im useEffect-Cleanup, in save() vor neuem Timeout altes clearen. |
 | ScreenshotExportAdmin soldArtworksDisplayDaysK2 (01.03.26) | Neuer useEffect lädt K2-Wert bei Werke-Tab; kein setInterval/reload. **Absicherung:** isMounted-Cleanup im useEffect (kein setState nach Unmount bei HMR/Tab-Wechsel). |
 | Tenant-Sync / Veröffentlichen (01.03.26) | Veröffentlichen für ök2/VK2 freigeschaltet; „Bilder vom Server laden“ für alle Mandanten. **Kein** neuer location.reload/setInterval. **Absicherung:** publishMobile({ silent: true }) nach Speichern nur wenn window.self === window.top (nicht im iframe), um Cursor Preview zu entlasten. |
 
@@ -179,8 +180,9 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 | 01.03.26 | Code-5-Check (erneut) | **Neue Prüfung:** ImageCropModal (neu) – addEventListener mousemove/mouseup mit Cleanup ✓. env.ts safeReload – iframe-Check ✓. SeitengestaltungPage – setTimeout(1800) für setSaved(false) ohne Cleanup → bei HMR/Navigation setState nach Unmount. **Fix:** savedTimeoutRef + clearTimeout im useEffect-Cleanup. |
 | 01.03.26 | PilotStartPage, MarketingOek2Page (Pilot-Rubrik) | **Neue Datei:** PilotStartPage.tsx – ein useEffect (QRCode.toDataURL), Cleanup mit `cancelled`. Kein setInterval/reload. **MarketingOek2Page:** zwei weitere useEffects für QR (pilotStartQrUrl, pilotHandyLinkQrUrl), beide mit `cancelled`-Cleanup. Route pilotStart ohne Mok2Layout. Kein neuer Fix nötig. |
 | 02.03.26 | K2 Familie (alle Seiten + familie*) | **ro check crash:** K2FamiliePersonPage, K2FamilieEventsPage, K2FamilieStammbaumPage, K2FamilieKalenderPage, K2FamilieStartPage + alle src *familie* durchsucht. Kein setInterval, setTimeout, addEventListener, location.reload/replace/href. useEffects nur sync (load/setState), kein Cleanup nötig. Kein neuer Fix. |
+| 02.03.26 | Code-5-Check (check the crash 5) | location.reload: nur in patch-backup-panel.js, beide mit iframe-Check ✓. location.replace/href: SmartPanel (startFremderModus + nav) mit iframe-Check ✓. env.ts safeReload ✓. write-build-info.js Inject: iframe + localhost ✓. index.html: root/Button-Reload mit iframe-Check ✓. **Fix:** VitaPage – setTimeout(2000) für setSaved(false) ohne Cleanup → bei Unmount/HMR setState nach Ablauf. savedTimeoutRef + clearTimeout im useEffect-Cleanup, in save() vor neuem Timeout altes clearen. |
 
-*Zuletzt ergänzt: 02.03.26 (Crash-Check – K2 Familie)*
+*Zuletzt ergänzt: 02.03.26 (Code-5-Check, VitaPage setTimeout-Cleanup)*
 
 ---
 

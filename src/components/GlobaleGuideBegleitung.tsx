@@ -8,6 +8,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
+import { LIZENZPREISE } from '../config/licencePricing'
 
 // ─── Typen ───────────────────────────────────────────────────────────────────
 
@@ -179,14 +181,16 @@ function baueSchritte(pfad: GuidePfad, name: string): TourSchritt[] {
 // ─── Lizenz-Karten ────────────────────────────────────────────────────────────
 
 function LizenzInfo({ pfad, akzentFarbe }: { pfad: GuidePfad; akzentFarbe: string }) {
-  const istVerein = pfad === 'gemeinschaft'
+  const mailto = `mailto:${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_EMAIL)}?subject=${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_BETREFF)}`
+  const zeilen = [
+    { emoji: '🎨', name: LIZENZPREISE.basic.name, preis: LIZENZPREISE.basic.price, inhalt: 'Bis 30 Werke, 1 Galerie, Events, Kasse' },
+    { emoji: '⭐', name: LIZENZPREISE.pro.name, preis: LIZENZPREISE.pro.price, inhalt: 'Unbegrenzte Werke, Custom Domain' },
+    { emoji: '💎', name: LIZENZPREISE.proplus.name, preis: LIZENZPREISE.proplus.price, inhalt: 'Pro + Marketingbereich (Flyer, Presse, Social)' },
+    { emoji: '🏛️', name: LIZENZPREISE.vk2.name, preis: LIZENZPREISE.vk2.priceLabel ?? '', inhalt: 'Verein ab 10 Mitgliedern kostenfrei' },
+  ]
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', marginTop: '0.4rem' }}>
-      {[
-        { emoji: '🟢', name: 'Basis', preis: 'kostenlos', inhalt: 'Galerie, Werke, Kontakt' },
-        { emoji: '🔵', name: 'Pro', preis: '€ 9 / Monat', inhalt: '+ Events, Dokumente, Kassa' },
-        { emoji: '🟣', name: istVerein ? 'VK2 / Verein' : 'Studio / VK2', preis: '€ 19 / Monat', inhalt: istVerein ? 'Bis 20 Mitglieder, alles inkl.' : 'Mehrere Künstler:innen, alles inkl.' },
-      ].map(l => (
+      {zeilen.map(l => (
         <div key={l.name} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.35rem 0.5rem', background: 'rgba(255,255,255,0.04)', borderRadius: '7px', border: '1px solid rgba(255,255,255,0.07)' }}>
           <span style={{ fontSize: '0.9rem' }}>{l.emoji}</span>
           <div style={{ flex: 1 }}>
@@ -196,6 +200,9 @@ function LizenzInfo({ pfad, akzentFarbe }: { pfad: GuidePfad; akzentFarbe: strin
           <span style={{ fontSize: '0.72rem', color: akzentFarbe, fontWeight: 600, whiteSpace: 'nowrap' as const }}>{l.preis}</span>
         </div>
       ))}
+      <a href={mailto} style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: akzentFarbe, fontWeight: 600, textDecoration: 'none', display: 'inline-block' }}>
+        Lizenz anfragen →
+      </a>
     </div>
   )
 }
