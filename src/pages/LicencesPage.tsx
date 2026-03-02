@@ -228,14 +228,17 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
           </p>
         </section>
 
-        {/* LIZENZ VERGEBEN */}
+        {/* LIZENZ VERGEBEN + EMPFEHLUNGSPROGRAMM */}
         <section style={{
           background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
           borderRadius: '12px', padding: '1.25rem', marginBottom: '1.5rem'
         }}>
-          <h2 style={{ fontSize: '1.05rem', margin: '0 0 1rem', color: 'var(--k2-text)' }}>
+          <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.25rem', color: 'var(--k2-text)' }}>
             ➕ Neue Lizenz vergeben
           </h2>
+          <p style={{ fontSize: '0.85rem', color: 'var(--k2-muted)', margin: '0 0 1rem' }}>
+            🤝 <strong style={{ color: 'var(--k2-text)' }}>Empfehlungsprogramm:</strong> Empfehler-ID eintragen → 10 % Rabatt für den Geworbenen, 10 % Gutschrift für den Empfehler.
+          </p>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', maxWidth: '400px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.25rem' }}>Name *</label>

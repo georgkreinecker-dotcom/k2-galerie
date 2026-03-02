@@ -1,5 +1,7 @@
+import { Link } from 'react-router-dom'
 import { usePersistentString } from '../hooks/usePersistentState'
 import { LIZENZPREISE } from '../config/licencePricing'
+import { PROJECT_ROUTES } from '../config/navigation'
 
 interface PricingPlan {
   id: string
@@ -212,6 +214,24 @@ const LicenseManager = () => {
       }}>
         <span style={{ display: 'block', marginBottom: '0.25rem', color: '#ffffff', fontWeight: 600 }}>Festgelegte Preise</span>
         <span>Basic {LIZENZPREISE.basic.price}, Pro {LIZENZPREISE.pro.price}, Pro+ {LIZENZPREISE.proplus.price}. VK2: {LIZENZPREISE.vk2.priceLabel}. Quelle: licencePricing.ts. Siehe mök2 → Lizenzstruktur VK2.</span>
+      </div>
+
+      {/* Empfehlungsprogramm – gehört zum Lizenzthema, geht nicht unter */}
+      <div style={{
+        marginTop: '1rem',
+        padding: '1rem',
+        background: 'rgba(95, 251, 241, 0.08)',
+        border: '1px solid rgba(95, 251, 241, 0.25)',
+        borderRadius: '8px',
+        fontSize: '0.85rem',
+        color: '#b8c5e0'
+      }}>
+        <span style={{ display: 'block', marginBottom: '0.35rem', color: '#5ffbf1', fontWeight: 600 }}>🤝 Empfehlungsprogramm</span>
+        <p style={{ margin: '0 0 0.5rem' }}>10 % Rabatt für Geworbene, 10 % Gutschrift für Empfehler. Beim Vergeben einer Lizenz optional Empfehler-ID eintragen.</p>
+        <span style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: '#5ffbf1', textDecoration: 'none', fontWeight: 600 }}>Lizenzen vergeben →</Link>
+          <Link to={PROJECT_ROUTES['k2-galerie'].empfehlungstool} style={{ color: '#5ffbf1', textDecoration: 'none', fontWeight: 600 }}>Empfehlungstool (ID & Link) →</Link>
+        </span>
       </div>
 
       {/* Feature-Vergleich */}

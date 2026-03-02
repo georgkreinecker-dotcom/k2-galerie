@@ -203,6 +203,9 @@ function LizenzInfo({ pfad, akzentFarbe }: { pfad: GuidePfad; akzentFarbe: strin
       <a href={mailto} style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: akzentFarbe, fontWeight: 600, textDecoration: 'none', display: 'inline-block' }}>
         Lizenz anfragen →
       </a>
+      <p style={{ margin: '0.5rem 0 0', fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)' }}>
+        🤝 Empfehlungsprogramm: 10 % Rabatt / 10 % Gutschrift – Empfehler-ID beim Lizenzabschluss angeben.
+      </p>
     </div>
   )
 }
