@@ -2109,3 +2109,72 @@ header h1 {
 .k2-familie-page .field textarea {
   border-color: rgba(13, 148, 136, 0.35);
 }
+
+/* ========== Druck: K2 Familie & Projektseiten – gut lesbar ========== */
+@media print {
+  .mission-wrapper {
+    background: #fff !important;
+    padding: 1rem;
+    color: #1c1a18 !important;
+  }
+  .mission-wrapper .viewport {
+    background: #fafaf9 !important;
+    border: 1px solid #ccc;
+    box-shadow: none;
+    padding: 1.5rem;
+    color: #1c1a18 !important;
+  }
+  .mission-wrapper .meta,
+  .mission-wrapper .card .meta {
+    color: #5c5650 !important;
+  }
+  .mission-wrapper h1,
+  .mission-wrapper h2 {
+    color: #1c1a18 !important;
+  }
+  .mission-wrapper a {
+    color: #0d9488 !important;
+  }
+  .k2-familie-page .viewport {
+    border-color: #0d9488;
+  }
+  .k2-familie-page .card {
+    background: #fff !important;
+    border-color: #0d9488 !important;
+    color: #1c1a18 !important;
+  }
+  .k2-familie-page .card::after {
+    display: none;
+  }
+  .k2-familie-page .card h2 {
+    color: #0d9488 !important;
+  }
+  .k2-familie-page .btn,
+  .k2-familie-page a.btn {
+    background: transparent !important;
+    color: #0d9488 !important;
+    box-shadow: none;
+    border: 1px solid #0d9488;
+  }
+  .k2-familie-page .familie-toolbar select,
+  .k2-familie-page .familie-toolbar .btn-outline {
+    background: #fff !important;
+    color: #0d9488 !important;
+    border-color: #0d9488;
+  }
+  .k2-familie-page .card-actions .btn-outline.danger {
+    color: #b54a1e !important;
+    border-color: #b54a1e;
+    background: transparent !important;
+  }
+  .k2-familie-page .field input,
+  .k2-familie-page .field select,
+  .k2-familie-page .field textarea {
+    border-color: #0d9488;
+    color: #1c1a18;
+    background: #fff !important;
+  }
+  .mission-wrapper button {
+    color: #1c1a18 !important;
+  }
+}
