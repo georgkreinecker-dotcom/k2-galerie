@@ -67,11 +67,12 @@
 - [x] **2.3** Beziehungen im UI pflegbar – **erledigt:** Auf der Personen-Seite pro Beziehungsart (Eltern, Kinder, Partner*innen, Geschwister, Wahlfamilie) „+ Hinzufügen“ (Dropdown) und „✕ Entfernen“. Beidseitig aktualisiert (z. B. Eltern ↔ Kinder).
 
 ### Phase 3: Momente & Events
-- [ ] **3.1** „Momente“ pro Person (Hochzeit, Geburt, Umzug, Abschied, Neuanfang, Alltägliches, …) – gleiche Struktur wie Werke, andere Semantik. Schicksalsschläge und freudige Ereignisse gleichwertig abbildbar.
+- [x] **3.1** „Momente“ pro Person (Hochzeit, Geburt, Umzug, Abschied, Neuanfang, Alltägliches, …) – gleiche Struktur wie Werke, andere Semantik. **Erledigt:** Speicher `k2-familie-{tenantId}-momente`, loadMomente/saveMomente in familieStorage; auf Personen-Seite Liste, Hinzufügen/Bearbeiten/Löschen (Titel, Datum, Bild-URL, Text).
 - [ ] **3.2** Familien-Events (Geburtstage, Treffen) aus Beziehungen ableiten oder manuell anlegen.
 - [ ] **3.3** Kalender/Übersicht (optional).
 
 ### Phase 4: Skalierung & Produkt
+- [ ] **4.0** **Rechte & Zweige (Konzept):** Organisches Wachstum + Schreib-/Löschrechte pro Zweig – Optionen und Entscheidung in `docs/K2-FAMILIE-RECHTE-ZWEIGE.md`. Danach Datenmodell/UI ableiten.
 - [ ] **4.1** Jede Familie = eigener Tenant (wie Galerie pro Künstler:in). Einladung/Lizenz pro Familie.
 - [ ] **4.2** Doku, Onboarding, evtl. Lizenzmodell „K2 Familie“.
 

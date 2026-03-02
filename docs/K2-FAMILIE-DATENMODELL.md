@@ -55,14 +55,14 @@ Ein Moment ist wie ein „Werk“ – Bild + Titel + Datum + Text. Für Hochzeit
 | `text` | string | Beschreibung / Geschichte – optional |
 | `createdAt` / `updatedAt` | string (ISO) | Optional |
 
-Speicher: pro Familie z. B. `k2-familie-{tenantId}-momente` oder in Person eingebettet. Entscheidung bei Implementierung Phase 3.
+Speicher: `k2-familie-{tenantId}-momente` (eigener Key pro Tenant). Lade/Schreib über `familieStorage.ts`: `loadMomente(tenantId)`, `saveMomente(tenantId, list, { allowReduce })`. **Erledigt Phase 3.1.**
 
 ---
 
 ## 4. Speicher (localStorage) – Tenant-basiert
 
 - **Personen:** `k2-familie-{tenantId}-personen` → Array von Person. Lade/Schreib über `familieStorage.ts`: `loadPersonen(tenantId)`, `savePersonen(tenantId, list, { allowReduce })`.
-- **Momente:** (Phase 3) `k2-familie-{tenantId}-momente` oder pro Person – noch offen.
+- **Momente:** `k2-familie-{tenantId}-momente` → Array von Moment. `loadMomente(tenantId)`, `saveMomente(tenantId, list, { allowReduce })`.
 - **Erster Tenant:** `default` (Konstante `K2_FAMILIE_DEFAULT_TENANT` in `src/utils/familieStorage.ts`). Später mehrere Familien = mehrere TenantIds.
 
 **Regeln (unveränderlich):**

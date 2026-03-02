@@ -44,3 +44,8 @@ export interface K2FamilieMoment {
 export function getK2FamiliePersonenKey(tenantId: string): string {
   return `k2-familie-${tenantId}-personen`
 }
+
+/** Storage-Key für Momente pro Tenant (Phase 3). */
+export function getK2FamilieMomenteKey(tenantId: string): string {
+  return `k2-familie-${tenantId}-momente`
+}

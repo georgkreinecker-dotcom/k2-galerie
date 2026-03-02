@@ -6,8 +6,8 @@
 import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { loadPersonen, savePersonen, K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
-import type { K2FamiliePerson } from '../types/k2Familie'
+import { loadPersonen, savePersonen, loadMomente, saveMomente, K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
+import type { K2FamiliePerson, K2FamilieMoment } from '../types/k2Familie'
 
 const STYLE = {
   page: { minHeight: '100vh', background: '#1a0f0a', color: '#fff5f0', padding: 'clamp(1.5rem, 4vw, 2.5rem)', maxWidth: 720, margin: '0 auto', fontFamily: 'system-ui, sans-serif' } as const,
@@ -22,12 +22,19 @@ const STYLE = {
 export default function K2FamiliePersonPage() {
   const { id } = useParams<{ id: string }>()
   const [personen, setPersonen] = useState<K2FamiliePerson[]>(() => loadPersonen(K2_FAMILIE_DEFAULT_TENANT))
+  const [momente, setMomente] = useState<K2FamilieMoment[]>(() => loadMomente(K2_FAMILIE_DEFAULT_TENANT))
   const [edit, setEdit] = useState(false)
   const [name, setName] = useState('')
   const [shortText, setShortText] = useState('')
+  const [editingMomentId, setEditingMomentId] = useState<string | 'new' | null>(null)
+  const [momentTitle, setMomentTitle] = useState('')
+  const [momentDate, setMomentDate] = useState('')
+  const [momentImage, setMomentImage] = useState('')
+  const [momentText, setMomentText] = useState('')
 
   useEffect(() => {
     setPersonen(loadPersonen(K2_FAMILIE_DEFAULT_TENANT))
+    setMomente(loadMomente(K2_FAMILIE_DEFAULT_TENANT))
   }, [id])
 
   const person = personen.find((p) => p.id === id)
@@ -179,6 +186,65 @@ export default function K2FamiliePersonPage() {
     updateAndSave(next)
   }
 
+  const personMomente = id ? momente.filter((m) => m.personId === id) : []
+  const openNewMoment = () => {
+    setEditingMomentId('new')
+    setMomentTitle('')
+    setMomentDate('')
+    setMomentImage('')
+    setMomentText('')
+  }
+  const openEditMoment = (m: K2FamilieMoment) => {
+    setEditingMomentId(m.id)
+    setMomentTitle(m.title)
+    setMomentDate(m.date ?? '')
+    setMomentImage(m.image ?? '')
+    setMomentText(m.text ?? '')
+  }
+  const saveMoment = () => {
+    if (!id) return
+    const now = new Date().toISOString()
+    if (editingMomentId === 'new') {
+      const newM: K2FamilieMoment = {
+        id: 'moment-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9),
+        personId: id,
+        title: momentTitle.trim() || 'Ohne Titel',
+        date: momentDate.trim() || null,
+        image: momentImage.trim() || undefined,
+        text: momentText.trim() || undefined,
+        createdAt: now,
+        updatedAt: now,
+      }
+      const next = [...momente, newM]
+      if (saveMomente(K2_FAMILIE_DEFAULT_TENANT, next)) {
+        setMomente(next)
+        setEditingMomentId(null)
+      }
+    } else if (editingMomentId) {
+      const next = momente.map((m) =>
+        m.id === editingMomentId
+          ? {
+              ...m,
+              title: momentTitle.trim() || m.title,
+              date: momentDate.trim() || null,
+              image: momentImage.trim() || undefined,
+              text: momentText.trim() || undefined,
+              updatedAt: now,
+            }
+          : m
+      )
+      if (saveMomente(K2_FAMILIE_DEFAULT_TENANT, next)) {
+        setMomente(next)
+        setEditingMomentId(null)
+      }
+    }
+  }
+  const deleteMoment = (momentId: string) => {
+    const next = momente.filter((m) => m.id !== momentId)
+    if (saveMomente(K2_FAMILIE_DEFAULT_TENANT, next, { allowReduce: true })) setMomente(next)
+    if (editingMomentId === momentId) setEditingMomentId(null)
+  }
+
   if (!id) {
     return (
       <div style={STYLE.page}>
@@ -296,8 +362,48 @@ export default function K2FamiliePersonPage() {
       </section>
 
       <section style={STYLE.section}>
-        <h2 style={{ fontSize: '1.1rem', margin: '0 0 0.5rem', color: '#14b8a6' }}>Meine Momente</h2>
-        <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)' }}>Phase 3 – Momente (Hochzeit, Geburt, Reise, …) kommen in einer späteren Version.</p>
+        <h2 style={{ fontSize: '1.1rem', margin: '0 0 0.75rem', color: '#14b8a6' }}>Meine Momente</h2>
+        <p style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)' }}>Hochzeit, Geburt, Umzug, Reise, Abschied, Neuanfang – was dir wichtig ist.</p>
+        {personMomente.length > 0 && (
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1rem' }}>
+            {personMomente.map((m) => (
+              <li key={m.id} style={{ marginBottom: '0.75rem', padding: '0.75rem', background: 'rgba(13,148,136,0.1)', borderRadius: 8, border: '1px solid rgba(13,148,136,0.25)' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'flex-start' }}>
+                  {m.image && (
+                    <img src={m.image} alt="" style={{ width: 64, height: 64, borderRadius: 8, objectFit: 'cover' }} />
+                  )}
+                  <div style={{ flex: 1, minWidth: 120 }}>
+                    <strong style={{ color: '#14b8a6' }}>{m.title}</strong>
+                    {m.date && <span style={{ marginLeft: '0.5rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)' }}>{m.date.slice(0, 10)}</span>}
+                    {m.text && <p style={{ margin: '0.35rem 0 0', fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>{m.text}</p>}
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.35rem' }}>
+                    <button type="button" onClick={() => openEditMoment(m)} style={STYLE.btn}>Bearbeiten</button>
+                    <button type="button" onClick={() => deleteMoment(m.id)} style={{ ...STYLE.btn, background: 'rgba(180,0,0,0.2)', color: '#f87171', borderColor: 'rgba(248,113,113,0.5)' }}>Löschen</button>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+        {editingMomentId ? (
+          <div style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: 8, border: '1px solid rgba(13,148,136,0.3)' }}>
+            <div style={STYLE.label}>Titel</div>
+            <input value={momentTitle} onChange={(e) => setMomentTitle(e.target.value)} style={STYLE.input} placeholder="z. B. Hochzeit, Umzug Wien" />
+            <div style={{ ...STYLE.label, marginTop: '0.5rem' }}>Datum (optional)</div>
+            <input type="date" value={momentDate} onChange={(e) => setMomentDate(e.target.value)} style={STYLE.input} />
+            <div style={{ ...STYLE.label, marginTop: '0.5rem' }}>Bild (URL oder einfügen Data-URL, optional)</div>
+            <input value={momentImage} onChange={(e) => setMomentImage(e.target.value)} style={STYLE.input} placeholder="https://… oder data:image/…" />
+            <div style={{ ...STYLE.label, marginTop: '0.5rem' }}>Text (optional)</div>
+            <textarea value={momentText} onChange={(e) => setMomentText(e.target.value)} style={{ ...STYLE.input, minHeight: 80 }} placeholder="Kurze Beschreibung oder Geschichte" />
+            <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
+              <button type="button" onClick={saveMoment} style={STYLE.btn}>Speichern</button>
+              <button type="button" onClick={() => setEditingMomentId(null)} style={{ ...STYLE.btn, background: 'transparent' }}>Abbrechen</button>
+            </div>
+          </div>
+        ) : (
+          <button type="button" onClick={openNewMoment} style={STYLE.btn}>Moment hinzufügen</button>
+        )}
       </section>
     </div>
   )
