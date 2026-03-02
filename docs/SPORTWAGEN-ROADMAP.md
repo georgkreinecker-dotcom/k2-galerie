@@ -205,6 +205,15 @@
 | **Schritte** | 1) Prüfen: Alle Aufrufer nutzen feste URL und API-Client (nach 2.2). 2) Doku auf „eine Quelle“ trimmen. |
 | **Erledigt** | [x] 27.02.26 – API ohne Reload/Redirect; Admin: apiPost(WRITE_GALLERY_DATA_API_URL), apiGet(CENTRAL_GALLERY_DATA_URL); docs/00-INDEX: DATENTRANSPORT-IPAD-MAC-VERCEL als eine Quelle eingetragen. |
 
+### 7.3 Lizenzen & Zahlungen (Stripe)
+
+| | Inhalt |
+|---|--------|
+| **Prototyp** | Lizenzen nur lokal (localStorage); keine echte Zahlung. |
+| **Sportwagen** | **Eine** Doku (ZAHLUNGSSYSTEM-LIZENZEN-TECHNIK-PLAN). **Eine** API zum Abruf: GET /api/licence-data (Lizenzen, Zahlungen, Gutschriften aus Supabase). Checkout + Webhook (create-checkout, webhook-stripe) schreiben in Supabase (Migration 003). Keine Kartendaten in der App; nur Stripe. |
+| **Schritte** | 1) Stripe Checkout + Webhook + Supabase-Tabellen (Migration 003). 2) API licence-data + Lizenzen-Seite (Export CSV/PDF). 3) Go-Live: Migration ausführen, Vercel Env, Stripe Webhook – Checkliste: **STRIPE-LIZENZEN-GO-LIVE.md** (die nächsten 3 Schritte). |
+| **Erledigt** | [x] 02.03.26 – Code fertig (create-checkout, webhook-stripe, licence-data, LicencesPage Export). **Offen:** Die nächsten 3 Schritte (Migration, Vercel Env, Stripe Webhook) – siehe STRIPE-LIZENZEN-GO-LIVE.md. |
+
 ---
 
 ## Phase 8: Sicherheit & Regeln – durchgängig
@@ -273,6 +282,7 @@
 | **6.2** | mök2, Handbuch | laufend |
 | **7.1** | Build/Stand Doku | laufend |
 | **7.2** | Vercel/API Doku | 2.2 |
+| **7.3** | Lizenzen & Zahlungen (Stripe) | eine Doku, eine API, Go-Live-Checkliste |
 | **8.1** | Datentrennung durch Context | 1.1 |
 | **8.2** | Kundendaten-Schutz in Schichten | 1.2, 1.3 |
 | **9.1** | Tests Merge + Persistenz | 2.1, 1.2 |

@@ -130,8 +130,11 @@ Lizenzen werden **nur im Internet** abgeschlossen und bezahlt – nicht in der G
 
 ## 5a. Nächste konkrete Schritte (Go-Live)
 
-1. **Stripe-Konto:** Anlegen, Keys in Vercel eintragen, Webhook-URL konfigurieren.
-2. **Supabase:** Migration 003 ausführen (Tabellen anlegen); `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` in Vercel eintragen.
+**Checkliste (Sportwagen – nichts vergessen):** **docs/STRIPE-LIZENZEN-GO-LIVE.md** – die nächsten 3 Schritte mit Erledigt-Boxen.
+
+1. **Supabase:** Migration 003 ausführen (Tabellen anlegen); siehe STRIPE-LIZENZEN-GO-LIVE Schritt 1.
+2. **Vercel:** `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (und Stripe-Keys) eintragen; siehe STRIPE-LIZENZEN-GO-LIVE Schritt 2.
+3. **Stripe:** Webhook-URL konfigurieren, Event `checkout.session.completed`; siehe STRIPE-LIZENZEN-GO-LIVE Schritt 3.
 
 ---
 

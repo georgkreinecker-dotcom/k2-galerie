@@ -15,6 +15,7 @@ Siehe auch: **SPORTWAGEN-ROADMAP.md** (Phasen 1–9, was umgesetzt wurde).
 | **Sync & Merge** | Eine Regel (SYNC-REGEL.md), eine Funktion `mergeServerWithLocal`. Alle Aufrufer nutzen sie. |
 | **API/Transport** | Ein API-Client (Retry, Timeout, einheitliches Fehler-Objekt). |
 | **Reload** | Eine sichere Funktion `safeReload` (iframe-Check zentral). Alle Reload-Buttons nutzen sie. |
+| **Lizenzen/Zahlungen** | Eine Doku (ZAHLUNGSSYSTEM-LIZENZEN-TECHNIK-PLAN); Stripe Checkout + Webhook; Supabase-Tabellen (Migration 003); eine API `GET /api/licence-data`; Go-Live-Checkliste: STRIPE-LIZENZEN-GO-LIVE.md (die nächsten 3 Schritte). |
 
 **Prinzip:** Eine Quelle, ein Standard pro Problemstellung (Profi statt Dilettant).
 
