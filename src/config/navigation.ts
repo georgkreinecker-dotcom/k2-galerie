@@ -100,13 +100,35 @@ export const PROJECT_ROUTES = {
     vitaGeorg: '/projects/k2-galerie/vita/georg',
     notizen: '/projects/k2-galerie/notizen',
   },
-  // Weitere Projekte hier hinzufügen:
-  // 'projekt-2': {
-  //   id: 'projekt-2',
-  //   name: 'Projekt 2',
-  //   home: '/projects/projekt-2',
-  //   ...
-  // },
+  'k2-familie': {
+    id: 'k2-familie',
+    name: 'K2 Familie',
+    home: '/projects/k2-familie',
+    /** Weitere Routen folgen (Stammbaum, Person, Momente, …) */
+    galerie: '/projects/k2-familie',
+    galerieOeffentlich: '/projects/k2-galerie/galerie-oeffentlich',
+    galerieOeffentlichVorschau: '/projects/k2-galerie/galerie-oeffentlich-vorschau',
+    galerieVorschau: '/projects/k2-galerie/galerie-vorschau',
+    shop: '/projects/k2-galerie/shop',
+    virtuellerRundgang: '/projects/k2-galerie/virtueller-rundgang',
+    controlStudio: '/projects/k2-galerie/control-studio',
+    plan: '/projects/k2-galerie/plan',
+    mobileConnect: '/projects/k2-galerie/mobile-connect',
+    platzanordnung: '/projects/k2-galerie/platzanordnung',
+    produktVorschau: '/projects/k2-galerie/produkt-vorschau',
+    marketingOek2: '/projects/k2-galerie/marketing-oek2',
+    pilotStart: '/projects/k2-galerie/pilot-start',
+    softwareentwicklung: '/projects/k2-galerie/softwareentwicklung',
+    werbeunterlagen: '/projects/k2-galerie/werbeunterlagen',
+    licences: '/projects/k2-galerie/licences',
+    empfehlungstool: '/projects/k2-galerie/empfehlungstool',
+    verguetung: '/projects/k2-galerie/verguetung',
+    vitaMartina: '/projects/k2-galerie/vita/martina',
+    vitaGeorg: '/projects/k2-galerie/vita/georg',
+    notizen: '/projects/k2-galerie/notizen',
+    seitengestaltung: '/projects/k2-galerie/seitengestaltung',
+    kunden: '/projects/k2-galerie/kunden',
+  },
 } as const
 
 export type ProjectId = keyof typeof PROJECT_ROUTES

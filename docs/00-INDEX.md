@@ -5,6 +5,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 ---
 
 ## Plan & nächste Schritte
+- **K2-FAMILIE-ROADMAP.md** – **K2 Familie (Sportwagenmodus):** Vision, Phasen (Fundament → Stammbaum & Personen → Momente & Events → Skalierung). Start 01.03.26. Projektkarte auf Projekte-Seite, Startseite unter /projects/k2-familie.
 - **PLAN-SCHRITT-FUER-SCHRITT.md** – **Unser gemeinsamer Plan:** Schritte 1–10 in Reihenfolge (Basis abhaken → ein Feature wählen → Pilot-Verein → Onboarding → optional Preise → später Rest). Ein Schritt nach dem anderen.
 - **ADMIN-STRUKTUR-HUB-DESIGN-IDEE.md** – **Idee/Prüfauftrag:** Admin-Einstieg („Was möchtest du tun?“) im gleichen Hub-Layout wie Entdecken – 3 Spalten, Fokus Mitte, zielsicherer und optisch überzeugend. Wann umsetzen offen.
 - **DIALOG-STAND.md** – **Nach Absturz:** Eine Datei = ein Anker. Steht immer: letzte Session, Thema, was zuletzt dran, nächster Schritt. Sag „weiter nach Absturz“ → KI liest sie und arbeitet dort weiter. Kein Suchen im Konzept.

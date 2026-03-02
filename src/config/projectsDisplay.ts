@@ -13,6 +13,7 @@ export const PROJECT_COLORS: Record<string, string> = {
   'k2-galerie': '#5ffbf1',
   'k2-galerie-oeffentlich': '#b8b8ff',
   vk2: '#e67a2a', // K2-Familie: Orange (Hausherr) – VK2 = Mieter nutzt K2-Design
+  'k2-familie': '#0d9488', // Türkis/Grün – Familie, Wachstum, Verbindung
 }
 
 /** Fallback-Palette für Projekte ohne Eintrag in PROJECT_COLORS */
@@ -80,6 +81,7 @@ function getDefaultDescription(projectId: ProjectId): string {
   const descriptions: Partial<Record<ProjectId, string>> = {
     'k2-galerie': 'Projekt-Start, Control-Studio, Plan, Mobile-Connect – Steuerung und Inhalte.',
     vk2: 'Vereinsplattform – Künstler:innen, Mitglieder, Admin.',
+    'k2-familie': 'Familienstammbaum modern – jeder sichtbar, vernetzt, mit eigener Seite. Sportwagenmodus.',
   }
   return descriptions[projectId] ?? 'Projekt öffnen.'
 }

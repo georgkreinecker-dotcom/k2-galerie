@@ -2,15 +2,16 @@
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
-## Datum: 01.03.26
+## Datum: 02.03.26
 
 ## Wo wir stehengeblieben (aktuell) – **HIER EINSTEIGEN**
-- **Session-Ende 01.03.26:** Schreiben an Michael (Prozess + Kontrast + QR), mök2-Struktur gruppiert, druckbare Kapitelseiten. Alle Änderungen committed und gepusht. Nächste Session: DIALOG-STAND lesen, ggf. GRAFIKER-TISCH-NOTIZEN (Offen), dann weiterarbeiten.
+- **APf – K2 Familie eigene Struktur (02.03.26):** Im Smart Panel: K2 Familie als eigener Eintrag mit eigener Farbe (Teal #14b8a6 / #0d9488), in loadOrder und activePage für `/projects/k2-familie`. Zusätzlich eigener Block „K2 Familie“ mit Überschrift in Familien-Farben, Kurztext (hat mit K2 Galerie nichts zu tun), Link „→ Start & Vision“. Klar getrennt von K2-Galerie-Themen.
+- **Session-Ende 01.03.26:** Schreiben an Michael (Prozess + Kontrast + QR), mök2-Struktur gruppiert, druckbare Kapitelseiten. Alle Änderungen committed und gepusht.
 - **Schreiben an Michael (01.03.26):** Eine Seite, ein Klick zur Galerie. Kontrast: heller Hintergrund, dunkle Schrift. QR „Adresse aufs Handy“ führt auf **diese** Seite (schreiben-michael), nicht auf die Galerie – in mök2 war vorher ein falscher QR (Galerie) entfernt. Georg: Link per WhatsApp an Michael → Michael tippt Link → tippt „Galerie öffnen“ → fertig.
 - **mök2-Struktur gruppiert (01.03.26):** Sidebar in 5 Kapiteln: Kern, Vertrieb, Bewertung & Lizenzen, Konzepte, Praktisch. Quelle: `src/config/mok2Structure.ts`. Druck: A4, jede Kapitelseite mit eigener Titelseite (Kern, Vertrieb, …). Text unter „Als PDF drucken“ angepasst.
 - **Start-Anleitung Piloten (Michael) in mök2 (01.03.26):** Eigene Rubrik in Marketing ök2: „Start-Anleitung Piloten (z.B. Michael)“ – Schreiben mit Schritt-für-Schritt-Anleitung zum Verschicken + QR-Code (zur **Seite** schreiben-michael). Sidebar Mok2Layout + Sektion MarketingOek2Page.
 - **Tenant-Sync ök2/VK2 (01.03.26):** Veröffentlichen und „Bilder vom Server laden“ für alle Mandanten (K2, ök2, VK2). API GET/POST mit tenantId; Blob pro Mandant. Doku: docs/TENANT-SYNC-DOMAIN.md. Tests 38 grün, Build ✅.
-- **Nächster Schritt:** Bei „ro“ DIALOG-STAND + GRAFIKER-TISCH-NOTIZEN lesen, dann weitermachen. Optional: mök2-Druck testen (Kapitelseiten), Schreiben an Michael mit Michael durchspielen.
+- **Nächster Schritt:** Bei „ro“ DIALOG-STAND + GRAFIKER-TISCH-NOTIZEN lesen, dann weitermachen. K2 Familie: Datenmodell Person + Beziehungen (Roadmap Phase 2); optional APf im Browser prüfen (K2-Familie-Button + Block).
 - **Info (Georg):** Gestern mit Android + Chrome die Seiten geöffnet – funktioniert problemlos.
 - **Vollkachelform / Bildverarbeitung:** Offene Punkte in docs/GRAFIKER-TISCH-NOTIZEN.md unter „Offene Wünsche“.
 

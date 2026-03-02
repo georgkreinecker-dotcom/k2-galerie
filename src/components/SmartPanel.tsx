@@ -76,6 +76,7 @@ type PanelItem = {
 const DEFAULT_ITEMS: PanelItem[] = [
   { id: 'k2', label: '🎨 K2 Galerie Kunst&Keramik', page: 'galerie', url: PROJECT_ROUTES['k2-galerie'].galerie, color: 'linear-gradient(135deg, rgba(255,140,66,0.2), rgba(230,122,42,0.15))', border: 'rgba(255,140,66,0.4)' },
   { id: 'oek2', label: '🌐 Öffentliche Galerie K2', page: 'galerie-oeffentlich', url: PROJECT_ROUTES['k2-galerie'].galerieOeffentlich, color: 'linear-gradient(135deg, rgba(95,251,241,0.12), rgba(60,200,190,0.08))', border: 'rgba(95,251,241,0.3)' },
+  { id: 'k2-familie', label: '👨‍👩‍👧‍👦 K2 Familie', page: 'k2-familie', url: PROJECT_ROUTES['k2-familie'].home, color: 'linear-gradient(135deg, rgba(13,148,136,0.22), rgba(20,184,166,0.12))', border: 'rgba(13,148,136,0.5)' },
   { id: 'vk2', label: '🎨 VK2 Vereinsplattform', page: 'vk2', url: VK2_GALERIE_URL, color: 'linear-gradient(135deg, rgba(230,122,42,0.2), rgba(255,140,66,0.15))', border: 'rgba(255,140,66,0.4)' },
   { id: 'mok2', label: '📋 mök2 – Vertrieb & Promotion', page: 'mok2', url: MOK2_ROUTE, color: 'linear-gradient(135deg, rgba(251,191,36,0.12), rgba(245,158,11,0.08))', border: 'rgba(251,191,36,0.3)' },
   { id: 'notizen', label: '📝 Notizen', page: 'notizen', url: PROJECT_ROUTES['k2-galerie'].notizen, color: 'linear-gradient(135deg, rgba(196,181,253,0.15), rgba(139,92,246,0.08))', border: 'rgba(196,181,253,0.35)' },
@@ -87,7 +88,7 @@ function loadOrder(): string[] {
     const saved = localStorage.getItem(PANEL_ORDER_KEY)
     if (saved) return JSON.parse(saved)
   } catch { /* ignore */ }
-  return ['k2', 'oek2', 'vk2', 'mok2', 'notizen', 'handbuch']
+  return ['k2', 'oek2', 'k2-familie', 'vk2', 'mok2', 'notizen', 'handbuch']
 }
 
 function saveOrder(order: string[]) {
@@ -148,6 +149,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
   }, [])
   const activePage = useMemo(() => {
     if (browserPath.startsWith('/projects/vk2')) return 'vk2'
+    if (browserPath.startsWith('/projects/k2-familie')) return 'k2-familie'
     if (browserPath.startsWith('/projects/k2-galerie/galerie-oeffentlich') || browserPath.startsWith('/galerie-oeffentlich')) return 'galerie-oeffentlich'
     if (browserPath.startsWith('/galerie') || browserPath.startsWith('/projects/k2-galerie/galerie')) return 'galerie'
     if (browserPath.startsWith('/mok2') || browserPath.startsWith('/projects/k2-galerie/marketing')) return 'mok2'
@@ -522,7 +524,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                   ? `2px solid ${item.border.replace(/0\.\d+\)/, '1)')}`
                   : `1px solid ${item.border}`,
                 borderRadius: '8px',
-                color: item.id === 'oek2' || item.id === 'admin' || item.id === 'handbuch' ? '#5ffbf1' : item.id === 'mok2' ? '#fbbf24' : '#ff8c42',
+                color: item.id === 'oek2' || item.id === 'admin' || item.id === 'handbuch' ? '#5ffbf1' : item.id === 'mok2' ? '#fbbf24' : item.id === 'k2-familie' ? '#14b8a6' : '#ff8c42',
                 fontWeight: activePage === item.page ? 800 : 600,
                 fontSize: '0.95rem',
                 textAlign: 'center',
@@ -538,6 +540,42 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
           </div>
         ))}
 
+      </div>
+
+      {/* ── K2 Familie – eigenes Projekt, eigene Struktur (nicht K2 Galerie) ───────────────── */}
+      <div style={{
+        borderBottom: '1px solid rgba(13,148,136,0.35)',
+        paddingBottom: '1rem',
+        background: 'linear-gradient(135deg, rgba(13,148,136,0.08), rgba(20,184,166,0.04))',
+        borderRadius: '10px',
+        padding: '0.85rem 1rem',
+        border: '1px solid rgba(13,148,136,0.25)',
+      }}>
+        <h4 style={{ margin: '0 0 0.6rem 0', fontSize: '0.9rem', color: '#14b8a6', fontWeight: 700 }}>
+          👨‍👩‍👧‍👦 K2 Familie
+        </h4>
+        <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)' }}>
+          Eigenes Projekt – Stammbaum, Personen, Momente (hat mit K2 Galerie nichts zu tun).
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          <a
+            href={PROJECT_ROUTES['k2-familie'].home}
+            style={{
+              display: 'block',
+              padding: '0.5rem 0.75rem',
+              background: 'rgba(13,148,136,0.15)',
+              border: '1px solid rgba(13,148,136,0.4)',
+              borderRadius: '8px',
+              color: '#14b8a6',
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              textDecoration: 'none',
+              fontFamily: 'inherit',
+            }}
+          >
+            → Start & Vision
+          </a>
+        </div>
       </div>
 
       {/* Deine To-dos – Vermarktung & Strategie */}
