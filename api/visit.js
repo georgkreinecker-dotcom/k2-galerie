@@ -1,13 +1,13 @@
 /**
  * Besucherzähler: Besuch erfassen (POST) und Zähler abrufen (GET).
- * GET /api/visit?tenant=k2|oeffentlich|vk2 → { count: N }
+ * GET /api/visit?tenant=k2|oeffentlich|vk2|vk2-members|vk2-external → { count: N }
  * POST /api/visit mit Body { tenant: 'k2' } oder Query ?tenant=k2 → increment, dann { count: N }
  * Umgebungsvariablen: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
  */
 
 import { createClient } from '@supabase/supabase-js'
 
-const ALLOWED = ['k2', 'oeffentlich', 'vk2']
+const ALLOWED = ['k2', 'oeffentlich', 'vk2', 'vk2-members', 'vk2-external']
 
 function getTenant(req) {
   if (req.method === 'POST' && req.body) {
@@ -27,7 +27,7 @@ export default async function handler(req, res) {
   if (req.method !== 'GET' && req.method !== 'POST') return res.status(405).json({ error: 'Nur GET oder POST' })
 
   const tenant = getTenant(req)
-  if (!tenant) return res.status(400).json({ error: 'tenant fehlt oder ungültig (k2, oeffentlich, vk2)' })
+  if (!tenant) return res.status(400).json({ error: 'tenant fehlt oder ungültig (k2, oeffentlich, vk2, vk2-members, vk2-external)' })
 
   const supabaseUrl = process.env.SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY

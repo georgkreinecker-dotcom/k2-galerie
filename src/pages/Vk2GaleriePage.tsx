@@ -118,6 +118,22 @@ const Vk2GaleriePage: React.FC = () => {
     }
   }, [])
 
+  // Besucherzähler VK2: einmal pro Session als Mitglied oder Extern melden (nicht in iframe, nicht in Admin-Vorschau)
+  useEffect(() => {
+    if (typeof window === 'undefined' || window.self !== window.top) return
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('vorschau') === '1') return
+    try {
+      if (sessionStorage.getItem('k2-visit-sent-vk2')) return
+      const tenant = sessionStorage.getItem('k2-vk2-mitglied-eingeloggt') ? 'vk2-members' : 'vk2-external'
+      const origin = window.location.origin
+      fetch(`${origin}/api/visit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenant }),
+      }).then(() => sessionStorage.setItem('k2-visit-sent-vk2', '1')).catch(() => {})
+    } catch (_) {}
+  }, [])
+
   // QR-Code auf Mitglieder-Seite (Vercel, mit Cache-Bust)
   useEffect(() => {
     let cancelled = false

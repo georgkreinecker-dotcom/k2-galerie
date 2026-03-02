@@ -427,13 +427,16 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     if (window.self !== window.top) return
     try {
       if (tenantId === 'k2' && localStorage.getItem('k2-admin-unlocked') === 'k2') return
-      const key = 'k2-visit-sent-' + tenantId
+      const key = tenantId === 'vk2' ? 'k2-visit-sent-vk2' : 'k2-visit-sent-' + tenantId
       if (sessionStorage.getItem(key)) return
+      const tenant = tenantId === 'vk2'
+        ? (sessionStorage.getItem('k2-vk2-mitglied-eingeloggt') ? 'vk2-members' : 'vk2-external')
+        : tenantId
       const origin = window.location.origin
       fetch(`${origin}/api/visit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenant: tenantId }),
+        body: JSON.stringify({ tenant }),
       }).then(() => sessionStorage.setItem(key, '1')).catch(() => {})
     } catch (_) {}
   }, [tenantId])

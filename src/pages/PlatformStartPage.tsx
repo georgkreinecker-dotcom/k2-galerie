@@ -90,7 +90,7 @@ export default function PlatformStartPage() {
   const [isMobile, setIsMobile] = useState(false)
   const [apiKeySet, setApiKeySet] = useState(false)
   const [githubTokenSet, setGithubTokenSet] = useState(false)
-  const [visits, setVisits] = useState<{ k2: number; oeffentlich: number } | null>(null)
+  const [visits, setVisits] = useState<{ k2: number; oeffentlich: number; vk2Members: number; vk2External: number } | null>(null)
 
   useEffect(() => {
     setApiKeySet(!!(localStorage.getItem('k2-openai-api-key') || localStorage.getItem('openai-api-key') || localStorage.getItem('k2-api-key')))
@@ -102,7 +102,9 @@ export default function PlatformStartPage() {
     Promise.all([
       fetch(`${origin}/api/visit?tenant=k2`).then((r) => r.json()).then((d) => d.count ?? 0),
       fetch(`${origin}/api/visit?tenant=oeffentlich`).then((r) => r.json()).then((d) => d.count ?? 0),
-    ]).then(([k2, oef]) => setVisits({ k2, oeffentlich: oef })).catch(() => setVisits(null))
+      fetch(`${origin}/api/visit?tenant=vk2-members`).then((r) => r.json()).then((d) => d.count ?? 0),
+      fetch(`${origin}/api/visit?tenant=vk2-external`).then((r) => r.json()).then((d) => d.count ?? 0),
+    ]).then(([k2, oef, vk2M, vk2E]) => setVisits({ k2, oeffentlich: oef, vk2Members: vk2M, vk2External: vk2E })).catch(() => setVisits(null))
   }, [])
 
   // Prüfe ob iOS und ob bereits installiert
@@ -208,7 +210,7 @@ export default function PlatformStartPage() {
                   border: '1px solid rgba(129,140,248,0.4)',
                 }}
               >
-                👁 Besucher: K2 {visits.k2} · ök2 {visits.oeffentlich} → Details
+                👁 Besucher: K2 {visits.k2} · ök2 {visits.oeffentlich} · VK2 Mitgl. {visits.vk2Members} / Ext. {visits.vk2External} → Details
               </Link>
             )}
           </div>
