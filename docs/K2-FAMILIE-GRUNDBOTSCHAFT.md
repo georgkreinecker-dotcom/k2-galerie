@@ -82,4 +82,19 @@ K2 Familie trägt dieses Licht: keine Ausgrenzung, Respekt, jede Form des Zusamm
 
 ---
 
+---
+
+## Dokumentation – Nachvollziehbarkeit
+
+**Alles, was wir machen, wird genau dokumentiert**, damit nachvollziehbar ist, was wir kommuniziert haben.
+
+- Entscheidungen, Zitate und Abmachungen gehören in die passenden Docs (Grundbotschaft, Roadmap, DIALOG-STAND).
+- Kein „wir haben mal besprochen“ ohne Eintrag – wer später (oder eine KI) nachliest, soll verstehen können, was gesagt und vereinbart wurde.
+- Die AI dokumentiert präzise: was geändert wurde, warum, und was Georg dazu gesagt hat. So bleibt die Kommunikation nachvollziehbar – für euch und für alle, die danach kommen.
+
+> *„Dokumentier alles, was wir machen, genau – damit das auch nachvollziehbar ist, was wir kommuniziert haben.“*  
+> – Georg, 02.03.26
+
+---
+
 **Querverweis:** Vision & Phasen → `docs/K2-FAMILIE-ROADMAP.md`
