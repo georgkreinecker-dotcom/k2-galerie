@@ -2,12 +2,12 @@
  * Vercel Serverless: Stripe Webhook – Zahlung erfolgreich.
  * Stripe ruft diese URL auf (im Dashboard konfigurieren). Raw-Body für Signaturprüfung nötig.
  *
- * Umgebungsvariablen: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET
+ * Umgebungsvariablen: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
  *
- * Nach erfolgreicher Zahlung: Metadaten (licenceType, empfehlerId) aus Session auslesen,
- * Zahlung/Gutschrift protokollieren. Ohne DB vorerst: Log + 200 OK (später Supabase-Tabellen anbinden).
+ * Nach erfolgreicher Zahlung: Lizenz + Zahlung + ggf. Gutschrift in Supabase speichern.
  */
 import Stripe from 'stripe'
+import { createClient } from '@supabase/supabase-js'
 
 /** Raw-Body aus Request-Stream lesen (für Stripe-Signaturprüfung erforderlich). */
 function getRawBody(req) {
@@ -54,23 +54,85 @@ export default async function handler(req, res) {
   const session = event.data.object
   const { metadata } = session
   const licenceType = metadata?.licenceType || 'basic'
-  const empfehlerId = metadata?.empfehlerId || null
+  const empfehlerId = (metadata?.empfehlerId || '').trim() || null
+  const customerName = (metadata?.customerName || '').trim() || 'Kunde'
   const amountTotal = session.amount_total ?? 0
   const customerEmail = session.customer_email || session.customer_details?.email || ''
 
-  // 10 % Gutschrift für Empfehler (in Cent, dann für Anzeige / DB in Euro umrechnen)
+  const amountEur = (amountTotal / 100).toFixed(2)
   const gutschriftCents = empfehlerId && amountTotal > 0 ? Math.round(amountTotal * 0.1) : 0
+  const gutschriftEur = (gutschriftCents / 100).toFixed(2)
 
-  // TODO: In Supabase-Tabellen schreiben (payments, licences, empfehler_gutschriften)
-  // Vorerst nur Log für Nachvollziehbarkeit
-  console.log('Stripe webhook: checkout.session.completed', {
-    sessionId: session.id,
-    licenceType,
-    customerEmail,
-    amountTotalCents: amountTotal,
-    empfehlerId: empfehlerId || null,
-    gutschriftCents,
-  })
+  const supabaseUrl = process.env.SUPABASE_URL
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error('webhook-stripe: SUPABASE_URL oder SUPABASE_SERVICE_ROLE_KEY fehlt')
+    return res.status(500).end()
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+  try {
+    const { data: licence, error: errLicence } = await supabase
+      .from('licences')
+      .insert({
+        email: customerEmail,
+        name: customerName,
+        licence_type: licenceType,
+        status: 'active',
+        empfehler_id: empfehlerId,
+        stripe_session_id: session.id,
+      })
+      .select('id')
+      .single()
+
+    if (errLicence) {
+      console.error('webhook-stripe: licences insert failed', errLicence)
+      return res.status(500).end()
+    }
+
+    const { data: payment, error: errPayment } = await supabase
+      .from('payments')
+      .insert({
+        licence_id: licence.id,
+        amount_cents: amountTotal,
+        amount_eur: amountEur,
+        currency: 'eur',
+        stripe_session_id: session.id,
+        empfehler_id: empfehlerId,
+      })
+      .select('id')
+      .single()
+
+    if (errPayment) {
+      console.error('webhook-stripe: payments insert failed', errPayment)
+      return res.status(500).end()
+    }
+
+    if (empfehlerId && gutschriftCents > 0) {
+      const { error: errGutschrift } = await supabase.from('empfehler_gutschriften').insert({
+        empfehler_id: empfehlerId,
+        amount_eur: gutschriftEur,
+        payment_id: payment.id,
+        licence_id: licence.id,
+      })
+      if (errGutschrift) {
+        console.error('webhook-stripe: empfehler_gutschriften insert failed', errGutschrift)
+      }
+    }
+
+    console.log('Stripe webhook: checkout.session.completed', {
+      sessionId: session.id,
+      licenceId: licence.id,
+      paymentId: payment.id,
+      licenceType,
+      customerEmail,
+      gutschriftCents,
+    })
+  } catch (err) {
+    console.error('webhook-stripe:', err)
+    return res.status(500).end()
+  }
 
   return res.status(200).json({ received: true })
 }

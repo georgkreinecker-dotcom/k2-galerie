@@ -116,20 +116,21 @@ Lizenzen werden **nur im Internet** abgeschlossen und bezahlt – nicht in der G
 
 ## 5. Stripe umgesetzt (Stand 02.03.26)
 
-- **Backend (Vercel):** `api/create-checkout.js` (Checkout-Session), `api/webhook-stripe.js` (Webhook, Signaturprüfung + Log/Gutschrift).
+- **Backend (Vercel):** `api/create-checkout.js` (Checkout-Session), `api/webhook-stripe.js` (Webhook: Signaturprüfung → Lizenz + Zahlung + Gutschrift in Supabase).
 - **Frontend:** `LizenzKaufenPage` (`/projects/k2-galerie/lizenz-kaufen`), `LizenzErfolgPage` (`/lizenz-erfolg`). Link „Lizenz online kaufen“ auf LicencesPage und im LicenseManager.
-- **Umgebungsvariablen (Vercel):** `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`. Optional `VERCEL_URL` (wird von Vercel gesetzt). Siehe `.env.example`.
-- **Stripe Dashboard:** Webhook-URL eintragen: `https://k2-galerie.vercel.app/api/webhook-stripe`, Event `checkout.session.completed`. Signing Secret als `STRIPE_WEBHOOK_SECRET` in Vercel eintragen.
+- **Datenbank:** Migration `supabase/migrations/003_stripe_licences_payments_gutschriften.sql` – Tabellen `licences`, `payments`, `empfehler_gutschriften`. RLS: nur authentifiziert lesen; Schreiben nur über service_role (Webhook).
+- **Umgebungsvariablen (Vercel):** `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`. Optional `VERCEL_URL`. Siehe `.env.example`.
+- **Stripe Dashboard:** Webhook-URL: `https://k2-galerie.vercel.app/api/webhook-stripe`, Event `checkout.session.completed`. Signing Secret → `STRIPE_WEBHOOK_SECRET`.
 
-**Noch offen:** DB-Tabellen (Lizenzen, Zahlungen, Gutschriften) und Schreiben aus dem Webhook; Export CSV/PDF. Webhook loggt derzeit nur.
+**Noch offen:** Migration in Supabase ausführen (einmalig); Export CSV/PDF für Zahlungen + Gutschriften (Admin).
 
 ---
 
 ## 5a. Nächste konkrete Schritte (nach Go-Live Stripe)
 
 1. **Stripe-Konto:** Anlegen, Keys in Vercel eintragen, Webhook-URL konfigurieren.
-2. **DB:** Tabellen Lizenzen, Zahlungen, Gutschriften in Supabase; Webhook erweitern zum Schreiben.
-3. **Export:** CSV/PDF für Zahlungen + Gutschriften (Admin).
+2. **Supabase:** Migration 003 ausführen (Tabellen anlegen); `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` in Vercel eintragen.
+3. **Export:** CSV/PDF für Zahlungen + Gutschriften (Admin, optional).
 
 ---
 
