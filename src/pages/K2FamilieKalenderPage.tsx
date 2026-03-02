@@ -81,8 +81,8 @@ export default function K2FamilieKalenderPage() {
             <p className="meta" style={{ margin: 0, fontStyle: 'italic' }}>Noch keine Einträge mit Datum. Events und Momente (mit Datum) erscheinen hier.</p>
           </div>
         ) : (
-          byMonth.map(([monthKey, items]) => (
-            <div key={monthKey} className="card" style={{ marginBottom: '1rem' }}>
+          byMonth.map(([monthKey, items], i) => (
+            <div key={monthKey} className="card familie-card-enter" style={{ marginBottom: '1rem', animationDelay: `${i * 0.07}s` }}>
               <h2 style={{ margin: '0 0 0.5rem', fontSize: '1rem' }}>{formatMonthYear(monthKey + '-01')}</h2>
               {items.map((e) => (
                 <div key={e.type + '-' + e.id} style={{ padding: '0.5rem 0', borderBottom: '1px solid rgba(13,148,136,0.15)', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'baseline' }}>

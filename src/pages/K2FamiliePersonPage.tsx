@@ -294,11 +294,11 @@ export default function K2FamiliePersonPage() {
           </div>
         </header>
 
-        <div className="card" style={{ display: 'flex', alignItems: 'flex-start', gap: '1.25rem', flexWrap: 'wrap' }}>
+        <div className="card familie-card-enter" style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem', flexWrap: 'wrap' }}>
           {person.photo ? (
-            <img src={person.photo} alt="" className="person-photo" style={{ width: 120, height: 120, borderRadius: 12, objectFit: 'cover' }} />
+            <img src={person.photo} alt="" className="person-photo" style={{ width: 140, height: 140, borderRadius: '50%', objectFit: 'cover', border: '4px solid rgba(20,184,166,0.35)' }} />
           ) : (
-            <div style={{ width: 120, height: 120, borderRadius: 12, background: 'rgba(13,148,136,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem' }}>👤</div>
+            <div style={{ width: 140, height: 140, borderRadius: '50%', background: 'rgba(13,148,136,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', border: '4px solid rgba(20,184,166,0.25)' }}>👤</div>
           )}
           <div style={{ flex: 1, minWidth: 200 }}>
             {edit ? (
@@ -352,9 +352,9 @@ export default function K2FamiliePersonPage() {
           {personMomente.length > 0 && (
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1rem' }}>
               {personMomente.map((m) => (
-                <li key={m.id} className="card" style={{ marginBottom: '0.75rem', padding: '0.75rem' }}>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'flex-start' }}>
-                    {m.image && <img src={m.image} alt="" style={{ width: 64, height: 64, borderRadius: 8, objectFit: 'cover' }} />}
+                <li key={m.id} className="card k2-familie-moment-card" style={{ marginBottom: '0.75rem', padding: '0.9rem', borderRadius: 16 }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'flex-start' }}>
+                    {m.image && <img src={m.image} alt="" className="person-photo" style={{ width: 72, height: 72, borderRadius: 12, objectFit: 'cover' }} />}
                     <div style={{ flex: 1, minWidth: 120 }}>
                       <strong>{m.title}</strong>
                       {m.date && <span className="meta" style={{ marginLeft: '0.5rem' }}>{m.date.slice(0, 10)}</span>}

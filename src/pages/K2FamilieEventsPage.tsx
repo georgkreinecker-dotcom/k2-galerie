@@ -100,8 +100,8 @@ export default function K2FamilieEventsPage() {
 
         {sortedEvents.length > 0 && (
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1rem' }}>
-            {sortedEvents.map((ev) => (
-              <li key={ev.id} className="card" style={{ marginBottom: '0.75rem' }}>
+            {sortedEvents.map((ev, i) => (
+              <li key={ev.id} className="card familie-card-enter" style={{ marginBottom: '0.75rem', animationDelay: `${i * 0.05}s` }}>
                 <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
                   <div>
                     <h2 style={{ margin: 0, fontSize: '1rem' }}>{ev.title}</h2>

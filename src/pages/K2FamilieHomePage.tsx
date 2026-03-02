@@ -15,15 +15,16 @@ import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
 import { useMemo } from 'react'
 
 const C = {
-  bg: '#0f1419',
-  bgCard: 'rgba(20,26,32,0.85)',
   text: '#f0f6ff',
-  textSoft: 'rgba(255,255,255,0.7)',
+  textSoft: 'rgba(255,255,255,0.78)',
   accent: '#14b8a6',
   accentHover: '#2dd4bf',
-  accentSoft: 'rgba(13,148,136,0.2)',
   border: 'rgba(13,148,136,0.35)',
-  heroOverlay: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(15,20,25,0.75) 60%, rgba(15,20,25,0.98) 100%)',
+  heroOverlay: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(15,20,25,0.6) 50%, rgba(15,20,25,0.96) 100%)',
+  /* Bunte Buttons wie Spielplatz */
+  btnStammbaum: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+  btnEvents: 'linear-gradient(135deg, #ea580c 0%, #fb923c 100%)',
+  btnKalender: 'linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%)',
 }
 
 export default function K2FamilieHomePage() {
@@ -67,87 +68,91 @@ export default function K2FamilieHomePage() {
           <button type="button" className="btn-outline" onClick={() => addTenant()} style={{ borderColor: C.border, color: C.accent }}>Neue Familie</button>
         </div>
 
-        {/* Hero: Willkommensbild oder Verlauf */}
-        <div style={{ position: 'relative', width: '100%', height: 'clamp(240px, 42vh, 400px)', overflow: 'hidden' }}>
+        {/* Hero: lebendig, mit sanftem Verlauf */}
+        <div className="k2-familie-hero" style={{ position: 'relative', width: '100%', height: 'clamp(260px, 44vh, 420px)', overflow: 'hidden', borderRadius: '0 0 28px 28px' }}>
           {welcomeImage ? (
             <img src={welcomeImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           ) : (
-            <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, rgba(13,148,136,0.4) 0%, rgba(20,184,166,0.25) 50%, rgba(15,20,25,0.9) 100%)' }} />
+            <div style={{ width: '100%', height: '100%', background: 'linear-gradient(145deg, rgba(13,148,136,0.5) 0%, rgba(234,88,12,0.15) 40%, rgba(15,20,25,0.92) 100%)' }} />
           )}
           <div style={{ position: 'absolute', inset: 0, background: C.heroOverlay }} />
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 'clamp(1.25rem, 4vw, 2rem) clamp(1.25rem, 5vw, 2.5rem)' }}>
-            <p style={{ margin: '0 0 0.3rem', fontSize: '0.8rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>
+          <div className="k2-familie-hero-shine" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.04) 45%, transparent 55%)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 'clamp(1.5rem, 4vw, 2.25rem) clamp(1.25rem, 5vw, 2.5rem)' }}>
+            <p style={{ margin: '0 0 0.35rem', fontSize: '0.82rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.88)', fontWeight: 600 }}>
               {texts.welcomeSubtitle}
             </p>
-            <h1 style={{ margin: 0, fontSize: 'clamp(1.75rem, 5vw, 2.75rem)', fontWeight: 700, color: '#fff', lineHeight: 1.1, textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>
+            <h1 style={{ margin: 0, fontSize: 'clamp(1.85rem, 5vw, 2.9rem)', fontWeight: 700, color: '#fff', lineHeight: 1.12, textShadow: '0 2px 20px rgba(0,0,0,0.5)' }}>
               {texts.welcomeTitle}
             </h1>
           </div>
         </div>
 
-        {/* Intro + Aktionen */}
-        <div style={{ padding: '1.5rem 1.25rem', maxWidth: 720, margin: '0 auto' }}>
-          <p style={{ margin: '0 0 1.25rem', fontSize: '1rem', lineHeight: 1.6, color: C.textSoft }}>
+        {/* Intro + bunte Aktionen (Spielplatz) */}
+        <div style={{ padding: '1.75rem 1.25rem', maxWidth: 760, margin: '0 auto' }}>
+          <p style={{ margin: '0 0 1.5rem', fontSize: '1.05rem', lineHeight: 1.65, color: C.textSoft }}>
             {texts.introText}
           </p>
-          <div className="grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
+          <div className="k2-familie-action-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
             <Link
               to={PROJECT_ROUTES['k2-familie'].stammbaum}
-              className="btn"
+              className="btn k2-familie-action-btn"
               style={{
-                padding: '0.9rem 1rem',
-                background: C.accentSoft,
-                border: `1px solid ${C.border}`,
-                borderRadius: 10,
-                color: C.accent,
-                fontWeight: 600,
-                fontSize: '0.95rem',
+                padding: '1.1rem 1.25rem',
+                background: C.btnStammbaum,
+                border: 'none',
+                borderRadius: 20,
+                color: '#fff',
+                fontWeight: 700,
+                fontSize: '1rem',
                 textAlign: 'center',
                 textDecoration: 'none',
                 display: 'block',
+                boxShadow: '0 8px 28px rgba(5, 150, 105, 0.4)',
               }}
             >
               🌳 {texts.buttonStammbaum}
             </Link>
             <Link
               to={PROJECT_ROUTES['k2-familie'].events}
-              className="btn"
+              className="btn k2-familie-action-btn"
               style={{
-                padding: '0.9rem 1rem',
-                background: C.accentSoft,
-                border: `1px solid ${C.border}`,
-                borderRadius: 10,
-                color: C.accent,
-                fontWeight: 600,
-                fontSize: '0.95rem',
+                padding: '1.1rem 1.25rem',
+                background: C.btnEvents,
+                border: 'none',
+                borderRadius: 20,
+                color: '#fff',
+                fontWeight: 700,
+                fontSize: '1rem',
                 textAlign: 'center',
                 textDecoration: 'none',
                 display: 'block',
+                boxShadow: '0 8px 28px rgba(234, 88, 12, 0.35)',
               }}
             >
-              📅 {texts.buttonEvents}
+              🎉 {texts.buttonEvents}
             </Link>
             <Link
               to={PROJECT_ROUTES['k2-familie'].kalender}
-              className="btn"
+              className="btn k2-familie-action-btn"
               style={{
-                padding: '0.9rem 1rem',
-                background: C.accentSoft,
-                border: `1px solid ${C.border}`,
-                borderRadius: 10,
-                color: C.accent,
-                fontWeight: 600,
-                fontSize: '0.95rem',
+                padding: '1.1rem 1.25rem',
+                background: C.btnKalender,
+                border: 'none',
+                borderRadius: 20,
+                color: '#fff',
+                fontWeight: 700,
+                fontSize: '1rem',
                 textAlign: 'center',
                 textDecoration: 'none',
                 display: 'block',
+                boxShadow: '0 8px 28px rgba(13, 148, 136, 0.4)',
               }}
             >
               📆 {texts.buttonKalender}
             </Link>
           </div>
-          <p className="meta" style={{ marginTop: '1.25rem' }}>
-            <Link to={PROJECT_ROUTES['k2-familie'].uebersicht} style={{ color: C.textSoft, textDecoration: 'none' }}>Leitbild & Vision →</Link>
+          <p className="meta" style={{ marginTop: '1.5rem' }}>
+            <Link to={PROJECT_ROUTES['k2-familie'].uebersicht} style={{ color: C.textSoft, textDecoration: 'none', transition: 'color 0.2s' }}>Leitbild & Vision →</Link>
           </p>
         </div>
       </div>

@@ -57,31 +57,41 @@ export default function K2FamilieStammbaumPage() {
         </header>
 
         {personen.length === 0 && (
-          <div className="card">
+          <div className="card familie-card-enter" style={{ animationDelay: '0s' }}>
             <p className="meta" style={{ fontStyle: 'italic', margin: 0 }}>Noch keine Personen. „Person hinzufügen“ drücken.</p>
           </div>
         )}
 
-        <div className="grid">
-          {personen.map((p) => (
-            <Link key={p.id} to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-              <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div className="k2-familie-stammbaum-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.25rem' }}>
+          {personen.map((p, i) => (
+            <Link
+              key={p.id}
+              to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`}
+              className="familie-card-enter"
+              style={{ textDecoration: 'none', color: 'inherit', animationDelay: `${i * 0.06}s` }}
+            >
+              <div className="card" style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
                 {p.photo ? (
-                  <img src={p.photo} alt="" className="person-photo" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover' }} />
+                  <img
+                    src={p.photo}
+                    alt=""
+                    className="person-photo"
+                    style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(20,184,166,0.4)' }}
+                  />
                 ) : (
-                  <div style={{ width: 48, height: 48, borderRadius: 8, background: 'rgba(13,148,136,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem' }}>👤</div>
+                  <div style={{ width: 96, height: 96, borderRadius: '50%', background: 'rgba(13,148,136,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', border: '3px solid rgba(20,184,166,0.3)' }}>👤</div>
                 )}
-                <div style={{ flex: 1 }}>
-                  <h2 style={{ margin: 0, fontSize: '1rem' }}>{p.name}</h2>
-                  {p.shortText && <p className="meta" style={{ margin: '0.25rem 0 0', fontSize: '0.85rem' }}>{p.shortText.slice(0, 80)}{p.shortText.length > 80 ? '…' : ''}</p>}
+                <div style={{ width: '100%' }}>
+                  <h2 style={{ margin: 0, fontSize: '1.05rem', lineHeight: 1.2 }}>{p.name}</h2>
+                  {p.shortText && <p className="meta" style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', lineHeight: 1.4 }}>{p.shortText.slice(0, 70)}{p.shortText.length > 70 ? '…' : ''}</p>}
                 </div>
-                <span className="meta">→</span>
+                <span className="meta" style={{ fontSize: '0.9rem', opacity: 0.8 }}>→ ansehen</span>
               </div>
             </Link>
           ))}
         </div>
 
-        <div style={{ marginTop: '1rem' }}>
+        <div style={{ marginTop: '1.5rem' }}>
           <button type="button" className="btn" onClick={addPerson}>＋ Person hinzufügen</button>
         </div>
       </div>

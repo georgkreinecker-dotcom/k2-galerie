@@ -21,14 +21,14 @@ function FamilieNav() {
   const path = loc.pathname
 
   return (
-    <nav style={{
+    <nav className="k2-familie-nav" style={{
       display: 'flex',
       flexWrap: 'wrap',
       gap: '0.5rem',
       alignItems: 'center',
-      padding: '0.6rem 0.75rem',
-      background: 'rgba(13,148,136,0.12)',
-      borderBottom: '1px solid rgba(13,148,136,0.3)',
+      padding: '0.7rem 1rem',
+      background: 'rgba(13,148,136,0.1)',
+      borderBottom: '1px solid rgba(13,148,136,0.25)',
       marginBottom: 0,
     }}>
       {FAMILIE_NAV.map(({ to, label }) => {
@@ -42,14 +42,15 @@ function FamilieNav() {
             key={to}
             to={to}
             style={{
-              padding: '0.4rem 0.7rem',
-              borderRadius: 6,
-              fontSize: '0.88rem',
-              fontWeight: isActive ? 600 : 500,
+              padding: '0.5rem 0.9rem',
+              borderRadius: 999,
+              fontSize: '0.9rem',
+              fontWeight: isActive ? 700 : 500,
               textDecoration: 'none',
-              color: isActive ? '#14b8a6' : 'rgba(255,255,255,0.75)',
-              background: isActive ? 'rgba(13,148,136,0.25)' : 'transparent',
+              color: isActive ? '#14b8a6' : 'rgba(255,255,255,0.78)',
+              background: isActive ? 'rgba(13,148,136,0.28)' : 'transparent',
               fontFamily: 'inherit',
+              transition: 'background 0.2s, color 0.2s, transform 0.2s',
             }}
           >
             {label}
