@@ -36,6 +36,8 @@ Nichts wurde weggeschmissen oder verlegt – nur diese Übersicht zum Wiederfind
 | **k2team-handbuch/** | Team-Handbuch (00–13) | **00-INDEX.md** = Inhaltsverzeichnis. Spiegel in `public/k2team-handbuch/` für App. |
 | **docs/CRASH-FIXES-STAND-17-02-26.md** | Crash-Fixes (Admin, Safe-Mode, Verzögerungen) | Was wir für Stabilität geändert haben. |
 | **docs/K2-OEK2-DATENTRENNUNG.md** | K2 vs. ök2 Regeln | Pflicht bei Änderungen an Daten/Keys. |
+| **docs/K2-FAMILIE-GRUNDBOTSCHAFT.md** | K2 Familie – moralisches Fundament | Grundbotschaft, Raumschiff-Anspruch, Gegenseitige Kontrolle, Dokumentation. Verbindlich für alle K2-Familie-Arbeit. |
+| **docs/K2-FAMILIE-ROADMAP.md** | K2 Familie – Vision & Phasen | Raumschiff-Phasen (Fundament → Stammbaum → Momente → Skalierung). Startseite: /projects/k2-familie. |
 
 ---
 
@@ -110,6 +112,7 @@ Alle anderen Dateien bleiben; bei Unsicherheit wurde nichts gelöscht.
 - **Admin-Auth einrichten:** `docs/ADMIN-AUTH-SETUP.md`
 - **Crash-Fixes:** `docs/CRASH-FIXES-STAND-17-02-26.md`
 - **K2 vs. ök2:** `docs/K2-OEK2-DATENTRENNUNG.md`
+- **K2 Familie (Raumschiff):** `docs/K2-FAMILIE-GRUNDBOTSCHAFT.md` (Fundament), `docs/K2-FAMILIE-ROADMAP.md` (Vision & Phasen)
 - **Ein Standard pro Problemstellung:** Gleiche Aufgabe = eine Lösung (verschiedene Standards = Fehlerquellen). Regel: `.cursor/rules/ein-standard-problem.mdc`; Doku: `docs/STRUKTUR-HANDELN-QUELLEN.md`, `docs/00-INDEX.md`.
 - **Team-Hebel & Vermächtnis (Lernkurve):** Unternehmer + Persönlichkeit + KI = außergewöhnliche Hebelwirkung. Regel: `.cursor/rules/team-hebel-unternehmer-persoenlichkeit-ki.mdc`; Vermächtnis: `docs/WIR-PROZESS.md` (Abschnitt „Team-Hebel und Lernkurve“).
 - **Handbuch-Inhalt:** `k2team-handbuch/00-INDEX.md`

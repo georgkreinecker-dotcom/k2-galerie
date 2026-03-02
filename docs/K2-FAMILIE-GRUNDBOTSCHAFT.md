@@ -97,4 +97,6 @@ K2 Familie trägt dieses Licht: keine Ausgrenzung, Respekt, jede Form des Zusamm
 
 ---
 
+**Daten:** K2-Familie-Daten (Personen, Momente, Beziehungen) unterliegen denselben Schutzprinzipien wie K2: keine automatischen Löschungen, keine stillen Filter, Schreiben nur nach expliziter User-Aktion. Siehe Projekt-Regeln zu Kundendaten und Datentrennung.
+
 **Querverweis:** Vision & Phasen → `docs/K2-FAMILIE-ROADMAP.md`
