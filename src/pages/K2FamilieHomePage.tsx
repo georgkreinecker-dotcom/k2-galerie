@@ -11,6 +11,7 @@ import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { getFamilyPageContent } from '../config/pageContentFamilie'
 import { getFamilyPageTexts } from '../config/pageTextsFamilie'
 import { K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
+import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
 import { useMemo } from 'react'
 
 const C = {
@@ -60,7 +61,7 @@ export default function K2FamilieHomePage() {
             }}
           >
             {tenantList.map((id) => (
-              <option key={id} value={id}>{id === K2_FAMILIE_DEFAULT_TENANT ? 'Standard' : id}</option>
+              <option key={id} value={id}>{getFamilieTenantDisplayName(id, 'Standard')}</option>
             ))}
           </select>
           <button type="button" className="btn-outline" onClick={() => addTenant()} style={{ borderColor: C.border, color: C.accent }}>Neue Familie</button>

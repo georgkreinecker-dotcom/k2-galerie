@@ -7,6 +7,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { loadPersonen, savePersonen, K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
+import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import type { K2FamiliePerson } from '../types/k2Familie'
 import { useMemo } from 'react'
@@ -45,7 +46,7 @@ export default function K2FamilieStammbaumPage() {
               <span className="meta">Familie:</span>
               <select value={currentTenantId} onChange={(e) => setCurrentTenantId(e.target.value)}>
                 {tenantList.map((id) => (
-                  <option key={id} value={id}>{id === K2_FAMILIE_DEFAULT_TENANT ? 'Standard' : id}</option>
+                  <option key={id} value={id}>{getFamilieTenantDisplayName(id, 'Standard')}</option>
                 ))}
               </select>
               <button type="button" className="btn-outline" onClick={() => addTenant()}>Neue Familie</button>
@@ -66,7 +67,7 @@ export default function K2FamilieStammbaumPage() {
             <Link key={p.id} to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
               <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 {p.photo ? (
-                  <img src={p.photo} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover' }} />
+                  <img src={p.photo} alt="" className="person-photo" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover' }} />
                 ) : (
                   <div style={{ width: 48, height: 48, borderRadius: 8, background: 'rgba(13,148,136,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem' }}>👤</div>
                 )}

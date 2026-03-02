@@ -51,6 +51,8 @@ type ContextValue = {
   tenantList: string[]
   setCurrentTenantId: (id: string) => void
   addTenant: () => string
+  /** Liest tenant list und current aus localStorage/sessionStorage neu (z. B. nach Seed Musterfamilie). */
+  refreshFromStorage: () => void
 }
 
 const FamilieTenantContext = createContext<ContextValue | null>(null)
@@ -77,6 +79,13 @@ export function FamilieTenantProvider({ children }: { children: ReactNode }) {
     return newId
   }, [tenantList])
 
+  const refreshFromStorage = useCallback(() => {
+    const list = loadList()
+    setTenantList(list)
+    const current = loadCurrent()
+    setCurrentTenantIdState(current)
+  }, [])
+
   useEffect(() => {
     const list = loadList()
     if (list.length !== tenantList.length || list.some((id, i) => id !== tenantList[i])) {
@@ -89,6 +98,7 @@ export function FamilieTenantProvider({ children }: { children: ReactNode }) {
     tenantList,
     setCurrentTenantId,
     addTenant,
+    refreshFromStorage,
   }
 
   return (
@@ -106,6 +116,7 @@ export function useFamilieTenant(): ContextValue {
       tenantList: [K2_FAMILIE_DEFAULT_TENANT],
       setCurrentTenantId: () => {},
       addTenant: () => K2_FAMILIE_DEFAULT_TENANT,
+      refreshFromStorage: () => {},
     }
   }
   return ctx

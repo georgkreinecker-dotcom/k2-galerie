@@ -3,14 +3,26 @@
  * Route: /projects/k2-familie
  */
 
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES, PLATFORM_ROUTES } from '../config/navigation'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
+import { seedFamilieHuber, getFamilieTenantDisplayName } from '../data/familieHuberMuster'
 
 export default function K2FamilieStartPage() {
-  const { currentTenantId, tenantList, setCurrentTenantId, addTenant } = useFamilieTenant()
+  const navigate = useNavigate()
+  const { currentTenantId, tenantList, setCurrentTenantId, addTenant, refreshFromStorage } = useFamilieTenant()
+  const [seedDone, setSeedDone] = useState(false)
+
+  const handleLoadMusterfamilie = () => {
+    if (seedFamilieHuber()) {
+      refreshFromStorage()
+      setSeedDone(true)
+      navigate(PROJECT_ROUTES['k2-familie'].home)
+    }
+  }
 
   return (
     <div className="mission-wrapper">
@@ -22,7 +34,7 @@ export default function K2FamilieStartPage() {
               <span className="meta">Familie:</span>
               <select value={currentTenantId} onChange={(e) => setCurrentTenantId(e.target.value)}>
                 {tenantList.map((id) => (
-                  <option key={id} value={id}>{id === K2_FAMILIE_DEFAULT_TENANT ? 'Standard' : id}</option>
+                  <option key={id} value={id}>{getFamilieTenantDisplayName(id, 'Standard')}</option>
                 ))}
               </select>
               <button type="button" className="btn-outline" onClick={() => addTenant()}>Neue Familie</button>
@@ -40,6 +52,15 @@ export default function K2FamilieStartPage() {
         <div className="card">
           <h2>Vision</h2>
           <p>Jede Form des Zusammenlebens = ein Mandant. Jede Person = eine Seite (Foto, Text, Momente). Beziehungen = der Baum. Modern, app-tauglich, für jede Konstellation.</p>
+        </div>
+
+        <div className="card" style={{ borderLeft: '4px solid rgba(20,184,166,0.6)' }}>
+          <h2>Musterfamilie Huber anzeigen</h2>
+          <p>Eine bunte Demo-Familie: Paul & Antonia, 4 Kinder (2 Söhne, 2 Töchter), 6 Enkel, 3 Urenkel. Maria lebt mit Lebenspartnerin Sophie und adoptiertem Sohn Leon. Mit Platzhalter-Bildern und einer kleinen Jahresgeschichte (Events & Momente).</p>
+          <button type="button" className="btn" onClick={handleLoadMusterfamilie} style={{ background: 'rgba(20,184,166,0.25)', border: '1px solid rgba(20,184,166,0.6)', color: '#14b8a6' }}>
+            → Musterfamilie Huber laden und anzeigen
+          </button>
+          {seedDone && <p className="meta" style={{ marginTop: '0.5rem', color: 'rgba(20,184,166,0.9)' }}>Familie Huber geladen. Du siehst jetzt die Startseite der Familie Huber.</p>}
         </div>
 
         <div className="card">

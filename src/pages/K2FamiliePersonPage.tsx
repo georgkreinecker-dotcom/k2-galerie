@@ -296,7 +296,7 @@ export default function K2FamiliePersonPage() {
 
         <div className="card" style={{ display: 'flex', alignItems: 'flex-start', gap: '1.25rem', flexWrap: 'wrap' }}>
           {person.photo ? (
-            <img src={person.photo} alt="" style={{ width: 120, height: 120, borderRadius: 12, objectFit: 'cover' }} />
+            <img src={person.photo} alt="" className="person-photo" style={{ width: 120, height: 120, borderRadius: 12, objectFit: 'cover' }} />
           ) : (
             <div style={{ width: 120, height: 120, borderRadius: 12, background: 'rgba(13,148,136,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem' }}>👤</div>
           )}
