@@ -8,11 +8,11 @@
 
 | Was | Inhalt |
 |-----|--------|
-| **Datum** | 01.03.26 |
-| **Thema** | Code-5-Check (Georg: „check crash fehler 5“) |
-| **Zuletzt geändert/geöffnet** | PilotStartPage.tsx (neu), MarketingOek2Page (Pilot-Rubrik, QR für Handy), navigation.ts (pilotStart), App.tsx (Route), CRASH-BEREITS-GEPRUEFT.md |
-| **Hinweis von Georg** | „check crash fehler 5“ |
-| **Ergebnis** | PilotStartPage + MarketingOek2Page QR-useEffects geprüft: alle mit `cancelled`-Cleanup, kein setInterval/reload. Eintrag in CRASH-BEREITS-GEPRUEFT.md. Kein neuer Fix. |
+| **Datum** | 02.03.26 |
+| **Thema** | ro check crash |
+| **Zuletzt geändert/geöffnet** | K2 Familie (Start, Stammbaum, Person, Events, Kalender), FamilieTenantContext, DIALOG-STAND, CRASH-BEREITS-GEPRUEFT.md |
+| **Hinweis von Georg** | „ro check crash“ |
+| **Ergebnis** | K2-Familie-Seiten + alle *familie* durchsucht: kein setInterval/setTimeout/reload/addEventListener. useEffects nur sync load/setState. Kein neuer Fix. Eintrag in CRASH-BEREITS-GEPRUEFT.md. |
 
 ---
 

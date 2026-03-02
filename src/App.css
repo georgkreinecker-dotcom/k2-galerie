@@ -2055,3 +2055,57 @@ header h1 {
     transform: translateY(0);
   }
 }
+
+/* ========== K2 Familie – Web-Design (Türkis-Akzent) ========== */
+.k2-familie-page .viewport {
+  border-color: rgba(13, 148, 136, 0.2);
+}
+.k2-familie-page .card {
+  border-color: rgba(13, 148, 136, 0.25);
+}
+.k2-familie-page .card:hover {
+  border-color: rgba(13, 148, 136, 0.45);
+}
+.k2-familie-page .card::after {
+  background: linear-gradient(135deg, rgba(13, 148, 136, 0.15), transparent 65%);
+}
+.k2-familie-page .card h2 {
+  color: #14b8a6;
+}
+.k2-familie-page .btn,
+.k2-familie-page a.btn {
+  background: linear-gradient(120deg, #0d9488, #14b8a6);
+  box-shadow: 0 10px 30px rgba(13, 148, 136, 0.35);
+}
+.k2-familie-page .btn:hover,
+.k2-familie-page a.btn:hover {
+  box-shadow: 0 12px 35px rgba(13, 148, 136, 0.5);
+}
+.k2-familie-page .familie-toolbar select {
+  border-radius: 10px;
+  border: 1px solid rgba(13, 148, 136, 0.5);
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--k2-text);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+}
+.k2-familie-page .familie-toolbar .btn-outline {
+  background: rgba(13, 148, 136, 0.2);
+  border: 1px solid rgba(13, 148, 136, 0.5);
+  color: #14b8a6;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.k2-familie-page .card-actions .btn-outline.danger {
+  background: rgba(180, 0, 0, 0.15);
+  border-color: rgba(248, 113, 113, 0.4);
+  color: #f87171;
+}
+.k2-familie-page .field input,
+.k2-familie-page .field select,
+.k2-familie-page .field textarea {
+  border-color: rgba(13, 148, 136, 0.35);
+}

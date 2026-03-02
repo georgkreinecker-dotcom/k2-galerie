@@ -178,8 +178,9 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 | 01.03.26 | Intensiv-Test (Georg Pause) | Systematische Prüfung: location.reload/replace/href, setInterval/setTimeout, addEventListener-Cleanup, write-build-info, App-Start. Alle bekannten Stellen mit iframe-Check bzw. Cleanup. **Fix:** main.tsx – in iframe MAX_LOGS = 15 (statt 100) zur Crash-Vermeidung in Cursor Preview. Doku: docs/CRASH-INTENSIV-TEST.md. |
 | 01.03.26 | Code-5-Check (erneut) | **Neue Prüfung:** ImageCropModal (neu) – addEventListener mousemove/mouseup mit Cleanup ✓. env.ts safeReload – iframe-Check ✓. SeitengestaltungPage – setTimeout(1800) für setSaved(false) ohne Cleanup → bei HMR/Navigation setState nach Unmount. **Fix:** savedTimeoutRef + clearTimeout im useEffect-Cleanup. |
 | 01.03.26 | PilotStartPage, MarketingOek2Page (Pilot-Rubrik) | **Neue Datei:** PilotStartPage.tsx – ein useEffect (QRCode.toDataURL), Cleanup mit `cancelled`. Kein setInterval/reload. **MarketingOek2Page:** zwei weitere useEffects für QR (pilotStartQrUrl, pilotHandyLinkQrUrl), beide mit `cancelled`-Cleanup. Route pilotStart ohne Mok2Layout. Kein neuer Fix nötig. |
+| 02.03.26 | K2 Familie (alle Seiten + familie*) | **ro check crash:** K2FamiliePersonPage, K2FamilieEventsPage, K2FamilieStammbaumPage, K2FamilieKalenderPage, K2FamilieStartPage + alle src *familie* durchsucht. Kein setInterval, setTimeout, addEventListener, location.reload/replace/href. useEffects nur sync (load/setState), kein Cleanup nötig. Kein neuer Fix. |
 
-*Zuletzt ergänzt: 01.03.26 (Crash-Check – PilotStartPage, mök2 Pilot-Rubrik)*
+*Zuletzt ergänzt: 02.03.26 (Crash-Check – K2 Familie)*
 
 ---
 

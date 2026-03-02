@@ -5,21 +5,11 @@
 
 import { Link } from 'react-router-dom'
 import { useMemo } from 'react'
+import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { loadEvents, loadMomente, loadPersonen } from '../utils/familieStorage'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import type { K2FamilieEvent, K2FamilieMoment } from '../types/k2Familie'
-
-const STYLE = {
-  page: { minHeight: '100vh', background: '#1a0f0a', color: '#fff5f0', padding: 'clamp(1.5rem, 4vw, 2.5rem)', maxWidth: 720, margin: '0 auto', fontFamily: 'system-ui, sans-serif' } as const,
-  link: { color: '#14b8a6', textDecoration: 'none', fontSize: '0.95rem' },
-  h1: { fontSize: 'clamp(1.4rem, 4vw, 1.8rem)', margin: '0 0 0.5rem', color: '#14b8a6' },
-  monthBlock: { marginBottom: '1.5rem' },
-  monthTitle: { fontSize: '1rem', fontWeight: 600, color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', paddingBottom: '0.25rem', borderBottom: '1px solid rgba(13,148,136,0.3)' },
-  row: { padding: '0.5rem 0', borderBottom: '1px solid rgba(13,148,136,0.15)', display: 'flex', flexWrap: 'wrap' as const, gap: '0.5rem', alignItems: 'baseline' },
-  date: { fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)', minWidth: 100 },
-  label: { fontSize: '0.8rem', color: 'rgba(255,255,255,0.45)', marginLeft: '0.25rem' },
-}
 
 const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember']
 
@@ -76,50 +66,51 @@ export default function K2FamilieKalenderPage() {
   }, [eintraege])
 
   return (
-    <div style={STYLE.page}>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <Link to={PROJECT_ROUTES['k2-familie'].home} style={STYLE.link}>← K2 Familie</Link>
-      </div>
-
-      <h1 style={STYLE.h1}>Kalender & Übersicht</h1>
-      <p style={{ margin: '0 0 1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.8)' }}>
-        Alle Events und Momente nach Datum – gebündelt.
-      </p>
-
-      {eintraege.length === 0 ? (
-        <p style={{ color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>
-          Noch keine Einträge mit Datum. Events und Momente (mit Datum) erscheinen hier.
-        </p>
-      ) : (
-        byMonth.map(([monthKey, items]) => (
-          <div key={monthKey} style={STYLE.monthBlock}>
-            <div style={STYLE.monthTitle}>{formatMonthYear(monthKey + '-01')}</div>
-            {items.map((e) => (
-              <div key={e.type + '-' + e.id} style={STYLE.row}>
-                <span style={STYLE.date}>{e.date}</span>
-                {e.type === 'event' ? (
-                  <>
-                    <Link to={PROJECT_ROUTES['k2-familie'].events} style={STYLE.link}>{e.title}</Link>
-                    {e.extra && <span style={STYLE.label}>({e.extra})</span>}
-                  </>
-                ) : (
-                  <>
-                    <span style={{ color: '#fff5f0' }}>{e.title}</span>
-                    <span style={STYLE.label}>– {e.personName}</span>
-                    <Link to={`${PROJECT_ROUTES['k2-familie'].personen}/${e.personId}`} style={{ ...STYLE.link, fontSize: '0.85rem' }}>→ Person</Link>
-                  </>
-                )}
-              </div>
-            ))}
+    <div className="mission-wrapper">
+      <div className="viewport k2-familie-page">
+        <header>
+          <div>
+            <Link to={PROJECT_ROUTES['k2-familie'].home} className="meta">← K2 Familie</Link>
+            <h1 style={{ marginTop: '0.5rem' }}>Kalender & Übersicht</h1>
+            <div className="meta">Alle Events und Momente nach Datum – gebündelt.</div>
           </div>
-        ))
-      )}
+        </header>
 
-      <p style={{ marginTop: '1.5rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)' }}>
-        <Link to={PROJECT_ROUTES['k2-familie'].events} style={STYLE.link}>Events bearbeiten</Link>
-        {' · '}
-        <Link to={PROJECT_ROUTES['k2-familie'].stammbaum} style={STYLE.link}>Stammbaum</Link>
-      </p>
+        {eintraege.length === 0 ? (
+          <div className="card">
+            <p className="meta" style={{ margin: 0, fontStyle: 'italic' }}>Noch keine Einträge mit Datum. Events und Momente (mit Datum) erscheinen hier.</p>
+          </div>
+        ) : (
+          byMonth.map(([monthKey, items]) => (
+            <div key={monthKey} className="card" style={{ marginBottom: '1rem' }}>
+              <h2 style={{ margin: '0 0 0.5rem', fontSize: '1rem' }}>{formatMonthYear(monthKey + '-01')}</h2>
+              {items.map((e) => (
+                <div key={e.type + '-' + e.id} style={{ padding: '0.5rem 0', borderBottom: '1px solid rgba(13,148,136,0.15)', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'baseline' }}>
+                  <span className="meta" style={{ minWidth: 100 }}>{e.date}</span>
+                  {e.type === 'event' ? (
+                    <>
+                      <Link to={PROJECT_ROUTES['k2-familie'].events} className="btn" style={{ padding: '0.2rem 0.5rem', fontSize: '0.9rem' }}>{e.title}</Link>
+                      {e.extra && <span className="meta">({e.extra})</span>}
+                    </>
+                  ) : (
+                    <>
+                      <span>{e.title}</span>
+                      <span className="meta">– {e.personName}</span>
+                      <Link to={`${PROJECT_ROUTES['k2-familie'].personen}/${e.personId}`} className="meta">→ Person</Link>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          ))
+        )}
+
+        <p className="meta" style={{ marginTop: '1.5rem' }}>
+          <Link to={PROJECT_ROUTES['k2-familie'].events} className="btn" style={{ padding: '0.35rem 0.75rem', fontSize: '0.9rem' }}>Events bearbeiten</Link>
+          {' · '}
+          <Link to={PROJECT_ROUTES['k2-familie'].stammbaum} className="btn" style={{ padding: '0.35rem 0.75rem', fontSize: '0.9rem' }}>Stammbaum</Link>
+        </p>
+      </div>
     </div>
   )
 }

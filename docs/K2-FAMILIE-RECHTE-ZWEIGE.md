@@ -86,4 +86,21 @@ Bis dahin bleibt es bei **einem Tenant, alle dürfen (wer Zugang hat)** – wie 
 
 ---
 
+## Entscheidung 4.0 – in 3 Fragen (für Georg)
+
+**Wenn du 5 Minuten hast:** Beantworte die drei Fragen unten. Danach leiten wir daraus die Datenfelder und UI-Schritte ab (Phase 4.0 → Baumeister).
+
+| # | Frage | Wahl | Empfehlung |
+|---|--------|------|------------|
+| **1** | **Zweig-Definition:** Wie soll ein „Zweig“ definiert sein? | **A** Abstammung (Person + Nachkommen) · **B** Haushalt/Einheit · **C** Verwalteter Bereich (beliebige Gruppe + Verwalter) | **C** – am flexibelsten; A und B können später als Regeln auf C aufsetzen. |
+| **2** | **Rechte-Modell:** Ein gemeinsamer Baum oder getrennte Tenants pro Zweig? | **1** Tenant = Zweig · **2** Ein Tenant, Rolle pro Person · **3** Ein Tenant, Verwalter pro Zweig | **3** – ein Baum, Rechte klar pro Zweig (Verwalter pro Bereich), mittlere Komplexität. |
+| **3** | **Passt die Empfehlung (C + Option 3)?** | Ja → wir leiten daraus Datenmodell & UI ab. Nein → welche Kombination? (z. B. C + Option 2) | – |
+
+**Entscheidung (ausfüllen wenn getroffen):**
+- Datum: _______________
+- Zweig = _______________ (A / B / C oder Kombination)
+- Rechte = _______________ (Option 1 / 2 / 3)
+
+---
+
 **Quelle:** Diskussion „organisches Wachstum + Schreib-/Löschrechte pro Zweig“. Roadmap: `docs/K2-FAMILIE-ROADMAP.md` Phase 4.
