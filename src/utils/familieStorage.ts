@@ -11,6 +11,7 @@ import { getK2FamiliePersonenKey, getK2FamilieMomenteKey, getK2FamilieEventsKey 
 /** Erster Tenant (eine Familie) für den Start. Später: mehrere TenantIds pro Lizenz. */
 export const K2_FAMILIE_DEFAULT_TENANT = 'default'
 
+/** Max. 10 MB pro Key (localStorage). Großfamilien: Fotos komprimieren oder extern; siehe docs/K2-FAMILIE-SKALIERUNG-GROSSFAMILIEN.md */
 const MAX_JSON_SIZE = 10_000_000
 
 /**
