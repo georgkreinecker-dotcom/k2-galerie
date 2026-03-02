@@ -19,14 +19,20 @@ export default function K2FamilieStartPage() {
         K2 Familie
       </h1>
       <p style={{ margin: '0 0 1.5rem', fontSize: '1.05rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
-        Familien-Stammbaum modern – jeder sichtbar, vernetzt, mit eigener Seite. Basis: K2-Struktur, tenantfähig.
+        Zusammenleben sichtbar machen – jede Form von Familie, wechselnde Partnerschaften, Freud, Leid und Alltag. Basis: K2-Struktur, tenantfähig.
       </p>
 
-      <div style={{ padding: '1.25rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 12, marginBottom: '1.5rem' }}>
+      <div style={{ padding: '1.25rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 12, marginBottom: '1rem' }}>
+        <h2 style={{ fontSize: '1.1rem', margin: '0 0 0.75rem', color: '#5ffbf1' }}>Leitbild</h2>
+        <p style={{ margin: 0, lineHeight: 1.6, color: 'rgba(255,255,255,0.9)' }}>
+          Wir sind eine offene Gesellschaft – nicht Mittelalter. Jede Art des Zusammenlebens ist Familie und soll abgebildet werden können: wechselnde Partnerschaften, Schicksalsschläge und freudige Ereignisse, die wir gemeinsam erleben, und der ganz normale Alltag. All das bekommt hier seinen Platz.
+        </p>
+      </div>
+
+      <div style={{ padding: '1.25rem', background: 'rgba(95,251,241,0.06)', border: '1px solid rgba(95,251,241,0.25)', borderRadius: 12, marginBottom: '1.5rem' }}>
         <h2 style={{ fontSize: '1.1rem', margin: '0 0 0.75rem', color: '#5ffbf1' }}>Vision</h2>
         <p style={{ margin: 0, lineHeight: 1.6, color: 'rgba(255,255,255,0.9)' }}>
-          Jede Familie = ein Mandant. Jede Person = eine Seite (Foto, Text, Momente). Beziehungen = der Stammbaum.
-          Jeder Mensch will gesehen werden – das Tool macht es möglich: modern, app-tauglich, für jede Familie.
+          Jede Form des Zusammenlebens = ein Mandant. Jede Person = eine Seite (Foto, Text, Momente). Beziehungen = der Baum. Modern, app-tauglich, für jede Konstellation.
         </p>
       </div>
 

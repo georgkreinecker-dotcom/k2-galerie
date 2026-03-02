@@ -555,7 +555,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
           👨‍👩‍👧‍👦 K2 Familie
         </h4>
         <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)' }}>
-          Eigenes Projekt – Stammbaum, Personen, Momente (hat mit K2 Galerie nichts zu tun).
+          Eigenes Projekt – jede Form des Zusammenlebens, wechselnde Partnerschaften, Freud, Leid, Alltag (hat mit K2 Galerie nichts zu tun).
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
           <a

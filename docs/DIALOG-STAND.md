@@ -5,7 +5,8 @@
 ## Datum: 02.03.26
 
 ## Wo wir stehengeblieben (aktuell) – **HIER EINSTEIGEN**
-- **APf – K2 Familie eigene Struktur (02.03.26):** Im Smart Panel: K2 Familie als eigener Eintrag mit eigener Farbe (Teal #14b8a6 / #0d9488), in loadOrder und activePage für `/projects/k2-familie`. Zusätzlich eigener Block „K2 Familie“ mit Überschrift in Familien-Farben, Kurztext (hat mit K2 Galerie nichts zu tun), Link „→ Start & Vision“. Klar getrennt von K2-Galerie-Themen.
+- **K2 Familie Leitbild – offene Gesellschaft (02.03.26):** Leitbild in Roadmap, Startseite und APf verankert: keine Mittelalter-App, jede Art des Zusammenlebens = Familie, wechselnde Partnerschaften, Schicksalsschläge, Freud und Alltag haben Platz. Roadmap: neuer Abschnitt „Leitbild“, Vision und Phasen sprachlich inklusiv (Partner*innen, wechselnde Partnerschaften, Wahlfamilie). Startseite: Leitbild-Block + angepasste Vision. APf-Block: Kurztext angepasst.
+- **APf – K2 Familie eigene Struktur (02.03.26):** Im Smart Panel: K2 Familie als eigener Eintrag mit eigener Farbe (Teal), eigener Block mit Link „→ Start & Vision“. Klar getrennt von K2-Galerie-Themen.
 - **Session-Ende 01.03.26:** Schreiben an Michael (Prozess + Kontrast + QR), mök2-Struktur gruppiert, druckbare Kapitelseiten. Alle Änderungen committed und gepusht.
 - **Schreiben an Michael (01.03.26):** Eine Seite, ein Klick zur Galerie. Kontrast: heller Hintergrund, dunkle Schrift. QR „Adresse aufs Handy“ führt auf **diese** Seite (schreiben-michael), nicht auf die Galerie – in mök2 war vorher ein falscher QR (Galerie) entfernt. Georg: Link per WhatsApp an Michael → Michael tippt Link → tippt „Galerie öffnen“ → fertig.
 - **mök2-Struktur gruppiert (01.03.26):** Sidebar in 5 Kapiteln: Kern, Vertrieb, Bewertung & Lizenzen, Konzepte, Praktisch. Quelle: `src/config/mok2Structure.ts`. Druck: A4, jede Kapitelseite mit eigener Titelseite (Kern, Vertrieb, …). Text unter „Als PDF drucken“ angepasst.

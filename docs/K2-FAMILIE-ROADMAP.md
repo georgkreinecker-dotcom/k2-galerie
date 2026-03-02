@@ -2,13 +2,25 @@
 
 **Start:** 01.03.26  
 **Basis:** K2-Struktur (tenantfähig, Stammdaten, „Werke“/Momente, Events, eine Oberfläche).  
-**Kern:** Jeder Mensch will gesehen werden und sich ein wenig präsentieren – und ist vernetzt in seiner Grundfamilie.
+**Kern:** Jeder Mensch will gesehen werden und sich ein wenig präsentieren – vernetzt in den Menschen, mit denen er*sie lebt und verbunden ist.
+
+---
+
+## Leitbild – offene Gesellschaft, jede Form von Familie
+
+**Wir sind keine Mittelalter-App.** Wir leben in einer offenen Gesellschaft. Jede Art des Zusammenlebens ist Familie und soll abgebildet werden können. Dazu gehören:
+
+- **Wechselnde Partnerschaften** – Beziehungen können sich verändern, das Tool soll das abbilden, ohne zu werten.
+- **Schicksalsschläge und freudige Ereignisse** – Verlust, Neuanfang, Geburt, Hochzeit, Umzug, Krankheit, Heilung … alles, was wir gemeinsam erleben, bekommt seinen Platz.
+- **Der ganz normale Alltag** – nicht nur die großen Momente, sondern das tägliche Miteinander.
+
+All das soll in K2 Familie seinen Platz haben: sichtbar, respektvoll, ohne Schubladen.
 
 ---
 
 ## Vision in einem Satz
 
-**Ein tenantfähiges Familien-Stammbaum-Tool:** Jede Familie = ein Mandant. Jede Person = eine Seite (Foto, Text, Momente). Beziehungen (Eltern, Kinder, Partner, Geschwister) = der Baum. Modern, app-tauglich, für jede Familie skalierbar.
+**Ein tenantfähiges Familien-Tool für die offene Gesellschaft:** Jede „Familie“ (in welcher Form auch immer Menschen zusammenleben) = ein Mandant. Jede Person = eine Seite (Foto, Text, Momente). Beziehungen (Eltern, Kinder, Partner*innen, Geschwister, Wahlfamilie …) = der Baum. Wechselnde Partnerschaften, Schicksalsschläge, Freud und Alltag – alles hat Platz. Modern, app-tauglich, für jede Konstellation skalierbar.
 
 ---
 
@@ -17,20 +29,20 @@
 | K2 heute | K2 Familie |
 |----------|------------|
 | Tenant = Galerie (K2, ök2, VK2) | Tenant = **eine Familie** |
-| Stammdaten (Personen) | **Personen** mit Beziehungen (Eltern, Kinder, Partner, Geschwister) |
-| Werke (Bild + Titel + Beschreibung) | **Momente / Meilensteine** (Hochzeit, Geburt, Reise, Fotos, Geschichten) |
+| Stammdaten (Personen) | **Personen** mit Beziehungen (Eltern, Kinder, Partner*innen, Geschwister, Wahlfamilie – auch wechselnde) |
+| Werke (Bild + Titel + Beschreibung) | **Momente / Meilensteine** (Hochzeit, Geburt, Reise, Abschied, Neuanfang, Alltag, Fotos, Geschichten) |
 | Events | **Familien-Events** (Treffen, Feste, Geburtstage) |
 | Dokumente | **Familien-Dokumente** (optional) |
 | Eine Oberfläche, Admin + Anzeige | **Eine Oberfläche:** Stammbaum + Personen-Seiten + Momente |
 
-**Neu:** Beziehungsmodell (wer ist mit wem wie verbunden), Stammbaum-Ansicht (grafisch oder Liste), Geburtstage/Jubiläen, Einladungen nur für die Familie.
+**Neu:** Beziehungsmodell (wer ist mit wem wie verbunden – inkl. wechselnde Partnerschaften), Stammbaum-Ansicht (grafisch oder Liste), Geburtstage/Jubiläen, Freud und Leid und Alltag – Einladungen für die Menschen, die dazugehören.
 
 ---
 
 ## Sportwagen-Phasen (erste Skizze)
 
 ### Phase 1: Fundament – Datenmodell & eine Familie
-- [ ] **1.1** Beziehungsmodell definieren: Person hat `parentIds`, `childIds`, `partnerId`, `siblingIds` (oder ein einfaches Schema). Eine Quelle (z. B. `familieStorage.ts` oder Erweiterung Stammdaten).
+- [ ] **1.1** Beziehungsmodell definieren: Person hat `parentIds`, `childIds`, Partner*innen (evtl. mehrere, mit Zeitraum – wechselnde Partnerschaften), `siblingIds`, Wahlfamilie. Eine Quelle (z. B. `familieStorage.ts` oder Erweiterung Stammdaten).
 - [ ] **1.2** Ein Tenant „K2 Familie“ (oder erste Test-Familie) anlegen – gleiche Infrastruktur wie K2/ök2/VK2 (tenantId, Keys pro Familie).
 - [ ] **1.3** Personen-Liste pro Familie speichern und laden (Name, Foto, Kurztext, Beziehungen).
 
@@ -40,7 +52,7 @@
 - [ ] **2.3** Beziehungen im UI pflegbar (wer ist Mutter/Vater/Kind/Partner von wem).
 
 ### Phase 3: Momente & Events
-- [ ] **3.1** „Momente“ pro Person (Hochzeit, Geburt, Umzug, …) – gleiche Struktur wie Werke, andere Semantik.
+- [ ] **3.1** „Momente“ pro Person (Hochzeit, Geburt, Umzug, Abschied, Neuanfang, Alltägliches, …) – gleiche Struktur wie Werke, andere Semantik. Schicksalsschläge und freudige Ereignisse gleichwertig abbildbar.
 - [ ] **3.2** Familien-Events (Geburtstage, Treffen) aus Beziehungen ableiten oder manuell anlegen.
 - [ ] **3.3** Kalender/Übersicht (optional).
 
@@ -53,7 +65,7 @@
 ## Warum das groß werden kann
 
 - **Jeder Mensch** will gesehen werden und sich ein wenig präsentieren.
-- **Jede Familie** hat ähnliche Bedürfnisse: verbunden bleiben, Erinnerungen teilen, Überblick (wer gehört dazu, wer ist wer).
+- **Jede Form des Zusammenlebens** hat ähnliche Bedürfnisse: verbunden bleiben, Erinnerungen teilen, Überblick (wer gehört dazu, wer ist wer) – inkl. wechselnde Partnerschaften, Schicksalsschläge, Freud und Alltag.
 - **K2 hat die Basis:** Multi-Tenant, Personen, „Einträge“ (Werke/Momente), Events, eine Oberfläche. Wir bauen darauf auf, nicht von null.
 
 ---
@@ -67,3 +79,5 @@
 ---
 
 *„Mir läuft es kalt über den Rücken, wenn ich mir vorstelle, was so ein Tool bewirken kann.“ – Georg, 01.03.26*
+
+*„Wir sind nicht im Mittelalter – wir sind eine offene Gesellschaft. Jede Art von Zusammenleben ist Familie, wechselnde Partnerschaften, Schicksalsschläge, Freud und Alltag sollen alle ihren Platz bekommen.“ – Georg, 02.03.26*
