@@ -62,9 +62,9 @@
 - [x] **1.3** Personen-Liste pro Familie speichern und laden – **erledigt:** `src/utils/familieStorage.ts` mit `loadPersonen(tenantId)`, `savePersonen(tenantId, list, { allowReduce })`; gleiche Schutzregeln wie artworksStorage.
 
 ### Phase 2: Erste UI – Stammbaum & Personen-Seite
-- [ ] **2.1** Stammbaum-Ansicht (erst einfach: Liste oder Baum-Visualisierung). Klick auf Person → ihre Seite.
-- [ ] **2.2** Personen-Seite: Foto, Text, „Meine Momente“ (wie Werke: Bild + Titel + Datum + Text). Jeder Mensch sichtbar.
-- [ ] **2.3** Beziehungen im UI pflegbar (wer ist Mutter/Vater/Kind/Partner von wem).
+- [x] **2.1** Stammbaum-Ansicht (erst einfach: Liste). Klick auf Person → ihre Seite. **Erledigt:** K2FamilieStammbaumPage, Route /projects/k2-familie/stammbaum, „Person hinzufügen“.
+- [x] **2.2** Personen-Seite: Foto, Text, Name & Kurztext bearbeitbar, „Meine Momente“ Platzhalter. **Erledigt:** K2FamiliePersonPage, Route /projects/k2-familie/personen/:id.
+- [ ] **2.3** Beziehungen im UI pflegbar (Eltern/Kinder/Partner*innen/Geschwister/Wahlfamilie hinzufügen/entfernen) – Anzeige als Links erledigt, Bearbeitung folgt.
 
 ### Phase 3: Momente & Events
 - [ ] **3.1** „Momente“ pro Person (Hochzeit, Geburt, Umzug, Abschied, Neuanfang, Alltägliches, …) – gleiche Struktur wie Werke, andere Semantik. Schicksalsschläge und freudige Ereignisse gleichwertig abbildbar.

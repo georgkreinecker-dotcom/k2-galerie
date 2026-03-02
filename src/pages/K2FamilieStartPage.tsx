@@ -51,6 +51,21 @@ export default function K2FamilieStartPage() {
       </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
         <Link
+          to={PROJECT_ROUTES['k2-familie'].stammbaum}
+          style={{
+            padding: '0.75rem 1.25rem',
+            background: 'rgba(13,148,136,0.25)',
+            color: '#14b8a6',
+            border: '1px solid rgba(13,148,136,0.5)',
+            borderRadius: 10,
+            textDecoration: 'none',
+            fontWeight: 600,
+            fontSize: '1rem',
+          }}
+        >
+          → Stammbaum öffnen
+        </Link>
+        <Link
           to={PROJECT_ROUTES['k2-galerie'].plan}
           style={{
             padding: '0.75rem 1.25rem',

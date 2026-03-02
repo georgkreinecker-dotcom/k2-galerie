@@ -104,7 +104,8 @@ export const PROJECT_ROUTES = {
     id: 'k2-familie',
     name: 'K2 Familie',
     home: '/projects/k2-familie',
-    /** Weitere Routen folgen (Stammbaum, Person, Momente, …) */
+    stammbaum: '/projects/k2-familie/stammbaum',
+    personen: '/projects/k2-familie/personen',
     galerie: '/projects/k2-familie',
     galerieOeffentlich: '/projects/k2-galerie/galerie-oeffentlich',
     galerieOeffentlichVorschau: '/projects/k2-galerie/galerie-oeffentlich-vorschau',
