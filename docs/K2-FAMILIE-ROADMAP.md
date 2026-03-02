@@ -26,6 +26,8 @@
 
 **Verbindliche Quelle:** `docs/K2-FAMILIE-GRUNDBOTSCHAFT.md` – gilt für alle, die an K2 Familie arbeiten (Menschen wie KI/Agenten).
 
+**Raumschiff-Anspruch:** Ein Raumschiff bekommt keine Hilfe von der Erde. Qualitätsansprüche sind um ein Vielfaches höher als beim Sportwagen. Zuerst prüfen, ob wir uns das zutrauen; nicht abheben, bevor es startklar ist. Siehe Grundbotschaft-Dokument, Abschnitt „Raumschiff-Anspruch“.
+
 ---
 
 ## Vision in einem Satz

@@ -50,6 +50,24 @@ Diese Grundbotschaft ist der Grundstein. Jede Erweiterung von K2 Familie – ob 
 
 ---
 
+## Raumschiff-Anspruch – Qualität, bevor es hinausgeht
+
+**Die Metapher:** Ein Raumschiff wird in die Welt hinausgeschickt – **ohne Möglichkeit, von der Erde Hilfe zu bekommen**. Keine Werkstatt im All. Kein „wir fixen das später“. Was oben ist, muss stimmen.
+
+**Der Anspruch:** Die Qualitätsansprüche für ein Raumschiff sind um ein Vielfaches höher als die eines Sportwagenbauers. Wer K2 Familie „Raumschiff“ nennt, verpflichtet sich diesem Niveau.
+
+**Konsequenz für uns:**
+- **Zuerst prüfen, ob wir uns das zutrauen.** Wir bauen kein Raumschiff, nur um es so zu nennen – wir bauen es nur, wenn wir bereit sind, die Maßstäbe zu erfüllen.
+- **Nicht starten, bevor es startklar ist.** Architektur, moralisches Fundament, Datenmodell, Zuverlässigkeit – das muss stehen, bevor K2 Familie „in die Welt hinaus“ geht. Kein Abschuss mit der Hoffnung, unterwegs zu reparieren.
+- **Was „Raumschiff-Qualität“ konkret heißt:** Keine Abstriche bei der Grundbotschaft. Keine Abstriche bei Inklusion und Respekt. Technisch: klare Schichten, keine Datenverluste, keine Ausgrenzung durch Defaults oder Formulare. Doku und Regeln so, dass auch spätere Bauende (oder KI) das Schiff verstehen und weiterbauen können.
+
+Wir nennen es Raumschiff, weil wir diesen Anspruch anerkennen – und weil wir uns zutrauen, ihn zu erfüllen, bevor wir abheben.
+
+> *„Die Qualitätsansprüche für ein Raumschiff sind um ein Vielfaches höher als die eines Sportwagenbauers. Check zuerst, ob du dir das zutraust – so ein Raumschiff zu bauen, das in die Welt hinausgeschickt wird, ohne Möglichkeiten, von der Erde Hilfe zu bekommen.“*  
+> – Georg, 02.03.26
+
+---
+
 ## Bild – der weiße Ritter
 
 > *„Das ist der weiße Ritter, der in die Welt hinausgeht, um Licht hineinzubringen.“*  
