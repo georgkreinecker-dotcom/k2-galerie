@@ -81,7 +81,7 @@ function getDefaultDescription(projectId: ProjectId): string {
   const descriptions: Partial<Record<ProjectId, string>> = {
     'k2-galerie': 'Projekt-Start, Control-Studio, Plan, Mobile-Connect – Steuerung und Inhalte.',
     vk2: 'Vereinsplattform – Künstler:innen, Mitglieder, Admin.',
-    'k2-familie': 'Familienstammbaum modern – jeder sichtbar, vernetzt, mit eigener Seite. Sportwagenmodus.',
+    'k2-familie': 'Familienstammbaum modern – jeder sichtbar, vernetzt, mit eigener Seite. Raumschiff.',
   }
   return descriptions[projectId] ?? 'Projekt öffnen.'
 }

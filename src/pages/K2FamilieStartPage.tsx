@@ -1,5 +1,5 @@
 /**
- * K2 Familie – Projekt-Start. Vision, Roadmap, Sportwagenmodus.
+ * K2 Familie – Projekt-Start. Vision, Roadmap, Raumschiff.
  * Route: /projects/k2-familie
  */
 
@@ -37,9 +37,9 @@ export default function K2FamilieStartPage() {
       </div>
 
       <div style={{ padding: '1.25rem', background: 'rgba(13,148,136,0.12)', border: '1px solid rgba(13,148,136,0.4)', borderRadius: 12, marginBottom: '1.5rem' }}>
-        <h2 style={{ fontSize: '1.1rem', margin: '0 0 0.75rem', color: '#0d9488' }}>Sportwagenmodus</h2>
+        <h2 style={{ fontSize: '1.1rem', margin: '0 0 0.75rem', color: '#0d9488' }}>Raumschiff</h2>
         <p style={{ margin: '0 0 1rem', lineHeight: 1.6, color: 'rgba(255,255,255,0.9)' }}>
-          Roadmap und Phasen (Fundament → Stammbaum & Personen-Seite → Momente & Events → Skalierung) stehen in der Doku.
+          Roadmap und Phasen (Fundament → Stammbaum & Personen-Seite → Momente & Events → Skalierung) stehen in der Doku. Vom Sportwagen zum Raumschiff – wir heben ab.
         </p>
         <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.75)' }}>
           <strong>Nächste Schritte:</strong> Datenmodell Person + Beziehungen festlegen → erste UI (Stammbaum, Personen-Seite).

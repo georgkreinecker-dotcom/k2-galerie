@@ -5,7 +5,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 ---
 
 ## Plan & nächste Schritte
-- **K2-FAMILIE-ROADMAP.md** – **K2 Familie (Sportwagenmodus):** Vision, Phasen (Fundament → Stammbaum & Personen → Momente & Events → Skalierung). Start 01.03.26. Projektkarte auf Projekte-Seite, Startseite unter /projects/k2-familie.
+- **K2-FAMILIE-ROADMAP.md** – **K2 Familie (Raumschiff):** Vision, Phasen (Fundament → Stammbaum & Personen → Momente & Events → Skalierung). Start 01.03.26. Projektkarte auf Projekte-Seite, Startseite unter /projects/k2-familie.
 - **K2-FAMILIE-GRUNDBOTSCHAFT.md** – **K2 Familie – moralisches Fundament:** Grundbotschaft (keine Ausgrenzung, Respekt, Religion/Politik raus) gilt für Form der App, Sprache und jede zukünftige KI/Agent-Kommunikation. Georgs Vermächtnis. Verbindlich für alle, die an K2 Familie arbeiten.
 - **PLAN-SCHRITT-FUER-SCHRITT.md** – **Unser gemeinsamer Plan:** Schritte 1–10 in Reihenfolge (Basis abhaken → ein Feature wählen → Pilot-Verein → Onboarding → optional Preise → später Rest). Ein Schritt nach dem anderen.
 - **ADMIN-STRUKTUR-HUB-DESIGN-IDEE.md** – **Idee/Prüfauftrag:** Admin-Einstieg („Was möchtest du tun?“) im gleichen Hub-Layout wie Entdecken – 3 Spalten, Fokus Mitte, zielsicherer und optisch überzeugend. Wann umsetzen offen.

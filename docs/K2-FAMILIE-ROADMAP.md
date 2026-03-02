@@ -1,4 +1,4 @@
-# K2 Familie – Vision & Roadmap (Sportwagenmodus)
+# K2 Familie – Vision & Roadmap (Raumschiff)
 
 **Start:** 01.03.26  
 **Basis:** K2-Struktur (tenantfähig, Stammdaten, „Werke“/Momente, Events, eine Oberfläche).  
@@ -49,7 +49,7 @@
 
 ---
 
-## Sportwagen-Phasen (erste Skizze)
+## Raumschiff-Phasen (erste Skizze)
 
 ### Phase 1: Fundament – Datenmodell & eine Familie
 - [ ] **1.1** Beziehungsmodell definieren: Person hat `parentIds`, `childIds`, Partner*innen (evtl. mehrere, mit Zeitraum – wechselnde Partnerschaften), `siblingIds`, Wahlfamilie. Eine Quelle (z. B. `familieStorage.ts` oder Erweiterung Stammdaten).
@@ -80,7 +80,7 @@
 
 ---
 
-## Nächster konkreter Schritt (Sportwagenmodus)
+## Nächster konkreter Schritt (Raumschiff)
 
 1. **Datenmodell** in einer Doku oder in Code festhalten: Person + Beziehungen (minimal: Eltern, Kinder, Partner).
 2. **Erste Route** `/projects/k2-familie` mit Startseite (Vision, Link zu dieser Roadmap) – **erledigt mit Projektkarte + Startseite**.
