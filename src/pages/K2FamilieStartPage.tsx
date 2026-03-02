@@ -5,14 +5,29 @@
 
 import { Link } from 'react-router-dom'
 import { PROJECT_ROUTES, PLATFORM_ROUTES } from '../config/navigation'
+import { useFamilieTenant } from '../context/FamilieTenantContext'
+import { K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
 
 export default function K2FamilieStartPage() {
+  const { currentTenantId, tenantList, setCurrentTenantId, addTenant } = useFamilieTenant()
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--k2-bg-1, #1a0f0a)', color: 'var(--k2-text, #fff5f0)', padding: 'clamp(1.5rem, 4vw, 2.5rem)', maxWidth: 720, margin: '0 auto', fontFamily: 'system-ui, sans-serif' }}>
-      <div style={{ marginBottom: '2rem' }}>
+      <div style={{ marginBottom: '2rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1rem' }}>
         <Link to={PLATFORM_ROUTES.projects} style={{ color: '#5ffbf1', textDecoration: 'none', fontSize: '0.95rem' }}>
           ← Projekte
         </Link>
+        <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem' }}>Familie:</span>
+        <select
+          value={currentTenantId}
+          onChange={(e) => setCurrentTenantId(e.target.value)}
+          style={{ padding: '0.35rem 0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(13,148,136,0.5)', borderRadius: 6, color: '#fff5f0', fontSize: '0.9rem' }}
+        >
+          {tenantList.map((id) => (
+            <option key={id} value={id}>{id === K2_FAMILIE_DEFAULT_TENANT ? 'Standard' : id}</option>
+          ))}
+        </select>
+        <button type="button" onClick={() => addTenant()} style={{ padding: '0.35rem 0.75rem', background: 'rgba(13,148,136,0.25)', color: '#14b8a6', border: '1px solid rgba(13,148,136,0.5)', borderRadius: 6, fontSize: '0.9rem', cursor: 'pointer' }}>Neue Familie</button>
       </div>
 
       <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', margin: '0 0 0.5rem', color: '#5ffbf1' }}>

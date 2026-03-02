@@ -6,7 +6,8 @@
 import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { loadPersonen, savePersonen, loadMomente, saveMomente, K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
+import { loadPersonen, savePersonen, loadMomente, saveMomente } from '../utils/familieStorage'
+import { useFamilieTenant } from '../context/FamilieTenantContext'
 import type { K2FamiliePerson, K2FamilieMoment } from '../types/k2Familie'
 
 const STYLE = {
@@ -21,8 +22,9 @@ const STYLE = {
 
 export default function K2FamiliePersonPage() {
   const { id } = useParams<{ id: string }>()
-  const [personen, setPersonen] = useState<K2FamiliePerson[]>(() => loadPersonen(K2_FAMILIE_DEFAULT_TENANT))
-  const [momente, setMomente] = useState<K2FamilieMoment[]>(() => loadMomente(K2_FAMILIE_DEFAULT_TENANT))
+  const { currentTenantId } = useFamilieTenant()
+  const [personen, setPersonen] = useState<K2FamiliePerson[]>(() => loadPersonen(currentTenantId))
+  const [momente, setMomente] = useState<K2FamilieMoment[]>(() => loadMomente(currentTenantId))
   const [edit, setEdit] = useState(false)
   const [name, setName] = useState('')
   const [shortText, setShortText] = useState('')
@@ -33,9 +35,9 @@ export default function K2FamiliePersonPage() {
   const [momentText, setMomentText] = useState('')
 
   useEffect(() => {
-    setPersonen(loadPersonen(K2_FAMILIE_DEFAULT_TENANT))
-    setMomente(loadMomente(K2_FAMILIE_DEFAULT_TENANT))
-  }, [id])
+    setPersonen(loadPersonen(currentTenantId))
+    setMomente(loadMomente(currentTenantId))
+  }, [id, currentTenantId])
 
   const person = personen.find((p) => p.id === id)
 
@@ -55,7 +57,7 @@ export default function K2FamiliePersonPage() {
       updatedAt: new Date().toISOString(),
     }
     const next = personen.map((p) => (p.id === id ? updated : p))
-    if (savePersonen(K2_FAMILIE_DEFAULT_TENANT, next, { allowReduce: false })) {
+    if (savePersonen(currentTenantId, next, { allowReduce: false })) {
       setPersonen(next)
       setEdit(false)
     }
@@ -65,7 +67,7 @@ export default function K2FamiliePersonPage() {
   const otherPersonen = personen.filter((p) => p.id !== id)
 
   const updateAndSave = (next: K2FamiliePerson[]) => {
-    if (savePersonen(K2_FAMILIE_DEFAULT_TENANT, next, { allowReduce: false })) setPersonen(next)
+    if (savePersonen(currentTenantId, next, { allowReduce: false })) setPersonen(next)
   }
 
   const addParent = (otherId: string) => {
@@ -216,7 +218,7 @@ export default function K2FamiliePersonPage() {
         updatedAt: now,
       }
       const next = [...momente, newM]
-      if (saveMomente(K2_FAMILIE_DEFAULT_TENANT, next)) {
+      if (saveMomente(currentTenantId, next)) {
         setMomente(next)
         setEditingMomentId(null)
       }
@@ -233,7 +235,7 @@ export default function K2FamiliePersonPage() {
             }
           : m
       )
-      if (saveMomente(K2_FAMILIE_DEFAULT_TENANT, next)) {
+      if (saveMomente(currentTenantId, next)) {
         setMomente(next)
         setEditingMomentId(null)
       }
@@ -241,7 +243,7 @@ export default function K2FamiliePersonPage() {
   }
   const deleteMoment = (momentId: string) => {
     const next = momente.filter((m) => m.id !== momentId)
-    if (saveMomente(K2_FAMILIE_DEFAULT_TENANT, next, { allowReduce: true })) setMomente(next)
+    if (saveMomente(currentTenantId, next, { allowReduce: true })) setMomente(next)
     if (editingMomentId === momentId) setEditingMomentId(null)
   }
 

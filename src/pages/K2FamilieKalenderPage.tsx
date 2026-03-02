@@ -6,7 +6,8 @@
 import { Link } from 'react-router-dom'
 import { useMemo } from 'react'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { loadEvents, loadMomente, loadPersonen, K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
+import { loadEvents, loadMomente, loadPersonen } from '../utils/familieStorage'
+import { useFamilieTenant } from '../context/FamilieTenantContext'
 import type { K2FamilieEvent, K2FamilieMoment } from '../types/k2Familie'
 
 const STYLE = {
@@ -30,9 +31,10 @@ function formatMonthYear(dateStr: string): string {
 }
 
 export default function K2FamilieKalenderPage() {
-  const personen = useMemo(() => loadPersonen(K2_FAMILIE_DEFAULT_TENANT), [])
-  const events = useMemo(() => loadEvents(K2_FAMILIE_DEFAULT_TENANT), [])
-  const momente = useMemo(() => loadMomente(K2_FAMILIE_DEFAULT_TENANT), [])
+  const { currentTenantId } = useFamilieTenant()
+  const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId])
+  const events = useMemo(() => loadEvents(currentTenantId), [currentTenantId])
+  const momente = useMemo(() => loadMomente(currentTenantId), [currentTenantId])
 
   const getPersonName = (personId: string) => personen.find((p) => p.id === personId)?.name ?? personId
 

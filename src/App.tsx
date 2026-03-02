@@ -27,6 +27,7 @@ import K2FamilieStammbaumPage from './pages/K2FamilieStammbaumPage'
 import K2FamiliePersonPage from './pages/K2FamiliePersonPage'
 import K2FamilieEventsPage from './pages/K2FamilieEventsPage'
 import K2FamilieKalenderPage from './pages/K2FamilieKalenderPage'
+import K2FamilieLayout from './components/K2FamilieLayout'
 import PlatzanordnungPage from './pages/PlatzanordnungPage'
 import VitaPage from './pages/VitaPage'
 import ShopPage from './pages/ShopPage'
@@ -527,11 +528,13 @@ function App() {
       <Route path={PROJECT_ROUTES.vk2.mitgliedLogin} element={<Vk2MitgliedLoginPage />} />
       <Route path={PROJECT_ROUTES.vk2.kunden} element={<KundenPage vk2 />} />
       <Route path={PROJECT_ROUTES.vk2.vollversion} element={<Navigate to="/admin?context=vk2" replace />} />
-      <Route path={PROJECT_ROUTES['k2-familie'].home} element={<K2FamilieStartPage />} />
-      <Route path={PROJECT_ROUTES['k2-familie'].stammbaum} element={<K2FamilieStammbaumPage />} />
-      <Route path={PROJECT_ROUTES['k2-familie'].events} element={<K2FamilieEventsPage />} />
-      <Route path={PROJECT_ROUTES['k2-familie'].kalender} element={<K2FamilieKalenderPage />} />
-      <Route path={`${PROJECT_ROUTES['k2-familie'].personen}/:id`} element={<K2FamiliePersonPage />} />
+      <Route path={PROJECT_ROUTES['k2-familie'].home} element={<K2FamilieLayout />}>
+        <Route index element={<K2FamilieStartPage />} />
+        <Route path="stammbaum" element={<K2FamilieStammbaumPage />} />
+        <Route path="events" element={<K2FamilieEventsPage />} />
+        <Route path="kalender" element={<K2FamilieKalenderPage />} />
+        <Route path="personen/:id" element={<K2FamiliePersonPage />} />
+      </Route>
       <Route path="/projects/:projectId" element={<ProjectStartPage />} />
             <Route path={PROJECT_ROUTES['k2-galerie'].platzanordnung} element={<PlatzanordnungPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].shop} element={<ShopPage />} />

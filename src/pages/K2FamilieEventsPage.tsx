@@ -6,7 +6,8 @@
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { loadEvents, saveEvents, loadPersonen, K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
+import { loadEvents, saveEvents, loadPersonen } from '../utils/familieStorage'
+import { useFamilieTenant } from '../context/FamilieTenantContext'
 import type { K2FamilieEvent } from '../types/k2Familie'
 
 const STYLE = {
@@ -24,8 +25,9 @@ function generateEventId(): string {
 }
 
 export default function K2FamilieEventsPage() {
-  const [events, setEvents] = useState<K2FamilieEvent[]>(() => loadEvents(K2_FAMILIE_DEFAULT_TENANT))
-  const [personen, setPersonen] = useState(() => loadPersonen(K2_FAMILIE_DEFAULT_TENANT))
+  const { currentTenantId } = useFamilieTenant()
+  const [events, setEvents] = useState<K2FamilieEvent[]>(() => loadEvents(currentTenantId))
+  const [personen, setPersonen] = useState(() => loadPersonen(currentTenantId))
   const [editingId, setEditingId] = useState<string | 'new' | null>(null)
   const [title, setTitle] = useState('')
   const [date, setDate] = useState('')
@@ -33,9 +35,9 @@ export default function K2FamilieEventsPage() {
   const [note, setNote] = useState('')
 
   useEffect(() => {
-    setEvents(loadEvents(K2_FAMILIE_DEFAULT_TENANT))
-    setPersonen(loadPersonen(K2_FAMILIE_DEFAULT_TENANT))
-  }, [])
+    setEvents(loadEvents(currentTenantId))
+    setPersonen(loadPersonen(currentTenantId))
+  }, [currentTenantId])
 
   const getPersonName = (personId: string) => personen.find((p) => p.id === personId)?.name ?? personId
 
@@ -66,7 +68,7 @@ export default function K2FamilieEventsPage() {
         updatedAt: now,
       }
       const next = [...events, neu]
-      if (saveEvents(K2_FAMILIE_DEFAULT_TENANT, next)) {
+      if (saveEvents(currentTenantId, next)) {
         setEvents(next)
         setEditingId(null)
       }
@@ -76,7 +78,7 @@ export default function K2FamilieEventsPage() {
           ? { ...ev, title: title.trim() || ev.title, date: date || ev.date, participantIds: [...participantIds], note: note.trim() || undefined, updatedAt: now }
           : ev
       )
-      if (saveEvents(K2_FAMILIE_DEFAULT_TENANT, next)) {
+      if (saveEvents(currentTenantId, next)) {
         setEvents(next)
         setEditingId(null)
       }
@@ -84,7 +86,7 @@ export default function K2FamilieEventsPage() {
   }
   const remove = (eventId: string) => {
     const next = events.filter((e) => e.id !== eventId)
-    if (saveEvents(K2_FAMILIE_DEFAULT_TENANT, next, { allowReduce: true })) setEvents(next)
+    if (saveEvents(currentTenantId, next, { allowReduce: true })) setEvents(next)
     if (editingId === eventId) setEditingId(null)
   }
 

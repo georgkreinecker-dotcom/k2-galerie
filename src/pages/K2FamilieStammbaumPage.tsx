@@ -6,6 +6,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { PROJECT_ROUTES, PLATFORM_ROUTES } from '../config/navigation'
 import { loadPersonen, savePersonen, K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
+import { useFamilieTenant } from '../context/FamilieTenantContext'
 import type { K2FamiliePerson } from '../types/k2Familie'
 import { useMemo } from 'react'
 
@@ -23,7 +24,8 @@ function generateId(): string {
 
 export default function K2FamilieStammbaumPage() {
   const navigate = useNavigate()
-  const personen = useMemo(() => loadPersonen(K2_FAMILIE_DEFAULT_TENANT), [])
+  const { currentTenantId } = useFamilieTenant()
+  const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId])
 
   const addPerson = () => {
     const neu: K2FamiliePerson = {
@@ -36,14 +38,23 @@ export default function K2FamilieStammbaumPage() {
       wahlfamilieIds: [],
     }
     const next = [...personen, neu]
-    if (!savePersonen(K2_FAMILIE_DEFAULT_TENANT, next, { allowReduce: false })) return
+    if (!savePersonen(currentTenantId, next, { allowReduce: false })) return
     navigate(`${PROJECT_ROUTES['k2-familie'].personen}/${neu.id}`)
   }
 
+  const { tenantList, setCurrentTenantId, addTenant } = useFamilieTenant()
+
   return (
     <div style={STYLE.page}>
-      <div style={{ marginBottom: '1.5rem' }}>
+      <div style={{ marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
         <Link to={PROJECT_ROUTES['k2-familie'].home} style={STYLE.link}>← K2 Familie</Link>
+        <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem' }}>Familie:</span>
+        <select value={currentTenantId} onChange={(e) => setCurrentTenantId(e.target.value)} style={{ padding: '0.3rem 0.5rem', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(13,148,136,0.5)', borderRadius: 6, color: '#fff5f0', fontSize: '0.85rem' }}>
+          {tenantList.map((id) => (
+            <option key={id} value={id}>{id === K2_FAMILIE_DEFAULT_TENANT ? 'Standard' : id}</option>
+          ))}
+        </select>
+        <button type="button" onClick={() => addTenant()} style={{ padding: '0.3rem 0.6rem', background: 'rgba(13,148,136,0.2)', color: '#14b8a6', border: '1px solid rgba(13,148,136,0.45)', borderRadius: 6, fontSize: '0.85rem', cursor: 'pointer' }}>Neue Familie</button>
       </div>
 
       <h1 style={STYLE.h1}>Stammbaum</h1>

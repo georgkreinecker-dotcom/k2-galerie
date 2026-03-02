@@ -73,7 +73,7 @@
 
 ### Phase 4: Skalierung & Produkt
 - [ ] **4.0** **Rechte & Zweige (Konzept):** Organisches Wachstum + Schreib-/Löschrechte pro Zweig – Optionen und Entscheidung in `docs/K2-FAMILIE-RECHTE-ZWEIGE.md`. Danach Datenmodell/UI ableiten.
-- [ ] **4.1** Jede Familie = eigener Tenant (wie Galerie pro Künstler:in). Einladung/Lizenz pro Familie.
+- [x] **4.1** Jede Familie = eigener Tenant (wie Galerie pro Künstler:in). **Erledigt:** FamilieTenantContext (aktueller Tenant + Liste), K2FamilieLayout mit Provider, nested Routes; Familien-Auswahl (Dropdown + „Neue Familie“) auf Start- und Stammbaum-Seite; alle Seiten (Person, Events, Kalender) nutzen currentTenantId. Tenant-Liste in localStorage, aktueller Tenant in sessionStorage.
 - [ ] **4.2** Doku, Onboarding, evtl. Lizenzmodell „K2 Familie“.
 
 **Phase 4 – Nächste Schritte (für den Baumeister):**
