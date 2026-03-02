@@ -7,6 +7,37 @@ import TermWithExplanation from '../components/TermWithExplanation'
 import { isValidEmpfehlerIdFormat } from '../utils/empfehlerId'
 import { addGutschrift } from '../utils/empfehlerGutschrift'
 
+/** API-Response: Online gekaufte Lizenzen aus Supabase */
+interface OnlineLicence {
+  id: string
+  email: string
+  name: string
+  licence_type: string
+  status: string
+  empfehler_id: string | null
+  stripe_session_id: string | null
+  created_at: string
+}
+interface OnlinePayment {
+  id: string
+  licence_id: string
+  amount_cents: number
+  amount_eur: number | string
+  currency: string
+  stripe_session_id: string
+  empfehler_id: string | null
+  paid_at: string
+  created_at: string
+}
+interface OnlineGutschrift {
+  id: string
+  empfehler_id: string
+  amount_eur: number | string
+  payment_id: string
+  licence_id: string
+  created_at: string
+}
+
 const STORAGE_KEY = 'k2-license-grants'
 
 export interface LicenceGrant {
@@ -64,10 +95,69 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
   const [empfehlerId, setEmpfehlerId] = useState('')
   const [message, setMessage] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [onlineLicences, setOnlineLicences] = useState<OnlineLicence[]>([])
+  const [onlinePayments, setOnlinePayments] = useState<OnlinePayment[]>([])
+  const [onlineGutschriften, setOnlineGutschriften] = useState<OnlineGutschrift[]>([])
+  const [onlineLoading, setOnlineLoading] = useState(false)
+  const [onlineError, setOnlineError] = useState<string | null>(null)
 
   useEffect(() => {
     setGrants(loadGrants())
   }, [])
+
+  async function loadOnlineData() {
+    setOnlineLoading(true)
+    setOnlineError(null)
+    try {
+      const base = window.location.origin
+      const res = await fetch(`${base}/api/licence-data`)
+      const data = await res.json()
+      setOnlineLicences(Array.isArray(data.licences) ? data.licences : [])
+      setOnlinePayments(Array.isArray(data.payments) ? data.payments : [])
+      setOnlineGutschriften(Array.isArray(data.gutschriften) ? data.gutschriften : [])
+      if (data.error) setOnlineError(data.error)
+    } catch (e) {
+      setOnlineError((e as Error)?.message || 'Fehler beim Laden')
+    } finally {
+      setOnlineLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadOnlineData()
+  }, [])
+
+  function exportCsv() {
+    const sep = ';'
+    const rows: string[] = []
+    rows.push('Lizenzen (online gekauft)')
+    rows.push(['E-Mail', 'Name', 'Lizenz', 'Status', 'Empfehler-ID', 'Datum'].join(sep))
+    onlineLicences.forEach((l) => {
+      rows.push([l.email, l.name, l.licence_type, l.status, l.empfehler_id ?? '', l.created_at?.slice(0, 10) ?? ''].join(sep))
+    })
+    rows.push('')
+    rows.push('Zahlungen')
+    rows.push(['Betrag (€)', 'Datum', 'Stripe-Session', 'Empfehler-ID'].join(sep))
+    onlinePayments.forEach((p) => {
+      rows.push([String(p.amount_eur), (p.paid_at || p.created_at)?.slice(0, 10) ?? '', p.stripe_session_id ?? '', p.empfehler_id ?? ''].join(sep))
+    })
+    rows.push('')
+    rows.push('Gutschriften (Empfehler)')
+    rows.push(['Empfehler-ID', 'Betrag (€)', 'Datum'].join(sep))
+    onlineGutschriften.forEach((g) => {
+      rows.push([g.empfehler_id, String(g.amount_eur), g.created_at?.slice(0, 10) ?? ''].join(sep))
+    })
+    const blob = new Blob(['\uFEFF' + rows.join('\r\n')], { type: 'text/csv;charset=utf-8' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `Lizenzen-Zahlungen-Gutschriften-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(a.href)
+  }
+
+  function printPdf() {
+    window.print()
+  }
 
   // Empfehler-ID aus URL vorausfüllen (?empfehler=K2-E-XXXXXX) – einmalig beim Laden
   useEffect(() => {
@@ -283,6 +373,119 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
             )}
             <button type="submit" className="btn primary-btn">Lizenz erfassen</button>
           </form>
+        </section>
+
+        {/* ONLINE GEKAUFTE LIZENZEN & ABRECHNUNG */}
+        <section
+          className="licence-export-area"
+          style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '12px',
+            padding: '1.25rem',
+            marginBottom: '1.5rem',
+          }}
+        >
+          <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.5rem', color: 'var(--k2-text)' }}>
+            📊 Online gekaufte Lizenzen & Abrechnung
+          </h2>
+          <p style={{ fontSize: '0.85rem', color: 'var(--k2-muted)', margin: '0 0 0.75rem' }}>
+            Daten aus Stripe/Supabase (Zahlungen, Lizenzen, Empfehler-Gutschriften). Export für Buchhaltung.
+          </p>
+          <div className="no-print" style={{ marginBottom: '0.75rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button type="button" onClick={loadOnlineData} disabled={onlineLoading} className="btn" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>
+              {onlineLoading ? 'Laden…' : '🔄 Daten neu laden'}
+            </button>
+            <button type="button" onClick={exportCsv} disabled={onlineLoading || (onlineLicences.length === 0 && onlinePayments.length === 0)} className="btn primary-btn" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>
+              📥 Als CSV exportieren
+            </button>
+            <button type="button" onClick={printPdf} disabled={onlineLoading || (onlineLicences.length === 0 && onlinePayments.length === 0)} className="btn" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>
+              🖨️ Als PDF drucken
+            </button>
+          </div>
+          {onlineError && (
+            <p style={{ fontSize: '0.85rem', color: '#f87171', margin: '0 0 0.5rem' }}>{onlineError}</p>
+          )}
+          {onlineLoading && onlineLicences.length === 0 && onlinePayments.length === 0 && (
+            <p style={{ fontSize: '0.9rem', color: 'var(--k2-muted)' }}>Lade Daten…</p>
+          )}
+          {!onlineLoading && (onlineLicences.length > 0 || onlinePayments.length > 0 || onlineGutschriften.length > 0) && (
+            <div style={{ overflowX: 'auto' }}>
+              {onlineLicences.length > 0 && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <h3 style={{ fontSize: '0.95rem', margin: '0 0 0.4rem', color: 'var(--k2-accent)' }}>Lizenzen ({onlineLicences.length})</h3>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
+                        <th style={{ textAlign: 'left', padding: '0.35rem 0.5rem' }}>E-Mail</th>
+                        <th style={{ textAlign: 'left', padding: '0.35rem 0.5rem' }}>Name</th>
+                        <th style={{ textAlign: 'left', padding: '0.35rem 0.5rem' }}>Lizenz</th>
+                        <th style={{ textAlign: 'left', padding: '0.35rem 0.5rem' }}>Empfehler</th>
+                        <th style={{ textAlign: 'left', padding: '0.35rem 0.5rem' }}>Datum</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {onlineLicences.map((l) => (
+                        <tr key={l.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                          <td style={{ padding: '0.35rem 0.5rem' }}>{l.email}</td>
+                          <td style={{ padding: '0.35rem 0.5rem' }}>{l.name}</td>
+                          <td style={{ padding: '0.35rem 0.5rem' }}>{l.licence_type}</td>
+                          <td style={{ padding: '0.35rem 0.5rem' }}>{l.empfehler_id ?? '–'}</td>
+                          <td style={{ padding: '0.35rem 0.5rem' }}>{l.created_at?.slice(0, 10)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {onlinePayments.length > 0 && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <h3 style={{ fontSize: '0.95rem', margin: '0 0 0.4rem', color: 'var(--k2-accent)' }}>Zahlungen ({onlinePayments.length})</h3>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
+                        <th style={{ textAlign: 'left', padding: '0.35rem 0.5rem' }}>Betrag (€)</th>
+                        <th style={{ textAlign: 'left', padding: '0.35rem 0.5rem' }}>Datum</th>
+                        <th style={{ textAlign: 'left', padding: '0.35rem 0.5rem' }}>Empfehler</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {onlinePayments.map((p) => (
+                        <tr key={p.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                          <td style={{ padding: '0.35rem 0.5rem' }}>{p.amount_eur}</td>
+                          <td style={{ padding: '0.35rem 0.5rem' }}>{(p.paid_at || p.created_at)?.slice(0, 10)}</td>
+                          <td style={{ padding: '0.35rem 0.5rem' }}>{p.empfehler_id ?? '–'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {onlineGutschriften.length > 0 && (
+                <div>
+                  <h3 style={{ fontSize: '0.95rem', margin: '0 0 0.4rem', color: 'var(--k2-accent)' }}>Gutschriften Empfehler ({onlineGutschriften.length})</h3>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
+                        <th style={{ textAlign: 'left', padding: '0.35rem 0.5rem' }}>Empfehler-ID</th>
+                        <th style={{ textAlign: 'left', padding: '0.35rem 0.5rem' }}>Betrag (€)</th>
+                        <th style={{ textAlign: 'left', padding: '0.35rem 0.5rem' }}>Datum</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {onlineGutschriften.map((g) => (
+                        <tr key={g.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                          <td style={{ padding: '0.35rem 0.5rem' }}>{g.empfehler_id}</td>
+                          <td style={{ padding: '0.35rem 0.5rem' }}>{g.amount_eur}</td>
+                          <td style={{ padding: '0.35rem 0.5rem' }}>{g.created_at?.slice(0, 10)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
         </section>
 
         {/* AKTIVE LIZENZEN */}

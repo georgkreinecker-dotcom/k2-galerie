@@ -2326,4 +2326,37 @@ header h1 {
     size: auto;
     margin: 12mm;
   }
+
+  /* Lizenzen-Seite: Beim Drucken nur Bereich „Online gekaufte Lizenzen & Abrechnung“ */
+  body:has(.licence-export-area) * {
+    visibility: hidden;
+  }
+  body:has(.licence-export-area) .licence-export-area,
+  body:has(.licence-export-area) .licence-export-area * {
+    visibility: visible;
+  }
+  body:has(.licence-export-area) .licence-export-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #fff !important;
+    color: #1c1a18 !important;
+    padding: 1rem;
+    box-sizing: border-box;
+  }
+  body:has(.licence-export-area) .licence-export-area .no-print {
+    display: none !important;
+  }
+  body:has(.licence-export-area) .licence-export-area h2,
+  body:has(.licence-export-area) .licence-export-area h3 {
+    color: #1c1a18 !important;
+  }
+  body:has(.licence-export-area) .licence-export-area table {
+    color: #1c1a18;
+  }
+  body:has(.licence-export-area) .licence-export-area th,
+  body:has(.licence-export-area) .licence-export-area td {
+    border-color: #ccc;
+  }
 }

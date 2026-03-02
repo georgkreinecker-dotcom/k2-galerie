@@ -122,15 +122,16 @@ Lizenzen werden **nur im Internet** abgeschlossen und bezahlt – nicht in der G
 - **Umgebungsvariablen (Vercel):** `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`. Optional `VERCEL_URL`. Siehe `.env.example`.
 - **Stripe Dashboard:** Webhook-URL: `https://k2-galerie.vercel.app/api/webhook-stripe`, Event `checkout.session.completed`. Signing Secret → `STRIPE_WEBHOOK_SECRET`.
 
-**Noch offen:** Migration in Supabase ausführen (einmalig); Export CSV/PDF für Zahlungen + Gutschriften (Admin).
+**Export (erledigt):** Auf der Lizenzen-Seite Bereich „Online gekaufte Lizenzen & Abrechnung“ – Daten aus `GET /api/licence-data`, Tabellen Lizenzen/Zahlungen/Gutschriften, Buttons „Als CSV exportieren“ (eine Datei mit drei Blöcken) und „Als PDF drucken“ (nur dieser Bereich wird gedruckt).
+
+**Noch offen (einmalig):** Migration 003 in Supabase ausführen; Stripe-Konto + Keys + Webhook; Supabase-Variablen in Vercel.
 
 ---
 
-## 5a. Nächste konkrete Schritte (nach Go-Live Stripe)
+## 5a. Nächste konkrete Schritte (Go-Live)
 
 1. **Stripe-Konto:** Anlegen, Keys in Vercel eintragen, Webhook-URL konfigurieren.
 2. **Supabase:** Migration 003 ausführen (Tabellen anlegen); `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` in Vercel eintragen.
-3. **Export:** CSV/PDF für Zahlungen + Gutschriften (Admin, optional).
 
 ---
 
