@@ -74,7 +74,7 @@
 ### Phase 4: Skalierung & Produkt
 - [ ] **4.0** **Rechte & Zweige (Konzept):** Organisches Wachstum + Schreib-/Löschrechte pro Zweig – Optionen und Entscheidung in `docs/K2-FAMILIE-RECHTE-ZWEIGE.md`. Danach Datenmodell/UI ableiten.
 - [x] **4.1** Jede Familie = eigener Tenant (wie Galerie pro Künstler:in). **Erledigt:** FamilieTenantContext (aktueller Tenant + Liste), K2FamilieLayout mit Provider, nested Routes; Familien-Auswahl (Dropdown + „Neue Familie“) auf Start- und Stammbaum-Seite; alle Seiten (Person, Events, Kalender) nutzen currentTenantId. Tenant-Liste in localStorage, aktueller Tenant in sessionStorage.
-- [ ] **4.2** Doku, Onboarding, evtl. Lizenzmodell „K2 Familie“.
+- [x] **4.2** Doku, Onboarding, evtl. Lizenzmodell „K2 Familie“. **Erledigt:** „Erste Schritte“ auf K2-Familie-Startseite (nummerierte Schritte); Handbuch-Kapitel `k2team-handbuch/17-K2-FAMILIE-ERSTE-SCHRITTE.md` mit Nutzer-Anleitung und Verweis im Index. Lizenzmodell bleibt evtl. (mök2) für später.
 
 **Phase 4 – Nächste Schritte (für den Baumeister):**
 - **4.0:** Entscheidung: Zweig-Definition (A/B/C) und Rechte-Modell (Option 1/2/3) in RECHTE-ZWEIGE. Danach konkrete Felder (z. B. branchId, managedBy) und UI ableiten.

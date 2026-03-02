@@ -14,5 +14,6 @@ Kurzreferenz für Zusammenarbeit und Betrieb der K2 Galerie. Stand: Februar 2026
 | 4 | [Sicherheit & Vor Veröffentlichung](14-SICHERHEIT-PRODUKT-LABEL.md) | Auth, RLS, Checkliste |
 | 5 | [Session 21.02.26](15-SESSION-21-02-26.md) | Video-Upload, Vollbild, Bilder-Sync, Stand-Badge-Fix |
 | 6 | [Mac ↔ iPad Sync](16-MAC-IPAD-SYNC-SCHRITT-FUER-SCHRITT.md) | Schritt für Schritt: Mac→iPad und iPad→Mac |
+| 7 | [K2 Familie – Erste Schritte](17-K2-FAMILIE-ERSTE-SCHRITTE.md) | Stammbaum, Personen, Momente, Events, Kalender, Familie wechseln |
 
 **Weitere Kapitel** (bei Bedarf): [Proaktive Zusammenarbeit](03-PROAKTIVE-ZUSAMMENARBEIT.md) · [Vision](04-VISION-STRATEGIE.md) · [Arbeitsgewohnheiten](05-ARBEITSGEWOHNHEITEN.md) · [Aktueller Stand](06-AKTUELLER-STAND.md) · [Entscheidungen](07-ENTSCHEIDUNGS-FRAMEWORK.md) · [Feedback](08-FEEDBACK.md) · [Git/Vercel](09-GIT-VERCEL-PROBLEME.md) · [Stabilität](10-STABILITAET-FIXES.md) · [Backup-Zusammenfassung](11-BACKUP-ZUSAMMENFASSUNG.md) · [APf-Verbesserungen](12-ARBEITSPLATTFORM-VERBESSERUNGEN.md)

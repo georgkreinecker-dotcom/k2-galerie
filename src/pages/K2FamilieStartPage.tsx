@@ -52,12 +52,16 @@ export default function K2FamilieStartPage() {
       </div>
 
       <div style={{ padding: '1.25rem', background: 'rgba(13,148,136,0.12)', border: '1px solid rgba(13,148,136,0.4)', borderRadius: 12, marginBottom: '1.5rem' }}>
-        <h2 style={{ fontSize: '1.1rem', margin: '0 0 0.75rem', color: '#0d9488' }}>Raumschiff</h2>
-        <p style={{ margin: '0 0 1rem', lineHeight: 1.6, color: 'rgba(255,255,255,0.9)' }}>
-          Roadmap und Phasen (Fundament → Stammbaum & Personen-Seite → Momente & Events → Skalierung) stehen in der Doku. Vom Sportwagen zum Raumschiff – wir heben ab.
-        </p>
-        <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.75)' }}>
-          <strong>Nächste Schritte:</strong> Datenmodell Person + Beziehungen festlegen → erste UI (Stammbaum, Personen-Seite).
+        <h2 style={{ fontSize: '1.1rem', margin: '0 0 0.75rem', color: '#0d9488' }}>Erste Schritte</h2>
+        <ol style={{ margin: '0 0 0 1.2rem', padding: 0, lineHeight: 1.7, color: 'rgba(255,255,255,0.9)' }}>
+          <li><strong>Familie wählen</strong> (Dropdown oben): „Standard“ oder eine andere Familie. „Neue Familie“ legt einen leeren Stammbaum an.</li>
+          <li><strong>Stammbaum</strong> → „Person hinzufügen“ → Person anlegen, Klick auf sie öffnet die Personen-Seite.</li>
+          <li><strong>Personen-Seite:</strong> Name, Kurztext, Foto; Beziehungen (Eltern, Kinder, Partner*innen, Geschwister, Wahlfamilie); <strong>Momente</strong> (Hochzeit, Geburt, Reise, …).</li>
+          <li><strong>Events</strong> (Geburtstage, Treffen): Datum, Titel, Teilnehmer aus der Familie auswählen.</li>
+          <li><strong>Kalender</strong> zeigt alle Events und Momente mit Datum, nach Monat sortiert.</li>
+        </ol>
+        <p style={{ margin: '0.75rem 0 0', fontSize: '0.9rem', color: 'rgba(255,255,255,0.75)' }}>
+          Ausführlich: <code style={{ background: 'rgba(0,0,0,0.2)', padding: '0.15rem 0.4rem', borderRadius: 4 }}>k2team-handbuch/17-K2-FAMILIE-ERSTE-SCHRITTE.md</code>
         </p>
       </div>
 
