@@ -12,6 +12,11 @@ import { PRODUCT_WERBESLOGAN, PRODUCT_BOTSCHAFT_2, PRODUCT_ZIELGRUPPE } from '..
 import ProductCopyright from '../components/ProductCopyright'
 import { compressImageForStorage } from '../utils/compressImageForStorage'
 
+/** Einheitliche Eröffnungs-URLs (wie in docs/MARKETING-EROEFFNUNG-K2-OEK2.md Abschnitt Links & QR) */
+const URL_K2_GALERIE = `${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].galerie}`
+const URL_MUSTER_WILLKOMMEN = `${BASE_APP_URL}${WILLKOMMEN_ROUTE}`
+const URL_VK2 = `${BASE_APP_URL}${PROJECT_ROUTES.vk2.home}`
+
 const MOK2_SLOGAN_KEY = 'k2-mok2-werbeslogan'
 const MOK2_BOTSCHAFT_KEY = 'k2-mok2-botschaft2'
 const OEF_WELCOME_KEY = 'k2-oeffentlich-welcomeImage'
@@ -397,6 +402,38 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
 
       {/* Kapitel: Vertrieb – Kanäle, Empfehlung, Werbung */}
       <Mok2ChapterPage title={mok2Groups[1].chapterTitle} />
+      {/* Eröffnung K2 + ök2 + VK2 – Marketinglinie, gemeinsame Lounge */}
+      <section id="mok2-eroeffnung-k2-oek2" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Eröffnung K2 + ök2 + VK2 (Marketinglinie)
+        </h2>
+        <p style={{ marginBottom: '0.75rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
+          K2, ök2 und VK2 zum gleichen Zeitpunkt bei der Galerie-Eröffnung einführen: eine Botschaft, eine <strong>gemeinsame Lounge</strong> (Galerie erleben + Plattform entdecken). Gezielte Marketinglinie in 2 Wochen – Werbetrommel vor der Eröffnung.
+        </p>
+        <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.75)' }}>
+          <strong>Vollständige Strategie, Checkliste und konkrete Texte:</strong> <code style={{ fontSize: '0.85em', color: '#5ffbf1' }}>docs/MARKETING-EROEFFNUNG-K2-OEK2.md</code>
+        </p>
+        <div style={{ padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.08)', borderRadius: '8px', border: '1px solid rgba(95,251,241,0.25)', marginTop: '0.75rem' }}>
+          <h3 style={{ fontSize: '1rem', color: '#5ffbf1', margin: '0 0 0.5rem' }}>Kernbotschaft (ein Satz)</h3>
+          <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5 }}>
+            „Wir eröffnen die K2 Galerie – und laden Sie ein, die Galerie und die Plattform kennenzulernen, mit der wir und andere Künstler:innen, Galerien und Kunstvereine arbeiten.“
+          </p>
+          <h3 style={{ fontSize: '1rem', color: '#5ffbf1', margin: '0.75rem 0 0.35rem' }}>Lounge-Text (für Einladung / vor Ort)</h3>
+          <p style={{ margin: 0, fontSize: '0.88rem', lineHeight: 1.5 }}>
+            Zur Eröffnung laden wir Sie in unsere <strong>Galerie</strong> ein – Werke, Raum, Begegnung. In einer <strong>gemeinsamen Lounge</strong> können Sie zusätzlich erleben, womit wir arbeiten: die <strong>K2-Plattform</strong> (K2 · ök2 · VK2), mit der Künstler:innen, Galerien und Kunstvereine ihre Werke präsentieren, Veranstaltungen planen und sich vernetzen. Musterseiten (ök2) und Vereinsplattform (VK2) sind am Bildschirm oder am eigenen Gerät zugänglich – siehe Links &amp; QR unten.
+          </p>
+          <h3 style={{ fontSize: '1rem', color: '#5ffbf1', margin: '0.75rem 0 0.35rem' }}>Links und QR-Codes – überall gleich</h3>
+          <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)' }}>Diese URLs in Einladung, Presse, Social und Lounge verwenden; QR-Codes für dieselben Adressen generieren.</p>
+          <ul style={{ margin: 0, paddingLeft: '1.2em', fontSize: '0.85rem', lineHeight: 1.6 }}>
+            <li><strong>Zur K2 Galerie:</strong>{' '}<a href={URL_K2_GALERIE} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>{URL_K2_GALERIE}</a></li>
+            <li><strong>Zu den Musterseiten / Demo (ök2):</strong>{' '}<a href={URL_MUSTER_WILLKOMMEN} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>{URL_MUSTER_WILLKOMMEN}</a></li>
+            <li><strong>Zur Vereinsplattform VK2:</strong>{' '}<a href={URL_VK2} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>{URL_VK2}</a></li>
+          </ul>
+        </div>
+        <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)' }}>
+          Checkliste 2 Wochen: Kernbotschaft, Lounge-Text, Einladung, Presse, Social, Kanäle, Bildmaterial, QR/Link – siehe Doku.
+        </p>
+      </section>
       {/* 4a. Kanäle 2026 – kurze Liste zum Ausfüllen und Prüfen */}
       <section id="mok2-kanale-2026" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>

@@ -1,0 +1,41 @@
+---
+description: Standard für jede druckbare Version – Lesbarkeit, Seitenzahl, Fußnoten
+alwaysApply: true
+---
+
+# Druckbare Version – verbindlicher Anspruch
+
+**Wenn Georg oder die Doku eine „druckbare Version“ verlangen, gilt dieser Anspruch ohne Ausnahme.**
+
+## 1. Lesbarkeit (Schriftfarbe + Hintergrund)
+
+- **Heller Hintergrund** (z. B. `#fffefb`, `#faf8f5`) → **dunkle Schrift** (`#1c1a18`, `#1c1a18`).
+- **Keine** unleserlichen Kombinationen (kein Türkis/Weiß auf Hell, siehe `ui-kontrast-lesbarkeit.mdc`).
+- Ausreichend Kontrast, guter Zeilenabstand (z. B. 1.7), lesbare Schriftgröße.
+
+## 2. Seitenzahlen beim Drucken
+
+- Jede gedruckte Seite hat eine **Seitennummer** im Seitenfuß (z. B. „Seite 1“, „Seite 2“).
+- Umsetzung: z. B. `@media print` mit `position: fixed; bottom: 0` und `content: "Seite " counter(page);`.
+- `@page` mit sinnvollem Rand (z. B. 18–20 mm), damit der Fuß nicht abgeschnitten wird.
+
+## 3. Fußnoten, wo es sich gehört
+
+- Quellen, Doku-Verweise (`docs/...`), Zusatzinformationen werden als **Fußnoten** geführt (hochgestellte Ziffer ¹ ² ³, Block „Fußnoten“ am Ende).
+- Keine nackten Dateipfade im Fließtext, wenn sie als Fußnote gehören.
+
+## 4. Kompaktes Layout (keine Leerräume)
+
+- **Überall bei K2-Projekten, Handbüchern, druckbaren Versionen:** Keine unnötigen Leerräume – der Inhalt soll auf möglichst wenige Seiten passen.
+- **Beim Drucken:** Nur der Text/die Inhalte drucken (kein Header, keine Sidebar, keine Buttons). Ränder und Abstände kompakt: z. B. `@page { margin: 12mm 14mm 10mm 14mm }`, Innenabstand 6–10 mm, Schrift 10–10,5 pt, Zeilenabstand 1,4, Überschriften und Absätze mit geringem Abstand (0,2–0,5 rem), Tabellen mit wenig Padding, Leerzeilen minimal (`br` z. B. 0,15 em Höhe).
+- **Gilt für:** K2 Familie Handbuch, K2 Galerie Handbuch, K2Team Handbuch und jede weitere druckbare Seite in K2-Projekten.
+
+## Referenz-Umsetzung
+
+- **K2 Familie:** `K2FamilieHandbuchPage.tsx` (Lesefassung + kompaktes Druck-Layout).
+- **K2 Galerie Handbuch:** `K2GalerieHandbuchPage.tsx` – Klasse `.k2-handbuch-druck`, kompakte Print-Styles, `.seitenfuss`, `.no-print`.
+- **K2Team Handbuch:** `K2TeamHandbuchPage.tsx` – gleiche Klassen und Print-Styles.
+
+## Kurzfassung
+
+**Druckbare Version = lesbar + Seitenzahl + Fußnoten + kompakt (keine Leerräume). Überall bei K2-Handbüchern und -Projekten.**

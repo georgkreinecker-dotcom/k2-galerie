@@ -14,6 +14,7 @@ const FAMILIE_NAV = [
   { to: PROJECT_ROUTES['k2-familie'].stammbaum, label: 'Stammbaum' },
   { to: PROJECT_ROUTES['k2-familie'].events, label: 'Events' },
   { to: PROJECT_ROUTES['k2-familie'].kalender, label: 'Kalender' },
+  { to: PROJECT_ROUTES['k2-familie'].handbuch, label: 'Handbuch' },
 ] as const
 
 function FamilieNav() {
@@ -34,7 +35,7 @@ function FamilieNav() {
       {FAMILIE_NAV.map(({ to, label }) => {
         const isStart = to === PROJECT_ROUTES['k2-familie'].home
         const isUebersicht = to === PROJECT_ROUTES['k2-familie'].uebersicht
-        const isActive = isStart || isUebersicht
+        const isActive = (isStart || isUebersicht || to === PROJECT_ROUTES['k2-familie'].handbuch)
           ? (path === to || path === to + '/')
           : path.startsWith(to)
         return (

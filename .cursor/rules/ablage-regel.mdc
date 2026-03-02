@@ -1,0 +1,42 @@
+---
+description: "Ablage-Regel: Wo neue Inhalte und Dokumente hingehören (docs, Handbuch, mök2)"
+alwaysApply: true
+---
+
+# Ablage-Regel – Wo gehört was hin?
+
+**Zweck:** Jeder neue Inhalt (Doku, Zusammenfassung, Anleitung, Vertriebstext) hat **einen logischen Ort**. Kein Rätselraten, keine doppelte Ablage ohne Grund.
+
+---
+
+## Die drei Ablage-Orte
+
+| Ort | Inhalt (Beispiele) | Wofür |
+|-----|--------------------|--------|
+| **docs/** | Projekt-Doku, technisch: Roadmap, Datenmodell, Skalierung, Markt/Standards, Crash-Fixes, Vercel, Supabase, K2/ök2-Trennung, Deployment. | Alles, was **Entwicklung, Architektur, Entscheidungen** betrifft. Einstieg: `docs/00-INDEX.md`. |
+| **k2team-handbuch/** | Wichtige Sachen für Team und Nutzer: Erste Schritte, Projekt-Zusammenfassung (druckbar), Backup, Sicherheit, Arbeitsgewohnheiten, Skalierungsprinzip. | Alles, was **gelesen, ausgedruckt oder als Orientierung** gebraucht wird – **eine** Ablage für „das Wichtige“. Einstieg: `k2team-handbuch/00-INDEX.md`. Spiegel in `public/k2team-handbuch/` für die App. |
+| **mök2** (Marketing ök2) | Vertrieb ök2, AGB, Rechtliches, Werbeunterlagen, USPs, Lizenzen, Konzepte für Piloten. Inhalt in `src/pages/MarketingOek2Page.tsx` (Sektionen) bzw. Sidebar `src/config/mok2Structure.ts`. | Alles, was **Außenkommunikation, Vertrieb, AGB** betrifft. „Ablegen in Marketing ök2“ = Inhalt als Sektion auf der Seite, mit „Als PDF drucken“ nutzbar. |
+
+---
+
+## Entscheidungsfragen (wo ablegen?)
+
+- **Ist es technisch / Projekt / Architektur / Roadmap?** → **docs/** (und in `docs/00-INDEX.md` eintragen).
+- **Ist es etwas zum Lesen, Ausdrucken oder für Orientierung (Team oder Nutzer)?** → **k2team-handbuch/** (und in `k2team-handbuch/00-INDEX.md` eintragen; bei neuem Kapitel ggf. Spiegel in `public/k2team-handbuch/`).
+- **Ist es Vertrieb, AGB, Recht, Werbeunterlagen für ök2?** → **mök2** (Sektion in MarketingOek2Page + ggf. Sidebar).
+
+**Druckbare Zusammenfassungen / Übersichten** (z. B. „Projekt K2 Familie zum Ausdrucken“) → **Handbuch**, nicht docs – weil sie zur Orientierung und zum Weitergeben da sind, nicht zur technischen Projekt-Doku.
+
+---
+
+## Was nicht gemacht wird
+
+- **Kein neues „irgendwo im Root“** für wichtige Sachen – Root bleibt für bestehende Anleitungen/Fix-Notizen (siehe HAUS-INDEX). Neue wichtige Infos → Handbuch oder docs.
+- **Kein doppeltes Ablegen** derselben Sache an zwei Orten ohne klaren Grund (Ausnahme: Handbuch-Quelle + Spiegel in `public/` für die App).
+- **mök2-Inhalte nicht in docs „weglegen“** – Vertrieb/AGB gehören in mök2. Siehe Regel `mok2-vk2-inhalte-nicht-entfernen.mdc`.
+
+---
+
+## Kurzfassung
+
+**docs/** = Projekt/Technik. **Handbuch** = Wichtige Sachen, lesen/drucken/Orientierung. **mök2** = Vertrieb/AGB/Werbeunterlagen. Bei neuem Inhalt zuerst fragen: technisch? → docs. Lesen/Druck/Orientierung? → Handbuch. Vertrieb/AGB? → mök2.

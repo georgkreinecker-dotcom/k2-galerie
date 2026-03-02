@@ -34,6 +34,7 @@ Damit alle Informationen **jederzeit aktuell und hier verfügbar** sind, gilt di
 - **Pflichtregel vor Fix prüfen:** Bei wiederkehrenden Themen (Crash, Reopen, Missetäter, „hatten wir schon“) zuerst bestehende Pflichtregeln in .cursorrules und .cursor/rules prüfen; Nutzer-Regel verbindlich umsetzen, keine „Ausnahme“ statt Regel. Analyse: **docs/ANALYSE-FEHLER-MISSETAETER-REOPEN.md**. Regel: **.cursor/rules/pflichtregel-vor-fix-pruefen.mdc**.
 - Bei Fragen „wo steht X?“ oder „wie machen wir Y?“: zuerst **k2team-handbuch/00-INDEX.md**, **mök2** (AGB, Marketing ök2), **docs/00-INDEX.md**, **HAUS-INDEX.md** prüfen.
 - Neue wichtige Infos: in der passenden Quelle (mök2, Handbuch, docs) eintragen, damit sie **hier immer aktuell zur Verfügung stehen**.
+- **Ablage (wo gehört was hin):** Technisch/Projekt → docs. Lesen/Druck/Orientierung → Handbuch. Vertrieb/AGB → mök2. Verbindliche Regel: **.cursor/rules/ablage-regel.mdc**.
 
 ---
 
@@ -41,6 +42,7 @@ Damit alle Informationen **jederzeit aktuell und hier verfügbar** sind, gilt di
 
 - **HAUS-INDEX.md** (Root) – Projekt-Übersicht, Schnellfinder
 - **.cursor/rules/struktur-handeln-quellen.mdc** – Regel für Cursor/AI, diese Quellen zu nutzen
+- **.cursor/rules/ablage-regel.mdc** – Ablage: wo neue Inhalte hingehören (docs, Handbuch, mök2)
 - **.cursor/rules/profi-statt-dilettant-rad-nicht-zweimal.mdc** – Profi-Denken: Rad nicht zweimal erfinden, zukaufen/normen/auslagern
 - **.cursor/rules/ein-standard-problem.mdc** – Ein Standard pro Problemstellung (keine verschiedenen Wege für dieselbe Aufgabe)
 - **.cursor/rules/verbindlich-zuverlaessig-nicht-hoffnung.mdc** – Verbindliche Anforderungen/Befehle müssen zuverlässig funktionieren (nicht „hoffen“, sondern „sich darauf verlassen können“)

@@ -390,7 +390,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                         </Link>
                       </div>
                     ))}
-                    <Link to="/k2team-handbuch" style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.2)', borderRadius: '8px', color: '#5ffbf1', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', fontFamily: 'inherit' }}>
+                    <Link to="/k2-galerie-handbuch" style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.2)', borderRadius: '8px', color: '#5ffbf1', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', fontFamily: 'inherit' }}>
                       🧠 Handbuch (K2 Galerie)
                     </Link>
                     <button type="button" onClick={startFremderModus} style={{ width: '100%', padding: '0.6rem 0.85rem', background: 'linear-gradient(135deg, rgba(255,140,66,0.18), rgba(181,74,30,0.12))', border: '1px solid rgba(255,140,66,0.5)', borderRadius: '8px', color: '#ff8c42', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '0.5rem' }} title="Landingpage wie ein Erstbesucher">
@@ -421,8 +421,8 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                         → Zur Startseite (erste Seite)
                       </Link>
                     )}
-                    <Link to="/k2team-handbuch?doc=17-K2-FAMILIE-ERSTE-SCHRITTE.md" style={{ display: 'block', padding: '0.5rem 0.7rem', background: 'rgba(13,148,136,0.08)', border: '1px solid rgba(13,148,136,0.3)', borderRadius: '8px', color: '#14b8a6', fontWeight: 500, fontSize: '0.82rem', textDecoration: 'none', fontFamily: 'inherit' }}>
-                      📖 Handbuch Familie (Erste Schritte)
+                    <Link to={PROJECT_ROUTES['k2-familie'].handbuch} style={{ display: 'block', padding: '0.5rem 0.7rem', background: 'rgba(13,148,136,0.08)', border: '1px solid rgba(13,148,136,0.3)', borderRadius: '8px', color: '#14b8a6', fontWeight: 500, fontSize: '0.82rem', textDecoration: 'none', fontFamily: 'inherit' }}>
+                      📖 Handbuch Familie
                     </Link>
                   </>
                 )}
@@ -463,6 +463,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                 {mappe.id === 'vermaechtnis' && (
                   <>
                     <p style={{ margin: '0 0 0.35rem 0', fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.4 }}>Dieser digitale Raum ist Georgs bleibendes Werk – für Kinder, Enkel und alle die nach ihm kommen.</p>
+                    <Link to="/k2team-handbuch" style={{ display: 'block', width: '100%', padding: '0.55rem 0.75rem', marginBottom: '0.4rem', background: 'rgba(95,251,241,0.1)', border: '1px solid rgba(95,251,241,0.3)', borderRadius: '8px', color: '#5ffbf1', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', fontFamily: 'inherit', textAlign: 'center', boxSizing: 'border-box' }}>🧠 Team-Handbuch (Vermächtnis)</Link>
                     <button type="button" onClick={() => nav('handbuch', '/k2team-handbuch?doc=16-ZENTRALE-THEMEN-FUER-NUTZER.md')} style={{ width: '100%', padding: '0.5rem 0.7rem', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.35)', borderRadius: '6px', color: '#86efac', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'inherit' }}>📌 Zentrale Themen</button>
                     <button
                       type="button"

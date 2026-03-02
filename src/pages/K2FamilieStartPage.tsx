@@ -72,7 +72,7 @@ export default function K2FamilieStartPage() {
             <li><strong>Events</strong> (Geburtstage, Treffen): Datum, Titel, Teilnehmer aus der Familie auswählen.</li>
             <li><strong>Kalender</strong> zeigt alle Events und Momente mit Datum, nach Monat sortiert.</li>
           </ol>
-          <p className="meta" style={{ marginTop: '0.75rem' }}>Ausführlich: <code style={{ background: 'rgba(0,0,0,0.2)', padding: '0.15rem 0.4rem', borderRadius: 4 }}>k2team-handbuch/17-K2-FAMILIE-ERSTE-SCHRITTE.md</code></p>
+          <p className="meta" style={{ marginTop: '0.75rem' }}>Ausführlich: <Link to={PROJECT_ROUTES['k2-familie'].handbuch} style={{ color: '#14b8a6' }}>Handbuch Familie</Link> (Erste Schritte &amp; Zusammenfassung).</p>
         </div>
 
         <div className="card" style={{ borderLeft: '4px solid rgba(95,251,241,0.6)' }}>

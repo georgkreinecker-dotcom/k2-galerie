@@ -11,6 +11,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **K2-FAMILIE-DATENMODELL.md** – **K2 Familie – Datenmodell (Phase 1.1):** Person, PartnerRef (mit Zeitraum), Moment, Speicher-Keys, Regeln. Typen in `src/types/k2Familie.ts`.
 - **K2-FAMILIE-SKALIERUNG-GROSSFAMILIEN.md** – **K2 Familie – Großfamilien:** Funktioniert das System für mehrere hundert Mitglieder? Speicher (10 MB/Key), Stammbaum-Grafik, Listen; Grenzen und Empfehlungen.
 - **K2-FAMILIE-MARKT-STANDARDS.md** – **K2 Familie – Markt und Standards:** Gibt es Stammbaum-Software/Formate schon? GEDCOM nutzen statt eigenes Format; Abgrenzung K2 (eine Familie, Momente, Leitbild) vs. klassische Genealogie-Tools.
+- **K2 Familie – Projekt-Zusammenfassung (druckbar):** Im **Handbuch** → `k2team-handbuch/18-K2-FAMILIE-PROJEKT-ZUSAMMENFASSUNG.md` (Inhaltsverzeichnis: Nr. 8). Logischer Ort: Handbuch = alle wichtigen Sachen, zum Ausdrucken.
 - **HOMEPAGE-DEFINITION.md** – **Fertige Homepage vs. Projekt-Startseite:** Damit wir dieselbe Sprache sprechen. Fertige Homepage = designte Einstiegsseite für Nutzer:innen (wie K2 Galerie). Projekt-Startseite = aktuelle Übersicht (Liste, Links). K2 Familie hat heute eine Projekt-Startseite, keine fertige Homepage.
 - **K2-FAMILIE-HOMEPAGE-KONZEPT.md** – **Fertige Homepage K2 Familie:** Orientierung Design ök2. Einheitliche Struktur, pro Familie (Tenant) freie Gestaltung (Texte, Bilder) → buntes Bild in fester Struktur. Technisch analog pageTexts/pageContentGalerie pro tenantId.
 - **SKALIERUNG-KONZEPT.md** – **Stimmig und nach oben unendlich skalierbar:** Ein Prinzip (eine Struktur, viele Tenant-Instanzen, Gestaltung pro tenantId). Skalierung „breit“ (mehr Mandanten pro Produkt) und „hoch“ (mehr Produktlinien wie Galerie, K2 Familie). Kein Sonderbau pro Kunde.
@@ -52,6 +53,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **VERMARKTUNGSKONZEPT-EMPFEHLUNGSPROGRAMM.md** – Empfehlungsprogramm / Vermarktung (50 %-Gebühr).
 - **EMPFEHLUNGSKONZEPT-EINFACHER-WEG.md** – **Empfehlung konkret:** Kostensenkung (10 % Rabatt / 10 % Gutschrift), Vermarktung + technische Umsetzung, ohne Cashback.
 - **VERBESSERUNGEN-VERMARKTUNG-GEMEINSAM.md** – **Vorschlag:** Was wir gemeinsam verbessern können (Zielgruppe, Kanäle, Customer Journey, Trust; priorisierte Liste).
+- **MARKETING-EROEFFNUNG-K2-OEK2.md** – **Galerie-Eröffnung:** K2 und ök2 gemeinsam einführen; gezielte Marketinglinie in 2 Wochen; Texte für gemeinsame Lounge (Kernbotschaft, Einladung, Presse, Social); Checkliste; Verweis in mök2.
 - **ABRECHNUNGSSTRUKTUR-EMPFEHLUNGSPROGRAMM.md** – Abrechnungsstruktur Empfehlungsprogramm.
 - **MARKTCHECK-PREISE-BASIC-PRO-VERGLEICH.md** – Marktcheck: Was Nutzer für Basic/Pro pro Monat zahlen würden, Vergleichsprodukte (KUNSTMATRIX, Wix, Squarespace, ArtCloud), Orientierung für Preisgestaltung; Einzigartigkeit & höherer Preis.
 - **FEATURES-ABHEBUNG-ZIELGRUPPE.md** – **Feature-Ideen:** Was die Zielgruppe (Künstler:innen mit Verkauf) noch mehr anspricht und uns abhebt; Priorität, Aufwand, empfohlene Reihenfolge zum Einbauen.

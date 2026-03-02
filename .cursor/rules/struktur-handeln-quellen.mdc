@@ -25,6 +25,8 @@ Georg und das Team haben eine **klare Struktur** entwickelt. Diese Quellen sind 
 - **Bei „wichtige Sachen“, Abläufe, Checklisten:** **k2team-handbuch** ist die zentrale Ablage. Dort nachsehen und ggf. darauf verweisen oder dort ergänzen.
 - **Aktualität:** Wenn neue wichtige Entscheidungen, Abläufe oder Rechtstexte (AGB, Datenschutz, Impressum) dazukommen: in **mök2** (für AGB/Vertrieb) bzw. **k2team-handbuch** (für Abläufe/Team) oder **docs/** (für Technik) eintragen, damit die Information „hier immer aktuell zur Verfügung steht“.
 
+**Ablage (wo neue Inhalte hingehören):** Siehe **.cursor/rules/ablage-regel.mdc** – docs = Projekt/Technik, Handbuch = Wichtige Sachen/Lesen/Druck, mök2 = Vertrieb/AGB.
+
 ## Kurzfassung
 
-**AGB = mök2. Handbuch = k2team-handbuch (alle wichtigen Sachen). Einstieg = HAUS-INDEX.md, docs/00-INDEX.md, k2team-handbuch/00-INDEX.md.** Diese Struktur gilt **einheitlich für K2, ök2, VK2 und Tom** – nicht mit anderen Regeln pro Kontext arbeiten. Bei Unsicherheit zuerst in diesen Quellen nachsehen.
+**AGB = mök2. Handbuch = k2team-handbuch (alle wichtigen Sachen). Einstieg = HAUS-INDEX.md, docs/00-INDEX.md, k2team-handbuch/00-INDEX.md.** Ablage-Logik: **ablage-regel.mdc**. Diese Struktur gilt **einheitlich für K2, ök2, VK2 und Tom** – nicht mit anderen Regeln pro Kontext arbeiten. Bei Unsicherheit zuerst in diesen Quellen nachsehen.

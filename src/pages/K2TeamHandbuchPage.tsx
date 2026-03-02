@@ -92,38 +92,40 @@ export default function K2TeamHandbuchPage() {
       })
   }
 
+  const compactPrintStyles = `
+    @media print {
+      .no-print { display: none !important; }
+      .mission-wrapper .viewport header,
+      .mission-wrapper .viewport aside { display: none !important; }
+      .mission-wrapper .handbuch-layout { grid-template-columns: 1fr !important; gap: 0 !important; }
+      .mission-wrapper .viewport { padding: 0 !important; }
+      .mission-wrapper article { border: none !important; background: white !important; color: black !important; padding: 6mm 10mm 14mm 10mm !important; }
+      .mission-wrapper .k2-handbuch-druck { font-size: 10.5pt !important; line-height: 1.4 !important; }
+      .mission-wrapper .k2-handbuch-druck h1 { font-size: 1.35rem !important; margin-top: 0 !important; margin-bottom: 0.25rem !important; }
+      .mission-wrapper .k2-handbuch-druck h2 { font-size: 1.1rem !important; margin-top: 0.5rem !important; margin-bottom: 0.2rem !important; }
+      .mission-wrapper .k2-handbuch-druck h3 { font-size: 1rem !important; margin-top: 0.4rem !important; margin-bottom: 0.15rem !important; }
+      .mission-wrapper .k2-handbuch-druck p { margin-top: 0 !important; margin-bottom: 0.2rem !important; }
+      .mission-wrapper .k2-handbuch-druck li { margin-bottom: 0.1rem !important; }
+      .mission-wrapper .k2-handbuch-druck table { margin-bottom: 0.4rem !important; font-size: 9.5pt !important; }
+      .mission-wrapper .k2-handbuch-druck th, .mission-wrapper .k2-handbuch-druck td { padding: 0.2rem 0.4rem !important; }
+      .mission-wrapper .k2-handbuch-druck br { height: 0.15em; display: block; overflow: hidden; }
+      .mission-wrapper h1, .mission-wrapper h2, .mission-wrapper h3 { color: black !important; page-break-after: avoid; }
+      .mission-wrapper p, .mission-wrapper li { color: black !important; }
+      .mission-wrapper .seitenfuss { display: block !important; position: fixed; bottom: 0; left: 0; right: 0; text-align: center; font-size: 0.65rem; color: #666; padding: 0.2rem 0; }
+      .mission-wrapper .seitenfuss::after { content: "Seite " counter(page); }
+      @page { margin: 12mm 14mm 10mm 14mm; size: A4; }
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  `
+
   return (
     <main className="mission-wrapper print-compact">
-      <style>{`
-        @media print {
-          .mission-wrapper header > div:last-child,
-          .mission-wrapper aside,
-          .mission-wrapper .btn {
-            display: none !important;
-          }
-          .mission-wrapper article {
-            border: none !important;
-            background: white !important;
-            color: black !important;
-            padding: 0 !important;
-          }
-          .mission-wrapper h1,
-          .mission-wrapper h2,
-          .mission-wrapper h3 {
-            color: black !important;
-            page-break-after: avoid;
-          }
-          .mission-wrapper p,
-          .mission-wrapper li {
-            color: black !important;
-          }
-        }
-      `}</style>
+      <style>{compactPrintStyles}</style>
       <div className="viewport">
-        <header>
+        <header className="no-print">
           <div>
-            <h1>🧠⚙️ K2Team Handbuch</h1>
-            <div className="meta">Handbuch unserer Zusammenarbeit</div>
+            <h1>🧠 K2Team Handbuch</h1>
+            <div className="meta">Team-Handbuch &amp; Vermächtnis – Handbuch unserer Zusammenarbeit</div>
           </div>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
             <button
@@ -157,9 +159,9 @@ export default function K2TeamHandbuchPage() {
           </div>
         </header>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: '2rem', marginTop: '2rem' }}>
+        <div className="handbuch-layout" style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: '2rem', marginTop: '2rem' }}>
           {/* Sidebar */}
-          <aside style={{ background: 'rgba(95, 251, 241, 0.05)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(95, 251, 241, 0.2)', height: 'fit-content', position: 'sticky', top: '2rem' }}>
+          <aside className="no-print" style={{ background: 'rgba(95, 251, 241, 0.05)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(95, 251, 241, 0.2)', height: 'fit-content', position: 'sticky', top: '2rem' }}>
             <h3 style={{ marginTop: 0, marginBottom: '1rem', color: '#5ffbf1', fontSize: '1.1rem' }}>Dokumente</h3>
             <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {documents.map((doc) => (
@@ -211,9 +213,12 @@ export default function K2TeamHandbuchPage() {
                 <div>Lade Dokument...</div>
               </div>
             ) : (
-              <div style={{ color: '#f4f7ff', lineHeight: '1.8' }}>
-                {renderMarkdown(docContent)}
-              </div>
+              <>
+                <div className="k2-handbuch-druck" style={{ color: '#f4f7ff', lineHeight: '1.8' }}>
+                  {renderMarkdown(docContent)}
+                </div>
+                <div className="seitenfuss" style={{ display: 'none' }} aria-hidden />
+              </>
             )}
           </article>
         </div>

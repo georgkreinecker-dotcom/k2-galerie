@@ -9,6 +9,7 @@ import ProjectPlanPage from './pages/ProjectPlanPage'
 import NotizenPage from './pages/NotizenPage'
 import BriefAnAugustPage from './pages/BriefAnAugustPage'
 import K2TeamHandbuchPage from './pages/K2TeamHandbuchPage'
+import K2GalerieHandbuchPage from './pages/K2GalerieHandbuchPage'
 import MobileConnectPage from './pages/MobileConnectPage'
 import ProduktVorschauPage from './pages/ProduktVorschauPage'
 import MarketingOek2Page from './pages/MarketingOek2Page'
@@ -28,6 +29,7 @@ import K2FamilieStammbaumPage from './pages/K2FamilieStammbaumPage'
 import K2FamiliePersonPage from './pages/K2FamiliePersonPage'
 import K2FamilieEventsPage from './pages/K2FamilieEventsPage'
 import K2FamilieKalenderPage from './pages/K2FamilieKalenderPage'
+import K2FamilieHandbuchPage from './pages/K2FamilieHandbuchPage'
 import K2FamilieLayout from './components/K2FamilieLayout'
 import PlatzanordnungPage from './pages/PlatzanordnungPage'
 import VitaPage from './pages/VitaPage'
@@ -535,6 +537,7 @@ function App() {
         <Route path="stammbaum" element={<K2FamilieStammbaumPage />} />
         <Route path="events" element={<K2FamilieEventsPage />} />
         <Route path="kalender" element={<K2FamilieKalenderPage />} />
+        <Route path="handbuch" element={<K2FamilieHandbuchPage />} />
         <Route path="personen/:id" element={<K2FamiliePersonPage />} />
       </Route>
       <Route path="/projects/:projectId" element={<ProjectStartPage />} />
@@ -559,6 +562,7 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].verguetung} element={<Mok2Layout><VerguetungPage /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].platzanordnung} element={<PlatzanordnungPage />} />
       <Route path="/k2team-handbuch" element={<K2TeamHandbuchPage />} />
+      <Route path="/k2-galerie-handbuch" element={<K2GalerieHandbuchPage />} />
       
       {/* Legacy-Routen (Redirect für bestehende Links) */}
       <Route path="/key" element={<Navigate to={PLATFORM_ROUTES.key} replace />} />

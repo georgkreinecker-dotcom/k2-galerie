@@ -29,6 +29,7 @@ export const mok2Groups: Mok2Group[] = [
   {
     chapterTitle: 'Vertrieb – Kanäle, Empfehlung, Werbung',
     sections: [
+      { id: 'mok2-eroeffnung-k2-oek2', label: 'Eröffnung K2 + ök2 + VK2 (Marketinglinie)' },
       { id: 'mok2-kanale-2026', label: 'Kanäle 2026' },
       { id: 'mok2-verbesserungen', label: 'Was wir gemeinsam verbessern' },
       { id: 'mok2-5', label: '5. Weitere Ideen & Konzepte' },
