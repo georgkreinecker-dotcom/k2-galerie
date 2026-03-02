@@ -48,4 +48,15 @@ Diese Grundbotschaft ist der Grundstein. Jede Erweiterung von K2 Familie – ob 
 
 ---
 
+---
+
+## Bild – der weiße Ritter
+
+> *„Das ist der weiße Ritter, der in die Welt hinausgeht, um Licht hineinzubringen.“*  
+> – Georg, 02.03.26
+
+K2 Familie trägt dieses Licht: keine Ausgrenzung, Respekt, jede Form des Zusammenlebens sichtbar. So geht es hinaus.
+
+---
+
 **Querverweis:** Vision & Phasen → `docs/K2-FAMILIE-ROADMAP.md`

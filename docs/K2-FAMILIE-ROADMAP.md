@@ -95,3 +95,5 @@
 *„Es darf keine Ausgrenzung stattfinden, egal in welcher Form. Religion und Politik haben hier nichts zu suchen – jeder respektiert den anderen so, wie er ist.“ – Georg, 02.03.26*
 
 *„Diese Grundbotschaft soll sich in der Form der App und in der Sprache niederschlagen. Sollte das Tool einmal von KI gesteuert werden – ein Agent oder so –, muss das die Grundlage seiner Kommunikation sein. Wenn wir jetzt den Grundstein legen, soll das Haus auf sicherem moralischen Fundament stehen. Das ist mein Anspruch, mein Vermächtnis.“ – Georg, 02.03.26*
+
+*„Das ist der weiße Ritter, der in die Welt hinausgeht, um Licht hineinzubringen.“ – Georg, 02.03.26*
