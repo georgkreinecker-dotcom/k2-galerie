@@ -430,6 +430,22 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             <li><strong>VK2:</strong>{' '}<a href={URL_VK2} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>{URL_VK2}</a></li>
           </ul>
         </div>
+        <div style={{ padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.06)', borderRadius: '8px', border: '1px solid rgba(95,251,241,0.2)', marginTop: '0.75rem' }}>
+          <h3 style={{ fontSize: '1rem', color: '#5ffbf1', margin: '0 0 0.5rem' }}>Presse – Vorlage (Kurz)</h3>
+          <p style={{ margin: 0, fontSize: '0.85rem', lineHeight: 1.55, color: 'rgba(255,255,255,0.9)', whiteSpace: 'pre-wrap' }}>{'Titel: Presseinformation – Eröffnung der K2 Galerie\n\nLead: [Galeriename] eröffnet am [Datum] die K2 Galerie. Werke in Malerei, Keramik, Grafik und Skulptur. Zur Eröffnung: Einblick in die K2-Plattform (K2 · ök2 · VK2).\n\nOrt, Zeit, Kontakt: [Adresse], [Datum, Uhrzeit]. Kontakt: [E-Mail, Telefon].\n\nOptional: Besucher:innen können Galerie und Demo (ök2) erleben; Vereine VK2 kennenlernen. Links und QR vor Ort.'}</p>
+        </div>
+        <div style={{ padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.06)', borderRadius: '8px', border: '1px solid rgba(95,251,241,0.2)', marginTop: '0.5rem' }}>
+          <h3 style={{ fontSize: '1rem', color: '#5ffbf1', margin: '0 0 0.5rem' }}>Verzeichnisse – Beispiele (kostenlos prüfen)</h3>
+          <ul style={{ margin: 0, paddingLeft: '1.2em', fontSize: '0.85rem', lineHeight: 1.5, color: 'rgba(255,255,255,0.88)' }}>
+            <li>Google Business (Punkt 2)</li>
+            <li>Regionale Kulturportale (Bundesland/Stadt)</li>
+            <li>Kunstverbände (ggf. Mitgliedschaft)</li>
+            <li>Galerien-Verzeichnisse (z. B. artfacts, regional)</li>
+            <li>Künstler:innen-/Galerie-Portale</li>
+          </ul>
+          <p style={{ margin: '0.5rem 0 0', fontSize: '0.8rem', color: 'rgba(255,255,255,0.75)' }}>Eintrag: Name, Kurzbeschreibung, Adresse, Website, Öffnungszeiten, Kontakt.</p>
+        </div>
+        <p style={{ marginTop: '0.75rem', fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)' }}>Noch offen: <strong>2</strong> Google Business · <strong>3</strong> Social Bio/Post (Vorlage Doc §2–3) · <strong>6</strong> Presse oben · <strong>7</strong> Verzeichnisse oben.</p>
       </section>
       {/* Eröffnung K2 + ök2 + VK2 – Marketinglinie, gemeinsame Lounge */}
       <section id="mok2-eroeffnung-k2-oek2" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
