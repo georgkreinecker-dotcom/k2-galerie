@@ -21,6 +21,7 @@ Damit rechtfertigen wir einen höheren Preis (siehe **MARKTCHECK-PREISE-BASIC-PR
 
 | Feature | Nutzen für Zielgruppe | Aufwand (grob) | Einordnung |
 |--------|------------------------|----------------|------------|
+| **Medienstudio für User** (Medienkit + Presse-Vorlage) | Pressearbeit professionell aus einer Hand: Medienkit aus Stammdaten, Vorlage für Einladungen/Vernissagen, optional Pressekontakte. Für Künstler:innen und Kunstvereine großer Mehrwert – „wie ein eigenes Medienstudio“. | Mittel (Bereich unter Marketing, Stammdaten anbinden, Vorlage + Variablen) | **Stark differenzierend** · Konzept: docs/PRODUKT-MEDIENSTUDIO-USER.md |
 | **Belege / Quittungen aus der Kasse** (Druck oder PDF) | Verkauf vor Ort → Kunde bekommt was Handfestes. Kaum ein Konkurrent in der Nische bietet Kasse + Beleg aus einer Hand. | Mittel (Druck-Layout, PDF-Export) | **Stark differenzierend** |
 | **„Teilen“-Link pro Werk** (Copy-Link, optional „Für Social kopieren“) | Ein Werk schnell per Link teilen (Mail, Social, Flyer). Vermarktung ohne Umweg. | Gering | Schnell umsetzbar, hohe Sichtbarkeit |
 | **Einfache Käufer:innen- / Interessent:innen-Liste** | Aus Kasse oder „Kontakt anfragen“: Wer hat gekauft / sich gemeldet? Für Einladungen, Newsletter, nächste Ausstellung. Kein volles CRM – nur Liste mit Name, Kontakt, optional Notiz. | Mittel (neue Liste + Speicher, evtl. Export) | **Sehr zielgruppennah** |
@@ -47,9 +48,10 @@ Damit rechtfertigen wir einen höheren Preis (siehe **MARKTCHECK-PREISE-BASIC-PR
 ## 3. Empfohlene Reihenfolge zum Einbauen
 
 1. **„Teilen“-Link pro Werk** – wenig Aufwand, sofort nutzbar für Vermarktung.
-2. **Belege / Quittungen aus Kasse** – starkes Alleinstellungsmerkmal, Zielgruppe erwartet das beim Verkauf vor Ort.
-3. **Präsentationsmodus** – gutes Demo-Feature für Vernissage und Werbung.
-4. **Käufer:innen- / Interessent:innen-Liste** – sehr zielgruppennah, Grundlage für spätere Einladungen/Newsletter.
+2. **Medienstudio für User** – Medienkit + Presse-Vorlage (Phase 1); großer Mehrwert, Konzept: docs/PRODUKT-MEDIENSTUDIO-USER.md.
+3. **Belege / Quittungen aus Kasse** – starkes Alleinstellungsmerkmal, Zielgruppe erwartet das beim Verkauf vor Ort.
+4. **Präsentationsmodus** – gutes Demo-Feature für Vernissage und Werbung.
+5. **Käufer:innen- / Interessent:innen-Liste** – sehr zielgruppennah, Grundlage für spätere Einladungen/Newsletter.
 
 Danach je nach Kapazität: Auswertung, Reservierung, Mehrsprachigkeit.
 
@@ -63,6 +65,7 @@ Danach je nach Kapazität: Auswertung, Reservierung, Mehrsprachigkeit.
 
 ## 5. Verweise
 
+- **Medienstudio für User (Produkt-Feature):** docs/PRODUKT-MEDIENSTUDIO-USER.md
 - **Kunstvereine als Multiplikatoren:** docs/KUNSTVEREINE-MULTIPLIKATOREN.md
 - **Preise & Einzigartigkeit:** docs/MARKTCHECK-PREISE-BASIC-PRO-VERGLEICH.md  
 - **Zielgruppe (eine Quelle):** src/config/tenantConfig.ts → PRODUCT_ZIELGRUPPE  

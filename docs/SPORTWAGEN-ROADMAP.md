@@ -260,6 +260,18 @@
 
 ---
 
+## Phase 10: Produkt-Features – Medienstudio für User
+
+| | Inhalt |
+|---|--------|
+| **Ziel** | Presse & Medien für Künstler:innen und Kunstvereine – professionell wie ein eigenes Medienstudio, eingebaut in die Galerie. **Großer Mehrwert**, verbindlich einbauen. |
+| **Konzept** | **docs/PRODUKT-MEDIENSTUDIO-USER.md** – Phase 1: Medienkit (aus Stammdaten) + Presse-Vorlage (Variablen). Phase 2: Pressekontakte. Phase 3: „Presseinfo verschickt“ an Events. |
+| **Ort** | Marketing (Admin) – Bereich „Presse & Medien“ / „Medienkit“. Eine Implementierung für K2, ök2, VK2; Datenquelle je Mandant. |
+| **Schritte** | 1) Phase 1 umsetzen: Medienkit-Generierung aus Stammdaten, Presse-Vorlage mit Datum/Anlass/Ort, UI unter Marketing. 2) Optional Phase 2/3 (Pressekontakte, Event-Checkbox). |
+| **Erledigt** | [ ] |
+
+---
+
 ## Übersicht – Reihenfolge (nichts vergessen)
 
 | Phase | Inhalt | Abhängigkeit |
@@ -287,6 +299,7 @@
 | **8.2** | Kundendaten-Schutz in Schichten | 1.2, 1.3 |
 | **9.1** | Tests Merge + Persistenz | 2.1, 1.2 |
 | **9.2** | Doku eine Stelle pro Thema | laufend |
+| **10** | Produkt-Feature: Medienstudio für User (Medienkit + Presse-Vorlage) | 1.3 (Stammdaten), Konzept: PRODUCT-MEDIENSTUDIO-USER.md |
 
 ---
 

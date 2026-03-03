@@ -71,6 +71,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **ABRECHNUNGSSTRUKTUR-EMPFEHLUNGSPROGRAMM.md** – Abrechnungsstruktur Empfehlungsprogramm.
 - **ZAHLUNGSSYSTEM-LIZENZEN-TECHNIK-PLAN.md** – **Zahlungssystem Lizenzen (nur online):** Konkreter Technik-Plan – Kreditkarte/PayPal über Stripe (o. ä.), Backend Checkout + Webhook, DB Lizenzen/Zahlungen/Gutschriften, Frontend Redirect + Success, Abrechnung/Export. Lizenzen nur im Internet, nicht in der Galerie.
 - **MARKTCHECK-PREISE-BASIC-PRO-VERGLEICH.md** – Marktcheck: Was Nutzer für Basic/Pro pro Monat zahlen würden, Vergleichsprodukte (KUNSTMATRIX, Wix, Squarespace, ArtCloud), Orientierung für Preisgestaltung; Einzigartigkeit & höherer Preis.
+- **PRODUKT-MEDIENSTUDIO-USER.md** – **Medienstudio für User (Produkt-Feature):** Presse & Medien für Künstler:innen und Kunstvereine – Medienkit aus Stammdaten, Presse-Vorlage, optional Pressekontakte und „Presseinfo verschickt“ an Events. Phase 1–3, Ort: Marketing. Großer Mehrwert, verbindlich einbauen.
 - **FEATURES-ABHEBUNG-ZIELGRUPPE.md** – **Feature-Ideen:** Was die Zielgruppe (Künstler:innen mit Verkauf) noch mehr anspricht und uns abhebt; Priorität, Aufwand, empfohlene Reihenfolge zum Einbauen.
 - **KUNSTVEREINE-MULTIPLIKATOREN.md** – **Kunstvereine als Multiplikatoren:** Warum eindruckvolles Angebot lohnt; was wir haben (VK2); was eindruckvoll wirkt; nächste Schritte (Satz „Für Kunstvereine“, Pilot, Onboarding).
 
