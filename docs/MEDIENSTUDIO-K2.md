@@ -15,6 +15,8 @@
 | Bereich | Dokument / Ort | Inhalt |
 |---------|----------------|--------|
 | **Einstieg (dieses Dokument)** | docs/MEDIENSTUDIO-K2.md | Übersicht, Medienkit, Redaktionsplan, Verknüpfungen |
+| **Presse-Story (persönlich)** | Dieses Dokument → **§1a** | Human Interest: Galerie-Traum, Unternehmer, K2 aus einer Hand – **für deinen eigenen Pressetext, wenn du es brauchst.** |
+| **Produkt-Story (K2 & VK2)** | Dieses Dokument → **§1b** | Neutrale Story für Medien: Plattform, Künstler:innen, Kunstvereine – interessant, ohne in deinen persönlichen Bereich zu gehen. |
 | **Standardablauf** | docs/PRESSEARBEIT-STANDARD.md | 6 Schritte pro Aussendung, Checkliste, Variablen |
 | **Verteiler (E-Mails)** | docs/MEDIENVERTEILER-EROEFFNUNG.md | Print, Funk, Fernsehen – regional + überregional |
 | **Textvorlage** | docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §6 · mök2 Sichtbarkeit | Presseinformation zum Ausfüllen |
@@ -39,6 +41,16 @@
 **Für Medien, die eine kleine „Geschichte dahinter“ mögen – locker, mit Augenzwinkern, nicht zu ernst:**
 
 > Zwei pensionierte Unternehmer, ein Traum: Mit ihrer eigenen Galerie wollen Martina und Georg Kreinecker ihre künstlerischen Werke zeigen – Malerei und Keramik, nah an den Menschen. Nur: Wer jahrzehntelang Maschinenbau und Vertrieb gemanagt hat, hat gewisse Ansprüche. An die Kassa. An die Organisation. An Marketing und Presse. Am Markt fanden sie vor allem Stückwerke – dies für die Galerie, das für die Kasse, jenes für die Einladungen. Also wurde selbst gebaut: Heute heißt das Ergebnis K2 Galerie – Galerie, Kasse, Events und Presse aus einer Hand, und die Plattform wächst mit (ök2 für Künstler:innen, VK2 für Kunstvereine). Kein Tech-Konzern, sondern zwei, die sich einen Traum erfüllen und dabei nicht auf halben Lösungen sitzen bleiben wollten. Mit Augenzwinkern: Wer sein Leben lang Dinge organisiert hat, hört im Ruhestand nicht einfach auf.
+
+**Ablage:** Präsent in diesem Dokument (§1a). In der App: Admin → Presse & Medien (nur im K2-Admin) → Block „Story für Presse (optional)“ → kopieren, wenn du es brauchst.
+
+### 1b. Produkt-Story (K2 & VK2 – für Medien, neutral)
+
+**Für Presse und Medien, wenn eine interessante Geschichte zur Plattform gefragt ist – ohne in deinen persönlichen Bereich zu gehen. Passt für K2, ök2 und VK2.**
+
+> Künstler:innen und kleine Galerien stehen vor demselben Problem: Sie brauchen Webauftritt, Kasse, Events und Presse – aber am Markt gibt es vor allem Stückwerke. Eine Software für die Galerie, eine andere für die Kasse, wieder eine für Einladungen. Die **K2 Galerie** ist aus genau dieser Lücke entstanden: eine Oberfläche für alles. Galerie, Kasse, Events und Marketing aus einer Hand, ohne dass man sich durch ein Dutzend Programme klicken muss. Mittlerweile wächst die Plattform: **ök2** für Künstler:innen mit eigenem Auftritt, **VK2** für Kunstvereine – alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Keine Tech-Story von oben, sondern gebaut für die, die es brauchen.
+
+**Ablage:** Dieses Dokument (§1b). In der App: Admin → Presse & Medien → Block „Produkt-Story (K2 & VK2)“ (in allen Kontexten: K2, ök2, VK2) → kopieren.
 
 ### 2. Presse-Ansprechpartner
 

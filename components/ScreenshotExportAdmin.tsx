@@ -13979,7 +13979,24 @@ ${name}`
                 </p>
               )}
 
-              {/* Story für Presse (Human Interest) – nur K2, optional zum Kopieren */}
+              {/* Produkt-Story (K2 & VK2) – für alle Kontexte, neutrale Story für Medien */}
+              <div style={{ marginBottom: '2rem', padding: '1rem 1.25rem', background: `${s.accent}08`, border: `1px solid ${s.accent}30`, borderRadius: '12px' }}>
+                <h3 style={{ fontSize: '1rem', color: s.text, marginBottom: '0.5rem' }}>📖 Produkt-Story (K2 & VK2)</h3>
+                <p style={{ fontSize: '0.8rem', color: s.muted, marginBottom: '0.75rem' }}>
+                  Neutrale Story für Presse – Plattform, Künstler:innen, Kunstvereine. Interessant, ohne in den persönlichen Bereich zu gehen.
+                </p>
+                <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '0.85rem', color: s.text, marginBottom: '0.75rem', lineHeight: 1.5, fontFamily: 'inherit' }}>
+                  {`Künstler:innen und kleine Galerien stehen vor demselben Problem: Sie brauchen Webauftritt, Kasse, Events und Presse – aber am Markt gibt es vor allem Stückwerke. Eine Software für die Galerie, eine andere für die Kasse, wieder eine für Einladungen. Die K2 Galerie ist aus genau dieser Lücke entstanden: eine Oberfläche für alles. Galerie, Kasse, Events und Marketing aus einer Hand, ohne dass man sich durch ein Dutzend Programme klicken muss. Mittlerweile wächst die Plattform: ök2 für Künstler:innen mit eigenem Auftritt, VK2 für Kunstvereine – alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Keine Tech-Story von oben, sondern gebaut für die, die es brauchen.`}
+                </pre>
+                <button type="button" onClick={() => {
+                  const t = 'Künstler:innen und kleine Galerien stehen vor demselben Problem: Sie brauchen Webauftritt, Kasse, Events und Presse – aber am Markt gibt es vor allem Stückwerke. Eine Software für die Galerie, eine andere für die Kasse, wieder eine für Einladungen. Die K2 Galerie ist aus genau dieser Lücke entstanden: eine Oberfläche für alles. Galerie, Kasse, Events und Marketing aus einer Hand, ohne dass man sich durch ein Dutzend Programme klicken muss. Mittlerweile wächst die Plattform: ök2 für Künstler:innen mit eigenem Auftritt, VK2 für Kunstvereine – alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Keine Tech-Story von oben, sondern gebaut für die, die es brauchen.'
+                  try { navigator.clipboard.writeText(t); alert('✅ Produkt-Story in Zwischenablage kopiert.') } catch (_) { alert('Kopieren fehlgeschlagen.') }
+                }} style={{ padding: '0.5rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
+                  📋 Produkt-Story kopieren
+                </button>
+              </div>
+
+              {/* Story für Presse (Human Interest – persönlich) – nur K2, optional zum Kopieren */}
               {!tenant.isVk2 && !tenant.isOeffentlich && (
                 <div style={{ marginBottom: '2rem', padding: '1rem 1.25rem', background: `${s.accent}08`, border: `1px solid ${s.accent}30`, borderRadius: '12px' }}>
                   <h3 style={{ fontSize: '1rem', color: s.text, marginBottom: '0.5rem' }}>💡 Story für Presse (optional)</h3>
