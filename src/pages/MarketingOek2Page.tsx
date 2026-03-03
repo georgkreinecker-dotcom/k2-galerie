@@ -418,6 +418,18 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <li><strong>Mit wenig Budget:</strong> Eigene Domain, kleines Google-Ads-Budget, gezielte Social-Kampagnen.</li>
           <li><strong>Mit höherem Budget:</strong> Größeres Werbebudget, SEO-Agentur, Influencer, Messen.</li>
         </ul>
+        <p style={{ marginTop: '1rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.8)' }}>
+          <strong>Punkt-für-Punkt:</strong> <code style={{ fontSize: '0.82em', color: '#5ffbf1' }}>docs/SICHTBARKEIT-WERBUNG-AGENDA.md</code> · <strong>Vorlagen 2–7:</strong> <code style={{ fontSize: '0.82em', color: '#5ffbf1' }}>docs/SICHTBARKEIT-PHASE1-VORLAGEN.md</code>
+        </p>
+        <div style={{ padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.08)', borderRadius: '8px', border: '1px solid rgba(95,251,241,0.25)', marginTop: '0.75rem' }}>
+          <h3 style={{ fontSize: '1rem', color: '#5ffbf1', margin: '0 0 0.5rem' }}>Links &amp; QR – einheitlich für alle Materialien</h3>
+          <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)' }}>Diese URLs überall verwenden; QR für dieselben Adressen (z. B. in APf/Eröffnung).</p>
+          <ul style={{ margin: 0, paddingLeft: '1.2em', fontSize: '0.85rem', lineHeight: 1.6 }}>
+            <li><strong>K2 Galerie:</strong>{' '}<a href={URL_K2_GALERIE} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>{URL_K2_GALERIE}</a></li>
+            <li><strong>Demo / Willkommen (ök2):</strong>{' '}<a href={URL_MUSTER_WILLKOMMEN} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>{URL_MUSTER_WILLKOMMEN}</a></li>
+            <li><strong>VK2:</strong>{' '}<a href={URL_VK2} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>{URL_VK2}</a></li>
+          </ul>
+        </div>
       </section>
       {/* Eröffnung K2 + ök2 + VK2 – Marketinglinie, gemeinsame Lounge */}
       <section id="mok2-eroeffnung-k2-oek2" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>

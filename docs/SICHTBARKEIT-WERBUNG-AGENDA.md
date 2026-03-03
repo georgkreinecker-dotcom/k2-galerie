@@ -15,7 +15,7 @@ Arbeitsliste zum Abarbeiten. Status: ○ offen · ◐ in Arbeit · ● erledigt
 | 2 | **Google Business Profile** | Einmal anlegen: Name, Adresse, Öffnungszeiten, Website-Link, Fotos. Kostenlos, wirkt in lokaler Suche. | ○ | **Vorlage:** docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §2. |
 | 3 | **Social-Profile** | Ein Account pro Kanal (z. B. Instagram, Facebook), Link zur Willkommensseite/Demo in Bio. Regelmäßig Posts. | ○ | **Vorlage:** docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §3. |
 | 4 | **Empfehlungsprogramm sichtbar** | In App und Kurztexten: „Empfehle uns – 10 % Rabatt …“. Link teilen leicht machen (kopierbar aus App). | ● | WillkommenPage: Hinweis ergänzt. Admin/Lizenz siehe Vorlage §4. |
-| 5 | **QR und Links** | Einheitliche Links (wie Eröffnungs-Doku) auf alle Materialien. QR für „Galerie“ und „Demo ansehen“. | ○ | **Vorlage:** docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §5 + MARKETING-EROEFFNUNG 3.6. |
+| 5 | **QR und Links** | Einheitliche Links (wie Eröffnungs-Doku) auf alle Materialien. QR für „Galerie“ und „Demo ansehen“. | ● | Erledigt: mök2 Sichtbarkeit – Links & QR Block + Agenda/Vorlagen-Verweis. Eröffnungs-Sektion hat dieselben URLs. |
 | 6 | **Presse** | Eine Presseinformation (Eröffnung + optional Plattform) an ausgewählte Medien. | ○ | **Vorlage:** docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §6. |
 | 7 | **Verzeichnisse** | Liste: 5–10 kostenlose Einträge (Kulturportale, Galerien, Kunstvereine). Nacheinander eintragen. | ○ | **Vorlage:** docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §7. |
 
@@ -43,7 +43,7 @@ Arbeitsliste zum Abarbeiten. Status: ○ offen · ◐ in Arbeit · ● erledigt
 
 ## Fortschritt
 
-- **Phase 1:** 2 von 7 erledigt (1 Technik, 4 Empfehlung in App)
+- **Phase 1:** 3 von 7 erledigt (1 Technik, 4 Empfehlung, 5 QR/Links in mök2)
 - **Phase 2:** 0 von 3
 - **Phase 3:** 0 von 3
 
