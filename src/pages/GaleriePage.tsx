@@ -921,8 +921,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
 
       const origin = typeof window !== 'undefined' ? window.location.origin : ''
       const isLocalLan = /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.|10\.)/.test(origin)
-      // ESSENZIELL: Immer zuerst API (Blob = aktueller Stand nach „Jetzt an Server senden“). Statische Datei nur Fallback.
-      const apiUrl = `${GALLERY_DATA_PUBLIC_URL}/api/gallery-data?t=${timestamp}&_=${Date.now()}&v=${newVersion}`
+      // ESSENZIELL: Immer zuerst API (Blob = aktueller Stand). tenantId=k2 = K2-Daten, nie Muster/ök2 – Gleichstand mit QR.
+      const apiUrl = `${GALLERY_DATA_PUBLIC_URL}/api/gallery-data?tenantId=k2&t=${timestamp}&_=${Date.now()}&v=${newVersion}`
 
       let response: Response | null = null
       try {
@@ -1354,8 +1354,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           }
         }
 
-        // ESSENZIELL: Immer zuerst API (Blob = was „Jetzt an Server senden“ geschrieben hat). Statische gallery-data.json nur Fallback (Build-Stand, oft alt).
-        const apiUrl = `${GALLERY_DATA_PUBLIC_URL}/api/gallery-data?${urlV ? `v=${urlV}&` : ''}t=${timestamp}&_=${Date.now()}`
+        // ESSENZIELL: Immer zuerst API (Blob = was „Jetzt an Server senden“ geschrieben hat). tenantId=k2 = genau die K2-Daten, keine Muster/ök2 – QR liefert Gleichstand.
+        const apiUrl = `${GALLERY_DATA_PUBLIC_URL}/api/gallery-data?tenantId=k2&${urlV ? `v=${urlV}&` : ''}t=${timestamp}&_=${Date.now()}`
         let response: Response | null = null
         try {
           response = await fetch(apiUrl, fetchOpts)
@@ -1402,7 +1402,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
         if (response?.ok) {
           const jsonData = await response.json()
           data = jsonData
-          
+          // QR/Gleichstand: Nur auf K2-Route Server-Daten anwenden – nie Muster/ök2-Daten in K2-Keys schreiben
+          if (musterOnly || vk2) {
+            data = null
+          } else {
           // Prüfe Timestamp UND Version - wenn neuer als gespeicherter, lade neu
           const lastLoadedTimestamp = localStorage.getItem('k2-last-loaded-timestamp')
           const currentTimestamp = jsonData.exportedAt || ''
@@ -1540,6 +1543,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               localStorage.setItem('k2-page-content-galerie', data.pageContentGalerie)
               window.dispatchEvent(new CustomEvent('k2-page-content-updated'))
             } catch (_) {}
+          }
           }
           
           // DEAKTIVIERT: Automatisches Reload verursacht Crashes
