@@ -56,6 +56,18 @@ So wächst die Vergangenheit **von vielen Seiten** – organisch, ohne dass eine
 
 ---
 
+## 2c. In Partnerschaft: zwei Zweige in der History
+
+**Wenn ich in einer Partnerschaft bin**, gibt es in der Vergangenheit **zwei Linien**: meine Herkunft und die des Partners. Beide gehören dazu – keiner „übernimmt“ den anderen.
+
+- **Strukturell:** Die History hat **zwei Zweige**, die in der **Partnerschaft zusammenlaufen**. Von „uns“ (dem Paar) nach oben: **meine** Eltern, Großeltern, … und **Partner's** Eltern, Großeltern, …. Zwei Linien, ein gemeinsamer Baum – niemand gibt seine Linie auf.
+- **In der App:** Klar erkennbar z. B. als **„Meine Herkunft“** und **„Herkunft [Partner-Name]“** (oder „Zweig des Partners“). Beide Zweige sind gleichberechtigt sichtbar; Stammbaum-Ansicht zeigt beide Linien, die sich in uns treffen.
+- **Beiträge:** Organisch gilt für **beide** Zweige: Ich kann zu meinen Vorfahren beitragen, Partner zu seinen/ihren; wir können wechselseitig zu den jeweiligen Vorfahren etwas beisteuern („Was ich dazu weiß“), wenn wir etwas erfahren haben. So wächst die History der Partnerschaft aus beiden Richtungen.
+- **Startpunkt in der Partnerschaft:** Oft sinnvoll: **„Wir“** (das Paar) als Anker – von dort aus nach oben zwei Äste (meine Herkunft, Partner-Herkunft), nach unten gemeinsame Kinder (falls vorhanden). So ist von vornherein klar: zwei Linien, ein gemeinsamer Raum.
+- **Rechte (später):** Jeder kann Verwalter „seines“ Herkunfts-Zweigs sein (oder beide verwalten gemeinsam); entscheidend ist, dass **beide Zweige** in der Struktur und in der UI vorkommen und nicht einer den anderen ersetzt.
+
+---
+
 ## 3. Wie wir das organisieren (Vorschlag)
 
 1. **Beim Start / Onboarding:**  
@@ -73,7 +85,14 @@ So wächst die Vergangenheit **von vielen Seiten** – organisch, ohne dass eine
 
 4. **Navigation / Oberfläche:**  
    - Z. B. **„Mein Bereich“** (aktiv) vs. **„Stammbaum“** (ganzer Baum, Leseansicht) vs. **„Gedenkort“** (passiv, Gaben).  
-   - So ist sofort klar: Wo arbeite ich, wo schaue ich nur.
+   - In **Partnerschaft:** zusätzlich oder im Stammbaum erkennbar: **„Meine Herkunft“** / **„Herkunft [Partner]“** – zwei Zweige in der History, die in „uns“ zusammentreffen.  
+   - So ist sofort klar: Wo arbeite ich, wo schaue ich nur – und dass die History aus zwei Linien besteht.
+
+5. **Stammbaum-Ansicht & Ausdruck – ich entscheide:**  
+   Beim Anzeigen und beim **Ausdruck** (Plakat, PDF) wähle ich immer **zwei Dinge**:  
+   - **Standpunkt:** Von wem aus zeige ich den Baum? (Ich / Wir / Eltern / Großeltern – der Anker.)  
+   - **Zeitlicher Ausschnitt:** **„Nur das Jetzt“** (z. B. nur die aktuellen Generationen, ohne Vorfahren – das Heute) oder **„Auch die Vergangenheit“** (vollständiger Baum inkl. History, Verstorbene, alle Zweige).  
+   So kann das Bild oder der Ausdruck genau das zeigen, was ich gerade brauche – nur das Jetzt oder das Ganze inkl. Vergangenheit.
 
 ---
 
@@ -92,9 +111,15 @@ So wächst die Vergangenheit **von vielen Seiten** – organisch, ohne dass eine
 - [ ] UI-Kennzeichnung **„Mein Bereich“** (aktiv) vs. **„Stammbaum / Alle“** (passiv) – sobald Rechte/Zweige (Phase 4.0) umgesetzt sind.
 - [ ] **Beiträge / „Was unsere Familie dazu weiß“:** Pro Person (v. a. im passiven Teil) können alle Zugangsberechtigten Wissen beisteuern (Erinnerung, Korrektur, Foto, Datum). Datenmodell: Beiträge-Liste pro Tenant; Anzeige auf Personen-Seite; „Was ich dazu weiß, hinzufügen“.
 - [ ] Gedenkort klar dem **passiven** Teil zugeordnet (Navigation, Texte).
+- [ ] **Partnerschaft:** In der UI zwei Herkunfts-Zweige erkennbar („Meine Herkunft“ / „Herkunft [Partner]“); Startpunkt optional „Wir“ als Anker; beide Linien beitragbar.
+- [ ] **Stammbaum-Ansicht & Ausdruck:** Nutzer entscheidet immer **von welchem Standpunkt** und **welcher zeitliche Ausschnitt** gezeigt wird: (1) **Standpunkt** = Anker (ich / wir / Eltern / Großeltern). (2) **Zeitlich** = **„Nur das Jetzt“** (z. B. nur lebende / aktuelle Generationen, kein Vorfahren-Teil) oder **„Auch die Vergangenheit“** (vollständiger Baum inkl. History). Gilt für Bildschirm-Ansicht und für Ausdruck (Plakat, PDF). So wähle ich selbst: nur das Heute oder das Ganze inkl. Vergangenheit.
 
 ---
 
 *„Wenn ich heute entscheide, mit der Familien-App zu beginnen, muss ich entscheiden: Wo ist der Startpunkt? Bei mir, bei meinen Eltern, bei meinen Großeltern. Es gibt einen aktiven Teil und einen passiven Teil – wie können wir das organisieren?“ – Georg, 02.03.26*
 
 *„Zum passiven Teil, der aus der Vergangenheit kommt und nur mehr in der History existiert – da gibt es vieles, das ich nicht weiß, aber andere Teile meiner Familie könnten etwas wissen. Wie können wir da eine organische Struktur aufbauen?“ – Georg, 02.03.26*
+
+*„Wie macht man das in Partnerschaft mit dem Zweig des Partners in der History?“ – Georg, 02.03.26*
+
+*„Beim Ausdruck oder in der Stammbaum-Ansicht entscheide ich immer, von welchem Standpunkt ich das Bild oder den Ausdruck sehen will – ob auch die Vergangenheit oder nur das Jetzt abgebildet sein soll.“ – Georg, 02.03.26*
