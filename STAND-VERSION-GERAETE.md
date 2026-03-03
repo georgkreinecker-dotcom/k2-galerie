@@ -7,9 +7,11 @@
 - **Mit „(lokal)“** → Du siehst die App vom Mac (Dev-Server). Handy kann anderen Stand haben (Vercel).
 - **Ohne „(lokal)“** → App vom gleichen Server wie andere Geräte (z. B. Vercel).
 
-**Merken:** Neuester Stand ist immer am Mac (hier wird gebaut; Mobil kann keinen Code ändern). Bei jedem `npm run dev` wird der Stand am Mac aktualisiert (`write-build-info.js`). Mobil zeigt die zuletzt deployte Version.
+**Merken:** „Stand … (lokal)“ = Anzeige kommt aus dem **letzten lokalen Build** (Datei `buildInfo.generated.ts`). **Commit/Push allein ändert das nicht** – der Build läuft auf Vercel, nicht auf deinem Mac. Dein lokaler Stand bleibt z. B. 11:49, bis du auf dem Mac einmal **`npm run build`** ausführst (dann schreibt write-build-info.js die Datei neu).
 
-**Wann gibt es einen neuen Stand?** Nach Code-Änderungen: am Mac beim nächsten `npm run dev`; für Mobil nach `npm run build` und Deploy (dann zeigt die deployte Version den neuen Stand).
+**Wann gibt es einen neuen Stand?**  
+- **Lokal (lokal):** Nur wenn du **`npm run build`** auf dem Mac ausführst. `npm run dev` aktualisiert den Stand **nicht** (damit Cursor ruhig bleibt).  
+- **Vercel/Handy:** Nach Push baut Vercel; 1–2 Min später ist der neue Stand auf k2-galerie.vercel.app. Um ihn zu sehen: App dort öffnen (nicht localhost) oder QR neu scannen.
 
 **Anderer Stand auf einem Gerät?** Dort **Cmd+Shift+R** (Mac) bzw. Seite neu laden / Cache leeren → dann überall gleich.
 

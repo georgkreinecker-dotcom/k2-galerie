@@ -22,6 +22,7 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
   const [panelMinimized, setPanelMinimized] = useState(false)
   const location = useLocation()
   const isMarketingPage = location.pathname === PROJECT_ROUTES['k2-galerie'].marketingOek2
+  const isUebersicht = location.pathname === PROJECT_ROUTES['k2-galerie'].uebersicht
   const isWerbeunterlagen = location.pathname === PROJECT_ROUTES['k2-galerie'].werbeunterlagen
   const isLicences = location.pathname === PROJECT_ROUTES['k2-galerie'].licences
   const isSoftwareentwicklung = location.pathname === PROJECT_ROUTES['k2-galerie'].softwareentwicklung
@@ -72,6 +73,20 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
           }}
         >
           ← Projekt-Start
+        </Link>
+        <Link
+          to={PROJECT_ROUTES['k2-galerie'].uebersicht}
+          style={{
+            padding: '0.4rem 0.8rem',
+            background: isUebersicht ? 'var(--k2-accent, #5ffbf1)' : '#444',
+            color: isUebersicht ? '#000' : '#fff',
+            textDecoration: 'none',
+            borderRadius: '6px',
+            fontSize: '0.9rem',
+            fontWeight: isUebersicht ? 600 : 400,
+          }}
+        >
+          Übersicht (Board)
         </Link>
         <Link
           to={PROJECT_ROUTES['k2-galerie'].marketingOek2}
@@ -244,6 +259,23 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
           <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: '#8fa0c9' }}>
             Arbeitsplattform für den Vertrieb von ök2
           </p>
+          <Link
+            to={PROJECT_ROUTES['k2-galerie'].uebersicht}
+            style={{
+              marginBottom: '0.75rem',
+              padding: '0.5rem 0.75rem',
+              background: isUebersicht ? 'rgba(95, 251, 241, 0.2)' : 'rgba(95, 251, 241, 0.08)',
+              border: '1px solid rgba(95, 251, 241, 0.2)',
+              borderRadius: '6px',
+              color: '#5ffbf1',
+              textDecoration: 'none',
+              fontSize: '0.85rem',
+              display: 'block',
+              fontWeight: isUebersicht ? 600 : 400,
+            }}
+          >
+            📊 Übersicht (Board)
+          </Link>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {mok2Groups.map((group) => (
               <div key={group.chapterTitle}>

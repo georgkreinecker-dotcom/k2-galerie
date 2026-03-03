@@ -829,14 +829,20 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     }
     return GALLERY_DATA_PUBLIC_URL + PROJECT_ROUTES['k2-galerie'].galerie
   }, [vk2, musterOnly])
-  // QR alle 15 s neu bauen mit frischem Date.now() (Cache-Bust), damit Scan immer aktuelle Version lädt
+  // QR alle 15 s neu bauen mit frischem Date.now() (Cache-Bust)
   const [qrBustTick, setQrBustTick] = useState(0)
+  // Eindeutiger Schlüssel für QR-URL: nach „QR neu erzeugen“ oder Veröffentlichen neu setzen → gescannte URL ist einmalig, kein Browser-/CDN-Cache
+  const [qrRegenerateKey, setQrRegenerateKey] = useState(() => `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`)
   useEffect(() => {
     if (typeof window !== 'undefined' && window.self !== window.top) return
     const t = setInterval(() => setQrBustTick((k) => k + 1), 15000)
     return () => clearInterval(t)
   }, [])
-  // QR mit Server-Stand (qrVersionTs) – Regel stand-qr-niemals-zurueck: Scan lädt immer die angezeigte Vercel-Version, nie gecachte alte (z. B. Musterbilder)
+  const handleQrNeuErzeugen = () => {
+    refetchQrStand()
+    setQrRegenerateKey(`${Date.now()}-${Math.random().toString(36).slice(2, 10)}`)
+  }
+  // QR mit Server-Stand + eindeutigem r= (qrRegenerateKey): Scan trifft nie gecachte Seite, lädt aktuelle App + API-Daten
   useEffect(() => {
     let cancelled = false
     const urlForQr = vercelGalerieUrl
@@ -844,12 +850,13 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       if (!cancelled) setVercelQrDataUrl('')
       return
     }
-    const qrUrl = buildQrUrlWithBust(urlForQr, qrVersionTs)
+    const busted = buildQrUrlWithBust(urlForQr, qrVersionTs)
+    const qrUrl = `${busted}&r=${encodeURIComponent(qrRegenerateKey)}`
     QRCode.toDataURL(qrUrl, { width: 100, margin: 1 })
       .then((url) => { if (!cancelled) setVercelQrDataUrl(url) })
       .catch(() => { if (!cancelled) setVercelQrDataUrl('') })
     return () => { cancelled = true }
-  }, [vercelGalerieUrl, musterOnly, qrVersionTs, qrBustTick])
+  }, [vercelGalerieUrl, musterOnly, qrVersionTs, qrBustTick, qrRegenerateKey])
 
   // QR für Presseaussendungen (ök2 + VK2) – beim Öffnen von Presse-Docs injizieren
   const [qrOek2Presse, setQrOek2Presse] = useState('')
@@ -1031,10 +1038,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 }
               }
             })
-            const { merged, toHistory } = mergeServerWithLocal(serverArtworks, localArtworks, { serverMap })
+            const { merged, toHistory } = mergeServerWithLocal(serverArtworks, localArtworks, { serverMap, onlyAddLocalIfMobileAndVeryNew: true })
             if (toHistory.length > 0) appendToHistory(toHistory)
-            
-            console.log('✅ Werke gemergt (Server = Quelle):', merged.length, 'Gesamt,', toHistory.length, 'in History')
+
+            console.log('✅ Werke gemergt (Server = Quelle, alte Lokale nicht übernommen):', merged.length, 'Gesamt,', toHistory.length, 'in History')
             console.log('📋 Lokale Nummern:', localArtworks.map((a: any) => a.number || a.id).join(', '))
             console.log('📋 Server Nummern:', serverArtworks.map((a: any) => a.number || a.id).join(', '))
             console.log('📋 Gemergte Nummern:', merged.map((a: any) => a.number || a.id).join(', '))
@@ -1478,10 +1485,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 console.warn(`⚠️ Initial-Load: Server ${serverArtworks.length} vs. lokal ${localArtworks.length} – Sync übersprungen`)
                 window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: localArtworks.length, fromGaleriePage: true, initialLoad: true, syncSkipped: true } }))
               } else {
-              const { merged, toHistory } = mergeServerWithLocal(serverArtworks, localArtworks)
+              const { merged, toHistory } = mergeServerWithLocal(serverArtworks, localArtworks, { onlyAddLocalIfMobileAndVeryNew: true })
               if (toHistory.length > 0) appendToHistory(toHistory)
               saveArtworksForContext(musterOnly, vk2, merged, { allowReduce: false })
-              console.log('✅ Werke gemergt beim Initial-Load (Server = Quelle):', merged.length, 'Gesamt,', toHistory.length, 'in History')
+              console.log('✅ Werke gemergt beim Initial-Load (Server = Quelle, alte Lokale nicht übernommen):', merged.length, 'Gesamt,', toHistory.length, 'in History')
               console.log('📋 Lokale Nummern:', localArtworks.map((a: any) => a.number || a.id).join(', '))
               console.log('📋 Server Nummern:', serverArtworks.map((a: any) => a.number || a.id).join(', '))
               console.log('📋 Gemergte Nummern:', merged.map((a: any) => a.number || a.id).join(', '))
@@ -3595,7 +3602,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                       <div style={{ background: '#fff', padding: '0.4rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
                         {serverLabel && <div style={{ fontSize: 10, color: '#666', marginBottom: 2 }}>App: {serverLabel}</div>}
                         {dataStandLabel && <div style={{ fontSize: 10, color: '#666', marginBottom: 4 }}>Daten: {dataStandLabel}</div>}
-                        <button type="button" onClick={() => { refetchQrStand(); handleRefresh(); }} title="Stand und Daten von Vercel abrufen (QR + Werke/Daten)" style={{ marginBottom: 4, padding: '2px 8px', fontSize: 11, background: 'rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.12)', borderRadius: 6, cursor: 'pointer' }}>Stand & Daten</button>
+                        <div style={{ display: 'flex', gap: 4, marginBottom: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
+                          <button type="button" onClick={() => { refetchQrStand(); handleRefresh(); }} title="Stand und Daten von Vercel abrufen" style={{ padding: '2px 8px', fontSize: 11, background: 'rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.12)', borderRadius: 6, cursor: 'pointer' }}>Stand & Daten</button>
+                          {!musterOnly && <button type="button" onClick={handleQrNeuErzeugen} title="QR mit neuer URL erzeugen – danach scannen liefert garantiert aktuellen Stand (kein Cache)" style={{ padding: '2px 8px', fontSize: 11, background: 'rgba(0,0,0,0.08)', border: '1px solid rgba(0,0,0,0.2)', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>QR neu erzeugen</button>}
+                        </div>
                         <img src={vercelQrDataUrl} alt={`QR-Code: ${tenantConfig.galleryName}`} style={{ width: 100, height: 100, display: 'block' }} />
                       </div>
                       <p style={{ margin: 0, fontSize: 'clamp(0.55rem, 1.2vw, 0.65rem)', color: theme.muted, fontWeight: 500, maxWidth: 140 }}>
@@ -3610,8 +3620,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                   </p>
                 )}
                 {!musterOnly && (
-                  <p style={{ margin: '0.35rem 0 0', fontSize: 'clamp(0.6rem, 1.2vw, 0.7rem)', color: theme.muted, opacity: 0.85, maxWidth: 260 }}>
-                    Damit das Handy aktuelle Werke sieht: im Admin «Jetzt an Server senden», dann hier «Stand & Daten» oder QR neu scannen.
+                  <p style={{ margin: '0.35rem 0 0', fontSize: 'clamp(0.6rem, 1.2vw, 0.7rem)', color: theme.muted, opacity: 0.85, maxWidth: 280 }}>
+                    Damit das Handy aktuelle Werke sieht: im Admin «Jetzt an Server senden», dann hier <strong>«QR neu erzeugen»</strong> tippen und danach den neuen QR scannen.
                   </p>
                 )}
                 <p style={{ marginTop: '1.5rem', marginBottom: 0, paddingTop: '1rem', borderTop: `1px solid color-mix(in srgb, ${theme.muted} 25%, transparent)`, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted, letterSpacing: '0.01em' }}>

@@ -133,6 +133,244 @@ const KEY_OEF_STAMMDATEN_MARTINA = 'k2-oeffentlich-stammdaten-martina'
 /** VK2-Stammdaten: Verein, Vorstand, Beirat, Mitglieder */
 const KEY_VK2_STAMMDATEN = 'k2-vk2-stammdaten'
 
+/** Medienspiegel (Presse): Key pro Kontext (K2, ök2, VK2) */
+function getMedienspiegelStorageKey(tenant: { isOeffentlich?: boolean; isVk2?: boolean }): string {
+  if (tenant.isOeffentlich) return 'k2-oeffentlich-medienspiegel'
+  if (tenant.isVk2) return 'k2-vk2-medienspiegel'
+  return 'k2-medienspiegel'
+}
+
+/** Wichtige österreichische Medien – vordefiniert zum Einfügen (Print, TV, Radio). E-Mail = typische Presse-/Redaktionsadresse; Nutzer kann anpassen. */
+const ÖSTERREICH_MEDIEN = {
+  print: [
+    { name: 'Kleine Zeitung', email: 'redaktion@kleinezeitung.at' },
+    { name: 'Kronen Zeitung', email: 'redaktion@kronenzeitung.at' },
+    { name: 'Der Standard', email: 'redaktion@derstandard.at' },
+    { name: 'Die Presse', email: 'redaktion@diepresse.com' },
+    { name: 'Salzburger Nachrichten', email: 'redaktion@sn.at' },
+    { name: 'Oberösterreichische Nachrichten (OÖN)', email: 'redaktion@nachrichten.at' },
+    { name: 'Tiroler Tageszeitung', email: 'redaktion@tt.com' },
+    { name: 'Kurier', email: 'redaktion@kurier.at' },
+    { name: 'Wiener Zeitung', email: 'redaktion@wienerzeitung.at' },
+    { name: 'Falter', email: 'redaktion@falter.at' },
+    { name: 'Profil', email: 'redaktion@profil.at' },
+    { name: 'Trend', email: 'redaktion@trend.at' },
+  ],
+  tv: [
+    { name: 'ORF', email: 'presse@orf.at' },
+    { name: 'ATV', email: 'presse@atv.at' },
+    { name: 'Puls 4', email: 'presse@puls4.com' },
+    { name: 'ServusTV', email: 'presse@servustv.com' },
+  ],
+  radio: [
+    { name: 'Ö1 (ORF)', email: 'oe1@orf.at' },
+    { name: 'Ö3 (ORF)', email: 'oe3@orf.at' },
+    { name: 'FM4 (ORF)', email: 'fm4@orf.at' },
+    { name: 'KroneHit', email: 'studio@kronehit.at' },
+    { name: 'Antenne Steiermark', email: 'redaktion@antenne.at' },
+  ],
+  /** Regional Oberösterreich – Print, Radio, Regionalmedien */
+  regionalOoe: [
+    { name: 'OÖ Nachrichten (OÖN)', email: 'redaktion@nachrichten.at' },
+    { name: 'tips Linz / Oberösterreich', email: 'redaktion@tips.at' },
+    { name: 'Bezirksblätter OÖ', email: 'redaktion@bezirksblaetter.at' },
+    { name: 'Radio Oberösterreich', email: 'redaktion@radioooe.at' },
+    { name: 'Antenne Oberösterreich', email: 'redaktion@antenne.at' },
+    { name: 'meinbezirk.at OÖ', email: 'redaktion@meinbezirk.at' },
+    { name: 'Welser Zeitung', email: 'redaktion@wels.at' },
+    { name: 'Rieder Volkszeitung', email: 'redaktion@rvz.at' },
+  ],
+  /** Online & Verteilung – wichtig für Internetauftritt, Reichweite im Netz */
+  online: [
+    { name: 'APA (Austria Presse Agentur)', email: 'presse@apa.at' },
+    { name: 'OTS (Presseaussendungen)', email: 'ots@ots.at' },
+    { name: 'ORF.at (Online)', email: 'redaktion@orf.at' },
+    { name: 'heute.at', email: 'redaktion@heute.at' },
+    { name: 'vienna.at', email: 'redaktion@vienna.at' },
+    { name: 'news.at', email: 'redaktion@news.at' },
+    { name: 'diepresse.com (Online)', email: 'redaktion@diepresse.com' },
+    { name: 'derStandard.at (Online)', email: 'redaktion@derstandard.at' },
+    { name: 'kleinezeitung.at (Online)', email: 'redaktion@kleinezeitung.at' },
+    { name: 'kurier.at (Online)', email: 'redaktion@kurier.at' },
+  ],
+  /** Kunst & Kultur – Galerien, Ausstellungen, Szene */
+  kultur: [
+    { name: 'Parnass (Kunstzeitschrift)', email: 'redaktion@parnass.at' },
+    { name: 'Artmagazine', email: 'redaktion@artmagazine.cc' },
+    { name: 'basis wien (Kunst-Datenbank)', email: 'office@basis-wien.at' },
+    { name: 'design austria', email: 'office@designaustria.at' },
+    { name: 'Kunstforum International', email: 'redaktion@kunstforum.de' },
+    { name: 'museum.at', email: 'redaktion@museum.at' },
+    { name: 'Kulturredaktion Der Standard', email: 'kultur@derstandard.at' },
+    { name: 'Kulturredaktion Die Presse', email: 'kultur@diepresse.com' },
+  ],
+} as const
+
+/** Wichtige deutsche Medien – gleiche Kategorien wie AT, für Skalierung (Land-Auswahl). E-Mail = typische Presse-/Redaktionsadresse. */
+const DEUTSCHLAND_MEDIEN = {
+  print: [
+    { name: 'Süddeutsche Zeitung', email: 'redaktion@sueddeutsche.de' },
+    { name: 'Frankfurter Allgemeine (FAZ)', email: 'redaktion@faz.net' },
+    { name: 'Die Zeit', email: 'redaktion@zeit.de' },
+    { name: 'Spiegel', email: 'redaktion@spiegel.de' },
+    { name: 'taz', email: 'redaktion@taz.de' },
+    { name: 'Handelsblatt', email: 'redaktion@handelsblatt.com' },
+    { name: 'Bild', email: 'redaktion@bild.de' },
+    { name: 'Die Welt', email: 'redaktion@welt.de' },
+    { name: 'Frankfurter Rundschau', email: 'redaktion@fr.de' },
+  ],
+  tv: [
+    { name: 'ARD', email: 'presse@ard.de' },
+    { name: 'ZDF', email: 'presse@zdf.de' },
+    { name: 'RTL', email: 'presse@rtl.de' },
+    { name: 'Sat.1', email: 'presse@sat1.de' },
+    { name: 'ProSieben', email: 'presse@prosieben.de' },
+  ],
+  radio: [
+    { name: 'WDR', email: 'redaktion@wdr.de' },
+    { name: 'NDR', email: 'redaktion@ndr.de' },
+    { name: 'BR (Bayern)', email: 'redaktion@br.de' },
+    { name: 'rbb (Berlin-Brandenburg)', email: 'redaktion@rbb-online.de' },
+    { name: 'Deutschlandfunk', email: 'redaktion@deutschlandfunk.de' },
+  ],
+  /** Regional DE – Beispiele Bayern, Berlin, NRW */
+  regionalOoe: [
+    { name: 'Süddeutsche Zeitung (Regional)', email: 'redaktion@sueddeutsche.de' },
+    { name: 'Tagesspiegel (Berlin)', email: 'redaktion@tagesspiegel.de' },
+    { name: 'Berliner Zeitung', email: 'redaktion@berliner-zeitung.de' },
+    { name: 'Westdeutsche Allgemeine (WAZ)', email: 'redaktion@waz.de' },
+    { name: 'Kölner Stadtanzeiger', email: 'redaktion@ksta.de' },
+    { name: 'Münchner Merkur', email: 'redaktion@merkur.de' },
+  ],
+  online: [
+    { name: 'dpa (Deutsche Presse-Agentur)', email: 'presse@dpa.com' },
+    { name: 'spiegel.de', email: 'redaktion@spiegel.de' },
+    { name: 'zeit.de', email: 'redaktion@zeit.de' },
+    { name: 'faz.net', email: 'redaktion@faz.net' },
+    { name: 'sueddeutsche.de', email: 'redaktion@sueddeutsche.de' },
+    { name: 'tagesschau.de', email: 'redaktion@tagesschau.de' },
+    { name: 'focus.de', email: 'redaktion@focus.de' },
+    { name: 'stern.de', email: 'redaktion@stern.de' },
+  ],
+  kultur: [
+    { name: 'Monopol (Kunstmagazin)', email: 'redaktion@monopol-magazin.de' },
+    { name: 'art – das Kunstmagazin', email: 'redaktion@art-magazin.de' },
+    { name: 'Kunstforum International', email: 'redaktion@kunstforum.de' },
+    { name: 'Kulturredaktion FAZ', email: 'kultur@faz.net' },
+    { name: 'Kulturredaktion SZ', email: 'kultur@sueddeutsche.de' },
+    { name: 'Kulturredaktion Zeit', email: 'kultur@zeit.de' },
+    { name: 'Deutschlandfunk Kultur', email: 'kultur@deutschlandfunk.de' },
+  ],
+} as const
+
+/** Wichtige Schweizer Medien – gleiche Kategorien (Print, TV, Radio, Regional, Online, Kultur). */
+const SCHWEIZ_MEDIEN = {
+  print: [
+    { name: 'Neue Zürcher Zeitung (NZZ)', email: 'redaktion@nzz.ch' },
+    { name: 'Tages-Anzeiger', email: 'redaktion@tagesanzeiger.ch' },
+    { name: 'Blick', email: 'redaktion@blick.ch' },
+    { name: 'Basler Zeitung', email: 'redaktion@bazonline.ch' },
+    { name: 'St. Galler Tagblatt', email: 'redaktion@tagblatt.ch' },
+    { name: 'Sonntagszeitung', email: 'redaktion@sonntagszeitung.ch' },
+    { name: 'Der Bund', email: 'redaktion@derbund.ch' },
+    { name: 'Le Temps (Romandie)', email: 'redaktion@letemps.ch' },
+  ],
+  tv: [
+    { name: 'SRF (Schweizer Radio und Fernsehen)', email: 'presse@srf.ch' },
+    { name: 'RTS (Romandie)', email: 'presse@rts.ch' },
+    { name: 'RTL Schweiz', email: 'presse@rtl.ch' },
+    { name: '3+', email: 'presse@3plus.tv' },
+  ],
+  radio: [
+    { name: 'SRF 1', email: 'srf1@srf.ch' },
+    { name: 'SRF 3', email: 'srf3@srf.ch' },
+    { name: 'Radio SRF Kultur', email: 'kultur@srf.ch' },
+    { name: 'Radio 24', email: 'redaktion@radio24.ch' },
+  ],
+  regionalOoe: [
+    { name: 'NZZ (Zürich)', email: 'redaktion@nzz.ch' },
+    { name: 'Tages-Anzeiger (Zürich)', email: 'redaktion@tagesanzeiger.ch' },
+    { name: 'Basler Zeitung', email: 'redaktion@bazonline.ch' },
+    { name: 'Berner Zeitung', email: 'redaktion@bernerzeitung.ch' },
+    { name: 'Luzerner Zeitung', email: 'redaktion@luzernerzeitung.ch' },
+    { name: 'St. Galler Tagblatt', email: 'redaktion@tagblatt.ch' },
+  ],
+  online: [
+    { name: 'sda (Schweizer Depeschenagentur)', email: 'redaktion@sda-ats.ch' },
+    { name: 'nzz.ch', email: 'redaktion@nzz.ch' },
+    { name: 'tagesanzeiger.ch', email: 'redaktion@tagesanzeiger.ch' },
+    { name: 'watson.ch', email: 'redaktion@watson.ch' },
+    { name: 'blick.ch', email: 'redaktion@blick.ch' },
+    { name: 'swissinfo.ch', email: 'redaktion@swissinfo.ch' },
+  ],
+  kultur: [
+    { name: 'Kunstbulletin', email: 'redaktion@kunstbulletin.ch' },
+    { name: 'Kulturredaktion NZZ', email: 'kultur@nzz.ch' },
+    { name: 'Kulturredaktion Tages-Anzeiger', email: 'kultur@tagesanzeiger.ch' },
+    { name: 'SRF Kultur', email: 'kultur@srf.ch' },
+  ],
+} as const
+
+/** Liechtenstein – kleine Medienlandschaft, gleiche Kategorien. */
+const LIECHTENSTEIN_MEDIEN = {
+  print: [
+    { name: 'Liechtensteiner Vaterland', email: 'redaktion@vaterland.li' },
+    { name: 'Liechtensteiner Volksblatt', email: 'redaktion@volksblatt.li' },
+  ],
+  tv: [
+    { name: '1 FL TV', email: 'redaktion@1fl.tv' },
+  ],
+  radio: [
+    { name: 'Radio Liechtenstein', email: 'redaktion@radio.li' },
+  ],
+  regionalOoe: [
+    { name: 'Liechtensteiner Vaterland', email: 'redaktion@vaterland.li' },
+    { name: 'Liechtensteiner Volksblatt', email: 'redaktion@volksblatt.li' },
+  ],
+  online: [
+    { name: 'vaterland.li', email: 'redaktion@vaterland.li' },
+    { name: 'volksblatt.li', email: 'redaktion@volksblatt.li' },
+  ],
+  kultur: [
+    { name: 'Kunst Liechtenstein', email: 'info@kunstmuseum.li' },
+  ],
+} as const
+
+/** Luxemburg – deutschsprachige Medien. */
+const LUXEMBURG_MEDIEN = {
+  print: [
+    { name: 'Luxemburger Wort', email: 'redaktion@wort.lu' },
+    { name: 'Tageblatt', email: 'redaktion@tageblatt.lu' },
+    { name: 'L\'essentiel', email: 'redaktion@lessentiel.lu' },
+  ],
+  tv: [
+    { name: 'RTL Télé Lëtzebuerg', email: 'presse@rtl.lu' },
+  ],
+  radio: [
+    { name: 'RTL Radio Lëtzebuerg', email: 'redaktion@rtl.lu' },
+  ],
+  regionalOoe: [
+    { name: 'Luxemburger Wort', email: 'redaktion@wort.lu' },
+    { name: 'Tageblatt', email: 'redaktion@tageblatt.lu' },
+  ],
+  online: [
+    { name: 'wort.lu', email: 'redaktion@wort.lu' },
+    { name: 'tageblatt.lu', email: 'redaktion@tageblatt.lu' },
+  ],
+  kultur: [
+    { name: 'Kulturredaktion Luxemburger Wort', email: 'kultur@wort.lu' },
+  ],
+} as const
+
+/** Mediensets pro Land – alle deutschsprachigen Länder (DACH + LI + LU). Struktur pro Land gleich (print, tv, …), Länge der Arrays unterschiedlich. */
+const MEDIEN_NACH_LAND: Record<string, typeof ÖSTERREICH_MEDIEN> = {
+  at: ÖSTERREICH_MEDIEN,
+  de: DEUTSCHLAND_MEDIEN as unknown as typeof ÖSTERREICH_MEDIEN,
+  ch: SCHWEIZ_MEDIEN as unknown as typeof ÖSTERREICH_MEDIEN,
+  li: LIECHTENSTEIN_MEDIEN as unknown as typeof ÖSTERREICH_MEDIEN,
+  lu: LUXEMBURG_MEDIEN as unknown as typeof ÖSTERREICH_MEDIEN,
+}
+
 /** QR-Code-Block für Mitglied-Login – erscheint im Voll-Admin bei der Mitgliederliste */
 function VK2LoginQrBlock({ s }: { s: { accent: string; text: string; muted: string } }) {
   const [qrDataUrl, setQrDataUrl] = React.useState('')
@@ -791,6 +1029,22 @@ function ScreenshotExportAdmin() {
     } catch { /* ignore */ }
   }, [location.search])
 
+  // Medienspiegel aus localStorage laden, wenn Kontext wechselt
+  React.useEffect(() => {
+    try {
+      const key = getMedienspiegelStorageKey(tenant)
+      const raw = localStorage.getItem(key)
+      if (!raw) { setMedienspiegel([]); setMedienspiegelSelectedIds(new Set()); return }
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const list = parsed.filter((e: unknown) => e && typeof e === 'object' && 'id' in e && 'email' in e && typeof (e as any).email === 'string')
+          .map((e: any) => ({ id: String(e.id), name: String(e.name ?? '').trim(), email: String(e.email ?? '').trim() }))
+        setMedienspiegel(list)
+        setMedienspiegelSelectedIds(new Set())
+      } else setMedienspiegel([])
+    } catch { setMedienspiegel([]) }
+  }, [tenant.isOeffentlich, tenant.isVk2])
+
   // Vorname aus URL – kommt vom Guide (z.B. /admin?context=oeffentlich&vorname=Klein)
   const guideVorname = (() => {
     try { return new URLSearchParams(window.location.search).get('vorname') ?? '' } catch { return '' }
@@ -844,7 +1098,7 @@ function ScreenshotExportAdmin() {
   })()
   const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>(initialEventplanSubTab)
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false) // kleine Leiste „Vergangenheit“, bei Klick aufklappen
-  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager' | 'empfehlung' | 'lizenz' | 'lizenzinfo'>('stammdaten')
+  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzinfo' | 'kassabuch'>('stammdaten')
   const [lizenzLicenceType, setLizenzLicenceType] = useState<'basic' | 'pro' | 'proplus'>('pro')
   const [lizenzName, setLizenzName] = useState('')
   const [lizenzEmail, setLizenzEmail] = useState('')
@@ -863,6 +1117,16 @@ function ScreenshotExportAdmin() {
   const [presseDatum, setPresseDatum] = useState('')
   const [presseAnlass, setPresseAnlass] = useState('')
   const [presseOrt, setPresseOrt] = useState('')
+  // Medienspiegel: Liste Medien (Name + E-Mail), pro Kontext gespeichert
+  const [medienspiegel, setMedienspiegel] = useState<{ id: string; name: string; email: string }[]>([])
+  const [medienspiegelSelectedIds, setMedienspiegelSelectedIds] = useState<Set<string>>(new Set())
+  const [medienspiegelAddName, setMedienspiegelAddName] = useState('')
+  const [medienspiegelAddEmail, setMedienspiegelAddEmail] = useState('')
+  const [medienspiegelPasteText, setMedienspiegelPasteText] = useState('')
+  /** Medienspiegel: Kategorie-Filter für Anzeige (Alle | Print | TV | …) */
+  const [medienspiegelKategorieFilter, setMedienspiegelKategorieFilter] = useState<'alle' | 'print' | 'tv' | 'radio' | 'regionalOoe' | 'online' | 'kultur'>('alle')
+  /** Medienspiegel: Land/Markt für Standard-Listen (alle deutschsprachigen Länder) */
+  const [medienspiegelLand, setMedienspiegelLand] = useState<'at' | 'de' | 'ch' | 'li' | 'lu'>('at')
   /** Bei blockiertem Pop-up: Dokument im gleichen Tab anzeigen (kein Fenster nötig) */
   const [inAppDocumentViewer, setInAppDocumentViewer] = useState<{ html: string; title: string } | null>(null)
   const previewContainerRef = React.useRef<HTMLDivElement>(null)
@@ -1583,8 +1847,7 @@ function ScreenshotExportAdmin() {
 
   // ök2: Lager-Tab nicht verfügbar. VK2: Sicherheit und Lager nicht – auf Stammdaten wechseln
   useEffect(() => {
-    if (tenant.isOeffentlich && settingsSubTab === 'lager') setSettingsSubTab('stammdaten')
-    if (tenant.isVk2 && (settingsSubTab === 'lager' || settingsSubTab === 'sicherheit')) setSettingsSubTab('stammdaten')
+    if (tenant.isVk2 && (settingsSubTab === 'sicherheit' || settingsSubTab === 'kassabuch')) setSettingsSubTab('stammdaten')
   }, [settingsSubTab])
 
   // Besucher-Ticker: Zahl für aktuellen Kontext laden (K2 / ök2 / VK2 Summe)
@@ -2066,9 +2329,9 @@ function ScreenshotExportAdmin() {
       a.click()
       setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url) }, 200)
       const customersCount = Array.isArray(customersForBackup) ? customersForBackup.length : 0
-      alert(`✅ Vollbackup heruntergeladen.\n\nEnthält: Stammdaten, ${allArtworks.length} Werke, ${eventsForBackup.length} Events, ${documentsForBackup.length} Dokumente, ${customersCount} Kunden.\n\nDatei lokal aufbewahren – bei Datenverlust kann sie im Admin wieder eingespielt werden.`)
+      alert(`✅ Sicherungskopie wurde heruntergeladen.\n\nIn der Datei sind: Stammdaten, ${allArtworks.length} Werke, ${eventsForBackup.length} Events, ${documentsForBackup.length} Dokumente, ${customersCount} Kunden.\n\nSpeichere die Datei an einem sicheren Ort (z. B. PC, USB-Stick). Falls du später Daten verlierst oder auf einem neuen Gerät startest, kannst du sie hier mit „Aus Backup-Datei wiederherstellen“ wieder einspielen.`)
     } catch (e) {
-      alert('Fehler beim Erstellen des Backups: ' + (e instanceof Error ? e.message : String(e)))
+      alert('Die Sicherungskopie konnte nicht erstellt werden.\n\nGrund: ' + (e instanceof Error ? e.message : String(e)) + '\n\nBitte erneut versuchen. Wenn es wieder fehlschlägt, Speicher prüfen („Speicher freigeben“) oder den Assistenten fragen.')
     }
   }
   
@@ -2195,6 +2458,11 @@ function ScreenshotExportAdmin() {
         }
         const designExport = (designSettings && typeof designSettings === 'object' && Object.keys(designSettings).length > 0) ? designSettings : designStored
         const pageTextsExport = (pageTexts != null && typeof pageTexts === 'object') ? pageTexts : pageTextsStored
+        let pageContentGalerieRaw: string | undefined
+        try {
+          const raw = localStorage.getItem(oeffentlich ? 'k2-oeffentlich-page-content-galerie' : 'k2-page-content-galerie')
+          if (raw && raw.length > 0 && raw.length < 6 * 1024 * 1024) pageContentGalerieRaw = raw
+        } catch (_) {}
         const eventsMerged = Array.isArray(events) && events.length > 0 ? events : eventsStored
         const documentsMerged = Array.isArray(documents) && documents.length > 0 ? documents : documentsStored
         const maxList = 100
@@ -2215,6 +2483,7 @@ function ScreenshotExportAdmin() {
           documents: documentsForExport,
           designSettings: designExport,
           pageTexts: pageTextsExport,
+          pageContentGalerie: pageContentGalerieRaw,
           exportedAt: exportedAt,
           version: newVersion,
           buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
@@ -2592,17 +2861,17 @@ function ScreenshotExportAdmin() {
       const data = await res.json()
       const list = Array.isArray(data?.artworks) ? data.artworks : []
       if (list.length === 0) {
-        alert('Die Veröffentlichung enthält keine Werke. Bitte zuerst veröffentlichen oder eine Backup-Datei nutzen.')
+        alert('Auf dem Server liegt noch kein Stand deiner Werke.\n\nKlicke zuerst einmal auf „Aktualisieren“, damit deine Werke dorthin gespeichert werden. Oder nutze eine zuvor heruntergeladene Sicherungsdatei („Aus Backup-Datei wiederherstellen“).')
         return
       }
       const ok = saveArtworksByKey('k2-artworks', list, { filterK2Only: true, allowReduce: true })
       if (!ok) {
-        alert('Speichern fehlgeschlagen (z. B. Daten zu groß). Bitte Backup-Datei nutzen.')
+        alert('Die Daten konnten nicht gespeichert werden (z. B. Speicher voll). Bitte versuche es mit „Aus Backup-Datei wiederherstellen“ und einer Sicherungsdatei von dir.')
         return
       }
       setAllArtworks(loadArtworks(tenant))
       if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated'))
-      alert(`✅ ${list.length} Werke aus der Veröffentlichung wiederhergestellt.`)
+      alert(`✅ Fertig. ${list.length} Werke wurden vom Server zurück in deine App geladen.`)
     } catch (e) {
       console.error('Werke aus Veröffentlichung wiederherstellen:', e)
       const msg = e instanceof Error ? e.message : String(e)
@@ -9139,6 +9408,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <Link
                   to={PROJECT_ROUTES.vk2.galerie}
                   title="Zur Vereins-Galerie"
+                  state={{ fromAdmin: true, fromAdminTab: activeTab, fromAdminContext: 'vk2' }}
                   style={{
                     padding: '0.5rem 0.75rem',
                     background: s.bgCard,
@@ -9158,10 +9428,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </Link>
               )}
 
-              {/* Galerie / Mitglieder ansehen */}
+              {/* Galerie / Mitglieder ansehen – Zurück landet im gleichen Tab (Design, Einstellungen, …) */}
               <Link
                 to={tenant.isVk2 ? PROJECT_ROUTES.vk2.galerieVorschau : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerie}
-                state={{ fromAdmin: true }}
+                state={{
+                  fromAdmin: true,
+                  fromAdminTab: activeTab,
+                  fromAdminContext: tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+                }}
                 style={{
                   padding: '0.5rem 1rem',
                   background: s.bgCard,
@@ -9614,7 +9888,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   ] : [
                     { emoji: '🖼️', name: 'Werke hinzufügen und bearbeiten', beschreibung: 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist live in deiner Galerie.', tab: 'werke' },
                     { emoji: '✨', name: 'Aussehen & Design', beschreibung: tenant.isOeffentlich ? 'Farben, Texte, dein Foto – die Galerie wird zu dir.' : 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
-                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: tenant.isOeffentlich ? 'Meine Daten, Kontakt, Backup. Lizenz & Empfehlungsprogramm.' : 'Meine Daten, Drucker, Sicherheit, Backup. Lizenz & Empfehlungsprogramm.', tab: 'einstellungen' },
+                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: tenant.isOeffentlich ? 'Meine Daten, Kontakt. Lizenz & Empfehlungsprogramm.' : 'Meine Daten, Drucker, Sicherheit (inkl. Backup). Lizenz & Empfehlungsprogramm.', tab: 'einstellungen' },
                     { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Neu hier? Der Assistent führt dich durch die Einrichtung.', tab: 'assistent' },
                   ]
                   const rechtsBereiche: HubArea[] = tenant.isVk2 ? [
@@ -9737,7 +10011,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               guidePfad={guidePfad || undefined}
               onGoToStep={(tab, subTab) => {
                 setActiveTab(tab)
-                if (subTab && tab === 'einstellungen') setSettingsSubTab(subTab as 'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager' | 'empfehlung' | 'lizenz' | 'lizenzinfo')
+                if (subTab && tab === 'einstellungen') setSettingsSubTab(subTab as 'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzinfo' | 'kassabuch')
                 if (subTab && tab === 'eventplan') setEventplanSubTab(subTab as 'events' | 'öffentlichkeitsarbeit')
               }}
             />
@@ -10936,7 +11210,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         : tenant.isOeffentlich
                         ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
                         : PROJECT_ROUTES['k2-galerie'].galerie
-                      navigate(route + '?vorschau=1')
+                      const backState = {
+                        fromAdmin: true,
+                        fromAdminTab: 'design' as const,
+                        fromAdminContext: tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+                      }
+                      navigate(route + '?vorschau=1', { state: backState })
                     }} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1.1rem', fontSize: '1rem', fontWeight: 700, background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: 10, color: '#10b981', cursor: 'pointer', fontFamily: 'inherit' }}>
                       <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>2</span> {tenant.isVk2 ? '👁 Unsere Mitglieder-Seite ansehen – gefällt es?' : '👁 Galerie ansehen – gefällt es?'}
                     </button>
@@ -11616,515 +11895,30 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               ⚙️ Einstellungen
             </h2>
 
-            {/* Kassabuch führen: Ja / Nein – wichtiger Punkt (nur K2/ök2, ab Pro) */}
-            {!tenant.isVk2 && hasKassa(kassabuchTenantForSettings) && (() => {
-              const aktiv = kassabuchAktivDisplay
+            {/* ök2: Musterdaten löschen nur anzeigen, wenn noch Musterwerke vorhanden (nach einmal Löschen nicht mehr nötig) */}
+            {tenant.isOeffentlich && (() => {
+              const hasMuster = allArtworks.some((a: any) => (a as any)._isMuster || String(a.id || '').startsWith('muster-'))
+              if (!hasMuster) return null
               return (
-                <div style={{
-                  marginBottom: '2rem',
-                  padding: '1.25rem',
-                  background: `${s.accent}14`,
-                  border: `1px solid ${s.accent}44`,
-                  borderRadius: '16px'
-                }}>
-                  <h3 style={{ fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>📒 Kassabuch führen</h3>
-                  <p style={{ color: s.muted, fontSize: '0.9rem', marginBottom: '1rem' }}>
-                    Mit <strong>Ja</strong>: Vollständiges Kassabuch (Eingänge aus Verkäufen + Ausgänge: Bar privat, Kassa an Bank, Bar mit Beleg). Mit <strong>Nein</strong>: Nur Verkäufe (Eingänge) sichtbar, keine Ausgänge.
-                  </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                    <button
-                      type="button"
-                      onClick={() => { setKassabuchAktiv(kassabuchTenantForSettings, true); setKassabuchAktivSetting(true) }}
-                      style={{
-                        padding: '0.5rem 1rem',
-                        background: aktiv ? s.accent : s.bgElevated,
-                        color: aktiv ? '#fff' : s.muted,
-                        border: `1px solid ${aktiv ? s.accent : s.muted}`,
-                        borderRadius: 8,
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        fontSize: '0.95rem'
-                      }}
-                    >
-                      Ja
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setKassabuchAktiv(kassabuchTenantForSettings, false); setKassabuchAktivSetting(false) }}
-                      style={{
-                        padding: '0.5rem 1rem',
-                        background: !aktiv ? s.accent : s.bgElevated,
-                        color: !aktiv ? '#fff' : s.muted,
-                        border: `1px solid ${!aktiv ? s.accent : s.muted}`,
-                        borderRadius: 8,
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        fontSize: '0.95rem'
-                      }}
-                    >
-                      Nein
-                    </button>
-                    <span style={{ fontSize: '0.9rem', color: s.muted }}>
-                      {aktiv ? 'Vollständiges Kassabuch (Eingänge + Ausgänge)' : 'Nur Verkäufe (Eingänge)'}
-                    </span>
-                  </div>
+                <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.06)', border: '1px solid rgba(95,251,241,0.2)', borderRadius: '12px' }}>
+                  <span style={{ fontSize: '0.9rem', color: s.muted, marginRight: '0.75rem' }}>Musterwerke in der Demo vorhanden – zum Entfernen:</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const existing = readArtworksRawByKey('k2-oeffentlich-artworks')
+                      const ohne = existing.filter((a: any) => !String(a.id || '').startsWith('muster-') && !(a as any)._isMuster)
+                      if (ohne.length === existing.length) { alert('Keine Musterdaten gefunden – nichts zu löschen.'); return }
+                      saveArtworksByKey('k2-oeffentlich-artworks', ohne, { filterK2Only: false, allowReduce: true })
+                      setAllArtworks(ohne)
+                      alert('✅ Musterdaten entfernt. Eigene Werke sind unberührt.')
+                    }}
+                    style={{ padding: '0.4rem 0.9rem', background: 'transparent', color: '#f87171', border: '1px solid #f87171', borderRadius: 8, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    🗑️ Musterdaten löschen
+                  </button>
                 </div>
               )
             })()}
-
-            {/* Musterdaten laden / löschen – nur K2 */}
-            {!tenant.isOeffentlich && !tenant.isVk2 && (
-            <div style={{ marginBottom: '2rem', padding: '1.25rem', background: 'rgba(95,251,241,0.07)', border: '1px solid rgba(95,251,241,0.25)', borderRadius: '16px' }}>
-              <h3 style={{ fontSize: '1.1rem', color: s.accent, marginBottom: '0.5rem' }}>🧪 Musterdaten</h3>
-              <p style={{ color: s.muted, fontSize: '0.85rem', marginBottom: '1rem' }}>
-                Zum Testen und Ausprobieren: Musterwerke und Musterdaten aus ök2 laden. Eigene Daten werden dabei <strong>nicht gelöscht</strong> – du kannst die Musterdaten jederzeit wieder entfernen.
-              </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const existing = readArtworksRawByKey('k2-artworks')
-                    const ohneAlteMuster = existing.filter((a: any) => !String(a.id || '').startsWith('muster-') && !(a as any)._isMuster)
-                    const withMuster = [...MUSTER_ARTWORKS.map((a: any) => ({ ...a, _isMuster: true })), ...ohneAlteMuster]
-                    saveArtworksByKey('k2-artworks', withMuster, { filterK2Only: true, allowReduce: true })
-                    // Musterstammdaten nur wenn leer (Schicht: stammdatenStorage)
-                    const gallStamm = loadStammdaten('k2', 'gallery') as Record<string, unknown>
-                    if (!(gallStamm && (gallStamm as any).name)) persistStammdaten('k2', 'gallery', { ...MUSTER_TEXTE.gallery, _isMuster: true })
-                    const martinaStamm = loadStammdaten('k2', 'martina') as Record<string, unknown>
-                    if (!(martinaStamm && (martinaStamm as any).name)) persistStammdaten('k2', 'martina', { ...MUSTER_TEXTE.martina, _isMuster: true })
-                    const georgStamm = loadStammdaten('k2', 'georg') as Record<string, unknown>
-                    if (!(georgStamm && (georgStamm as any).name)) persistStammdaten('k2', 'georg', { ...MUSTER_TEXTE.georg, _isMuster: true })
-                    // State direkt aktualisieren + Tab wechseln (iframe-sicher, kein Reload)
-                    setAllArtworks(withMuster)
-                    setActiveTab('werke')
-                  }}
-                  style={{ padding: '0.65rem 1.25rem', background: s.accent, color: '#1a1d24', border: 'none', borderRadius: 10, fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer' }}
-                >
-                  🧪 Musterdaten laden
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const existing = readArtworksRawByKey('k2-artworks')
-                    const ohne = existing.filter((a: any) => !String(a.id || '').startsWith('muster-') && !(a as any)._isMuster)
-                    if (ohne.length === existing.length) { alert('Keine Musterdaten gefunden – nichts zu löschen.'); return }
-                    saveArtworksByKey('k2-artworks', ohne, { filterK2Only: true, allowReduce: true })
-                    const gallStamm = loadStammdaten('k2', 'gallery') as Record<string, unknown>
-                    if ((gallStamm as any)?._isMuster) localStorage.removeItem('k2-stammdaten-galerie')
-                    const martinaStamm = loadStammdaten('k2', 'martina') as Record<string, unknown>
-                    if ((martinaStamm as any)?._isMuster) localStorage.removeItem('k2-stammdaten-martina')
-                    const georgStamm = loadStammdaten('k2', 'georg') as Record<string, unknown>
-                    if ((georgStamm as any)?._isMuster) localStorage.removeItem('k2-stammdaten-georg')
-                    // State aktualisieren statt Reload (iframe-sicher)
-                    setAllArtworks(ohne)
-                    alert('✅ Musterdaten entfernt.\n\nEigene Werke und Daten sind unberührt.')
-                  }}
-                  style={{ padding: '0.65rem 1.25rem', background: 'transparent', color: '#f87171', border: '1px solid #f87171', borderRadius: 10, fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer' }}
-                >
-                  🗑️ Musterdaten löschen
-                </button>
-              </div>
-            </div>
-            )}
-
-            {/* Veröffentlichung – nur K2 (ök2 und VK2 brauchen das nicht) */}
-            {!tenant.isOeffentlich && !tenant.isVk2 && (
-            <div style={{
-              marginBottom: '2rem',
-              padding: '1.25rem',
-              background: `${s.accent}14`,
-              border: `1px solid ${s.accent}44`,
-              borderRadius: '16px'
-            }}>
-              <h3 style={{ fontSize: '1.1rem', color: s.accent, marginBottom: '0.5rem' }}>🚀 Veröffentlichung</h3>
-
-              {/* Vor dem Veröffentlichen: Seiten komplett prüfen */}
-              <div style={{ marginBottom: '1.25rem', padding: '1rem', background: s.bgElevated, borderRadius: '12px', border: `1px solid ${s.accent}22` }}>
-                <h4 style={{ fontSize: '0.95rem', color: s.text, marginBottom: '0.5rem' }}>📋 Vor dem Veröffentlichen: Seiten prüfen</h4>
-                <p style={{ color: s.muted, fontSize: '0.85rem', marginBottom: '0.75rem' }}>
-                  Speichert alle Änderungen und zeigt die Seite hier an (kein neuer Tab). Oben erscheint „← Zurück zu Einstellungen“. Wenn alles passt, zurückgehen und unten auf Veröffentlichen klicken.
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      saveAllForVorschau()
-                      const seite1Route = tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie
-                      const state = { fromAdminTab: 'einstellungen' as const, fromAdminContext: tenant.isVk2 ? 'vk2' : tenant.isOeffentlich ? 'oeffentlich' : null }
-                      requestAnimationFrame(() => { navigate(seite1Route + '?vorschau=1', { state }) })
-                    }}
-                    style={{ padding: '0.5rem 0.9rem', fontSize: '0.9rem', background: `${s.accent}20`, border: `1px solid ${s.accent}66`, borderRadius: 8, color: s.accent, fontWeight: 500, cursor: 'pointer' }}
-                  >
-                    Seite 1 (Willkommen) anzeigen →
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      saveAllForVorschau()
-                      const vorschauRoute = tenant.isVk2 ? PROJECT_ROUTES.vk2.galerieVorschau : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerieVorschau
-                      const state = { fromAdminTab: 'einstellungen' as const, fromAdminContext: tenant.isVk2 ? 'vk2' : tenant.isOeffentlich ? 'oeffentlich' : null }
-                      requestAnimationFrame(() => { navigate(vorschauRoute + '?vorschau=1', { state }) })
-                    }}
-                    style={{ padding: '0.5rem 0.9rem', fontSize: '0.9rem', background: `${s.accent}20`, border: `1px solid ${s.accent}66`, borderRadius: 8, color: s.accent, fontWeight: 500, cursor: 'pointer' }}
-                  >
-                    Seite 2 (Werke) anzeigen →
-                  </button>
-                </div>
-              </div>
-
-              <p style={{ color: s.muted, fontSize: '0.9rem', marginBottom: '1rem' }}>
-                Stammdaten, Werke, Events, Dokumente und Seitentexte auf Vercel pushen. Danach auf allen Geräten aktuell (Seite neu öffnen oder QR-Code neu scannen).
-              </p>
-              <button 
-                onClick={() => {
-                  if (allArtworks.length === 0) {
-                    alert('ℹ️ Keine Werke zum Veröffentlichen.\n\nFüge zuerst Werke hinzu oder lade sie vom Server.')
-                    return
-                  }
-                  const detail = `${allArtworks.length} Werk(e), Stammdaten, Events, Dokumente, Seitentexte`
-                  if (confirm(`🚀 App veröffentlichen?\n\nEs wird die gesamte App aktualisiert:\n• ${detail}\n\nNach dem Push (2–3 Min) sind alle Daten auf allen Geräten aktuell. Seite neu öffnen oder QR-Code neu scannen.`)) {
-                    publishMobile()
-                  }
-                }}
-                disabled={isDeploying}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  background: isDeploying ? s.bgElevated : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                  color: isDeploying ? s.muted : '#ffffff',
-                  border: 'none',
-                  borderRadius: '10px',
-                  fontSize: '0.95rem',
-                  fontWeight: '600',
-                  cursor: isDeploying ? 'not-allowed' : 'pointer',
-                  boxShadow: isDeploying ? 'none' : '0 4px 14px rgba(245, 158, 11, 0.4)',
-                  opacity: isDeploying ? 0.6 : 1
-                }}
-              >
-                {isDeploying ? '⏳ App wird aktualisiert...' : '🚀 Veröffentlichen'}
-              </button>
-            </div>
-            )}
-
-            {/* Lager (Backup) – nur K2 (ök2 und VK2 brauchen kein Vollbackup) */}
-            {settingsSubTab === 'lager' && (
-            <div style={{
-              marginBottom: '2rem',
-              background: `${s.accent}12`,
-              border: `1px solid ${s.accent}33`,
-              borderRadius: '16px',
-              overflow: 'hidden'
-            }}>
-              <button
-                type="button"
-                onClick={() => setBackupPanelMinimized(!backupPanelMinimized)}
-                style={{
-                  width: '100%',
-                  padding: backupPanelMinimized ? '0.6rem 1rem' : '0.75rem 1rem',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  color: s.accent,
-                  fontSize: backupPanelMinimized ? '0.95rem' : '1.1rem',
-                  fontWeight: '600',
-                  textAlign: 'left'
-                }}
-              >
-                <span>💾 Backup & Wiederherstellung</span>
-                <span style={{ opacity: 0.8, fontSize: '0.85rem' }}>{backupPanelMinimized ? '▼ Aufklappen' : '▲ Einklappen'}</span>
-              </button>
-              {!backupPanelMinimized && (
-                <div style={{ padding: '0 1.25rem 1.25rem', borderTop: `1px solid ${s.accent}22` }}>
-              {/* Kontext-Badge */}
-              <div style={{
-                marginTop: '0.75rem',
-                marginBottom: '1rem',
-                padding: '0.75rem 1rem',
-                background: `${s.accent}18`,
-                borderRadius: '10px',
-                border: `1px solid ${s.accent}33`
-              }}>
-                <div style={{ color: s.accent, fontWeight: '700', fontSize: '0.95rem', marginBottom: '0.25rem' }}>
-                  {tenant.isVk2 ? '🏛️ VK2 Vereins-Backup' : tenant.isOeffentlich ? '🎨 ök2 Demo-Backup' : '🖼️ K2 Galerie-Backup'}
-                </div>
-                <div style={{ color: s.muted, fontSize: '0.85rem' }}>
-                  {tenant.isVk2
-                    ? 'Enthält: Vereins-Stammdaten, Vorstand, alle Mitglieder, Events, Design. Komplett wiederherstellbar.'
-                    : tenant.isOeffentlich
-                    ? 'Enthält: Demo-Stammdaten, Demo-Werke, Demo-Events, Demo-Design. Separat von K2 und VK2.'
-                    : 'Enthält: Stammdaten (Martina, Georg, Galerie), alle Werke, Events, Dokumente, Kunden, Design.'}
-                </div>
-              </div>
-
-              <p style={{ color: s.muted, fontSize: '0.9rem', marginBottom: '1rem' }}>
-                Backup auf backupmicro aufbewahren. Bei Systemchaos: Backup-Datei hochladen – alles wird wiederhergestellt.
-              </p>
-              {!tenant.isOeffentlich && !tenant.isVk2 && (
-                <p style={{ color: s.accent, fontSize: '0.88rem', marginBottom: '1rem', padding: '0.5rem 0.75rem', background: `${s.accent}12`, borderRadius: '8px', border: `1px solid ${s.accent}33` }}>
-                  Nach dem Bearbeiten veröffentlichen – dann sind die Werke auf dem Server und können hier bei Bedarf wiederhergestellt werden.
-                </p>
-              )}
-
-              <input
-                ref={backupFileInputRef}
-                type="file"
-                accept=".json,application/json"
-                style={{ display: 'none' }}
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  e.target.value = ''
-                  if (!file) return
-                  setRestoreProgress('running')
-                  const reader = new FileReader()
-                  reader.onload = () => {
-                    try {
-                      const raw = reader.result as string
-                      const backup = JSON.parse(raw)
-                      const kontext = detectBackupKontext(backup)
-                      const currentKontext = tenant.isVk2 ? 'vk2' : tenant.isOeffentlich ? 'oeffentlich' : 'k2'
-                      if (kontext !== currentKontext && kontext !== 'unbekannt') {
-                        const kontextName = kontext === 'vk2' ? 'VK2 Verein' : kontext === 'oeffentlich' ? 'ök2 Demo' : 'K2 Galerie'
-                        const currentName = currentKontext === 'vk2' ? 'VK2 Verein' : currentKontext === 'oeffentlich' ? 'ök2 Demo' : 'K2 Galerie'
-                        if (!confirm(`⚠️ Diese Backup-Datei gehört zu „${kontextName}“, du bist aber gerade in „${currentName}“.\n\nTrotzdem wiederherstellen?`)) {
-                          setRestoreProgress('idle')
-                          return
-                        }
-                      }
-                      let ok = false
-                      let restored: string[] = []
-                      if (kontext === 'vk2') {
-                        const r = restoreVk2FromBackup(backup)
-                        ok = r.ok; restored = r.restored
-                      } else if (kontext === 'oeffentlich') {
-                        const r = restoreOek2FromBackup(backup)
-                        ok = r.ok; restored = r.restored
-                      } else {
-                        const r = restoreK2FromBackup(backup)
-                        if (r.ok) { ok = true; restored = r.restored }
-                        else { ok = restoreFromBackupFile(backup) }
-                      }
-                      if (!ok) {
-                        setRestoreProgress('idle')
-                        alert('❌ Die Datei ist kein gültiges Backup (K2, ök2 oder VK2 Backup erwartet).')
-                        return
-                      }
-                      if (restored.length > 0) console.log('💾 Wiederhergestellt:', restored.join(', '))
-                      setRestoreProgress('done')
-                      setTimeout(() => safeReload(), 800)
-                    } catch (err) {
-                      setRestoreProgress('idle')
-                      alert('❌ Datei konnte nicht gelesen werden: ' + (err instanceof Error ? err.message : String(err)))
-                    }
-                  }
-                  reader.onerror = () => {
-                    setRestoreProgress('idle')
-                    alert('❌ Datei konnte nicht gelesen werden.')
-                  }
-                  reader.readAsText(file, 'UTF-8')
-                }}
-              />
-
-              {restoreProgress !== 'idle' && (
-                <div style={{
-                  marginBottom: '1rem',
-                  padding: '0.75rem',
-                  background: 'rgba(0,0,0,0.2)',
-                  borderRadius: '10px',
-                  border: '1px solid rgba(95, 251, 241, 0.3)'
-                }}>
-                  <div style={{ color: s.accent, fontSize: '0.95rem', marginBottom: '0.5rem' }}>
-                    {restoreProgress === 'running' ? 'Wiederherstellung läuft…' : 'Fertig. Lade neu…'}
-                  </div>
-                  <div style={{
-                    height: '8px',
-                    background: 'rgba(255,255,255,0.1)',
-                    borderRadius: '4px',
-                    overflow: 'hidden'
-                  }}>
-                    <div style={{
-                      height: '100%',
-                      width: restoreProgress === 'done' ? '100%' : undefined,
-                      background: 'linear-gradient(90deg, #5ffbf1, #33a1ff)',
-                      borderRadius: '4px',
-                      transition: restoreProgress === 'done' ? 'width 0.3s ease' : 'none',
-                      animation: restoreProgress === 'running' ? 'backup-progress-pulse 1s ease-in-out infinite' : 'none'
-                    }} />
-                  </div>
-                </div>
-              )}
-
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
-                <button
-                  onClick={() => {
-                    try {
-                      if (tenant.isVk2) {
-                        const result = createVk2Backup()
-                        const m = loadVk2Stammdaten() || {}
-                        const mitglieder = Array.isArray(m.mitglieder) ? m.mitglieder.length : 0
-                        downloadBackupAsFile(result.data, result.filename)
-                        alert(`✅ VK2 Vereins-Backup heruntergeladen.\n\nEnthält: Vereins-Stammdaten, Vorstand, ${mitglieder} Mitglieder, Events, Design.\n\nAuf backupmicro speichern!`)
-                      } else if (tenant.isOeffentlich) {
-                        const result = createOek2Backup()
-                        downloadBackupAsFile(result.data, result.filename)
-                        alert(`✅ ök2 Demo-Backup heruntergeladen.\n\nEnthält: Demo-Stammdaten, Demo-Werke, Demo-Events, Demo-Design.\n\nAuf backupmicro speichern!`)
-                      } else {
-                        const result = createK2Backup()
-                        downloadBackupAsFile(result.data, result.filename)
-                        const artworks = readArtworksRawByKey('k2-artworks')
-                        alert(`✅ K2 Galerie-Backup heruntergeladen.\n\nEnthält: Stammdaten, ${Array.isArray(artworks) ? artworks.length : 0} Werke, Events, Dokumente, Design.\n\nAuf backupmicro speichern!`)
-                      }
-                    } catch (e) {
-                      alert('Fehler beim Erstellen des Backups: ' + (e instanceof Error ? e.message : String(e)))
-                    }
-                  }}
-                  style={{
-                    padding: '0.75rem 1.25rem',
-                    background: s.bgElevated,
-                    border: `1px solid ${s.accent}33`,
-                    borderRadius: '10px',
-                    color: s.text,
-                    fontSize: '0.95rem',
-                    fontWeight: '600',
-                    cursor: 'pointer'
-                  }}
-                >
-                  💾 Backup herunterladen
-                </button>
-
-                <button
-                  type="button"
-                  disabled={restoreProgress !== 'idle'}
-                  onClick={() => backupFileInputRef.current?.click()}
-                  style={{
-                    padding: '0.75rem 1.25rem',
-                    background: s.bgElevated,
-                    border: `1px solid ${s.accent}33`,
-                    borderRadius: '10px',
-                    color: s.text,
-                    fontSize: '0.95rem',
-                    fontWeight: '600',
-                    cursor: 'pointer'
-                  }}
-                >
-                  📂 Aus Backup-Datei wiederherstellen
-                </button>
-
-                {!tenant.isOeffentlich && !tenant.isVk2 && (
-                  <button
-                    type="button"
-                    disabled={restoreProgress !== 'idle' || isRestoringWerkeFromPublished}
-                    onClick={() => handleRestoreWerkeFromPublished()}
-                    title="Lädt die Werke aus der auf Vercel veröffentlichten Galerie (gallery-data.json) und schreibt sie in den lokalen Speicher."
-                    style={{
-                      padding: '0.75rem 1.25rem',
-                      background: isRestoringWerkeFromPublished ? s.muted + '22' : s.accent + '18',
-                      border: `1px solid ${s.accent}66`,
-                      borderRadius: '10px',
-                      color: s.accent,
-                      fontSize: '0.95rem',
-                      fontWeight: '600',
-                      cursor: restoreProgress !== 'idle' || isRestoringWerkeFromPublished ? 'not-allowed' : 'pointer'
-                    }}
-                  >
-                    {isRestoringWerkeFromPublished ? '⏳ Lade…' : '🌐 Werke aus Veröffentlichung wiederherstellen'}
-                  </button>
-                )}
-
-                {!tenant.isOeffentlich && !tenant.isVk2 && hasBackup() && (
-                  <button
-                    disabled={restoreProgress !== 'idle'}
-                    onClick={() => {
-                      if (!confirm('Alle aktuellen Daten mit dem letzten Auto-Backup überschreiben? Die Seite wird danach neu geladen.')) return
-                      setRestoreProgress('running')
-                      requestAnimationFrame(() => {
-                        const ok = restoreFromBackup()
-                        if (!ok) {
-                          setRestoreProgress('idle')
-                          alert('❌ Kein Backup gefunden oder Fehler.')
-                          return
-                        }
-                        setRestoreProgress('done')
-                        setTimeout(() => safeReload(), 800)
-                      })
-                    }}
-                    style={{
-                      padding: '0.75rem 1.25rem',
-                      background: `${s.accent}20`,
-                      border: `1px solid ${s.accent}66`,
-                      borderRadius: '10px',
-                      color: s.accent,
-                      fontSize: '0.95rem',
-                      fontWeight: '600',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    🔄 Aus letztem Auto-Backup wiederherstellen
-                    {getBackupTimestamp() && (
-                      <span style={{ display: 'block', fontSize: '0.75rem', opacity: 0.9, marginTop: '0.2rem' }}>
-                        Backup: {new Date(getBackupTimestamp()!).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })}
-                      </span>
-                    )}
-                  </button>
-                )}
-
-                {!tenant.isOeffentlich && !tenant.isVk2 && !hasBackup() && (
-                  <span style={{ color: s.muted, fontSize: '0.9rem' }}>
-                    Kein Auto-Backup im Browser. Backup-Datei von backupmicro hochladen.
-                  </span>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    const freed = tryFreeLocalStorageSpace()
-                    if (freed > 0) {
-                      alert(`✅ Speicher freigegeben: ca. ${(freed / 1024).toFixed(0)} KB.\n\nDas lokale Auto-Backup wurde entfernt. Backup-Datei von backupmicro zum Wiederherstellen nutzen.`)
-                    } else {
-                      alert('Kein lokales Auto-Backup im Speicher (oder bereits gelöscht).')
-                    }
-                  }}
-                  style={{
-                    padding: '0.6rem 1rem',
-                    background: s.bgElevated,
-                    border: `1px solid ${s.accent}33`,
-                    borderRadius: '8px',
-                    color: s.text,
-                    fontSize: '0.85rem',
-                    fontWeight: '500',
-                    cursor: 'pointer'
-                  }}
-                  title="Entfernt das im Browser gespeicherte Auto-Backup"
-                >
-                  🔓 Speicher freigeben
-                </button>
-              </div>
-
-              {!tenant.isOeffentlich && !tenant.isVk2 && backupTimestamps.length > 0 && (
-                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: `1px solid ${s.accent}22` }}>
-                  <div style={{ fontSize: '0.85rem', color: s.muted, marginBottom: '0.5rem' }}>Auto-Backup Verlauf (neueste zuerst)</div>
-                  <ul style={{
-                    margin: 0,
-                    paddingLeft: '1.25rem',
-                    maxHeight: '140px',
-                    overflowY: 'auto',
-                    fontSize: '0.85rem',
-                    color: s.text,
-                    lineHeight: '1.5'
-                  }}>
-                    {backupTimestamps.map((iso, i) => (
-                      <li key={iso + i}>
-                        {new Date(iso).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'medium' })}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-                </div>
-              )}
-            </div>
-            )}
 
             {/* Für K2: Verwaltung (Board, Lizenzen) – dezent. Für ök2: Lizenz/Empfehlung hauptsächlich in Einstellungen (Lizenz abschließen, Empfehlungs-Programm). */}
             {!tenant.isVk2 && !tenant.isOeffentlich && (
@@ -12183,6 +11977,17 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   {tenant.isVk2 ? 'Drucken (Standard-Drucker)' : 'Etikettendrucker einrichten'}
                 </div>
               </button>
+              {/* Kassabuch führen (nur K2/ök2, ab Pro) – normale Kachel */}
+              {!tenant.isVk2 && hasKassa(kassabuchTenantForSettings) && (
+              <button type="button" onClick={() => setSettingsSubTab('kassabuch')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'kassabuch' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'kassabuch' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'kassabuch' ? s.accent : `${s.accent}22` }}
+              >
+                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📒</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Kassabuch führen</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Ja: vollständig (Eingänge + Ausgänge). Nein: nur Verkäufe.</div>
+              </button>
+              )}
               {/* 6. Passwort & Sicherheit */}
               {!tenant.isVk2 && (
               <button type="button" onClick={() => setSettingsSubTab('sicherheit')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'sicherheit' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'sicherheit' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
@@ -12203,17 +12008,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📝</div>
                 <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Anmeldung</div>
                 <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Wie melden sich Nutzer an?</div>
-              </button>
-              )}
-              {/* Backup & Lager (nur K2) */}
-              {!tenant.isOeffentlich && !tenant.isVk2 && (
-              <button type="button" onClick={() => setSettingsSubTab('lager')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'lager' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'lager' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'lager' ? s.accent : `${s.accent}22` }}
-              >
-                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📦</div>
-                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Backup & Lager</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Sicherheitskopie, Speicherverwaltung</div>
               </button>
               )}
             </div>
@@ -12969,6 +12763,26 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               </div>
             )}
 
+            {/* Kassabuch führen Sub-Tab – nur K2/ök2, ab Pro */}
+            {!tenant.isVk2 && hasKassa(kassabuchTenantForSettings) && settingsSubTab === 'kassabuch' && (() => {
+              const aktiv = kassabuchAktivDisplay
+              return (
+                <div style={{ padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px', marginBottom: '1.5rem' }}>
+                  <h3 style={{ fontSize: '1rem', color: s.text, marginBottom: '0.5rem' }}>📒 Kassabuch führen</h3>
+                  <p style={{ color: s.muted, fontSize: '0.85rem', marginBottom: '0.75rem' }}>
+                    <strong>Ja</strong>: Vollständiges Kassabuch (Eingänge + Ausgänge). <strong>Nein</strong>: Nur Verkäufe (Eingänge) sichtbar.
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <button type="button" onClick={() => { setKassabuchAktiv(kassabuchTenantForSettings, true); setKassabuchAktivSetting(true) }}
+                      style={{ padding: '0.5rem 1rem', background: aktiv ? s.accent : s.bgElevated, color: aktiv ? '#fff' : s.muted, border: `1px solid ${aktiv ? s.accent : s.muted}`, borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>Ja</button>
+                    <button type="button" onClick={() => { setKassabuchAktiv(kassabuchTenantForSettings, false); setKassabuchAktivSetting(false) }}
+                      style={{ padding: '0.5rem 1rem', background: !aktiv ? s.accent : s.bgElevated, color: !aktiv ? '#fff' : s.muted, border: `1px solid ${!aktiv ? s.accent : s.muted}`, borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>Nein</button>
+                    <span style={{ fontSize: '0.85rem', color: s.muted }}>{aktiv ? 'Vollständiges Kassabuch' : 'Nur Verkäufe'}</span>
+                  </div>
+                </div>
+              )
+            })()}
+
             {/* Registrierung Sub-Tab – nur K2/VK2; ök2 nutzt „Lizenz abschließen“ */}
             {!tenant.isOeffentlich && settingsSubTab === 'registrierung' && (
               <div>
@@ -13178,8 +12992,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             {settingsSubTab === 'sicherheit' && !tenant.isVk2 && (
               <div>
                 <h3 style={{ fontSize: '1.1rem', color: s.accent, marginBottom: '1rem' }}>🔒 Sicherheitsabteilung</h3>
-                <p style={{ color: s.muted, marginBottom: '1rem' }}>
-                  Admin-Zugang, Passwort-Einstellungen und Zugriffskontrolle. Neue Kunden haben 2 Wochen Testphase ohne Passwort; danach oder für Wiederkehr Passwort setzen.
+                <p style={{ color: s.muted, marginBottom: '1rem', lineHeight: 1.5 }}>
+                  Hier regelst du den Zugang zum Admin-Bereich (Passwort) und die Sicherung deiner Daten. So behältst du die Kontrolle und kannst bei Verlust alles zurückholen.
                 </p>
                 <div style={{
                   padding: '1rem',
@@ -13189,13 +13003,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   marginBottom: '1rem'
                 }}>
                   <p style={{ margin: 0, fontSize: '0.9rem', color: s.text }}>
-                    Verwaltet in Stammdaten (Admin-Passwort). Admin-Login beenden über den Header (👤 Symbol).
+                    Das Admin-Passwort wird in den Stammdaten gespeichert. Ausloggen: im oberen Bereich auf das 👤 Symbol tippen.
                   </p>
                 </div>
                 {/* Admin-Passwort ändern / setzen (K2: Stammdaten, ök2: eigener Key) */}
                 <div style={{ padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33`, marginBottom: '1rem' }}>
                   <h4 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text }}>Admin-Passwort ändern</h4>
-                  <p style={{ margin: '0 0 1rem', fontSize: '0.85rem', color: s.muted }}>Mindestens 6 Zeichen. E-Mail/Telefon optional – für Passwort-Zurücksetzen.</p>
+                  <p style={{ margin: '0 0 1rem', fontSize: '0.85rem', color: s.muted }}>Mindestens 6 Zeichen. E-Mail oder Telefon (optional) helfen dir, das Passwort später wiederzufinden.</p>
                   <input type="email" value={adminContactEmail} onChange={(e) => setAdminContactEmail(e.target.value)} placeholder="E-Mail (optional)" style={{ width: '100%', padding: '0.6rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem', marginBottom: '0.5rem', boxSizing: 'border-box' }} />
                   <input type="tel" value={adminContactPhone} onChange={(e) => setAdminContactPhone(e.target.value)} placeholder="Telefon (optional)" style={{ width: '100%', padding: '0.6rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem', marginBottom: '0.5rem', boxSizing: 'border-box' }} />
                   <input type="password" value={adminNewPw} onChange={(e) => setAdminNewPw(e.target.value)} placeholder="Neues Passwort (min. 6 Zeichen)" style={{ width: '100%', padding: '0.6rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem', marginBottom: '0.5rem', boxSizing: 'border-box' }} />
@@ -13232,6 +13046,151 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     Passwort speichern
                   </button>
                 </div>
+                {/* Backup & Wiederherstellung – nur K2 (ök2 lädt immer aktuellen Stand; bei Bedarf hier) */}
+                {!tenant.isOeffentlich && (
+                <div style={{ marginTop: '1.5rem', padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33` }}>
+                  <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text }}>💾 Deine Daten sichern und zurückholen</h4>
+                  <p style={{ color: s.muted, fontSize: '0.9rem', marginBottom: '1rem', lineHeight: 1.55 }}>
+                    Alle deine Inhalte (Werke, Stammdaten, Events, Dokumente) liegen in dieser App. Damit bei Gerätewechsel, Browser-Löschung oder Panne nichts verloren geht, kannst du hier jederzeit eine Sicherungskopie herunterladen und bei Bedarf wieder einspielen. Wir empfehlen: regelmäßig eine Backup-Datei an einem sicheren Ort speichern (z. B. PC, USB-Stick, Festplatte).
+                  </p>
+                  <input
+                    ref={backupFileInputRef}
+                    type="file"
+                    accept=".json,application/json"
+                    style={{ display: 'none' }}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      e.target.value = ''
+                      if (!file) return
+                      setRestoreProgress('running')
+                      const reader = new FileReader()
+                      reader.onload = () => {
+                        try {
+                          const raw = reader.result as string
+                          const backup = JSON.parse(raw)
+                          const kontext = detectBackupKontext(backup)
+                          if (kontext !== 'k2' && kontext !== 'unbekannt') {
+                            const kontextName = kontext === 'vk2' ? 'VK2 Verein' : 'ök2 Demo'
+                            if (!confirm(`Hinweis: Diese Sicherungsdatei stammt von „${kontextName}“, du bist aber in der K2 Galerie.\n\nTrotzdem wiederherstellen? Dann werden die Daten aus dieser Datei hier eingespielt.`)) {
+                              setRestoreProgress('idle')
+                              return
+                            }
+                          }
+                          let ok = false
+                          if (kontext === 'vk2') {
+                            const r = restoreVk2FromBackup(backup)
+                            ok = r.ok
+                          } else if (kontext === 'oeffentlich') {
+                            const r = restoreOek2FromBackup(backup)
+                            ok = r.ok
+                          } else {
+                            const r = restoreK2FromBackup(backup)
+                            ok = r.ok || restoreFromBackupFile(backup)
+                          }
+                          if (!ok) {
+                            setRestoreProgress('idle')
+                            alert('Diese Datei ist keine gültige Sicherungsdatei von dieser App. Bitte eine Datei wählen, die du zuvor hier mit „Sicherungskopie herunterladen“ erstellt hast.')
+                            return
+                          }
+                          setRestoreProgress('done')
+                          setTimeout(() => safeReload(), 800)
+                        } catch (err) {
+                          setRestoreProgress('idle')
+                          alert('❌ Datei konnte nicht gelesen werden: ' + (err instanceof Error ? err.message : String(err)))
+                        }
+                      }
+                      reader.onerror = () => { setRestoreProgress('idle'); alert('❌ Datei konnte nicht gelesen werden.') }
+                      reader.readAsText(file, 'UTF-8')
+                    }}
+                  />
+                  {restoreProgress !== 'idle' && (
+                    <div style={{ marginBottom: '1rem', padding: '0.75rem', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', border: '1px solid rgba(95, 251, 241, 0.3)' }}>
+                      <div style={{ color: s.accent, fontSize: '0.95rem', marginBottom: '0.5rem' }}>{restoreProgress === 'running' ? 'Wiederherstellung läuft…' : 'Fertig. Lade neu…'}</div>
+                      <div style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: restoreProgress === 'done' ? '100%' : undefined, background: 'linear-gradient(90deg, #5ffbf1, #33a1ff)', borderRadius: '4px', transition: restoreProgress === 'done' ? 'width 0.3s ease' : 'none', animation: restoreProgress === 'running' ? 'backup-progress-pulse 1s ease-in-out infinite' : 'none' }} />
+                      </div>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div>
+                      <button
+                        onClick={() => {
+                          try {
+                            const result = createK2Backup()
+                            downloadBackupAsFile(result.data, result.filename)
+                            const artworks = readArtworksRawByKey('k2-artworks')
+                            alert(`✅ Sicherungskopie ist heruntergeladen.\n\nIn der Datei sind: Stammdaten, ${Array.isArray(artworks) ? artworks.length : 0} Werke, Events, Dokumente, Design.\n\nSpeichere die Datei an einem sicheren Ort (z. B. PC, USB-Stick). Bei Datenverlust kannst du sie hier mit „Aus Backup-Datei wiederherstellen“ wieder einspielen.`)
+                          } catch (e) {
+                            alert('Beim Erstellen der Sicherungskopie ist etwas schiefgelaufen. Bitte erneut versuchen.')
+                          }
+                        }}
+                        style={{ padding: '0.75rem 1.25rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: 'pointer' }}
+                      >
+                        💾 Sicherungskopie herunterladen
+                      </button>
+                      <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Lädt eine Datei mit allen deinen Daten. Diese Datei bei dir speichern – dann hast du eine echte Sicherung gegen Datenverlust.</p>
+                    </div>
+                    <div>
+                      <button
+                        type="button"
+                        disabled={restoreProgress !== 'idle'}
+                        onClick={() => backupFileInputRef.current?.click()}
+                        style={{ padding: '0.75rem 1.25rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: 'pointer' }}
+                      >
+                        📂 Aus Backup-Datei wiederherstellen
+                      </button>
+                      <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Du wählst eine zuvor heruntergeladene Sicherungsdatei. Alle Daten in der App werden durch den Inhalt dieser Datei ersetzt. Nur nutzen, wenn du Daten verloren hast oder auf einem neuen Gerät startest.</p>
+                    </div>
+                    <div>
+                      <button
+                        type="button"
+                        disabled={restoreProgress !== 'idle' || isRestoringWerkeFromPublished}
+                        onClick={() => handleRestoreWerkeFromPublished()}
+                        style={{ padding: '0.75rem 1.25rem', background: isRestoringWerkeFromPublished ? s.muted + '22' : s.accent + '18', border: `1px solid ${s.accent}66`, borderRadius: '10px', color: s.accent, fontSize: '0.95rem', fontWeight: '600', cursor: restoreProgress !== 'idle' || isRestoringWerkeFromPublished ? 'not-allowed' : 'pointer' }}
+                      >
+                        {isRestoringWerkeFromPublished ? '⏳ Lade…' : '🌐 Werke vom Server zurückholen'}
+                      </button>
+                      <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Holt den letzten Stand deiner Werke von unserem Server. Wenn du schon einmal auf „Aktualisieren“ geklickt hast, liegt dort ein Stand – damit kannst du deine Werke ohne Backup-Datei zurückholen.</p>
+                    </div>
+                    {hasBackup() && (
+                    <div>
+                      <button
+                        disabled={restoreProgress !== 'idle'}
+                        onClick={() => {
+                          if (!confirm('Achtung – deine aktuellen Daten werden ersetzt:\n\nDie App lädt den letzten automatischen Sicherungsstand (nur von diesem Gerät/Browser). Alles, was du seitdem geändert hast, geht dabei verloren. Danach lädt die Seite neu.\n\nNur fortfahren, wenn du wirklich diesen älteren Stand wiederherstellen willst.')) return
+                          setRestoreProgress('running')
+                          requestAnimationFrame(() => {
+                            const ok = restoreFromBackup()
+                            if (!ok) { setRestoreProgress('idle'); alert('Wiederherstellung nicht möglich.\n\nEntweder wurde auf diesem Gerät noch keine automatische Sicherung erstellt (z. B. App erst kurz geöffnet), oder ein Fehler ist aufgetreten. Nutze in dem Fall „Aus Backup-Datei wiederherstellen“ mit einer zuvor heruntergeladenen Sicherungsdatei.'); return }
+                            setRestoreProgress('done')
+                            setTimeout(() => safeReload(), 800)
+                          })
+                        }}
+                        style={{ padding: '0.75rem 1.25rem', background: `${s.accent}20`, border: `1px solid ${s.accent}66`, borderRadius: '10px', color: s.accent, fontSize: '0.95rem', fontWeight: '600', cursor: 'pointer' }}
+                      >
+                        🔄 Aus letztem automatischen Stand wiederherstellen
+                        {getBackupTimestamp() && <span style={{ display: 'block', fontSize: '0.75rem', opacity: 0.9, marginTop: '0.2rem' }}>Stand: {new Date(getBackupTimestamp()!).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })}</span>}
+                      </button>
+                      <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Stellt den Stand wieder her, den die App automatisch in diesem Browser gespeichert hat. Gilt nur auf diesem Gerät.</p>
+                    </div>
+                    )}
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const freed = tryFreeLocalStorageSpace()
+                          if (freed > 0) alert(`✅ Speicher wurde freigegeben (ca. ${(freed / 1024).toFixed(0)} KB).\n\nNur die automatische Sicherung im Browser wurde entfernt. Deine echten Daten und eine selbst gespeicherte Backup-Datei bleiben unberührt.`)
+                          else alert('Es liegt keine automatische Sicherung im Browser-Speicher (oder sie wurde bereits gelöscht).')
+                        }}
+                        style={{ padding: '0.6rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '8px', color: s.text, fontSize: '0.85rem', fontWeight: '500', cursor: 'pointer' }}
+                      >
+                        🔓 Speicher freigeben
+                      </button>
+                      <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Löscht nur die automatische Sicherung im Browser, um Platz zu machen. Deine Daten und eine selbst gespeicherte Sicherungsdatei bleiben unverändert.</p>
+                    </div>
+                  </div>
+                </div>
+                )}
               </div>
             )}
 
@@ -13985,6 +13944,135 @@ ${name}`
               <p style={{ marginBottom: '1.5rem', padding: '0.6rem 1rem', background: `${s.accent}0c`, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.85rem', color: s.muted }}>
                 <strong style={{ color: s.text }}>Presseaussendung zu einem konkreten Event?</strong> (Vernissage, Eröffnung, Lesung …) → <button type="button" onClick={() => setActiveTab('eventplan')} style={{ background: 'none', border: 'none', padding: 0, color: s.accent, textDecoration: 'underline', cursor: 'pointer', fontWeight: 600, fontSize: 'inherit' }}>Events & Ausstellungen</button> → Event wählen → Presseaussendung. Hier nur Medienkit und allgemeine Vorlage (ohne Event).
               </p>
+
+              {/* Medienspiegel: eigene Medienliste, Auswahl, ein Klick → E-Mail-Adressen kopieren (BCC) */}
+              <div style={{ marginBottom: '2rem', padding: '1.25rem', background: `${s.accent}0a`, border: `1px solid ${s.accent}35`, borderRadius: '14px' }}>
+                <h3 style={{ fontSize: '1.15rem', color: s.text, marginBottom: '0.35rem' }}>📋 Medienspiegel</h3>
+                <p style={{ fontSize: '0.85rem', color: s.muted, marginBottom: '0.75rem' }}>
+                  Lege deine Presse-Empfänger an (einzeln oder aus einer Liste). <strong style={{ color: s.text }}>Häkchen setzen, welche Medien du kontaktieren willst – ein Klick kopiert alle E-Mail-Adressen</strong> (z. B. für BCC in deinem E-Mail-Programm).
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '0.85rem', color: s.text }}>Land / Markt:</span>
+                  <select value={medienspiegelLand} onChange={e => setMedienspiegelLand(e.target.value as 'at' | 'de' | 'ch' | 'li' | 'lu')} style={{ padding: '0.4rem 0.75rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', background: s.bgElevated, color: s.text }}>
+                    <option value="at">Österreich</option>
+                    <option value="de">Deutschland</option>
+                    <option value="ch">Schweiz</option>
+                    <option value="li">Liechtenstein</option>
+                    <option value="lu">Luxemburg</option>
+                  </select>
+                  <span style={{ fontSize: '0.8rem', color: s.muted }}>– Kategorie: Klick fügt die Medien ein und zeigt nur diese Kategorie. «Alle» zeigt die komplette Liste.</span>
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+                  {(['alle', 'print', 'tv', 'radio', 'regionalOoe', 'online', 'kultur'] as const).map(typ => (
+                    <button key={typ} type="button" onClick={() => {
+                      setMedienspiegelKategorieFilter(typ)
+                      if (typ !== 'alle') {
+                        const medienSet = MEDIEN_NACH_LAND[medienspiegelLand]
+                        if (!medienSet) return
+                        const existingEmails = new Set(medienspiegel.map(m => m.email.toLowerCase()))
+                        const list = medienSet[typ].filter((e: { name: string; email: string }) => !existingEmails.has(e.email.toLowerCase()))
+                        if (list.length > 0) {
+                          const added = list.map((e: { name: string; email: string }, i: number) => ({ id: `${medienspiegelLand}-${typ}-${Date.now()}-${i}`, name: e.name, email: e.email }))
+                          const next = [...medienspiegel, ...added]
+                          setMedienspiegel(next)
+                          try { localStorage.setItem(getMedienspiegelStorageKey(tenant), JSON.stringify(next)) } catch (_) {}
+                        }
+                      }
+                    }} style={{ padding: '0.45rem 0.9rem', background: medienspiegelKategorieFilter === typ ? s.gradientAccent : s.bgElevated, color: medienspiegelKategorieFilter === typ ? '#fff' : s.text, border: `1px solid ${medienspiegelKategorieFilter === typ ? 'transparent' : s.accent + '44'}`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
+                      {typ === 'alle' ? 'Alle' : typ === 'print' ? '📰 Print' : typ === 'tv' ? '📺 TV' : typ === 'radio' ? '📻 Radio' : typ === 'regionalOoe' ? '📍 Regional' : typ === 'online' ? '🌐 Online' : '🎨 Kultur'}
+                    </button>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem', alignItems: 'flex-end' }}>
+                  <input type="text" value={medienspiegelAddName} onChange={e => setMedienspiegelAddName(e.target.value)} placeholder="Name (z. B. Kleine Zeitung)" style={{ padding: '0.45rem 0.6rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', minWidth: '140px' }} />
+                  <input type="text" value={medienspiegelAddEmail} onChange={e => setMedienspiegelAddEmail(e.target.value)} placeholder="E-Mail" style={{ padding: '0.45rem 0.6rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', minWidth: '180px' }} />
+                  <button type="button" onClick={() => {
+                    const email = medienspiegelAddEmail.trim()
+                    if (!email) return
+                    const name = medienspiegelAddName.trim() || email
+                    const next = [...medienspiegel, { id: `m-${Date.now()}-${Math.random().toString(36).slice(2)}`, name, email }]
+                    setMedienspiegel(next)
+                    setMedienspiegelAddName(''); setMedienspiegelAddEmail('')
+                    try { localStorage.setItem(getMedienspiegelStorageKey(tenant), JSON.stringify(next)) } catch (_) {}
+                  }} style={{ padding: '0.5rem 1rem', background: s.gradientAccent, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>
+                    Hinzufügen
+                  </button>
+                </div>
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: s.text, marginBottom: '0.35rem' }}>Aus Liste einfügen (eine Zeile pro Medium: „Name, E-Mail“ oder nur E-Mail)</label>
+                  <textarea value={medienspiegelPasteText} onChange={e => setMedienspiegelPasteText(e.target.value)} placeholder={'z. B.:\nKleine Zeitung, redaktion@kleinezeitung.at\nredaktion@nachrichten.at'} rows={3} style={{ width: '100%', maxWidth: '500px', padding: '0.5rem 0.75rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', fontFamily: 'inherit' }} />
+                  <button type="button" onClick={() => {
+                    const lines = medienspiegelPasteText.split(/\r?\n/).map(l => l.trim()).filter(Boolean)
+                    const emailRe = /[\w.-]+@[\w.-]+\.\w+/
+                    const added: { id: string; name: string; email: string }[] = []
+                    const baseId = Date.now()
+                    lines.forEach((line, i) => {
+                      const match = line.match(emailRe)
+                      if (!match) return
+                      const email = match[0]
+                      const name = line.replace(email, '').replace(/^[\s,<>]+|[\s,<>]+$/g, '').trim() || email
+                      added.push({ id: `m-${baseId}-${i}-${Math.random().toString(36).slice(2)}`, name, email })
+                    })
+                    if (added.length === 0) { setMedienspiegelPasteText(''); return }
+                    const next = [...medienspiegel, ...added]
+                    setMedienspiegel(next)
+                    setMedienspiegelPasteText('')
+                    try { localStorage.setItem(getMedienspiegelStorageKey(tenant), JSON.stringify(next)) } catch (_) {}
+                  }} style={{ marginTop: '0.35rem', padding: '0.4rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
+                    Einfügen
+                  </button>
+                </div>
+                {medienspiegel.length > 0 && (() => {
+                  const getKategorie = (id: string): 'print' | 'tv' | 'radio' | 'regionalOoe' | 'online' | 'kultur' | 'sonstige' => {
+                    const m = id.match(/^(at|de|ch|li|lu)-(print|tv|radio|regionalOoe|online|kultur)-/)
+                    return m ? (m[2] as 'print' | 'tv' | 'radio' | 'regionalOoe' | 'online' | 'kultur') : 'sonstige'
+                  }
+                  const kategorieReihenfolge: Record<string, number> = { print: 0, tv: 1, radio: 2, regionalOoe: 3, online: 4, kultur: 5, sonstige: 6 }
+                  const gefiltert = medienspiegel.filter(m => medienspiegelKategorieFilter === 'alle' || getKategorie(m.id) === medienspiegelKategorieFilter)
+                  const sortiert = [...gefiltert].sort((a, b) => kategorieReihenfolge[getKategorie(a.id)] - kategorieReihenfolge[getKategorie(b.id)] || a.name.localeCompare(b.name))
+                  return (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '0.85rem', color: s.text }}>Medien auswählen, dann E-Mail-Adressen kopieren:</span>
+                      <button type="button" onClick={() => setMedienspiegelSelectedIds(new Set(medienspiegel.map(m => m.id)))} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Alle auswählen</button>
+                      <button type="button" onClick={() => setMedienspiegelSelectedIds(new Set())} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Keine auswählen</button>
+                    </div>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 0.75rem', maxHeight: '220px', overflowY: 'auto', border: `1px solid ${s.accent}22`, borderRadius: '10px', background: s.bgElevated }}>
+                      {sortiert.map(m => (
+                        <li key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0.75rem', borderBottom: `1px solid ${s.accent}15` }}>
+                          <input type="checkbox" checked={medienspiegelSelectedIds.has(m.id)} onChange={() => {
+                            const next = new Set(medienspiegelSelectedIds)
+                            if (next.has(m.id)) next.delete(m.id); else next.add(m.id)
+                            setMedienspiegelSelectedIds(next)
+                          }} />
+                          <span style={{ flex: 1, fontSize: '0.9rem', color: s.text }}>{m.name}</span>
+                          <span style={{ fontSize: '0.8rem', color: s.muted }}>{m.email}</span>
+                          <button type="button" onClick={() => {
+                            const next = medienspiegel.filter(x => x.id !== m.id)
+                            setMedienspiegel(next)
+                            const sel = new Set(medienspiegelSelectedIds); sel.delete(m.id); setMedienspiegelSelectedIds(sel)
+                            try { localStorage.setItem(getMedienspiegelStorageKey(tenant), JSON.stringify(next)) } catch (_) {}
+                          }} style={{ padding: '0.2rem 0.5rem', background: 'transparent', border: `1px solid ${s.muted}66`, borderRadius: '6px', fontSize: '0.75rem', color: s.muted, cursor: 'pointer' }}>Löschen</button>
+                        </li>
+                      ))}
+                    </ul>
+                    {(() => {
+                      const selected = medienspiegel.filter(m => medienspiegelSelectedIds.has(m.id))
+                      const count = selected.length
+                      return (
+                        <button type="button" disabled={count === 0} onClick={() => {
+                          const emails = selected.map(m => m.email).join(', ')
+                          navigator.clipboard.writeText(emails).then(() => alert(`✅ E-Mail-Adressen von ${count} ${count === 1 ? 'Medium' : 'Medien'} in die Zwischenablage kopiert.\n\nIn deinem E-Mail-Programm bei BCC einfügen – dann geht die Aussendung an alle ausgewählten.`)).catch(() => alert('Kopieren fehlgeschlagen.'))
+                        }} style={{ padding: '0.6rem 1.2rem', background: count > 0 ? s.gradientAccent : s.bgElevated, color: count > 0 ? '#fff' : s.muted, border: 'none', borderRadius: '10px', fontWeight: 600, cursor: count > 0 ? 'pointer' : 'not-allowed', fontSize: '0.95rem' }}>
+                          {count === 0 ? 'E-Mail-Adressen kopieren (zuerst Medien auswählen)' : `E-Mail-Adressen kopieren (${count} ${count === 1 ? 'Medium' : 'Medien'})`}
+                        </button>
+                      )
+                    })()}
+                  </>
+                  )
+                })()}
+                {medienspiegel.length === 0 && <p style={{ fontSize: '0.85rem', color: s.muted }}>Noch keine Medien. Füge welche hinzu oder füge eine Liste ein.</p>}
+              </div>
 
               {/* Produkt-Story (K2 & VK2) – für alle Kontexte, neutrale Story für Medien */}
               <div style={{ marginBottom: '2rem', padding: '1rem 1.25rem', background: `${s.accent}08`, border: `1px solid ${s.accent}30`, borderRadius: '12px' }}>

@@ -1,0 +1,34 @@
+---
+description: Zurück-Navigation – immer dorthin zurück, woher der Nutzer gekommen ist (generelle Regel)
+alwaysApply: true
+---
+
+# Zurück = woher gekommen (generelle Regel)
+
+## Grundsatz (unveränderlich)
+
+**„Zurück“ führt immer genau dorthin zurück, woher der Nutzer gerade gekommen ist – nicht weiter, nicht zur Übersicht.**
+
+- Wer von **Design** in die Vorschau geht → Zurück landet in **Design**, nicht auf der Funktionsübersicht.
+- Wer von **Einstellungen** → **X** geht → Zurück landet in **Einstellungen** (ggf. gleicher Sub-Tab).
+- Wer von **Tab A** irgendwohin geht → Zurück = wieder **Tab A**.
+
+## Umsetzung
+
+### Beim Navigieren weg (Link / Button / navigate)
+
+- **Rückziel immer mitgeben:** z. B. `state: { fromAdminTab: activeTab, fromAdminContext: … }` oder `returnTo`, `returnTab`, je nach Kontext.
+- **Kein generisches Ziel:** Nicht „Zurück geht immer zum Hub/Übersicht“ – das bricht die Regel.
+
+### Beim „Zurück“-Button / Back-Handler
+
+- **Rückziel aus State/URL lesen** und genau dorthin navigieren (z. B. `/admin?tab=design` statt nur `/admin`).
+- Bereits umgesetzt z. B.: GaleriePage, GalerieVorschauPage, Vk2GaleriePage, Vk2GalerieVorschauPage nutzen `fromAdminTab` / `fromAdminContext` für die Back-URL.
+
+### Bei neuen Abzweigen
+
+- **Vor dem Bauen fragen:** Wird von hier woandershin navigiert? Wenn ja → Rückziel (Tab, Sub-Tab, Route) in State oder URL mitgeben, damit „Zurück“ wieder hier landet.
+
+## Kurzfassung
+
+**Zurück = exakt die letzte Herkunft (Tab/Seite/Kontext). Keine Abkürzung zur Übersicht. Generelle Regel für alle Navigation.**

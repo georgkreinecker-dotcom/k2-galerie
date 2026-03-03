@@ -63,4 +63,28 @@ describe('mergeServerWithLocal', () => {
     expect(toHistory.some((a: any) => a.number === '1')).toBe(true)
     expect(toHistory.some((a: any) => a.number === '2')).toBe(false)
   })
+
+  it('onlyAddLocalIfMobileAndVeryNew: alte lokale ohne Server werden nicht übernommen (Musterwerke weg)', () => {
+    const server = [{ number: '1', title: 'Echtes Werk' }]
+    const oldDate = new Date(Date.now() - 20 * 60 * 1000).toISOString()
+    const local = [
+      { number: '1', title: 'Echtes Werk' },
+      { number: 'M-1', title: 'Altes Muster', createdAt: oldDate },
+      { number: 'M-2', title: 'Noch Muster', createdAt: oldDate }
+    ]
+    const { merged } = mergeServerWithLocal(server, local, { onlyAddLocalIfMobileAndVeryNew: true })
+    expect(merged).toHaveLength(1)
+    expect(merged[0].number).toBe('1')
+  })
+
+  it('onlyAddLocalIfMobileAndVeryNew: sehr neues Mobile-Werk ohne Server wird übernommen', () => {
+    const server = [{ number: '1', title: 'A' }]
+    const local = [
+      { number: '1', title: 'A' },
+      { number: '2', title: 'Gerade am Handy', createdAt: new Date().toISOString(), createdOnMobile: true }
+    ]
+    const { merged } = mergeServerWithLocal(server, local, { onlyAddLocalIfMobileAndVeryNew: true })
+    expect(merged).toHaveLength(2)
+    expect(merged.find((a: any) => a.number === '2')?.title).toBe('Gerade am Handy')
+  })
 })

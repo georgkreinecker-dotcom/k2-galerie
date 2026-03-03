@@ -1,0 +1,17 @@
+---
+description: Wenn Ursache eines Bugs erkannt ist – Fix sofort im Code umsetzen, nicht auf User-Workaround warten.
+alwaysApply: true
+---
+
+# Ursache erkannt = sofort fixen (nicht auf Workaround warten)
+
+## Regel
+
+**Sobald die Ursache eines Problems klar ist, den Fix im Code umsetzen – nicht darauf warten, dass der Nutzer einen Workaround findet.**
+
+- Beispiel (03.03.26): Alte Musterwerke blieben auf dem Handy, obwohl am Mac gelöscht. **Ursache:** Merge-Logik fügte alle lokalen Werke ohne Server-Eintrag wieder hinzu. **Richtig:** Option `onlyAddLocalIfMobileAndVeryNew` sofort einbauen und beim Server-Load nutzen, damit Server = Quelle und alte lokale Einträge nicht reinkommen. **Nicht:** Nutzer muss „Safari-Verlauf löschen“, damit es geht.
+- Allgemein: Wenn das Muster erkennbar ist (z. B. „Server ist Quelle, aber Merge holt altes Lokal zurück“), die logische Lösung **im Code** umsetzen – damit es für alle gilt und ohne Nutzer-Eingriff funktioniert.
+
+## Kurzfassung
+
+**Ursache klar → Fix implementieren. Kein „User findet schon einen Workaround“ – ich baue die Lösung ein.**

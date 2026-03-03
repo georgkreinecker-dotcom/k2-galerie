@@ -8,6 +8,15 @@
 
 ---
 
+## BUG-019 · QR trotz Gleichstand: Musterbilder / Daten durcheinander
+**Symptom:** Nach „Jetzt an Server senden“ und Gleichstand zeigt der QR-Scan auf dem Handy trotzdem Musterwerke oder falsche Daten.
+**Ursache:** API-Aufruf ohne explizites tenantId → theoretisch Mehrdeutigkeit; Server-Daten wurden ohne Kontext-Check angewendet.
+**Lösung:** (1) Beim Laden von gallery-data **immer** `tenantId=k2` in der URL für die K2-Galerie (`/api/gallery-data?tenantId=k2&...`). (2) Beim Anwenden der Server-Daten: Nur wenn `!musterOnly && !vk2` – sonst `data = null` und nichts in K2-Keys schreiben. So liefert der QR exakt die gleichen Daten wie der Mac; keine Muster/ök2-Daten in der K2-Ansicht.
+**Betroffene Dateien:** `src/pages/GaleriePage.tsx` (loadData, handleRefresh: tenantId=k2; Guard beim Anwenden)
+**Status:** ✅ Behoben (03.03.26)
+
+---
+
 ## BUG-018 · QR / Handy zeigt immer alte Daten („nie in den Griff bekommen“)
 **Symptom:** Nach „Jetzt an Server senden“ am Mac zeigt das Handy (QR-Scan oder Galerie öffnen) weiterhin alte Werke/Daten – essenzielles Problem, nie zuverlässig gelöst.
 **Ursache:** In GaleriePage loadData wurde auf dem **Handy** (vercel.app) **zuerst** die **statische** Datei `/gallery-data.json` geladen (relative URL). Diese Datei kommt aus dem **Build** (dist/), nicht aus dem Blob. „Veröffentlichen“ schreibt aber in **Vercel Blob** (API write-gallery-data). Die Lese-API `/api/gallery-data` liest aus dem Blob. Wer zuerst die statische Datei lädt, bekommt immer den **alten** Build-Stand.

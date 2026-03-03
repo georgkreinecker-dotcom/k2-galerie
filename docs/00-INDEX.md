@@ -55,10 +55,13 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **UEBERSICHT-BESUCHER-EMPFEHLER-LIZENZNEHMER.md** – **Überblick für Georg:** Wo Besucher (K2/ök2/VK2), Empfehler, ganze Lizenznehmer-Geschichte? Ist-Stand + Pro-Board-Ansatz (optik wie K2 Familie). **Umsetzung:** Übersicht-Board unter `/projects/k2-galerie/uebersicht` – 4 Kacheln, ein Klick zu Details.
 
 ## Produkt & Vision
+- **MEHRSPRACHIGKEIT.md** – **Grundstein Mehrsprachigkeit:** Locale-Config, t(key), strings.de; vorbereitet auf EN/FR. Erweiterung wenn zweite Sprache kommt.
+- **ZWISCHENCHECK-SPORTWAGEN-RENNAUTO.md** – **Zwischencheck (03.03.26):** Sind alle Sportwagen-Anforderungen erfüllt? Ein offener Punkt (Stripe Go-Live); was „Rennauto“ ausmacht (Orientierung).
 - **PRODUKT-VISION.md** – Produkt-Vision K2 Galerie.
 - **PRODUKT-STANDARD-NACH-SPORTWAGEN.md** – **Erreichter Standard (28.02.26):** Architektur (eine Quelle/Schicht/Regel), Sicherheit (Kundendaten, Datentrennung, Stand/QR), Tests (38), Doku & Prozess. Eine feste Stelle für „worauf das Produkt jetzt aufbaut“.
 - **K2-GALERIE-PRAESENTATIONSMAPPE.md** – **Prospekt (Sportwagen like):** Funktionale und technische Infos für Präsentationen, Pitches, Partner – Deckblatt, Kurzfassung, Funktionen, Technik, Sicherheit, Plattformen, Lizenzen, Referenzen. In der App: mök2 → Sektion „K2 Galerie Prospekt“ (1 Seite, druckbar als PDF).
 - **PLATTFORM-UNTERSTUETZUNG.md** – Welche Plattformen (Windows, Android, Mac).
+- **MEHRSPRACHIGKEIT.md** – **Grundstein für Mehrsprachigkeit:** localeConfig, i18n mit t(key), strings.de; Erweiterung auf en/fr ohne Bruch; schrittweise Migration der UI-Texte.
 - **USP-UND-MARKTCHANCEN.md** – USPs und Marktchancen.
 - **VERMARKTUNGSKONZEPT-EMPFEHLUNGSPROGRAMM.md** – Empfehlungsprogramm / Vermarktung (50 %-Gebühr).
 - **EMPFEHLUNGSKONZEPT-EINFACHER-WEG.md** – **Empfehlung konkret:** Kostensenkung (10 % Rabatt / 10 % Gutschrift), Vermarktung + technische Umsetzung, ohne Cashback.

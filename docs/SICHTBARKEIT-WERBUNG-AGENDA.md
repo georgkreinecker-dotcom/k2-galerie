@@ -9,7 +9,7 @@ Arbeitsliste zum Abarbeiten. Status: ○ offen · ◐ in Arbeit · ● erledigt
 
 ## Von Joe erledigt (ohne Georg)
 
-- **1** Technik (Titel/Meta pro Route)
+- **1** Technik (Titel/Meta pro Route, **Sitemap + robots.txt** – Suchmaschinen finden alle öffentlichen Seiten)
 - **4** Empfehlungsprogramm sichtbar (Willkommen, Entdecken, LizenzKaufen)
 - **5** QR und Links (mök2 Sichtbarkeit + Eröffnung)
 - **6+7** Presse- und Verzeichnisse-Vorlagen in mök2 + Doc (zum Kopieren/Versenden/Eintragen)
@@ -31,7 +31,7 @@ Arbeitsliste zum Abarbeiten. Status: ○ offen · ◐ in Arbeit · ● erledigt
 
 | # | Punkt | Was zu tun | Status | Nächster Schritt |
 |---|-------|------------|--------|------------------|
-| 1 | **Technik prüfen** | Öffentliche Seiten: klarer Seitentitel + Meta-Beschreibung (keine Doppelungen, keine leeren Titel). Pro Route prüfen (Willkommen, Galerie, Vita, AGB, Demo). | ● | Erledigt: seoPageMeta.ts + App setzt Titel/Meta pro Route. |
+| 1 | **Technik prüfen** | Öffentliche Seiten: klarer Seitentitel + Meta-Beschreibung (keine Doppelungen, keine leeren Titel). Pro Route prüfen (Willkommen, Galerie, Vita, AGB, Demo). Optional: sitemap.xml + robots.txt. | ● | Erledigt: seoPageMeta.ts + App setzt Titel/Meta pro Route. **Sitemap + robots.txt:** public/sitemap.xml, public/robots.txt (03.03.26) – Suchmaschinen finden alle öffentlichen URLs. |
 | 2 | **Google Business Profile** | Einmal anlegen: Name, Adresse, Öffnungszeiten, Website-Link, Fotos. Kostenlos, wirkt in lokaler Suche. | ○ | **Vorlage:** docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §2. |
 | 3 | **Social-Profile** | Ein Account pro Kanal (z. B. Instagram, Facebook), Link zur Willkommensseite/Demo in Bio. Regelmäßig Posts. | ○ | **Vorlage:** docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §3. |
 | 4 | **Empfehlungsprogramm sichtbar** | In App und Kurztexten: „Empfehle uns – 10 % Rabatt …“. Link teilen leicht machen (kopierbar aus App). | ● | WillkommenPage: Hinweis ergänzt. Admin/Lizenz siehe Vorlage §4. |

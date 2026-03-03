@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Sitemap für Suchmaschinen (Sichtbarkeit – Internet gefunden werden)
+Sitemap: https://k2-galerie.vercel.app/sitemap.xml

@@ -29,8 +29,8 @@
 - **Überschriften und Text**  
   Echte Texte (Willkommen, Vita, Galerie-Infos) statt nur Bilder. Suchmaschinen lesen Text; klare H1/H2 und Absätze helfen.
 
-- **Sitemap (optional, kein Muss)**  
-  Eine `sitemap.xml` mit allen öffentlichen URLs hilft Suchmaschinen, alle Seiten zu entdecken. Kann automatisch aus den Routen erzeugt oder manuell gepflegt werden – keine laufenden Kosten.
+- **Sitemap (umgesetzt)**  
+  Eine `sitemap.xml` mit allen öffentlichen URLs hilft Suchmaschinen, alle Seiten zu entdecken. **Vorhanden:** public/sitemap.xml, public/robots.txt mit Sitemap-Verweis (Stand 03.03.26). Keine laufenden Kosten.
 
 - **Schnelle Ladezeit, mobiltauglich**  
   Vercel liefert schnell aus; die App ist responsiv. Das wirkt sich positiv auf die Bewertung aus.
