@@ -6,6 +6,36 @@
 
 ---
 
+## 1. Google Search Console – Sitemap einreichen
+
+Damit Google die Seite zügig findet und bei „k2 galerie“ anzeigen kann. Kostenlos, einmalig einrichten.
+
+**Schritte:**
+
+1. **Öffnen:** https://search.google.com/search-console  
+   Mit deinem Google-Konto anmelden (das du für die Galerie nutzt).
+
+2. **Eigenschaft hinzufügen**  
+   - „Eigenschaftstyp auswählen“ → **„URL-Präfix“** wählen.  
+   - **URL eingeben:** `https://k2-galerie.vercel.app`  
+   - Bestätigen.
+
+3. **Besitz bestätigen**  
+   Google schlägt meist „HTML-Tag“ oder „HTML-Datei“ vor.  
+   - **Einfachste Variante:** Methode „**HTML-Tag**“ wählen.  
+   - Den gezeigten Meta-Tag (z. B. `<meta name="google-site-verification" content="…">`) **kopieren** und mir (Joe) sagen – ich baue ihn einmalig in die `index.html` ein. Danach in der Search Console auf „Bestätigen“ klicken.  
+   - **Alternative:** Wenn du eine andere Methode nutzen willst (z. B. DNS), der Anleitung in der Search Console folgen.
+
+4. **Sitemap eintragen**  
+   Nach der Bestätigung: links **„Sitemaps“** wählen.  
+   - Bei „Neue Sitemap hinzufügen“ eintragen: `sitemap.xml`  
+   - **Senden** klicken.  
+   - Fertig. Google crawlt die Seite in den nächsten Tagen; danach kannst du in der Search Console sehen, ob und welche Seiten indiziert sind.
+
+**Ergebnis:** Google kennt die Adresse und die Sitemap – die Chance, dass „k2 galerie“ bald unsere Seite zeigt, steigt deutlich.
+
+---
+
 ## 2. Google Business Profile
 
 **Anlegen:** https://business.google.com → „Unternehmen hinzufügen“ (oder „Geschäftsinhaber“).
