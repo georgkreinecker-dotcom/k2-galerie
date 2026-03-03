@@ -115,9 +115,9 @@ export function getKassabuchLizenzStufe(tenant: 'k2' | 'oeffentlich'): Kassabuch
     const key = tenant === 'oeffentlich' ? OEF_LIZENZ_STUFE_KEY : K2_LIZENZ_STUFE_KEY
     const v = localStorage.getItem(key)
     if (v === 'basic' || v === 'pro' || v === 'proplus') return v
-    return tenant === 'oeffentlich' ? 'pro' : 'proplus'
+    return 'proplus'
   } catch {
-    return tenant === 'oeffentlich' ? 'pro' : 'proplus'
+    return 'proplus'
   }
 }
 

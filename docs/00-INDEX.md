@@ -49,6 +49,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **TENANT-SYNC-DOMAIN.md** – **Tenantfähig:** Veröffentlichen / Vom Server laden für K2, ök2, VK2; Blob pro Mandant; Domänen-Struktur (tenantId); Sicherheit später.
 - **UMZUG-K2-GALERIE-KUNST-KERAMIK.md** – Plattform = K2 Galerie, erste Galerie = K2 Galerie Kunst&Keramik; Backup für backupmicro.
 - **MOK2-EIGENER-BEREICH.md** – Marketing ök2 als eigener Bereich (mök2).
+- **Genaue Produktbeschreibung** – **In der App:** APf → Projekte → K2 Galerie → **Marketing ök2 (mök2)** → Sektion „Genaue Produktbeschreibung“. Dort die detaillierte, anpassbare Produktbeschreibung für Vertrieb, Presse und Partner pflegen; noch anzupassen (Inhalt aus USPs / „Was kann die App?“ zusammenführen).
 - **WARUM-EVENTS-DOKUMENTE-WEG-WAREN.md** – Erklärung zu Events/Dokumenten.
 - **OEK2-ANMELDUNG-LIZENZIERUNG-STAND.md** – **ök2 Anmeldung & Lizenzierung – State of the Art:** Was es gibt (Entdecken, Guide, Willkommen-Redirect, LicencesPage, mailto), was fehlt (sichtbarer CTA „Lizenz anfragen“, einheitliche Preise), nächste Schritte; Code-Stellen.
 - **UEBERSICHT-BESUCHER-EMPFEHLER-LIZENZNEHMER.md** – **Überblick für Georg:** Wo Besucher (K2/ök2/VK2), Empfehler, ganze Lizenznehmer-Geschichte? Ist-Stand + Pro-Board-Ansatz (optik wie K2 Familie). **Umsetzung:** Übersicht-Board unter `/projects/k2-galerie/uebersicht` – 4 Kacheln, ein Klick zu Details.
@@ -65,7 +66,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **SICHTBARKEIT-SUCHMASCHINEN-WERBUNG-KONZEPT.md** – **Sichtbar im Netz:** Suchmaschinen (SEO ohne Kosten), alle Werbemöglichkeiten; maximaler Verbreitungsgrad ohne Zusatzkosten; was mit welchem Budget möglich ist (Domain, Google Ads, Social, Agentur).
 - **SICHTBARKEIT-WERBUNG-AGENDA.md** – **Punkt-für-Punkt:** Arbeitsliste Sichtbarkeit & Werbung (Phase 1–3), Status pro Punkt; zum Abarbeiten mit Nächster Schritt.
 - **SICHTBARKEIT-PHASE1-VORLAGEN.md** – **Copy-Paste für Phase 1:** Google Business, Social Bio/Post, QR/Links, Medienlisten (§5a), Presse + **Medienverteiler-Eröffnung** (§6).
-- **MEDIENSTUDIO-K2.md** – **Medienstudio K2 (Presse & Medien):** Einstieg für alle Pressearbeit; Medienkit (Boilerplate, Ansprechpartner, Bilder), Redaktionsplan, Qualitätsregeln; verknüpft mit PRESSEARBEIT-STANDARD und MEDIENVERTEILER.
+- **MEDIENSTUDIO-K2.md** – **Medienstudio K2 (Presse & Medien):** Einstieg für alle Pressearbeit; Medienkit, Redaktionsplan, Qualitätsregeln; **Abgrenzung Presse & Medien vs. Events & Ausstellungen** (keine Dopplung); verknüpft mit PRESSEARBEIT-STANDARD und MEDIENVERTEILER.
 - **PRESSEARBEIT-STANDARD.md** – **Pressearbeit standardisiert (Sportwagenmodus):** ein Ablauf, eine Vorlage, ein Verteiler; Teil von Medienstudio K2; Checkliste vor Versand.
 - **MEDIENVERTEILER-EROEFFNUNG.md** – **Presseverteiler:** regional (OÖN, MeinBezirk, Tips, ORF OÖ) + überregional (Standard, Presse); mit PRESSEARBEIT-STANDARD verknüpft.
 - **ABRECHNUNGSSTRUKTUR-EMPFEHLUNGSPROGRAMM.md** – Abrechnungsstruktur Empfehlungsprogramm.

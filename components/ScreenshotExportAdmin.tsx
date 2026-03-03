@@ -37,6 +37,16 @@ import AdminBildZuschneidenButton from '../src/components/AdminBildZuschneidenBu
 import { getWerbeliniePrDocCss, getWerbeliniePrDocCssVk2, WERBELINIE_FONTS_URL, WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../src/config/marketingWerbelinie'
 import '../src/App.css'
 
+/** Icon für Presse & Medien / Medienstudio – Zeitung/Presse, gut sichtbar im Admin (Tab, Hub, Bereichs-Karten). */
+function MedienstudioIcon({ size = 24, style }: { size?: number; style?: React.CSSProperties }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" style={{ flexShrink: 0, verticalAlign: 'middle', ...style }} aria-hidden>
+      {/* Zeitung/Presse: Blatt mit Überschriftzeilen */}
+      <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+    </svg>
+  )
+}
+
 /** Session-Key für Admin-Kontext (K2/ök2/VK2) – wird von TenantContext gesetzt; hier nur noch für gezielte Schreibzugriffe beim Navigieren. */
 const ADMIN_CONTEXT_KEY = 'k2-admin-context'
 /** Session-Key: eingeloggtes VK2-Mitglied (Name) – nur eigenes Profil bearbeitbar */
@@ -9045,11 +9055,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             title="Zurück zur Übersicht mit allen Bereichen (Werke hinzufügen und bearbeiten, Events, Kassa, …)">
             ← Zurück zur Übersicht
           </button>
-          <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.82rem' }}>
-            Du schaust dir gerade an: <strong style={{ color: '#fff' }}>
+          <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+            Du schaust dir gerade an: <strong style={{ color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
               {activeTab === 'werke' ? '🖼️ Werke hinzufügen und bearbeiten' :
                activeTab === 'eventplan' ? '🎟️ Events & Ausstellungen' :
-               activeTab === 'presse' ? '📰 Presse & Medien' :
+               activeTab === 'presse' ? <><MedienstudioIcon size={20} /> Presse & Medien</> :
                activeTab === 'design' ? '✨ Aussehen & Design' :
                activeTab === 'katalog' ? '📋 Werkkatalog' :
                activeTab === 'statistik' ? '🧾 Kassa & Verkauf' :
@@ -9396,7 +9406,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                   fontWeight: istAktiv ? 700 : 400,
                                   position: 'relative' as const,
                                 }}>
-                                <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{st.emoji}</span>
+                                {st.tab === 'presse' ? <MedienstudioIcon size={22} style={{ color: istAktiv ? '#fff' : undefined }} /> : <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{st.emoji}</span>}
                                 <span style={{ fontSize: '0.78rem', lineHeight: 1.3 }}>{st.name}</span>
                                 {istAktiv && <span style={{ position: 'absolute', top: 5, right: 7, fontSize: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>●</span>}
                               </button>
@@ -9415,8 +9425,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               <div style={{ fontSize: '0.6rem', color: akzentHell, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em' }}>
                                 {istVerein ? 'Vereins-Guide' : 'Galerie-Guide'}
                               </div>
-                              <div style={{ fontSize: '1rem', fontWeight: 700, color: '#1c1a18' }}>
-                                {aktivStation.emoji} {aktivStation.name}
+                              <div style={{ fontSize: '1rem', fontWeight: 700, color: '#1c1a18', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                {aktivStation.tab === 'presse' ? <MedienstudioIcon size={20} /> : aktivStation.emoji} {aktivStation.name}
                               </div>
                             </div>
                           </div>
@@ -9439,7 +9449,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           <button type="button"
                             onClick={() => { setActiveTab(aktivStation.tab); window.scrollTo({ top: 200, behavior: 'smooth' }) }}
                             style={{ width: '100%', padding: '0.8rem', background: akzentGrad, border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit', boxShadow: `0 4px 14px ${akzent}44` }}>
-                            {aktivStation.emoji} {aktivStation.name} öffnen →
+                            {aktivStation.tab === 'presse' ? <MedienstudioIcon size={18} /> : aktivStation.emoji} {aktivStation.name} öffnen →
                           </button>
                         </div>
 
@@ -9461,7 +9471,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                   fontWeight: istAktiv ? 700 : 400,
                                   position: 'relative' as const,
                                 }}>
-                                <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{st.emoji}</span>
+                                {st.tab === 'presse' ? <MedienstudioIcon size={22} style={{ color: istAktiv ? '#fff' : undefined }} /> : <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{st.emoji}</span>}
                                 <span style={{ fontSize: '0.78rem', lineHeight: 1.3 }}>{st.name}</span>
                                 {istAktiv && <span style={{ position: 'absolute', top: 5, right: 7, fontSize: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>●</span>}
                               </button>
@@ -9542,7 +9552,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             onMouseEnter={e => { e.currentTarget.style.borderColor = '#b54a1e66'; e.currentTarget.style.background = '#fdf9f6' }}
                             onMouseLeave={e => { e.currentTarget.style.borderColor = '#e8e4de'; e.currentTarget.style.background = '#fff' }}
                           >
-                            <span style={{ fontSize: '1.25rem', flexShrink: 0, lineHeight: 1.2 }}>{b.emoji}</span>
+                            {b.tab === 'presse' ? <MedienstudioIcon size={24} style={{ flexShrink: 0 }} /> : <span style={{ fontSize: '1.25rem', flexShrink: 0, lineHeight: 1.2 }}>{b.emoji}</span>}
                             <div>
                               <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1c1a18', marginBottom: '0.2rem' }}>{b.name}</div>
                               <div style={{ fontSize: '0.75rem', color: '#5c5650', lineHeight: 1.4 }}>{b.text}</div>
@@ -9595,27 +9605,26 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   const akzent = s.accent
                   const akzentGrad = `linear-gradient(135deg, ${s.accent} 0%, #d96b35 100%)`
                   type HubArea = { emoji: string; name: string; beschreibung: string; tab: string }
+                  // Links: Werke → Aussehen → Einstellungen → Schritt-für-Schritt | Rechts: Kassa → Events → Presse
                   const linksBereiche: HubArea[] = tenant.isVk2 ? [
                     { emoji: '🖼️', name: 'Vereinsmitglieder', beschreibung: 'Mitglieder hinzufügen, bearbeiten, verwalten – Fotos, Profile.', tab: 'werke' },
-                    { emoji: '🎟️', name: 'Events & Werbung', beschreibung: 'Events planen, Flyer und Newsletter für den Verein erstellen.', tab: 'eventplan' },
                     { emoji: '✨', name: 'Aussehen & Design', beschreibung: 'Farben, Texte, Bilder – die Galerie nach euren Wünschen.', tab: 'design' },
+                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Vereinsdaten, Kontakt, Mitglieder verwalten.', tab: 'einstellungen' },
+                    { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Der Assistent führt euch durch die Einrichtung.', tab: 'assistent' },
                   ] : [
                     { emoji: '🖼️', name: 'Werke hinzufügen und bearbeiten', beschreibung: 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist live in deiner Galerie.', tab: 'werke' },
-                    { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Events planen, Einladungen und Flyer erstellen, Presse, Social Media.', tab: 'eventplan' },
                     { emoji: '✨', name: 'Aussehen & Design', beschreibung: tenant.isOeffentlich ? 'Farben, Texte, dein Foto – die Galerie wird zu dir.' : 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
+                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: tenant.isOeffentlich ? 'Meine Daten, Kontakt, Backup. Lizenz & Empfehlungsprogramm.' : 'Meine Daten, Drucker, Sicherheit, Backup. Lizenz & Empfehlungsprogramm.', tab: 'einstellungen' },
+                    { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Neu hier? Der Assistent führt dich durch die Einrichtung.', tab: 'assistent' },
                   ]
                   const rechtsBereiche: HubArea[] = tenant.isVk2 ? [
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
-                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Vereinsdaten, Kontakt, Mitglieder verwalten.', tab: 'einstellungen' },
-                    { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Der Assistent führt euch durch die Einrichtung.', tab: 'assistent' },
-                  ] : tenant.isOeffentlich ? [
-                    { emoji: '📋📊', name: 'Kassa, Lager, Listen & Werkkatalog', beschreibung: 'Werkkatalog, Verkaufsstatistik, PDF-Export, Speicherdaten – alles an einem Ort.', tab: 'statistik' },
-                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Meine Daten, Kontakt, Backup. Lizenz & Empfehlungsprogramm.', tab: 'einstellungen' },
-                    { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Neu hier? Der Assistent führt dich durch die Einrichtung.', tab: 'assistent' },
+                    { emoji: '🎟️', name: 'Events & Werbung', beschreibung: 'Events planen, Flyer und Newsletter für den Verein erstellen.', tab: 'eventplan' },
+                    { emoji: '📰', name: 'Presse & Medien', beschreibung: 'Medienkit und Presse-Vorlage – professionell für Pressearbeit.', tab: 'presse' },
                   ] : [
                     { emoji: '📋📊', name: 'Kassa, Lager, Listen & Werkkatalog', beschreibung: 'Werkkatalog, Verkaufsstatistik, PDF-Export, Speicherdaten – alles an einem Ort.', tab: 'statistik' },
-                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Meine Daten, Drucker, Sicherheit, Backup. Lizenz & Empfehlungsprogramm.', tab: 'einstellungen' },
-                    { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Neu hier? Der Assistent führt dich durch die Einrichtung.', tab: 'assistent' },
+                    { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Events planen, Einladungen und Flyer erstellen, Presse, Social Media.', tab: 'eventplan' },
+                    { emoji: '📰', name: 'Presse & Medien', beschreibung: 'Medienkit, Presse-Vorlage und Einladung an Medien – ök2 testen.', tab: 'presse' },
                   ]
                   const scrollToWerke = () => document.getElementById('admin-werke-inhalt')?.scrollIntoView({ behavior: 'smooth' })
                   const openKasse = () => {
@@ -9655,7 +9664,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               color: b.tab === 'werke' ? '#fff' : s.text,
                               fontWeight: b.tab === 'werke' ? 700 : 500,
                             }}>
-                            <span style={{ fontSize: 'clamp(1.75rem, 4vw, 2.1rem)', flexShrink: 0, lineHeight: 1 }}>{b.emoji}</span>
+                            {b.tab === 'presse' ? <MedienstudioIcon size={28} style={{ flexShrink: 0 }} /> : <span style={{ fontSize: 'clamp(1.75rem, 4vw, 2.1rem)', flexShrink: 0, lineHeight: 1 }}>{b.emoji}</span>}
                             <div style={{ minWidth: 0 }}>
                               <div style={{ fontSize: 'clamp(0.88rem, 1.8vw, 1rem)', lineHeight: 1.25 }}>{b.name}</div>
                               <div style={{ fontSize: '0.72rem', color: b.tab === 'werke' ? 'rgba(255,255,255,0.85)' : s.muted, marginTop: '0.15rem', lineHeight: 1.3 }}>
@@ -9694,7 +9703,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   {activeTab === 'newsletter' && '📬 Newsletter & Einladungen'}
                   {activeTab === 'pressemappe' && '📰 Pressemappe'}
                   {activeTab === 'eventplan' && (tenant.isVk2 ? '📢 Vereins-Events & Werbematerial' : '📢 Veranstaltungen & Werbung')}
-                  {activeTab === 'presse' && (tenant.isVk2 ? '📰 Presse & Medien – Medienkit und Presse-Vorlage' : '📰 Presse & Medien – Medienkit und Presse-Vorlage')}
+                  {activeTab === 'presse' && (tenant.isVk2 ? <><MedienstudioIcon size={22} /> Presse & Medien – Medienkit und Presse-Vorlage</> : <><MedienstudioIcon size={22} /> Presse & Medien – Medienkit und Presse-Vorlage</>)}
                   {activeTab === 'design' && (tenant.isVk2 ? '✨ Aussehen – nach euren Wünschen anpassen' : '✨ Aussehen der Galerie – nach deinen Wünschen anpassen')}
                   {activeTab === 'einstellungen' && '⚙️ Einstellungen'}
                 </h2>
@@ -13964,7 +13973,7 @@ ${name}`
           ].filter(Boolean).join('\n')
           return (
             <section style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '24px', padding: 'clamp(2rem, 5vw, 3rem)', boxShadow: s.shadow, marginBottom: 'clamp(2rem, 5vw, 3rem)' }}>
-              <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: 700, color: s.text, marginBottom: '0.5rem' }}>📰 Presse & Medien</h2>
+              <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: 700, color: s.text, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><MedienstudioIcon size={28} /> Presse & Medien</h2>
               <p style={{ color: s.muted, marginBottom: tenant.isVk2 ? '0.5rem' : '1.5rem', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
                 {tenant.isVk2 ? 'Medienkit und Presse-Vorlage aus euren Vereinsdaten (Verein, Vorstand, Adresse) – zum Kopieren und Versand an Medien.' : 'Medienkit und Presse-Vorlage aus deinen Stammdaten – zum Kopieren und Versand an Medien.'}
               </p>
@@ -13978,6 +13987,11 @@ ${name}`
                   Demo – in Ihrer lizenzierten Galerie nutzen Sie Ihre eigenen Daten.
                 </p>
               )}
+
+              {/* Abgrenzung: Presseaussendung zu konkretem Event = Events & Ausstellungen (keine Dopplung) */}
+              <p style={{ marginBottom: '1.5rem', padding: '0.6rem 1rem', background: `${s.accent}0c`, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.85rem', color: s.muted }}>
+                <strong style={{ color: s.text }}>Presseaussendung zu einem konkreten Event?</strong> (Vernissage, Eröffnung, Lesung …) → <button type="button" onClick={() => setActiveTab('eventplan')} style={{ background: 'none', border: 'none', padding: 0, color: s.accent, textDecoration: 'underline', cursor: 'pointer', fontWeight: 600, fontSize: 'inherit' }}>Events & Ausstellungen</button> → Event wählen → Presseaussendung. Hier nur Medienkit und allgemeine Vorlage (ohne Event).
+              </p>
 
               {/* Produkt-Story (K2 & VK2) – für alle Kontexte, neutrale Story für Medien */}
               <div style={{ marginBottom: '2rem', padding: '1rem 1.25rem', background: `${s.accent}08`, border: `1px solid ${s.accent}30`, borderRadius: '12px' }}>
@@ -13993,6 +14007,23 @@ ${name}`
                   try { navigator.clipboard.writeText(t); alert('✅ Produkt-Story in Zwischenablage kopiert.') } catch (_) { alert('Kopieren fehlgeschlagen.') }
                 }} style={{ padding: '0.5rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
                   📋 Produkt-Story kopieren
+                </button>
+              </div>
+
+              {/* Einladung an Journalist:innen – ök2 testen & berichten, dankbar für Verbesserungsvorschläge */}
+              <div style={{ marginBottom: '2rem', padding: '1rem 1.25rem', background: `${s.accent}08`, border: `1px solid ${s.accent}30`, borderRadius: '12px' }}>
+                <h3 style={{ fontSize: '1rem', color: s.text, marginBottom: '0.5rem' }}>📢 Einladung an Medien (ök2 testen)</h3>
+                <p style={{ fontSize: '0.8rem', color: s.muted, marginBottom: '0.75rem' }}>
+                  Für Presseaussendungen und E-Mails an Redaktionen – einladend, offen für Feedback.
+                </p>
+                <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '0.85rem', color: s.text, marginBottom: '0.75rem', lineHeight: 1.5, fontFamily: 'inherit' }}>
+                  {`Wir laden Redaktionen ein, ök2 selbst zu testen – und über ihren Eindruck zu berichten. Die Demo-Galerie zeigt den vollen Umfang der Plattform; wer mag, kann sie vor Ort oder von zu Hause aus ausprobieren. Wir sind auch dankbar für Verbesserungsvorschläge.`}
+                </pre>
+                <button type="button" onClick={() => {
+                  const t = 'Wir laden Redaktionen ein, ök2 selbst zu testen – und über ihren Eindruck zu berichten. Die Demo-Galerie zeigt den vollen Umfang der Plattform; wer mag, kann sie vor Ort oder von zu Hause aus ausprobieren. Wir sind auch dankbar für Verbesserungsvorschläge.'
+                  try { navigator.clipboard.writeText(t); alert('✅ Einladung an Medien in Zwischenablage kopiert.') } catch (_) { alert('Kopieren fehlgeschlagen.') }
+                }} style={{ padding: '0.5rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
+                  📋 Einladung kopieren
                 </button>
               </div>
 
@@ -15643,7 +15674,7 @@ ${name}`
                                 typ: 'presse' as const,
                                 icon: '📰',
                                 titel: 'Presseaussendung',
-                                beschreibung: 'Für Zeitungen & Medien',
+                                beschreibung: 'Für dieses Event – Zeitungen & Medien. Medienkit & allgemeine Texte: Presse & Medien.',
                                 docs: byTyp['presse'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),

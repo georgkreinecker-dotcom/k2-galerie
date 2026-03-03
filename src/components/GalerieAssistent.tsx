@@ -9,7 +9,7 @@ import { WERBEUNTERLAGEN_STIL } from '../config/marketingWerbelinie'
 
 const s = WERBEUNTERLAGEN_STIL
 
-export type AdminTab = 'werke' | 'eventplan' | 'design' | 'einstellungen'
+export type AdminTab = 'werke' | 'eventplan' | 'presse' | 'design' | 'einstellungen'
 export type SettingsSubTab = 'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'lager'
 export type EventplanSubTab = 'events' | 'öffentlichkeitsarbeit'
 
@@ -72,6 +72,15 @@ function baueSchritte(pfad: string): Step[] {
       tab: 'eventplan',
       subTab: 'events',
       icon: '🎟️',
+    },
+    {
+      id: 'presse',
+      title: 'Presse & Medien',
+      short: istVerein
+        ? 'Medienkit und Presse-Vorlage aus Vereinsdaten – für Pressearbeit und Einladungen an Medien.'
+        : 'Medienkit und Presse-Vorlage – wenn du Presse oder Medien einladen willst.',
+      tab: 'presse',
+      icon: '📰',
     },
   ]
 }

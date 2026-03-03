@@ -5,7 +5,7 @@
 
 **Geltung:** K2 (echte Galerie) und ök2 (Demo) – Kassa gibt es nur für K2/ök2, nicht für VK2.
 
-**Lizenzstufen (03.03.26):** Vollständiges Kassabuch erst ab **Pro+**. **Pro** = Kassa (Verkauf erfassen) ja, Kassabuch nur Verkäufe (Eingänge), keine Ausgänge. **Basic** = keine Kassa. Speicher: `k2-lizenz-stufe` / `k2-oeffentlich-lizenz-stufe` (`basic` | `pro` | `proplus`). Default K2 = proplus, ök2 = pro.
+**Lizenzstufen (03.03.26):** Vollständiges Kassabuch erst ab **Pro+**. **Pro** = Kassa (Verkauf erfassen) ja, Kassabuch nur Verkäufe (Eingänge), keine Ausgänge. **Basic** = keine Kassa. Speicher: `k2-lizenz-stufe` / `k2-oeffentlich-lizenz-stufe` (`basic` | `pro` | `proplus`). Default K2 = proplus, **ök2 = proplus** (voller Betriebsumfang in der Demo).
 
 ---
 

@@ -17,6 +17,7 @@
 | **Einstieg (dieses Dokument)** | docs/MEDIENSTUDIO-K2.md | Übersicht, Medienkit, Redaktionsplan, Verknüpfungen |
 | **Presse-Story (persönlich)** | Dieses Dokument → **§1a** | Human Interest: Galerie-Traum, Unternehmer, K2 aus einer Hand – **für deinen eigenen Pressetext, wenn du es brauchst.** |
 | **Produkt-Story (K2 & VK2)** | Dieses Dokument → **§1b** | Neutrale Story für Medien: Plattform, Künstler:innen, Kunstvereine – interessant, ohne in deinen persönlichen Bereich zu gehen. |
+| **Einladung an Journalist:innen** | Dieses Dokument → **§1c** | „ök2 testen und über Eindruck berichten“ + dankbar für Verbesserungsvorschläge – für Presseaussendungen und E-Mails. |
 | **Standardablauf** | docs/PRESSEARBEIT-STANDARD.md | 6 Schritte pro Aussendung, Checkliste, Variablen |
 | **Verteiler (E-Mails)** | docs/MEDIENVERTEILER-EROEFFNUNG.md | Print, Funk, Fernsehen – regional + überregional |
 | **Textvorlage** | docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §6 · mök2 Sichtbarkeit | Presseinformation zum Ausfüllen |
@@ -52,6 +53,16 @@
 
 **Ablage:** Dieses Dokument (§1b). In der App: Admin → Presse & Medien → Block „Produkt-Story (K2 & VK2)“ (in allen Kontexten: K2, ök2, VK2) → kopieren.
 
+### 1c. Einladung an Journalist:innen (ök2 testen & berichten)
+
+**Für Presseaussendungen und E-Mails an Redaktionen – selbstbewusst, einladend, offen für Feedback.**
+
+> Wir laden Redaktionen ein, **ök2 selbst zu testen** – und über ihren Eindruck zu berichten. Die Demo-Galerie zeigt den vollen Umfang der Plattform; wer mag, kann sie vor Ort oder von zu Hause aus ausprobieren. Wir sind auch dankbar für Verbesserungsvorschläge.
+
+**Einsatz:** In Presseinformationen, bei Einladungen zur Eröffnung oder zum Produkttest, am Ende von E-Mails an Medien. Kurz, klar, ohne Prahlerei.
+
+**Ablage:** Dieses Dokument (§1c). In der App: Admin → Presse & Medien → Block „Einladung an Medien (ök2 testen)“ → kopieren.
+
 ### 2. Presse-Ansprechpartner
 
 - **Absender für E-Mails:** „K2 Galerie · Presse“ bzw. Name + E-Mail aus Stammdaten
@@ -84,6 +95,19 @@
 
 ---
 
+## Abgrenzung: Presse & Medien vs. Events & Ausstellungen (keine Dopplung)
+
+In der App gibt es zwei Einstiege für Presse – sie ergänzen sich, ohne sich zu doppeln:
+
+| Wann? | Wo in der App? | Was? |
+|-------|-----------------|------|
+| **Medienkit, allgemeine Presse-Vorlage, Story-Texte** – ohne konkretes Event | **Admin → Presse & Medien** | Medienkit kopieren, Presse-Vorlage (Anlass/Datum/Ort frei), Produkt-Story, optional persönliche Story. Für E-Mails an Redaktionen, Anhänge, „immer bereit“. |
+| **Presseaussendung zu einem konkreten Event** (Vernissage, Eröffnung, Lesung, …) | **Admin → Events & Ausstellungen** → Event wählen → **Presseaussendung** | Vollständige Presseaussendung mit Event-Titel, -Datum, -Ort, -Beschreibung. Pro Event ein Dokument, bearbeitbar, druckbar. |
+
+**Regel:** Presse & Medien = event-unabhängig (Medienstudio, Boilerplate, Vorlage). Events & Ausstellungen = pro Event (Presseaussendung zu diesem Event). Keine zweite „Presseaussendung“ im Presse-Tab – die Presse-Vorlage dort ist nur die kurze Zeilen-Vorlage (Anlass/Datum/Ort), keine vollständige Aussendung. Vollständige Aussendung immer im Eventplan zum jeweiligen Event.
+
+---
+
 ## Qualitätsregeln (Medienstudio-Standard)
 
 1. **Eine Quelle:** Vorlage, Verteiler und Ablauf kommen nur aus den verlinkten Dokumenten. Keine „mal schnell anders“-Mails.
@@ -105,7 +129,9 @@
 
 ## Verknüpfung in der App
 
+- **Admin → Presse & Medien:** Medienkit, Presse-Vorlage (Anlass/Datum/Ort), Produkt-Story, optional persönliche Story. Kein Event nötig.
+- **Admin → Events & Ausstellungen:** Pro Event Flyer, Plakat, **Presseaussendung** (vollständiger Text zu diesem Event), Newsletter, Einladung, Social. Presseaussendung = immer hier, zum gewählten Event.
 - **mök2 → Sichtbarkeit & Werbung:** Verweis auf dieses Dokument und auf Presse-Standard + Verteiler.
 - **Für dich (Georg):** Ein Einstieg = docs/MEDIENSTUDIO-K2.md. Von hier aus alle Pressearbeit steuern.
 
-**Kurz:** Medienstudio K2 = ein Standard, ein Ablauf, ein Verteiler, ein Medienkit. Professionell von Beginn an – wie ein eigenes kleines Medienstudio, ohne Aufwand zu verdoppeln.
+**Kurz:** Medienstudio K2 = ein Standard, ein Ablauf, ein Verteiler, ein Medienkit. Presse & Medien = Medienstudio (ohne Event). Events = Presseaussendung pro Event. Keine Dopplung – klare Zuordnung.
