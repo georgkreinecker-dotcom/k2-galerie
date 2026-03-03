@@ -101,4 +101,6 @@ K2 Familie trägt dieses Licht: keine Ausgrenzung, Respekt, jede Form des Zusamm
 
 **Datensouveränität:** Die Daten der Familie gehören der Familie – **100 % verfügbar und erhalten**, auch wenn der Betrieb der App eingestellt wird. Export und Ausdruck jederzeit möglich; private Speicherung bei der Familie. Cloud-Platz entfällt dann; wer exportiert/ausdruckt, hat die Geschichte dauerhaft bei sich. Das muss in der App und gegenüber Nutzer*innen **klar kommuniziert** werden. Verbindlich: **docs/K2-FAMILIE-DATENSOUVERAENITAET.md**.
 
+**Datenschutz & Sicherheit:** EU-Datenschutz (DSGVO) selbstverständlich. Keine Daten verlassen den Familienraum (Tenant-Isolation, kein Verkauf/Sharing); Schutz vor unbefugtem Zugriff durch Verschlüsselung, Zugriffskontrolle, dokumentierte Maßnahmen. Ehrliche Kommunikation: wir garantieren angemessene Maßnahmen, nicht das technisch Unmögliche. Verbindlich: **docs/K2-FAMILIE-DATENSCHUTZ-SICHERHEIT.md**.
+
 **Querverweis:** Vision & Phasen → `docs/K2-FAMILIE-ROADMAP.md`

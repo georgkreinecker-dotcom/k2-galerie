@@ -32,7 +32,7 @@
 
 - **In der App:** Deutlicher Hinweis (z. B. unter Einstellungen / „Deine Familie“): „Deine Daten gehören dir. Export und Ausdruck jederzeit möglich – so bleibt eure Geschichte bei euch, unabhängig von uns.“
 - **Bei Lizenz/Registrierung:** Kurzer Satz: „Ihr könnt eure Daten jederzeit exportieren und ausdrucken; sie bleiben 100 % bei euch.“
-- **In AGB / Datenschutz / Vertrauen:** Formulierung aufnehmen: Auch bei Einstellung des Angebots bleiben exportierte und ausgedruckte Daten in der Verfügungsgewalt der Nutzer*innen; Cloud-Speicher entfällt dann, Export vorher bzw. dauerhaft angeboten.
+- **In AGB / Datenschutz / Vertrauen:** Formulierung aufnehmen: Auch bei Einstellung des Angebots bleiben exportierte und ausgedruckte Daten in der Verfügungsgewalt der Nutzer*innen; Cloud-Speicher entfällt dann, Export vorher bzw. dauerhaft angeboten. **Datenschutz und Sicherheit** (EU-Richtlinien, Daten verlassen den Familienraum nicht, Schutz vor unbefugtem Zugriff): **docs/K2-FAMILIE-DATENSCHUTZ-SICHERHEIT.md**.
 
 ---
 

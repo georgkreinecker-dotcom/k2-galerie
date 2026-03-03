@@ -30,6 +30,8 @@
 
 **Datensouveränität:** Die Daten der Familie gehören der Familie – **100 % verfügbar und erhalten**, auch wenn wir die App nicht mehr betreiben. Export und Ausdruck jederzeit; private Speicherung; Cloud entfällt dann. Das muss in der App und gegenüber Nutzer*innen **klar kommuniziert** werden. Siehe **docs/K2-FAMILIE-DATENSOUVERAENITAET.md**.
 
+**Datenschutz & Sicherheit:** EU-Datenschutz (DSGVO) selbstverständlich. **Keine Daten verlassen den Familienraum** (Tenant-Isolation, kein Verkauf/Sharing); **Schutz vor unbefugtem Zugriff** (Verschlüsselung, Zugriffskontrolle, dokumentierte Maßnahmen). Ehrlich kommunizieren: angemessene Maßnahmen ja, „100 % unknackbar“ nicht. Siehe **docs/K2-FAMILIE-DATENSCHUTZ-SICHERHEIT.md**.
+
 ---
 
 ## Vision in einem Satz
