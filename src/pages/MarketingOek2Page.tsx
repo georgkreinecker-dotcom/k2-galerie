@@ -233,6 +233,8 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <h3 style={{ fontSize: '1rem', margin: '0 0 0.75rem', color: '#5ffbf1', fontWeight: 600 }}>📋 Struktur der mök2</h3>
           <ol style={{ margin: 0, paddingLeft: '1.35rem', lineHeight: 1.9, color: 'rgba(255,255,255,0.95)', fontSize: '0.95rem' }}>
             <li><a href="#mok2-was-kann-die-app" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Was kann die App?</strong> (ök2 | VK2 – kurz)</a></li>
+            <li><a href="#mok2-prospekt" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>K2 Galerie Prospekt</strong> (funktional & technisch, druckbar)</a></li>
+            <li><a href="#mok2-prospekt-galerieeroeffnung" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Prospekt Galerieeröffnung K2</strong> (Kunst und Keramik, 1 Seite)</a></li>
             <li><a href="#mok2-1" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>USPs</strong> (Unique Selling Points)</a></li>
             <li><a href="#mok2-produkt-branchenvergleich" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Produkt- &amp; Branchenvergleich</strong> (Vorteile im Vergleich)</a></li>
             <li><a href="#mok2-2" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Marktchancen – Stärken</strong></a></li>
@@ -263,6 +265,110 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <p style={{ margin: '0.35rem 0 0', fontSize: '0.95rem', color: 'rgba(255,255,255,0.85)' }}>{slogan}</p>
           <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>2. {botschaft}</p>
         </div>
+      )}
+
+      {/* mök2 Board – Themen auf einen Blick, ein Klick zum Bereich */}
+      {embeddedInMok2Layout && (
+        <section className="marketing-oek2-no-print" id="mok2-board" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+          <h2 style={{ fontSize: '1.1rem', margin: '0 0 0.5rem', color: '#5ffbf1', fontWeight: 700 }}>mök2 Board</h2>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)', marginBottom: '1rem' }}>
+            Ein Klick – du bist beim Thema. Presse, Vertrieb, Lizenzen, Werbeunterlagen.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem' }}>
+            {mok2Groups.map((group, i) => {
+              const firstId = group.sections[0]?.id
+              if (!firstId) return null
+              return (
+                <button
+                  key={group.chapterTitle}
+                  type="button"
+                  onClick={() => document.getElementById(firstId)?.scrollIntoView({ behavior: 'smooth' })}
+                  style={{
+                    padding: '0.75rem 1rem',
+                    background: 'rgba(95,251,241,0.08)',
+                    border: '1px solid rgba(95,251,241,0.35)',
+                    borderRadius: 10,
+                    color: '#5ffbf1',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    textAlign: 'left',
+                  }}
+                >
+                  {group.chapterTitle}
+                </button>
+              )
+            })}
+            <button
+              type="button"
+              onClick={() => document.getElementById('mok2-sichtbarkeit-werbung')?.scrollIntoView({ behavior: 'smooth' })}
+              style={{
+                padding: '0.75rem 1rem',
+                background: 'rgba(95,251,241,0.12)',
+                border: '1px solid rgba(95,251,241,0.4)',
+                borderRadius: 10,
+                color: '#5ffbf1',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                textAlign: 'left',
+              }}
+            >
+              📰 Presse & Medien
+            </button>
+            <Link
+              to={PROJECT_ROUTES['k2-galerie'].werbeunterlagen}
+              style={{
+                padding: '0.75rem 1rem',
+                background: 'rgba(95,251,241,0.08)',
+                border: '1px solid rgba(95,251,241,0.35)',
+                borderRadius: 10,
+                color: '#5ffbf1',
+                textDecoration: 'none',
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                display: 'block',
+                textAlign: 'left',
+              }}
+            >
+              📁 Werbeunterlagen
+            </Link>
+            <Link
+              to={PROJECT_ROUTES['k2-galerie'].licences}
+              style={{
+                padding: '0.75rem 1rem',
+                background: 'rgba(95,251,241,0.08)',
+                border: '1px solid rgba(95,251,241,0.35)',
+                borderRadius: 10,
+                color: '#5ffbf1',
+                textDecoration: 'none',
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                display: 'block',
+                textAlign: 'left',
+              }}
+            >
+              💼 Lizenzen
+            </Link>
+            <Link
+              to={AGB_ROUTE}
+              style={{
+                padding: '0.75rem 1rem',
+                background: 'rgba(95,251,241,0.08)',
+                border: '1px solid rgba(95,251,241,0.35)',
+                borderRadius: 10,
+                color: '#5ffbf1',
+                textDecoration: 'none',
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                display: 'block',
+                textAlign: 'left',
+              }}
+            >
+              📜 AGB
+            </Link>
+          </div>
+        </section>
       )}
 
       {/* Kapitel: Kern – Überblick & Stärken */}
@@ -311,6 +417,58 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.75)', fontStyle: 'italic' }}>
           Noch anzupassen: Inhalt aus USPs, „Was kann die App?“ und weiteren mök2-Sektionen hier in eine durchgängige, genaue Produktbeschreibung bringen. Bis dahin siehe die Sektionen „Was kann die App?“ und „1. USPs“ in diesem Kapitel.
         </p>
+      </section>
+
+      {/* K2 Galerie Prospekt – fertige Form zum Herzeigen, 1 Seite */}
+      <section id="mok2-prospekt" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          K2 Galerie – Prospekt
+        </h2>
+        <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.5 }}>
+          Fertig editiert, professionelles Layout, 2–3 Seiten – zum Herzeigen bei Partnern, Presse oder Pitches. Keine Listenform; Fließtext und klare Gliederung.
+        </p>
+        <Link
+          to={PROJECT_ROUTES['k2-galerie'].praesentationsmappe}
+          style={{
+            display: 'inline-block',
+            padding: '0.65rem 1.25rem',
+            background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
+            color: '#fff',
+            textDecoration: 'none',
+            borderRadius: '10px',
+            fontSize: '1rem',
+            fontWeight: 600,
+            boxShadow: '0 2px 8px rgba(13,148,136,0.35)',
+          }}
+        >
+          Prospekt öffnen (1 Seite, drucken)
+        </Link>
+      </section>
+
+      {/* Prospekt K2 Kunst und Keramik – Galerieeröffnung */}
+      <section id="mok2-prospekt-galerieeroeffnung" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Prospekt Galerieeröffnung – K2 Kunst und Keramik
+        </h2>
+        <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.5 }}>
+          Einseitiger Prospekt zur Galerieeröffnung mit Stammdaten (Name, Adresse, Kontakt), QR-Codes und Links (ök2, VK2), Impressum. Aus K2-Stammdaten befüllt, druckbar.
+        </p>
+        <Link
+          to={PROJECT_ROUTES['k2-galerie'].prospektGalerieeroeffnung}
+          style={{
+            display: 'inline-block',
+            padding: '0.65rem 1.25rem',
+            background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
+            color: '#fff',
+            textDecoration: 'none',
+            borderRadius: '10px',
+            fontSize: '1rem',
+            fontWeight: 600,
+            boxShadow: '0 2px 8px rgba(13,148,136,0.35)',
+          }}
+        >
+          Prospekt Galerieeröffnung öffnen (1 Seite, drucken)
+        </Link>
       </section>
 
       {/* 1. Markteinschätzung: USPs */}
@@ -691,10 +849,10 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           9. Werbeunterlagen (mök2)
         </h2>
         <p style={{ marginBottom: '1rem', lineHeight: 1.6 }}>
-          Präsentationsmappe, Social-Media-Masken und Flyer gehören zu mök2. Dort sind die Texte (Slogan, Botschaft) <strong>bearbeitbar</strong>; Änderungen erscheinen auch hier oben.
+          Prospekt, Social-Media-Masken und Flyer gehören zu mök2. Dort sind die Texte (Slogan, Botschaft) <strong>bearbeitbar</strong>; Änderungen erscheinen auch hier oben.
         </p>
         <ol style={{ lineHeight: 1.7, paddingLeft: '1.5em', margin: '0 0 1rem' }}>
-          <li><strong>Präsentationsmappe</strong> – Deckblatt, Kernbotschaften, USPs (A4, druckbar)</li>
+          <li><strong>Prospekt</strong> – Deckblatt, Kernbotschaften, USPs (A4, 1 Seite, druckbar)</li>
           <li><strong>Social-Media-Masken</strong> – Instagram Quadrat/Story, Facebook, LinkedIn (Standardformate)</li>
           <li><strong>Flyer A5</strong> – Produkt-Flyer mit Slogan und Botschaft</li>
         </ol>
@@ -941,7 +1099,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           </tbody>
         </table>
         <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>
-          Preise für den Start festgelegt. In Präsentationsmappe, Werbeunterlagen und bei „Lizenz anfragen“ einheitlich nutzen.
+          Preise für den Start festgelegt. In Prospekt, Werbeunterlagen und bei „Lizenz anfragen“ einheitlich nutzen.
         </p>
         <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>
           <strong>Details:</strong> Siehe Abschnitt <a href="#mok2-marktwert" style={{ color: '#5ffbf1', textDecoration: 'none' }}>Produktbewertung → Realistische Lizenzgebühren</a>: Basic <strong>15 €/Monat</strong>, Pro <strong>35 €/Monat</strong>, Pro+ <strong>45 €/Monat</strong>, VK2 wie Pro. Ausführlich: <code>docs/MARKTCHECK-PREISE-BASIC-PRO-VERGLEICH.md</code>.

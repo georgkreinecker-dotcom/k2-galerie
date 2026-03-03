@@ -9639,9 +9639,18 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       <p style={{ color: s.muted, margin: 0, fontSize: '0.9rem', marginBottom: '1rem' }}>
                         Ein Klick – du bist im Bereich.
                       </p>
-                      {/* Zwei Spalten, keine Doppelfunktion: nur Icons + kurze Funktionsinfo, One-Click */}
+                      {/* Zwei Spalten: links Werke/Aussehen/Einstellungen/Schritt, rechts Kassa/Events/Presse – zeilenweise gefüllt */}
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'clamp(0.75rem, 2vw, 1rem)', maxWidth: '900px' }}>
-                        {[...linksBereiche, ...rechtsBereiche].map((b) => (
+                        {(() => {
+                          const maxRows = Math.max(linksBereiche.length, rechtsBereiche.length)
+                          const cells: (HubArea | null)[] = []
+                          for (let i = 0; i < maxRows; i++) {
+                            if (linksBereiche[i]) cells.push(linksBereiche[i])
+                            else cells.push(null)
+                            if (rechtsBereiche[i]) cells.push(rechtsBereiche[i])
+                            else cells.push(null)
+                          }
+                          return cells.map((b, idx) => b ? (
                           <button key={b.tab} type="button"
                             onClick={() => {
                               if (b.tab === 'kassa') openKasse()
@@ -9672,7 +9681,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               </div>
                             </div>
                           </button>
-                        ))}
+                          ) : <div key={`empty-${idx}`} />)
+                        })()}
                       </div>
                     </div>
                   )
@@ -12933,23 +12943,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
-                      <div className="field">
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', color: s.text }}>
-                          <input
-                            type="checkbox"
-                            checked={galleryData.internetShopNotSetUp !== false}
-                            onChange={(e) => setGalleryData({ ...galleryData, internetShopNotSetUp: e.target.checked })}
-                            style={{ width: '18px', height: '18px' }}
-                          />
-                          Hinweis anzeigen: Galerie besuchen & Termin vereinbaren
-                        </label>
-                        <small style={{ color: s.muted, fontSize: '0.75rem', marginTop: '0.25rem', display: 'block' }}>
-                          Wenn aktiv: Im Shop erscheint ein freundlicher Hinweis, dass ein Besuch der Galerie und eine Terminvereinbarung sinnvoll sind. Der Shop bleibt voll nutzbar (Bestellung, Zahlung).
-                        </small>
-                      </div>
-                      <small style={{ color: s.muted, fontSize: '0.75rem', marginTop: '0.5rem', display: 'block' }}>
-                        Bilder und Texte für Willkommensseite & Galerie findest du im <strong>Design</strong>-Tab in der Vorschau – dort auf Text oder Bild klicken zum Bearbeiten.
-                      </small>
                       <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: `1px solid ${s.accent}22` }}>
                         <label style={{ fontSize: '0.85rem', display: 'block', marginBottom: '0.25rem', color: s.text }}>📜 AGB (Allgemeine Geschäftsbedingungen)</label>
                         <Link to={AGB_ROUTE} target="_blank" rel="noopener noreferrer" style={{ color: s.accent, textDecoration: 'underline', fontSize: '0.9rem' }}>AGB-Seite im Volltext anzeigen →</Link>

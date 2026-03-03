@@ -13,6 +13,8 @@ import K2GalerieHandbuchPage from './pages/K2GalerieHandbuchPage'
 import MobileConnectPage from './pages/MobileConnectPage'
 import ProduktVorschauPage from './pages/ProduktVorschauPage'
 import MarketingOek2Page from './pages/MarketingOek2Page'
+import PraesentationsmappePage from './pages/PraesentationsmappePage'
+import ProspektGalerieeroeffnungPage from './pages/ProspektGalerieeroeffnungPage'
 import PilotStartPage from './pages/PilotStartPage'
 import K2SoftwareentwicklungPage from './pages/K2SoftwareentwicklungPage'
 import WerbeunterlagenPage from './pages/WerbeunterlagenPage'
@@ -570,6 +572,8 @@ function App() {
       <Route path="/projects/k2-galerie/vita/:artistId" element={<VitaPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].produktVorschau} element={<ProduktVorschauPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].marketingOek2} element={<Mok2Layout><MarketingOek2Page embeddedInMok2Layout /></Mok2Layout>} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].praesentationsmappe} element={<PraesentationsmappePage />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].prospektGalerieeroeffnung} element={<ProspektGalerieeroeffnungPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].pilotStart} element={<Navigate to={PILOT_SCHREIBEN_ROUTE} replace />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].softwareentwicklung} element={<Mok2Layout><K2SoftwareentwicklungPage /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].werbeunterlagen} element={<Mok2Layout><WerbeunterlagenPage embeddedInMok2Layout /></Mok2Layout>} />

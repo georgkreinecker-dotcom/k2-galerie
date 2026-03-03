@@ -9,7 +9,7 @@ import {
   loadArtworksFromSupabase,
   isSupabaseConfigured
 } from '../utils/supabaseClient'
-import { sortArtworksFavoritesFirstThenNewest } from '../utils/artworkSort'
+import { sortArtworksFavoritesFirstThenNewest, interleaveArtworksByCategory } from '../utils/artworkSort'
 import { appendToHistory } from '../utils/artworkHistory'
 import { tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from '../../components/SafeMode'
 import { readArtworksRawForContext, readArtworksRawForContextOrNull, saveArtworksForContext, loadForDisplay, filterK2Only as filterK2OnlyStorage, saveArtworksOnly as saveArtworksStorage, mayWriteServerList, mergeAndMaybeWrite, mergeWithPending, getPendingArtworks, addPendingArtwork, clearPendingIfInList } from '../utils/artworksStorage'
@@ -2758,42 +2758,43 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               }
             } catch (_) {}
           }
-          const filteredArtworks = sortArtworksFavoritesFirstThenNewest(
-            currentArtworks.filter((artwork) => {
-              if (!artwork) return false
-              if (filter === 'alle') {
-                // K2: verkaufte Werke nach Ablauf aus Galerie-Ansicht ausblenden
-                if (!musterOnly && soldMap.size > 0) {
-                  const num = artwork.number != null ? String(artwork.number) : (artwork.id != null ? String(artwork.id) : '')
-                  const soldAt = num ? soldMap.get(num) : null
-                  if (soldAt) {
-                    if (soldDisplayDays === 0) return false
-                    const cutoff = Date.now() - soldDisplayDays * 24 * 60 * 60 * 1000
-                    if (new Date(soldAt).getTime() < cutoff) return false
-                  }
-                }
-                return true
-              }
-              // WICHTIG: Prüfe ob artwork.category existiert und mit filter übereinstimmt
-              if (!artwork.category) {
-                console.warn('⚠️ Werk ohne category:', artwork.number || artwork.id)
-                return false
-              }
-              let include = artwork.category === filter
-              if (include && !musterOnly && soldMap.size > 0) {
+          const filtered = currentArtworks.filter((artwork) => {
+            if (!artwork) return false
+            if (filter === 'alle') {
+              // K2: verkaufte Werke nach Ablauf aus Galerie-Ansicht ausblenden
+              if (!musterOnly && soldMap.size > 0) {
                 const num = artwork.number != null ? String(artwork.number) : (artwork.id != null ? String(artwork.id) : '')
                 const soldAt = num ? soldMap.get(num) : null
                 if (soldAt) {
-                  if (soldDisplayDays === 0) include = false
-                  else {
-                    const cutoff = Date.now() - soldDisplayDays * 24 * 60 * 60 * 1000
-                    if (new Date(soldAt).getTime() < cutoff) include = false
-                  }
+                  if (soldDisplayDays === 0) return false
+                  const cutoff = Date.now() - soldDisplayDays * 24 * 60 * 60 * 1000
+                  if (new Date(soldAt).getTime() < cutoff) return false
                 }
               }
-              return include
-            })
-          )
+              return true
+            }
+            // WICHTIG: Prüfe ob artwork.category existiert und mit filter übereinstimmt
+            if (!artwork.category) {
+              console.warn('⚠️ Werk ohne category:', artwork.number || artwork.id)
+              return false
+            }
+            let include = artwork.category === filter
+            if (include && !musterOnly && soldMap.size > 0) {
+              const num = artwork.number != null ? String(artwork.number) : (artwork.id != null ? String(artwork.id) : '')
+              const soldAt = num ? soldMap.get(num) : null
+              if (soldAt) {
+                if (soldDisplayDays === 0) include = false
+                else {
+                  const cutoff = Date.now() - soldDisplayDays * 24 * 60 * 60 * 1000
+                  if (new Date(soldAt).getTime() < cutoff) include = false
+                }
+              }
+            }
+            return include
+          })
+          const sorted = sortArtworksFavoritesFirstThenNewest(filtered)
+          // Bei „alle Werke“: Kategorien abwechselnd anzeigen (nicht alle Malerei, dann alle Keramik)
+          const filteredArtworks = filter === 'alle' ? interleaveArtworksByCategory(sorted) : sorted
           
           console.log('🎨 Render - filteredArtworks:', {
             anzahl: filteredArtworks.length,

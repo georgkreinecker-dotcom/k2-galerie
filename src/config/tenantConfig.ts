@@ -28,6 +28,9 @@ export const PRODUCT_LIZENZ_ANFRAGE_EMAIL = 'info@kgm.at'
 /** Betreff für Lizenz-Anfrage-E-Mail (kurz, erkennbar). */
 export const PRODUCT_LIZENZ_ANFRAGE_BETREFF = 'K2 Galerie – Lizenz anfragen'
 
+/** Basis-URL der App (für Presse/Links/QR – keine Importe aus navigation). */
+export const BASE_APP_URL = 'https://k2-galerie.vercel.app'
+
 /** E-Mail für Nutzer-Feedback / Verbesserungswünsche – nicht im UI anzeigen */
 export const PRODUCT_FEEDBACK_EMAIL = 'georg.kreinecker@kgm.at'
 
@@ -445,7 +448,7 @@ function getVk2MusterEventFlyerDataUrl(): string {
 
 function getVk2MusterPresseaussendungDataUrl(): string {
   const v = VK2_DEMO_STAMMDATEN.verein
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Presseaussendung – Gemeinschaftsausstellung</title><style>${VK2_MUSTER_CSS}</style></head><body><h1>PRESSEAUSSENDUNG</h1><p><strong>${v.name}</strong> – Gemeinschaftsausstellung</p><p class="meta">Vereinshaus Muster, Musterstraße 12, 1010 Wien</p><p>Kontakt: ${v.email || 'office@kunstverein-muster.at'}</p><p>– Ende der Presseaussendung –</p></body></html>`
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Presseaussendung – Gemeinschaftsausstellung</title><style>${VK2_MUSTER_CSS}</style></head><body><h1>PRESSEAUSSENDUNG</h1><p><strong>${v.name}</strong> – Gemeinschaftsausstellung</p><p class="meta">Vereinshaus Muster, Musterstraße 12, 1010 Wien</p><p>Kontakt: ${v.email || 'office@kunstverein-muster.at'}</p>${getPresseLinksQrSnippet()}</body></html>`
   return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
 }
 
@@ -722,13 +725,21 @@ function getMusterEinladungDataUrl(): string {
   return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
 }
 
+/** Snippet Links & QR für Presseaussendungen (ök2/VK2) – Platzhalter <!-- QR_BLOCK --> wird beim Öffnen ersetzt. */
+function getPresseLinksQrSnippet(): string {
+  const oek2 = BASE_APP_URL + '/projects/k2-galerie/galerie-oeffentlich'
+  const willkommen = BASE_APP_URL + '/willkommen'
+  const vk2 = BASE_APP_URL + '/projects/vk2'
+  return `<p class="meta">– Ende der Presseaussendung –</p><div class="presse-links-qr" style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid #ddd;"><p><strong>Links &amp; QR-Codes</strong></p><p>ök2 Demo: <a href="${oek2}">${oek2}</a><br>Willkommen &amp; Lizenz: <a href="${willkommen}">${willkommen}</a><br>VK2 Vereinsplattform: <a href="${vk2}">${vk2}</a></p><!-- QR_BLOCK --></div>`
+}
+
 /** Presse-Text Vernissage – HTML aus MUSTER_TEXTE, für Öffentlichkeitsarbeit. */
 function getMusterPresseDataUrl(): string {
   const g = MUSTER_TEXTE.gallery
   const m = MUSTER_TEXTE.martina.name
   const p = MUSTER_TEXTE.georg.name
   const adresse = [g.address, g.city, g.country].filter(Boolean).join(', ')
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Presse Vernissage</title><style>body{font-family:Georgia,serif;max-width:600px;margin:2rem auto;padding:0 1rem;line-height:1.65;color:#222}h1{font-size:1.35rem;border-bottom:2px solid #6b9080;padding-bottom:.4rem}p{margin:.6rem 0}.meta{color:#555;font-size:.9rem}</style></head><body><h1>Presseinformation – Vernissage</h1><p><strong>Galerie Muster</strong> lädt zur Eröffnung der Ausstellung „Neue Arbeiten“ ein.</p><p class="meta">Samstag, 15. März 2026, 18 Uhr<br>${adresse || 'Musterstraße 1, 12345 Musterstadt'}</p><p>${m} (Malerei, Grafik) und ${p} (Keramik, Skulptur) zeigen aktuelle Werke in Malerei, Keramik, Grafik und Skulptur. Die Ausstellung ist im Anschluss zu den Öffnungszeiten zu sehen.</p><p>Kontakt: ${g.email || 'info@galerie-muster.example'}, ${g.phone || ''}</p></body></html>`
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Presse Vernissage</title><style>body{font-family:Georgia,serif;max-width:600px;margin:2rem auto;padding:0 1rem;line-height:1.65;color:#222}h1{font-size:1.35rem;border-bottom:2px solid #6b9080;padding-bottom:.4rem}p{margin:.6rem 0}.meta{color:#555;font-size:.9rem}</style></head><body><h1>Presseinformation – Vernissage</h1><p><strong>Galerie Muster</strong> lädt zur Eröffnung der Ausstellung „Neue Arbeiten“ ein.</p><p class="meta">Samstag, 15. März 2026, 18 Uhr<br>${adresse || 'Musterstraße 1, 12345 Musterstadt'}</p><p>${m} (Malerei, Grafik) und ${p} (Keramik, Skulptur) zeigen aktuelle Werke in Malerei, Keramik, Grafik und Skulptur. Die Ausstellung ist im Anschluss zu den Öffnungszeiten zu sehen.</p><p>Kontakt: ${g.email || 'info@galerie-muster.example'}, ${g.phone || ''}</p>${getPresseLinksQrSnippet()}</body></html>`
   return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
 }
 
@@ -767,7 +778,7 @@ function getMusterPresseaussendungDataUrl(): string {
   const m = MUSTER_TEXTE.martina.name
   const p = MUSTER_TEXTE.georg.name
   const adresse = [g.address, (g as any).city].filter(Boolean).join(', ')
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Presseaussendung – Vernissage</title><style>${MUSTER_CSS}</style></head><body><h1>PRESSEAUSSENDUNG</h1><p><strong>Galerie Muster</strong> – Vernissage – Neue Arbeiten</p><p class="meta">Samstag, 15. März 2026, 18 Uhr · ${adresse || 'Musterstraße 1, 12345 Musterstadt'}</p><p>${m} und ${p} zeigen aktuelle Werke in Malerei, Keramik, Grafik und Skulptur.</p><p>Kontakt: ${g.email || 'info@galerie-muster.example'}, ${g.phone || ''}</p><p>– Ende der Presseaussendung –</p></body></html>`
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Presseaussendung – Vernissage</title><style>${MUSTER_CSS}</style></head><body><h1>PRESSEAUSSENDUNG</h1><p><strong>Galerie Muster</strong> – Vernissage – Neue Arbeiten</p><p class="meta">Samstag, 15. März 2026, 18 Uhr · ${adresse || 'Musterstraße 1, 12345 Musterstadt'}</p><p>${m} und ${p} zeigen aktuelle Werke in Malerei, Keramik, Grafik und Skulptur.</p><p>Kontakt: ${g.email || 'info@galerie-muster.example'}, ${g.phone || ''}</p>${getPresseLinksQrSnippet()}</body></html>`
   return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
 }
 

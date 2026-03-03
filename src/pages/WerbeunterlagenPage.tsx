@@ -92,7 +92,7 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
               Werbeunterlagen <span style={{ fontSize: '0.7em', fontWeight: 400, color: s.muted }}>(mök2)</span>
             </h1>
             <p style={{ color: s.muted, marginTop: '0.35rem', fontSize: '0.9rem' }}>
-              <strong>Struktur:</strong> 1. Präsentationsmappe · 2. Social-Media-Masken · 3. Flyer A5. Texte unten bearbeiten → gelten überall.
+              <strong>Struktur:</strong> 1. Prospekt · 2. Social-Media-Masken · 3. Flyer A5. Texte unten bearbeiten → gelten überall.
             </p>
           </div>
           <button type="button" onClick={() => window.print()} style={{ padding: '0.6rem 1.2rem', background: s.gradientAccent, color: '#fff', border: 'none', borderRadius: s.radius, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -127,10 +127,10 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
       </header>
 
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
-        {/* ─── Präsentationsmappe ─── */}
+        {/* ─── Prospekt ─── */}
         <section style={{ marginBottom: '3rem' }}>
           <h2 className={PRINT_HIDE} style={{ fontFamily: s.fontHeading, fontSize: '1.35rem', color: s.accent, marginBottom: '1rem', borderBottom: `1px solid ${s.accentSoft}`, paddingBottom: '0.5rem' }}>
-            1. Präsentationsmappe
+            1. Prospekt
           </h2>
 
           {/* Deckblatt */}

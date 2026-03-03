@@ -28,3 +28,34 @@ export function sortArtworksFavoritesFirstThenNewest<T extends WithFavorite>(art
     return bTime - aTime
   })
 }
+
+/** Kategorie-Feld für Interleave (Werke haben category als string). */
+type WithCategory = { category?: string }
+
+/**
+ * Stellt Werke so um, dass Kategorien abwechselnd vorkommen (nicht alle Malerei, dann alle Keramik).
+ * Round-Robin: Ein Malerei, ein Keramik, ein Grafik, … – so wirkt die Galerie-Vorschau abwechslungsreich.
+ */
+export function interleaveArtworksByCategory<T extends WithCategory>(artworks: T[]): T[] {
+  if (!Array.isArray(artworks) || artworks.length <= 1) return artworks
+  const byCategory = new Map<string, T[]>()
+  for (const a of artworks) {
+    const cat = (a.category && String(a.category).trim()) || 'sonstiges'
+    if (!byCategory.has(cat)) byCategory.set(cat, [])
+    byCategory.get(cat)!.push(a)
+  }
+  const categories = Array.from(byCategory.keys())
+  if (categories.length <= 1) return artworks
+  const result: T[] = []
+  const queues = categories.map((c) => [...(byCategory.get(c) || [])])
+  let maxLen = Math.max(...queues.map((q) => q.length))
+  while (maxLen > 0) {
+    for (let i = 0; i < queues.length; i++) {
+      if (queues[i].length > 0) {
+        result.push(queues[i].shift()!)
+      }
+    }
+    maxLen = Math.max(...queues.map((q) => q.length))
+  }
+  return result
+}

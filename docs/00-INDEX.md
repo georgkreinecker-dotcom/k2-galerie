@@ -57,6 +57,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 ## Produkt & Vision
 - **PRODUKT-VISION.md** – Produkt-Vision K2 Galerie.
 - **PRODUKT-STANDARD-NACH-SPORTWAGEN.md** – **Erreichter Standard (28.02.26):** Architektur (eine Quelle/Schicht/Regel), Sicherheit (Kundendaten, Datentrennung, Stand/QR), Tests (38), Doku & Prozess. Eine feste Stelle für „worauf das Produkt jetzt aufbaut“.
+- **K2-GALERIE-PRAESENTATIONSMAPPE.md** – **Prospekt (Sportwagen like):** Funktionale und technische Infos für Präsentationen, Pitches, Partner – Deckblatt, Kurzfassung, Funktionen, Technik, Sicherheit, Plattformen, Lizenzen, Referenzen. In der App: mök2 → Sektion „K2 Galerie Prospekt“ (1 Seite, druckbar als PDF).
 - **PLATTFORM-UNTERSTUETZUNG.md** – Welche Plattformen (Windows, Android, Mac).
 - **USP-UND-MARKTCHANCEN.md** – USPs und Marktchancen.
 - **VERMARKTUNGSKONZEPT-EMPFEHLUNGSPROGRAMM.md** – Empfehlungsprogramm / Vermarktung (50 %-Gebühr).

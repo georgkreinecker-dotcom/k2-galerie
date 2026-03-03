@@ -168,11 +168,16 @@ function getFlyerDocForEvent(docs: any[], eventId: string): any | null {
   return flyer || null
 }
 
+const PRESSE_QR_PLACEHOLDER = '<!-- QR_BLOCK -->'
+
 /** Event-Dokument in neuem Fenster öffnen (PDF/Bild/HTML/Download).
- * Wenn doc kein fileData hat: in fullDocsForEvent nach id/name suchen (z. B. nach Export nur Referenzen). */
+ * Wenn doc kein fileData hat: in fullDocsForEvent nach id/name suchen (z. B. nach Export nur Referenzen).
+ * Bei Presse-HTML mit <!-- QR_BLOCK -->: qrOek2/qrVk2 optional – dann werden QR-Codes eingefügt. */
 function openEventDocument(
-  doc: { id?: string; name?: string; fileData?: string; data?: string; fileName?: string; fileType?: string },
-  fullDocsForEvent?: { id?: string; name?: string; fileData?: string; data?: string; fileName?: string; fileType?: string }[]
+  doc: { id?: string; name?: string; fileData?: string; data?: string; fileName?: string; fileType?: string; werbematerialTyp?: string },
+  fullDocsForEvent?: { id?: string; name?: string; fileData?: string; data?: string; fileName?: string; fileType?: string; werbematerialTyp?: string }[],
+  qrOek2?: string,
+  qrVk2?: string
 ) {
   let fileData = doc?.fileData || doc?.data
   let useDoc = doc
@@ -193,6 +198,18 @@ function openEventDocument(
     }
     return
   }
+  const fileType = useDoc.fileType || ''
+  const isHtml = fileType.includes('html') || (typeof fileData === 'string' && fileData.startsWith('data:text/html'))
+  if (isHtml && typeof fileData === 'string' && fileData.includes(PRESSE_QR_PLACEHOLDER) && qrOek2 && qrVk2) {
+    try {
+      const decoded = decodeURIComponent(fileData.replace(/^data:text\/html;charset=utf-8,/, ''))
+      const qrBlock = `<p style="margin:0.5rem 0"><img src="${qrOek2}" alt="ök2" width="100" height="100" style="vertical-align:middle;margin-right:0.5rem"/> <strong>ök2 Demo</strong></p><p style="margin:0.5rem 0"><img src="${qrVk2}" alt="VK2" width="100" height="100" style="vertical-align:middle;margin-right:0.5rem"/> <strong>VK2 Vereinsplattform</strong></p>`
+      const injected = decoded.replace(PRESSE_QR_PLACEHOLDER, qrBlock)
+      fileData = 'data:text/html;charset=utf-8,' + encodeURIComponent(injected)
+    } catch (_) {
+      /* Fallback: ohne QR öffnen */
+    }
+  }
   const w = window.open()
   if (!w) {
     if (typeof window !== 'undefined' && window.alert) {
@@ -200,10 +217,8 @@ function openEventDocument(
     }
     return
   }
-  const fileType = useDoc.fileType || ''
   const isPdf = fileType.includes('pdf')
   const isImage = fileType.includes('image')
-  const isHtml = fileType.includes('html') || (typeof fileData === 'string' && fileData.startsWith('data:text/html'))
   const safeTitle = (useDoc.name || useDoc.fileName || 'Dokument').replace(/</g, '&lt;')
   if (isHtml) {
     w.location.href = fileData
@@ -834,6 +849,26 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     return () => { cancelled = true }
   }, [vercelGalerieUrl, musterOnly, qrBustTick])
 
+  // QR für Presseaussendungen (ök2 + VK2) – beim Öffnen von Presse-Docs injizieren
+  const [qrOek2Presse, setQrOek2Presse] = useState('')
+  const [qrVk2Presse, setQrVk2Presse] = useState('')
+  const oek2UrlPresse = GALLERY_DATA_PUBLIC_URL + '/projects/k2-galerie/galerie-oeffentlich'
+  const vk2UrlPresse = GALLERY_DATA_PUBLIC_URL + '/projects/vk2'
+  useEffect(() => {
+    let cancelled = false
+    QRCode.toDataURL(buildQrUrlWithBust(oek2UrlPresse, qrVersionTs), { width: 100, margin: 1 })
+      .then((url) => { if (!cancelled) setQrOek2Presse(url) })
+      .catch(() => { if (!cancelled) setQrOek2Presse('') })
+    return () => { cancelled = true }
+  }, [qrVersionTs])
+  useEffect(() => {
+    let cancelled = false
+    QRCode.toDataURL(buildQrUrlWithBust(vk2UrlPresse, qrVersionTs), { width: 100, margin: 1 })
+      .then((url) => { if (!cancelled) setQrVk2Presse(url) })
+      .catch(() => { if (!cancelled) setQrVk2Presse('') })
+    return () => { cancelled = true }
+  }, [qrVersionTs])
+
   // Aktualisieren-Funktion für Mobile-Version - lädt neue Daten ohne Reload
   const [isRefreshing, setIsRefreshing] = React.useState(false)
   
@@ -1297,9 +1332,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       // Vorschau aus Einstellungen „Seiten prüfen“: Nur localStorage nutzen, kein Fetch (sonst überschreiben alte Server-Daten die gerade gespeicherten)
       if (!isVorschauModus) {
       try {
-        // Einfacheres Cache-Busting - nicht zu aggressiv
+        // Cache-Bust: v= aus URL (vom QR) mitnutzen, damit Scan immer frische Daten lädt
         const timestamp = Date.now()
-        const pathAndQuery = `/gallery-data.json?v=${timestamp}&t=${timestamp}&_=${Math.random()}`
+        const urlV = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('v') : null
+        const pathAndQuery = `/gallery-data.json?v=${urlV || timestamp}&t=${timestamp}&_=${Math.random()}`
         
         // WICHTIG: Timeout hinzufügen um Hänger zu vermeiden
         controller = new AbortController()
@@ -1318,8 +1354,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
         }
 
         const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        // Bei localhost zuerst von Vercel (API = Blob) laden, damit die gleichen Werke wie auf vercel.app sichtbar sind – eine Adresse = eine Datenquelle
-        const apiUrl = `${GALLERY_DATA_PUBLIC_URL}/api/gallery-data?t=${timestamp}&_=${Date.now()}`
+        // Bei localhost zuerst von Vercel (API = Blob) laden; v= aus URL (QR) mitgeben für frischen Abruf
+        const apiUrl = `${GALLERY_DATA_PUBLIC_URL}/api/gallery-data?${urlV ? `v=${urlV}&` : ''}t=${timestamp}&_=${Date.now()}`
         let response: Response | null = null
         if (isLocal) {
           try {
@@ -2874,7 +2910,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                       {hasFlyer && (
                         <button
                           type="button"
-                          onClick={() => openEventDocument({ name: flyerDoc.name, fileData: flyerDoc.fileData || flyerDoc.data, fileType: flyerDoc.fileType || 'text/html' })}
+                          onClick={() => openEventDocument({ name: flyerDoc.name, fileData: flyerDoc.fileData || flyerDoc.data, fileType: flyerDoc.fileType || 'text/html' }, undefined, qrOek2Presse, qrVk2Presse)}
                           title="Flyer anzeigen"
                           style={{
                             display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, padding: 0,
@@ -2893,7 +2929,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                               <li key={doc.id || doc.name}>
                                 <button
                                   type="button"
-                                  onClick={() => openEventDocument(doc, fullDocsForEvent)}
+                                  onClick={() => openEventDocument(doc, fullDocsForEvent, qrOek2Presse, qrVk2Presse)}
                                   style={{
                                     background: 'none',
                                     border: 'none',

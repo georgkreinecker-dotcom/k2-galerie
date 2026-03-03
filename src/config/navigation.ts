@@ -63,6 +63,10 @@ export const PROJECT_ROUTES = {
     platzanordnung: '/projects/k2-galerie/platzanordnung',
     produktVorschau: '/projects/k2-galerie/produkt-vorschau',
     marketingOek2: '/projects/k2-galerie/marketing-oek2',
+    /** K2 Galerie Prospekt (1 Seite, fertige Form zum Drucken) */
+    praesentationsmappe: '/projects/k2-galerie/praesentationsmappe',
+    /** Prospekt K2 Kunst und Keramik – Galerieeröffnung (1 Seite, druckbar) */
+    prospektGalerieeroeffnung: '/projects/k2-galerie/prospekt-galerieeroeffnung',
     /** Nur Schreiben an Michael – gleicher Inhalt wie PILOT_SCHREIBEN_ROUTE, Redirect dorthin */
     pilotStart: '/projects/k2-galerie/pilot-start',
     softwareentwicklung: '/projects/k2-galerie/softwareentwicklung',
@@ -101,6 +105,8 @@ export const PROJECT_ROUTES = {
     platzanordnung: '/projects/k2-galerie/platzanordnung',
     produktVorschau: '/projects/k2-galerie/produkt-vorschau',
     marketingOek2: '/projects/k2-galerie/marketing-oek2',
+    praesentationsmappe: '/projects/k2-galerie/praesentationsmappe',
+    prospektGalerieeroeffnung: '/projects/k2-galerie/prospekt-galerieeroeffnung',
     werbeunterlagen: '/projects/k2-galerie/werbeunterlagen',
     licences: '/projects/k2-galerie/licences',
     lizenzKaufen: '/projects/k2-galerie/lizenz-kaufen',
@@ -133,6 +139,8 @@ export const PROJECT_ROUTES = {
     platzanordnung: '/projects/k2-galerie/platzanordnung',
     produktVorschau: '/projects/k2-galerie/produkt-vorschau',
     marketingOek2: '/projects/k2-galerie/marketing-oek2',
+    praesentationsmappe: '/projects/k2-galerie/praesentationsmappe',
+    prospektGalerieeroeffnung: '/projects/k2-galerie/prospekt-galerieeroeffnung',
     pilotStart: '/projects/k2-galerie/pilot-start',
     softwareentwicklung: '/projects/k2-galerie/softwareentwicklung',
     werbeunterlagen: '/projects/k2-galerie/werbeunterlagen',
