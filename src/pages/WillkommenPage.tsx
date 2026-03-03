@@ -209,6 +209,7 @@ function VariantA({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
             {' · '}
             <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ color: muted, textDecoration: 'underline' }}>Lizenz online kaufen</Link>
           </p>
+          <p style={{ textAlign: 'center', marginTop: '0.5rem', fontSize: '0.72rem', color: muted }}>Empfehlungsprogramm: 10 % Rabatt für dich, 10 % Gutschrift für den Empfehler – Empfehler-ID beim Lizenzkauf angeben.</p>
 
           {/* Fußzeile – AGB/Legal nur unten, nicht im Fokus */}
           <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.75rem', color: muted, lineHeight: 2 }}>
@@ -302,13 +303,14 @@ function VariantC({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
           </div>
 
           {/* Weitere Optionen dezent – CTA Lizenz sichtbar (Priorität 3 OEK2) */}
-          <p style={{ textAlign: 'center', marginTop: '0.5rem', marginBottom: '1.5rem', fontSize: '0.8rem', color: muted }}>
+          <p style={{ textAlign: 'center', marginTop: '0.5rem', marginBottom: '0.5rem', fontSize: '0.8rem', color: muted }}>
             <button type="button" onClick={() => startEntry('ansicht')} style={{ background: 'none', border: 'none', color: muted, textDecoration: 'underline', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>Nur Galerie ansehen</button>
             {' · '}
             <a href={`mailto:${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_EMAIL)}?subject=${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_BETREFF)}`} style={{ color: muted, textDecoration: 'underline' }}>Lizenz anfragen</a>
             {' · '}
             <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ color: muted, textDecoration: 'underline' }}>Lizenz online kaufen</Link>
           </p>
+          <p style={{ textAlign: 'center', marginBottom: '1.5rem', fontSize: '0.72rem', color: muted }}>Empfehlungsprogramm: 10 % Rabatt für dich, 10 % Gutschrift für den Empfehler – Empfehler-ID beim Lizenzkauf angeben.</p>
 
           {/* Fußzeile */}
           <p style={{ textAlign: 'center', fontSize: '0.75rem', color: muted, lineHeight: 2 }}>

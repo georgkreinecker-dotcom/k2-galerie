@@ -63,6 +63,8 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **VERBESSERUNGEN-VERMARKTUNG-GEMEINSAM.md** – **Vorschlag:** Was wir gemeinsam verbessern können (Zielgruppe, Kanäle, Customer Journey, Trust; priorisierte Liste).
 - **MARKETING-EROEFFNUNG-K2-OEK2.md** – **Galerie-Eröffnung:** K2 und ök2 gemeinsam einführen; gezielte Marketinglinie in 2 Wochen; Texte für gemeinsame Lounge (Kernbotschaft, Einladung, Presse, Social); Checkliste; Verweis in mök2.
 - **SICHTBARKEIT-SUCHMASCHINEN-WERBUNG-KONZEPT.md** – **Sichtbar im Netz:** Suchmaschinen (SEO ohne Kosten), alle Werbemöglichkeiten; maximaler Verbreitungsgrad ohne Zusatzkosten; was mit welchem Budget möglich ist (Domain, Google Ads, Social, Agentur).
+- **SICHTBARKEIT-WERBUNG-AGENDA.md** – **Punkt-für-Punkt:** Arbeitsliste Sichtbarkeit & Werbung (Phase 1–3), Status pro Punkt; zum Abarbeiten mit Nächster Schritt.
+- **SICHTBARKEIT-PHASE1-VORLAGEN.md** – **Copy-Paste für Phase 1:** Google Business, Social Bio/Post, QR/Links, Presse, Verzeichnisse; Verweis Empfehlungsprogramm.
 - **ABRECHNUNGSSTRUKTUR-EMPFEHLUNGSPROGRAMM.md** – Abrechnungsstruktur Empfehlungsprogramm.
 - **ZAHLUNGSSYSTEM-LIZENZEN-TECHNIK-PLAN.md** – **Zahlungssystem Lizenzen (nur online):** Konkreter Technik-Plan – Kreditkarte/PayPal über Stripe (o. ä.), Backend Checkout + Webhook, DB Lizenzen/Zahlungen/Gutschriften, Frontend Redirect + Success, Abrechnung/Export. Lizenzen nur im Internet, nicht in der Galerie.
 - **MARKTCHECK-PREISE-BASIC-PRO-VERGLEICH.md** – Marktcheck: Was Nutzer für Basic/Pro pro Monat zahlen würden, Vergleichsprodukte (KUNSTMATRIX, Wix, Squarespace, ArtCloud), Orientierung für Preisgestaltung; Einzigartigkeit & höherer Preis.

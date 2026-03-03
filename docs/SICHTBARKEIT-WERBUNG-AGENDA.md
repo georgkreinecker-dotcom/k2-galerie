@@ -1,0 +1,50 @@
+# Sichtbarkeit & Werbung – Punkt-für-Punkt Agenda
+
+**Stand:** 03.03.26  
+**Referenz:** docs/SICHTBARKEIT-SUCHMASCHINEN-WERBUNG-KONZEPT.md
+
+Arbeitsliste zum Abarbeiten. Status: ○ offen · ◐ in Arbeit · ● erledigt
+
+---
+
+## Phase 1: Ohne Zusatzkosten
+
+| # | Punkt | Was zu tun | Status | Nächster Schritt |
+|---|-------|------------|--------|------------------|
+| 1 | **Technik prüfen** | Öffentliche Seiten: klarer Seitentitel + Meta-Beschreibung (keine Doppelungen, keine leeren Titel). Pro Route prüfen (Willkommen, Galerie, Vita, AGB, Demo). | ● | Erledigt: seoPageMeta.ts + App setzt Titel/Meta pro Route. |
+| 2 | **Google Business Profile** | Einmal anlegen: Name, Adresse, Öffnungszeiten, Website-Link, Fotos. Kostenlos, wirkt in lokaler Suche. | ○ | **Vorlage:** docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §2. |
+| 3 | **Social-Profile** | Ein Account pro Kanal (z. B. Instagram, Facebook), Link zur Willkommensseite/Demo in Bio. Regelmäßig Posts. | ○ | **Vorlage:** docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §3. |
+| 4 | **Empfehlungsprogramm sichtbar** | In App und Kurztexten: „Empfehle uns – 10 % Rabatt …“. Link teilen leicht machen (kopierbar aus App). | ● | WillkommenPage: Hinweis ergänzt. Admin/Lizenz siehe Vorlage §4. |
+| 5 | **QR und Links** | Einheitliche Links (wie Eröffnungs-Doku) auf alle Materialien. QR für „Galerie“ und „Demo ansehen“. | ○ | **Vorlage:** docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §5 + MARKETING-EROEFFNUNG 3.6. |
+| 6 | **Presse** | Eine Presseinformation (Eröffnung + optional Plattform) an ausgewählte Medien. | ○ | **Vorlage:** docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §6. |
+| 7 | **Verzeichnisse** | Liste: 5–10 kostenlose Einträge (Kulturportale, Galerien, Kunstvereine). Nacheinander eintragen. | ○ | **Vorlage:** docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §7. |
+
+---
+
+## Phase 2: Mit kleinem Budget (optional)
+
+| # | Punkt | Was zu tun | Status |
+|---|-------|------------|--------|
+| 8 | **Eigene Domain** | z. B. k2-galerie.at – einmalig + jährlich wenig Kosten. | ○ |
+| 9 | **Google Ads testen** | Kleines Monatsbudget (z. B. 50–100 €), Keywords testen. | ○ |
+| 10 | **Social-Werbung** | 1–2 Kampagnen (z. B. 30–50 €) für Willkommensseite/Demo. | ○ |
+
+---
+
+## Phase 3: Mit höherem Budget (optional)
+
+| # | Punkt | Status |
+|---|-------|--------|
+| 11 | SEO-Agentur / Content | ○ |
+| 12 | Influencer / Kooperationen | ○ |
+| 13 | Messen / Events | ○ |
+
+---
+
+## Fortschritt
+
+- **Phase 1:** 2 von 7 erledigt (1 Technik, 4 Empfehlung in App)
+- **Phase 2:** 0 von 3
+- **Phase 3:** 0 von 3
+
+Beim Weitermachen: einen Punkt wählen → Status auf ◐ setzen → abarbeiten → ● setzen → nächster Punkt.

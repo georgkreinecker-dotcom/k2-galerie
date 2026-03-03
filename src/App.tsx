@@ -58,6 +58,7 @@ import FlyerK2GaleriePage from './pages/FlyerK2GaleriePage'
 import PresseEinladungK2GaleriePage from './pages/PresseEinladungK2GaleriePage'
 import KundenPage from './pages/KundenPage'
 import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUTE, ENTDECKEN_ROUTE, PILOT_SCHREIBEN_ROUTE } from './config/navigation'
+import { getPageMeta, applyPageMeta } from './config/seoPageMeta'
 import { TenantProvider } from './context/TenantContext'
 import WillkommenPage from './pages/WillkommenPage'
 import EntdeckenPage from './pages/EntdeckenPage'
@@ -446,6 +447,12 @@ function App() {
   const location = useLocation()
   const currentApfPage = getApfPageFromPath(location.pathname, location.search || '')
   const isOnApf = location.pathname === '/'
+
+  // SEO: Seitentitel und Meta-Beschreibung pro Route (Sichtbarkeit Punkt 1)
+  useEffect(() => {
+    const meta = getPageMeta(location.pathname)
+    applyPageMeta(meta)
+  }, [location.pathname])
 
   // Beim Start: Gespeicherten Admin-Login wiederherstellen (Mobil: Kasse/Admin bleibt gültig)
   useEffect(() => {
