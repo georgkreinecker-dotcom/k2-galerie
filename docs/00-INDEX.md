@@ -93,6 +93,8 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **WERKE-HINZUFUEGEN-OHNE-LAN.md** – Werke hinzufügen ohne LAN.
 
 ## Kassa, Mobile, Geräte
+- **K2-OEK2-KASSABUCH-AGENDA.md** – **Agenda:** Kassabuch steuerberatergeeignet (K2/ök2) – Kassausgänge, Bar privat, Bar mit Beleg (QR/Foto), Kassa an Bank, optional Kassabuch führen Ja/Nein.
+- **KASSA-ETIKETTEN-CONTROLLISTE.md** – Kassafunktion & Etiketten – Controlliste (Vollumfang), was umgesetzt ist.
 - **NUTZUNG-VERSCHIEDENE-GERAETE.md** – **Zentral:** Nutzung auf Mac, Windows, Android, iOS – klare Anweisungen und Tipps pro Gerät; was wo geht, Veröffentlichen nur am Mac.
 - **DRUCKER-BROTHER-HINWEISE.md** – **Zentral:** Brother-Etikettendruck – gleiches Netz (Pflicht), Checkliste, Zwei-Netze-Problem, Hilfestellung Mac/iPad/Android, Schnell-Check.
 - **KASSA-MAC-VS-MOBILE.md** – Kassa am Mac vs. Mobile.
