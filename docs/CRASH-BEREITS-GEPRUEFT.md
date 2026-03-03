@@ -188,8 +188,9 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 | 03.03.26 | KassaEinstiegPage, kassabuchStorage | Neue Dateien (Kassa): kein setInterval/setTimeout/reload/listener – unkritisch. |
 | 03.03.26 | KeyPage, EmpfehlungstoolPage, GitHubTokenPage | setTimeout(2000) für setSaved/setCopied(false) ohne Cleanup → bei Unmount/HMR setState nach Ablauf. **Fix:** savedTimeoutRef/copiedTimeoutRef + clearTimeout im useEffect-Cleanup, vor neuem Timeout altes clearen. |
 | 03.03.26 | ro check crash | GaleriePage (dataStandLabel, pageContentGalerie beim Laden): setDataStandLabel nur bei isMounted; loadData-Cleanup unverändert. ScreenshotExportAdmin: nur TypeScript-Cast (Medienspiegel) + pageContentGalerie im Publish-Payload – kein neuer useEffect/setTimeout/setInterval. Keine neuen Crash-Quellen. |
+| 03.03.26 | check the crash (Sitemap-Session) | **Neue Datei:** api/sitemap.js – Vercel-Serverless-Handler, läuft nur auf dem Server. Kein setInterval/setTimeout/reload/listener, kein Client-/Preview-Code. Keine neue Crash-Quelle. |
 
-*Zuletzt ergänzt: 03.03.26 (ro check crash – GaleriePage, ScreenshotExportAdmin)*
+*Zuletzt ergänzt: 03.03.26 (check the crash – api/sitemap.js)*
 
 ---
 

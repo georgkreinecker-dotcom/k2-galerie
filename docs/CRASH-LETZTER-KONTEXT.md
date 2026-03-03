@@ -9,10 +9,10 @@
 | Was | Inhalt |
 |-----|--------|
 | **Datum** | 03.03.26 |
-| **Thema** | ro check crash |
-| **Zuletzt geändert/geöffnet** | GaleriePage (dataStandLabel, pageContentGalerie vom Server), ScreenshotExportAdmin (Medienspiegel-Typ, pageContentGalerie im Publish) |
-| **Hinweis von Georg** | „ro check the crash“ |
-| **Ergebnis** | Keine neuen Crash-Quellen. GaleriePage: setDataStandLabel nur bei isMounted in loadData. ScreenshotExportAdmin: nur Typ-Cast + Payload-Feld. CRASH-BEREITS-GEPRUEFT.md ergänzt. |
+| **Thema** | check the crash (nach Sitemap/Google-Session) |
+| **Zuletzt geändert/geöffnet** | api/sitemap.js (neu), public/sitemap.xml (minimal), vercel.json (Header), docs Sichtbarkeit |
+| **Hinweis von Georg** | „check the crash“ |
+| **Ergebnis** | api/sitemap.js geprüft: nur Server-Handler, kein Client-Code. Keine neuen Crash-Quellen. CRASH-BEREITS-GEPRUEFT.md ergänzt. |
 
 ---
 
