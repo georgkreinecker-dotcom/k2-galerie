@@ -402,6 +402,23 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
 
       {/* Kapitel: Vertrieb – Kanäle, Empfehlung, Werbung */}
       <Mok2ChapterPage title={mok2Groups[1].chapterTitle} />
+      {/* Sichtbarkeit Suchmaschinen & Werbung – Konzept (ohne / mit Kosten) */}
+      <section id="mok2-sichtbarkeit-werbung" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Sichtbarkeit & Werbung (Suchmaschinen, Verbreitung)
+        </h2>
+        <p style={{ marginBottom: '0.75rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
+          Konzept: Wie wir im Netz bei Suchmaschinen sichtbar werden und welcher Verbreitungsgrad <strong>ohne Zusatzkosten</strong> möglich ist – und was mit welchem <strong>Budget</strong> dazu kommt.
+        </p>
+        <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.75)' }}>
+          <strong>Vollständiges Konzept:</strong> <code style={{ fontSize: '0.85em', color: '#5ffbf1' }}>docs/SICHTBARKEIT-SUCHMASCHINEN-WERBUNG-KONZEPT.md</code>
+        </p>
+        <ul style={{ margin: '0.5rem 0 0', paddingLeft: '1.2em', fontSize: '0.9rem', lineHeight: 1.6, color: 'rgba(255,255,255,0.88)' }}>
+          <li><strong>Ohne Zusatzkosten:</strong> SEO-Basis (Titel, Beschreibung, Texte), Google Business, Social-Profile, Empfehlungsprogramm, QR/Links, E-Mail/Einladungen, Presse, kostenlose Verzeichnisse.</li>
+          <li><strong>Mit wenig Budget:</strong> Eigene Domain, kleines Google-Ads-Budget, gezielte Social-Kampagnen.</li>
+          <li><strong>Mit höherem Budget:</strong> Größeres Werbebudget, SEO-Agentur, Influencer, Messen.</li>
+        </ul>
+      </section>
       {/* Eröffnung K2 + ök2 + VK2 – Marketinglinie, gemeinsame Lounge */}
       <section id="mok2-eroeffnung-k2-oek2" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
