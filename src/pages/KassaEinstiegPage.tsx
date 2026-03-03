@@ -1,6 +1,6 @@
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { isKassabuchAktiv } from '../utils/kassabuchStorage'
+import { hasKassa, hasKassabuchVoll, isKassabuchAktiv } from '../utils/kassabuchStorage'
 
 const s = {
   bg: '#f8f7f5',
@@ -23,7 +23,8 @@ export default function KassaEinstiegPage() {
     (location.state as { fromOeffentlich?: boolean } | null)?.fromOeffentlich === true ||
     (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'oeffentlich')
   const tenant = fromOeffentlich ? 'oeffentlich' as const : 'k2' as const
-  const kassabuchAktiv = isKassabuchAktiv(tenant)
+  const kassaVerfuegbar = hasKassa(tenant)
+  const kassabuchVollVerfuegbar = hasKassabuchVoll(tenant) && isKassabuchAktiv(tenant)
 
   const toShop = () => {
     navigate(PROJECT_ROUTES['k2-galerie'].shop, {
@@ -33,6 +34,23 @@ export default function KassaEinstiegPage() {
 
   const toKassabuch = () => {
     navigate(PROJECT_ROUTES['k2-galerie'].kassabuchAusgang, { state: { fromOeffentlich: fromOeffentlich || undefined } })
+  }
+
+  if (!kassaVerfuegbar) {
+    return (
+      <div style={{ minHeight: '100vh', background: s.bg, padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <h1 style={{ fontSize: '1.5rem', color: s.text, marginBottom: '0.5rem' }}>💰 Kassa</h1>
+        <p style={{ color: s.muted, marginBottom: '1rem', textAlign: 'center', maxWidth: '320px' }}>
+          Kassa ist ab der Lizenzstufe <strong>Pro</strong> verfügbar. Basic enthält keine Kassa.
+        </p>
+        <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ padding: '0.75rem 1.25rem', background: s.accent, color: '#fff', borderRadius: s.radius, textDecoration: 'none', fontWeight: 600 }}>
+          Lizenz ansehen
+        </Link>
+        <Link to="/admin" style={{ marginTop: '2rem', fontSize: '0.9rem', color: s.muted, textDecoration: 'none' }}>
+          ← Zurück zum Admin
+        </Link>
+      </div>
+    )
   }
 
   return (
@@ -67,7 +85,7 @@ export default function KassaEinstiegPage() {
             <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>Verkauf erfassen – Beleg drucken</div>
           </div>
         </button>
-        {kassabuchAktiv && (
+        {kassabuchVollVerfuegbar && (
         <button
           type="button"
           onClick={toKassabuch}

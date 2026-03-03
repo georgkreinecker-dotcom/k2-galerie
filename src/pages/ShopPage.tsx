@@ -6,7 +6,7 @@ import { getCategoryLabel, MUSTER_TEXTE, PRODUCT_COPYRIGHT } from '../config/ten
 import { loadStammdaten } from '../utils/stammdatenStorage'
 import { isOeffentlichDisplayContext } from '../utils/oeffentlichContext'
 import { getCustomers, createCustomer, updateCustomer, type Customer } from '../utils/customers'
-import { isKassabuchAktiv } from '../utils/kassabuchStorage'
+import { hasKassa, hasKassabuchVoll, isKassabuchAktiv } from '../utils/kassabuchStorage'
 import { PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import '../App.css'
 
@@ -1162,7 +1162,7 @@ const ShopPage = () => {
               >
                 ← Zur Galerie
               </Link>
-              {!isAdminContext && hasStoredAdminLogin && (
+              {!isAdminContext && hasStoredAdminLogin && hasKassa('k2') && (
                 <button
                   type="button"
                   onClick={() => {
@@ -1191,7 +1191,7 @@ const ShopPage = () => {
                   🧾 Als Kasse öffnen
                 </button>
               )}
-              {isAdminContext && isKassabuchAktiv(fromOeffentlich ? 'oeffentlich' : 'k2') && (
+              {isAdminContext && hasKassa(fromOeffentlich ? 'oeffentlich' : 'k2') && hasKassabuchVoll(fromOeffentlich ? 'oeffentlich' : 'k2') && isKassabuchAktiv(fromOeffentlich ? 'oeffentlich' : 'k2') && (
               <Link 
                 to={PROJECT_ROUTES['k2-galerie'].kassabuchAusgang} 
                 state={{ fromOeffentlich: fromOeffentlich || undefined }}

@@ -104,6 +104,40 @@ export function getKassabuchMitEingaengen(tenant: 'k2' | 'oeffentlich'): Kassabu
   }
 }
 
+/** Lizenzstufe für Kassa/Kassabuch: Basic = keine Kassa, Pro = Kassa ohne volles Kassabuch, Pro+ = volles Kassabuch */
+export type KassabuchLizenzStufe = 'basic' | 'pro' | 'proplus'
+
+const K2_LIZENZ_STUFE_KEY = 'k2-lizenz-stufe'
+const OEF_LIZENZ_STUFE_KEY = 'k2-oeffentlich-lizenz-stufe'
+
+export function getKassabuchLizenzStufe(tenant: 'k2' | 'oeffentlich'): KassabuchLizenzStufe {
+  try {
+    const key = tenant === 'oeffentlich' ? OEF_LIZENZ_STUFE_KEY : K2_LIZENZ_STUFE_KEY
+    const v = localStorage.getItem(key)
+    if (v === 'basic' || v === 'pro' || v === 'proplus') return v
+    return tenant === 'oeffentlich' ? 'pro' : 'proplus'
+  } catch {
+    return tenant === 'oeffentlich' ? 'pro' : 'proplus'
+  }
+}
+
+export function setKassabuchLizenzStufe(tenant: 'k2' | 'oeffentlich', stufe: KassabuchLizenzStufe): void {
+  try {
+    const key = tenant === 'oeffentlich' ? OEF_LIZENZ_STUFE_KEY : K2_LIZENZ_STUFE_KEY
+    localStorage.setItem(key, stufe)
+  } catch {}
+}
+
+/** Kassa (Verkauf erfassen) nur ab Pro. Basic = keine Kassa. */
+export function hasKassa(tenant: 'k2' | 'oeffentlich'): boolean {
+  return getKassabuchLizenzStufe(tenant) !== 'basic'
+}
+
+/** Volles Kassabuch (Eingänge + Ausgänge, Bar privat, Kassa an Bank, Belege) nur mit Pro+. */
+export function hasKassabuchVoll(tenant: 'k2' | 'oeffentlich'): boolean {
+  return getKassabuchLizenzStufe(tenant) === 'proplus'
+}
+
 /** Kassabuch führen Ja/Nein – Einstellung pro Kontext (default: true) */
 const K2_KASSABUCH_AKTIV_KEY = 'k2-kassabuch-aktiv'
 const OEF_KASSABUCH_AKTIV_KEY = 'k2-oeffentlich-kassabuch-aktiv'

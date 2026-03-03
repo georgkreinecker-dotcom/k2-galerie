@@ -10,6 +10,8 @@ import {
   getKassabuchMitEingaengen,
   getKassabuchArtLabel,
   exportKassabuchCsv,
+  hasKassa,
+  hasKassabuchVoll,
   isKassabuchAktiv,
   setKassabuchAktiv,
   type KassabuchEintrag,
@@ -36,6 +38,8 @@ export default function KassabuchPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const tenant = getTenant(location)
+  const kassaVerfuegbar = hasKassa(tenant)
+  const kassabuchVoll = hasKassabuchVoll(tenant)
   const [aktiv, setAktiv] = useState(() => isKassabuchAktiv(tenant))
   const [entries, setEntries] = useState<KassabuchEintrag[]>(() => getKassabuchMitEingaengen(tenant))
   const [von, setVon] = useState('')
@@ -43,9 +47,9 @@ export default function KassabuchPage() {
 
   const sortedEntries = useMemo(() => {
     let list = [...entries]
-    if (!aktiv) list = list.filter(e => e.art === 'eingang')
+    if (!kassabuchVoll || !aktiv) list = list.filter(e => e.art === 'eingang')
     return list.sort((a, b) => a.datum.localeCompare(b.datum) || 0)
-  }, [entries, aktiv])
+  }, [entries, aktiv, kassabuchVoll])
 
   const refresh = () => {
     setEntries(getKassabuchMitEingaengen(tenant))
@@ -58,7 +62,7 @@ export default function KassabuchPage() {
   }
 
   const handleExportCsv = () => {
-    const toExport = aktiv ? entries : entries.filter(e => e.art === 'eingang')
+    const toExport = (kassabuchVoll && aktiv) ? entries : entries.filter(e => e.art === 'eingang')
     const csv = exportKassabuchCsv(toExport, von || undefined, bis || undefined)
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
     const url = URL.createObjectURL(blob)
@@ -78,6 +82,25 @@ export default function KassabuchPage() {
     window.print()
   }
 
+  if (!kassaVerfuegbar) {
+    return (
+      <div style={{ minHeight: '100vh', background: s.bg, padding: '1.5rem' }}>
+        <div style={{ maxWidth: 500, margin: '0 auto', textAlign: 'center', paddingTop: '2rem' }}>
+          <h1 style={{ fontSize: '1.5rem', color: s.text, marginBottom: '0.5rem' }}>📒 Kassabuch</h1>
+          <p style={{ color: s.muted, marginBottom: '1rem' }}>
+            Kassa und Kassabuch sind ab der Lizenzstufe <strong>Pro</strong> verfügbar. Basic enthält keine Kassa.
+          </p>
+          <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ padding: '0.75rem 1.25rem', background: s.accent, color: '#fff', borderRadius: s.radius, textDecoration: 'none', fontWeight: 600 }}>
+            Lizenz ansehen
+          </Link>
+          <div style={{ marginTop: '1.5rem' }}>
+            <Link to="/admin" style={{ fontSize: '0.9rem', color: s.muted, textDecoration: 'none' }}>← Admin</Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: s.bg, padding: '1.5rem' }}>
       <div className="no-print" style={{ maxWidth: 900, margin: '0 auto' }}>
@@ -91,9 +114,10 @@ export default function KassabuchPage() {
 
         <h1 style={{ fontSize: '1.5rem', color: s.text, marginBottom: '0.25rem' }}>📒 Kassabuch</h1>
         <p style={{ color: s.muted, marginBottom: '1rem', fontSize: '0.95rem' }}>
-          Chronologische Buchungen – steuerberatergeeignet, separat druckbar und übermittelbar.
+          {kassabuchVoll ? 'Chronologische Buchungen – steuerberatergeeignet, separat druckbar und übermittelbar.' : 'Pro: Nur Verkäufe (Eingänge). Volles Kassabuch (Ausgänge, Bar privat, Belege) mit Pro+.'}
         </p>
 
+        {kassabuchVoll && (
         <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
           <label style={{ color: s.text, fontSize: '0.95rem', fontWeight: 500 }}>Kassabuch führen:</label>
           <button
@@ -115,9 +139,10 @@ export default function KassabuchPage() {
             {aktiv ? 'Eingänge + Ausgänge' : 'Nur Verkäufe (Eingänge)'}
           </span>
         </div>
+        )}
 
         <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-          {aktiv && (
+          {kassabuchVoll && aktiv && (
             <button
               type="button"
               onClick={() => navigate(PROJECT_ROUTES['k2-galerie'].kassabuchAusgang, { state: { fromOeffentlich: tenant === 'oeffentlich' } })}

@@ -5,7 +5,8 @@
 ## Datum: 03.03.26
 
 ## Was zuletzt gemacht (03.03.26)
-- **Kassabuch – alles aus Agenda umgesetzt:** (1) **Kassaeingänge:** Verkäufe aus k2-orders (K2) bzw. k2-oeffentlich-orders (ök2) erscheinen im Kassabuch als „Eingang“, gemeinsam mit Ausgängen chronologisch; getKassabuchMitEingaengen in kassabuchStorage. (2) **Einstellung „Kassabuch führen: Ja/Nein“:** Speicher k2-kassabuch-aktiv / k2-oeffentlich-kassabuch-aktiv; Toggle auf KassabuchPage; bei Nein nur Verkäufe (Eingänge) sichtbar, Button „Neuer Kassausgang“ ausgeblendet; Link „Auszahlen (Kassabuch)“ in ShopPage und KassaEinstiegPage nur bei Ja sichtbar. (3) **PDF-Export:** Button „Export PDF (Steuerberater)“ öffnet Druckdialog (Nutzer wählt „Als PDF speichern“). Tests + Build grün. **Commit:** 2f9bd0f ✅ auf GitHub. **Nächster Schritt:** Im Browser testen (Eingänge nach Verkauf, Toggle Ja/Nein, PDF-Export).
+- **Kassabuch – Lizenzstufen:** Vollständiges Kassabuch nur ab **Pro+**. **Pro** = Kassa (Verkauf erfassen) ja, Kassabuch nur Verkäufe (Eingänge), keine Ausgänge. **Basic** = keine Kassa. Speicher: k2-lizenz-stufe / k2-oeffentlich-lizenz-stufe (basic | pro | proplus). Default K2 = proplus, ök2 = pro. KassaEinstiegPage: Basic → Hinweis „Kassa ab Pro“; Pro → nur „Erhalten“, kein „Auszahlen“. ShopPage: „Als Kasse öffnen“ und „Auszahlen“ nur bei passender Stufe. KassabuchPage: Basic → Hinweis; Pro → nur Verkäufe, kein Toggle, kein „Neuer Kassausgang“. KassausgangPage: ohne Pro+ → Hinweis „Nur mit Pro+“. Control Studio Kasse-Tab: ohne Kassa „Lizenz ansehen“. Agenda-Doku ergänzt.
+- **Kassabuch – alles aus Agenda umgesetzt:** (1) Kassaeingänge aus Verkäufen. (2) Einstellung Kassabuch führen Ja/Nein. (3) PDF-Export. **Commit:** 2f9bd0f, a5af566 ✅ auf GitHub.
 
 ## Datum: 02.03.26
 

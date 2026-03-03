@@ -7,7 +7,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import jsQR from 'jsqr'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { addKassabuchEintrag, getKassabuchArtLabel, type KassabuchArt } from '../utils/kassabuchStorage'
+import { addKassabuchEintrag, getKassabuchArtLabel, hasKassabuchVoll, type KassabuchArt } from '../utils/kassabuchStorage'
 
 const s = {
   bg: '#f8f7f5',
@@ -32,6 +32,7 @@ export default function KassausgangPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const tenant = getTenant(location)
+  const kassabuchVoll = hasKassabuchVoll(tenant)
   const [step, setStep] = useState<Step>('choose')
   const [art, setArt] = useState<KassabuchArt>('bar_privat')
   const [bankRichtung, setBankRichtung] = useState<'kassa_an_bank' | 'bank_an_kassa'>('kassa_an_bank')
@@ -149,11 +150,26 @@ export default function KassausgangPage() {
     )
   }
 
+  if (!kassabuchVoll) {
+    return (
+      <div style={{ minHeight: '100vh', background: s.bg, padding: '1.5rem' }}>
+        <div style={{ maxWidth: 500, margin: '0 auto', textAlign: 'center', paddingTop: '2rem' }}>
+          <h1 style={{ fontSize: '1.35rem', color: s.text, marginBottom: '0.5rem' }}>Neuer Kassausgang</h1>
+          <p style={{ color: s.muted, marginBottom: '1rem' }}>
+            Kassausgänge (Bar privat, Kassa an Bank, Beleg) sind nur mit der Lizenzstufe <strong>Pro+</strong> verfügbar.
+          </p>
+          <Link to={PROJECT_ROUTES['k2-galerie'].kassabuch} state={{ fromOeffentlich: tenant === 'oeffentlich' }} style={{ display: 'inline-block', marginRight: '0.75rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>← Kassabuch</Link>
+          <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ padding: '0.75rem 1.25rem', background: s.accent, color: '#fff', borderRadius: s.radius, textDecoration: 'none', fontWeight: 600 }}>Pro+ ansehen</Link>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: s.bg, padding: '1.5rem' }}>
       <div style={{ maxWidth: 420, margin: '0 auto' }}>
         <div className="no-print" style={{ marginBottom: '1.5rem' }}>
-          <Link to={PROJECT_ROUTES['k2-galerie'].kassabuch} style={{ color: s.muted, textDecoration: 'none', fontSize: '0.9rem' }}>← Kassabuch</Link>
+          <Link to={PROJECT_ROUTES['k2-galerie'].kassabuch} state={{ fromOeffentlich: tenant === 'oeffentlich' }} style={{ color: s.muted, textDecoration: 'none', fontSize: '0.9rem' }}>← Kassabuch</Link>
         </div>
 
         <h1 style={{ fontSize: '1.35rem', color: s.text, marginBottom: '1rem' }}>Neuer Kassausgang</h1>

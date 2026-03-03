@@ -5,6 +5,7 @@ import { usePersistentBoolean, usePersistentString } from '../hooks/usePersisten
 import { ProjectNavButton } from '../components/Navigation'
 import { KundenTab } from '../components/KundenTab'
 import { getCustomers, type Customer } from '../utils/customers'
+import { hasKassa } from '../utils/kassabuchStorage'
 
 type ChatMessage = { role: 'user' | 'ai'; content: string }
 
@@ -338,10 +339,21 @@ const ControlStudioPage = () => {
             {activeTab === 'kasse' && (
               <div className="card">
                 <h2>Kasse</h2>
-                <p className="meta">Verkauf erfassen (Eingang) oder Kassabuch (Ausgaben: Bar privat, Bar an Bank, Bar mit Beleg).</p>
-                <Link to={PROJECT_ROUTES['k2-galerie'].kassa} className="btn" style={{ marginTop: '0.75rem', display: 'inline-block' }}>
-                  Kassa öffnen
-                </Link>
+                {hasKassa('k2') ? (
+                  <>
+                    <p className="meta">Verkauf erfassen (Eingang) oder Kassabuch (Ausgaben: Bar privat, Bar an Bank, Bar mit Beleg).</p>
+                    <Link to={PROJECT_ROUTES['k2-galerie'].kassa} className="btn" style={{ marginTop: '0.75rem', display: 'inline-block' }}>
+                      Kassa öffnen
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <p className="meta">Kassa ist ab der Lizenzstufe Pro verfügbar. Basic enthält keine Kassa.</p>
+                    <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} className="btn" style={{ marginTop: '0.75rem', display: 'inline-block' }}>
+                      Lizenz ansehen
+                    </Link>
+                  </>
+                )}
               </div>
             )}
             {activeTab === 'archiv' && (
