@@ -51,7 +51,36 @@
 
 ---
 
-## 4. Technik & Regeln
+## 4. Umsetzungsreihenfolge: K2 zuerst, dann ök2
+
+| Schritt | Was | Warum |
+|--------|-----|-------|
+| **1. K2 als Testobjekt** | Medienstudio (Medienkit + Presse-Vorlage) **zuerst für K2** bauen und testen – mit echten Stammdaten (Martina & Georg, echte Galerie). | Du siehst sofort, ob es passt; echte Pressearbeit kann von Anfang an damit laufen. |
+| **2. Kontextfähig bauen** | Von vornherein **eine** Implementierung, die den **Kontext** (K2 vs. ök2 vs. VK2) nutzt: Stammdaten aus der richtigen Quelle (z. B. `loadStammdaten(tenant)` bzw. musterOnly → Muster-Stammdaten). | Dann muss für ök2 **nichts Zweites** gebaut werden – dieselbe Oberfläche, andere Daten. |
+| **3. ök2 „dazu“** | **Nichts extra für ök2 programmieren.** Wer im ök2-Admin „Presse & Medien“ öffnet, bekommt dieselbe Seite mit **Muster-Stammdaten** (Galerie Muster, Lena Berg, Paul Weber). Optional: kurzer Hinweis „Demo – in Ihrer lizenzierten Galerie nutzen Sie Ihre eigenen Daten.“ | Kein doppelter Aufwand; ök2 dient zur Vorschau/Demo für spätere Lizenznehmer. |
+
+**Kurz:** K2 zuerst umsetzen und testen. Weil wir kontextfähig bauen, ist ök2 automatisch mit dabei – nur die Datenquelle wechselt. Die „Sache mit ök2“ ist also: **nicht zweimal bauen, einmal kontextfähig bauen.**
+
+---
+
+## 5. Nächste Schritte (abarbeitbar)
+
+**Reihenfolge für Phase 1 (K2 zuerst, kontextfähig):**
+
+| Nr. | Schritt | Konkret |
+|-----|--------|--------|
+| **1** | **Ort im Admin festlegen** | ✅ Erledigt: eigener Tab **„Presse & Medien“** im Admin (neben Events, Design). Hub-Kacheln und Bereichs-Karten ergänzt. |
+| **2** | **Stammdaten-Anbindung** | ✅ Erledigt: Medienkit-Text aus galleryData, martinaData, georgData (K2/ök2) bzw. vk2Stammdaten (VK2). Tenant aus useTenant() – kontextfähig. |
+| **3** | **UI Medienkit** | ✅ Erledigt: Block „Medienkit“ mit generiertem Text, Button **„Kopieren“**. Hinweis bei fehlenden Daten: „In Einstellungen → Stammdaten ergänzen.“ („Als PDF“ optional später.) |
+| **4** | **Presse-Vorlage** | ✅ Erledigt: Drei Felder Anlass, Datum, Ort; fertiger Text; Button **„In Zwischenablage“**. |
+| **5** | **Test K2** | Mit echten K2-Stammdaten testen: Medienkit passt, Presse-Vorlage füllt sich, Kopieren funktioniert. |
+| **6** | **Prüfung ök2** | Im ök2-Admin denselben Bereich öffnen – Muster-Stammdaten; Hinweis „Demo – in Ihrer Galerie nutzen Sie Ihre eigenen Daten.“ eingebaut. |
+
+**Danach (optional):** Phase 2 Pressekontakte-Liste, Phase 3 „Presseinfo verschickt“ an Events.
+
+---
+
+## 6. Technik & Regeln
 
 - **Keine doppelten Eingaben:** Medienkit-Text kommt aus Stammdaten; wo Stammdaten fehlen, Fallback/Platzhalter und Hinweis „In Stammdaten ergänzen“.
 - **Kontext getrennt:** K2 / ök2 / VK2 je eigene Keys und Datenquelle (dokumente-kontext-eine-quelle, k2-oek2-trennung).
@@ -60,7 +89,7 @@
 
 ---
 
-## 5. Verweise
+## 7. Verweise
 
 - **Medienstudio K2 (unser Standard):** docs/MEDIENSTUDIO-K2.md  
 - **Presse-Ablauf:** docs/PRESSEARBEIT-STANDARD.md  
@@ -70,6 +99,6 @@
 
 ---
 
-## 6. Kurzfassung
+## 8. Kurzfassung
 
 **Medienstudio für User = Medienkit (aus Stammdaten) + Presse-Vorlage (Variablen) + optional Pressekontakte + optional „Presseinfo verschickt“ an Events. Ein Bereich unter Marketing, eine Implementierung für K2/ök2/VK2. Großes Plus für Künstler:innen und Kunstvereine – professionell von Beginn an.**

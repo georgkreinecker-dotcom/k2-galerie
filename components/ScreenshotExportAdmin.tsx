@@ -772,7 +772,7 @@ function ScreenshotExportAdmin() {
     try {
       const params = new URLSearchParams(location.search)
       const gt = params.get('guidetab')
-      const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','design','einstellungen','assistent'] as const
+      const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','einstellungen','assistent'] as const
       type AdminTab = typeof validTabs[number]
       if (gt && (validTabs as readonly string[]).includes(gt)) {
         setActiveTab(gt as AdminTab)
@@ -814,7 +814,7 @@ function ScreenshotExportAdmin() {
   const initialTab = (() => {
     try {
       const params = new URLSearchParams(window.location.search)
-      const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','design','einstellungen','assistent'] as const
+      const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','einstellungen','assistent'] as const
       type AdminTab = typeof validTabs[number]
       // ?tab=... (vom Hub) oder ?guidetab=... (alter Guide)
       const t = params.get('tab') || params.get('guidetab')
@@ -822,7 +822,7 @@ function ScreenshotExportAdmin() {
     } catch { /* ignore */ }
     return guideAssistent ? 'assistent' : 'werke'
   })()
-  const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'design' | 'einstellungen' | 'assistent'>(initialTab)
+  const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'presse' | 'design' | 'einstellungen' | 'assistent'>(initialTab)
   const [guideBannerClosed, setGuideBannerClosed] = useState(false)
   const [guideBegleiterGeschlossen, setGuideBegleiterGeschlossen] = useState(false)
   const initialEventplanSubTab = (() => {
@@ -849,6 +849,10 @@ function ScreenshotExportAdmin() {
   const [designPreviewHeightPx, setDesignPreviewHeightPx] = useState(560) // Vorschau-Höhe – per Ziehen anpassbar
   const [designPreviewScale, setDesignPreviewScale] = useState(1) // 1 = 100%, manuell vergrößerbar
   const designPreviewResizeStart = useRef<{ y: number; height: number } | null>(null)
+  // Presse & Medien – Variablen für Presse-Vorlage
+  const [presseDatum, setPresseDatum] = useState('')
+  const [presseAnlass, setPresseAnlass] = useState('')
+  const [presseOrt, setPresseOrt] = useState('')
   /** Bei blockiertem Pop-up: Dokument im gleichen Tab anzeigen (kein Fenster nötig) */
   const [inAppDocumentViewer, setInAppDocumentViewer] = useState<{ html: string; title: string } | null>(null)
   const previewContainerRef = React.useRef<HTMLDivElement>(null)
@@ -9045,6 +9049,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             Du schaust dir gerade an: <strong style={{ color: '#fff' }}>
               {activeTab === 'werke' ? '🖼️ Werke hinzufügen und bearbeiten' :
                activeTab === 'eventplan' ? '🎟️ Events & Ausstellungen' :
+               activeTab === 'presse' ? '📰 Presse & Medien' :
                activeTab === 'design' ? '✨ Aussehen & Design' :
                activeTab === 'katalog' ? '📋 Werkkatalog' :
                activeTab === 'statistik' ? '🧾 Kassa & Verkauf' :
@@ -9324,10 +9329,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   const galerieUrl = '/projects/k2-galerie/galerie-oeffentlich'
 
                   // Alle Stationen – Kacheln links + rechts
-                  type HubTab = 'werke' | 'eventplan' | 'design' | 'einstellungen' | 'katalog' | 'assistent'
+                  type HubTab = 'werke' | 'eventplan' | 'presse' | 'design' | 'einstellungen' | 'katalog' | 'assistent'
                   const alleStationen: { emoji: string; name: string; beschreibung: string; tab: HubTab }[] = istVerein ? [
                     { emoji: '🖼️', name: 'Werke & Mitglieder', beschreibung: 'Alle Werke aller Mitglieder – Fotos, Preise, Profile.', tab: 'werke' },
                     { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Vernissagen planen, Einladungen erstellen, QR-Codes.', tab: 'eventplan' },
+                    { emoji: '📰', name: 'Presse & Medien', beschreibung: 'Medienkit und Presse-Vorlage – professionell für Pressearbeit.', tab: 'presse' },
                     { emoji: '✨', name: 'Aussehen & Design', beschreibung: 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Vereinsdaten, Kontakt, Mitglieder verwalten.', tab: 'einstellungen' },
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
@@ -9335,6 +9341,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   ] : [
                     { emoji: '🖼️', name: 'Werke hinzufügen und bearbeiten', beschreibung: 'Fotos hochladen, Titel, Preis – ein Klick und es ist live.', tab: 'werke' },
                     { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Vernissage planen, Einladungen & QR-Codes erstellen.', tab: 'eventplan' },
+                    { emoji: '📰', name: 'Presse & Medien', beschreibung: 'Medienkit und Presse-Vorlage – professionell für Pressearbeit.', tab: 'presse' },
                     { emoji: '✨', name: 'Aussehen & Design', beschreibung: 'Farben, Texte, dein Foto – die Galerie wird zu dir.', tab: 'design' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Kontakt, Adresse, Öffnungszeiten – deine Stammdaten.', tab: 'einstellungen' },
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
@@ -9475,6 +9482,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '🏛️', name: 'Gemeinschafts-Galerie', text: 'Alle Werke aller Mitglieder unter einem Dach – jede:r mit eigenem Profil', tab: 'werke' },
                     { emoji: '📋', name: 'Werkkatalog', text: 'Alle Werke des Vereins filtern, suchen, drucken', tab: 'katalog' },
                     { emoji: '🎟️', name: 'Veranstaltungen', text: 'Ausstellungen planen, Einladungen an alle Mitglieder versenden', tab: 'eventplan' },
+                    { emoji: '📰', name: 'Presse & Medien', text: 'Medienkit und Presse-Vorlage für Pressearbeit', tab: 'presse' },
                     { emoji: '✨', name: 'Aussehen', text: 'Farben, Texte, Foto – eure Mitglieder-Seite nach euren Wünschen', tab: 'design' },
                     { emoji: '⚙️', name: 'Einstellungen', text: 'Vereinsdaten, Kontakt, Mitglieder verwalten', tab: 'einstellungen' },
                   ] : [
@@ -9482,6 +9490,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '📋', name: 'Werkkatalog', text: 'Alle Werke auf einen Blick – filtern, suchen, drucken', tab: 'katalog' },
                     { emoji: '💰', name: 'Kassa', text: 'Direkt verkaufen – Beleg drucken, Übersicht behalten', tab: 'kassa' },
                     { emoji: '📢', name: 'Veranstaltungen', text: 'Events planen, Einladungen erstellen, Presse informieren', tab: 'eventplan' },
+                    { emoji: '📰', name: 'Presse & Medien', text: 'Medienkit und Presse-Vorlage für Pressearbeit', tab: 'presse' },
                     { emoji: '✨', name: 'Aussehen', text: 'Farben, Texte, dein Foto – die Galerie wird zu dir', tab: 'design' },
                   ]
                   const galerieUrl = tenant.isOeffentlich
@@ -9521,7 +9530,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 try { sessionStorage.setItem('k2-admin-context', tenant.isOeffentlich ? 'oeffentlich' : 'k2') } catch (_) {}
                                 if (typeof window !== 'undefined' && window.self === window.top) window.location.href = '/projects/k2-galerie/shop?openAsKasse=1'
                               } else {
-                                const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','design','einstellungen','assistent'] as const
+                                const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','einstellungen','assistent'] as const
                                 type AdminTab = typeof validTabs[number]
                                 if (validTabs.includes(b.tab as AdminTab)) {
                                   setActiveTab(b.tab as AdminTab)
@@ -9685,6 +9694,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   {activeTab === 'newsletter' && '📬 Newsletter & Einladungen'}
                   {activeTab === 'pressemappe' && '📰 Pressemappe'}
                   {activeTab === 'eventplan' && (tenant.isVk2 ? '📢 Vereins-Events & Werbematerial' : '📢 Veranstaltungen & Werbung')}
+                  {activeTab === 'presse' && (tenant.isVk2 ? '📰 Presse & Medien – Medienkit und Presse-Vorlage' : '📰 Presse & Medien – Medienkit und Presse-Vorlage')}
                   {activeTab === 'design' && (tenant.isVk2 ? '✨ Aussehen – nach euren Wünschen anpassen' : '✨ Aussehen der Galerie – nach deinen Wünschen anpassen')}
                   {activeTab === 'einstellungen' && '⚙️ Einstellungen'}
                 </h2>
@@ -13918,6 +13928,101 @@ ${name}`
                     return <p style={{ color: '#666', textAlign: 'center', padding: '2rem' }}>Noch keine Verkäufe</p>
                   })()}
                 </div>
+              </div>
+            </section>
+          )
+        })()}
+
+        {/* Presse & Medien – Medienstudio für User (Medienkit + Presse-Vorlage) */}
+        {activeTab === 'presse' && (() => {
+          const n = (x: unknown) => (x != null && String(x).trim() !== '' ? String(x).trim() : '')
+          const galerieName = tenant.isVk2 ? n(vk2Stammdaten?.verein?.name) : n(galleryData?.name)
+          const adresse = tenant.isVk2
+            ? [n(vk2Stammdaten?.verein?.address), n(vk2Stammdaten?.verein?.city), n(vk2Stammdaten?.verein?.country)].filter(Boolean).join(', ')
+            : [n(galleryData?.address), n(galleryData?.city), n(galleryData?.country)].filter(Boolean).join(', ')
+          const vk2Verein = tenant.isVk2 ? (vk2Stammdaten?.verein as Record<string, unknown> | undefined) : null
+          const vk2Vorstand = tenant.isVk2 ? (vk2Stammdaten?.vorstand as Record<string, unknown> | undefined) : null
+          const kontaktName = tenant.isVk2 ? n(vk2Stammdaten?.vorstand?.name) || n(vk2Stammdaten?.vize?.name) : n(martinaData?.name) || n(georgData?.name)
+          const kontaktEmail = tenant.isVk2 ? n(vk2Stammdaten?.verein?.email) || (vk2Vorstand && n(vk2Vorstand.email as string)) : n(martinaData?.email) || n(georgData?.email)
+          const kontaktPhone = tenant.isVk2 ? (vk2Verein && n(vk2Verein.phone as string)) || (vk2Vorstand && n(vk2Vorstand.phone as string)) : n(martinaData?.phone) || n(georgData?.phone)
+          const kurzbeschreibung = tenant.isVk2 ? (vk2Verein && n(vk2Verein.beschreibung as string)) : n(galleryData?.description)
+          const medienkitZeilen = [
+            galerieName ? `${galerieName}` : '',
+            kurzbeschreibung ? kurzbeschreibung : '',
+            adresse ? `Adresse: ${adresse}` : '',
+            (kontaktName || kontaktEmail || kontaktPhone) ? `Kontakt: ${[kontaktName, kontaktEmail, kontaktPhone].filter(Boolean).join(' · ')}` : '',
+            n(galleryData?.openingHours) && !tenant.isVk2 ? `Öffnungszeiten: ${galleryData.openingHours}` : '',
+          ].filter(Boolean)
+          const medienkitText = medienkitZeilen.join('\n\n')
+          const presseVorlageText = [
+            `Presseinformation – ${presseAnlass || '[Anlass]'}`,
+            '',
+            galerieName ? `${galerieName}` : '[Galerie/Verein]',
+            presseAnlass ? presseAnlass : '[Anlass]',
+            (presseDatum || presseOrt) ? `${presseDatum || '[Datum]'}${presseOrt ? ', ' + presseOrt : ''}.` : '[Datum], [Ort].',
+            (kontaktEmail || kontaktPhone) ? `Kontakt: ${[kontaktEmail, kontaktPhone].filter(Boolean).join(', ')}` : 'Kontakt: [E-Mail], [Telefon]',
+          ].filter(Boolean).join('\n')
+          return (
+            <section style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '24px', padding: 'clamp(2rem, 5vw, 3rem)', boxShadow: s.shadow, marginBottom: 'clamp(2rem, 5vw, 3rem)' }}>
+              <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: 700, color: s.text, marginBottom: '0.5rem' }}>📰 Presse & Medien</h2>
+              <p style={{ color: s.muted, marginBottom: '1.5rem', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
+                Medienkit und Presse-Vorlage aus deinen Stammdaten – zum Kopieren und Versand an Medien.
+              </p>
+              {tenant.isOeffentlich && (
+                <p style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: `${s.accent}15`, border: `1px solid ${s.accent}40`, borderRadius: '10px', fontSize: '0.9rem', color: s.text }}>
+                  Demo – in Ihrer lizenzierten Galerie nutzen Sie Ihre eigenen Daten.
+                </p>
+              )}
+
+              <div style={{ marginBottom: '2rem' }}>
+                <h3 style={{ fontSize: '1.15rem', color: s.text, marginBottom: '0.5rem' }}>Medienkit</h3>
+                <p style={{ fontSize: '0.88rem', color: s.muted, marginBottom: '0.75rem' }}>
+                  Kurztext über Galerie/Verein und Ansprechpartner – aus Stammdaten erzeugt. Für E-Mails an Redaktionen oder als Anhang.
+                </p>
+                <pre style={{ background: s.bgElevated, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '0.9rem', color: s.text, marginBottom: '0.75rem', minHeight: '80px' }}>
+                  {medienkitText || 'Noch keine Stammdaten vorhanden. In Einstellungen → Stammdaten ergänzen.'}
+                </pre>
+                <button type="button" onClick={() => {
+                  try {
+                    const t = medienkitText || 'Noch keine Stammdaten vorhanden.'
+                    navigator.clipboard.writeText(t)
+                    alert('✅ Medienkit in Zwischenablage kopiert.')
+                  } catch (_) { alert('Kopieren fehlgeschlagen.') }
+                }} style={{ padding: '0.6rem 1.2rem', background: s.gradientAccent, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>
+                  📋 Kopieren
+                </button>
+              </div>
+
+              <div>
+                <h3 style={{ fontSize: '1.15rem', color: s.text, marginBottom: '0.5rem' }}>Presse-Vorlage</h3>
+                <p style={{ fontSize: '0.88rem', color: s.muted, marginBottom: '0.75rem' }}>
+                  Variablen ausfüllen – fertiger Text zum Kopieren für Presseinformationen (z. B. Eröffnung, Vernissage).
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem', color: s.text }}>
+                    <span>Anlass</span>
+                    <input type="text" value={presseAnlass} onChange={e => setPresseAnlass(e.target.value)} placeholder="z. B. Eröffnung Galerie" style={{ padding: '0.5rem 0.75rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem' }} />
+                  </label>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem', color: s.text }}>
+                    <span>Datum</span>
+                    <input type="text" value={presseDatum} onChange={e => setPresseDatum(e.target.value)} placeholder="z. B. 15.03.2026" style={{ padding: '0.5rem 0.75rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem' }} />
+                  </label>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem', color: s.text }}>
+                    <span>Ort</span>
+                    <input type="text" value={presseOrt} onChange={e => setPresseOrt(e.target.value)} placeholder="z. B. Adresse oder Stadt" style={{ padding: '0.5rem 0.75rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem' }} />
+                  </label>
+                </div>
+                <pre style={{ background: s.bgElevated, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '0.9rem', color: s.text, marginBottom: '0.75rem', minHeight: '60px' }}>
+                  {presseVorlageText}
+                </pre>
+                <button type="button" onClick={() => {
+                  try {
+                    navigator.clipboard.writeText(presseVorlageText)
+                    alert('✅ Presse-Text in Zwischenablage kopiert.')
+                  } catch (_) { alert('Kopieren fehlgeschlagen.') }
+                }} style={{ padding: '0.6rem 1.2rem', background: s.gradientAccent, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>
+                  📋 In Zwischenablage
+                </button>
               </div>
             </section>
           )

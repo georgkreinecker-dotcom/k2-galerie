@@ -268,7 +268,7 @@
 | **Konzept** | **docs/PRODUKT-MEDIENSTUDIO-USER.md** – Phase 1: Medienkit (aus Stammdaten) + Presse-Vorlage (Variablen). Phase 2: Pressekontakte. Phase 3: „Presseinfo verschickt“ an Events. |
 | **Ort** | Marketing (Admin) – Bereich „Presse & Medien“ / „Medienkit“. Eine Implementierung für K2, ök2, VK2; Datenquelle je Mandant. |
 | **Schritte** | 1) Phase 1 umsetzen: Medienkit-Generierung aus Stammdaten, Presse-Vorlage mit Datum/Anlass/Ort, UI unter Marketing. 2) Optional Phase 2/3 (Pressekontakte, Event-Checkbox). |
-| **Erledigt** | [ ] |
+| **Erledigt** | [x] 03.03.26 – Tab „Presse & Medien“ mit Medienkit (aus Stammdaten) + Presse-Vorlage (Anlass, Datum, Ort), Kopieren/Zwischenablage. K2/ök2/VK2 kontextfähig. |
 
 ---
 
