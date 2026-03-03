@@ -46,6 +46,9 @@ import LizenzErfolgPage from './pages/LizenzErfolgPage'
 import EmpfehlungstoolPage from './pages/EmpfehlungstoolPage'
 import VerguetungPage from './pages/VerguetungPage'
 import SecondMacPage from './pages/SecondMacPage'
+import KassaEinstiegPage from './pages/KassaEinstiegPage'
+import KassabuchPage from './pages/KassabuchPage'
+import KassausgangPage from './pages/KassausgangPage'
 // Admin-Route lazy, damit Supabase Auth erst bei /admin geladen wird (Crash-Vermeidung)
 const AdminRoute = lazy(() => import('./components/AdminRoute').then(m => ({ default: m.default })))
 import { Ok2ThemeWrapper } from './components/Ok2ThemeWrapper'
@@ -546,6 +549,9 @@ function App() {
       <Route path="/projects/:projectId" element={<ProjectStartPage />} />
             <Route path={PROJECT_ROUTES['k2-galerie'].platzanordnung} element={<PlatzanordnungPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].shop} element={<ShopPage />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].kassa} element={<KassaEinstiegPage />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].kassabuch} element={<KassabuchPage />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].kassabuchAusgang} element={<KassausgangPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].virtuellerRundgang} element={<VirtuellerRundgangPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].seitengestaltung} element={<SeitengestaltungPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].controlStudio} element={<ControlStudioPage />} />

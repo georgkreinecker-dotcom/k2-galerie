@@ -49,8 +49,12 @@ export const PROJECT_ROUTES = {
     galerieOeffentlichVorschau: '/projects/k2-galerie/galerie-oeffentlich-vorschau',
     galerieVorschau: '/projects/k2-galerie/galerie-vorschau',
     shop: '/projects/k2-galerie/shop',
-    /** Kassabuch – Ausgaben, Bar, Belege (Agenda: docs/K2-OEK2-KASSABUCH-AGENDA.md) */
+    /** Kassa-Einstieg: Erhalten (Shop) oder Auszahlen (Kassabuch) */
+    kassa: '/projects/k2-galerie/kassa',
+    /** Kassabuch – Liste, Druck, Export für Steuerberater */
     kassabuch: '/projects/k2-galerie/kassabuch',
+    /** Neuer Kassausgang: Bar privat, Bar an Bank, Bar mit Beleg */
+    kassabuchAusgang: '/projects/k2-galerie/kassabuch/ausgang',
     virtuellerRundgang: '/projects/k2-galerie/virtueller-rundgang',
     controlStudio: '/projects/k2-galerie/control-studio',
     kunden: '/projects/k2-galerie/kunden',

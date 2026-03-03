@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, Link } from 'react-router-dom'
+import { PROJECT_ROUTES } from '../config/navigation'
 import { usePersistentBoolean, usePersistentString } from '../hooks/usePersistentState'
 import { ProjectNavButton } from '../components/Navigation'
 import { KundenTab } from '../components/KundenTab'
@@ -337,7 +338,10 @@ const ControlStudioPage = () => {
             {activeTab === 'kasse' && (
               <div className="card">
                 <h2>Kasse</h2>
-                <p className="meta">Kassasystem und Vor-Ort-Verkauf – folgt in Kürze.</p>
+                <p className="meta">Verkauf erfassen (Eingang) oder Kassabuch (Ausgaben: Bar privat, Bar an Bank, Bar mit Beleg).</p>
+                <Link to={PROJECT_ROUTES['k2-galerie'].kassa} className="btn" style={{ marginTop: '0.75rem', display: 'inline-block' }}>
+                  Kassa öffnen
+                </Link>
               </div>
             )}
             {activeTab === 'archiv' && (

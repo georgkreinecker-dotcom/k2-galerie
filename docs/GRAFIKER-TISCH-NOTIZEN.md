@@ -21,3 +21,5 @@
 ## Notizen / Ideen
 
 *(freie Notizen, Skizzen, Ideen für später)*
+
+- **Editierbarer Kassabon und Werketiketten (für später):** Layout/Vorlage für Kassenbon und Werketiketten vom Nutzer anpassbar (z. B. Texte, Reihenfolge, optional Logo). Aktuell: Kassenbon und Etiketten haben festes Layout im Code (ShopPage, getEtikettBlob). Aufgehoben für spätere Umsetzung. (03.03.26)

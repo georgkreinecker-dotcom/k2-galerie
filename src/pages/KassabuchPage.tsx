@@ -1,0 +1,200 @@
+/**
+ * Kassabuch – Liste aller Buchungen, separat druckbar, Export für Steuerberater.
+ * Bereich „Kassa, Lager & Listen“ – im Ordner extra gekennzeichnet, übermittelbar.
+ */
+
+import { useState, useMemo } from 'react'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { PROJECT_ROUTES } from '../config/navigation'
+import {
+  getKassabuchMitEingaengen,
+  getKassabuchArtLabel,
+  exportKassabuchCsv,
+  isKassabuchAktiv,
+  setKassabuchAktiv,
+  type KassabuchEintrag,
+} from '../utils/kassabuchStorage'
+
+const s = {
+  bg: '#f8f7f5',
+  card: '#ffffff',
+  accent: '#7a3b1e',
+  text: '#1c1a17',
+  muted: '#7a6f66',
+  radius: '14px',
+  shadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+}
+
+function getTenant(location: ReturnType<typeof useLocation>): 'k2' | 'oeffentlich' {
+  const state = location.state as { fromOeffentlich?: boolean } | null
+  if (state?.fromOeffentlich === true) return 'oeffentlich'
+  if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'oeffentlich') return 'oeffentlich'
+  return 'k2'
+}
+
+export default function KassabuchPage() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const tenant = getTenant(location)
+  const [aktiv, setAktiv] = useState(() => isKassabuchAktiv(tenant))
+  const [entries, setEntries] = useState<KassabuchEintrag[]>(() => getKassabuchMitEingaengen(tenant))
+  const [von, setVon] = useState('')
+  const [bis, setBis] = useState('')
+
+  const sortedEntries = useMemo(() => {
+    let list = [...entries]
+    if (!aktiv) list = list.filter(e => e.art === 'eingang')
+    return list.sort((a, b) => a.datum.localeCompare(b.datum) || 0)
+  }, [entries, aktiv])
+
+  const refresh = () => {
+    setEntries(getKassabuchMitEingaengen(tenant))
+    setAktiv(isKassabuchAktiv(tenant))
+  }
+  const toggleAktiv = () => {
+    const next = !aktiv
+    setKassabuchAktiv(tenant, next)
+    setAktiv(next)
+  }
+
+  const handleExportCsv = () => {
+    const toExport = aktiv ? entries : entries.filter(e => e.art === 'eingang')
+    const csv = exportKassabuchCsv(toExport, von || undefined, bis || undefined)
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `Kassabuch_${tenant}_${von || 'alle'}_${bis || 'alle'}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handlePrint = () => {
+    window.print()
+  }
+
+  /** PDF = gleiche Druckansicht, Nutzer wählt „Als PDF speichern“. */
+  const handleExportPdf = () => {
+    window.print()
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: s.bg, padding: '1.5rem' }}>
+      <div className="no-print" style={{ maxWidth: 900, margin: '0 auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+          <Link to={PROJECT_ROUTES['k2-galerie'].kassa} style={{ color: s.muted, textDecoration: 'none', fontSize: '0.9rem' }}>
+            ← Kassa
+          </Link>
+          <span style={{ color: s.muted }}>|</span>
+          <Link to="/admin" style={{ color: s.muted, textDecoration: 'none', fontSize: '0.9rem' }}>Admin</Link>
+        </div>
+
+        <h1 style={{ fontSize: '1.5rem', color: s.text, marginBottom: '0.25rem' }}>📒 Kassabuch</h1>
+        <p style={{ color: s.muted, marginBottom: '1rem', fontSize: '0.95rem' }}>
+          Chronologische Buchungen – steuerberatergeeignet, separat druckbar und übermittelbar.
+        </p>
+
+        <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <label style={{ color: s.text, fontSize: '0.95rem', fontWeight: 500 }}>Kassabuch führen:</label>
+          <button
+            type="button"
+            onClick={toggleAktiv}
+            style={{
+              padding: '0.35rem 0.75rem',
+              background: aktiv ? '#2d7a3a' : s.muted,
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+            }}
+          >
+            {aktiv ? 'Ja' : 'Nein'}
+          </button>
+          <span style={{ color: s.muted, fontSize: '0.85rem' }}>
+            {aktiv ? 'Eingänge + Ausgänge' : 'Nur Verkäufe (Eingänge)'}
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+          {aktiv && (
+            <button
+              type="button"
+              onClick={() => navigate(PROJECT_ROUTES['k2-galerie'].kassabuchAusgang, { state: { fromOeffentlich: tenant === 'oeffentlich' } })}
+              style={{
+                padding: '0.75rem 1.25rem',
+                background: s.accent,
+                color: '#fff',
+                border: 'none',
+                borderRadius: s.radius,
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              + Neuer Kassausgang
+            </button>
+          )}
+          <button type="button" onClick={refresh} style={{ padding: '0.75rem 1.25rem', background: s.card, color: s.text, border: `1px solid ${s.muted}`, borderRadius: s.radius, cursor: 'pointer' }}>
+            Aktualisieren
+          </button>
+          <button type="button" onClick={handlePrint} style={{ padding: '0.75rem 1.25rem', background: s.card, color: s.text, border: `1px solid ${s.muted}`, borderRadius: s.radius, cursor: 'pointer' }}>
+            Drucken
+          </button>
+          <button type="button" onClick={handleExportPdf} style={{ padding: '0.75rem 1.25rem', background: '#1a5f7a', color: '#fff', border: 'none', borderRadius: s.radius, cursor: 'pointer' }}>
+            Export PDF (Steuerberater)
+          </button>
+          <button type="button" onClick={handleExportCsv} style={{ padding: '0.75rem 1.25rem', background: '#2d7a3a', color: '#fff', border: 'none', borderRadius: s.radius, cursor: 'pointer' }}>
+            Export CSV (Steuerberater)
+          </button>
+        </div>
+
+        <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <label style={{ color: s.muted, fontSize: '0.9rem' }}>Von</label>
+          <input type="date" value={von} onChange={e => setVon(e.target.value)} style={{ padding: '0.35rem 0.5rem', borderRadius: 6, border: `1px solid ${s.muted}` }} />
+          <label style={{ color: s.muted, fontSize: '0.9rem' }}>Bis</label>
+          <input type="date" value={bis} onChange={e => setBis(e.target.value)} style={{ padding: '0.35rem 0.5rem', borderRadius: 6, border: `1px solid ${s.muted}` }} />
+        </div>
+
+        <div style={{ background: s.card, borderRadius: s.radius, boxShadow: s.shadow, overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+            <thead>
+              <tr style={{ background: '#f5f4f2', color: s.text }}>
+                <th style={{ padding: '0.75rem', textAlign: 'left' }}>Datum</th>
+                <th style={{ padding: '0.75rem', textAlign: 'left' }}>Art</th>
+                <th style={{ padding: '0.75rem', textAlign: 'right' }}>Betrag</th>
+                <th style={{ padding: '0.75rem', textAlign: 'left' }}>Verwendungszweck</th>
+                <th style={{ padding: '0.75rem', textAlign: 'left' }}>Beleg</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedEntries
+                .filter(e => (!von || e.datum >= von) && (!bis || e.datum <= bis))
+                .map(e => (
+                  <tr key={e.id} style={{ borderTop: '1px solid #eee' }}>
+                    <td style={{ padding: '0.75rem' }}>{e.datum}</td>
+                    <td style={{ padding: '0.75rem' }}>{getKassabuchArtLabel(e.art)}</td>
+                    <td style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 600 }}>{e.betrag.toFixed(2)} €</td>
+                    <td style={{ padding: '0.75rem', color: s.muted }}>{(e.verwendungszweck || '').slice(0, 40)}{(e.verwendungszweck?.length || 0) > 40 ? '…' : ''}</td>
+                    <td style={{ padding: '0.75rem' }}>
+                      {e.belegImage ? <span title="Belegfoto">📷</span> : null}
+                      {e.belegQrText ? <span title={e.belegQrText.slice(0, 100)}>📄</span> : null}
+                      {!e.belegImage && !e.belegQrText ? '–' : null}
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+          {sortedEntries.length === 0 && (
+            <div style={{ padding: '2rem', textAlign: 'center', color: s.muted }}>Noch keine Buchungen. „Neuer Kassausgang“ für Bar privat, Bar an Bank oder Bar mit Beleg.</div>
+          )}
+        </div>
+      </div>
+
+      <style>{`
+        @media print {
+          .no-print { display: none !important; }
+        }
+      `}</style>
+    </div>
+  )
+}

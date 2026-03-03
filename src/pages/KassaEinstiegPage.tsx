@@ -1,5 +1,6 @@
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
+import { isKassabuchAktiv } from '../utils/kassabuchStorage'
 
 const s = {
   bg: '#f8f7f5',
@@ -21,6 +22,8 @@ export default function KassaEinstiegPage() {
   const fromOeffentlich =
     (location.state as { fromOeffentlich?: boolean } | null)?.fromOeffentlich === true ||
     (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'oeffentlich')
+  const tenant = fromOeffentlich ? 'oeffentlich' as const : 'k2' as const
+  const kassabuchAktiv = isKassabuchAktiv(tenant)
 
   const toShop = () => {
     navigate(PROJECT_ROUTES['k2-galerie'].shop, {
@@ -29,7 +32,7 @@ export default function KassaEinstiegPage() {
   }
 
   const toKassabuch = () => {
-    navigate(PROJECT_ROUTES['k2-galerie'].kassabuch, { state: { fromOeffentlich: fromOeffentlich || undefined } })
+    navigate(PROJECT_ROUTES['k2-galerie'].kassabuchAusgang, { state: { fromOeffentlich: fromOeffentlich || undefined } })
   }
 
   return (
@@ -64,6 +67,7 @@ export default function KassaEinstiegPage() {
             <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>Verkauf erfassen – Beleg drucken</div>
           </div>
         </button>
+        {kassabuchAktiv && (
         <button
           type="button"
           onClick={toKassabuch}
@@ -89,21 +93,11 @@ export default function KassaEinstiegPage() {
             <div style={{ fontSize: '0.85rem', color: s.muted }}>Kassabuch – Bar privat, Kassa an Bank, Beleg</div>
           </div>
         </button>
+        )}
       </div>
-      <Link
-        to="/admin"
-        style={{ marginTop: '2rem', fontSize: '0.9rem', color: s.muted, textDecoration: 'none' }}
-      >
+      <Link to="/admin" style={{ marginTop: '2rem', fontSize: '0.9rem', color: s.muted, textDecoration: 'none' }}>
         ← Zurück zum Admin
       </Link>
     </div>
-  )
-}
-
-function Link({ to, children, style }: { to: string; children: React.ReactNode; style?: React.CSSProperties }) {
-  return (
-    <a href={to} style={style}>
-      {children}
-    </a>
   )
 }

@@ -6,6 +6,7 @@ import { getCategoryLabel, MUSTER_TEXTE, PRODUCT_COPYRIGHT } from '../config/ten
 import { loadStammdaten } from '../utils/stammdatenStorage'
 import { isOeffentlichDisplayContext } from '../utils/oeffentlichContext'
 import { getCustomers, createCustomer, updateCustomer, type Customer } from '../utils/customers'
+import { isKassabuchAktiv } from '../utils/kassabuchStorage'
 import { PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import '../App.css'
 
@@ -1189,6 +1190,37 @@ const ShopPage = () => {
                 >
                   🧾 Als Kasse öffnen
                 </button>
+              )}
+              {isAdminContext && isKassabuchAktiv(fromOeffentlich ? 'oeffentlich' : 'k2') && (
+              <Link 
+                to={PROJECT_ROUTES['k2-galerie'].kassabuchAusgang} 
+                state={{ fromOeffentlich: fromOeffentlich || undefined }}
+                style={{ 
+                  padding: '0.6rem 1.25rem', 
+                  background: s.accentSoft,
+                  border: `1px solid ${s.accent}40`,
+                  color: s.accent, 
+                  textDecoration: 'none', 
+                  borderRadius: s.radiusSm,
+                  whiteSpace: 'nowrap',
+                  fontWeight: '600',
+                  transition: 'all 0.2s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  boxShadow: s.shadow
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = s.bgElevated
+                  e.currentTarget.style.borderColor = s.accent
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = s.accentSoft
+                  e.currentTarget.style.borderColor = `${s.accent}40`
+                }}
+              >
+                📤 Auszahlen (Kassabuch)
+              </Link>
               )}
               {isAdminContext && (
               <Link 
