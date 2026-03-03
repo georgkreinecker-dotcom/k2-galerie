@@ -69,9 +69,16 @@ Preise und Limits später festlegen; die **Struktur** (eine Lizenz pro Familie, 
 
 ---
 
-## 5. Nächste Schritte (für Roadmap)
+## 5. Datensouveränität – Daten bleiben bei der Familie
+
+**Auch wenn wir die App eines Tages nicht mehr aktiv betreiben:** Die Familiendaten bleiben **100 % verfügbar und erhalten**. Sie können **ausgedruckt** und **privat abgespeichert** (exportiert) werden. Der Cloud-Platz wird dann voraussichtlich nicht mehr zur Verfügung stehen – deshalb sind Export und Druck von Anfang an anzubieten und **gut zu kommunizieren**. Die Familie behält ihre Daten in der Hand. Verbindlich: **docs/K2-FAMILIE-DATENSOUVERAENITAET.md**.
+
+---
+
+## 6. Nächste Schritte (für Roadmap)
 
 - [ ] **Cloud-Backend für K2 Familie** umsetzen (Supabase oder API): Familiendaten pro Tenant in der Cloud; Einladungslink/Code; Sync für alle Geräte.
+- [ ] **Export & Druck** jederzeit anbieten und **Datensouveränität** kommunizieren („Deine Daten gehören dir – exportieren, ausdrucken, privat aufbewahren“); siehe **docs/K2-FAMILIE-DATENSOUVERAENITAET.md**.
 - [ ] **Lizenzmodell K2 Familie** festlegen: eine Lizenz pro Familie, Gründer zahlt; Stufe (Basic/Pro) und Intervall (jährlich/monatlich); Preise.
 - [ ] **Checkout K2 Familie** anbinden (Stripe, analog K2 Galerie); Lizenz-Check vor „Cloud aktivieren“ oder „Familie einladen“.
 - [ ] **Doku mök2/Handbuch:** K2 Familie als Lizenzprodukt, faire Kostenstruktur, wer/wann/wo/wie – für Vertrieb und Nutzer.

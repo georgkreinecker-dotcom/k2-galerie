@@ -99,4 +99,6 @@ K2 Familie trägt dieses Licht: keine Ausgrenzung, Respekt, jede Form des Zusamm
 
 **Daten:** K2-Familie-Daten (Personen, Momente, Beziehungen) unterliegen denselben Schutzprinzipien wie K2: keine automatischen Löschungen, keine stillen Filter, Schreiben nur nach expliziter User-Aktion. Siehe Projekt-Regeln zu Kundendaten und Datentrennung.
 
+**Datensouveränität:** Die Daten der Familie gehören der Familie – **100 % verfügbar und erhalten**, auch wenn der Betrieb der App eingestellt wird. Export und Ausdruck jederzeit möglich; private Speicherung bei der Familie. Cloud-Platz entfällt dann; wer exportiert/ausdruckt, hat die Geschichte dauerhaft bei sich. Das muss in der App und gegenüber Nutzer*innen **klar kommuniziert** werden. Verbindlich: **docs/K2-FAMILIE-DATENSOUVERAENITAET.md**.
+
 **Querverweis:** Vision & Phasen → `docs/K2-FAMILIE-ROADMAP.md`
