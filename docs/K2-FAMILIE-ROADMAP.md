@@ -85,6 +85,14 @@
 - **4.1:** Heute nur `K2_FAMILIE_DEFAULT_TENANT`; alle Keys `k2-familie-{tenantId}-*`. Später: Tenant-Auswahl („Familie wechseln“), Liste der Familien, Einladung/Lizenz pro Familie – analog K2 Galerie pro Künstler:in.
 - **4.2:** Nutzer-Doku, Onboarding (erste Schritte), ggf. Lizenzmodell „K2 Familie“ in mök2/Handbuch.
 - **Austausch (Markt/Standard):** Rad nicht neu erfinden – **GEDCOM**-Export/Import (Personen + Beziehungen) einplanen, damit Anschluss an Legacy, MacStammbaum, FamilySearch usw. Details: **docs/K2-FAMILIE-MARKT-STANDARDS.md**.
+- **Struktur: Startpunkt & aktiv/passiv:** Wo beginne ich (bei mir / Eltern / Großeltern)? Aktiver Teil = den ich pflege; passiver Teil = Vergangenheit, Gedenkort. **Organisch:** Passiver Teil = „Was unsere Familie dazu weiß“ – viele können zu derselben Person (Vorfahre) beitragen (Erinnerung, Korrektur, Foto, Datum); niemand „besitzt“ die Vergangenheit. Details: **docs/K2-FAMILIE-STARTPUNKT-AKTIV-PASSIV.md**.
+
+### Phase 5: Gedenkort – Die uns vorausgegangen sind
+
+- [ ] **5.1** **Gedenkort (Konzept):** Ort zum Gedenken der Verstorbenen – „die ewige Heimat, dorthin woher wir gekommen sind und wohin wir zurückgehen“. **Erledigt (Konzept):** `docs/K2-FAMILIE-GEDENKORT.md`.
+- [ ] **5.2** Personen-Felder `verstorben`, `verstorbenAm`; Gedenkort-Seite zeigt nur verstorbene Personen (Foto, Name, optional Sterbedatum).
+- [ ] **5.3** **Gaben hinterlassen:** Blume, Kerze, Text, Foto – mit **Sichtbarkeit:** **privat** (nur für mich sichtbar) oder **öffentlich** (für alle in der Familie). Speicher `k2-familie-{tenantId}-gaben`, Datenmodell in GEDENKORT.md.
+- [ ] **5.4** UI: „Blume hinterlassen“, „Etwas in Erinnerung teilen“ – leise, würdig, keine Punkte/Belohnungen.
 
 ---
 
@@ -113,3 +121,5 @@
 *„Diese Grundbotschaft soll sich in der Form der App und in der Sprache niederschlagen. Sollte das Tool einmal von KI gesteuert werden – ein Agent oder so –, muss das die Grundlage seiner Kommunikation sein. Wenn wir jetzt den Grundstein legen, soll das Haus auf sicherem moralischen Fundament stehen. Das ist mein Anspruch, mein Vermächtnis.“ – Georg, 02.03.26*
 
 *„Das ist der weiße Ritter, der in die Welt hinausgeht, um Licht hineinzubringen.“ – Georg, 02.03.26*
+
+*„Ein Ort, um an die zu gedenken, die uns schon vorausgegangen sind – in die ewige Heimat. Die Möglichkeit, Blumen zu hinterlassen oder anderes, was uns wichtig ist. Vielleicht ein ganz persönlicher Eintrag, den niemand sieht – und einer, der öffentlich ist.“ – Georg, 02.03.26*
