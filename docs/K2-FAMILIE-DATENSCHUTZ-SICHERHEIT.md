@@ -11,7 +11,7 @@
 
 - **Rechtliche Grundlage:** Verarbeitung personenbezogener Daten (Namen, Fotos, Lebensdaten, Beziehungen, Momente, Events) erfolgt **konform mit der DSGVO** (EU-Datenschutz-Grundverordnung) und dem anwendbaren nationalen Recht (z. B. Österreich, Deutschland).
 - **Datenschutzerklärung, Rechtsgrundlagen, Betroffenenrechte (Auskunft, Berichtigung, Löschung, Widerspruch, Datenübertragbarkeit), Speicherdauer, Empfänger, ggf. Auftragsverarbeiter** – alles in der Datenschutzerklärung der App/des Angebots dokumentiert und für Nutzer*innen zugänglich.
-- **Keine Weitergabe an Dritte** zu Werbezwecken; **kein Verkauf** von Familiendaten; **keine Nutzung** der Inhalte für Training von KI oder Marketing. Das ist keine „Extra-Garantie“, sondern Teil des normalen Datenschutzniveaus, das wir einhalten.
+- **Keine Weitergabe an Dritte** zu Werbezwecken; **kein Verkauf** von Familiendaten; **keine Nutzung** der Inhalte für Training von KI oder Marketing. **Kommerzielle Verwertung der Familiendaten ist absolut – für immer – ausgeschlossen** (Teil des Genoms von K2 Familie, siehe **docs/K2-FAMILIE-GRUNDBOTSCHAFT.md** Abschnitt „Genom“). Das ist kein Geschäftsmodell-Entschluss, sondern ethisches und rechtliches Fundament.
 
 ---
 

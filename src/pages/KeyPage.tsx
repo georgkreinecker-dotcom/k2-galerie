@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { PLATFORM_ROUTES } from '../config/navigation'
 
@@ -13,17 +13,25 @@ export default function KeyPage() {
   const [key, setKey] = useState('')
   const [visible, setVisible] = useState(false)
   const [saved, setSaved] = useState(false)
+  const savedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     setKey(localStorage.getItem(STORAGE_KEY) || '')
   }, [])
 
+  useEffect(() => {
+    return () => {
+      if (savedTimeoutRef.current) clearTimeout(savedTimeoutRef.current)
+    }
+  }, [])
+
   const save = () => {
     const v = key.trim()
     if (v) {
+      if (savedTimeoutRef.current) clearTimeout(savedTimeoutRef.current)
       localStorage.setItem(STORAGE_KEY, v)
       setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
+      savedTimeoutRef.current = setTimeout(() => setSaved(false), 2000)
     }
   }
 

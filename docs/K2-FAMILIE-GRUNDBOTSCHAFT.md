@@ -10,6 +10,22 @@
 2. **Wechselnde Partnerschaften, Schicksalsschläge, Freud und Alltag** – alles bekommt seinen Platz, ohne zu werten.
 3. **Keine Ausgrenzung – in keiner Form.** Religion und Politik haben hier nichts zu suchen.
 4. **Jeder respektiert den anderen so, wie er ist.**
+5. **Daten gehören der Familie und dürfen nur dort Verwendung finden. Die kommerzielle Verwertung ist absolut – für immer – ausgeschlossen.** Denn wenn die Sache groß wird, wird die Versuchung immer größer, da etwas zu manipulieren. Wer kennt die Zukunft. Dieses Prinzip ist Teil des Genoms von K2 Familie – unverhandelbar.
+
+---
+
+## Genom – Daten der Familie, keine kommerzielle Verwertung (für immer)
+
+**Im Genom von K2 Familie eingepflanzt:**
+
+- **Daten gehören der Familie** – und **dürfen nur dort Verwendung finden**. Kein Weitergeben, kein Verkaufen, kein Nutzen für andere Zwecke als den Familienraum.
+- **Kommerzielle Verwertung der Familiendaten ist absolut – für immer – ausgeschlossen.** Egal wie groß K2 Familie wird: die Daten der Familien werden nicht kommerziell verwertet. Keine Ausnahme.
+- **Warum für immer:** Wenn die Sache groß ist, wird die Versuchung immer größer, da etwas zu manipulieren. Wer kennt die Zukunft. Deshalb steht es von vornherein fest: **nie** kommerzielle Verwertung – nicht heute, nicht morgen, nicht bei anderem Eigentümer, nicht bei Skalierung. Das ist kein Geschäftsmodell-Entschluss, sondern ein **ethisches und rechtliches Fundament** des Produkts.
+
+Jede KI, jeder Agent, jede zukünftige Betreiberin oder jeder Betreiber, die oder der mit K2 Familie arbeitet, hat dieses Genom zu respektieren. In AGB, Datenschutz und technischen Vorkehrungen muss es abgesichert und kommuniziert werden.
+
+> *„In unser Genom der K2 Familie ist einzupflanzen: Daten gehören der Familie und dürfen nur dort Verwendung finden. Die kommerzielle Verwertung ist absolut für immer ausgeschlossen – denn wenn die Sache groß ist, wird die Versuchung immer größer werden, da etwas zu manipulieren. Wer kennt die Zukunft.“*  
+> – Georg, 02.03.26
 
 ---
 
@@ -97,7 +113,7 @@ K2 Familie trägt dieses Licht: keine Ausgrenzung, Respekt, jede Form des Zusamm
 
 ---
 
-**Daten:** K2-Familie-Daten (Personen, Momente, Beziehungen) unterliegen denselben Schutzprinzipien wie K2: keine automatischen Löschungen, keine stillen Filter, Schreiben nur nach expliziter User-Aktion. Siehe Projekt-Regeln zu Kundendaten und Datentrennung.
+**Daten:** K2-Familie-Daten (Personen, Momente, Beziehungen) unterliegen denselben Schutzprinzipien wie K2: keine automatischen Löschungen, keine stillen Filter, Schreiben nur nach expliziter User-Aktion. Siehe Projekt-Regeln zu Kundendaten und Datentrennung. **Genom:** Daten gehören der Familie, nur dort Verwendung; **kommerzielle Verwertung für immer ausgeschlossen** – siehe Abschnitt „Genom“ oben.
 
 **Datensouveränität:** Die Daten der Familie gehören der Familie – **100 % verfügbar und erhalten**, auch wenn der Betrieb der App eingestellt wird. Export und Ausdruck jederzeit möglich; private Speicherung bei der Familie. Cloud-Platz entfällt dann; wer exportiert/ausdruckt, hat die Geschichte dauerhaft bei sich. Das muss in der App und gegenüber Nutzer*innen **klar kommuniziert** werden. Verbindlich: **docs/K2-FAMILIE-DATENSOUVERAENITAET.md**.
 

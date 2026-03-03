@@ -28,12 +28,19 @@ export default function EmpfehlungstoolPage() {
   const [empfehlerName, setEmpfehlerName] = useState(getStoredName)
   const [copied, setCopied] = useState(false)
   const schreibenRef = useRef<HTMLElement | null>(null)
+  const copiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (scrollToTeil && schreibenRef.current) {
       schreibenRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }, [scrollToTeil])
+
+  useEffect(() => {
+    return () => {
+      if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current)
+    }
+  }, [])
 
   const empfehlungslink = useMemo(
     () => `${BASE_APP_URL}${WILLKOMMEN_ROUTE}?empfehler=${encodeURIComponent(empfehlerId)}`,
@@ -65,9 +72,10 @@ ${name}`
 
   const copyText = () => {
     try {
+      if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current)
       navigator.clipboard.writeText(emailText)
       setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      copiedTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
     } catch (_) {}
   }
 

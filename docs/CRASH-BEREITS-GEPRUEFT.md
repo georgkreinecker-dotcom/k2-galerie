@@ -63,6 +63,9 @@ So können wir den Punkt Schritt für Schritt eingrenzen.
 | main.tsx Console in iframe (01.03.26) | MAX_LOGS in Cursor Preview (iframe) auf 15 reduziert – weniger Speicher/Churn (crash-beim-programmieren-vermeiden.mdc). |
 | SeitengestaltungPage setSaved-Timeout (01.03.26) | setTimeout(1800) für setSaved(false) ohne Cleanup → bei Unmount (HMR, Navigation) setState nach Ablauf. **Fix:** savedTimeoutRef, clearTimeout im useEffect-Cleanup, in handleSave vor neuem Timeout altes clearen. |
 | VitaPage setSaved-Timeout (02.03.26) | Zwei setTimeout(2000) für setSaved(false) in save() ohne Cleanup → bei Unmount (HMR, Navigation) setState nach Ablauf. **Fix:** savedTimeoutRef, clearTimeout im useEffect-Cleanup, in save() vor neuem Timeout altes clearen. |
+| KeyPage setSaved-Timeout (03.03.26) | setTimeout(2000) in save() ohne Cleanup → setState nach Unmount. **Fix:** savedTimeoutRef + clearTimeout im useEffect-Cleanup. |
+| EmpfehlungstoolPage setCopied-Timeout (03.03.26) | setTimeout(2000) in copyText() ohne Cleanup → setState nach Unmount. **Fix:** copiedTimeoutRef + clearTimeout im useEffect-Cleanup. |
+| GitHubTokenPage setSaved-Timeout (03.03.26) | setTimeout(2000) in save() ohne Cleanup → setState nach Unmount. **Fix:** savedTimeoutRef + clearTimeout im useEffect-Cleanup. |
 | ScreenshotExportAdmin soldArtworksDisplayDaysK2 (01.03.26) | Neuer useEffect lädt K2-Wert bei Werke-Tab; kein setInterval/reload. **Absicherung:** isMounted-Cleanup im useEffect (kein setState nach Unmount bei HMR/Tab-Wechsel). |
 | Tenant-Sync / Veröffentlichen (01.03.26) | Veröffentlichen für ök2/VK2 freigeschaltet; „Bilder vom Server laden“ für alle Mandanten. **Kein** neuer location.reload/setInterval. **Absicherung:** publishMobile({ silent: true }) nach Speichern nur wenn window.self === window.top (nicht im iframe), um Cursor Preview zu entlasten. |
 
@@ -182,8 +185,10 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 | 02.03.26 | K2 Familie (alle Seiten + familie*) | **ro check crash:** K2FamiliePersonPage, K2FamilieEventsPage, K2FamilieStammbaumPage, K2FamilieKalenderPage, K2FamilieStartPage + alle src *familie* durchsucht. Kein setInterval, setTimeout, addEventListener, location.reload/replace/href. useEffects nur sync (load/setState), kein Cleanup nötig. Kein neuer Fix. |
 | 02.03.26 | Code-5-Check (check the crash 5) | location.reload: nur in patch-backup-panel.js, beide mit iframe-Check ✓. location.replace/href: SmartPanel (startFremderModus + nav) mit iframe-Check ✓. env.ts safeReload ✓. write-build-info.js Inject: iframe + localhost ✓. index.html: root/Button-Reload mit iframe-Check ✓. **Fix:** VitaPage – setTimeout(2000) für setSaved(false) ohne Cleanup → bei Unmount/HMR setState nach Ablauf. savedTimeoutRef + clearTimeout im useEffect-Cleanup, in save() vor neuem Timeout altes clearen. |
 | 02.03.26 | ro check crash | Letzte Änderung: Upgrade-Info in ScreenshotExportAdmin (Lizenzinformation) – nur statischer Block + mailto-Link, kein neuer useEffect/setTimeout/setInterval/reload. K2-Familie-Seiten bereits 02.03.26 geprüft. Kein neuer Fix. |
+| 03.03.26 | KassaEinstiegPage, kassabuchStorage | Neue Dateien (Kassa): kein setInterval/setTimeout/reload/listener – unkritisch. |
+| 03.03.26 | KeyPage, EmpfehlungstoolPage, GitHubTokenPage | setTimeout(2000) für setSaved/setCopied(false) ohne Cleanup → bei Unmount/HMR setState nach Ablauf. **Fix:** savedTimeoutRef/copiedTimeoutRef + clearTimeout im useEffect-Cleanup, vor neuem Timeout altes clearen. |
 
-*Zuletzt ergänzt: 02.03.26 (ro check crash, Upgrade-Info statisch)*
+*Zuletzt ergänzt: 03.03.26 (check crash – KeyPage, EmpfehlungstoolPage, GitHubTokenPage)*
 
 ---
 

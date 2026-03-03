@@ -8,11 +8,11 @@
 
 | Was | Inhalt |
 |-----|--------|
-| **Datum** | 02.03.26 |
-| **Thema** | ro check crash |
-| **Zuletzt geändert/geöffnet** | DIALOG-STAND, CRASH-BEREITS-GEPRUEFT, CRASH-LETZTER-KONTEXT, ScreenshotExportAdmin (Upgrade-Info), K2-Familie-Seiten |
-| **Hinweis von Georg** | „ro check crasch“ |
-| **Ergebnis** | Upgrade-Info in Lizenzinformation = nur statischer JSX + mailto, keine neuen Timer/Listener/Reload. Kein neuer Fix. Eintrag in CRASH-BEREITS-GEPRUEFT.md. |
+| **Datum** | 03.03.26 |
+| **Thema** | check crash |
+| **Zuletzt geändert/geöffnet** | CRASH-BEREITS-GEPRUEFT, CRASH-LETZTER-KONTEXT, KassaEinstiegPage, kassabuchStorage, KeyPage, EmpfehlungstoolPage, GitHubTokenPage |
+| **Hinweis von Georg** | „check crash“ |
+| **Ergebnis** | Neue Kassa-Dateien unkritisch. KeyPage, EmpfehlungstoolPage, GitHubTokenPage: setTimeout für setSaved/setCopied ohne Cleanup → Fix (Ref + clearTimeout im Cleanup) wie bei VitaPage/SeitengestaltungPage. CRASH-BEREITS-GEPRUEFT.md ergänzt. |
 
 ---
 
