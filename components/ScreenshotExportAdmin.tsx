@@ -332,6 +332,7 @@ import { sortArtworksNewestFirst, sortArtworksFavoritesFirstThenNewest } from '.
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
 import { getOrCreateEmpfehlerId, isValidEmpfehlerIdFormat } from '../src/utils/empfehlerId'
 import { LIZENZPREISE } from '../src/config/licencePricing'
+import { isKassabuchAktiv, setKassabuchAktiv, hasKassa } from '../src/utils/kassabuchStorage'
 import { getGutschriftSumme } from '../src/utils/empfehlerGutschrift'
 import { writePngDpi } from 'png-dpi-reader-writer'
 
@@ -914,6 +915,14 @@ function ScreenshotExportAdmin() {
   useEffect(() => {
     if (activeTab === 'einstellungen') setBackupTimestamps(getBackupTimestamps())
   }, [activeTab])
+
+  // Kassabuch führen (Einstellungen): lokale Anzeige synchron mit Speicher
+  const kassabuchTenantForSettings = tenant.isOeffentlich ? 'oeffentlich' as const : 'k2' as const
+  const [kassabuchAktivSetting, setKassabuchAktivSetting] = useState<boolean | null>(null)
+  useEffect(() => {
+    if (activeTab === 'einstellungen' && !tenant.isVk2) setKassabuchAktivSetting(null)
+  }, [activeTab, tenant.isVk2])
+  const kassabuchAktivDisplay = kassabuchAktivSetting !== null ? kassabuchAktivSetting : isKassabuchAktiv(kassabuchTenantForSettings)
 
   // Vorschau-Container für bildausfüllende Skalierung messen (Design-Tab Vorschau; bei Overlay ref wechselt)
   useEffect(() => {
@@ -11577,6 +11586,62 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             }}>
               ⚙️ Einstellungen
             </h2>
+
+            {/* Kassabuch führen: Ja / Nein – wichtiger Punkt (nur K2/ök2, ab Pro) */}
+            {!tenant.isVk2 && hasKassa(kassabuchTenantForSettings) && (() => {
+              const aktiv = kassabuchAktivDisplay
+              return (
+                <div style={{
+                  marginBottom: '2rem',
+                  padding: '1.25rem',
+                  background: `${s.accent}14`,
+                  border: `1px solid ${s.accent}44`,
+                  borderRadius: '16px'
+                }}>
+                  <h3 style={{ fontSize: '1.1rem', color: s.text, marginBottom: '0.35rem' }}>📒 Kassabuch führen</h3>
+                  <p style={{ color: s.muted, fontSize: '0.9rem', marginBottom: '1rem' }}>
+                    Mit <strong>Ja</strong>: Vollständiges Kassabuch (Eingänge aus Verkäufen + Ausgänge: Bar privat, Kassa an Bank, Bar mit Beleg). Mit <strong>Nein</strong>: Nur Verkäufe (Eingänge) sichtbar, keine Ausgänge.
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      onClick={() => { setKassabuchAktiv(kassabuchTenantForSettings, true); setKassabuchAktivSetting(true) }}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        background: aktiv ? s.accent : s.bgElevated,
+                        color: aktiv ? '#fff' : s.muted,
+                        border: `1px solid ${aktiv ? s.accent : s.muted}`,
+                        borderRadius: 8,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        fontSize: '0.95rem'
+                      }}
+                    >
+                      Ja
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setKassabuchAktiv(kassabuchTenantForSettings, false); setKassabuchAktivSetting(false) }}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        background: !aktiv ? s.accent : s.bgElevated,
+                        color: !aktiv ? '#fff' : s.muted,
+                        border: `1px solid ${!aktiv ? s.accent : s.muted}`,
+                        borderRadius: 8,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        fontSize: '0.95rem'
+                      }}
+                    >
+                      Nein
+                    </button>
+                    <span style={{ fontSize: '0.9rem', color: s.muted }}>
+                      {aktiv ? 'Vollständiges Kassabuch (Eingänge + Ausgänge)' : 'Nur Verkäufe (Eingänge)'}
+                    </span>
+                  </div>
+                </div>
+              )
+            })()}
 
             {/* Musterdaten laden / löschen – nur K2 */}
             {!tenant.isOeffentlich && !tenant.isVk2 && (
