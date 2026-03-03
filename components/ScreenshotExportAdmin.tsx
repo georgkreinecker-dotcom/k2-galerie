@@ -13979,6 +13979,25 @@ ${name}`
                 </p>
               )}
 
+              {/* Story für Presse (Human Interest) – nur K2, optional zum Kopieren */}
+              {!tenant.isVk2 && !tenant.isOeffentlich && (
+                <div style={{ marginBottom: '2rem', padding: '1rem 1.25rem', background: `${s.accent}08`, border: `1px solid ${s.accent}30`, borderRadius: '12px' }}>
+                  <h3 style={{ fontSize: '1rem', color: s.text, marginBottom: '0.5rem' }}>💡 Story für Presse (optional)</h3>
+                  <p style={{ fontSize: '0.8rem', color: s.muted, marginBottom: '0.75rem' }}>
+                    Locker, mit Augenzwinkern – für Medien, die eine kleine „Geschichte dahinter“ mögen.
+                  </p>
+                  <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '0.85rem', color: s.text, marginBottom: '0.75rem', lineHeight: 1.5, fontFamily: 'inherit' }}>
+                    {`Zwei pensionierte Unternehmer, ein Traum: Mit ihrer eigenen Galerie wollen Martina und Georg Kreinecker ihre künstlerischen Werke zeigen – Malerei und Keramik, nah an den Menschen. Nur: Wer jahrzehntelang Maschinenbau und Vertrieb gemanagt hat, hat gewisse Ansprüche. An die Kassa. An die Organisation. An Marketing und Presse. Am Markt fanden sie vor allem Stückwerke – dies für die Galerie, das für die Kasse, jenes für die Einladungen. Also wurde selbst gebaut: Heute heißt das Ergebnis K2 Galerie – Galerie, Kasse, Events und Presse aus einer Hand, und die Plattform wächst mit (ök2 für Künstler:innen, VK2 für Kunstvereine). Kein Tech-Konzern, sondern zwei, die sich einen Traum erfüllen und dabei nicht auf halben Lösungen sitzen bleiben wollten. Mit Augenzwinkern: Wer sein Leben lang Dinge organisiert hat, hört im Ruhestand nicht einfach auf.`}
+                  </pre>
+                  <button type="button" onClick={() => {
+                    const t = 'Zwei pensionierte Unternehmer, ein Traum: Mit ihrer eigenen Galerie wollen Martina und Georg Kreinecker ihre künstlerischen Werke zeigen – Malerei und Keramik, nah an den Menschen. Nur: Wer jahrzehntelang Maschinenbau und Vertrieb gemanagt hat, hat gewisse Ansprüche. An die Kassa. An die Organisation. An Marketing und Presse. Am Markt fanden sie vor allem Stückwerke – dies für die Galerie, das für die Kasse, jenes für die Einladungen. Also wurde selbst gebaut: Heute heißt das Ergebnis K2 Galerie – Galerie, Kasse, Events und Presse aus einer Hand, und die Plattform wächst mit (ök2 für Künstler:innen, VK2 für Kunstvereine). Kein Tech-Konzern, sondern zwei, die sich einen Traum erfüllen und dabei nicht auf halben Lösungen sitzen bleiben wollten. Mit Augenzwinkern: Wer sein Leben lang Dinge organisiert hat, hört im Ruhestand nicht einfach auf.'
+                    try { navigator.clipboard.writeText(t); alert('✅ Story in Zwischenablage kopiert.') } catch (_) { alert('Kopieren fehlgeschlagen.') }
+                  }} style={{ padding: '0.5rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
+                    📋 Story kopieren
+                  </button>
+                </div>
+              )}
+
               <div style={{ marginBottom: '2rem' }}>
                 <h3 style={{ fontSize: '1.15rem', color: s.text, marginBottom: '0.5rem' }}>Medienkit</h3>
                 <p style={{ fontSize: '0.88rem', color: s.muted, marginBottom: '0.75rem' }}>
