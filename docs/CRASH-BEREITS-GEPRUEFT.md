@@ -266,3 +266,5 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 **Konkret ableitbar:** In `.vscode/settings.json` (oder Cursor-User-Settings) können wir bzw. Georg ergänzen: `git.autoRefresh: false`, ggf. `cursor.server.memoryLimit: 4096`, `window.restoreWindows: "none"`. Dateiwatcher-Ausnahmen sind schon drin. Rest (Cache, Reinstall, Chat reduzieren) ist manuelle Cursor-Pflege.
 
 **Georgs Beobachtung (01.03.26):** Reopen/Crash hat laut Empfinden **nichts mit der App zu tun**, sondern passiert **hauptsächlich beim Codieren** (Speichern, Schreiben). → Ursache liegt eher bei **Cursor/Editor** (Dateiwächter, HMR beim Speichern, IDE-Stabilität) als bei der laufenden App. App-seitige Abschaltungen (iframe, Preview) können trotzdem entlasten; die Hauptquelle ist aber das Schreiben/Speichern im Editor.
+
+**Was Georg hilft (03.03.26):** Kleinere Datenmengen, keine Türme bauen – das hat bisher geholfen. (Klein halten, nicht alles auf einmal.)
