@@ -5,7 +5,7 @@
 ## Datum: 03.03.26
 
 ## Was zuletzt gemacht (03.03.26)
-- **Kassabuch – alles aus Agenda umgesetzt:** (1) **Kassaeingänge:** Verkäufe aus k2-orders (K2) bzw. k2-oeffentlich-orders (ök2) erscheinen im Kassabuch als „Eingang“, gemeinsam mit Ausgängen chronologisch; getKassabuchMitEingaengen in kassabuchStorage. (2) **Einstellung „Kassabuch führen: Ja/Nein“:** Speicher k2-kassabuch-aktiv / k2-oeffentlich-kassabuch-aktiv; Toggle auf KassabuchPage; bei Nein nur Verkäufe (Eingänge) sichtbar, Button „Neuer Kassausgang“ ausgeblendet; Link „Auszahlen (Kassabuch)“ in ShopPage und KassaEinstiegPage nur bei Ja sichtbar. (3) **PDF-Export:** Button „Export PDF (Steuerberater)“ öffnet Druckdialog (Nutzer wählt „Als PDF speichern“). Tests + Build grün. **Nächster Schritt:** Commit + Push; danach im Browser testen (Eingänge nach Verkauf, Toggle, PDF).
+- **Kassabuch – alles aus Agenda umgesetzt:** (1) **Kassaeingänge:** Verkäufe aus k2-orders (K2) bzw. k2-oeffentlich-orders (ök2) erscheinen im Kassabuch als „Eingang“, gemeinsam mit Ausgängen chronologisch; getKassabuchMitEingaengen in kassabuchStorage. (2) **Einstellung „Kassabuch führen: Ja/Nein“:** Speicher k2-kassabuch-aktiv / k2-oeffentlich-kassabuch-aktiv; Toggle auf KassabuchPage; bei Nein nur Verkäufe (Eingänge) sichtbar, Button „Neuer Kassausgang“ ausgeblendet; Link „Auszahlen (Kassabuch)“ in ShopPage und KassaEinstiegPage nur bei Ja sichtbar. (3) **PDF-Export:** Button „Export PDF (Steuerberater)“ öffnet Druckdialog (Nutzer wählt „Als PDF speichern“). Tests + Build grün. **Commit:** 2f9bd0f ✅ auf GitHub. **Nächster Schritt:** Im Browser testen (Eingänge nach Verkauf, Toggle Ja/Nein, PDF-Export).
 
 ## Datum: 02.03.26
 
