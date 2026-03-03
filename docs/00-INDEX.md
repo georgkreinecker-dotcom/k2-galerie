@@ -65,7 +65,8 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **SICHTBARKEIT-SUCHMASCHINEN-WERBUNG-KONZEPT.md** – **Sichtbar im Netz:** Suchmaschinen (SEO ohne Kosten), alle Werbemöglichkeiten; maximaler Verbreitungsgrad ohne Zusatzkosten; was mit welchem Budget möglich ist (Domain, Google Ads, Social, Agentur).
 - **SICHTBARKEIT-WERBUNG-AGENDA.md** – **Punkt-für-Punkt:** Arbeitsliste Sichtbarkeit & Werbung (Phase 1–3), Status pro Punkt; zum Abarbeiten mit Nächster Schritt.
 - **SICHTBARKEIT-PHASE1-VORLAGEN.md** – **Copy-Paste für Phase 1:** Google Business, Social Bio/Post, QR/Links, Medienlisten (§5a), Presse + **Medienverteiler-Eröffnung** (§6).
-- **PRESSEARBEIT-STANDARD.md** – **Pressearbeit standardisiert (Sportwagenmodus):** ein Ablauf, eine Vorlage, ein Verteiler; nur Variablen anpassen; Checkliste vor Versand.
+- **MEDIENSTUDIO-K2.md** – **Medienstudio K2 (Presse & Medien):** Einstieg für alle Pressearbeit; Medienkit (Boilerplate, Ansprechpartner, Bilder), Redaktionsplan, Qualitätsregeln; verknüpft mit PRESSEARBEIT-STANDARD und MEDIENVERTEILER.
+- **PRESSEARBEIT-STANDARD.md** – **Pressearbeit standardisiert (Sportwagenmodus):** ein Ablauf, eine Vorlage, ein Verteiler; Teil von Medienstudio K2; Checkliste vor Versand.
 - **MEDIENVERTEILER-EROEFFNUNG.md** – **Presseverteiler:** regional (OÖN, MeinBezirk, Tips, ORF OÖ) + überregional (Standard, Presse); mit PRESSEARBEIT-STANDARD verknüpft.
 - **ABRECHNUNGSSTRUKTUR-EMPFEHLUNGSPROGRAMM.md** – Abrechnungsstruktur Empfehlungsprogramm.
 - **ZAHLUNGSSYSTEM-LIZENZEN-TECHNIK-PLAN.md** – **Zahlungssystem Lizenzen (nur online):** Konkreter Technik-Plan – Kreditkarte/PayPal über Stripe (o. ä.), Backend Checkout + Webhook, DB Lizenzen/Zahlungen/Gutschriften, Frontend Redirect + Success, Abrechnung/Export. Lizenzen nur im Internet, nicht in der Galerie.

@@ -1,6 +1,7 @@
 # Pressearbeit – Standard (Sportwagenmodus)
 
-**Stand:** 03.03.26 · **Prinzip:** Standardisiert, automatisiert – ein Ablauf, eine Vorlage, ein Verteiler. Kein Neuerfinden, keine Sonderfälle.
+**Stand:** 03.03.26 · **Teil von:** Medienstudio K2 (docs/MEDIENSTUDIO-K2.md).  
+**Prinzip:** Standardisiert, automatisiert – ein Ablauf, eine Vorlage, ein Verteiler. Kein Neuerfinden, keine Sonderfälle.
 
 ---
 

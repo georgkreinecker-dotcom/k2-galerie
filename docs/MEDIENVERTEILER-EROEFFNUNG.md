@@ -2,8 +2,8 @@
 
 **Stand:** 03.03.26 · **Zweck:** Regional und leicht überregional für Presseinformation. Einmal pflegen, für jede Presseaussendung nutzen.
 
-**Pressearbeit = immer derselbe Standard:** docs/PRESSEARBEIT-STANDARD.md (ein Ablauf, eine Vorlage, dieser Verteiler).  
-**Vorlage Text:** docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §6 bzw. mök2 → Sichtbarkeit & Werbung → Presse-Vorlage.
+**Medienstudio K2:** docs/MEDIENSTUDIO-K2.md (Einstieg Presse/Medien – Standard, Medienkit, Redaktionsplan).  
+**Ablauf:** docs/PRESSEARBEIT-STANDARD.md. **Vorlage Text:** docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §6 bzw. mök2 → Sichtbarkeit & Werbung → Presse-Vorlage.
 
 ---
 

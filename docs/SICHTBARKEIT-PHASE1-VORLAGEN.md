@@ -85,7 +85,7 @@ QR-Codes für diese URLs auf Einladung, Presse, Social, in der Lounge. Nicht and
 
 ## 6. Presse – Vorlage & Medienverteiler (Standard)
 
-**Pressearbeit standardisiert:** docs/PRESSEARBEIT-STANDARD.md – ein Ablauf, eine Vorlage, ein Verteiler; nur Variablen (Datum, Ort, Anlass) anpassen. Kein Sonderfall pro Aktion.
+**Medienstudio K2:** docs/MEDIENSTUDIO-K2.md (Einstieg – Medienkit, Redaktionsplan, Qualitätsregeln). **Ablauf:** docs/PRESSEARBEIT-STANDARD.md – ein Ablauf, eine Vorlage, ein Verteiler; nur Variablen anpassen.
 
 **Verteiler:** docs/MEDIENVERTEILER-EROEFFNUNG.md – regional (OÖN, MeinBezirk, Tips, ORF OÖ) + überregional (Standard, Presse). Für Eröffnung und alle weiteren Aussendungen.
 
