@@ -83,9 +83,11 @@ QR-Codes für diese URLs auf Einladung, Presse, Social, in der Lounge. Nicht and
 
 ---
 
-## 6. Presse – Vorlage & Medienverteiler
+## 6. Presse – Vorlage & Medienverteiler (Standard)
 
-**Fertiger Verteiler zum Start:** docs/MEDIENVERTEILER-EROEFFNUNG.md – regional (OÖN, MeinBezirk, Tips, ORF OÖ) und leicht überregional (Standard, Presse, APA/OTS). E-Mails direkt nutzbar; für Eröffnung und spätere Presseaussendungen.
+**Pressearbeit standardisiert:** docs/PRESSEARBEIT-STANDARD.md – ein Ablauf, eine Vorlage, ein Verteiler; nur Variablen (Datum, Ort, Anlass) anpassen. Kein Sonderfall pro Aktion.
+
+**Verteiler:** docs/MEDIENVERTEILER-EROEFFNUNG.md – regional (OÖN, MeinBezirk, Tips, ORF OÖ) + überregional (Standard, Presse). Für Eröffnung und alle weiteren Aussendungen.
 
 **Titel Presseinformation:** Presseinformation – Eröffnung der K2 Galerie
 

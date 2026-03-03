@@ -1,8 +1,9 @@
 # Medienverteiler – Eröffnung K2 Galerie
 
-**Stand:** 03.03.26 · **Zweck:** Regional und leicht überregional für Presseinformation zur Galerie-Eröffnung. Einmal pflegen, dann für jede Presseaussendung nutzen.
+**Stand:** 03.03.26 · **Zweck:** Regional und leicht überregional für Presseinformation. Einmal pflegen, für jede Presseaussendung nutzen.
 
-**Vorlage Presse:** docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §6 bzw. mök2 → Sichtbarkeit & Werbung → Presse-Vorlage.
+**Pressearbeit = immer derselbe Standard:** docs/PRESSEARBEIT-STANDARD.md (ein Ablauf, eine Vorlage, dieser Verteiler).  
+**Vorlage Text:** docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §6 bzw. mök2 → Sichtbarkeit & Werbung → Presse-Vorlage.
 
 ---
 
