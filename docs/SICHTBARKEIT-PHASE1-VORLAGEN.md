@@ -2,7 +2,7 @@
 
 **Stand:** 03.03.26 · **Agenda:** docs/SICHTBARKEIT-WERBUNG-AGENDA.md
 
-Copy-Paste-Vorlagen für Punkte 2–7. Abarbeiten → in Agenda Status setzen.
+**Punkte 2, 3, 6 (Versand), 7 (Einträge) = du (Georg) führst aus – Vorlagen hier.** Copy-Paste bzw. Schritte folgen → in Agenda ● setzen.
 
 ---
 

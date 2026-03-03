@@ -859,6 +859,7 @@ export default function EntdeckenPage() {
           {PRODUCT_BRAND_NAME}
           {' · '}
           <span>Kein Erwerb nötig</span>
+          <p style={{ margin: '0.35rem 0 0', fontSize: '0.68rem', color: muted }}>Empfehlungsprogramm: 10 % Rabatt für dich, 10 % Gutschrift für den Empfehler – Empfehler-ID beim Lizenzkauf angeben.</p>
         </div>
       )}
 

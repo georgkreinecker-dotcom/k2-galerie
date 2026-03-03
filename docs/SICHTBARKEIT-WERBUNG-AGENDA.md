@@ -7,7 +7,27 @@ Arbeitsliste zum Abarbeiten. Status: ○ offen · ◐ in Arbeit · ● erledigt
 
 ---
 
-## Phase 1: Ohne Zusatzkosten
+## Von Joe erledigt (ohne Georg)
+
+- **1** Technik (Titel/Meta pro Route)
+- **4** Empfehlungsprogramm sichtbar (Willkommen, Entdecken, LizenzKaufen)
+- **5** QR und Links (mök2 Sichtbarkeit + Eröffnung)
+- **6+7** Presse- und Verzeichnisse-Vorlagen in mök2 + Doc (zum Kopieren/Versenden/Eintragen)
+
+---
+
+## Braucht Georg (als Nächstes)
+
+| # | Was | Wo / wie |
+|---|-----|----------|
+| **2** | Google Business Profile anlegen & ausfüllen | https://business.google.com – Vorlage: SICHTBARKEIT-PHASE1-VORLAGEN.md §2 |
+| **3** | Social-Profile (Instagram/Facebook): Bio + Link, 1. Post | Vorlage: §3 – Copy-Paste Bio/Post |
+| **6** | Presseinformation an Medien schicken | Vorlage in mök2 Sichtbarkeit + Doc §6 – [Datum], [Adresse] ausfüllen; Medien (lokal/regional) wählen und senden |
+| **7** | Verzeichnisse: 5–10 Einträge anlegen | Liste in mök2 + Doc §7 – Portale nacheinander eintragen |
+
+---
+
+## Phase 1: Ohne Zusatzkosten (Detailtabelle)
 
 | # | Punkt | Was zu tun | Status | Nächster Schritt |
 |---|-------|------------|--------|------------------|
