@@ -87,6 +87,7 @@
 - **Austausch (Markt/Standard):** Rad nicht neu erfinden – **GEDCOM**-Export/Import (Personen + Beziehungen) einplanen, damit Anschluss an Legacy, MacStammbaum, FamilySearch usw. Details: **docs/K2-FAMILIE-MARKT-STANDARDS.md**.
 - **Struktur: Startpunkt & aktiv/passiv:** Wo beginne ich (bei mir / Eltern / Großeltern)? Aktiver Teil = den ich pflege; passiver Teil = Vergangenheit, Gedenkort. **Organisch:** Passiver Teil = „Was unsere Familie dazu weiß“ – viele können zu derselben Person (Vorfahre) beitragen (Erinnerung, Korrektur, Foto, Datum); niemand „besitzt“ die Vergangenheit. Details: **docs/K2-FAMILIE-STARTPUNKT-AKTIV-PASSIV.md**.
 - **Szenario Geschwister-Geschenk:** Eine Person legt Grundstruktur (Eltern + Geschwister), lädt ein; jeder trägt zur Vergangenheit bei; „Erinnerungsebene darunter“ = wer etwas weiß. Was es braucht: **docs/K2-FAMILIE-SZENARIO-GESCHWISTER-GESCHENK.md** (Zugang für mehrere, Schutz Grundstruktur, Beiträge).
+- **Gemeinsamer Ort = Cloud; Lizenz & Kosten:** K2 Familie als Lizenzprodukt – gemeinsamer Ort in der Cloud (verbindlich). Faire Kostenstruktur: wer (Gründer, eine Lizenz pro Familie), wann (jährlich/monatlich), wo (in der App), wie (Stripe). **docs/K2-FAMILIE-LIZENZ-KOSTEN.md**.
 
 ### Phase 5: Gedenkort – Die uns vorausgegangen sind
 

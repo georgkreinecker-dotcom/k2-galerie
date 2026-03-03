@@ -30,19 +30,15 @@
 
 ## 3. Was es noch braucht
 
-### 3.1 Zugang für mehrere (Geschwister „kommen rein“)
+### 3.1 Zugang für mehrere (Geschwister „kommen rein“) – gemeinsamer Ort in der Cloud
 
-**Heute:** K2 Familie speichert pro Tenant in **localStorage** – die Familie lebt auf **einem** Gerät/Browser. Wer die App auf einem anderen Gerät öffnet, sieht diese Familie nicht.
+**Vorgabe (Lizenzprodukt):** Der **gemeinsame Ort liegt in der Cloud.** K2 Familie ist ein Lizenzprodukt; die Familiendaten (Personen, Beiträge, Momente, Events) leben auf dem Server, damit alle Beteiligten dieselbe Familie sehen und beitragen können. Details und faire Kostenstruktur: **docs/K2-FAMILIE-LIZENZ-KOSTEN.md**.
 
-**Damit Geschwister „reinkommen“ und ihren Teil anlegen können, braucht es eine der folgenden Wege:**
+**Heute:** K2 Familie speichert pro Tenant noch in **localStorage** – Zwischenstand bis Cloud-Backend steht.
 
-| Option | Beschreibung | Aufwand |
-|--------|--------------|--------|
-| **A – Sync/Backend** | Familiendaten (Personen, Beiträge, Momente, Events) liegen auf einem **Server** (z. B. Supabase oder API wie bei K2 Galerie gallery-data). Georg erstellt die Familie, erhält einen **Einladungslink** (oder Familien-Code). Geschwister öffnen den Link, „treten der Familie bei“, können lesen und **Beiträge** (und ggf. Personen im passiven Teil) anlegen. Alle sehen dieselbe Familie. | Backend + Einladungslogik (Link/Code), ggf. einfache Anmeldung pro Familie. |
-| **B – Export/Import + Merge** | Georg exportiert die Familie (JSON), schickt sie an die Geschwister. Diese importieren, fügen **ihre Beiträge** (und ggf. Vorfahren-Personen) hinzu, exportieren und schicken zurück. Georg (oder jemand) **merged** die Beiträge in die „Hauptfamilie“. Die gemeinsame Geschichte entsteht in Runden. | Kein Backend nötig; Merge-Logik (Beiträge zusammenführen, Duplikate vermeiden), klare Anleitung. |
-| **C – Ein Gerät / Treffen** | Alle treffen sich (oder einer gibt die Daten ein). Kein Mehr-Nutzer-Zugang nötig – die Grundstruktur und Beiträge werden von einer Person am einen Gerät gepflegt. | Nichts Zusätzliches; nur Doku/Workflow. |
+**Ziel-Architektur (Cloud):** Familiendaten auf **Server** (z. B. Supabase); wer die Familie anlegt, schließt eine **Lizenz** ab (eine Lizenz pro Familie, Gründer zahlt); **Einladungslink** oder Familien-Code; Geschwister öffnen den Link, treten bei, lesen und legen Beiträge an. Alle sehen dieselbe Familie.
 
-**Empfehlung für das Geschenk:** Kurzfristig **B** (Export/Import + Merge) oder **C**; mittelfristig **A** (Sync/Backend), damit alle wirklich „reinkommen“ können.
+**Übergang:** Bis Cloud steht, möglich: Export/Import + Merge oder ein Gerät/Treffen – dann Migration in die Cloud, sobald Backend und Lizenz laufen.
 
 ### 3.2 Grundstruktur schützen
 
@@ -70,7 +66,7 @@
 | Grundstruktur (Eltern + Geschwister) anlegen | ✅ Konzept + UI vorhanden (Startpunkt „Bei unseren Eltern“). |
 | Jeder legt seinen Teil an (Vergangenheit vor Eltern) | ✅ Konzept „Beiträge / Was unsere Familie dazu weiß“; **Umsetzung** Beiträge-Datenmodell + UI noch offen. |
 | Erinnerungsebene darunter (nicht von mir abhängig) | ✅ Konzept – viele tragen bei; keine Extra-Logik. |
-| **Zugang für Geschwister** („kommt rein“) | ⚠️ **Noch zu lösen:** Entweder Sync/Backend + Einladungslink (A), oder Export/Import + Merge (B), oder ein Gerät/Treffen (C). |
+| **Zugang für Geschwister** („kommt rein“) | **Ziel: Cloud** (verbindlich für Lizenzprodukt) – Backend + Einladungslink; eine Lizenz pro Familie, Gründer zahlt. Siehe **docs/K2-FAMILIE-LIZENZ-KOSTEN.md**. Bis dahin optional: Export/Import + Merge oder ein Gerät. |
 | Grundstruktur schützen | ⚠️ Mit Phase 4.0 (Rechte/Zweige) oder vereinfacht: nur Beiträge erlauben für „Nicht-Verwalter“. |
 | Einladungstext + Link/Code | 📄 Doku/Text; Link/Code sobald Zugang (A oder B) steht. |
 
