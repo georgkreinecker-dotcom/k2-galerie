@@ -187,8 +187,9 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 | 02.03.26 | ro check crash | Letzte Änderung: Upgrade-Info in ScreenshotExportAdmin (Lizenzinformation) – nur statischer Block + mailto-Link, kein neuer useEffect/setTimeout/setInterval/reload. K2-Familie-Seiten bereits 02.03.26 geprüft. Kein neuer Fix. |
 | 03.03.26 | KassaEinstiegPage, kassabuchStorage | Neue Dateien (Kassa): kein setInterval/setTimeout/reload/listener – unkritisch. |
 | 03.03.26 | KeyPage, EmpfehlungstoolPage, GitHubTokenPage | setTimeout(2000) für setSaved/setCopied(false) ohne Cleanup → bei Unmount/HMR setState nach Ablauf. **Fix:** savedTimeoutRef/copiedTimeoutRef + clearTimeout im useEffect-Cleanup, vor neuem Timeout altes clearen. |
+| 03.03.26 | ro check crash | GaleriePage (dataStandLabel, pageContentGalerie beim Laden): setDataStandLabel nur bei isMounted; loadData-Cleanup unverändert. ScreenshotExportAdmin: nur TypeScript-Cast (Medienspiegel) + pageContentGalerie im Publish-Payload – kein neuer useEffect/setTimeout/setInterval. Keine neuen Crash-Quellen. |
 
-*Zuletzt ergänzt: 03.03.26 (check crash – KeyPage, EmpfehlungstoolPage, GitHubTokenPage)*
+*Zuletzt ergänzt: 03.03.26 (ro check crash – GaleriePage, ScreenshotExportAdmin)*
 
 ---
 

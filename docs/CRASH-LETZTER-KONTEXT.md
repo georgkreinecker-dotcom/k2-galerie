@@ -9,10 +9,10 @@
 | Was | Inhalt |
 |-----|--------|
 | **Datum** | 03.03.26 |
-| **Thema** | check crash |
-| **Zuletzt geändert/geöffnet** | CRASH-BEREITS-GEPRUEFT, CRASH-LETZTER-KONTEXT, KassaEinstiegPage, kassabuchStorage, KeyPage, EmpfehlungstoolPage, GitHubTokenPage |
-| **Hinweis von Georg** | „check crash“ |
-| **Ergebnis** | Neue Kassa-Dateien unkritisch. KeyPage, EmpfehlungstoolPage, GitHubTokenPage: setTimeout für setSaved/setCopied ohne Cleanup → Fix (Ref + clearTimeout im Cleanup) wie bei VitaPage/SeitengestaltungPage. CRASH-BEREITS-GEPRUEFT.md ergänzt. |
+| **Thema** | ro check crash |
+| **Zuletzt geändert/geöffnet** | GaleriePage (dataStandLabel, pageContentGalerie vom Server), ScreenshotExportAdmin (Medienspiegel-Typ, pageContentGalerie im Publish) |
+| **Hinweis von Georg** | „ro check the crash“ |
+| **Ergebnis** | Keine neuen Crash-Quellen. GaleriePage: setDataStandLabel nur bei isMounted in loadData. ScreenshotExportAdmin: nur Typ-Cast + Payload-Feld. CRASH-BEREITS-GEPRUEFT.md ergänzt. |
 
 ---
 

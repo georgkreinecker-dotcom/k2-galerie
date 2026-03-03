@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, BASE_APP_URL, WILLKOMMEN_ROUTE } from '../config/navigation'
+import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_BOTSCHAFT_2, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, SOCIAL_MEDIA_FORMATE, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 
@@ -50,13 +51,15 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
   const [slogan, setSlogan] = useState(loadSlogan)
   const [botschaft, setBotschaft] = useState(loadBotschaft)
   const [willkommenQrUrl, setWillkommenQrUrl] = useState('')
+  const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
 
   useEffect(() => {
     setSlogan(loadSlogan())
     setBotschaft(loadBotschaft())
   }, [])
 
-  const willkommenFullUrl = BASE_APP_URL + WILLKOMMEN_ROUTE
+  const willkommenBaseUrl = BASE_APP_URL + WILLKOMMEN_ROUTE
+  const willkommenFullUrl = buildQrUrlWithBust(willkommenBaseUrl, qrVersionTs)
   useEffect(() => {
     QRCode.toDataURL(willkommenFullUrl, { width: 200, margin: 1 })
       .then(setWillkommenQrUrl)
@@ -270,7 +273,7 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
                 rel="noopener noreferrer"
                 style={{ color: s.accent, fontWeight: 600, wordBreak: 'break-all', fontSize: '0.9rem' }}
               >
-                {willkommenFullUrl}
+                {willkommenBaseUrl}
               </a>
               <p style={{ margin: '0.75rem 0 0', fontSize: '0.8rem', color: s.muted }}>
                 Für Druck: QR-Code oben ausdrucken oder Link einfügen.

@@ -8,6 +8,16 @@
 
 ---
 
+## BUG-018 · QR / Handy zeigt immer alte Daten („nie in den Griff bekommen“)
+**Symptom:** Nach „Jetzt an Server senden“ am Mac zeigt das Handy (QR-Scan oder Galerie öffnen) weiterhin alte Werke/Daten – essenzielles Problem, nie zuverlässig gelöst.
+**Ursache:** In GaleriePage loadData wurde auf dem **Handy** (vercel.app) **zuerst** die **statische** Datei `/gallery-data.json` geladen (relative URL). Diese Datei kommt aus dem **Build** (dist/), nicht aus dem Blob. „Veröffentlichen“ schreibt aber in **Vercel Blob** (API write-gallery-data). Die Lese-API `/api/gallery-data` liest aus dem Blob. Wer zuerst die statische Datei lädt, bekommt immer den **alten** Build-Stand.
+**Lösung:** **Immer zuerst** `GET /api/gallery-data` (Blob = aktuelle Daten). Nur bei Fehler Fallback auf `/gallery-data.json`. In loadData (Initial-Load) die Reihenfolge geändert: zuerst apiUrl für **alle** (nicht nur localhost), dann pathAndQuery nur als Fallback.
+**Betroffene Dateien:** `src/pages/GaleriePage.tsx` (loadData – Reihenfolge API vor static)
+**Doku:** `docs/STAND-BUILD-VS-DATEN.md` Abschnitt „ESSENZIELL: Eine Quelle = API (Blob)“
+**Status:** ✅ Behoben (03.03.26)
+
+---
+
 ## BUG-017 · „Daten an Server senden“ auf iPad zeigt nur „prüfen ob vercel.app geöffnet“, nicht den echten Fehler
 **Symptom:** Beim 1. Versuch „Daten an Server senden“ auf iPad: Fehlermeldung „Daten konnten nicht an den Server gesendet werden … Prüfen ob k2-galerie.vercel.app geöffnet ist“ – der tatsächliche Grund (z. B. GITHUB_TOKEN fehlt, Zeitüberschreitung) wurde nicht angezeigt.
 **Ursache:** Auf Mobil/Vercel wurde bei API-Fehler immer eine generische Alert-Meldung gezeigt, ohne `result.error` und `result.hint` einzubauen.

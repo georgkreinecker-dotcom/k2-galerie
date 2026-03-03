@@ -402,6 +402,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     try { return (localStorage.getItem('k2-admin-unlocked') === 'k2') } catch { return false }
   })
   const [vercelQrDataUrl, setVercelQrDataUrl] = useState('')
+  /** Daten-Stand (exportedAt aus gallery-data.json) – nur gesetzt wenn von Server geladen; erklärt „warum Handy andere Werke zeigt als Mac“ */
+  const [dataStandLabel, setDataStandLabel] = useState('')
   // adminPassword wird nur für Initialisierung verwendet, nicht für Login-Validierung
   const [, setAdminPassword] = useState('')
   // Testphase + Passwort setzen / vergessen
@@ -834,6 +836,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     const t = setInterval(() => setQrBustTick((k) => k + 1), 15000)
     return () => clearInterval(t)
   }, [])
+  // QR mit Server-Stand (qrVersionTs) – Regel stand-qr-niemals-zurueck: Scan lädt immer die angezeigte Vercel-Version, nie gecachte alte (z. B. Musterbilder)
   useEffect(() => {
     let cancelled = false
     const urlForQr = vercelGalerieUrl
@@ -841,13 +844,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       if (!cancelled) setVercelQrDataUrl('')
       return
     }
-    // Immer frischer Cache-Bust (Date.now()), damit Scan sofort die aktuell ausgelieferte Version lädt – unabhängig vom Build-Stand
-    const qrUrl = buildQrUrlWithBust(urlForQr, Date.now())
+    const qrUrl = buildQrUrlWithBust(urlForQr, qrVersionTs)
     QRCode.toDataURL(qrUrl, { width: 100, margin: 1 })
       .then((url) => { if (!cancelled) setVercelQrDataUrl(url) })
       .catch(() => { if (!cancelled) setVercelQrDataUrl('') })
     return () => { cancelled = true }
-  }, [vercelGalerieUrl, musterOnly, qrBustTick])
+  }, [vercelGalerieUrl, musterOnly, qrVersionTs, qrBustTick])
 
   // QR für Presseaussendungen (ök2 + VK2) – beim Öffnen von Presse-Docs injizieren
   const [qrOek2Presse, setQrOek2Presse] = useState('')
@@ -919,7 +921,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
 
       const origin = typeof window !== 'undefined' ? window.location.origin : ''
       const isLocalLan = /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.|10\.)/.test(origin)
-      // Verbindlicher Datenabgleich: Immer feste Vercel-URL für API (funktioniert von überall – vercel.app, localhost, iPad)
+      // ESSENZIELL: Immer zuerst API (Blob = aktueller Stand nach „Jetzt an Server senden“). Statische Datei nur Fallback.
       const apiUrl = `${GALLERY_DATA_PUBLIC_URL}/api/gallery-data?t=${timestamp}&_=${Date.now()}&v=${newVersion}`
 
       let response: Response | null = null
@@ -928,7 +930,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       } catch (e) {
         if (isLocalLan) console.warn('🔄 Fetch Vercel API fehlgeschlagen (von localhost/LAN):', e instanceof Error ? e.message : e, '– Fallbacks werden versucht.')
       }
-      // Fallback: statische gallery-data.json (z. B. nach Git-Push/Build)
       if (!response?.ok) {
         try {
           response = await fetch(pathAndQuery, fetchOpts)
@@ -1353,18 +1354,19 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           }
         }
 
-        const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        // Bei localhost zuerst von Vercel (API = Blob) laden; v= aus URL (QR) mitgeben für frischen Abruf
+        // ESSENZIELL: Immer zuerst API (Blob = was „Jetzt an Server senden“ geschrieben hat). Statische gallery-data.json nur Fallback (Build-Stand, oft alt).
         const apiUrl = `${GALLERY_DATA_PUBLIC_URL}/api/gallery-data?${urlV ? `v=${urlV}&` : ''}t=${timestamp}&_=${Date.now()}`
         let response: Response | null = null
-        if (isLocal) {
-          try {
-            response = await fetch(apiUrl, fetchOpts)
-          } catch (_) {
-            response = null
-          }
+        try {
+          response = await fetch(apiUrl, fetchOpts)
+        } catch (_) {
+          response = null
         }
-        if (!response?.ok && !isLocal) {
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+          timeoutId = null
+        }
+        if (!response?.ok) {
           try {
             response = await fetch(pathAndQuery, fetchOpts)
           } catch (_) {
@@ -1375,17 +1377,25 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           clearTimeout(timeoutId)
           timeoutId = null
         }
-        if (!response?.ok && !window.location.hostname.includes('vercel.app')) {
+        const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        if (!response?.ok && (isLocal || !window.location.hostname.includes('vercel.app'))) {
           try {
             controller = new AbortController()
             timeoutId = setTimeout(() => { if (controller) controller.abort() }, 8000)
-            response = await fetch(isLocal ? (GALLERY_DATA_PUBLIC_URL + pathAndQuery) : apiUrl, { ...fetchOpts, signal: controller.signal })
+            response = await fetch(apiUrl, { ...fetchOpts, signal: controller.signal })
           } catch (_) {
             response = response || null
           }
           if (timeoutId) {
             clearTimeout(timeoutId)
             timeoutId = null
+          }
+        }
+        if (!response?.ok) {
+          try {
+            response = await fetch(GALLERY_DATA_PUBLIC_URL + pathAndQuery, fetchOpts)
+          } catch (_) {
+            response = response || null
           }
         }
 
@@ -1400,7 +1410,18 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           const currentBuildId = jsonData.buildId || ''
           const lastLoadedVersion = parseInt(localStorage.getItem('k2-last-loaded-version') || '0')
           const lastBuildId = localStorage.getItem('k2-last-build-id') || ''
-          
+          // Daten-Stand für Nutzer sichtbar machen (Build-Stand ≠ Daten-Stand – siehe docs/STAND-BUILD-VS-DATEN.md)
+          if (currentTimestamp && isMounted) {
+            try {
+              const d = new Date(currentTimestamp)
+              const dd = String(d.getDate()).padStart(2, '0')
+              const mm = String(d.getMonth() + 1).padStart(2, '0')
+              const yy = String(d.getFullYear()).slice(-2)
+              const h = String(d.getHours()).padStart(2, '0')
+              const min = String(d.getMinutes()).padStart(2, '0')
+              setDataStandLabel(`${dd}.${mm}.${yy} ${h}:${min}`)
+            } catch (_) { setDataStandLabel('') }
+          }
           const isNewer = !lastLoadedTimestamp || 
                           currentTimestamp > lastLoadedTimestamp || 
                           currentVersion > lastLoadedVersion ||
@@ -1511,6 +1532,13 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               const designToUse = isOldBlueTheme(data.designSettings) ? K2_ORANGE : data.designSettings
               localStorage.setItem('k2-design-settings', JSON.stringify(designToUse))
               applyDesignToDocument(designToUse)
+            } catch (_) {}
+          }
+          // Seitengestaltung (Kacheln, Willkommensbild, Galerie-Karte) – sonst zeigt Handy alte Anordnung
+          if (!musterOnly && !vk2 && data.pageContentGalerie != null && typeof data.pageContentGalerie === 'string' && data.pageContentGalerie.length > 0 && data.pageContentGalerie.length < 6 * 1024 * 1024) {
+            try {
+              localStorage.setItem('k2-page-content-galerie', data.pageContentGalerie)
+              window.dispatchEvent(new CustomEvent('k2-page-content-updated'))
             } catch (_) {}
           }
           
@@ -3561,7 +3589,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                         📱 QR scannen → öffnet diese Galerie auf dem Handy
                       </p>
                       <div style={{ background: '#fff', padding: '0.4rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
-                        {serverLabel && <div style={{ fontSize: 10, color: '#666', marginBottom: 4 }}>Vercel-Stand: {serverLabel}</div>}
+                        {serverLabel && <div style={{ fontSize: 10, color: '#666', marginBottom: 2 }}>App: {serverLabel}</div>}
+                        {dataStandLabel && <div style={{ fontSize: 10, color: '#666', marginBottom: 4 }}>Daten: {dataStandLabel}</div>}
                         <button type="button" onClick={() => { refetchQrStand(); handleRefresh(); }} title="Stand und Daten von Vercel abrufen (QR + Werke/Daten)" style={{ marginBottom: 4, padding: '2px 8px', fontSize: 11, background: 'rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.12)', borderRadius: 6, cursor: 'pointer' }}>Stand & Daten</button>
                         <img src={vercelQrDataUrl} alt={`QR-Code: ${tenantConfig.galleryName}`} style={{ width: 100, height: 100, display: 'block' }} />
                       </div>
@@ -3571,6 +3600,16 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                     </div>
                 )}
               </div>
+                {dataStandLabel && !musterOnly && (
+                  <p style={{ margin: '0.5rem 0 0', fontSize: 'clamp(0.65rem, 1.4vw, 0.75rem)', color: theme.muted, opacity: 0.9 }}>
+                    Daten: {dataStandLabel} (Werke vom letzten Veröffentlichen)
+                  </p>
+                )}
+                {!musterOnly && (
+                  <p style={{ margin: '0.35rem 0 0', fontSize: 'clamp(0.6rem, 1.2vw, 0.7rem)', color: theme.muted, opacity: 0.85, maxWidth: 260 }}>
+                    Damit das Handy aktuelle Werke sieht: im Admin «Jetzt an Server senden», dann hier «Stand & Daten» oder QR neu scannen.
+                  </p>
+                )}
                 <p style={{ marginTop: '1.5rem', marginBottom: 0, paddingTop: '1rem', borderTop: `1px solid color-mix(in srgb, ${theme.muted} 25%, transparent)`, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted, letterSpacing: '0.01em' }}>
                   {PRODUCT_COPYRIGHT}
                 </p>
