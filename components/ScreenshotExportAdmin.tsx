@@ -13965,9 +13965,14 @@ ${name}`
           return (
             <section style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '24px', padding: 'clamp(2rem, 5vw, 3rem)', boxShadow: s.shadow, marginBottom: 'clamp(2rem, 5vw, 3rem)' }}>
               <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: 700, color: s.text, marginBottom: '0.5rem' }}>📰 Presse & Medien</h2>
-              <p style={{ color: s.muted, marginBottom: '1.5rem', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
-                Medienkit und Presse-Vorlage aus deinen Stammdaten – zum Kopieren und Versand an Medien.
+              <p style={{ color: s.muted, marginBottom: tenant.isVk2 ? '0.5rem' : '1.5rem', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
+                {tenant.isVk2 ? 'Medienkit und Presse-Vorlage aus euren Vereinsdaten (Verein, Vorstand, Adresse) – zum Kopieren und Versand an Medien.' : 'Medienkit und Presse-Vorlage aus deinen Stammdaten – zum Kopieren und Versand an Medien.'}
               </p>
+              {tenant.isVk2 && (
+                <p style={{ marginBottom: '1.5rem', padding: '0.6rem 1rem', background: `${s.accent}12`, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.85rem', color: s.text }}>
+                  Für Kunstvereine: Pressearbeit mit einem Klick – Vereinsname, Ansprechpartner und Adresse aus Einstellungen.
+                </p>
+              )}
               {tenant.isOeffentlich && (
                 <p style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: `${s.accent}15`, border: `1px solid ${s.accent}40`, borderRadius: '10px', fontSize: '0.9rem', color: s.text }}>
                   Demo – in Ihrer lizenzierten Galerie nutzen Sie Ihre eigenen Daten.
@@ -13977,10 +13982,10 @@ ${name}`
               <div style={{ marginBottom: '2rem' }}>
                 <h3 style={{ fontSize: '1.15rem', color: s.text, marginBottom: '0.5rem' }}>Medienkit</h3>
                 <p style={{ fontSize: '0.88rem', color: s.muted, marginBottom: '0.75rem' }}>
-                  Kurztext über Galerie/Verein und Ansprechpartner – aus Stammdaten erzeugt. Für E-Mails an Redaktionen oder als Anhang.
+                  {tenant.isVk2 ? 'Kurztext über euren Verein und Ansprechpartner (Vorstand) – aus Vereins-Stammdaten. Für E-Mails an Redaktionen oder als Anhang.' : 'Kurztext über Galerie/Verein und Ansprechpartner – aus Stammdaten erzeugt. Für E-Mails an Redaktionen oder als Anhang.'}
                 </p>
                 <pre style={{ background: s.bgElevated, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '0.9rem', color: s.text, marginBottom: '0.75rem', minHeight: '80px' }}>
-                  {medienkitText || 'Noch keine Stammdaten vorhanden. In Einstellungen → Stammdaten ergänzen.'}
+                  {medienkitText || (tenant.isVk2 ? 'Noch keine Vereinsdaten vorhanden. In Einstellungen → Stammdaten (Verein, Vorstand) ergänzen.' : 'Noch keine Stammdaten vorhanden. In Einstellungen → Stammdaten ergänzen.')}
                 </pre>
                 <button type="button" onClick={() => {
                   try {

@@ -74,7 +74,7 @@
 | **3** | **UI Medienkit** | ✅ Erledigt: Block „Medienkit“ mit generiertem Text, Button **„Kopieren“**. Hinweis bei fehlenden Daten: „In Einstellungen → Stammdaten ergänzen.“ („Als PDF“ optional später.) |
 | **4** | **Presse-Vorlage** | ✅ Erledigt: Drei Felder Anlass, Datum, Ort; fertiger Text; Button **„In Zwischenablage“**. |
 | **5** | **Test K2** | Mit echten K2-Stammdaten testen: Medienkit passt, Presse-Vorlage füllt sich, Kopieren funktioniert. |
-| **6** | **Prüfung ök2** | Im ök2-Admin denselben Bereich öffnen – Muster-Stammdaten; Hinweis „Demo – in Ihrer Galerie nutzen Sie Ihre eigenen Daten.“ eingebaut. |
+| **6** | **Prüfung ök2 + VK2** | ök2: Muster-Stammdaten, Hinweis „Demo – in Ihrer Galerie …“. **VK2:** Dasselbe unter Vereins-Admin – Medienkit aus Vereinsdaten (Verein, Vorstand, Adresse), Presse-Vorlage mit Vereinsname; Hinweis „Für Kunstvereine“ in der UI. |
 
 **Danach (optional):** Phase 2 Pressekontakte-Liste, Phase 3 „Presseinfo verschickt“ an Events.
 
