@@ -22,7 +22,7 @@ Arbeitsliste zum Abarbeiten. Status: ○ offen · ◐ in Arbeit · ● erledigt
 |---|-----|----------|
 | **2** | Google Business Profile anlegen & ausfüllen | https://business.google.com – Vorlage: SICHTBARKEIT-PHASE1-VORLAGEN.md §2 |
 | **3** | Social-Profile (Instagram/Facebook): Bio + Link, 1. Post | Vorlage: §3 – Copy-Paste Bio/Post |
-| **6** | Presseinformation an Medien schicken | Vorlage in mök2 Sichtbarkeit + Doc §6 – [Datum], [Adresse] ausfüllen; Medien (lokal/regional) wählen und senden |
+| **6** | Presseinformation an Medien schicken | **Verteiler:** docs/MEDIENVERTEILER-EROEFFNUNG.md. Vorlage: mök2 + Doc §6. |
 | **7** | Verzeichnisse: 5–10 Einträge anlegen | Liste in mök2 + Doc §7 – Portale nacheinander eintragen |
 
 ---

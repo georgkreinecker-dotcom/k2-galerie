@@ -56,9 +56,38 @@ QR-Codes für diese URLs auf Einladung, Presse, Social, in der Lounge. Nicht and
 
 ---
 
-## 6. Presse – Vorlage
+## 5a. Medienlisten / Presseverteiler (Österreich, deutschsprachiger Raum)
 
-**Titel:** Presseinformation – Eröffnung der K2 Galerie
+**Ja – von regional bis Österreich/deutschsprachig.**
+
+### Ohne laufende Kosten (eigene Liste pflegen)
+
+| Stufe | Beispiele (Redaktion/Kultur) |
+|-------|------------------------------|
+| **Regional Eferding / OÖ** | OÖ Nachrichten (nachrichten.at) – Lokalbücher z. B. Linz, Wels, Innviertel, Mühlviertel; RegionalMedien/MeinBezirk OÖ (meinbezirk.at) – regionale Redaktionen; lokale Wochenblätter/Kulturblätter der Region prüfen. |
+| **Oberösterreich** | OÖN Zentralredaktion; Landes-Kultur OÖ (Land OÖ Kultur); ggf. Tips OÖ, andere OÖ-Titel. |
+| **Österreich** | Der Standard, Die Presse, Kleine Zeitung, Salzburger Nachrichten, ORF (Landesstudios + Kultur); APA (Austria Presse Agentur) – Übernahme durch viele Medien. |
+| **Deutschsprachig** | Deutsche/CH-Zeitungen mit Kulturressort, wenn Thema überregional (z. B. Galerie-Plattform, Kunstvereine). |
+
+**Vorgehen:** Redaktion/Kultur bzw. „Lokalredaktion [Ort]“ googeln → Kontakt (E-Mail Presse/Redaktion) notieren → eigene Excel/Liste „Medienverteiler“ führen und bei Presseaussendungen nutzen.
+
+### Mit Budget (fertige Datenbanken / Presseverteiler)
+
+| Anbieter | Inhalt | Kosten (Orientierung) |
+|----------|--------|------------------------|
+| **Medienhandbuch Österreich** (medienhandbuch.at) | Über 3.000 Medien, Journalisten, Filter nach Thema/Region, integriertes Versandtool, Export. | Abo ab ca. 154 € (Basic 3 Mt.) / 305 € (Premium 3 Mt.); Print 2024/25 ca. 35 €. Demo 1 Tag kostenlos. |
+| **Journalisten-, Medien- & PR-Index** (indexverlag.at) | Über 11.500 Journalisten, 2.700+ Medien, Ressorts inkl. Kultur. | Eher Abo/Angebot – beim Anbieter anfragen. |
+| **OTS (ots.at)** | Verteilung von Presseaussendungen an Medien/Redaktionen in AT (und teilw. D/CH). | Kostenpflichtig je Versand/Reichweite – für einmalige Aktionen prüfbar. |
+
+**Empfehlung:** Für den Start reicht eine **eigene kurze Liste** (Regional Eferding/OÖ + 2–3 überregionale AT-Medien). Wenn du regelmäßig Presse schickst oder breiter streuen willst: Medienhandbuch Print (ca. 35 €) oder Abo mit Versandtool.
+
+---
+
+## 6. Presse – Vorlage & Medienverteiler
+
+**Fertiger Verteiler zum Start:** docs/MEDIENVERTEILER-EROEFFNUNG.md – regional (OÖN, MeinBezirk, Tips, ORF OÖ) und leicht überregional (Standard, Presse, APA/OTS). E-Mails direkt nutzbar; für Eröffnung und spätere Presseaussendungen.
+
+**Titel Presseinformation:** Presseinformation – Eröffnung der K2 Galerie
 
 **Lead:**  
 [Galeriename] eröffnet am [Datum] die K2 Galerie. Gezeigt werden Werke in Malerei, Keramik, Grafik und Skulptur. Zur Eröffnung gibt es Einblick in die K2-Plattform (K2 · ök2 · VK2), mit der Künstler:innen, Galerien und Kunstvereine ihre Werke präsentieren und Veranstaltungen planen.
