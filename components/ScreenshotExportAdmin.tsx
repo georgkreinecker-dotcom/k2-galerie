@@ -17363,9 +17363,12 @@ ${name}`
                     <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Stückzahl</label>
                     <input type="number" min={1} max={99} value={artworkQuantity} onChange={(e) => setArtworkQuantity(e.target.value)} style={{ width: '100%', maxWidth: '80px', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none' }} />
                   </div>
+                  <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem', lineHeight: 1.35 }}>
+                    Angehakt = online sichtbar (+ Shop wenn gewünscht). Nicht angehakt = nur Galerie/Atelier & Kassa.
+                  </div>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#8fa0c9', cursor: 'pointer' }}>
                     <input type="checkbox" checked={isInExhibition} onChange={(e) => setIsInExhibition(e.target.checked)} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
-                    In Online-Galerie anzeigen (sonst nur Lager & Kassa)
+                    In Online-Galerie anzeigen
                   </label>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#8fa0c9', cursor: 'pointer' }}>
                     <input type="checkbox" checked={isInShop} onChange={(e) => setIsInShop(e.target.checked)} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
@@ -17810,8 +17813,13 @@ ${name}`
                 />
               </div>
 
-              {/* Online-Galerie vs. nur Lager & Kassa */}
-              <div>
+              {/* Wo wird das Werk angezeigt / verkauft – zwei klare Fälle */}
+              <div style={{ marginBottom: '0.5rem' }}>
+                <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.35rem', lineHeight: 1.4 }}>
+                  <strong style={{ color: 'rgba(255,255,255,0.7)' }}>Kurz:</strong><br />
+                  • <strong>Angehakt</strong> = Online-Galerie sichtbar; mit „Im Online-Shop“ auch online verkaufbar.<br />
+                  • <strong>Nicht angehakt</strong> = Nicht online sichtbar, aber in Galerie/Atelier und Kassa verfügbar.
+                </div>
                 <label style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -17841,7 +17849,7 @@ ${name}`
                     }}
                   />
                   <span style={{ fontSize: '0.85rem', color: '#8fa0c9' }}>
-                    In Online-Galerie anzeigen (sonst nur Lager & Kassa)
+                    In Online-Galerie anzeigen
                   </span>
                 </label>
               </div>
