@@ -10276,7 +10276,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 {!tenant.isVk2 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                     <button
-                      onClick={() => { setEditingArtwork(null); setIsInExhibition(false); setShowAddModal(true) }}
+                      onClick={() => { setEditingArtwork(null); setIsInExhibition(false); setIsInShop(false); setShowAddModal(true) }}
                       style={{
                         padding: '0.7rem 1.4rem',
                         background: s.gradientAccent,
@@ -10911,8 +10911,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', 
                       color: s.muted 
                     }}>
-                      {artwork.inExhibition && <span style={{ display: 'block' }}>✓ Online-Galerie</span>}
-                      {artwork.inShop && <span style={{ display: 'block' }}>✓ Shop</span>}
+                      {(artwork.inExhibition && artwork.inShop) && <span style={{ display: 'block' }}>✓ Online sichtbar & erwerbbar</span>}
                       {(() => {
                         const katalogAnzahl = allArtworks.filter((a: any) => a.imVereinskatalog).length
                         const istDrin = !!artwork.imVereinskatalog
@@ -17364,15 +17363,16 @@ ${name}`
                     <input type="number" min={1} max={99} value={artworkQuantity} onChange={(e) => setArtworkQuantity(e.target.value)} style={{ width: '100%', maxWidth: '80px', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none' }} />
                   </div>
                   <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem', lineHeight: 1.35 }}>
-                    Angehakt = online sichtbar (+ Shop wenn gewünscht). Nicht angehakt = nur Galerie/Atelier & Kassa.
+                    Normal: in Galerie/Atelier vorhanden und erwerbbar.
                   </div>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#8fa0c9', cursor: 'pointer' }}>
-                    <input type="checkbox" checked={isInExhibition} onChange={(e) => setIsInExhibition(e.target.checked)} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
-                    In Online-Galerie anzeigen
-                  </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#8fa0c9', cursor: 'pointer' }}>
-                    <input type="checkbox" checked={isInShop} onChange={(e) => setIsInShop(e.target.checked)} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
-                    Im Online-Shop verfügbar
+                    <input
+                      type="checkbox"
+                      checked={isInExhibition && isInShop}
+                      onChange={(e) => { const v = e.target.checked; setIsInExhibition(v); setIsInShop(v) }}
+                      style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                    />
+                    Auch in Online-Galerie sichtbar und online erwerbbar
                   </label>
                   {/* Favorit (max 5): Vorreihung in Galerie; bei VK2 zusätzlich im Vereinskatalog */}
                   {(() => {
@@ -17813,12 +17813,10 @@ ${name}`
                 />
               </div>
 
-              {/* Wo wird das Werk angezeigt / verkauft – zwei klare Fälle */}
+              {/* Normal = in Galerie/Atelier vorhanden und erwerbbar. Variante = auch online sichtbar + erwerbbar (eine Funktion) */}
               <div style={{ marginBottom: '0.5rem' }}>
                 <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.35rem', lineHeight: 1.4 }}>
-                  <strong style={{ color: 'rgba(255,255,255,0.7)' }}>Kurz:</strong><br />
-                  • <strong>Angehakt</strong> = Online-Galerie sichtbar; mit „Im Online-Shop“ auch online verkaufbar.<br />
-                  • <strong>Nicht angehakt</strong> = Nicht online sichtbar, aber in Galerie/Atelier und Kassa verfügbar.
+                  Normal: Das Werk ist in Galerie/Atelier vorhanden und erwerbbar.
                 </div>
                 <label style={{
                   display: 'flex',
@@ -17840,8 +17838,12 @@ ${name}`
                 >
                   <input
                     type="checkbox"
-                    checked={isInExhibition}
-                    onChange={(e) => setIsInExhibition(e.target.checked)}
+                    checked={isInExhibition && isInShop}
+                    onChange={(e) => {
+                      const v = e.target.checked
+                      setIsInExhibition(v)
+                      setIsInShop(v)
+                    }}
                     style={{
                       width: '16px',
                       height: '16px',
@@ -17849,43 +17851,7 @@ ${name}`
                     }}
                   />
                   <span style={{ fontSize: '0.85rem', color: '#8fa0c9' }}>
-                    In Online-Galerie anzeigen
-                  </span>
-                </label>
-              </div>
-
-              {/* Shop-Checkbox */}
-              <div>
-                <label style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.6rem',
-                  background: 'rgba(255, 255, 255, 0.03)',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)'
-                }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isInShop}
-                    onChange={(e) => setIsInShop(e.target.checked)}
-                    style={{
-                      width: '16px',
-                      height: '16px',
-                      cursor: 'pointer'
-                    }}
-                  />
-                  <span style={{ fontSize: '0.85rem', color: '#8fa0c9' }}>
-                    Im Online-Shop verfügbar
+                    Auch in Online-Galerie sichtbar und online erwerbbar
                   </span>
                 </label>
               </div>
