@@ -17420,7 +17420,7 @@ ${name}`
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Stückzahl</label>
                     <input type="number" min={1} max={99} value={artworkQuantity} onChange={(e) => setArtworkQuantity(e.target.value)} style={{ width: '100%', maxWidth: '80px', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none' }} />
-                    <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', marginTop: '0.25rem', lineHeight: 1.35 }}>Gruppe/Set: ein Foto, ein Preis für alle – z.B. 10 Tassen = 10 Stück, ein Etikett pro Stück.</div>
+                    <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', marginTop: '0.25rem', lineHeight: 1.35 }}>Gruppe/Set: ein Foto, Preis pro Stück – z.B. 10 Tassen = 10 Stück, ein Etikett pro Stück.</div>
                   </div>
                   <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem', lineHeight: 1.35 }}>
                     Normal: in Galerie/Atelier vorhanden und erwerbbar.
@@ -17839,7 +17839,7 @@ ${name}`
                       outline: 'none'
                     }}
                   />
-                  <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', marginTop: '0.25rem', lineHeight: 1.35 }}>Gruppe/Set: ein Foto, ein Preis für alle – z.B. 10 Stück, ein Etikett pro Stück.</div>
+                  <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', marginTop: '0.25rem', lineHeight: 1.35 }}>Gruppe/Set: ein Foto, Preis pro Stück – z.B. 10 Stück, ein Etikett pro Stück.</div>
                 </div>
               </div>
 
