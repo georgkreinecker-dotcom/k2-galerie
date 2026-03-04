@@ -68,6 +68,7 @@ So können wir den Punkt Schritt für Schritt eingrenzen.
 | GitHubTokenPage setSaved-Timeout (03.03.26) | setTimeout(2000) in save() ohne Cleanup → setState nach Unmount. **Fix:** savedTimeoutRef + clearTimeout im useEffect-Cleanup. |
 | ScreenshotExportAdmin soldArtworksDisplayDaysK2 (01.03.26) | Neuer useEffect lädt K2-Wert bei Werke-Tab; kein setInterval/reload. **Absicherung:** isMounted-Cleanup im useEffect (kein setState nach Unmount bei HMR/Tab-Wechsel). |
 | Tenant-Sync / Veröffentlichen (01.03.26) | Veröffentlichen für ök2/VK2 freigeschaltet; „Bilder vom Server laden“ für alle Mandanten. **Kein** neuer location.reload/setInterval. **Absicherung:** publishMobile({ silent: true }) nach Speichern nur wenn window.self === window.top (nicht im iframe), um Cursor Preview zu entlasten. |
+| Admin volle Werkeliste im State (04.03.26) | Admin hielt alle Werke inkl. Base64-Bilder im State → in Cursor Preview (iframe) hohe Speicherlast → Code 5. **Fix:** In iframe nur „leichte“ Werke (stripArtworkImagesForPreview); Backup/Auto-Save nutzen loadArtworks(tenant). setAllArtworksSafe überall. |
 
 ---
 
@@ -190,7 +191,11 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 | 03.03.26 | ro check crash | GaleriePage (dataStandLabel, pageContentGalerie beim Laden): setDataStandLabel nur bei isMounted; loadData-Cleanup unverändert. ScreenshotExportAdmin: nur TypeScript-Cast (Medienspiegel) + pageContentGalerie im Publish-Payload – kein neuer useEffect/setTimeout/setInterval. Keine neuen Crash-Quellen. |
 | 03.03.26 | check the crash (Sitemap-Session) | **Neue Datei:** api/sitemap.js – Vercel-Serverless-Handler, läuft nur auf dem Server. Kein setInterval/setTimeout/reload/listener, kein Client-/Preview-Code. Keine neue Crash-Quelle. |
 
-*Zuletzt ergänzt: 03.03.26 (check the crash – api/sitemap.js)*
+| 04.03.26 | ScreenshotExportAdmin Einstellungen-Scroll | Neuer useEffect (scrollIntoView bei settingsSubTab/activeTab) – **Cleanup:** clearTimeout(t). Doppelter identischer useEffect entfernt. Vor scrollIntoView: `el.isConnected`-Check. Kein Reload, kein setState im Timeout. |
+
+| 04.03.26 | ScreenshotExportAdmin große Datensätze (Code 5) | **Ursache:** Admin lädt beim Öffnen die komplette Werkeliste inkl. Base64-Bilder in State → in Cursor Preview (iframe) viel Speicher. **Fix:** In iframe (`window.self !== window.top`) Werke ohne data:-Bilder im State halten (stripArtworkImagesForPreview). Backup nutzt immer loadArtworks(tenant); Auto-Save in iframe liest Werke aus loadArtworks(tenant). So: weniger Last in Preview, Backup/Auto-Save weiter vollständig. |
+
+*Zuletzt ergänzt: 04.03.26 (Crash 5 – große Datensätze Admin)*
 
 ---
 

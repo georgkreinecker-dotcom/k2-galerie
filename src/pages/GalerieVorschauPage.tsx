@@ -2467,7 +2467,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 marginBottom: '0.5rem',
                 flexWrap: 'wrap'
               }}>
-                {/* Arbeitsplattform-Link entfernt - nicht benötigt auf iPad/Mobile */}
+                {/* Projekt-Start-Link nur bei K2 – bei ök2 entfernt, führt sonst fälschlich zu K2-Galerie-Projekt */}
+                {!musterOnly && (
                 <Link 
                   to={PROJECT_ROUTES['k2-galerie'].home}
                   style={{
@@ -2483,7 +2484,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                     transition: 'all 0.2s ease'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = musterOnly ? 'rgba(0,0,0,0.12)' : 'rgba(255, 255, 255, 0.2)'
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
                     e.currentTarget.style.color = galerieTheme.text
                   }}
                   onMouseLeave={(e) => {
@@ -2494,6 +2495,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                   <span>←</span>
                   <span>Projekt-Start</span>
                 </Link>
+                )}
               </div>
               <h1 style={{ 
                 margin: 0, 

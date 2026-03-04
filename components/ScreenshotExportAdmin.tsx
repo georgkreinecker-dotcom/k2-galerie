@@ -1102,6 +1102,7 @@ function ScreenshotExportAdmin() {
   const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>(initialEventplanSubTab)
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false) // kleine Leiste „Vergangenheit“, bei Klick aufklappen
   const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzinfo' | 'kassabuch'>('stammdaten')
+  const settingsContentRef = useRef<HTMLDivElement>(null)
   const [lizenzLicenceType, setLizenzLicenceType] = useState<'basic' | 'pro' | 'proplus'>('pro')
   const [lizenzName, setLizenzName] = useState('')
   const [lizenzEmail, setLizenzEmail] = useState('')
@@ -1753,10 +1754,10 @@ function ScreenshotExportAdmin() {
   const [eventDocumentName, setEventDocumentName] = useState('')
   const [eventDocumentType, setEventDocumentType] = useState<'flyer' | 'plakat' | 'presseaussendung' | 'sonstiges'>('flyer')
   
-  // Stammdaten – bei ök2-Kontext nur Musterdaten (keine Vermischung mit K2); K2 nutzt K2_STAMMDATEN_DEFAULTS
+  // Stammdaten – bei ök2 aus localStorage (damit „Musterdaten entfernen“ dauerhaft wirkt); K2 aus Defaults
   const [martinaData, setMartinaData] = useState(() =>
     tenant.isOeffentlich
-      ? { name: MUSTER_TEXTE.martina.name, email: MUSTER_TEXTE.martina.email || '', phone: MUSTER_TEXTE.martina.phone || '', category: 'malerei' as const, bio: MUSTER_TEXTE.artist1Bio, website: MUSTER_TEXTE.martina.website || '', vita: MUSTER_VITA_MARTINA }
+      ? (loadStammdaten('oeffentlich', 'martina') as any)
       : {
           name: K2_STAMMDATEN_DEFAULTS.martina.name,
           category: 'malerei',
@@ -1769,7 +1770,7 @@ function ScreenshotExportAdmin() {
   )
   const [georgData, setGeorgData] = useState(() =>
     tenant.isOeffentlich
-      ? { name: MUSTER_TEXTE.georg.name, email: MUSTER_TEXTE.georg.email || '', phone: MUSTER_TEXTE.georg.phone || '', category: 'keramik' as const, bio: MUSTER_TEXTE.artist2Bio, website: MUSTER_TEXTE.georg.website || '', vita: MUSTER_VITA_GEORG }
+      ? (loadStammdaten('oeffentlich', 'georg') as any)
       : {
           name: K2_STAMMDATEN_DEFAULTS.georg.name,
           category: 'keramik',
@@ -1782,26 +1783,7 @@ function ScreenshotExportAdmin() {
   )
   const [galleryData, setGalleryData] = useState<any>(() =>
     tenant.isOeffentlich
-      ? {
-          name: 'Galerie Muster',
-          subtitle: 'Malerei & Skulptur',
-          description: MUSTER_TEXTE.gemeinsamText,
-          address: MUSTER_TEXTE.gallery.address,
-          city: (MUSTER_TEXTE.gallery as any).city || '',
-          country: (MUSTER_TEXTE.gallery as any).country || '',
-          phone: (MUSTER_TEXTE.gallery as any).phone || '',
-          email: (MUSTER_TEXTE.gallery as any).email || '',
-          website: MUSTER_TEXTE.gallery.website || '',
-          internetadresse: MUSTER_TEXTE.gallery.internetadresse || '',
-          openingHours: (MUSTER_TEXTE.gallery as any).openingHours || '',
-          bankverbindung: (MUSTER_TEXTE.gallery as any).bankverbindung || '',
-          adminPassword: '',
-          soldArtworksDisplayDays: 30,
-          welcomeImage: '',
-          virtualTourImage: '',
-          galerieCardImage: '',
-          internetShopNotSetUp: true
-        }
+      ? (loadStammdaten('oeffentlich', 'gallery') as any)
       : {
           name: K2_STAMMDATEN_DEFAULTS.gallery.name,
           subtitle: 'Kunst & Keramik',
@@ -1899,6 +1881,17 @@ function ScreenshotExportAdmin() {
   useEffect(() => {
     if (tenant.isVk2 && (settingsSubTab === 'sicherheit' || settingsSubTab === 'kassabuch')) setSettingsSubTab('stammdaten')
   }, [settingsSubTab])
+
+  // Einstellungen: Beim Klick auf eine Karte (Meine Daten, Drucker, …) sofort den geöffneten Bereich in den sichtbaren Bereich scrollen (v. a. Handy)
+  useEffect(() => {
+    if (activeTab !== 'einstellungen') return
+    const el = settingsContentRef.current
+    if (!el) return
+    const t = setTimeout(() => {
+      if (el.isConnected) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 50)
+    return () => clearTimeout(t)
+  }, [activeTab, settingsSubTab])
 
   // Besucher-Ticker: Zahl für aktuellen Kontext laden (K2 / ök2 / VK2 Summe)
   useEffect(() => {
@@ -2380,11 +2373,13 @@ function ScreenshotExportAdmin() {
         const raw = localStorage.getItem('k2-page-content-galerie')
         if (raw && raw.length < 6 * 1024 * 1024) pageContentGalerieRaw = raw
       } catch (_) {}
+      // Immer volle Werke aus localStorage (in iframe ist allArtworks „leicht“ ohne Base64 – Backup muss voll sein)
+      const artworksForBackup = loadArtworks(tenant)
       const payload = {
         martina: martinaData,
         georg: georgData,
         gallery: galleryData,
-        artworks: allArtworks,
+        artworks: artworksForBackup,
         events: eventsForBackup,
         documents: documentsForBackup,
         customers: Array.isArray(customersForBackup) ? customersForBackup : [],
@@ -2405,7 +2400,7 @@ function ScreenshotExportAdmin() {
       a.click()
       setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url) }, 200)
       const customersCount = Array.isArray(customersForBackup) ? customersForBackup.length : 0
-      alert(`✅ Sicherungskopie wurde heruntergeladen.\n\nIn der Datei sind: Stammdaten, ${allArtworks.length} Werke, ${eventsForBackup.length} Events, ${documentsForBackup.length} Dokumente, ${customersCount} Kunden.\n\nSpeichere die Datei an einem sicheren Ort (z. B. PC, USB-Stick). Falls du später Daten verlierst oder auf einem neuen Gerät startest, kannst du sie hier mit „Aus Backup-Datei wiederherstellen“ wieder einspielen.`)
+      alert(`✅ Sicherungskopie wurde heruntergeladen.\n\nIn der Datei sind: Stammdaten, ${artworksForBackup.length} Werke, ${eventsForBackup.length} Events, ${documentsForBackup.length} Dokumente, ${customersCount} Kunden.\n\nSpeichere die Datei an einem sicheren Ort (z. B. PC, USB-Stick). Falls du später Daten verlierst oder auf einem neuen Gerät startest, kannst du sie hier mit „Aus Backup-Datei wiederherstellen“ wieder einspielen.`)
     } catch (e) {
       alert('Die Sicherungskopie konnte nicht erstellt werden.\n\nGrund: ' + (e instanceof Error ? e.message : String(e)) + '\n\nBitte erneut versuchen. Wenn es wieder fehlschlägt, Speicher prüfen („Speicher freigeben“) oder den Assistenten fragen.')
     }
@@ -2720,6 +2715,23 @@ function ScreenshotExportAdmin() {
     }
   }, [showAddModal, editingArtwork])
 
+  /** In Cursor Preview (iframe) keine schweren Base64-Bilder im State halten → weniger Speicher, weniger Code-5-Crashes */
+  const inIframe = typeof window !== 'undefined' && window.self !== window.top
+  const stripArtworkImagesForPreview = (list: any[]): any[] => {
+    if (!inIframe || !Array.isArray(list)) return list
+    return list.map((a: any) => {
+      if (a && typeof a.imageUrl === 'string' && a.imageUrl.startsWith('data:')) {
+        return { ...a, imageUrl: '' }
+      }
+      return a
+    })
+  }
+  /** State setzen – in iframe ohne Base64, um Speicher/Crash 5 zu entlasten */
+  const setAllArtworksSafe = (list: any[]) => {
+    const arr = Array.isArray(list) ? list : []
+    setAllArtworks(inIframe ? stripArtworkImagesForPreview(arr) : arr)
+  }
+
   // Werke aus localStorage laden – bei Kontextwechsel (K2/ök2/VK2) neu laden, sonst zeigt Admin nach Guide-Klick weiter K2-Daten
   useEffect(() => {
     let isMounted = true
@@ -2738,7 +2750,9 @@ function ScreenshotExportAdmin() {
           return
         }
         const artworks = loadArtworks(tenant)
-        if (isMounted && Array.isArray(artworks)) setAllArtworks(artworks)
+        if (isMounted && Array.isArray(artworks)) {
+          setAllArtworks(inIframe ? stripArtworkImagesForPreview(artworks) : artworks)
+        }
       } catch (_) {
         if (isMounted) setAllArtworks([])
       }
@@ -2773,7 +2787,8 @@ function ScreenshotExportAdmin() {
           return
         }
         if (Array.isArray(artworks)) {
-          setAllArtworks(artworks)
+          const inIframe = typeof window !== 'undefined' && window.self !== window.top
+          setAllArtworks(inIframe ? artworks.map((a: any) => (a && typeof a?.imageUrl === 'string' && a.imageUrl.startsWith('data:')) ? { ...a, imageUrl: '' } : a) : artworks)
         }
       } catch (error) {
         console.error('Fehler beim Neuladen der Werke:', error)
@@ -2840,7 +2855,7 @@ function ScreenshotExportAdmin() {
           } catch (_) {}
         }
         if (ok) {
-          setAllArtworks(loadArtworks(tenant))
+          setAllArtworksSafe(loadArtworks(tenant))
           window.dispatchEvent(new CustomEvent('artworks-updated', { detail: {} }))
           setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
           const exportedAt = data.exportedAt ? ` (Stand: ${new Date(String(data.exportedAt)).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })})` : ''
@@ -2896,7 +2911,7 @@ function ScreenshotExportAdmin() {
       const toSave = filterK2Only(merged)
       if (toSave.length >= localArtworks.length || toSave.length >= (loadArtworks(tenant).length || 0)) {
         if (saveArtworks(tenant, toSave)) {
-          setAllArtworks(loadArtworks(tenant))
+          setAllArtworksSafe(loadArtworks(tenant))
           window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: toSave.length } }))
           setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
           const exportedAt = data.exportedAt ? ` (Stand: ${new Date(data.exportedAt).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })})` : ''
@@ -2945,7 +2960,7 @@ function ScreenshotExportAdmin() {
         alert('Die Daten konnten nicht gespeichert werden (z. B. Speicher voll). Bitte versuche es mit „Aus Backup-Datei wiederherstellen“ und einer Sicherungsdatei von dir.')
         return
       }
-      setAllArtworks(loadArtworks(tenant))
+      setAllArtworksSafe(loadArtworks(tenant))
       if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated'))
       alert(`✅ Fertig. ${list.length} Werke wurden vom Server zurück in deine App geladen.`)
     } catch (e) {
@@ -3033,12 +3048,12 @@ function ScreenshotExportAdmin() {
   useEffect(() => {
     let isMounted = true
     
-    // Funktion die alle Daten sammelt
+    // Funktion die alle Daten sammelt – in iframe allArtworks ist „leicht“ (ohne Base64), Auto-Save braucht volle Daten aus localStorage
     const getAllData = () => ({
       martina: martinaData,
       georg: georgData,
       gallery: galleryData,
-      artworks: allArtworks,
+      artworks: (typeof window !== 'undefined' && window.self !== window.top) ? loadArtworks(tenant) : allArtworks,
       events: events,
       documents: documents,
       designSettings: designSettings,
@@ -7216,7 +7231,7 @@ ${'='.repeat(60)}
     const updated = [...artworks]
     updated[idx] = { ...updated[idx], inExhibition: !updated[idx].inExhibition }
     if (saveArtworks(tenant, updated)) {
-      setAllArtworks(loadArtworks(tenant))
+      setAllArtworksSafe(loadArtworks(tenant))
       window.dispatchEvent(new CustomEvent('artworks-updated'))
     }
   }
@@ -7235,7 +7250,7 @@ ${'='.repeat(60)}
       const q = a.quantity != null ? Number(a.quantity) : 0
       artworks[idx] = { ...a, quantity: q + 1, inShop: true }
       if (saveArtworks(tenant, artworks)) {
-        setAllArtworks(loadArtworks(tenant))
+        setAllArtworksSafe(loadArtworks(tenant))
         window.dispatchEvent(new CustomEvent('artworks-updated'))
       }
     }
@@ -7270,7 +7285,7 @@ ${'='.repeat(60)}
         artworks[idx] = { ...a, quantity: 0, inShop: false }
       }
       if (saveArtworks(tenant, artworks)) {
-        setAllArtworks(loadArtworks(tenant))
+        setAllArtworksSafe(loadArtworks(tenant))
         window.dispatchEvent(new CustomEvent('artworks-updated'))
       }
     }
@@ -7295,7 +7310,7 @@ ${'='.repeat(60)}
       localStorage.setItem('k2-reserved-artworks', JSON.stringify(reserved))
       alert(`✅ Werk ${artworkNumber} ist reserviert${name.trim() ? ` für ${name.trim()}` : ''}.`)
     }
-    setAllArtworks(loadArtworks(tenant))
+    setAllArtworksSafe(loadArtworks(tenant))
     window.dispatchEvent(new CustomEvent('artworks-updated'))
     setShowReserveModal(false)
     setReserveInput('')
@@ -7946,7 +7961,7 @@ ${'='.repeat(60)}
             (a?.id === artworkData.id || a?.number === artworkData.number) ? { ...a, imageUrl: url } : a
           )
           saveArtworks(tenant, updatedArtworks)
-          setAllArtworks(loadArtworks(tenant))
+          setAllArtworksSafe(loadArtworks(tenant))
           console.log('✅ Werk-Bild auf GitHub hochgeladen:', url)
         } catch (uploadErr) {
           console.warn('GitHub Upload für Werk fehlgeschlagen (Bild bleibt lokal):', uploadErr)
@@ -8033,7 +8048,7 @@ ${'='.repeat(60)}
         listToShow = listToShow.filter((a: any) => String(a?.number ?? a?.id ?? '') !== editKey)
         listToShow = [...listToShow, { ...artworkData, imageUrl: imageDataUrl }]
       }
-      setAllArtworks(listToShow)
+      setAllArtworksSafe(listToShow)
       
       // WICHTIG: Kurze Verzögerung damit React State aktualisiert wird
       setTimeout(() => {
@@ -9828,9 +9843,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             {istVerein ? 'Dein Guide führt euch durch alle Bereiche.' : 'Klick auf eine Kachel – dein Guide erklärt sie dir.'}
                           </div>
                         </div>
-                        <a href={galerieUrl} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.55rem 1rem', background: akzent, color: '#fff', borderRadius: '10px', fontSize: '0.84rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0, whiteSpace: 'nowrap' as const, boxShadow: `0 3px 10px ${akzent}44` }}>
+                        <Link to={galerieUrl} state={tenant.isOeffentlich ? { fromAdmin: true } : undefined} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.55rem 1rem', background: akzent, color: '#fff', borderRadius: '10px', fontSize: '0.84rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0, whiteSpace: 'nowrap' as const, boxShadow: `0 3px 10px ${akzent}44` }}>
                           {istVerein ? '👥 Unsere Mitglieder' : '🎨 Galerie ansehen'} →
-                        </a>
+                        </Link>
                       </div>
 
                       {/* Hub: Kacheln links | aktiver Dialog Mitte | Kacheln rechts */}
@@ -9970,9 +9985,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               : `Willkommen, ${guideVorname}! Das ist deine Galerie-Zentrale.`}
                           </div>
                         </div>
-                        <a href={galerieUrl} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.5rem 0.9rem', background: '#b54a1e', color: '#fff', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0, whiteSpace: 'nowrap' as const }}>
+                        <Link to={galerieUrl} state={tenant.isOeffentlich ? { fromAdmin: true } : undefined} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.5rem 0.9rem', background: '#b54a1e', color: '#fff', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0, whiteSpace: 'nowrap' as const }}>
                           {istVerein ? '👥 Unsere Mitglieder' : '🎨 Galerie ansehen'} →
-                        </a>
+                        </Link>
                       </div>
                       <div style={{ fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.55, marginBottom: '1rem' }}>
                         {istVerein
@@ -10218,7 +10233,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               <StatistikTab
                 allArtworks={allArtworks}
                 onMarkAsReserved={handleMarkAsReserved}
-                onRerender={() => setAllArtworks(loadArtworks(tenant))}
+                onRerender={() => setAllArtworksSafe(loadArtworks(tenant))}
                 onStorno={handleStornoVerkauf}
               />
               {/* PDFs & Speicherdaten – hier bei Kassa/Statistik, nicht in Einstellungen */}
@@ -10272,7 +10287,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               const newArtworks = importData.artworks.filter((a: any) => !existingIds.has(a.id || a.number))
                               if (newArtworks.length === 0) { alert('Keine neuen Werke zum Importieren.'); return }
                               const merged = [...existing, ...newArtworks]
-                              if (saveArtworks(tenant, merged)) { setAllArtworks(merged); window.dispatchEvent(new CustomEvent('artworks-updated')); alert(`✅ ${newArtworks.length} Werke importiert!`) }
+                              if (saveArtworks(tenant, merged)) { setAllArtworksSafe(merged); window.dispatchEvent(new CustomEvent('artworks-updated')); alert(`✅ ${newArtworks.length} Werke importiert!`) }
                               else alert('⚠️ Fehler beim Speichern.')
                             } else alert('Ungültiges Format.')
                           } catch (_) { alert('Fehler beim Importieren.') }
@@ -11078,7 +11093,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               if (limitErreicht) return
                               const updated = allArtworks.map((a: any) => a.id === artwork.id ? { ...a, imVereinskatalog: !istDrin } : a)
                               saveArtworks(tenant, updated)
-                              setAllArtworks(updated)
+                              setAllArtworksSafe(updated)
                             }}
                             style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.3rem', padding: '0.2rem 0.5rem', background: istDrin ? 'rgba(251,191,36,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${istDrin ? 'rgba(251,191,36,0.5)' : 'rgba(255,255,255,0.15)'}`, borderRadius: 6, color: istDrin ? '#fbbf24' : 'rgba(255,255,255,0.3)', fontSize: '0.72rem', cursor: limitErreicht ? 'not-allowed' : 'pointer', opacity: limitErreicht ? 0.5 : 1 }}
                           >
@@ -11239,7 +11254,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               if (tenant.isOeffentlich && filtered.length === 0) {
                                 setAllArtworks([])
                               } else {
-                                setAllArtworks(filtered)
+                                setAllArtworksSafe(filtered)
                               }
                               window.dispatchEvent(new CustomEvent('artworks-updated'))
                             } else {
@@ -12316,7 +12331,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       const ohne = existing.filter((a: any) => !String(a.id || '').startsWith('muster-') && !(a as any)._isMuster)
                       if (ohne.length === existing.length) { alert('Keine Musterdaten gefunden – nichts zu löschen.'); return }
                       saveArtworksByKey('k2-oeffentlich-artworks', ohne, { filterK2Only: false, allowReduce: true })
-                      setAllArtworks(ohne)
+                      setAllArtworksSafe(ohne)
                       alert('✅ Musterdaten entfernt. Eigene Werke sind unberührt.')
                     }}
                     style={{ padding: '0.4rem 0.9rem', background: 'transparent', color: '#f87171', border: '1px solid #f87171', borderRadius: 8, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}
@@ -12421,7 +12436,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
 
             {/* Stammdaten Sub-Tab */}
             {settingsSubTab === 'stammdaten' && (
-              <div>
+              <div ref={settingsContentRef}>
                 {tenant.isVk2 ? (
                   /* VK2: Verein, Vorstand, Beirat, Mitglieder */
                   <div>
@@ -12918,34 +12933,22 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       </div>
                     )}
                 <div style={{
-                  padding: '0.75rem 1rem',
-                  marginBottom: '1.25rem',
-                  background: s.bgCard,
-                  border: `1px solid ${s.accent}33`,
-                  borderRadius: s.radius,
-                  color: s.text,
-                  fontSize: '0.9rem',
-                  lineHeight: 1.5
-                }}>
-                  <strong>Hinweis:</strong> Die Galerie wird in der Hauptsache von einer Person betrieben. Optional kannst du eine zweite Person anbieten – dazu die erforderlichen Eintragungen bei „Person 2 (optional)“ vornehmen (Name, E-Mail, Telefon; Name ggf. im Design-Tab unter Willkommensseite/Galerie anpassen). Nach dem Speichern erscheint die zweite Person z. B. im Impressum und in der Vita.
-                </div>
-                <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                  gap: 'clamp(1rem, 2.5vw, 1.5rem)',
-                  marginBottom: 'clamp(1rem, 2.5vw, 1.5rem)'
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                  gap: 'clamp(0.6rem, 2vw, 1rem)',
+                  marginBottom: 'clamp(0.75rem, 2vw, 1.25rem)'
                 }}>
                   {/* Person 1 */}
                   <div style={{
                     background: s.bgCard,
                     border: `1px solid ${s.accent}22`,
-                    padding: 'clamp(1rem, 2.5vw, 1.25rem)',
-                    borderRadius: '16px',
+                    padding: 'clamp(0.75rem, 2vw, 1rem)',
+                    borderRadius: '12px',
                     boxShadow: s.shadow
                   }}>
                     <h3 style={{
                       marginTop: 0,
-                      marginBottom: '0.25rem',
+                      marginBottom: '0.5rem',
                       fontSize: 'clamp(1rem, 2.5vw, 1.15rem)',
                       fontWeight: '600',
                       color: s.text,
@@ -12954,10 +12957,17 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     }}>
                       👩‍🎨 Person 1 (Hauptansprechpartner)
                     </h3>
-                    <p style={{ margin: '0 0 clamp(0.75rem, 2vw, 1rem)', fontSize: '0.8rem', color: s.muted }}>
-                      {tenant.isOeffentlich ? MUSTER_TEXTE.martina.name : (martinaData.name || 'Name im Design-Tab festlegen')}
-                    </p>
                     <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', color: s.text }}>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Name</label>
+                        <input
+                          type="text"
+                          value={martinaData.name || ''}
+                          onChange={(e) => setMartinaData({ ...martinaData, name: e.target.value })}
+                          placeholder="Name der Hauptansprechperson"
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
+                        />
+                      </div>
                       <div className="field">
                         <label style={{ fontSize: '0.85rem', color: s.text }}>E-Mail</label>
                         <input
@@ -12978,6 +12988,38 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           placeholder="z.B. +43 664 … (international änderbar)"
                           style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
+                      </div>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Vollständige Adresse (Straße, Hausnr.)</label>
+                        <input
+                          type="text"
+                          value={galleryData.address || ''}
+                          onChange={(e) => setGalleryData({ ...galleryData, address: e.target.value })}
+                          placeholder="z. B. Hauptstraße 12"
+                          style={{ padding: '0.5rem 0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
+                        />
+                      </div>
+                      <div className="field" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                        <div>
+                          <label style={{ fontSize: '0.8rem', color: s.text }}>Ort (PLZ Ort)</label>
+                          <input
+                            type="text"
+                            value={galleryData.city || ''}
+                            onChange={(e) => setGalleryData({ ...galleryData, city: e.target.value })}
+                            placeholder="1010 Wien"
+                            style={{ padding: '0.5rem 0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: '0.8rem', color: s.text }}>Land</label>
+                          <input
+                            type="text"
+                            value={galleryData.country || ''}
+                            onChange={(e) => setGalleryData({ ...galleryData, country: e.target.value })}
+                            placeholder="Österreich"
+                            style={{ padding: '0.5rem 0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box' }}
+                          />
+                        </div>
                       </div>
                       <div className="field">
                         <button type="button" onClick={() => setVitaMartinaOpen(!vitaMartinaOpen)} style={{ width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
@@ -13029,13 +13071,17 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     </button>
                     {person2BlockOpen && (
                       <>
-                        <p style={{ margin: '0.75rem 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>
-                          {tenant.isOeffentlich ? MUSTER_TEXTE.georg.name : (georgData.name || 'Name im Design-Tab festlegen')}
-                        </p>
-                        <p style={{ margin: '0 0 0.75rem', fontSize: '0.75rem', color: s.muted }}>
-                          Für Anzeige einer zweiten Person: E-Mail und Telefon ausfüllen, dann „Stammdaten speichern“. Name ggf. im Design-Tab anpassen.
-                        </p>
-                        <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', color: s.text }}>
+                        <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', color: s.text, marginTop: '0.75rem' }}>
+                          <div className="field">
+                            <label style={{ fontSize: '0.85rem', color: s.text }}>Name (optional)</label>
+                            <input
+                              type="text"
+                              value={georgData.name || ''}
+                              onChange={(e) => setGeorgData({ ...georgData, name: e.target.value })}
+                              placeholder="Name der zweiten Person"
+                              style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box' }}
+                            />
+                          </div>
                           <div className="field">
                             <label style={{ fontSize: '0.85rem', color: s.text }}>E-Mail</label>
                             <input
@@ -13092,7 +13138,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   }}>
                     <h3 style={{
                       marginTop: 0,
-                      marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
+                      marginBottom: '0.5rem',
                       fontSize: 'clamp(1rem, 2.5vw, 1.15rem)',
                       fontWeight: '600',
                       color: s.text,
@@ -13101,37 +13147,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     }}>
                       🏛️ Galerie
                     </h3>
-                    <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', color: s.text }}>
-                      <div className="field">
-                        <label style={{ fontSize: '0.85rem', color: s.text }}>Adresse (Straße, Hausnummer)</label>
-                        <input
-                          type="text"
-                          value={galleryData.address || ''}
-                          onChange={(e) => setGalleryData({ ...galleryData, address: e.target.value })}
-                          placeholder="z. B. Hauptstraße 12"
-                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
-                        />
-                      </div>
-                      <div className="field">
-                        <label style={{ fontSize: '0.85rem', color: s.text }}>Ort (PLZ und Ortsname)</label>
-                        <input
-                          type="text"
-                          value={galleryData.city || ''}
-                          onChange={(e) => setGalleryData({ ...galleryData, city: e.target.value })}
-                          placeholder="z. B. 1010 Wien"
-                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
-                        />
-                      </div>
-                      <div className="field">
-                        <label style={{ fontSize: '0.85rem', color: s.text }}>Land</label>
-                        <input
-                          type="text"
-                          value={galleryData.country || ''}
-                          onChange={(e) => setGalleryData({ ...galleryData, country: e.target.value })}
-                          placeholder="z. B. Österreich"
-                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
-                        />
-                      </div>
+                    <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', color: s.muted }}>Vollständige Adresse bei Person 1 (Hauptansprechpartner).</p>
+                    <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', color: s.text }}>
                       <div className="field">
                         <label style={{ fontSize: '0.85rem', color: s.text }}>Telefon</label>
                         <input
@@ -13209,7 +13226,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             {!tenant.isVk2 && hasKassa(kassabuchTenantForSettings) && settingsSubTab === 'kassabuch' && (() => {
               const aktiv = kassabuchAktivDisplay
               return (
-                <div style={{ padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px', marginBottom: '1.5rem' }}>
+                <div ref={settingsContentRef} style={{ padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px', marginBottom: '1.5rem' }}>
                   <h3 style={{ fontSize: '1rem', color: s.text, marginBottom: '0.5rem' }}>📒 Kassabuch führen</h3>
                   <p style={{ color: s.muted, fontSize: '0.85rem', marginBottom: '0.75rem' }}>
                     <strong>Ja</strong>: Vollständiges Kassabuch (Eingänge + Ausgänge). <strong>Nein</strong>: Nur Verkäufe (Eingänge) sichtbar.
@@ -13227,7 +13244,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
 
             {/* Registrierung Sub-Tab – nur K2/VK2; ök2 nutzt „Lizenz abschließen“ */}
             {!tenant.isOeffentlich && settingsSubTab === 'registrierung' && (
-              <div>
+              <div ref={settingsContentRef}>
                 <h3 style={{ fontSize: '1.1rem', color: s.accent, marginBottom: '0.5rem' }}>📝 Registrierung</h3>
                 <p style={{ color: s.muted, marginBottom: '1.25rem', fontSize: '0.9rem' }}>
                   Grundinfo für zukünftige User. Lizenz und Vereinsmitgliedschaft festlegen – Daten kommen aus Stammdaten, Änderungen werden beim Speichern übernommen.
@@ -13432,7 +13449,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
 
             {/* Sicherheit Sub-Tab – nur K2 und ök2 (VK2 braucht das nicht) */}
             {settingsSubTab === 'sicherheit' && !tenant.isVk2 && (
-              <div>
+              <div ref={settingsContentRef}>
                 <h3 style={{ fontSize: '1.1rem', color: s.accent, marginBottom: '1rem' }}>🔒 Sicherheitsabteilung</h3>
                 <p style={{ color: s.muted, marginBottom: '1rem', lineHeight: 1.5 }}>
                   Hier regelst du den Zugang zum Admin-Bereich (Passwort) und die Sicherung deiner Daten. So behältst du die Kontrolle und kannst bei Verlust alles zurückholen.
@@ -13651,7 +13668,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               const anzahlGeworbene = grants.length
               const prozentGutschrift = Math.min(anzahlGeworbene * 10, 100)
               return (
-                <div>
+                <div ref={settingsContentRef}>
                   <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', fontWeight: 600, color: s.text, marginBottom: '1rem' }}>
                     🤝 Empfehlungs-Programm
                   </h3>
@@ -13766,7 +13783,7 @@ ${name}`
                 setLizenzLoading(false)
               }
               return (
-                <div>
+                <div ref={settingsContentRef}>
                   <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', fontWeight: 600, color: s.text, marginBottom: '0.5rem' }}>
                     📄 Lizenz abschließen
                   </h3>
@@ -13829,7 +13846,7 @@ ${name}`
 
             {/* Lizenzinformation – was jedes Paket enthält, Unterschiede und Mehrkosten auf einen Blick */}
             {settingsSubTab === 'lizenzinfo' && (
-              <div style={{ maxWidth: 640 }}>
+              <div ref={settingsContentRef} style={{ maxWidth: 640 }}>
                 <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', fontWeight: 600, color: s.text, marginBottom: '0.5rem' }}>
                   📋 Lizenzinformation
                 </h3>
@@ -13902,7 +13919,7 @@ ${name}`
 
             {/* Drucker Sub-Tab */}
             {settingsSubTab === 'drucker' && tenant.isVk2 && (
-              <div>
+              <div ref={settingsContentRef}>
                 <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', fontWeight: '600', color: s.text, marginBottom: '1.5rem' }}>
                   🖨️ Drucken
                 </h3>
@@ -13924,7 +13941,7 @@ ${name}`
               </div>
             )}
             {settingsSubTab === 'drucker' && !tenant.isVk2 && (
-              <div>
+              <div ref={settingsContentRef}>
                 <h3 style={{
                   fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
                   fontWeight: '600',

@@ -8,11 +8,11 @@
 
 | Was | Inhalt |
 |-----|--------|
-| **Datum** | 03.03.26 |
-| **Thema** | check the crash (nach Sitemap/Google-Session) |
-| **Zuletzt geändert/geöffnet** | api/sitemap.js (neu), public/sitemap.xml (minimal), vercel.json (Header), docs Sichtbarkeit |
-| **Hinweis von Georg** | „check the crash“ |
-| **Ergebnis** | api/sitemap.js geprüft: nur Server-Handler, kein Client-Code. Keine neuen Crash-Quellen. CRASH-BEREITS-GEPRUEFT.md ergänzt. |
+| **Datum** | 04.03.26 |
+| **Thema** | Crash 5 – „zu große Datensätze / läuft gar nichts im Hintergrund“ |
+| **Zuletzt geändert/geöffnet** | components/ScreenshotExportAdmin.tsx (allArtworks in iframe leicht, Backup/Auto-Save volle Daten) |
+| **Hinweis von Georg** | „check the crash 5 wieso haben wir jetzt ständig wieder das problem machst du zu grosse datensätze denn es läuft gar nichts im hintergrund“ |
+| **Ergebnis** | Admin hielt volle Werkeliste inkl. Base64 im State → in Cursor Preview Speicherlast. Fix: In iframe nur „leichte“ Werke (ohne data:-Bilder); Backup und Auto-Save nutzen weiter loadArtworks(tenant). CRASH-BEREITS-GEPRUEFT.md ergänzt. |
 
 ---
 

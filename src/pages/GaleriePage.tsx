@@ -358,13 +358,23 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     } catch (_) {}
   }, [musterOnly])
 
+  const KEY_FROM_ADMIN = 'k2-galerie-from-admin'
   useEffect(() => {
     if (!musterOnly) return
     try {
+      // Von Admin/App zur Galerie gewechselt (Link state oder <a>-Klick mit sessionStorage) → kein „Wähle deinen Einstieg“
+      if ((location.state as any)?.fromAdmin || sessionStorage.getItem(KEY_FROM_ADMIN)) {
+        try {
+          sessionStorage.setItem(KEY_GALERIE_WELCOME_SEEN, '1')
+          sessionStorage.removeItem(KEY_FROM_ADMIN)
+        } catch (_) {}
+        setShowWelcomeModal(false)
+        return
+      }
       const isMobile = window.innerWidth <= 768 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
       if (isMobile && !sessionStorage.getItem(KEY_GALERIE_WELCOME_SEEN)) setShowWelcomeModal(true)
     } catch (_) {}
-  }, [musterOnly])
+  }, [musterOnly, location.state])
   const closeWelcomeNurUmschauen = () => {
     try { sessionStorage.setItem(KEY_GALERIE_WELCOME_SEEN, '1') } catch (_) {}
     setShowWelcomeModal(false)
