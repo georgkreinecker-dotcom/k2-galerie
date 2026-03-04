@@ -9621,7 +9621,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '✨', name: 'Galerie gestalten und texten', beschreibung: 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Vereinsdaten, Kontakt, Mitglieder verwalten.', tab: 'einstellungen' },
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
-                    { emoji: '🚀', name: 'Jetzt starten', beschreibung: 'Daten ausfüllen und die Galerie live schalten.', tab: 'assistent' },
+                    { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Daten ausfüllen und die Galerie live schalten.', tab: 'assistent' },
                   ] : [
                     { emoji: '🖼️', name: 'Werke hinzufügen und bearbeiten', beschreibung: 'Fotos hochladen, Titel, Preis – ein Klick und es ist live.', tab: 'werke' },
                     { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Vernissage planen, Einladungen & QR-Codes erstellen.', tab: 'eventplan' },
@@ -9629,7 +9629,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '✨', name: 'Galerie gestalten und texten', beschreibung: 'Farben, Texte, Bilder – die Galerie wird zu dir.', tab: 'design' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Kontakt, Adresse, Öffnungszeiten – deine Stammdaten.', tab: 'einstellungen' },
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
-                    { emoji: '🚀', name: 'Jetzt starten', beschreibung: 'Daten ausfüllen und deine Galerie live schalten.', tab: 'assistent' },
+                    { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Daten ausfüllen und deine Galerie live schalten.', tab: 'assistent' },
                   ]
 
                   // Abgestimmte Hintergrundfarben pro Bereich (inaktiv) – alle aus einer warmen Palette
@@ -9669,7 +9669,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         }
                         .hub-guide-karte:active:not(.hub-guide-karte--aktiv) { transform: translateY(-1px); }
                       `}</style>
-                      <button type="button" onClick={() => setGuideBannerClosed(true)} style={{ position: 'absolute', top: '0.9rem', right: '1rem', background: 'none', border: 'none', cursor: 'pointer', color: `${akzent}44`, fontSize: '1.2rem', lineHeight: 1, padding: '0.2rem 0.4rem' }} title="Schließen">×</button>
+                      <button type="button" onClick={() => setGuideBannerClosed(true)} style={{ position: 'absolute', top: '0.9rem', right: '1rem', background: 'none', border: 'none', cursor: 'pointer', color: `${akzent}44`, fontSize: '1.2rem', lineHeight: 1, padding: '0.2rem 0.4rem' }} title="Schließen – danach siehst du dieselben Bereiche als Karten">×</button>
 
                       {/* Kopfzeile */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem', marginBottom: '1.25rem', flexWrap: 'wrap' as const }}>
@@ -9812,7 +9812,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     : '/projects/k2-galerie/galerie'
                   return (
                     <div style={{ background: 'linear-gradient(135deg, #b54a1e14, #b54a1e08)', border: '1.5px solid #b54a1e33', borderRadius: '16px', padding: '1.25rem 1.5rem', marginBottom: '1.75rem', position: 'relative' }}>
-                      <button type="button" onClick={() => setGuideBannerClosed(true)} style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', background: 'none', border: 'none', cursor: 'pointer', color: '#b54a1e66', fontSize: '1.1rem', lineHeight: 1, padding: '0.2rem 0.4rem' }} title="Schließen">×</button>
+                      <button type="button" onClick={() => setGuideBannerClosed(true)} style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', background: 'none', border: 'none', cursor: 'pointer', color: '#b54a1e66', fontSize: '1.1rem', lineHeight: 1, padding: '0.2rem 0.4rem' }} title="Schließen – danach siehst du dieselben Bereiche als Karten">×</button>
 
                       {/* Kopf + Galerie-Vorschau Button */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
@@ -9935,15 +9935,31 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     try { sessionStorage.setItem('k2-admin-context', tenant.isOeffentlich ? 'oeffentlich' : 'k2') } catch (_) {}
                     if (typeof window !== 'undefined' && window.self === window.top) window.location.href = '/projects/k2-galerie/shop?openAsKasse=1'
                   }
+                  // Abgestimmte Kartenfarben (Werke + Galerie gestalten gleich präsent), Rest harmonisch
+                  const GRID_CARD_STYLE: Record<string, { bg: string; text: string; sub: string; border: string }> = {
+                    werke: { bg: akzentGrad, text: '#fff', sub: 'rgba(255,255,255,0.85)', border: 'none' },
+                    design: { bg: '#f5ebe0', text: '#1c1a18', sub: '#5c5650', border: '#c4a57444' },
+                    einstellungen: { bg: '#f0f4f8', text: s.text, sub: s.muted, border: '#a0b0c844' },
+                    assistent: { bg: '#f8f0f4', text: s.text, sub: s.muted, border: '#c4a0b044' },
+                    statistik: { bg: '#f5f8f2', text: s.text, sub: s.muted, border: '#90a88044' },
+                    eventplan: { bg: '#f5f8f2', text: s.text, sub: s.muted, border: '#90a88044' },
+                    presse: { bg: '#f2f4f8', text: s.text, sub: s.muted, border: '#8090b044' },
+                    katalog: { bg: '#f4f8f0', text: s.text, sub: s.muted, border: '#80a09044' },
+                  }
                   return (
                     <div style={{ marginBottom: 'clamp(2rem, 4vw, 2.5rem)' }}>
+                      <style>{`
+                        .admin-hub-karte { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+                        .admin-hub-karte:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+                        .admin-hub-karte:active { transform: translateY(-1px); }
+                      `}</style>
                       <h2 style={{ fontSize: 'clamp(1.2rem, 2.5vw, 1.5rem)', fontWeight: 700, color: s.text, margin: '0 0 0.25rem' }}>
                         Was möchtest du heute tun?
                       </h2>
                       <p style={{ color: s.muted, margin: 0, fontSize: '0.9rem', marginBottom: '1rem' }}>
-                        Ein Klick – du bist im Bereich.
+                        Ein Klick – du bist im Bereich. Das sind alle Bereiche deiner Galerie.
                       </p>
-                      {/* Zwei Spalten: links Werke/Aussehen/Einstellungen/Schritt, rechts Kassa/Events/Presse – zeilenweise gefüllt */}
+                      {/* Zwei Spalten: links Werke/Galerie gestalten/Einstellungen/Schritt, rechts Kassa/Events/Presse – zeilenweise gefüllt */}
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'clamp(0.75rem, 2vw, 1rem)', maxWidth: '900px' }}>
                         {(() => {
                           const maxRows = Math.max(linksBereiche.length, rechtsBereiche.length)
@@ -9954,8 +9970,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             if (rechtsBereiche[i]) cells.push(rechtsBereiche[i])
                             else cells.push(null)
                           }
-                          return cells.map((b, idx) => b ? (
-                          <button key={b.tab} type="button"
+                          return cells.map((b, idx) => b ? (() => {
+                            const cs = GRID_CARD_STYLE[b.tab] || { bg: s.bgCard, text: s.text, sub: s.muted, border: `${s.accent}22` }
+                            const isAccent = b.tab === 'werke'
+                            return (
+                          <button key={b.tab} type="button" className="admin-hub-karte"
                             onClick={() => {
                               if (b.tab === 'kassa') openKasse()
                               else if (b.tab === 'werke') scrollToWerke()
@@ -9966,26 +9985,26 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               display: 'flex',
                               alignItems: 'center',
                               gap: 'clamp(0.6rem, 1.5vw, 0.9rem)',
-                              background: b.tab === 'werke' ? akzentGrad : s.bgCard,
-                              border: b.tab === 'werke' ? 'none' : `1px solid ${s.accent}22`,
+                              background: cs.bg,
+                              border: isAccent ? 'none' : `1px solid ${cs.border}`,
                               borderRadius: '12px',
                               cursor: 'pointer',
                               fontFamily: 'inherit',
-                              transition: 'all 0.15s',
                               textAlign: 'left' as const,
-                              boxShadow: b.tab === 'werke' ? `0 3px 12px ${akzent}44` : '0 1px 3px rgba(0,0,0,0.06)',
-                              color: b.tab === 'werke' ? '#fff' : s.text,
-                              fontWeight: b.tab === 'werke' ? 700 : 500,
+                              boxShadow: isAccent ? `0 3px 12px ${akzent}44` : '0 1px 3px rgba(0,0,0,0.06)',
+                              color: cs.text,
+                              fontWeight: isAccent ? 700 : 500,
                             }}>
-                            {b.tab === 'presse' ? <MedienstudioIcon size={28} style={{ flexShrink: 0 }} /> : <span style={{ fontSize: 'clamp(1.75rem, 4vw, 2.1rem)', flexShrink: 0, lineHeight: 1 }}>{b.emoji}</span>}
+                            {b.tab === 'presse' ? <MedienstudioIcon size={28} style={{ flexShrink: 0, color: cs.text }} /> : <span style={{ fontSize: 'clamp(1.75rem, 4vw, 2.1rem)', flexShrink: 0, lineHeight: 1 }}>{b.emoji}</span>}
                             <div style={{ minWidth: 0 }}>
                               <div style={{ fontSize: 'clamp(0.88rem, 1.8vw, 1rem)', lineHeight: 1.25 }}>{b.name}</div>
-                              <div style={{ fontSize: '0.72rem', color: b.tab === 'werke' ? 'rgba(255,255,255,0.85)' : s.muted, marginTop: '0.15rem', lineHeight: 1.3 }}>
+                              <div style={{ fontSize: '0.72rem', color: cs.sub, marginTop: '0.15rem', lineHeight: 1.3 }}>
                                 {b.beschreibung.length > 48 ? b.beschreibung.slice(0, 47) + '…' : b.beschreibung}
                               </div>
                             </div>
                           </button>
-                          ) : <div key={`empty-${idx}`} />)
+                            )
+                          })() : <div key={`empty-${idx}`} />)
                         })()}
                       </div>
                     </div>

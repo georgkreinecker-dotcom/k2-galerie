@@ -5,7 +5,8 @@
 ## Datum: 04.03.26
 
 ## Was zuletzt gemacht (04.03.26)
-- **Galerie gestalten und texten – umgesetzt (04.03.26):** „Aussehen & Design“ überall in **„Galerie gestalten und texten“** umbenannt (EntdeckenPage, GalerieAssistent, Admin-Hub). Admin-Hub: abgestimmte Hintergrundfarben pro Karte, dezente Icon-Tints, **Hover-Effekte** (Lift + Schatten). Regel **standardsachen-k2-oek2-vk2.mdc**: Standardsachen gelten immer für K2, ök2 und VK2. **Commit:** 6f53c17 ✅ auf GitHub. **Nächster Schritt:** Optional im Admin (ök2) Hub-Karten + Hover prüfen; oder anderes.
+- **Keine Verwirrung für User (04.03.26):** Guide- und Karten-Ansicht klar verbunden: Schließen-Button im Guide mit Titel „Schließen – danach siehst du dieselben Bereiche als Karten“. Karten-Grid-Untertitel: „Ein Klick – du bist im Bereich. Das sind alle Bereiche deiner Galerie.“ Assistent in beiden Ansichten einheitlich **„Schritt-für-Schritt“** (statt „Jetzt starten“ im Guide). **Nächster Schritt:** Optional im Admin (ök2) beide Ansichten durchklicken; oder anderes.
+- **Galerie gestalten und texten – umgesetzt (04.03.26):** „Aussehen & Design“ überall in **„Galerie gestalten und texten“** umbenannt (EntdeckenPage, GalerieAssistent, Admin-Hub). Admin-Hub: abgestimmte Hintergrundfarben pro Karte, dezente Icon-Tints, **Hover-Effekte** (Lift + Schatten). Regel **standardsachen-k2-oek2-vk2.mdc**: Standardsachen gelten immer für K2, ök2 und VK2. **Commit:** 6f53c17 ✅ auf GitHub.
 
 ## Datum: 03.03.26
 
