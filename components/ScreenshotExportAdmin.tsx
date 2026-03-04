@@ -17037,42 +17037,72 @@ ${name}`
               {/* Bild-Upload - Sehr kompakt */}
               {previewUrl ? (
                 <div style={{
-                  display: 'flex',
-                  gap: '0.75rem',
-                  alignItems: 'center',
                   padding: '0.75rem',
                   background: 'rgba(255, 255, 255, 0.03)',
                   borderRadius: '10px',
                   border: '1px solid rgba(255, 255, 255, 0.1)'
                 }}>
-                  <img 
-                    src={previewUrl} 
-                    alt="Vorschau" 
-                    style={{
-                      width: '80px',
-                      height: '80px',
-                      objectFit: 'cover',
-                      borderRadius: '8px'
-                    }}
-                  />
-                  <button 
-                    onClick={() => {
-                      setSelectedFile(null)
-                      setPreviewUrl(null)
-                      pendingImageDataUrlRef.current = null
-                    }}
-                    style={{
-                      padding: '0.4rem 0.75rem',
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      borderRadius: '6px',
-                      color: '#ffffff',
-                      cursor: 'pointer',
-                      fontSize: '0.85rem'
-                    }}
-                  >
-                    ✏️ Ändern
-                  </button>
+                  <div style={{ position: 'relative', display: 'inline-block', maxWidth: '100%' }}>
+                    <img 
+                      src={previewUrl} 
+                      alt="Vorschau" 
+                      style={{
+                        display: 'block',
+                        maxWidth: 'min(320px, 100%)',
+                        maxHeight: '280px',
+                        width: 'auto',
+                        height: 'auto',
+                        objectFit: 'contain',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSaveArtwork}
+                      disabled={isSavingArtwork}
+                      title="Werk speichern"
+                      style={{
+                        position: 'absolute',
+                        top: '8px',
+                        right: '8px',
+                        width: '36px',
+                        height: '36px',
+                        padding: 0,
+                        borderRadius: '8px',
+                        background: 'rgba(0,0,0,0.65)',
+                        border: '1px solid rgba(255,255,255,0.25)',
+                        color: '#fff',
+                        fontSize: '1rem',
+                        cursor: isSavingArtwork ? 'wait' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                      }}
+                    >
+                      💾
+                    </button>
+                  </div>
+                  <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <button 
+                      onClick={() => {
+                        setSelectedFile(null)
+                        setPreviewUrl(null)
+                        pendingImageDataUrlRef.current = null
+                      }}
+                      style={{
+                        padding: '0.4rem 0.75rem',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '6px',
+                        color: '#ffffff',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem'
+                      }}
+                    >
+                      ✏️ Neu/Ändern
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div style={{
@@ -17390,6 +17420,7 @@ ${name}`
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Stückzahl</label>
                     <input type="number" min={1} max={99} value={artworkQuantity} onChange={(e) => setArtworkQuantity(e.target.value)} style={{ width: '100%', maxWidth: '80px', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none' }} />
+                    <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', marginTop: '0.25rem', lineHeight: 1.35 }}>Gruppe/Set: ein Foto, ein Preis für alle – z.B. 10 Tassen = 10 Stück, ein Etikett pro Stück.</div>
                   </div>
                   <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.25rem', lineHeight: 1.35 }}>
                     Normal: in Galerie/Atelier vorhanden und erwerbbar.
@@ -17808,6 +17839,7 @@ ${name}`
                       outline: 'none'
                     }}
                   />
+                  <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', marginTop: '0.25rem', lineHeight: 1.35 }}>Gruppe/Set: ein Foto, ein Preis für alle – z.B. 10 Stück, ein Etikett pro Stück.</div>
                 </div>
               </div>
 
