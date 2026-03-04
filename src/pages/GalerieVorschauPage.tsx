@@ -4416,6 +4416,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       createdAt: now,
                       addedToGalleryAt: now, // Zeitstempel: wann in Galerie aufgenommen
                       updatedAt: now, // WICHTIG: updatedAt für Merge-Logik
+                      inExhibition: false, // Neu = nur Lager & Kassa; in Admin „In Online-Galerie anzeigen“ aktivieren wenn gewünscht
                       inShop: !!mobilePrice && parseFloat(mobilePrice) > 0,
                       createdOnMobile: true // Marker dass es auf Mobile erstellt wurde
                     }

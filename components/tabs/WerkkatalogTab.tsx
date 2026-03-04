@@ -101,7 +101,7 @@ export default function WerkkatalogTab({
     if (!pw) { alert('Pop-up blockiert – bitte erlauben.'); return }
     const galName = galleryData.name || 'K2 Galerie'
     const datum = new Date().toLocaleDateString('de-DE')
-    const statusLabel = katalogFilter.status === 'galerie' ? 'In Galerie' : katalogFilter.status === 'verkauft' ? 'Verkauft' : katalogFilter.status === 'lager' ? 'Lager' : 'Alle'
+    const statusLabel = katalogFilter.status === 'galerie' ? 'In Online-Galerie' : katalogFilter.status === 'verkauft' ? 'Verkauft' : katalogFilter.status === 'lager' ? 'Nur Lager & Kassa' : 'Alle'
     const cols = katalogSpalten
     const rows = filtered.map((a: any) => {
       const cells = cols.map(col => {
@@ -113,7 +113,7 @@ export default function WerkkatalogTab({
           case 'masse': return `<td>${a.dimensions || '–'}</td>`
           case 'technik': return `<td>${a.technik || '–'}</td>`
           case 'preis': return `<td style="text-align:right">${a.price ? `€ ${Number(a.price).toFixed(2)}` : '–'}</td>`
-          case 'status': return `<td>${a.sold ? `<span style="color:#b91c1c;font-weight:700">Verkauft</span>` : a.reserved ? `<span style="color:#d97706;font-weight:700">Reserviert${a.reservedFor ? ' – ' + a.reservedFor : ''}</span>` : a.inExhibition ? '<span style="color:#15803d">Galerie</span>' : 'Lager'}</td>`
+          case 'status': return `<td>${a.sold ? `<span style="color:#b91c1c;font-weight:700">Verkauft</span>` : a.reserved ? `<span style="color:#d97706;font-weight:700">Reserviert${a.reservedFor ? ' – ' + a.reservedFor : ''}</span>` : a.inExhibition ? '<span style="color:#15803d">Online-Galerie</span>' : 'Lager'}</td>`
           case 'datum': return `<td>${a.createdAt ? new Date(a.createdAt).toLocaleDateString('de-DE') : '–'}</td>`
           case 'kaeufer': return `<td>${a.buyer || '–'}</td>`
           case 'verkauftam': return `<td>${a.soldAt ? new Date(a.soldAt).toLocaleDateString('de-DE') : '–'}</td>`
@@ -152,7 +152,7 @@ export default function WerkkatalogTab({
 
   const w = katalogSelectedWork
   const statusColor = w ? (w.sold ? '#b91c1c' : w.reserved ? '#d97706' : w.inExhibition ? '#15803d' : '#6b7280') : '#6b7280'
-  const statusLabel = w ? (w.sold ? 'Verkauft' : w.reserved ? `🔶 Reserviert${w.reservedFor ? ` – ${w.reservedFor}` : ''}` : w.inExhibition ? 'In Galerie' : 'Lager') : ''
+  const statusLabel = w ? (w.sold ? 'Verkauft' : w.reserved ? `🔶 Reserviert${w.reservedFor ? ` – ${w.reservedFor}` : ''}` : w.inExhibition ? 'In Online-Galerie' : 'Nur Lager & Kassa') : ''
 
   const druckeWerkkarte = () => {
     if (!w) return
@@ -220,10 +220,10 @@ export default function WerkkatalogTab({
           <select value={katalogFilter.status} onChange={e => setKatalogFilter(f => ({ ...f, status: e.target.value as any }))}
             style={{ padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }}>
             <option value="alle">Alle</option>
-            <option value="galerie">In Galerie</option>
+            <option value="galerie">In Online-Galerie</option>
             <option value="verkauft">Verkauft</option>
             <option value="reserviert">🔶 Reserviert</option>
-            <option value="lager">Lager</option>
+            <option value="lager">Nur Lager & Kassa</option>
           </select>
         </div>
         <div>
@@ -323,11 +323,11 @@ export default function WerkkatalogTab({
                       : a.reserved ? <span style={{ color: '#d97706', fontWeight: 700, fontSize: '0.82rem' }} title={a.reservedFor ? `Reserviert für ${a.reservedFor}` : ''}>🔶 Reserviert{a.reservedFor ? ` – ${a.reservedFor}` : ''}</span>
                       : onToggleInExhibition ? (
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                          <span style={{ color: a.inExhibition ? '#15803d' : s.muted, fontSize: '0.82rem', fontWeight: 600 }}>{a.inExhibition ? '● Galerie' : '○ Lager'}</span>
+                          <span style={{ color: a.inExhibition ? '#15803d' : s.muted, fontSize: '0.82rem', fontWeight: 600 }} title={a.inExhibition ? 'In Online-Galerie sichtbar' : 'Nur Lager & Kassa (nicht in Online-Galerie)'}>{a.inExhibition ? '● Online-Galerie' : '○ Nur Lager/Kassa'}</span>
                           <button
                             type="button"
                             onClick={() => onToggleInExhibition(a)}
-                            title={a.inExhibition ? 'Ins Lager' : 'In Galerie'}
+                            title={a.inExhibition ? 'Aus Online-Galerie → nur Lager & Kassa' : 'In Online-Galerie anzeigen'}
                             style={{
                               padding: '2px 6px',
                               fontSize: '0.75rem',
@@ -338,11 +338,11 @@ export default function WerkkatalogTab({
                               cursor: 'pointer',
                             }}
                           >
-                            {a.inExhibition ? '→ Lager' : '→ Galerie'}
+                            {a.inExhibition ? '→ Nur Lager/Kassa' : '→ Online-Galerie'}
                           </button>
                         </span>
-                        ) : a.inExhibition ? <span style={{ color: '#15803d', fontWeight: 600, fontSize: '0.82rem' }}>● Galerie</span>
-                        : <span style={{ color: s.muted, fontSize: '0.82rem' }}>○ Lager</span>}
+                        ) : a.inExhibition ? <span style={{ color: '#15803d', fontWeight: 600, fontSize: '0.82rem' }}>● Online-Galerie</span>
+                        : <span style={{ color: s.muted, fontSize: '0.82rem' }}>○ Nur Lager/Kassa</span>}
                   </td>}
                   {katalogSpalten.includes('datum') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.createdAt ? new Date(a.createdAt).toLocaleDateString('de-DE') : '–'}</td>}
                   {katalogSpalten.includes('kaeufer') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.buyer || '–'}</td>}

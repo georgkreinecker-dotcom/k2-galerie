@@ -1434,9 +1434,9 @@ function ScreenshotExportAdmin() {
   const [artworkDimensions, setArtworkDimensions] = useState<string>('') // z.B. "60×80 cm"
   const [artworkPrice, setArtworkPrice] = useState<string>('')
   // Sichtbarkeit-Einstellungen:
-  // - inExhibition: Werke in der Galerie-Vorschau sichtbar (immer true)
+  // - inExhibition: In Online-Galerie anzeigen (false = nur Lager & Kassa, nicht digital)
   // - inShop: Werke im Online-Shop verfügbar (kann geändert werden)
-  const [isInExhibition] = useState(true)
+  const [isInExhibition, setIsInExhibition] = useState(false)
   const [isInShop, setIsInShop] = useState(true)
   const [isImVereinskatalog, setIsImVereinskatalog] = useState(false)
   const [artworkQuantity, setArtworkQuantity] = useState<string>('1')
@@ -10276,7 +10276,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 {!tenant.isVk2 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                     <button
-                      onClick={() => { setEditingArtwork(null); setShowAddModal(true) }}
+                      onClick={() => { setEditingArtwork(null); setIsInExhibition(false); setShowAddModal(true) }}
                       style={{
                         padding: '0.7rem 1.4rem',
                         background: s.gradientAccent,
@@ -10911,7 +10911,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', 
                       color: s.muted 
                     }}>
-                      {artwork.inExhibition && <span style={{ display: 'block' }}>✓ Ausstellung</span>}
+                      {artwork.inExhibition && <span style={{ display: 'block' }}>✓ Online-Galerie</span>}
                       {artwork.inShop && <span style={{ display: 'block' }}>✓ Shop</span>}
                       {(() => {
                         const katalogAnzahl = allArtworks.filter((a: any) => a.imVereinskatalog).length
@@ -10995,6 +10995,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             setArtworkPrice(String(artwork.price || ''))
                             setArtworkQuantity(String(artwork.quantity ?? 1))
                             setIsInShop(artwork.inShop !== undefined ? artwork.inShop : true)
+                            setIsInExhibition(artwork.inExhibition === true)
                           setIsImVereinskatalog(artwork.imVereinskatalog || false)
                           setArtworkYear(artwork.year || '')
                           setArtworkVerkaufsstatus(artwork.verkaufsstatus || 'verfuegbar')
@@ -11043,6 +11044,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           setArtworkPrice(String(artwork.price || ''))
                           setArtworkQuantity(String(artwork.quantity ?? 1))
                           setIsInShop(artwork.inShop !== undefined ? artwork.inShop : true)
+                          setIsInExhibition(artwork.inExhibition === true)
                           setIsImVereinskatalog(artwork.imVereinskatalog || false)
                           setArtworkYear(artwork.year || '')
                           setArtworkVerkaufsstatus(artwork.verkaufsstatus || 'verfuegbar')
@@ -17362,6 +17364,10 @@ ${name}`
                     <input type="number" min={1} max={99} value={artworkQuantity} onChange={(e) => setArtworkQuantity(e.target.value)} style={{ width: '100%', maxWidth: '80px', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none' }} />
                   </div>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#8fa0c9', cursor: 'pointer' }}>
+                    <input type="checkbox" checked={isInExhibition} onChange={(e) => setIsInExhibition(e.target.checked)} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
+                    In Online-Galerie anzeigen (sonst nur Lager & Kassa)
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#8fa0c9', cursor: 'pointer' }}>
                     <input type="checkbox" checked={isInShop} onChange={(e) => setIsInShop(e.target.checked)} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
                     Im Online-Shop verfügbar
                   </label>
@@ -17802,6 +17808,42 @@ ${name}`
                     fontFamily: 'inherit'
                   }}
                 />
+              </div>
+
+              {/* Online-Galerie vs. nur Lager & Kassa */}
+              <div>
+                <label style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.6rem',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)'
+                }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isInExhibition}
+                    onChange={(e) => setIsInExhibition(e.target.checked)}
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      cursor: 'pointer'
+                    }}
+                  />
+                  <span style={{ fontSize: '0.85rem', color: '#8fa0c9' }}>
+                    In Online-Galerie anzeigen (sonst nur Lager & Kassa)
+                  </span>
+                </label>
               </div>
 
               {/* Shop-Checkbox */}
