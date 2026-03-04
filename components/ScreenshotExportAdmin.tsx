@@ -9329,7 +9329,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               {activeTab === 'werke' ? '🖼️ Werke hinzufügen und bearbeiten' :
                activeTab === 'eventplan' ? '🎟️ Events & Ausstellungen' :
                activeTab === 'presse' ? <><MedienstudioIcon size={20} /> Presse & Medien</> :
-               activeTab === 'design' ? '✨ Aussehen & Design' :
+               activeTab === 'design' ? '✨ Galerie gestalten und texten' :
                activeTab === 'katalog' ? '📋 Werkkatalog' :
                activeTab === 'statistik' ? '🧾 Kassa & Verkauf' :
                activeTab === 'einstellungen' ? '⚙️ Einstellungen' :
@@ -9612,13 +9612,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     : 'Das ist deine Galerie-Zentrale.'
                   const galerieUrl = '/projects/k2-galerie/galerie-oeffentlich'
 
-                  // Alle Stationen – Kacheln links + rechts
+                  // Alle Stationen – Kacheln links + rechts; einheitlich „Galerie gestalten und texten“
                   type HubTab = 'werke' | 'eventplan' | 'presse' | 'design' | 'einstellungen' | 'katalog' | 'assistent'
                   const alleStationen: { emoji: string; name: string; beschreibung: string; tab: HubTab }[] = istVerein ? [
                     { emoji: '🖼️', name: 'Werke & Mitglieder', beschreibung: 'Alle Werke aller Mitglieder – Fotos, Preise, Profile.', tab: 'werke' },
                     { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Vernissagen planen, Einladungen erstellen, QR-Codes.', tab: 'eventplan' },
                     { emoji: '📰', name: 'Presse & Medien', beschreibung: 'Medienkit und Presse-Vorlage – professionell für Pressearbeit.', tab: 'presse' },
-                    { emoji: '✨', name: 'Aussehen & Design', beschreibung: 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
+                    { emoji: '✨', name: 'Galerie gestalten und texten', beschreibung: 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Vereinsdaten, Kontakt, Mitglieder verwalten.', tab: 'einstellungen' },
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
                     { emoji: '🚀', name: 'Jetzt starten', beschreibung: 'Daten ausfüllen und die Galerie live schalten.', tab: 'assistent' },
@@ -9626,11 +9626,31 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '🖼️', name: 'Werke hinzufügen und bearbeiten', beschreibung: 'Fotos hochladen, Titel, Preis – ein Klick und es ist live.', tab: 'werke' },
                     { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Vernissage planen, Einladungen & QR-Codes erstellen.', tab: 'eventplan' },
                     { emoji: '📰', name: 'Presse & Medien', beschreibung: 'Medienkit und Presse-Vorlage – professionell für Pressearbeit.', tab: 'presse' },
-                    { emoji: '✨', name: 'Aussehen & Design', beschreibung: 'Farben, Texte, dein Foto – die Galerie wird zu dir.', tab: 'design' },
+                    { emoji: '✨', name: 'Galerie gestalten und texten', beschreibung: 'Farben, Texte, Bilder – die Galerie wird zu dir.', tab: 'design' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Kontakt, Adresse, Öffnungszeiten – deine Stammdaten.', tab: 'einstellungen' },
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
                     { emoji: '🚀', name: 'Jetzt starten', beschreibung: 'Daten ausfüllen und deine Galerie live schalten.', tab: 'assistent' },
                   ]
+
+                  // Abgestimmte Hintergrundfarben pro Bereich (inaktiv) – alle aus einer warmen Palette
+                  const HUB_CARD_BG: Record<HubTab, string> = {
+                    werke: '#fdf4ef',
+                    eventplan: '#f5f8f2',
+                    presse: '#f2f4f8',
+                    design: '#f8f4f0',
+                    einstellungen: '#f0f4f8',
+                    katalog: '#f4f8f0',
+                    assistent: '#f8f0f4',
+                  }
+                  const HUB_ICON_TINT: Record<HubTab, string> = {
+                    werke: '#b54a1e22',
+                    eventplan: '#2d7a3e22',
+                    presse: '#1e5cb522',
+                    design: '#a65a2a22',
+                    einstellungen: '#4a5a8a22',
+                    katalog: '#3a7a5a22',
+                    assistent: '#8a4a6a22',
+                  }
 
                   // Aktive Station = welcher Tab ist gerade offen
                   const aktivIdx = alleStationen.findIndex(s => s.tab === activeTab)
@@ -9641,6 +9661,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
 
                   return (
                     <div style={{ background: `linear-gradient(135deg, ${akzent}10, ${akzent}05)`, border: `1.5px solid ${akzent}30`, borderRadius: '20px', padding: '1.5rem', marginBottom: '2rem', position: 'relative' }}>
+                      <style>{`
+                        .hub-guide-karte { transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
+                        .hub-guide-karte:hover:not(.hub-guide-karte--aktiv) {
+                          transform: translateY(-3px);
+                          box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+                        }
+                        .hub-guide-karte:active:not(.hub-guide-karte--aktiv) { transform: translateY(-1px); }
+                      `}</style>
                       <button type="button" onClick={() => setGuideBannerClosed(true)} style={{ position: 'absolute', top: '0.9rem', right: '1rem', background: 'none', border: 'none', cursor: 'pointer', color: `${akzent}44`, fontSize: '1.2rem', lineHeight: 1, padding: '0.2rem 0.4rem' }} title="Schließen">×</button>
 
                       {/* Kopfzeile */}
@@ -9662,25 +9690,26 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       {/* Hub: Kacheln links | aktiver Dialog Mitte | Kacheln rechts */}
                       <div style={{ display: 'flex', gap: '1rem', alignItems: 'stretch' }}>
 
-                        {/* Kacheln links */}
+                        {/* Kacheln links – jede mit abgestimmter Hintergrundfarbe (inaktiv), aktiv = Akzent */}
                         <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: '140px', flexShrink: 0 }}>
                           {linksStationen.map((st, i) => {
                             const istAktiv = activeTab === st.tab
                             return (
                               <button key={st.tab} type="button"
+                                className={`hub-guide-karte${istAktiv ? ' hub-guide-karte--aktiv' : ''}`}
                                 onClick={() => { setActiveTab(st.tab); window.scrollTo({ top: 200, behavior: 'smooth' }) }}
                                 style={{
                                   padding: '0.65rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
-                                  background: istAktiv ? akzentGrad : '#fff',
-                                  border: istAktiv ? 'none' : '1px solid #e8e4de',
+                                  background: istAktiv ? akzentGrad : HUB_CARD_BG[st.tab],
+                                  border: istAktiv ? 'none' : `1px solid ${HUB_ICON_TINT[st.tab].replace('22', '44')}`,
                                   borderRadius: '12px', cursor: 'pointer', fontFamily: 'inherit',
-                                  transition: 'all 0.15s', textAlign: 'left' as const,
+                                  textAlign: 'left' as const,
                                   boxShadow: istAktiv ? `0 3px 12px ${akzent}44` : '0 1px 3px rgba(0,0,0,0.06)',
                                   color: istAktiv ? '#fff' : '#1c1a18',
                                   fontWeight: istAktiv ? 700 : 400,
                                   position: 'relative' as const,
                                 }}>
-                                {st.tab === 'presse' ? <MedienstudioIcon size={22} style={{ color: istAktiv ? '#fff' : undefined }} /> : <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{st.emoji}</span>}
+                                {st.tab === 'presse' ? <MedienstudioIcon size={22} style={{ color: istAktiv ? '#fff' : '#5c5650' }} /> : <span style={{ fontSize: '1.2rem', flexShrink: 0, background: istAktiv ? 'transparent' : HUB_ICON_TINT[st.tab], borderRadius: '6px', width: 28, height: 28, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{st.emoji}</span>}
                                 <span style={{ fontSize: '0.78rem', lineHeight: 1.3 }}>{st.name}</span>
                                 {istAktiv && <span style={{ position: 'absolute', top: 5, right: 7, fontSize: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>●</span>}
                               </button>
@@ -9727,25 +9756,26 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           </button>
                         </div>
 
-                        {/* Kacheln rechts */}
+                        {/* Kacheln rechts – gleiche abgestimmte Farben wie links */}
                         <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: '140px', flexShrink: 0 }}>
                           {rechtsStationen.map((st) => {
                             const istAktiv = activeTab === st.tab
                             return (
                               <button key={st.tab} type="button"
+                                className={`hub-guide-karte${istAktiv ? ' hub-guide-karte--aktiv' : ''}`}
                                 onClick={() => { setActiveTab(st.tab); window.scrollTo({ top: 200, behavior: 'smooth' }) }}
                                 style={{
                                   padding: '0.65rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
-                                  background: istAktiv ? akzentGrad : '#fff',
-                                  border: istAktiv ? 'none' : '1px solid #e8e4de',
+                                  background: istAktiv ? akzentGrad : HUB_CARD_BG[st.tab],
+                                  border: istAktiv ? 'none' : `1px solid ${HUB_ICON_TINT[st.tab].replace('22', '44')}`,
                                   borderRadius: '12px', cursor: 'pointer', fontFamily: 'inherit',
-                                  transition: 'all 0.15s', textAlign: 'left' as const,
+                                  textAlign: 'left' as const,
                                   boxShadow: istAktiv ? `0 3px 12px ${akzent}44` : '0 1px 3px rgba(0,0,0,0.06)',
                                   color: istAktiv ? '#fff' : '#1c1a18',
                                   fontWeight: istAktiv ? 700 : 400,
                                   position: 'relative' as const,
                                 }}>
-                                {st.tab === 'presse' ? <MedienstudioIcon size={22} style={{ color: istAktiv ? '#fff' : undefined }} /> : <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{st.emoji}</span>}
+                                {st.tab === 'presse' ? <MedienstudioIcon size={22} style={{ color: istAktiv ? '#fff' : '#5c5650' }} /> : <span style={{ fontSize: '1.2rem', flexShrink: 0, background: istAktiv ? 'transparent' : HUB_ICON_TINT[st.tab], borderRadius: '6px', width: 28, height: 28, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{st.emoji}</span>}
                                 <span style={{ fontSize: '0.78rem', lineHeight: 1.3 }}>{st.name}</span>
                                 {istAktiv && <span style={{ position: 'absolute', top: 5, right: 7, fontSize: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>●</span>}
                               </button>
@@ -9767,7 +9797,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '📋', name: 'Werkkatalog', text: 'Alle Werke des Vereins filtern, suchen, drucken', tab: 'katalog' },
                     { emoji: '🎟️', name: 'Veranstaltungen', text: 'Ausstellungen planen, Einladungen an alle Mitglieder versenden', tab: 'eventplan' },
                     { emoji: '📰', name: 'Presse & Medien', text: 'Medienkit und Presse-Vorlage für Pressearbeit', tab: 'presse' },
-                    { emoji: '✨', name: 'Aussehen', text: 'Farben, Texte, Foto – eure Mitglieder-Seite nach euren Wünschen', tab: 'design' },
+                    { emoji: '✨', name: 'Galerie gestalten und texten', text: 'Farben, Texte, Foto – eure Mitglieder-Seite nach euren Wünschen', tab: 'design' },
                     { emoji: '⚙️', name: 'Einstellungen', text: 'Vereinsdaten, Kontakt, Mitglieder verwalten', tab: 'einstellungen' },
                   ] : [
                     { emoji: '🎨', name: 'Werke hinzufügen und bearbeiten', text: 'Fotos hochladen, Titel, Preis, Beschreibung – deine Galerie füllen', tab: 'werke' },
@@ -9775,7 +9805,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '💰', name: 'Kassa', text: 'Direkt verkaufen – Beleg drucken, Übersicht behalten', tab: 'kassa' },
                     { emoji: '📢', name: 'Veranstaltungen', text: 'Events planen, Einladungen erstellen, Presse informieren', tab: 'eventplan' },
                     { emoji: '📰', name: 'Presse & Medien', text: 'Medienkit und Presse-Vorlage für Pressearbeit', tab: 'presse' },
-                    { emoji: '✨', name: 'Aussehen', text: 'Farben, Texte, dein Foto – die Galerie wird zu dir', tab: 'design' },
+                    { emoji: '✨', name: 'Galerie gestalten und texten', text: 'Farben, Texte, dein Foto – die Galerie wird zu dir', tab: 'design' },
                   ]
                   const galerieUrl = tenant.isOeffentlich
                     ? '/projects/k2-galerie/galerie-oeffentlich'
@@ -9882,12 +9912,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   // Links: Werke → Aussehen → Einstellungen → Schritt-für-Schritt | Rechts: Kassa → Events → Presse
                   const linksBereiche: HubArea[] = tenant.isVk2 ? [
                     { emoji: '🖼️', name: 'Vereinsmitglieder', beschreibung: 'Mitglieder hinzufügen, bearbeiten, verwalten – Fotos, Profile.', tab: 'werke' },
-                    { emoji: '✨', name: 'Aussehen & Design', beschreibung: 'Farben, Texte, Bilder – die Galerie nach euren Wünschen.', tab: 'design' },
+                    { emoji: '✨', name: 'Galerie gestalten und texten', beschreibung: 'Farben, Texte, Bilder – die Galerie nach euren Wünschen.', tab: 'design' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Vereinsdaten, Kontakt, Mitglieder verwalten.', tab: 'einstellungen' },
                     { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Der Assistent führt euch durch die Einrichtung.', tab: 'assistent' },
                   ] : [
                     { emoji: '🖼️', name: 'Werke hinzufügen und bearbeiten', beschreibung: 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist live in deiner Galerie.', tab: 'werke' },
-                    { emoji: '✨', name: 'Aussehen & Design', beschreibung: tenant.isOeffentlich ? 'Farben, Texte, dein Foto – die Galerie wird zu dir.' : 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
+                    { emoji: '✨', name: 'Galerie gestalten und texten', beschreibung: tenant.isOeffentlich ? 'Farben, Texte, dein Foto – die Galerie wird zu dir.' : 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: tenant.isOeffentlich ? 'Meine Daten, Kontakt. Lizenz & Empfehlungsprogramm.' : 'Meine Daten, Drucker, Sicherheit (inkl. Backup). Lizenz & Empfehlungsprogramm.', tab: 'einstellungen' },
                     { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Neu hier? Der Assistent führt dich durch die Einrichtung.', tab: 'assistent' },
                   ]
@@ -9988,7 +10018,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   {activeTab === 'pressemappe' && '📰 Pressemappe'}
                   {activeTab === 'eventplan' && (tenant.isVk2 ? '📢 Vereins-Events & Werbematerial' : '📢 Veranstaltungen & Werbung')}
                   {activeTab === 'presse' && (tenant.isVk2 ? <><MedienstudioIcon size={22} /> Presse & Medien – Medienkit und Presse-Vorlage</> : <><MedienstudioIcon size={22} /> Presse & Medien – Medienkit und Presse-Vorlage</>)}
-                  {activeTab === 'design' && (tenant.isVk2 ? '✨ Aussehen – nach euren Wünschen anpassen' : '✨ Aussehen der Galerie – nach deinen Wünschen anpassen')}
+                  {activeTab === 'design' && (tenant.isVk2 ? '✨ Galerie gestalten und texten – nach euren Wünschen anpassen' : '✨ Galerie gestalten und texten – nach deinen Wünschen anpassen')}
                   {activeTab === 'einstellungen' && '⚙️ Einstellungen'}
                 </h2>
                 {activeTab === 'statistik' && (

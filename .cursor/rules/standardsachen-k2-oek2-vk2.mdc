@@ -1,0 +1,28 @@
+---
+description: "Standardsachen gelten immer für K2, ök2 und VK2 – keine Ausnahme pro Kontext"
+alwaysApply: true
+---
+
+# Standardsachen – immer K2, ök2 und VK2
+
+## Grundsatz (unveränderlich)
+
+**Standardsachen gelten immer für K2, ök2 und VK2.** Was wir als Standard definieren, gilt für alle drei Kontexte – keine Sonderregel nur für einen.
+
+## Was „Standardsachen“ umfasst
+
+- **Features & UX:** Gleiche Funktionen, gleiche Abläufe (z. B. Bild-Tools: Freistellen, Zuschneiden, Bild ausfüllen bei allen Bildern, die in K2 eingefügt werden – Werke, Willkommensbild, Galerie-Karte, virtueller Rundgang, Events, Dokumente, VK2-Mitgliederfotos usw.).
+- **Technik:** Ein Standard pro Problemstellung (eine Lösung, viele Aufrufer); gleiche Architektur für alle Mandanten.
+- **Struktur & Quellen:** Dieselben Ablagen, dieselben Regeln (AGB, Handbuch, Doku) für alle Kontexte.
+
+## Konsequenz für die Arbeit
+
+- **Bei neuen Standards (z. B. Bild-Tools überall):** Von vornherein für K2, ök2 und VK2 umsetzen – nicht „erst K2, ök2 später“.
+- **Bei Refactors:** Prüfen, ob der Standard in allen drei Kontexten greift; keine stillen Ausnahmen („nur für K2“).
+- **Datentrennung bleibt:** Getrennte Daten pro Kontext (Keys, Tenant) – aber **gleiche Möglichkeiten** (gleiche Tools, gleiche UX).
+
+## Kurzfassung
+
+**Standard = für K2, ök2 und VK2. Immer. Keine Ausnahme.**
+
+Verknüpfung: **struktur-handeln-quellen.mdc** (dieselbe Struktur für alle), **skalierungsprinzip.mdc** (eine Struktur, viele Instanzen), **k2-oek2-trennung.mdc** (Trennung der Daten, nicht der Standards).

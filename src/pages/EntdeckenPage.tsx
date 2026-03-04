@@ -89,12 +89,12 @@ interface HeroHubProps {
 }
 
 const HUB_STATIONEN = [
-  { emoji: '🖼️', name: 'Meine Werke',        sub: 'Fotos, Preise, Beschreibungen – deine Galerie füllen',          tab: 'werke' },
-  { emoji: '🎟️', name: 'Events & Ausst.',     sub: 'Vernissagen planen, Einladungen & QR-Codes erstellen',           tab: 'eventplan' },
-  { emoji: '✨', name: 'Aussehen & Design',   sub: 'Farben, Texte, dein Foto – die Galerie wird zu dir',             tab: 'design' },
-  { emoji: '📋', name: 'Werkkatalog',         sub: 'Alle Werke auf einen Blick – filtern, suchen, drucken',          tab: 'katalog' },
-  { emoji: '🧾', name: 'Kassa & Verkauf',     sub: 'Direkt verkaufen, Beleg drucken – auch vom Handy',               tab: 'statistik' },
-  { emoji: '⚙️', name: 'Einstellungen',       sub: 'Kontakt, Adresse, Öffnungszeiten – deine Stammdaten',            tab: 'einstellungen' },
+  { emoji: '🖼️', name: 'Meine Werke',                  sub: 'Fotos, Preise, Beschreibungen – deine Galerie füllen',     tab: 'werke' },
+  { emoji: '✨', name: 'Galerie gestalten und texten',  sub: 'Farben, Texte, Bilder – die Galerie wird zu dir',        tab: 'design' },
+  { emoji: '🎟️', name: 'Events & Ausst.',               sub: 'Vernissagen planen, Einladungen & QR-Codes erstellen',  tab: 'eventplan' },
+  { emoji: '📋', name: 'Werkkatalog',                   sub: 'Alle Werke auf einen Blick – filtern, suchen, drucken', tab: 'katalog' },
+  { emoji: '🧾', name: 'Kassa & Verkauf',                sub: 'Direkt verkaufen, Beleg drucken – auch vom Handy',      tab: 'statistik' },
+  { emoji: '⚙️', name: 'Einstellungen',                  sub: 'Kontakt, Adresse, Öffnungszeiten – deine Stammdaten',   tab: 'einstellungen' },
 ]
 
 function HeroHub({ accent, accentLight, accentGlow, bgDark, bgMid, fontHeading, fontBody, onWeiter }: HeroHubProps) {
@@ -303,7 +303,7 @@ function baueHubStationen(weg: string) {
       },
       {
         emoji: '✨',
-        name: 'Aussehen & Marke',
+        name: 'Galerie gestalten und texten',
         beschreibung: 'Farben, Logo, Vereinsname, Willkommensbild – die Galerie wird zum Gesicht eures Vereins.',
         tab: 'design',
       },
@@ -332,8 +332,8 @@ function baueHubStationen(weg: string) {
     },
     {
       emoji: '✨',
-      name: 'Aussehen & Design',
-      beschreibung: 'Farben, dein Foto, deine Texte – die Galerie wird zu deinem persönlichen Auftritt.',
+      name: 'Galerie gestalten und texten',
+      beschreibung: 'Farben, Texte, Bilder – die Galerie wird zu deinem persönlichen Auftritt.',
       tab: 'design',
     },
     {

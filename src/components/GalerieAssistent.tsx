@@ -56,7 +56,7 @@ function baueSchritte(pfad: string): Step[] {
     },
     {
       id: 'design',
-      title: istVerein ? 'Aussehen der Vereinsgalerie' : 'Galerie nach deinem Geschmack',
+      title: 'Galerie gestalten und texten',
       short: istVerein
         ? 'Farben, Logo, Texte – damit die Galerie das Gesicht eures Vereins bekommt.'
         : 'Farben, Willkommensbild und Texte – damit deine Galerie zu dir passt.',
