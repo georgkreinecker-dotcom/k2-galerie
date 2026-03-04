@@ -15,6 +15,8 @@ export interface ImageProcessingOptionsProps {
   onBackgroundPresetChange: (preset: BackgroundPresetKey) => void
   /** Nur bei Werken: Option "Vollkachelform" (Bild füllt Kachel). Bei Seitengestaltung false. */
   showVollkachel?: boolean
+  /** Optional: Button "Foto zuschneiden" anzeigen – öffnet Zuschnitt, Ergebnis ersetzt aktuelles Bild. */
+  onCropClick?: () => void
   /** Styling: inline styles für Container (z. B. dunkler Admin-Hintergrund). */
   style?: React.CSSProperties
 }
@@ -33,6 +35,7 @@ export function ImageProcessingOptions({
   backgroundPreset,
   onBackgroundPresetChange,
   showVollkachel = false,
+  onCropClick,
   style = {}
 }: ImageProcessingOptionsProps) {
   return (
@@ -85,6 +88,25 @@ export function ImageProcessingOptions({
             />
             Vollkachelform (Bild füllt Kachel)
           </label>
+        )}
+        {onCropClick && (
+          <button
+            type="button"
+            onClick={onCropClick}
+            style={{
+              marginTop: '0.25rem',
+              padding: '0.4rem 0.75rem',
+              background: 'rgba(95, 251, 241, 0.15)',
+              border: '1px solid rgba(95, 251, 241, 0.4)',
+              borderRadius: 8,
+              color: '#5ffbf1',
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              fontWeight: 500
+            }}
+          >
+            ✂️ Foto zuschneiden
+          </button>
         )}
       </div>
       {mode === 'freigestellt' && (

@@ -1395,6 +1395,11 @@ function ScreenshotExportAdmin() {
   })
   const [showAddModal, setShowAddModal] = useState(false)
   const [showVitaEditor, setShowVitaEditor] = useState(false)
+  /** Einstellungen: Vita-Bereich Person 1/2 erst auf Klick aufklappen (Handy-freundlich). */
+  const [vitaMartinaOpen, setVitaMartinaOpen] = useState(false)
+  const [vitaGeorgOpen, setVitaGeorgOpen] = useState(false)
+  /** Einstellungen: Person 2 (optional) als Maske geschlossen, erst bei Bedarf aufklappen. */
+  const [person2BlockOpen, setPerson2BlockOpen] = useState(false)
   /** VK2 Mitglied-Login Modal */
   const [showMitgliedLogin, setShowMitgliedLogin] = useState(false)
   const [mitgliedLoginName, setMitgliedLoginName] = useState('')
@@ -1679,6 +1684,27 @@ function ScreenshotExportAdmin() {
   const [pendingPageImage, setPendingPageImage] = useState<{ field: 'welcomeImage' | 'galerieCardImage' | 'virtualTourImage'; dataUrl: string; file: File } | null>(null)
   const [pendingPageImageMode, setPendingPageImageMode] = useState<ImageProcessingMode>('freigestellt')
   const [pendingPageImagePreset, setPendingPageImagePreset] = useState<BackgroundPresetKey>('hell')
+  /** Zuschnitt für Seitengestaltung: wenn gesetzt, ImageCropModal öffnen; Ergebnis ersetzt pendingPageImage.dataUrl. */
+  const [cropPageImageSrc, setCropPageImageSrc] = useState<string | null>(null)
+  /** Bildverarbeitungs-Modal: Verschieben (dx, dy) in px, damit Nutzer die Galerie dahinter sehen kann. */
+  const [imageModalDragOffset, setImageModalDragOffset] = useState({ x: 0, y: 0 })
+  const [imageModalDragging, setImageModalDragging] = useState(false)
+  const imageModalDragRef = useRef({ startX: 0, startY: 0, startOx: 0, startOy: 0 })
+  useEffect(() => {
+    if (!imageModalDragging) return
+    const onMove = (e: MouseEvent) => {
+      const r = imageModalDragRef.current
+      setImageModalDragOffset({ x: r.startOx + (e.clientX - r.startX), y: r.startOy + (e.clientY - r.startY) })
+    }
+    const onUp = () => setImageModalDragging(false)
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+    return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp) }
+  }, [imageModalDragging])
+  /** Beim Öffnen des Bildverarbeitungs-Modals wieder zentrieren. */
+  useEffect(() => {
+    if (pendingPageImage) setImageModalDragOffset({ x: 0, y: 0 })
+  }, [pendingPageImage])
   /** VK2 Eingangskarten: Bildverarbeitung wie Design-Tab – pending bis „Bild übernehmen“. */
   const [pendingVk2Card, setPendingVk2Card] = useState<{ index: number; dataUrl: string; file: File } | null>(null)
   const [pendingVk2CardMode, setPendingVk2CardMode] = useState<ImageProcessingMode>('freigestellt')
@@ -2162,6 +2188,32 @@ function ScreenshotExportAdmin() {
     } catch (e) {
       console.warn('Vorschau-Speichern:', e)
     }
+  }
+
+  /** Pilot/ök2: Musterdaten auf einen Klick leeren – eigene Eintragung ohne umständliches Rauslöschen. */
+  const clearStammdatenMuster = () => {
+    if (!tenant.isOeffentlich) return
+    if (!confirm('Alle Musterdaten in Person 1, Person 2 und Galerie leeren? Du kannst danach deine eigenen Daten eintragen.')) return
+    const emptyPerson1 = { name: '', email: '', phone: '', website: '', category: 'malerei' as const, bio: '', vita: '' }
+    const emptyPerson2 = { name: '', email: '', phone: '', website: '', category: 'keramik' as const, bio: '', vita: '' }
+    const emptyGallery = {
+      name: '', subtitle: '', description: '', address: '', city: '', country: '', phone: '', email: '', website: '', internetadresse: '', openingHours: '', bankverbindung: '', adminPassword: '',
+      soldArtworksDisplayDays: 30, welcomeImage: '', virtualTourImage: '', galerieCardImage: '', internetShopNotSetUp: true
+    }
+    setMartinaData(emptyPerson1)
+    setGeorgData(emptyPerson2)
+    setGalleryData(emptyGallery)
+    try {
+      persistStammdaten('oeffentlich', 'martina', emptyPerson1, { merge: false })
+      persistStammdaten('oeffentlich', 'georg', emptyPerson2, { merge: false })
+      persistStammdaten('oeffentlich', 'gallery', emptyGallery, { merge: false })
+    } catch (e) {
+      console.warn('Musterdaten leeren (persist):', e)
+    }
+    setVitaMartinaOpen(false)
+    setVitaGeorgOpen(false)
+    setPerson2BlockOpen(false)
+    alert('✅ Musterdaten entfernt. Trage jetzt deine eigenen Daten ein.')
   }
 
   // Stammdaten speichern - bei ök2-Kontext nicht in echte K2-Daten schreiben; bei VK2 in k2-vk2-stammdaten
@@ -11368,7 +11420,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   }} style={{ padding: '0.5rem 1.25rem', fontSize: '0.95rem', fontWeight: 700 }}>💾 Speichern</button>
                 </div>
                 <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: '700', color: s.text, marginBottom: '0.5rem', letterSpacing: '-0.01em' }}>✨ Farben & Theme</h2>
-                <p style={{ color: s.muted, marginBottom: '1.5rem' }}>Galerie-Farben, Hintergrund und Akzent wählen. Ändere Texte direkt in der Vorschau (auf Text klicken).</p>
+                <p style={{ color: s.muted, marginBottom: '0.5rem' }}>So wirkt deine Galerie auf Besucher. <strong>Einfach:</strong> unten eine Vorlage wählen (ein Klick). <strong>Oder</strong> drei Farben selbst einstellen – rechts siehst du sofort die Vorschau. Texte änderst du in der Vorschau (auf Text klicken).</p>
+                <p style={{ color: s.muted, marginBottom: '1.5rem', fontSize: '0.9rem' }}>Unten „Speichern“ nicht vergessen – dann gilt der Look.</p>
               </>
             )}
 
@@ -11579,57 +11632,119 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             <div style={{ width: '100%', minHeight: 200, background: 'rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: 'var(--k2-muted)', fontSize: '1rem' }}><span style={{ fontSize: '2rem' }}>📸</span><span>Foto ziehen oder klicken</span><span style={{ fontSize: '0.8rem', color: 'var(--k2-accent)' }}>🖼️ Freistellen möglich</span></div>
                           )}
                         </label>
-                        {pendingPageImage && (
-                          <div style={{ marginTop: '0.75rem' }}>
-                            {pendingPageImage.field !== 'welcomeImage' && (
-                              <div style={{ marginBottom: '0.5rem' }}>
-                                <img src={pendingPageImage.dataUrl} alt="Vorschau" style={{ maxWidth: '100%', maxHeight: 160, objectFit: 'contain', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)' }} />
-                              </div>
-                            )}
-                            <ImageProcessingOptions
-                              mode={pendingPageImageMode === 'vollkachel' ? 'original' : pendingPageImageMode}
-                              onModeChange={(m) => setPendingPageImageMode(m === 'vollkachel' ? 'original' : m)}
-                              backgroundPreset={pendingPageImagePreset}
-                              onBackgroundPresetChange={setPendingPageImagePreset}
-                              showVollkachel={false}
-                            />
-                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-                              <button
-                                type="button"
-                                onClick={async () => {
-                                  if (!pendingPageImage) return
-                                  try {
-                                    setImageUploadStatus('⏳ Bild wird verarbeitet…')
-                                    const mode = pendingPageImageMode === 'vollkachel' ? 'original' : pendingPageImageMode
-                                    const result = await processImageForSave(pendingPageImage.dataUrl, { mode, backgroundPreset: pendingPageImagePreset, context: 'desktop' })
-                                    const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
-                                    const next = { ...pageContent, [pendingPageImage.field]: result }
-                                    setPageContent(next)
-                                    setPageContentGalerie(next, designTenant)
-                                    if (pendingPageImage.field === 'welcomeImage' && !tenant.isVk2) pendingWelcomeFileRef.current = pendingPageImage.file
-                                    setPendingPageImage(null)
-                                    setImageUploadStatus('✅ Bild übernommen – Speichern nicht vergessen')
-                                    setTimeout(() => setImageUploadStatus(null), 5000)
-                                    if ((pendingPageImage.field === 'galerieCardImage' || pendingPageImage.field === 'virtualTourImage') && typeof uploadPageImageToGitHub === 'function') {
-                                      try {
-                                        const res = await fetch(result)
-                                        const blob = await res.blob()
-                                        const file = new File([blob], pendingPageImage.field === 'galerieCardImage' ? 'galerie-card.jpg' : 'virtual-tour.jpg', { type: blob.type })
-                                        await uploadPageImageToGitHub(file, pendingPageImage.field, pendingPageImage.field === 'galerieCardImage' ? 'galerie-card.jpg' : 'virtual-tour.jpg')
-                                      } catch (_) { /* optional */ }
-                                    }
-                                  } catch (_) {
-                                    setImageUploadStatus('⚠️ Fehler – bitte erneut versuchen')
-                                    setTimeout(() => setImageUploadStatus(null), 4000)
-                                  }
+                        {/* Bildverarbeitung außerhalb der Seite: als Modal-Overlay – verschiebbar, damit Galerie dahinter sichtbar. */}
+                        {pendingPageImage && createPortal(
+                          <div
+                            style={{
+                              position: 'fixed',
+                              inset: 0,
+                              zIndex: 10000,
+                              background: 'rgba(0,0,0,0.6)',
+                              padding: '1.5rem',
+                              boxSizing: 'border-box'
+                            }}
+                            onClick={(e) => { if (e.target === e.currentTarget) { setPendingPageImage(null); setCropPageImageSrc(null); setImageUploadStatus(null); setImageModalDragOffset({ x: 0, y: 0 }) } }}
+                          >
+                            <div
+                              style={{
+                                position: 'fixed',
+                                left: '50%',
+                                top: '50%',
+                                transform: `translate(calc(-50% + ${imageModalDragOffset.x}px), calc(-50% + ${imageModalDragOffset.y}px))`,
+                                background: '#1c1a18',
+                                borderRadius: 16,
+                                padding: 0,
+                                maxWidth: 420,
+                                width: '100%',
+                                maxHeight: '90vh',
+                                overflow: 'hidden',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+                                border: '1px solid rgba(95,251,241,0.2)'
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div
+                                role="button"
+                                tabIndex={0}
+                                onMouseDown={(e) => {
+                                  e.preventDefault()
+                                  imageModalDragRef.current = { startX: e.clientX, startY: e.clientY, startOx: imageModalDragOffset.x, startOy: imageModalDragOffset.y }
+                                  setImageModalDragging(true)
                                 }}
-                                style={{ padding: '0.5rem 1rem', background: 'var(--k2-accent)', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}
+                                style={{ padding: '0.75rem 1rem', cursor: 'move', userSelect: 'none', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}
                               >
-                                Bild übernehmen
-                              </button>
-                              <button type="button" onClick={() => { setPendingPageImage(null); setImageUploadStatus(null) }} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: '0.9rem' }}>Abbrechen</button>
+                                <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>⋮⋮</span>
+                                <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#f4f7ff' }}>🖼️ Bildverarbeitung</span>
+                                <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginLeft: 'auto' }}>Ziehen zum Verschieben</span>
+                              </div>
+                              <div style={{ padding: '0 1rem 1rem', overflow: 'auto', flex: 1 }}>
+                                <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', margin: '0.5rem 0 0.75rem' }}>Freistellen, Original oder Zuschneiden wählen – dann „Bild übernehmen“.</p>
+                                <img src={pendingPageImage.dataUrl} alt="Vorschau" style={{ width: '100%', maxHeight: 220, objectFit: 'contain', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', marginBottom: '0.75rem' }} />
+                                <ImageProcessingOptions
+                                  mode={pendingPageImageMode === 'vollkachel' ? 'original' : pendingPageImageMode}
+                                  onModeChange={(m) => setPendingPageImageMode(m === 'vollkachel' ? 'original' : m)}
+                                  backgroundPreset={pendingPageImagePreset}
+                                  onBackgroundPresetChange={setPendingPageImagePreset}
+                                  showVollkachel={false}
+                                  onCropClick={() => setCropPageImageSrc(pendingPageImage.dataUrl)}
+                                />
+                                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+                                  <button
+                                    type="button"
+                                    onClick={async () => {
+                                      if (!pendingPageImage) return
+                                      try {
+                                        setImageUploadStatus('⏳ Bild wird verarbeitet…')
+                                        const mode = pendingPageImageMode === 'vollkachel' ? 'original' : pendingPageImageMode
+                                        const result = await processImageForSave(pendingPageImage.dataUrl, { mode, backgroundPreset: pendingPageImagePreset, context: 'desktop' })
+                                        const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+                                        const next = { ...pageContent, [pendingPageImage.field]: result }
+                                        setPageContent(next)
+                                        setPageContentGalerie(next, designTenant)
+                                        if (pendingPageImage.field === 'welcomeImage' && !tenant.isVk2) pendingWelcomeFileRef.current = pendingPageImage.file
+                                        setPendingPageImage(null)
+                                        setCropPageImageSrc(null)
+                                        setImageModalDragOffset({ x: 0, y: 0 })
+                                        setImageUploadStatus('✅ Bild übernommen – Speichern nicht vergessen')
+                                        setTimeout(() => setImageUploadStatus(null), 5000)
+                                        if ((pendingPageImage.field === 'galerieCardImage' || pendingPageImage.field === 'virtualTourImage') && typeof uploadPageImageToGitHub === 'function') {
+                                          try {
+                                            const res = await fetch(result)
+                                            const blob = await res.blob()
+                                            const file = new File([blob], pendingPageImage.field === 'galerieCardImage' ? 'galerie-card.jpg' : 'virtual-tour.jpg', { type: blob.type })
+                                            await uploadPageImageToGitHub(file, pendingPageImage.field, pendingPageImage.field === 'galerieCardImage' ? 'galerie-card.jpg' : 'virtual-tour.jpg')
+                                          } catch (_) { /* optional */ }
+                                        }
+                                      } catch (_) {
+                                        setImageUploadStatus('⚠️ Fehler – bitte erneut versuchen')
+                                        setTimeout(() => setImageUploadStatus(null), 4000)
+                                      }
+                                    }}
+                                    style={{ padding: '0.5rem 1rem', background: '#b54a1e', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}
+                                  >
+                                    Bild übernehmen
+                                  </button>
+                                  <button type="button" onClick={() => { setPendingPageImage(null); setCropPageImageSrc(null); setImageUploadStatus(null); setImageModalDragOffset({ x: 0, y: 0 }) }} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: '0.9rem' }}>Abbrechen</button>
+                                </div>
+                              </div>
                             </div>
-                          </div>
+                          </div>,
+                          document.body
+                        )}
+                        {cropPageImageSrc && pendingPageImage && createPortal(
+                          <div style={{ position: 'fixed', inset: 0, zIndex: 10001 }}>
+                            <ImageCropModal
+                              imageSrc={cropPageImageSrc}
+                              onApply={(dataUrl) => {
+                                setPendingPageImage(prev => prev ? { ...prev, dataUrl } : null)
+                                setCropPageImageSrc(null)
+                              }}
+                              onCancel={() => setCropPageImageSrc(null)}
+                            />
+                          </div>,
+                          document.body
                         )}
                         {imageUploadStatus && (
                           <div style={{ marginTop: '0.5rem', padding: '0.5rem 0.75rem', background: imageUploadStatus.startsWith('✅') ? 'rgba(16,185,129,0.1)' : imageUploadStatus.startsWith('⏳') ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)', border: `1px solid ${imageUploadStatus.startsWith('✅') ? '#10b981' : imageUploadStatus.startsWith('⏳') ? '#f59e0b' : '#10b981'}44`, borderRadius: 8, fontSize: '0.88rem', color: imageUploadStatus.startsWith('✅') ? '#10b981' : imageUploadStatus.startsWith('⏳') ? '#d97706' : '#10b981', fontWeight: 500 }}>
@@ -12049,49 +12164,68 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             {designSubTab === 'farben' && (() => {
               const simpleKeys = ['accentColor', 'backgroundColor1', 'textColor'] as const
               const labels: Record<string, string> = { accentColor: 'Akzentfarbe', backgroundColor1: 'Hintergrund', textColor: 'Textfarbe' }
+              const fText = '#1c1a18'
+              const fMuted = '#5c5650'
+              const fAccent = '#b54a1e'
               return (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(1.5rem, 4vw, 2.5rem)', alignItems: 'start' }}>
-                  {/* Linke Spalte: einfache Farbwahl */}
+                  {/* Linke Spalte: einfache Farbwahl – auf hellem Hintergrund dunkle Schrift (Lesbarkeit). */}
                   <div style={{ flex: '1 1 260px', minWidth: 260, maxWidth: 420, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                    <h3 style={{ fontSize: '1rem', color: 'var(--k2-accent)', marginBottom: 0 }}>Schnellwahl</h3>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-                      {Object.entries(themes).map(([name, theme]) => (
-                        <button key={name} type="button" onClick={() => applyTheme(name as keyof typeof themes)} style={{ padding: '0.75rem 1.25rem', background: `linear-gradient(135deg, ${theme.backgroundColor2}, ${theme.backgroundColor3})`, border: `2px solid ${theme.accentColor}`, borderRadius: 10, color: theme.textColor, cursor: 'pointer', fontSize: '0.9rem' }}>
-                          {name === 'default' ? 'Standard' : name === 'warm' ? 'Warm' : name === 'elegant' ? 'Elegant' : 'Modern'}
-                        </button>
-                      ))}
+                    <div>
+                      <h3 style={{ fontSize: '1rem', color: fAccent, marginBottom: '0.25rem' }}>1. Schnellwahl – fertige Vorlagen</h3>
+                      <p style={{ fontSize: '0.8rem', color: fMuted, marginBottom: '0.5rem' }}>Ein Klick: deine Galerie hat sofort einen stimmigen Look.</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                        {Object.entries(themes).map(([name, theme]) => (
+                          <button key={name} type="button" onClick={() => applyTheme(name as keyof typeof themes)} style={{ padding: '0.75rem 1.25rem', background: `linear-gradient(135deg, ${theme.backgroundColor2}, ${theme.backgroundColor3})`, border: `2px solid ${theme.accentColor}`, borderRadius: 10, color: theme.textColor, cursor: 'pointer', fontSize: '0.9rem' }}>
+                            {name === 'default' ? 'Standard' : name === 'warm' ? 'Warm' : name === 'elegant' ? 'Elegant' : 'Modern'}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <h3 style={{ fontSize: '1rem', color: 'var(--k2-accent)', marginBottom: 0 }}>Drei Farben anpassen</h3>
-                    {simpleKeys.map((key) => {
-                      const hex = designSettings[key] || '#ff8c42'
-                      const isHex = /^#[0-9A-Fa-f]{3,6}$/.test(hex)
-                      const hsl = isHex ? hexToHsl(hex) : { h: 180, s: 80, l: 65 }
-                      return (
-                        <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                          <label style={{ color: 'var(--k2-muted)', fontSize: '0.9rem' }}>{labels[key]}</label>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <input type="color" value={hex} onChange={(e) => handleDesignChange(key, e.target.value)} style={{ width: 44, height: 36, border: 'none', borderRadius: 8, cursor: 'pointer' }} />
-                            <input type="range" min={0} max={360} value={hsl.h} onChange={(e) => handleDesignChange(key, hslToHex(Number(e.target.value), hsl.s, hsl.l))} style={{ flex: 1, accentColor: 'var(--k2-accent)' }} title="Farbton" />
-                            <input type="range" min={0} max={100} value={hsl.l} onChange={(e) => handleDesignChange(key, hslToHex(hsl.h, hsl.s, Number(e.target.value)))} style={{ width: 80, accentColor: 'var(--k2-accent)' }} title="Helligkeit" />
+                    <div>
+                      <h3 style={{ fontSize: '1rem', color: fAccent, marginBottom: '0.25rem' }}>2. Oder: Drei Farben selbst wählen</h3>
+                      <p style={{ fontSize: '0.8rem', color: fMuted, marginBottom: '0.75rem' }}>Farbfeld = Klick, Farbe wählen. Die Schieber darunter: <strong>Farbton</strong> (welche Farbe) und <strong>Helligkeit</strong> (dunkel/hell).</p>
+                      {simpleKeys.map((key) => {
+                        const hex = designSettings[key] || '#ff8c42'
+                        const isHex = /^#[0-9A-Fa-f]{3,6}$/.test(hex)
+                        const hsl = isHex ? hexToHsl(hex) : { h: 180, s: 80, l: 65 }
+                        const beschreibung: Record<string, string> = { accentColor: 'Buttons, Links, Highlights – die „Markenfarbe“ deiner Galerie.', backgroundColor1: 'Die Hauptfarbe hinter deinen Inhalten.', textColor: 'Farbe der Texte – gut lesbar halten.' }
+                        return (
+                          <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginBottom: '1rem' }}>
+                            <label style={{ color: fText, fontSize: '0.9rem', fontWeight: 600 }}>{labels[key]}</label>
+                            <p style={{ fontSize: '0.78rem', color: fMuted, margin: 0 }}>{beschreibung[key]}</p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                              <input type="color" value={hex} onChange={(e) => handleDesignChange(key, e.target.value)} style={{ width: 44, height: 36, border: 'none', borderRadius: 8, cursor: 'pointer' }} title="Klicken zum Farbwählen" />
+                              <div style={{ flex: 1, minWidth: 120, display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                <span style={{ fontSize: '0.7rem', color: fMuted }}>Farbton</span>
+                                <input type="range" min={0} max={360} value={hsl.h} onChange={(e) => handleDesignChange(key, hslToHex(Number(e.target.value), hsl.s, hsl.l))} style={{ width: '100%', accentColor: fAccent }} />
+                              </div>
+                              <div style={{ width: 80, display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                <span style={{ fontSize: '0.7rem', color: fMuted }}>Helligkeit</span>
+                                <input type="range" min={0} max={100} value={hsl.l} onChange={(e) => handleDesignChange(key, hslToHex(hsl.h, hsl.s, Number(e.target.value)))} style={{ width: '100%', accentColor: fAccent }} />
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      )
-                    })}
+                        )
+                      })}
+                    </div>
 
-                    <button type="button" onClick={() => setDesignSettings({ ...(tenant.isOeffentlich ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN) })} style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: 'transparent', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer', marginTop: '0.5rem' }}>↩ Zum Originalzustand</button>
-                    <h3 style={{ fontSize: '1rem', color: 'var(--k2-accent)', marginBottom: '0.5rem', marginTop: '0.5rem' }}>Varianten</h3>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', margin: '0 0 0.5rem' }}>Zum Experimentieren: aktuellen Stand als A oder B speichern, später anwenden. Die aktuelle Einstellung gilt – jederzeit änderbar.</p>
+                    <button type="button" onClick={() => setDesignSettings({ ...(tenant.isOeffentlich ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN) })} style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: 'transparent', border: `1px solid ${fMuted}`, borderRadius: 8, color: fMuted, cursor: 'pointer', marginTop: '0.25rem' }}>↩ Zurücksetzen (Standard-Farben)</button>
+                    <div style={{ marginTop: '1.25rem' }}>
+                      <h3 style={{ fontSize: '1rem', color: fAccent, marginBottom: '0.25rem' }}>3. Varianten A & B (optional)</h3>
+                      <p style={{ fontSize: '0.8rem', color: fMuted, margin: '0 0 0.5rem' }}>Zwei Favoriten speichern und später wieder anwenden – zum Vergleichen (z. B. „So oder so?“) oder Zurückwechseln. Für alle, die gern experimentieren.</p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      <button type="button" onClick={() => saveDesignVariant('a')} style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--k2-accent)', borderRadius: 8, color: 'var(--k2-accent)', cursor: 'pointer' }}>Aktuell als A speichern</button>
-                      <button type="button" onClick={() => saveDesignVariant('b')} style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--k2-accent)', borderRadius: 8, color: 'var(--k2-accent)', cursor: 'pointer' }}>Aktuell als B speichern</button>
-                      <button type="button" onClick={() => loadDesignVariant('a')} style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer' }}>Variante A anwenden</button>
-                      <button type="button" onClick={() => loadDesignVariant('b')} style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', background: 'rgba(255,255,255,0.08)', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer' }}>Variante B anwenden</button>
+                      <button type="button" onClick={() => saveDesignVariant('a')} style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', background: 'rgba(181,74,30,0.08)', border: `1px solid ${fAccent}`, borderRadius: 8, color: fAccent, cursor: 'pointer', fontWeight: 600 }}>Aktuell als A speichern</button>
+                      <button type="button" onClick={() => saveDesignVariant('b')} style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', background: 'rgba(181,74,30,0.08)', border: `1px solid ${fAccent}`, borderRadius: 8, color: fAccent, cursor: 'pointer', fontWeight: 600 }}>Aktuell als B speichern</button>
+                      <button type="button" onClick={() => loadDesignVariant('a')} style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', background: 'rgba(28,26,24,0.06)', border: `1px solid ${fMuted}`, borderRadius: 8, color: fMuted, cursor: 'pointer' }}>Variante A anwenden</button>
+                      <button type="button" onClick={() => loadDesignVariant('b')} style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', background: 'rgba(28,26,24,0.06)', border: `1px solid ${fMuted}`, borderRadius: 8, color: fMuted, cursor: 'pointer' }}>Variante B anwenden</button>
+                    </div>
                     </div>
                   </div>
                   {/* Rechte Spalte: echte Galerie-Seite in Kundengröße (wie „So sehen Kunden die Galerie“) */}
                   <div style={{ flex: '1 1 280px', minWidth: 280, position: 'sticky', top: '1rem' }}>
-                    <h3 style={{ fontSize: '1rem', color: 'var(--k2-accent)', marginBottom: '0.75rem' }}>Vorschau (Kundengröße)</h3>
-                    <div style={{ overflow: 'auto', maxHeight: 'min(85vh, 640px)', borderRadius: 16, border: '2px solid var(--k2-accent)', background: 'var(--k2-bg-1)' }}>
+                    <h3 style={{ fontSize: '1rem', color: fText, marginBottom: '0.75rem' }}>Vorschau (Kundengröße)</h3>
+                    <div style={{ overflow: 'auto', maxHeight: 'min(85vh, 640px)', borderRadius: 16, border: `2px solid ${fAccent}`, background: 'var(--k2-bg-1)' }}>
                       {(() => {
                         const tc = tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich : tenant.isVk2 ? TENANT_CONFIGS.vk2 : TENANT_CONFIGS.k2
                         const galleryName = tenant.isVk2 ? (vk2Stammdaten.verein?.name || tc.galleryName) : tc.galleryName
@@ -12320,7 +12454,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>E-Mail</label>
-                          <input type="email" value={vk2Stammdaten.verein.email} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, email: e.target.value } })} placeholder="info@verein.example" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                          <input type="email" value={vk2Stammdaten.verein.email} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, email: e.target.value } })} onFocus={(e) => { const def = (VK2_STAMMDATEN_DEFAULTS.verein.email || 'office@kunstverein-muster.at').trim(); if ((vk2Stammdaten.verein.email || '').trim() === def) e.target.select(); }} placeholder="info@verein.example" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Website</label>
@@ -12353,11 +12487,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           <input
                             type="tel"
                             value={vk2Stammdaten.kommunikation?.vorstandTelefon || ''}
-                            onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, kommunikation: { ...vk2Stammdaten.kommunikation, vorstandTelefon: e.target.value.replace(/\s/g, '') } })}
-                            placeholder="4366412345678 (ohne + oder 0)"
+                            onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, kommunikation: { ...vk2Stammdaten.kommunikation, vorstandTelefon: e.target.value.replace(/\D/g, '') } })}
+                            placeholder="z.B. 4366412345678 (international änderbar)"
                             style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, outline: 'none' }}
                           />
-                          <p style={{ margin: '0.25rem 0 0', fontSize: '0.75rem', color: s.muted }}>Österreich: 43 + Nummer ohne führende 0 (z.B. 4366412345678)</p>
+                          <p style={{ margin: '0.25rem 0 0', fontSize: '0.75rem', color: s.muted }}>Nur Ziffern, Landesvorwahl + Nummer ohne führende 0 (z.B. 43 Österreich, 49 Deutschland). Beliebig änderbar.</p>
                         </div>
                       </div>
 
@@ -12775,6 +12909,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         🔒 Demo-Modus (ök2): Nur Musterdaten – Speichern schreibt keine echten K2-Daten.
                       </div>
                     )}
+                    {tenant.isOeffentlich && (
+                      <div style={{ marginBottom: '1rem' }}>
+                        <button type="button" onClick={clearStammdatenMuster} style={{ padding: '0.6rem 1.2rem', background: 'transparent', border: `2px solid ${s.accent}`, borderRadius: 10, color: s.accent, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>
+                          🗑️ Musterdaten entfernen – Felder leeren für eigene Eintragung
+                        </button>
+                        <p style={{ margin: '0.35rem 0 0', fontSize: '0.78rem', color: s.muted }}>Ein Klick leert Person 1, Person 2 und Galerie – danach deine Daten eintragen.</p>
+                      </div>
+                    )}
                 <div style={{
                   padding: '0.75rem 1rem',
                   marginBottom: '1.25rem',
@@ -12822,6 +12964,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           type="email"
                           value={martinaData.email || ''}
                           onChange={(e) => setMartinaData({ ...martinaData, email: e.target.value })}
+                          onFocus={(e) => { const def = tenant.isOeffentlich ? (MUSTER_TEXTE.martina.email || '') : (K2_STAMMDATEN_DEFAULTS.martina.email || ''); if ((martinaData.email || '').trim() === def.trim()) e.target.select(); }}
                           placeholder="martina@k2-galerie.at"
                           style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
@@ -12832,27 +12975,34 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           type="tel"
                           value={martinaData.phone || ''}
                           onChange={(e) => setMartinaData({ ...martinaData, phone: e.target.value })}
-                          placeholder="+43 ..."
+                          placeholder="z.B. +43 664 … (international änderbar)"
                           style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
                       <div className="field">
-                        <label style={{ fontSize: '0.85rem', color: s.text }}>Vita (für Außenkommunikation &amp; Galerie)</label>
-                        <textarea
-                          value={martinaData.vita || ''}
-                          onChange={(e) => setMartinaData({ ...martinaData, vita: e.target.value })}
-                          placeholder="Vita-Text (Werdegang, Ausstellungen, Arbeitsweise …)"
-                          rows={8}
-                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box', resize: 'vertical' }}
-                        />
-                        <button type="button" onClick={() => openVitaDocument('martina')} style={{ marginTop: '0.5rem', padding: '0.4rem 0.75rem', background: s.accent, color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: '0.85rem' }}>
-                          📄 Vita als Dokument öffnen
+                        <button type="button" onClick={() => setVitaMartinaOpen(!vitaMartinaOpen)} style={{ width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                          <span>Vita (für Außenkommunikation &amp; Galerie)</span>
+                          <span style={{ fontSize: '0.75rem', color: s.muted }}>{vitaMartinaOpen ? '▼ einklappen' : '▶ aufklappen'}</span>
                         </button>
+                        {vitaMartinaOpen && (
+                          <>
+                            <textarea
+                              value={martinaData.vita || ''}
+                              onChange={(e) => setMartinaData({ ...martinaData, vita: e.target.value })}
+                              placeholder="Vita-Text (Werdegang, Ausstellungen, Arbeitsweise …)"
+                              rows={8}
+                              style={{ marginTop: '0.5rem', padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box', resize: 'vertical' }}
+                            />
+                            <button type="button" onClick={() => openVitaDocument('martina')} style={{ marginTop: '0.5rem', padding: '0.4rem 0.75rem', background: s.accent, color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: '0.85rem' }}>
+                              📄 Vita als Dokument öffnen
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
 
-                  {/* Person 2 (optional) */}
+                  {/* Person 2 (optional) – Maske geschlossen, erst bei Bedarf aufklappen */}
                   <div style={{
                     background: s.bgCard,
                     border: `1px solid ${s.accent}22`,
@@ -12860,58 +13010,76 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     borderRadius: '16px',
                     boxShadow: s.shadow
                   }}>
-                    <h3 style={{
-                      marginTop: 0,
-                      marginBottom: '0.25rem',
-                      fontSize: 'clamp(1rem, 2.5vw, 1.15rem)',
-                      fontWeight: '600',
-                      color: s.text,
-                      borderBottom: `1px solid ${s.accent}22`,
-                      paddingBottom: '0.5rem'
-                    }}>
-                      👨‍🎨 Person 2 (optional)
-                    </h3>
-                    <p style={{ margin: '0 0 clamp(0.75rem, 2vw, 1rem)', fontSize: '0.8rem', color: s.muted }}>
-                      {tenant.isOeffentlich ? MUSTER_TEXTE.georg.name : (georgData.name || 'Name im Design-Tab festlegen')}
-                    </p>
-<p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: s.muted }}>
-                    Für Anzeige einer zweiten Person: E-Mail und Telefon ausfüllen, dann „Stammdaten speichern“. Name ggf. im Design-Tab anpassen.
-                    </p>
-                    <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', color: s.text }}>
-                      <div className="field">
-                        <label style={{ fontSize: '0.85rem', color: s.text }}>E-Mail</label>
-                        <input
-                          type="email"
-                          value={georgData.email || ''}
-                          onChange={(e) => setGeorgData({ ...georgData, email: e.target.value })}
-                          placeholder="georg@k2-galerie.at"
-                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
-                        />
-                      </div>
-                      <div className="field">
-                        <label style={{ fontSize: '0.85rem', color: s.text }}>Telefon</label>
-                        <input
-                          type="tel"
-                          value={georgData.phone || ''}
-                          onChange={(e) => setGeorgData({ ...georgData, phone: e.target.value })}
-                          placeholder="+43 ..."
-                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
-                        />
-                      </div>
-                      <div className="field">
-                        <label style={{ fontSize: '0.85rem', color: s.text }}>Vita (für Außenkommunikation &amp; Galerie)</label>
-                        <textarea
-                          value={georgData.vita || ''}
-                          onChange={(e) => setGeorgData({ ...georgData, vita: e.target.value })}
-                          placeholder="Vita-Text (Werdegang, Ausstellungen, Arbeitsweise …)"
-                          rows={8}
-                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box', resize: 'vertical' }}
-                        />
-                        <button type="button" onClick={() => openVitaDocument('georg')} style={{ marginTop: '0.5rem', padding: '0.4rem 0.75rem', background: s.accent, color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: '0.85rem' }}>
-                          📄 Vita als Dokument öffnen
-                        </button>
-                      </div>
-                    </div>
+                    <button type="button" onClick={() => setPerson2BlockOpen(!person2BlockOpen)} style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', color: 'inherit' }}>
+                      <h3 style={{
+                        margin: 0,
+                        fontSize: 'clamp(1rem, 2.5vw, 1.15rem)',
+                        fontWeight: '600',
+                        color: s.text,
+                        borderBottom: `1px solid ${s.accent}22`,
+                        paddingBottom: '0.5rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '0.5rem'
+                      }}>
+                        <span>👨‍🎨 Person 2 (optional)</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 400, color: s.muted }}>{person2BlockOpen ? '▼ einklappen' : '▶ bei Bedarf öffnen'}</span>
+                      </h3>
+                    </button>
+                    {person2BlockOpen && (
+                      <>
+                        <p style={{ margin: '0.75rem 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>
+                          {tenant.isOeffentlich ? MUSTER_TEXTE.georg.name : (georgData.name || 'Name im Design-Tab festlegen')}
+                        </p>
+                        <p style={{ margin: '0 0 0.75rem', fontSize: '0.75rem', color: s.muted }}>
+                          Für Anzeige einer zweiten Person: E-Mail und Telefon ausfüllen, dann „Stammdaten speichern“. Name ggf. im Design-Tab anpassen.
+                        </p>
+                        <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', color: s.text }}>
+                          <div className="field">
+                            <label style={{ fontSize: '0.85rem', color: s.text }}>E-Mail</label>
+                            <input
+                              type="email"
+                              value={georgData.email || ''}
+                              onChange={(e) => setGeorgData({ ...georgData, email: e.target.value })}
+                              onFocus={(e) => { const def = tenant.isOeffentlich ? (MUSTER_TEXTE.georg.email || '') : (K2_STAMMDATEN_DEFAULTS.georg.email || ''); if ((georgData.email || '').trim() === def.trim()) e.target.select(); }}
+                              placeholder="georg@k2-galerie.at"
+                              style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
+                            />
+                          </div>
+                          <div className="field">
+                            <label style={{ fontSize: '0.85rem', color: s.text }}>Telefon</label>
+                            <input
+                              type="tel"
+                              value={georgData.phone || ''}
+                              onChange={(e) => setGeorgData({ ...georgData, phone: e.target.value })}
+                              placeholder="z.B. +43 664 … (international änderbar)"
+                              style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
+                            />
+                          </div>
+                          <div className="field">
+                            <button type="button" onClick={() => setVitaGeorgOpen(!vitaGeorgOpen)} style={{ width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                              <span>Vita (für Außenkommunikation &amp; Galerie)</span>
+                              <span style={{ fontSize: '0.75rem', color: s.muted }}>{vitaGeorgOpen ? '▼ einklappen' : '▶ aufklappen'}</span>
+                            </button>
+                            {vitaGeorgOpen && (
+                              <>
+                                <textarea
+                                  value={georgData.vita || ''}
+                                  onChange={(e) => setGeorgData({ ...georgData, vita: e.target.value })}
+                                  placeholder="Vita-Text (Werdegang, Ausstellungen, Arbeitsweise …)"
+                                  rows={8}
+                                  style={{ marginTop: '0.5rem', padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box', resize: 'vertical' }}
+                                />
+                                <button type="button" onClick={() => openVitaDocument('georg')} style={{ marginTop: '0.5rem', padding: '0.4rem 0.75rem', background: s.accent, color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: '0.85rem' }}>
+                                  📄 Vita als Dokument öffnen
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {/* Galerie */}
@@ -12970,7 +13138,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           type="tel"
                           value={galleryData.phone || ''}
                           onChange={(e) => setGalleryData({ ...galleryData, phone: e.target.value })}
-                          placeholder="+43 ..."
+                          placeholder="z.B. +43 664 … (international änderbar)"
                           style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
@@ -12980,6 +13148,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           type="email"
                           value={galleryData.email || ''}
                           onChange={(e) => setGalleryData({ ...galleryData, email: e.target.value })}
+                          onFocus={(e) => { const def = tenant.isOeffentlich ? (MUSTER_TEXTE.gallery.email || '') : (K2_STAMMDATEN_DEFAULTS.gallery.email || ''); if ((galleryData.email || '').trim() === def.trim()) e.target.select(); }}
                           placeholder="info@k2-galerie.at"
                           style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
@@ -13161,7 +13330,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>E-Mail</label>
-                          <input type="email" value={vk2Stammdaten.verein.email} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, email: e.target.value } })} placeholder="info@verein.example" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                          <input type="email" value={vk2Stammdaten.verein.email} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, email: e.target.value } })} onFocus={(e) => { const def = (VK2_STAMMDATEN_DEFAULTS.verein.email || 'office@kunstverein-muster.at').trim(); if ((vk2Stammdaten.verein.email || '').trim() === def) e.target.select(); }} placeholder="info@verein.example" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Website</label>
@@ -13212,11 +13381,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>E-Mail</label>
-                          <input type="email" value={galleryData.email || ''} onChange={(e) => setGalleryData({ ...galleryData, email: e.target.value })} placeholder="info@galerie.at" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                          <input type="email" value={galleryData.email || ''} onChange={(e) => setGalleryData({ ...galleryData, email: e.target.value })} onFocus={(e) => { const def = tenant.isOeffentlich ? (MUSTER_TEXTE.gallery.email || '') : (K2_STAMMDATEN_DEFAULTS.gallery.email || ''); if ((galleryData.email || '').trim() === def.trim()) e.target.select(); }} placeholder="info@galerie.at" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Telefon</label>
-                          <input type="tel" value={galleryData.phone || ''} onChange={(e) => setGalleryData({ ...galleryData, phone: e.target.value })} placeholder="+43 ..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                          <input type="tel" value={galleryData.phone || ''} onChange={(e) => setGalleryData({ ...galleryData, phone: e.target.value })} placeholder="z.B. +43 664 … (international änderbar)" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Website</label>
@@ -13233,11 +13402,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Person 1 (E-Mail)</label>
-                          <input type="email" value={martinaData.email || ''} onChange={(e) => setMartinaData({ ...martinaData, email: e.target.value })} placeholder="E-Mail" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                          <input type="email" value={martinaData.email || ''} onChange={(e) => setMartinaData({ ...martinaData, email: e.target.value })} onFocus={(e) => { const def = tenant.isOeffentlich ? (MUSTER_TEXTE.martina.email || '') : (K2_STAMMDATEN_DEFAULTS.martina.email || ''); if ((martinaData.email || '').trim() === def.trim()) e.target.select(); }} placeholder="E-Mail" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Person 1 (Telefon)</label>
-                          <input type="tel" value={martinaData.phone || ''} onChange={(e) => setMartinaData({ ...martinaData, phone: e.target.value })} placeholder="+43 ..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                          <input type="tel" value={martinaData.phone || ''} onChange={(e) => setMartinaData({ ...martinaData, phone: e.target.value })} placeholder="z.B. +43 664 … (international änderbar)" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Person 2 (Name)</label>
@@ -13245,11 +13414,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Person 2 (E-Mail)</label>
-                          <input type="email" value={georgData.email || ''} onChange={(e) => setGeorgData({ ...georgData, email: e.target.value })} placeholder="E-Mail" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                          <input type="email" value={georgData.email || ''} onChange={(e) => setGeorgData({ ...georgData, email: e.target.value })} onFocus={(e) => { const def = tenant.isOeffentlich ? (MUSTER_TEXTE.georg.email || '') : (K2_STAMMDATEN_DEFAULTS.georg.email || ''); if ((georgData.email || '').trim() === def.trim()) e.target.select(); }} placeholder="E-Mail" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Person 2 (Telefon)</label>
-                          <input type="tel" value={georgData.phone || ''} onChange={(e) => setGeorgData({ ...georgData, phone: e.target.value })} placeholder="+43 ..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                          <input type="tel" value={georgData.phone || ''} onChange={(e) => setGeorgData({ ...georgData, phone: e.target.value })} placeholder="z.B. +43 664 … (international änderbar)" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                       </div>
                     </div>

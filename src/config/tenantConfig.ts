@@ -200,7 +200,7 @@ export interface Vk2Stammdaten {
   kommunikation?: {
     /** WhatsApp Gruppen-Einladungslink (z.B. https://chat.whatsapp.com/xxx) */
     whatsappGruppeLink?: string
-    /** Telefonnummer des Vorstands für Direkt-Nachricht (Format: 4366412345678) */
+    /** Telefonnummer des Vorstands für WhatsApp (nur Ziffern, international: 43… Österreich, 49… Deutschland, etc.) */
     vorstandTelefon?: string
     /** Aktive Umfragen */
     umfragen?: Vk2Umfrage[]
