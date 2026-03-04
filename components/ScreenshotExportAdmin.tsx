@@ -1455,6 +1455,7 @@ function ScreenshotExportAdmin() {
   const shareFallbackBlobRef = useRef<Blob | null>(null)
   const [printLabelData, setPrintLabelData] = useState<{ url: string; widthMm: number; heightMm: number } | null>(null)
   const [savedArtwork, setSavedArtwork] = useState<any>(null)
+  const [etikettAnzahl, setEtikettAnzahl] = useState(1)
   const [isSavingArtwork, setIsSavingArtwork] = useState(false)
   const [selectedForBatchPrint, setSelectedForBatchPrint] = useState<Set<string>>(new Set())
   const [batchPrintUrls, setBatchPrintUrls] = useState<string[] | null>(null)
@@ -7980,6 +7981,7 @@ ${'='.repeat(60)}
         ...artworkData,
         file: selectedFile // Für QR-Code-Generierung behalten
       })
+      setEtikettAnzahl(Math.max(1, Math.min(99, Number(artworkData.quantity) || 1)))
       
       setShowAddModal(false)
       setEditingArtwork(null)
@@ -8167,7 +8169,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
     }
   }
 
-  /** Sammeldruck: Alle ausgewählten Werke als Etiketten – über Teilen (funktioniert mit allen Druckern). */
+  /** Sammeldruck: Alle ausgewählten Werke als Etiketten – über Teilen. Bei Stückzahl > 1: gleiches Etikett mehrfach (Gruppe/Serie). */
   const handleBatchPrintEtiketten = async () => {
     const ids = Array.from(selectedForBatchPrint)
     if (ids.length === 0) return
@@ -8180,24 +8182,26 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
     const settings = loadPrinterSettingsForTenant(activeTenant)
     const lm = parseLabelSize(settings.labelSize)
     try {
-      // Jedes Werk einzeln über Teilen → Drucker (gleicher Weg wie Einzeletikett)
       for (const artwork of toPrint) {
         const blob = await getEtikettBlobForArtwork(artwork, lm.width, lm.height)
+        const copies = Math.max(1, Math.min(99, Number(artwork.quantity) || 1))
         const file = new File([blob], `etikett-${artwork.number || artwork.id}.png`, { type: 'image/png' })
-        if (isMobile) {
-          shareFallbackBlobRef.current = blob
-          setShareFallbackImageUrl(URL.createObjectURL(blob))
-          setShowShareFallbackOverlay(true)
-          // Bei mehreren Werken: nacheinander – User schließt Teilen-Dialog und nächstes öffnet sich
-          await new Promise(resolve => setTimeout(resolve, 500))
-        } else if (typeof navigator !== 'undefined' && navigator.share) {
-          try {
-            await navigator.share({ title: `Etikett ${artwork.number || artwork.id}`, text: `${artwork.title || ''} – K2 Galerie`, files: [file] })
-          } catch (_) {}
-        } else {
-          const blobUrl = URL.createObjectURL(blob)
-          window.open(blobUrl, '_blank')
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+        for (let i = 0; i < copies; i++) {
+          if (isMobile) {
+            shareFallbackBlobRef.current = blob
+            setShareFallbackImageUrl(URL.createObjectURL(blob))
+            setShowShareFallbackOverlay(true)
+            await new Promise(resolve => setTimeout(resolve, 500))
+          } else if (typeof navigator !== 'undefined' && navigator.share) {
+            try {
+              await navigator.share({ title: `Etikett ${artwork.number || artwork.id}${copies > 1 ? ` (${i + 1}/${copies})` : ''}`, text: `${artwork.title || ''} – K2 Galerie`, files: [file] })
+            } catch (_) {}
+          } else {
+            const blobUrl = URL.createObjectURL(blob)
+            window.open(blobUrl, '_blank')
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+          }
+          if (copies > 1 && i < copies - 1) await new Promise(resolve => setTimeout(resolve, 400))
         }
       }
       setSelectedForBatchPrint(new Set())
@@ -8302,6 +8306,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
         ctx.fillText('€ ' + priceVal.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), w / 2, h * yNext)
         ctx.fillStyle = '#666'
       }
+      const qty = savedArtwork.quantity != null ? Number(savedArtwork.quantity) : 1
+      if (qty > 1) {
+        yNext += 0.05
+        ctx.font = `${fs4}px Arial,sans-serif`
+        ctx.fillStyle = '#666'
+        ctx.fillText(`${qty} Stück`, w / 2, h * yNext)
+      }
       const qrSize = Math.min(w * 0.75, h * 0.25)
       const qrX = (w - qrSize) / 2
       const qrY = h * 0.55
@@ -8342,7 +8353,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
   }
 
   /** Etikett für beliebiges Werk (für Sammeldruck). Gleiche Logik wie getEtikettBlob, aber mit übergebenem artwork. */
-  const getEtikettBlobForArtwork = (artwork: { number?: string; id?: string; title?: string; category?: string; paintingWidth?: number; paintingHeight?: number; artist?: string; price?: number | string }, widthMm = 29, heightMm = 90.3): Promise<Blob> => {
+  const getEtikettBlobForArtwork = (artwork: { number?: string; id?: string; title?: string; category?: string; paintingWidth?: number; paintingHeight?: number; artist?: string; price?: number | string; quantity?: number }, widthMm = 29, heightMm = 90.3): Promise<Blob> => {
     const num = artwork?.number || artwork?.id
     if (!num) return Promise.reject(new Error('Werk ohne Nummer'))
     const pxPerMm = 300 / 25.4
@@ -8387,6 +8398,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
         ctx.fillStyle = '#1a1a1a'
         ctx.fillText('€ ' + priceVal.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), w / 2, h * yNext)
         ctx.fillStyle = '#666'
+      }
+      const qty = artwork.quantity != null ? Number(artwork.quantity) : 1
+      if (qty > 1) {
+        yNext += 0.05
+        ctx.font = `${fs4}px Arial,sans-serif`
+        ctx.fillStyle = '#666'
+        ctx.fillText(`${qty} Stück`, w / 2, h * yNext)
       }
       const qrSize = Math.min(w * 0.75, h * 0.25)
       const qrX = (w - qrSize) / 2
@@ -8465,6 +8483,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
 
   const handleShareLabel = async () => {
     if (!savedArtwork) return
+    const n = Math.max(1, Math.min(99, etikettAnzahl))
     try {
       const blob = await getEtikettBlob()
       const file = new File([blob], `etikett-${savedArtwork.number}.png`, { type: 'image/png' })
@@ -8474,13 +8493,16 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
         setShowShareFallbackOverlay(true)
         return
       }
-      if (typeof navigator !== 'undefined' && navigator.share) {
-        await navigator.share({ title: `Etikett ${savedArtwork.number}`, text: `${savedArtwork.title || ''} – K2 Galerie`, files: [file] })
-      } else {
-        const blobUrl = URL.createObjectURL(blob)
-        const w = window.open(blobUrl, '_blank')
-        if (w) { try { w.focus() } catch (_) { }; w.document.title = `Etikett ${savedArtwork.number}` }
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+      for (let i = 0; i < n; i++) {
+        if (typeof navigator !== 'undefined' && navigator.share) {
+          await navigator.share({ title: `Etikett ${savedArtwork.number}${n > 1 ? ` (${i + 1}/${n})` : ''}`, text: `${savedArtwork.title || ''} – K2 Galerie`, files: [file] })
+        } else {
+          const blobUrl = URL.createObjectURL(blob)
+          const w = window.open(blobUrl, '_blank')
+          if (w) { try { w.focus() } catch (_) { }; w.document.title = `Etikett ${savedArtwork.number}` }
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+        }
+        if (n > 1 && i < n - 1) await new Promise(r => setTimeout(r, 400))
       }
     } catch (e) {
       if ((e as Error)?.message?.includes('QR')) alert('QR konnte nicht erzeugt werden. Bitte erneut versuchen.')
@@ -10431,7 +10453,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66` }}
                       onMouseLeave={(e) => { e.currentTarget.style.borderColor = selectedForBatchPrint.size > 0 ? `${s.accent}44` : `${s.muted}44` }}
                     >
-                      🖸️ Etiketten drucken{selectedForBatchPrint.size > 0 ? ` (${selectedForBatchPrint.size} ausgewählt)` : ''}
+                      🖸️ Etiketten drucken{selectedForBatchPrint.size > 0 ? (() => {
+                        const batchWerke = allArtworks.filter((a: any) => (a?.number || a?.id) && selectedForBatchPrint.has(String(a?.number || a?.id)))
+                        const totalEtiketten = batchWerke.reduce((s: number, a: any) => s + Math.max(1, Number(a?.quantity) || 1), 0)
+                        return totalEtiketten !== batchWerke.length ? ` (${batchWerke.length} Werke · ${totalEtiketten} Etiketten)` : ` (${batchWerke.length} ausgewählt)`
+                      })() : ''}
                     </button>
                     {selectedForBatchPrint.size === 0 && (
                       <span style={{ fontSize: '0.72rem', color: s.muted }}>→ Hakerl bei Werken setzen, dann hier drucken</span>
@@ -10593,7 +10619,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </label>
                 )}
               </div>
-              {!tenant.isVk2 && selectedForBatchPrint.size > 0 && (
+              {!tenant.isVk2 && selectedForBatchPrint.size > 0 && (() => {
+                const batchWerke = allArtworks.filter((a: any) => (a?.number || a?.id) && selectedForBatchPrint.has(String(a?.number || a?.id)))
+                const totalEtiketten = batchWerke.reduce((s: number, a: any) => s + Math.max(1, Number(a?.quantity) || 1), 0)
+                return (
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -10606,7 +10635,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   marginBottom: '1rem'
                 }}>
                   <span style={{ fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: s.text }}>
-                    {selectedForBatchPrint.size} Etikett{selectedForBatchPrint.size !== 1 ? 'en' : ''} gesammelt
+                    {batchWerke.length} Werk{batchWerke.length !== 1 ? 'e' : ''} · {totalEtiketten} Etikett{totalEtiketten !== 1 ? 'en' : ''} gesammelt
                   </span>
                   <button
                     type="button"
@@ -10622,7 +10651,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       fontSize: 'clamp(0.85rem, 2.2vw, 0.95rem)'
                     }}
                   >
-                    Sammeldruck: {selectedForBatchPrint.size} Etiketten drucken
+                    Sammeldruck: {totalEtiketten} Etiketten drucken
                   </button>
                   <button
                     type="button"
@@ -10640,7 +10669,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     Abwählen
                   </button>
                 </div>
-              )}
+              ); })()}
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(clamp(200px, 30vw, 280px), 1fr))',
@@ -18003,8 +18032,15 @@ ${name}`
                 </div>
                 {savedArtwork.title && <div style={{ fontSize: '0.85rem', color: '#555', marginBottom: '0.25rem' }}>{savedArtwork.title}</div>}
                 {(typeof savedArtwork.price === 'number' ? savedArtwork.price : parseFloat(String(savedArtwork.price ?? '').replace(',', '.'))) > 0 && (
-                  <div style={{ fontSize: '1rem', fontWeight: 700, color: '#1a1a1a', marginBottom: isMobile ? '0.5rem' : '0.75rem' }}>
+                  <div style={{ fontSize: '1rem', fontWeight: 700, color: '#1a1a1a', marginBottom: '0.25rem' }}>
                     € {(typeof savedArtwork.price === 'number' ? savedArtwork.price : parseFloat(String(savedArtwork.price || '').replace(',', '.'))).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                )}
+                {(savedArtwork.quantity != null && Number(savedArtwork.quantity) > 1) && (
+                  <div style={{ marginBottom: isMobile ? '0.5rem' : '0.75rem' }}>
+                    <label style={{ fontSize: '0.85rem', color: '#555', display: 'block', marginBottom: '0.25rem' }}>Anzahl Etiketten (gleich)</label>
+                    <input type="number" min={1} max={99} value={etikettAnzahl} onChange={(e) => setEtikettAnzahl(Math.max(1, Math.min(99, parseInt(e.target.value, 10) || 1)))} style={{ width: '4rem', padding: '0.35rem 0.5rem', fontSize: '1rem', border: '1px solid #8b6914', borderRadius: 6 }} />
+                    <span style={{ fontSize: '0.8rem', color: '#666', marginLeft: '0.5rem' }}>Stück</span>
                   </div>
                 )}
                 {/* Ein Button – universeller Weg für alle Drucker */}
@@ -18032,6 +18068,11 @@ ${name}`
                     • <strong>Etikettendrucker</strong> (Brother, Dymo, …) → Drucker-App wählen<br />
                     • <strong>WLAN-Drucker</strong> (AirPrint) → Drucker direkt wählen<br />
                     • <strong>Speichern</strong> → Bild in Foto-App → von dort drucken
+                    {etikettAnzahl > 1 && isMobile && (
+                      <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #ddd' }}>
+                        Für <strong>{etikettAnzahl} gleiche Etiketten</strong>: In der Drucker-App „Kopien“ auf {etikettAnzahl} stellen.
+                      </div>
+                    )}
                   </div>
                   <button type="button" className="btn-secondary" onClick={() => setShowPrintModal(false)}>
                     Später drucken
