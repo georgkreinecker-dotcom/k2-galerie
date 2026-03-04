@@ -18,6 +18,7 @@ import ProjectPlanPage from './ProjectPlanPage'
 import ScreenshotExportAdmin from '../../components/ScreenshotExportAdmin'
 import ProjectsPage from './ProjectsPage'
 import PlatformStartPage from './PlatformStartPage'
+import K2TeamHandbuchPage from './K2TeamHandbuchPage'
 import SmartPanel from '../components/SmartPanel'
 import { BUILD_TIMESTAMP } from '../buildInfo.generated'
 import { getPageContentGalerie } from '../config/pageContentGalerie'
@@ -829,7 +830,7 @@ end tell`
     { id: 'projects', name: 'Projekte', component: ProjectsPage },
     { id: 'platform', name: 'Plattform Start', component: PlatformStartPage },
     { id: 'mok2', name: 'mök2 – Vertrieb', component: MarketingOek2Page },
-    { id: 'handbuch', name: 'Handbuch', component: PlatformStartPage },
+    { id: 'handbuch', name: 'Handbuch', component: K2TeamHandbuchPage },
   ]
 
   // Auf Mobile: "Plattform Start" Tab ausblenden (nur für Mac)

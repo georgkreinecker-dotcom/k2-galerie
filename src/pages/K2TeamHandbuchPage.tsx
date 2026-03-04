@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ProjectNavButton } from '../components/Navigation'
 
 const HANDBUCH_DOC_PARAM = 'doc'
 
 export default function K2TeamHandbuchPage() {
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null)
   const [docContent, setDocContent] = useState<string>('')
   const [loading, setLoading] = useState(false)
@@ -26,6 +26,8 @@ export default function K2TeamHandbuchPage() {
     { id: '12-arbeitsplattform', name: 'Arbeitsplattform Verbesserungen', file: '12-ARBEITSPLATTFORM-VERBESSERUNGEN.md' },
     { id: '13-backup-vollbackup', name: 'Backup & Vollbackup K2 Galerie', file: '13-BACKUP-VOLLBACKUP-K2-GALERIE.md' },
     { id: '16-zentrale-themen', name: 'Zentrale Themen für Nutzer', file: '16-ZENTRALE-THEMEN-FUER-NUTZER.md', stand: '20.02.2026' },
+    { id: '19-martina-muna', name: 'Martina & Muna (Archiv)', file: '19-MARTINA-MUNA-BESUCH-OEK2-VK2.md' },
+    { id: '20-pilot-zettel', name: 'Pilot-Zettel – Drucken', file: '20-PILOT-ZETTEL-OEK2-VK2.md' },
   ]
 
   useEffect(() => {
@@ -38,9 +40,16 @@ export default function K2TeamHandbuchPage() {
     }
   }, [searchParams])
 
+
   const loadDocument = async (filename: string) => {
     setLoading(true)
     setSelectedDoc(filename)
+    // URL immer mitsetzen, damit Link „in der APf öffnen“ funktioniert (page=handbuch&doc=...)
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.set(HANDBUCH_DOC_PARAM, filename)
+      return next
+    }, { replace: true })
     try {
       const response = await fetch(`/k2team-handbuch/${filename}`)
       if (response.ok) {
@@ -56,42 +65,171 @@ export default function K2TeamHandbuchPage() {
     }
   }
 
-  const renderMarkdown = (text: string) => {
-    // Einfaches Markdown-Rendering
-    return text
-      .split('\n')
-      .map((line, i) => {
-        // Überschriften
-        if (line.startsWith('# ')) {
-          return <h1 key={i} style={{ fontSize: '2rem', marginTop: '2rem', marginBottom: '1rem', color: '#5ffbf1' }}>{line.substring(2)}</h1>
+  // Inline **fett** und *kursiv* in Fließtext
+  const renderInline = (s: string): ReactNode => {
+    const parts: ReactNode[] = []
+    let rest = s
+    let key = 0
+    while (rest.length > 0) {
+      const bold = rest.match(/^\*\*([^*]+)\*\*/)
+      const em = rest.match(/^\*([^*]+)\*/)
+      if (bold) {
+        parts.push(<strong key={key++}>{bold[1]}</strong>)
+        rest = rest.slice(bold[0].length)
+      } else if (em) {
+        parts.push(<em key={key++}>{em[1]}</em>)
+        rest = rest.slice(em[0].length)
+      } else {
+        const nextB = rest.indexOf('**')
+        const nextE = rest.indexOf('*')
+        const next = nextB >= 0 && (nextE < 0 || nextB <= nextE) ? nextB : nextE
+        if (next < 0) {
+          parts.push(rest)
+          break
         }
-        if (line.startsWith('## ')) {
-          return <h2 key={i} style={{ fontSize: '1.5rem', marginTop: '1.5rem', marginBottom: '0.75rem', color: '#8b5cf6' }}>{line.substring(3)}</h2>
-        }
-        if (line.startsWith('### ')) {
-          return <h3 key={i} style={{ fontSize: '1.25rem', marginTop: '1rem', marginBottom: '0.5rem', color: '#a78bfa' }}>{line.substring(4)}</h3>
-        }
-        // Fett
-        if (line.startsWith('**') && line.endsWith('**')) {
-          return <p key={i} style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{line.substring(2, line.length - 2)}</p>
-        }
-        // Code-Blöcke
-        if (line.startsWith('```')) {
-          return null // Überspringe Code-Block-Markierungen
-        }
-        // Listen
-        if (line.startsWith('- ') || line.startsWith('* ')) {
-          return <li key={i} style={{ marginLeft: '1.5rem', marginBottom: '0.25rem' }}>{line.substring(2)}</li>
-        }
-        // Leerzeilen
-        if (line.trim() === '') {
-          return <br key={i} />
-        }
-        // Normaler Text
-        return <p key={i} style={{ marginBottom: '0.75rem', lineHeight: '1.6' }}>{line}</p>
-      })
+        parts.push(rest.slice(0, next))
+        rest = rest.slice(next)
+      }
+    }
+    return parts.length === 1 ? parts[0] : <>{parts}</>
   }
 
+  // Redigierte leserliche Form – kein Buchhaltungsformular (handbuch-dokumente-leserlich-kein-formular.mdc)
+  const renderMarkdown = (text: string) => {
+    const lines = text.split('\n')
+    const out: ReactNode[] = []
+    let i = 0
+    const key = () => `md-${i}`
+
+    while (i < lines.length) {
+      const line = lines[i]
+      const trimmed = line.trim()
+
+      if (trimmed === '') {
+        out.push(<div key={key()} style={{ height: '0.75rem' }} aria-hidden />)
+        i++
+        continue
+      }
+
+      if (line.startsWith('# ')) {
+        out.push(<h1 key={key()} className="handbuch-h1">{line.substring(2).trim()}</h1>)
+        i++
+        continue
+      }
+      if (line.startsWith('## ')) {
+        out.push(<h2 key={key()} className="handbuch-h2">{line.substring(3).trim()}</h2>)
+        i++
+        continue
+      }
+      if (line.startsWith('### ')) {
+        out.push(<h3 key={key()} className="handbuch-h3">{line.substring(4).trim()}</h3>)
+        i++
+        continue
+      }
+
+      if (trimmed === '---' || /^---+$/.test(trimmed)) {
+        out.push(<hr key={key()} className="handbuch-hr" />)
+        i++
+        continue
+      }
+
+      if (line.startsWith('|') && line.includes('|', 1)) {
+        const rows: string[][] = []
+        while (i < lines.length && lines[i].trim().startsWith('|')) {
+          const row = lines[i].split('|').map((c) => c.trim()).filter((_, idx, arr) => idx > 0 && idx < arr.length - 1)
+          const isSeparator = row.length > 0 && row.every((c) => /^[-:\s]+$/.test(c))
+          if (row.length > 0 && !isSeparator) rows.push(row)
+          i++
+        }
+        if (rows.length > 0) {
+          const [head, ...body] = rows
+          out.push(
+            <div key={key()} className="handbuch-table-wrap">
+              <table className="handbuch-table">
+                {head && (
+                  <thead>
+                    <tr>{head.map((c, j) => <th key={j}>{c}</th>)}</tr>
+                  </thead>
+                )}
+                <tbody>
+                  {body.map((row, r) => (
+                    <tr key={r}>{row.map((c, j) => <td key={j}>{c}</td>)}</tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+        }
+        continue
+      }
+
+      if (line.startsWith('- ') || line.startsWith('* ')) {
+        const items: React.ReactNode[] = []
+        while (i < lines.length && (lines[i].startsWith('- ') || lines[i].startsWith('* '))) {
+          items.push(<li key={items.length} className="handbuch-li">{lines[i].substring(2).trim()}</li>)
+          i++
+        }
+        out.push(<ul key={key()} className="handbuch-ul">{items}</ul>)
+        continue
+      }
+
+      if (line.startsWith('- [ ] ')) {
+        const items: React.ReactNode[] = []
+        while (i < lines.length && lines[i].startsWith('- [ ] ')) {
+          items.push(<li key={items.length} className="handbuch-li handbuch-checkbox">☐ {lines[i].substring(6).trim()}</li>)
+          i++
+        }
+        out.push(<ul key={key()} className="handbuch-ul">{items}</ul>)
+        continue
+      }
+
+      if (trimmed.startsWith('**') && trimmed.endsWith('**') && !trimmed.includes('\n')) {
+        out.push(<p key={key()} className="handbuch-strong">{trimmed.slice(2, -2)}</p>)
+        i++
+        continue
+      }
+
+      if (trimmed.startsWith('*') && trimmed.endsWith('*') && !trimmed.includes('**')) {
+        out.push(<p key={key()} className="handbuch-em">{trimmed.slice(1, -1)}</p>)
+        i++
+        continue
+      }
+
+      if (line.startsWith('```')) {
+        i++
+        while (i < lines.length && !lines[i].trim().startsWith('```')) i++
+        if (i < lines.length) i++
+        continue
+      }
+
+      out.push(<p key={key()} className="handbuch-p">{renderInline(line)}</p>)
+      i++
+    }
+
+    return out
+  }
+
+  // Leserliche Form – Screen: gut lesbar; Print: kompakt aber nicht Buchhaltungsformular
+  const handbuchLeserlichStyles = `
+    .mission-wrapper .k2-handbuch-druck { font-size: 1rem; line-height: 1.75; color: #f4f7ff; max-width: 52rem; }
+    .mission-wrapper .handbuch-h1 { font-size: 1.75rem; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #5ffbf1; font-weight: 600; page-break-after: avoid; }
+    .mission-wrapper .handbuch-h2 { font-size: 1.35rem; margin-top: 1.25rem; margin-bottom: 0.5rem; color: #8b5cf6; font-weight: 600; page-break-after: avoid; }
+    .mission-wrapper .handbuch-h3 { font-size: 1.15rem; margin-top: 1rem; margin-bottom: 0.4rem; color: #a78bfa; page-break-after: avoid; }
+    .mission-wrapper .handbuch-hr { border: none; border-top: 1px solid rgba(95, 251, 241, 0.25); margin: 1.25rem 0; }
+    .mission-wrapper .handbuch-p { margin: 0 0 0.6rem 0; line-height: 1.75; }
+    .mission-wrapper .handbuch-strong { font-weight: 700; margin: 0 0 0.4rem 0; color: rgba(255,255,255,0.95); }
+    .mission-wrapper .handbuch-em { font-style: italic; margin: 0 0 0.5rem 0; color: rgba(255,255,255,0.88); }
+    .mission-wrapper .handbuch-ul { margin: 0.5rem 0 0.75rem 1.5rem; padding-left: 0.5rem; }
+    .mission-wrapper .handbuch-li { margin-bottom: 0.35rem; line-height: 1.6; }
+    .mission-wrapper .handbuch-checkbox { list-style: none; margin-left: -1.5rem; }
+    .mission-wrapper .handbuch-table-wrap { margin: 0.75rem 0; overflow-x: auto; }
+    .mission-wrapper .handbuch-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    .mission-wrapper .handbuch-table th, .mission-wrapper .handbuch-table td { border: 1px solid rgba(95, 251, 241, 0.25); padding: 0.5rem 0.75rem; text-align: left; vertical-align: top; }
+    .mission-wrapper .handbuch-table th { background: rgba(95, 251, 241, 0.1); color: #5ffbf1; font-weight: 600; }
+    .mission-wrapper .handbuch-table td { color: rgba(255,255,255,0.9); }
+    .mission-wrapper .handbuch-table code { font-size: 0.88em; color: #a78bfa; word-break: break-all; }
+  `
+  const isZettelDoc = selectedDoc === '19-MARTINA-MUNA-BESUCH-OEK2-VK2.md' || selectedDoc === '20-PILOT-ZETTEL-OEK2-VK2.md'
   const compactPrintStyles = `
     @media print {
       .no-print { display: none !important; }
@@ -99,27 +237,49 @@ export default function K2TeamHandbuchPage() {
       .mission-wrapper .viewport aside { display: none !important; }
       .mission-wrapper .handbuch-layout { grid-template-columns: 1fr !important; gap: 0 !important; }
       .mission-wrapper .viewport { padding: 0 !important; }
-      .mission-wrapper article { border: none !important; background: white !important; color: black !important; padding: 6mm 10mm 14mm 10mm !important; }
-      .mission-wrapper .k2-handbuch-druck { font-size: 10.5pt !important; line-height: 1.4 !important; }
-      .mission-wrapper .k2-handbuch-druck h1 { font-size: 1.35rem !important; margin-top: 0 !important; margin-bottom: 0.25rem !important; }
-      .mission-wrapper .k2-handbuch-druck h2 { font-size: 1.1rem !important; margin-top: 0.5rem !important; margin-bottom: 0.2rem !important; }
-      .mission-wrapper .k2-handbuch-druck h3 { font-size: 1rem !important; margin-top: 0.4rem !important; margin-bottom: 0.15rem !important; }
-      .mission-wrapper .k2-handbuch-druck p { margin-top: 0 !important; margin-bottom: 0.2rem !important; }
-      .mission-wrapper .k2-handbuch-druck li { margin-bottom: 0.1rem !important; }
-      .mission-wrapper .k2-handbuch-druck table { margin-bottom: 0.4rem !important; font-size: 9.5pt !important; }
-      .mission-wrapper .k2-handbuch-druck th, .mission-wrapper .k2-handbuch-druck td { padding: 0.2rem 0.4rem !important; }
-      .mission-wrapper .k2-handbuch-druck br { height: 0.15em; display: block; overflow: hidden; }
-      .mission-wrapper h1, .mission-wrapper h2, .mission-wrapper h3 { color: black !important; page-break-after: avoid; }
-      .mission-wrapper p, .mission-wrapper li { color: black !important; }
+      .mission-wrapper article { border: none !important; background: white !important; color: #1c1a18 !important; padding: 8mm 12mm 16mm 12mm !important; }
+      .mission-wrapper .k2-handbuch-druck { font-size: 10.5pt !important; line-height: 1.5 !important; color: #1c1a18 !important; }
+      .mission-wrapper .handbuch-h1 { font-size: 1.35rem !important; margin-top: 0 !important; margin-bottom: 0.4rem !important; color: #1c1a18 !important; }
+      .mission-wrapper .handbuch-h2 { font-size: 1.15rem !important; margin-top: 0.75rem !important; margin-bottom: 0.35rem !important; color: #1c1a18 !important; }
+      .mission-wrapper .handbuch-h3 { font-size: 1.05rem !important; margin-top: 0.5rem !important; margin-bottom: 0.25rem !important; color: #1c1a18 !important; }
+      .mission-wrapper .handbuch-hr { border-top-color: #ccc !important; margin: 0.75rem 0 !important; }
+      .mission-wrapper .handbuch-p { margin-bottom: 0.4rem !important; color: #1c1a18 !important; }
+      .mission-wrapper .handbuch-strong, .mission-wrapper .handbuch-em { color: #1c1a18 !important; margin-bottom: 0.35rem !important; }
+      .mission-wrapper .handbuch-ul { margin: 0.4rem 0 0.5rem 1.25rem !important; }
+      .mission-wrapper .handbuch-li { margin-bottom: 0.25rem !important; color: #1c1a18 !important; }
+      .mission-wrapper .handbuch-table-wrap { margin: 0.5rem 0 !important; }
+      .mission-wrapper .handbuch-table { font-size: 9.5pt !important; }
+      .mission-wrapper .handbuch-table th, .mission-wrapper .handbuch-table td { padding: 0.35rem 0.5rem !important; border-color: #ccc !important; color: #1c1a18 !important; }
+      .mission-wrapper .handbuch-table th { background: #f0f0f0 !important; color: #1c1a18 !important; }
+      .mission-wrapper .handbuch-table code { color: #333 !important; }
       .mission-wrapper .seitenfuss { display: block !important; position: fixed; bottom: 0; left: 0; right: 0; text-align: center; font-size: 0.65rem; color: #666; padding: 0.2rem 0; }
       .mission-wrapper .seitenfuss::after { content: "Seite " counter(page); }
       @page { margin: 12mm 14mm 10mm 14mm; size: A4; }
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      /* Martina & Muna Zettel: ein Blatt, nur weiß und schwarz – keine Blamage */
+      body.handbuch-zettel-print-active,
+      body.handbuch-zettel-print-active .mission-wrapper,
+      .mission-wrapper.handbuch-zettel-druck,
+      .mission-wrapper.handbuch-zettel-druck .viewport,
+      .mission-wrapper.handbuch-zettel-druck .handbuch-layout,
+      .mission-wrapper.handbuch-zettel-druck article { background: #fff !important; color: #1c1a18 !important; }
+      .mission-wrapper.handbuch-zettel-druck article { padding: 6mm 10mm !important; font-size: 9pt !important; line-height: 1.35 !important; }
+      .mission-wrapper.handbuch-zettel-druck .handbuch-h1 { font-size: 1.1rem !important; margin-bottom: 0.3rem !important; color: #1c1a18 !important; }
+      .mission-wrapper.handbuch-zettel-druck .handbuch-h2 { font-size: 1rem !important; margin-top: 0.5rem !important; margin-bottom: 0.25rem !important; color: #1c1a18 !important; }
+      .mission-wrapper.handbuch-zettel-druck .handbuch-hr { margin: 0.4rem 0 !important; border-color: #ccc !important; }
+      .mission-wrapper.handbuch-zettel-druck .handbuch-p { margin-bottom: 0.25rem !important; color: #1c1a18 !important; }
+      .mission-wrapper.handbuch-zettel-druck .handbuch-ul, .mission-wrapper.handbuch-zettel-druck .handbuch-li { margin-bottom: 0.15rem !important; color: #1c1a18 !important; }
+      .mission-wrapper.handbuch-zettel-druck .handbuch-table { font-size: 8.5pt !important; }
+      .mission-wrapper.handbuch-zettel-druck .handbuch-table th, .mission-wrapper.handbuch-zettel-druck .handbuch-table td { padding: 0.25rem 0.4rem !important; border-color: #ccc !important; color: #1c1a18 !important; }
+      .mission-wrapper.handbuch-zettel-druck .handbuch-table th { background: #f5f5f5 !important; }
+      .mission-wrapper.handbuch-zettel-druck .handbuch-table code { color: #333 !important; }
+      .mission-wrapper.handbuch-zettel-druck .seitenfuss { display: none !important; }
     }
   `
 
   return (
-    <main className="mission-wrapper print-compact">
+    <main className={`mission-wrapper print-compact${isZettelDoc ? ' handbuch-zettel-druck' : ''}`}>
+      <style>{handbuchLeserlichStyles}</style>
       <style>{compactPrintStyles}</style>
       <div className="viewport">
         <header className="no-print">
@@ -128,6 +288,23 @@ export default function K2TeamHandbuchPage() {
             <div className="meta">Team-Handbuch &amp; Vermächtnis – Handbuch unserer Zusammenarbeit</div>
           </div>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            <Link
+              to="/zettel-pilot-form"
+              className="btn small-btn"
+              style={{
+                background: 'linear-gradient(120deg, #f59e0b, #d97706)',
+                color: '#fff',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                textDecoration: 'none'
+              }}
+              title="Name/URL eintragen, dann Zettel drucken"
+            >
+              📄 Pilot-Zettel (PDF)
+            </Link>
             <button
               onClick={() => window.print()}
               className="btn small-btn"
@@ -140,7 +317,7 @@ export default function K2TeamHandbuchPage() {
                 alignItems: 'center',
                 gap: '0.5rem'
               }}
-              title="Handbuch drucken"
+              title="Aktuelles Dokument drucken (PDF oder Drucker)"
             >
               🖨️ Drucken
             </button>
@@ -214,7 +391,7 @@ export default function K2TeamHandbuchPage() {
               </div>
             ) : (
               <>
-                <div className="k2-handbuch-druck" style={{ color: '#f4f7ff', lineHeight: '1.8' }}>
+                <div className="k2-handbuch-druck">
                   {renderMarkdown(docContent)}
                 </div>
                 <div className="seitenfuss" style={{ display: 'none' }} aria-hidden />

@@ -78,6 +78,22 @@ export default function MissionControlPage() {
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
             <div style={{ fontSize: '0.75rem', color: '#8fa0c9', opacity: 0.7 }}>💾 Auto-Save aktiv</div>
             <Link
+              to="/zettel-pilot-form"
+              className="btn small-btn"
+              style={{
+                background: 'linear-gradient(120deg, #f59e0b, #d97706)',
+                color: '#ffffff',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem'
+              }}
+              title="Pilot-Zettel: Name (und optional URL) eintragen, dann Zettel drucken"
+            >
+              <span style={{ fontSize: '1.1rem' }}>📄</span>
+              <span>Pilot-Zettel</span>
+            </Link>
+            <Link
               to="/k2team-handbuch"
               className="btn small-btn"
               style={{

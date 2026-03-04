@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { PROJECT_ROUTES, MOK2_ROUTE, ENTDECKEN_ROUTE } from '../config/navigation'
+import { PROJECT_ROUTES, PLATFORM_ROUTES, MOK2_ROUTE, ENTDECKEN_ROUTE } from '../config/navigation'
 import { ERKUNDUNGS_NOTIZEN_KEY, type ErkundungsNotiz } from '../pages/EntdeckenPage'
 
 const GUIDE_KEY = 'k2-entdecken-guide-antworten'
@@ -82,7 +82,7 @@ const DEFAULT_ITEMS: PanelItem[] = [
   { id: 'vk2', label: '🎨 VK2 Vereinsplattform', page: 'vk2', url: VK2_GALERIE_URL, color: 'linear-gradient(135deg, rgba(230,122,42,0.2), rgba(255,140,66,0.15))', border: 'rgba(255,140,66,0.4)' },
   { id: 'mok2', label: '📋 mök2 – Vertrieb & Promotion', page: 'mok2', url: MOK2_ROUTE, color: 'linear-gradient(135deg, rgba(251,191,36,0.12), rgba(245,158,11,0.08))', border: 'rgba(251,191,36,0.3)' },
   { id: 'notizen', label: '📝 Notizen', page: 'notizen', url: PROJECT_ROUTES['k2-galerie'].notizen, color: 'linear-gradient(135deg, rgba(196,181,253,0.15), rgba(139,92,246,0.08))', border: 'rgba(196,181,253,0.35)' },
-  { id: 'handbuch', label: '🧠 Handbuch', page: 'handbuch', url: '/k2team-handbuch', color: 'rgba(95,251,241,0.08)', border: 'rgba(95,251,241,0.2)', direct: true },
+  { id: 'handbuch', label: '🧠 Handbuch', page: 'handbuch', url: '/k2team-handbuch', color: 'rgba(95,251,241,0.08)', border: 'rgba(95,251,241,0.2)' },
 ]
 
 function loadOrder(): string[] {
@@ -369,6 +369,9 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
               <div style={{ marginTop: '0.5rem', paddingLeft: '0.25rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 {mappe.id === 'galerie' && (
                   <>
+                    <Link to={PLATFORM_ROUTES.missionControl} style={{ display: 'block', padding: '0.65rem 0.85rem', background: 'linear-gradient(135deg, rgba(129,140,248,0.2), rgba(99,102,241,0.12))', border: '1px solid rgba(129,140,248,0.4)', borderRadius: '8px', color: '#a5b4fc', fontWeight: 600, fontSize: '0.88rem', textAlign: 'center', textDecoration: 'none', fontFamily: 'inherit' }}>
+                      🚀 Mission Control
+                    </Link>
                     {items.map(item => (
                       <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                         <Link
@@ -395,6 +398,17 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                     <Link to="/k2-galerie-handbuch" style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.2)', borderRadius: '8px', color: '#5ffbf1', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', fontFamily: 'inherit' }}>
                       🧠 Handbuch (K2 Galerie)
                     </Link>
+                    <div style={{ marginTop: '0.6rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(196,181,253,0.25)' }}>
+                      <div style={{ fontSize: '0.8rem', color: 'rgba(196,181,253,0.95)', fontWeight: 700, marginBottom: '0.4rem' }}>Praktisch</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                        <Link to="/zettel-pilot-form" style={{ display: 'block', padding: '0.6rem 0.85rem', background: 'linear-gradient(120deg, rgba(245,158,11,0.28), rgba(217,119,6,0.2))', border: '1px solid rgba(245,158,11,0.5)', borderRadius: '8px', color: '#fbbf24', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'none', fontFamily: 'inherit' }} title="Zettel mit neuen Codes drucken (ök2 oder VK2): Nr., Name, Pilot-URL eintragen → Zettel anzeigen → drucken. Ablauf kontrolliert und wiederholbar.">
+                          ✈️ Neuer Test-Pilot
+                        </Link>
+                        <Link to={`${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-pilot-start-michael`} style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'linear-gradient(120deg, rgba(245,158,11,0.2), rgba(217,119,6,0.15))', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '8px', color: '#fbbf24', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', fontFamily: 'inherit' }} title="Startanleitung Michael in mök2">
+                          Startanleitung Michael
+                        </Link>
+                      </div>
+                    </div>
                     <button type="button" onClick={startFremderModus} style={{ width: '100%', padding: '0.6rem 0.85rem', background: 'linear-gradient(135deg, rgba(255,140,66,0.18), rgba(181,74,30,0.12))', border: '1px solid rgba(255,140,66,0.5)', borderRadius: '8px', color: '#ff8c42', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '0.5rem' }} title="Landingpage wie ein Erstbesucher">
                       <span>👤</span><span>Als Fremder eintreten</span>
                     </button>

@@ -32,6 +32,9 @@ import { loadDocuments as loadDocumentsFromStorage } from '../src/utils/document
 import { apiPost, apiGet } from '../src/utils/apiClient'
 import { safeReload } from '../src/utils/env'
 import { compressImageForStorage } from '../src/utils/compressImageForStorage'
+import { processImageForSave } from '../src/utils/imageProcessingTool'
+import { ImageProcessingOptions, type ImageProcessingMode } from '../src/components/ImageProcessingOptions'
+import type { BackgroundPresetKey } from '../src/utils/professionalImageBackground'
 import ImageCropModal from '../src/components/ImageCropModal'
 import AdminBildZuschneidenButton from '../src/components/AdminBildZuschneidenButton'
 import { getWerbeliniePrDocCss, getWerbeliniePrDocCssVk2, WERBELINIE_FONTS_URL, WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../src/config/marketingWerbelinie'
@@ -1672,6 +1675,26 @@ function ScreenshotExportAdmin() {
   const [designSaveFeedback, setDesignSaveFeedback] = useState<'ok' | null>(null)
   const [imageUploadStatus, setImageUploadStatus] = useState<string | null>(null)
   const pendingWelcomeFileRef = React.useRef<File | null>(null)
+  /** Ein Tool für alle: Bildverarbeitung (Original | Freistellen) – pending bis „Bild übernehmen“. */
+  const [pendingPageImage, setPendingPageImage] = useState<{ field: 'welcomeImage' | 'galerieCardImage' | 'virtualTourImage'; dataUrl: string; file: File } | null>(null)
+  const [pendingPageImageMode, setPendingPageImageMode] = useState<ImageProcessingMode>('freigestellt')
+  const [pendingPageImagePreset, setPendingPageImagePreset] = useState<BackgroundPresetKey>('hell')
+  /** VK2 Eingangskarten: Bildverarbeitung wie Design-Tab – pending bis „Bild übernehmen“. */
+  const [pendingVk2Card, setPendingVk2Card] = useState<{ index: number; dataUrl: string; file: File } | null>(null)
+  const [pendingVk2CardMode, setPendingVk2CardMode] = useState<ImageProcessingMode>('freigestellt')
+  const [pendingVk2CardPreset, setPendingVk2CardPreset] = useState<BackgroundPresetKey>('hell')
+  /** VK2 Mitglieder: Foto / Werk – Bildverarbeitung. */
+  const [pendingMemberImage, setPendingMemberImage] = useState<{ mitgliedIdx: number; field: 'mitgliedFotoUrl' | 'imageUrl'; dataUrl: string; file: File } | null>(null)
+  const [pendingMemberImageMode, setPendingMemberImageMode] = useState<ImageProcessingMode>('freigestellt')
+  const [pendingMemberImagePreset, setPendingMemberImagePreset] = useState<BackgroundPresetKey>('hell')
+  /** Dokument hochladen (Presse/Allgemein): bei Bildern Freistellen anbieten. */
+  const [pendingDocumentImage, setPendingDocumentImage] = useState<{ file: File; dataUrl: string } | null>(null)
+  const [pendingDocumentImageMode, setPendingDocumentImageMode] = useState<ImageProcessingMode>('freigestellt')
+  const [pendingDocumentImagePreset, setPendingDocumentImagePreset] = useState<BackgroundPresetKey>('hell')
+  /** Event-Dokument (Flyer/Presse/Plakat): bei Bildern Freistellen anbieten. */
+  const [pendingEventDocImage, setPendingEventDocImage] = useState<{ file: File; dataUrl: string } | null>(null)
+  const [pendingEventDocImageMode, setPendingEventDocImageMode] = useState<ImageProcessingMode>('freigestellt')
+  const [pendingEventDocImagePreset, setPendingEventDocImagePreset] = useState<BackgroundPresetKey>('hell')
 
   const DESIGN_VARIANT_KEYS = tenant.isOeffentlich
     ? { a: 'k2-oeffentlich-design-variant-a', b: 'k2-oeffentlich-design-variant-b' } as const
@@ -9153,13 +9176,37 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               ) : (
                 <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', width: '100%', aspectRatio: '1', background: 'rgba(37,99,235,0.08)', border: '2px dashed rgba(37,99,235,0.3)', borderRadius: 12, cursor: 'pointer', color: 'rgba(160,200,255,0.5)', fontSize: '0.8rem', textAlign: 'center' }}>
                   <span style={{ fontSize: '1.8rem' }}>👤</span><span>Foto hinzufügen</span>
-                  <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={(e) => {
+                  <span style={{ fontSize: '0.7rem', color: 'var(--k2-accent)' }}>🖼️ Freistellen möglich</span>
+                  <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={async (e) => {
                     const file = e.target.files?.[0]; if (!file) return
-                    const reader = new FileReader(); reader.onload = () => { const dataUrl = reader.result as string; const img = new Image(); img.onload = () => { const maxW=400; const scale=img.width>maxW?maxW/img.width:1; const c=document.createElement('canvas'); c.width=Math.round(img.width*scale); c.height=Math.round(img.height*scale); const ctx=c.getContext('2d'); const url=ctx?c.toDataURL('image/jpeg',0.6):dataUrl; if(ctx)ctx.drawImage(img,0,0,c.width,c.height); const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],mitgliedFotoUrl:url};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{saveVk2Stammdaten({...vk2Stammdaten,mitglieder:neu})}catch(_){}} }; img.src=dataUrl }; reader.readAsDataURL(file)
+                    try {
+                      const dataUrl = await compressImageForStorage(file, { context: 'desktop' })
+                      setPendingMemberImage({ mitgliedIdx, field: 'mitgliedFotoUrl', dataUrl, file })
+                      setPendingMemberImageMode('freigestellt')
+                    } catch (_) {}
+                    e.target.value = ''
                   }} />
                 </label>
               )}
             </div>
+            {pendingMemberImage?.mitgliedIdx === mitgliedIdx && pendingMemberImage?.field === 'mitgliedFotoUrl' && (
+              <div style={{ marginTop: '0.5rem', padding: '0.6rem', background: 'rgba(0,0,0,0.12)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ fontSize: '0.75rem', color: 'rgba(160,200,255,0.8)', marginBottom: '0.4rem' }}>🖼️ Bildverarbeitung</div>
+                <ImageProcessingOptions mode={pendingMemberImageMode} onModeChange={setPendingMemberImageMode} backgroundPreset={pendingMemberImagePreset} onBackgroundPresetChange={setPendingMemberImagePreset} showVollkachel={false} />
+                <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.4rem' }}>
+                  <button type="button" onClick={async () => {
+                    if (!pendingMemberImage || pendingMemberImage.field !== 'mitgliedFotoUrl') return
+                    try {
+                      const result = await processImageForSave(pendingMemberImage.dataUrl, { mode: pendingMemberImageMode === 'vollkachel' ? 'freigestellt' : pendingMemberImageMode, backgroundPreset: pendingMemberImagePreset, context: 'desktop' })
+                      const neu = [...(vk2Stammdaten.mitglieder || [])]
+                      if (neu[mitgliedIdx]) { neu[mitgliedIdx] = { ...neu[mitgliedIdx], mitgliedFotoUrl: result }; setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }); try { saveVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }) } catch (_) {} }
+                      setPendingMemberImage(null)
+                    } catch (_) {}
+                  }} style={{ padding: '0.4rem 0.8rem', background: '#b54a1e', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>Bild übernehmen</button>
+                  <button type="button" onClick={() => setPendingMemberImage(null)} style={{ padding: '0.4rem 0.8rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: '0.85rem' }}>Abbrechen</button>
+                </div>
+              </div>
+            )}
             <div style={{ background: 'rgba(37,99,235,0.07)', border: '2px solid rgba(37,99,235,0.4)', borderRadius: 12, padding: '0.75rem' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#60a5fa', fontWeight: 700 }}>✏️ 🖼️ Werk</label>
               {mitglied?.imageUrl ? (
@@ -9170,13 +9217,37 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               ) : (
                 <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', width: '100%', aspectRatio: '3/2', background: 'rgba(37,99,235,0.08)', border: '2px dashed rgba(37,99,235,0.3)', borderRadius: 12, cursor: 'pointer', color: 'rgba(160,200,255,0.5)', fontSize: '0.8rem', textAlign: 'center' }}>
                   <span style={{ fontSize: '1.8rem' }}>🖼️</span><span>Werk hinzufügen</span>
-                  <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={(e) => {
+                  <span style={{ fontSize: '0.7rem', color: 'var(--k2-accent)' }}>🖼️ Freistellen möglich</span>
+                  <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={async (e) => {
                     const file = e.target.files?.[0]; if (!file) return
-                    const reader = new FileReader(); reader.onload = () => { const dataUrl = reader.result as string; const img = new Image(); img.onload = () => { const maxW=600; const scale=img.width>maxW?maxW/img.width:1; const c=document.createElement('canvas'); c.width=Math.round(img.width*scale); c.height=Math.round(img.height*scale); const ctx=c.getContext('2d'); const url=ctx?c.toDataURL('image/jpeg',0.6):dataUrl; if(ctx)ctx.drawImage(img,0,0,c.width,c.height); const neu=[...(vk2Stammdaten.mitglieder||[])]; if(neu[mitgliedIdx]){neu[mitgliedIdx]={...neu[mitgliedIdx],imageUrl:url};setVk2Stammdaten({...vk2Stammdaten,mitglieder:neu});try{saveVk2Stammdaten({...vk2Stammdaten,mitglieder:neu})}catch(_){}} }; img.src=dataUrl }; reader.readAsDataURL(file)
+                    try {
+                      const dataUrl = await compressImageForStorage(file, { context: 'desktop' })
+                      setPendingMemberImage({ mitgliedIdx, field: 'imageUrl', dataUrl, file })
+                      setPendingMemberImageMode('freigestellt')
+                    } catch (_) {}
+                    e.target.value = ''
                   }} />
                 </label>
               )}
             </div>
+            {pendingMemberImage?.mitgliedIdx === mitgliedIdx && pendingMemberImage?.field === 'imageUrl' && (
+              <div style={{ marginTop: '0.5rem', padding: '0.6rem', background: 'rgba(0,0,0,0.12)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ fontSize: '0.75rem', color: 'rgba(160,200,255,0.8)', marginBottom: '0.4rem' }}>🖼️ Bildverarbeitung</div>
+                <ImageProcessingOptions mode={pendingMemberImageMode} onModeChange={setPendingMemberImageMode} backgroundPreset={pendingMemberImagePreset} onBackgroundPresetChange={setPendingMemberImagePreset} showVollkachel={false} />
+                <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.4rem' }}>
+                  <button type="button" onClick={async () => {
+                    if (!pendingMemberImage || pendingMemberImage.field !== 'imageUrl') return
+                    try {
+                      const result = await processImageForSave(pendingMemberImage.dataUrl, { mode: pendingMemberImageMode === 'vollkachel' ? 'freigestellt' : pendingMemberImageMode, backgroundPreset: pendingMemberImagePreset, context: 'desktop' })
+                      const neu = [...(vk2Stammdaten.mitglieder || [])]
+                      if (neu[mitgliedIdx]) { neu[mitgliedIdx] = { ...neu[mitgliedIdx], imageUrl: result }; setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }); try { saveVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }) } catch (_) {} }
+                      setPendingMemberImage(null)
+                    } catch (_) {}
+                  }} style={{ padding: '0.4rem 0.8rem', background: '#b54a1e', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>Bild übernehmen</button>
+                  <button type="button" onClick={() => setPendingMemberImage(null)} style={{ padding: '0.4rem 0.8rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: '0.85rem' }}>Abbrechen</button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Bio */}
@@ -11186,30 +11257,69 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               overflow: 'auto'
             }}>
               <h2 style={{ marginTop: 0 }}>Dokument hochladen</h2>
-              <p style={{ color: '#666', marginBottom: '1.5rem' }}>
+              <p style={{ color: '#666', marginBottom: '0.5rem' }}>
                 Unterstützte Formate: PDF, Bilder (JPG, PNG, etc.), Word-Dokumente
               </p>
+              <p style={{ color: '#b54a1e', fontSize: '0.85rem', marginBottom: '1rem' }}>🖼️ Bei Bildern: Freistellen & Pro-Hintergrund möglich</p>
               <input
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,image/*,application/pdf"
                 onChange={async (e) => {
                   const file = e.target.files?.[0]
-                  if (file) {
+                  if (!file) return
+                  if (file.type.startsWith('image/')) {
                     try {
+                      const dataUrl = await compressImageForStorage(file, { context: 'desktop' })
+                      setPendingDocumentImage({ file, dataUrl })
+                      setPendingDocumentImageMode('freigestellt')
+                    } catch (_) {
                       await handleDocumentUpload(file)
                       alert('✅ Dokument erfolgreich hochgeladen!')
                       setShowUploadModal(false)
-                    } catch (error) {
-                      console.error('Upload-Fehler:', error)
-                      alert('❌ Fehler beim Hochladen. Bitte versuche es erneut.')
                     }
+                    e.target.value = ''
+                    return
                   }
+                  try {
+                    await handleDocumentUpload(file)
+                    alert('✅ Dokument erfolgreich hochgeladen!')
+                    setShowUploadModal(false)
+                  } catch (error) {
+                    console.error('Upload-Fehler:', error)
+                    alert('❌ Fehler beim Hochladen. Bitte versuche es erneut.')
+                  }
+                  e.target.value = ''
                 }}
                 style={{ width: '100%', padding: '0.5rem', marginBottom: '1rem' }}
               />
+              {pendingDocumentImage && (
+                <div style={{ marginBottom: '1rem', padding: '1rem', background: '#f8f6f4', borderRadius: 8, border: '1px solid #e0ddd8' }}>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#1c1a18', marginBottom: '0.5rem' }}>🖼️ Bildverarbeitung – dann „Bild übernehmen“</div>
+                  <ImageProcessingOptions mode={pendingDocumentImageMode} onModeChange={setPendingDocumentImageMode} backgroundPreset={pendingDocumentImagePreset} onBackgroundPresetChange={setPendingDocumentImagePreset} showVollkachel={false} />
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
+                    <button type="button" onClick={async () => {
+                      if (!pendingDocumentImage) return
+                      try {
+                        const result = await processImageForSave(pendingDocumentImage.dataUrl, { mode: pendingDocumentImageMode === 'vollkachel' ? 'freigestellt' : pendingDocumentImageMode, backgroundPreset: pendingDocumentImagePreset, context: 'desktop' })
+                        const res = await fetch(result)
+                        const blob = await res.blob()
+                        const processedFile = new File([blob], pendingDocumentImage.file.name || 'document.jpg', { type: blob.type })
+                        await handleDocumentUpload(processedFile)
+                        setPendingDocumentImage(null)
+                        alert('✅ Dokument erfolgreich hochgeladen!')
+                        setShowUploadModal(false)
+                      } catch (err) {
+                        console.error(err)
+                        alert('❌ Fehler. Bitte erneut versuchen.')
+                      }
+                    }} style={{ padding: '0.5rem 1rem', background: '#b54a1e', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}>Bild übernehmen & hochladen</button>
+                    <button type="button" onClick={() => { setPendingDocumentImage(null) }} style={{ padding: '0.5rem 1rem', background: '#fff', border: '1px solid #ddd', borderRadius: 8, cursor: 'pointer' }}>Abbrechen</button>
+                  </div>
+                </div>
+              )}
               <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                 <button 
-                  onClick={() => setShowUploadModal(false)}
+                  onClick={() => { setShowUploadModal(false); setPendingDocumentImage(null) }}
                   style={{ padding: '0.5rem 1rem', border: '1px solid #ddd', background: '#fff', borderRadius: '4px', cursor: 'pointer' }}
                 >
                   Abbrechen
@@ -11375,8 +11485,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     </div>
                   </div>
                 </div>
-                <input type="file" accept="image/*" ref={galerieImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
-                <input type="file" accept="image/*" ref={virtualTourImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                <input type="file" accept="image/*" ref={galerieImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'galerieCardImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Galerie-Karte – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                <input type="file" accept="image/*" ref={virtualTourImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                 {(() => {
                   const tc = tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich : tenant.isVk2 ? TENANT_CONFIGS.vk2 : TENANT_CONFIGS.k2
                   const galleryName = tenant.isVk2 ? (vk2Stammdaten.verein?.name || tc.galleryName) : tc.galleryName
@@ -11442,14 +11552,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             if (f && f.type.startsWith('image/')) {
                               try {
                                 const img = await compressImageForStorage(f, { context: 'desktop' })
-                                const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
-                                const next = { ...pageContent, welcomeImage: img }
-                                setPageContent(next)
-                                setPageContentGalerie(next, designTenant)
-                                // Datei für späteren Upload beim Speichern merken (K2 + ök2, nicht VK2)
-                                if (!tenant.isVk2) pendingWelcomeFileRef.current = f
-                                setImageUploadStatus('✓ Foto bereit – erst ansehen, dann Speichern')
-                                setTimeout(() => setImageUploadStatus(null), 6000)
+                                setPendingPageImage({ field: 'welcomeImage', dataUrl: img, file: f })
+                                setPendingPageImageMode('freigestellt')
+                                setImageUploadStatus('✓ Foto bereit – Bildverarbeitung wählen, dann „Bild übernehmen“')
+                                setTimeout(() => setImageUploadStatus(null), 5000)
                               } catch (_) { alert('Fehler beim Bild') }
                             }
                           }}
@@ -11459,23 +11565,72 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             if (f) {
                               try {
                                 const img = await compressImageForStorage(f, { context: 'desktop' })
-                                const next = { ...pageContent, welcomeImage: img }
-                                setPageContent(next)
-                                setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
-                                // Datei für späteren Upload beim Speichern merken (K2 + ök2, nicht VK2)
-                                if (!tenant.isVk2) pendingWelcomeFileRef.current = f
-                                setImageUploadStatus('✓ Foto bereit – erst ansehen, dann Speichern')
-                                setTimeout(() => setImageUploadStatus(null), 6000)
+                                setPendingPageImage({ field: 'welcomeImage', dataUrl: img, file: f })
+                                setPendingPageImageMode('freigestellt')
+                                setImageUploadStatus('✓ Foto bereit – Bildverarbeitung wählen, dann „Bild übernehmen“')
+                                setTimeout(() => setImageUploadStatus(null), 5000)
                               } catch (_) { alert('Fehler beim Bild') }
                             }
                             e.target.value = ''
                           }} />
-                          {pageContent.welcomeImage ? (
-                            <img src={pageContent.welcomeImage} alt="Willkommen" style={{ width: '100%', height: 'auto', display: 'block', maxHeight: 480, objectFit: 'cover', boxSizing: 'border-box' }} />
+                          {(pendingPageImage?.field === 'welcomeImage' ? pendingPageImage.dataUrl : pageContent.welcomeImage) ? (
+                            <img src={pendingPageImage?.field === 'welcomeImage' ? pendingPageImage.dataUrl : pageContent.welcomeImage} alt="Willkommen" style={{ width: '100%', height: 'auto', display: 'block', maxHeight: 480, objectFit: 'cover', boxSizing: 'border-box' }} />
                           ) : (
-                            <div style={{ width: '100%', minHeight: 200, background: 'rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: 'var(--k2-muted)', fontSize: '1rem' }}><span style={{ fontSize: '2rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>
+                            <div style={{ width: '100%', minHeight: 200, background: 'rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: 'var(--k2-muted)', fontSize: '1rem' }}><span style={{ fontSize: '2rem' }}>📸</span><span>Foto ziehen oder klicken</span><span style={{ fontSize: '0.8rem', color: 'var(--k2-accent)' }}>🖼️ Freistellen möglich</span></div>
                           )}
                         </label>
+                        {pendingPageImage && (
+                          <div style={{ marginTop: '0.75rem' }}>
+                            {pendingPageImage.field !== 'welcomeImage' && (
+                              <div style={{ marginBottom: '0.5rem' }}>
+                                <img src={pendingPageImage.dataUrl} alt="Vorschau" style={{ maxWidth: '100%', maxHeight: 160, objectFit: 'contain', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)' }} />
+                              </div>
+                            )}
+                            <ImageProcessingOptions
+                              mode={pendingPageImageMode === 'vollkachel' ? 'original' : pendingPageImageMode}
+                              onModeChange={(m) => setPendingPageImageMode(m === 'vollkachel' ? 'original' : m)}
+                              backgroundPreset={pendingPageImagePreset}
+                              onBackgroundPresetChange={setPendingPageImagePreset}
+                              showVollkachel={false}
+                            />
+                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  if (!pendingPageImage) return
+                                  try {
+                                    setImageUploadStatus('⏳ Bild wird verarbeitet…')
+                                    const mode = pendingPageImageMode === 'vollkachel' ? 'original' : pendingPageImageMode
+                                    const result = await processImageForSave(pendingPageImage.dataUrl, { mode, backgroundPreset: pendingPageImagePreset, context: 'desktop' })
+                                    const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+                                    const next = { ...pageContent, [pendingPageImage.field]: result }
+                                    setPageContent(next)
+                                    setPageContentGalerie(next, designTenant)
+                                    if (pendingPageImage.field === 'welcomeImage' && !tenant.isVk2) pendingWelcomeFileRef.current = pendingPageImage.file
+                                    setPendingPageImage(null)
+                                    setImageUploadStatus('✅ Bild übernommen – Speichern nicht vergessen')
+                                    setTimeout(() => setImageUploadStatus(null), 5000)
+                                    if ((pendingPageImage.field === 'galerieCardImage' || pendingPageImage.field === 'virtualTourImage') && typeof uploadPageImageToGitHub === 'function') {
+                                      try {
+                                        const res = await fetch(result)
+                                        const blob = await res.blob()
+                                        const file = new File([blob], pendingPageImage.field === 'galerieCardImage' ? 'galerie-card.jpg' : 'virtual-tour.jpg', { type: blob.type })
+                                        await uploadPageImageToGitHub(file, pendingPageImage.field, pendingPageImage.field === 'galerieCardImage' ? 'galerie-card.jpg' : 'virtual-tour.jpg')
+                                      } catch (_) { /* optional */ }
+                                    }
+                                  } catch (_) {
+                                    setImageUploadStatus('⚠️ Fehler – bitte erneut versuchen')
+                                    setTimeout(() => setImageUploadStatus(null), 4000)
+                                  }
+                                }}
+                                style={{ padding: '0.5rem 1rem', background: 'var(--k2-accent)', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}
+                              >
+                                Bild übernehmen
+                              </button>
+                              <button type="button" onClick={() => { setPendingPageImage(null); setImageUploadStatus(null) }} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: '0.9rem' }}>Abbrechen</button>
+                            </div>
+                          </div>
+                        )}
                         {imageUploadStatus && (
                           <div style={{ marginTop: '0.5rem', padding: '0.5rem 0.75rem', background: imageUploadStatus.startsWith('✅') ? 'rgba(16,185,129,0.1)' : imageUploadStatus.startsWith('⏳') ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)', border: `1px solid ${imageUploadStatus.startsWith('✅') ? '#10b981' : imageUploadStatus.startsWith('⏳') ? '#f59e0b' : '#10b981'}44`, borderRadius: 8, fontSize: '0.88rem', color: imageUploadStatus.startsWith('✅') ? '#10b981' : imageUploadStatus.startsWith('⏳') ? '#d97706' : '#10b981', fontWeight: 500 }}>
                             {imageUploadStatus}
@@ -11501,8 +11656,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                     if (!f || !f.type.startsWith('image/')) return
                                     try {
                                       const img = await compressImageForStorage(f, { context: 'desktop' })
-                                      const updated = vk2Karten.map((k, i) => i === idx ? { ...k, imageUrl: img } : k)
-                                      saveVk2Karten(updated)
+                                      setPendingVk2Card({ index: idx, dataUrl: img, file: f })
+                                      setPendingVk2CardMode('freigestellt')
                                     } catch { /* ignore */ }
                                   }}
                                 >
@@ -11511,8 +11666,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                     if (!f) return
                                     try {
                                       const img = await compressImageForStorage(f, { context: 'desktop' })
-                                      const updated = vk2Karten.map((k, i) => i === idx ? { ...k, imageUrl: img } : k)
-                                      saveVk2Karten(updated)
+                                      setPendingVk2Card({ index: idx, dataUrl: img, file: f })
+                                      setPendingVk2CardMode('freigestellt')
                                     } catch { /* ignore */ }
                                     e.target.value = ''
                                   }} />
@@ -11521,6 +11676,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                     : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', color: s.muted, fontSize: '0.85rem' }}>
                                         <span style={{ fontSize: '1.6rem', opacity: 0.4 }}>{idx === 0 ? '🖼️' : '👥'}</span>
                                         <span>📸 Foto wählen</span>
+                                        <span style={{ fontSize: '0.7rem', color: 'var(--k2-accent)', opacity: 0.9 }}>🖼️ Freistellen möglich</span>
                                       </div>
                                   }
                                   <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0)', display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', padding: '0.4rem' }}>
@@ -11534,6 +11690,25 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                     >×</button>
                                   )}
                                 </label>
+                                {/* VK2-Karte: Pending Bildverarbeitung (Freistellen/Original) – ein Tool für alle */}
+                                {pendingVk2Card?.index === idx && (
+                                  <div style={{ marginTop: '0.6rem', padding: '0.75rem', background: 'rgba(0,0,0,0.15)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.12)' }}>
+                                    <div style={{ fontSize: '0.8rem', color: s.muted, marginBottom: '0.5rem' }}>🖼️ Bildverarbeitung – dann „Bild übernehmen“</div>
+                                    <ImageProcessingOptions mode={pendingVk2CardMode} onModeChange={setPendingVk2CardMode} backgroundPreset={pendingVk2CardPreset} onBackgroundPresetChange={setPendingVk2CardPreset} showVollkachel={false} />
+                                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+                                      <button type="button" onClick={async () => {
+                                        if (!pendingVk2Card) return
+                                        try {
+                                          const result = await processImageForSave(pendingVk2Card.dataUrl, { mode: pendingVk2CardMode === 'vollkachel' ? 'freigestellt' : pendingVk2CardMode, backgroundPreset: pendingVk2CardPreset, context: 'desktop' })
+                                          const updated = vk2Karten.map((k, i) => i === pendingVk2Card.index ? { ...k, imageUrl: result } : k)
+                                          saveVk2Karten(updated)
+                                          setPendingVk2Card(null)
+                                        } catch (_) { /* ignore */ }
+                                      }} style={{ padding: '0.5rem 1rem', background: 'var(--k2-accent)', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>Bild übernehmen</button>
+                                      <button type="button" onClick={() => setPendingVk2Card(null)} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: '0.9rem' }}>Abbrechen</button>
+                                    </div>
+                                  </div>
+                                )}
                                 {/* Titel + Untertitel editierbar */}
                                 <div style={{ padding: '0.6rem 0.7rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                                   <input
@@ -11638,10 +11813,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             <label htmlFor="galerie-card-image-input-p1" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.galerieCardImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-accent)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
                               onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
                               onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-                              onDrop={async (e) => { e.preventDefault(); e.stopPropagation(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } }}
+                              onDrop={async (e) => { e.preventDefault(); e.stopPropagation(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'galerieCardImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Galerie-Karte – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } }}
                             >
-                              <input id="galerie-card-image-input-p1" ref={galerieImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
-                              {pageContent.galerieCardImage ? <img src={pageContent.galerieCardImage} alt="In die Galerie" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>}
+                              <input id="galerie-card-image-input-p1" ref={galerieImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'galerieCardImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Galerie-Karte – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                              {pageContent.galerieCardImage ? <img src={pageContent.galerieCardImage} alt="In die Galerie" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span><span style={{ fontSize: '0.75rem', color: 'var(--k2-accent)' }}> 🖼️ Freistellen</span></div>}
                             </label>
                             {designPreviewEdit === 'p1-galerieButtonText' ? (
                               <input autoFocus type="text" value={pageTexts.galerie?.galerieButtonText ?? defaultPageTexts.galerie.galerieButtonText ?? 'In die Galerie'} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, galerieButtonText: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.3rem', fontSize: '1.1rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 6, textAlign: 'center', boxSizing: 'border-box' }} />
@@ -11653,10 +11828,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             <label htmlFor="virtual-tour-image-input-p1" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
                               onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
                               onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-                              onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } }}
+                              onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } }}
                             >
-                              <input id="virtual-tour-image-input-p1" ref={virtualTourImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
-                              {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>}
+                              <input id="virtual-tour-image-input-p1" ref={virtualTourImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                              {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span><span style={{ fontSize: '0.75rem', color: 'var(--k2-accent)' }}> 🖼️ Freistellen</span></div>}
                             </label>
                             {designPreviewEdit === 'p1-virtualTourButtonText' ? (
                               <input autoFocus type="text" value={pageTexts.galerie?.virtualTourButtonText ?? defaultPageTexts.galerie.virtualTourButtonText ?? 'Virtueller Rundgang'} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, virtualTourButtonText: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.3rem', fontSize: '1.1rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 6, textAlign: 'center', boxSizing: 'border-box' }} />
@@ -11757,10 +11932,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           <label htmlFor="galerie-card-image-input-p2" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.galerieCardImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-accent)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
                             onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
                             onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-                            onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } }}
+                            onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'galerieCardImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Galerie-Karte – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } }}
                           >
-                            <input id="galerie-card-image-input-p2" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); const next = { ...pageContent, galerieCardImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'galerieCardImage', 'galerie-card.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
-                            {pageContent.galerieCardImage ? <img src={pageContent.galerieCardImage} alt="Galerie Innenansicht" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>}
+                            <input id="galerie-card-image-input-p2" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'galerieCardImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Galerie-Karte – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                            {pageContent.galerieCardImage ? <img src={pageContent.galerieCardImage} alt="Galerie Innenansicht" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span><span style={{ fontSize: '0.75rem', color: 'var(--k2-accent)' }}> 🖼️ Freistellen</span></div>}
                           </label>
                           <p style={{ fontSize: '0.9rem', color: 'var(--k2-accent)', margin: 0, fontWeight: '500' }}>Galerie Innenansicht</p>
                           <p style={{ fontSize: '0.75rem', color: 'var(--k2-muted)', margin: '2px 0 0', lineHeight: 1.3 }}>Foto ziehen oder klicken · ein Bild</p>
@@ -11774,10 +11949,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             <label htmlFor="virtual-tour-image-input-p2" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 8, overflow: 'hidden', marginBottom: 6, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
                               onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
                               onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-                              onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } }}
+                              onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } }}
                             >
-                              <input id="virtual-tour-image-input-p2" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
-                              {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.85rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>}
+                              <input id="virtual-tour-image-input-p2" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                              {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.85rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span><span style={{ fontSize: '0.75rem', color: 'var(--k2-accent)' }}> 🖼️ Freistellen</span></div>}
                             </label>
                           )}
                           <p style={{ fontSize: '0.85rem', color: 'var(--k2-text)', margin: '0 0 8px' }}>Virtueller Rundgang</p>
@@ -11785,7 +11960,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
                             <label htmlFor="virtual-tour-image-input-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-card-bg-2, #e8e4dd)', color: 'var(--k2-text)', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600', border: '1px solid var(--k2-muted)' }}>
                               📸 Foto wählen oder aufnehmen
-                              <input id="virtual-tour-image-input-btn" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); const next = { ...pageContent, virtualTourImage: img }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); await uploadPageImageToGitHub(f, 'virtualTourImage', 'virtual-tour.jpg') } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                              <input id="virtual-tour-image-input-btn" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
                             </label>
                             <label htmlFor="virtual-tour-video-input" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}>
                               📹 Video wählen oder aufnehmen
@@ -11974,6 +12149,24 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             }}>
               ⚙️ Einstellungen
             </h2>
+
+            {/* Sichtbarer Hinweis: Du bist Testpilot (ök2 oder VK2) – voller Gratis-Zugang */}
+            {(tenant.isOeffentlich || tenant.isVk2) && (
+              <div style={{
+                marginBottom: '1.25rem',
+                padding: '0.75rem 1rem',
+                background: tenant.isOeffentlich ? 'rgba(95,251,241,0.08)' : 'rgba(139,92,246,0.08)',
+                border: `1px solid ${tenant.isOeffentlich ? 'rgba(95,251,241,0.35)' : 'rgba(139,92,246,0.35)'}`,
+                borderRadius: '12px',
+                fontSize: '0.9rem',
+                color: s.text,
+                fontWeight: 600
+              }}>
+                ✈️ Du nutzt einen <strong>Test-Pilot-Zugang</strong>
+                {tenant.isOeffentlich ? ' (ök2 – Künstler-Demo)' : ' (VK2 – Vereinsplattform)'}
+                {' '}– voller Gratis-Zugang. Bitte unten unter „Meine Daten“ Namen und Kontakt eintragen, dann kannst du voll durchstarten.
+              </div>
+            )}
 
             {/* ök2: Musterdaten löschen nur anzeigen, wenn noch Musterwerke vorhanden (nach einmal Löschen nicht mehr nötig) */}
             {tenant.isOeffentlich && (() => {
@@ -15536,17 +15729,29 @@ ${name}`
                   }}>
                     Datei auswählen *
                   </label>
+                  <p style={{ fontSize: '0.8rem', color: 'rgba(95,251,241,0.9)', marginBottom: '0.5rem' }}>🖼️ Bei Bildern: Freistellen & Pro-Hintergrund möglich</p>
                   <input
                     type="file"
-                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                    onChange={(e) => {
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,image/*"
+                    onChange={async (e) => {
                       const file = e.target.files?.[0]
-                      if (file) {
-                        setEventDocumentFile(file)
-                        if (!eventDocumentName) {
-                          setEventDocumentName(file.name.replace(/\.[^/.]+$/, ''))
+                      if (!file) return
+                      if (file.type.startsWith('image/')) {
+                        try {
+                          const dataUrl = await compressImageForStorage(file, { context: 'desktop' })
+                          setPendingEventDocImage({ file, dataUrl })
+                          setPendingEventDocImageMode('freigestellt')
+                          if (!eventDocumentName) setEventDocumentName(file.name.replace(/\.[^/.]+$/, ''))
+                        } catch (_) {
+                          setEventDocumentFile(file)
+                          if (!eventDocumentName) setEventDocumentName(file.name.replace(/\.[^/.]+$/, ''))
                         }
+                        e.target.value = ''
+                        return
                       }
+                      setEventDocumentFile(file)
+                      if (!eventDocumentName) setEventDocumentName(file.name.replace(/\.[^/.]+$/, ''))
+                      e.target.value = ''
                     }}
                     style={{
                       width: '100%',
@@ -15558,7 +15763,27 @@ ${name}`
                       fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)'
                     }}
                   />
-                  {eventDocumentFile && (
+                  {pendingEventDocImage && (
+                    <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'rgba(0,0,0,0.2)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.15)' }}>
+                      <div style={{ fontSize: '0.85rem', color: '#5ffbf1', marginBottom: '0.5rem' }}>🖼️ Bildverarbeitung – dann „Bild übernehmen“</div>
+                      <ImageProcessingOptions mode={pendingEventDocImageMode} onModeChange={setPendingEventDocImageMode} backgroundPreset={pendingEventDocImagePreset} onBackgroundPresetChange={setPendingEventDocImagePreset} showVollkachel={false} />
+                      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                        <button type="button" onClick={async () => {
+                          if (!pendingEventDocImage) return
+                          try {
+                            const result = await processImageForSave(pendingEventDocImage.dataUrl, { mode: pendingEventDocImageMode === 'vollkachel' ? 'freigestellt' : pendingEventDocImageMode, backgroundPreset: pendingEventDocImagePreset, context: 'desktop' })
+                            const res = await fetch(result)
+                            const blob = await res.blob()
+                            const processedFile = new File([blob], pendingEventDocImage.file.name || 'event-image.jpg', { type: blob.type })
+                            setEventDocumentFile(processedFile)
+                            setPendingEventDocImage(null)
+                          } catch (_) {}
+                        }} style={{ padding: '0.5rem 1rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}>Bild übernehmen</button>
+                        <button type="button" onClick={() => setPendingEventDocImage(null)} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', cursor: 'pointer' }}>Abbrechen</button>
+                      </div>
+                    </div>
+                  )}
+                  {eventDocumentFile && !pendingEventDocImage && (
                     <div style={{
                       marginTop: '0.5rem',
                       fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
@@ -15591,14 +15816,15 @@ ${name}`
                   >
                     ✅ Hinzufügen
                   </button>
-                  <button
-                    onClick={() => {
-                      setShowDocumentModal(false)
-                      setSelectedEventForDocument(null)
-                      setEventDocumentFile(null)
-                      setEventDocumentName('')
-                      setEventDocumentType('flyer')
-                    }}
+                    <button
+                      onClick={() => {
+                        setShowDocumentModal(false)
+                        setSelectedEventForDocument(null)
+                        setEventDocumentFile(null)
+                        setEventDocumentName('')
+                        setEventDocumentType('flyer')
+                        setPendingEventDocImage(null)
+                      }}
                     style={{
                       flex: 1,
                       padding: 'clamp(0.75rem, 2vw, 1rem)',

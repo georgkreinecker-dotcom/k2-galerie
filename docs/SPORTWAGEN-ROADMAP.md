@@ -183,6 +183,13 @@
 | **Schritte** | 1) Bei Änderungen: keine K2/ök2-Daten in mök2 schreiben. 2) Inhalte (Lizenz VK2, etc.) nicht „nebenbei“ entfernen. |
 | **Erledigt** | [x] 28.02.26 (Geprüft: MarketingOek2Page/K2TeamHandbuch schreiben keine k2-artworks/k2-stammdaten; Regel mok2-vk2-inhalte-nicht-entfernen.mdc aktiv. Bei Änderungen weiter beachten.) |
 
+### 6.3 Test-Pilot-Ablauf (Neuer Test-Pilot)
+
+| | Inhalt |
+|---|--------|
+| **Sportwagen** | **Eine** Quelle: ein Formular (ZettelPilotFormPage), ein Zettel (ZettelPilotPage), eine Markdown-Quelle (20-PILOT-ZETTEL-OEK2-VK2.md). Kontrollierter Ablauf: Smart-Leiste K2-Mappe → „Neuer Test-Pilot“ → Nr. (fortlaufend), Name, Pilot-URL (ök2 oder VK2) → Zettel anzeigen → drucken. Kein zweiter Ablauf, keine Duplikate. |
+| **Erledigt** | [x] 04.03.26 (Neuer Test-Pilot in Smart Panel; Form mit auto-Nr.; Zettel mit indexiertem QR/URL; Hinweis Einstellungen-Anmeldung im Zettel.) |
+
 ---
 
 ## Phase 7: Build, Stand, Deployment – ein Standard

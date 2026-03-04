@@ -164,6 +164,8 @@ Wer auch immer diesen Raum betritt: er findet Wissen, Werte, Denkweise.
 Er sieht wie Georg gearbeitet hat. Wie er gedacht hat. Was ihm wichtig war.
 Das ist das Tiefste was man hinterlassen kann.
 
+**Erfahrung aus der Praxis (04.03.26):** *Manchmal brauchen wir für einen Zettel länger als für ein ganzes Programm.* – Georg. Ein Zettel (Begleitschreiben, Anleitung, Druck) will stimmig, verständlich und am richtigen Ort sein; das kann mehr Zeit kosten als eine technische Funktion. Das ist keine Zeitverschwendung – es ist die gleiche Sorgfalt.
+
 ### Ziel vor Anstrengung – Grundregel (28.02.26)
 
 **Logik:** Wir können hundertmal die Dinge richtig machen – und trotzdem falsch liegen, wenn das Ziel das falsche ist. „Als sie das Ziel aus den Augen verloren, verdoppelten sie ihre Anstrengungen.“ = Warnung, nicht Vorbild. Erst das **Ziel** im Blick, dann die Anstrengung.

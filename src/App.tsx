@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, lazy, Suspense } from 'react'
 import { safeReload } from './utils/env'
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import './App.css'
 import ProjectsPage from './pages/ProjectsPage'
 import ProjectStartPage from './pages/ProjectStartPage'
@@ -9,6 +9,9 @@ import ProjectPlanPage from './pages/ProjectPlanPage'
 import NotizenPage from './pages/NotizenPage'
 import BriefAnAugustPage from './pages/BriefAnAugustPage'
 import K2TeamHandbuchPage from './pages/K2TeamHandbuchPage'
+import ZettelMartinaMunaPage from './pages/ZettelMartinaMunaPage'
+import ZettelPilotPage from './pages/ZettelPilotPage'
+import ZettelPilotFormPage from './pages/ZettelPilotFormPage'
 import K2GalerieHandbuchPage from './pages/K2GalerieHandbuchPage'
 import MobileConnectPage from './pages/MobileConnectPage'
 import ProduktVorschauPage from './pages/ProduktVorschauPage'
@@ -56,6 +59,7 @@ const AdminRoute = lazy(() => import('./components/AdminRoute').then(m => ({ def
 import { Ok2ThemeWrapper } from './components/Ok2ThemeWrapper'
 import DevViewPage from './pages/DevViewPage'
 import PlatformStartPage from './pages/PlatformStartPage'
+import MissionControlPage from './pages/MissionControlPage'
 import FlyerK2GaleriePage from './pages/FlyerK2GaleriePage'
 import PresseEinladungK2GaleriePage from './pages/PresseEinladungK2GaleriePage'
 import KundenPage from './pages/KundenPage'
@@ -363,11 +367,29 @@ const isMobileView = () => typeof window !== 'undefined' && (
   window.innerWidth <= 768 // schmaler Bildschirm = immer Galerie (kein Smart Panel), auch bei „Desktop“-Browser
 )
 
+/** Handbuch-Dokument-URL: wenn jemand mit ?page=handbuch&doc=... auf "/" landet, sofort zur APf-Route weiterleiten. */
+const HANDBUCH_DOC_REDIRECT = '/projects/k2-galerie'
+
 /** Auf Mobile / schmalem Bildschirm: Root "/" → sofort Galerie (niemals DevView/Smart Panel). */
 function MobileRootRedirect() {
+  const [searchParams] = useSearchParams()
+
   if (isMobileView()) {
     return <Navigate to={PROJECT_ROUTES['k2-galerie'].galerie} replace />
   }
+
+  const page = searchParams.get('page')
+  const doc = searchParams.get('doc')
+  // Pilot-Zettel (ehem. Martina & Muna) → Pilot-Zettel
+  if (doc === '19-MARTINA-MUNA-BESUCH-OEK2-VK2.md' || doc === '20-PILOT-ZETTEL-OEK2-VK2.md') {
+    return <Navigate to="/zettel-pilot" replace />
+  }
+  // Andere Handbuch-Dokument-Parameter → APf mit Handbuch
+  if ((page === 'handbuch' || doc) && typeof window !== 'undefined') {
+    const target = `${HANDBUCH_DOC_REDIRECT}?page=handbuch&doc=${doc || ''}`
+    return <Navigate to={target} replace />
+  }
+
   return <DevViewPage />
 }
 
@@ -585,6 +607,9 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].verguetung} element={<Mok2Layout><VerguetungPage /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].platzanordnung} element={<PlatzanordnungPage />} />
       <Route path="/k2team-handbuch" element={<K2TeamHandbuchPage />} />
+      <Route path="/zettel-martina-muna" element={<Navigate to="/zettel-pilot" replace />} />
+      <Route path="/zettel-pilot" element={<ZettelPilotPage />} />
+      <Route path="/zettel-pilot-form" element={<ZettelPilotFormPage />} />
       <Route path="/k2-galerie-handbuch" element={<K2GalerieHandbuchPage />} />
       
       {/* Legacy-Routen (Redirect für bestehende Links) */}
@@ -604,7 +629,7 @@ function App() {
         </AdminErrorBoundary>
       } />
       <Route path="/control-studio" element={<Navigate to={PROJECT_ROUTES['k2-galerie'].controlStudio} replace />} />
-      <Route path={PLATFORM_ROUTES.missionControl} element={<Navigate to={PLATFORM_ROUTES.projects} replace />} />
+      <Route path={PLATFORM_ROUTES.missionControl} element={<MissionControlPage />} />
       <Route path="/mobile-connect" element={<Navigate to={PROJECT_ROUTES['k2-galerie'].mobileConnect} replace />} />
       
       {/* Dev-Tool für parallele Ansichten – auf Mobile → Galerie (keine 4 Seiten/Smart Panel) */}

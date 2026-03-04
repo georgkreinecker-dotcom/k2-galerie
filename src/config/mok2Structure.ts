@@ -69,7 +69,8 @@ export const mok2Groups: Mok2Group[] = [
   {
     chapterTitle: 'Praktisch',
     sections: [
-      { id: 'mok2-pilot-start-michael', label: 'Start-Anleitung Piloten (z.B. Michael)' },
+      { id: 'mok2-pilot-zettel', label: 'Pilot-Zettel drucken' },
+      { id: 'mok2-pilot-start-michael', label: 'Startanleitung Michael' },
     ],
   },
 ]

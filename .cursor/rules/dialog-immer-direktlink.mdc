@@ -1,0 +1,35 @@
+---
+description: Im Dialog immer einen klickbaren Direktlink geben, wenn auf eine Seite/Stelle verwiesen wird
+alwaysApply: true
+---
+
+# Dialog – immer Direktlink (Georg sucht nicht)
+
+## Regel (unveränderlich)
+
+**Wenn du Georg sagst „geh dorthin“, „dort kannst du dir das anschauen“, „liegt unter …“ oder sinngemäß auf eine konkrete Stelle/Seite/Datei verweist: Gib im selben Dialog immer einen klickbaren Link, der ihn direkt dorthin führt – ohne Umwege, ohne Suchen.**
+
+- **Eine Stelle = ein Link.** Georg klickt, landet genau dort.
+- **Kein „du findest das unter …“ ohne Link.** Immer den direkten Pfad/URL als klickbaren Link mitliefern.
+- **Gilt für:** App-Seiten (z. B. Handbuch, Mission Control, Admin-Tab), Handbuch-Kapitel (z. B. Martina & Muna), Dateien im Projekt (z. B. `docs/XY.md`), Vercel, was auch immer du als „dort“ bezeichnest.
+
+## Konkret im Chat
+
+- **App-URLs:** Vollständige URL angeben – als klickbarer Link (Markdown: `[Beschreibung](URL)`).
+- **Wichtig – APf vs. eigenes Handbuch:** Wenn Georg das Dokument **in der APf** (Smart Panel links, Inhalt rechts) sehen will: URL muss die **APf-Route** sein: `/projects/k2-galerie?page=handbuch&doc=DATEI.md`. Beispiel: `https://k2-galerie.vercel.app/projects/k2-galerie?page=handbuch&doc=19-MARTINA-MUNA-BESUCH-OEK2-VK2.md`. Die reine Handbuch-Route `/k2team-handbuch?doc=...` öffnet die **eigenständige** Handbuch-Seite (ohne Smart Panel).
+- **Dateien im Projekt:** Pfad als Link, z. B. `[k2team-handbuch/19-MARTINA-MUNA-BESUCH-OEK2-VK2.md](k2team-handbuch/19-MARTINA-MUNA-BESUCH-OEK2-VK2.md)` (Cursor macht Dateipfade oft klickbar).
+- **Kurz und klar:** Ein kleiner Satz + der Link. Georg soll nichts mehr suchen müssen.
+
+## App-Links (APf, Handbuch, Drucken)
+
+**Links auf die App** (localhost:5177 oder k2-galerie.vercel.app) **immer mit kurzem Hinweis:** „Im **Browser** öffnen (Chrome/Safari) – dann siehst du die APf und das Dokument. In Cursor geöffnet landest du oft nur im Chat.“ So kommt Georg mit einem Klick im Browser direkt zum Dokument und kann dort 🖨️ Drucken klicken.
+
+## Cursor: „Do you want to open the external website?“ (einmal einrichten)
+
+**Wenn Georg einen Link im Dialog klickt**, zeigt Cursor eine Sicherheitsabfrage („Open“ / „Copy“ / „Configure Trusted Domains“ / „Cancel“). Das kommt von der IDE, nicht von unserer App.
+
+**Damit es künftig mit einem Klick geht:** Georg soll **einmal** in dieser Abfrage auf **„Configure Trusted Domains“** klicken und die Domain **k2-galerie.vercel.app** (und bei Bedarf **localhost**) als vertrauenswürdig eintragen. Danach kann Cursor Links zu dieser Domain ohne erneute Abfrage öffnen (oder nur noch „Open“ klicken – je nach Cursor-Version). **Für jedes zukünftige Dokument:** Immer den gleichen Direktlink im Dialog liefern; Georg klickt den Link → Open (oder direkt im Browser) → landet genau dort.
+
+## Kurzfassung
+
+**Verweis = Link im selben Dialog. Immer. Eine Klick-Regel. App-Links: Hinweis „Im Browser öffnen“. Cursor-Abfrage: einmal „Configure Trusted Domains“ → k2-galerie.vercel.app eintragen, dann reicht Klick auf Link + Open.**

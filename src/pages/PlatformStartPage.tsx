@@ -216,6 +216,25 @@ export default function PlatformStartPage() {
           </div>
         </header>
 
+        {/* Ein Klick: Pilot-Zettel – Name/URL eintragen, dann Drucken */}
+        <Link
+          to="/zettel-pilot-form"
+          style={{
+            display: 'block',
+            marginTop: '1.5rem',
+            padding: '1rem 1.5rem',
+            background: 'linear-gradient(120deg, #f59e0b, #d97706)',
+            borderRadius: '12px',
+            color: '#fff',
+            fontWeight: 600,
+            textDecoration: 'none',
+            textAlign: 'center',
+            boxShadow: '0 4px 14px rgba(245,158,11,0.3)',
+          }}
+        >
+          📄 Pilot-Zettel (Name eintragen, dann 🖨️ Drucken)
+        </Link>
+
         {/* Haupt-Features - Prominent und groß */}
         <div style={{ 
           display: 'grid', 

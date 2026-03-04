@@ -1678,10 +1678,10 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
 
       {/* Kapitel: Praktisch */}
       <Mok2ChapterPage title={mok2Groups[4].chapterTitle} />
-      {/* Start-Anleitung für erste Pro+-Piloten (z.B. Michael) – Begleitschreiben + Link (PC) + QR (Handy) zum Verschicken */}
+      {/* Startanleitung Michael – Begleitschreiben + Link (PC) + QR (Handy) zum Verschicken */}
       <section id="mok2-pilot-start-michael" style={{ marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(95,251,241,0.2)', pageBreakInside: 'avoid' as const }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
-          Start-Anleitung für Piloten (z.B. Michael)
+          Startanleitung Michael
         </h2>
         <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', marginBottom: '1.25rem' }}>
           Begleitschreiben + Link für PC + QR-Code für Handy – alles zusammen kopieren bzw. Screenshot und an Michael senden.
@@ -1744,6 +1744,22 @@ Viel Erfolg!`}
         <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)', marginTop: '1rem' }}>
           <strong>Wichtig:</strong> An Michael schickst du immer nur den einen Link bzw. QR oben („So kommt es auf dein Handy“) – der führt zur Seite „Schreiben an Michael“. Dort tippt Michael auf „Galerie öffnen“ und ist drin. Kein anderer Link und kein anderer QR gehört an Michael.
         </p>
+      </section>
+
+      {/* Pilot-Zettel – Testpilot:in ök2/VK2, voller Gratis-Zugang; Teil von mök2 Praktisch */}
+      <section id="mok2-pilot-zettel" style={{ marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(95,251,241,0.2)', pageBreakInside: 'avoid' as const }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Pilot-Zettel drucken
+        </h2>
+        <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', marginBottom: '1rem' }}>
+          Ein Zettel pro Testpilot:in – voller Gratis-Zugang zu ök2 und VK2. Name (und optional Pilot-URL) eintragen, Zettel anzeigen, drucken – QR und Adresse sind indexiert.
+        </p>
+        <a
+          href="/zettel-pilot-form"
+          style={{ display: 'inline-block', padding: '0.75rem 1.25rem', background: 'linear-gradient(120deg, #f59e0b, #d97706)', color: '#fff', fontWeight: 600, borderRadius: '10px', textDecoration: 'none', fontFamily: 'inherit' }}
+        >
+          📄 Pilot-Zettel (Name eintragen, dann 🖨️ Drucken)
+        </a>
       </section>
 
       <footer style={{ marginTop: '2rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>
