@@ -55,22 +55,23 @@ export default function StatistikTab({ allArtworks, onMarkAsReserved, onRerender
 
   const lagerBestand = gesamtWerke - soldWerke.length // Noch im Bestand (nicht verkauft)
 
-  // Wert der Galerie: Werke die in Galerie hängen und nicht verkauft
+  // Wert der Galerie: Werke die in Galerie hängen und nicht verkauft (Preis pro Stück × Stückzahl = Lagerwert)
   const galerieWerke = allArtworks.filter((a: any) => a.inExhibition && !soldNumbers.has(a.number || a.id))
-  const galerieWert = galerieWerke.reduce((sum: number, a: any) => sum + (Number(a.price) || 0), 0)
+  const wertProWerk = (a: any) => (Number(a.price) || 0) * Math.max(1, Number(a.quantity) || 1)
+  const galerieWert = galerieWerke.reduce((sum: number, a: any) => sum + wertProWerk(a), 0)
   const galerieNachKuenstler: Record<string, { count: number; wert: number }> = {}
   galerieWerke.forEach((a: any) => {
     const name = (a.artist || 'Ohne Künstler').trim() || 'Ohne Künstler'
     if (!galerieNachKuenstler[name]) galerieNachKuenstler[name] = { count: 0, wert: 0 }
     galerieNachKuenstler[name].count++
-    galerieNachKuenstler[name].wert += Number(a.price) || 0
+    galerieNachKuenstler[name].wert += wertProWerk(a)
   })
   const galerieNachKategorie: Record<string, { count: number; wert: number }> = {}
   galerieWerke.forEach((a: any) => {
     const kat = getCategoryLabel(a.category || 'malerei')
     if (!galerieNachKategorie[kat]) galerieNachKategorie[kat] = { count: 0, wert: 0 }
     galerieNachKategorie[kat].count++
-    galerieNachKategorie[kat].wert += Number(a.price) || 0
+    galerieNachKategorie[kat].wert += wertProWerk(a)
   })
   const galerieKuenstlerSorted = Object.entries(galerieNachKuenstler).sort((a, b) => b[1].wert - a[1].wert)
   const galerieKategorieSorted = Object.entries(galerieNachKategorie).sort((a, b) => b[1].wert - a[1].wert)

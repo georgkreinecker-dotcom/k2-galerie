@@ -7575,6 +7575,7 @@ ${'='.repeat(60)}
       year: artworkYear.trim() || undefined,
       verkaufsstatus: tenant.isVk2 ? artworkVerkaufsstatus : undefined,
       dimensions: artworkDimensions.trim() || undefined,
+      // Preis pro Stück (bei quantity > 1: Einzelpreis für jedes Stück; Etikett, Shop und Kassa nutzen diesen Wert pro verkauftem Stück)
       price: parseFloat(artworkPrice) || 0,
       quantity: quantityNum,
       inExhibition: isInExhibition,
@@ -13815,9 +13816,12 @@ ${name}`
               const soldArtworks = JSON.parse(soldData as string) as any[]
               soldCount = soldArtworks.length
               // Berechne Gesamtwert der verkauften Werke
-              const soldNumbers = new Set<string>(soldArtworks.map((a: any) => a.number).filter((n: unknown): n is string => n != null && n !== ''))
-              const soldItems = allArtworks.filter((a: any) => { const n = a.number; if (n == null) return false; return soldNumbers.has(String(n)) })
-              soldTotal = soldItems.reduce((sum: number, a: any) => sum + (a.price || 0), 0)
+              // Gesamtwert verkaufter Stücke: pro Verkaufseintrag ein Stück zum Preis pro Stück (Lagerführung/Bewertung)
+              soldTotal = soldArtworks.reduce((sum: number, e: any) => {
+                const werk = allArtworks.find((a: any) => (a.number || a.id) === e.number)
+                const preisProStueck = e.soldPrice ?? werk?.price ?? 0
+                return sum + (Number(preisProStueck) || 0)
+              }, 0)
             }
           } catch (error) {
             // Ignoriere Fehler
