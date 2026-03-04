@@ -2,6 +2,11 @@
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
+## Datum: 04.03.26
+
+## Was zuletzt gemacht (04.03.26)
+- **Galerie gestalten und texten – umgesetzt (04.03.26):** „Aussehen & Design“ überall in **„Galerie gestalten und texten“** umbenannt (EntdeckenPage, GalerieAssistent, Admin-Hub). Admin-Hub: abgestimmte Hintergrundfarben pro Karte, dezente Icon-Tints, **Hover-Effekte** (Lift + Schatten). Regel **standardsachen-k2-oek2-vk2.mdc**: Standardsachen gelten immer für K2, ök2 und VK2. **Commit:** 6f53c17 ✅ auf GitHub. **Nächster Schritt:** Optional im Admin (ök2) Hub-Karten + Hover prüfen; oder anderes.
+
 ## Datum: 03.03.26
 
 ## Was zuletzt gemacht (03.03.26)
