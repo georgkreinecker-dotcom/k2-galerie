@@ -2,6 +2,12 @@
 
 **Strenge Regel:** Bei jedem neuen Crash **zuerst diese Datei lesen**. Nicht wieder dieselben Stellen von vorne durchsuchen – nur **neue** Ursachen suchen und diese Liste danach ergänzen.
 
+**ro5:** Wenn Georg „ro5“ schreibt = Reopen nach Code 5. KI dokumentiert es hier (kurz), macht wie bei „ro“ weiter. Keine große Analyse – „ein andermal Zeit dafür“. Siehe docs/CODE-5-GRUNDPROBLEM-UND-LOESUNG.md Abschnitt 4.
+
+| Datum   | ro5 gemeldet |
+|--------|---------------|
+| 05.03.26 | ro5-Konvention vereinbart (Georg schreibt ro5, KI weiß es war Code 5, dokumentiert, macht weiter). |
+
 ---
 
 ## Wenn Georg „check the crash“ sagt – sofort-Routine
@@ -14,6 +20,8 @@
 So können wir den Punkt Schritt für Schritt eingrenzen.
 
 **Überblick Ursache „massiver“ Crash 5 (04.03.26):** docs/CRASH-5-URSACHE-GESTERN-04-03.md – drei Ursachen + Regeln-Check.
+
+**Grundproblem + endgültige Lösung (ro / Code 5):** docs/CODE-5-GRUNDPROBLEM-UND-LOESUNG.md – eine Stelle für Ursache (Preview, Schreiben, Last) und verbindliche Lösung (Preview zu, ro-Protokoll, Regeln).
 
 ---
 
@@ -50,6 +58,7 @@ So können wir den Punkt Schritt für Schritt eingrenzen.
 | 19.02.26 | Crash-Check (neu) | location.reload/replace: main.tsx, appBootstrap nur bei !inIframe ✓. Vk2GaleriePage, VirtuellerRundgangPage: Listener-Cleanup ✓. DevViewPage: iframe-Check vor Intervall, Listener-Cleanup ✓. |
 | 20.02.26 | App.tsx, GalerieVorschauPage | App.tsx: „Reset & neu laden“ hatte keinen iframe-Check → ergänzt (im iframe nur setState, kein reload). GalerieVorschauPage: Beide Polling-Intervalle (Mac Mobile-Updates, Mobile-zu-Mobile) nur wenn notInIframe (wie DevViewPage). |
 | 01.03.26 | Tenant-Sync (ScreenshotExportAdmin, API) | Kein Auto-Reload; keine neuen setInterval. publishMobile nach Speichern nur bei window.self === window.top. handleLoadFromServer/executeExport: dynamischer Import, einmalige API-Calls. env.ts safeReload bereits iframe-geprüft. |
+| 05.03.26 | **ro5** | Georg: Reopen nach Code 5. Konvention „ro5“ in CODE-5-GRUNDPROBLEM-UND-LOESUNG.md + reopen-info.mdc dokumentiert. Kein großer Crash-Check – ein andermal. |
 
 ---
 

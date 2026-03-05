@@ -2251,7 +2251,40 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             <span>{displayGalleryName} – {galerieTexts.kunstschaffendeHeading || 'Unsere Mitglieder'}</span>
           </div>
         )}
-        {/* Künstler-Einstieg nur über /mein-bereich – kein Admin-Button auf der Galerie (Variante B) */}
+        {/* Admin-Button prominent – User braucht ihn ständig; führt zu /mein-bereich (dort ggf. Passwort, dann Admin) */}
+        <button
+          onClick={handleAdminButtonClick}
+          style={{
+            position: 'fixed',
+            top: 'max(clamp(1rem, 2vw, 1.5rem), calc(env(safe-area-inset-top, 0px) + 1rem))',
+            right: 'clamp(1rem, 2vw, 1.5rem)',
+            background: vk2 ? 'linear-gradient(135deg, rgba(255, 140, 66, 0.5), rgba(230, 122, 42, 0.45))' : musterOnly ? 'rgba(255, 255, 255, 0.92)' : 'rgba(255, 255, 255, 0.12)',
+            backdropFilter: 'blur(10px)',
+            border: vk2 ? '1px solid rgba(255, 140, 66, 0.6)' : musterOnly ? '1px solid rgba(45, 45, 42, 0.25)' : '1px solid rgba(255, 255, 255, 0.2)',
+            color: musterOnly ? 'var(--k2-text)' : 'rgba(255, 255, 255, 0.95)',
+            padding: 'clamp(0.6rem, 1.8vw, 0.85rem) clamp(0.9rem, 2.2vw, 1.1rem)',
+            borderRadius: '10px',
+            fontSize: 'clamp(0.8rem, 2vw, 0.95rem)',
+            fontWeight: 600,
+            cursor: 'pointer',
+            zIndex: 1000,
+            transition: 'all 0.25s ease',
+            opacity: 1,
+            touchAction: 'manipulation',
+            minWidth: '48px',
+            minHeight: '48px',
+            boxShadow: vk2 ? '0 4px 14px rgba(0,0,0,0.28)' : '0 2px 12px rgba(0,0,0,0.15)'
+          }}
+          onMouseEnter={(e) => {
+            if (vk2) { e.currentTarget.style.filter = 'brightness(1.1)' } else { e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.2)' }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = vk2 ? 'linear-gradient(135deg, rgba(255, 140, 66, 0.5), rgba(230, 122, 42, 0.45))' : musterOnly ? 'rgba(255, 255, 255, 0.92)' : 'rgba(255, 255, 255, 0.12)'
+            e.currentTarget.style.filter = 'none'
+          }}
+        >
+          ⚙️ Admin
+        </button>
 
         {/* Am Mac: „Vom Server laden“ – damit neue Werke vom iPad hier erscheinen (iPad speichern → 1–2 Min warten → hier klicken) */}
         {!musterOnly && !vk2 && !(isMobileDevice || isMobile) && (

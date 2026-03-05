@@ -5,10 +5,14 @@ alwaysApply: true
 
 # Reopen Info – feste Routine (endgültige Lösung)
 
-**Wenn Georg „ro“ schreibt (Gesetz, unveränderlich):**
+**Grundproblem Code 5 (nicht vergessen):** Code 5 kommt von **Cursor/Electron** (Preview/iframe + Dateischreiben + HMR = Last). Nicht von der App. Kürzere Sätze allein sind kein Fix – die **Ursache** ist: Preview nutzen + viele Schreibvorgänge + lange Antworten = Lastspitze. **Lösung:** Preview zu, App im Browser; bei ro kurze Antwort, kein write-build-info. Vollständig: docs/CODE-5-GRUNDPROBLEM-UND-LOESUNG.md.
 
-- Georg: „ro dann möchte ich dass du am Code weiterarbeitest und der Dialog weiterläuft – keine Bestätigung von mir notwendig, du bleibst am Weiterarbeiten ohne meine Hilfe. Das ist Gesetz.“
-- **Ziel:** ro = immer derselbe Ablauf, eine Runde durchziehen, kurze Antwort. Keine Spirale aus Warten, keine langen Texte (→ weniger Last → weniger Code 5 beim Lesen).
+**Wenn Georg „ro“ oder „ro5“ schreibt (Gesetz, unveränderlich):**
+
+- **ro** = Reopen / weiterarbeiten. KI: DIALOG-STAND lesen → handeln → kurze Antwort (2–5 Sätze).
+- **ro5** = Reopen **nach Code-5-Absturz**. KI erkennt: es war ein Crash. Wie „ro“ handeln, **plus:** Code 5 kurz dokumentieren (z. B. CRASH-BEREITS-GEPRUEFT oder Eintrag „ro5 – [Datum]“), dann weitermachen. **Keine** große Code-5-Analyse jetzt – „ein andermal Zeit dafür“. Siehe docs/CODE-5-GRUNDPROBLEM-UND-LOESUNG.md Abschnitt 4.
+- **Grundproblem:** Die KI bemerkt den Absturz **nicht** – sie wartet passiv. Mit „ro5“ weiß sie es sofort. Georg: „ro dann möchte ich dass du am Code weiterarbeitest … keine Bestätigung von mir notwendig. Das ist Gesetz.“
+- **Ziel:** ro/ro5 = eine Eingabe reicht. KI: sofort handeln, kurze Antwort. Keine langen Texte (→ weniger Code 5 beim Lesen).
 
 ---
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY } from '../config/navigation'
+import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, MEIN_BEREICH_ROUTE } from '../config/navigation'
 import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, type ArtworkCategoryId, initVk2DemoStammdatenIfEmpty } from '../config/tenantConfig'
 import { 
   syncMobileToSupabase, 
@@ -251,6 +251,17 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   const [showGuideAfterDelay, setShowGuideAfterDelay] = useState(false)
   // PWA-Icon-Hinweis: nur Mobile, nicht Standalone, gleicher Key wie GaleriePage
   const [showPwaIconHint, setShowPwaIconHint] = useState(false)
+  /** ök2 „User reinziehen“: Erste Aktion nach „Galerie ausprobieren“ – einmalig anzeigen, dann ausblendbar */
+  const [ersteAktionDismissed, setErsteAktionDismissed] = useState(() => {
+    try { return sessionStorage.getItem('k2-oek2-erste-aktion-dismissed') === '1' } catch { return false }
+  })
+  const showErsteAktionBanner = musterOnly && !ersteAktionDismissed && (() => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('entwurf') === '1') return true
+      return sessionStorage.getItem(WILLKOMMEN_ENTWURF_KEY) === '1'
+    } catch { return false }
+  })()
   useEffect(() => {
     if (typeof window === 'undefined') return
     const mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
@@ -291,6 +302,10 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     try {
       sessionStorage.removeItem(WILLKOMMEN_ENTWURF_KEY)
     } catch (_) {}
+  }
+  const dismissErsteAktionBanner = () => {
+    setErsteAktionDismissed(true)
+    try { sessionStorage.setItem('k2-oek2-erste-aktion-dismissed', '1') } catch (_) {}
   }
 
   // ök2 / VK2: Einträge aus dem jeweiligen Speicher anzeigen
@@ -2401,6 +2416,116 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 ? 'Teilen (□↑) → „Zum Home-Bildschirm“ → Hinzufügen.'
                 : 'Menü (⋮) → „Zum Startbildschirm hinzufügen“ oder „App installieren“.'
               }
+            </div>
+          </div>
+        )}
+        {/* ök2 „User reinziehen“: Eine klare erste Aktion – Deinen Namen eintragen (nach „Galerie ausprobieren“) */}
+        {showErsteAktionBanner && (
+          <div style={{
+            margin: 'clamp(0.75rem, 2vw, 1rem)',
+            padding: '0.75rem 1rem',
+            background: 'rgba(107, 144, 128, 0.2)',
+            border: '1px solid rgba(107, 144, 128, 0.45)',
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            flexWrap: 'wrap'
+          }}>
+            <span style={{ color: 'var(--k2-text)', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
+              Das ist deine Galerie. Als Nächstes: <strong>Deinen Namen eintragen</strong>.
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Link
+                to={`${MEIN_BEREICH_ROUTE}?context=oeffentlich&tab=einstellungen`}
+                onClick={dismissErsteAktionBanner}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: 'var(--k2-accent)',
+                  color: 'var(--k2-text)',
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  border: '1px solid rgba(0,0,0,0.1)'
+                }}
+              >
+                Zum Admin →
+              </Link>
+              <button
+                type="button"
+                onClick={dismissErsteAktionBanner}
+                aria-label="Hinweis schließen"
+                style={{
+                  padding: '0.35rem 0.5rem',
+                  background: 'transparent',
+                  border: '1px solid rgba(107,144,128,0.5)',
+                  borderRadius: '8px',
+                  color: 'var(--k2-text)',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+        {/* ök2 „User reinziehen“: Eine klare erste Aktion nach „Galerie ausprobieren“ */}
+        {showErsteAktionBanner && (
+          <div style={{
+            margin: 'clamp(0.75rem, 2vw, 1rem)',
+            padding: 'clamp(0.6rem, 1.5vw, 0.85rem) clamp(1rem, 2.5vw, 1.25rem)',
+            background: 'rgba(107, 144, 128, 0.18)',
+            border: '1px solid rgba(107, 144, 128, 0.45)',
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '0.75rem',
+            flexWrap: 'wrap'
+          }}>
+            <span style={{ color: 'var(--k2-text)', fontSize: 'clamp(0.88rem, 2vw, 0.95rem)', flex: '1 1 200px' }}>
+              Das ist deine Galerie. Als Nächstes: <strong>Deinen Namen eintragen</strong>.
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  dismissErsteAktionBanner()
+                  navigate(`${MEIN_BEREICH_ROUTE}?context=oeffentlich&tab=einstellungen`)
+                }}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: 'linear-gradient(135deg, var(--k2-accent) 0%, #6b9080 100%)',
+                  color: 'var(--k2-text)',
+                  border: '1px solid rgba(0,0,0,0.15)',
+                  borderRadius: '10px',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }}
+              >
+                Zum Admin →
+              </button>
+              <button
+                type="button"
+                onClick={dismissErsteAktionBanner}
+                aria-label="Hinweis schließen"
+                style={{
+                  padding: '0.35rem 0.6rem',
+                  background: 'transparent',
+                  border: '1px solid rgba(107,144,128,0.5)',
+                  borderRadius: '8px',
+                  color: 'var(--k2-text)',
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }}
+              >
+                Schließen
+              </button>
             </div>
           </div>
         )}
