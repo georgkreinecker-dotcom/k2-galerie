@@ -6,6 +6,12 @@
 
 ## Was zuletzt gemacht (05.03.26)
 
+- **ro5-Thema entschlackt (05.03.26):** Eine Kernregel **.cursor/rules/ro5-kern.mdc** – ro/ro5 Bedeutung, eine Pflichtregel (write-build-info nie am Ende), Verweise. reopen-info.mdc verweist darauf; CRASH-BEREITS-GEPRUEFT verweist auf ro5-kern. ro5 = kein inhaltlicher Auftrag (kein „Nächster Schritt“ umsetzen). **Nächster Schritt:** optional Commit + Push; sonst Raum bereit.
+
+- **Link Willkommen → Entdecken (05.03.26):** Bereits umgesetzt. WillkommenPage: `ENTDECKEN_ROUTE` importiert; in beiden Varianten (A + C) steht „In 1 Min. entdecken“ zwischen „Nur Galerie ansehen“ und „Lizenz anfragen“. Tests grün. **Nächster Schritt:** Commit + Push; optional im Browser prüfen.
+
+- **Entdecken-Seite Hero-Bild – Ein-Klick (05.03.26):** Im K2-Admin unter **Design** oben: Bereich „Entdecken-Seite (Landing) – Bild, das Fremde zuerst sehen“ mit Button **Bild wählen**. Ein Klick → Datei wählen → Upload nach `entdecken-hero.jpg` (oeffentlich), in ca. 2 Min. auf /entdecken sichtbar. EntdeckenPage zeigt `entdecken-hero.jpg`, Fallback auf `willkommen.svg` wenn noch keins hochgeladen. Nur K2 (nicht ök2/VK2). Doku: LEAK-PRUEFUNG-ASSETS.md. **Nächster Schritt:** Commit + Push; im Admin testen (Design → Bild wählen).
+
 - **ro5 (05.03.26, erneut):** Reopen nach Code 5. In CRASH-BEREITS-GEPRUEFT eingetragen. **Nächster Schritt:** „eine Person, eine Adresse“ (ök2) in ScreenshotExportAdmin umsetzen – im Einstellungen-Tab bei ök2 nur einen Künstler-Block anzeigen.
 
 **Heute 05.03.26 – konkret umgesetzt (Kurzbericht):**

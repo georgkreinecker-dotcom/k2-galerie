@@ -1,4 +1,33 @@
-# Code 5 – Lösungen aus dem Netz (Cursor-Forum, Gurus, Community)
+# Code 5 – Lösungen aus dem Netz (Cursor-Forum, Profis, Community)
+
+---
+
+## 🔥 Bei 5× Code 5 in einer Session: sofort das probieren (ohne auf Cursor zu warten)
+
+**Zuerst (2 Min.):** In Cursor **Cmd+Shift+P** → „Preferences: Configure Runtime Arguments“ → **argv.json** öffnet sich. Eintragen: `"js-flags": "--max-old-space-size=8192"` (bei 16 GB+ RAM). Cursor **komplett beenden** (alle Fenster), neu starten.
+
+**Wenn es danach noch crasht:** Cursor beenden → im **Mac-Terminal:** `cd ~/Library/"Application Support"` → `mv Cursor CursorBackup` → Cursor neu starten. (Einstellungen zurückgesetzt, Backup bleibt.)
+
+**Dazu:** Preview zu, App im Browser; bei Bedarf `cursor --disable-gpu` starten. Details unten.
+
+---
+
+## Wenn Code 5 wieder kommt – Sofort-Checkliste (ohne auf Cursor zu warten)
+
+**Reihenfolge, die Profis und Cursor-Staff empfehlen:**
+
+| # | Was | Wo / wie |
+|---|-----|----------|
+| 1 | **Preview zu, App im Browser** | Cursor-Preview schließen; `npm run dev` → im Browser http://localhost:5177 öffnen. Entlastet sofort. |
+| 2 | **Cursor mit GPU aus** starten | Im Terminal: `cursor --disable-gpu` (oder aus dem Projekt: `bash scripts/cursor-start-stabil.sh`). |
+| 3 | **Chat-Verlauf entlasten** | `~/Library/Application Support/Cursor/User/workspaceStorage` → Ordner **dieses** Projekts umbenennen (z. B. `...Backup`). Cursor neu starten. Oft großer Effekt. |
+| 4 | **Speicher-Limit erhöhen** | In Cursor: **Cmd+Shift+P** → „Preferences: Configure Runtime Arguments“ → in **argv.json** eintragen: `"js-flags": "--max-old-space-size=8192"` → Cursor **komplett beenden** und neu starten. (8 GB Heap – braucht mind. 16 GB RAM am Mac.) |
+| 5 | **Cursor-Daten-Reset** | Cursor beenden → Terminal: `cd ~/Library/"Application Support"` und `mv Cursor CursorBackup` → Cursor neu starten. Einstellungen weg, Backup bleibt. |
+| 6 | **Erweiterungen testen** | Im Terminal: `cursor --disable-extensions`. Wenn Crashes weg: Erweiterungen einzeln wieder an – so findest du die Übeltäter. |
+
+**Wichtig:** Auf Cursor-Update zu warten hilft oft nicht – das Problem ist bei vielen seit Monaten offen. Die obigen Schritte sind das, was Profis und Cursor-Staff konkret empfehlen.
+
+---
 
 **Im Projekt umgesetzt:** Cursor mit GPU aus starten → **im Terminal am Mac aus dem Projektordner:**  
 `bash scripts/cursor-start-stabil.sh`  
@@ -6,7 +35,7 @@
 
 ---
 
-**Quelle:** Cursor-Forum (Staff-Antworten), VS Code/Electron-Issues, Nutzerberichte 2024–2025.  
+**Quelle:** Cursor-Forum (Staff Dean Rie, Bug Reports), VS Code/Electron, OOM-Threads 2024–2025.  
 **Zweck:** Eine Checkliste mit dem, was wirklich empfohlen wird – du probierst der Reihe nach.
 
 ---

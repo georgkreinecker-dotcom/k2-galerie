@@ -8,6 +8,15 @@
 
 ---
 
+## BUG-020 · Test-Foto (Michal) auf Entdecken-Seite („Katastrophe“)
+**Symptom:** Beim Prüfen des Zutritts für Fremde erschien auf der Landing (/entdecken) ein Test-Foto (Michals Porträt) statt eines neutralen Bildes – gleiche Datei wie Demo-Willkommensbild.
+**Ursache:** Ein Asset, zwei Zwecke: `/img/oeffentlich/willkommen.jpg` wurde sowohl von der **EntdeckenPage** (global) als auch vom **ök2-Admin-Upload** (Willkommensbild) genutzt. Upload überschrieb die Datei → alle sahen das Test-Foto.
+**Lösung:** (1) EntdeckenPage nutzt nur **willkommen.svg** (fest, nie überschrieben). (2) Admin-Upload für ök2 schreibt in **willkommen-demo.jpg**, nie in willkommen.jpg. Regel: Ein Asset, ein Zweck (siehe docs/LEAK-PRUEFUNG-ASSETS.md).
+**Betroffene Dateien:** `src/pages/EntdeckenPage.tsx`, `components/ScreenshotExportAdmin.tsx` (welcomeFilename), `docs/LEAK-PRUEFUNG-ASSETS.md`
+**Status:** ✅ Behoben (05.03.26)
+
+---
+
 ## BUG-019 · QR trotz Gleichstand: Musterbilder / Daten durcheinander
 **Symptom:** Nach „Jetzt an Server senden“ und Gleichstand zeigt der QR-Scan auf dem Handy trotzdem Musterwerke oder falsche Daten.
 **Ursache:** API-Aufruf ohne explizites tenantId → theoretisch Mehrdeutigkeit; Server-Daten wurden ohne Kontext-Check angewendet.

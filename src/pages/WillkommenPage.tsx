@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, AGB_ROUTE } from '../config/navigation'
+import { PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, AGB_ROUTE, ENTDECKEN_ROUTE } from '../config/navigation'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 
@@ -205,6 +205,8 @@ function VariantA({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
           <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.8rem', color: muted }}>
             <button type="button" onClick={() => startEntry('ansicht')} style={{ background: 'none', border: 'none', color: muted, textDecoration: 'underline', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>Nur Galerie ansehen</button>
             {' · '}
+            <Link to={ENTDECKEN_ROUTE} style={{ color: muted, textDecoration: 'underline' }}>In 1 Min. entdecken</Link>
+            {' · '}
             <a href={`mailto:${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_EMAIL)}?subject=${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_BETREFF)}`} style={{ color: muted, textDecoration: 'underline' }}>Lizenz anfragen</a>
             {' · '}
             <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ color: muted, textDecoration: 'underline' }}>Lizenz online kaufen</Link>
@@ -305,6 +307,8 @@ function VariantC({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
           {/* Weitere Optionen dezent – CTA Lizenz sichtbar (Priorität 3 OEK2) */}
           <p style={{ textAlign: 'center', marginTop: '0.5rem', marginBottom: '0.5rem', fontSize: '0.8rem', color: muted }}>
             <button type="button" onClick={() => startEntry('ansicht')} style={{ background: 'none', border: 'none', color: muted, textDecoration: 'underline', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>Nur Galerie ansehen</button>
+            {' · '}
+            <Link to={ENTDECKEN_ROUTE} style={{ color: muted, textDecoration: 'underline' }}>In 1 Min. entdecken</Link>
             {' · '}
             <a href={`mailto:${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_EMAIL)}?subject=${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_BETREFF)}`} style={{ color: muted, textDecoration: 'underline' }}>Lizenz anfragen</a>
             {' · '}

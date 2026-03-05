@@ -585,6 +585,8 @@ export default function EntdeckenPage() {
   const [step, setStep] = useState<Step>(initialStep)
   const [answers, setAnswers] = useState<Answers>({ q1: initialQ1, q2: '', q3: '' })
   const [notizOffen, setNotizOffen] = useState(false)
+  /** Hero-Bild: primary → SVG-Fallback → kein Bild (nie Fragezeichen-Icon) */
+  const [heroImageSrc, setHeroImageSrc] = useState<'primary' | 'svg' | 'none'>('primary')
   const [notizText, setNotizText] = useState('')
   const [notizGespeichert, setNotizGespeichert] = useState(false)
 
@@ -719,19 +721,42 @@ export default function EntdeckenPage() {
               </div>
             </div>
 
-            {/* Rechte Seite: Foto */}
+            {/* Rechte Seite: Hero-Bild (Admin → Design → „Bild wählen“) – Fallback ohne Fragezeichen-Icon */}
             <div style={{
               flex: '1 1 320px', position: 'relative', minHeight: 320, overflow: 'hidden',
             }}>
-              <img
-                src="/img/oeffentlich/willkommen.jpg"
-                alt="Galerie Vorschau"
+              {heroImageSrc === 'primary' && (
+                <img
+                  src="/img/oeffentlich/entdecken-hero.jpg"
+                  alt="Galerie Vorschau"
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: 0.75 }}
+                  onError={() => setHeroImageSrc('svg')}
+                />
+              )}
+              {heroImageSrc === 'svg' && (
+                <img
+                  src="/img/oeffentlich/willkommen.svg"
+                  alt="Galerie Vorschau"
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: 0.75 }}
+                  onError={() => setHeroImageSrc('none')}
+                />
+              )}
+              {heroImageSrc === 'none' && (
+                <div style={{ position: 'absolute', inset: 0, background: `${bgDark}ee`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem' }}>
+                  Bild in Admin → Design wählen
+                </div>
+              )}
+              {/* Klick = zum Admin, dort „Bild wählen“ */}
+              <Link
+                to="/mein-bereich?tab=design"
                 style={{
-                  position: 'absolute', inset: 0, width: '100%', height: '100%',
-                  objectFit: 'cover', objectPosition: 'center',
-                  opacity: 0.75,
+                  position: 'absolute', bottom: 12, right: 12, zIndex: 2,
+                  fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', textDecoration: 'none',
+                  padding: '0.25rem 0.5rem', background: 'rgba(0,0,0,0.4)', borderRadius: 6,
                 }}
-              />
+              >
+                Bild ändern
+              </Link>
               {/* Gradient-Übergang links zum Text */}
               <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${bgDark} 0%, transparent 35%)`, pointerEvents: 'none' }} />
               {/* Gradient unten */}

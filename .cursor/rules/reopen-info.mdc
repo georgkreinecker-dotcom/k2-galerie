@@ -1,35 +1,18 @@
 ---
-description: Wenn Georg "reopen info" schreibt – feste Routine, Georg nicht belasten
+description: Bei "ro" / "ro5" – Routine ohne Ballast. Kern: ro5-kern.mdc.
 alwaysApply: true
 ---
 
-# Reopen Info – feste Routine (endgültige Lösung)
+# Reopen (ro / ro5)
 
-**Grundproblem Code 5 (nicht vergessen):** Code 5 kommt von **Cursor/Electron** (Preview/iframe + Dateischreiben + HMR = Last). Nicht von der App. Kürzere Sätze allein sind kein Fix – die **Ursache** ist: Preview nutzen + viele Schreibvorgänge + lange Antworten = Lastspitze. **Lösung:** Preview zu, App im Browser; bei ro kurze Antwort, kein write-build-info. Vollständig: docs/CODE-5-GRUNDPROBLEM-UND-LOESUNG.md.
-
-**Wenn Georg „ro“ oder „ro5“ schreibt (Gesetz, unveränderlich):**
-
-- **ro** = Reopen / weiterarbeiten. KI: DIALOG-STAND lesen → handeln → kurze Antwort (2–5 Sätze).
-- **ro5** = Reopen **nach Code-5-Absturz**. KI erkennt: es war ein Crash. Wie „ro“ handeln, **plus:** Code 5 kurz dokumentieren (z. B. CRASH-BEREITS-GEPRUEFT oder Eintrag „ro5 – [Datum]“), dann weitermachen. **Keine** große Code-5-Analyse jetzt – „ein andermal Zeit dafür“. Siehe docs/CODE-5-GRUNDPROBLEM-UND-LOESUNG.md Abschnitt 4.
-- **Grundproblem:** Die KI bemerkt den Absturz **nicht** – sie wartet passiv. Mit „ro5“ weiß sie es sofort. Georg: „ro dann möchte ich dass du am Code weiterarbeitest … keine Bestätigung von mir notwendig. Das ist Gesetz.“
-- **Ziel:** ro/ro5 = eine Eingabe reicht. KI: sofort handeln, kurze Antwort. Keine langen Texte (→ weniger Code 5 beim Lesen).
+**Zentrale Regel für das ganze Thema:** .cursor/rules/ro5-kern.mdc – dort steht, was ro/ro5 bedeutet, die Missetäter-Regel und die Verweise.
 
 ---
 
-## ro-Protokoll (verbindlich – immer gleich)
+## Bei „ro“ oder „ro5“
 
-1. **Lesen:** DIALOG-STAND.md („Nächster Schritt“) + ggf. GRAFIKER-TISCH-NOTIZEN.md.
-2. **Handeln:** Genau diesen einen nächsten Schritt ausführen (oder den ersten offenen). Kein langer Plan, kein „ich würde …“ – tun.
-3. **Abschließen:** Wenn Code geändert wurde: Test + Build, dann Commit + Push, DIALOG-STAND mit Commit-Hash und neuem „Nächster Schritt“ aktualisieren.
-4. **Antwort an Georg – maximal kurz (Code-5-Risiko beim Lesen verringern):**
-   - Kein langer Tätigkeitsbericht, keine „was ich gemacht habe“-Blöcke.
-   - Erlaubt: 2–5 Sätze. Z.B.: „ro erledigt. [Nächster Schritt] umgesetzt. Commit: abc1234. Nächster Schritt: …“ oder „Fertig. Raum ist bereit 💚“
-   - Hinweis „Preview zu, App im Browser“ nur in einer Zeile, wenn relevant (docs/LOSUNG-CRASH-SPIRALE.md).
+1. **Lesen:** DIALOG-STAND.md („Nächster Schritt“); bei Bedarf GRAFIKER-TISCH-NOTIZEN.md.
+2. **Bei ro5:** Kurz in CRASH-BEREITS-GEPRUEFT eintragen („ro5 – [Datum]“), sonst nichts Spezielles. ro5 ist **kein** Auftrag, ein Feature oder „Nächster Schritt“ umzusetzen.
+3. **Antwort:** Maximal 2–5 Sätze. Kein langer Bericht (→ weniger Last, weniger Code-5-Risiko). Details stehen in DIALOG-STAND.
 
-**Warum kurz:** Lange Antworten = Georg scrollt und liest lange = Cursor/Preview unter Last = Code 5. Kurze Antwort = schneller gelesen, weniger Last, gleiche Information (Details stehen in DIALOG-STAND). **Antwort nach ro NIEMALS länger als 5 Sätze** – endgültige Regel gegen Code 5 beim Lesen.
-
----
-
-## Missetäter – Pflichtregel (verbindlich)
-
-**write-build-info am Ende jeder AI-Antwort ist verboten.** Das war der Missetäter für Reopen. Georg hat das als Pflichtregel gesetzt: **niemals** write-build-info am Ende einer Aufgabe ausführen. Stand kommt nur beim **Commit-Push** (dann im Build) oder wenn Georg explizit „Stand aktualisieren“ sagt. Siehe .cursorrules PFLICHT-ABSCHLUSS und docs/CRASH-BEREITS-GEPRUEFT.md.
+**Vor dem Umsetzen eines „Nächster Schritt“:** Prüfen, ob das wirklich noch offen ist (Code/Doku), nicht blind abarbeiten – sonst wiederholst du längst Erledigtes.

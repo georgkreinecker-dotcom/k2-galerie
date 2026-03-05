@@ -1,0 +1,24 @@
+# Ein Asset, ein Zweck – keine versteckten Leaks (Sportwagenmodus)
+
+## Regel (unveränderlich)
+
+**Eine statische Datei (z. B. in public/img/) darf nicht gleichzeitig**
+- von einer **globalen/öffentlichen Seite** (z. B. /entdecken, Landing) angezeigt werden und
+- von **User-Upload** (Admin, Demo) überschrieben werden.
+
+Sonst erscheint Test- oder Kundendaten weltweit („Katastrophe“ – BUG-020).
+
+## Konkret
+
+- **Entdecken/Landing:** Nur feste Dateien (z. B. willkommen.svg) oder eigene, nie von Admin überschreibbare Dateinamen.
+- **Admin-Upload (ök2):** Eigenen Dateinamen nutzen (z. B. willkommen-demo.jpg), wenn die gleiche Basis-Datei auch global genutzt wird.
+- **Neue öffentliche Seite:** Keine Bilder aus localStorage/getPageContentGalerie ohne festen Tenant; nur Repo-Assets oder tenant-spezifische Quellen.
+
+## Bei neuen Assets oder Uploads prüfen
+
+- [ ] Wird die Datei global angezeigt? → Dann nicht von User-Upload überschreibbar machen.
+- [ ] Upload mit Kontext (K2/ök2/VK2)? → Eigenen Dateinamen/Subfolder für ök2, wenn dieselbe Datei auch global genutzt werden könnte.
+
+## Kurzfassung
+
+**Ein Asset, ein Zweck.** Doku: docs/LEAK-PRUEFUNG-ASSETS.md · Gelöst: BUG-020 (GELOESTE-BUGS.md).

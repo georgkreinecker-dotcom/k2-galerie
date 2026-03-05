@@ -95,12 +95,14 @@ bash scripts/cursor-start-stabil.sh
 
 ## 6. Verweise
 
+- **ro5/Reopen – Kernregel (gefiltert, ohne Ballast):** .cursor/rules/ro5-kern.mdc – eine Stelle für ro/ro5, Missetäter, Verweise.
+- **ro-Routine:** .cursor/rules/reopen-info.mdc (verweist auf ro5-kern).
 - **Lösungen aus dem Netz (Forum/Gurus):** docs/CODE-5-LOESUNGEN-AUS-DEM-NETZ.md – Checkliste zum Durchprobieren (GPU aus, workspaceStorage, Reset, Erweiterungen, Cache).
 - **Lösung Spirale:** docs/LOSUNG-CRASH-SPIRALE.md  
 - **Bereits geprüft / Übersicht:** docs/CRASH-BEREITS-GEPRUEFT.md  
 - **Letzter Kontext:** docs/CRASH-LETZTER-KONTEXT.md  
-- **ro-Protokoll:** .cursor/rules/reopen-info.mdc  
 - **Crash beim Programmieren:** .cursor/rules/crash-beim-programmieren-vermeiden.mdc  
+- **Bei Cursor eskalieren (dringend):** docs/CODE-5-ESKALATION-CURSOR.md – Text zum Kopieren für Forum/Feedback, damit Cursor das Problem priorisiert.
 
 ---
 

@@ -2,11 +2,13 @@
 
 **Strenge Regel:** Bei jedem neuen Crash **zuerst diese Datei lesen**. Nicht wieder dieselben Stellen von vorne durchsuchen – nur **neue** Ursachen suchen und diese Liste danach ergänzen.
 
-**ro5:** Wenn Georg „ro5“ schreibt = Reopen nach Code 5. KI dokumentiert es hier (kurz), macht wie bei „ro“ weiter. Keine große Analyse – „ein andermal Zeit dafür“. Siehe docs/CODE-5-GRUNDPROBLEM-UND-LOESUNG.md Abschnitt 4.
+**ro5:** Wenn Georg „ro5“ schreibt = Reopen nach Code 5. KI: kurz hier eintragen („ro5 – [Datum]“), dann wie bei „ro“ weitermachen. **Kernregel für ro5/Reopen:** .cursor/rules/ro5-kern.mdc (dort: was ro5 bedeutet, Missetäter, Verweise).
 
 | Datum   | ro5 gemeldet |
 |--------|---------------|
 | 05.03.26 | ro5-Konvention vereinbart (Georg schreibt ro5, KI weiß es war Code 5, dokumentiert, macht weiter). |
+| 05.03.26 | ro5 again – nur dokumentiert; nichts neu umgesetzt (Nächster Schritt ggf. schon erledigt). |
+| 05.03.26 | ro5 – Erkenntnis in ro5-kern.mdc Abschn. 5 dokumentiert; Kernregel + Verweise. |
 
 ---
 

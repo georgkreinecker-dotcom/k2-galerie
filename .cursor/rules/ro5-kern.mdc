@@ -1,0 +1,60 @@
+---
+description: ro5 = Synonym für das Reopen/Code-5-Thema. Eine Stelle – nur das Relevante.
+alwaysApply: true
+---
+
+# ro5 – Reopen/Code-5: nur das Wichtige
+
+**ro5** = Oberbegriff für das komplexe Thema „Reopen nach Code 5“. Diese Regel ist die zentrale Referenz; Ballast steht woanders (docs, andere Rules nur bei Bedarf).
+
+---
+
+## 1. Was ro und ro5 bedeuten
+
+- **ro** = Reopen: Du bist wieder da, ich soll weitermachen.  
+  Ich: DIALOG-STAND (ggf. GRAFIKER-TISCH) lesen → orientieren → **kurz antworten** (2–5 Sätze). Keine langen Berichte.
+
+- **ro5** = Dasselbe, nur **nach Code-5-Absturz**.  
+  Ich: Kurz dokumentieren (z. B. ein Eintrag „ro5 – [Datum]“ in CRASH-BEREITS-GEPRUEFT), dann wie bei ro weitermachen.  
+  **ro5 hat keinen inhaltlichen Auftrag.** ro5 heißt nicht „setze jetzt den Nächster-Schritt aus DIALOG-STAND um“. Es heißt nur: Crash passiert, du meldest dich, ich mache normal weiter (Kontext kommt von dir / vom echten Faden, nicht von einer alten To-do-Zeile).
+
+---
+
+## 2. Die eine Pflichtregel (Missetäter)
+
+**write-build-info am Ende einer AI-Antwort ist verboten.**
+
+- **Niemals** `node scripts/write-build-info.js` am Ende einer Aufgabe ausführen.
+- Stand kommt: (1) beim **Commit-Push** (dann läuft es im Build), (2) nur wenn du **explizit** „Stand aktualisieren“ sagst.
+
+Das war der Hauptauslöser für Reopen/Code 5. Keine Ausnahme.
+
+---
+
+## 3. Ursache & Entlastung (kurz)
+
+- **Code 5** = Cursor/Electron/Preview (nicht die App). Last durch Preview, Dateischreiben, lange Antworten.
+- **Entlastung:** Preview zu, App im Browser; kurze Antworten; kein automatischer Reload in der App; bei ro/ro5 keine großen Doku-/Code-Aktionen in einem Rutsch.
+
+---
+
+## 4. Verweise (Details nur bei Bedarf)
+
+- **Ursache & Lösung ausführlich:** docs/CODE-5-GRUNDPROBLEM-UND-LOESUNG.md  
+- **Bei neuem Crash:** docs/CRASH-BEREITS-GEPRUEFT.md zuerst lesen, nur **neue** Ursachen suchen.  
+- **Kein Auto-Reload in der App:** .cursor/rules/code-5-crash-kein-auto-reload.mdc  
+- **Nach Crash nicht dieselbe Check-Routine wiederholen:** .cursor/rules/code-5-keine-wiederholte-checks.mdc  
+
+Alles Weitere (Build-Skripte, Watcher, Proaktiv, „ro-Protokoll“ im Detail) steht in anderen Regeln oder docs – hier nur das, was für ro5 wirklich zählt.
+
+---
+
+## 5. Erkenntnis (für die KI – verbindlich)
+
+**Lehre aus 05.03.26:** ro5 wurde fälschlich mit einem „Nächster Schritt“ aus DIALOG-STAND verknüpft; es wurde ein Feature umgesetzt, das mit ro5 nichts zu tun hatte. Georg: „ro5 ist das Synonym für das Reopen-Problem, nicht für eine inhaltliche Regel.“
+
+**Regel für jede Session:**
+
+1. **ro5 = nur Signal.** „Crash, ich bin wieder da.“ Kein Auftrag, etwas Bestimmtes zu bauen oder zu ändern. Kontext, was als Nächstes dran ist, kommt von Georg und dem echten Faden – nicht von einer To-do-Zeile im DIALOG-STAND.
+2. **„Nächster Schritt“ nicht blind abarbeiten.** Die Zeile im DIALOG-STAND ist Gedächtnisstütze, kein Befehl für die nächste Nachricht. Bei ro/ro5: orientieren, kurz antworten; nur dann etwas umsetzen, wenn es zum aktuellen Kontext gehört und wirklich noch offen ist.
+3. **Weniger Regeln, klarer handeln.** Mit den wenigen wichtigen Regeln (diese Datei, Missetäter, kurze Antwort) arbeiten – nicht in Regel-Ballast versinken oder sich selbst blockieren.

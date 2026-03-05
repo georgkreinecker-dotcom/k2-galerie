@@ -1158,6 +1158,8 @@ function ScreenshotExportAdmin() {
   }
   const galerieImageInputRef = React.useRef<HTMLInputElement>(null)
   const virtualTourImageInputRef = React.useRef<HTMLInputElement>(null)
+  /** Nur K2: Entdecken-Seite (Landing) Hero-Bild – ein Klick = Bild wählen, sofortiger Upload */
+  const entdeckenHeroInputRef = React.useRef<HTMLInputElement>(null)
   const [backupTimestamps, setBackupTimestamps] = useState<string[]>([])
   const [restoreProgress, setRestoreProgress] = useState<'idle' | 'running' | 'done'>('idle')
   const [isRestoringWerkeFromPublished, setIsRestoringWerkeFromPublished] = useState(false)
@@ -11442,6 +11444,32 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ flexShrink: 0, position: 'sticky', top: 0, zIndex: 20, background: WERBEUNTERLAGEN_STIL.bgDark, borderBottom: `2px solid ${s.accent}33`, padding: '1rem 1.25rem' }}>
                   {/* Titel */}
                   <div style={{ fontWeight: 800, fontSize: '1.4rem', color: s.text, marginBottom: '0.75rem' }}>✨ Deine Galerie gestalten</div>
+                  {/* Nur K2: Entdecken-Seite (Landing) – ein Klick = Bild wählen, sofort gespeichert */}
+                  {!tenant.isOeffentlich && !tenant.isVk2 && (
+                    <div style={{ marginBottom: '1rem', padding: '0.6rem 1rem', background: 'rgba(0,0,0,0.08)', borderRadius: 10, border: `1px solid ${s.accent}44` }}>
+                      <span style={{ fontSize: '0.9rem', color: s.muted, marginRight: '0.75rem' }}>Entdecken-Seite (Landing) – Bild, das Fremde zuerst sehen:</span>
+                      <input type="file" accept="image/*" ref={entdeckenHeroInputRef} style={{ display: 'none' }} onChange={async (e) => {
+                        const f = e.target.files?.[0]
+                        e.target.value = ''
+                        if (!f) return
+                        setImageUploadStatus('⏳ Entdecken-Bild wird gespeichert…')
+                        try {
+                          const dataUrl = await compressImageForStorage(f, { context: 'desktop', maxWidth: 800, quality: 0.75 })
+                          const res = await fetch(dataUrl)
+                          const blob = await res.blob()
+                          const fileToUpload = new File([blob], 'entdecken-hero.jpg', { type: blob.type || 'image/jpeg' })
+                          const { uploadPageImage } = await import('../src/utils/githubImageUpload')
+                          await uploadPageImage(fileToUpload, 'oeffentlich', 'entdecken-hero.jpg', () => {})
+                          setImageUploadStatus('✅ Entdecken-Seite: Bild gespeichert – in ca. 2 Min. sichtbar')
+                          setTimeout(() => setImageUploadStatus(null), 6000)
+                        } catch (_) {
+                          setImageUploadStatus('⚠️ Speichern fehlgeschlagen – bitte erneut versuchen')
+                          setTimeout(() => setImageUploadStatus(null), 5000)
+                        }
+                      }} />
+                      <button type="button" onClick={() => entdeckenHeroInputRef.current?.click()} style={{ padding: '0.4rem 1rem', fontSize: '0.9rem', fontWeight: 600, background: s.accent, color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>Bild wählen</button>
+                    </div>
+                  )}
                   {/* 3-Schritt-Workflow */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                     {/* Schritt 1 */}
@@ -11500,11 +11528,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 const base64Image = pageContent.welcomeImage
                                 pendingWelcomeFileRef.current = null
 
+                                // ök2: willkommen-demo.jpg – nie willkommen.jpg, sonst überschreibt die Entdecken-Seite (Landing) das Bild für alle
+                                const welcomeFilename = context === 'oeffentlich' ? 'willkommen-demo.jpg' : 'willkommen.jpg'
                                 const doWelcomeUpload = async (uploadFile: File) => {
                                   setImageUploadStatus('⏳ Foto wird dauerhaft gespeichert…')
                                   try {
                                     const { uploadPageImage } = await import('../src/utils/githubImageUpload')
-                                    const url = await uploadPageImage(uploadFile, context, 'willkommen.jpg', () => {})
+                                    const url = await uploadPageImage(uploadFile, context, welcomeFilename, () => {})
                                     const next2 = { ...pageContent, welcomeImage: url }
                                     setPageContent(next2)
                                     setPageContentGalerie(next2, tenantForUpload)
@@ -11523,7 +11553,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                   try {
                                     const res = await fetch(base64Image)
                                     const blob = await res.blob()
-                                    const fileFromBase64 = new File([blob], 'willkommen.jpg', { type: blob.type })
+                                    const fileFromBase64 = new File([blob], welcomeFilename, { type: blob.type })
                                     await doWelcomeUpload(fileFromBase64)
                                   } catch (_) {
                                     setImageUploadStatus('⚠️ Nur lokal gespeichert – bitte nochmals speichern')
