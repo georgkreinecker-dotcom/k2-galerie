@@ -8,6 +8,8 @@ import { useState, useEffect } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { loadEvents, saveEvents, loadPersonen } from '../utils/familieStorage'
+import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
+import { isSupabaseConfigured } from '../utils/supabaseClient'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import type { K2FamilieEvent } from '../types/k2Familie'
 
@@ -26,8 +28,15 @@ export default function K2FamilieEventsPage() {
   const [note, setNote] = useState('')
 
   useEffect(() => {
-    setEvents(loadEvents(currentTenantId))
-    setPersonen(loadPersonen(currentTenantId))
+    if (!isSupabaseConfigured()) {
+      setEvents(loadEvents(currentTenantId))
+      setPersonen(loadPersonen(currentTenantId))
+      return
+    }
+    loadFamilieFromSupabase(currentTenantId).then((d) => {
+      setEvents(d.events)
+      setPersonen(d.personen)
+    })
   }, [currentTenantId])
 
   const getPersonName = (personId: string) => personen.find((p) => p.id === personId)?.name ?? personId

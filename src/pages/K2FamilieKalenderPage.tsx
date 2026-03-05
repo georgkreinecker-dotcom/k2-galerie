@@ -4,10 +4,12 @@
  */
 
 import { Link } from 'react-router-dom'
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { loadEvents, loadMomente, loadPersonen } from '../utils/familieStorage'
+import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
+import { isSupabaseConfigured } from '../utils/supabaseClient'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import type { K2FamilieEvent, K2FamilieMoment } from '../types/k2Familie'
 
@@ -22,9 +24,17 @@ function formatMonthYear(dateStr: string): string {
 
 export default function K2FamilieKalenderPage() {
   const { currentTenantId } = useFamilieTenant()
-  const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId])
-  const events = useMemo(() => loadEvents(currentTenantId), [currentTenantId])
-  const momente = useMemo(() => loadMomente(currentTenantId), [currentTenantId])
+  const [synced, setSynced] = useState(false)
+  useEffect(() => {
+    if (!isSupabaseConfigured()) {
+      setSynced(true)
+      return
+    }
+    loadFamilieFromSupabase(currentTenantId).then(() => setSynced(true))
+  }, [currentTenantId])
+  const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId, synced])
+  const events = useMemo(() => loadEvents(currentTenantId), [currentTenantId, synced])
+  const momente = useMemo(() => loadMomente(currentTenantId), [currentTenantId, synced])
 
   const getPersonName = (personId: string) => personen.find((p) => p.id === personId)?.name ?? personId
 

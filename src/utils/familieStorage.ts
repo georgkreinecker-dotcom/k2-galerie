@@ -2,11 +2,13 @@
  * K2 Familie – eine Schicht für Personen pro Tenant (Phase 1.2, 1.3).
  * Lese-/Schreibzugriffe laufen über diese Schicht. Gleiche Schutzregeln wie artworksStorage:
  * keine automatischen Löschungen, nicht mit weniger überschreiben außer allowReduce nach User-Aktion.
+ * Bei Supabase konfiguriert: nach jedem Save Push zu Supabase (dynamischer Import, kein Zyklus).
  * Siehe docs/K2-FAMILIE-DATENMODELL.md, Regel niemals-kundendaten-loeschen.
  */
 
 import type { K2FamiliePerson, K2FamilieMoment, K2FamilieEvent } from '../types/k2Familie'
 import { getK2FamiliePersonenKey, getK2FamilieMomenteKey, getK2FamilieEventsKey } from '../types/k2Familie'
+import { isSupabaseConfigured } from './supabaseClient'
 
 /** Erster Tenant (eine Familie) für den Start. Später: mehrere TenantIds pro Lizenz. */
 export const K2_FAMILIE_DEFAULT_TENANT = 'default'
@@ -58,6 +60,15 @@ export function savePersonen(
       return false
     }
     localStorage.setItem(key, json)
+    if (isSupabaseConfigured()) {
+      import('./familieSupabaseClient').then((m) =>
+        m.saveFamilieToSupabase(tenantId, {
+          personen: arr,
+          momente: loadMomente(tenantId),
+          events: loadEvents(tenantId),
+        })
+      ).catch((e) => console.warn('Supabase Push (Personen) fehlgeschlagen:', e))
+    }
     return true
   } catch (e) {
     console.error('❌ familieStorage: Fehler beim Schreiben', e)
@@ -105,6 +116,15 @@ export function saveMomente(
       return false
     }
     localStorage.setItem(key, json)
+    if (isSupabaseConfigured()) {
+      import('./familieSupabaseClient').then((m) =>
+        m.saveFamilieToSupabase(tenantId, {
+          personen: loadPersonen(tenantId),
+          momente: arr,
+          events: loadEvents(tenantId),
+        })
+      ).catch((e) => console.warn('Supabase Push (Momente) fehlgeschlagen:', e))
+    }
     return true
   } catch (e) {
     console.error('❌ familieStorage: Fehler beim Schreiben (Momente)', e)
@@ -152,6 +172,15 @@ export function saveEvents(
       return false
     }
     localStorage.setItem(key, json)
+    if (isSupabaseConfigured()) {
+      import('./familieSupabaseClient').then((m) =>
+        m.saveFamilieToSupabase(tenantId, {
+          personen: loadPersonen(tenantId),
+          momente: loadMomente(tenantId),
+          events: arr,
+        })
+      ).catch((e) => console.warn('Supabase Push (Events) fehlgeschlagen:', e))
+    }
     return true
   } catch (e) {
     console.error('❌ familieStorage: Fehler beim Schreiben (Events)', e)

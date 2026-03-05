@@ -8,6 +8,8 @@ import { useMemo, useEffect, useCallback, useState } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { loadPersonen, savePersonen, K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
+import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
+import { isSupabaseConfigured } from '../utils/supabaseClient'
 import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import type { K2FamiliePerson } from '../types/k2Familie'
@@ -24,7 +26,15 @@ export default function K2FamilieStammbaumPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const { currentTenantId, tenantList, setCurrentTenantId, addTenant } = useFamilieTenant()
-  const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId])
+  const [synced, setSynced] = useState(false)
+  useEffect(() => {
+    if (!isSupabaseConfigured()) {
+      setSynced(true)
+      return
+    }
+    loadFamilieFromSupabase(currentTenantId).then(() => setSynced(true))
+  }, [currentTenantId])
+  const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId, synced])
 
   const druck = searchParams.get('druck') === '1'
   const formatFromUrl = (searchParams.get('format') as PrintFormat) || 'a4'

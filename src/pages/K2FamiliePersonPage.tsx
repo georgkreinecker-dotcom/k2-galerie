@@ -8,6 +8,8 @@ import { useState, useEffect } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { loadPersonen, savePersonen, loadMomente, saveMomente } from '../utils/familieStorage'
+import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
+import { isSupabaseConfigured } from '../utils/supabaseClient'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import type { K2FamiliePerson, K2FamilieMoment } from '../types/k2Familie'
 
@@ -26,8 +28,15 @@ export default function K2FamiliePersonPage() {
   const [momentText, setMomentText] = useState('')
 
   useEffect(() => {
-    setPersonen(loadPersonen(currentTenantId))
-    setMomente(loadMomente(currentTenantId))
+    if (!isSupabaseConfigured()) {
+      setPersonen(loadPersonen(currentTenantId))
+      setMomente(loadMomente(currentTenantId))
+      return
+    }
+    loadFamilieFromSupabase(currentTenantId).then((d) => {
+      setPersonen(d.personen)
+      setMomente(d.momente)
+    })
   }, [id, currentTenantId])
 
   const person = personen.find((p) => p.id === id)
