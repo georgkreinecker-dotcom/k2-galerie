@@ -224,7 +224,7 @@ const Vk2GaleriePage: React.FC = () => {
             🔑 Mitglied
           </button>
           <button
-            onClick={() => navigate('/admin?context=vk2')}
+            onClick={() => navigate('/mein-bereich?context=vk2')}
             style={{ background: 'transparent', color: C.textLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '0.28rem 0.7rem', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'system-ui, sans-serif' }}
           >
             Admin

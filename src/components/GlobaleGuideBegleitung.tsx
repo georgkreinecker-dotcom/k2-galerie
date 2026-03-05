@@ -350,6 +350,7 @@ export function GlobaleGuideBegleitung() {
     '/galerie',
     '/galerie/',
     '/admin',
+    '/mein-bereich',
   ]
   if (ausgeblendetAuf.includes(location.pathname)) return null
 
@@ -399,7 +400,7 @@ export function GlobaleGuideBegleitung() {
   const fertigStellen = () => {
     beendeGuideFlow()
     setGeschlossen(true)
-    navigate(`/admin?context=oeffentlich&assistent=1&vorname=${encodeURIComponent(name)}&pfad=${pfad}`)
+    navigate(`/mein-bereich?context=oeffentlich&assistent=1&vorname=${encodeURIComponent(name)}&pfad=${pfad}`)
   }
 
   const erklaerungText = aktuellerSchritt.beschreibung.split('\n').map((z, i, arr) => (

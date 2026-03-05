@@ -62,8 +62,9 @@ import PlatformStartPage from './pages/PlatformStartPage'
 import MissionControlPage from './pages/MissionControlPage'
 import FlyerK2GaleriePage from './pages/FlyerK2GaleriePage'
 import PresseEinladungK2GaleriePage from './pages/PresseEinladungK2GaleriePage'
+import MeinBereichPage from './pages/MeinBereichPage'
 import KundenPage from './pages/KundenPage'
-import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUTE, ENTDECKEN_ROUTE, PILOT_SCHREIBEN_ROUTE } from './config/navigation'
+import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUTE, ENTDECKEN_ROUTE, PILOT_SCHREIBEN_ROUTE, MEIN_BEREICH_ROUTE } from './config/navigation'
 import { getPageMeta, applyPageMeta } from './config/seoPageMeta'
 import { TenantProvider } from './context/TenantContext'
 import WillkommenPage from './pages/WillkommenPage'
@@ -617,6 +618,8 @@ function App() {
       <Route path="/kosten" element={<Navigate to={PLATFORM_ROUTES.kosten} replace />} />
       <Route path="/dialog" element={<Navigate to={PLATFORM_ROUTES.dialog} replace />} />
       <Route path="/galerie" element={<GaleriePage />} />
+      {/* Künstler-Einstieg: eigener Zugang zum Admin (kein Admin-Button auf der Galerie) */}
+      <Route path={MEIN_BEREICH_ROUTE} element={<MeinBereichPage />} />
       {/* /admin/login → sofort zur Galerie (keine AdminLoginPage-Route, um Crash-Risiko zu vermeiden) */}
       <Route path="/admin/login" element={<Navigate to={PROJECT_ROUTES['k2-galerie'].galerie} replace />} />
       <Route path="/admin" element={

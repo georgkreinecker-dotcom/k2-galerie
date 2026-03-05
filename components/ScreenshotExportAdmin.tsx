@@ -1398,9 +1398,6 @@ function ScreenshotExportAdmin() {
   const [showVitaEditor, setShowVitaEditor] = useState(false)
   /** Einstellungen: Vita-Bereich Person 1/2 erst auf Klick aufklappen (Handy-freundlich). */
   const [vitaMartinaOpen, setVitaMartinaOpen] = useState(false)
-  const [vitaGeorgOpen, setVitaGeorgOpen] = useState(false)
-  /** Einstellungen: Person 2 (optional) als Maske geschlossen, erst bei Bedarf aufklappen. */
-  const [person2BlockOpen, setPerson2BlockOpen] = useState(false)
   /** VK2 Mitglied-Login Modal */
   const [showMitgliedLogin, setShowMitgliedLogin] = useState(false)
   const [mitgliedLoginName, setMitgliedLoginName] = useState('')
@@ -2186,7 +2183,7 @@ function ScreenshotExportAdmin() {
   /** Pilot/ök2: Musterdaten auf einen Klick leeren – eigene Eintragung ohne umständliches Rauslöschen. */
   const clearStammdatenMuster = () => {
     if (!tenant.isOeffentlich) return
-    if (!confirm('Alle Musterdaten in Person 1, Person 2 und Galerie leeren? Du kannst danach deine eigenen Daten eintragen.')) return
+    if (!confirm('Alle Musterdaten in Person und Galerie leeren? Du kannst danach deine eigenen Daten eintragen.')) return
     const emptyPerson1 = { name: '', email: '', phone: '', website: '', category: 'malerei' as const, bio: '', vita: '' }
     const emptyPerson2 = { name: '', email: '', phone: '', website: '', category: 'keramik' as const, bio: '', vita: '' }
     const emptyGallery = {
@@ -2204,8 +2201,6 @@ function ScreenshotExportAdmin() {
       console.warn('Musterdaten leeren (persist):', e)
     }
     setVitaMartinaOpen(false)
-    setVitaGeorgOpen(false)
-    setPerson2BlockOpen(false)
     alert('✅ Musterdaten entfernt. Trage jetzt deine eigenen Daten ein.')
   }
 
@@ -12929,7 +12924,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         <button type="button" onClick={clearStammdatenMuster} style={{ padding: '0.6rem 1.2rem', background: 'transparent', border: `2px solid ${s.accent}`, borderRadius: 10, color: s.accent, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>
                           🗑️ Musterdaten entfernen – Felder leeren für eigene Eintragung
                         </button>
-                        <p style={{ margin: '0.35rem 0 0', fontSize: '0.78rem', color: s.muted }}>Ein Klick leert Person 1, Person 2 und Galerie – danach deine Daten eintragen.</p>
+                        <p style={{ margin: '0.35rem 0 0', fontSize: '0.78rem', color: s.muted }}>Ein Klick leert Person und Galerie – danach deine Daten eintragen.</p>
                       </div>
                     )}
                 <div style={{
@@ -12938,7 +12933,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   gap: 'clamp(0.6rem, 2vw, 1rem)',
                   marginBottom: 'clamp(0.75rem, 2vw, 1.25rem)'
                 }}>
-                  {/* Person 1 */}
+                  {/* Künstler:in – ein Künstler mit Adresse, alle Daten */}
                   <div style={{
                     background: s.bgCard,
                     border: `1px solid ${s.accent}22`,
@@ -12955,7 +12950,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       borderBottom: `1px solid ${s.accent}22`,
                       paddingBottom: '0.5rem'
                     }}>
-                      👩‍🎨 Person 1 (Hauptansprechpartner)
+                      👩‍🎨 Künstler:in – Name, Kontakt &amp; Adresse
                     </h3>
                     <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', color: s.text }}>
                       <div className="field">
@@ -12964,7 +12959,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           type="text"
                           value={martinaData.name || ''}
                           onChange={(e) => setMartinaData({ ...martinaData, name: e.target.value })}
-                          placeholder="Name der Hauptansprechperson"
+                          placeholder="Ihr Name"
                           style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
@@ -12975,7 +12970,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           value={martinaData.email || ''}
                           onChange={(e) => setMartinaData({ ...martinaData, email: e.target.value })}
                           onFocus={(e) => { const def = tenant.isOeffentlich ? (MUSTER_TEXTE.martina.email || '') : (K2_STAMMDATEN_DEFAULTS.martina.email || ''); if ((martinaData.email || '').trim() === def.trim()) e.target.select(); }}
-                          placeholder="martina@k2-galerie.at"
+                          placeholder="E-Mail"
                           style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
@@ -12985,12 +12980,22 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           type="tel"
                           value={martinaData.phone || ''}
                           onChange={(e) => setMartinaData({ ...martinaData, phone: e.target.value })}
-                          placeholder="z.B. +43 664 … (international änderbar)"
+                          placeholder="z.B. +43 664 …"
                           style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
                       <div className="field">
-                        <label style={{ fontSize: '0.85rem', color: s.text }}>Vollständige Adresse (Straße, Hausnr.)</label>
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Website</label>
+                        <input
+                          type="url"
+                          value={martinaData.website || ''}
+                          onChange={(e) => setMartinaData({ ...martinaData, website: e.target.value.trim() })}
+                          placeholder="www.ihre-website.at"
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
+                        />
+                      </div>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Adresse (Straße, Hausnr.)</label>
                         <input
                           type="text"
                           value={galleryData.address || ''}
@@ -13044,90 +13049,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     </div>
                   </div>
 
-                  {/* Person 2 (optional) – Maske geschlossen, erst bei Bedarf aufklappen */}
-                  <div style={{
-                    background: s.bgCard,
-                    border: `1px solid ${s.accent}22`,
-                    padding: 'clamp(1rem, 2.5vw, 1.25rem)',
-                    borderRadius: '16px',
-                    boxShadow: s.shadow
-                  }}>
-                    <button type="button" onClick={() => setPerson2BlockOpen(!person2BlockOpen)} style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', color: 'inherit' }}>
-                      <h3 style={{
-                        margin: 0,
-                        fontSize: 'clamp(1rem, 2.5vw, 1.15rem)',
-                        fontWeight: '600',
-                        color: s.text,
-                        borderBottom: `1px solid ${s.accent}22`,
-                        paddingBottom: '0.5rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '0.5rem'
-                      }}>
-                        <span>👨‍🎨 Person 2 (optional)</span>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 400, color: s.muted }}>{person2BlockOpen ? '▼ einklappen' : '▶ bei Bedarf öffnen'}</span>
-                      </h3>
-                    </button>
-                    {person2BlockOpen && (
-                      <>
-                        <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', color: s.text, marginTop: '0.75rem' }}>
-                          <div className="field">
-                            <label style={{ fontSize: '0.85rem', color: s.text }}>Name (optional)</label>
-                            <input
-                              type="text"
-                              value={georgData.name || ''}
-                              onChange={(e) => setGeorgData({ ...georgData, name: e.target.value })}
-                              placeholder="Name der zweiten Person"
-                              style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box' }}
-                            />
-                          </div>
-                          <div className="field">
-                            <label style={{ fontSize: '0.85rem', color: s.text }}>E-Mail</label>
-                            <input
-                              type="email"
-                              value={georgData.email || ''}
-                              onChange={(e) => setGeorgData({ ...georgData, email: e.target.value })}
-                              onFocus={(e) => { const def = tenant.isOeffentlich ? (MUSTER_TEXTE.georg.email || '') : (K2_STAMMDATEN_DEFAULTS.georg.email || ''); if ((georgData.email || '').trim() === def.trim()) e.target.select(); }}
-                              placeholder="georg@k2-galerie.at"
-                              style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
-                            />
-                          </div>
-                          <div className="field">
-                            <label style={{ fontSize: '0.85rem', color: s.text }}>Telefon</label>
-                            <input
-                              type="tel"
-                              value={georgData.phone || ''}
-                              onChange={(e) => setGeorgData({ ...georgData, phone: e.target.value })}
-                              placeholder="z.B. +43 664 … (international änderbar)"
-                              style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
-                            />
-                          </div>
-                          <div className="field">
-                            <button type="button" onClick={() => setVitaGeorgOpen(!vitaGeorgOpen)} style={{ width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                              <span>Vita (für Außenkommunikation &amp; Galerie)</span>
-                              <span style={{ fontSize: '0.75rem', color: s.muted }}>{vitaGeorgOpen ? '▼ einklappen' : '▶ aufklappen'}</span>
-                            </button>
-                            {vitaGeorgOpen && (
-                              <>
-                                <textarea
-                                  value={georgData.vita || ''}
-                                  onChange={(e) => setGeorgData({ ...georgData, vita: e.target.value })}
-                                  placeholder="Vita-Text (Werdegang, Ausstellungen, Arbeitsweise …)"
-                                  rows={8}
-                                  style={{ marginTop: '0.5rem', padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box', resize: 'vertical' }}
-                                />
-                                <button type="button" onClick={() => openVitaDocument('georg')} style={{ marginTop: '0.5rem', padding: '0.4rem 0.75rem', background: s.accent, color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: '0.85rem' }}>
-                                  📄 Vita als Dokument öffnen
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-
                   {/* Galerie */}
                   <div style={{
                     background: s.bgCard,
@@ -13145,10 +13066,34 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       borderBottom: `1px solid ${s.accent}22`,
                       paddingBottom: '0.5rem'
                     }}>
-                      🏛️ Galerie
+                      🏛️ Galerie-Adresse (optional)
                     </h3>
-                    <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', color: s.muted }}>Vollständige Adresse bei Person 1 (Hauptansprechpartner).</p>
+                    <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', color: s.muted }}>Nur ausfüllen, wenn sich Ihre Galerie an einem anderen Ort befindet oder andere Kontaktdaten hat. Sonst wird Ihre Künstler-Adresse oben verwendet.</p>
                     <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', color: s.text }}>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Galerie-Name</label>
+                        <input
+                          type="text"
+                          value={galleryData.name || ''}
+                          onChange={(e) => setGalleryData({ ...galleryData, name: e.target.value })}
+                          placeholder="z. B. Galerie am Platz"
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
+                        />
+                      </div>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Adresse, Ort, Land</label>
+                        <input
+                          type="text"
+                          value={[galleryData.address, galleryData.city, galleryData.country].filter(Boolean).join(', ') || ''}
+                          onChange={(e) => {
+                            const v = e.target.value
+                            const parts = v.split(',').map(p => p.trim())
+                            setGalleryData({ ...galleryData, address: parts[0] || '', city: parts[1] || '', country: parts[2] || '' })
+                          }}
+                          placeholder="Straße, PLZ Ort, Land (nur wenn anders)"
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
+                        />
+                      </div>
                       <div className="field">
                         <label style={{ fontSize: '0.85rem', color: s.text }}>Telefon</label>
                         <input
@@ -13425,18 +13370,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           <label style={{ fontSize: '0.85rem' }}>Person 1 (Telefon)</label>
                           <input type="tel" value={martinaData.phone || ''} onChange={(e) => setMartinaData({ ...martinaData, phone: e.target.value })} placeholder="z.B. +43 664 … (international änderbar)" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
-                        <div className="field">
-                          <label style={{ fontSize: '0.85rem' }}>Person 2 (Name)</label>
-                          <input type="text" value={georgData.name || ''} onChange={(e) => setGeorgData({ ...georgData, name: e.target.value })} placeholder="Name (optional)" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
-                        </div>
-                        <div className="field">
-                          <label style={{ fontSize: '0.85rem' }}>Person 2 (E-Mail)</label>
-                          <input type="email" value={georgData.email || ''} onChange={(e) => setGeorgData({ ...georgData, email: e.target.value })} onFocus={(e) => { const def = tenant.isOeffentlich ? (MUSTER_TEXTE.georg.email || '') : (K2_STAMMDATEN_DEFAULTS.georg.email || ''); if ((georgData.email || '').trim() === def.trim()) e.target.select(); }} placeholder="E-Mail" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
-                        </div>
-                        <div className="field">
-                          <label style={{ fontSize: '0.85rem' }}>Person 2 (Telefon)</label>
-                          <input type="tel" value={georgData.phone || ''} onChange={(e) => setGeorgData({ ...georgData, phone: e.target.value })} placeholder="z.B. +43 664 … (international änderbar)" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
-                        </div>
                       </div>
                     </div>
                     <button className="btn-primary" onClick={() => { saveRegistrierungConfig(); saveStammdaten(); }} style={{ padding: '0.75rem 1.5rem', fontSize: '1rem', alignSelf: 'flex-start' }}>
@@ -13469,6 +13402,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33`, marginBottom: '1rem' }}>
                   <h4 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text }}>Admin-Passwort ändern</h4>
                   <p style={{ margin: '0 0 1rem', fontSize: '0.85rem', color: s.muted }}>Mindestens 6 Zeichen. E-Mail oder Telefon (optional) helfen dir, das Passwort später wiederzufinden.</p>
+                  <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: s.muted }}>Das Passwort wird nur auf diesem Gerät gespeichert. Vergessen = wir können es nicht zurücksetzen. Leer lassen und speichern = Passwort entfernen (dann Einstieg über „Mein Bereich“ ohne Passwort).</p>
                   <input type="email" value={adminContactEmail} onChange={(e) => setAdminContactEmail(e.target.value)} placeholder="E-Mail (optional)" style={{ width: '100%', padding: '0.6rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem', marginBottom: '0.5rem', boxSizing: 'border-box' }} />
                   <input type="tel" value={adminContactPhone} onChange={(e) => setAdminContactPhone(e.target.value)} placeholder="Telefon (optional)" style={{ width: '100%', padding: '0.6rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem', marginBottom: '0.5rem', boxSizing: 'border-box' }} />
                   <input type="password" value={adminNewPw} onChange={(e) => setAdminNewPw(e.target.value)} placeholder="Neues Passwort (min. 6 Zeichen)" style={{ width: '100%', padding: '0.6rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem', marginBottom: '0.5rem', boxSizing: 'border-box' }} />
@@ -13476,11 +13410,15 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   <button
                     type="button"
                     onClick={() => {
-                      if (adminNewPw.length < 6) { alert('Passwort muss mindestens 6 Zeichen haben.'); return }
-                      if (adminNewPw !== adminNewPwConfirm) { alert('Passwort und Wiederholung stimmen nicht überein.'); return }
+                      const removePw = adminNewPw === '' && adminNewPwConfirm === ''
+                      if (!removePw) {
+                        if (adminNewPw.length < 6) { alert('Passwort muss mindestens 6 Zeichen haben.'); return }
+                        if (adminNewPw !== adminNewPwConfirm) { alert('Passwort und Wiederholung stimmen nicht überein.'); return }
+                      }
                       try {
+                        const toSave = removePw ? '' : adminNewPw
                         if (tenant.isOeffentlich) {
-                          localStorage.setItem(KEY_OEF_ADMIN_PASSWORD, adminNewPw)
+                          localStorage.setItem(KEY_OEF_ADMIN_PASSWORD, toSave)
                           if (adminContactEmail.trim()) localStorage.setItem(KEY_OEF_ADMIN_EMAIL, adminContactEmail.trim())
                           if (adminContactPhone.trim()) localStorage.setItem(KEY_OEF_ADMIN_PHONE, adminContactPhone.trim())
                         } else if (tenant.isVk2) {

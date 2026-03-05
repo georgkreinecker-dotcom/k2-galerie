@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { PROJECT_ROUTES, PLATFORM_ROUTES, getAllProjectIds } from '../config/navigation'
 import { usePersistentBoolean } from '../hooks/usePersistentState'
@@ -15,7 +15,8 @@ import PlatzanordnungPage from './PlatzanordnungPage'
 import ShopPage from './ShopPage'
 import ControlStudioPage from './ControlStudioPage'
 import ProjectPlanPage from './ProjectPlanPage'
-import ScreenshotExportAdmin from '../../components/ScreenshotExportAdmin'
+/** Lazy: Admin nur laden wenn wirklich gebraucht (nicht in iframe) – verhindert Code-5 in Cursor Preview */
+const ScreenshotExportAdmin = lazy(() => import('../../components/ScreenshotExportAdmin').then(m => ({ default: m.default })))
 import ProjectsPage from './ProjectsPage'
 import PlatformStartPage from './PlatformStartPage'
 import K2TeamHandbuchPage from './K2TeamHandbuchPage'
@@ -24,6 +25,28 @@ import { BUILD_TIMESTAMP } from '../buildInfo.generated'
 import { getPageContentGalerie } from '../config/pageContentGalerie'
 import { loadEvents } from '../utils/eventsStorage'
 import { loadDocuments } from '../utils/documentsStorage'
+
+/** In Cursor Preview (iframe): Admin nicht laden – nur Hinweis (Code-5-Vermeidung). */
+function AdminPreviewPlaceholder() {
+  return (
+    <div style={{
+      padding: '2rem',
+      fontFamily: 'system-ui, sans-serif',
+      background: '#1c1a18',
+      color: '#e0e0e0',
+      minHeight: '50vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '1rem',
+      textAlign: 'center'
+    }}>
+      <p style={{ fontSize: '1.1rem', margin: 0 }}>Admin in der Preview nicht geladen (Crash-Vermeidung).</p>
+      <p style={{ fontSize: '0.95rem', margin: 0, opacity: 0.9 }}>App im Browser: <strong>http://localhost:5177/admin</strong></p>
+    </div>
+  )
+}
 
 // Helper: Lese persistent Boolean ohne Hook (für useMemo)
 function getPersistentBoolean(key: string): boolean {
@@ -930,7 +953,14 @@ end tell`
       return <GalerieVorschauPage key={componentKey} vk2={true} initialFilter={galerieFilter} />
     }
     if (pageToRender === 'vk2-admin') {
-      return <ScreenshotExportAdmin key="vk2-admin-singleton" />
+      if (typeof window !== 'undefined' && window.self !== window.top) {
+        return <AdminPreviewPlaceholder key="vk2-admin-placeholder" />
+      }
+      return (
+        <Suspense key="vk2-admin-suspense" fallback={<div style={{ padding: '2rem', color: 'var(--k2-muted)' }}>Admin wird geladen…</div>}>
+          <ScreenshotExportAdmin key="vk2-admin-singleton" />
+        </Suspense>
+      )
     }
     if (pageToRender === 'mok2') {
       return <MarketingOek2Page key={componentKey} />
@@ -939,9 +969,16 @@ end tell`
       return <PlatzanordnungPage key={componentKey} />
     }
     
-    // Admin-Komponente: Nur einmal rendern - IMMER gleicher Key verhindert doppeltes Mounten
+    // Admin-Komponente: Nur einmal rendern - IMMER gleicher Key verhindert doppeltes Mounten. In iframe (Preview) nicht laden (Code-5).
     if (pageToRender === 'admin') {
-      return <ScreenshotExportAdmin key="admin-singleton" />
+      if (typeof window !== 'undefined' && window.self !== window.top) {
+        return <AdminPreviewPlaceholder key="admin-placeholder" />
+      }
+      return (
+        <Suspense key="admin-suspense" fallback={<div style={{ padding: '2rem', color: 'var(--k2-muted)' }}>Admin wird geladen…</div>}>
+          <ScreenshotExportAdmin key="admin-singleton" />
+        </Suspense>
+      )
     }
     
     return <CurrentComponent key={componentKey} />

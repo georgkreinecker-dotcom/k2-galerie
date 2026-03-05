@@ -1912,7 +1912,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     } catch { return 0 }
   }
 
-  // Aktuelles Admin-Passwort (K2 aus Stammdaten, ök2 aus eigenem Key)
+  // Aktuelles Admin-Passwort (K2 aus Stammdaten, ök2 aus eigenem Key). Leer = optional, kein Passwort nötig.
   const getCurrentAdminPassword = (): string => {
     if (musterOnly) {
       try {
@@ -1923,10 +1923,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       const galleryStored = localStorage.getItem('k2-stammdaten-galerie')
       if (galleryStored) {
         const data = JSON.parse(galleryStored)
-        return data.adminPassword || 'k2Galerie2026'
+        return (data.adminPassword && String(data.adminPassword).trim()) || ''
       }
     } catch (_) {}
-    return 'k2Galerie2026'
+    return ''
   }
 
   const grantAdminAccess = () => {
@@ -1969,13 +1969,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     }
     
     setFirstVisitNow()
-    // Testphase: innerhalb 2 Wochen und noch kein Passwort gesetzt → ohne Passwort rein
-    if (isInTestPhase() && !getCurrentAdminPassword()) {
+    // Kein Passwort gesetzt (optional) oder Testphase ohne Passwort → ohne Abfrage rein
+    const currentPassword = getCurrentAdminPassword()
+    if (!currentPassword) {
       grantAdminAccess()
       return
     }
-    
-    const currentPassword = getCurrentAdminPassword()
     if (adminPasswordInput === currentPassword) {
       try {
         sessionStorage.setItem('k2-admin-context', musterOnly ? 'oeffentlich' : 'k2')
@@ -1996,56 +1995,25 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     }
   }
 
-  // Admin-Button Klick Handler (K2/ök2/VK2 strikt getrennt)
+  // Künstler-Einstieg: immer zu /mein-bereich (dort Passwort wenn nötig, dann Admin). Kein Admin-Button auf der Galerie (Variante B).
   const handleAdminButtonClick = () => {
-    // VK2-Galerie: immer in VK2-Admin (Mitglieder, Werke), nie K2-Admin
     if (vk2) {
-      try { sessionStorage.setItem('k2-admin-context', 'vk2') } catch (_) {}
-      navigate('/admin?context=vk2')
+      navigate('/mein-bereich?context=vk2')
       return
     }
-    const isLocalhost = window.location.hostname === 'localhost' || 
-                       window.location.hostname === '127.0.0.1' ||
-                       window.location.hostname === '192.168.0.31' ||
-                       window.location.hostname === '192.168.0.27'
-    
-    if (isLocalhost) {
-      try { sessionStorage.setItem('k2-admin-context', musterOnly ? 'oeffentlich' : 'k2') } catch (_) {}
-      navigate(musterOnly ? '/admin?context=oeffentlich' : '/admin')
-      return
-    }
-    // Von ök2-Galerie: nur ök2-Zugang – nie K2-Session/k2-admin-unlocked prüfen (sonst käme Gast mit K2-Passwort in K2-Admin)
     if (musterOnly) {
-      try {
-        if (sessionStorage.getItem('k2-admin-context') === 'oeffentlich') {
-          navigate('/admin?context=oeffentlich')
-          return
-        }
-      } catch (_) {}
-      setFirstVisitNow()
-      if (isInTestPhase() && !getCurrentAdminPassword()) {
-        grantAdminAccess()
-        return
-      }
-      setShowAdminModal(true)
+      navigate('/mein-bereich?context=oeffentlich')
       return
     }
-    // K2-Galerie: bestehende K2-Session / „Passwort merken“ nutzen
-    try {
-      if (sessionStorage.getItem('k2-admin-context') === 'k2') {
-        navigate('/admin')
-        return
-      }
-      const unlocked = localStorage.getItem('k2-admin-unlocked')
-      const expiry = localStorage.getItem('k2-admin-unlocked-expiry')
-      if (unlocked === 'k2' && (!expiry || Date.now() <= parseInt(expiry, 10))) {
-        sessionStorage.setItem('k2-admin-context', 'k2')
-        navigate('/admin')
-        return
-      }
-    } catch (_) {}
+    navigate('/mein-bereich')
+    return
+  }
+
+  // Legacy: setFirstVisitNow / grantAdminAccess / Modal nur noch für Fallback (z. B. deep link). Normaler Einstieg = /mein-bereich.
+  const _legacyAdminUnlock = () => {
     setFirstVisitNow()
-    if (isInTestPhase() && !getCurrentAdminPassword()) {
+    // Kein Passwort gesetzt → optional, direkt rein
+    if (!getCurrentAdminPassword()) {
       grantAdminAccess()
       return
     }
@@ -2283,48 +2251,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             <span>{displayGalleryName} – {galerieTexts.kunstschaffendeHeading || 'Unsere Mitglieder'}</span>
           </div>
         )}
-        {/* Admin Button – auf normaler Galerie, ök2 und VK2 (VK2: K2-Familie Orange) */}
-        {/* iPhone: safe-area-inset-top + größerer Abstand, damit Button unter Notch sichtbar bleibt */}
-        <button
-          onClick={handleAdminButtonClick}
-          style={{
-            position: 'fixed',
-            top: 'max(clamp(1rem, 2vw, 1.5rem), calc(env(safe-area-inset-top, 0px) + 1rem))',
-            right: 'clamp(1rem, 2vw, 1.5rem)',
-            background: vk2 ? 'linear-gradient(135deg, rgba(255, 140, 66, 0.35), rgba(230, 122, 42, 0.3))' : musterOnly ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.05)',
-            backdropFilter: 'blur(10px)',
-            border: vk2 ? '1px solid rgba(255, 140, 66, 0.4)' : musterOnly ? '1px solid rgba(45, 45, 42, 0.2)' : '1px solid rgba(255, 255, 255, 0.1)',
-            color: musterOnly ? 'var(--k2-text)' : 'rgba(255, 255, 255, 0.9)',
-            padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem)',
-            borderRadius: '8px',
-            fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)',
-            cursor: 'pointer',
-            zIndex: 1000,
-            transition: 'all 0.3s ease',
-            opacity: vk2 ? 1 : (isMobileDevice || isMobile) ? 0.9 : 0.6,
-            touchAction: 'manipulation',
-            minWidth: '44px',
-            minHeight: '44px',
-            boxShadow: vk2 ? '0 4px 12px rgba(0,0,0,0.25)' : undefined
-          }}
-          onMouseEnter={(e) => {
-            if (vk2) { e.currentTarget.style.opacity = '1'; e.currentTarget.style.filter = 'brightness(1.1)' } else { e.currentTarget.style.opacity = '1'; e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)' }
-          }}
-          onMouseLeave={(e) => {
-            if (vk2) { e.currentTarget.style.opacity = '1'; e.currentTarget.style.filter = 'none' } else { e.currentTarget.style.opacity = (isMobileDevice || isMobile) ? '0.9' : '0.6'; e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.05)' }
-          }}
-          onTouchStart={(e) => {
-            e.currentTarget.style.opacity = '1'
-            if (vk2) e.currentTarget.style.filter = 'brightness(1.1)'; else e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.15)'
-          }}
-          onTouchEnd={(e) => {
-            setTimeout(() => {
-              if (vk2) { e.currentTarget.style.opacity = '1'; e.currentTarget.style.filter = 'none' } else { e.currentTarget.style.opacity = (isMobileDevice || isMobile) ? '0.9' : '0.6'; e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.05)' }
-            }, 200)
-          }}
-        >
-          ⚙️ Admin
-        </button>
+        {/* Künstler-Einstieg nur über /mein-bereich – kein Admin-Button auf der Galerie (Variante B) */}
 
         {/* Am Mac: „Vom Server laden“ – damit neue Werke vom iPad hier erscheinen (iPad speichern → 1–2 Min warten → hier klicken) */}
         {!musterOnly && !vk2 && !(isMobileDevice || isMobile) && (

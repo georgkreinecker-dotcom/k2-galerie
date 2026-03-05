@@ -1,7 +1,8 @@
-import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
+/**
+ * Einstieg – im iframe (Cursor Preview) wird NUR dieser leichte Pfad ausgeführt.
+ * Kein Import von React/App hier – sonst lädt Vite das komplette Bundle auch in der Preview → Code 5.
+ */
 import './index.css'
-import App from './App.tsx'
 import { safeReload } from './utils/env'
 
 // Sofort global, damit Fehler-Buttons (index.html, Bootstrap) safeReload nutzen können

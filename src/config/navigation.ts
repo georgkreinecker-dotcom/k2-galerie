@@ -24,6 +24,9 @@ export const WILLKOMMEN_ENTWURF_KEY = 'k2-willkommen-entwurf'
 /** Basis-URL der App (für QR/Links auf Flyern – immer Produktion) */
 export const BASE_APP_URL = 'https://k2-galerie.vercel.app'
 
+/** Künstler-Einstieg: eigener Zugang zum Admin (Besucher sehen keinen Admin-Button). Optional Passwort. */
+export const MEIN_BEREICH_ROUTE = '/mein-bereich'
+
 /** Nur Schreiben an Michael (Begleitschreiben + Einstiegscodes) – eine URL, eine Seite, nichts anderes */
 export const PILOT_SCHREIBEN_ROUTE = '/schreiben-michael'
 

@@ -108,7 +108,7 @@ function HeroHub({ accent, accentLight, accentGlow, bgDark, bgMid, fontHeading, 
 
   const oeffneTab = (tab: string) => {
     try { sessionStorage.setItem('k2-hub-from', '1') } catch (_) {}
-    navigate(`/admin?context=oeffentlich&tab=${tab}&from=hub`)
+    navigate(`/mein-bereich?context=oeffentlich&tab=${tab}&from=hub`)
   }
 
   return (
@@ -378,7 +378,9 @@ function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, 
 
   const oeffneTab = (tab: string) => {
     try { sessionStorage.setItem('k2-hub-from', '1') } catch (_) {}
-    navigate(`/admin?context=${hubContext}&tab=${tab}&from=hub`)
+    const ctx = hubContext === 'oeffentlich' ? 'oeffentlich' : hubContext === 'vk2' ? 'vk2' : ''
+    const q = `tab=${encodeURIComponent(tab)}&from=hub` + (ctx ? `&context=${ctx}` : '')
+    navigate(`/mein-bereich?${q}`)
   }
 
   const begruessung = istVerein

@@ -17,6 +17,19 @@ alwaysApply: true
 
 So muss nicht bei jedem Crash wieder von vorne gesucht werden – die Liste wächst und die nächste Session kann gezielt weitermachen.
 
+## Check darf keinen Code 5 auslösen (05.03.26)
+
+**Problem:** Wenn die AI den Crash-Check durchführt (Lesen + ggf. Schreiben), crasht Cursor oft mit Code 5 – „nur dein Check reicht“.
+
+**Regel – Checks bleiben, aber crash-sicher:**
+
+1. **Pro Antwort wenig lesen:** Zuerst nur `CRASH-BEREITS-GEPRUEFT.md` und `CRASH-LETZTER-KONTEXT.md` lesen (2 Dateien). Reicht die Antwort → fertig. Braucht es mehr (z. B. konkrete Datei prüfen) → in der **nächsten** Nachricht gezielt diese eine Sache (z. B. nur main.tsx), nicht viele Dateien auf einmal.
+2. **Schreiben in docs/ zurückhalten:** CRASH-BEREITS-GEPRUEFT / CRASH-LETZTER-KONTEXT / DIALOG-STAND **nicht** in derselben Antwort wie der Check aktualisieren. Erst wenn Georg sagt „dokumentieren“ oder am Ende einer **anderen** erledigten Aufgabe – oder in einer separaten Antwort, in der **nur** diese Doku-Updates gemacht werden (kein großer Check dazu).
+3. **Kein Schreiben in .vscode** im Zuge eines Crash-Checks, außer Georg bittet ausdrücklich darum.
+
+So bleibt der Check nützlich, aber die Last pro Antwort bleibt gering → weniger Code-5-Risiko.
+
 ## Kurzfassung
 
-**Crash gemeldet → CRASH-BEREITS-GEPRUEFT.md lesen → nur neue Bugs suchen → Protokoll aktualisieren.**
+**Crash gemeldet → CRASH-BEREITS-GEPRUEFT.md lesen → nur neue Bugs suchen → Protokoll aktualisieren.**  
+**Dabei:** Pro Antwort maximal 2 Doku-Lesungen; Doku-Updates nicht in derselben Antwort wie den Check; tiefere Prüfung in Schritten.

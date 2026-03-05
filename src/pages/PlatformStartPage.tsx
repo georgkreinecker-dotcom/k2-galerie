@@ -137,11 +137,11 @@ export default function PlatformStartPage() {
     return () => window.removeEventListener('resize', handleResize)
   }, [navigate])
 
-  // Automatisch zur Admin-Seite weiterleiten wenn ?admin=true
+  // Automatisch zum Künstler-Einstieg weiterleiten wenn ?admin=true
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     if (params.get('admin') === 'true' || params.get('admin') === 'auto') {
-      navigate('/admin')
+      navigate('/mein-bereich')
     }
   }, [navigate])
 

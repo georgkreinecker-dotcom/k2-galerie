@@ -13,6 +13,24 @@
 
 So können wir den Punkt Schritt für Schritt eingrenzen.
 
+**Überblick Ursache „massiver“ Crash 5 (04.03.26):** docs/CRASH-5-URSACHE-GESTERN-04-03.md – drei Ursachen + Regeln-Check.
+
+---
+
+## Code 5 bei Cursor-Dialog / AI-Aktivität – Überblick (bei neuem Crash zuerst hier)
+
+**Trigger:** Crash kommt, obwohl du nur den Dialog offen hast oder meine Nachricht liest – kein Speichern, keine App geöffnet.
+
+**Bereits versucht / kannst du ausschließen:**
+
+| # | Was wir schon gemacht haben | Stand |
+|---|-----------------------------|--------|
+| 1 | **docs/** von Watcher ausnehmen | `.vscode/settings.json` → `**/docs/**` in `files.watcherExclude` | Soll Entlastung bringen; Crash kam danach weiter. |
+| 2 | **Crash-Check „leicht“ halten** | Weniger Lesen pro Antwort, Doku-Updates nicht im gleichen Zug wie Check (Regel in crash-neue-bugs-suchen.mdc) | Crash auch „nur beim Lesen“ der Nachricht. |
+| 3 | **files.autoSave auf "off"** | Kein „afterDelay“ mehr – nur noch explizites Speichern (Cmd+S) | **Aktueller Fix.** Kaskade durch AI-Schreiben soll weg sein. |
+
+**Bei neuem Crash:** Diese drei nicht nochmal als erste Lösung versuchen. Nächste Kandidaten: anderes Cursor-Setting (z. B. `cursor.server.memoryLimit`), Cursor-Version/Update, oder Last durch viele gleichzeitige Tool-Aufrufe (dann Check in kleineren Schritten).
+
 ---
 
 ## Bereits geprüfte Stellen (nicht erneut durchgehen)
@@ -69,6 +87,10 @@ So können wir den Punkt Schritt für Schritt eingrenzen.
 | ScreenshotExportAdmin soldArtworksDisplayDaysK2 (01.03.26) | Neuer useEffect lädt K2-Wert bei Werke-Tab; kein setInterval/reload. **Absicherung:** isMounted-Cleanup im useEffect (kein setState nach Unmount bei HMR/Tab-Wechsel). |
 | Tenant-Sync / Veröffentlichen (01.03.26) | Veröffentlichen für ök2/VK2 freigeschaltet; „Bilder vom Server laden“ für alle Mandanten. **Kein** neuer location.reload/setInterval. **Absicherung:** publishMobile({ silent: true }) nach Speichern nur wenn window.self === window.top (nicht im iframe), um Cursor Preview zu entlasten. |
 | Admin volle Werkeliste im State (04.03.26) | Admin hielt alle Werke inkl. Base64-Bilder im State → in Cursor Preview (iframe) hohe Speicherlast → Code 5. **Fix:** In iframe nur „leichte“ Werke (stripArtworkImagesForPreview); Backup/Auto-Save nutzen loadArtworks(tenant). setAllArtworksSafe überall. |
+| main.tsx App-Import (04.03.26) | **Ursache:** main.tsx importierte App, createRoot, BrowserRouter am Top-Level → Vite lud das komplette App-Bundle auch in der Preview (iframe). **Fix:** Diese Imports entfernt; nur index.css + safeReload. App lädt nur noch per import('./appBootstrap') wenn nicht in iframe. In Preview: nur ~7KB index-Chunk, kein 1.6MB App-Bundle. |
+| DevViewPage Admin in Preview (04.03.26) | AdminPreviewPlaceholder fehlte → ReferenceError beim Admin-Tab in iframe. ScreenshotExportAdmin war statisch importiert → beim Öffnen der APf wurde die schwere Komponente sofort geladen. **Fix:** AdminPreviewPlaceholder definiert; ScreenshotExportAdmin in DevViewPage per lazy() – Admin-Chunk lädt nur außerhalb iframe beim Öffnen des Admin-Tabs. |
+| 05.03.26 | Cursor-Dialog nur offen, sonst nichts | Georg: „nur den Dialog geöffnet“, „dein Check hat ausgereicht“ → Code 5. **Ursache:** AI schreibt in docs/ (z. B. CRASH-LETZTER-KONTEXT.md). Cursor beobachtet Repo; docs/ war **nicht** in files.watcherExclude → bei Schreibzugriff auf docs/ reagiert Cursor (Reindex/Reopen) → Last → Crash. **Fix:** .vscode/settings.json → `**/docs/**` in files.watcherExclude aufgenommen. |
+| 05.03.26 | „Nach deiner Nachricht lesen“ → Crash; „Missetäter finden“ | **Verdacht Missetäter:** `files.autoSave: "afterDelay"`. Bei AI-Schreibzugriff speichert Cursor nach kurzer Verzögerung auch andere geöffnete Dateien → Kaskade (mehrere Writes, ggf. HMR wenn src/ betroffen) → Code 5. **Fix:** `files.autoSave` auf `"off"` gestellt. Speichern nur noch explizit (Ctrl+S / Cmd+S). Keine Kaskade mehr durch AI-Schreiben. |
 
 ---
 
@@ -193,6 +215,7 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 
 | 04.03.26 | ScreenshotExportAdmin Einstellungen-Scroll | Neuer useEffect (scrollIntoView bei settingsSubTab/activeTab) – **Cleanup:** clearTimeout(t). Doppelter identischer useEffect entfernt. Vor scrollIntoView: `el.isConnected`-Check. Kein Reload, kein setState im Timeout. |
 
+| 04.03.26 | Check Crash 5 („ceck crasch 5“) | main.tsx ohne App-Import ✓, AdminRoute/DevViewPage iframe-Placeholder + lazy ✓. location.reload/replace/href: env.safeReload, GaleriePage, SmartPanel mit iframe-Check. Keine neuen Stellen. |
 | 04.03.26 | ScreenshotExportAdmin große Datensätze (Code 5) | **Ursache:** Admin lädt beim Öffnen die komplette Werkeliste inkl. Base64-Bilder in State → in Cursor Preview (iframe) viel Speicher. **Fix:** In iframe (`window.self !== window.top`) Werke ohne data:-Bilder im State halten (stripArtworkImagesForPreview). Backup nutzt immer loadArtworks(tenant); Auto-Save in iframe liest Werke aus loadArtworks(tenant). So: weniger Last in Preview, Backup/Auto-Save weiter vollständig. |
 
 *Zuletzt ergänzt: 04.03.26 (Crash 5 – große Datensätze Admin)*
