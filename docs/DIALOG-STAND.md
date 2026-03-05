@@ -6,7 +6,9 @@
 
 ## Was zuletzt gemacht (05.03.26)
 
-- **ro5-Thema entschlackt (05.03.26):** Eine Kernregel **.cursor/rules/ro5-kern.mdc** – ro/ro5 Bedeutung, eine Pflichtregel (write-build-info nie am Ende), Verweise. reopen-info.mdc verweist darauf; CRASH-BEREITS-GEPRUEFT verweist auf ro5-kern. ro5 = kein inhaltlicher Auftrag (kein „Nächster Schritt“ umsetzen). **Nächster Schritt:** optional Commit + Push; sonst Raum bereit.
+- **Mein-Bereich: K2/VK2 ohne Zwischenschritt (05.03.26):** /mein-bereich leitet für **alle** Kontexte (K2, ök2, VK2) sofort in den Admin weiter – keine Seite „Künstler-Bereich“ oder „Vereins-Admin“ mehr. Kurzer Hinweis „Weiterleitung in den Admin …“, dann navigate mit replace. Query-Parameter (tab, from, assistent, vorname, pfad, guidetab, guidesubtab) werden durchgereicht. **Nächster Schritt:** Commit + Push; optional im Browser /mein-bereich testen (K2 + ök2).
+
+- **ro5-Thema entschlackt (05.03.26):** Eine Kernregel **.cursor/rules/ro5-kern.mdc** – ro/ro5 Bedeutung, eine Pflichtregel (write-build-info nie am Ende), Verweise, Erkenntnis Abschn. 5. reopen-info.mdc verweist darauf; CRASH-BEREITS-GEPRUEFT verweist auf ro5-kern. **Commit:** fa250b1 ✅ auf GitHub.
 
 - **Link Willkommen → Entdecken (05.03.26):** Bereits umgesetzt. WillkommenPage: `ENTDECKEN_ROUTE` importiert; in beiden Varianten (A + C) steht „In 1 Min. entdecken“ zwischen „Nur Galerie ansehen“ und „Lizenz anfragen“. Tests grün. **Nächster Schritt:** Commit + Push; optional im Browser prüfen.
 
