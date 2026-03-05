@@ -9,7 +9,7 @@ import { getGalerieImages, getPageContentGalerie } from '../config/pageContentGa
 import { getPageTexts, type GaleriePageTexts } from '../config/pageTexts'
 import { appendToHistory } from '../utils/artworkHistory'
 import { readArtworksRawForContext, saveArtworksForContext } from '../utils/artworksStorage'
-import { mergeServerWithLocal } from '../utils/syncMerge'
+import { mergeServerWithLocal, preserveLocalImageData } from '../utils/syncMerge'
 import { loadEvents, saveEvents } from '../utils/eventsStorage'
 import { loadDocuments, saveDocuments } from '../utils/documentsStorage'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
@@ -1062,16 +1062,22 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             const { merged, toHistory } = mergeServerWithLocal(serverArtworks, localArtworks, { serverMap, onlyAddLocalIfMobileAndVeryNew: true })
             if (toHistory.length > 0) appendToHistory(toHistory)
 
-            console.log('✅ Werke gemergt (Server = Quelle, alte Lokale nicht übernommen):', merged.length, 'Gesamt,', toHistory.length, 'in History')
+            // BUG-021: Server-Daten haben oft keine Bilder (Export streicht Base64). Lokale Bilddaten erhalten.
+            const mergedWithImages = preserveLocalImageData(merged, localArtworks, (a: any) => {
+              const k = a?.number ?? a?.id
+              return k != null ? String(k) : undefined
+            })
+
+            console.log('✅ Werke gemergt (Server = Quelle, alte Lokale nicht übernommen):', mergedWithImages.length, 'Gesamt,', toHistory.length, 'in History')
             console.log('📋 Lokale Nummern:', localArtworks.map((a: any) => a.number || a.id).join(', '))
             console.log('📋 Server Nummern:', serverArtworks.map((a: any) => a.number || a.id).join(', '))
-            console.log('📋 Gemergte Nummern:', merged.map((a: any) => a.number || a.id).join(', '))
+            console.log('📋 Gemergte Nummern:', mergedWithImages.map((a: any) => a.number || a.id).join(', '))
             
             // KRITISCH: Speichere merged Liste – allowReduce: false verhindert Reduzierung (Schutz)
-            saveArtworksForContext(musterOnly, vk2, merged, { allowReduce: false })
+            saveArtworksForContext(musterOnly, vk2, mergedWithImages, { allowReduce: false })
             
             // ZUSÄTZLICH: Prüfe ob neue Mobile-Werke vom Server geladen wurden
-            const newMobileWorks = merged.filter((a: any) => 
+            const newMobileWorks = mergedWithImages.filter((a: any) => 
               (a.createdOnMobile || a.updatedOnMobile) && 
               !localArtworks.some((local: any) => 
                 (local.number && a.number && local.number === a.number) ||
@@ -1084,7 +1090,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             }
             
             // Trigger Event für andere Komponenten - mit Flag dass es von GaleriePage kommt
-            window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: merged.length, fromGaleriePage: true, newMobileWorks: newMobileWorks.length } }))
+            window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: mergedWithImages.length, fromGaleriePage: true, newMobileWorks: newMobileWorks.length } }))
             }
           } catch (e) {
             console.warn('⚠️ Werke zu groß für localStorage:', e)
@@ -1508,13 +1514,18 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               } else {
               const { merged, toHistory } = mergeServerWithLocal(serverArtworks, localArtworks, { onlyAddLocalIfMobileAndVeryNew: true })
               if (toHistory.length > 0) appendToHistory(toHistory)
-              saveArtworksForContext(musterOnly, vk2, merged, { allowReduce: false })
-              console.log('✅ Werke gemergt beim Initial-Load (Server = Quelle, alte Lokale nicht übernommen):', merged.length, 'Gesamt,', toHistory.length, 'in History')
+              // BUG-021: Lokale Bilddaten erhalten, wenn Server keine Bilder liefert
+              const mergedWithImages = preserveLocalImageData(merged, localArtworks, (a: any) => {
+                const k = a?.number ?? a?.id
+                return k != null ? String(k) : undefined
+              })
+              saveArtworksForContext(musterOnly, vk2, mergedWithImages, { allowReduce: false })
+              console.log('✅ Werke gemergt beim Initial-Load (Server = Quelle, alte Lokale nicht übernommen):', mergedWithImages.length, 'Gesamt,', toHistory.length, 'in History')
               console.log('📋 Lokale Nummern:', localArtworks.map((a: any) => a.number || a.id).join(', '))
               console.log('📋 Server Nummern:', serverArtworks.map((a: any) => a.number || a.id).join(', '))
-              console.log('📋 Gemergte Nummern:', merged.map((a: any) => a.number || a.id).join(', '))
+              console.log('📋 Gemergte Nummern:', mergedWithImages.map((a: any) => a.number || a.id).join(', '))
               // Trigger Event für andere Komponenten (z.B. GalerieVorschauPage)
-              window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: merged.length, fromGaleriePage: true, initialLoad: true } }))
+              window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: mergedWithImages.length, fromGaleriePage: true, initialLoad: true } }))
               }
             } catch (e) {
               console.warn('⚠️ Werke zu groß für localStorage:', e)

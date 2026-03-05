@@ -103,3 +103,44 @@ export function mergeServerWithLocal(
 
   return { merged, toHistory }
 }
+
+/** Platzhalter-SVG („Kein Bild“) – zählt nicht als echtes Bild. */
+function isPlaceholderOrEmpty(url: string | undefined): boolean {
+  if (!url || String(url).trim() === '') return true
+  if (String(url).includes('data:image/svg')) return true
+  return false
+}
+
+/**
+ * Erhält lokale Bilddaten (imageUrl, imageRef, previewUrl), wenn das gemergte Werk vom Server kein Bild hat.
+ * Server-Daten (z. B. gallery-data) enthalten oft keine Base64-Bilder → nach Merge würden Anzeigen leer.
+ * Doku: docs/GELOESTE-BUGS.md BUG-021
+ */
+export function preserveLocalImageData(
+  merged: any[],
+  localList: any[],
+  getKey: (a: any) => string | undefined = DEFAULT_GET_KEY
+): any[] {
+  const localByKey = new Map<string, any>()
+  localList.forEach((a: any) => {
+    const k = getKey(a)
+    if (k) localByKey.set(k, a)
+  })
+  return merged.map((item: any) => {
+    const key = getKey(item)
+    if (!key) return item
+    const local = localByKey.get(key)
+    if (!local) return item
+    const serverHasNoImage =
+      isPlaceholderOrEmpty(item.imageUrl) && !(item.imageRef && String(item.imageRef).trim() !== '')
+    const localHasImage =
+      (!isPlaceholderOrEmpty(local.imageUrl) || (local.imageRef && String(local.imageRef).trim() !== ''))
+    if (!serverHasNoImage || !localHasImage) return item
+    return {
+      ...item,
+      imageUrl: local.imageUrl ?? item.imageUrl,
+      imageRef: local.imageRef ?? item.imageRef,
+      previewUrl: local.previewUrl ?? item.previewUrl,
+    }
+  })
+}

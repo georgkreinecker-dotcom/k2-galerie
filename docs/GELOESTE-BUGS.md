@@ -8,6 +8,15 @@
 
 ---
 
+## BUG-021 · Werk-Fotos nach Freistellung/Speichern wieder weg oder Platzhalter
+**Symptom:** Werk-Fotos werden teilweise nicht mehr angezeigt (Platzhalter mit ID). Freistellung funktioniert, dauert lange – danach sind die Bilder wieder wie vorher (Speicherung hält nicht).
+**Ursache:** Beim Laden vom Server (gallery-data API) kommen Werke **ohne** Bilddaten (Export streicht Base64 für kleine Payloads). Der Merge (Server = Quelle) hat die Server-Version übernommen und damit **lokale imageUrl/imageRef überschrieben** → gespeicherte Fotos/Freistellungen gingen verloren.
+**Lösung:** Nach dem Merge **lokale Bilddaten erhalten**, wenn die Server-Version kein Bild hat: `preserveLocalImageData(merged, localArtworks)` in `syncMerge.ts`; Aufruf in GaleriePage an beiden Stellen (handleRefresh + Initial-Load) vor `saveArtworksForContext`. So werden imageUrl, imageRef und previewUrl vom lokalen Werk übernommen, sobald der Server-Eintrag kein Bild liefert.
+**Betroffene Dateien:** `src/utils/syncMerge.ts` (preserveLocalImageData), `src/pages/GaleriePage.tsx` (beide Merge-Pfade)
+**Status:** ✅ Behoben (05.03.26)
+
+---
+
 ## BUG-020 · Test-Foto (Michal) auf Entdecken-Seite („Katastrophe“)
 **Symptom:** Beim Prüfen des Zutritts für Fremde erschien auf der Landing (/entdecken) ein Test-Foto (Michals Porträt) statt eines neutralen Bildes – gleiche Datei wie Demo-Willkommensbild.
 **Ursache:** Ein Asset, zwei Zwecke: `/img/oeffentlich/willkommen.jpg` wurde sowohl von der **EntdeckenPage** (global) als auch vom **ök2-Admin-Upload** (Willkommensbild) genutzt. Upload überschrieb die Datei → alle sahen das Test-Foto.

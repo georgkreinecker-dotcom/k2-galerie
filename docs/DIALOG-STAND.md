@@ -16,6 +16,8 @@
 
 ## Was zuletzt gemacht (05.03.26)
 
+- **BUG-021 – Werk-Fotos/Platzhalter & Speicherung (05.03.26):** Werk-Fotos teilweise nicht angezeigt; Freistellung funktionierte, danach wieder wie vorher. **Ursache:** Server-Daten (gallery-data) haben keine Base64-Bilder → Merge hat lokale Bilddaten überschrieben. **Lösung:** `preserveLocalImageData()` in syncMerge.ts – nach Merge werden imageUrl/imageRef/previewUrl vom lokalen Werk übernommen, wenn Server-Eintrag kein Bild hat. GaleriePage: beide Merge-Stellen (handleRefresh + Initial-Load) rufen preserveLocalImageData vor saveArtworksForContext auf. GELOESTE-BUGS BUG-021 ergänzt. **Nächster Schritt:** Tests + Build → Commit + Push; Georg testet Galerie (Freistellung speichern, Seite neu/Refresh – Bilder sollen bleiben).
+
 - **ro5 (05.03.26):** Reopen. Werbelinie Sportwagenmodus: PRODUKT-STANDARD-NACH-SPORTWAGEN um Abschnitt 4a Marketing-Werbelinie ergänzt (eine Quelle tenantConfig, alle Strategiepapiere ausgerichtet). SPORTWAGEN-ROADMAP 6.4 war bereits eingetragen. **Nächster Schritt:** Tests + Build → Commit + Push.
 
 - **ro5 (05.03.26):** Reopen. CRASH-BEREITS-GEPRUEFT Eintrag. Uncommittete Änderungen: Admin-Button präsenter (GaleriePage), ggf. ScreenshotExportAdmin. **Nächster Schritt:** Tests + Build → Commit + Push.
