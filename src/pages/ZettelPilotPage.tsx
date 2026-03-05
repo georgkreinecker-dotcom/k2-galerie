@@ -7,9 +7,11 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import QRCode from 'qrcode'
+import { BASE_APP_URL, ENTDECKEN_ROUTE } from '../config/navigation'
 
 const PILOT_ZETTEL_MD = '/k2team-handbuch/20-PILOT-ZETTEL-OEK2-VK2.md'
-const OEK2_URL = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie-oeffentlich'
+/** Testpiloten über denselben Einstieg wie alle: Entdecken → Vorschau → Admin */
+const OEK2_URL = BASE_APP_URL + ENTDECKEN_ROUTE
 const VK2_URL = 'https://k2-galerie.vercel.app/projects/vk2/galerie'
 
 export type PilotType = 'oek2' | 'vk2'

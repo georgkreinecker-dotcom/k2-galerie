@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { speichereGuideFlow, beendeGuideFlow } from '../components/GlobaleGuideBegleitung'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY } from '../config/navigation'
+import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, ENTDECKEN_ROUTE } from '../config/navigation'
 import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, OEK2_WILLKOMMEN_IMAGES, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty } from '../config/tenantConfig'
 import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie } from '../config/pageContentGalerie'
@@ -331,7 +331,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   const [mobileUrl, setMobileUrl] = React.useState<string>('')
   // Willkommens-Fenster (nur öffentliche Galerie): nur auf Mobilgeräten (QR-Einstieg). Am Mac/Desktop direkt rein wie lizenzierter Benutzer.
   const [showWelcomeModal, setShowWelcomeModal] = useState(false)
-  const [welcomeName, setWelcomeName] = useState('')
 
   // Guide-Avatar: Name + Entwurf-Flag aus URL-Parameter (von EntdeckenPage)
   const [guideName, setGuideName] = useState<string | null>(null)
@@ -359,9 +358,27 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   }, [musterOnly])
 
   const KEY_FROM_ADMIN = 'k2-galerie-from-admin'
+  /** Fremde: Direktaufruf von galerie-oeffentlich → zuerst Entdecken. Von Entdecken (Klick „Meine eigene Galerie“) → nie zurück; Flag nicht löschen, damit nach ro5/Crash/Reload der Zugang bleibt (Referrer ist oft leer). */
+  useEffect(() => {
+    if (!musterOnly || typeof window === 'undefined') return
+    try {
+      if (new URLSearchParams(window.location.search).get('embedded') === '1') return
+      if ((location.state as any)?.fromAdmin || sessionStorage.getItem(KEY_FROM_ADMIN)) return
+      if (sessionStorage.getItem('k2-from-entdecken') === '1') return
+      const ref = document.referrer || ''
+      if (ref.includes('/entdecken') || ref.includes('/willkommen')) return
+      navigate(ENTDECKEN_ROUTE, { replace: true })
+    } catch (_) {}
+  }, [musterOnly, navigate, location.state])
   useEffect(() => {
     if (!musterOnly) return
     try {
+      // APf iPhone/iPad-Vorschau (embedded=1): gleiche Ansicht wie Desktop – Willkommensseite, kein „Wähle deinen Einstieg“
+      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embedded') === '1') {
+        try { sessionStorage.setItem(KEY_GALERIE_WELCOME_SEEN, '1') } catch (_) {}
+        setShowWelcomeModal(false)
+        return
+      }
       // Von Admin/App zur Galerie gewechselt (Link state oder <a>-Klick mit sessionStorage) → kein „Wähle deinen Einstieg“
       if ((location.state as any)?.fromAdmin || sessionStorage.getItem(KEY_FROM_ADMIN)) {
         try {
@@ -380,13 +397,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     setShowWelcomeModal(false)
   }
   const goVorschauEntwurf = () => {
-    const n = welcomeName.trim()
-    if (n) {
-      try {
-        sessionStorage.setItem(WILLKOMMEN_NAME_KEY, n)
-        sessionStorage.setItem(WILLKOMMEN_ENTWURF_KEY, '1')
-      } catch (_) {}
-    }
+    try { sessionStorage.setItem(WILLKOMMEN_ENTWURF_KEY, '1') } catch (_) {}
     try { sessionStorage.setItem(KEY_GALERIE_WELCOME_SEEN, '1') } catch (_) {}
     setShowWelcomeModal(false)
     navigate(PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau)
@@ -1995,17 +2006,18 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     }
   }
 
-  // Künstler-Einstieg: immer zu /mein-bereich (dort Passwort wenn nötig, dann Admin). Kein Admin-Button auf der Galerie (Variante B).
+  // Künstler-Einstieg: immer zu /mein-bereich (dort Passwort wenn nötig, dann Admin). embedded=1 mitnehmen, damit Admin in APf-iPhone-iframe bleibt.
   const handleAdminButtonClick = () => {
+    const embedded = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embedded') === '1' ? '&embedded=1' : ''
     if (vk2) {
-      navigate('/mein-bereich?context=vk2')
+      navigate(`/mein-bereich?context=vk2${embedded}`)
       return
     }
     if (musterOnly) {
-      navigate('/mein-bereich?context=oeffentlich')
+      navigate(`/mein-bereich?context=oeffentlich${embedded}`)
       return
     }
-    navigate('/mein-bereich')
+    navigate(`/mein-bereich${embedded ? '?' + embedded.slice(1) : ''}`)
     return
   }
 
@@ -2188,24 +2200,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       
       {/* Content */}
       <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Optional: Link für Internet-Zugriff – nur auf Desktop, nicht auf iPhone/iPad */}
-        {isLocalOrPrivateOrigin() && !(isMobileDevice || isMobile) && (
-          <div style={{
-            padding: '0.5rem 1rem',
-            margin: '0 0 0.5rem 0',
-            background: 'rgba(0,0,0,0.2)',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
-            fontSize: '0.8rem',
-            textAlign: 'center'
-          }}>
-            <span style={{ marginRight: '0.5rem', color: musterOnly ? 'var(--k2-text)' : 'rgba(255,255,255,0.75)' }}>
-              Auch aus anderem WLAN erreichbar:
-            </span>
-            <a href={getPublicPageUrl(vk2, musterOnly)} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--k2-accent)', fontWeight: 600, textDecoration: 'underline' }}>
-              {vk2 ? 'VK2 im Internet öffnen' : musterOnly ? 'ök2 im Internet öffnen' : 'K2 im Internet öffnen'}
-            </a>
-          </div>
-        )}
         {/* Brand linkes oberes Eck – VK2 klar erkennbar, sonst K2 Galerie */}
         <div
           style={{
@@ -2251,39 +2245,55 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             <span>{displayGalleryName} – {galerieTexts.kunstschaffendeHeading || 'Unsere Mitglieder'}</span>
           </div>
         )}
-        {/* Admin-Button prominent – User braucht ihn ständig; führt zu /mein-bereich (dort ggf. Passwort, dann Admin) */}
+        {/* Admin-Button prominent – ein Klick öffnet die ganze Admin-Seite (/mein-bereich → /admin). Auf hellem Hintergrund (ök2) kräftige Farbe, damit er sofort sichtbar ist. */}
         <button
           onClick={handleAdminButtonClick}
           style={{
             position: 'fixed',
             top: 'max(clamp(1rem, 2vw, 1.5rem), calc(env(safe-area-inset-top, 0px) + 1rem))',
             right: 'clamp(1rem, 2vw, 1.5rem)',
-            background: vk2 ? 'linear-gradient(135deg, rgba(255, 140, 66, 0.5), rgba(230, 122, 42, 0.45))' : musterOnly ? 'rgba(255, 255, 255, 0.92)' : 'rgba(255, 255, 255, 0.12)',
-            backdropFilter: 'blur(10px)',
-            border: vk2 ? '1px solid rgba(255, 140, 66, 0.6)' : musterOnly ? '1px solid rgba(45, 45, 42, 0.25)' : '1px solid rgba(255, 255, 255, 0.2)',
-            color: musterOnly ? 'var(--k2-text)' : 'rgba(255, 255, 255, 0.95)',
+            background: vk2
+              ? 'linear-gradient(135deg, #d4622a, #b54a1e)'
+              : musterOnly
+                ? '#b54a1e'
+                : 'rgba(255, 255, 255, 0.22)',
+            backdropFilter: musterOnly ? 'none' : 'blur(10px)',
+            border: vk2 ? '1px solid rgba(255, 140, 66, 0.7)' : musterOnly ? '1px solid #8c3a18' : '1px solid rgba(255, 255, 255, 0.35)',
+            color: musterOnly || vk2 ? '#fff' : 'rgba(255, 255, 255, 0.98)',
             padding: 'clamp(0.6rem, 1.8vw, 0.85rem) clamp(0.9rem, 2.2vw, 1.1rem)',
             borderRadius: '10px',
             fontSize: 'clamp(0.8rem, 2vw, 0.95rem)',
-            fontWeight: 600,
+            fontWeight: 700,
             cursor: 'pointer',
             zIndex: 1000,
-            transition: 'all 0.25s ease',
+            transition: 'all 0.2s ease',
             opacity: 1,
             touchAction: 'manipulation',
             minWidth: '48px',
             minHeight: '48px',
-            boxShadow: vk2 ? '0 4px 14px rgba(0,0,0,0.28)' : '0 2px 12px rgba(0,0,0,0.15)'
+            boxShadow: vk2 || musterOnly ? '0 4px 16px rgba(0,0,0,0.35)' : '0 2px 12px rgba(0,0,0,0.25)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.15rem'
           }}
           onMouseEnter={(e) => {
-            if (vk2) { e.currentTarget.style.filter = 'brightness(1.1)' } else { e.currentTarget.style.background = musterOnly ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.2)' }
+            if (vk2 || musterOnly) {
+              e.currentTarget.style.filter = 'brightness(1.08)'
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.4)'
+            } else {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)'
+            }
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = vk2 ? 'linear-gradient(135deg, rgba(255, 140, 66, 0.5), rgba(230, 122, 42, 0.45))' : musterOnly ? 'rgba(255, 255, 255, 0.92)' : 'rgba(255, 255, 255, 0.12)'
             e.currentTarget.style.filter = 'none'
+            e.currentTarget.style.background = vk2 ? 'linear-gradient(135deg, #d4622a, #b54a1e)' : musterOnly ? '#b54a1e' : 'rgba(255, 255, 255, 0.22)'
+            e.currentTarget.style.boxShadow = vk2 || musterOnly ? '0 4px 16px rgba(0,0,0,0.35)' : '0 2px 12px rgba(0,0,0,0.25)'
           }}
         >
-          ⚙️ Admin
+          <span style={{ lineHeight: 1 }}>⚙️ Admin</span>
+          <span style={{ fontSize: '0.7em', fontWeight: 600, opacity: 0.95 }}>Einstellungen</span>
         </button>
 
         {/* Am Mac: „Vom Server laden“ – damit neue Werke vom iPad hier erscheinen (iPad speichern → 1–2 Min warten → hier klicken) */}
@@ -2656,6 +2666,45 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           </header>
         ) : (
         <>
+        {/* ök2: Banner oben – So könnte deine Galerie aussehen, dann mit mir in den Admin */}
+        {musterOnly && (
+          <div style={{
+            margin: 'clamp(0.75rem, 2vw, 1rem)',
+            padding: 'clamp(0.65rem, 1.5vw, 0.9rem) clamp(1rem, 2.5vw, 1.25rem)',
+            background: 'rgba(107, 144, 128, 0.15)',
+            border: '1px solid rgba(107, 144, 128, 0.4)',
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            flexWrap: 'wrap',
+            maxWidth: '1400px',
+            marginLeft: 'auto',
+            marginRight: 'auto',
+          }}>
+            <span style={{ color: 'var(--k2-text)', fontSize: 'clamp(0.88rem, 2vw, 0.98rem)', lineHeight: 1.45, flex: '1 1 260px' }}>
+              So könnte deine Galerie aussehen. Schau dich um – danach gehst du mit mir in den Admin und siehst, wie du deine Galerie gestaltest.
+            </span>
+            <button
+              type="button"
+              onClick={handleAdminButtonClick}
+              style={{
+                padding: '0.5rem 1rem',
+                background: 'var(--k2-accent)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '10px',
+                fontWeight: 600,
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+              }}
+            >
+              Mit mir in den Admin →
+            </button>
+          </div>
+        )}
         {/* Hero Section (K2 / ök2) – Bild zuerst, dann Titel: sofortiger visueller Eindruck */}
         <header style={{
           maxWidth: '1400px',
@@ -3668,44 +3717,26 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                   <span style={{ display: 'block', marginBottom: '0.2rem' }}>Nur umschauen</span>
                   <span style={{ fontSize: '0.85rem', fontWeight: 400, color: OK2_THEME.mutedColor }}>Galerie ansehen, ohne Anmeldung.</span>
                 </button>
-                <div style={{ padding: '0.75rem', background: OK2_THEME.backgroundColor2, borderRadius: '10px', border: `1px solid ${OK2_THEME.accentColor}30` }}>
-                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', color: OK2_THEME.mutedColor }}>Vorschau & Entwurf (optional Name):</p>
-                  <input
-                    type="text"
-                    value={welcomeName}
-                    onChange={(e) => setWelcomeName(e.target.value)}
-                    placeholder="Galerie- oder Künstlername (optional)"
-                    style={{
-                      width: '100%',
-                      padding: '0.6rem 0.75rem',
-                      border: `1px solid ${OK2_THEME.accentColor}40`,
-                      borderRadius: '8px',
-                      fontFamily: 'inherit',
-                      fontSize: '0.9rem',
-                      background: OK2_THEME.cardBg1,
-                      color: OK2_THEME.textColor,
-                      marginBottom: '0.75rem',
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={goVorschauEntwurf}
-                    style={{
-                      width: '100%',
-                      padding: '0.65rem 1rem',
-                      background: OK2_THEME.accentColor,
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      fontFamily: 'inherit',
-                      fontSize: '0.9rem',
-                    }}
-                  >
-                    Vorschau & Entwurf ansehen →
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={goVorschauEntwurf}
+                  style={{
+                    width: '100%',
+                    padding: '0.85rem 1.25rem',
+                    background: OK2_THEME.cardBg2,
+                    color: OK2_THEME.textColor,
+                    border: `1px solid ${OK2_THEME.accentColor}40`,
+                    borderRadius: '10px',
+                    textAlign: 'left',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    fontSize: '0.95rem',
+                  }}
+                >
+                  <span style={{ display: 'block', marginBottom: '0.2rem' }}>Vorschau & Entwurf ansehen</span>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 400, color: OK2_THEME.mutedColor }}>Deine Galerie im Entwurfsmodus – ohne Anmeldung.</span>
+                </button>
                 <button
                   type="button"
                   onClick={() => { setShowWelcomeModal(false); handleAdminButtonClick(); }}

@@ -88,6 +88,17 @@ const Vk2GalerieVorschauPage: React.FC = () => {
     setKarten(loadEingangskarten())
   }, [])
 
+  /** Fremde: Direktaufruf der VK2-Vorschau → zuerst VK2-Galerie (Willkommensseite) */
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      if (new URLSearchParams(window.location.search).get('embedded') === '1') return
+      const ref = typeof document !== 'undefined' ? document.referrer : ''
+      if (ref && (ref.includes('/projects/vk2/galerie') || ref.includes('/entdecken'))) return
+      navigate(PROJECT_ROUTES.vk2.galerie, { replace: true })
+    } catch (_) {}
+  }, [navigate])
+
   useEffect(() => {
     const reload = () => {
       setMitglieder(loadVk2Mitglieder())

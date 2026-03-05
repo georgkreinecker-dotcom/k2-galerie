@@ -84,7 +84,24 @@ bash scripts/cursor-start-stabil.sh
 
 ---
 
-## 5. Was die AI bei „ro“ und bei Code-5-Meldung tun muss
+## 5. Analyse: Warum eine komplexe Session ohne Code 5 blieb (05.03.26)
+
+**Beobachtung:** Die Speichermix-Operation (IndexedDB, Admin, autoSave, GalerieVorschauPage, viele Dateien) lief ohne einen einzigen Code-5-Absturz. Der Unterschied zu früheren „crash-anfälligen“ Sessions:
+
+| Faktor | Früher (crash-anfällig) | Diesmal (stabil) |
+|--------|--------------------------|-------------------|
+| **Missetäter** | write-build-info am Ende der AI-Antwort ausgeführt → Dateischreiben → Watcher/HMR → Spitze → Code 5 | **Nicht** ausgeführt. Stand kommt nur mit Build (Commit-Push). Regel eingehalten. |
+| **Dateischreiben** | Mehrere generierte Dateien am Ende einer Antwort (buildInfo, index.html, …) in einem Rutsch | Nur **Edit** bestehender Dateien (StrReplace). Build lief separat (ggf. im Hintergrund), schreibt in dist/ und Build-Info – nicht „am Ende der Chat-Antwort“. |
+| **Automatischer Reload** | Manchmal Reload-Logik in der App → Loop in Preview | Keine neue Reload-Logik eingebaut. Nur async Speicherlogik (IndexedDB), kein location.reload. |
+| **Crash-Check als Auslöser** | Nach Crash: großer Check (viele Dateien lesen + Doku schreiben in derselben Antwort) → selbst Lastspitze | Kein Crash gemeldet → kein großer Check. Regel „nur neue Bugs, wenig lesen, Doku nicht in derselben Runde“ war nicht nötig, aber würde greifen. |
+| **Umfang pro Antwort** | Sehr lange Antworten, viele Dateien auf einmal lesen/ändern | Gezielte Änderungen (Admin-Zeilen, autoSave, Vorschau-Ladepfade), dann Tests/Build. Kein „alles auf einmal lesen + alles dokumentieren“. |
+| **Preview** | Unklar – wenn offen, lastet jede Änderung dort | Wenn Preview zu war: Hauptlast-Faktor entfallen (App im Browser). |
+
+**Kern:** Die **verbotenen Auslöser** wurden vermieden (kein write-build-info am Ende, kein Auto-Reload, kein massiver Check+Doku in einem Rutsch). Die **Arbeitsweise** war entlastend: fokussierte Edits, Build separat, keine Schreib-Kaskade am Ende der Antwort. Das bestätigt die Regeln (Missetäter, crash-neue-bugs-suchen, kurze Antworten bei ro) als wirksam.
+
+---
+
+## 6. Was die AI bei „ro“ und bei Code-5-Meldung tun muss
 
 1. **Das wirkliche Grundproblem im Kopf haben:** Die KI bemerkt den Absturz nicht – sie wartet auf deine Eingabe. Dein „ro“ oder „ro5“ ist das einzige Signal. Also: Bei „ro“/„ro5“ sofort handeln, einen vollständigen Zyklus durchziehen, kurze Antwort (damit du nicht lange lesen musst und wieder Code 5 riskierst).
 2. **Bei „ro“:** reopen-info.mdc befolgen (lesen → handeln → kurze Antwort, kein write-build-info). Kein „ich habe bemerkt …“ – die KI hat nichts bemerkt, bis du geschrieben hast.
@@ -93,7 +110,7 @@ bash scripts/cursor-start-stabil.sh
 
 ---
 
-## 6. Verweise
+## 7. Verweise
 
 - **ro5/Reopen – Kernregel (gefiltert, ohne Ballast):** .cursor/rules/ro5-kern.mdc – eine Stelle für ro/ro5, Missetäter, Verweise.
 - **ro-Routine:** .cursor/rules/reopen-info.mdc (verweist auf ro5-kern).

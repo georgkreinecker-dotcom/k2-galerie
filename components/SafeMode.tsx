@@ -124,4 +124,4 @@ export function tryFreeLocalStorageSpace(): number {
 }
 
 /** Einheitliche Meldung bei Speicher voll – Ursache oft Backup/Stammdaten, nicht nur Werke. */
-export const SPEICHER_VOLL_MELDUNG = 'Speicher voll (Browser-Speicherplatz).\n\nOft liegt es nicht an den Werken, sondern am Vollbackup oder großen Bildern in Stammdaten.\n\nTipps:\n• Einstellungen → Backup & Wiederherstellung → „Altes Backup löschen“\n• Oder Browser-Daten für diese Seite löschen\n• Nur wenn nötig: Werke mit kleineren Bildern oder einzelne löschen'
+export const SPEICHER_VOLL_MELDUNG = 'Speicher voll (Browser-Speicherplatz).\n\nOft liegt es an vielen Werken mit großen Bildern oder am Vollbackup.\n\nTipps:\n• Einstellungen → Backup & Wiederherstellung → „Speicher entlasten – Werkbilder verkleinern“ (verkleinert alle Bilder, löscht nichts)\n• „Altes Backup löschen“ falls vorhanden\n• Oder Browser-Daten für diese Seite löschen'

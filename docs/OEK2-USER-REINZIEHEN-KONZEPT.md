@@ -31,20 +31,27 @@
 
 ---
 
+## Fremde zuerst (verbindliche Linie)
+
+**Das Hineinziehprogramm funktioniert am besten, wenn alle User, die sich noch nicht registriert haben, als Fremde eintreten.**  
+→ Keine Anmeldeseite als Einstiegs-Gate. Wer kommt, ist erst mal Besucher; Willkommen/Entdecken/Galerie ausprobieren stehen offen. Danach ziehen wir sie Schritt für Schritt rein (Name, Admin, erste Aktion). Die alte „Anmeldeseite“ vor dem Ausprobieren ist damit hinfällig – wir bauen sie nicht als Pflicht-Einstieg.
+
+---
+
 ## Bereits umgesetzt
 
 - **Stammdaten ök2:** Leere Felder bei neuem User, sofort überschreibbar.
 - **Mein-Bereich:** Einstieg für Künstler:in, optional Passwort.
 - **Einstieg:** „Galerie ausprobieren“ → direkt Galerie/Vorschau (ein Weg, ein Ziel).
 - **Erste Aktion nach Einstieg:** Banner auf Vorschau: „Deinen Namen eintragen“ + „Zum Admin →“.
+- **Eine Person, eine Adresse (ök2):** Umgesetzt. Im Admin/Einstellungen bei ök2 nur ein Künstler-Block, eine Adresse; K2 unverändert (Martina + Georg).
 
 ---
 
 ## Noch offen (konkret)
 
-- [ ] **Eine Person, eine Adresse:** Im Admin/Einstellungen für **ök2** nur **einen** Künstler-Block („Deine Daten“), **eine** Adresse; Person-2-Block ausblenden. K2 bleibt unverändert (Martina + Georg).
 - [ ] **Texte kürzen:** Willkommen/Entdecken/erster Admin – lange Erklärungen auf das Nötige reduzieren.
 
 ---
 
-*Stand: 05.03.26 – Einstieg + erste Aktion umgesetzt; eine Person/eine Adresse + Texte offen.*
+*Stand: 05.03.26 – Einstieg, erste Aktion, eine Person/eine Adresse umgesetzt.*

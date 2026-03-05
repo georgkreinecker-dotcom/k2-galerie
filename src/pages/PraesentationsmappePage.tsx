@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, BASE_APP_URL } from '../config/navigation'
-import { PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL } from '../config/tenantConfig'
+import { PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
 const printStyles = `
@@ -109,7 +109,10 @@ export default function PraesentationsmappePage() {
             K2 Galerie
           </h1>
           <p className="pm-tagline" style={{ fontSize: '0.95rem', color: '#5c5650', margin: '0.25rem 0 0', fontWeight: 500 }}>
-            Multifunktionale Arbeitsplattform für Künstler:innen und Galerien – Galerie, Kassa, Events und Presse aus einer Hand.
+            {PRODUCT_WERBESLOGAN}
+          </p>
+          <p className="pm-tagline" style={{ fontSize: '0.95rem', color: '#5c5650', margin: '0.15rem 0 0', fontWeight: 500 }}>
+            {PRODUCT_WERBESLOGAN_2}
           </p>
           <p className="pm-lead" style={{ fontSize: '0.9rem', lineHeight: 1.45, color: '#1c1a18', marginTop: '0.75rem', maxWidth: '520px' }}>
             Für Ateliers, Galerien und Kunstvereine. Windows, Android, macOS, iOS · Browser & PWA. Lizenzen: Basic, Pro, Pro+, VK2.

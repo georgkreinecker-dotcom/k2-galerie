@@ -3,14 +3,15 @@
  * Anmeldung = Galerie-Passwort (auf der Galerie, Button „Admin“). Danach kommt man hierher.
  * Es gibt KEINE zweite Tür (kein Supabase-Login). useAuthSession/supabaseAuth werden hier nicht verwendet.
  *
- * Cursor Preview (iframe): Admin wird hier nicht geladen – verhindert Code-5-Crashes durch die schwere Komponente.
+ * Cursor Preview (iframe): Admin wird hier nicht geladen – verhindert Code-5-Crashes. Ausnahme: embedded=1 = APf iPhone-Vorschau, dort Admin laden.
  */
 import ScreenshotExportAdmin from '../../components/ScreenshotExportAdmin'
 
 const inIframe = typeof window !== 'undefined' && window.self !== window.top
+const embeddedInApf = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embedded') === '1'
 
 export default function AdminRoute() {
-  if (inIframe) {
+  if (inIframe && !embeddedInApf) {
     return (
       <div style={{
         padding: '2rem',

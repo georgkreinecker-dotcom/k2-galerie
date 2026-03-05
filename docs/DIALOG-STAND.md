@@ -2,11 +2,25 @@
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
+---
+
+## 🔴 NACH ro5 / CRASH: WO DU GERADE BIST (05.03.26)
+
+- **Thema:** Supabase Storage für Werkbilder – umgesetzt (s1–s3).
+- **Was gemacht:** `src/utils/supabaseStorage.ts` (Upload → öffentliche URL); Admin beim Speichern: wenn Supabase konfiguriert und Bild Data-URL → Upload in Storage, imageUrl = URL; Doku `docs/SUPABASE-STORAGE-WERKBILDER.md` (Bucket `artwork-images`, Policy, Free Tier; beim Start Pro geplant).
+- **Nächster Schritt:** Im Supabase Dashboard Bucket `artwork-images` (öffentlich) + Policy für Upload anlegen → Werk speichern testen. Beim echten Losstarten: auf Pro wechseln.
+
+---
+
 ## Datum: 05.03.26
 
 ## Was zuletzt gemacht (05.03.26)
 
-- **Mein-Bereich: K2/VK2 ohne Zwischenschritt (05.03.26):** /mein-bereich leitet für **alle** Kontexte (K2, ök2, VK2) sofort in den Admin weiter – keine Seite „Künstler-Bereich“ oder „Vereins-Admin“ mehr. Kurzer Hinweis „Weiterleitung in den Admin …“, dann navigate mit replace. Query-Parameter (tab, from, assistent, vorname, pfad, guidetab, guidesubtab) werden durchgereicht. **Nächster Schritt:** Commit + Push; optional im Browser /mein-bereich testen (K2 + ök2).
+- **ro5 (05.03.26):** Reopen. Werbelinie Sportwagenmodus: PRODUKT-STANDARD-NACH-SPORTWAGEN um Abschnitt 4a Marketing-Werbelinie ergänzt (eine Quelle tenantConfig, alle Strategiepapiere ausgerichtet). SPORTWAGEN-ROADMAP 6.4 war bereits eingetragen. **Nächster Schritt:** Tests + Build → Commit + Push.
+
+- **ro5 (05.03.26):** Reopen. CRASH-BEREITS-GEPRUEFT Eintrag. Uncommittete Änderungen: Admin-Button präsenter (GaleriePage), ggf. ScreenshotExportAdmin. **Nächster Schritt:** Tests + Build → Commit + Push.
+
+- **Mein-Bereich: K2/VK2 ohne Zwischenschritt (05.03.26):** /mein-bereich leitet für **alle** Kontexte (K2, ök2, VK2) sofort in den Admin weiter – keine Seite „Künstler-Bereich“ oder „Vereins-Admin“ mehr. Kurzer Hinweis „Weiterleitung in den Admin …“, dann navigate mit replace. Query-Parameter (tab, from, assistent, vorname, pfad, guidetab, guidesubtab) werden durchgereicht. **Commit:** 5760df5 ✅.
 
 - **ro5-Thema entschlackt (05.03.26):** Eine Kernregel **.cursor/rules/ro5-kern.mdc** – ro/ro5 Bedeutung, eine Pflichtregel (write-build-info nie am Ende), Verweise, Erkenntnis Abschn. 5. reopen-info.mdc verweist darauf; CRASH-BEREITS-GEPRUEFT verweist auf ro5-kern. **Commit:** fa250b1 ✅ auf GitHub.
 

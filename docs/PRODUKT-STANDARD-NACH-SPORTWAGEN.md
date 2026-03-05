@@ -45,6 +45,17 @@ Siehe auch: **SPORTWAGEN-ROADMAP.md** (Phasen 1–9, was umgesetzt wurde).
 - **CRASH-BEREITS-GEPRUEFT.md:** Bei Crash zuerst lesen; nicht dieselben Stellen wieder durchsuchen.
 - **Struktur:** HAUS-INDEX, docs/00-INDEX, STRUKTUR-HANDELN-QUELLEN, k2team-handbuch.
 
+## 4a. Marketing-Werbelinie (Sportwagenmodus)
+
+- **Eine Quelle:** tenantConfig (PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2). Beide Slogans auf allen Werbemaßnahmen (Presse, Flyer, Plakat, Web, Social).
+- **Strategiepapiere ausgerichtet:** mök2 → Sektion 7 „Promotion für alle Medien“; docs/MARKETING-EROEFFNUNG-K2-OEK2.md; k2team-handbuch/04-VISION-STRATEGIE.md (Werbelinie jeweils oben).
+
+## 4.1 Marketing-Standard (Werbelinie)
+
+- **Eine Quelle:** `tenantConfig.ts` – PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2. Beide Slogans auf jeder Werbemaßnahme (Presse, Flyer, Plakat, Web, Social, Prospekt).
+- **Strategiepapiere ausgerichtet:** mök2 → Sektion 7 „Promotion für alle Medien“ (Werbelinie & Strategie verbindlich); docs/MARKETING-EROEFFNUNG-K2-OEK2.md (Verbindliche Werbelinie am Anfang); k2team-handbuch/04-VISION-STRATEGIE.md (Marketing-Werbelinie verbindlich).
+- **Roadmap:** SPORTWAGEN-ROADMAP Phase 6.4.
+
 ---
 
 ## 5. Prozess-Standard

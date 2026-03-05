@@ -4,6 +4,17 @@
 
 ---
 
+## Verbindliche Werbelinie (Strategie)
+
+**Alle Werbemaßnahmen** (Presse, Flyer, Plakat, Einladung, Web, Social) tragen diese beiden Slogans – eine Quelle, überall prägend. Siehe **mök2 → Promotion für alle Medien (Sektion 7)**.
+
+1. **K2 Galerie – für Künstler:innen, die gesehen werden wollen**
+2. **Deine Kunst verdient mehr als einen Instagram-Post.**
+
+Texte und Kernbotschaften in diesem Dokument (Kernbotschaft, Lounge-Text, Einladung, Presse, Social) sind darauf ausgerichtet. Technische Quelle: `src/config/tenantConfig.ts` (PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2).
+
+---
+
 ## 1. Einschätzung: K2, ök2 und VK2 zum gleichen Zeitpunkt
 
 **Sinnvoll.** Eine Eröffnung, eine Botschaft: „Wir eröffnen unsere Galerie – und zeigen zugleich, womit andere Künstler:innen, Galerien und Kunstvereine arbeiten können.“ Das wirkt professionell und setzt ök2 und VK2 nicht als „später mal“, sondern als Teil des gleichen Moments. Gemeinsame Lounge = ein Raum (physisch und in der Kommunikation), in dem alles Platz hat: die echte Galerie (K2), die Musterseiten (ök2) und die Vereinsplattform (VK2).

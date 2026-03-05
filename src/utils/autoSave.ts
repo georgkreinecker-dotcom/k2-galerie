@@ -4,7 +4,8 @@
  */
 
 import { K2_STAMMDATEN_DEFAULTS, MUSTER_TEXTE } from '../config/tenantConfig'
-import { saveArtworksByKey } from './artworksStorage'
+import { readArtworksRawByKey, saveArtworksByKey, saveArtworksByKeyWithImageStore } from './artworksStorage'
+import { compressImageForStorage } from './compressImageForStorage'
 import {
   loadStammdaten,
   saveStammdaten,
@@ -57,7 +58,7 @@ export function startAutoSave(getData: () => AutoSaveData) {
     clearInterval(autoSaveTimer)
   }
   
-  autoSaveTimer = setInterval(() => {
+  autoSaveTimer = setInterval(async () => {
     if (!autoSaveEnabled) return
     
     try {
@@ -69,7 +70,7 @@ export function startAutoSave(getData: () => AutoSaveData) {
       if (data.artworks) {
         try {
           const toSave = filterK2ArtworksOnly(data.artworks)
-          saveArtworksByKey('k2-artworks', toSave, { filterK2Only: false, allowReduce: true })
+          await saveArtworksByKeyWithImageStore('k2-artworks', toSave, { filterK2Only: false, allowReduce: true })
         } catch (e) {
           console.warn('⚠️ Artworks zu groß für Auto-Save')
         }
@@ -134,7 +135,7 @@ export function stopAutoSave() {
 /**
  * Speichere sofort (ohne auf Timer zu warten) – alle Daten wie beim Intervall (Stammdaten, Werke, Events, Dokumente, …)
  */
-export function saveNow(getData: () => AutoSaveData) {
+export async function saveNow(getData: () => AutoSaveData) {
   try {
     const data = getData()
 
@@ -144,7 +145,7 @@ export function saveNow(getData: () => AutoSaveData) {
     if (data.artworks) {
       try {
         const toSave = filterK2ArtworksOnly(data.artworks)
-        saveArtworksByKey('k2-artworks', toSave, { filterK2Only: false, allowReduce: true })
+        await saveArtworksByKeyWithImageStore('k2-artworks', toSave, { filterK2Only: false, allowReduce: true })
       } catch (e) {
         console.warn('⚠️ Artworks zu groß für Sofort-Save')
       }
@@ -635,5 +636,39 @@ export function detectBackupKontext(backup: Record<string, any>): 'k2' | 'oeffen
   if (backup['k2-vk2-stammdaten']) return 'vk2'
   if (backup['k2-oeffentlich-artworks']) return 'oeffentlich'
   return 'unbekannt'
+}
+
+/** Speicher entlasten: Alle Werkbilder im angegebenen Key nachkomprimieren (artwork-Standard).
+ * Keine Daten löschen – nur Bilder verkleinern, damit bei vielen Werken der localStorage nicht voll läuft. */
+export async function compressAllArtworkImages(storageKey: string): Promise<{ ok: boolean; count: number; savedBytes: number; error?: string }> {
+  let savedBytes = 0
+  try {
+    const list = readArtworksRawByKey(storageKey)
+    if (!Array.isArray(list) || list.length === 0) {
+      return { ok: true, count: 0, savedBytes: 0 }
+    }
+    let count = 0
+    const updated = await Promise.all(list.map(async (a: any) => {
+      const url = a?.imageUrl
+      if (typeof url !== 'string' || !url.startsWith('data:image')) return a
+      try {
+        const compressed = await compressImageForStorage(url, { context: 'artwork' })
+        const before = url.length
+        const after = compressed.length
+        if (after < before) {
+          savedBytes += before - after
+          count++
+        }
+        return { ...a, imageUrl: compressed }
+      } catch {
+        return a
+      }
+    }))
+    const ok = saveArtworksByKey(storageKey, updated, { filterK2Only: storageKey === 'k2-artworks', allowReduce: true })
+    return { ok, count, savedBytes, error: ok ? undefined : 'Speichern fehlgeschlagen (Speicher voll?)' }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    return { ok: false, count: 0, savedBytes: 0, error: msg }
+  }
 }
 

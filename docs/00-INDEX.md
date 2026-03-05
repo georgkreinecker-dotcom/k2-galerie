@@ -66,7 +66,8 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **VERMARKTUNGSKONZEPT-EMPFEHLUNGSPROGRAMM.md** – Empfehlungsprogramm / Vermarktung (50 %-Gebühr).
 - **EMPFEHLUNGSKONZEPT-EINFACHER-WEG.md** – **Empfehlung konkret:** Kostensenkung (10 % Rabatt / 10 % Gutschrift), Vermarktung + technische Umsetzung, ohne Cashback.
 - **VERBESSERUNGEN-VERMARKTUNG-GEMEINSAM.md** – **Vorschlag:** Was wir gemeinsam verbessern können (Zielgruppe, Kanäle, Customer Journey, Trust; priorisierte Liste).
-- **MARKETING-EROEFFNUNG-K2-OEK2.md** – **Galerie-Eröffnung:** K2 und ök2 gemeinsam einführen; gezielte Marketinglinie in 2 Wochen; Texte für gemeinsame Lounge (Kernbotschaft, Einladung, Presse, Social); Checkliste; Verweis in mök2.
+- **Werbelinie (verbindlich):** Beide Slogans (1. K2 Galerie – für Künstler:innen, die gesehen werden wollen. 2. Deine Kunst verdient mehr als einen Instagram-Post.) auf allen Werbemaßnahmen. Quelle: `src/config/tenantConfig.ts` (PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2); mök2 → Promotion für alle Medien. **Alle Strategiepapiere** (dieses Doc, Handbuch Vision & Strategie, MARKETING-EROEFFNUNG) sind darauf ausgerichtet.
+- **MARKETING-EROEFFNUNG-K2-OEK2.md** – **Galerie-Eröffnung:** K2 und ök2 gemeinsam einführen; gezielte Marketinglinie in 2 Wochen; Texte für gemeinsame Lounge (Kernbotschaft, Einladung, Presse, Social); Checkliste; Verweis in mök2. Enthält Abschnitt „Verbindliche Werbelinie (Strategie)“.
 - **SICHTBARKEIT-SUCHMASCHINEN-WERBUNG-KONZEPT.md** – **Sichtbar im Netz:** Suchmaschinen (SEO ohne Kosten), alle Werbemöglichkeiten; maximaler Verbreitungsgrad ohne Zusatzkosten; was mit welchem Budget möglich ist (Domain, Google Ads, Social, Agentur).
 - **SICHTBARKEIT-WERBUNG-AGENDA.md** – **Punkt-für-Punkt:** Arbeitsliste Sichtbarkeit & Werbung (Phase 1–3), Status pro Punkt; zum Abarbeiten mit Nächster Schritt.
 - **SICHTBARKEIT-PHASE1-VORLAGEN.md** – **Copy-Paste für Phase 1:** Google Business, Social Bio/Post, QR/Links, Medienlisten (§5a), Presse + **Medienverteiler-Eröffnung** (§6).
@@ -100,6 +101,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **SUPABASE-SETUP.md** – Supabase einrichten.
 - **SUPABASE-SETUP-PROFESSIONELL.md** – Professionelles Setup.
 - **SUPABASE-INTEGRATION-COMPLETE.md** – Integration abgeschlossen.
+- **SUPABASE-STORAGE-WERKBILDER.md** – **Werkbilder in Supabase Storage:** Bucket `artwork-images` anlegen, Policy (Upload), Free Tier 1 GB; beim Start Pro geplant.
 - **MIGRATION-LOCALSTORAGE-TO-SUPABASE.md** – Migration von localStorage zu Supabase.
 
 ## Git, Terminal, Push

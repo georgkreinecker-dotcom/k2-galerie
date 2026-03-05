@@ -69,6 +69,14 @@ export default function ImageCropModal({
     setIsDragging(true)
   }, [crop.x, crop.y])
 
+  /** Touch: Zuschnittrahmen verschieben (wie Maus-Drag) */
+  const handleDragTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!imgRef.current || !e.touches.length) return
+    const t = e.touches[0]
+    dragRef.current = { startX: t.clientX, startY: t.clientY, startCropX: crop.x, startCropY: crop.y }
+    setIsDragging(true)
+  }, [crop.x, crop.y])
+
   /** Resize: Griff unten-rechts ziehen → Zuschnitt vergrößern/verkleinern (Seitenverhältnis bleibt) */
   const handleResizeDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
@@ -94,15 +102,34 @@ export default function ImageCropModal({
         y: dragRef.current!.startCropY + dy
       }))
     }
+    const onTouchMove = (e: TouchEvent) => {
+      if (!imgRef.current || !dragRef.current || !e.touches.length) return
+      e.preventDefault()
+      const t = e.touches[0]
+      const r = imgRef.current.getBoundingClientRect()
+      const dx = (t.clientX - dragRef.current.startX) / r.width
+      const dy = (t.clientY - dragRef.current.startY) / r.height
+      setCrop(prev => clampCrop({
+        ...prev,
+        x: dragRef.current!.startCropX + dx,
+        y: dragRef.current!.startCropY + dy
+      }))
+    }
     const onUp = () => {
       dragRef.current = null
       setIsDragging(false)
     }
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
+    window.addEventListener('touchmove', onTouchMove, { passive: false })
+    window.addEventListener('touchend', onUp)
+    window.addEventListener('touchcancel', onUp)
     return () => {
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onUp)
+      window.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('touchend', onUp)
+      window.removeEventListener('touchcancel', onUp)
     }
   }, [isDragging, clampCrop])
 
@@ -217,7 +244,7 @@ export default function ImageCropModal({
           Zuschnitt verschieben oder an der Ecke vergrößern/verkleinern – genau den Ausschnitt markieren, der die Kachel füllen soll. Mausrad: Größe ändern. Dann „Übernehmen“.
         </p>
         <div
-          style={{ position: 'relative', maxHeight: '70vh', lineHeight: 0 }}
+          style={{ position: 'relative', maxHeight: '70vh', lineHeight: 0, display: 'inline-block' }}
           onWheel={handleWheel}
         >
           <img
@@ -250,6 +277,7 @@ export default function ImageCropModal({
                 cursor: isResizing ? 'nwse-resize' : 'move'
               }}
               onMouseDown={handleMouseDown}
+              onTouchStart={handleDragTouchStart}
             >
               {/* Griff unten-rechts: Zuschnitt vergrößern/verkleinern */}
               <div

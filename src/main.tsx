@@ -139,9 +139,10 @@ if (typeof window !== 'undefined') {
   // Kein setInterval mehr hier – verursachte unnötige Timer und konnte bei HMR/Reload zu Mehrfach-Intervallen führen
 }
 
-// Finale Lösung Crash: Im iframe (Cursor Preview) die App NICHT laden – nur Hinweis. Kein React, kein HMR, keine Last → keine Crashes.
+// Finale Lösung Crash: Im iframe (Cursor Preview) die App NICHT laden – nur Hinweis. Ausnahme: embedded=1 = APf iPhone/iPad-Vorschau, dort App laden damit Galerie → Admin in derselben Ansicht funktioniert.
 const rootElement = typeof document !== 'undefined' ? document.getElementById('root') : null
-if (rootElement && inIframe) {
+const embeddedInApf = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embedded') === '1'
+if (rootElement && inIframe && !embeddedInApf) {
   const port = typeof window !== 'undefined' && window.location.port ? window.location.port : '5177'
   // Volle URL (Pfad + Suchparameter), damit z. B. /projects/k2-galerie?page=handbuch&doc=... im Browser genau diese Seite öffnet
   const fullUrl = typeof window !== 'undefined'

@@ -7,9 +7,10 @@
  * Am Ende: verblüffender Moment – „Das ist deine Galerie."
  */
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { PROJECT_ROUTES, AGB_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY } from '../config/navigation'
+import { PROJECT_ROUTES, AGB_ROUTE } from '../config/navigation'
+import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
 import { PRODUCT_BRAND_NAME, PRODUCT_FEEDBACK_EMAIL, PRODUCT_FEEDBACK_BETREFF, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 
@@ -44,13 +45,14 @@ function speichereNotiz(text: string, step: string) {
 
 // ─── Texte (hier zentral, später leicht übersetzbar) ─────────────────────────
 const T = {
-  heroTag: 'Für Künstler:innen die gesehen werden wollen',
-  heroTitle: 'Deine Kunst verdient mehr als einen Instagram-Post.',
+  heroTag: PRODUCT_WERBESLOGAN,
+  heroTitle: PRODUCT_WERBESLOGAN_2,
   heroSub: 'Wähle deinen Weg – dann siehst du sofort, was dich erwartet.',
+  heroDeviceHint: 'Am besten auf Tablet oder Computer – so siehst du alle Möglichkeiten auf einen Blick. Smartphone geht auch, ist aber nicht optimal, auch beim Ausfüllen.',
   cta: 'Jetzt entdecken →',
   ctaSub: 'Kostenlos · Keine Anmeldung · 1 Minute',
 
-  weg: 'Wohin möchtest du?',
+  weg: 'Wofür interessierst du dich?',
   wegSolo: { emoji: '🖼️', label: 'Meine eigene Galerie', sub: 'Deine Werke, dein Name, dein Auftritt – online und im Atelier.' },
   wegVerein: { emoji: '🏛️', label: 'Vereinsgalerie', sub: 'Gemeinsamer Katalog, Mitglieder, gemeinsame Galerie – eine eigene Welt.' },
 
@@ -72,7 +74,7 @@ const T = {
 }
 
 // q2 entfällt – der Guide auf der Galerie-Seite übernimmt die Tiefenanalyse
-type Step = 'hero' | 'q1' | 'q3' | 'hub' | 'result'
+type Step = 'hero' | 'q1' | 'hub' | 'result'
 
 interface Answers {
   q1: string
@@ -567,6 +569,10 @@ function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, 
 
 export default function EntdeckenPage() {
   const navigate = useNavigate()
+  /** Beim Betreten Entdecken: Flag zurücksetzen, damit Direktaufrufer von galerie-oeffentlich wieder hierher umgeleitet werden. */
+  useEffect(() => {
+    try { sessionStorage.removeItem('k2-from-entdecken') } catch (_) {}
+  }, [])
   // ?step=hub → direkt zum Hub springen (z.B. Zurück-Button vom Admin)
   // ?q1=verein → Vereins-Antwort vorausfüllen
   const initialStep: Step = (() => {
@@ -611,23 +617,15 @@ export default function EntdeckenPage() {
   const fontHeading = WERBEUNTERLAGEN_STIL.fontHeading
   const fontBody = WERBEUNTERLAGEN_STIL.fontBody
 
-  const goToDemo = () => {
-    const name = answers.q3.trim()
-    const istVerein = answers.q1 === 'verein'
+  /** Nach Galerie-Entscheidung: Fremde zuerst auf die ök2-/VK2-Willkommensseite („WILLKOMMEN BEI Galerie Muster“) – nirgends sonst */
+  const openByChoice = (weg: 'solo' | 'verein') => {
     try {
-      if (name) {
-        sessionStorage.setItem(WILLKOMMEN_NAME_KEY, name)
-        sessionStorage.setItem(WILLKOMMEN_ENTWURF_KEY, '1')
-        localStorage.setItem(WILLKOMMEN_NAME_KEY, name)
-        localStorage.setItem(WILLKOMMEN_ENTWURF_KEY, '1')
-      }
+      sessionStorage.setItem('k2-from-entdecken', '1')
     } catch (_) {}
-    // Verein → VK2-Galerie, sonst → ök2-Galerie-Vorschau (dort personalisierter Guide)
-    const url = istVerein
-      ? PROJECT_ROUTES.vk2.galerieVorschau
-      : PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau
-    const params = name ? `?vorname=${encodeURIComponent(name)}&entwurf=1` : ''
-    navigate(url + params)
+    const url = weg === 'verein'
+      ? PROJECT_ROUTES.vk2.galerie
+      : PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+    navigate(url)
   }
 
   // ─── Hilfs-Komponente: Auswahl-Karte ────────────────────────────────────────
@@ -668,7 +666,7 @@ export default function EntdeckenPage() {
 
   // ─── Progress-Punkte ────────────────────────────────────────────────────────
   function Progress() {
-    const steps: Step[] = ['q1', 'q3']
+    const steps: Step[] = ['q1']
     const current = steps.indexOf(step as Step)
     return (
       <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginBottom: '1.75rem' }}>
@@ -708,8 +706,11 @@ export default function EntdeckenPage() {
                 <h1 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 700, color: textLight, margin: '0 0 1.25rem', lineHeight: 1.15, letterSpacing: '-0.02em', maxWidth: 480 }}>
                   {T.heroTitle}
                 </h1>
-                <p style={{ fontSize: 'clamp(0.95rem, 2vw, 1.1rem)', color: '#d4a574', lineHeight: 1.7, maxWidth: 420, marginBottom: '2.5rem' }}>
+                <p style={{ fontSize: 'clamp(0.95rem, 2vw, 1.1rem)', color: '#d4a574', lineHeight: 1.7, maxWidth: 420, marginBottom: '0.75rem' }}>
                   {T.heroSub}
+                </p>
+                <p style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: 'rgba(212,165,116,0.85)', lineHeight: 1.5, maxWidth: 420, marginBottom: '2.5rem' }}>
+                  {T.heroDeviceHint}
                 </p>
                 <button type="button" onClick={() => setStep('q1')}
                   style={{ display: 'inline-block', padding: 'clamp(0.85rem, 2vw, 1.05rem) clamp(2rem, 4vw, 2.75rem)', background: `linear-gradient(135deg, ${accentGlow} 0%, ${accent} 100%)`, color: '#fff', border: 'none', borderRadius: '50px', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: 'clamp(0.95rem, 2vw, 1.1rem)', letterSpacing: '0.01em', boxShadow: `0 8px 32px ${accentGlow}44`, transition: 'all 0.2s' }}
@@ -746,35 +747,17 @@ export default function EntdeckenPage() {
                   Bild in Admin → Design wählen
                 </div>
               )}
-              {/* Klick = zum Admin, dort „Bild wählen“ */}
-              <Link
-                to="/mein-bereich?tab=design"
-                style={{
-                  position: 'absolute', bottom: 12, right: 12, zIndex: 2,
-                  fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', textDecoration: 'none',
-                  padding: '0.25rem 0.5rem', background: 'rgba(0,0,0,0.4)', borderRadius: 6,
-                }}
-              >
-                Bild ändern
-              </Link>
               {/* Gradient-Übergang links zum Text */}
               <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${bgDark} 0%, transparent 35%)`, pointerEvents: 'none' }} />
               {/* Gradient unten */}
               <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, ${bgDark} 0%, transparent 40%)`, pointerEvents: 'none' }} />
             </div>
           </div>
-
-          {/* Trust-Leiste */}
-          <div style={{ background: 'rgba(0,0,0,0.35)', borderTop: `1px solid rgba(255,255,255,0.06)`, padding: '0.9rem clamp(1.5rem, 4vw, 3rem)', display: 'flex', justifyContent: 'center', gap: 'clamp(1.5rem, 4vw, 3rem)', flexWrap: 'wrap' }}>
-            {['🎨 Für jede Kunstart', '📱 Auf jedem Gerät', '🔒 Keine Anmeldung nötig'].map(item => (
-              <span key={item} style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>{item}</span>
-            ))}
-          </div>
         </div>
       )}
 
       {/* ── FRAGEN-FLOW ──────────────────────────────────────────────────────── */}
-      {(step === 'q1' || step === 'q3') && (
+      {step === 'q1' && (
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'clamp(2rem, 5vw, 4rem) clamp(1rem, 4vw, 2rem)' }}>
           <div style={{ maxWidth: 540, width: '100%' }}>
 
@@ -785,56 +768,15 @@ export default function EntdeckenPage() {
 
             <Progress />
 
-            {/* Zwei Wege – keine Vermischung */}
-            {step === 'q1' && (
-              <>
-                <h2 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', fontWeight: 700, color: text, textAlign: 'center', marginBottom: '1.5rem', lineHeight: 1.3 }}>
-                  {T.weg}
-                </h2>
-                <ChoiceCard {...T.wegSolo} selected={answers.q1 === 'solo'} onClick={() => setAnswers(a => ({ ...a, q1: 'solo' }))} />
-                <ChoiceCard {...T.wegVerein} selected={answers.q1 === 'verein'} onClick={() => setAnswers(a => ({ ...a, q1: 'verein' }))} color="#1e5cb5" />
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
-                  <button type="button" onClick={() => setStep('hero')} style={{ padding: '0.7rem 1.25rem', background: 'transparent', color: muted, border: `1px solid #e0d5c5`, borderRadius: '10px', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.9rem' }}>{T.btnBack}</button>
-                  <button type="button" disabled={answers.q1 !== 'solo' && answers.q1 !== 'verein'} onClick={() => setStep('q3')} style={{ padding: '0.7rem 1.75rem', background: (answers.q1 === 'solo' || answers.q1 === 'verein') ? `linear-gradient(135deg, ${accent}, ${accentLight})` : '#ccc', color: '#fff', border: 'none', borderRadius: '10px', cursor: (answers.q1 === 'solo' || answers.q1 === 'verein') ? 'pointer' : 'not-allowed', fontFamily: fontBody, fontSize: '0.95rem', fontWeight: 700 }}>{T.btnNext}</button>
-                </div>
-              </>
-            )}
-
-            {/* Frage 2 (Name) */}
-            {step === 'q3' && (
-              <>
-                <h2 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', fontWeight: 700, color: text, textAlign: 'center', marginBottom: '0.6rem', lineHeight: 1.3 }}>
-                  {T.q3}
-                </h2>
-                <p style={{ textAlign: 'center', fontSize: '0.85rem', color: muted, marginBottom: '1.5rem', lineHeight: 1.5 }}>
-                  {T.q3hint}
-                </p>
-                <input
-                  type="text"
-                  value={answers.q3}
-                  onChange={e => setAnswers(a => ({ ...a, q3: e.target.value }))}
-                  onKeyDown={e => { if (e.key === 'Enter') setStep('hub') }}
-                  placeholder={T.q3placeholder}
-                  autoFocus
-                  style={{ width: '100%', padding: '1rem 1.25rem', border: `2px solid ${accent}44`, borderRadius: '12px', fontFamily: fontHeading, fontSize: '1.1rem', background: bgCard, color: text, marginBottom: '1rem', boxSizing: 'border-box', outline: 'none', transition: 'border-color 0.2s' }}
-                  onFocus={e => { e.currentTarget.style.borderColor = accent }}
-                  onBlur={e => { e.currentTarget.style.borderColor = `${accent}44` }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setStep('hub')}
-                  style={{ width: '100%', padding: '1.1rem', background: `linear-gradient(135deg, ${accentGlow} 0%, ${accent} 100%)`, color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: '1.05rem', boxShadow: `0 6px 24px ${accent}33`, transition: 'all 0.2s', marginBottom: '0.75rem' }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)' }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)' }}
-                >
-                  {answers.q3.trim() ? T.btnFinishName(answers.q3.trim()) : T.btnFinish}
-                </button>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <button type="button" onClick={() => setStep('q1')} style={{ padding: '0.6rem 1rem', background: 'transparent', color: muted, border: `1px solid #e0d5c5`, borderRadius: '10px', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.85rem' }}>{T.btnBack}</button>
-                  <span style={{ fontSize: '0.75rem', color: muted }}>{T.footNote}</span>
-                </div>
-              </>
-            )}
+            {/* Ein Klick auf die Karte öffnet direkt ök2 oder VK2 – kein Zusatzbutton */}
+            <h2 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', fontWeight: 700, color: text, textAlign: 'center', marginBottom: '1.5rem', lineHeight: 1.3 }}>
+              {T.weg}
+            </h2>
+            <ChoiceCard {...T.wegSolo} selected={answers.q1 === 'solo'} onClick={() => { setAnswers(a => ({ ...a, q1: 'solo' })); openByChoice('solo'); }} />
+            <ChoiceCard {...T.wegVerein} selected={answers.q1 === 'verein'} onClick={() => { setAnswers(a => ({ ...a, q1: 'verein' })); openByChoice('verein'); }} color="#1e5cb5" />
+            <div style={{ marginTop: '1rem' }}>
+              <button type="button" onClick={() => setStep('hero')} style={{ padding: '0.7rem 1.25rem', background: 'transparent', color: muted, border: `1px solid #e0d5c5`, borderRadius: '10px', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.9rem' }}>{T.btnBack}</button>
+            </div>
           </div>
         </div>
       )}
@@ -842,7 +784,7 @@ export default function EntdeckenPage() {
       {/* ── HUB: Alle Themen + Guide in der Mitte als Arbeitsbereich ─────────── */}
       {step === 'hub' && (
         <HubArbeitsbereich
-          name={answers.q3.trim()}
+          name=""
           q1={answers.q1}
           accent={accent}
           accentLight={accentLight}
@@ -852,8 +794,8 @@ export default function EntdeckenPage() {
           bgLight={bgLight}
           fontHeading={fontHeading}
           fontBody={fontBody}
-          onStarten={goToDemo}
-          onZurueck={() => setStep('q3')}
+          onStarten={() => openByChoice(answers.q1 === 'verein' ? 'verein' : 'solo')}
+          onZurueck={() => setStep('q1')}
         />
       )}
 
@@ -862,7 +804,7 @@ export default function EntdeckenPage() {
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '3rem 1.5rem', background: bgLight }}>
           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎨</div>
           <h2 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.6rem, 4vw, 2.4rem)', fontWeight: 700, color: text, margin: '0 0 0.75rem', lineHeight: 1.2 }}>
-            {T.resultTitle(answers.q3.trim())}
+            {T.resultTitle('')}
           </h2>
           <p style={{ fontSize: '1rem', color: muted, marginBottom: '0.5rem' }}>{T.resultSub}</p>
           <p style={{ fontSize: '0.85rem', color: muted }}>{T.resultNoPressure}</p>
@@ -878,15 +820,14 @@ export default function EntdeckenPage() {
         </div>
       )}
 
-      {/* Fußzeile */}
-      {step !== 'result' && (
-        <div style={{ textAlign: 'center', padding: '1rem', fontSize: '0.72rem', color: muted, borderTop: '1px solid #e8ddd0', background: bgCard }}>
+      {/* Fußzeile – nicht auf erster Seite (Hero), damit klare Botschaft ohne Ablenkung */}
+      {step !== 'result' && step !== 'hero' && (
+        <div style={{ textAlign: 'center', padding: '0.75rem 1rem', fontSize: '0.72rem', color: muted, borderTop: '1px solid #e8ddd0', background: bgCard }}>
           <Link to={AGB_ROUTE} style={{ color: muted, textDecoration: 'none' }}>AGB</Link>
           {' · '}
           {PRODUCT_BRAND_NAME}
           {' · '}
           <span>Kein Erwerb nötig</span>
-          <p style={{ margin: '0.35rem 0 0', fontSize: '0.68rem', color: muted }}>Empfehlungsprogramm: 10 % Rabatt für dich, 10 % Gutschrift für den Empfehler – Empfehler-ID beim Lizenzkauf angeben.</p>
         </div>
       )}
 

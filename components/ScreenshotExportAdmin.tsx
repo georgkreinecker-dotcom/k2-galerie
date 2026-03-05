@@ -25,7 +25,9 @@ import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
-import { addPendingArtwork, filterK2Only, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey } from '../src/utils/artworksStorage'
+import { addPendingArtwork, filterK2Only, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, saveArtworksByKeyWithImageStore, readArtworksWithResolvedImages, resolveArtworkImages } from '../src/utils/artworksStorage'
+import { isSupabaseConfigured } from '../src/utils/supabaseClient'
+import { uploadArtworkImageToStorage } from '../src/utils/supabaseStorage'
 import { loadStammdaten, saveStammdaten as persistStammdaten, loadVk2Stammdaten, saveVk2Stammdaten } from '../src/utils/stammdatenStorage'
 import { loadEvents as loadEventsFromStorage } from '../src/utils/eventsStorage'
 import { loadDocuments as loadDocumentsFromStorage } from '../src/utils/documentsStorage'
@@ -578,7 +580,7 @@ const OEF_DESIGN_DEFAULT = {
 } as const
 import { checkLocalStorageSize, cleanupLargeImages, getLocalStorageReport, tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from './SafeMode'
 import { GalerieAssistent } from '../src/components/GalerieAssistent'
-import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps, createK2Backup, createOek2Backup, createVk2Backup, downloadBackupAsFile, restoreK2FromBackup, restoreOek2FromBackup, restoreVk2FromBackup, detectBackupKontext } from '../src/utils/autoSave'
+import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps, createK2Backup, createOek2Backup, createVk2Backup, downloadBackupAsFile, restoreK2FromBackup, restoreOek2FromBackup, restoreVk2FromBackup, detectBackupKontext, compressAllArtworkImages } from '../src/utils/autoSave'
 import { sortArtworksNewestFirst, sortArtworksFavoritesFirstThenNewest } from '../src/utils/artworkSort'
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
 import { getOrCreateEmpfehlerId, isValidEmpfehlerIdFormat } from '../src/utils/empfehlerId'
@@ -605,23 +607,36 @@ try {
   // Ignoriere Import-Fehler
 }
 
-// Phase 1.2: Eine Schicht – Schreiben nur über artworksStorage.
-function saveArtworks(tenant: ReturnType<typeof useTenant>, artworks: any[]): boolean {
+// Phase 1.2: Eine Schicht – Schreiben nur über artworksStorage. Speichermix: große Bilder in IndexedDB.
+async function saveArtworks(tenant: ReturnType<typeof useTenant>, artworks: any[]): Promise<boolean> {
   if (tenant.isVk2) return false
   const key = tenant.getArtworksKey()
-  const ok = saveArtworksByKey(key, artworks, { filterK2Only: tenant.tenantId === 'k2', allowReduce: true })
+  let ok = await saveArtworksByKeyWithImageStore(key!, artworks, { filterK2Only: tenant.tenantId === 'k2', allowReduce: true })
   if (ok) console.log('✅ Gespeichert:', artworks.length, 'Werke', key === 'k2-oeffentlich-artworks' ? '(ök2)' : '')
   else if (artworks.length > 0) {
     const freed = tryFreeLocalStorageSpace()
     if (freed > 0) {
-      const retry = saveArtworksByKey(key, artworks, { filterK2Only: tenant.tenantId === 'k2', allowReduce: true })
-      if (retry) console.log('✅ Nach Speicher-Freigabe gespeichert')
+      ok = await saveArtworksByKeyWithImageStore(key!, artworks, { filterK2Only: tenant.tenantId === 'k2', allowReduce: true })
+      if (ok) console.log('✅ Nach Speicher-Freigabe gespeichert')
       else alert('⚠️ ' + SPEICHER_VOLL_MELDUNG)
-      return retry
+      return ok
     }
-    alert('⚠️ Zu viele Werke oder Speicher voll. Bitte einige löschen.')
+    alert('⚠️ Zu viele Werke oder Speicher voll. Bitte Einstellungen → Speicher entlasten oder einige löschen.')
   }
   return ok
+}
+
+/** Lädt Werke mit aufgelösten Bildern aus IndexedDB (Speichermix). Für Anzeige. */
+async function loadArtworksWithResolvedImages(tenant: ReturnType<typeof useTenant>): Promise<any[]> {
+  if (tenant.isVk2) return []
+  const key = tenant.getArtworksKey()
+  if (!key) return []
+  if (tenant.isOeffentlich) {
+    const raw = readArtworksRawByKeyOrNull(key)
+    const list = raw === null ? [...MUSTER_ARTWORKS] : (Array.isArray(raw) ? raw : [])
+    return resolveArtworkImages(list)
+  }
+  return readArtworksWithResolvedImages(key)
 }
 
 /** Lädt Werke ROH – über artworksStorage (Phase 1.2). Ohne Anzeige-Filter, für Schreibvorgänge.
@@ -785,8 +800,8 @@ function loadArtworks(tenant: ReturnType<typeof useTenant>): any[] {
     if (hasDuplicates && fixedNumbers.length > 0) {
       try {
         console.log(`💾 Speichere ${fixedNumbers.length} umbenannte Werke...`)
-        const saved = saveArtworks(tenant, artworks)
-        if (saved) {
+        saveArtworks(tenant, artworks).then((saved) => {
+          if (saved) {
           console.log('✅ Doppelte Nummern automatisch behoben und gespeichert')
           console.log(`📝 ${fixedNumbers.length} Werke umbenannt:`, fixedNumbers)
           // Dispatch Event damit UI aktualisiert wird
@@ -798,9 +813,10 @@ function loadArtworks(tenant: ReturnType<typeof useTenant>): any[] {
             localStorage.setItem('k2-duplicate-fix-time', now.toString())
             console.log(`ℹ️ ${fixedNumbers.length} Werke wurden automatisch umbenannt um Duplikate zu beheben`)
           }
-        } else {
-          console.error('❌ Fehler beim Speichern korrigierter Daten')
-        }
+          } else {
+            console.error('❌ Fehler beim Speichern korrigierter Daten')
+          }
+        }).catch((e) => { console.error('Fehler beim Speichern korrigierter Daten:', e) })
       } catch (e) {
         console.error('Fehler beim Speichern korrigierter Daten:', e)
       }
@@ -1163,6 +1179,7 @@ function ScreenshotExportAdmin() {
   const [backupTimestamps, setBackupTimestamps] = useState<string[]>([])
   const [restoreProgress, setRestoreProgress] = useState<'idle' | 'running' | 'done'>('idle')
   const [isRestoringWerkeFromPublished, setIsRestoringWerkeFromPublished] = useState(false)
+  const [entlastenInProgress, setEntlastenInProgress] = useState(false)
   const [backupPanelMinimized, setBackupPanelMinimized] = useState(true)
   const backupFileInputRef = useRef<HTMLInputElement>(null)
   const [adminNewPw, setAdminNewPw] = useState('')
@@ -1400,6 +1417,8 @@ function ScreenshotExportAdmin() {
   const [showVitaEditor, setShowVitaEditor] = useState(false)
   /** Einstellungen: Vita-Bereich Person 1/2 erst auf Klick aufklappen (Handy-freundlich). */
   const [vitaMartinaOpen, setVitaMartinaOpen] = useState(false)
+  /** Einstellungen: Galerie-Adresse (optional) – nur Link zum Öffnen, wird kaum gebraucht. */
+  const [galerieAdresseOpen, setGalerieAdresseOpen] = useState(false)
   /** VK2 Mitglied-Login Modal */
   const [showMitgliedLogin, setShowMitgliedLogin] = useState(false)
   const [mitgliedLoginName, setMitgliedLoginName] = useState('')
@@ -2746,10 +2765,11 @@ function ScreenshotExportAdmin() {
           if (isMounted) setAllArtworks([])
           return
         }
-        const artworks = loadArtworks(tenant)
-        if (isMounted && Array.isArray(artworks)) {
-          setAllArtworks(inIframe ? stripArtworkImagesForPreview(artworks) : artworks)
-        }
+        loadArtworksWithResolvedImages(tenant).then((artworks) => {
+          if (isMounted && Array.isArray(artworks)) {
+            setAllArtworks(inIframe ? stripArtworkImagesForPreview(artworks) : artworks)
+          }
+        }).catch(() => { if (isMounted) setAllArtworks([]) })
       } catch (_) {
         if (isMounted) setAllArtworks([])
       }
@@ -2770,26 +2790,18 @@ function ScreenshotExportAdmin() {
         return
       }
       console.log('🔄 artworks-updated Event empfangen - lade Werke neu...')
-      try {
-        // ök2: Gespeichert leer = wirklich leer anzeigen (kein Rückfall auf Musterwerke)
-        if (tenant.isOeffentlich && readArtworksRawByKey('k2-oeffentlich-artworks').length === 0) {
-          setAllArtworks([])
-          return
-        }
-        const artworks = loadArtworks(tenant)
-        console.log('📦 Geladene Werke:', artworks.length)
-        // K2: Niemals nicht-leere Anzeige durch leeres Neuladen ersetzen (verhindert „alle weg“ nach Speichern)
+      if (tenant.isOeffentlich && readArtworksRawByKey('k2-oeffentlich-artworks').length === 0) {
+        setAllArtworks([])
+        return
+      }
+      loadArtworksWithResolvedImages(tenant).then((artworks) => {
         if (!tenant.isOeffentlich && !tenant.isVk2 && artworks.length === 0 && allArtworksRef.current.length > 0) {
           console.warn('⚠️ loadArtworks leer, aber Anzeige hat Werke – nicht überschreiben')
           return
         }
-        if (Array.isArray(artworks)) {
-          const inIframe = typeof window !== 'undefined' && window.self !== window.top
-          setAllArtworks(inIframe ? artworks.map((a: any) => (a && typeof a?.imageUrl === 'string' && a.imageUrl.startsWith('data:')) ? { ...a, imageUrl: '' } : a) : artworks)
-        }
-      } catch (error) {
-        console.error('Fehler beim Neuladen der Werke:', error)
-      }
+        const inIframe = typeof window !== 'undefined' && window.self !== window.top
+        setAllArtworks(inIframe ? artworks.map((a: any) => (a && typeof a?.imageUrl === 'string' && a.imageUrl.startsWith('data:')) ? { ...a, imageUrl: '' } : a) : artworks)
+      }).catch((error) => { console.error('Fehler beim Neuladen der Werke:', error) })
     }
     
     window.addEventListener('artworks-updated', handleArtworksUpdate)
@@ -2852,7 +2864,7 @@ function ScreenshotExportAdmin() {
           } catch (_) {}
         }
         if (ok) {
-          setAllArtworksSafe(loadArtworks(tenant))
+          loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
           window.dispatchEvent(new CustomEvent('artworks-updated', { detail: {} }))
           setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
           const exportedAt = data.exportedAt ? ` (Stand: ${new Date(String(data.exportedAt)).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })})` : ''
@@ -2907,8 +2919,10 @@ function ScreenshotExportAdmin() {
       })
       const toSave = filterK2Only(merged)
       if (toSave.length >= localArtworks.length || toSave.length >= (loadArtworks(tenant).length || 0)) {
-        if (saveArtworks(tenant, toSave)) {
-          setAllArtworksSafe(loadArtworks(tenant))
+        const saved = await saveArtworks(tenant, toSave)
+        if (saved) {
+          const resolved = await loadArtworksWithResolvedImages(tenant)
+          setAllArtworksSafe(resolved)
           window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: toSave.length } }))
           setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
           const exportedAt = data.exportedAt ? ` (Stand: ${new Date(data.exportedAt).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })})` : ''
@@ -2952,12 +2966,13 @@ function ScreenshotExportAdmin() {
         alert('Auf dem Server liegt noch kein Stand deiner Werke.\n\nKlicke zuerst einmal auf „Aktualisieren“, damit deine Werke dorthin gespeichert werden. Oder nutze eine zuvor heruntergeladene Sicherungsdatei („Aus Backup-Datei wiederherstellen“).')
         return
       }
-      const ok = saveArtworksByKey('k2-artworks', list, { filterK2Only: true, allowReduce: true })
+      const ok = await saveArtworksByKeyWithImageStore('k2-artworks', list, { filterK2Only: true, allowReduce: true })
       if (!ok) {
-        alert('Die Daten konnten nicht gespeichert werden (z. B. Speicher voll). Bitte versuche es mit „Aus Backup-Datei wiederherstellen“ und einer Sicherungsdatei von dir.')
+        alert('Die Daten konnten nicht gespeichert werden (z. B. Speicher voll). Bitte versuche es mit „Aus Backup-Datei wiederherstellen“ oder „Speicher entlasten“.')
         return
       }
-      setAllArtworksSafe(loadArtworks(tenant))
+      const resolved = await loadArtworksWithResolvedImages(tenant)
+      setAllArtworksSafe(resolved)
       if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated'))
       alert(`✅ Fertig. ${list.length} Werke wurden vom Server zurück in deine App geladen.`)
     } catch (e) {
@@ -7227,10 +7242,12 @@ ${'='.repeat(60)}
     if (idx === -1) return
     const updated = [...artworks]
     updated[idx] = { ...updated[idx], inExhibition: !updated[idx].inExhibition }
-    if (saveArtworks(tenant, updated)) {
-      setAllArtworksSafe(loadArtworks(tenant))
-      window.dispatchEvent(new CustomEvent('artworks-updated'))
-    }
+    saveArtworks(tenant, updated).then((ok) => {
+      if (ok) {
+        loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
+        window.dispatchEvent(new CustomEvent('artworks-updated'))
+      }
+    })
   }
 
   // Verkauf stornieren: aus k2-sold-artworks entfernen, Stückzahl +1
@@ -7246,10 +7263,12 @@ ${'='.repeat(60)}
       const a = artworks[idx]
       const q = a.quantity != null ? Number(a.quantity) : 0
       artworks[idx] = { ...a, quantity: q + 1, inShop: true }
-      if (saveArtworks(tenant, artworks)) {
-        setAllArtworksSafe(loadArtworks(tenant))
-        window.dispatchEvent(new CustomEvent('artworks-updated'))
-      }
+      saveArtworks(tenant, artworks).then((ok) => {
+        if (ok) {
+          loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
+          window.dispatchEvent(new CustomEvent('artworks-updated'))
+        }
+      })
     }
   }
 
@@ -7281,10 +7300,12 @@ ${'='.repeat(60)}
       } else {
         artworks[idx] = { ...a, quantity: 0, inShop: false }
       }
-      if (saveArtworks(tenant, artworks)) {
-        setAllArtworksSafe(loadArtworks(tenant))
-        window.dispatchEvent(new CustomEvent('artworks-updated'))
-      }
+      saveArtworks(tenant, artworks).then((ok) => {
+        if (ok) {
+          loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
+          window.dispatchEvent(new CustomEvent('artworks-updated'))
+        }
+      })
     }
 
     alert(`✅ Werk ${artworkNumber} wurde als verkauft markiert!${idx !== -1 ? ' Stückzahl wurde angepasst.' : ''}`)
@@ -7307,7 +7328,7 @@ ${'='.repeat(60)}
       localStorage.setItem('k2-reserved-artworks', JSON.stringify(reserved))
       alert(`✅ Werk ${artworkNumber} ist reserviert${name.trim() ? ` für ${name.trim()}` : ''}.`)
     }
-    setAllArtworksSafe(loadArtworks(tenant))
+    loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
     window.dispatchEvent(new CustomEvent('artworks-updated'))
     setShowReserveModal(false)
     setReserveInput('')
@@ -7572,9 +7593,14 @@ ${'='.repeat(60)}
         if (photoImageMode === 'freigestellt') {
           try {
             const { compositeOnProfessionalBackground } = await import('../src/utils/professionalImageBackground')
-            imageDataUrl = await compositeOnProfessionalBackground(imageDataUrl, photoBackgroundPreset)
+            imageDataUrl = await compositeOnProfessionalBackground(imageDataUrl, photoBackgroundPreset, {
+              onFreistellungSkipped: () => {
+                alert('Freistellung konnte nicht durchgeführt werden (z. B. Modell nicht geladen). Es wird der professionelle Hintergrund ohne Freistellung verwendet.')
+              }
+            })
           } catch (err) {
             console.warn('Freistellung (Vorschau-Pfad) fehlgeschlagen, verwende Original:', err)
+            alert('Freistellung fehlgeschlagen. Es wird das Original mit Pro-Hintergrund verwendet.')
             try {
               const key = 'k2-freistellen-fallback-count'
               const n = parseInt(sessionStorage.getItem(key) || '0', 10) + 1
@@ -7598,9 +7624,14 @@ ${'='.repeat(60)}
         if (photoImageMode === 'freigestellt') {
           try {
             const { compositeOnProfessionalBackground } = await import('../src/utils/professionalImageBackground')
-            imageDataUrl = await compositeOnProfessionalBackground(imageDataUrl, photoBackgroundPreset)
+            imageDataUrl = await compositeOnProfessionalBackground(imageDataUrl, photoBackgroundPreset, {
+              onFreistellungSkipped: () => {
+                alert('Freistellung konnte nicht durchgeführt werden (z. B. Modell nicht geladen). Es wird der professionelle Hintergrund ohne Freistellung verwendet.')
+              }
+            })
           } catch (err) {
             console.warn('Freistellung fehlgeschlagen, verwende Original:', err)
+            alert('Freistellung fehlgeschlagen. Es wird das Original mit Pro-Hintergrund verwendet.')
             try {
               const key = 'k2-freistellen-fallback-count'
               const n = parseInt(sessionStorage.getItem(key) || '0', 10) + 1
@@ -7650,6 +7681,13 @@ ${'='.repeat(60)}
       finalArtworkNumber = await generateArtworkNumber(artworkCategory)
     }
     
+    // Optional: Werkbild in Supabase Storage hochladen → imageUrl = öffentliche URL (spart Speicher, Sync überall)
+    let imageUrlForArtwork = imageDataUrl
+    if (isSupabaseConfigured() && typeof imageDataUrl === 'string' && imageDataUrl.startsWith('data:')) {
+      const storageUrl = await uploadArtworkImageToStorage(imageDataUrl, finalArtworkNumber)
+      if (storageUrl) imageUrlForArtwork = storageUrl
+    }
+    
     const quantityNum = Math.min(99, Math.max(1, parseInt(artworkQuantity, 10) || 1))
     const artworkData: any = {
       id: finalArtworkNumber,
@@ -7668,7 +7706,7 @@ ${'='.repeat(60)}
       inExhibition: isInExhibition,
       inShop: isInShop,
       imVereinskatalog: isImVereinskatalog || false,
-      imageUrl: imageDataUrl,
+      imageUrl: imageUrlForArtwork,
       imageDisplayMode: photoImageMode === 'original' ? 'normal' : photoImageMode === 'freigestellt' ? 'freigestellt' : 'vollkachel',
       createdAt: new Date().toISOString(),
       addedToGalleryAt: new Date().toISOString(),
@@ -7864,20 +7902,19 @@ ${'='.repeat(60)}
           return
         }
         
-        const saved = saveArtworks(tenant, keptArtworks)
+        const saved = await saveArtworks(tenant, keptArtworks)
         if (!saved) {
           console.error('❌ Speichern fehlgeschlagen!')
           alert('⚠️ Fehler beim Speichern! Bitte versuche es erneut.')
           return
         }
-        
         const removedCount = artworks.length - keptArtworks.length
         artworks = keptArtworks
         if (removedCount > 0 && currentSize > maxSize) {
           alert(`⚠️ localStorage war zu voll!\n\nDie ältesten ${removedCount} Werke wurden automatisch gelöscht.\n\nBitte verwende kleinere Bilder um Platz zu sparen.`)
         }
       } else {
-        const saved = saveArtworks(tenant, artworks)
+        const saved = await saveArtworks(tenant, artworks)
         if (!saved) {
           console.error('❌ Speichern fehlgeschlagen!')
           alert('⚠️ Fehler beim Speichern! Bitte versuche es erneut.')
@@ -7957,8 +7994,9 @@ ${'='.repeat(60)}
           const updatedArtworks = list.map((a: any) =>
             (a?.id === artworkData.id || a?.number === artworkData.number) ? { ...a, imageUrl: url } : a
           )
-          saveArtworks(tenant, updatedArtworks)
-          setAllArtworksSafe(loadArtworks(tenant))
+          await saveArtworks(tenant, updatedArtworks)
+          const resolved = await loadArtworksWithResolvedImages(tenant)
+          setAllArtworksSafe(resolved)
           console.log('✅ Werk-Bild auf GitHub hochgeladen:', url)
         } catch (uploadErr) {
           console.warn('GitHub Upload für Werk fehlgeschlagen (Bild bleibt lokal):', uploadErr)
@@ -8005,7 +8043,7 @@ ${'='.repeat(60)}
         const count = parseInt(sessionStorage.getItem(countKey) || '0', 10)
         if (count > 0) {
           sessionStorage.setItem(countKey, String(count - 1))
-          alert('Foto gespeichert. Auf diesem Gerät wurde keine Freistellung durchgeführt – das Foto hat einen professionellen Hintergrund.\n\nAm Mac: Werk bearbeiten → „Foto jetzt freistellen“ für echte Freistellung.')
+          alert('Foto gespeichert. Die Freistellung konnte nicht durchgeführt werden – das Foto hat einen professionellen Hintergrund.')
         }
       } catch (_) {}
       
@@ -10230,7 +10268,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               <StatistikTab
                 allArtworks={allArtworks}
                 onMarkAsReserved={handleMarkAsReserved}
-                onRerender={() => setAllArtworksSafe(loadArtworks(tenant))}
+                onRerender={() => loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)}
                 onStorno={handleStornoVerkauf}
               />
               {/* PDFs & Speicherdaten – hier bei Kassa/Statistik, nicht in Einstellungen */}
@@ -10284,8 +10322,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               const newArtworks = importData.artworks.filter((a: any) => !existingIds.has(a.id || a.number))
                               if (newArtworks.length === 0) { alert('Keine neuen Werke zum Importieren.'); return }
                               const merged = [...existing, ...newArtworks]
-                              if (saveArtworks(tenant, merged)) { setAllArtworksSafe(merged); window.dispatchEvent(new CustomEvent('artworks-updated')); alert(`✅ ${newArtworks.length} Werke importiert!`) }
-                              else alert('⚠️ Fehler beim Speichern.')
+                              saveArtworks(tenant, merged).then((ok) => {
+                                if (ok) { setAllArtworksSafe(merged); window.dispatchEvent(new CustomEvent('artworks-updated')); alert(`✅ ${newArtworks.length} Werke importiert!`) }
+                                else alert('⚠️ Fehler beim Speichern.')
+                              })
                             } else alert('Ungültiges Format.')
                           } catch (_) { alert('Fehler beim Importieren.') }
                         }
@@ -11089,8 +11129,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             onClick={() => {
                               if (limitErreicht) return
                               const updated = allArtworks.map((a: any) => a.id === artwork.id ? { ...a, imVereinskatalog: !istDrin } : a)
-                              saveArtworks(tenant, updated)
-                              setAllArtworksSafe(updated)
+                              saveArtworks(tenant, updated).then((ok) => { if (ok) setAllArtworksSafe(updated) })
                             }}
                             style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.3rem', padding: '0.2rem 0.5rem', background: istDrin ? 'rgba(251,191,36,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${istDrin ? 'rgba(251,191,36,0.5)' : 'rgba(255,255,255,0.15)'}`, borderRadius: 6, color: istDrin ? '#fbbf24' : 'rgba(255,255,255,0.3)', fontSize: '0.72rem', cursor: limitErreicht ? 'not-allowed' : 'pointer', opacity: limitErreicht ? 0.5 : 1 }}
                           >
@@ -11242,16 +11281,16 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       </button>
                       <button 
                         onClick={async () => {
-                          if (confirm(`Möchtest du "${artwork.title || artwork.number}" wirklich löschen?`)) {
+                            if (confirm(`Möchtest du "${artwork.title || artwork.number}" wirklich löschen?`)) {
                             const artworks = loadArtworks(tenant)
                             const filtered = artworks.filter((a: any) => a.number !== artwork.number && a.id !== artwork.id)
-                            const saved = saveArtworks(tenant, filtered)
+                            const saved = await saveArtworks(tenant, filtered)
                             if (saved) {
-                              // ök2: saveArtworks hat bereits '[]' geschrieben (über Schicht)
                               if (tenant.isOeffentlich && filtered.length === 0) {
                                 setAllArtworks([])
                               } else {
-                                setAllArtworksSafe(filtered)
+                                const resolved = await loadArtworksWithResolvedImages(tenant)
+                                setAllArtworksSafe(resolved)
                               }
                               window.dispatchEvent(new CustomEvent('artworks-updated'))
                             } else {
@@ -13079,7 +13118,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     </div>
                   </div>
 
-                  {/* Galerie */}
+                  {/* Galerie – optional, nur Link zum Öffnen (wird kaum gebraucht) */}
                   <div style={{
                     background: s.bgCard,
                     border: `1px solid ${s.accent}22`,
@@ -13087,6 +13126,27 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     borderRadius: '16px',
                     boxShadow: s.shadow
                   }}>
+                    {!galerieAdresseOpen ? (
+                      <button
+                        type="button"
+                        onClick={() => setGalerieAdresseOpen(true)}
+                        style={{
+                          margin: 0,
+                          padding: 0,
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontSize: 'clamp(1rem, 2.5vw, 1.15rem)',
+                          fontWeight: '600',
+                          color: s.accent,
+                          textAlign: 'left',
+                          textDecoration: 'underline'
+                        }}
+                      >
+                        🏛️ Galerie-Adresse (optional) – bei Bedarf öffnen
+                      </button>
+                    ) : (
+                      <>
                     <h3 style={{
                       marginTop: 0,
                       marginBottom: '0.5rem',
@@ -13176,6 +13236,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         <Link to={AGB_ROUTE} target="_blank" rel="noopener noreferrer" style={{ color: s.accent, textDecoration: 'underline', fontSize: '0.9rem' }}>AGB-Seite im Volltext anzeigen →</Link>
                       </div>
                     </div>
+                    <button type="button" onClick={() => setGalerieAdresseOpen(false)} style={{ marginTop: '0.75rem', padding: '0.35rem 0.75rem', background: 'none', border: `1px solid ${s.accent}44`, borderRadius: 8, color: s.muted, fontSize: '0.85rem', cursor: 'pointer' }}>Galerie-Adresse zuklappen</button>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -13425,14 +13488,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   marginBottom: '1rem'
                 }}>
                   <p style={{ margin: 0, fontSize: '0.9rem', color: s.text }}>
-                    Das Admin-Passwort wird in den Stammdaten gespeichert. Ausloggen: im oberen Bereich auf das 👤 Symbol tippen.
+                    Wie bei einer App nur auf deinem Gerät: Das Passwort wird nur hier gespeichert – wir können es nicht zurücksetzen. Ausloggen: im oberen Bereich auf das 👤 Symbol tippen.
                   </p>
                 </div>
                 {/* Admin-Passwort ändern / setzen (K2: Stammdaten, ök2: eigener Key) */}
                 <div style={{ padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33`, marginBottom: '1rem' }}>
                   <h4 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text }}>Admin-Passwort ändern</h4>
                   <p style={{ margin: '0 0 1rem', fontSize: '0.85rem', color: s.muted }}>Mindestens 6 Zeichen. E-Mail oder Telefon (optional) helfen dir, das Passwort später wiederzufinden.</p>
-                  <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: s.muted }}>Das Passwort wird nur auf diesem Gerät gespeichert. Vergessen = wir können es nicht zurücksetzen. Leer lassen und speichern = Passwort entfernen (dann Einstieg über „Mein Bereich“ ohne Passwort).</p>
+                  <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: s.muted }}>Wie bei einer App: nur auf diesem Gerät gespeichert, nicht zurücksetzbar. Leer lassen und speichern = Passwort entfernen (dann Einstieg über „Mein Bereich“ ohne Passwort).</p>
                   <input type="email" value={adminContactEmail} onChange={(e) => setAdminContactEmail(e.target.value)} placeholder="E-Mail (optional)" style={{ width: '100%', padding: '0.6rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem', marginBottom: '0.5rem', boxSizing: 'border-box' }} />
                   <input type="tel" value={adminContactPhone} onChange={(e) => setAdminContactPhone(e.target.value)} placeholder="Telefon (optional)" style={{ width: '100%', padding: '0.6rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem', marginBottom: '0.5rem', boxSizing: 'border-box' }} />
                   <input type="password" value={adminNewPw} onChange={(e) => setAdminNewPw(e.target.value)} placeholder="Neues Passwort (min. 6 Zeichen)" style={{ width: '100%', padding: '0.6rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem', marginBottom: '0.5rem', boxSizing: 'border-box' }} />
@@ -13578,6 +13641,36 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         {isRestoringWerkeFromPublished ? '⏳ Lade…' : '🌐 Werke vom Server zurückholen'}
                       </button>
                       <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Holt den letzten Stand deiner Werke von unserem Server. Wenn du schon einmal auf „Aktualisieren“ geklickt hast, liegt dort ein Stand – damit kannst du deine Werke ohne Backup-Datei zurückholen.</p>
+                    </div>
+                    <div>
+                      <button
+                        type="button"
+                        disabled={entlastenInProgress || restoreProgress !== 'idle'}
+                        onClick={async () => {
+                          if (entlastenInProgress) return
+                          setEntlastenInProgress(true)
+                          try {
+                            const result = await compressAllArtworkImages('k2-artworks')
+                            if (result.error && !result.ok) {
+                              alert('⚠️ Speicher entlasten fehlgeschlagen: ' + result.error)
+                              return
+                            }
+                            if (result.count > 0) {
+                              const mb = (result.savedBytes / 1024 / 1024).toFixed(2)
+                              if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated'))
+                              alert(`✅ Speicher entlastet.\n\n${result.count} Werkbilder verkleinert, ca. ${mb} MB frei geworden. Du kannst weiter Werke eingeben.`)
+                            } else {
+                              alert('✅ Keine großen Bilder zum Verkleinern gefunden – deine Werkbilder sind bereits kompakt.')
+                            }
+                          } finally {
+                            setEntlastenInProgress(false)
+                          }
+                        }}
+                        style={{ padding: '0.75rem 1.25rem', background: entlastenInProgress ? s.muted + '22' : s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: entlastenInProgress ? 'wait' : 'pointer' }}
+                      >
+                        {entlastenInProgress ? '⏳ Verkleinere…' : '🗜️ Speicher entlasten – Werkbilder verkleinern'}
+                      </button>
+                      <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Verkleinert alle Werkbilder im Speicher (ohne etwas zu löschen). Hilft, wenn „Speicher voll“ erscheint – danach hast du wieder Platz für weitere Werke.</p>
                     </div>
                     {hasBackup() && (
                     <div>
@@ -17619,7 +17712,11 @@ ${name}`
                           setFreistellenInProgress(true)
                           try {
                             const { compositeOnProfessionalBackground } = await import('../src/utils/professionalImageBackground')
-                            const result = await compositeOnProfessionalBackground(src, photoBackgroundPreset)
+                            const result = await compositeOnProfessionalBackground(src, photoBackgroundPreset, {
+                              onFreistellungSkipped: () => {
+                                alert('Freistellung konnte nicht durchgeführt werden (z. B. Modell nicht geladen oder Speicher). Es wird der professionelle Hintergrund ohne Freistellung verwendet.')
+                              }
+                            })
                             setPreviewUrl(result)
                             pendingImageDataUrlRef.current = result
                             setPhotoImageMode('freigestellt')
@@ -17629,7 +17726,7 @@ ${name}`
                               const n = parseInt(sessionStorage.getItem(key) || '0', 10) + 1
                               sessionStorage.setItem(key, String(n))
                             } catch (_) {}
-                            alert('Auf diesem Gerät wurde keine Freistellung durchgeführt.\n\nAm Mac: Werk bearbeiten → „Foto jetzt freistellen“ nutzen.')
+                            alert('Freistellung fehlgeschlagen. Bitte erneut versuchen oder Original verwenden.')
                           } finally {
                             setFreistellenInProgress(false)
                           }

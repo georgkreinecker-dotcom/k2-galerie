@@ -13,7 +13,7 @@ export default function MeinBereichPage() {
   const contextParam = searchParams.get('context') as Context | null
   const context: Context = contextParam === 'oeffentlich' || contextParam === 'vk2' ? contextParam : 'k2'
 
-  // Alle: sofort in den Admin – keine Zwischenseite
+  // Alle: sofort in den Admin – keine Zwischenseite. embedded=1 mitnehmen, damit Admin in APf-iPhone-iframe lädt.
   useEffect(() => {
     const tab = searchParams.get('tab')
     const from = searchParams.get('from')
@@ -22,8 +22,10 @@ export default function MeinBereichPage() {
     const pfad = searchParams.get('pfad')
     const guidetab = searchParams.get('guidetab')
     const guidesubtab = searchParams.get('guidesubtab')
+    const embedded = searchParams.get('embedded')
     const parts: string[] = []
     if (context !== 'k2') parts.push(`context=${context}`)
+    if (embedded === '1') parts.push('embedded=1')
     if (tab) parts.push(`tab=${encodeURIComponent(tab)}`)
     if (from) parts.push(`from=${encodeURIComponent(from)}`)
     if (assistent) parts.push(`assistent=${encodeURIComponent(assistent)}`)

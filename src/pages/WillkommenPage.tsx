@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, AGB_ROUTE, ENTDECKEN_ROUTE } from '../config/navigation'
+import { PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, WILLKOMMEN_FROM_KEY, AGB_ROUTE, ENTDECKEN_ROUTE } from '../config/navigation'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 
@@ -44,6 +44,7 @@ export default function WillkommenPage() {
   const doNavigate = (action: PendingAction) => {
     if (!action) return
     try { sessionStorage.setItem(AGB_ACCEPTED_KEY, '1') } catch (_) {}
+    try { sessionStorage.setItem(WILLKOMMEN_FROM_KEY, '1') } catch (_) {}
     setAgbAccepted(true)
     setShowAgbModal(false)
     setPendingAction(null)

@@ -12,8 +12,15 @@ export const PRODUCT_BRAND_NAME = 'K2 Galerie'
 /** Copyright-Zeile mit K2-Brand – an Footer/Impressum/AGB etc. verwenden */
 export const PRODUCT_COPYRIGHT = '© 2026 K2 Galerie · Alle Rechte vorbehalten · Design und Entwicklung: kgm solution (G. Kreinecker)'
 
-/** Werbeslogan für Promotion (Web, Social, Print, Pitch) – einheitlich nutzbar */
-export const PRODUCT_WERBESLOGAN = 'K2 Galerie – in 5 Minuten zu deiner eigenen Galerie in deinem Atelier und im Netz'
+/**
+ * Verbindliche Werbelinie – auf allen Werbemaßnahmen (Presse, Flyer, Plakat, Web, Social).
+ * Eine Quelle, überall präsent.
+ */
+/** Werbeslogan 1 – markante Aussage */
+export const PRODUCT_WERBESLOGAN = 'K2 Galerie – für Künstler:innen, die gesehen werden wollen'
+
+/** Werbeslogan 2 – zweiter Satz, immer zusammen mit Slogan 1 */
+export const PRODUCT_WERBESLOGAN_2 = 'Deine Kunst verdient mehr als einen Instagram-Post.'
 
 /** Zweite Kernbotschaft: Empfehlungs-Programm – kostenlose Nutzung und Einkommen durch Weiterempfehlung */
 export const PRODUCT_BOTSCHAFT_2 = 'Durch Weiterempfehlung: kostenlose Nutzung und Einkommen erzielen'

@@ -20,6 +20,8 @@ export const ENTDECKEN_ROUTE = '/entdecken'
 /** SessionStorage-Keys von WillkommenPage: Name + Flag „Erster Entwurf“ (in GalerieVorschauPage musterOnly auslesen) */
 export const WILLKOMMEN_NAME_KEY = 'k2-willkommen-name'
 export const WILLKOMMEN_ENTWURF_KEY = 'k2-willkommen-entwurf'
+/** SessionStorage: Besucher kommt von WillkommenPage oder EntdeckenPage → kein Redirect zur Willkommensseite (ök2/VK2) */
+export const WILLKOMMEN_FROM_KEY = 'k2-from-willkommen'
 
 /** Basis-URL der App (für QR/Links auf Flyern – immer Produktion) */
 export const BASE_APP_URL = 'https://k2-galerie.vercel.app'
@@ -62,6 +64,8 @@ export const PROJECT_ROUTES = {
     controlStudio: '/projects/k2-galerie/control-studio',
     kunden: '/projects/k2-galerie/kunden',
     plan: '/projects/k2-galerie/plan',
+    /** Einstieg Mission Control / APf-Start (QR, Mobil verbinden) */
+    platformStart: '/projects/k2-galerie/mobile-connect',
     mobileConnect: '/projects/k2-galerie/mobile-connect',
     platzanordnung: '/projects/k2-galerie/platzanordnung',
     produktVorschau: '/projects/k2-galerie/produkt-vorschau',

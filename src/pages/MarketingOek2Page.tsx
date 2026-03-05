@@ -8,7 +8,7 @@ import { Link, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, WILLKOMMEN_ROUTE, AGB_ROUTE, BASE_APP_URL, PILOT_SCHREIBEN_ROUTE } from '../config/navigation'
 import { mok2Groups } from '../config/mok2Structure'
-import { PRODUCT_WERBESLOGAN, PRODUCT_BOTSCHAFT_2, PRODUCT_ZIELGRUPPE } from '../config/tenantConfig'
+import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_BOTSCHAFT_2, PRODUCT_ZIELGRUPPE } from '../config/tenantConfig'
 import ProductCopyright from '../components/ProductCopyright'
 import { compressImageForStorage } from '../utils/compressImageForStorage'
 
@@ -763,17 +763,31 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
           7. Promotion für alle Medien – ök2 perfekt präsentieren
         </h2>
+
+        {/* Strategie: Verbindliche Werbelinie – auf jeder Werbemaßnahme */}
+        <div style={{ marginBottom: '1.25rem', padding: '1rem 1.25rem', background: 'rgba(181, 74, 30, 0.15)', borderRadius: '10px', border: '2px solid rgba(181, 74, 30, 0.5)' }}>
+          <h3 style={{ fontSize: '1.05rem', color: '#ff8c42', margin: '0 0 0.5rem', fontWeight: 700 }}>Werbelinie &amp; Strategie (verbindlich)</h3>
+          <p style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', lineHeight: 1.5, color: 'rgba(255,255,255,0.9)' }}>
+            Diese beiden Sätze sind unsere <strong>markante Werbelinie</strong> und müssen auf <strong>allen</strong> Werbemaßnahmen prägend erscheinen: Presse, Flyer, Plakat, Web, Social, Prospekt – jede Dokumentation, die nach außen geht, trägt beide Slogans. <strong>Alle Strategiepapiere</strong> (docs, Handbuch, Eröffnungs-Marketing) sind auf diese Werbelinie ausgerichtet.
+          </p>
+          <p style={{ margin: '0 0 0.25rem', fontSize: '1.05rem', lineHeight: 1.45, color: '#fff', fontWeight: 600 }}>1. {PRODUCT_WERBESLOGAN}</p>
+          <p style={{ margin: 0, fontSize: '1.05rem', lineHeight: 1.45, color: 'rgba(255,255,255,0.95)' }}>2. {PRODUCT_WERBESLOGAN_2}</p>
+        </div>
+
         <p style={{ marginBottom: '0.5rem', padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.1)', borderRadius: '8px', borderLeft: '4px solid #5ffbf1', fontSize: '1.05rem', lineHeight: 1.5 }}>
           <strong>1. Werbeslogan:</strong> {PRODUCT_WERBESLOGAN}
         </p>
+        <p style={{ marginBottom: '0.5rem', padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.1)', borderRadius: '8px', borderLeft: '4px solid #5ffbf1', fontSize: '1.05rem', lineHeight: 1.5 }}>
+          <strong>2. Zweiter Satz (immer mit Slogan 1):</strong> {PRODUCT_WERBESLOGAN_2}
+        </p>
         <p style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.1)', borderRadius: '8px', borderLeft: '4px solid #5ffbf1', fontSize: '1.05rem', lineHeight: 1.5 }}>
-          <strong>2. Wichtige Botschaft:</strong> {PRODUCT_BOTSCHAFT_2}
+          <strong>3. Wichtige Botschaft (Empfehlungs-Programm):</strong> {PRODUCT_BOTSCHAFT_2}
         </p>
         <p style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(34, 197, 94, 0.12)', borderRadius: '8px', borderLeft: '4px solid #22c55e', fontSize: '1.05rem', lineHeight: 1.5 }}>
-          <strong>3. Zentrale Information für Außenkommunikation (Werbung, Marketing, Presse):</strong> Es handelt sich hier <strong>nicht um eine normale App</strong>, sondern um eine <strong>multifunktionale Arbeitsplattform am PC/Mac</strong> – mit Galerie, Kassa, Veröffentlichen, Planung und Werbeunterlagen aus einer Hand. Mobil: Galerie und Kassa, gleicher Stand. In dieser Kombination sind wir in diesem Feld <strong>einzigartig</strong> – das soll in der Kommunikation nach außen klar werden.
+          <strong>4. Zentrale Information für Außenkommunikation (Werbung, Marketing, Presse):</strong> Es handelt sich hier <strong>nicht um eine normale App</strong>, sondern um eine <strong>multifunktionale Arbeitsplattform am PC/Mac</strong> – mit Galerie, Kassa, Veröffentlichen, Planung und Werbeunterlagen aus einer Hand. Mobil: Galerie und Kassa, gleicher Stand. In dieser Kombination sind wir in diesem Feld <strong>einzigartig</strong> – das soll in der Kommunikation nach außen klar werden.
         </p>
         <p style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(139, 92, 246, 0.12)', borderRadius: '8px', borderLeft: '4px solid #8b5cf6', fontSize: '1.05rem', lineHeight: 1.5 }}>
-          <strong>4. Unsere Zielgruppe (ein Satz):</strong> {PRODUCT_ZIELGRUPPE}
+          <strong>5. Unsere Zielgruppe (ein Satz):</strong> {PRODUCT_ZIELGRUPPE}
         </p>
 
         <h3 style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.9)', marginTop: '1rem', marginBottom: '0.5rem' }}>Warum brauchen Künstler:innen das?</h3>

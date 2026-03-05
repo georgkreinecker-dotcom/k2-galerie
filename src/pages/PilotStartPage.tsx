@@ -6,9 +6,10 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES, BASE_APP_URL, PILOT_SCHREIBEN_ROUTE } from '../config/navigation'
+import { PROJECT_ROUTES, BASE_APP_URL, PILOT_SCHREIBEN_ROUTE, ENTDECKEN_ROUTE } from '../config/navigation'
 
-const PILOT_GALERIE_URL = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+/** Testpiloten über denselben Einstieg wie alle: Entdecken → Vorschau → Admin */
+const PILOT_GALERIE_URL = BASE_APP_URL + ENTDECKEN_ROUTE
 /** Diese Seite – damit Georg sie per QR aufs Handy holen und an Michael schicken kann */
 const PILOT_SEITE_URL = BASE_APP_URL + PILOT_SCHREIBEN_ROUTE
 

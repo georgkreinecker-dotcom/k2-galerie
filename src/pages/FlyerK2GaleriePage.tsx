@@ -3,7 +3,7 @@ import { getGalerieImages } from '../config/pageContentGalerie'
 import { getPageTexts } from '../config/pageTexts'
 import { getWerbelinieCss, WERBELINIE_FONTS_URL } from '../config/marketingWerbelinie'
 import { K2_STAMMDATEN_DEFAULTS } from '../config/tenantConfig'
-import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
+import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
 import { loadEvents } from '../utils/eventsStorage'
 
 const DOC_CLASS = 'flyer-k2-page'
@@ -128,6 +128,8 @@ export default function FlyerK2GaleriePage() {
         <div className="content">
           <p className="tagline">{tagline}</p>
           <h1>{PRODUCT_BRAND_NAME}</h1>
+          <p className="subtitle" style={{ marginBottom: 2 }}>{PRODUCT_WERBESLOGAN}</p>
+          <p className="subtitle" style={{ marginBottom: 8 }}>{PRODUCT_WERBESLOGAN_2}</p>
           <p className="subtitle">{subtitle}</p>
           <div className="line" />
           {welcomeImage ? (

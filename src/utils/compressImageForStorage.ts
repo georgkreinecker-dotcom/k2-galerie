@@ -18,8 +18,8 @@ export interface CompressImageOptions {
 const DEFAULTS: Record<CompressContext, { maxWidth: number; quality: number }> = {
   mobile: { maxWidth: 560, quality: 0.48 },
   desktop: { maxWidth: 760, quality: 0.6 },
-  /** Für Werke im Admin: klein halten, damit viele Werke in localStorage und loadArtworks nicht zu groß werden */
-  artwork: { maxWidth: 640, quality: 0.55 }
+  /** Für Werke im Admin: stark komprimieren, damit bei vielen Werken (z. B. 30+) der localStorage nicht voll läuft (Regel: maximale Komprimierung). */
+  artwork: { maxWidth: 520, quality: 0.5 }
 }
 
 /**

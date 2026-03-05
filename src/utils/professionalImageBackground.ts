@@ -146,36 +146,36 @@ function onlyProfessionalBackground(
   })
 }
 
-/** Mobile Geräte: Freistellung (ONNX) oft instabil/Speicher – hier nie versuchen, nur Pro-Hintergrund. */
-function isMobileDevice(): boolean {
-  if (typeof navigator === 'undefined' || !navigator.userAgent) return false
-  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+/** Auf Mobile kleinere Eingabe für Freistellung → weniger Speicher, höhere Erfolgsrate. */
+function getMaxSideForRemoval(): number {
+  if (typeof navigator === 'undefined' || !navigator.userAgent) return MAX_SIDE_FOR_REMOVAL
+  if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) return 560
+  return MAX_SIDE_FOR_REMOVAL
+}
+
+export type CompositeOptions = {
+  /** Wird aufgerufen, wenn keine echte Freistellung durchgeführt wurde (Fehler/Timeout). */
+  onFreistellungSkipped?: (reason: 'error', err?: unknown) => void
 }
 
 /**
  * Echte Objektfreistellung + professioneller Hintergrund.
- * Kostenlos, im Browser. Auf Mobile (iPad/iPhone): nur Pro-Hintergrund, keine Freistellung – immer gleicher Ablauf.
- * Am Desktop bei Fehler: Fallback Pro-Hintergrund ohne Freistellung.
+ * Kostenlos, im Browser. Funktioniert auf Desktop und Mobile (iPad/iPhone) – auf Mobile mit kleinerer Auflösung für Stabilität.
+ * Bei Fehler: Fallback Pro-Hintergrund ohne Freistellung.
  * @param backgroundPreset Optional: 'hell' | 'weiss' | 'warm' | 'kuehl' | 'dunkel' (Standard: 'hell')
+ * @param options Optional: onFreistellungSkipped – wird aufgerufen, wenn Freistellung fehlschlägt
  */
 export function compositeOnProfessionalBackground(
   imageDataUrl: string,
-  backgroundPreset: BackgroundPresetKey = 'hell'
+  backgroundPreset: BackgroundPresetKey = 'hell',
+  options: CompositeOptions = {}
 ): Promise<string> {
   const background = BACKGROUND_PRESETS[backgroundPreset] ?? BACKGROUND_PRESETS.hell
+  const { onFreistellungSkipped } = options
   return (async () => {
-    // Auf Mobile: Freistellung weglassen – einheitlich, schnell, keine Fehlermeldungen
-    if (isMobileDevice()) {
-      try {
-        const key = 'k2-freistellen-fallback-count'
-        const n = parseInt(sessionStorage.getItem(key) || '0', 10) + 1
-        sessionStorage.setItem(key, String(n))
-      } catch (_) {}
-      return onlyProfessionalBackground(imageDataUrl, background)
-    }
     try {
-      // Vor Freistellung verkleinern → ONNX läuft auf weniger Pixeln, Prozess spürbar schneller
-      const inputForRemoval = await resizeDataUrlMax(imageDataUrl, MAX_SIDE_FOR_REMOVAL)
+      const maxSide = getMaxSideForRemoval()
+      const inputForRemoval = await resizeDataUrlMax(imageDataUrl, maxSide)
       const { removeBackground } = await import('@imgly/background-removal')
       const blob = await removeBackground(inputForRemoval)
       return drawOnProfessionalBackground(blob, true, background)
@@ -186,6 +186,7 @@ export function compositeOnProfessionalBackground(
         const n = parseInt(sessionStorage.getItem(key) || '0', 10) + 1
         sessionStorage.setItem(key, String(n))
       } catch (_) {}
+      onFreistellungSkipped?.('error', e)
       return onlyProfessionalBackground(imageDataUrl, background)
     }
   })()

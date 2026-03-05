@@ -5,7 +5,11 @@
  * 1. Lesen: immer aus localStorage, für Anzeige ggf. filtern (nie zurück schreiben).
  * 2. Schreiben: nur bei expliziter Aktion (Speichern/Löschen) oder wenn Merge mindestens so viele Werke hat wie aktuell.
  * 3. Niemals mit weniger Werken überschreiben als aktuell vorhanden (außer User hat explizit gelöscht).
+ *
+ * Speichermix: Große Werkbilder werden in IndexedDB ausgelagert (artworkImageStore), nur Referenzen in localStorage.
  */
+
+import { prepareArtworksForStorage, resolveArtworkImages } from './artworkImageStore'
 
 const K2_ARTWORKS_KEY = 'k2-artworks'
 const OEF_ARTWORKS_KEY = 'k2-oeffentlich-artworks'
@@ -51,6 +55,37 @@ export function saveArtworksForContext(
 }
 
 /**
+ * Speichermix: Lagert große Bilder in IndexedDB aus, dann Speichern in localStorage.
+ * Nutzen wo "volle" Werke (mit Bildern) gespeichert werden – entlastet localStorage.
+ */
+export async function saveArtworksForContextWithImageStore(
+  musterOnly: boolean,
+  vk2: boolean,
+  data: any[],
+  options: { allowReduce?: boolean } = {}
+): Promise<boolean> {
+  if (vk2) return false
+  const key = musterOnly ? OEF_ARTWORKS_KEY : K2_ARTWORKS_KEY
+  const filterK2Only = key === K2_ARTWORKS_KEY
+  return saveArtworksByKeyWithImageStore(key, data, { filterK2Only, allowReduce: options.allowReduce ?? true })
+}
+
+/** Speichermix: Bilder in IndexedDB, dann saveArtworksByKey. */
+export async function saveArtworksByKeyWithImageStore(
+  key: string,
+  toSave: any[],
+  options: { allowReduce?: boolean; filterK2Only?: boolean } = {}
+): Promise<boolean> {
+  try {
+    const prepared = await prepareArtworksForStorage(Array.isArray(toSave) ? toSave : [])
+    return saveArtworksByKey(key, prepared, options)
+  } catch (e) {
+    console.warn('prepareArtworksForStorage failed, saving without image store:', e)
+    return saveArtworksByKey(key, toSave, options)
+  }
+}
+
+/**
  * Liest Werke ROH aus einem Key – keine Filterung. Eine Schicht für alle Kontexte.
  */
 export function readArtworksRawByKey(key: string): any[] {
@@ -73,6 +108,24 @@ export function readArtworksRawByKeyOrNull(key: string): any[] | null {
     return []
   }
 }
+
+/**
+ * Speichermix: Liest Werke und löst imageRef in imageUrl auf (Bilder aus IndexedDB).
+ * Für Anzeige nutzen – liefert Werke mit geladenen Bildern.
+ */
+export async function readArtworksWithResolvedImages(key: string): Promise<any[]> {
+  const raw = readArtworksRawByKey(key)
+  return resolveArtworkImages(raw)
+}
+
+/** Kontext-Variante: Werke mit aufgelösten Bildern für Anzeige. */
+export async function readArtworksForContextWithResolvedImages(musterOnly: boolean, vk2: boolean): Promise<any[]> {
+  if (vk2) return []
+  const key = musterOnly ? OEF_ARTWORKS_KEY : K2_ARTWORKS_KEY
+  return readArtworksWithResolvedImages(key)
+}
+
+export { resolveArtworkImages } from './artworkImageStore'
 
 /**
  * Speichert Werke in einen Key. Schutz: nicht mit weniger überschreiben (außer allowReduce).

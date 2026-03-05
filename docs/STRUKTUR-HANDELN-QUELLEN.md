@@ -17,7 +17,8 @@ Damit alle Informationen **jederzeit aktuell und hier verfügbar** sind, gilt di
 | **Projekt-Übersicht** | **HAUS-INDEX.md** (Root). | Schnellfinder: wo liegt was (Keller bis Dachboden). Enthält den Abschnitt „Struktur für unser Handeln“. |
 | **Tenant-Context (K2 \| ök2 \| VK2)** | **.cursor/rules/k2-oek2-trennung.mdc**, **docs/K2-OEK2-DATENTRENNUNG.md**, `src/config/tenantConfig.ts`. | Eine Stelle: Kontext steuert Keys und Anzeige; keine vergessene Stelle. |
 | **Sync-Regel (Merge Server + lokal)** | **docs/SYNC-REGEL.md**, `src/utils/syncMerge.ts`. | Eine Funktion `mergeServerWithLocal`; alle Aufrufer nutzen sie. |
-| **Produkt-Standard (nach Sportwagen)** | **docs/PRODUKT-STANDARD-NACH-SPORTWAGEN.md**. | Erreichter Standard: Architektur, Sicherheit, Tests, Doku & Prozess; eine feste Stelle für „worauf das Produkt aufbaut“. |
+| **Produkt-Standard (nach Sportwagen)** | **docs/PRODUKT-STANDARD-NACH-SPORTWAGEN.md**. | Erreichter Standard: Architektur, Sicherheit, Tests, Doku & Prozess, Marketing-Werbelinie; eine feste Stelle für „worauf das Produkt aufbaut“. |
+| **Marketing-Werbelinie (verbindlich)** | **src/config/tenantConfig.ts** (PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2). **mök2** → Sektion 7 „Promotion für alle Medien“. **docs/MARKETING-EROEFFNUNG-K2-OEK2.md**, **k2team-handbuch/04-VISION-STRATEGIE.md** (jeweils Werbelinie-Abschnitt). | Eine Quelle für beide Slogans; alle Werbemaßnahmen und Strategiepapiere darauf ausgerichtet. SPORTWAGEN-ROADMAP Phase 6.4. |
 
 ---
 
@@ -35,6 +36,7 @@ Damit alle Informationen **jederzeit aktuell und hier verfügbar** sind, gilt di
 - Bei Fragen „wo steht X?“ oder „wie machen wir Y?“: zuerst **k2team-handbuch/00-INDEX.md**, **mök2** (AGB, Marketing ök2), **docs/00-INDEX.md**, **HAUS-INDEX.md** prüfen.
 - Neue wichtige Infos: in der passenden Quelle (mök2, Handbuch, docs) eintragen, damit sie **hier immer aktuell zur Verfügung stehen**.
 - **Ablage (wo gehört was hin):** Technisch/Projekt → docs. Lesen/Druck/Orientierung → Handbuch. Vertrieb/AGB → mök2. Verbindliche Regel: **.cursor/rules/ablage-regel.mdc**.
+- **„Merken“ / „merke dir das“ = Reproduzierbarkeit:** Auch wenn Georg nur kurz „merken“ oder „merken muss“ sagt – die Sache so festhalten, dass sie in zukünftigen Sessions reproduzierbar ist (Regel oder Doku + Verweis + klare Handlungsanweisung). Regel: **.cursor/rules/georg-merke-dir-reproduzierbarkeit.mdc**.
 
 ---
 
@@ -50,6 +52,7 @@ Damit alle Informationen **jederzeit aktuell und hier verfügbar** sind, gilt di
 - **.cursor/rules/schritt-fuer-schritt-konsequent.mdc** – Schritt für Schritt, konsequent bleiben; nicht springen, nicht halb machen (DNA)
 - **.cursor/rules/build-skripte-nur-schreiben-wenn-geaendert.mdc** – Build-Skripte schreiben nur bei Änderung → weniger Cursor-Reopen (Erfahrung 28.02.26)
 - **.cursor/rules/pflichtregel-vor-fix-pruefen.mdc** – Vor Fix zu wiederkehrenden Themen bestehende Pflichtregeln prüfen; Regel verbindlich umsetzen (Analyse: docs/ANALYSE-FEHLER-MISSETAETER-REOPEN.md)
+- **.cursor/rules/georg-merke-dir-reproduzierbarkeit.mdc** – „Merke dir das“ = Reproduzierbarkeit gewährleisten (Regel/Doku + Verweis + Handlungsanweisung)
 - **.cursor/rules/team-hebel-unternehmer-persoenlichkeit-ki.mdc** – Team-Hebel (Unternehmer + Persönlichkeit + KI), Regelwerk und Vermächtnis für maximale Lernkurve
 - **docs/WIR-PROZESS.md** – Abschnitt „Team-Hebel und Lernkurve“ im Vermächtnis
 - **docs/MOK2-EIGENER-BEREICH.md** – mök2 als eigener Bereich

@@ -190,6 +190,14 @@
 | **Sportwagen** | **Eine** Quelle: ein Formular (ZettelPilotFormPage), ein Zettel (ZettelPilotPage), eine Markdown-Quelle (20-PILOT-ZETTEL-OEK2-VK2.md). Kontrollierter Ablauf: Smart-Leiste K2-Mappe → „Neuer Test-Pilot“ → Nr. (fortlaufend), Name, Pilot-URL (ök2 oder VK2) → Zettel anzeigen → drucken. Kein zweiter Ablauf, keine Duplikate. |
 | **Erledigt** | [x] 04.03.26 (Neuer Test-Pilot in Smart Panel; Form mit auto-Nr.; Zettel mit indexiertem QR/URL; Hinweis Einstellungen-Anmeldung im Zettel.) |
 
+### 6.4 Marketing-Werbelinie (verbindlich)
+
+| | Inhalt |
+|---|--------|
+| **Sportwagen** | **Eine** Quelle für die Werbelinie: `tenantConfig.ts` (PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2). Alle Werbemaßnahmen (Presse, Flyer, Plakat, Web, Social, Prospekt) tragen beide Slogans. Alle Strategiepapiere darauf ausgerichtet: mök2 Sektion 7, docs/MARKETING-EROEFFNUNG-K2-OEK2.md, k2team-handbuch/04-VISION-STRATEGIE.md. |
+| **Schritte** | 1) Slogans zentral in tenantConfig. 2) Entdecken, Presse, Flyer, Werbeunterlagen aus dieser Quelle. 3) mök2 „Werbelinie & Strategie (verbindlich)“ in Sektion 7. 4) MARKETING-EROEFFNUNG und Vision-Strategie Handbuch mit Werbelinie-Abschnitt am Anfang. |
+| **Erledigt** | [x] 05.03.26 (tenantConfig PRODUCT_WERBESLOGAN + PRODUCT_WERBESLOGAN_2; EntdeckenPage, Presse, Flyer, mök2 Sektion 7; MARKETING-EROEFFNUNG + 04-VISION-STRATEGIE mit verbindlicher Werbelinie; PRODUKT-STANDARD erweitert.) |
+
 ---
 
 ## Phase 7: Build, Stand, Deployment – ein Standard
@@ -299,6 +307,7 @@
 | **5.3** | Shop, Willkommen, Vita, etc. | 1.3, 1.1 |
 | **6.1** | DevView, Mission Control, Mobile Connect | 3.1 |
 | **6.2** | mök2, Handbuch | laufend |
+| **6.4** | Marketing-Werbelinie (verbindlich) | eine Quelle tenantConfig, alle Papiere ausgerichtet |
 | **7.1** | Build/Stand Doku | laufend |
 | **7.2** | Vercel/API Doku | 2.2 |
 | **7.3** | Lizenzen & Zahlungen (Stripe) | eine Doku, eine API, Go-Live-Checkliste |

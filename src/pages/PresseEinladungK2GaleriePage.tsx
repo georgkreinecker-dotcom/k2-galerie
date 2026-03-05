@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getWerbelinieCss, WERBELINIE_FONTS_URL } from '../config/marketingWerbelinie'
 import { K2_STAMMDATEN_DEFAULTS } from '../config/tenantConfig'
-import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
+import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
 import { loadEvents } from '../utils/eventsStorage'
 
 const DOC_CLASS = 'presse-k2-page'
@@ -102,6 +102,8 @@ export default function PresseEinladungK2GaleriePage() {
       <div className="doc-box">
         <div className="content">
           <p className="tagline">{PRODUCT_BRAND_NAME}</p>
+          <p className="subtitle" style={{ marginBottom: 4 }}>{PRODUCT_WERBESLOGAN}</p>
+          <p className="subtitle" style={{ marginBottom: 12 }}>{PRODUCT_WERBESLOGAN_2}</p>
           <p className="presse-type">{typeLabel}</p>
           <h1 className="presse-headline">{event?.title || 'Einladung zur Galerieeröffnung'}</h1>
           <div className="line" />

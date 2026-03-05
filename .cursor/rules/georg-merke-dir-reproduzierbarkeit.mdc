@@ -1,0 +1,24 @@
+---
+description: "Georg sagt 'merke dir das' = Reproduzierbarkeit gewährleisten – eine der wichtigsten Erkenntnisse"
+alwaysApply: true
+---
+
+# „Merke dir das“ = Reproduzierbarkeit gewährleisten
+
+## Die Erkenntnis (Georg, 05.03.26)
+
+**Wenn Georg sagt „merke dir das“, „merk dir das“, „merken“, „merken muss“ oder kurz „merken“ (oder sinngemäß „nicht vergessen“ / „festhalten“), meint er: Du musst die Reproduzierbarkeit gewährleisten.**
+
+Die KI hat kein persistentes Gedächtnis zwischen Sessions. Damit das Wissen trotzdem erhalten bleibt und in zukünftigen Sessions (oder von anderen) genutzt werden kann, muss es **im Projekt festgehalten** werden – so, dass es **reproduzierbar** ist.
+
+## Was du konkret tust
+
+1. **Inhalt festhalten:** Die Sache in eine **Regel** (.cursor/rules/*.mdc, alwaysApply wenn für jede Session relevant) oder in **Doku** (docs/, Handbuch, mök2 je nach Thema) schreiben.
+2. **Auffindbar machen:** Wenn es in einer Doku steht, in der **passenden Regel** einen Verweis einbauen („Bei Thema X: docs/XY.md Abschnitt Z lesen“), damit die nächste Session weiß, wo nachzuschauen.
+3. **Handlungsanweisung mitliefern:** Nicht nur „warum“, sondern **was genau** in Zukunft getan werden soll (Checkliste, Verhalten), damit es 1:1 nachvollziehbar ist.
+
+## Kurzfassung
+
+**„Merken“ / „merke dir das“ (auch kurz) = Reproduzierbarkeit sichern: Regel oder Doku + Verweis + klare Handlungsanweisung. Eine der wichtigsten Erkenntnisse für die gemeinsame Arbeit.**
+
+Verknüpfung: .cursor/rules/session-start-regeln-struktur.mdc (Session lädt Regeln und Quellen), docs/STRUKTUR-HANDELN-QUELLEN.md (wo was liegt).

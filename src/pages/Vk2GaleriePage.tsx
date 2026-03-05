@@ -232,6 +232,81 @@ const Vk2GaleriePage: React.FC = () => {
         </div>
       </nav>
 
+      {/* VK2 Willkommens-Banner: So könnte eure Vereinsgalerie aussehen – dann mit mir in den Admin */}
+      {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('vorschau') !== '1' && (
+        <div style={{
+          margin: 'clamp(0.75rem, 2vw, 1rem) clamp(1rem, 4vw, 2rem)',
+          padding: 'clamp(0.65rem, 1.5vw, 0.9rem) clamp(1rem, 2.5vw, 1.25rem)',
+          background: 'rgba(30, 92, 181, 0.08)',
+          border: '1px solid rgba(30, 92, 181, 0.35)',
+          borderRadius: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+          flexWrap: 'wrap',
+        }}>
+          <span style={{ color: C.text, fontSize: 'clamp(0.88rem, 2vw, 0.98rem)', lineHeight: 1.45, flex: '1 1 260px' }}>
+            So könnte eure Vereinsgalerie aussehen. Schau dich um – danach gehst du mit mir in den Admin und siehst, wie ihr eure Galerie gestaltet.
+          </span>
+          <button
+            type="button"
+            onClick={() => navigate('/mein-bereich?context=vk2')}
+            style={{
+              padding: '0.5rem 1rem',
+              background: '#1e5cb5',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '10px',
+              fontWeight: 600,
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+            }}
+          >
+            Mit mir in den Admin →
+          </button>
+        </div>
+      )}
+
+      {/* ── WILLKOMMENS-BANNER (Fremde) – So könnte eure Vereinsgalerie aussehen ── */}
+      <div style={{
+        margin: 'clamp(0.75rem, 2vw, 1rem)',
+        padding: 'clamp(0.65rem, 1.5vw, 0.9rem) clamp(1rem, 2.5vw, 1.25rem)',
+        background: 'rgba(30, 92, 181, 0.1)',
+        border: '1px solid rgba(30, 92, 181, 0.35)',
+        borderRadius: '12px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '1rem',
+        flexWrap: 'wrap',
+        maxWidth: '1400px',
+        marginLeft: 'auto',
+        marginRight: 'auto',
+      }}>
+        <span style={{ color: C.text, fontSize: 'clamp(0.88rem, 2vw, 0.98rem)', lineHeight: 1.45, flex: '1 1 260px', fontFamily: 'system-ui, sans-serif' }}>
+          So könnte eure Vereinsgalerie aussehen. Schau dich um – danach gehst du mit mir in den Admin und siehst, wie ihr eure Galerie gestaltet.
+        </span>
+        <button
+          type="button"
+          onClick={() => navigate('/mein-bereich?context=vk2')}
+          style={{
+            padding: '0.5rem 1rem',
+            background: '#1e5cb5',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '10px',
+            fontWeight: 600,
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            fontFamily: 'system-ui, sans-serif',
+          }}
+        >
+          Mit mir in den Admin →
+        </button>
+      </div>
+
       {/* ── VORSCHAU-BANNER ── */}
       {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('vorschau') === '1' && (
         <div style={{ background: C.accent, color: '#fff', padding: '0.5rem 1.5rem', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'space-between', fontFamily: 'system-ui, sans-serif' }}>

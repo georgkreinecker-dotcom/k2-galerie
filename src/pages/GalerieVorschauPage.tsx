@@ -12,7 +12,7 @@ import {
 import { sortArtworksFavoritesFirstThenNewest, interleaveArtworksByCategory } from '../utils/artworkSort'
 import { appendToHistory } from '../utils/artworkHistory'
 import { tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from '../../components/SafeMode'
-import { readArtworksRawForContext, readArtworksRawForContextOrNull, saveArtworksForContext, loadForDisplay, filterK2Only as filterK2OnlyStorage, saveArtworksOnly as saveArtworksStorage, mayWriteServerList, mergeAndMaybeWrite, mergeWithPending, getPendingArtworks, addPendingArtwork, clearPendingIfInList } from '../utils/artworksStorage'
+import { readArtworksRawForContext, readArtworksRawForContextOrNull, readArtworksForContextWithResolvedImages, saveArtworksForContext, loadForDisplay, filterK2Only as filterK2OnlyStorage, saveArtworksOnly as saveArtworksStorage, mayWriteServerList, mergeAndMaybeWrite, mergeWithPending, getPendingArtworks, addPendingArtwork, clearPendingIfInList } from '../utils/artworksStorage'
 import { loadEvents } from '../utils/eventsStorage'
 import { loadDocuments } from '../utils/documentsStorage'
 import { mergeServerWithLocal } from '../utils/syncMerge'
@@ -255,13 +255,20 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   const [ersteAktionDismissed, setErsteAktionDismissed] = useState(() => {
     try { return sessionStorage.getItem('k2-oek2-erste-aktion-dismissed') === '1' } catch { return false }
   })
-  const showErsteAktionBanner = musterOnly && !ersteAktionDismissed && (() => {
+  /** Immer anzeigen für ök2-Besucher (Fremde), bis sie schließen – „So könnte deine Galerie aussehen“ */
+  const showErsteAktionBanner = musterOnly && !ersteAktionDismissed
+
+  /** Fremde: Direktaufruf der ök2-Vorschau → zuerst ök2-Willkommensseite („WILLKOMMEN BEI Galerie Muster“) */
+  useEffect(() => {
+    if (!musterOnly || typeof window === 'undefined') return
     try {
-      const params = new URLSearchParams(window.location.search)
-      if (params.get('entwurf') === '1') return true
-      return sessionStorage.getItem(WILLKOMMEN_ENTWURF_KEY) === '1'
-    } catch { return false }
-  })()
+      if (new URLSearchParams(window.location.search).get('embedded') === '1') return
+      const ref = typeof document !== 'undefined' ? document.referrer : ''
+      if (ref && (ref.includes('/galerie-oeffentlich') || ref.includes('/entdecken'))) return
+      navigate(PROJECT_ROUTES['k2-galerie'].galerieOeffentlich, { replace: true })
+    } catch (_) {}
+  }, [musterOnly, navigate])
+
   useEffect(() => {
     if (typeof window === 'undefined') return
     const mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
@@ -320,27 +327,30 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     }
   }, [musterOnly, vk2])
 
-  // K2: Direkt nach Mount einmal aus localStorage + Pending nachziehen (z. B. nach Speichern → Galerie öffnen)
+  // K2: Direkt nach Mount einmal aus localStorage + IndexedDB (aufgelöste Bilder) + Pending nachziehen
   useEffect(() => {
     if (musterOnly || vk2) return
     const placeholder = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+    let cancelled = false
     const t = setTimeout(() => {
-      const stored = loadArtworks()
-      const withPending = mergeWithPending(stored || [])
-      if (withPending.length > 0) {
-        const withImages = withPending.map((a: any) => {
-          const out = { ...a }
-          if (!out.imageUrl && out.previewUrl) out.imageUrl = out.previewUrl
-          if (!out.imageUrl && !out.previewUrl) out.imageUrl = placeholder
-          return out
-        })
-        setArtworksDisplay(withImages)
-      }
+      readArtworksForContextWithResolvedImages(false, false).then((resolved) => {
+        if (cancelled) return
+        const withPending = mergeWithPending(resolved || [])
+        if (withPending.length > 0) {
+          const withImages = withPending.map((a: any) => {
+            const out = { ...a }
+            if (!out.imageUrl && out.previewUrl) out.imageUrl = out.previewUrl
+            if (!out.imageUrl && !out.previewUrl) out.imageUrl = placeholder
+            return out
+          })
+          setArtworksDisplay(withImages)
+        }
+      })
     }, 150)
-    return () => clearTimeout(t)
+    return () => { cancelled = true; clearTimeout(t) }
   }, [musterOnly, vk2])
 
-  // K2 / ök2 / VK2: Nach Speichern im Admin aktualisieren
+  // K2 / ök2 / VK2: Nach Speichern im Admin aktualisieren (K2: mit aufgelösten Bildern aus IndexedDB)
   useEffect(() => {
     const onUpdated = () => {
       if (vk2) {
@@ -352,8 +362,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         setArtworks(oef === null ? [...MUSTER_ARTWORKS] : oef)
         return
       }
-      {
-        const stored = loadArtworks()
+      readArtworksForContextWithResolvedImages(false, false).then((stored) => {
         if (stored && stored.length > 0) {
           const placeholder = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
           const withImages = stored.map((a: any) => {
@@ -364,7 +373,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           })
           setArtworksDisplay(withImages)
         }
-      }
+      })
     }
     window.addEventListener('artworks-updated', onUpdated)
     return () => window.removeEventListener('artworks-updated', onUpdated)
@@ -797,9 +806,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     }
     
     const loadArtworksData = async () => {
-      // K2: Eine Quelle (wie ök2/Musterwerke) – localStorage + Pending; gespeist von Mac oder Mobil, kein Server-Überschreiben
-      const localOnly = loadArtworks()
-      const withPending = mergeWithPending(localOnly || [])
+      // K2: Eine Quelle – localStorage + IndexedDB (aufgelöste Bilder) + Pending
+      const resolved = await readArtworksForContextWithResolvedImages(false, false)
+      const withPending = mergeWithPending(resolved || [])
       if (withPending.length > 0) {
         const placeholder = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
         const withImages = withPending.map((a: any) => {
@@ -812,22 +821,24 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         setLoadStatus({ message: `✅ ${withImages.length} Werke`, success: true })
         setTimeout(() => setLoadStatus(null), 2000)
         setIsLoading(false)
-        console.log('✅ K2 Galerie: eine Quelle (localStorage + Pending), wie Musterwerke –', withImages.length, 'Werke')
+        console.log('✅ K2 Galerie: eine Quelle (localStorage + IndexedDB + Pending) –', withImages.length, 'Werke')
         // Kurz verzögert nochmal lesen: falls Admin-Save gerade fertig wurde (Navigation direkt nach Speichern)
         delayedReadTimeoutId = setTimeout(() => {
           if (!isMounted) return
-          const again = loadArtworks()
-          const againPending = mergeWithPending(again || [])
-          if (againPending.length > withImages.length) {
-            const againWithImages = againPending.map((a: any) => {
-              const out = { ...a }
-              if (!out.imageUrl && out.previewUrl) out.imageUrl = out.previewUrl
-              if (!out.imageUrl && !out.previewUrl) out.imageUrl = placeholder
-              return out
-            })
-            setArtworksDisplay(againWithImages)
-            console.log('✅ K2 Galerie: Nachzug –', againWithImages.length, 'Werke (nach Admin-Save)')
-          }
+          readArtworksForContextWithResolvedImages(false, false).then((again) => {
+            if (!isMounted) return
+            const againPending = mergeWithPending(again || [])
+            if (againPending.length > withImages.length) {
+              const againWithImages = againPending.map((a: any) => {
+                const out = { ...a }
+                if (!out.imageUrl && out.previewUrl) out.imageUrl = out.previewUrl
+                if (!out.imageUrl && !out.previewUrl) out.imageUrl = placeholder
+                return out
+              })
+              setArtworksDisplay(againWithImages)
+              console.log('✅ K2 Galerie: Nachzug –', againWithImages.length, 'Werke (nach Admin-Save)')
+            }
+          })
         }, 200)
       }
       
@@ -2419,59 +2430,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
             </div>
           </div>
         )}
-        {/* ök2 „User reinziehen“: Eine klare erste Aktion – Deinen Namen eintragen (nach „Galerie ausprobieren“) */}
-        {showErsteAktionBanner && (
-          <div style={{
-            margin: 'clamp(0.75rem, 2vw, 1rem)',
-            padding: '0.75rem 1rem',
-            background: 'rgba(107, 144, 128, 0.2)',
-            border: '1px solid rgba(107, 144, 128, 0.45)',
-            borderRadius: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '1rem',
-            flexWrap: 'wrap'
-          }}>
-            <span style={{ color: 'var(--k2-text)', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
-              Das ist deine Galerie. Als Nächstes: <strong>Deinen Namen eintragen</strong>.
-            </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Link
-                to={`${MEIN_BEREICH_ROUTE}?context=oeffentlich&tab=einstellungen`}
-                onClick={dismissErsteAktionBanner}
-                style={{
-                  padding: '0.5rem 1rem',
-                  background: 'var(--k2-accent)',
-                  color: 'var(--k2-text)',
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  border: '1px solid rgba(0,0,0,0.1)'
-                }}
-              >
-                Zum Admin →
-              </Link>
-              <button
-                type="button"
-                onClick={dismissErsteAktionBanner}
-                aria-label="Hinweis schließen"
-                style={{
-                  padding: '0.35rem 0.5rem',
-                  background: 'transparent',
-                  border: '1px solid rgba(107,144,128,0.5)',
-                  borderRadius: '8px',
-                  color: 'var(--k2-text)',
-                  cursor: 'pointer',
-                  fontSize: '0.85rem'
-                }}
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-        )}
-        {/* ök2 „User reinziehen“: Eine klare erste Aktion nach „Galerie ausprobieren“ */}
+        {/* ök2 Willkommensseite: So könnte deine Galerie aussehen – ein Banner, kein Doppel */}
         {showErsteAktionBanner && (
           <div style={{
             margin: 'clamp(0.75rem, 2vw, 1rem)',
@@ -2486,7 +2445,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
             flexWrap: 'wrap'
           }}>
             <span style={{ color: 'var(--k2-text)', fontSize: 'clamp(0.88rem, 2vw, 0.95rem)', flex: '1 1 200px' }}>
-              Das ist deine Galerie. Als Nächstes: <strong>Deinen Namen eintragen</strong>.
+              So könnte deine Galerie aussehen.
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <button

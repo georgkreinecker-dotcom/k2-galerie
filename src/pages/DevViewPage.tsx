@@ -224,6 +224,33 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       default: return PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
     }
   }
+
+  /** URL-Pfad für eine Seite (Vollbild-Link + Mobile-iframe). Admin-Klick in der App bleibt dann im iframe (Galerie → Admin). */
+  const getPathForPage = (pageId: string): string => {
+    switch (pageId) {
+      case 'galerie': return PROJECT_ROUTES['k2-galerie'].galerie
+      case 'galerie-oeffentlich': return PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+      case 'galerie-vorschau': return PROJECT_ROUTES['k2-galerie'].galerieVorschau
+      case 'galerie-oeffentlich-vorschau': return PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau
+      case 'vk2': return PROJECT_ROUTES.vk2.galerie
+      case 'vk2-kunden': return PROJECT_ROUTES.vk2.kunden
+      case 'vk2-vorschau': return PROJECT_ROUTES.vk2.galerieVorschau
+      case 'vk2-admin': return PROJECT_ROUTES.vk2.vollversion
+      case 'admin': return '/admin'
+      case 'shop': return PROJECT_ROUTES['k2-galerie'].shop
+      case 'control': return PROJECT_ROUTES['k2-galerie'].controlStudio
+      case 'mission': return PROJECT_ROUTES['k2-galerie'].plan
+      case 'platform': return PROJECT_ROUTES['k2-galerie'].platformStart
+      case 'projects': return '/projects'
+      case 'mok2':
+      case 'marketing-oek2': return PROJECT_ROUTES['k2-galerie'].marketingOek2
+      case 'handbuch': return '/k2team-handbuch'
+      case 'produkt-vorschau': return PROJECT_ROUTES['k2-galerie'].produktVorschau
+      case 'platzanordnung': return '/platzanordnung'
+      case 'k2-familie': return PROJECT_ROUTES['k2-familie'].home
+      default: return PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+    }
+  }
   const getGrafikerLabel = (): string => {
     switch (currentPage) {
       case 'galerie': return '🏛️ K2 Galerie (echt)'
@@ -1492,7 +1519,23 @@ end tell`
                 flexDirection: 'column',
                 alignItems: 'stretch'
               }}>
-                {renderComponent('mobile', viewMode === 'split' && currentPage === 'admin')}
+                {/* iframe = echte App: Admin-Klick öffnet Admin in derselben iPhone-Ansicht. Parameter embedded=1 sagt main.tsx: App laden (kein Platzhalter). */}
+                {typeof window !== 'undefined' && window.self === window.top ? (
+                  <iframe
+                    key={`mobile-${effectiveCurrentPage}`}
+                    src={`${window.location.origin}${getPathForPage(effectiveCurrentPage)}${getPathForPage(effectiveCurrentPage).includes('?') ? '&' : '?'}embedded=1`}
+                    title="App (iPhone-Ansicht)"
+                    style={{
+                      width: '100%',
+                      minHeight: '100%',
+                      border: 'none',
+                      flex: 1,
+                      background: '#fff'
+                    }}
+                  />
+                ) : (
+                  renderComponent('mobile', viewMode === 'split' && currentPage === 'admin')
+                )}
               </div>
             </div>
           </div>

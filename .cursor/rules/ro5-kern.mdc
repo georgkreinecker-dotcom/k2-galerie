@@ -38,7 +38,21 @@ Das war der Hauptauslöser für Reopen/Code 5. Keine Ausnahme.
 
 ---
 
-## 4. Verweise (Details nur bei Bedarf)
+## 4. Reproduzierbare Arbeitsweise (damit Code 5 nicht ausgelöst wird)
+
+**So arbeitest du so, dass auch komplexe Sessions stabil bleiben (reproduzierbar):**
+
+1. **Nie** write-build-info am Ende einer Antwort (Missetäter).
+2. **Kein** automatischer Reload in der App (nur Badge/Button).
+3. **Wenig Schreiben pro Antwort:** Gezielte Edits, Tests/Build getrennt; nicht „viele Dateien lesen + viele Docs in einem Rutsch updaten“.
+4. **Nach Crash/ro5:** Nur CRASH-BEREITS-GEPRUEFT (ggf. CRASH-LETZTER-KONTEXT) lesen; Doku-Updates **nicht** in derselben Antwort wie den großen Check.
+5. **Bei ro/ro5:** Kurz antworten (2–5 Sätze), kein langer Bericht.
+
+**Vollständige Analyse (warum eine Session ohne Code 5 blieb):** docs/CODE-5-GRUNDPROBLEM-UND-LOESUNG.md **Abschnitt 5** – dort die Tabelle und die Faktoren; bei Code-5-Thema oder langer Session gezielt lesen.
+
+---
+
+## 5. Verweise (Details nur bei Bedarf)
 
 - **Ursache & Lösung ausführlich:** docs/CODE-5-GRUNDPROBLEM-UND-LOESUNG.md  
 - **Bei neuem Crash:** docs/CRASH-BEREITS-GEPRUEFT.md zuerst lesen, nur **neue** Ursachen suchen.  
@@ -49,7 +63,7 @@ Alles Weitere (Build-Skripte, Watcher, Proaktiv, „ro-Protokoll“ im Detail) s
 
 ---
 
-## 5. Erkenntnis (für die KI – verbindlich)
+## 6. Erkenntnis (für die KI – verbindlich)
 
 **Lehre aus 05.03.26:** ro5 wurde fälschlich mit einem „Nächster Schritt“ aus DIALOG-STAND verknüpft; es wurde ein Feature umgesetzt, das mit ro5 nichts zu tun hatte. Georg: „ro5 ist das Synonym für das Reopen-Problem, nicht für eine inhaltliche Regel.“
 
