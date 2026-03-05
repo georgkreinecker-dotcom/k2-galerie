@@ -59,6 +59,8 @@ So können wir den Punkt Schritt für Schritt eingrenzen.
 | 20.02.26 | App.tsx, GalerieVorschauPage | App.tsx: „Reset & neu laden“ hatte keinen iframe-Check → ergänzt (im iframe nur setState, kein reload). GalerieVorschauPage: Beide Polling-Intervalle (Mac Mobile-Updates, Mobile-zu-Mobile) nur wenn notInIframe (wie DevViewPage). |
 | 01.03.26 | Tenant-Sync (ScreenshotExportAdmin, API) | Kein Auto-Reload; keine neuen setInterval. publishMobile nach Speichern nur bei window.self === window.top. handleLoadFromServer/executeExport: dynamischer Import, einmalige API-Calls. env.ts safeReload bereits iframe-geprüft. |
 | 05.03.26 | **ro5** | Georg: Reopen nach Code 5. Konvention „ro5“ in CODE-5-GRUNDPROBLEM-UND-LOESUNG.md + reopen-info.mdc dokumentiert. Kein großer Crash-Check – ein andermal. |
+| 05.03.26 | **ro5** (erneut) | Reopen nach Code 5. Nächster Schritt: „eine Person, eine Adresse“ (ök2) in ScreenshotExportAdmin fortsetzen. |
+| 05.03.26 | **ro5** (2.) | Erneuter Reopen nach Code 5. Dokumentiert, weitergemacht. |
 
 ---
 

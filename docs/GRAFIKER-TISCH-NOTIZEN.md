@@ -8,7 +8,7 @@
 
 ## Offene Wünsche (noch umzusetzen)
 
-- **ök2 – User reinziehen (lösungsorientiert):** User, die nur an Lösungen interessiert sind, in die App holen – Lösung zuerst zeigen, ein Weg ein Ziel, wenig Ablenkung, sofort überschreibbar. Konzept: docs/OEK2-USER-REINZIEHEN-KONZEPT.md. Nächste Schritte: Einstieg prüfen („Galerie ausprobieren“ → direkt „deine Galerie“), Stammdaten auf eine Person/eine Adresse, erste Aktion nach Einstieg klar, Texte kürzen. (05.03.26)
+- **ök2 – User reinziehen (lösungsorientiert):** Konzept: docs/OEK2-USER-REINZIEHEN-KONZEPT.md. **Bereits umgesetzt:** leere Stammdaten ök2, Mein-Bereich, Einstieg (ein Weg → Vorschau), Erste-Aktion-Banner („Deinen Namen eintragen“ + Zum Admin). **Noch offen:** Eine Person/eine Adresse (im ök2-Admin nur ein Künstler-Block, Person-2 ausblenden); optional Texte kürzen. (05.03.26)
 - **Profi-Tests (nur bei Skalierung):** Sportwagen-Tests sind erledigt (38 Tests, Merge/Persistenz/Datentrennung; siehe SPORTWAGEN-ROADMAP, PRODUKT-STANDARD-NACH-SPORTWAGEN). Dieser Punkt gilt **erst**, wenn erste **externe** Kunden/Lizenznehmer dazukommen: dann Test-Set ausbauen (z. B. E-Mail bei Fehler, Backup-Tests, Handy-Tests) und Georg daran erinnern. (notiert 23.02.26, präzisiert 02.03.26)
 
 ---

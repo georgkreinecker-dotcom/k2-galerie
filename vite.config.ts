@@ -112,7 +112,7 @@ const writeGalleryDataPlugin = () => {
             email: '',
             website: 'www.k2-galerie.at',
             internetadresse: '',
-            adminPassword: 'k2Galerie2026',
+            adminPassword: '',
             welcomeImage: '',
             virtualTourImage: ''
           },

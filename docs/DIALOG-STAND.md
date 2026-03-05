@@ -5,7 +5,18 @@
 ## Datum: 05.03.26
 
 ## Was zuletzt gemacht (05.03.26)
-- **ro5 (05.03.26):** Georg: Reopen nach Code 5. ro5-Konvention in CODE-5-GRUNDPROBLEM-UND-LOESUNG.md + reopen-info.mdc dokumentiert; CRASH-BEREITS-GEPRUEFT Eintrag „ro5“. Tests + Build grün. **Nächster Schritt:** Commit + Push; danach optional: Stammdaten eine Person/eine Adresse oder Texte kürzen (OEK2-USER-REINZIEHEN-KONZEPT).
+
+- **ro5 (05.03.26, erneut):** Reopen nach Code 5. In CRASH-BEREITS-GEPRUEFT eingetragen. **Nächster Schritt:** „eine Person, eine Adresse“ (ök2) in ScreenshotExportAdmin umsetzen – im Einstellungen-Tab bei ök2 nur einen Künstler-Block anzeigen.
+
+**Heute 05.03.26 – konkret umgesetzt (Kurzbericht):**
+1. **ro5-Konvention:** „ro5“ = Reopen nach Code 5. Dokumentiert in CODE-5-GRUNDPROBLEM-UND-LOESUNG.md, reopen-info.mdc, CRASH-BEREITS-GEPRUEFT. KI erkennt es, dokumentiert kurz, macht weiter.
+2. **ök2 User reinziehen – Erste Aktion:** Banner auf GalerieVorschauPage (nach „Galerie ausprobieren“): „Das ist deine Galerie. Als Nächstes: Deinen Namen eintragen.“ + „Zum Admin →“ (/mein-bereich?context=oeffentlich&tab=einstellungen). Ausblendbar. Build-Fix: doppelte dismissErsteAktionBanner entfernt.
+3. **Konzept-Stand:** OEK2-USER-REINZIEHEN-KONZEPT.md – Einstieg + erste Aktion als erledigt; offen: eine Person/eine Adresse (ök2), Texte kürzen.
+4. **Code-5-Doku/Skripte:** CODE-5-GRUNDPROBLEM-UND-LOESUNG.md, CODE-5-LOESUNGEN-AUS-DEM-NETZ.md, cursor-start-stabil.sh (--disable-gpu).
+5. **Mein-Bereich** (bereits vorher): Route /mein-bereich, Galerie ohne Admin-Button, Parameter an Admin durchgereicht.
+
+- **ro5 (05.03.26, 2. Reopen):** Erneut Code 5. Dokumentiert in CRASH-BEREITS-GEPRUEFT. **Nächster Schritt:** Optional: Stammdaten eine Person/eine Adresse oder Texte kürzen (OEK2-USER-REINZIEHEN-KONZEPT); sonst Raum bereit.
+- **ro5 (05.03.26):** Georg: Reopen nach Code 5. ro5-Konvention dokumentiert; CRASH-BEREITS-GEPRUEFT Eintrag; Tests + Build grün. **Commit:** f003438 ✅.
 - **ök2 User reinziehen – Erste Aktion Banner (05.03.26):** GalerieVorschauPage (musterOnly): Nach „Galerie ausprobieren“ erscheint Banner „Das ist deine Galerie. Als Nächstes: Deinen Namen eintragen.“ + „Zum Admin →“ (/mein-bereich?context=oeffentlich&tab=einstellungen). Doppelte dismissErsteAktionBanner entfernt (Build war vorher rot).
 - **ök2 User reinziehen – Konzept (05.03.26):** docs/OEK2-USER-REINZIEHEN-KONZEPT.md: Prinzipien (Lösung zuerst, ein Weg ein Ziel, Angst/Ablenkung minimieren, eine Sache pro Bildschirm, sofort überschreibbar). Nächste Schritte: Einstieg prüfen, eine Person/eine Adresse, erste Aktion klar, Texte kürzen. Grafiker-Tisch offene Wünsche ergänzt.
 - **Code-5-Lösung umgesetzt (05.03.26):** Skript **scripts/cursor-start-stabil.sh** – startet Cursor mit `--disable-gpu` (Empfehlung Cursor-Staff). Nutzung: Im Terminal am Mac aus dem Projektordner `bash scripts/cursor-start-stabil.sh`. CODE-5-LOESUNGEN-AUS-DEM-NETZ.md oben mit Hinweis ergänzt. **Nächster Schritt:** Optional: einmal so starten und testen; Commit + Push.

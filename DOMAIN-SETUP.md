@@ -111,7 +111,7 @@
 
 1. **Gehe zu deiner Website:** `https://k2-galerie.at`
 2. **Klicke auf den Admin-Button** (oben rechts)
-3. **Gib das Passwort ein:** `k2Galerie2026`
+3. **Künstler-Bereich** öffnen (z. B. Link „Admin“) → **In den Admin** (ohne Passwort, sofern keins in Einstellungen gesetzt wurde)
 4. **Gehe zu "Stammdaten"**
 5. **Setze die Website-URL auf:** `https://k2-galerie.at`
 6. **Speichere**

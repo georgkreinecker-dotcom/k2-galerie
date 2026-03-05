@@ -1794,7 +1794,7 @@ function ScreenshotExportAdmin() {
           internetadresse: K2_STAMMDATEN_DEFAULTS.gallery.internetadresse || K2_STAMMDATEN_DEFAULTS.gallery.website,
           openingHours: K2_STAMMDATEN_DEFAULTS.gallery.openingHours,
           bankverbindung: K2_STAMMDATEN_DEFAULTS.gallery.bankverbindung,
-          adminPassword: 'k2Galerie2026',
+          adminPassword: '',
           soldArtworksDisplayDays: 30,
           welcomeImage: '',
           virtualTourImage: '',
@@ -2048,7 +2048,7 @@ function ScreenshotExportAdmin() {
             internetadresse: g.internetadresse || '',
             openingHours: g.openingHours || '',
             bankverbindung: g.bankverbindung || '',
-            adminPassword: 'k2Galerie2026',
+            adminPassword: '',
             soldArtworksDisplayDays: 30,
             welcomeImage: '',
             virtualTourImage: '',
@@ -2079,7 +2079,7 @@ function ScreenshotExportAdmin() {
       } catch (error) {
         console.error('Fehler beim Laden der Galerie-Daten:', error)
         if (isMounted) {
-          const fallback = { ...K2_STAMMDATEN_DEFAULTS.gallery, adminPassword: 'k2Galerie2026', soldArtworksDisplayDays: 30, welcomeImage: '', virtualTourImage: '', galerieCardImage: '', internetShopNotSetUp: true }
+          const fallback = { ...K2_STAMMDATEN_DEFAULTS.gallery, adminPassword: '', soldArtworksDisplayDays: 30, welcomeImage: '', virtualTourImage: '', galerieCardImage: '', internetShopNotSetUp: true }
           setGalleryData(fallback)
         }
       }

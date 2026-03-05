@@ -33,18 +33,18 @@
 
 ## Bereits umgesetzt
 
-- Stammdaten ök2: `loadStammdaten('oeffentlich', …)` liefert leere Felder (`getEmptyOeffentlich`) bei leerem localStorage – neue User sehen keine Musterdaten.
-- Mein-Bereich: Einstieg für Künstler:in, kein Admin-Button-Chaos auf der Galerie; optional Passwort.
+- **Stammdaten ök2:** Leere Felder bei neuem User, sofort überschreibbar.
+- **Mein-Bereich:** Einstieg für Künstler:in, optional Passwort.
+- **Einstieg:** „Galerie ausprobieren“ → direkt Galerie/Vorschau (ein Weg, ein Ziel).
+- **Erste Aktion nach Einstieg:** Banner auf Vorschau: „Deinen Namen eintragen“ + „Zum Admin →“.
 
 ---
 
-## Nächste Schritte (konkret)
+## Noch offen (konkret)
 
-- [ ] **Einstieg prüfen:** Willkommen/Entdecken – führt „Galerie ausprobieren“ / erster CTA wirklich **direkt** in einen Zustand „deine Galerie“ (leere Felder, eine klare nächste Aktion)?
-- [ ] **Eine Person, eine Adresse:** Stammdaten-UI auf **einen** Künstler, **eine** Adresse (optional Galerie-Adresse) reduzieren; Person-2-Block entfernen (bereits geplant).
-- [ ] **Erste Aktion nach Einstieg:** Beim ersten Öffnen der Demo: eine einzige, klare Aktion anbieten (z. B. „Deinen Namen eintragen“ oder „Deine Galerie benennen“) – nicht sieben Tabs.
-- [ ] **Texte kürzen:** Lange Erklärungen auf Willkommen/Entdecken/erster Admin-Ansicht auf das Nötige reduzieren; „Lösung zeigen“ statt „Produkt erklären“.
+- [ ] **Eine Person, eine Adresse:** Im Admin/Einstellungen für **ök2** nur **einen** Künstler-Block („Deine Daten“), **eine** Adresse; Person-2-Block ausblenden. K2 bleibt unverändert (Martina + Georg).
+- [ ] **Texte kürzen:** Willkommen/Entdecken/erster Admin – lange Erklärungen auf das Nötige reduzieren.
 
 ---
 
-*Stand: 05.03.26 – aus Faden „ök2 Mobil-Test, User reinziehen“.*
+*Stand: 05.03.26 – Einstieg + erste Aktion umgesetzt; eine Person/eine Adresse + Texte offen.*

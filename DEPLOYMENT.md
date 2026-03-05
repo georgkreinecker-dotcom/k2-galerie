@@ -43,7 +43,7 @@ Die Domain-Integration ist jetzt automatisch konfiguriert. Du musst nur noch:
 
 Nach erfolgreichem Deployment:
 1. Öffne die Galerie-Website
-2. Admin-Bereich öffnen (Passwort: k2Galerie2026)
+2. Künstler-Bereich öffnen → In den Admin (ohne Passwort; optional in Einstellungen setzbar)
 3. Stammdaten → Galerie
 4. Website-Feld auf `https://k2-galerie.at` setzen
 5. Speichern

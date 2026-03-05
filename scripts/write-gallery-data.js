@@ -21,7 +21,7 @@ if (fs.existsSync(exportDataPath)) {
   const emptyData = {
     martina: { name: 'Martina Kreinecker', email: '', phone: '' },
     georg: { name: 'Georg Kreinecker', email: '', phone: '' },
-    gallery: { address: '', phone: '', email: '', website: 'www.k2-galerie.at', internetadresse: '', adminPassword: 'k2Galerie2026', welcomeImage: '', virtualTourImage: '' },
+    gallery: { address: '', phone: '', email: '', website: 'www.k2-galerie.at', internetadresse: '', adminPassword: '', welcomeImage: '', virtualTourImage: '' },
     artworks: [],
     events: [],
     documents: [],

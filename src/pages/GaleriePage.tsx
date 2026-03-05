@@ -533,7 +533,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       website: K2_STAMMDATEN_DEFAULTS.gallery.website,
       internetadresse: K2_STAMMDATEN_DEFAULTS.gallery.internetadresse || '',
       openingHours: K2_STAMMDATEN_DEFAULTS.gallery.openingHours,
-      adminPassword: 'k2Galerie2026',
+      adminPassword: '',
       welcomeImage: '/img/k2/willkommen.jpg',
       virtualTourImage: '',
       galerieCardImage: ''
@@ -1005,12 +1005,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             website: data.gallery.website || 'www.k2-galerie.at',
             internetadresse: data.gallery.internetadresse || data.gallery.website || '',
             openingHours: (data.gallery as any).openingHours || '',
-            adminPassword: data.gallery.adminPassword || 'k2Galerie2026',
+            adminPassword: data.gallery.adminPassword || '',
             welcomeImage: data.gallery.welcomeImage || '',
             virtualTourImage: data.gallery.virtualTourImage || '',
             galerieCardImage: data.gallery.galerieCardImage || ''
           })
-          setAdminPassword(data.gallery.adminPassword || 'k2Galerie2026')
+          setAdminPassword(data.gallery.adminPassword || '')
         }
         
         // KRITISCH: Lade ZUERST lokale Werke um sicherzustellen dass Mobile-Werke NICHT verloren gehen!
@@ -1740,7 +1740,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             website: g.website || 'www.k2-galerie.at',
             internetadresse: g.internetadresse || g.website || '',
             openingHours: g.openingHours,
-            adminPassword: 'k2Galerie2026',
+            adminPassword: '',
             welcomeImage: existingImages.welcomeImage,
             virtualTourImage: existingImages.virtualTourImage,
             galerieCardImage: existingImages.galerieCardImage
@@ -1748,7 +1748,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
         }
         if (isMounted) {
           setGalleryData(mergedGallery)
-          setAdminPassword(mergedGallery.adminPassword || 'k2Galerie2026')
+          setAdminPassword(mergedGallery.adminPassword || '')
         }
         // Nur Kontakt/Adresse-Felder reparieren – welcomeImage, virtualTourImage und alle anderen Felder aus dem Bestand behalten
         if (galleryStored) {
@@ -1816,7 +1816,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 phone: data.phone || '', email: data.email || '',
                 website: data.website || 'www.k2-galerie.at', internetadresse: data.internetadresse || data.website || '',
                 openingHours: (data as any).openingHours ?? prev.openingHours ?? '',
-                adminPassword: data.adminPassword || 'k2Galerie2026',
+                adminPassword: data.adminPassword || '',
                 welcomeImage, virtualTourImage, galerieCardImage
               }
             }
@@ -1826,7 +1826,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             }
             return prev
           })
-          setAdminPassword(data.adminPassword || 'k2Galerie2026')
+          setAdminPassword(data.adminPassword || '')
         }
       } catch {}
     }

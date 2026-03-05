@@ -5,31 +5,13 @@
  */
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { loadVk2Stammdaten } from '../utils/stammdatenStorage'
 
-const KEY_OEF_ADMIN_PASSWORD = 'k2-oeffentlich-admin-password'
+/** Passwort wird nicht mehr am Einstieg abgefragt – K2, ök2, VK2: direkter Zugang. Optional in Admin → Einstellungen setzbar. */
 
 type Context = 'k2' | 'oeffentlich' | 'vk2'
 
 function getPassword(context: Context): string {
-  if (context === 'oeffentlich') {
-    try {
-      return (typeof localStorage !== 'undefined' ? localStorage.getItem(KEY_OEF_ADMIN_PASSWORD) : null) || ''
-    } catch { return '' }
-  }
-  if (context === 'vk2') {
-    try {
-      const s = loadVk2Stammdaten()
-      const pw = (s?.vorstand as { adminPassword?: string } | undefined)?.adminPassword
-      return (pw && String(pw).trim()) || ''
-    } catch { return '' }
-  }
-  try {
-    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('k2-stammdaten-galerie') : null
-    if (!raw) return ''
-    const data = JSON.parse(raw)
-    return (data.adminPassword && String(data.adminPassword).trim()) || ''
-  } catch { return '' }
+  return ''
 }
 
 export default function MeinBereichPage() {
