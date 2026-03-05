@@ -39,6 +39,16 @@
 
 ---
 
+## Supabase = Quelle (wenn konfiguriert)
+
+Wenn Supabase konfiguriert ist (K2):
+
+- **Laden:** `loadArtworksFromSupabase()` holt von der Edge Function, mergt mit lokal via `mergeServerWithLocal` (Server = Quelle, lokale ohne Server-Eintrag geschützt), schreibt nur wenn `merged.length >= local.length`, gibt `merged` zurück. So ist Supabase die Quelle, ohne lokale Neu-Anlagen zu verlieren.
+- **Speichern:** Jeder Admin-Save (K2) schreibt in localStorage/IndexedDB **und** ruft `saveArtworksToSupabase(artworks)` auf. Supabase bleibt damit synchron; alle Geräte sehen denselben Stand beim nächsten Laden.
+- **Bilder:** Werkbilder optional in Supabase Storage → `imageUrl` = öffentliche URL; Edge Function speichert `image_url` in der DB.
+
+---
+
 ## Kurzfassung
 
 **Server = Quelle. Lokale ohne Server-Eintrag immer behalten. Konflikt: Mobile > neuer. Eine Funktion: syncMerge.mergeServerWithLocal.**

@@ -6,9 +6,9 @@
 
 ## 🔴 NACH ro5 / CRASH: WO DU GERADE BIST (05.03.26)
 
-- **Thema:** Supabase Storage für Werkbilder – umgesetzt (s1–s3).
-- **Was gemacht:** `src/utils/supabaseStorage.ts` (Upload → öffentliche URL); Admin beim Speichern: wenn Supabase konfiguriert und Bild Data-URL → Upload in Storage, imageUrl = URL; Doku `docs/SUPABASE-STORAGE-WERKBILDER.md` (Bucket `artwork-images`, Policy, Free Tier; beim Start Pro geplant).
-- **Nächster Schritt:** Im Supabase Dashboard Bucket `artwork-images` (öffentlich) + Policy für Upload anlegen → Werk speichern testen. Beim echten Losstarten: auf Pro wechseln.
+- **Thema:** Sportwagen Supabase – alles auf eine Quelle ausgerichtet (Pro läuft).
+- **Was gemacht:** (1) `loadArtworksFromSupabase`: Merge mit lokal via `mergeServerWithLocal`, nur schreiben wenn merged.length >= local.length. (2) Admin `saveArtworks`: Nach jedem K2-Save wird `saveArtworksToSupabase(artworks)` aufgerufen. (3) Doku: SYNC-REGEL Abschnitt „Supabase = Quelle“, PRODUKT-STANDARD Sync-Zeile ergänzt.
+- **Nächster Schritt:** Optional: Edge Function/DB um weitere Felder (artist, quantity, dimensions, …) erweitern, falls beim Laden von Supabase auf neuem Gerät Felder fehlen. Sonst: testen (Admin speichern → Supabase; „Vom Server laden“ → Merge).
 
 ---
 

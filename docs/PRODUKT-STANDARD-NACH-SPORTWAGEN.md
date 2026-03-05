@@ -12,7 +12,7 @@ Siehe auch: **SPORTWAGEN-ROADMAP.md** (Phasen 1–9, was umgesetzt wurde).
 |--------|----------|
 | **Daten & Kontext** | Eine Quelle: Tenant-Context (K2 \| ök2 \| VK2). Keys und Kontext-Abfragen zentral, keine verstreuten Duplikate. |
 | **Persistenz** | Eine Schicht pro Typ: Artworks, Stammdaten, Events, Dokumente. Lesen/Schreiben nur über diese Schichten. |
-| **Sync & Merge** | Eine Regel (SYNC-REGEL.md), eine Funktion `mergeServerWithLocal`. Alle Aufrufer nutzen sie. |
+| **Sync & Merge** | Eine Regel (SYNC-REGEL.md), eine Funktion `mergeServerWithLocal`. Alle Aufrufer nutzen sie. Bei Supabase konfiguriert: Supabase = Quelle für K2-Werke; Load mergt mit lokal, Save pusht nach Supabase (+ Storage für Bilder). |
 | **API/Transport** | Ein API-Client (Retry, Timeout, einheitliches Fehler-Objekt). |
 | **Reload** | Eine sichere Funktion `safeReload` (iframe-Check zentral). Alle Reload-Buttons nutzen sie. |
 | **Lizenzen/Zahlungen** | Eine Doku (ZAHLUNGSSYSTEM-LIZENZEN-TECHNIK-PLAN); Stripe Checkout + Webhook; Supabase-Tabellen (Migration 003); eine API `GET /api/licence-data`; Go-Live-Checkliste: STRIPE-LIZENZEN-GO-LIVE.md (die nächsten 3 Schritte). |

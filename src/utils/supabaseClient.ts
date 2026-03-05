@@ -8,6 +8,7 @@
 import { getAuthToken } from './supabaseAuth'
 import { filterK2ArtworksOnly } from './autoSave'
 import { readArtworksRawByKey, saveArtworksByKey } from './artworksStorage'
+import { mergeServerWithLocal } from './syncMerge'
 
 // Sicherer Zugriff auf import.meta.env
 let SUPABASE_URL = ''
@@ -80,15 +81,17 @@ export async function loadArtworksFromSupabase(): Promise<any[]> {
     }))
 
     console.log(`✅ ${artworks.length} Werke aus Supabase geladen`)
-    
+    const localList = loadFromLocalStorage()
+    const { merged } = mergeServerWithLocal(artworks, localList, { onlyAddLocalIfMobileAndVeryNew: true })
     try {
-      const toStore = filterK2ArtworksOnly(artworks)
-      saveArtworksByKey('k2-artworks', toStore, { filterK2Only: false, allowReduce: true })
+      if (merged.length >= localList.length) {
+        const toStore = filterK2ArtworksOnly(merged)
+        saveArtworksByKey('k2-artworks', toStore, { filterK2Only: false, allowReduce: true })
+      }
     } catch (e) {
       console.warn('⚠️ localStorage Backup fehlgeschlagen:', e)
     }
-
-    return artworks
+    return merged
   } catch (error) {
     console.error('❌ Fehler beim Laden aus Supabase:', error)
     return loadFromLocalStorage()

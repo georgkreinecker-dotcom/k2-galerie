@@ -26,7 +26,7 @@ import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
 import { addPendingArtwork, filterK2Only, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, saveArtworksByKeyWithImageStore, readArtworksWithResolvedImages, resolveArtworkImages } from '../src/utils/artworksStorage'
-import { isSupabaseConfigured } from '../src/utils/supabaseClient'
+import { isSupabaseConfigured, saveArtworksToSupabase } from '../src/utils/supabaseClient'
 import { uploadArtworkImageToStorage } from '../src/utils/supabaseStorage'
 import { loadStammdaten, saveStammdaten as persistStammdaten, loadVk2Stammdaten, saveVk2Stammdaten } from '../src/utils/stammdatenStorage'
 import { loadEvents as loadEventsFromStorage } from '../src/utils/eventsStorage'
@@ -612,13 +612,29 @@ async function saveArtworks(tenant: ReturnType<typeof useTenant>, artworks: any[
   if (tenant.isVk2) return false
   const key = tenant.getArtworksKey()
   let ok = await saveArtworksByKeyWithImageStore(key!, artworks, { filterK2Only: tenant.tenantId === 'k2', allowReduce: true })
-  if (ok) console.log('✅ Gespeichert:', artworks.length, 'Werke', key === 'k2-oeffentlich-artworks' ? '(ök2)' : '')
-  else if (artworks.length > 0) {
+  if (ok) {
+    console.log('✅ Gespeichert:', artworks.length, 'Werke', key === 'k2-oeffentlich-artworks' ? '(ök2)' : '')
+    if (tenant.tenantId === 'k2' && isSupabaseConfigured() && artworks.length > 0) {
+      try {
+        await saveArtworksToSupabase(artworks)
+      } catch (e) {
+        console.warn('Supabase Sync nach Speichern fehlgeschlagen:', e)
+      }
+    }
+  } else if (artworks.length > 0) {
     const freed = tryFreeLocalStorageSpace()
     if (freed > 0) {
       ok = await saveArtworksByKeyWithImageStore(key!, artworks, { filterK2Only: tenant.tenantId === 'k2', allowReduce: true })
-      if (ok) console.log('✅ Nach Speicher-Freigabe gespeichert')
-      else alert('⚠️ ' + SPEICHER_VOLL_MELDUNG)
+      if (ok) {
+        console.log('✅ Nach Speicher-Freigabe gespeichert')
+        if (tenant.tenantId === 'k2' && isSupabaseConfigured() && artworks.length > 0) {
+          try {
+            await saveArtworksToSupabase(artworks)
+          } catch (e) {
+            console.warn('Supabase Sync nach Speichern fehlgeschlagen:', e)
+          }
+        }
+      } else alert('⚠️ ' + SPEICHER_VOLL_MELDUNG)
       return ok
     }
     alert('⚠️ Zu viele Werke oder Speicher voll. Bitte Einstellungen → Speicher entlasten oder einige löschen.')
