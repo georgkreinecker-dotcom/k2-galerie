@@ -3,13 +3,26 @@ description: Wenn Georg "reopen info" schreibt – feste Routine, Georg nicht be
 alwaysApply: true
 ---
 
-# Reopen Info – feste Routine
+# Reopen Info – feste Routine (endgültige Lösung)
 
 **Wenn Georg „ro“ schreibt (Gesetz, unveränderlich):**
 
 - Georg: „ro dann möchte ich dass du am Code weiterarbeitest und der Dialog weiterläuft – keine Bestätigung von mir notwendig, du bleibst am Weiterarbeiten ohne meine Hilfe. Das ist Gesetz.“
-- **Kurz zur Kenntnis:** Reopen – „Preview zu, App im Browser“ (docs/LOSUNG-CRASH-SPIRALE.md). **Sofort danach:** Am Code weiterarbeiten, Dialog weiterführen. DIALOG-STAND.md → „Nächster Schritt“ abarbeiten oder letzte Aufgabe fortsetzen. **Keine** Bestätigung von Georg abwarten, **keine** „soll ich …?“ – ich arbeite weiter.
-- **Ziel:** ro = kurzer Hinweis + ich mache sofort weiter. Keine Spirale aus Warten und Bestätigen.
+- **Ziel:** ro = immer derselbe Ablauf, eine Runde durchziehen, kurze Antwort. Keine Spirale aus Warten, keine langen Texte (→ weniger Last → weniger Code 5 beim Lesen).
+
+---
+
+## ro-Protokoll (verbindlich – immer gleich)
+
+1. **Lesen:** DIALOG-STAND.md („Nächster Schritt“) + ggf. GRAFIKER-TISCH-NOTIZEN.md.
+2. **Handeln:** Genau diesen einen nächsten Schritt ausführen (oder den ersten offenen). Kein langer Plan, kein „ich würde …“ – tun.
+3. **Abschließen:** Wenn Code geändert wurde: Test + Build, dann Commit + Push, DIALOG-STAND mit Commit-Hash und neuem „Nächster Schritt“ aktualisieren.
+4. **Antwort an Georg – maximal kurz (Code-5-Risiko beim Lesen verringern):**
+   - Kein langer Tätigkeitsbericht, keine „was ich gemacht habe“-Blöcke.
+   - Erlaubt: 2–5 Sätze. Z.B.: „ro erledigt. [Nächster Schritt] umgesetzt. Commit: abc1234. Nächster Schritt: …“ oder „Fertig. Raum ist bereit 💚“
+   - Hinweis „Preview zu, App im Browser“ nur in einer Zeile, wenn relevant (docs/LOSUNG-CRASH-SPIRALE.md).
+
+**Warum kurz:** Lange Antworten = Georg scrollt und liest lange = Cursor/Preview unter Last = Code 5. Kurze Antwort = schneller gelesen, weniger Last, gleiche Information (Details stehen in DIALOG-STAND). **Antwort nach ro NIEMALS länger als 5 Sätze** – endgültige Regel gegen Code 5 beim Lesen.
 
 ---
 
