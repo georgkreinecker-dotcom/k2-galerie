@@ -4,6 +4,40 @@
 
 ---
 
+## Datum: 06.03.26 – „Importing a module script failed“ beim Admin (K2/ök2/VK2)
+
+- **Thema:** Von Galerie in den Admin wechseln → Fehler „Importing a module script failed“; Blockade für K2, ök2, VK2.
+- **Ursache:** In **vercel.json** hat das SPA-Rewrite **alle** Pfade außer wenigen Ausnahmen auf index.html geschickt – auch **/assets/** (JS-Chunks). Wenn der Browser den Admin-Chunk (z. B. /assets/AdminRoute-xxx.js) lud, konnte Vercel stattdessen index.html ausliefern → HTML statt JavaScript → „Importing a module script failed“.
+- **Was gemacht:** In der Rewrite-Regel **/assets/** (und vite.svg, manifest.json) explizit ausgenommen: `(?!assets/)` etc. in der negative-Lookahead-Liste. So werden Anfragen für JS-Chunks nie mehr auf index.html umgeleitet.
+- **Nächster Schritt:** Commit + Push → Vercel baut neu. Danach testen: Galerie (K2/ök2/VK2) → Admin-Button → Admin soll ohne Fehler laden.
+
+---
+
+## Datum: 06.03.26 – Beim Speichern rausgeworfen, keine Werke mehr (Datenverlust-Schutz)
+
+- **Thema:** Georg: Beim Abspeichern wieder hinausgeworfen, danach keine Werke mehr, App neu starten nötig.
+- **Was gemacht:** (1) **artworksStorage:** Speichern mit **0 Werken** wird ab jetzt **immer abgelehnt**, wenn im Speicher noch Werke stehen – auch bei allowReduce. So kann kein Bug/Crash mehr die Galerie mit einer leeren Liste überschreiben. (2) **ScreenshotExportAdmin:** Im GitHub-Upload-Block wird nur noch gespeichert, wenn updatedArtworks.length > 0 (kein Überschreiben mit leerer Liste). (3) Neuer Test: „0 Werke schreiben“ bei vorhandenen Daten wird abgelehnt.
+- **Wichtig für Georg – wenn Werke schon weg sind:** Admin → **Einstellungen** → **Backup & Wiederherstellung** → „Aus letztem Backup wiederherstellen“ (Auto-Backup alle 5 Sek.) oder „Aus Backup-Datei wiederherstellen“, falls du eine Vollbackup-Datei hast.
+- **Nächster Schritt:** Georg prüft, ob Wiederherstellung aus Backup möglich ist; danach beim nächsten Speichern sollte der neue Schutz greifen.
+
+---
+
+## Datum: 06.03.26 – Freistellen: Rauswurf + Ergebnis wurde nicht übernommen
+
+- **Thema:** Georg: Freistellen dauert am Mac lange, hat ihn rausgeschmissen; nach Neuladen war das Foto nicht freigestellt.
+- **Was gemacht:** (1) **professionalImageBackground.ts:** Freistellung läuft jetzt mit `proxyToWorker: true` (Arbeit im Web Worker → Hauptthread bleibt reaktiv, kein Rauswurf), `device: 'gpu'` (schneller wo verfügbar), `model: 'isnet_quint8'` (kleiner/schneller). Timeout 90 s, danach Fallback Pro-Hintergrund ohne Freistellung. Option `maxSideForRemoval` ergänzt. (2) **ScreenshotExportAdmin:** Beim Button „Foto jetzt freistellen“ wird `maxSideForRemoval: 600` übergeben (schneller); isMounted-Ref + nur setState wenn Komponente noch gemountet, damit Ergebnis nach langem Warten trotzdem ankommt und kein setState auf unmounted.
+- **Nächster Schritt:** Georg testet: Werk bearbeiten → „Foto jetzt freistellen“ – sollte nicht mehr rauswerfen, Fenster bleibt reaktiv; nach Fertigstellung erscheint das freigestellte Bild. Bei GPU-Unterstützung deutlich schneller.
+
+---
+
+## Datum: 06.03.26 – Artworks-Abweichungen behoben (Sportwagenmodus)
+
+- **Thema:** Georg: „ja unbedingt“ – Abweichungen bei Artworks (VirtuellerRundgangPage, ShopPage) beheben: nicht mehr direkt `localStorage.getItem('k2-artworks')`, sondern Artworks-Schicht nutzen.
+- **Was gemacht:** (1) **VirtuellerRundgangPage:** `readArtworksRawByKey` aus artworksStorage importiert, lokale `loadArtworks()` ruft jetzt `readArtworksRawByKey('k2-artworks')` auf. (2) **ShopPage:** Import `readArtworksRawByKey`; im useEffect „Alle Werke laden für Suche“ wird `readArtworksRawByKey('k2-artworks')` genutzt, Listener und Cleanup unverändert. (3) **docs/BERICHT-ABLAEUFE-SPORTWAGEN.md:** Abweichung 1 als erledigt markiert, VirtuellerRundgang + Shop in der Tabelle „Bereits standardisiert“ ergänzt.
+- **Nächster Schritt:** Optional: API-Aufrufe (gallery-data, licence-data, visit) über apiClient bündeln (Bericht Abschnitt 2). Oder anderes Thema.
+
+---
+
 ## Datum: 06.03.26 – Bild einfügen: ein Standard-Ablauf überall (runBildUebernehmen)
 
 - **Thema:** Georg: „Ist das Bild einfügen nicht auch ein standardisierter Ablauf, der überall gleich funktionieren muss und nicht für jedes Modal anders?“
