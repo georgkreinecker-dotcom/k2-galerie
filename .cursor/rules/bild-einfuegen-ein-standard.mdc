@@ -1,0 +1,27 @@
+---
+description: Bild einfügen / Bild übernehmen = ein Standard-Ablauf überall gleich (Sportwagenmodus, ein-standard-problem).
+alwaysApply: true
+---
+
+# Bild einfügen – ein Standard (überall gleich)
+
+**Hintergrund:** Sportwagenmodus = Standard für alle Abläufe. Das gilt von vornherein – nicht erst, wenn Georg darauf hinweist. Siehe .cursorrules „Sportwagenmodus“, SPORTWAGEN-ROADMAP, ein-standard-problem.mdc.
+
+## Regel
+
+**„Bild einfügen“ / „Bild übernehmen“ ist ein einziger, standardisierter Ablauf.** Er muss überall gleich funktionieren – nicht pro Modal oder pro Kontext anders.
+
+- **Gleicher Ablauf:** Datei/Vorschau → Bildverarbeitung (Original / Freistellen / Zuschneiden) → „Bild übernehmen“ → Verarbeitung (processImageForSave) → Validierung → Anwendung (kontextspezifisch) → Statusmeldung / Fehlerbehandlung.
+- **Eine Implementierung:** In **ScreenshotExportAdmin** gibt es genau **einen** zentralen Ablauf: **`runBildUebernehmen(dataUrl, mode, backgroundPreset, onApplied)`**. Alle Stellen (Design Willkommen/Galerie-Karte/Virtual-Tour, VK2 Eingangskarten, VK2 Mitglieder Foto/Werk, Dokument hochladen, Event-Dokument) rufen diese Funktion auf.
+- **Kontext nur in onApplied:** Was mit dem verarbeiteten Bild passiert (in pageContent schreiben, in vk2Karten, in Dokument hochladen, etc.), steht nur im Callback `onApplied(result)`. Verarbeitung, Status („⏳ Bild wird verarbeitet…“, „✅ Bild übernommen“, „⚠️ Fehler“) und Fehlerbehandlung sind einheitlich.
+
+## Bei neuen „Bild einfügen“-Stellen
+
+- **Nicht** einen neuen, eigenen Ablauf mit eigenem `processImageForSave`-Aufruf und eigenen Statusmeldungen bauen.
+- **Stattdessen:** `runBildUebernehmen(dataUrl, mode, preset, async (result) => { … })` verwenden und in `onApplied` nur die kontextspezifische Anwendung (State setzen, speichern, Modal schließen) ausführen.
+
+## Kurzfassung
+
+**Bild einfügen = ein Standard. Eine Funktion (runBildUebernehmen), viele Aufrufer. Kein zweiter Ablauf pro Modal.**
+
+Verknüpfung: **ein-standard-problem.mdc**, **imageProcessingTool.ts** (processImageForSave), **ImageProcessingOptions.tsx** (UI für Original/Freistellen/Zuschneiden).

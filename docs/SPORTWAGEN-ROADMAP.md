@@ -4,6 +4,8 @@
 
 **Grundsatz:** Profi statt Dilettant – eine Quelle, ein Standard pro Problemstellung, keine verstreuten Duplikate. Siehe **ANALYSE-HANDWERK-VS-STANDARD-KOMPONENTEN.md**.
 
+**Pflicht für AI/Entwicklung:** Sportwagenmodus gilt **immer** – nicht erst, wenn Georg darauf hinweist. Bei jedem Ablauf (Bild einfügen, Dokument öffnen, Speichern, …): Zuerst prüfen, ob es bereits einen standardisierten Ablauf gibt → denselben überall nutzen. Wenn nein → einen bauen und überall wiederverwenden. Kein „pro Modal anders“.
+
 **Stand:** 28.02.26
 
 ---

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react'
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useTenant } from '../src/context/TenantContext'
@@ -1764,6 +1764,31 @@ function ScreenshotExportAdmin() {
   const [pendingEventDocImage, setPendingEventDocImage] = useState<{ file: File; dataUrl: string } | null>(null)
   const [pendingEventDocImageMode, setPendingEventDocImageMode] = useState<ImageProcessingMode>('freigestellt')
   const [pendingEventDocImagePreset, setPendingEventDocImagePreset] = useState<BackgroundPresetKey>('hell')
+
+  /** Ein Standard für alle: Bild einfügen/übernehmen – gleicher Ablauf (Verarbeitung, Status, Fehler) in jedem Modal. */
+  const runBildUebernehmen = useCallback(async (
+    dataUrl: string,
+    mode: ImageProcessingMode,
+    backgroundPreset: BackgroundPresetKey,
+    onApplied: (result: string) => void | Promise<void>
+  ) => {
+    setImageUploadStatus('⏳ Bild wird verarbeitet…')
+    try {
+      const effectiveMode = mode === 'vollkachel' ? 'original' : mode
+      const result = await processImageForSave(dataUrl, { mode: effectiveMode, backgroundPreset, context: 'desktop' })
+      if (!result || typeof result !== 'string') {
+        setImageUploadStatus('⚠️ Kein Bild erzeugt – bitte erneut versuchen')
+        setTimeout(() => setImageUploadStatus(null), 4000)
+        return
+      }
+      await onApplied(result)
+      setImageUploadStatus('✅ Bild übernommen – Speichern nicht vergessen')
+      setTimeout(() => setImageUploadStatus(null), 5000)
+    } catch (_) {
+      setImageUploadStatus('⚠️ Fehler – bitte erneut versuchen')
+      setTimeout(() => setImageUploadStatus(null), 4000)
+    }
+  }, [])
 
   const DESIGN_VARIANT_KEYS = tenant.isOeffentlich
     ? { a: 'k2-oeffentlich-design-variant-a', b: 'k2-oeffentlich-design-variant-b' } as const
@@ -9316,12 +9341,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.4rem' }}>
                   <button type="button" onClick={async () => {
                     if (!pendingMemberImage || pendingMemberImage.field !== 'mitgliedFotoUrl') return
-                    try {
-                      const result = await processImageForSave(pendingMemberImage.dataUrl, { mode: pendingMemberImageMode === 'vollkachel' ? 'freigestellt' : pendingMemberImageMode, backgroundPreset: pendingMemberImagePreset, context: 'desktop' })
+                    const idx = pendingMemberImage.mitgliedIdx
+                    const dataUrl = pendingMemberImage.dataUrl
+                    await runBildUebernehmen(dataUrl, pendingMemberImageMode, pendingMemberImagePreset, async (result) => {
                       const neu = [...(vk2Stammdaten.mitglieder || [])]
-                      if (neu[mitgliedIdx]) { neu[mitgliedIdx] = { ...neu[mitgliedIdx], mitgliedFotoUrl: result }; setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }); try { saveVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }) } catch (_) {} }
+                      if (neu[idx]) { neu[idx] = { ...neu[idx], mitgliedFotoUrl: result }; setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }); try { saveVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }) } catch (_) {} }
                       setPendingMemberImage(null)
-                    } catch (_) {}
+                    })
                   }} style={{ padding: '0.4rem 0.8rem', background: '#b54a1e', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>Bild übernehmen</button>
                   <button type="button" onClick={() => setPendingMemberImage(null)} style={{ padding: '0.4rem 0.8rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: '0.85rem' }}>Abbrechen</button>
                 </div>
@@ -9357,12 +9383,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.4rem' }}>
                   <button type="button" onClick={async () => {
                     if (!pendingMemberImage || pendingMemberImage.field !== 'imageUrl') return
-                    try {
-                      const result = await processImageForSave(pendingMemberImage.dataUrl, { mode: pendingMemberImageMode === 'vollkachel' ? 'freigestellt' : pendingMemberImageMode, backgroundPreset: pendingMemberImagePreset, context: 'desktop' })
+                    const idx = pendingMemberImage.mitgliedIdx
+                    const dataUrl = pendingMemberImage.dataUrl
+                    await runBildUebernehmen(dataUrl, pendingMemberImageMode, pendingMemberImagePreset, async (result) => {
                       const neu = [...(vk2Stammdaten.mitglieder || [])]
-                      if (neu[mitgliedIdx]) { neu[mitgliedIdx] = { ...neu[mitgliedIdx], imageUrl: result }; setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }); try { saveVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }) } catch (_) {} }
+                      if (neu[idx]) { neu[idx] = { ...neu[idx], imageUrl: result }; setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }); try { saveVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }) } catch (_) {} }
                       setPendingMemberImage(null)
-                    } catch (_) {}
+                    })
                   }} style={{ padding: '0.4rem 0.8rem', background: '#b54a1e', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>Bild übernehmen</button>
                   <button type="button" onClick={() => setPendingMemberImage(null)} style={{ padding: '0.4rem 0.8rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: '0.85rem' }}>Abbrechen</button>
                 </div>
@@ -11454,19 +11481,22 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
                     <button type="button" onClick={async () => {
                       if (!pendingDocumentImage) return
-                      try {
-                        const result = await processImageForSave(pendingDocumentImage.dataUrl, { mode: pendingDocumentImageMode === 'vollkachel' ? 'freigestellt' : pendingDocumentImageMode, backgroundPreset: pendingDocumentImagePreset, context: 'desktop' })
-                        const res = await fetch(result)
-                        const blob = await res.blob()
-                        const processedFile = new File([blob], pendingDocumentImage.file.name || 'document.jpg', { type: blob.type })
-                        await handleDocumentUpload(processedFile)
-                        setPendingDocumentImage(null)
-                        alert('✅ Dokument erfolgreich hochgeladen!')
-                        setShowUploadModal(false)
-                      } catch (err) {
-                        console.error(err)
-                        alert('❌ Fehler. Bitte erneut versuchen.')
-                      }
+                      const dataUrl = pendingDocumentImage.dataUrl
+                      const fileName = pendingDocumentImage.file.name || 'document.jpg'
+                      await runBildUebernehmen(dataUrl, pendingDocumentImageMode, pendingDocumentImagePreset, async (result) => {
+                        try {
+                          const res = await fetch(result)
+                          const blob = await res.blob()
+                          const processedFile = new File([blob], fileName, { type: blob.type })
+                          await handleDocumentUpload(processedFile)
+                          setPendingDocumentImage(null)
+                          alert('✅ Dokument erfolgreich hochgeladen!')
+                          setShowUploadModal(false)
+                        } catch (err) {
+                          console.error(err)
+                          alert('❌ Fehler. Bitte erneut versuchen.')
+                        }
+                      })
                     }} style={{ padding: '0.5rem 1rem', background: '#b54a1e', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}>Bild übernehmen & hochladen</button>
                     <button type="button" onClick={() => { setPendingDocumentImage(null) }} style={{ padding: '0.5rem 1rem', background: '#fff', border: '1px solid #ddd', borderRadius: 8, cursor: 'pointer' }}>Abbrechen</button>
                   </div>
@@ -11826,32 +11856,29 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                     type="button"
                                     onClick={async () => {
                                       if (!pendingPageImage) return
-                                      try {
-                                        setImageUploadStatus('⏳ Bild wird verarbeitet…')
-                                        const mode = pendingPageImageMode === 'vollkachel' ? 'original' : pendingPageImageMode
-                                        const result = await processImageForSave(pendingPageImage.dataUrl, { mode, backgroundPreset: pendingPageImagePreset, context: 'desktop' })
+                                      const field = pendingPageImage.field
+                                      const dataUrlToProcess = pendingPageImage.dataUrl
+                                      const fileForWelcome = pendingPageImage.file
+                                      await runBildUebernehmen(dataUrlToProcess, pendingPageImageMode, pendingPageImagePreset, async (result) => {
                                         const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
-                                        const next = { ...pageContent, [pendingPageImage.field]: result }
-                                        setPageContent(next)
-                                        setPageContentGalerie(next, designTenant)
-                                        if (pendingPageImage.field === 'welcomeImage' && !tenant.isVk2) pendingWelcomeFileRef.current = pendingPageImage.file
+                                        setPageContent(prev => {
+                                          const next = { ...prev, [field]: result }
+                                          setPageContentGalerie(next, designTenant ?? undefined)
+                                          return next
+                                        })
+                                        if (field === 'welcomeImage' && !tenant.isVk2) pendingWelcomeFileRef.current = fileForWelcome
                                         setPendingPageImage(null)
                                         setCropPageImageSrc(null)
                                         setImageModalDragOffset({ x: 0, y: 0 })
-                                        setImageUploadStatus('✅ Bild übernommen – Speichern nicht vergessen')
-                                        setTimeout(() => setImageUploadStatus(null), 5000)
-                                        if ((pendingPageImage.field === 'galerieCardImage' || pendingPageImage.field === 'virtualTourImage') && typeof uploadPageImageToGitHub === 'function') {
+                                        if ((field === 'galerieCardImage' || field === 'virtualTourImage') && typeof uploadPageImageToGitHub === 'function') {
                                           try {
                                             const res = await fetch(result)
                                             const blob = await res.blob()
-                                            const file = new File([blob], pendingPageImage.field === 'galerieCardImage' ? 'galerie-card.jpg' : 'virtual-tour.jpg', { type: blob.type })
-                                            await uploadPageImageToGitHub(file, pendingPageImage.field, pendingPageImage.field === 'galerieCardImage' ? 'galerie-card.jpg' : 'virtual-tour.jpg')
+                                            const file = new File([blob], field === 'galerieCardImage' ? 'galerie-card.jpg' : 'virtual-tour.jpg', { type: blob.type })
+                                            await uploadPageImageToGitHub(file, field, field === 'galerieCardImage' ? 'galerie-card.jpg' : 'virtual-tour.jpg')
                                           } catch (_) { /* optional */ }
                                         }
-                                      } catch (_) {
-                                        setImageUploadStatus('⚠️ Fehler – bitte erneut versuchen')
-                                        setTimeout(() => setImageUploadStatus(null), 4000)
-                                      }
+                                      })
                                     }}
                                     style={{ padding: '0.5rem 1rem', background: '#b54a1e', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}
                                   >
@@ -11944,12 +11971,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                     <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
                                       <button type="button" onClick={async () => {
                                         if (!pendingVk2Card) return
-                                        try {
-                                          const result = await processImageForSave(pendingVk2Card.dataUrl, { mode: pendingVk2CardMode === 'vollkachel' ? 'freigestellt' : pendingVk2CardMode, backgroundPreset: pendingVk2CardPreset, context: 'desktop' })
-                                          const updated = vk2Karten.map((k, i) => i === pendingVk2Card.index ? { ...k, imageUrl: result } : k)
+                                        const cardIndex = pendingVk2Card.index
+                                        const dataUrl = pendingVk2Card.dataUrl
+                                        await runBildUebernehmen(dataUrl, pendingVk2CardMode, pendingVk2CardPreset, async (result) => {
+                                          const updated = vk2Karten.map((k, i) => i === cardIndex ? { ...k, imageUrl: result } : k)
                                           saveVk2Karten(updated)
                                           setPendingVk2Card(null)
-                                        } catch (_) { /* ignore */ }
+                                        })
                                       }} style={{ padding: '0.5rem 1rem', background: 'var(--k2-accent)', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>Bild übernehmen</button>
                                       <button type="button" onClick={() => setPendingVk2Card(null)} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: '0.9rem' }}>Abbrechen</button>
                                     </div>
@@ -16092,14 +16120,17 @@ ${name}`
                       <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                         <button type="button" onClick={async () => {
                           if (!pendingEventDocImage) return
-                          try {
-                            const result = await processImageForSave(pendingEventDocImage.dataUrl, { mode: pendingEventDocImageMode === 'vollkachel' ? 'freigestellt' : pendingEventDocImageMode, backgroundPreset: pendingEventDocImagePreset, context: 'desktop' })
-                            const res = await fetch(result)
-                            const blob = await res.blob()
-                            const processedFile = new File([blob], pendingEventDocImage.file.name || 'event-image.jpg', { type: blob.type })
-                            setEventDocumentFile(processedFile)
+                          const dataUrl = pendingEventDocImage.dataUrl
+                          const fileName = pendingEventDocImage.file.name || 'event-image.jpg'
+                          await runBildUebernehmen(dataUrl, pendingEventDocImageMode, pendingEventDocImagePreset, async (result) => {
+                            try {
+                              const res = await fetch(result)
+                              const blob = await res.blob()
+                              const processedFile = new File([blob], fileName, { type: blob.type })
+                              setEventDocumentFile(processedFile)
+                            } catch (_) {}
                             setPendingEventDocImage(null)
-                          } catch (_) {}
+                          })
                         }} style={{ padding: '0.5rem 1rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}>Bild übernehmen</button>
                         <button type="button" onClick={() => setPendingEventDocImage(null)} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', cursor: 'pointer' }}>Abbrechen</button>
                       </div>

@@ -4,6 +4,7 @@ import jsQR from 'jsqr'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { getCategoryLabel, MUSTER_TEXTE, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
 import { loadStammdaten } from '../utils/stammdatenStorage'
+import { readArtworksRawByKey } from '../utils/artworksStorage'
 import { isOeffentlichDisplayContext } from '../utils/oeffentlichContext'
 import { getCustomers, createCustomer, updateCustomer, type Customer } from '../utils/customers'
 import { hasKassa, hasKassabuchVoll, isKassabuchAktiv } from '../utils/kassabuchStorage'
@@ -200,20 +201,11 @@ const ShopPage = () => {
     }
   }, [cart])
 
-  // Alle Werke laden für Suche
+  // Alle Werke laden für Suche – über Artworks-Schicht (Sportwagen: eine Quelle)
   useEffect(() => {
     const loadArtworks = () => {
-      try {
-        const stored = localStorage.getItem('k2-artworks')
-        if (stored) {
-          const artworks = JSON.parse(stored)
-          if (Array.isArray(artworks)) {
-            setAllArtworks(artworks)
-          }
-        }
-      } catch (error) {
-        console.error('Fehler beim Laden der Werke:', error)
-      }
+      const artworks = readArtworksRawByKey('k2-artworks')
+      if (Array.isArray(artworks)) setAllArtworks(artworks)
     }
     loadArtworks()
     window.addEventListener('artworks-updated', loadArtworks)

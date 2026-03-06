@@ -4,6 +4,22 @@
 
 ---
 
+## Datum: 06.03.26 – Bild einfügen: ein Standard-Ablauf überall (runBildUebernehmen)
+
+- **Thema:** Georg: „Ist das Bild einfügen nicht auch ein standardisierter Ablauf, der überall gleich funktionieren muss und nicht für jedes Modal anders?“
+- **Was gemacht:** (1) **Ein zentraler Ablauf:** In ScreenshotExportAdmin `runBildUebernehmen(dataUrl, mode, backgroundPreset, onApplied)` eingeführt – übernimmt Verarbeitung (processImageForSave), Validierung, Statusmeldungen (⏳/✅/⚠️) und Fehlerbehandlung. (2) **Alle „Bild übernehmen“-Stellen** nutzen diese Funktion: Design (Willkommen/Galerie-Karte/Virtual-Tour), VK2 Eingangskarten, VK2 Mitglieder (Foto + Werk), Dokument hochladen, Event-Dokument. Nur die Anwendung (onApplied) ist pro Kontext unterschiedlich. (3) **Regel:** .cursor/rules/bild-einfuegen-ein-standard.mdc (alwaysApply) – neue Bild-einfügen-Stellen müssen runBildUebernehmen verwenden, kein zweiter Ablauf.
+- **Nächster Schritt:** Optional Commit + Push. Georg testet: Bild übernehmen in Design, VK2, Dokument, Event – überall gleicher Ablauf und gleiche Meldungen.
+
+---
+
+## Datum: 06.03.26 – Design-Tab: „Bild übernehmen“ funktioniert nicht / spielt verrückt
+
+- **Thema:** Georg: Beim Klick auf „Bild übernehmen“ im Bildverarbeitungs-Modal (Design, Willkommensbild/Galerie-Karte/Virtual-Tour) passiert etwas Verrücktes, das neue Bild wird nicht übernommen.
+- **Was gemacht:** **ScreenshotExportAdmin** – Handler „Bild übernehmen“ (Design-Modal) angepasst: (1) **Stale-Closure** behoben: `field`, `dataUrlToProcess`, `fileForWelcome` am Anfang aus `pendingPageImage` auslesen und nach dem `await` nur noch diese lokalen Variablen nutzen. (2) **State-Update** mit funktionalem Updater: `setPageContent(prev => { const next = { ...prev, [field]: result }; setPageContentGalerie(next, designTenant); return next })`, damit immer der aktuelle Stand gemerged wird und das neue Bild nicht durch veraltetes `pageContent` überschrieben wird. (3) Prüfung: Wenn `processImageForSave` kein gültiges Ergebnis liefert, Fehlermeldung anzeigen statt leeren Wert zu setzen.
+- **Nächster Schritt:** Georg testet: Design → Foto reinziehen → Bildverarbeitung (z. B. Original) → „Bild übernehmen“ → Bild sollte in der Vorschau erscheinen und nach Speichern bleiben.
+
+---
+
 ## Datum: 06.03.26 – Werke verwalten: Platzhalter „Kein Bild“ – Anzeige-Fallback
 
 - **Thema:** Georg: „Es sind noch immer Platzhalter im Werke verwalten.“

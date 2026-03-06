@@ -1,17 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
+import { readArtworksRawByKey } from '../utils/artworksStorage'
 import '../App.css'
 
-// Einfache localStorage-Funktion
+/** Werke laden über Artworks-Schicht (Sportwagen: eine Quelle). */
 function loadArtworks(): any[] {
-  try {
-    const stored = localStorage.getItem('k2-artworks')
-    return stored ? JSON.parse(stored) : []
-  } catch (error) {
-    console.error('Fehler beim Laden:', error)
-    return []
-  }
+  return readArtworksRawByKey('k2-artworks')
 }
 
 const VirtuellerRundgangPage = () => {
