@@ -119,6 +119,7 @@ serve(async (req) => {
           description: a.description || null,
           location: a.location || null,
           in_shop: a.in_shop || a.inShop || false,
+          in_exhibition: a.in_exhibition !== false,
           created_at: a.created_at || a.createdAt || new Date().toISOString(),
           updated_at: a.updated_at || a.updatedAt || new Date().toISOString(),
           created_on_mobile: a.created_on_mobile || a.createdOnMobile || false,
@@ -163,6 +164,7 @@ serve(async (req) => {
         description: body.description || null,
         location: body.location || null,
         in_shop: body.in_shop || body.inShop || false,
+        in_exhibition: body.in_exhibition !== false,
         created_at: body.created_at || body.createdAt || new Date().toISOString(),
         updated_at: body.updated_at || body.updatedAt || new Date().toISOString(),
         created_on_mobile: body.created_on_mobile || body.createdOnMobile || false,
@@ -219,6 +221,10 @@ serve(async (req) => {
       if (updateData.inShop !== undefined) {
         updateData.in_shop = updateData.inShop
         delete updateData.inShop
+      }
+      if (updateData.inExhibition !== undefined) {
+        updateData.in_exhibition = updateData.inExhibition
+        delete updateData.inExhibition
       }
       if (updateData.createdOnMobile !== undefined) {
         updateData.created_on_mobile = updateData.createdOnMobile

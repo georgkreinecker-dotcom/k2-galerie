@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useTenant } from '../src/context/TenantContext'
@@ -35,6 +35,7 @@ import { apiPost, apiGet } from '../src/utils/apiClient'
 import { safeReload } from '../src/utils/env'
 import { compressImageForStorage } from '../src/utils/compressImageForStorage'
 import { processImageForSave } from '../src/utils/imageProcessingTool'
+import { preserveLocalImageData } from '../src/utils/syncMerge'
 import { ImageProcessingOptions, type ImageProcessingMode } from '../src/components/ImageProcessingOptions'
 import type { BackgroundPresetKey } from '../src/utils/professionalImageBackground'
 import ImageCropModal from '../src/components/ImageCropModal'
@@ -1289,8 +1290,8 @@ function ScreenshotExportAdmin() {
   }
 
   // Mandantenspezifische Drucker-Einstellungen (K2, ök2, Demo – je eigener Drucker + Format)
-  const printerStorageKey = (tenantId: TenantId, key: 'ip' | 'type' | 'labelSize' | 'printServerUrl') => {
-    const suffix = key === 'ip' ? 'printer-ip' : key === 'type' ? 'printer-type' : key === 'labelSize' ? 'label-size' : 'print-server-url'
+  const printerStorageKey = (tenantId: TenantId, key: 'ip' | 'type' | 'labelSize' | 'printServerUrl' | 'openEtikettAfterSave') => {
+    const suffix = key === 'ip' ? 'printer-ip' : key === 'type' ? 'printer-type' : key === 'labelSize' ? 'label-size' : key === 'printServerUrl' ? 'print-server-url' : 'open-etikett-after-save'
     return `k2-${suffix}-${tenantId}`
   }
   const defaultPrinterSettings = () => ({
@@ -1301,7 +1302,8 @@ function ScreenshotExportAdmin() {
     // Standard: Am Mac localhost; Mobilgeräte und Drucker im LAN 192.168.1.x → Print-Server-URL in diesem Netz.
     printServerUrl: typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
       ? 'http://localhost:3847'
-      : 'http://192.168.1.1:3847'
+      : 'http://192.168.1.1:3847',
+    openEtikettAfterSave: false
   })
   const loadPrinterSettingsForTenant = (tenantId: TenantId) => {
     try {
@@ -1330,18 +1332,21 @@ function ScreenshotExportAdmin() {
       const type = localStorage.getItem(printerStorageKey(tenantId, 'type'))
       const labelSize = localStorage.getItem(printerStorageKey(tenantId, 'labelSize'))
       const printServerUrl = localStorage.getItem(printerStorageKey(tenantId, 'printServerUrl'))
+      const openEtikettRaw = localStorage.getItem(printerStorageKey(tenantId, 'openEtikettAfterSave'))
+      const openEtikettAfterSave = openEtikettRaw === '1' || openEtikettRaw === 'true'
       return {
         ipAddress: ip || def.ipAddress,
         printerModel: def.printerModel,
         printerType: (type || def.printerType) as 'etikettendrucker' | 'standarddrucker',
         labelSize: labelSize || def.labelSize,
-        printServerUrl: printServerUrl || def.printServerUrl
+        printServerUrl: printServerUrl || def.printServerUrl,
+        openEtikettAfterSave: openEtikettRaw != null ? openEtikettAfterSave : def.openEtikettAfterSave
       }
     } catch {
       return defaultPrinterSettings()
     }
   }
-  const savePrinterSetting = (tenantId: TenantId, key: 'ip' | 'type' | 'labelSize' | 'printServerUrl', value: string) => {
+  const savePrinterSetting = (tenantId: TenantId, key: 'ip' | 'type' | 'labelSize' | 'printServerUrl' | 'openEtikettAfterSave', value: string) => {
     try {
       localStorage.setItem(printerStorageKey(tenantId, key), value)
     } catch (_) {}
@@ -7519,7 +7524,10 @@ ${'='.repeat(60)}
     setIsSavingArtwork(true)
     const forOek2 = tenant.isOeffentlich
     
-    if (!editingArtwork && !selectedFile) {
+    // Bild-Quelle: Datei, Kamera-Vorschau (previewUrl/Ref) oder beim Bearbeiten bestehendes Bild – nur ablehnen wenn wirklich kein Bild da ist
+    const hasPreviewDataUrl = (previewUrl?.startsWith('data:') || pendingImageDataUrlRef.current?.startsWith('data:'))
+    const hasImage = editingArtwork?.imageUrl || selectedFile || hasPreviewDataUrl
+    if (!editingArtwork && !hasImage) {
       setIsSavingArtwork(false)
       alert('Bitte ein Bild auswählen')
       return
@@ -7558,22 +7566,7 @@ ${'='.repeat(60)}
         return
       }
       if (artworkCategory === 'keramik') {
-        if (artworkCeramicSubcategory === 'vase' || artworkCeramicSubcategory === 'skulptur') {
-          const height = parseFloat(artworkCeramicHeight)
-          if (!artworkCeramicHeight || height < 10 || height % 5 !== 0) {
-            setIsSavingArtwork(false)
-            alert('Bitte die Höhe in cm eingeben (mindestens 10cm, nur 5cm Schritte: 10, 15, 20, 25, ...)')
-            return
-          }
-        }
-        if (artworkCeramicSubcategory === 'teller') {
-          const diameter = parseFloat(artworkCeramicDiameter)
-          if (!artworkCeramicDiameter || diameter < 10 || diameter % 5 !== 0) {
-            setIsSavingArtwork(false)
-            alert('Bitte den Durchmesser in cm eingeben (mindestens 10cm, nur 5cm Schritte: 10, 15, 20, 25, ...)')
-            return
-          }
-        }
+        // Höhe (Vase/Skulptur) und Durchmesser (Teller) sind optional – keine Pflichtangabe
         if (artworkCeramicSubcategory === 'sonstig') {
           if (!artworkCeramicDescription || artworkCeramicDescription.trim() === '') {
             setIsSavingArtwork(false)
@@ -8045,13 +8038,14 @@ ${'='.repeat(60)}
         return
       }
       
-      let reloaded = loadArtworks(tenant)
-      // KRITISCH: Wenn loadArtworks nach dem Speichern leer liefert (z. B. Größen-Check), Anzeige nicht leeren – nutze die soeben gespeicherte Liste
-      if (reloaded.length === 0 && artworks.length > 0) {
-        console.warn('⚠️ loadArtworks nach Speichern leer – nutze gespeicherte Liste für Anzeige')
-        reloaded = artworks
+      // Liste mit aufgelösten Bildern laden (imageRef → imageUrl aus IndexedDB), damit andere Werke nicht „kein Bild“/schwarz zeigen
+      let listWithResolved = await loadArtworksWithResolvedImages(tenant)
+      if (listWithResolved.length === 0 && artworks.length > 0) {
+        console.warn('⚠️ loadArtworksWithResolvedImages nach Speichern leer – nutze gespeicherte Liste + Erhalt aus State')
+        const raw = loadArtworks(tenant)
+        listWithResolved = preserveLocalImageData(raw.length ? raw : artworks, allArtworks, (a: any) => String(a?.number ?? a?.id ?? ''))
       }
-      console.log('📦 Reloaded artworks:', reloaded.length, 'Neues Werk gefunden:', artworkData?.number)
+      console.log('📦 Liste mit aufgelösten Bildern:', listWithResolved.length, 'Gespeichertes Werk:', artworkData?.number)
       
       // Einheitliche Meldung, wenn keine Freistellung (Mobile oder Fehler) – pro gespeichertes Werk einmal
       try {
@@ -8063,7 +8057,7 @@ ${'='.repeat(60)}
         }
       } catch (_) {}
       
-      console.log('✅ Neues Werk in reloaded gefunden:', artworkData.number)
+      console.log('✅ Neues Werk in Liste gefunden:', artworkData.number)
       
       // K2: Pending-Layer – neues Werk bleibt in Galerie sichtbar, auch wenn Liste woanders überschrieben wird
       if (!forOek2) {
@@ -8075,25 +8069,17 @@ ${'='.repeat(60)}
       }
       
       // KRITISCH: Setze Filter auf 'alle' damit das neue Werk sichtbar ist
-      // Oder setze Filter auf die Kategorie des neuen Werks
       if (categoryFilter !== 'alle' && categoryFilter !== artworkData.category) {
-        console.log('🔄 Setze Filter auf Kategorie des neuen Werks:', artworkData.category)
         setCategoryFilter(artworkData.category)
       }
       
-      // Lösche Such-Query falls vorhanden
-      if (searchQuery) {
-        setSearchQuery('')
-      }
+      if (searchQuery) setSearchQuery('')
       
-      // Sofortige UI-Aktualisierung: Bild für Anzeige = imageDataUrl (Parameter), nicht artworkData.imageUrl!
-      // artworkData.imageUrl wird im GitHub-Upload-Block durch die kurze URL ersetzt – die ist beim ersten Mal
-      // oft noch nicht geladen → Nutzer sah „alte Version“. Anzeige immer mit dem soeben gespeicherten Bild.
+      // Gespeichertes Werk in der Anzeige: immer imageDataUrl + volles artworkData (inkl. imageDisplayMode), damit volles Bild und kein Ausschnitt
       const idNum = String(artworkData?.number ?? artworkData?.id ?? '')
-      let listToShow = reloaded.map((a: any) =>
+      let listToShow = listWithResolved.map((a: any) =>
         String(a?.number ?? a?.id ?? '') === idNum ? { ...a, ...artworkData, imageUrl: imageDataUrl } : a
       )
-      // Bearbeitung: Falls die neue Version nicht in der Liste ist (z. B. reloaded veraltet), alte Version ersetzen oder neue anhängen
       if (editingArtwork && !listToShow.some((a: any) => String(a?.number ?? a?.id ?? '') === idNum)) {
         const editKey = String(editingArtwork?.number ?? editingArtwork?.id ?? '')
         listToShow = listToShow.filter((a: any) => String(a?.number ?? a?.id ?? '') !== editKey)
@@ -8131,7 +8117,13 @@ ${'='.repeat(60)}
       setPreviewUrl(null)
       pendingImageDataUrlRef.current = null
       setArtworkTitle('')
-      setArtworkCategory('malerei')
+      setArtworkCategory(() => {
+        try {
+          const last = localStorage.getItem('k2-last-artwork-category')
+          if (last && (ARTWORK_CATEGORIES.some((c) => c.id === last) || (tenant.isVk2 && VK2_KUNSTBEREICHE.some((c) => c.id === last)))) return last
+        } catch (_) {}
+        return 'malerei'
+      })
       setArtworkCeramicSubcategory('vase')
       setArtworkCeramicHeight('')
       setArtworkCeramicDiameter('')
@@ -8152,7 +8144,7 @@ ${'='.repeat(60)}
       // Event dispatchen, damit Galerie-Seite sich aktualisiert
       ignoreArtworksUpdatedRef.current = true
       window.dispatchEvent(new CustomEvent('artworks-updated', { 
-        detail: { count: reloaded.length, newArtwork: artworkData.number } 
+        detail: { count: listWithResolved.length, newArtwork: artworkData.number } 
       }))
       setTimeout(() => { ignoreArtworksUpdatedRef.current = false }, 400)
       
@@ -8166,18 +8158,16 @@ ${'='.repeat(60)}
         }
       }
       window.dispatchEvent(new CustomEvent('artwork-saved-needs-publish', { 
-        detail: { artworkCount: reloaded.length } 
+        detail: { artworkCount: listWithResolved.length } 
       }))
       
       // NICHT nochmal setAllArtworks aufrufen - wurde bereits oben gemacht!
-      // Die Liste wurde bereits mit reloaded aktualisiert
-      
-      // Etikett-Druck-Modal immer anbieten (bei neuem Werk und bei Bearbeitung)
-      setTimeout(() => {
-        setShowPrintModal(true)
-      }, 200)
-      if (editingArtwork) {
-        console.log('✅ Werk aktualisiert – Etikett kann erneut gedruckt werden')
+      // Die Liste wurde bereits mit listWithResolved aktualisiert
+      // Etikett-Dialog nur öffnen, wenn in Druckereinstellungen aktiviert (z. B. bei Normaldrucker – dann Fenster nach Speichern automatisch).
+      const tenantIdForPrint = getCurrentTenantId()
+      const printerCfg = loadPrinterSettingsForTenant(tenantIdForPrint)
+      if (printerCfg.openEtikettAfterSave) {
+        setTimeout(() => setShowPrintModal(true), 200)
       }
     } catch (error: any) {
       console.error('Fehler beim Speichern:', error)
@@ -8185,7 +8175,9 @@ ${'='.repeat(60)}
         tryFreeLocalStorageSpace()
         alert('⚠️ ' + SPEICHER_VOLL_MELDUNG)
       } else {
-        alert('Fehler beim Speichern. Bitte versuche es erneut.')
+        const msg = error?.message || error?.toString?.() || String(error)
+        const detail = msg && msg !== 'Error' ? `\n\nGrund: ${msg}` : ''
+        alert('Fehler beim Speichern. Bitte versuche es erneut.' + detail)
       }
     } finally {
       setIsSavingArtwork(false)
@@ -11028,11 +11020,16 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     }}
                   >
                     {imageSrc ? (
-                      <div style={{ position: 'relative', width: '100%', marginBottom: 'clamp(0.75rem, 2vw, 1rem)' }}>
+                      <div style={{ position: 'relative', width: '100%', marginBottom: 'clamp(0.75rem, 2vw, 1rem)', background: artwork.imageDisplayMode === 'vollkachel' ? undefined : '#e8e6e2', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'clamp(180px, 30vw, 220px)' }}>
                         <img 
                           src={imageSrc} 
                           alt={artwork.title || artwork.number}
-                          style={{ width: '100%', height: 'clamp(180px, 30vw, 220px)', objectFit: 'cover', borderRadius: '12px' }}
+                          style={{
+                            borderRadius: '12px',
+                            ...(artwork.imageDisplayMode === 'vollkachel'
+                              ? { width: '100%', height: 'clamp(180px, 30vw, 220px)', objectFit: 'cover' as const }
+                              : { maxWidth: '100%', maxHeight: 'clamp(180px, 30vw, 220px)', width: 'auto', height: 'auto', objectFit: 'contain' as const })
+                          }}
                           onError={(e) => {
                             const target = e.target as HTMLImageElement
                             const retried = target.getAttribute('data-img-retry') === '1'
@@ -14131,8 +14128,31 @@ ${name}`
                           }}
                         >
                           <option value="etikettendrucker">Etikettendrucker</option>
-                          <option value="standarddrucker">Standarddrucker</option>
+                          <option value="standarddrucker">Standarddrucker (Normalpapier)</option>
                         </select>
+                        <p style={{ fontSize: '0.8rem', color: s.muted, marginTop: '0.5rem', marginBottom: 0 }}>
+                          Mit <strong>Standarddrucker</strong> kannst du Etiketten auf Normalpapier ausdrucken (Teilen → Drucker wählen).
+                        </p>
+                      </div>
+
+                      {/* Auch auf dem Handy sichtbar: gleiche Option wie am Mac – nach Speichern automatisch Etikett-Fenster öffnen */}
+                      <div className="field" style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', flexWrap: 'wrap', padding: '0.75rem', background: `${s.accent}0c`, borderRadius: '10px', border: `1px solid ${s.accent}22` }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', flex: '1 1 auto' }}>
+                          <input
+                            type="checkbox"
+                            checked={!!printerSettings.openEtikettAfterSave}
+                            onChange={(e) => {
+                              const v = e.target.checked ? '1' : '0'
+                              setPrinterSettings(prev => ({ ...prev, openEtikettAfterSave: e.target.checked }))
+                              savePrinterSetting(printerSettingsForTenant, 'openEtikettAfterSave', v)
+                            }}
+                            style={{ width: '1.2rem', height: '1.2rem', accentColor: s.accent, flexShrink: 0 }}
+                          />
+                          <span style={{ fontSize: '0.95rem', color: s.text, fontWeight: 600 }}>Etikett-Fenster nach Speichern automatisch öffnen</span>
+                        </label>
+                        <p style={{ fontSize: '0.8rem', color: s.muted, marginTop: '0.25rem', marginBottom: 0, flex: '1 1 100%' }}>
+                          Mac &amp; Handy: Wenn aktiviert, öffnet sich nach dem Speichern eines Werks automatisch das Etikett-Fenster – ein Tipp zum Drucken. Mit <strong>Standarddrucker</strong> auf Normalpapier; mit <strong>Etikettendrucker</strong> wie gewohnt.
+                        </p>
                       </div>
 
                       <div className="field">
@@ -17099,7 +17119,10 @@ ${name}`
             setEditingMemberIndex(null)
             pendingImageDataUrlRef.current = null
             setMemberForm({ ...EMPTY_MEMBER_FORM })
-            setArtworkCategory('malerei')
+            try {
+              const last = localStorage.getItem('k2-last-artwork-category')
+              if (last && (ARTWORK_CATEGORIES.some((c) => c.id === last) || (tenant.isVk2 && VK2_KUNSTBEREICHE.some((c) => c.id === last)))) setArtworkCategory(last)
+            } catch (_) {}
             setArtworkCeramicSubcategory('vase')
             setArtworkCeramicHeight('10')
             setArtworkCeramicDiameter('10')
@@ -17169,7 +17192,10 @@ ${name}`
                   pendingImageDataUrlRef.current = null
                   setMemberForm({ ...EMPTY_MEMBER_FORM })
                   setArtworkTitle('')
-                  setArtworkCategory('malerei')
+                  try {
+                    const last = localStorage.getItem('k2-last-artwork-category')
+                    if (last && (ARTWORK_CATEGORIES.some((c) => c.id === last) || (tenant.isVk2 && VK2_KUNSTBEREICHE.some((c) => c.id === last)))) setArtworkCategory(last)
+                  } catch (_) {}
                   setArtworkCeramicSubcategory('vase')
                   setArtworkCeramicHeight('10')
                   setArtworkCeramicDiameter('10')
@@ -17656,6 +17682,9 @@ ${name}`
                   <span style={{ fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500', display: 'block', marginBottom: '0.5rem' }}>
                     Bildverarbeitung
                   </span>
+                  <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', marginBottom: '0.5rem', lineHeight: 1.4 }}>
+                    Freistellen und Vollkachel schließen sich gegenseitig aus: entweder <strong>ganzes Bild sichtbar</strong> (Freistellen/Original) oder <strong>Kachel füllen</strong> (Vollkachel, Bild kann beschnitten werden).
+                  </p>
                   <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#f4f7ff' }}>
                       <input
@@ -17664,7 +17693,7 @@ ${name}`
                         checked={photoImageMode === 'freigestellt'}
                         onChange={() => setPhotoImageMode('freigestellt')}
                       />
-                      Foto freistellen (mit Pro-Hintergrund)
+                      Foto freistellen (mit Pro-Hintergrund) – ganzes Bild
                     </label>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#f4f7ff' }}>
                       <input
@@ -17673,7 +17702,7 @@ ${name}`
                         checked={photoImageMode === 'original'}
                         onChange={() => setPhotoImageMode('original')}
                       />
-                      Original benutzen
+                      Original benutzen – ganzes Bild
                     </label>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#f4f7ff' }}>
                       <input
@@ -17682,7 +17711,7 @@ ${name}`
                         checked={photoImageMode === 'vollkachel'}
                         onChange={() => setPhotoImageMode('vollkachel')}
                       />
-                      Vollkachelform (Bild füllt Kachel)
+                      Vollkachelform – Bild füllt Kachel (kann beschnitten werden)
                     </label>
                   </div>
                   {/* Nachträglich freistellen: z. B. wenn Foto vom iPad ohne Freistellung gespeichert wurde */}
@@ -18458,7 +18487,10 @@ ${name}`
                     setShowAddModal(false)
                     setEditingArtwork(null)
                     setArtworkTitle('')
-                    setArtworkCategory('malerei')
+                    try {
+                      const last = localStorage.getItem('k2-last-artwork-category')
+                      if (last && (ARTWORK_CATEGORIES.some((c) => c.id === last) || (tenant.isVk2 && VK2_KUNSTBEREICHE.some((c) => c.id === last)))) setArtworkCategory(last)
+                    } catch (_) {}
                     setArtworkCeramicSubcategory('vase')
                     setArtworkCeramicHeight('10')
                     setArtworkCeramicDiameter('10')
@@ -18591,7 +18623,22 @@ ${name}`
                       </div>
                     )}
                   </div>
-                  <button type="button" className="btn-secondary" onClick={() => setShowPrintModal(false)}>
+                  <button
+                    type="button"
+                    onClick={() => setShowPrintModal(false)}
+                    style={{
+                      padding: '0.85rem 1.25rem',
+                      fontSize: '1rem',
+                      fontWeight: 700,
+                      color: '#1a1a1a',
+                      background: '#fff',
+                      border: '2px solid #8b6914',
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 8px rgba(139,105,20,0.15)',
+                      touchAction: 'manipulation'
+                    }}
+                  >
                     Später drucken
                   </button>
                 </div>

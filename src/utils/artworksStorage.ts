@@ -41,6 +41,7 @@ export function readArtworksRawForContextOrNull(musterOnly: boolean): any[] | nu
 /**
  * Phase 5.2: Kontextbezogenes Schreiben – eine API, Key intern.
  * K2: filterK2Only; ök2: keine Filterung; VK2: no-op (kein Artwork-Key).
+ * Sportwagen: allowReduce default false – nur bei expliziter User-Aktion (Löschen, Backup-Restore) true übergeben.
  */
 export function saveArtworksForContext(
   musterOnly: boolean,
@@ -51,7 +52,7 @@ export function saveArtworksForContext(
   if (vk2) return false // VK2 hat keinen Artwork-Key
   const key = musterOnly ? OEF_ARTWORKS_KEY : K2_ARTWORKS_KEY
   const filterK2Only = key === K2_ARTWORKS_KEY
-  return saveArtworksByKey(key, data, { filterK2Only, allowReduce: options.allowReduce ?? true })
+  return saveArtworksByKey(key, data, { filterK2Only, allowReduce: options.allowReduce ?? false })
 }
 
 /**
@@ -67,7 +68,7 @@ export async function saveArtworksForContextWithImageStore(
   if (vk2) return false
   const key = musterOnly ? OEF_ARTWORKS_KEY : K2_ARTWORKS_KEY
   const filterK2Only = key === K2_ARTWORKS_KEY
-  return saveArtworksByKeyWithImageStore(key, data, { filterK2Only, allowReduce: options.allowReduce ?? true })
+  return saveArtworksByKeyWithImageStore(key, data, { filterK2Only, allowReduce: options.allowReduce ?? false })
 }
 
 /** Speichermix: Bilder in IndexedDB, dann saveArtworksByKey. */
@@ -199,12 +200,13 @@ export function loadForDisplay(): any[] {
 /**
  * Speichert Werke. Nur aufrufen bei expliziter User-Aktion (Werk speichern, Werk löschen).
  * Regel: Wenn toSave weniger Werke hat als aktuell und allowReduce nicht true → nicht speichern (Schutz).
+ * Sportwagen: allowReduce default false.
  */
 export function saveArtworksOnly(
   toSave: any[],
   options: { allowReduce?: boolean } = {}
 ): boolean {
-  return saveArtworksByKey(K2_ARTWORKS_KEY, toSave, { ...options, filterK2Only: true })
+  return saveArtworksByKey(K2_ARTWORKS_KEY, toSave, { filterK2Only: true, allowReduce: options.allowReduce ?? false })
 }
 
 /**

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, lazy, Suspense } from 'react'
-import { safeReload } from './utils/env'
+import { safeReload, safeReloadWithCacheBypass } from './utils/env'
 import { Routes, Route, Navigate, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import './App.css'
 import ProjectsPage from './pages/ProjectsPage'
@@ -275,13 +275,15 @@ function StandBadgeSync() {
 
   // Auf Vercel/Produktion: Stand vom Server holen → Badge zeigt immer aktuellen Stand (auch auf Mac bei gecachtem Bundle)
   const mountedRef = useRef(true)
+  const reloadForStand = isLocal ? safeReload : safeReloadWithCacheBypass
   useEffect(() => {
     mountedRef.current = true
     return () => { mountedRef.current = false }
   }, [])
   useEffect(() => {
     if (isLocal) return
-    const url = '/build-info.json?t=' + Date.now() + '&r=' + Math.random()
+    // Immer gleiche no-cache Quelle: build-info.json (static) oder api/build-info (serverless)
+    const url = window.location.origin + '/api/build-info?t=' + Date.now() + '&r=' + Math.random()
     fetch(url, { cache: 'no-store' })
       .then((r) => r.ok ? r.json() : null)
       .then((data: { label?: string; timestamp?: number } | null) => {
@@ -312,8 +314,8 @@ function StandBadgeSync() {
         <div
           role="button"
           tabIndex={0}
-          onClick={safeReload}
-          onKeyDown={(e) => e.key === 'Enter' && safeReload()}
+          onClick={reloadForStand}
+          onKeyDown={(e) => e.key === 'Enter' && reloadForStand()}
           style={{
             position: 'fixed',
             top: 12,
@@ -338,7 +340,7 @@ function StandBadgeSync() {
       <div
         id="app-stand-badge"
         role="status"
-        onClick={safeReload}
+        onClick={reloadForStand}
         title={title}
         style={{
           position: 'fixed',

@@ -1,0 +1,29 @@
+---
+description: Werke-Speicherung = Schlüsselfunktion; Checkliste vor jeder Änderung an Lade/Schreib-Pfaden
+alwaysApply: true
+---
+
+# Werke-Speicherung – bombensicher (Schlüsselfunktion)
+
+## Grundsatz
+
+**Die Werke-Speicherung ist eine Schlüsselfunktion.** Ohne sie ist die App wertlos. Jede Änderung an Lade-/Schreib-Pfaden für Werke muss die verbindliche Checkliste einhalten.
+
+## Vor JEDER Änderung an Werke-Speicherung
+
+1. **Lesen:** [docs/WERKE-SPEICHERUNG-CHECKLISTE.md](../../docs/WERKE-SPEICHERUNG-CHECKLISTE.md)
+2. **Prüfen:** Wird irgendwo mit **weniger** Werken als aktuell geschrieben (ohne explizite User-Löschung)? → Verboten.
+3. **Prüfen:** Wird ein **Filter** auf eine Liste angewendet und das Ergebnis in k2-artworks (oder ök2-Key) geschrieben? → Nur bei expliziter User-Aktion (z. B. Löschen).
+4. **allowReduce:** Nur dort true, wo bewusst weniger Werke erlaubt sind (User hat gelöscht, oder Nachschub = gleiche/mehr).
+
+## Betroffene Dateien (bei Änderungen immer Checkliste anwenden)
+
+- `src/utils/artworksStorage.ts`
+- `src/utils/supabaseClient.ts` (saveArtworksToSupabase, loadArtworksFromSupabase)
+- `src/utils/syncMerge.ts`
+- `src/utils/artworkImageStore.ts`
+- GalerieVorschauPage, GaleriePage, ScreenshotExportAdmin, DevViewPage, autoSave.ts
+
+## Kurzfassung
+
+**Nie mit weniger überschreiben (außer User hat gelöscht). Kein Filter-and-Write das Kundendaten löscht. Kontext trennen. Supabase: Validierung + Einzelfehler brechen Batch nicht. Checkliste vor Commit.**

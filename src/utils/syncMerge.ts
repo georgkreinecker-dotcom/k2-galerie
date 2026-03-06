@@ -131,11 +131,10 @@ export function preserveLocalImageData(
     if (!key) return item
     const local = localByKey.get(key)
     if (!local) return item
-    const serverHasNoImage =
-      isPlaceholderOrEmpty(item.imageUrl) && !(item.imageRef && String(item.imageRef).trim() !== '')
-    const localHasImage =
-      (!isPlaceholderOrEmpty(local.imageUrl) || (local.imageRef && String(local.imageRef).trim() !== ''))
-    if (!serverHasNoImage || !localHasImage) return item
+    // Immer lokales Bild übernehmen, wenn das gemergte Item kein anzeigbares imageUrl hat (auch bei imageRef – Anzeige braucht imageUrl).
+    const mergedHasNoDisplayableImage = isPlaceholderOrEmpty(item.imageUrl)
+    const localHasImage = !isPlaceholderOrEmpty(local.imageUrl) || (local.imageRef && String(local.imageRef).trim() !== '')
+    if (!mergedHasNoDisplayableImage || !localHasImage) return item
     return {
       ...item,
       imageUrl: local.imageUrl ?? item.imageUrl,

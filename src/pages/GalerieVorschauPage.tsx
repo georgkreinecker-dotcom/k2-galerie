@@ -12,10 +12,10 @@ import {
 import { sortArtworksFavoritesFirstThenNewest, interleaveArtworksByCategory } from '../utils/artworkSort'
 import { appendToHistory } from '../utils/artworkHistory'
 import { tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from '../../components/SafeMode'
-import { readArtworksRawForContext, readArtworksRawForContextOrNull, readArtworksForContextWithResolvedImages, saveArtworksForContext, loadForDisplay, filterK2Only as filterK2OnlyStorage, saveArtworksOnly as saveArtworksStorage, mayWriteServerList, mergeAndMaybeWrite, mergeWithPending, getPendingArtworks, addPendingArtwork, clearPendingIfInList } from '../utils/artworksStorage'
+import { readArtworksRawForContext, readArtworksRawForContextOrNull, readArtworksForContextWithResolvedImages, resolveArtworkImages, saveArtworksForContext, loadForDisplay, filterK2Only as filterK2OnlyStorage, saveArtworksOnly as saveArtworksStorage, mayWriteServerList, mergeAndMaybeWrite, mergeWithPending, getPendingArtworks, addPendingArtwork, clearPendingIfInList } from '../utils/artworksStorage'
 import { loadEvents } from '../utils/eventsStorage'
 import { loadDocuments } from '../utils/documentsStorage'
-import { mergeServerWithLocal } from '../utils/syncMerge'
+import { mergeServerWithLocal, preserveLocalImageData } from '../utils/syncMerge'
 import { artworksForExport } from '../utils/artworkExport'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
 import '../App.css'
@@ -181,20 +181,20 @@ function saveArtworks(artworks: any[]): boolean {
   if (toSave.length === 0 && currentArtworks && currentArtworks.length > 0) {
     const backup = loadBackup()
     if (backup && backup.length > 0) {
-      saveArtworksForContext(false, false, backup)
+      saveArtworksForContext(false, false, backup, { allowReduce: true })
       alert('⚠️ KRITISCH: Alle Werke würden gelöscht werden!\n\n💾 Backup wurde wiederhergestellt.')
       return false
     }
     alert('⚠️ KRITISCH: Alle Werke würden gelöscht werden!\n\n❌ Kein Backup verfügbar!')
     return false
   }
-  let ok = saveArtworksForContext(false, false, toSave)
+  let ok = saveArtworksForContext(false, false, toSave, { allowReduce: true })
   if (!ok && toSave.length > 0) {
     const freed = tryFreeLocalStorageSpace()
-    if (freed > 0) ok = saveArtworksForContext(false, false, toSave)
+    if (freed > 0) ok = saveArtworksForContext(false, false, toSave, { allowReduce: true })
     if (!ok) {
       const backup = loadBackup()
-      if (backup?.length) saveArtworksForContext(false, false, backup)
+      if (backup?.length) saveArtworksForContext(false, false, backup, { allowReduce: true })
       alert('⚠️ ' + SPEICHER_VOLL_MELDUNG)
     }
   }
@@ -900,10 +900,20 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               } else {
                 console.log(`✅ ${filteredSupabase.length} Werke aus Supabase geladen`)
                 if (mayWriteServerList(filteredSupabase, lokalAnzahl)) {
-                  saveArtworksStorage(filteredSupabase, { allowReduce: false })
+                  const toSave = preserveLocalImageData(filteredSupabase, loadArtworks())
+                  saveArtworksStorage(toSave, { allowReduce: false })
                 }
-                setArtworksDisplay(filteredSupabase)
-                setLoadStatus({ message: `✅ ${filteredSupabase.length} Werke geladen`, success: true })
+                // Supabase-Daten haben oft nur imageRef – Bilder aus IndexedDB auflösen, sonst fehlen sie in der Galerie
+                const resolved = await resolveArtworkImages(filteredSupabase)
+                const forExhibition = filterInExhibitionOnly(resolved)
+                const withPlaceholder = forExhibition.map((a: any) => {
+                  const out = { ...a }
+                  if (!out.imageUrl && out.previewUrl) out.imageUrl = out.previewUrl
+                  if (!out.imageUrl && !out.previewUrl) out.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+                  return out
+                })
+                setArtworksDisplay(withPlaceholder)
+                setLoadStatus({ message: `✅ ${withPlaceholder.length} Werke geladen`, success: true })
               }
               setTimeout(() => setLoadStatus(null), 2000)
               setIsLoading(false)
@@ -919,8 +929,16 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 const migratedArtworks = await loadArtworksFromSupabase()
                 if (migratedArtworks && migratedArtworks.length > 0) {
                   const filteredMigrated = filterK2ArtworksOnly(migratedArtworks)
-                  setArtworksDisplay(filteredMigrated)
-                  setLoadStatus({ message: `✅ ${filteredMigrated.length} Werke migriert und geladen`, success: true })
+                  const resolvedMigrated = await resolveArtworkImages(filteredMigrated)
+                  const forExhibitionMigrated = filterInExhibitionOnly(resolvedMigrated)
+                  const withPlaceholderMigrated = forExhibitionMigrated.map((a: any) => {
+                    const out = { ...a }
+                    if (!out.imageUrl && out.previewUrl) out.imageUrl = out.previewUrl
+                    if (!out.imageUrl && !out.previewUrl) out.imageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+                    return out
+                  })
+                  setArtworksDisplay(withPlaceholderMigrated)
+                  setLoadStatus({ message: `✅ ${withPlaceholderMigrated.length} Werke migriert und geladen`, success: true })
                   setTimeout(() => setLoadStatus(null), 2000)
                   setIsLoading(false)
                   return
@@ -983,7 +1001,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
             console.log('💾 Backup gefunden - verwende Backup für Anzeige (resolved):', backup.length, 'Werke')
             const currentCount = loadArtworks().length
             if (backup.length >= currentCount) {
-              saveArtworksForContext(false, false, backup)
+              saveArtworksForContext(false, false, backup, { allowReduce: true })
             } else {
               console.warn('⚠️ Backup hat weniger Werke als aktuell – localStorage wird NICHT überschrieben')
             }
@@ -1029,8 +1047,13 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               console.warn(`⚠️ Mobile-Sync: Server lieferte nur ${artworks.length} Werke, lokal sind ${lokalAnzahl} – Sync übersprungen (zu großer Unterschied)`)
               return
             }
+            // 🔒 Nur schreiben wenn mindestens so viele wie lokal – nie mit weniger überschreiben (Datenverlust)
+            if (artworks.length < lokalAnzahl) {
+              console.warn(`⚠️ Mobile-Sync: Server hat ${artworks.length} < lokal ${lokalAnzahl} – localStorage bleibt unverändert`)
+              return
+            }
             console.log(`🔄 Automatisch ${artworks.length} neue Mobile-Daten synchronisiert`)
-            saveArtworksForContext(false, false, artworks)
+            saveArtworksForContext(false, false, artworks, { allowReduce: false })
             loadArtworksResolvedForDisplay().then((list) => { if (isMounted) setArtworksDisplay(filterK2ArtworksOnly(list)) })
             // Update Hash für nächsten Check
             const hash = artworks.map((a: any) => a.number || a.id).sort().join(',')
@@ -1389,7 +1412,28 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           }
         }
         
-        // Nur wenn wirklich keine Werke vorhanden sind, lade vom Server
+        // Wenn lokal keine Werke: zuerst Supabase versuchen (Mac hat oft dorthin synchronisiert)
+        const localArtworks = loadArtworks()
+        if (localArtworks.length === 0 && isSupabaseConfigured()) {
+          try {
+            const supabaseArtworks = await loadArtworksFromSupabase()
+            if (supabaseArtworks && Array.isArray(supabaseArtworks) && supabaseArtworks.length > 0) {
+              const toSave = preserveLocalImageData(filterK2OnlyStorage(supabaseArtworks), loadArtworks())
+              saveArtworksStorage(toSave, { allowReduce: false })
+              const list = await loadArtworksResolvedForDisplay()
+              setArtworksDisplay(filterK2ArtworksOnly(list))
+              setLoadStatus({ message: `✅ ${supabaseArtworks.length} Werke von Supabase geladen`, success: true })
+              setTimeout(() => setLoadStatus(null), 3000)
+              setIsLoading(false)
+              clearTimeout(fallbackClear)
+              return
+            }
+          } catch (e) {
+            console.warn('⚠️ Supabase-Vorab-Load fehlgeschlagen:', e)
+          }
+        }
+        
+        // Nur wenn wirklich keine Werke vorhanden sind, lade vom Server (gallery-data.json)
         console.log('🔄 Keine Werke vorhanden - lade vom Server...')
         setLoadStatus({ message: 'Lade Werke...', success: false })
         
@@ -1551,8 +1595,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       setIsLoading(false)
                     })
                   } else {
-                    const ok = saveArtworksStorage(toSaveMerge, { allowReduce: false })
-                    if (ok) console.log('✅ Gemergte Werke gespeichert:', toSaveMerge.length)
+                    const toSave = preserveLocalImageData(toSaveMerge, loadArtworks())
+                    const ok = saveArtworksStorage(toSave, { allowReduce: false })
+                    if (ok) console.log('✅ Gemergte Werke gespeichert:', toSave.length)
                   
                   // Mobile: Synchronisiere gemergte Liste zu Supabase
                   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
@@ -1609,11 +1654,29 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                   setLoadStatus({ message: `⚠️ Server hat keine Werke - verwende Cache (${stored.length})`, success: false })
                   setTimeout(() => setLoadStatus(null), 5000)
                 } else {
-                  // KRITISCH: Prüfe Backup bevor wir leeren!
+                  // gallery-data.json leer → Supabase versuchen (z. B. Mac hat dorthin synchronisiert)
+                  if (isSupabaseConfigured()) {
+                    try {
+                      const supabaseArtworks = await loadArtworksFromSupabase()
+                      if (supabaseArtworks && Array.isArray(supabaseArtworks) && supabaseArtworks.length > 0) {
+                        const toSave = preserveLocalImageData(filterK2OnlyStorage(supabaseArtworks), loadArtworks())
+                        saveArtworksStorage(toSave, { allowReduce: false })
+                        const list = await loadArtworksResolvedForDisplay()
+                        setArtworksDisplay(filterK2ArtworksOnly(list))
+                        setLoadStatus({ message: `✅ ${supabaseArtworks.length} Werke von Supabase geladen`, success: true })
+                        setTimeout(() => setLoadStatus(null), 3000)
+                        setIsLoading(false)
+                        return
+                      }
+                    } catch (supabaseErr) {
+                      console.warn('⚠️ Supabase-Fallback (leere Server-Antwort) fehlgeschlagen:', supabaseErr)
+                    }
+                  }
+                  // Weder Cache noch Supabase: Backup prüfen
                   const backup = loadBackup()
                   if (backup && backup.length > 0) {
                     console.log('💾 Backup gefunden - verwende Backup statt leeren:', backup.length, 'Werke')
-                    saveArtworksForContext(false, false, backup)
+                    saveArtworksForContext(false, false, backup, { allowReduce: true })
                     loadArtworksResolvedForDisplay().then((list) => setArtworksDisplay(filterK2ArtworksOnly(list)))
                     setLoadStatus({ message: `💾 Backup wiederhergestellt: ${backup.length} Werke`, success: true })
                   } else {
@@ -1692,7 +1755,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                   }
                 } else {
                   console.log('✅ Supabase-Daten übernommen:', supabaseArtworks.length)
-                  saveArtworksStorage(filterK2OnlyStorage(supabaseArtworks), { allowReduce: false })
+                  const toSave = preserveLocalImageData(filterK2OnlyStorage(supabaseArtworks), loadArtworks())
+                  saveArtworksStorage(toSave, { allowReduce: false })
                   stored = supabaseArtworks
                   loadArtworksResolvedForDisplay().then((list) => setArtworksDisplay(filterK2ArtworksOnly(list)))
                   setLoadStatus({ message: `✅ ${supabaseArtworks.length} Werke von Supabase geladen`, success: true })
@@ -1753,7 +1817,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           const backup = loadBackup()
           if (backup && backup.length > 0) {
             console.log('💾 Backup gefunden - verwende Backup statt leeren:', backup.length, 'Werke')
-            saveArtworksForContext(false, false, backup)
+            saveArtworksForContext(false, false, backup, { allowReduce: true })
             loadArtworksResolvedForDisplay().then((list) => setArtworksDisplay(filterK2ArtworksOnly(list)))
             setLoadStatus({ message: `💾 Backup wiederhergestellt: ${backup.length} Werke`, success: true })
           } else {
@@ -1768,7 +1832,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         const backup = loadBackup()
         if (backup && backup.length > 0) {
           console.log('💾 Backup wiederhergestellt nach Fehler:', backup.length, 'Werke')
-          saveArtworksForContext(false, false, backup)
+          saveArtworksForContext(false, false, backup, { allowReduce: true })
           loadArtworksResolvedForDisplay().then((list) => setArtworksDisplay(filterK2ArtworksOnly(list)))
           setLoadStatus({ message: `💾 Backup wiederhergestellt: ${backup.length} Werke`, success: true })
         } else {
@@ -1908,8 +1972,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           try {
             let listForDisplay = toSaveServer
             if (mayWriteServer) {
-              const ok = saveArtworksStorage(toSaveServer, { allowReduce: false })
-              if (ok) console.log('✅ Gemergte Werke geladen:', toSaveServer.length, 'Version:', data.version)
+              const toSave = preserveLocalImageData(toSaveServer, loadArtworks())
+              const ok = saveArtworksStorage(toSave, { allowReduce: false })
+              if (ok) console.log('✅ Gemergte Werke geladen:', toSave.length, 'Version:', data.version)
             } else {
               console.warn(`⚠️ Merge würde ${localCountHere} → ${toSaveServer.length} – localStorage unverändert`)
               listForDisplay = localArtworks
@@ -2988,7 +3053,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                         🔶 Reserviert{reservedFor ? ` – ${reservedFor}` : ''}
                       </div>
                     )}
-                    {/* Bild immer anzeigen - robuster Fallback */}
+                    {/* Bild immer anzeigen - robuster Fallback. Bei Freistellen/contain: gleicher Hintergrund wie Pro-Hintergrund („links gespeichert = rechts gleiches Format“). */}
                     <div style={{ 
                       width: '100%', 
                       height: 'clamp(150px, 40vw, 200px)', 
@@ -2996,7 +3061,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       marginBottom: '0.5rem',
                       position: 'relative',
                       overflow: 'hidden',
-                      background: galerieTheme.filterInactive,
+                      background: artwork.imageDisplayMode === 'vollkachel' ? galerieTheme.filterInactive : '#e8e6e2',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
@@ -4197,24 +4262,26 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       // KRITISCH: Erstelle neue Array-Kopie (React State darf nicht direkt mutiert werden!)
                       const updatedArtworks = [...artworks]
                       updatedArtworks[index] = updatedArtwork
+                      // KRITISCH: Bilddaten der anderen Werke erhalten – nie mit Liste ohne imageRef überschreiben (BUG: andere Bilder gelöscht)
+                      const toSave = preserveLocalImageData(updatedArtworks, loadArtworks())
                       
                       // PROFESSIONELL: Speichere zuerst in Supabase (wenn konfiguriert), sonst localStorage
                       let saved = false
                       if (isSupabaseConfigured()) {
                         try {
-                          saved = await saveArtworksToSupabase(updatedArtworks)
+                          saved = await saveArtworksToSupabase(toSave)
                           if (saved) {
                             console.log('✅ Objekt in Supabase aktualisiert:', updatedArtwork.number || updatedArtwork.id)
                           } else {
                             console.warn('⚠️ Supabase-Speichern fehlgeschlagen, verwende localStorage')
-                            saved = saveArtworks(updatedArtworks)
+                            saved = saveArtworks(toSave)
                           }
                         } catch (supabaseError) {
                           console.warn('⚠️ Supabase-Fehler, verwende localStorage:', supabaseError)
-                          saved = saveArtworks(updatedArtworks)
+                          saved = saveArtworks(toSave)
                         }
                       } else {
-                        saved = saveArtworks(updatedArtworks)
+                        saved = saveArtworks(toSave)
                       }
                       
                       if (!saved) {
@@ -4413,31 +4480,32 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                     
                     // KRITISCH: Erstelle neue Array-Kopie (React State darf nicht direkt mutiert werden!)
                     const updatedArtworks = [...artworks, newArtwork]
+                    const toSave = preserveLocalImageData(updatedArtworks, loadArtworks())
                     
                     // PROFESSIONELL: Speichere zuerst in Supabase (wenn konfiguriert), sonst localStorage
                     console.log('💾 Speichere Werk:', {
                       nummer: newNumber,
                       titel: mobileTitle,
-                      gesamtAnzahl: updatedArtworks.length,
+                      gesamtAnzahl: toSave.length,
                       supabase: isSupabaseConfigured()
                     })
                     
                     let saved = false
                     if (isSupabaseConfigured()) {
                       try {
-                        saved = await saveArtworksToSupabase(updatedArtworks)
+                        saved = await saveArtworksToSupabase(toSave)
                         if (saved) {
                           console.log('✅ Werk in Supabase gespeichert:', newNumber)
                         } else {
                           console.warn('⚠️ Supabase-Speichern fehlgeschlagen, verwende localStorage')
-                          saved = saveArtworks(updatedArtworks)
+                          saved = saveArtworks(toSave)
                         }
                       } catch (supabaseError) {
                         console.warn('⚠️ Supabase-Fehler, verwende localStorage:', supabaseError)
-                        saved = saveArtworks(updatedArtworks)
+                        saved = saveArtworks(toSave)
                       }
                     } else {
-                      saved = saveArtworks(updatedArtworks)
+                      saved = saveArtworks(toSave)
                     }
                     
                     if (!saved) {

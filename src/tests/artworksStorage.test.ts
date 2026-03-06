@@ -91,6 +91,13 @@ describe('artworksStorage: Nie mit weniger überschreiben', () => {
     expect(readArtworksRawByKey(K2_KEY)).toHaveLength(1)
   })
 
+  it('saveArtworksForContext lehnt ab wenn weniger Werke (Sportwagen: default allowReduce false)', () => {
+    localStorage.setItem(K2_KEY, JSON.stringify([{ number: '1' }, { number: '2' }]))
+    const ok = saveArtworksForContext(false, false, [{ number: '1', title: 'A' }])
+    expect(ok).toBe(false)
+    expect(readArtworksRawByKey(K2_KEY)).toHaveLength(2)
+  })
+
   it('mergeAndMaybeWrite überschreibt nicht mit weniger: Server 1, Lokal 3 → merged enthält alle 3', () => {
     const local = [
       { number: '1', title: 'A' },

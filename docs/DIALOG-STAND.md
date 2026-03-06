@@ -4,6 +4,22 @@
 
 ---
 
+## Datum: 06.03.26 – Sportwagenmodus: Stand, Datentransport, Bilder
+
+- **Thema:** Stand drücken bringt nie neuen Stand; Platzhalter/Bilder fehlen in Galerie und Werk bearbeiten; Speicherpunkt unklar.
+- **Was gemacht:** (1) **Stand drücken = echte Aktualisierung:** Beim Tippen auf den Stand-Badge wird auf Produktion `safeReloadWithCacheBypass()` genutzt → lädt zuerst `/refresh.html` (no-cache), dann Weiterleitung zu `/` mit Cache-Bust. So bekommt das Handy wirklich die neueste App-Version. StandBadgeSync nutzt `/api/build-info` für Abgleich. (2) **Bilder in gallery-data:** Beim Veröffentlichen werden vor dem Export alle Werke mit `resolveArtworkImageUrlsForExport()` durchlaufen → imageRef/IndexedDB wird zu Supabase-URL hochgeladen, gallery-data.json enthält echte Bild-URLs → Handy zeigt keine Platzhalter mehr (wenn Supabase konfiguriert). (3) Doku STAND-BUILD-VS-DATEN: Stand-Badge tippen, App- vs. Daten-Stand, Speicherpunkt erklärt.
+- **Nächster Schritt:** Commit + Push. Georg testet: am Handy Stand tippen → neuer Stand erscheint; nach Veröffentlichen Handy aktualisieren → Bilder sichtbar. Supabase Storage muss für Bild-URLs auf dem Handy konfiguriert sein.
+
+---
+
+## Schluss für heute (05.03.26)
+
+- **Thema:** Handy-Reload „keine Werke“ + mök2 Technikerzettel für Informatiker.
+- **Was gemacht:** (1) GalerieVorschauPage: Bei leerem Lokal zuerst Supabase laden; wenn gallery-data.json leer liefert, Supabase-Fallback – damit Handy nach Reload Werke von Supabase bekommt. (2) mök2: Neue Gruppe „Technik“ mit Sektion **Technikerzettel (für Informatiker)** – Stack, Gesetzte Standards (allgemein), Architektur, Daten, Sicherheit, Doku, **Beurteilung Level im Vergleich** (Galerie-Websites, MVP, kleines professionelles SaaS, Open-Source), Zweck-Zettel.
+- **Nächster Schritt:** Optional Commit + Push; morgen oder bei Wiedereinstieg: DIALOG-STAND + GRAFIKER-TISCH lesen, dann weiter wie geplant.
+
+---
+
 ## 🔴 NACH ro5 / CRASH: WO DU GERADE BIST (05.03.26)
 
 - **Thema:** K2 Familie Supabase – Raumschiff-Sync eingebaut.

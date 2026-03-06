@@ -55,6 +55,7 @@ Das war der Hauptauslöser für Reopen/Code 5. Keine Ausnahme.
 ## 5. Verweise (Details nur bei Bedarf)
 
 - **Ursache & Lösung ausführlich:** docs/CODE-5-GRUNDPROBLEM-UND-LOESUNG.md  
+- **Vermutung (Qualitätsfilter):** ebd. Abschnitt 4a – Georg: Code 5 könnte bewusst als Hürde/Filter sein; festgehalten, man weiß ja nie.
 - **Bei neuem Crash:** docs/CRASH-BEREITS-GEPRUEFT.md zuerst lesen, nur **neue** Ursachen suchen.  
 - **Kein Auto-Reload in der App:** .cursor/rules/code-5-crash-kein-auto-reload.mdc  
 - **Nach Crash nicht dieselbe Check-Routine wiederholen:** .cursor/rules/code-5-keine-wiederholte-checks.mdc  

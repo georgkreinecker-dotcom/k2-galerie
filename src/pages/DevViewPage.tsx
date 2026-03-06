@@ -5,6 +5,7 @@ import { usePersistentBoolean } from '../hooks/usePersistentState'
 import { checkMobileUpdates } from '../utils/supabaseClient'
 import { filterK2ArtworksOnly } from '../utils/autoSave'
 import { artworksForExport } from '../utils/artworkExport'
+import { resolveArtworkImageUrlsForExport } from '../utils/supabaseClient'
 import { readArtworksRawByKey, saveArtworksByKey } from '../utils/artworksStorage'
 import '../App.css'
 import GaleriePage from './GaleriePage'
@@ -408,6 +409,9 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
         return
       }
       
+      // Sportwagen: Bild-URLs für Handy auflösen (imageRef/IndexedDB → Supabase-URL), damit gallery-data echte URLs enthält
+      const allArtworksWithUrls = await resolveArtworkImageUrlsForExport(allArtworks)
+      
       const galleryStamm = getItemSafe('k2-stammdaten-galerie', {})
       const pageContent = getPageContentGalerie()
       const maxList = 100
@@ -421,7 +425,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
           galerieCardImage: pageContent.galerieCardImage || galleryStamm.galerieCardImage || '',
           virtualTourImage: pageContent.virtualTourImage || galleryStamm.virtualTourImage || ''
         },
-        artworks: artworksForExport(allArtworks),
+        artworks: artworksForExport(allArtworksWithUrls),
         events: Array.isArray(events) ? events.slice(0, maxList) : [],
         documents: Array.isArray(documents) ? documents.slice(0, maxList) : [],
         designSettings: getItemSafe('k2-design-settings', {}),

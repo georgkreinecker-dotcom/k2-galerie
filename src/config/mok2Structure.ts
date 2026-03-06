@@ -67,6 +67,12 @@ export const mok2Groups: Mok2Group[] = [
     ],
   },
   {
+    chapterTitle: 'Technik',
+    sections: [
+      { id: 'mok2-technikerzettel', label: 'Technikerzettel (für Informatiker)' },
+    ],
+  },
+  {
     chapterTitle: 'Praktisch',
     sections: [
       { id: 'mok2-pilot-zettel', label: 'Pilot-Zettel drucken' },

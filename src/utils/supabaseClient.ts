@@ -9,6 +9,8 @@ import { getAuthToken } from './supabaseAuth'
 import { filterK2ArtworksOnly } from './autoSave'
 import { readArtworksRawByKey, saveArtworksByKey } from './artworksStorage'
 import { mergeServerWithLocal } from './syncMerge'
+import { getArtworkImage } from './artworkImageStore'
+import { uploadArtworkImageToStorage } from './supabaseStorage'
 
 // Sicherer Zugriff auf import.meta.env
 let SUPABASE_URL = ''
@@ -62,7 +64,7 @@ export async function loadArtworksFromSupabase(): Promise<any[]> {
     const data = await response.json()
     const dbArtworks = data.artworks || []
 
-    // Konvertiere Datenbank-Format zu App-Format
+    // Konvertiere Datenbank-Format zu App-Format (inExhibition = „In Online-Galerie anzeigen“)
     const artworks = dbArtworks.map((artwork: any) => ({
       id: artwork.id,
       number: artwork.number,
@@ -74,6 +76,7 @@ export async function loadArtworksFromSupabase(): Promise<any[]> {
       description: artwork.description,
       location: artwork.location,
       inShop: artwork.in_shop !== false,
+      inExhibition: artwork.in_exhibition !== false,
       createdAt: artwork.created_at,
       updatedAt: artwork.updated_at,
       createdOnMobile: artwork.created_on_mobile,
@@ -84,9 +87,12 @@ export async function loadArtworksFromSupabase(): Promise<any[]> {
     const localList = loadFromLocalStorage()
     const { merged } = mergeServerWithLocal(artworks, localList, { onlyAddLocalIfMobileAndVeryNew: true })
     try {
+      // 🔒 Nur schreiben wenn mindestens so viele wie lokal – nie mit weniger überschreiben (Datenverlust)
       if (merged.length >= localList.length) {
         const toStore = filterK2ArtworksOnly(merged)
-        saveArtworksByKey('k2-artworks', toStore, { filterK2Only: false, allowReduce: true })
+        saveArtworksByKey('k2-artworks', toStore, { filterK2Only: false, allowReduce: false })
+      } else {
+        console.warn(`⚠️ Supabase-Load: merged ${merged.length} < lokal ${localList.length} – localStorage unverändert`)
       }
     } catch (e) {
       console.warn('⚠️ localStorage Backup fehlgeschlagen:', e)
@@ -99,7 +105,55 @@ export async function loadArtworksFromSupabase(): Promise<any[]> {
 }
 
 /**
- * Speichert Werke in die Datenbank über Edge Function (Bulk Upsert)
+ * Liefert eine für Supabase/Handy nutzbare Bild-URL: entweder bestehende https-URL
+ * oder Auflösung aus imageRef/IndexedDB + Upload nach Supabase Storage.
+ * So sieht das Handy nach Sync die Bilder (keine Platzhalter).
+ */
+export async function resolveImageUrlForSupabase(artwork: any): Promise<string | undefined> {
+  const url = artwork?.imageUrl
+  const ref = artwork?.imageRef
+  const number = artwork?.number || artwork?.id || 'werk'
+  // Bereits öffentliche URL (z. B. von früherem Storage-Upload) → unverändert nutzen
+  if (typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))) {
+    return url
+  }
+  let dataUrl: string | null = null
+  if (typeof url === 'string' && url.startsWith('data:image')) {
+    dataUrl = url
+  } else if (ref && typeof ref === 'string') {
+    dataUrl = await getArtworkImage(ref)
+  }
+  if (!dataUrl) return undefined
+  const storageUrl = await uploadArtworkImageToStorage(dataUrl, String(number))
+  return storageUrl ?? undefined
+}
+
+/**
+ * Bereitet Werke für den Export (gallery-data.json) vor: imageRef/Base64 → Supabase-URL.
+ * So enthält die veröffentlichte Datei echte Bild-URLs und das Handy zeigt keine Platzhalter.
+ * Bei nicht konfiguriertem Supabase bleiben imageUrl leer (wie bisher).
+ */
+export async function resolveArtworkImageUrlsForExport(artworks: any[]): Promise<any[]> {
+  if (!Array.isArray(artworks) || artworks.length === 0) return artworks
+  const out = await Promise.all(
+    artworks.map(async (a: any) => {
+      try {
+        const imageUrl = await resolveImageUrlForSupabase(a)
+        const previewUrl = a.previewUrl && (a.previewUrl.startsWith('http') ? a.previewUrl : null)
+        return { ...a, imageUrl: imageUrl ?? a.imageUrl ?? '', previewUrl: previewUrl ?? imageUrl ?? a.previewUrl ?? '' }
+      } catch (e) {
+        console.warn('Bild-URL für Export nicht auflösbar:', a?.number ?? a?.id, e)
+        return a
+      }
+    })
+  )
+  return out
+}
+
+/**
+ * Speichert Werke in die Datenbank über Edge Function (Bulk Upsert).
+ * Vor dem Speichern werden Bild-URLs aufgelöst (imageRef → IndexedDB → Supabase Storage),
+ * damit das Handy nach Sync echte Bilder statt Platzhalter sieht.
  */
 export async function saveArtworksToSupabase(artworks: any[]): Promise<boolean> {
   if (!isSupabaseConfigured() || !ARTWORKS_API_URL) {
@@ -107,14 +161,39 @@ export async function saveArtworksToSupabase(artworks: any[]): Promise<boolean> 
     return saveToLocalStorage(artworks)
   }
 
-  if (!artworks || artworks.length === 0) {
+  if (!artworks || !Array.isArray(artworks) || artworks.length === 0) {
     console.warn('⚠️ Keine Werke zum Speichern')
     return false
   }
 
+  // Nur Werke mit number oder id – verhindert ungültige Einträge
+  const validArtworks = artworks.filter((a: any) => (a?.number ?? a?.id) != null && String(a?.number ?? a?.id).trim() !== '')
+  if (validArtworks.length === 0) {
+    console.warn('⚠️ Keine gültigen Werke (number/id fehlt)')
+    return false
+  }
+  if (validArtworks.length < artworks.length) {
+    console.warn(`⚠️ ${artworks.length - validArtworks.length} Werke ohne number/id übersprungen`)
+  }
+
   try {
+    // Bild-URLs für Supabase auflösen (imageRef → Storage-URL). Einzelfehler brechen den Batch nicht ab.
+    const withResolvedUrls = await Promise.all(
+      validArtworks.map(async (artwork: any) => {
+        let resolvedUrl: string | undefined
+        try {
+          resolvedUrl = await resolveImageUrlForSupabase(artwork)
+        } catch (e) {
+          console.warn('⚠️ Bild-URL für Werk', artwork?.number ?? artwork?.id, 'nicht auflösbar:', e)
+        }
+        const imageUrl = resolvedUrl ?? artwork.imageUrl ?? artwork.previewUrl
+        const previewUrl = artwork.previewUrl ?? imageUrl
+        return { ...artwork, imageUrl, previewUrl }
+      })
+    )
+
     // Konvertiere App-Format zu Datenbank-Format
-    const dbArtworks = artworks.map((artwork: any) => ({
+    const dbArtworks = withResolvedUrls.map((artwork: any) => ({
       number: artwork.number || artwork.id,
       title: artwork.title || '',
       category: artwork.category || 'malerei',
@@ -124,6 +203,7 @@ export async function saveArtworksToSupabase(artworks: any[]): Promise<boolean> 
       description: artwork.description || null,
       location: artwork.location || null,
       in_shop: artwork.inShop || false,
+      in_exhibition: artwork.inExhibition !== false,
       created_at: artwork.createdAt || new Date().toISOString(),
       updated_at: artwork.updatedAt || new Date().toISOString(),
       created_on_mobile: artwork.createdOnMobile || false,
@@ -143,8 +223,7 @@ export async function saveArtworksToSupabase(artworks: any[]): Promise<boolean> 
     if (!response.ok) {
       const errorText = await response.text()
       console.error('❌ Supabase Save Error:', response.status, errorText)
-      // Fallback zu localStorage
-      saveToLocalStorage(artworks)
+      saveToLocalStorage(validArtworks)
       return false
     }
 
@@ -152,16 +231,16 @@ export async function saveArtworksToSupabase(artworks: any[]): Promise<boolean> 
     console.log(`✅ ${data.count || artworks.length} Werke in Supabase gespeichert`)
     
     try {
-      const toStore = filterK2ArtworksOnly(artworks)
+      const toStore = filterK2ArtworksOnly(validArtworks)
       saveArtworksByKey('k2-artworks', toStore, { filterK2Only: false, allowReduce: true })
     } catch (e) {
-      console.warn('⚠️ localStorage Backup fehlgeschlagen:', e)
+      console.warn('⚠️ localStorage Backup nach Supabase-Success fehlgeschlagen:', e)
     }
 
     return true
   } catch (error) {
     console.error('❌ Fehler beim Speichern in Supabase:', error)
-    saveToLocalStorage(artworks)
+    saveToLocalStorage(validArtworks)
     return false
   }
 }

@@ -15,7 +15,7 @@ function loadArtworks(): any[] {
 
 function saveArtworks(artworks: any[]): void {
   try {
-    saveArtworksByKey('k2-artworks', artworks, { filterK2Only: true, allowReduce: true })
+    saveArtworksByKey('k2-artworks', artworks, { filterK2Only: true, allowReduce: false })
   } catch (error) {
     console.error('Fehler beim Speichern:', error)
   }

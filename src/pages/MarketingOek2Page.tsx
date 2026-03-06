@@ -1761,6 +1761,92 @@ Viel Erfolg!`}
       </section>
 
       {/* Pilot-Zettel – Testpilot:in ök2/VK2, voller Gratis-Zugang; Teil von mök2 Praktisch */}
+      {/* Technikerzettel – für Informatiker zur technischen Beurteilung des Gesamtprojekts */}
+      <section id="mok2-technikerzettel" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Technikerzettel (für Informatiker)
+        </h2>
+        <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
+          Kurzüberblick für technische Beurteilung des Gesamtprojekts – Stack, Architektur, Daten, Deployment, Sicherheit, Doku. Ermöglicht Informatiker:innen eine fundierte Einschätzung ohne tiefen Repo-Einstieg.
+        </p>
+
+        <h3 style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)', marginTop: '1rem', marginBottom: '0.5rem' }}>Gesetzte Standards (allgemein)</h3>
+        <p style={{ marginBottom: '0.75rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.6 }}>
+          Im Projekt gelten verbindliche technische und prozessuale Standards, die in Regelwerken (.cursor/rules) und Doku festgehalten sind und bei jeder Änderung beachtet werden sollen:
+        </p>
+        <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', marginBottom: '1rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)' }}>
+          <li><strong>Eine Lösung pro Problemstellung</strong> – Keine parallelen oder abweichenden Wege für dieselbe Aufgabe (z. B. ein einheitlicher Ablauf für „Dokument öffnen“, ein Standard für Stand/QR).</li>
+          <li><strong>Kein Datenverlust, kein stilles Überschreiben</strong> – Kundendaten (Werke, Stammdaten, Vereinsdaten) werden nie automatisch gelöscht oder mit weniger/leer überschrieben. Schreiben nur nach expliziter Nutzeraktion oder nach klaren Merge-Regeln (z. B. Server-Merge nur wenn Ergebnis mindestens so viele Einträge hat wie lokal).</li>
+          <li><strong>Strenge Datentrennung der Mandanten</strong> – K2, ök2 und VK2 nutzen ausschließlich ihre eigenen Speicher-Keys und Datenquellen; keine Vermischung zwischen Kontexten (weder lesend noch schreibend).</li>
+          <li><strong>Skalierung von vornherein mitgedacht</strong> – Eine Architektur, viele Instanzen; Konfiguration statt Festverdrahtung; gleiche Abläufe für alle Mandanten, keine Sonderbauten pro Kunde.</li>
+          <li><strong>Eine Quelle pro Konzept</strong> – Pro Thema eine autoritative Quelle (z. B. Stammdaten-Defaults, Ablage docs/Handbuch/mök2), klare Ablage-Regeln und nachvollziehbare Doku.</li>
+          <li><strong>Verbindlich statt „hoffen“</strong> – Buttons, Abläufe und Anleitungen sind so umgesetzt, dass sie unter den angegebenen Bedingungen zuverlässig funktionieren; Fehlermeldungen verweisen nicht auf Umwege als Hauptlösung.</li>
+          <li><strong>Qualität vor Commit</strong> – Tests (Vitest) und Build müssen grün sein vor Commit/Push; Änderungen sind erst „fertig“, wenn sie committed und getestet sind.</li>
+        </ul>
+        <p style={{ marginBottom: '1rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.5, fontStyle: 'italic' }}>
+          Diese Standards sind aus Betriebserfahrung und Vermächtnis-Anspruch entstanden und werden in Regeldateien sowie in docs (z. B. PRODUKT-STANDARD-NACH-SPORTWAGEN.md, K2-OEK2-DATENTRENNUNG.md) konkret ausformuliert.
+        </p>
+
+        <h3 style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)', marginTop: '1rem', marginBottom: '0.5rem' }}>Stack &amp; Umgebung</h3>
+        <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', marginBottom: '1rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)' }}>
+          <li><strong>Frontend:</strong> React 19, TypeScript, Vite, Tailwind CSS. PWA (installierbar, Offline-fähig).</li>
+          <li><strong>Backend/Speicher:</strong> Supabase (PostgreSQL, Auth, optional KV/Storage). Vercel Blob für Datei-Uploads. Kein eigener App-Server.</li>
+          <li><strong>Deployment:</strong> Vercel (Production Branch: main). Build: test → write-build-info → tsc → vite build. Stand-Sync Mac/Handy über build-info.json + Cache-Bust (QR).</li>
+          <li><strong>Laufzeit:</strong> Node &gt;= 18. Tests: Vitest. Lint: ESLint.</li>
+        </ul>
+
+        <h3 style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)', marginTop: '1rem', marginBottom: '0.5rem' }}>Architektur &amp; Mandanten</h3>
+        <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', marginBottom: '1rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)' }}>
+          <li><strong>Multi-Tenant:</strong> K2 (echte Galerie), ök2 (öffentliche Demo), VK2 (Vereinsplattform). Strenge Datentrennung: eigene localStorage-Keys pro Kontext (k2-artworks, k2-oeffentlich-*, k2-vk2-stammdaten). Keine Vermischung – Regeln in .cursor/rules und docs/K2-OEK2-DATENTRENNUNG.md.</li>
+          <li><strong>Daten-Schichten:</strong> artworksStorage (Lesen/Schreiben, allowReduce-Regel „nie mit weniger überschreiben“), Supabase-Sync für Werke (optional), gallery-data.json für öffentliche Auslieferung (Vercel).</li>
+          <li><strong>APf vs. Produkt:</strong> Arbeitsplattform (Admin, Handbuch, mök2, Mission Control) = Werkzeug (Mac/backupmicro). Galerie, Shop, Willkommen = Produkt (Vercel, alle Geräte).</li>
+        </ul>
+
+        <h3 style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)', marginTop: '1rem', marginBottom: '0.5rem' }}>Daten &amp; Sync</h3>
+        <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', marginBottom: '1rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)' }}>
+          <li><strong>Werke:</strong> Primär localStorage (k2-artworks); optional Supabase (Laden/Speichern mit Merge, allowReduce: false). Export: gallery-data.json (Git, Vercel). Bilder: Base64 lokal, Vercel-Pfade (/img/k2/) für Sync; optional Supabase Storage.</li>
+          <li><strong>Stammdaten/Events/Dokumente:</strong> Kontext-getrennte Keys (k2-stammdaten-*, k2-events, k2-documents; ök2/VK2 analog). Kein stilles Löschen – Regeln in datentrennung-localstorage-niemals-loeschen.mdc.</li>
+          <li><strong>Stand überall:</strong> QR-URLs mit Server-Timestamp + Cache-Bust (buildQrUrlWithBust, useServerBuildTimestamp). index.html mit Inject-Script (Stale-Check, build-info-Fetch). vercel.json: no-cache für index.html und build-info.json.</li>
+        </ul>
+
+        <h3 style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)', marginTop: '1rem', marginBottom: '0.5rem' }}>Sicherheit &amp; Qualität</h3>
+        <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', marginBottom: '1rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)' }}>
+          <li><strong>Kundendaten:</strong> Absolut geschützte Keys (k2-artworks, k2-stammdaten-*, k2-vk2-stammdaten, …). Kein automatisches Löschen/Filter-and-Write. Server-Sync nur bei mayWrite (z. B. merged.length &gt;= localCount).</li>
+          <li><strong>Supabase:</strong> RLS, Auth für Admin optional. Env (SUPABASE_URL, Keys) nur serverseitig/Vercel. docs: SUPABASE-RLS-SICHERHEIT.md, ADMIN-AUTH-SETUP.md.</li>
+          <li><strong>Tests:</strong> Vitest (Artworks-Speicherung, Datentrennung, Kundendaten-Schutz, Bild-Upload). QS vor Commit: npm run test, npm run build.</li>
+        </ul>
+
+        <h3 style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)', marginTop: '1rem', marginBottom: '0.5rem' }}>Dokumentation &amp; Einstieg</h3>
+        <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', marginBottom: '1rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)' }}>
+          <li><strong>docs/00-INDEX.md</strong> – Inhaltsverzeichnis aller technischen Docs (Deployment, Supabase, K2/ök2, Crash, Sicherheit, Roadmap).</li>
+          <li><strong>HAUS-INDEX.md</strong> (Root) – Struktur für unser Handeln, Ablage (docs / Handbuch / mök2).</li>
+          <li><strong>.cursor/rules/*.mdc</strong> – Verbindliche Regeln (Stand/QR, Datentrennung, Werke bombensicher, kein Datenverlust, APf vs. Produkt, etc.).</li>
+          <li><strong>k2team-handbuch/00-INDEX.md</strong> – Wichtige Sachen für Team/Nutzer (druckbar).</li>
+          <li><strong>Produkt &amp; Vision:</strong> docs/PRODUKT-VISION.md, docs/PRODUKT-STANDARD-NACH-SPORTWAGEN.md, docs/PLATTFORM-UNTERSTUETZUNG.md.</li>
+        </ul>
+
+        <h3 style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)', marginTop: '1rem', marginBottom: '0.5rem' }}>Beurteilung: Level im Vergleich zu vergleichbaren Projekten</h3>
+        <p style={{ marginBottom: '0.75rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.6 }}>
+          Einordnung, wo sich K2 Galerie / ök2 technisch und prozessual im Vergleich zu typischen Referenzprojekten einstuft:
+        </p>
+        <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', marginBottom: '0.75rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)' }}>
+          <li><strong>Galerie-/Künstler-Websites (Baukasten, Agentur-Lösungen):</strong> Oft statische Sites oder einfache CMS ohne durchgängige Datenbasis für Werke, Kasse, Events und Marketing. K2/ök2 liegt <strong>darüber</strong>: eine integrierte App mit einheitlicher Datenbasis, Multi-Mandant, PWA, Sync und klaren Speicher-/Merge-Regeln.</li>
+          <li><strong>Typisches Startup-MVP:</strong> Häufig schneller Prototyp, wenig formale Regeln, Doku nachgezogen. Hier: <strong>über MVP-Niveau</strong> – verbindliche Regeln (eine Quelle pro Thema, kein Datenverlust, Datentrennung), automatisierte Tests, dokumentierte Architektur und Ablage, QS vor Commit. Entspricht eher dem Niveau „produktionsreif für definierten Umfang“.</li>
+          <li><strong>Kleine professionelle SaaS-Produkte (kleines Team, B2B-Nische):</strong> Vergleichbar in Punkten: moderne Stack-Wahl (React, TypeScript, Supabase, Vercel), Multi-Tenant-Architektur, Trennung Werkzeug vs. Produkt, schriftlich fixierte Standards und Doku-Struktur. Noch kein großes Team, keine 24/7-SLA – aber <strong>Level „kleines professionelles Produkt“</strong> mit klarer Skalierungsvorbereitung (Konfiguration, Mandantenmodell).</li>
+          <li><strong>Open-Source- oder Nischen-Projekte ohne formale Prozesse:</strong> Viele Nischen- oder Community-Projekte haben kaum festgehaltene Regeln oder einheitliche Ablage. K2/ök2 hat <strong>explizit gesetzte Standards</strong>, Regelwerke und ein klares Einstiegs- und Dokumentationsmodell – damit für Übernahme oder Due-Diligence besser einordnen und weiterführen.</li>
+        </ul>
+        <p style={{ marginBottom: '1rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
+          <strong>Kurz:</strong> Technisch und prozessual auf dem Level eines <strong>kleinen professionellen Produkts</strong> mit verbindlichen Standards, Tests und Doku – über typisches MVP und über einfache Galerie-Websites hinaus; noch nicht auf dem Niveau großer Enterprise-SaaS (großes Team, SLA, Compliance-Zertifikate). Für Einzelkünstler:innen, kleine Galerien und Kunstvereine (VK2) produktiv nutzbar und für Lizenzierung/Weiterentwicklung vorbereitet.
+        </p>
+
+        <div style={{ padding: '1rem 1.25rem', background: 'rgba(95,251,241,0.1)', border: '1px solid rgba(95,251,241,0.35)', borderRadius: 10, marginTop: '1rem' }}>
+          <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#5ffbf1', marginBottom: '0.5rem' }}>Zweck dieses Zettels</div>
+          <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.95)', lineHeight: 1.55 }}>
+            Ermöglicht externen Informatiker:innen (Due-Diligence, Technik-Check, Übernahme) das Projekt technisch einzuordnen: Stack, Mandantenmodell, Datenfluss, Sicherheitsregeln und Doku-Struktur – ohne sofort das gesamte Repo zu durchsuchen. Bei vertiefter Prüfung: docs/00-INDEX.md und genannte Regeln/Docs nutzen.
+          </p>
+        </div>
+      </section>
+
       <section id="mok2-pilot-zettel" style={{ marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(95,251,241,0.2)', pageBreakInside: 'avoid' as const }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
           Pilot-Zettel drucken

@@ -84,6 +84,14 @@ bash scripts/cursor-start-stabil.sh
 
 ---
 
+## 4a. Vermutung: Absichtlicher Qualitätsfilter? (Georg, 05.03.26)
+
+**Hypothese:** Code 5 / Reopen könnte von Cursor bewusst als **Qualitätsfilter** oder **Hürde** eingebaut sein – um Nutzer:innen zu testen oder um „schwierige“ Nutzung zu begrenzen. Man weiß es nicht.
+
+**Für uns:** Egal ob Absicht oder Bug – unser Verhalten (kurze Antworten, kein write-build-info am Ende, Preview zu, App im Browser) bleibt sinnvoll und reduziert Last. Festgehalten, falls sich später dazu etwas klärt oder die Idee wieder aufkommt.
+
+---
+
 ## 5. Analyse: Warum eine komplexe Session ohne Code 5 blieb (05.03.26)
 
 **Beobachtung:** Die Speichermix-Operation (IndexedDB, Admin, autoSave, GalerieVorschauPage, viele Dateien) lief ohne einen einzigen Code-5-Absturz. Der Unterschied zu früheren „crash-anfälligen“ Sessions:

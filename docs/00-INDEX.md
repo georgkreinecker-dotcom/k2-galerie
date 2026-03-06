@@ -45,6 +45,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **ADMIN-AUTH-SETUP.md** – Admin-Nutzer in Supabase anlegen, Migration 002 anwenden, testen.
 
 ## K2 vs. ök2 & Daten
+- **WERKE-SPEICHERUNG-CHECKLISTE.md** – **Schlüsselfunktion Werke:** Bombensichere Regeln (nie mit weniger überschreiben, kein Filter-and-Write, Kontext, Supabase, Backup). Pflicht-Check vor jedem Commit, der Lade-/Schreib-Pfade für Werke ändert.
 - **LEHRE-WERKE-WEG-IPAD-NOCH-DA.md** – **Lehre 01.03.26:** Werke am Mac weg, am iPad noch da. Veröffentlichen = Sicherung; Code nie mit leer/weniger überschreiben.
 - **K2-OEK2-DATENTRENNUNG.md** – Regeln: K2-Daten vs. ök2-Muster, Keys, Checkliste. Pflicht bei Daten-Änderungen.
 - **TENANT-SYNC-DOMAIN.md** – **Tenantfähig:** Veröffentlichen / Vom Server laden für K2, ök2, VK2; Blob pro Mandant; Domänen-Struktur (tenantId); Sicherheit später.
