@@ -560,6 +560,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   const [mobileDescription, setMobileDescription] = useState('')
   const [mobileLocationType, setMobileLocationType] = useState<'regal' | 'bildflaeche' | 'sonstig' | ''>('')
   const [mobileLocationNumber, setMobileLocationNumber] = useState('')
+  const [mobileInExhibition, setMobileInExhibition] = useState(true) // „In Online-Galerie anzeigen“ – auf Handy oft gewünscht
   const [isSaving, setIsSaving] = useState(false)
   const [showQRScanner, setShowQRScanner] = useState(false)
   const [showLocationQR, setShowLocationQR] = useState(false)
@@ -609,6 +610,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     setMobileCategory(ARTWORK_CATEGORIES.some((x) => x.id === artwork.category) ? (artwork.category as ArtworkCategoryId) : 'malerei')
     setMobilePrice(artwork.price ? String(artwork.price) : '')
     setMobileDescription(artwork.description || '')
+    setMobileInExhibition(artwork.inExhibition === true)
     
     // Zuweisungsplatz laden
     if (artwork.location) {
@@ -644,6 +646,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     setMobileDescription('')
     setMobileLocationType('')
     setMobileLocationNumber('')
+    setMobileInExhibition(true) // Standard: in Galerie anzeigen (Handy-Wunsch)
     setShowMobileAdmin(true)
   }
 
@@ -4070,6 +4073,22 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               />
             </div>
             
+            {/* In Online-Galerie anzeigen (nur K2) */}
+            {!musterOnly && (
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fff', fontWeight: '500', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={mobileInExhibition}
+                    onChange={(e) => setMobileInExhibition(e.target.checked)}
+                    style={{ width: 20, height: 20, accentColor: '#ff8c42' }}
+                  />
+                  In Galerie anzeigen
+                </label>
+                <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>Wenn aktiviert, erscheint das Werk in der öffentlichen Galerie.</p>
+              </div>
+            )}
+            
             {/* Beschreibung */}
             <div style={{ marginBottom: '1rem' }}>
               <label style={{ display: 'block', marginBottom: '0.5rem', color: '#fff', fontWeight: '600' }}>
@@ -4253,16 +4272,20 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                         price: mobilePrice ? parseFloat(mobilePrice) : undefined,
                         description: mobileDescription || undefined,
                         location: locationString,
+                        inExhibition: mobileInExhibition,
                         inShop: !!mobilePrice && parseFloat(mobilePrice) > 0,
                         createdAt: existingArtwork.createdAt || new Date().toISOString(), // Behalte createdAt
                         updatedAt: new Date().toISOString(), // Setze updatedAt
                         updatedOnMobile: true // Marker dass es auf Mobile aktualisiert wurde
                       }
                       
-                      // KRITISCH: Erstelle neue Array-Kopie (React State darf nicht direkt mutiert werden!)
-                      const updatedArtworks = [...artworks]
-                      updatedArtworks[index] = updatedArtwork
-                      // KRITISCH: Bilddaten der anderen Werke erhalten – nie mit Liste ohne imageRef überschreiben (BUG: andere Bilder gelöscht)
+                      // KRITISCH: Basis = immer VOLLSTÄNDIGE Liste aus localStorage (auf Handy kann State nur Anzeige-Ausschnitt sein → sonst gehen andere Werke verloren)
+                      const currentFromStorage = loadArtworks()
+                      const key = updatedArtwork.number || updatedArtwork.id
+                      const idxInStorage = currentFromStorage.findIndex((a: any) => (a.number || a.id) === key)
+                      const updatedArtworks = idxInStorage >= 0
+                        ? [...currentFromStorage.slice(0, idxInStorage), updatedArtwork, ...currentFromStorage.slice(idxInStorage + 1)]
+                        : [...currentFromStorage, updatedArtwork]
                       const toSave = preserveLocalImageData(updatedArtworks, loadArtworks())
                       
                       // PROFESSIONELL: Speichere zuerst in Supabase (wenn konfiguriert), sonst localStorage
@@ -4383,14 +4406,14 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       alert(`❌ Objekt nicht gefunden!\n\nGesucht: ${editingArtwork.number || editingArtwork.id}\n\nVerfügbare: ${availableIds || 'Keine'}\n\nGesamt: ${artworks.length} Objekte`)
                     }
                   } else {
-                    // NEU: Erstelle neues Objekt
-                    // WICHTIG: Finde maximale Nummer aus ALLEN artworks der GLEICHEN Kategorie (auch Supabase)
-                    // Kategorie-basiert: M/K/G/S/O (max 5 Kategorien)
+                    // NEU: Erstelle neues Objekt – Basis immer aus localStorage (State kann auf Handy nur Teilmenge sein)
+                    const currentFromStorageForNew = loadArtworks()
+                    // WICHTIG: Finde maximale Nummer aus ALLEN Werken der GLEICHEN Kategorie (localStorage + ggf. Supabase)
                     const prefix = getCategoryPrefixLetter(mobileCategory)
                     const categoryPrefix = `K2-${prefix}-`
                     
                     let maxNumber = 0
-                    artworks.forEach((a: any) => {
+                    currentFromStorageForNew.forEach((a: any) => {
                       if (!a.number) return
                       
                       if (a.number.startsWith(categoryPrefix)) {
@@ -4473,13 +4496,13 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       createdAt: now,
                       addedToGalleryAt: now, // Zeitstempel: wann in Galerie aufgenommen
                       updatedAt: now, // WICHTIG: updatedAt für Merge-Logik
-                      inExhibition: false, // Neu = nur Lager & Kassa; in Admin „In Online-Galerie anzeigen“ aktivieren wenn gewünscht
+                      inExhibition: mobileInExhibition, // Checkbox „In Galerie anzeigen“ im Formular
                       inShop: !!mobilePrice && parseFloat(mobilePrice) > 0,
                       createdOnMobile: true // Marker dass es auf Mobile erstellt wurde
                     }
                     
-                    // KRITISCH: Erstelle neue Array-Kopie (React State darf nicht direkt mutiert werden!)
-                    const updatedArtworks = [...artworks, newArtwork]
+                    // KRITISCH: Basis = immer VOLLSTÄNDIGE Liste aus localStorage (currentFromStorageForNew bereits oben geladen)
+                    const updatedArtworks = [...currentFromStorageForNew, newArtwork]
                     const toSave = preserveLocalImageData(updatedArtworks, loadArtworks())
                     
                     // PROFESSIONELL: Speichere zuerst in Supabase (wenn konfiguriert), sonst localStorage
