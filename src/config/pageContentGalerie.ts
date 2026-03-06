@@ -95,6 +95,36 @@ export function getPageContentGalerie(tenantId?: 'oeffentlich' | 'vk2'): PageCon
   return { ...defaults }
 }
 
+/**
+ * Merged Server-Seitengestaltung (z. B. aus gallery-data.json) mit lokalem Stand.
+ * Regel: Lokale befüllte Felder gehen nicht verloren – Server überschreibt nur, wo Server etwas liefert.
+ * Verhindert „Bilder weg nach Galerie ansehen“, wenn gallery-data.json noch alte/leere Seitengestaltung hat.
+ */
+export function mergePageContentGalerieFromServer(serverJson: string, tenantId?: 'oeffentlich' | 'vk2'): void {
+  try {
+    if (typeof window === 'undefined' || !serverJson || serverJson.length > 6 * 1024 * 1024) return
+    const local = getPageContentGalerie(tenantId)
+    let server: Partial<PageContentGalerie>
+    try {
+      server = JSON.parse(serverJson) as Partial<PageContentGalerie>
+    } catch {
+      return
+    }
+    const keys: (keyof PageContentGalerie)[] = ['welcomeImage', 'galerieCardImage', 'virtualTourImage', 'virtualTourVideo', 'welcomeIntroText']
+    const merged: Partial<PageContentGalerie> = {}
+    for (const k of keys) {
+      const s = server[k]
+      const l = local[k]
+      const hasServer = s != null && String(s).trim() !== ''
+      const hasLocal = l != null && String(l).trim() !== ''
+      if (hasLocal || hasServer) (merged as Record<string, unknown>)[k] = hasLocal ? l : s
+    }
+    setPageContentGalerie(merged, tenantId)
+  } catch (e) {
+    console.warn('Seitengestaltung Merge fehlgeschlagen:', e)
+  }
+}
+
 /** Speichert Seitengestaltung. tenantId 'oeffentlich' = ök2, 'vk2' = VK2. */
 export function setPageContentGalerie(data: Partial<PageContentGalerie>, tenantId?: 'oeffentlich' | 'vk2'): void {
   try {

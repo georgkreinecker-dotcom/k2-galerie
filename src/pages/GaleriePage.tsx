@@ -5,7 +5,7 @@ import QRCode from 'qrcode'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, ENTDECKEN_ROUTE } from '../config/navigation'
 import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, OEK2_WILLKOMMEN_IMAGES, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty } from '../config/tenantConfig'
 import { buildVitaDocumentHtml } from '../utils/vitaDocument'
-import { getGalerieImages, getPageContentGalerie } from '../config/pageContentGalerie'
+import { getGalerieImages, getPageContentGalerie, mergePageContentGalerieFromServer } from '../config/pageContentGalerie'
 import { getPageTexts, type GaleriePageTexts } from '../config/pageTexts'
 import { appendToHistory } from '../utils/artworkHistory'
 import { readArtworksRawForContext, saveArtworksForContext } from '../utils/artworksStorage'
@@ -1576,10 +1576,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               applyDesignToDocument(designToUse)
             } catch (_) {}
           }
-          // Seitengestaltung (Kacheln, Willkommensbild, Galerie-Karte) – sonst zeigt Handy alte Anordnung
+          // Seitengestaltung: Merge mit lokal – nie lokale Bilder durch alte Server-Daten ersetzen („Galerie gestalten“ bleibt erhalten)
           if (!musterOnly && !vk2 && data.pageContentGalerie != null && typeof data.pageContentGalerie === 'string' && data.pageContentGalerie.length > 0 && data.pageContentGalerie.length < 6 * 1024 * 1024) {
             try {
-              localStorage.setItem('k2-page-content-galerie', data.pageContentGalerie)
+              mergePageContentGalerieFromServer(data.pageContentGalerie, undefined)
               window.dispatchEvent(new CustomEvent('k2-page-content-updated'))
             } catch (_) {}
           }
@@ -4182,6 +4182,7 @@ function ErgebnisKarten({ pfad, antworten, name, onWeiter, onFuehrung }: { pfad:
 }
 
 function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: () => void }) {
+  const navigate = useNavigate()
   const [schritt, setSchritt] = useState<GuideSchritt>('begruessung')
   const [antworten, setAntworten] = useState<GuideAntworten>(ladeGuideAntworten)
   const [textIdx, setTextIdx] = useState(0)
@@ -4358,8 +4359,8 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
         const vornamePart = name ? `&vorname=${encodeURIComponent(name)}` : ''
         const pfadPart = neu.pfad ? `&pfad=${neu.pfad}` : ''
         const adminUrl = `/admin?context=oeffentlich${vornamePart}${pfadPart}`
-        if (window.self === window.top) window.location.href = adminUrl
-        else window.open(adminUrl, '_blank')
+        if (window.self !== window.top) window.open(adminUrl, '_blank')
+        else navigate(adminUrl)
       }, 800)
       setSichtbar(false)
       return
@@ -4386,8 +4387,8 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
     const assistentPart = assistent ? '&assistent=1' : ''
     const adminUrl = `/admin?context=oeffentlich${vornamePart}${pfadPart}${assistentPart}`
     setTimeout(() => {
-      if (window.self === window.top) window.location.href = adminUrl
-      else window.open(adminUrl, '_blank')
+      if (window.self !== window.top) window.open(adminUrl, '_blank')
+      else navigate(adminUrl)
     }, 300)
   }
 

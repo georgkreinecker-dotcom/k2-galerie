@@ -15,6 +15,8 @@ export interface ImageProcessingOptionsProps {
   onBackgroundPresetChange: (preset: BackgroundPresetKey) => void
   /** Nur bei Werken: Option "Vollkachelform" (Bild füllt Kachel). Bei Seitengestaltung false. */
   showVollkachel?: boolean
+  /** Nur bei Werken: Option "Foto freistellen". Bei Design (Willkommensbild, Galerie-Karte, Virtual-Tour), VK2-Karten, Dokumenten false. */
+  showFreistellen?: boolean
   /** Optional: Button "Foto zuschneiden" anzeigen – öffnet Zuschnitt, Ergebnis ersetzt aktuelles Bild. */
   onCropClick?: () => void
   /** Styling: inline styles für Container (z. B. dunkler Admin-Hintergrund). */
@@ -35,9 +37,11 @@ export function ImageProcessingOptions({
   backgroundPreset,
   onBackgroundPresetChange,
   showVollkachel = false,
+  showFreistellen = true,
   onCropClick,
   style = {}
 }: ImageProcessingOptionsProps) {
+  const effectiveMode = !showFreistellen && mode === 'freigestellt' ? 'original' : mode
   return (
     <div
       style={{
@@ -60,20 +64,22 @@ export function ImageProcessingOptions({
         Bildverarbeitung
       </span>
       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', flexDirection: 'column' }}>
+        {showFreistellen && (
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#f4f7ff' }}>
+            <input
+              type="radio"
+              name="image-processing-mode"
+              checked={effectiveMode === 'freigestellt'}
+              onChange={() => onModeChange('freigestellt')}
+            />
+            Foto freistellen (mit Pro-Hintergrund)
+          </label>
+        )}
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#f4f7ff' }}>
           <input
             type="radio"
             name="image-processing-mode"
-            checked={mode === 'freigestellt'}
-            onChange={() => onModeChange('freigestellt')}
-          />
-          Foto freistellen (mit Pro-Hintergrund)
-        </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#f4f7ff' }}>
-          <input
-            type="radio"
-            name="image-processing-mode"
-            checked={mode === 'original'}
+            checked={effectiveMode === 'original'}
             onChange={() => onModeChange('original')}
           />
           Original benutzen
@@ -83,7 +89,7 @@ export function ImageProcessingOptions({
             <input
               type="radio"
               name="image-processing-mode"
-              checked={mode === 'vollkachel'}
+              checked={effectiveMode === 'vollkachel'}
               onChange={() => onModeChange('vollkachel')}
             />
             Vollkachelform (Bild füllt Kachel)
@@ -109,7 +115,7 @@ export function ImageProcessingOptions({
           </button>
         )}
       </div>
-      {mode === 'freigestellt' && (
+      {effectiveMode === 'freigestellt' && (
         <div style={{ marginTop: '0.75rem' }}>
           <label style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: '0.35rem' }}>
             Hintergrund

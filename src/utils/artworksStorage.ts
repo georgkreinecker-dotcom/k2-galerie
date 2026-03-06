@@ -142,8 +142,9 @@ export function saveArtworksByKey(
   const current = readArtworksRawByKey(key)
   const currentCount = current.length
 
-  if (list.length === 0 && currentCount > 0 && !options.allowReduce) {
-    console.warn('⚠️ artworksStorage: Speichern mit 0 Werken abgelehnt (Schutz)')
+  // KRITISCH: Niemals leere Liste schreiben wenn noch Werke da sind (verhindert Datenverlust bei Crash/Bug)
+  if (list.length === 0 && currentCount > 0) {
+    console.warn('⚠️ artworksStorage: Speichern mit 0 Werken abgelehnt (Schutz – auch bei allowReduce)')
     return false
   }
   if (list.length < currentCount && !options.allowReduce) {

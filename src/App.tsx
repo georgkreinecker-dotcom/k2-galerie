@@ -54,8 +54,7 @@ import SecondMacPage from './pages/SecondMacPage'
 import KassaEinstiegPage from './pages/KassaEinstiegPage'
 import KassabuchPage from './pages/KassabuchPage'
 import KassausgangPage from './pages/KassausgangPage'
-// Admin-Route lazy, damit Supabase Auth erst bei /admin geladen wird (Crash-Vermeidung)
-const AdminRoute = lazy(() => import('./components/AdminRoute').then(m => ({ default: m.default })))
+const AdminRoute = lazy(() => import('./components/AdminRoute'))
 import { Ok2ThemeWrapper } from './components/Ok2ThemeWrapper'
 import DevViewPage from './pages/DevViewPage'
 import PlatformStartPage from './pages/PlatformStartPage'
@@ -133,14 +132,15 @@ class AppErrorBoundary extends Component<{ children: ReactNode }, { hasError: bo
             )}
           </div>
           <p style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#aaa' }}>
-            Wenn die K2-Seite nach Drucken/Teilen nicht mehr lädt: „Reset &amp; neu laden“ versuchen.
+            {errorMessage.includes('Importing a module script failed')
+              ? 'Das passiert oft nach Drucken/Teilen oder nach einem Update. „Reset & neu laden“ holt die neueste Version.'
+              : 'Wenn die K2-Seite nach Drucken/Teilen nicht mehr lädt: „Reset &amp; neu laden“ versuchen.'}
           </p>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
             <button
               onClick={() => {
                 try {
                   // 🔒 NIEMALS Kundendaten löschen – nur Session/UI-Keys entfernen
-                  // Echte Daten (Werke, Stammdaten, Events) bleiben IMMER erhalten
                   const SAFE_TO_DELETE = [
                     'k2-admin-unlocked', 'k2-admin-unlocked-expiry',
                     'k2-last-loaded-timestamp', 'k2-last-loaded-version',
@@ -152,7 +152,12 @@ class AppErrorBoundary extends Component<{ children: ReactNode }, { hasError: bo
                   SAFE_TO_DELETE.forEach(k => { try { localStorage.removeItem(k) } catch (_) {} })
                   sessionStorage.clear()
                 } catch (_) {}
-                safeReload()
+                // Bei Modul-Import-Fehler: stärkerer Cache-Bypass (frisches HTML), sonst normaler Reload
+                if (errorMessage.includes('Importing a module script failed')) {
+                  safeReloadWithCacheBypass()
+                } else {
+                  safeReload()
+                }
               }}
               style={{
                 padding: '0.75rem 1.5rem',
@@ -627,9 +632,7 @@ function App() {
       <Route path="/admin" element={
         <AdminErrorBoundary>
           <AppErrorBoundary>
-            <Suspense fallback={<div style={{ minHeight: '100vh', background: '#1a0f0a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Lade …</div>}>
-              <AdminRoute />
-            </Suspense>
+            <AdminRoute />
           </AppErrorBoundary>
         </AdminErrorBoundary>
       } />

@@ -9456,6 +9456,769 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
     )
   }
 
+  const renderDesignVorschau = () => {
+    return (
+        <div ref={previewContainerRef} style={{ width: '100%', minHeight: 'calc(100vh - 180px)', background: WERBEUNTERLAGEN_STIL.bgDark, display: 'flex', flexDirection: 'column' }}>
+          {/* Design-Toolbar – sticky, immer sichtbar */}
+          <div style={{ flexShrink: 0, position: 'sticky', top: 0, zIndex: 20, background: WERBEUNTERLAGEN_STIL.bgDark, borderBottom: `2px solid ${s.accent}33`, padding: '1rem 1.25rem' }}>
+            {/* Titel */}
+            <div style={{ fontWeight: 800, fontSize: '1.4rem', color: s.text, marginBottom: '0.75rem' }}>✨ Deine Galerie gestalten</div>
+            {/* Nur K2: Entdecken-Seite (Landing) – ein Klick = Bild wählen, sofort gespeichert */}
+            {!tenant.isOeffentlich && !tenant.isVk2 && (
+              <div style={{ marginBottom: '1rem', padding: '0.6rem 1rem', background: 'rgba(0,0,0,0.08)', borderRadius: 10, border: `1px solid ${s.accent}44` }}>
+                <span style={{ fontSize: '0.9rem', color: s.muted, marginRight: '0.75rem' }}>Entdecken-Seite (Landing) – Bild, das Fremde zuerst sehen:</span>
+                <input type="file" accept="image/*" ref={entdeckenHeroInputRef} style={{ display: 'none' }} onChange={async (e) => {
+                  const f = e.target.files?.[0]
+                  e.target.value = ''
+                  if (!f) return
+                  setImageUploadStatus('⏳ Entdecken-Bild wird gespeichert…')
+                  try {
+                    const dataUrl = await compressImageForStorage(f, { context: 'desktop', maxWidth: 800, quality: 0.75 })
+                    const res = await fetch(dataUrl)
+                    const blob = await res.blob()
+                    const fileToUpload = new File([blob], 'entdecken-hero.jpg', { type: blob.type || 'image/jpeg' })
+                    const { uploadPageImage } = await import('../src/utils/githubImageUpload')
+                    await uploadPageImage(fileToUpload, 'oeffentlich', 'entdecken-hero.jpg', () => {})
+                    setImageUploadStatus('✅ Entdecken-Seite: Bild gespeichert – in ca. 2 Min. sichtbar')
+                    setTimeout(() => setImageUploadStatus(null), 6000)
+                  } catch (_) {
+                    setImageUploadStatus('⚠️ Speichern fehlgeschlagen – bitte erneut versuchen')
+                    setTimeout(() => setImageUploadStatus(null), 5000)
+                  }
+                }} />
+                <button type="button" onClick={() => entdeckenHeroInputRef.current?.click()} style={{ padding: '0.4rem 1rem', fontSize: '0.9rem', fontWeight: 600, background: s.accent, color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>Bild wählen</button>
+              </div>
+            )}
+            {/* 3-Schritt-Workflow */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {/* Schritt 1 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0,0,0,0.06)', border: `1px solid ${s.accent}33`, borderRadius: 10, padding: '0.45rem 1rem' }}>
+                <span style={{ fontSize: '0.9rem', fontWeight: 700, color: s.accent }}>1</span>
+                <span style={{ fontSize: '0.95rem', color: s.muted }}>Foto / Video reinziehen oder Text anklicken</span>
+                {pageContent.welcomeImage && <span style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 700 }}>✓ Foto bereit</span>}
+              </div>
+              <span style={{ color: s.muted, fontSize: '1.2rem' }}>→</span>
+              {/* Schritt 2: Galerie ansehen – erst Bild in localStorage speichern, dann öffnen */}
+              <button type="button" onClick={() => {
+                // Erst alles in localStorage sichern, dann Galerie im gleichen Tab öffnen
+                // (gleicher Tab = localStorage sofort lesbar, neues Foto wird sofort angezeigt)
+                const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+                setPageContentGalerie(pageContent, designTenant)
+                setPageTexts(pageTexts, designTenant)
+                const route = tenant.isVk2
+                  ? PROJECT_ROUTES.vk2.galerie
+                  : tenant.isOeffentlich
+                  ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+                  : PROJECT_ROUTES['k2-galerie'].galerie
+                const backState = {
+                  fromAdmin: true,
+                  fromAdminTab: 'design' as const,
+                  fromAdminContext: tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+                }
+                navigate(route + '?vorschau=1', { state: backState })
+              }} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1.1rem', fontSize: '1rem', fontWeight: 700, background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: 10, color: '#10b981', cursor: 'pointer', fontFamily: 'inherit' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>2</span> {tenant.isVk2 ? '👁 Unsere Mitglieder-Seite ansehen – gefällt es?' : '👁 Galerie ansehen – gefällt es?'}
+              </button>
+              <span style={{ color: s.muted, fontSize: '1.2rem' }}>→</span>
+              {/* Schritt 3: Speichern */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button type="button" onClick={() => setDesignSubTab('farben')} style={{ padding: '0.5rem 1rem', fontSize: '0.95rem', fontWeight: 600, background: `${s.accent}18`, border: `1px solid ${s.accent}66`, borderRadius: 10, color: s.accent, cursor: 'pointer' }}>🎨 Farbe ändern</button>
+                {designSaveFeedback === 'ok'
+                  ? <span style={{ fontSize: '1rem', color: '#10b981', fontWeight: 700, padding: '0.5rem 1.1rem', background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: 10 }}>✅ Gespeichert!</span>
+                  : <button type="button" className="btn-primary" onClick={async () => {
+                      try {
+                        const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+                        setPageContentGalerie(pageContent, designTenant)
+                        setPageTexts(pageTexts, designTenant)
+                        if (designSettings && Object.keys(designSettings).length > 0) {
+                          const ds = JSON.stringify(designSettings)
+                          if (ds.length < 50000) localStorage.setItem(getDesignStorageKey(), ds)
+                        }
+                        localStorage.removeItem('k2-last-publish-signature')
+                        if (!tenant.isOeffentlich) window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
+                        setDesignSaveFeedback('ok')
+                        setTimeout(() => setDesignSaveFeedback(null), 6000)
+                        // Foto auf GitHub hochladen – damit es dauerhaft auf Vercel gespeichert ist
+                        // Gilt für K2 UND ök2 – Base64 wird durch Vercel-Pfad ersetzt → kein localStorage-Verlust mehr
+                        {
+                          const context = tenant.isOeffentlich ? ('oeffentlich' as const) : tenant.isVk2 ? ('vk2' as const) : ('k2' as const)
+                          const tenantForUpload = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+                          const fileToUpload = pendingWelcomeFileRef.current
+                          const base64Image = pageContent.welcomeImage
+                          pendingWelcomeFileRef.current = null
+      
+                          // ök2: willkommen-demo.jpg – nie willkommen.jpg, sonst überschreibt die Entdecken-Seite (Landing) das Bild für alle
+                          const welcomeFilename = context === 'oeffentlich' ? 'willkommen-demo.jpg' : 'willkommen.jpg'
+                          const doWelcomeUpload = async (uploadFile: File) => {
+                            setImageUploadStatus('⏳ Foto wird dauerhaft gespeichert…')
+                            try {
+                              const { uploadPageImage } = await import('../src/utils/githubImageUpload')
+                              const url = await uploadPageImage(uploadFile, context, welcomeFilename, () => {})
+                              const next2 = { ...pageContent, welcomeImage: url }
+                              setPageContent(next2)
+                              setPageContentGalerie(next2, tenantForUpload)
+                              setImageUploadStatus('✅ Dauerhaft gespeichert – auf allen Geräten sichtbar')
+                              setTimeout(() => setImageUploadStatus(null), 6000)
+                            } catch (_) {
+                              setImageUploadStatus('⚠️ Nur lokal gespeichert – bitte nochmals speichern')
+                              setTimeout(() => setImageUploadStatus(null), 8000)
+                            }
+                          }
+      
+                          if (fileToUpload) {
+                            await doWelcomeUpload(fileToUpload)
+                          } else if (base64Image && base64Image.startsWith('data:')) {
+                            // Altes Base64-Foto: als Blob konvertieren und hochladen
+                            try {
+                              const res = await fetch(base64Image)
+                              const blob = await res.blob()
+                              const fileFromBase64 = new File([blob], welcomeFilename, { type: blob.type })
+                              await doWelcomeUpload(fileFromBase64)
+                            } catch (_) {
+                              setImageUploadStatus('⚠️ Nur lokal gespeichert – bitte nochmals speichern')
+                              setTimeout(() => setImageUploadStatus(null), 8000)
+                            }
+                          }
+                        }
+                      } catch (e) {
+                        alert('Fehler beim Speichern: ' + (e instanceof Error ? e.message : String(e)))
+                      }
+                    }} style={{ padding: '0.5rem 1.25rem', fontSize: '1rem', fontWeight: 700, borderRadius: 10 }}>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 700, marginRight: '0.35rem' }}>3</span>💾 Speichern – fertig!
+                    </button>
+                }
+              </div>
+              {/* Zoom-Buttons, am Ende */}
+              <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', marginLeft: 'auto' }}>
+                <span style={{ color: 'var(--k2-muted)', fontSize: '0.85rem' }}>Zoom:</span>
+                {([1, 1.25, 1.5, 2] as const).map((sc) => (
+                  <button key={sc} type="button" onClick={() => setDesignPreviewScale(sc)} style={{ padding: '0.3rem 0.55rem', fontSize: '0.85rem', background: designPreviewScale === sc ? 'rgba(95,251,241,0.2)' : 'transparent', border: '1px solid ' + (designPreviewScale === sc ? 'var(--k2-accent)' : 'rgba(255,255,255,0.15)'), borderRadius: 6, color: designPreviewScale === sc ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>{Math.round(sc * 100)}%</button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <input type="file" accept="image/*" ref={galerieImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'galerieCardImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Galerie-Karte – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+          <input type="file" accept="image/*" ref={virtualTourImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+          {(() => {
+            const tc = tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich : tenant.isVk2 ? TENANT_CONFIGS.vk2 : TENANT_CONFIGS.k2
+            const galleryName = tenant.isVk2 ? (vk2Stammdaten.verein?.name || tc.galleryName) : tc.galleryName
+            const tagline = tenant.isVk2 ? (vk2Stammdaten.vorstand?.name ? `Obfrau/Obmann: ${vk2Stammdaten.vorstand.name}` : tc.tagline) : tc.tagline
+            const welcomeIntroDefault = tenant.isVk2
+              ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.'
+              : (defaultPageTexts.galerie.welcomeIntroText || 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.')
+            return (
+          <>
+          {/* Design-Vorschau: manuelle Größe (Ziehen) + Zoom 100%–200% */}
+          {(() => {
+            const scale = designPreviewScale
+            const scaledContentMinHeight = Math.ceil(2800 * scale)
+            return (
+          <div style={{ overflow: 'auto', width: '100%', flex: '1 1 0', minHeight: 0, maxHeight: `${designPreviewHeightPx}px`, WebkitOverflowScrolling: 'touch' }}>
+          <div style={{ width: 412 * scale, minHeight: scaledContentMinHeight, margin: '0 auto', boxSizing: 'border-box', overflow: 'hidden' }}>
+          <div style={{ width: 412, transform: `scale(${scale})`, transformOrigin: 'top left', boxSizing: 'border-box' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 0, boxSizing: 'border-box' }}>
+            {previewFullscreenPage === 1 && (
+            <div style={{ width: '100%', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 100%)' }}>
+              {/* Brand linkes oberes Eck – K2/ök2 */}
+              <div style={{ position: 'absolute', top: 12, left: 14, zIndex: 10 }}>
+                <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--k2-text)', letterSpacing: '0.02em', lineHeight: 1.25 }}>{PRODUCT_BRAND_NAME}</div>
+              </div>
+              <header style={{ padding: '24px 18px 24px', paddingTop: 44, maxWidth: 412, margin: 0 }}>
+                <div style={{ marginBottom: 32 }}>
+                  {designPreviewEdit === 'p1-heroTitle' ? (
+                    <input autoFocus type="text" value={pageTexts.galerie?.heroTitle ?? defaultPageTexts.galerie.heroTitle ?? galleryName} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, heroTitle: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.5rem', fontSize: '2rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.12)', border: '2px solid var(--k2-accent)', borderRadius: 8 }} placeholder="Großer Titel (z. B. Galeriename)" />
+                  ) : (
+                    <h1 role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-heroTitle')} style={{ margin: 0, fontSize: '2rem', fontWeight: '700', background: 'linear-gradient(135deg, var(--k2-text) 0%, var(--k2-accent) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', letterSpacing: '-0.02em', lineHeight: 1.1, cursor: 'pointer' }} title="Klicken: Großer Titel bearbeiten">{(pageTexts.galerie?.heroTitle ?? defaultPageTexts.galerie.heroTitle)?.trim() || galleryName}</h1>
+                  )}
+                  {designPreviewEdit === 'p1-tagline' ? (
+                    <input autoFocus type="text" value={pageTexts.galerie?.welcomeSubtext ?? tagline} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeSubtext: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', marginTop: '0.5rem', padding: '0.5rem', fontSize: '1rem', color: 'var(--k2-muted)', background: 'rgba(0,0,0,0.12)', border: '2px solid var(--k2-accent)', borderRadius: 8 }} />
+                  ) : (
+                    <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-tagline')} style={{ margin: '0.5rem 0 0', color: 'var(--k2-muted)', fontSize: '1rem', fontWeight: '300', letterSpacing: '0.05em', cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.welcomeSubtext ?? defaultPageTexts.galerie.welcomeSubtext) || tagline}</p>
+                  )}
+                </div>
+                <section style={{ marginBottom: 40, maxWidth: 412, width: '100%' }}>
+                  <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', fontWeight: '700', lineHeight: 1.2, color: 'var(--k2-text)', letterSpacing: '-0.02em' }}>
+                    {designPreviewEdit === 'p1-welcomeHeading' ? (
+                      <input autoFocus type="text" value={pageTexts.galerie?.welcomeHeading ?? defaultPageTexts.galerie.welcomeHeading ?? 'Willkommen bei'} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeHeading: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.4rem', fontSize: '1.5rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.12)', border: '2px solid var(--k2-accent)', borderRadius: 8 }} placeholder="z. B. Willkommen bei" />
+                    ) : (
+                      <span role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-welcomeHeading')} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit('p1-welcomeHeading')} style={{ cursor: 'pointer' }}>{(pageTexts.galerie?.welcomeHeading ?? defaultPageTexts.galerie.welcomeHeading)?.trim() || 'Willkommen bei'} {(pageTexts.galerie?.heroTitle ?? defaultPageTexts.galerie.heroTitle)?.trim() || galleryName} –</span>
+                    )}<br />
+                    {designPreviewEdit === 'p1-taglineH2' ? (
+                      <textarea autoFocus rows={2} value={pageTexts.galerie?.welcomeSubtext ?? defaultPageTexts.galerie.welcomeSubtext ?? tagline} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeSubtext: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', marginTop: 4, padding: '0.4rem', fontSize: '1.1rem', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.12)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
+                    ) : (
+                      <span role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-taglineH2')} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit('p1-taglineH2')} style={{ cursor: 'pointer', background: 'linear-gradient(135deg, var(--k2-accent) 0%, #e67a2a 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{(pageTexts.galerie?.welcomeSubtext ?? defaultPageTexts.galerie.welcomeSubtext) || tagline}</span>
+                    )}
+                  </h2>
+                  {designPreviewEdit === 'p1-intro' ? (
+                    <textarea autoFocus rows={4} value={pageTexts.galerie?.welcomeIntroText ?? defaultPageTexts.galerie.welcomeIntroText ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeIntroText: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.75rem', fontSize: '1.05rem', color: 'var(--k2-text)', lineHeight: 1.6, background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 12, marginBottom: '1rem', resize: 'vertical', boxSizing: 'border-box' }} placeholder={welcomeIntroDefault} />
+                  ) : (
+                    <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-intro')} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit('p1-intro')} style={{ fontSize: '1.05rem', color: 'var(--k2-text)', lineHeight: 1.6, fontWeight: '300', maxWidth: 340, marginBottom: 24, cursor: 'pointer' }}>{(pageTexts.galerie?.welcomeIntroText ?? defaultPageTexts.galerie.welcomeIntroText)?.trim() || welcomeIntroDefault}</p>
+                  )}
+                  <label htmlFor="welcome-image-input" style={{ display: 'block', cursor: 'pointer', width: '100%', marginTop: 20, overflow: 'hidden', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'border-color 0.2s' }}
+                    onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.borderColor = 'var(--k2-accent)' }}
+                    onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--k2-muted)' }}
+                    onDrop={async (e) => {
+                      e.preventDefault()
+                      ;(e.currentTarget as HTMLElement).style.borderColor = 'var(--k2-muted)'
+                      const f = e.dataTransfer.files?.[0]
+                      if (f && f.type.startsWith('image/')) {
+                        try {
+                          const img = await compressImageForStorage(f, { context: 'desktop' })
+                          setPendingPageImage({ field: 'welcomeImage', dataUrl: img, file: f })
+                          setPendingPageImageMode('freigestellt')
+                          setImageUploadStatus('✓ Foto bereit – Bildverarbeitung wählen, dann „Bild übernehmen“')
+                          setTimeout(() => setImageUploadStatus(null), 5000)
+                        } catch (_) { alert('Fehler beim Bild') }
+                      }
+                    }}
+                  >
+                    <input id="welcome-image-input" ref={welcomeImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => {
+                      const f = e.target.files?.[0]
+                      if (f) {
+                        try {
+                          const img = await compressImageForStorage(f, { context: 'desktop' })
+                          setPendingPageImage({ field: 'welcomeImage', dataUrl: img, file: f })
+                          setPendingPageImageMode('freigestellt')
+                          setImageUploadStatus('✓ Foto bereit – Bildverarbeitung wählen, dann „Bild übernehmen“')
+                          setTimeout(() => setImageUploadStatus(null), 5000)
+                        } catch (_) { alert('Fehler beim Bild') }
+                      }
+                      e.target.value = ''
+                    }} />
+                    {(pendingPageImage?.field === 'welcomeImage' ? pendingPageImage.dataUrl : pageContent.welcomeImage) ? (
+                      <img src={pendingPageImage?.field === 'welcomeImage' ? pendingPageImage.dataUrl : pageContent.welcomeImage} alt="Willkommen" style={{ width: '100%', height: 'auto', display: 'block', maxHeight: 480, objectFit: 'cover', boxSizing: 'border-box' }} />
+                    ) : (
+                      <div style={{ width: '100%', minHeight: 200, background: 'rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: 'var(--k2-muted)', fontSize: '1rem' }}><span style={{ fontSize: '2rem' }}>📸</span><span>Foto ziehen oder klicken</span><span style={{ fontSize: '0.8rem', color: 'var(--k2-accent)' }}>🖼️ Freistellen möglich</span></div>
+                    )}
+                  </label>
+                  {/* Bildverarbeitung außerhalb der Seite: als Modal-Overlay – verschiebbar, damit Galerie dahinter sichtbar. */}
+                  {pendingPageImage && createPortal(
+                    <div
+                      style={{
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: 10000,
+                        background: 'rgba(0,0,0,0.6)',
+                        padding: '1.5rem',
+                        boxSizing: 'border-box'
+                      }}
+                      onClick={(e) => { if (e.target === e.currentTarget) { setPendingPageImage(null); setCropPageImageSrc(null); setImageUploadStatus(null); setImageModalDragOffset({ x: 0, y: 0 }) } }}
+                    >
+                      <div
+                        style={{
+                          position: 'fixed',
+                          left: '50%',
+                          top: '50%',
+                          transform: `translate(calc(-50% + ${imageModalDragOffset.x}px), calc(-50% + ${imageModalDragOffset.y}px))`,
+                          background: '#1c1a18',
+                          borderRadius: 16,
+                          padding: 0,
+                          maxWidth: 420,
+                          width: '100%',
+                          maxHeight: '90vh',
+                          overflow: 'hidden',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+                          border: '1px solid rgba(95,251,241,0.2)'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          onMouseDown={(e) => {
+                            e.preventDefault()
+                            imageModalDragRef.current = { startX: e.clientX, startY: e.clientY, startOx: imageModalDragOffset.x, startOy: imageModalDragOffset.y }
+                            setImageModalDragging(true)
+                          }}
+                          style={{ padding: '0.75rem 1rem', cursor: 'move', userSelect: 'none', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}
+                        >
+                          <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>⋮⋮</span>
+                          <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#f4f7ff' }}>🖼️ Bildverarbeitung</span>
+                          <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginLeft: 'auto' }}>Ziehen zum Verschieben</span>
+                        </div>
+                        <div style={{ padding: '0 1rem 1rem', overflow: 'auto', flex: 1 }}>
+                          <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', margin: '0.5rem 0 0.75rem' }}>Freistellen, Original oder Zuschneiden wählen – dann „Bild übernehmen“.</p>
+                          <img src={pendingPageImage.dataUrl} alt="Vorschau" style={{ width: '100%', maxHeight: 220, objectFit: 'contain', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', marginBottom: '0.75rem' }} />
+                          <ImageProcessingOptions
+                            mode={pendingPageImageMode === 'vollkachel' ? 'original' : pendingPageImageMode}
+                            onModeChange={(m) => setPendingPageImageMode(m === 'vollkachel' ? 'original' : m)}
+                            backgroundPreset={pendingPageImagePreset}
+                            onBackgroundPresetChange={setPendingPageImagePreset}
+                            showVollkachel={false}
+                            onCropClick={() => setCropPageImageSrc(pendingPageImage.dataUrl)}
+                          />
+                          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                if (!pendingPageImage) return
+                                const field = pendingPageImage.field
+                                const dataUrlToProcess = pendingPageImage.dataUrl
+                                const fileForWelcome = pendingPageImage.file
+                                await runBildUebernehmen(dataUrlToProcess, pendingPageImageMode, pendingPageImagePreset, async (result) => {
+                                  const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+                                  setPageContent(prev => {
+                                    const next = { ...prev, [field]: result }
+                                    setPageContentGalerie(next, designTenant ?? undefined)
+                                    return next
+                                  })
+                                  if (field === 'welcomeImage' && !tenant.isVk2) pendingWelcomeFileRef.current = fileForWelcome
+                                  setPendingPageImage(null)
+                                  setCropPageImageSrc(null)
+                                  setImageModalDragOffset({ x: 0, y: 0 })
+                                  if ((field === 'galerieCardImage' || field === 'virtualTourImage') && typeof uploadPageImageToGitHub === 'function') {
+                                    try {
+                                      const res = await fetch(result)
+                                      const blob = await res.blob()
+                                      const file = new File([blob], field === 'galerieCardImage' ? 'galerie-card.jpg' : 'virtual-tour.jpg', { type: blob.type })
+                                      await uploadPageImageToGitHub(file, field, field === 'galerieCardImage' ? 'galerie-card.jpg' : 'virtual-tour.jpg')
+                                    } catch (_) { /* optional */ }
+                                  }
+                                })
+                              }}
+                              style={{ padding: '0.5rem 1rem', background: '#b54a1e', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}
+                            >
+                              Bild übernehmen
+                            </button>
+                            <button type="button" onClick={() => { setPendingPageImage(null); setCropPageImageSrc(null); setImageUploadStatus(null); setImageModalDragOffset({ x: 0, y: 0 }) }} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: '0.9rem' }}>Abbrechen</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>,
+                    document.body
+                  )}
+                  {cropPageImageSrc && pendingPageImage && createPortal(
+                    <div style={{ position: 'fixed', inset: 0, zIndex: 10001 }}>
+                      <ImageCropModal
+                        imageSrc={cropPageImageSrc}
+                        onApply={(dataUrl) => {
+                          setPendingPageImage(prev => prev ? { ...prev, dataUrl } : null)
+                          setCropPageImageSrc(null)
+                        }}
+                        onCancel={() => setCropPageImageSrc(null)}
+                      />
+                    </div>,
+                    document.body
+                  )}
+                  {imageUploadStatus && (
+                    <div style={{ marginTop: '0.5rem', padding: '0.5rem 0.75rem', background: imageUploadStatus.startsWith('✅') ? 'rgba(16,185,129,0.1)' : imageUploadStatus.startsWith('⏳') ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)', border: `1px solid ${imageUploadStatus.startsWith('✅') ? '#10b981' : imageUploadStatus.startsWith('⏳') ? '#f59e0b' : '#10b981'}44`, borderRadius: 8, fontSize: '0.88rem', color: imageUploadStatus.startsWith('✅') ? '#10b981' : imageUploadStatus.startsWith('⏳') ? '#d97706' : '#10b981', fontWeight: 500 }}>
+                      {imageUploadStatus}
+                    </div>
+                  )}
+                </section>
+                {/* VK2 Eingangskarten – 2 editierbare Bildkarten */}
+                {tenant.isVk2 && (
+                  <section style={{ marginTop: '1.5rem', padding: '1.25rem', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 14 }}>
+                    <h3 style={{ margin: '0 0 0.9rem', fontSize: '1rem', fontWeight: 700, color: s.text }}>🖼️ Eingangskarten (2 Bilder)</h3>
+                    <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: s.muted }}>Erscheinen auf der Startseite zwischen Willkommensfoto und Vereinsname. Je ein Foto + editierbarer Text.</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      {vk2Karten.map((karte, idx) => (
+                        <div key={idx} style={{ background: s.bgElevated, borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                          {/* Bild-Upload */}
+                          <label
+                            style={{ display: 'block', aspectRatio: '3/2', cursor: 'pointer', position: 'relative', background: karte.imageUrl ? '#000' : 'rgba(0,0,0,0.15)', overflow: 'hidden' }}
+                            title="Klicken oder Foto ziehen"
+                            onDragOver={e => e.preventDefault()}
+                            onDrop={async e => {
+                              e.preventDefault()
+                              const f = e.dataTransfer.files?.[0]
+                              if (!f || !f.type.startsWith('image/')) return
+                              try {
+                                const img = await compressImageForStorage(f, { context: 'desktop' })
+                                setPendingVk2Card({ index: idx, dataUrl: img, file: f })
+                                setPendingVk2CardMode('freigestellt')
+                              } catch { /* ignore */ }
+                            }}
+                          >
+                            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={async e => {
+                              const f = e.target.files?.[0]
+                              if (!f) return
+                              try {
+                                const img = await compressImageForStorage(f, { context: 'desktop' })
+                                setPendingVk2Card({ index: idx, dataUrl: img, file: f })
+                                setPendingVk2CardMode('freigestellt')
+                              } catch { /* ignore */ }
+                              e.target.value = ''
+                            }} />
+                            {karte.imageUrl
+                              ? <img src={karte.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                              : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', color: s.muted, fontSize: '0.85rem' }}>
+                                  <span style={{ fontSize: '1.6rem', opacity: 0.4 }}>{idx === 0 ? '🖼️' : '👥'}</span>
+                                  <span>📸 Foto wählen</span>
+                                  <span style={{ fontSize: '0.7rem', color: 'var(--k2-accent)', opacity: 0.9 }}>🖼️ Freistellen möglich</span>
+                                </div>
+                            }
+                            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0)', display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', padding: '0.4rem' }}>
+                              <span style={{ background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: '0.65rem', padding: '0.15rem 0.4rem', borderRadius: 6 }}>✏️ {karte.imageUrl ? 'ändern' : 'wählen'}</span>
+                            </div>
+                            {karte.imageUrl && (
+                              <button
+                                type="button"
+                                onClick={e => { e.preventDefault(); e.stopPropagation(); const updated = vk2Karten.map((k, i) => i === idx ? { ...k, imageUrl: '' } : k); saveVk2Karten(updated) }}
+                                style={{ position: 'absolute', top: '0.3rem', right: '0.3rem', background: 'rgba(180,0,0,0.7)', border: 'none', borderRadius: '50%', width: 22, height: 22, color: '#fff', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                              >×</button>
+                            )}
+                          </label>
+                          {/* VK2-Karte: Pending Bildverarbeitung (Freistellen/Original) – ein Tool für alle */}
+                          {pendingVk2Card?.index === idx && (
+                            <div style={{ marginTop: '0.6rem', padding: '0.75rem', background: 'rgba(0,0,0,0.15)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.12)' }}>
+                              <div style={{ fontSize: '0.8rem', color: s.muted, marginBottom: '0.5rem' }}>🖼️ Bildverarbeitung – dann „Bild übernehmen“</div>
+                              <ImageProcessingOptions mode={pendingVk2CardMode} onModeChange={setPendingVk2CardMode} backgroundPreset={pendingVk2CardPreset} onBackgroundPresetChange={setPendingVk2CardPreset} showVollkachel={false} />
+                              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+                                <button type="button" onClick={async () => {
+                                  if (!pendingVk2Card) return
+                                  const cardIndex = pendingVk2Card.index
+                                  const dataUrl = pendingVk2Card.dataUrl
+                                  await runBildUebernehmen(dataUrl, pendingVk2CardMode, pendingVk2CardPreset, async (result) => {
+                                    const updated = vk2Karten.map((k, i) => i === cardIndex ? { ...k, imageUrl: result } : k)
+                                    saveVk2Karten(updated)
+                                    setPendingVk2Card(null)
+                                  })
+                                }} style={{ padding: '0.5rem 1rem', background: 'var(--k2-accent)', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>Bild übernehmen</button>
+                                <button type="button" onClick={() => setPendingVk2Card(null)} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: '0.9rem' }}>Abbrechen</button>
+                              </div>
+                            </div>
+                          )}
+                          {/* Titel + Untertitel editierbar */}
+                          <div style={{ padding: '0.6rem 0.7rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                            <input
+                              type="text"
+                              value={karte.titel}
+                              onChange={e => { const updated = vk2Karten.map((k, i) => i === idx ? { ...k, titel: e.target.value } : k); saveVk2Karten(updated) }}
+                              placeholder="Titel der Karte"
+                              style={{ width: '100%', padding: '0.35rem 0.5rem', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6, color: s.text, fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }}
+                            />
+                            <input
+                              type="text"
+                              value={karte.untertitel}
+                              onChange={e => { const updated = vk2Karten.map((k, i) => i === idx ? { ...k, untertitel: e.target.value } : k); saveVk2Karten(updated) }}
+                              placeholder="Kurzer Untertitel"
+                              style={{ width: '100%', padding: '0.3rem 0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: s.muted, fontSize: '0.75rem', outline: 'none', boxSizing: 'border-box' }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p style={{ margin: '0.7rem 0 0', fontSize: '0.72rem', color: 'rgba(251,191,36,0.5)' }}>
+                      💡 Fotos werden sofort gespeichert. Texte ebenfalls. Auf der VK2-Startseite sofort sichtbar.
+                    </p>
+                  </section>
+                )}
+      
+                {/* Aktuelles aus den Eventplanungen – wie auf der echten ersten Seite */}
+                {(() => {
+                  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
+                  const getEventEnd = (e: any) => { const d = e.endDate ? new Date(e.endDate) : new Date(e.date); d.setHours(23, 59, 59, 999); return d }
+                  const upcoming = events.filter((e: any) => e && e.date && getEventEnd(e) >= todayStart).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0, 5)
+                  if (upcoming.length === 0) return null
+                  const eventHeading = pageTexts.galerie?.eventSectionHeading ?? defaultPageTexts.galerie.eventSectionHeading ?? 'Aktuelles aus den Eventplanungen'
+                  const formatDate = (d: string, end?: string) => {
+                    if (!d) return ''
+                    const start = new Date(d); const endD = end ? new Date(end) : null
+                    return endD && endD.getTime() !== start.getTime() ? `${start.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })} – ${endD.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })}` : start.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })
+                  }
+                  return (
+                    <section style={{ marginTop: 28, padding: '1rem 0', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                      {designPreviewEdit === 'p1-eventHeading' ? (
+                        <input autoFocus value={pageTexts.galerie?.eventSectionHeading ?? eventHeading} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, eventSectionHeading: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.4rem', fontSize: '0.75rem', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: '600', color: 'var(--k2-muted)', background: 'rgba(0,0,0,0.12)', border: '2px solid var(--k2-accent)', borderRadius: 6, marginBottom: '0.5rem', boxSizing: 'border-box' }} />
+                      ) : (
+                        <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-eventHeading')} style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--k2-muted)', fontWeight: '600', cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.eventSectionHeading ?? eventHeading).trim() || 'Aktuelles aus den Eventplanungen'}</p>
+                      )}
+                      <ul style={{ margin: 0, paddingLeft: '1.25rem', color: 'var(--k2-text)', fontSize: '1rem', lineHeight: 1.6 }}>
+                        {upcoming.map((ev: any) => (
+                          <li key={ev.id || ev.date} style={{ marginBottom: ev.documents?.length ? '0.5rem' : 0 }}>
+                            <strong>{ev.title}</strong>
+                            {ev.date && <span style={{ color: 'var(--k2-muted)', fontWeight: '400' }}> — {formatDate(ev.date, ev.endDate)}</span>}
+                            {ev.documents && ev.documents.length > 0 && (
+                              <ul style={{ margin: '0.25rem 0 0 1rem', paddingLeft: '0.75rem', listStyle: 'none', fontSize: '0.95em' }}>
+                                {ev.documents.map((doc: any) => (
+                                  <li key={doc.id || doc.name}>
+                                    <button type="button" onClick={() => handleViewEventDocument(doc, ev)} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--k2-accent)', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }}>📎 {doc.name || doc.fileName || 'Dokument'}</button>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  )
+                })()}
+                {/* Die Kunstschaffenden + Eingangshalle – nur K2/ök2, nicht VK2 */}
+                {!tenant.isVk2 && <><section style={{ marginTop: 32 }}>
+                  {designPreviewEdit === 'p2-kunstschaffendeHeading' ? (
+                    <input autoFocus value={pageTexts.galerie?.kunstschaffendeHeading ?? defaultPageTexts.galerie.kunstschaffendeHeading ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, kunstschaffendeHeading: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '1.5rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, marginBottom: 24, textAlign: 'center', boxSizing: 'border-box' }} />
+                  ) : (
+                    <h3 role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-kunstschaffendeHeading')} style={{ fontSize: '1.5rem', marginBottom: 24, fontWeight: '700', color: 'var(--k2-text)', textAlign: 'center', letterSpacing: '-0.02em', cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.kunstschaffendeHeading ?? defaultPageTexts.galerie.kunstschaffendeHeading) || 'Die Kunstschaffenden'}</h3>
+                  )}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+                    <div style={{ position: 'relative', background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: '16px 16px 8px 16px', padding: 20, overflow: 'hidden' }}>
+                      <div style={{ position: 'absolute', top: 0, left: 0, width: 4, height: '60%', background: 'linear-gradient(180deg, var(--k2-accent) 0%, #e67a2a 100%)', borderRadius: '0 4px 4px 0' }} />
+                      {designPreviewEdit === 'p2-martinaBio' ? (
+                        <textarea autoFocus rows={4} value={pageTexts.galerie?.martinaBio ?? defaultPageTexts.galerie.martinaBio ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, martinaBio: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '0.9rem', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
+                      ) : (
+                        <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-martinaBio')} style={{ color: 'var(--k2-text)', fontSize: '0.9rem', margin: 0, lineHeight: 1.7, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.martinaBio ?? defaultPageTexts.galerie.martinaBio) || 'Kurzbio Künstler:in 1 (z. B. Martina)'}</p>
+                      )}
+                    </div>
+                    <div style={{ position: 'relative', background: 'var(--k2-card-bg-2)', border: '1px solid var(--k2-muted)', borderRadius: '16px 16px 16px 8px', padding: 20, overflow: 'hidden' }}>
+                      <div style={{ position: 'absolute', top: 0, right: 0, width: 4, height: '60%', background: 'var(--k2-accent)', borderRadius: '4px 0 0 4px' }} />
+                      {designPreviewEdit === 'p2-georgBio' ? (
+                        <textarea autoFocus rows={4} value={pageTexts.galerie?.georgBio ?? defaultPageTexts.galerie.georgBio ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, georgBio: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '0.9rem', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
+                      ) : (
+                        <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-georgBio')} style={{ color: 'var(--k2-text)', fontSize: '0.9rem', margin: 0, lineHeight: 1.7, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.georgBio ?? defaultPageTexts.galerie.georgBio) || 'Kurzbio Künstler:in 2 (z. B. Georg)'}</p>
+                      )}
+                    </div>
+                  </div>
+                  {designPreviewEdit === 'p2-gemeinsamText' ? (
+                    <textarea autoFocus rows={2} value={pageTexts.galerie?.gemeinsamText ?? defaultPageTexts.galerie.gemeinsamText ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, gemeinsamText: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} placeholder="Leer = wird aus Namen erzeugt" style={{ width: '100%', margin: '0 auto 16px', display: 'block', padding: '0.6rem', fontSize: '1rem', color: 'var(--k2-text)', lineHeight: 1.7, textAlign: 'center', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
+                  ) : (
+                    <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-gemeinsamText')} style={{ marginTop: 8, fontSize: '1rem', lineHeight: 1.7, color: 'var(--k2-text)', textAlign: 'center', marginBottom: 16, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.gemeinsamText ?? defaultPageTexts.galerie.gemeinsamText)?.trim() || 'Gemeinsam eröffnen … (leer = automatisch)'}</p>
+                  )}
+                </section>
+                {/* Eingangshalle: untere Bilder – wie auf der echten ersten Seite */}
+                <section style={{ marginTop: 28, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--k2-muted)', marginBottom: 16, textAlign: 'center' }}>Willkommen in der Eingangshalle – wähle deinen Weg:</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 14, alignItems: 'stretch' }}>
+                    <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 16, padding: 16, textAlign: 'center' }}>
+                      <label htmlFor="galerie-card-image-input-p1" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.galerieCardImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-accent)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
+                        onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
+                        onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
+                        onDrop={async (e) => { e.preventDefault(); e.stopPropagation(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'galerieCardImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Galerie-Karte – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } }}
+                      >
+                        <input id="galerie-card-image-input-p1" ref={galerieImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'galerieCardImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Galerie-Karte – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                        {pageContent.galerieCardImage ? <img src={pageContent.galerieCardImage} alt="In die Galerie" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span><span style={{ fontSize: '0.75rem', color: 'var(--k2-accent)' }}> 🖼️ Freistellen</span></div>}
+                      </label>
+                      {designPreviewEdit === 'p1-galerieButtonText' ? (
+                        <input autoFocus type="text" value={pageTexts.galerie?.galerieButtonText ?? defaultPageTexts.galerie.galerieButtonText ?? 'In die Galerie'} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, galerieButtonText: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.3rem', fontSize: '1.1rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 6, textAlign: 'center', boxSizing: 'border-box' }} />
+                      ) : (
+                        <h3 role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-galerieButtonText')} style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--k2-text)', marginBottom: 4, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.galerieButtonText ?? defaultPageTexts.galerie.galerieButtonText) || 'In die Galerie'}</h3>
+                      )}
+                    </div>
+                    <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 16, padding: 16, textAlign: 'center' }}>
+                      <label htmlFor="virtual-tour-image-input-p1" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
+                        onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
+                        onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
+                        onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } }}
+                      >
+                        <input id="virtual-tour-image-input-p1" ref={virtualTourImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                        {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span><span style={{ fontSize: '0.75rem', color: 'var(--k2-accent)' }}> 🖼️ Freistellen</span></div>}
+                      </label>
+                      {designPreviewEdit === 'p1-virtualTourButtonText' ? (
+                        <input autoFocus type="text" value={pageTexts.galerie?.virtualTourButtonText ?? defaultPageTexts.galerie.virtualTourButtonText ?? 'Virtueller Rundgang'} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, virtualTourButtonText: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.3rem', fontSize: '1.1rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 6, textAlign: 'center', boxSizing: 'border-box' }} />
+                      ) : (
+                        <h3 role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-virtualTourButtonText')} style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--k2-text)', marginBottom: 4, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.virtualTourButtonText ?? defaultPageTexts.galerie.virtualTourButtonText) || 'Virtueller Rundgang'}</h3>
+                      )}
+                      <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 8 }}>
+                        <label htmlFor="virtual-tour-video-input-p1" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}>
+                          📹 Video wählen oder aufnehmen
+                          <input id="virtual-tour-video-input-p1" title="Max. 2 Min. Länge · max. 100 MB" type="file" accept="video/*" style={{ display: 'none' }} onChange={async (e) => {
+                            const f = e.target.files?.[0]
+                            if (!f) { e.target.value = ''; return }
+                            if (f.size > 100 * 1024 * 1024) { setVideoUploadMsg('Video ist zu groß (max. 100 MB).'); setVideoUploadStatus('error'); e.target.value = ''; return }
+                            try {
+                              const durationSec = await getVideoDurationSec(f)
+                              if (durationSec > MAX_VIDEO_DURATION_SEC) { setVideoUploadMsg(`Video darf max. 2 Minuten lang sein (${Math.round(durationSec)} s) – für schnelles Laden.`); setVideoUploadStatus('error'); e.target.value = ''; return }
+                            } catch { setVideoUploadMsg('Länge konnte nicht gelesen werden.'); setVideoUploadStatus('error'); e.target.value = ''; return }
+                            try {
+                              const localUrl = URL.createObjectURL(f)
+                              const tenantId = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+                              const nextLocal = { ...pageContent, virtualTourVideo: localUrl }
+                              setPageContent(nextLocal)
+                              setPageContentGalerie(nextLocal, tenantId)
+                              if (!tenant.isOeffentlich) {
+                                setVideoUploadStatus('uploading')
+                                setVideoUploadMsg('Video wird hochgeladen… Bitte warten.')
+                                try {
+                                  const { uploadVideoToGitHub } = await import('../src/utils/githubImageUpload')
+                                  const url = await uploadVideoToGitHub(f, 'virtual-tour.mp4', (msg) => setVideoUploadMsg(msg))
+                                  const nextVercel = { ...nextLocal, virtualTourVideo: url }
+                                  setPageContent(nextVercel)
+                                  setPageContentGalerie(nextVercel, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
+                                  localStorage.removeItem('k2-last-publish-signature')
+                                  setVideoUploadStatus('done')
+                                  setVideoUploadMsg('✅ Video hochgeladen – in ca. 2 Min. überall sichtbar.')
+                                } catch {
+                                  setVideoUploadStatus('error')
+                                  setVideoUploadMsg('Upload fehlgeschlagen – Video nur auf diesem Gerät sichtbar.')
+                                }
+                              } else {
+                                setVideoUploadStatus('done')
+                                setVideoUploadMsg('✅ Video gespeichert.')
+                              }
+                            } catch { setVideoUploadStatus('error'); setVideoUploadMsg('Fehler beim Laden des Videos.') }
+                            e.target.value = ''
+                          }} />
+                        </label>
+                      </div>
+                      <p style={{ margin: '6px 0 0', fontSize: '0.75rem', color: 'var(--k2-muted)' }}>Max. 2 Min. Länge · max. 100 MB</p>
+                      {videoUploadStatus !== 'idle' && videoUploadMsg && (
+                        <p style={{ margin: '6px 0 0', fontSize: '0.82rem', color: videoUploadStatus === 'error' ? '#e05c5c' : videoUploadStatus === 'uploading' ? 'var(--k2-accent)' : '#4caf50', textAlign: 'center' }}>
+                          {videoUploadStatus === 'uploading' && '⏳ '}{videoUploadMsg}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </section></>}
+              </header>
+            </div>
+            )} {/* Ende !isVk2AdminContext Seite 1 */}
+            {previewFullscreenPage === 2 && (
+            <div style={{ width: '100%', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 100%)' }}>
+              <div style={{ position: 'absolute', top: 12, left: 14, zIndex: 10 }}>
+                <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--k2-text)', letterSpacing: '0.02em', lineHeight: 1.25 }}>{PRODUCT_BRAND_NAME}</div>
+              </div>
+              <main style={{ padding: '24px 18px 40px', maxWidth: 412, margin: 0 }}>
+                <section style={{ marginTop: 36 }}>
+                  {designPreviewEdit === 'p2-kunstschaffendeHeading' ? (
+                    <input autoFocus value={pageTexts.galerie?.kunstschaffendeHeading ?? defaultPageTexts.galerie.kunstschaffendeHeading ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, kunstschaffendeHeading: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '1.5rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, marginBottom: 24, textAlign: 'center', boxSizing: 'border-box' }} />
+                  ) : (
+                    <h3 role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-kunstschaffendeHeading')} style={{ fontSize: '1.5rem', marginBottom: 24, fontWeight: '700', color: 'var(--k2-text)', textAlign: 'center', letterSpacing: '-0.02em', cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.kunstschaffendeHeading ?? defaultPageTexts.galerie.kunstschaffendeHeading) || 'Die Kunstschaffenden'}</h3>
+                  )}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 28 }}>
+                    <div style={{ position: 'relative', background: 'var(--k2-card-bg-1)', backdropFilter: 'blur(20px)', border: '1px solid var(--k2-muted)', borderRadius: '16px 16px 8px 16px', padding: 20, overflow: 'hidden' }}>
+                      <div style={{ position: 'absolute', top: 0, left: 0, width: 4, height: '60%', background: 'linear-gradient(180deg, var(--k2-accent) 0%, #e67a2a 100%)', borderRadius: '0 4px 4px 0' }} />
+                      {designPreviewEdit === 'p2-martinaBio' ? (
+                        <textarea autoFocus rows={4} value={pageTexts.galerie?.martinaBio ?? defaultPageTexts.galerie.martinaBio ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, martinaBio: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '0.9rem', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
+                      ) : (
+                        <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-martinaBio')} style={{ color: 'var(--k2-text)', fontSize: '0.9rem', margin: 0, lineHeight: 1.7, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.martinaBio ?? defaultPageTexts.galerie.martinaBio) || 'Kurzbio Künstler:in 1 (z. B. Martina)'}</p>
+                      )}
+                    </div>
+                    <div style={{ position: 'relative', background: 'var(--k2-card-bg-2)', backdropFilter: 'blur(20px)', border: '1px solid var(--k2-muted)', borderRadius: '16px 16px 16px 8px', padding: 20, overflow: 'hidden' }}>
+                      <div style={{ position: 'absolute', top: 0, right: 0, width: 4, height: '60%', background: 'var(--k2-accent)', borderRadius: '4px 0 0 4px' }} />
+                      {designPreviewEdit === 'p2-georgBio' ? (
+                        <textarea autoFocus rows={4} value={pageTexts.galerie?.georgBio ?? defaultPageTexts.galerie.georgBio ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, georgBio: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '0.9rem', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
+                      ) : (
+                        <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-georgBio')} style={{ color: 'var(--k2-text)', fontSize: '0.9rem', margin: 0, lineHeight: 1.7, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.georgBio ?? defaultPageTexts.galerie.georgBio) || 'Kurzbio Künstler:in 2 (z. B. Georg)'}</p>
+                      )}
+                    </div>
+                  </div>
+                  {designPreviewEdit === 'p2-gemeinsamText' ? (
+                    <textarea autoFocus rows={3} value={pageTexts.galerie?.gemeinsamText ?? defaultPageTexts.galerie.gemeinsamText ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, gemeinsamText: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} placeholder="Leer = wird aus Namen erzeugt" style={{ width: '100%', margin: '0 auto 28px', display: 'block', padding: '0.6rem', fontSize: '1.05rem', color: 'var(--k2-text)', lineHeight: 1.7, textAlign: 'center', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
+                  ) : (
+                    <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-gemeinsamText')} style={{ marginTop: 24, fontSize: '1.05rem', lineHeight: 1.7, color: 'var(--k2-text)', textAlign: 'center', marginLeft: 'auto', marginRight: 'auto', marginBottom: 20, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.gemeinsamText ?? defaultPageTexts.galerie.gemeinsamText) || 'Gemeinsam eröffnen … (leer = automatisch)'}</p>
+                  )}
+                  {/* Ein Bild: Galerie Innenansicht – klickbar zum Ändern, wie auf der echten Seite */}
+                  <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 16, padding: 16, textAlign: 'center', marginBottom: 12 }}>
+                    <label htmlFor="galerie-card-image-input-p2" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.galerieCardImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-accent)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
+                      onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
+                      onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
+                      onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'galerieCardImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Galerie-Karte – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } }}
+                    >
+                      <input id="galerie-card-image-input-p2" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'galerieCardImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Galerie-Karte – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                      {pageContent.galerieCardImage ? <img src={pageContent.galerieCardImage} alt="Galerie Innenansicht" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span><span style={{ fontSize: '0.75rem', color: 'var(--k2-accent)' }}> 🖼️ Freistellen</span></div>}
+                    </label>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--k2-accent)', margin: 0, fontWeight: '500' }}>Galerie Innenansicht</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--k2-muted)', margin: '2px 0 0', lineHeight: 1.3 }}>Foto ziehen oder klicken · ein Bild</p>
+                  </div>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: 12, textAlign: 'center' }}>Optional: Virtueller Rundgang – Foto oder Video</p>
+                  <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 12, padding: 12, textAlign: 'center' }}>
+                    {/* Video-Vorschau wenn vorhanden */}
+                    {pageContent.virtualTourVideo ? (
+                      <video src={pageContent.virtualTourVideo} controls style={{ width: '100%', borderRadius: 8, marginBottom: 6 }} />
+                    ) : (
+                      <label htmlFor="virtual-tour-image-input-p2" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 8, overflow: 'hidden', marginBottom: 6, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
+                        onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
+                        onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
+                        onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } }}
+                      >
+                        <input id="virtual-tour-image-input-p2" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                        {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.85rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span><span style={{ fontSize: '0.75rem', color: 'var(--k2-accent)' }}> 🖼️ Freistellen</span></div>}
+                      </label>
+                    )}
+                    <p style={{ fontSize: '0.85rem', color: 'var(--k2-text)', margin: '0 0 8px' }}>Virtueller Rundgang</p>
+                    {/* Foto- und Video-Buttons */}
+                    <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+                      <label htmlFor="virtual-tour-image-input-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-card-bg-2, #e8e4dd)', color: 'var(--k2-text)', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600', border: '1px solid var(--k2-muted)' }}>
+                        📸 Foto wählen oder aufnehmen
+                        <input id="virtual-tour-image-input-btn" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                      </label>
+                      <label htmlFor="virtual-tour-video-input" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}>
+                        📹 Video wählen oder aufnehmen
+                        <input id="virtual-tour-video-input" type="file" accept="video/*" title="Max. 2 Min. Länge · max. 100 MB" style={{ display: 'none' }} onChange={async (e) => {
+                          const f = e.target.files?.[0]
+                          if (!f) { e.target.value = ''; return }
+                          if (f.size > 100 * 1024 * 1024) { setVideoUploadMsg('Video ist zu groß (max. 100 MB). Bitte kürzer aufnehmen.'); setVideoUploadStatus('error'); e.target.value = ''; return }
+                          try {
+                            const durationSec = await getVideoDurationSec(f)
+                            if (durationSec > MAX_VIDEO_DURATION_SEC) { setVideoUploadMsg(`Video darf max. 2 Minuten lang sein (${Math.round(durationSec)} s) – für schnelles Laden.`); setVideoUploadStatus('error'); e.target.value = ''; return }
+                          } catch { setVideoUploadMsg('Länge konnte nicht gelesen werden.'); setVideoUploadStatus('error'); e.target.value = ''; return }
+                          try {
+                            const localUrl = URL.createObjectURL(f)
+                            const tenantId = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+                            // Sofort lokal speichern → sofort im Admin sichtbar
+                            const nextLocal = { ...pageContent, virtualTourVideo: localUrl }
+                            setPageContent(nextLocal)
+                            setPageContentGalerie(nextLocal, tenantId)
+                            if (!tenant.isOeffentlich) {
+                              // K2: Video via GitHub hochladen → auf Vercel dauerhaft
+                              setVideoUploadStatus('uploading')
+                              setVideoUploadMsg('Video wird hochgeladen… Bitte warten.')
+                              try {
+                                const { uploadVideoToGitHub } = await import('../src/utils/githubImageUpload')
+                                const url = await uploadVideoToGitHub(f, 'virtual-tour.mp4', (msg) => setVideoUploadMsg(msg))
+                                const nextVercel = { ...nextLocal, virtualTourVideo: url }
+                                setPageContent(nextVercel)
+                                setPageContentGalerie(nextVercel, undefined)
+                                localStorage.removeItem('k2-last-publish-signature')
+                                setVideoUploadStatus('done')
+                                setVideoUploadMsg('✅ Video hochgeladen – in ca. 2 Min. überall sichtbar.')
+                              } catch (uploadErr: any) {
+                                console.warn('Video-Upload fehlgeschlagen:', uploadErr)
+                                setVideoUploadStatus('error')
+                                setVideoUploadMsg('Upload fehlgeschlagen – Video nur auf diesem Gerät sichtbar.')
+                              }
+                            } else {
+                              // ök2: blob-URL reicht für lokale Demo-Vorschau
+                              setVideoUploadStatus('done')
+                              setVideoUploadMsg('✅ Video gespeichert.')
+                            }
+                          } catch (_) {
+                            setVideoUploadStatus('error')
+                            setVideoUploadMsg('Fehler beim Laden des Videos.')
+                          }
+                          e.target.value = ''
+                        }} />
+                      </label>
+                      {pageContent.virtualTourVideo && (
+                        <button type="button" onClick={() => { const next = { ...pageContent, virtualTourVideo: '' }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); setVideoUploadStatus('idle'); setVideoUploadMsg('') }} style={{ padding: '0.4rem 0.8rem', background: 'transparent', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Video entfernen</button>
+                      )}
+                    </div>
+                    <p style={{ margin: '6px 0 0', fontSize: '0.75rem', color: 'var(--k2-muted)' }}>Max. 2 Min. Länge · max. 100 MB</p>
+                    {videoUploadStatus !== 'idle' && videoUploadMsg && (
+                      <p style={{ margin: '8px 0 0', fontSize: '0.82rem', color: videoUploadStatus === 'error' ? '#e05c5c' : videoUploadStatus === 'uploading' ? 'var(--k2-accent)' : '#4caf50', textAlign: 'center' }}>
+                        {videoUploadStatus === 'uploading' && '⏳ '}{videoUploadMsg}
+                      </p>
+                    )}
+                  </div>
+                </section>
+              </main>
+            </div>
+            )}
+          </div>
+          </div>
+          </div>
+          <div
+            role="button"
+            tabIndex={0}
+            onMouseDown={(e) => { e.preventDefault(); designPreviewResizeStart.current = { y: e.clientY, height: designPreviewHeightPx } }}
+            onTouchStart={(e) => { if (e.touches.length === 1) designPreviewResizeStart.current = { y: e.touches[0].clientY, height: designPreviewHeightPx } }}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.preventDefault() }}
+            style={{ height: 20, marginTop: 12, marginBottom: 8, cursor: 'ns-resize', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.06)', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: 8, color: 'var(--k2-muted)', fontSize: '0.8rem', userSelect: 'none', touchAction: 'none' }}
+            title="Nach unten ziehen = Bereich vergrößern, nach oben = verkleinern"
+          >
+            ⋮⋮ Ziehen zum Vergrößern / Verkleinern
+          </div>
+          </div>
+          );
+          })()}
+          </>
+            ); })()}
+        </div>
+    );
+  };
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -11557,768 +12320,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <p style={{ color: s.muted, marginBottom: '1.5rem', fontSize: '0.9rem' }}>Unten „Speichern“ nicht vergessen – dann gilt der Look.</p>
               </>
             )}
-
             {/* Vorschau – wie in K2: Seite 1 / Seite 2 / Farben, für K2 und ök2 gleich */}
-            {designSubTab === 'vorschau' && (
-              <div ref={previewContainerRef} style={{ width: '100%', minHeight: 'calc(100vh - 180px)', background: WERBEUNTERLAGEN_STIL.bgDark, display: 'flex', flexDirection: 'column' }}>
-                {/* Design-Toolbar – sticky, immer sichtbar */}
-                <div style={{ flexShrink: 0, position: 'sticky', top: 0, zIndex: 20, background: WERBEUNTERLAGEN_STIL.bgDark, borderBottom: `2px solid ${s.accent}33`, padding: '1rem 1.25rem' }}>
-                  {/* Titel */}
-                  <div style={{ fontWeight: 800, fontSize: '1.4rem', color: s.text, marginBottom: '0.75rem' }}>✨ Deine Galerie gestalten</div>
-                  {/* Nur K2: Entdecken-Seite (Landing) – ein Klick = Bild wählen, sofort gespeichert */}
-                  {!tenant.isOeffentlich && !tenant.isVk2 && (
-                    <div style={{ marginBottom: '1rem', padding: '0.6rem 1rem', background: 'rgba(0,0,0,0.08)', borderRadius: 10, border: `1px solid ${s.accent}44` }}>
-                      <span style={{ fontSize: '0.9rem', color: s.muted, marginRight: '0.75rem' }}>Entdecken-Seite (Landing) – Bild, das Fremde zuerst sehen:</span>
-                      <input type="file" accept="image/*" ref={entdeckenHeroInputRef} style={{ display: 'none' }} onChange={async (e) => {
-                        const f = e.target.files?.[0]
-                        e.target.value = ''
-                        if (!f) return
-                        setImageUploadStatus('⏳ Entdecken-Bild wird gespeichert…')
-                        try {
-                          const dataUrl = await compressImageForStorage(f, { context: 'desktop', maxWidth: 800, quality: 0.75 })
-                          const res = await fetch(dataUrl)
-                          const blob = await res.blob()
-                          const fileToUpload = new File([blob], 'entdecken-hero.jpg', { type: blob.type || 'image/jpeg' })
-                          const { uploadPageImage } = await import('../src/utils/githubImageUpload')
-                          await uploadPageImage(fileToUpload, 'oeffentlich', 'entdecken-hero.jpg', () => {})
-                          setImageUploadStatus('✅ Entdecken-Seite: Bild gespeichert – in ca. 2 Min. sichtbar')
-                          setTimeout(() => setImageUploadStatus(null), 6000)
-                        } catch (_) {
-                          setImageUploadStatus('⚠️ Speichern fehlgeschlagen – bitte erneut versuchen')
-                          setTimeout(() => setImageUploadStatus(null), 5000)
-                        }
-                      }} />
-                      <button type="button" onClick={() => entdeckenHeroInputRef.current?.click()} style={{ padding: '0.4rem 1rem', fontSize: '0.9rem', fontWeight: 600, background: s.accent, color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>Bild wählen</button>
-                    </div>
-                  )}
-                  {/* 3-Schritt-Workflow */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    {/* Schritt 1 */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0,0,0,0.06)', border: `1px solid ${s.accent}33`, borderRadius: 10, padding: '0.45rem 1rem' }}>
-                      <span style={{ fontSize: '0.9rem', fontWeight: 700, color: s.accent }}>1</span>
-                      <span style={{ fontSize: '0.95rem', color: s.muted }}>Foto / Video reinziehen oder Text anklicken</span>
-                      {pageContent.welcomeImage && <span style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 700 }}>✓ Foto bereit</span>}
-                    </div>
-                    <span style={{ color: s.muted, fontSize: '1.2rem' }}>→</span>
-                    {/* Schritt 2: Galerie ansehen – erst Bild in localStorage speichern, dann öffnen */}
-                    <button type="button" onClick={() => {
-                      // Erst alles in localStorage sichern, dann Galerie im gleichen Tab öffnen
-                      // (gleicher Tab = localStorage sofort lesbar, neues Foto wird sofort angezeigt)
-                      const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
-                      setPageContentGalerie(pageContent, designTenant)
-                      setPageTexts(pageTexts, designTenant)
-                      const route = tenant.isVk2
-                        ? PROJECT_ROUTES.vk2.galerie
-                        : tenant.isOeffentlich
-                        ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
-                        : PROJECT_ROUTES['k2-galerie'].galerie
-                      const backState = {
-                        fromAdmin: true,
-                        fromAdminTab: 'design' as const,
-                        fromAdminContext: tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
-                      }
-                      navigate(route + '?vorschau=1', { state: backState })
-                    }} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1.1rem', fontSize: '1rem', fontWeight: 700, background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: 10, color: '#10b981', cursor: 'pointer', fontFamily: 'inherit' }}>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>2</span> {tenant.isVk2 ? '👁 Unsere Mitglieder-Seite ansehen – gefällt es?' : '👁 Galerie ansehen – gefällt es?'}
-                    </button>
-                    <span style={{ color: s.muted, fontSize: '1.2rem' }}>→</span>
-                    {/* Schritt 3: Speichern */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <button type="button" onClick={() => setDesignSubTab('farben')} style={{ padding: '0.5rem 1rem', fontSize: '0.95rem', fontWeight: 600, background: `${s.accent}18`, border: `1px solid ${s.accent}66`, borderRadius: 10, color: s.accent, cursor: 'pointer' }}>🎨 Farbe ändern</button>
-                      {designSaveFeedback === 'ok'
-                        ? <span style={{ fontSize: '1rem', color: '#10b981', fontWeight: 700, padding: '0.5rem 1.1rem', background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: 10 }}>✅ Gespeichert!</span>
-                        : <button type="button" className="btn-primary" onClick={async () => {
-                            try {
-                              const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
-                              setPageContentGalerie(pageContent, designTenant)
-                              setPageTexts(pageTexts, designTenant)
-                              if (designSettings && Object.keys(designSettings).length > 0) {
-                                const ds = JSON.stringify(designSettings)
-                                if (ds.length < 50000) localStorage.setItem(getDesignStorageKey(), ds)
-                              }
-                              localStorage.removeItem('k2-last-publish-signature')
-                              if (!tenant.isOeffentlich) window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
-                              setDesignSaveFeedback('ok')
-                              setTimeout(() => setDesignSaveFeedback(null), 6000)
-                              // Foto auf GitHub hochladen – damit es dauerhaft auf Vercel gespeichert ist
-                              // Gilt für K2 UND ök2 – Base64 wird durch Vercel-Pfad ersetzt → kein localStorage-Verlust mehr
-                              {
-                                const context = tenant.isOeffentlich ? ('oeffentlich' as const) : tenant.isVk2 ? ('vk2' as const) : ('k2' as const)
-                                const tenantForUpload = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
-                                const fileToUpload = pendingWelcomeFileRef.current
-                                const base64Image = pageContent.welcomeImage
-                                pendingWelcomeFileRef.current = null
+            {designSubTab === 'vorschau' && renderDesignVorschau()}
 
-                                // ök2: willkommen-demo.jpg – nie willkommen.jpg, sonst überschreibt die Entdecken-Seite (Landing) das Bild für alle
-                                const welcomeFilename = context === 'oeffentlich' ? 'willkommen-demo.jpg' : 'willkommen.jpg'
-                                const doWelcomeUpload = async (uploadFile: File) => {
-                                  setImageUploadStatus('⏳ Foto wird dauerhaft gespeichert…')
-                                  try {
-                                    const { uploadPageImage } = await import('../src/utils/githubImageUpload')
-                                    const url = await uploadPageImage(uploadFile, context, welcomeFilename, () => {})
-                                    const next2 = { ...pageContent, welcomeImage: url }
-                                    setPageContent(next2)
-                                    setPageContentGalerie(next2, tenantForUpload)
-                                    setImageUploadStatus('✅ Dauerhaft gespeichert – auf allen Geräten sichtbar')
-                                    setTimeout(() => setImageUploadStatus(null), 6000)
-                                  } catch (_) {
-                                    setImageUploadStatus('⚠️ Nur lokal gespeichert – bitte nochmals speichern')
-                                    setTimeout(() => setImageUploadStatus(null), 8000)
-                                  }
-                                }
-
-                                if (fileToUpload) {
-                                  await doWelcomeUpload(fileToUpload)
-                                } else if (base64Image && base64Image.startsWith('data:')) {
-                                  // Altes Base64-Foto: als Blob konvertieren und hochladen
-                                  try {
-                                    const res = await fetch(base64Image)
-                                    const blob = await res.blob()
-                                    const fileFromBase64 = new File([blob], welcomeFilename, { type: blob.type })
-                                    await doWelcomeUpload(fileFromBase64)
-                                  } catch (_) {
-                                    setImageUploadStatus('⚠️ Nur lokal gespeichert – bitte nochmals speichern')
-                                    setTimeout(() => setImageUploadStatus(null), 8000)
-                                  }
-                                }
-                              }
-                            } catch (e) {
-                              alert('Fehler beim Speichern: ' + (e instanceof Error ? e.message : String(e)))
-                            }
-                          }} style={{ padding: '0.5rem 1.25rem', fontSize: '1rem', fontWeight: 700, borderRadius: 10 }}>
-                            <span style={{ fontSize: '0.85rem', fontWeight: 700, marginRight: '0.35rem' }}>3</span>💾 Speichern – fertig!
-                          </button>
-                      }
-                    </div>
-                    {/* Zoom-Buttons, am Ende */}
-                    <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', marginLeft: 'auto' }}>
-                      <span style={{ color: 'var(--k2-muted)', fontSize: '0.85rem' }}>Zoom:</span>
-                      {([1, 1.25, 1.5, 2] as const).map((sc) => (
-                        <button key={sc} type="button" onClick={() => setDesignPreviewScale(sc)} style={{ padding: '0.3rem 0.55rem', fontSize: '0.85rem', background: designPreviewScale === sc ? 'rgba(95,251,241,0.2)' : 'transparent', border: '1px solid ' + (designPreviewScale === sc ? 'var(--k2-accent)' : 'rgba(255,255,255,0.15)'), borderRadius: 6, color: designPreviewScale === sc ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>{Math.round(sc * 100)}%</button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <input type="file" accept="image/*" ref={galerieImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'galerieCardImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Galerie-Karte – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
-                <input type="file" accept="image/*" ref={virtualTourImageInputRef} style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
-                {(() => {
-                  const tc = tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich : tenant.isVk2 ? TENANT_CONFIGS.vk2 : TENANT_CONFIGS.k2
-                  const galleryName = tenant.isVk2 ? (vk2Stammdaten.verein?.name || tc.galleryName) : tc.galleryName
-                  const tagline = tenant.isVk2 ? (vk2Stammdaten.vorstand?.name ? `Obfrau/Obmann: ${vk2Stammdaten.vorstand.name}` : tc.tagline) : tc.tagline
-                  const welcomeIntroDefault = tenant.isVk2
-                    ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.'
-                    : (defaultPageTexts.galerie.welcomeIntroText || 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.')
-                  return (
-                <>
-                {/* Design-Vorschau: manuelle Größe (Ziehen) + Zoom 100%–200% */}
-                {(() => {
-                  const scale = designPreviewScale
-                  const scaledContentMinHeight = Math.ceil(2800 * scale)
-                  return (
-                <div style={{ overflow: 'auto', width: '100%', flex: '1 1 0', minHeight: 0, maxHeight: `${designPreviewHeightPx}px`, WebkitOverflowScrolling: 'touch' }}>
-                <div style={{ width: 412 * scale, minHeight: scaledContentMinHeight, margin: '0 auto', boxSizing: 'border-box', overflow: 'hidden' }}>
-                <div style={{ width: 412, transform: `scale(${scale})`, transformOrigin: 'top left', boxSizing: 'border-box' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 0, boxSizing: 'border-box' }}>
-                  {previewFullscreenPage === 1 && (
-                  <div style={{ width: '100%', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 100%)' }}>
-                    {/* Brand linkes oberes Eck – K2/ök2 */}
-                    <div style={{ position: 'absolute', top: 12, left: 14, zIndex: 10 }}>
-                      <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--k2-text)', letterSpacing: '0.02em', lineHeight: 1.25 }}>{PRODUCT_BRAND_NAME}</div>
-                    </div>
-                    <header style={{ padding: '24px 18px 24px', paddingTop: 44, maxWidth: 412, margin: 0 }}>
-                      <div style={{ marginBottom: 32 }}>
-                        {designPreviewEdit === 'p1-heroTitle' ? (
-                          <input autoFocus type="text" value={pageTexts.galerie?.heroTitle ?? defaultPageTexts.galerie.heroTitle ?? galleryName} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, heroTitle: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.5rem', fontSize: '2rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.12)', border: '2px solid var(--k2-accent)', borderRadius: 8 }} placeholder="Großer Titel (z. B. Galeriename)" />
-                        ) : (
-                          <h1 role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-heroTitle')} style={{ margin: 0, fontSize: '2rem', fontWeight: '700', background: 'linear-gradient(135deg, var(--k2-text) 0%, var(--k2-accent) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', letterSpacing: '-0.02em', lineHeight: 1.1, cursor: 'pointer' }} title="Klicken: Großer Titel bearbeiten">{(pageTexts.galerie?.heroTitle ?? defaultPageTexts.galerie.heroTitle)?.trim() || galleryName}</h1>
-                        )}
-                        {designPreviewEdit === 'p1-tagline' ? (
-                          <input autoFocus type="text" value={pageTexts.galerie?.welcomeSubtext ?? tagline} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeSubtext: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', marginTop: '0.5rem', padding: '0.5rem', fontSize: '1rem', color: 'var(--k2-muted)', background: 'rgba(0,0,0,0.12)', border: '2px solid var(--k2-accent)', borderRadius: 8 }} />
-                        ) : (
-                          <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-tagline')} style={{ margin: '0.5rem 0 0', color: 'var(--k2-muted)', fontSize: '1rem', fontWeight: '300', letterSpacing: '0.05em', cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.welcomeSubtext ?? defaultPageTexts.galerie.welcomeSubtext) || tagline}</p>
-                        )}
-                      </div>
-                      <section style={{ marginBottom: 40, maxWidth: 412, width: '100%' }}>
-                        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', fontWeight: '700', lineHeight: 1.2, color: 'var(--k2-text)', letterSpacing: '-0.02em' }}>
-                          {designPreviewEdit === 'p1-welcomeHeading' ? (
-                            <input autoFocus type="text" value={pageTexts.galerie?.welcomeHeading ?? defaultPageTexts.galerie.welcomeHeading ?? 'Willkommen bei'} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeHeading: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.4rem', fontSize: '1.5rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.12)', border: '2px solid var(--k2-accent)', borderRadius: 8 }} placeholder="z. B. Willkommen bei" />
-                          ) : (
-                            <span role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-welcomeHeading')} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit('p1-welcomeHeading')} style={{ cursor: 'pointer' }}>{(pageTexts.galerie?.welcomeHeading ?? defaultPageTexts.galerie.welcomeHeading)?.trim() || 'Willkommen bei'} {(pageTexts.galerie?.heroTitle ?? defaultPageTexts.galerie.heroTitle)?.trim() || galleryName} –</span>
-                          )}<br />
-                          {designPreviewEdit === 'p1-taglineH2' ? (
-                            <textarea autoFocus rows={2} value={pageTexts.galerie?.welcomeSubtext ?? defaultPageTexts.galerie.welcomeSubtext ?? tagline} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeSubtext: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', marginTop: 4, padding: '0.4rem', fontSize: '1.1rem', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.12)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
-                          ) : (
-                            <span role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-taglineH2')} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit('p1-taglineH2')} style={{ cursor: 'pointer', background: 'linear-gradient(135deg, var(--k2-accent) 0%, #e67a2a 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{(pageTexts.galerie?.welcomeSubtext ?? defaultPageTexts.galerie.welcomeSubtext) || tagline}</span>
-                          )}
-                        </h2>
-                        {designPreviewEdit === 'p1-intro' ? (
-                          <textarea autoFocus rows={4} value={pageTexts.galerie?.welcomeIntroText ?? defaultPageTexts.galerie.welcomeIntroText ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, welcomeIntroText: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.75rem', fontSize: '1.05rem', color: 'var(--k2-text)', lineHeight: 1.6, background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 12, marginBottom: '1rem', resize: 'vertical', boxSizing: 'border-box' }} placeholder={welcomeIntroDefault} />
-                        ) : (
-                          <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-intro')} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit('p1-intro')} style={{ fontSize: '1.05rem', color: 'var(--k2-text)', lineHeight: 1.6, fontWeight: '300', maxWidth: 340, marginBottom: 24, cursor: 'pointer' }}>{(pageTexts.galerie?.welcomeIntroText ?? defaultPageTexts.galerie.welcomeIntroText)?.trim() || welcomeIntroDefault}</p>
-                        )}
-                        <label htmlFor="welcome-image-input" style={{ display: 'block', cursor: 'pointer', width: '100%', marginTop: 20, overflow: 'hidden', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'border-color 0.2s' }}
-                          onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.borderColor = 'var(--k2-accent)' }}
-                          onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--k2-muted)' }}
-                          onDrop={async (e) => {
-                            e.preventDefault()
-                            ;(e.currentTarget as HTMLElement).style.borderColor = 'var(--k2-muted)'
-                            const f = e.dataTransfer.files?.[0]
-                            if (f && f.type.startsWith('image/')) {
-                              try {
-                                const img = await compressImageForStorage(f, { context: 'desktop' })
-                                setPendingPageImage({ field: 'welcomeImage', dataUrl: img, file: f })
-                                setPendingPageImageMode('freigestellt')
-                                setImageUploadStatus('✓ Foto bereit – Bildverarbeitung wählen, dann „Bild übernehmen“')
-                                setTimeout(() => setImageUploadStatus(null), 5000)
-                              } catch (_) { alert('Fehler beim Bild') }
-                            }
-                          }}
-                        >
-                          <input id="welcome-image-input" ref={welcomeImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => {
-                            const f = e.target.files?.[0]
-                            if (f) {
-                              try {
-                                const img = await compressImageForStorage(f, { context: 'desktop' })
-                                setPendingPageImage({ field: 'welcomeImage', dataUrl: img, file: f })
-                                setPendingPageImageMode('freigestellt')
-                                setImageUploadStatus('✓ Foto bereit – Bildverarbeitung wählen, dann „Bild übernehmen“')
-                                setTimeout(() => setImageUploadStatus(null), 5000)
-                              } catch (_) { alert('Fehler beim Bild') }
-                            }
-                            e.target.value = ''
-                          }} />
-                          {(pendingPageImage?.field === 'welcomeImage' ? pendingPageImage.dataUrl : pageContent.welcomeImage) ? (
-                            <img src={pendingPageImage?.field === 'welcomeImage' ? pendingPageImage.dataUrl : pageContent.welcomeImage} alt="Willkommen" style={{ width: '100%', height: 'auto', display: 'block', maxHeight: 480, objectFit: 'cover', boxSizing: 'border-box' }} />
-                          ) : (
-                            <div style={{ width: '100%', minHeight: 200, background: 'rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: 'var(--k2-muted)', fontSize: '1rem' }}><span style={{ fontSize: '2rem' }}>📸</span><span>Foto ziehen oder klicken</span><span style={{ fontSize: '0.8rem', color: 'var(--k2-accent)' }}>🖼️ Freistellen möglich</span></div>
-                          )}
-                        </label>
-                        {/* Bildverarbeitung außerhalb der Seite: als Modal-Overlay – verschiebbar, damit Galerie dahinter sichtbar. */}
-                        {pendingPageImage && createPortal(
-                          <div
-                            style={{
-                              position: 'fixed',
-                              inset: 0,
-                              zIndex: 10000,
-                              background: 'rgba(0,0,0,0.6)',
-                              padding: '1.5rem',
-                              boxSizing: 'border-box'
-                            }}
-                            onClick={(e) => { if (e.target === e.currentTarget) { setPendingPageImage(null); setCropPageImageSrc(null); setImageUploadStatus(null); setImageModalDragOffset({ x: 0, y: 0 }) } }}
-                          >
-                            <div
-                              style={{
-                                position: 'fixed',
-                                left: '50%',
-                                top: '50%',
-                                transform: `translate(calc(-50% + ${imageModalDragOffset.x}px), calc(-50% + ${imageModalDragOffset.y}px))`,
-                                background: '#1c1a18',
-                                borderRadius: 16,
-                                padding: 0,
-                                maxWidth: 420,
-                                width: '100%',
-                                maxHeight: '90vh',
-                                overflow: 'hidden',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
-                                border: '1px solid rgba(95,251,241,0.2)'
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <div
-                                role="button"
-                                tabIndex={0}
-                                onMouseDown={(e) => {
-                                  e.preventDefault()
-                                  imageModalDragRef.current = { startX: e.clientX, startY: e.clientY, startOx: imageModalDragOffset.x, startOy: imageModalDragOffset.y }
-                                  setImageModalDragging(true)
-                                }}
-                                style={{ padding: '0.75rem 1rem', cursor: 'move', userSelect: 'none', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}
-                              >
-                                <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>⋮⋮</span>
-                                <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#f4f7ff' }}>🖼️ Bildverarbeitung</span>
-                                <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginLeft: 'auto' }}>Ziehen zum Verschieben</span>
-                              </div>
-                              <div style={{ padding: '0 1rem 1rem', overflow: 'auto', flex: 1 }}>
-                                <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', margin: '0.5rem 0 0.75rem' }}>Freistellen, Original oder Zuschneiden wählen – dann „Bild übernehmen“.</p>
-                                <img src={pendingPageImage.dataUrl} alt="Vorschau" style={{ width: '100%', maxHeight: 220, objectFit: 'contain', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', marginBottom: '0.75rem' }} />
-                                <ImageProcessingOptions
-                                  mode={pendingPageImageMode === 'vollkachel' ? 'original' : pendingPageImageMode}
-                                  onModeChange={(m) => setPendingPageImageMode(m === 'vollkachel' ? 'original' : m)}
-                                  backgroundPreset={pendingPageImagePreset}
-                                  onBackgroundPresetChange={setPendingPageImagePreset}
-                                  showVollkachel={false}
-                                  onCropClick={() => setCropPageImageSrc(pendingPageImage.dataUrl)}
-                                />
-                                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', flexWrap: 'wrap' }}>
-                                  <button
-                                    type="button"
-                                    onClick={async () => {
-                                      if (!pendingPageImage) return
-                                      const field = pendingPageImage.field
-                                      const dataUrlToProcess = pendingPageImage.dataUrl
-                                      const fileForWelcome = pendingPageImage.file
-                                      await runBildUebernehmen(dataUrlToProcess, pendingPageImageMode, pendingPageImagePreset, async (result) => {
-                                        const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
-                                        setPageContent(prev => {
-                                          const next = { ...prev, [field]: result }
-                                          setPageContentGalerie(next, designTenant ?? undefined)
-                                          return next
-                                        })
-                                        if (field === 'welcomeImage' && !tenant.isVk2) pendingWelcomeFileRef.current = fileForWelcome
-                                        setPendingPageImage(null)
-                                        setCropPageImageSrc(null)
-                                        setImageModalDragOffset({ x: 0, y: 0 })
-                                        if ((field === 'galerieCardImage' || field === 'virtualTourImage') && typeof uploadPageImageToGitHub === 'function') {
-                                          try {
-                                            const res = await fetch(result)
-                                            const blob = await res.blob()
-                                            const file = new File([blob], field === 'galerieCardImage' ? 'galerie-card.jpg' : 'virtual-tour.jpg', { type: blob.type })
-                                            await uploadPageImageToGitHub(file, field, field === 'galerieCardImage' ? 'galerie-card.jpg' : 'virtual-tour.jpg')
-                                          } catch (_) { /* optional */ }
-                                        }
-                                      })
-                                    }}
-                                    style={{ padding: '0.5rem 1rem', background: '#b54a1e', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}
-                                  >
-                                    Bild übernehmen
-                                  </button>
-                                  <button type="button" onClick={() => { setPendingPageImage(null); setCropPageImageSrc(null); setImageUploadStatus(null); setImageModalDragOffset({ x: 0, y: 0 }) }} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: '0.9rem' }}>Abbrechen</button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>,
-                          document.body
-                        )}
-                        {cropPageImageSrc && pendingPageImage && createPortal(
-                          <div style={{ position: 'fixed', inset: 0, zIndex: 10001 }}>
-                            <ImageCropModal
-                              imageSrc={cropPageImageSrc}
-                              onApply={(dataUrl) => {
-                                setPendingPageImage(prev => prev ? { ...prev, dataUrl } : null)
-                                setCropPageImageSrc(null)
-                              }}
-                              onCancel={() => setCropPageImageSrc(null)}
-                            />
-                          </div>,
-                          document.body
-                        )}
-                        {imageUploadStatus && (
-                          <div style={{ marginTop: '0.5rem', padding: '0.5rem 0.75rem', background: imageUploadStatus.startsWith('✅') ? 'rgba(16,185,129,0.1)' : imageUploadStatus.startsWith('⏳') ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)', border: `1px solid ${imageUploadStatus.startsWith('✅') ? '#10b981' : imageUploadStatus.startsWith('⏳') ? '#f59e0b' : '#10b981'}44`, borderRadius: 8, fontSize: '0.88rem', color: imageUploadStatus.startsWith('✅') ? '#10b981' : imageUploadStatus.startsWith('⏳') ? '#d97706' : '#10b981', fontWeight: 500 }}>
-                            {imageUploadStatus}
-                          </div>
-                        )}
-                      </section>
-                      {/* VK2 Eingangskarten – 2 editierbare Bildkarten */}
-                      {tenant.isVk2 && (
-                        <section style={{ marginTop: '1.5rem', padding: '1.25rem', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 14 }}>
-                          <h3 style={{ margin: '0 0 0.9rem', fontSize: '1rem', fontWeight: 700, color: s.text }}>🖼️ Eingangskarten (2 Bilder)</h3>
-                          <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: s.muted }}>Erscheinen auf der Startseite zwischen Willkommensfoto und Vereinsname. Je ein Foto + editierbarer Text.</p>
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                            {vk2Karten.map((karte, idx) => (
-                              <div key={idx} style={{ background: s.bgElevated, borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                {/* Bild-Upload */}
-                                <label
-                                  style={{ display: 'block', aspectRatio: '3/2', cursor: 'pointer', position: 'relative', background: karte.imageUrl ? '#000' : 'rgba(0,0,0,0.15)', overflow: 'hidden' }}
-                                  title="Klicken oder Foto ziehen"
-                                  onDragOver={e => e.preventDefault()}
-                                  onDrop={async e => {
-                                    e.preventDefault()
-                                    const f = e.dataTransfer.files?.[0]
-                                    if (!f || !f.type.startsWith('image/')) return
-                                    try {
-                                      const img = await compressImageForStorage(f, { context: 'desktop' })
-                                      setPendingVk2Card({ index: idx, dataUrl: img, file: f })
-                                      setPendingVk2CardMode('freigestellt')
-                                    } catch { /* ignore */ }
-                                  }}
-                                >
-                                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={async e => {
-                                    const f = e.target.files?.[0]
-                                    if (!f) return
-                                    try {
-                                      const img = await compressImageForStorage(f, { context: 'desktop' })
-                                      setPendingVk2Card({ index: idx, dataUrl: img, file: f })
-                                      setPendingVk2CardMode('freigestellt')
-                                    } catch { /* ignore */ }
-                                    e.target.value = ''
-                                  }} />
-                                  {karte.imageUrl
-                                    ? <img src={karte.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                                    : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', color: s.muted, fontSize: '0.85rem' }}>
-                                        <span style={{ fontSize: '1.6rem', opacity: 0.4 }}>{idx === 0 ? '🖼️' : '👥'}</span>
-                                        <span>📸 Foto wählen</span>
-                                        <span style={{ fontSize: '0.7rem', color: 'var(--k2-accent)', opacity: 0.9 }}>🖼️ Freistellen möglich</span>
-                                      </div>
-                                  }
-                                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0)', display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', padding: '0.4rem' }}>
-                                    <span style={{ background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: '0.65rem', padding: '0.15rem 0.4rem', borderRadius: 6 }}>✏️ {karte.imageUrl ? 'ändern' : 'wählen'}</span>
-                                  </div>
-                                  {karte.imageUrl && (
-                                    <button
-                                      type="button"
-                                      onClick={e => { e.preventDefault(); e.stopPropagation(); const updated = vk2Karten.map((k, i) => i === idx ? { ...k, imageUrl: '' } : k); saveVk2Karten(updated) }}
-                                      style={{ position: 'absolute', top: '0.3rem', right: '0.3rem', background: 'rgba(180,0,0,0.7)', border: 'none', borderRadius: '50%', width: 22, height: 22, color: '#fff', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                    >×</button>
-                                  )}
-                                </label>
-                                {/* VK2-Karte: Pending Bildverarbeitung (Freistellen/Original) – ein Tool für alle */}
-                                {pendingVk2Card?.index === idx && (
-                                  <div style={{ marginTop: '0.6rem', padding: '0.75rem', background: 'rgba(0,0,0,0.15)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.12)' }}>
-                                    <div style={{ fontSize: '0.8rem', color: s.muted, marginBottom: '0.5rem' }}>🖼️ Bildverarbeitung – dann „Bild übernehmen“</div>
-                                    <ImageProcessingOptions mode={pendingVk2CardMode} onModeChange={setPendingVk2CardMode} backgroundPreset={pendingVk2CardPreset} onBackgroundPresetChange={setPendingVk2CardPreset} showVollkachel={false} />
-                                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-                                      <button type="button" onClick={async () => {
-                                        if (!pendingVk2Card) return
-                                        const cardIndex = pendingVk2Card.index
-                                        const dataUrl = pendingVk2Card.dataUrl
-                                        await runBildUebernehmen(dataUrl, pendingVk2CardMode, pendingVk2CardPreset, async (result) => {
-                                          const updated = vk2Karten.map((k, i) => i === cardIndex ? { ...k, imageUrl: result } : k)
-                                          saveVk2Karten(updated)
-                                          setPendingVk2Card(null)
-                                        })
-                                      }} style={{ padding: '0.5rem 1rem', background: 'var(--k2-accent)', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>Bild übernehmen</button>
-                                      <button type="button" onClick={() => setPendingVk2Card(null)} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: '0.9rem' }}>Abbrechen</button>
-                                    </div>
-                                  </div>
-                                )}
-                                {/* Titel + Untertitel editierbar */}
-                                <div style={{ padding: '0.6rem 0.7rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                                  <input
-                                    type="text"
-                                    value={karte.titel}
-                                    onChange={e => { const updated = vk2Karten.map((k, i) => i === idx ? { ...k, titel: e.target.value } : k); saveVk2Karten(updated) }}
-                                    placeholder="Titel der Karte"
-                                    style={{ width: '100%', padding: '0.35rem 0.5rem', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6, color: s.text, fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }}
-                                  />
-                                  <input
-                                    type="text"
-                                    value={karte.untertitel}
-                                    onChange={e => { const updated = vk2Karten.map((k, i) => i === idx ? { ...k, untertitel: e.target.value } : k); saveVk2Karten(updated) }}
-                                    placeholder="Kurzer Untertitel"
-                                    style={{ width: '100%', padding: '0.3rem 0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: s.muted, fontSize: '0.75rem', outline: 'none', boxSizing: 'border-box' }}
-                                  />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                          <p style={{ margin: '0.7rem 0 0', fontSize: '0.72rem', color: 'rgba(251,191,36,0.5)' }}>
-                            💡 Fotos werden sofort gespeichert. Texte ebenfalls. Auf der VK2-Startseite sofort sichtbar.
-                          </p>
-                        </section>
-                      )}
-
-                      {/* Aktuelles aus den Eventplanungen – wie auf der echten ersten Seite */}
-                      {(() => {
-                        const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
-                        const getEventEnd = (e: any) => { const d = e.endDate ? new Date(e.endDate) : new Date(e.date); d.setHours(23, 59, 59, 999); return d }
-                        const upcoming = events.filter((e: any) => e && e.date && getEventEnd(e) >= todayStart).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0, 5)
-                        if (upcoming.length === 0) return null
-                        const eventHeading = pageTexts.galerie?.eventSectionHeading ?? defaultPageTexts.galerie.eventSectionHeading ?? 'Aktuelles aus den Eventplanungen'
-                        const formatDate = (d: string, end?: string) => {
-                          if (!d) return ''
-                          const start = new Date(d); const endD = end ? new Date(end) : null
-                          return endD && endD.getTime() !== start.getTime() ? `${start.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })} – ${endD.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })}` : start.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })
-                        }
-                        return (
-                          <section style={{ marginTop: 28, padding: '1rem 0', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                            {designPreviewEdit === 'p1-eventHeading' ? (
-                              <input autoFocus value={pageTexts.galerie?.eventSectionHeading ?? eventHeading} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, eventSectionHeading: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.4rem', fontSize: '0.75rem', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: '600', color: 'var(--k2-muted)', background: 'rgba(0,0,0,0.12)', border: '2px solid var(--k2-accent)', borderRadius: 6, marginBottom: '0.5rem', boxSizing: 'border-box' }} />
-                            ) : (
-                              <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-eventHeading')} style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--k2-muted)', fontWeight: '600', cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.eventSectionHeading ?? eventHeading).trim() || 'Aktuelles aus den Eventplanungen'}</p>
-                            )}
-                            <ul style={{ margin: 0, paddingLeft: '1.25rem', color: 'var(--k2-text)', fontSize: '1rem', lineHeight: 1.6 }}>
-                              {upcoming.map((ev: any) => (
-                                <li key={ev.id || ev.date} style={{ marginBottom: ev.documents?.length ? '0.5rem' : 0 }}>
-                                  <strong>{ev.title}</strong>
-                                  {ev.date && <span style={{ color: 'var(--k2-muted)', fontWeight: '400' }}> — {formatDate(ev.date, ev.endDate)}</span>}
-                                  {ev.documents && ev.documents.length > 0 && (
-                                    <ul style={{ margin: '0.25rem 0 0 1rem', paddingLeft: '0.75rem', listStyle: 'none', fontSize: '0.95em' }}>
-                                      {ev.documents.map((doc: any) => (
-                                        <li key={doc.id || doc.name}>
-                                          <button type="button" onClick={() => handleViewEventDocument(doc, ev)} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--k2-accent)', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }}>📎 {doc.name || doc.fileName || 'Dokument'}</button>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  )}
-                                </li>
-                              ))}
-                            </ul>
-                          </section>
-                        )
-                      })()}
-                      {/* Die Kunstschaffenden + Eingangshalle – nur K2/ök2, nicht VK2 */}
-                      {!tenant.isVk2 && <><section style={{ marginTop: 32 }}>
-                        {designPreviewEdit === 'p2-kunstschaffendeHeading' ? (
-                          <input autoFocus value={pageTexts.galerie?.kunstschaffendeHeading ?? defaultPageTexts.galerie.kunstschaffendeHeading ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, kunstschaffendeHeading: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '1.5rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, marginBottom: 24, textAlign: 'center', boxSizing: 'border-box' }} />
-                        ) : (
-                          <h3 role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-kunstschaffendeHeading')} style={{ fontSize: '1.5rem', marginBottom: 24, fontWeight: '700', color: 'var(--k2-text)', textAlign: 'center', letterSpacing: '-0.02em', cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.kunstschaffendeHeading ?? defaultPageTexts.galerie.kunstschaffendeHeading) || 'Die Kunstschaffenden'}</h3>
-                        )}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
-                          <div style={{ position: 'relative', background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: '16px 16px 8px 16px', padding: 20, overflow: 'hidden' }}>
-                            <div style={{ position: 'absolute', top: 0, left: 0, width: 4, height: '60%', background: 'linear-gradient(180deg, var(--k2-accent) 0%, #e67a2a 100%)', borderRadius: '0 4px 4px 0' }} />
-                            {designPreviewEdit === 'p2-martinaBio' ? (
-                              <textarea autoFocus rows={4} value={pageTexts.galerie?.martinaBio ?? defaultPageTexts.galerie.martinaBio ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, martinaBio: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '0.9rem', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
-                            ) : (
-                              <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-martinaBio')} style={{ color: 'var(--k2-text)', fontSize: '0.9rem', margin: 0, lineHeight: 1.7, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.martinaBio ?? defaultPageTexts.galerie.martinaBio) || 'Kurzbio Künstler:in 1 (z. B. Martina)'}</p>
-                            )}
-                          </div>
-                          <div style={{ position: 'relative', background: 'var(--k2-card-bg-2)', border: '1px solid var(--k2-muted)', borderRadius: '16px 16px 16px 8px', padding: 20, overflow: 'hidden' }}>
-                            <div style={{ position: 'absolute', top: 0, right: 0, width: 4, height: '60%', background: 'var(--k2-accent)', borderRadius: '4px 0 0 4px' }} />
-                            {designPreviewEdit === 'p2-georgBio' ? (
-                              <textarea autoFocus rows={4} value={pageTexts.galerie?.georgBio ?? defaultPageTexts.galerie.georgBio ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, georgBio: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '0.9rem', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
-                            ) : (
-                              <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-georgBio')} style={{ color: 'var(--k2-text)', fontSize: '0.9rem', margin: 0, lineHeight: 1.7, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.georgBio ?? defaultPageTexts.galerie.georgBio) || 'Kurzbio Künstler:in 2 (z. B. Georg)'}</p>
-                            )}
-                          </div>
-                        </div>
-                        {designPreviewEdit === 'p2-gemeinsamText' ? (
-                          <textarea autoFocus rows={2} value={pageTexts.galerie?.gemeinsamText ?? defaultPageTexts.galerie.gemeinsamText ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, gemeinsamText: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} placeholder="Leer = wird aus Namen erzeugt" style={{ width: '100%', margin: '0 auto 16px', display: 'block', padding: '0.6rem', fontSize: '1rem', color: 'var(--k2-text)', lineHeight: 1.7, textAlign: 'center', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
-                        ) : (
-                          <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-gemeinsamText')} style={{ marginTop: 8, fontSize: '1rem', lineHeight: 1.7, color: 'var(--k2-text)', textAlign: 'center', marginBottom: 16, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.gemeinsamText ?? defaultPageTexts.galerie.gemeinsamText)?.trim() || 'Gemeinsam eröffnen … (leer = automatisch)'}</p>
-                        )}
-                      </section>
-                      {/* Eingangshalle: untere Bilder – wie auf der echten ersten Seite */}
-                      <section style={{ marginTop: 28, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--k2-muted)', marginBottom: 16, textAlign: 'center' }}>Willkommen in der Eingangshalle – wähle deinen Weg:</p>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 14, alignItems: 'stretch' }}>
-                          <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 16, padding: 16, textAlign: 'center' }}>
-                            <label htmlFor="galerie-card-image-input-p1" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.galerieCardImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-accent)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
-                              onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
-                              onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-                              onDrop={async (e) => { e.preventDefault(); e.stopPropagation(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'galerieCardImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Galerie-Karte – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } }}
-                            >
-                              <input id="galerie-card-image-input-p1" ref={galerieImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'galerieCardImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Galerie-Karte – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
-                              {pageContent.galerieCardImage ? <img src={pageContent.galerieCardImage} alt="In die Galerie" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span><span style={{ fontSize: '0.75rem', color: 'var(--k2-accent)' }}> 🖼️ Freistellen</span></div>}
-                            </label>
-                            {designPreviewEdit === 'p1-galerieButtonText' ? (
-                              <input autoFocus type="text" value={pageTexts.galerie?.galerieButtonText ?? defaultPageTexts.galerie.galerieButtonText ?? 'In die Galerie'} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, galerieButtonText: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.3rem', fontSize: '1.1rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 6, textAlign: 'center', boxSizing: 'border-box' }} />
-                            ) : (
-                              <h3 role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-galerieButtonText')} style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--k2-text)', marginBottom: 4, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.galerieButtonText ?? defaultPageTexts.galerie.galerieButtonText) || 'In die Galerie'}</h3>
-                            )}
-                          </div>
-                          <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 16, padding: 16, textAlign: 'center' }}>
-                            <label htmlFor="virtual-tour-image-input-p1" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
-                              onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
-                              onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-                              onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } }}
-                            >
-                              <input id="virtual-tour-image-input-p1" ref={virtualTourImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
-                              {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span><span style={{ fontSize: '0.75rem', color: 'var(--k2-accent)' }}> 🖼️ Freistellen</span></div>}
-                            </label>
-                            {designPreviewEdit === 'p1-virtualTourButtonText' ? (
-                              <input autoFocus type="text" value={pageTexts.galerie?.virtualTourButtonText ?? defaultPageTexts.galerie.virtualTourButtonText ?? 'Virtueller Rundgang'} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, virtualTourButtonText: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.3rem', fontSize: '1.1rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 6, textAlign: 'center', boxSizing: 'border-box' }} />
-                            ) : (
-                              <h3 role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-virtualTourButtonText')} style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--k2-text)', marginBottom: 4, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.virtualTourButtonText ?? defaultPageTexts.galerie.virtualTourButtonText) || 'Virtueller Rundgang'}</h3>
-                            )}
-                            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 8 }}>
-                              <label htmlFor="virtual-tour-video-input-p1" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}>
-                                📹 Video wählen oder aufnehmen
-                                <input id="virtual-tour-video-input-p1" title="Max. 2 Min. Länge · max. 100 MB" type="file" accept="video/*" style={{ display: 'none' }} onChange={async (e) => {
-                                  const f = e.target.files?.[0]
-                                  if (!f) { e.target.value = ''; return }
-                                  if (f.size > 100 * 1024 * 1024) { setVideoUploadMsg('Video ist zu groß (max. 100 MB).'); setVideoUploadStatus('error'); e.target.value = ''; return }
-                                  try {
-                                    const durationSec = await getVideoDurationSec(f)
-                                    if (durationSec > MAX_VIDEO_DURATION_SEC) { setVideoUploadMsg(`Video darf max. 2 Minuten lang sein (${Math.round(durationSec)} s) – für schnelles Laden.`); setVideoUploadStatus('error'); e.target.value = ''; return }
-                                  } catch { setVideoUploadMsg('Länge konnte nicht gelesen werden.'); setVideoUploadStatus('error'); e.target.value = ''; return }
-                                  try {
-                                    const localUrl = URL.createObjectURL(f)
-                                    const tenantId = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
-                                    const nextLocal = { ...pageContent, virtualTourVideo: localUrl }
-                                    setPageContent(nextLocal)
-                                    setPageContentGalerie(nextLocal, tenantId)
-                                    if (!tenant.isOeffentlich) {
-                                      setVideoUploadStatus('uploading')
-                                      setVideoUploadMsg('Video wird hochgeladen… Bitte warten.')
-                                      try {
-                                        const { uploadVideoToGitHub } = await import('../src/utils/githubImageUpload')
-                                        const url = await uploadVideoToGitHub(f, 'virtual-tour.mp4', (msg) => setVideoUploadMsg(msg))
-                                        const nextVercel = { ...nextLocal, virtualTourVideo: url }
-                                        setPageContent(nextVercel)
-                                        setPageContentGalerie(nextVercel, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
-                                        localStorage.removeItem('k2-last-publish-signature')
-                                        setVideoUploadStatus('done')
-                                        setVideoUploadMsg('✅ Video hochgeladen – in ca. 2 Min. überall sichtbar.')
-                                      } catch {
-                                        setVideoUploadStatus('error')
-                                        setVideoUploadMsg('Upload fehlgeschlagen – Video nur auf diesem Gerät sichtbar.')
-                                      }
-                                    } else {
-                                      setVideoUploadStatus('done')
-                                      setVideoUploadMsg('✅ Video gespeichert.')
-                                    }
-                                  } catch { setVideoUploadStatus('error'); setVideoUploadMsg('Fehler beim Laden des Videos.') }
-                                  e.target.value = ''
-                                }} />
-                              </label>
-                            </div>
-                            <p style={{ margin: '6px 0 0', fontSize: '0.75rem', color: 'var(--k2-muted)' }}>Max. 2 Min. Länge · max. 100 MB</p>
-                            {videoUploadStatus !== 'idle' && videoUploadMsg && (
-                              <p style={{ margin: '6px 0 0', fontSize: '0.82rem', color: videoUploadStatus === 'error' ? '#e05c5c' : videoUploadStatus === 'uploading' ? 'var(--k2-accent)' : '#4caf50', textAlign: 'center' }}>
-                                {videoUploadStatus === 'uploading' && '⏳ '}{videoUploadMsg}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </section></>}
-                    </header>
-                  </div>
-                  )} {/* Ende !isVk2AdminContext Seite 1 */}
-                  {previewFullscreenPage === 2 && (
-                  <div style={{ width: '100%', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 100%)' }}>
-                    <div style={{ position: 'absolute', top: 12, left: 14, zIndex: 10 }}>
-                      <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--k2-text)', letterSpacing: '0.02em', lineHeight: 1.25 }}>{PRODUCT_BRAND_NAME}</div>
-                    </div>
-                    <main style={{ padding: '24px 18px 40px', maxWidth: 412, margin: 0 }}>
-                      <section style={{ marginTop: 36 }}>
-                        {designPreviewEdit === 'p2-kunstschaffendeHeading' ? (
-                          <input autoFocus value={pageTexts.galerie?.kunstschaffendeHeading ?? defaultPageTexts.galerie.kunstschaffendeHeading ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, kunstschaffendeHeading: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '1.5rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, marginBottom: 24, textAlign: 'center', boxSizing: 'border-box' }} />
-                        ) : (
-                          <h3 role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-kunstschaffendeHeading')} style={{ fontSize: '1.5rem', marginBottom: 24, fontWeight: '700', color: 'var(--k2-text)', textAlign: 'center', letterSpacing: '-0.02em', cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.kunstschaffendeHeading ?? defaultPageTexts.galerie.kunstschaffendeHeading) || 'Die Kunstschaffenden'}</h3>
-                        )}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 28 }}>
-                          <div style={{ position: 'relative', background: 'var(--k2-card-bg-1)', backdropFilter: 'blur(20px)', border: '1px solid var(--k2-muted)', borderRadius: '16px 16px 8px 16px', padding: 20, overflow: 'hidden' }}>
-                            <div style={{ position: 'absolute', top: 0, left: 0, width: 4, height: '60%', background: 'linear-gradient(180deg, var(--k2-accent) 0%, #e67a2a 100%)', borderRadius: '0 4px 4px 0' }} />
-                            {designPreviewEdit === 'p2-martinaBio' ? (
-                              <textarea autoFocus rows={4} value={pageTexts.galerie?.martinaBio ?? defaultPageTexts.galerie.martinaBio ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, martinaBio: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '0.9rem', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
-                            ) : (
-                              <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-martinaBio')} style={{ color: 'var(--k2-text)', fontSize: '0.9rem', margin: 0, lineHeight: 1.7, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.martinaBio ?? defaultPageTexts.galerie.martinaBio) || 'Kurzbio Künstler:in 1 (z. B. Martina)'}</p>
-                            )}
-                          </div>
-                          <div style={{ position: 'relative', background: 'var(--k2-card-bg-2)', backdropFilter: 'blur(20px)', border: '1px solid var(--k2-muted)', borderRadius: '16px 16px 16px 8px', padding: 20, overflow: 'hidden' }}>
-                            <div style={{ position: 'absolute', top: 0, right: 0, width: 4, height: '60%', background: 'var(--k2-accent)', borderRadius: '4px 0 0 4px' }} />
-                            {designPreviewEdit === 'p2-georgBio' ? (
-                              <textarea autoFocus rows={4} value={pageTexts.galerie?.georgBio ?? defaultPageTexts.galerie.georgBio ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, georgBio: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.6rem', fontSize: '0.9rem', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
-                            ) : (
-                              <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-georgBio')} style={{ color: 'var(--k2-text)', fontSize: '0.9rem', margin: 0, lineHeight: 1.7, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.georgBio ?? defaultPageTexts.galerie.georgBio) || 'Kurzbio Künstler:in 2 (z. B. Georg)'}</p>
-                            )}
-                          </div>
-                        </div>
-                        {designPreviewEdit === 'p2-gemeinsamText' ? (
-                          <textarea autoFocus rows={3} value={pageTexts.galerie?.gemeinsamText ?? defaultPageTexts.galerie.gemeinsamText ?? ''} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, gemeinsamText: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} placeholder="Leer = wird aus Namen erzeugt" style={{ width: '100%', margin: '0 auto 28px', display: 'block', padding: '0.6rem', fontSize: '1.05rem', color: 'var(--k2-text)', lineHeight: 1.7, textAlign: 'center', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 8, resize: 'vertical', boxSizing: 'border-box' }} />
-                        ) : (
-                          <p role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p2-gemeinsamText')} style={{ marginTop: 24, fontSize: '1.05rem', lineHeight: 1.7, color: 'var(--k2-text)', textAlign: 'center', marginLeft: 'auto', marginRight: 'auto', marginBottom: 20, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.gemeinsamText ?? defaultPageTexts.galerie.gemeinsamText) || 'Gemeinsam eröffnen … (leer = automatisch)'}</p>
-                        )}
-                        {/* Ein Bild: Galerie Innenansicht – klickbar zum Ändern, wie auf der echten Seite */}
-                        <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 16, padding: 16, textAlign: 'center', marginBottom: 12 }}>
-                          <label htmlFor="galerie-card-image-input-p2" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.galerieCardImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-accent)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
-                            onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
-                            onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-                            onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'galerieCardImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Galerie-Karte – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } }}
-                          >
-                            <input id="galerie-card-image-input-p2" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'galerieCardImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Galerie-Karte – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
-                            {pageContent.galerieCardImage ? <img src={pageContent.galerieCardImage} alt="Galerie Innenansicht" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span><span style={{ fontSize: '0.75rem', color: 'var(--k2-accent)' }}> 🖼️ Freistellen</span></div>}
-                          </label>
-                          <p style={{ fontSize: '0.9rem', color: 'var(--k2-accent)', margin: 0, fontWeight: '500' }}>Galerie Innenansicht</p>
-                          <p style={{ fontSize: '0.75rem', color: 'var(--k2-muted)', margin: '2px 0 0', lineHeight: 1.3 }}>Foto ziehen oder klicken · ein Bild</p>
-                        </div>
-                        <p style={{ fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: 12, textAlign: 'center' }}>Optional: Virtueller Rundgang – Foto oder Video</p>
-                        <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 12, padding: 12, textAlign: 'center' }}>
-                          {/* Video-Vorschau wenn vorhanden */}
-                          {pageContent.virtualTourVideo ? (
-                            <video src={pageContent.virtualTourVideo} controls style={{ width: '100%', borderRadius: 8, marginBottom: 6 }} />
-                          ) : (
-                            <label htmlFor="virtual-tour-image-input-p2" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 8, overflow: 'hidden', marginBottom: 6, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
-                              onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
-                              onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-                              onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } }}
-                            >
-                              <input id="virtual-tour-image-input-p2" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
-                              {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.85rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span><span style={{ fontSize: '0.75rem', color: 'var(--k2-accent)' }}> 🖼️ Freistellen</span></div>}
-                            </label>
-                          )}
-                          <p style={{ fontSize: '0.85rem', color: 'var(--k2-text)', margin: '0 0 8px' }}>Virtueller Rundgang</p>
-                          {/* Foto- und Video-Buttons */}
-                          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
-                            <label htmlFor="virtual-tour-image-input-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-card-bg-2, #e8e4dd)', color: 'var(--k2-text)', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600', border: '1px solid var(--k2-muted)' }}>
-                              📸 Foto wählen oder aufnehmen
-                              <input id="virtual-tour-image-input-btn" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – Bildverarbeitung wählen, dann „Bild übernehmen“'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
-                            </label>
-                            <label htmlFor="virtual-tour-video-input" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}>
-                              📹 Video wählen oder aufnehmen
-                              <input id="virtual-tour-video-input" type="file" accept="video/*" title="Max. 2 Min. Länge · max. 100 MB" style={{ display: 'none' }} onChange={async (e) => {
-                                const f = e.target.files?.[0]
-                                if (!f) { e.target.value = ''; return }
-                                if (f.size > 100 * 1024 * 1024) { setVideoUploadMsg('Video ist zu groß (max. 100 MB). Bitte kürzer aufnehmen.'); setVideoUploadStatus('error'); e.target.value = ''; return }
-                                try {
-                                  const durationSec = await getVideoDurationSec(f)
-                                  if (durationSec > MAX_VIDEO_DURATION_SEC) { setVideoUploadMsg(`Video darf max. 2 Minuten lang sein (${Math.round(durationSec)} s) – für schnelles Laden.`); setVideoUploadStatus('error'); e.target.value = ''; return }
-                                } catch { setVideoUploadMsg('Länge konnte nicht gelesen werden.'); setVideoUploadStatus('error'); e.target.value = ''; return }
-                                try {
-                                  const localUrl = URL.createObjectURL(f)
-                                  const tenantId = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
-                                  // Sofort lokal speichern → sofort im Admin sichtbar
-                                  const nextLocal = { ...pageContent, virtualTourVideo: localUrl }
-                                  setPageContent(nextLocal)
-                                  setPageContentGalerie(nextLocal, tenantId)
-                                  if (!tenant.isOeffentlich) {
-                                    // K2: Video via GitHub hochladen → auf Vercel dauerhaft
-                                    setVideoUploadStatus('uploading')
-                                    setVideoUploadMsg('Video wird hochgeladen… Bitte warten.')
-                                    try {
-                                      const { uploadVideoToGitHub } = await import('../src/utils/githubImageUpload')
-                                      const url = await uploadVideoToGitHub(f, 'virtual-tour.mp4', (msg) => setVideoUploadMsg(msg))
-                                      const nextVercel = { ...nextLocal, virtualTourVideo: url }
-                                      setPageContent(nextVercel)
-                                      setPageContentGalerie(nextVercel, undefined)
-                                      localStorage.removeItem('k2-last-publish-signature')
-                                      setVideoUploadStatus('done')
-                                      setVideoUploadMsg('✅ Video hochgeladen – in ca. 2 Min. überall sichtbar.')
-                                    } catch (uploadErr: any) {
-                                      console.warn('Video-Upload fehlgeschlagen:', uploadErr)
-                                      setVideoUploadStatus('error')
-                                      setVideoUploadMsg('Upload fehlgeschlagen – Video nur auf diesem Gerät sichtbar.')
-                                    }
-                                  } else {
-                                    // ök2: blob-URL reicht für lokale Demo-Vorschau
-                                    setVideoUploadStatus('done')
-                                    setVideoUploadMsg('✅ Video gespeichert.')
-                                  }
-                                } catch (_) {
-                                  setVideoUploadStatus('error')
-                                  setVideoUploadMsg('Fehler beim Laden des Videos.')
-                                }
-                                e.target.value = ''
-                              }} />
-                            </label>
-                            {pageContent.virtualTourVideo && (
-                              <button type="button" onClick={() => { const next = { ...pageContent, virtualTourVideo: '' }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); setVideoUploadStatus('idle'); setVideoUploadMsg('') }} style={{ padding: '0.4rem 0.8rem', background: 'transparent', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Video entfernen</button>
-                            )}
-                          </div>
-                          <p style={{ margin: '6px 0 0', fontSize: '0.75rem', color: 'var(--k2-muted)' }}>Max. 2 Min. Länge · max. 100 MB</p>
-                          {videoUploadStatus !== 'idle' && videoUploadMsg && (
-                            <p style={{ margin: '8px 0 0', fontSize: '0.82rem', color: videoUploadStatus === 'error' ? '#e05c5c' : videoUploadStatus === 'uploading' ? 'var(--k2-accent)' : '#4caf50', textAlign: 'center' }}>
-                              {videoUploadStatus === 'uploading' && '⏳ '}{videoUploadMsg}
-                            </p>
-                          )}
-                        </div>
-                      </section>
-                    </main>
-                  </div>
-                  )}
-                </div>
-                </div>
-                </div>
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onMouseDown={(e) => { e.preventDefault(); designPreviewResizeStart.current = { y: e.clientY, height: designPreviewHeightPx } }}
-                  onTouchStart={(e) => { if (e.touches.length === 1) designPreviewResizeStart.current = { y: e.touches[0].clientY, height: designPreviewHeightPx } }}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.preventDefault() }}
-                  style={{ height: 20, marginTop: 12, marginBottom: 8, cursor: 'ns-resize', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.06)', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: 8, color: 'var(--k2-muted)', fontSize: '0.8rem', userSelect: 'none', touchAction: 'none' }}
-                  title="Nach unten ziehen = Bereich vergrößern, nach oben = verkleinern"
-                >
-                  ⋮⋮ Ziehen zum Vergrößern / Verkleinern
-                </div>
-                </div>
-                );
-                })()}
-                </>
-                  ); })()}
-              </div>
-            )}
 
             {designSubTab === 'farben' && (() => {
               const simpleKeys = ['accentColor', 'backgroundColor1', 'textColor'] as const

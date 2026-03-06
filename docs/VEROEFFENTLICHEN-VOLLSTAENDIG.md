@@ -27,6 +27,12 @@
 
 ---
 
+## Galerie-Seite lädt gallery-data.json
+
+**Regel:** Wenn die Galerie-Seite (GaleriePage) `gallery-data.json` lädt, wird **Seitengestaltung (pageContentGalerie) nur gemerged**, nicht überschrieben. Lokale Bilder („Galerie gestalten“ im Admin) gehen sonst verloren, sobald die Galerie die (noch alte) Server-Datei lädt. Umsetzung: `mergePageContentGalerieFromServer()` in `pageContentGalerie.ts` – lokale befüllte Felder haben Vorrang.
+
+---
+
 ## Bei Änderungen
 
 Wenn neue Datenfelder oder neue Speicher (State/localStorage) dazukommen: **Beim Export dieselbe Regel anwenden** – aktueller State (was der Nutzer sieht) + sinnvoller Fallback, Merge statt halbe Lieferung.

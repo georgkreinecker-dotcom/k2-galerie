@@ -153,9 +153,14 @@ function getMaxSideForRemoval(): number {
   return MAX_SIDE_FOR_REMOVAL
 }
 
+/** Timeout für Freistellung (ms) – danach Fallback, damit Tab/App nicht hängen bleibt. */
+const FREISTELLEN_TIMEOUT_MS = 90_000
+
 export type CompositeOptions = {
   /** Wird aufgerufen, wenn keine echte Freistellung durchgeführt wurde (Fehler/Timeout). */
   onFreistellungSkipped?: (reason: 'error', err?: unknown) => void
+  /** Max. Kantenlänge für die Freistellung (kleiner = schneller, weniger Last). Wenn gesetzt, überschreibt getMaxSideForRemoval(). */
+  maxSideForRemoval?: number
 }
 
 /**
@@ -171,13 +176,26 @@ export function compositeOnProfessionalBackground(
   options: CompositeOptions = {}
 ): Promise<string> {
   const background = BACKGROUND_PRESETS[backgroundPreset] ?? BACKGROUND_PRESETS.hell
-  const { onFreistellungSkipped } = options
+  const { onFreistellungSkipped, maxSideForRemoval } = options
+  const maxSide = maxSideForRemoval ?? getMaxSideForRemoval()
   return (async () => {
     try {
-      const maxSide = getMaxSideForRemoval()
       const inputForRemoval = await resizeDataUrlMax(imageDataUrl, maxSide)
       const { removeBackground } = await import('@imgly/background-removal')
-      const blob = await removeBackground(inputForRemoval)
+      // proxyToWorker: true → Arbeit im Worker, Hauptthread bleibt reaktiv (kein Rauswurf/Crash)
+      // device: 'gpu' → schneller wo verfügbar
+      // model: 'isnet' → volle Qualität, saubere Kanten (isnet_quint8 verursacht oft schwarze Schatten)
+      const config = {
+        proxyToWorker: true,
+        device: 'gpu' as const,
+        model: 'isnet' as const
+      }
+      const blob = await Promise.race([
+        removeBackground(inputForRemoval, config),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Freistellung-Timeout')), FREISTELLEN_TIMEOUT_MS)
+        )
+      ])
       return drawOnProfessionalBackground(blob, true, background)
     } catch (e) {
       console.warn('Freistellung fehlgeschlagen, verwende professionellen Hintergrund ohne Freistellung:', e)
