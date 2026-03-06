@@ -114,8 +114,8 @@ export async function prepareArtworksForStorage(artworks: any[]): Promise<any[]>
 }
 
 /**
- * Löst imageRef in imageUrl auf (lädt Bilder aus IndexedDB).
- * Für Anzeige: nach readArtworksRawByKey diese Funktion aufrufen.
+ * Löst imageRef in imageUrl auf: IndexedDB oder direkte URL (Supabase/Vercel).
+ * Wenn imageRef eine http(s)-URL ist, wird sie direkt als imageUrl genutzt (kein Platzhalter).
  */
 export async function resolveArtworkImages(artworks: any[]): Promise<any[]> {
   if (!Array.isArray(artworks) || artworks.length === 0) return artworks
@@ -124,6 +124,11 @@ export async function resolveArtworkImages(artworks: any[]): Promise<any[]> {
     if (!a) { out.push(a); continue }
     const ref = a.imageRef
     if (ref && typeof ref === 'string') {
+      const isUrl = ref.startsWith('http://') || ref.startsWith('https://')
+      if (isUrl) {
+        out.push({ ...a, imageUrl: ref, imageRef: ref })
+        continue
+      }
       try {
         const dataUrl = await getArtworkImage(ref)
         out.push({ ...a, imageUrl: dataUrl || a.imageUrl || '', imageRef: ref })

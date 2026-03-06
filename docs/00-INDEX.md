@@ -29,6 +29,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **ZENTRALE-THEMEN-FUER-NUTZER.md** – **Eine Übersicht:** Änderungen sichtbar, Geräte, Drucker, Stand/Handy, Backup, Echte Galerie vs. Demo, Admin, Kassa. Kurz + Verweise auf die Einzel-Dokus.
 
 ## Stabilität & Crash
+- **ANALYSE-OEK2-GALERIE-BETRETEN-FEHLER-06-03.md** – **„Cannot access uninitialized variable“ (ök2 Galerie betreten):** Ursache = Variable (location) in useEffect verwendet, Deklaration (useLocation) stand weiter unten → temporal dead zone. Fix: useLocation() an Komponentenanfang. **Lehre:** Hook-Variablen (location, navigate, state) immer vor erster Verwendung deklarieren; Router-Hooks am Anfang. Regel: .cursor/rules/variable-vor-verwendung-hooks.mdc.
 - **WIE-PROFIS-ARBEITEN.md** – **Was Profis anders machen:** Kleine Dateien, App im Browser, weniger Always-On-Kontext, stabile Tools, kleine Schritte. Damit es funktioniert.
 - **CODE-5-WAS-GEAENDERT-WURDE.md** – Welche Änderungen im Repo stehen; was Code 5 plausibel auslöst (große Datei + Speichern); Sofort-Checks.
 - **NACH-CODE-5-DEIN-TEIL.md** – **Nach Code 5:** Deine 3 Schritte (Reopen, Save All, „weiter“ sagen). Die KI liest DIALOG-STAND und arbeitet am Nächsten Schritt weiter.
@@ -45,6 +46,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **ADMIN-AUTH-SETUP.md** – Admin-Nutzer in Supabase anlegen, Migration 002 anwenden, testen.
 
 ## K2 vs. ök2 & Daten
+- **WERKBILDER-EINE-QUELLE.md** – **Sportwagenmodus Werkbilder:** Eine Quelle = Supabase Storage (Standard statt Eigenbau). Upload → URL → URL in den Daten; kein IndexedDB/GitHub-Mix für Werkbilder. Konkrete Schritte in SPORTWAGEN-ROADMAP Phase 4.3.
 - **WERKE-SPEICHERUNG-CHECKLISTE.md** – **Schlüsselfunktion Werke:** Bombensichere Regeln (nie mit weniger überschreiben, kein Filter-and-Write, Kontext, Supabase, Backup). Pflicht-Check vor jedem Commit, der Lade-/Schreib-Pfade für Werke ändert.
 - **LEHRE-WERKE-WEG-IPAD-NOCH-DA.md** – **Lehre 01.03.26:** Werke am Mac weg, am iPad noch da. Veröffentlichen = Sicherung; Code nie mit leer/weniger überschreiben.
 - **K2-OEK2-DATENTRENNUNG.md** – Regeln: K2-Daten vs. ök2-Muster, Keys, Checkliste. Pflicht bei Daten-Änderungen.

@@ -22,8 +22,8 @@ const REFRESH_HTML_PATH = '/refresh.html'
 
 /**
  * Reload mit garantiertem Cache-Bypass: lädt zuerst refresh.html (no-cache),
- * die sofort zu /?v=... weiterleitet. So bekommt das Handy beim „Stand drücken“
- * wirklich die neueste Version (kein gecachtes HTML/JS).
+ * die zur aktuellen Seite mit ?v=... weiterleitet. So bleibt man auf derselben
+ * Seite (Galerie, Admin, …) und bekommt trotzdem die neueste Version.
  * Nur auf Produktion (Vercel); lokal bleibt safeReload.
  */
 export function safeReloadWithCacheBypass(): void {
@@ -36,5 +36,10 @@ export function safeReloadWithCacheBypass(): void {
     return
   }
   const t = Date.now()
-  window.location.replace(origin + REFRESH_HTML_PATH + '?t=' + t)
+  const pathname = window.location.pathname || '/'
+  const search = window.location.search || ''
+  const hash = window.location.hash || ''
+  const returnPath = pathname + search + hash
+  const params = new URLSearchParams([['t', String(t)], ['return', returnPath]])
+  window.location.replace(origin + REFRESH_HTML_PATH + '?' + params.toString())
 }

@@ -400,7 +400,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     try { sessionStorage.setItem(WILLKOMMEN_ENTWURF_KEY, '1') } catch (_) {}
     try { sessionStorage.setItem(KEY_GALERIE_WELCOME_SEEN, '1') } catch (_) {}
     setShowWelcomeModal(false)
-    navigate(PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau)
+    navigate(PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau, { state: { fromOeffentlichGalerie: true } })
   }
   // Mobile-Erkennung: Prüfe sowohl Bildschirmbreite als auch User-Agent
   const [isMobile, setIsMobile] = useState(() => {
@@ -3259,7 +3259,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 </div>
                 <Link 
                   to={musterOnly ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerieVorschau}
-                  state={musterOnly ? undefined : { fromAdmin: (location.state as { fromAdmin?: boolean } | null)?.fromAdmin === true }}
+                  state={musterOnly ? { fromOeffentlichGalerie: true } : { fromAdmin: (location.state as { fromAdmin?: boolean } | null)?.fromAdmin === true }}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',

@@ -1,0 +1,22 @@
+---
+description: "Variable vor Verwendung – Hooks (useLocation etc.) am Komponentenanfang, sonst 'Cannot access uninitialized variable'"
+alwaysApply: true
+---
+
+# Variable vor Verwendung – Hooks am Komponentenanfang
+
+## Was passiert ist (06.03.26)
+
+Nach Änderung in GalerieVorschauPage: Im Redirect-useEffect wurde `location.state` verwendet und `location.state` in die Dependency-Liste aufgenommen. **`const location = useLocation()`** stand aber erst ~250 Zeilen weiter unten in derselben Komponente. Beim ersten Render → **„Cannot access uninitialized variable“** (Zeile 247). Ursache: In JavaScript/TypeScript darf auf eine `const`/`let`-Variable vor ihrer Deklarationszeile nicht zugegriffen werden (temporal dead zone).
+
+**Fix:** `useLocation()` an den Anfang der Komponente verschoben (direkt nach `useNavigate()`). Analyse: **docs/ANALYSE-OEK2-GALERIE-BETRETEN-FEHLER-06-03.md**.
+
+## Regel
+
+- **Wenn du eine Variable in einem Hook** (useEffect, useCallback, useMemo) **oder in frühem Code verwendest**, muss die **Deklaration** (z. B. `useLocation()`, `useNavigate()`, `useState()`) **oberhalb** der ersten Verwendung stehen.
+- **Router-Hooks:** `useLocation()` und `useNavigate()` **immer am Anfang** der Komponente aufrufen (direkt nach den Props / ersten Zeilen), damit alle nachfolgenden Hooks und Callbacks sie sicher nutzen können.
+- **Checkliste vor Commit:** In geänderten Komponenten prüfen: Für jede in Hooks/Dependencies genutzte Variable – steht die zugehörige Deklaration **vor** der ersten Verwendung? In großen Dateien leicht übersehen.
+
+## Kurzfassung
+
+**Variable aus Hook (location, navigate, state) nur verwenden, wenn der Hook vor der Verwendung aufgerufen wurde. Sonst → „Cannot access uninitialized variable“.**

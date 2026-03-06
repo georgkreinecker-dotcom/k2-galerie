@@ -4,6 +4,48 @@
 
 ---
 
+## Datum: 06.03.26 – ök2 „Galerie betreten“: Analyse + Regel (Variable vor Verwendung)
+
+- **Thema:** Georg: „Jetzt gehts wieder – wodurch wurde das verändert, das musst du analysieren, solche Dinge sind sehr lästig.“
+- **Was gemacht:** (1) **Analyse:** Ursache war „Variable vor Deklaration“ – im Redirect-useEffect wurde `location` verwendet, `const location = useLocation()` stand aber ~250 Zeilen weiter unten → temporal dead zone → „Cannot access uninitialized variable“. Fix war: useLocation() an Komponentenanfang. (2) **Reproduzierbarkeit:** Doku **docs/ANALYSE-OEK2-GALERIE-BETRETEN-FEHLER-06-03.md** (Ursache, Lehre, Checkliste). (3) **Regel:** **.cursor/rules/variable-vor-verwendung-hooks.mdc** (alwaysApply) – Hook-Variablen (location, navigate, state) nur verwenden, wenn der Hook vor der ersten Verwendung aufgerufen wurde; Router-Hooks am Komponentenanfang. (4) **00-INDEX:** Eintrag unter Stabilität & Crash mit Verweis auf Analyse + Regel.
+- **Nächster Schritt:** Optional Commit + Push. Bei ähnlichen Fehlern: Analyse-Doc + Regel prüfen.
+
+---
+
+## Datum: 06.03.26 – Werkbilder: Standard-Lösung statt Eigenbau (Sportwagenmodus)
+
+- **Thema:** Georg: „Warum nehmen wir nicht das her statt stundenlang Fehler zu suchen – wenn möglich fertige funktionierende Lösungen.“
+- **Was gemacht:** (1) **SPORTWAGEN-ROADMAP** Phase 4.3 ergänzt: Werkbilder – **eine Quelle = Supabase Storage**. Kein Mix IndexedDB + GitHub + Supabase. (2) **docs/WERKBILDER-EINE-QUELLE.md** angelegt: Ziel (eine Quelle), konkrete Schritte (Supabase als einzige Upload-Ziel für Werkbilder; GitHub-Upload für Werkbilder entfernen/Fallback), betroffene Dateien. (3) **00-INDEX** Eintrag für WERKBILDER-EINE-QUELLE.
+- **Nächster Schritt:** ~~Phase 4.3 umsetzen~~ → **erledigt 06.03.26:** Supabase = Standard, imageRef = URL; GitHub nur bei !isSupabaseConfigured(). Commit + Push, dann testen (mit Supabase: Werk speichern → Bild überall sichtbar).
+
+---
+
+## Datum: 06.03.26 – Admin „Kein Bild“: imageRef nach GitHub-Upload mitspeichern
+
+- **Thema:** Georg: „Warum fehlen so viele Werke?“ – viele Karten in der Admin-Werkliste mit „Kein Bild“.
+- **Ursache:** Nach GitHub-Upload wurde nur **imageUrl = url** gesetzt, nicht **imageRef**. Beim Reload oder auf anderem Gerät: Liste hat imageRef = k2-img-xxx, IndexedDB dort leer → resolveArtworkImages findet kein Bild → „Kein Bild“.
+- **Was gemacht:** In ScreenshotExportAdmin beim Speichern nach Upload **auch imageRef = url** setzen (artworkData + in updatedArtworks). So steht die öffentliche URL dauerhaft in den Daten; resolveArtworkImages nutzt sie (bereits zuvor: imageRef mit http(s) → direkt als imageUrl). GELOESTE-BUGS BUG-021 Ergänzung 2.
+- **Nächster Schritt:** Siehe oben – langfristig Phase 4.3 (eine Quelle Supabase).
+
+---
+
+## Datum: 06.03.26 – Platzhalter behoben (imageRef als URL nutzen)
+
+- **Thema:** Georg: „Ich sehe noch immer Platzhalter“ trotz abgeschlossener Arbeiten.
+- **Ursache:** `resolveArtworkImages` hat nur IndexedDB genutzt. Wenn Werke von Supabase/gallery-data mit **imageRef = URL** (https://…) kamen, wurde nicht als Bild geladen → Platzhalter.
+- **Was gemacht:** In `src/utils/artworkImageStore.ts`: `resolveArtworkImages` – wenn `imageRef` mit `http://` oder `https://` beginnt, wird es direkt als `imageUrl` verwendet (kein IndexedDB-Lookup). Gilt für Supabase-Pfad, API-Load und alle Aufrufer. Tests 41/41, Build ✅.
+- **Nächster Schritt:** Commit + Push. Georg testet: Galerie/Vorschau (Handy/Mac) → echte Bilder statt Platzhalter, sobald imageRef eine URL ist.
+
+---
+
+## Datum: 06.03.26 – Drei Mobil-Punkte umgesetzt (waren als „umgesetzt“ bezeichnet, stimmten aber nicht)
+
+- **Thema:** Georg: „Du hast gesagt du hast das schon umgesetzt – warum stimmt das nicht?“ Drei Punkte waren in der Session-Zusammenfassung als erledigt genannt, im Code aber falsch oder fehlend.
+- **Was gemacht:** (1) **GalerieVorschauPage:** Button „✏️ Bild bearbeiten“ nur auf **Desktop** anzeigen (auf Mobil ausgeblendet). Bedingung umgedreht: `!(/iPhone|...|| window.innerWidth <= 768)`. (2) **ScreenshotExportAdmin:** `isMobileDevice` ergänzt (iPhone/iPad/Android oder Breite ≤768). Bildverarbeitung (Original | Freigestellt | Vollkachel, „Jetzt freistellen“, Hintergrund) nur anzeigen wenn `!isMobileDevice` – auf Mobil nur Original sichtbar/nutzbar. (3) **ScreenshotExportAdmin beim Speichern:** Auf Mobil wird effektiv nur Original gespeichert: `effectivePhotoMode = isMobileDevice ? 'original' : photoImageMode` vor Freistell-Block; `imageDisplayMode` auf Mobil immer `'normal'`. Tests 41/41, Build erfolgreich.
+- **Nächster Schritt:** Commit + Push. Georg testet am Handy: Werk hinzufügen → keine Freistell-Optionen; Speichern → Original; in Galerie kein „Bild bearbeiten“-Button.
+
+---
+
 ## Datum: 06.03.26 – Sportwagenmodus: Stand, Datentransport, Bilder
 
 - **Thema:** Stand drücken bringt nie neuen Stand; Platzhalter/Bilder fehlen in Galerie und Werk bearbeiten; Speicherpunkt unklar.

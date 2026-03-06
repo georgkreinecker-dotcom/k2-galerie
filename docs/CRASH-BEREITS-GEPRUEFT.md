@@ -10,6 +10,7 @@
 | 05.03.26 | ro5 again – nur dokumentiert; nichts neu umgesetzt (Nächster Schritt ggf. schon erledigt). |
 | 05.03.26 | ro5 – Erkenntnis in ro5-kern.mdc Abschn. 5 dokumentiert; Kernregel + Verweise. |
 | 05.03.26 | ro5 – Reopen; DIALOG-STAND gelesen, Änderungen committed. |
+| 06.03.26 | ro5 – Reopen nach Code 5; Check durchgeführt. |
 
 ---
 

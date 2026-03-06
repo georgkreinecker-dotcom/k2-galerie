@@ -1134,6 +1134,7 @@ function ScreenshotExportAdmin() {
   })()
   const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>(initialEventplanSubTab)
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false) // kleine Leiste „Vergangenheit“, bei Klick aufklappen
+  const [werkeSideOptionsOpen, setWerkeSideOptionsOpen] = useState(false) // Einstellungen & Sync (Verkaufte Werke, Vom Server laden) – Nebenakteure, aufklappbar
   const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzinfo' | 'kassabuch'>('stammdaten')
   const settingsContentRef = useRef<HTMLDivElement>(null)
   const [lizenzLicenceType, setLizenzLicenceType] = useState<'basic' | 'pro' | 'proplus'>('pro')
@@ -1460,6 +1461,8 @@ function ScreenshotExportAdmin() {
   const [photoImageMode, setPhotoImageMode] = useState<'original' | 'freigestellt' | 'vollkachel'>('freigestellt')
   // Hintergrund-Variante bei Freistellung: hell | weiss | warm | kuehl | dunkel
   const [photoBackgroundPreset, setPhotoBackgroundPreset] = useState<'hell' | 'weiss' | 'warm' | 'kuehl' | 'dunkel'>('hell')
+  /** Auf Mobil: keine Freistellung anzeigen/ausführen – nur Original speichern */
+  const isMobileDevice = typeof window !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768)
   /** Läuft gerade „Jetzt freistellen“ (nachträglich für bestehendes Bild)? */
   const [freistellenInProgress, setFreistellenInProgress] = useState(false)
   /** Zuschnitt-Modal: Bild als Data-URL zum Zuschneiden (null = geschlossen) */
@@ -7599,7 +7602,8 @@ ${'='.repeat(60)}
           compressed = more.length > MAX_ARTWORK_BYTES ? compressed : more
         }
         imageDataUrl = compressed
-        if (photoImageMode === 'freigestellt') {
+        const effectivePhotoMode = isMobileDevice ? 'original' : photoImageMode
+        if (effectivePhotoMode === 'freigestellt') {
           try {
             const { compositeOnProfessionalBackground } = await import('../src/utils/professionalImageBackground')
             imageDataUrl = await compositeOnProfessionalBackground(imageDataUrl, photoBackgroundPreset, {
@@ -7630,7 +7634,8 @@ ${'='.repeat(60)}
         } else {
           imageDataUrl = compressedDataUrl
         }
-        if (photoImageMode === 'freigestellt') {
+        const effectivePhotoModeFile = isMobileDevice ? 'original' : photoImageMode
+        if (effectivePhotoModeFile === 'freigestellt') {
           try {
             const { compositeOnProfessionalBackground } = await import('../src/utils/professionalImageBackground')
             imageDataUrl = await compositeOnProfessionalBackground(imageDataUrl, photoBackgroundPreset, {
@@ -7716,7 +7721,11 @@ ${'='.repeat(60)}
       inShop: isInShop,
       imVereinskatalog: isImVereinskatalog || false,
       imageUrl: imageUrlForArtwork,
-      imageDisplayMode: photoImageMode === 'original' ? 'normal' : photoImageMode === 'freigestellt' ? 'freigestellt' : 'vollkachel',
+      // Eine Quelle: Wenn Bild-URL von Supabase → dieselbe URL in imageRef (überall sichtbar, kein IndexedDB)
+      ...(typeof imageUrlForArtwork === 'string' && (imageUrlForArtwork.startsWith('http://') || imageUrlForArtwork.startsWith('https://'))
+        ? { imageRef: imageUrlForArtwork }
+        : {}),
+      imageDisplayMode: isMobileDevice ? 'normal' : (photoImageMode === 'original' ? 'normal' : photoImageMode === 'freigestellt' ? 'freigestellt' : 'vollkachel'),
       createdAt: new Date().toISOString(),
       addedToGalleryAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -7982,8 +7991,8 @@ ${'='.repeat(60)}
         console.warn('⚠️ Nummer-Index fehlgeschlagen:', e)
       }
       
-      // K2: Werk-Bild automatisch via GitHub hochladen → überall sichtbar (auch ohne selectedFile, z. B. iPad-Vorschau)
-      if (!forOek2 && imageDataUrl) {
+      // K2: Werkbild-Upload – eine Quelle. Supabase = Standard; GitHub nur Fallback wenn Supabase nicht konfiguriert (Phase 4.3)
+      if (!forOek2 && imageDataUrl && !isSupabaseConfigured()) {
         try {
           const { uploadPageImage } = await import('../src/utils/githubImageUpload')
           const safeNumber = (artworkData.number || artworkData.id || 'werk').replace(/[^a-zA-Z0-9-]/g, '-')
@@ -7991,6 +8000,7 @@ ${'='.repeat(60)}
           const fileToUpload = selectedFile || (await dataUrlToFile(imageDataUrl))
           const url = await uploadPageImage(fileToUpload, 'k2', filename, (msg) => console.log(msg))
           artworkData.imageUrl = url
+          artworkData.imageRef = url
           const key = tenant.getArtworksKey()
           const raw = localStorage.getItem(key)
           let list: any[] = []
@@ -8001,12 +8011,12 @@ ${'='.repeat(60)}
             }
           } catch (_) {}
           const updatedArtworks = list.map((a: any) =>
-            (a?.id === artworkData.id || a?.number === artworkData.number) ? { ...a, imageUrl: url } : a
+            (a?.id === artworkData.id || a?.number === artworkData.number) ? { ...a, imageUrl: url, imageRef: url } : a
           )
           await saveArtworks(tenant, updatedArtworks)
           const resolved = await loadArtworksWithResolvedImages(tenant)
           setAllArtworksSafe(resolved)
-          console.log('✅ Werk-Bild auf GitHub hochgeladen:', url)
+          console.log('✅ Werk-Bild auf GitHub hochgeladen (Fallback, Supabase nicht konfiguriert):', url)
         } catch (uploadErr) {
           console.warn('GitHub Upload für Werk fehlgeschlagen (Bild bleibt lokal):', uploadErr)
         }
@@ -10414,92 +10424,29 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               }}>
                 {tenant.isVk2 ? 'Vereinsmitglieder' : 'Werke verwalten'}
               </h2>
-              {/* Verkaufte Werke: wie lange noch in Galerie sichtbar (Balken/Slider) – K2 + ök2 */}
-              {!tenant.isVk2 && (
-                <div style={{
-                  marginBottom: '1.25rem',
-                  padding: '0.75rem 1rem',
-                  background: s.bgElevated + '99',
-                  border: `1px solid ${s.accent}22`,
-                  borderRadius: '12px',
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  alignItems: 'center',
-                  gap: '0.75rem'
-                }}>
-                  <span style={{ fontSize: '0.9rem', color: s.text, fontWeight: 500 }}>Verkaufte Werke in Galerie anzeigen:</span>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', alignItems: 'center' }}>
-                    {([0, 7, 14, 30, 60, 90] as const).map((days) => {
-                      const isK2 = !tenant.isOeffentlich
-                      const value = isK2 ? soldArtworksDisplayDaysK2 : soldArtworksDisplayDaysOek2
-                      const setValue = isK2 ? setSoldArtworksDisplayDaysK2 : setSoldArtworksDisplayDaysOek2
-                      const active = value === days
-                      return (
-                        <button
-                          key={days}
-                          type="button"
-                          onClick={() => {
-                            setValue(days)
-                            if (isK2) {
-                              try {
-                                const g = loadStammdaten('k2', 'gallery') as Record<string, unknown>
-                                persistStammdaten('k2', 'gallery', { ...g, soldArtworksDisplayDays: days })
-                              } catch (_) {}
-                            } else {
-                              try {
-                                const raw = localStorage.getItem('k2-oeffentlich-galerie-settings')
-                                const o = raw ? JSON.parse(raw) : {}
-                                localStorage.setItem('k2-oeffentlich-galerie-settings', JSON.stringify({ ...o, soldArtworksDisplayDays: days }))
-                              } catch (_) {}
-                            }
-                          }}
-                          style={{
-                            padding: '0.4rem 0.75rem',
-                            background: active ? s.accent : 'transparent',
-                            color: active ? '#fff' : s.muted,
-                            border: `1px solid ${active ? s.accent : s.muted + '44'}`,
-                            borderRadius: '8px',
-                            fontSize: '0.85rem',
-                            fontWeight: active ? 600 : 400,
-                            cursor: 'pointer'
-                          }}
-                        >
-                          {days === 0 ? '0 (sofort ausblenden)' : `${days} Tage`}
-                        </button>
-                      )
-                    })}
-                  </div>
-                  <span style={{ fontSize: '0.78rem', color: s.muted }}>Nach Verkauf: wie lange das Werk noch in der Galerie-Vorschau sichtbar bleibt</span>
-                </div>
-              )}
-              {tenant.isVk2 && (
-                <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted }}>
-                  <button type="button" onClick={() => { setActiveTab('einstellungen'); setSettingsSubTab('stammdaten') }} style={{ background: 'none', border: 'none', padding: 0, color: s.accent, textDecoration: 'underline', cursor: 'pointer', fontSize: 'inherit' }}>Stammdaten (Verein, Vorstand, Mitglieder) bearbeiten → Einstellungen</button>
-                </p>
-              )}
-              {/* Werke-Aktionen: Primär klar, Sekundär zurückhaltend */}
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
+              {/* Hauptakteur zuerst: + Neues Werk, daneben Etiketten – Nebenakteure (Anzeige, Sync) unter „Einstellungen & Sync“ aufklappbar */}
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: '1rem' }}>
                 {!tenant.isVk2 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                     <button
                       onClick={() => { setEditingArtwork(null); setIsInExhibition(false); setIsInShop(false); setShowAddModal(true) }}
                       style={{
-                        padding: '0.7rem 1.4rem',
+                        padding: '0.85rem 1.6rem',
                         background: s.gradientAccent,
                         color: '#ffffff',
                         border: 'none',
-                        borderRadius: '10px',
-                        fontSize: '0.95rem',
+                        borderRadius: '12px',
+                        fontSize: '1.05rem',
                         fontWeight: 700,
                         cursor: 'pointer',
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '0.4rem',
-                        boxShadow: '0 2px 8px rgba(181,74,30,0.18)',
+                        gap: '0.5rem',
+                        boxShadow: '0 4px 12px rgba(181,74,30,0.22)',
                         transition: 'all 0.2s'
                       }}
                       onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(181,74,30,0.28)' }}
-                      onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(181,74,30,0.18)' }}
+                      onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(181,74,30,0.22)' }}
                     >
                       + Neues Werk
                     </button>
@@ -10648,103 +10595,187 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     )}
                     </div>
                   </div>
-                  {/* Sync-Notfall: eigenes Feld, abgesetzt */}
-                  <div style={{
-                    marginTop: '1.25rem',
-                    padding: '1rem 1.25rem',
-                    background: s.bgElevated + '99',
-                    border: `1px solid ${s.muted}44`,
-                    borderRadius: '12px',
-                    maxWidth: '420px'
-                  }}>
-                    {(!tenant.isOeffentlich && !tenant.isVk2) && (
-                      <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.8rem', color: s.muted, lineHeight: 1.4 }}>
-                        Mac ↔ iPad/Handy: <strong style={{ color: s.text }}>Normalerweise musst du nichts tun</strong> – beim Speichern gehen die Daten automatisch mit. Nur im Notfall:
-                      </p>
-                    )}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'flex-end' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  {/* Nebenakteure: Anzeige + Sync unter einem Aufklapp-Button – Hauptakteur (+ Neues Werk) bleibt klar sichtbar */}
+                  <div style={{ marginTop: '0.75rem' }}>
                     <button
                       type="button"
-                      onClick={() => handleLoadFromServer()}
-                      disabled={isLoadingFromServer}
-                      title="Aktuellen Stand vom Server holen (z. B. nach Speichern am iPad)"
+                      onClick={() => setWerkeSideOptionsOpen((v) => !v)}
                       style={{
-                        padding: '0.6rem 1rem',
-                        background: isLoadingFromServer ? s.muted + '22' : s.accent + '18',
-                        color: s.text,
-                        border: `1px solid ${s.accent}44`,
-                        borderRadius: '10px',
-                        fontSize: '0.85rem',
-                        fontWeight: 600,
-                        cursor: isLoadingFromServer ? 'wait' : 'pointer',
+                        padding: '0.45rem 0.9rem',
+                        background: 'transparent',
+                        color: s.muted,
+                        border: `1px solid ${s.muted}44`,
+                        borderRadius: '8px',
+                        fontSize: '0.82rem',
+                        fontWeight: 500,
+                        cursor: 'pointer',
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '0.4rem'
+                        gap: '0.35rem'
                       }}
                     >
-                      {isLoadingFromServer ? '⏳ Lade…' : '🔄 Vom Server laden'}
+                      {werkeSideOptionsOpen ? '▼' : '▶'} Einstellungen & Sync
                     </button>
-                    <span style={{ fontSize: '0.7rem', color: s.muted }}>Aktuellen Stand holen</span>
-                    </div>
-                    {!tenant.isOeffentlich && !tenant.isVk2 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                    <button
-                      type="button"
-                      onClick={() => publishMobile()}
-                      disabled={isDeploying || allArtworks.length === 0}
-                      title="Jetzt an Server senden (z. B. nach Speichern am iPad, damit Mac es sieht)"
-                      style={{
-                        padding: '0.6rem 1rem',
-                        background: isDeploying || allArtworks.length === 0 ? s.bgCard : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                        color: isDeploying || allArtworks.length === 0 ? s.muted : '#ffffff',
-                        border: 'none',
-                        borderRadius: '10px',
-                        fontSize: '0.85rem',
-                        fontWeight: 600,
-                        cursor: isDeploying || allArtworks.length === 0 ? 'not-allowed' : 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.4rem',
-                        boxShadow: allArtworks.length > 0 && !isDeploying ? '0 2px 6px rgba(245,158,11,0.25)' : 'none'
-                      }}
-                    >
-                      {isDeploying ? '⏳ Wird gesendet…' : '📤 An Server senden'}
-                    </button>
-                    <span style={{ fontSize: '0.7rem', color: s.muted }}>Jetzt an alle Geräte senden</span>
-                    </div>
-                    )}
-                    </div>
-                  </div>
-                  {syncStatusBar.phase !== 'idle' && (
-                    <div style={{ width: '100%', marginTop: '0.5rem' }}>
-                      <div style={{
-                        height: '8px',
-                        borderRadius: '4px',
-                        backgroundColor: syncStatusBar.phase === 'sending' || syncStatusBar.phase === 'loading' ? (s.muted + '44') : syncStatusBar.phase === 'success' ? '#22c55e' : '#dc2626',
-                        overflow: 'hidden'
-                      }}>
-                        {(syncStatusBar.phase === 'sending' || syncStatusBar.phase === 'loading') && (
-                          <div
-                            className="k2-sync-bar-fill"
-                            style={{
-                              height: '100%',
-                              width: '30%',
-                              borderRadius: '4px',
-                              background: syncStatusBar.phase === 'sending' ? 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)' : `linear-gradient(90deg, ${s.accent} 0%, ${s.accent}88 100%)`
-                            }}
-                          />
-                        )}
-                        {(syncStatusBar.phase === 'success' || syncStatusBar.phase === 'error') && (
-                          <div style={{ width: '100%', height: '100%' }} />
-                        )}
+                    {werkeSideOptionsOpen && (
+                      <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '520px' }}>
+                        {/* Verkaufte Werke: wie lange in Galerie sichtbar */}
+                        <div style={{
+                          padding: '0.75rem 1rem',
+                          background: s.bgElevated + '99',
+                          border: `1px solid ${s.accent}22`,
+                          borderRadius: '12px',
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          alignItems: 'center',
+                          gap: '0.75rem'
+                        }}>
+                          <span style={{ fontSize: '0.9rem', color: s.text, fontWeight: 500 }}>Verkaufte Werke in Galerie anzeigen:</span>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', alignItems: 'center' }}>
+                            {([0, 7, 14, 30, 60, 90] as const).map((days) => {
+                              const isK2 = !tenant.isOeffentlich
+                              const value = isK2 ? soldArtworksDisplayDaysK2 : soldArtworksDisplayDaysOek2
+                              const setValue = isK2 ? setSoldArtworksDisplayDaysK2 : setSoldArtworksDisplayDaysOek2
+                              const active = value === days
+                              return (
+                                <button
+                                  key={days}
+                                  type="button"
+                                  onClick={() => {
+                                    setValue(days)
+                                    if (isK2) {
+                                      try {
+                                        const g = loadStammdaten('k2', 'gallery') as Record<string, unknown>
+                                        persistStammdaten('k2', 'gallery', { ...g, soldArtworksDisplayDays: days })
+                                      } catch (_) {}
+                                    } else {
+                                      try {
+                                        const raw = localStorage.getItem('k2-oeffentlich-galerie-settings')
+                                        const o = raw ? JSON.parse(raw) : {}
+                                        localStorage.setItem('k2-oeffentlich-galerie-settings', JSON.stringify({ ...o, soldArtworksDisplayDays: days }))
+                                      } catch (_) {}
+                                    }
+                                  }}
+                                  style={{
+                                    padding: '0.4rem 0.75rem',
+                                    background: active ? s.accent : 'transparent',
+                                    color: active ? '#fff' : s.muted,
+                                    border: `1px solid ${active ? s.accent : s.muted + '44'}`,
+                                    borderRadius: '8px',
+                                    fontSize: '0.85rem',
+                                    fontWeight: active ? 600 : 400,
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  {days === 0 ? '0 (sofort ausblenden)' : `${days} Tage`}
+                                </button>
+                              )
+                            })}
+                          </div>
+                          <span style={{ fontSize: '0.78rem', color: s.muted }}>Nach Verkauf: wie lange in der Galerie-Vorschau sichtbar</span>
+                        </div>
+                        {/* Sync: Vom Server laden / An Server senden */}
+                        <div style={{
+                          padding: '1rem 1.25rem',
+                          background: s.bgElevated + '99',
+                          border: `1px solid ${s.muted}44`,
+                          borderRadius: '12px'
+                        }}>
+                          {(!tenant.isOeffentlich && !tenant.isVk2) && (
+                            <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.8rem', color: s.muted, lineHeight: 1.4 }}>
+                              Mac ↔ iPad/Handy: <strong style={{ color: s.text }}>Normalerweise musst du nichts tun</strong> – beim Speichern gehen die Daten automatisch mit. Nur im Notfall:
+                            </p>
+                          )}
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'flex-end' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                              <button
+                                type="button"
+                                onClick={() => handleLoadFromServer()}
+                                disabled={isLoadingFromServer}
+                                title="Aktuellen Stand vom Server holen (z. B. nach Speichern am iPad)"
+                                style={{
+                                  padding: '0.6rem 1rem',
+                                  background: isLoadingFromServer ? s.muted + '22' : s.accent + '18',
+                                  color: s.text,
+                                  border: `1px solid ${s.accent}44`,
+                                  borderRadius: '10px',
+                                  fontSize: '0.85rem',
+                                  fontWeight: 600,
+                                  cursor: isLoadingFromServer ? 'wait' : 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.4rem'
+                                }}
+                              >
+                                {isLoadingFromServer ? '⏳ Lade…' : '🔄 Vom Server laden'}
+                              </button>
+                              <span style={{ fontSize: '0.7rem', color: s.muted }}>Aktuellen Stand holen</span>
+                            </div>
+                            {!tenant.isOeffentlich && !tenant.isVk2 && (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                <button
+                                  type="button"
+                                  onClick={() => publishMobile()}
+                                  disabled={isDeploying || allArtworks.length === 0}
+                                  title="Jetzt an Server senden (z. B. nach Speichern am iPad, damit Mac es sieht)"
+                                  style={{
+                                    padding: '0.6rem 1rem',
+                                    background: isDeploying || allArtworks.length === 0 ? s.bgCard : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                    color: isDeploying || allArtworks.length === 0 ? s.muted : '#ffffff',
+                                    border: 'none',
+                                    borderRadius: '10px',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 600,
+                                    cursor: isDeploying || allArtworks.length === 0 ? 'not-allowed' : 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.4rem',
+                                    boxShadow: allArtworks.length > 0 && !isDeploying ? '0 2px 6px rgba(245,158,11,0.25)' : 'none'
+                                  }}
+                                >
+                                  {isDeploying ? '⏳ Wird gesendet…' : '📤 An Server senden'}
+                                </button>
+                                <span style={{ fontSize: '0.7rem', color: s.muted }}>Jetzt an alle Geräte senden</span>
+                              </div>
+                            )}
+                          </div>
+                          {syncStatusBar.phase !== 'idle' && (
+                            <div style={{ width: '100%', marginTop: '0.5rem' }}>
+                              <div style={{
+                                height: '8px',
+                                borderRadius: '4px',
+                                backgroundColor: syncStatusBar.phase === 'sending' || syncStatusBar.phase === 'loading' ? (s.muted + '44') : syncStatusBar.phase === 'success' ? '#22c55e' : '#dc2626',
+                                overflow: 'hidden'
+                              }}>
+                                {(syncStatusBar.phase === 'sending' || syncStatusBar.phase === 'loading') && (
+                                  <div
+                                    className="k2-sync-bar-fill"
+                                    style={{
+                                      height: '100%',
+                                      width: '30%',
+                                      borderRadius: '4px',
+                                      background: syncStatusBar.phase === 'sending' ? 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)' : `linear-gradient(90deg, ${s.accent} 0%, ${s.accent}88 100%)`
+                                    }}
+                                  />
+                                )}
+                                {(syncStatusBar.phase === 'success' || syncStatusBar.phase === 'error') && (
+                                  <div style={{ width: '100%', height: '100%' }} />
+                                )}
+                              </div>
+                              <span style={{ fontSize: '0.8rem', color: syncStatusBar.phase === 'error' ? '#dc2626' : syncStatusBar.phase === 'success' ? '#22c55e' : s.text, marginTop: '0.25rem', display: 'inline-block' }}>{syncStatusBar.message}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <span style={{ fontSize: '0.8rem', color: syncStatusBar.phase === 'error' ? '#dc2626' : syncStatusBar.phase === 'success' ? '#22c55e' : s.text, marginTop: '0.25rem', display: 'inline-block' }}>{syncStatusBar.message}</span>
-                    </div>
-                  )}
+                    )}
+                  </div>
                   </>
                 )}
               </div>
+              {tenant.isVk2 && (
+                <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted }}>
+                  <button type="button" onClick={() => { setActiveTab('einstellungen'); setSettingsSubTab('stammdaten') }} style={{ background: 'none', border: 'none', padding: 0, color: s.accent, textDecoration: 'underline', cursor: 'pointer', fontSize: 'inherit' }}>Stammdaten (Verein, Vorstand, Mitglieder) bearbeiten → Einstellungen</button>
+                </p>
+              )}
               <div style={{
                 display: 'flex',
                 gap: 'clamp(1rem, 3vw, 1.5rem)',
@@ -17671,8 +17702,8 @@ ${name}`
                 </div>
               )}
 
-              {/* Option: Original | Freigestellt (Pro-Hintergrund) | Vollkachelform – nur anzeigen wenn Bild gewählt */}
-              {previewUrl && (
+              {/* Option: Original | Freigestellt (Pro-Hintergrund) | Vollkachelform – nur Desktop; auf Mobil nur Original */}
+              {previewUrl && !isMobileDevice && (
                 <div style={{
                   padding: '0.75rem',
                   background: 'rgba(255, 255, 255, 0.03)',
@@ -18173,8 +18204,8 @@ ${name}`
                   </div>
                 </div>
               )}
-              {/* Breite + Höhe für alle Kategorien (Bilder und Keramik gleich) */}
-              {(
+              {/* Breite + Höhe nur bei Nicht-Keramik (Keramik hat eigene Höhe/Durchmesser) */}
+              {artworkCategory !== 'keramik' && (
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: '1fr 1fr',
@@ -18242,25 +18273,27 @@ ${name}`
                 </div>
               )}
 
-              {/* Technik/Material + Maße */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>
-                    Technik / Material
-                  </label>
-                  <input type="text" value={artworkTechnik} onChange={e => setArtworkTechnik(e.target.value)}
-                    placeholder="z.B. Acryl auf Leinwand"
-                    style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
+              {/* Technik/Material + Maße nur bei Nicht-Keramik (bei Keramik überflüssig) */}
+              {artworkCategory !== 'keramik' && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>
+                      Technik / Material
+                    </label>
+                    <input type="text" value={artworkTechnik} onChange={e => setArtworkTechnik(e.target.value)}
+                      placeholder="z.B. Acryl auf Leinwand"
+                      style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>
+                      Maße (z.B. 60×80 cm)
+                    </label>
+                    <input type="text" value={artworkDimensions} onChange={e => setArtworkDimensions(e.target.value)}
+                      placeholder="Breite × Höhe cm"
+                      style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
+                  </div>
                 </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>
-                    Maße (z.B. 60×80 cm)
-                  </label>
-                  <input type="text" value={artworkDimensions} onChange={e => setArtworkDimensions(e.target.value)}
-                    placeholder="Breite × Höhe cm"
-                    style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
-                </div>
-              </div>
+              )}
 
               {/* Weitere Felder - Kompakt Grid */}
               <div style={{

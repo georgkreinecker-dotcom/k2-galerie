@@ -12,8 +12,10 @@
 **Symptom:** Werk-Fotos werden teilweise nicht mehr angezeigt (Platzhalter mit ID). Freistellung funktioniert, dauert lange – danach sind die Bilder wieder wie vorher (Speicherung hält nicht).
 **Ursache:** Beim Laden vom Server (gallery-data API) kommen Werke **ohne** Bilddaten (Export streicht Base64 für kleine Payloads). Der Merge (Server = Quelle) hat die Server-Version übernommen und damit **lokale imageUrl/imageRef überschrieben** → gespeicherte Fotos/Freistellungen gingen verloren.
 **Lösung:** Nach dem Merge **lokale Bilddaten erhalten**, wenn die Server-Version kein Bild hat: `preserveLocalImageData(merged, localArtworks)` in `syncMerge.ts`; Aufruf in GaleriePage an beiden Stellen (handleRefresh + Initial-Load) vor `saveArtworksForContext`. So werden imageUrl, imageRef und previewUrl vom lokalen Werk übernommen, sobald der Server-Eintrag kein Bild liefert.
-**Betroffene Dateien:** `src/utils/syncMerge.ts` (preserveLocalImageData), `src/pages/GaleriePage.tsx` (beide Merge-Pfade)
-**Status:** ✅ Behoben (05.03.26)
+**Ergänzung (06.03.26):** Platzhalter blieben sichtbar, wenn Werke mit **imageRef = URL** (Supabase/Vercel) geladen wurden – `resolveArtworkImages` nutzte nur IndexedDB. Fix: In `artworkImageStore.ts` wird imageRef, sofern es mit `http://` oder `https://` beginnt, direkt als imageUrl verwendet → echte Bilder statt Platzhalter.
+**Ergänzung 2 (06.03.26):** Admin-Werkliste zeigte viele „Kein Bild“: Nach GitHub-Upload wurde nur **imageUrl = url** gesetzt, nicht **imageRef**. Beim Reload/anderem Gerät blieb nur imageRef = k2-img-xxx, IndexedDB dort leer → Platzhalter. Fix: In ScreenshotExportAdmin beim Speichern nach Upload auch **imageRef = url** setzen (artworkData + updatedArtworks), damit die URL dauerhaft in den Daten steht und resolveArtworkImages sie überall nutzen kann.
+**Betroffene Dateien:** `src/utils/syncMerge.ts` (preserveLocalImageData), `src/pages/GaleriePage.tsx` (beide Merge-Pfade), `src/utils/artworkImageStore.ts` (resolveArtworkImages), `components/ScreenshotExportAdmin.tsx` (Upload-Block: imageRef = url)
+**Status:** ✅ Behoben (05.03.26, Ergänzung 06.03.26)
 
 ---
 

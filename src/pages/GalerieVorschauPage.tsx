@@ -206,7 +206,8 @@ type Filter = 'alle' | ArtworkCategoryId
 
 const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }: { initialFilter?: Filter; musterOnly?: boolean; vk2?: boolean }) => {
   const navigate = useNavigate()
-  
+  const location = useLocation()
+
   // EINE QUELLE je Kontext (von Mac oder Mobil gespeist): K2 = k2-artworks + Pending, ök2 = k2-oeffentlich-artworks / MUSTER_ARTWORKS, VK2 = k2-vk2-stammdaten. Nur lesen, nie still überschreiben.
   const initialArtworks = (() => {
     if (vk2) {
@@ -278,16 +279,17 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   /** Immer anzeigen für ök2-Besucher (Fremde), bis sie schließen – „So könnte deine Galerie aussehen“ */
   const showErsteAktionBanner = musterOnly && !ersteAktionDismissed
 
-  /** Fremde: Direktaufruf der ök2-Vorschau → zuerst ök2-Willkommensseite („WILLKOMMEN BEI Galerie Muster“) */
+  /** Fremde: Direktaufruf der ök2-Vorschau → zuerst ök2-Willkommensseite. Ausnahme: Klick „Galerie betreten“ von galerie-oeffentlich (State oder Referrer). */
   useEffect(() => {
     if (!musterOnly || typeof window === 'undefined') return
     try {
       if (new URLSearchParams(window.location.search).get('embedded') === '1') return
+      if ((location.state as { fromOeffentlichGalerie?: boolean } | null)?.fromOeffentlichGalerie === true) return
       const ref = typeof document !== 'undefined' ? document.referrer : ''
       if (ref && (ref.includes('/galerie-oeffentlich') || ref.includes('/entdecken'))) return
       navigate(PROJECT_ROUTES['k2-galerie'].galerieOeffentlich, { replace: true })
     } catch (_) {}
-  }, [musterOnly, navigate])
+  }, [musterOnly, navigate, location.state])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -461,7 +463,6 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   }, [applyDesignFromStorage])
 
   // Admin-Kontext nur beenden, wenn Nutzer bewusst aus dem Admin „Zur Galerie“ geklickt hat (nicht bei direktem Aufruf/Mobil → Kassa bleibt nutzbar)
-  const location = useLocation()
   useEffect(() => {
     try {
       const fromAdmin = (location.state as { fromAdmin?: boolean } | null)?.fromAdmin === true
@@ -3587,8 +3588,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               </button>
             )}
 
-            {/* Bild bearbeiten Button (ök2: ausblenden) */}
-            {!musterOnly && showMobileAdmin && lightboxImage.artwork && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) && (
+            {/* Bild bearbeiten: nur auf Desktop (auf Mobil ausblenden – Bild nur im Admin ändern) */}
+            {!musterOnly && showMobileAdmin && lightboxImage.artwork && !(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) && (
               <button
                 onClick={(e) => {
                   e.stopPropagation()

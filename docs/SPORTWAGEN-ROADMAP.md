@@ -130,6 +130,15 @@
 | **Schritte** | 1) Alle Aufrufer von githubImageUpload erfassen. 2) Eine Wrapper-Funktion mit Kontext (K2/ök2/VK2) und Subfolder; Aufrufer rufen nur diese. |
 | **Erledigt** | [x] 28.02.26 (uploadPageImage in githubImageUpload; Admin nutzt uploadPageImage/uploadPageImageToGitHub, Willkommen/Seitengestaltung einheitlich) |
 
+### 4.3 Werkbilder – eine Quelle (Standard statt Eigenbau) 🔧 Sportwagenmodus
+
+| | Inhalt |
+|---|--------|
+| **Prototyp** | Mix: IndexedDB (lokal) + GitHub-Upload (Vercel) + optional Supabase; imageRef mal Key (k2-img-xxx), mal URL; resolveArtworkImages, Merge, „Kein Bild“-Bugs. |
+| **Sportwagen** | **Eine** Quelle für Werkbilder: **Supabase Storage** (fertige Lösung). Upload → öffentliche URL → nur diese URL in imageUrl/imageRef. Kein IndexedDB für Werkbilder, kein zweiter Upload-Pfad (GitHub) für Werkbilder. Anzeige überall dieselbe URL → keine Auflösungslogik, keine gerätespezifischen Fehler. |
+| **Schritte** | 1) Supabase Storage als **einzige** Upload-Ziel für Werkbilder (bereits vorhanden: uploadArtworkImageToStorage). 2) Beim Speichern: Immer Supabase-Upload (wenn konfiguriert), URL in imageUrl + imageRef; GitHub-Upload für Werkbilder entfernen oder nur Fallback wenn Supabase nicht konfiguriert. 3) Anzeige: Nur URL nutzen (resolveArtworkImages bleibt für URL-Fall; IndexedDB-Zweig für Werkbilder entfällt langfristig). 4) Doku: docs/WERKBILDER-EINE-QUELLE.md. |
+| **Erledigt** | [x] 06.03.26 (Supabase = Standard beim Speichern, imageRef = URL; GitHub-Upload nur wenn !isSupabaseConfigured(); docs/WERKBILDER-EINE-QUELLE.md) |
+
 ---
 
 ## Phase 5: Admin & Galerie – eine Daten-Schicht
