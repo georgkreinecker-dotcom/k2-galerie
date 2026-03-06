@@ -4,6 +4,14 @@
 
 ---
 
+## Datum: 06.03.26 – Werke verwalten: Platzhalter „Kein Bild“ – Anzeige-Fallback
+
+- **Thema:** Georg: „Es sind noch immer Platzhalter im Werke verwalten.“
+- **Was gemacht:** In **ScreenshotExportAdmin** (Werkkarten „Werke verwalten“): Zusätzlicher **Anzeige-Fallback** – wenn `imageUrl`/`previewUrl` leer sind: (1) `imageRef` nutzen, falls es eine http(s)-URL ist (Supabase/GitHub); (2) sonst Vercel-Fallback-URL bauen: `https://k2-galerie.vercel.app/img/k2/werk-{Nummer}.jpg` (wie beim GitHub-Upload). So zeigen Karten auch dann ein Bild, wenn die Liste aus einem Pfad kam, der nicht aufgelöst wurde, oder bei alten Einträgen ohne imageRef.
+- **Nächster Schritt:** Commit + Push. Georg testet: Admin → Werke verwalten → Karten sollten Bilder zeigen (oder bei 404 weiter „Kein Bild“ nach onerror).
+
+---
+
 ## Datum: 06.03.26 – ök2 „Galerie betreten“: Analyse + Regel (Variable vor Verwendung)
 
 - **Thema:** Georg: „Jetzt gehts wieder – wodurch wurde das verändert, das musst du analysieren, solche Dinge sind sehr lästig.“

@@ -65,7 +65,6 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **PRODUKT-STANDARD-NACH-SPORTWAGEN.md** – **Erreichter Standard (28.02.26):** Architektur (eine Quelle/Schicht/Regel), Sicherheit (Kundendaten, Datentrennung, Stand/QR), Tests (38), Doku & Prozess. Eine feste Stelle für „worauf das Produkt jetzt aufbaut“.
 - **K2-GALERIE-PRAESENTATIONSMAPPE.md** – **Prospekt (Sportwagen like):** Funktionale und technische Infos für Präsentationen, Pitches, Partner – Deckblatt, Kurzfassung, Funktionen, Technik, Sicherheit, Plattformen, Lizenzen, Referenzen. In der App: mök2 → Sektion „K2 Galerie Prospekt“ (1 Seite, druckbar als PDF).
 - **PLATTFORM-UNTERSTUETZUNG.md** – Welche Plattformen (Windows, Android, Mac).
-- **MEHRSPRACHIGKEIT.md** – **Grundstein für Mehrsprachigkeit:** localeConfig, i18n mit t(key), strings.de; Erweiterung auf en/fr ohne Bruch; schrittweise Migration der UI-Texte.
 - **USP-UND-MARKTCHANCEN.md** – USPs und Marktchancen.
 - **VERMARKTUNGSKONZEPT-EMPFEHLUNGSPROGRAMM.md** – Empfehlungsprogramm / Vermarktung (50 %-Gebühr).
 - **EMPFEHLUNGSKONZEPT-EINFACHER-WEG.md** – **Empfehlung konkret:** Kostensenkung (10 % Rabatt / 10 % Gutschrift), Vermarktung + technische Umsetzung, ohne Cashback.
@@ -141,6 +140,9 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **QS-VERGLEICH-PROFIS.md** – Wo unser QS-Standard im Vergleich zu Profi-Teams steht (was wir haben, was optional wäre).
 - **LICENCE-STRUKTUR.md** – Lizenzstruktur.
 - **LIZENZMODELL-BASIC-PRO-ENTERPRISE.md** – Stufen Basic/Pro/Enterprise, Limits, Feature-Matrix, Aufstufung.
+
+## Aufräumen (vorsichtig)
+- **AUFRAEUM-VORSCHLAG.md** – **Doppelte/verwaiste Einträge:** Was bereits bereinigt wurde (00-INDEX Duplikat); was optional aufgeräumt werden könnte (reference-screenshots, Crash-Regeln, historische Session-Docs). Nichts ohne Freigabe löschen.
 
 ## Session & Heute
 - **SESSION-17-02-26-MOK2-LIZENZEN-REGELN.md** – Was wir heute gemacht haben (mök2, Lizenzen, Vergütung, Regeln, Crash-Fixes).

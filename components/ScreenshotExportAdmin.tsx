@@ -11024,8 +11024,16 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 }
 
                 const PLACEHOLDER_KEIN_BILD = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
+                const VERCEL_IMG_BASE = 'https://k2-galerie.vercel.app'
                 return filtered.map((artwork) => {
                   let rawSrc = artwork.imageUrl || artwork.previewUrl
+                  // imageRef als URL (Supabase/GitHub) nutzen wenn imageUrl leer
+                  if (!rawSrc && artwork.imageRef && typeof artwork.imageRef === 'string' && (artwork.imageRef.startsWith('http://') || artwork.imageRef.startsWith('https://'))) rawSrc = artwork.imageRef
+                  // Fallback: Vercel /img/k2/werk-{Nummer}.jpg (wie bei GitHub-Upload) – für Werke mit nur k2-img-Ref
+                  if (!rawSrc && (artwork.number || artwork.id)) {
+                    const id = String(artwork.number || artwork.id).trim().replace(/[^a-zA-Z0-9-]/g, '-')
+                    if (id) rawSrc = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
+                  }
                   // blob:-URLs werden ungültig (z. B. nach Reload) → nie anzeigen, Platzhalter nutzen
                   if (typeof rawSrc === 'string' && rawSrc.startsWith('blob:')) rawSrc = ''
                   const isPlaceholder = !rawSrc || (typeof rawSrc === 'string' && rawSrc.startsWith('data:image/svg'))

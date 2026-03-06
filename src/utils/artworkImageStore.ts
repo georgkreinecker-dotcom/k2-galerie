@@ -113,9 +113,13 @@ export async function prepareArtworksForStorage(artworks: any[]): Promise<any[]>
   return out
 }
 
+/** Basis-URL für Vercel-Bilder (Fallback wenn IndexedDB leer, z. B. anderes Gerät). */
+const VERCEL_IMG_BASE = 'https://k2-galerie.vercel.app'
+
 /**
  * Löst imageRef in imageUrl auf: IndexedDB oder direkte URL (Supabase/Vercel).
  * Wenn imageRef eine http(s)-URL ist, wird sie direkt als imageUrl genutzt (kein Platzhalter).
+ * Wenn imageRef = k2-img-{Nummer} und IndexedDB liefert nichts: Fallback-URL /img/k2/werk-{Nummer}.jpg (GitHub-Upload-Namensschema).
  */
 export async function resolveArtworkImages(artworks: any[]): Promise<any[]> {
   if (!Array.isArray(artworks) || artworks.length === 0) return artworks
@@ -131,7 +135,13 @@ export async function resolveArtworkImages(artworks: any[]): Promise<any[]> {
       }
       try {
         const dataUrl = await getArtworkImage(ref)
-        out.push({ ...a, imageUrl: dataUrl || a.imageUrl || '', imageRef: ref })
+        let imageUrl = dataUrl || a.imageUrl || ''
+        // Fallback: IndexedDB leer (z. B. anderes Gerät) – versuche Vercel-Pfad wie bei GitHub-Upload (werk-{safeNumber}.jpg)
+        if (!imageUrl && ref.startsWith('k2-img-')) {
+          const id = ref.replace(/^k2-img-/, '').trim().replace(/[^a-zA-Z0-9-]/g, '-')
+          if (id) imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
+        }
+        out.push({ ...a, imageUrl, imageRef: ref })
       } catch {
         out.push(a)
       }
