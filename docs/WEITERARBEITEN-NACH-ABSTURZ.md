@@ -47,7 +47,7 @@ Diese Klarstellung gilt dauerhaft, damit in zukünftigen Sessions nicht wieder A
 
 **Wenn Georg „ro5“ schreibt:** Reopen nach Code-5-Absturz. KI: kurz in `docs/CRASH-BEREITS-GEPRUEFT.md` eintragen („ro5 – [Datum]“), dann DIALOG-STAND + ggf. diese Datei lesen und **dort** weitermachen. ro5 ist **kein** Auftrag für ein bestimmtes Feature – Kontext kommt von Georg/dem Faden.
 
-**Design-Vorschau Build-Fix (06.03.26):** Der JSX-Fehler in `ScreenshotExportAdmin.tsx` (Design-Tab → Vorschau) wurde behoben, indem der gesamte Vorschau-Block in eine Hilfsfunktion **`renderDesignVorschau`** ausgelagert wurde. Einfügepunkt: **nach** Zeile mit `  }` (Schließung VK2-Block), **vor** `  return (` (Haupt-JSX). Im JSX nur noch: `{designSubTab === 'vorschau' && renderDesignVorschau()}`. Nach ro5: **nicht** wieder Wrapper/IIFE im JSX versuchen – die Auslagerung in eine Funktion ist der richtige Weg.
+**Design-Vorschau Build-Fix (06.03.26):** Der JSX-Fehler in `ScreenshotExportAdmin.tsx` (Design-Tab → Vorschau) wurde behoben, indem der gesamte Vorschau-Block in eine Hilfsfunktion **`renderDesignVorschau`** ausgelagert wurde. Einfügepunkt: **nach** Zeile mit `  }` (Schließung VK2-Block), **vor** `  return (` (Haupt-JSX). Im JSX nur noch: `{designSubTab === 'vorschau' && renderDesignVorschau()}`. Nach ro5: **nicht** wieder Wrapper/IIFE im JSX versuchen – die Auslagerung in eine Funktion ist der richtige Weg. **Vollständige Analyse (was das Desaster war, warum, Prävention):** **docs/ANALYSE-ADMIN-BUILD-DESASTER-06-03.md**. Regel: .cursor/rules/jsx-grosse-bloeke-auslagern.mdc.
 
 ---
 

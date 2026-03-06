@@ -1,0 +1,29 @@
+---
+description: JSX – große oder komplexe Conditional-Blöcke in Hilfsfunktion auslagern, sonst Parser-Chaos und Build rot.
+alwaysApply: true
+---
+
+# 🔒 JSX: Große/complexe Blöcke auslagern (Build-Desaster vermeiden)
+
+## Lehre aus 06.03.26 (Admin/Build-Desaster)
+
+Ein **riesiger Block** im JSX hinter `{condition && ( ... )}` mit **verschachtelten IIFEs** und mehreren `return ( ... );` hat den **Parser** verwirrt: `);` wurde dem äußeren Conditional zugeordnet → **')' expected**, **Expected closing tag for fragment** → **Build rot** → **kein Deploy** → Admin wirkte „kaputt“.
+
+**Richtige Lösung:** Block in eine **Hilfsfunktion** auslagern (z. B. `const renderX = () => { return ( ... ); };`), im JSX nur `{condition && renderX()}`. Kein `);` mehr im gleichen Baum wie das Conditional.
+
+Vollständige Analyse: **docs/ANALYSE-ADMIN-BUILD-DESASTER-06-03.md**.
+
+---
+
+## Regel
+
+- **Wenn** ein Conditional (`&&` oder `? :`) einen **sehr großen** (z. B. hundert+ Zeilen) oder **strukturell komplexen** Block rendert (z. B. **verschachtelte IIFEs**, mehrere `return ( ... );` im gleichen JSX-Ausdruck):
+  - **Nicht** mit weiteren Wrappern, Fragmenten oder Klammern im JSX „reparieren“.
+  - **Stattdessen:** Den Block in eine **Hilfsfunktion** im Komponenten-Body auslagern und im JSX nur den Aufruf stehen lassen (z. B. `{condition && renderBlock()}`).
+- **Build rot:** Nie dauerhaft rot lassen. Sofort beheben oder letzte Änderung zurücknehmen, bis Build wieder grün – sonst blockiert jeder Push (wie beim Admin-Desaster).
+
+---
+
+## Kurzfassung
+
+**Großer/complexer Block im Conditional → Auslagern in Hilfsfunktion. Nicht im JSX-Baum herumdoktern. Build nie dauerhaft rot.**

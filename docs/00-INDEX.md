@@ -29,6 +29,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **ZENTRALE-THEMEN-FUER-NUTZER.md** – **Eine Übersicht:** Änderungen sichtbar, Geräte, Drucker, Stand/Handy, Backup, Echte Galerie vs. Demo, Admin, Kassa. Kurz + Verweise auf die Einzel-Dokus.
 
 ## Stabilität & Crash
+- **ANALYSE-ADMIN-BUILD-DESASTER-06-03.md** – **Admin/Build-Desaster 06.03.26:** Warum Build rot war (JSX-Chaos in ScreenshotExportAdmin Design-Vorschau + navigate in Unterkomponente). Auslagern großer Conditional-Blöcke in Hilfsfunktion; Build nie dauerhaft rot; Hooks pro Komponente. Regel: .cursor/rules/jsx-grosse-bloeke-auslagern.mdc.
 - **ANALYSE-OEK2-GALERIE-BETRETEN-FEHLER-06-03.md** – **„Cannot access uninitialized variable“ (ök2 Galerie betreten):** Ursache = Variable (location) in useEffect verwendet, Deklaration (useLocation) stand weiter unten → temporal dead zone. Fix: useLocation() an Komponentenanfang. **Lehre:** Hook-Variablen (location, navigate, state) immer vor erster Verwendung deklarieren; Router-Hooks am Anfang. Regel: .cursor/rules/variable-vor-verwendung-hooks.mdc.
 - **WIE-PROFIS-ARBEITEN.md** – **Was Profis anders machen:** Kleine Dateien, App im Browser, weniger Always-On-Kontext, stabile Tools, kleine Schritte. Damit es funktioniert.
 - **CODE-5-WAS-GEAENDERT-WURDE.md** – Welche Änderungen im Repo stehen; was Code 5 plausibel auslöst (große Datei + Speichern); Sofort-Checks.
