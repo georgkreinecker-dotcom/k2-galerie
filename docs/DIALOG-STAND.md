@@ -13,6 +13,14 @@
 
 ---
 
+## Datum: 07.03.26 – ro5 + weiter (Commit + Push)
+
+- **Thema:** Georg: ro5, dann „weiter“ – offene Änderungen sichern, Stand sauber.
+- **Was gemacht:** (1) ro5 in CRASH-BEREITS-GEPRUEFT eingetragen (07.03.26, frag anke). (2) QS: Tests 42/42, Build ✅. (3) Commit + Push: ScreenshotExportAdmin.tsx, CRASH-BEREITS-GEPRUEFT.md, Build-Info-Dateien. **Commit:** 6883dbe ✅ auf GitHub.
+- **Nächster Schritt:** Beim Wiedereinstieg: DIALOG-STAND + Ankes Briefing lesen. Optional: Grafiker-Tisch / Texte kürzen (ök2), oder anderes Thema.
+
+---
+
 ## Datum: 06.03.26 – Build-Fix Design-Vorschau + ro5 abgesichert
 
 - **Thema:** JSX-Fehler in ScreenshotExportAdmin (Design-Tab Vorschau) blockierte Vercel-Build; Georg: „weiter, aber bei ro5 nicht wie Idioten dastehen“.
