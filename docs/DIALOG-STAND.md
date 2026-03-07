@@ -9,7 +9,8 @@
 - **Thema:** (1) Virtueller Rundgang Video: ein Standard – eine Funktion `handleVirtualTourVideoFile`, beide Video-Inputs (Design Seite 1 + Seite 2) nutzen sie. (2) Georg: „Warum muss ich auf Sportwagenmodus hinweisen – wir sind ja permanent drin.“
 - **Erledigt:** ScreenshotExportAdmin: `handleVirtualTourVideoFile(file)` als useCallback (nach runBildUebernehmen); komplette Logik (Größe/Dauer, blob, setPageContent/setPageContentGalerie, Upload K2/VK2, Status) zentral; beide Inputs nur noch `onChange` → Aufruf dieser Funktion. VK2 nach Upload korrekt mit tenantId 'vk2'.
 - **Regel:** Sportwagenmodus = Standard für alle Abläufe – von vornherein prüfen (ein Ablauf, viele Aufrufer), nicht erst wenn Georg darauf hinweist.
-- **Nächster Schritt:** Commit + Push (siehe unten). Georg testen: Admin → Design → Virtueller Rundgang, Video wählen auf Seite 1 und Seite 2 – gleiches Verhalten.
+- **Commit:** c42c79a ✅ auf GitHub.
+- **Nächster Schritt:** Georg testen: Admin → Design → Virtueller Rundgang, Video wählen auf Seite 1 und Seite 2 – gleiches Verhalten.
 
 ---
 
