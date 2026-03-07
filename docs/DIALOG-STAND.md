@@ -4,6 +4,15 @@
 
 ---
 
+## Datum: 07.03.26 – Commit + Push nach jeder Aktion (frag anke / Anke Bescheid sagen)
+
+- **Thema:** Georg: „Commiten und Pushen machst du nach jeder Aktion ja selbständig, oder nicht mehr?“ – Anke/Briefing soll es wissen.
+- **Bestätigung:** Regel unverändert (auto-commit-push-nach-aufgabe.mdc): Nach jeder erledigten Programmier-Aufgabe macht Joe selbst test → build → commit → push. War in einer vorherigen Runde weggelassen worden, wurde nachgeholt.
+- **Erledigt (07.03.26):** Alle offenen Änderungen committed und gepusht: APf Smart Panel ein-/ausblendbar, APf-Icon auf Galerie-Seiten ausgeblendet, Kassabuch iPhone-Scroll, Mobile-Lesbarkeit (AGB, Kunden, Werbeunterlagen, Handbücher), drei Icons unten auf Galerie entfernt. **Commit:** a047eb5 (nach Rebase 68a0cca) ✅ auf GitHub.
+- **Für Anke/nächste Session:** Keine uncommitteten Änderungen mehr; „Uncommitted“ im Briefing war Stand vor diesem Push. Joe führt Commit + Push nach jeder abgeschlossenen Aufgabe durch.
+
+---
+
 ## Datum: 07.03.26 – Anke (Briefing + Konzept)
 
 - **Thema:** Anke – schlanker smarter Agent für unsere Arbeit (Orientierung, Stand, Offen, proaktive Vorschläge); kein zweiter Joe. **Name: Anke** (schöner deutscher Mädchenname – Joe und Anke, nicht zwei männliche Wesen).
