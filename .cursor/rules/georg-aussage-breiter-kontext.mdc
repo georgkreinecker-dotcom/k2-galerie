@@ -1,0 +1,38 @@
+---
+description: Georgs Aussagen (z. B. "verwirrend") – oft breiter Kontext, viele Bereiche
+alwaysApply: true
+---
+
+# 🔒 Georg: Aussagen mit breitem Kontext (für Joe und Anke)
+
+## Regel (unveränderlich)
+
+**Wenn Georg sagt, etwas sei „verwirrend“, „funktioniert nicht“, „war weg“ oder einen Bereich/Flow kritisiert (z. B. „Galerie gestalten“), steckt dahinter oft ein **breiter Kontext** – viele Bereiche und Schritte, nicht nur ein Bildschirm.**
+
+- **Nicht** annehmen: „ein Button, eine Stelle“ – dann nur die eine Stelle fixen.
+- **Sondern:** Den **ganzen Ablauf** und **alle betroffenen Bereiche** mitdenken (Workflow, Speichern, Anzeige, Platzhalter, Video, Statusmeldungen, Geräte).
+
+## Konkret: „Galerie gestalten“
+
+„Galerie gestalten“ (Design-Tab, Deine Galerie gestalten) umfasst u. a.:
+
+| Bereich | Was dazugehört |
+|---------|----------------|
+| **Workflow** | Schritt 1 Foto/Text, Schritt 2 Galerie ansehen, Schritt 3 Speichern (auf diesem Gerät), Schritt 4 Veröffentlichen |
+| **Bild** | Willkommensbild, Galerie-Karte, Virtual-Tour; Bildverarbeitung (Original/Zuschneiden, ggf. Freistellen); „Bild übernehmen“ |
+| **Speichern** | setPageContentGalerie, localStorage, ggf. Upload (GitHub/Vercel); Quota bei großen Base64-Bildern |
+| **Anzeige** | Design-Vorschau („Galerie ansehen“), Platzhalter wenn Bild fehlt/fehlschlägt; GaleriePage / GalerieVorschauPage |
+| **Video** | Virtual-Tour-Video, Anzeige in Galerie ansehen |
+| **Status** | „⏳ Bild wird verarbeitet…“, „✅ Bild übernommen“, „⚠️ Fehler“ – sichtbar im gleichen Modal/Fenster |
+
+Wenn Georg z. B. sagt „nach Speichern war Bild weg, nur Platzhalter“ oder „in Galerie ansehen kann man Video nicht ansehen“ oder „Galerie gestalten ist noch sehr verwirrend“, sind das **Hinweise auf den ganzen Kontext** – nicht nur einen einzelnen Button.
+
+## Konsequenz für Joe und Anke
+
+- **Bei solchen Aussagen:** Zuerst den **Faden** verstehen (welcher Ablauf? welche Schritte? welche Seiten?). Dann prüfen: Speichern, Anzeige, Platzhalter, Video, Status – wo hakt es?
+- **Anke/Briefing:** Diese Regel und der Kontext „Galerie gestalten = viele Bereiche“ sind für die nächste Session abrufbar (DIALOG-STAND, diese Regel). Bei „frag Anke“ oder Session-Start: Kontext mitlesen.
+- **Nicht:** Nur eine Stelle ändern und „fertig“ melden, wenn das Problem den ganzen Flow betrifft.
+
+## Kurzfassung
+
+**Georgs Kritik oder „verwirrend“ = oft breiter Kontext. Galerie gestalten = Workflow + Bild + Speichern + Anzeige + Platzhalter + Video + Status. Immer den ganzen Faden mitdenken – und Anke mitteilen.**

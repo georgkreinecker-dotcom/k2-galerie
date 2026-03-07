@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, lazy, Suspense } from 'react'
 import { safeReload, safeReloadWithCacheBypass } from './utils/env'
-import { Routes, Route, Navigate, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import './App.css'
 import ProjectsPage from './pages/ProjectsPage'
 import ProjectStartPage from './pages/ProjectStartPage'
@@ -451,42 +451,8 @@ function PrintFooter() {
   return <div id="print-footer" ref={ref} aria-hidden />
 }
 
-/** Galerie-Seiten: dort wird das APf-Icon nicht angezeigt (nicht mehr benötigt). */
-function isGaleriePage(pathname: string): boolean {
-  return pathname === PROJECT_ROUTES['k2-galerie'].galerie
-    || pathname === PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
-    || pathname === PROJECT_ROUTES['k2-galerie'].galerieVorschau
-    || pathname === PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau
-}
-
-/** Aktuelle Route → APf-Tab (DevView page id), damit die gleiche Seite in der APf geöffnet wird */
-function getApfPageFromPath(pathname: string, search: string): string {
-  if (pathname === '/') {
-    const page = new URLSearchParams(search).get('page')
-    return page || 'platform'
-  }
-  if (pathname === '/admin') return 'admin'
-  if (pathname === PLATFORM_ROUTES.projects) return 'projects'
-  if (pathname === PROJECT_ROUTES['k2-galerie'].galerie) return 'galerie'
-  if (pathname === PROJECT_ROUTES['k2-galerie'].galerieOeffentlich) return 'galerie-oeffentlich'
-  if (pathname === PROJECT_ROUTES['k2-galerie'].galerieVorschau) return 'galerie-vorschau'
-  if (pathname === PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau) return 'galerie-oeffentlich-vorschau'
-  if (pathname === PROJECT_ROUTES['k2-galerie'].platzanordnung) return 'platzanordnung'
-  if (pathname === PROJECT_ROUTES['k2-galerie'].shop) return 'shop'
-  if (pathname === PROJECT_ROUTES['k2-galerie'].controlStudio) return 'control'
-  if (pathname === PROJECT_ROUTES['k2-galerie'].plan) return 'mission'
-  if (pathname === PROJECT_ROUTES['k2-galerie'].produktVorschau) return 'produkt-vorschau'
-  if (pathname === PROJECT_ROUTES['k2-galerie'].marketingOek2) return 'marketing-oek2'
-  if (pathname === PROJECT_ROUTES['k2-galerie'].softwareentwicklung) return 'k2-softwareentwicklung'
-  if (pathname.startsWith('/projects/k2-galerie')) return 'galerie' // z. B. Projekt-Start → Galerie
-  return 'platform'
-}
-
 function App() {
-  const navigate = useNavigate()
   const location = useLocation()
-  const currentApfPage = getApfPageFromPath(location.pathname, location.search || '')
-  const isOnApf = location.pathname === '/'
 
   // SEO: Seitentitel und Meta-Beschreibung pro Route (Sichtbarkeit Punkt 1)
   useEffect(() => {
@@ -504,38 +470,7 @@ function App() {
     <AppErrorBoundary>
     <div style={{ width: '100%', minWidth: 0 }}>
     <StandBadgeSync />
-    {/* Brand-Button entfernt – bei der Arbeit nicht nötig; bei Bedarf in BrandLogo.tsx wieder einbinden */}
-    {/* Von jeder Seite in die APf – gleiche Seite bleibt in der APf geöffnet; Vollbild wird beendet. Auf Galerie-Seiten nicht anzeigen. */}
-    {typeof window !== 'undefined' && !isMobileView() && !isOnApf && !isGaleriePage(location.pathname) && (
-      <button
-        type="button"
-        onClick={() => {
-          try {
-            if (document.fullscreenElement) (document as any).exitFullscreen?.()
-          } catch (_) {}
-          navigate(`/?page=${currentApfPage}`)
-        }}
-        title={`Zurück zur APf (diese Seite: ${currentApfPage})`}
-        className="apf-float-btn"
-        style={{
-          position: 'fixed',
-          top: '12px',
-          left: '12px',
-          zIndex: 99998,
-          padding: '8px 14px',
-          fontSize: '14px',
-          fontWeight: '600',
-          color: '#fff',
-          background: 'linear-gradient(135deg, var(--k2-accent, #ff8c42) 0%, #e67a2a 100%)',
-          border: 'none',
-          borderRadius: '10px',
-          cursor: 'pointer',
-          boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
-        }}
-      >
-        APf
-      </button>
-    )}
+    {/* Brand-Button entfernt – bei der Arbeit nicht nötig; bei Bedarf in BrandLogo.tsx wieder einbinden. APf-Float-Button entfernt – nirgends mehr benötigt. */}
     <Routes>
       {/* Schreiben an Michael – nur diese eine Seite, keine APf, keine Galerie */}
       <Route path={PILOT_SCHREIBEN_ROUTE} element={<PilotStartPage />} />

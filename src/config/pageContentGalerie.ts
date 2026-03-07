@@ -125,8 +125,8 @@ export function mergePageContentGalerieFromServer(serverJson: string, tenantId?:
   }
 }
 
-/** Speichert Seitengestaltung. tenantId 'oeffentlich' = ök2, 'vk2' = VK2. */
-export function setPageContentGalerie(data: Partial<PageContentGalerie>, tenantId?: 'oeffentlich' | 'vk2'): void {
+/** Speichert Seitengestaltung. tenantId 'oeffentlich' = ök2, 'vk2' = VK2. Gibt true zurück bei Erfolg, false bei Fehler (z. B. Quota) – Caller kann Meldung anzeigen. */
+export function setPageContentGalerie(data: Partial<PageContentGalerie>, tenantId?: 'oeffentlich' | 'vk2'): boolean {
   try {
     if (typeof window !== 'undefined') {
       const current = getPageContentGalerie(tenantId)
@@ -136,9 +136,12 @@ export function setPageContentGalerie(data: Partial<PageContentGalerie>, tenantI
       window.dispatchEvent(new CustomEvent('k2-oeffentlich-images-updated'))
       window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
       window.dispatchEvent(new CustomEvent('k2-page-content-updated'))
+      return true
     }
+    return true
   } catch (e) {
     console.warn('Seitengestaltung speichern fehlgeschlagen:', e)
+    return false
   }
 }
 

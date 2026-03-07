@@ -83,8 +83,6 @@ a {
   /* Standard: Nur #root anzeigen (Flyer/Seiten drucken) */
   body > * { display: none !important; }
   #root { display: block !important; min-height: auto !important; padding-bottom: 12mm !important; }
-  /* APf-Button beim Drucken ausblenden */
-  .apf-float-btn { display: none !important; }
   /* Globale Druck-Fußzeile: Dokumentenersteller | Druckdatum (Inhalt wird per JS gesetzt) */
   #print-footer {
     display: flex !important;

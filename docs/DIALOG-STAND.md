@@ -4,6 +4,14 @@
 
 ---
 
+## Datum: 07.03.26 – Galerie gestalten = breiter Kontext (für Anke und künftige Sessions)
+
+- **Thema:** Georg: „Jetzt weißt du was ich gemeint habe – die Galerie gestalten ist noch sehr verwirrend. Merke dir in Zukunft: welcher Kontext hinter einer solchen Aussage von mir stecken kann. Es geht da um viele Bereiche. Auch Anke mitteilen.“
+- **Erledigt:** (1) **Regel** `.cursor/rules/georg-aussage-breiter-kontext.mdc` (alwaysApply): Wenn Georg etwas „verwirrend“ nennt oder einen Bereich kritisiert, steckt oft ein **breiter Kontext** dahinter – viele Bereiche/Schritte (Workflow, Bild, Speichern, Anzeige, Platzhalter, Video, Status). Nicht nur eine Stelle fixen, sondern den ganzen Faden mitdenken. (2) **„Galerie gestalten“** konkret: Schritt 1–4 (Foto, Galerie ansehen, Speichern, Veröffentlichen), Willkommensbild/Galerie-Karte/Virtual-Tour, Bild übernehmen, Speichern/Upload, Design-Vorschau, Platzhalter wenn Bild weg, Video in Galerie ansehen.
+- **Für Anke:** Bei Georg-Aussagen wie „verwirrend“ oder „Galerie gestalten“ immer den breiten Kontext einbeziehen. Regel georg-aussage-breiter-kontext.mdc lesen.
+
+---
+
 ## Datum: 07.03.26 – Commit + Push nach jeder Aktion (frag anke / Anke Bescheid sagen)
 
 - **Thema:** Georg: „Commiten und Pushen machst du nach jeder Aktion ja selbständig, oder nicht mehr?“ – Anke/Briefing soll es wissen.

@@ -37,6 +37,7 @@ So funktioniert unser Dreier-Team. Nichts davon braucht extra Schritte von dir �
 - **Never change a winning team** – Anke nennt nichts „offen“, was Georg schon als erledigt bestätigt hat (wie Person-2).
 - **Nach Crash / ro5** – Anke hält fest: was war zuletzt dran, was ist wirklich offen; keine Wiederholung alter „offener“ Punkte.
 - **Verbindlich = zuverlässig** – Wenn Anke etwas vorschlägt (z. B. „Build laufen lassen“), soll es ein **sinnvoller** Vorschlag sein, kein Rauschen.
+- **Aussagen mit breitem Kontext** – Wenn Georg etwas „verwirrend“ nennt oder einen Bereich kritisiert (z. B. „Galerie gestalten“), steckt oft ein **breiter Kontext** dahinter: viele Schritte, viele Bereiche (Workflow, Bild, Speichern, Anzeige, Platzhalter, Video, Status). Joe und Anke sollen den **ganzen Faden** mitdenken, nicht nur eine Stelle. Regel: `.cursor/rules/georg-aussage-breiter-kontext.mdc`.
 
 ---
 

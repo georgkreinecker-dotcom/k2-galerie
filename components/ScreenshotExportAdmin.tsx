@@ -9530,7 +9530,63 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   : <button type="button" className="btn-primary" onClick={async () => {
                       try {
                         const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
-                        setPageContentGalerie(pageContent, designTenant)
+                        const tenantForUpload = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+                        const context = tenant.isOeffentlich ? ('oeffentlich' as const) : tenant.isVk2 ? ('vk2' as const) : ('k2' as const)
+                        let contentToSave: PageContentGalerie = { ...pageContent }
+                        // Zuerst Willkommensbild als URL speichern (Upload vor Speichern) → kein großes Base64 in localStorage, kein Quota-Fehler
+                        const welcomeFilename = context === 'oeffentlich' ? 'willkommen-demo.jpg' : 'willkommen.jpg'
+                        const fileToUpload = pendingWelcomeFileRef.current
+                        const base64Image = pageContent.welcomeImage
+                        pendingWelcomeFileRef.current = null
+                        if (fileToUpload) {
+                          setImageUploadStatus('⏳ Foto wird gespeichert…')
+                          try {
+                            const { uploadPageImage } = await import('../src/utils/githubImageUpload')
+                            const url = await uploadPageImage(fileToUpload, context, welcomeFilename, () => {})
+                            contentToSave = { ...contentToSave, welcomeImage: url }
+                            setImageUploadStatus(null)
+                          } catch (_) {
+                            setImageUploadStatus('⚠️ Upload fehlgeschlagen – Bild nur lokal')
+                            setTimeout(() => setImageUploadStatus(null), 5000)
+                          }
+                        } else if (base64Image && base64Image.startsWith('data:')) {
+                          setImageUploadStatus('⏳ Foto wird gespeichert…')
+                          try {
+                            const res = await fetch(base64Image)
+                            const blob = await res.blob()
+                            const fileFromBase64 = new File([blob], welcomeFilename, { type: blob.type })
+                            const { uploadPageImage } = await import('../src/utils/githubImageUpload')
+                            const url = await uploadPageImage(fileFromBase64, context, welcomeFilename, () => {})
+                            contentToSave = { ...contentToSave, welcomeImage: url }
+                            setImageUploadStatus(null)
+                          } catch (_) {
+                            setImageUploadStatus('⚠️ Upload fehlgeschlagen – Bild nur lokal')
+                            setTimeout(() => setImageUploadStatus(null), 5000)
+                          }
+                        }
+                        // Virtual-Tour-Video: blob vor Speichern hochladen, damit es in „Galerie ansehen“ abspielbar ist (nur K2/VK2)
+                        const videoSrc = contentToSave.virtualTourVideo
+                        if (videoSrc?.startsWith('blob:') && (context === 'k2' || context === 'vk2')) {
+                          setImageUploadStatus('⏳ Video wird gespeichert…')
+                          try {
+                            const res = await fetch(videoSrc)
+                            const videoBlob = await res.blob()
+                            const videoFile = new File([videoBlob], 'virtual-tour.mp4', { type: videoBlob.type || 'video/mp4' })
+                            const { uploadVideoToGitHub } = await import('../src/utils/githubImageUpload')
+                            const videoUrl = await uploadVideoToGitHub(videoFile, 'virtual-tour.mp4', (msg) => setImageUploadStatus('⏳ ' + msg))
+                            contentToSave = { ...contentToSave, virtualTourVideo: videoUrl }
+                            setImageUploadStatus(null)
+                          } catch (_) {
+                            setImageUploadStatus('⚠️ Video-Upload fehlgeschlagen – nur lokal')
+                            setTimeout(() => setImageUploadStatus(null), 5000)
+                          }
+                        }
+                        setPageContent(contentToSave)
+                        const ok = setPageContentGalerie(contentToSave, designTenant)
+                        if (!ok) {
+                          alert('Speichern fehlgeschlagen – Speicher voll? Bitte weniger oder kleinere Bilder wählen.')
+                          return
+                        }
                         setPageTexts(pageTexts, designTenant)
                         if (designSettings && Object.keys(designSettings).length > 0) {
                           const ds = JSON.stringify(designSettings)
@@ -9540,48 +9596,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         if (!tenant.isOeffentlich) window.dispatchEvent(new CustomEvent('k2-design-saved-publish'))
                         setDesignSaveFeedback('ok')
                         setTimeout(() => setDesignSaveFeedback(null), 6000)
-                        // Foto auf GitHub hochladen – damit es dauerhaft auf Vercel gespeichert ist
-                        // Gilt für K2 UND ök2 – Base64 wird durch Vercel-Pfad ersetzt → kein localStorage-Verlust mehr
-                        {
-                          const context = tenant.isOeffentlich ? ('oeffentlich' as const) : tenant.isVk2 ? ('vk2' as const) : ('k2' as const)
-                          const tenantForUpload = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
-                          const fileToUpload = pendingWelcomeFileRef.current
-                          const base64Image = pageContent.welcomeImage
-                          pendingWelcomeFileRef.current = null
-      
-                          // ök2: willkommen-demo.jpg – nie willkommen.jpg, sonst überschreibt die Entdecken-Seite (Landing) das Bild für alle
-                          const welcomeFilename = context === 'oeffentlich' ? 'willkommen-demo.jpg' : 'willkommen.jpg'
-                          const doWelcomeUpload = async (uploadFile: File) => {
-                            setImageUploadStatus('⏳ Foto wird dauerhaft gespeichert…')
-                            try {
-                              const { uploadPageImage } = await import('../src/utils/githubImageUpload')
-                              const url = await uploadPageImage(uploadFile, context, welcomeFilename, () => {})
-                              const next2 = { ...pageContent, welcomeImage: url }
-                              setPageContent(next2)
-                              setPageContentGalerie(next2, tenantForUpload)
-                              setImageUploadStatus('✅ Dauerhaft gespeichert – auf allen Geräten sichtbar')
-                              setTimeout(() => setImageUploadStatus(null), 6000)
-                            } catch (_) {
-                              setImageUploadStatus('⚠️ Nur lokal gespeichert – bitte nochmals speichern')
-                              setTimeout(() => setImageUploadStatus(null), 8000)
-                            }
-                          }
-      
-                          if (fileToUpload) {
-                            await doWelcomeUpload(fileToUpload)
-                          } else if (base64Image && base64Image.startsWith('data:')) {
-                            // Altes Base64-Foto: als Blob konvertieren und hochladen
-                            try {
-                              const res = await fetch(base64Image)
-                              const blob = await res.blob()
-                              const fileFromBase64 = new File([blob], welcomeFilename, { type: blob.type })
-                              await doWelcomeUpload(fileFromBase64)
-                            } catch (_) {
-                              setImageUploadStatus('⚠️ Nur lokal gespeichert – bitte nochmals speichern')
-                              setTimeout(() => setImageUploadStatus(null), 8000)
-                            }
-                          }
-                        }
                       } catch (e) {
                         alert('Fehler beim Speichern: ' + (e instanceof Error ? e.message : String(e)))
                       }
@@ -9753,7 +9767,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             </>
                           ) : (
                             <>
-                              <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', margin: '0.5rem 0 0.75rem' }}>Freistellen, Original oder Zuschneiden wählen – dann „Bild übernehmen“.</p>
+                              <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', margin: '0.5rem 0 0.75rem' }}>Original oder Zuschneiden wählen – dann „Bild übernehmen“.</p>
                               <img src={pendingPageImage.dataUrl} alt="Vorschau" style={{ width: '100%', maxHeight: 220, objectFit: 'contain', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', marginBottom: '0.75rem' }} />
                               <ImageProcessingOptions
                                 mode={pendingPageImageMode === 'vollkachel' ? 'original' : pendingPageImageMode}
@@ -9761,6 +9775,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 backgroundPreset={pendingPageImagePreset}
                                 onBackgroundPresetChange={setPendingPageImagePreset}
                                 showVollkachel={false}
+                                showFreistellen={false}
                                 onCropClick={() => setCropPageImageSrc(pendingPageImage.dataUrl)}
                               />
                             </>
@@ -9773,7 +9788,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 const field = pendingPageImage.field
                                 const dataUrlToProcess = pendingPageImage.dataUrl
                                 const fileForWelcome = pendingPageImage.file
-                                const effectiveMode = (field === 'galerieCardImage' || field === 'virtualTourImage') ? 'original' : pendingPageImageMode
+                                const effectiveMode = (field === 'galerieCardImage' || field === 'virtualTourImage') ? 'original' : (pendingPageImageMode === 'freigestellt' ? 'original' : pendingPageImageMode)
                                 await runBildUebernehmen(dataUrlToProcess, effectiveMode, pendingPageImagePreset, async (result) => {
                                   const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
                                   setPageContent(prev => {
@@ -9801,6 +9816,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             </button>
                             <button type="button" onClick={() => { setPendingPageImage(null); setCropPageImageSrc(null); setImageUploadStatus(null); setImageModalDragOffset({ x: 0, y: 0 }) }} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: '0.9rem' }}>Abbrechen</button>
                           </div>
+                          {imageUploadStatus && (
+                            <div style={{ marginTop: '0.75rem', padding: '0.5rem 0.75rem', background: imageUploadStatus.startsWith('✅') ? 'rgba(16,185,129,0.15)' : imageUploadStatus.startsWith('⏳') ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)', border: `1px solid ${imageUploadStatus.startsWith('✅') ? '#10b981' : imageUploadStatus.startsWith('⏳') ? '#f59e0b' : '#ef4444'}44`, borderRadius: 8, fontSize: '0.88rem', color: imageUploadStatus.startsWith('✅') ? '#10b981' : imageUploadStatus.startsWith('⏳') ? '#d97706' : '#fca5a5', fontWeight: 500 }}>
+                              {imageUploadStatus}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>,
