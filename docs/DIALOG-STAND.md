@@ -4,6 +4,15 @@
 
 ---
 
+## Datum: 07.03.26 – Schlanker smarter Agent (Briefing + Konzept)
+
+- **Thema:** Agent, der unsere Arbeit unterstützt – Orientierung, Stand, Offen, proaktive Vorschläge; kein zweiter Joe.
+- **Was gemacht:** (1) **docs/AGENT-KONZEPT.md** – Analyse Georgs Denk- und Handlungsweise (aus WIR-PROZESS, Regeln), Spezifikation des Agenten (Stand, Offen, Proaktiv), wo er lebt (Briefing-Datei + Skript). (2) **scripts/agenten-briefing.js** – liest DIALOG-STAND + Grafiker-Tisch, optional git status; schreibt **docs/AGENTEN-BRIEFING.md** mit Stand, Offen, Proaktiv, Georg-Kurzreferenz. (3) **npm run briefing** – Skript in package.json. (4) Session-Start-Regeln ergänzt: AGENTEN-BRIEFING bei Session-Start (und „Hi Joe“/ro) mit lesen; gemeinsamer-arbeitsraum.mdc + session-start-regeln-struktur.mdc. (5) docs/00-INDEX.md Einträge für AGENT-KONZEPT + AGENTEN-BRIEFING.
+- **Grafiker-Tisch (07.03.26):** Georg: direkter Weg war schneller, Grafiker-Tisch hat sich nicht bewährt. **Entscheidung:** Grafiker-Tisch bleibt als **Option** (Ablage), ist aber **nicht mehr in normalen Operationen** – Session-Start = DIALOG-STAND + AGENTEN-BRIEFING; Grafiker-Tisch nur lesen wenn Georg ihn explizit nutzt. Regeln + GRAFIKER-TISCH-NOTIZEN.md + AGENT-KONZEPT angepasst.
+- **Nächster Schritt:** Optional Commit + Push. Beim nächsten Session-Start: `npm run briefing` (oder vorher), dann DIALOG-STAND + AGENTEN-BRIEFING lesen – Proaktiv-Vorschläge nutzen wenn sinnvoll.
+
+---
+
 ## Datum: 06.03.26 – Build-Fix Design-Vorschau + ro5 abgesichert
 
 - **Thema:** JSX-Fehler in ScreenshotExportAdmin (Design-Tab Vorschau) blockierte Vercel-Build; Georg: „weiter, aber bei ro5 nicht wie Idioten dastehen“.

@@ -15,6 +15,7 @@
     "build": "npm run test && node scripts/write-build-info.js --inject-html && npm run check-exports && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "briefing": "node scripts/agenten-briefing.js",
     "electron": "electron .",
     "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5175 && electron . --dev\"",
     "electron:build": "npm run build && electron-builder --mac",
