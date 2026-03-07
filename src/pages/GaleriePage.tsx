@@ -3357,21 +3357,23 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                   })()}
                 </div>
                 <h3 style={{
-                  fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                  fontWeight: '600',
-                  color: musterOnly ? theme.text : 'rgba(255, 255, 255, 0.9)',
+                  fontSize: 'clamp(1.1rem, 2.8vw, 1.25rem)',
+                  fontWeight: '700',
+                  color: musterOnly ? theme.text : 'rgba(255, 255, 255, 0.95)',
                   marginBottom: 'clamp(0.35rem, 1vw, 0.5rem)'
                 }}>
                   {galerieTexts.virtualTourButtonText || 'Virtueller Rundgang'}
                 </h3>
-                <p style={{
-                  fontSize: 'clamp(0.8rem, 2vw, 0.85rem)',
-                  color: musterOnly ? theme.muted : 'rgba(255, 255, 255, 0.55)',
-                  marginBottom: '0.35rem',
-                  lineHeight: '1.4'
-                }}>
-                  {musterOnly ? 'Galerie virtuell erkunden' : 'Galerie auch bei geschlossener Tür erkunden'}
-                </p>
+                {!(musterOnly ? displayImages.virtualTourVideo : (displayImages.virtualTourVideo || '/img/k2/virtual-tour.mp4')) && (
+                  <p style={{
+                    fontSize: 'clamp(0.8rem, 2vw, 0.85rem)',
+                    color: musterOnly ? theme.muted : 'rgba(255, 255, 255, 0.55)',
+                    marginBottom: '0.35rem',
+                    lineHeight: '1.4'
+                  }}>
+                    {musterOnly ? 'Galerie virtuell erkunden' : 'Galerie auch bei geschlossener Tür erkunden'}
+                  </p>
+                )}
                 <p style={{
                   fontSize: 'clamp(0.72rem, 1.8vw, 0.78rem)',
                   color: musterOnly ? theme.muted : 'rgba(255, 255, 255, 0.45)',

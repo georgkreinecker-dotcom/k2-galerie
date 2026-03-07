@@ -8,7 +8,7 @@
 
 - **Thema:** Georg: Beim Klick auf „Rundgang starten“ kam das Bild, nicht das Video.
 - **Ursache:** Button nutzte für K2 nur auf vercel.app einen Video-Fallback; auf localhost war videoSrc leer → es wurde das Bild geöffnet.
-- **Erledigt:** GaleriePage – Button „Rundgang starten“ nutzt dieselbe Logik wie die Kachel: Video hat Vorrang, K2 immer mit Fallback `'/img/k2/virtual-tour.mp4'` wenn kein eigenes Video. **Commit:** (folgt)
+- **Erledigt:** GaleriePage – Button „Rundgang starten“ nutzt dieselbe Logik wie die Kachel: Video hat Vorrang, K2 immer mit Fallback `'/img/k2/virtual-tour.mp4'` wenn kein eigenes Video. **Commit:** abb2a1f ✅ auf GitHub.
 - **Nächster Schritt:** Georg testen: Galerie → „Rundgang starten“ → Video im Vollbild.
 
 ---
