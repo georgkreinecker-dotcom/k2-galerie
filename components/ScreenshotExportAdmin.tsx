@@ -1056,7 +1056,7 @@ function ScreenshotExportAdmin() {
     try {
       const params = new URLSearchParams(location.search)
       const gt = params.get('guidetab')
-      const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','einstellungen','assistent'] as const
+      const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','veroeffentlichen','einstellungen','assistent'] as const
       type AdminTab = typeof validTabs[number]
       if (gt && (validTabs as readonly string[]).includes(gt)) {
         setActiveTab(gt as AdminTab)
@@ -1114,7 +1114,7 @@ function ScreenshotExportAdmin() {
   const initialTab = (() => {
     try {
       const params = new URLSearchParams(window.location.search)
-      const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','einstellungen','assistent'] as const
+      const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','veroeffentlichen','einstellungen','assistent'] as const
       type AdminTab = typeof validTabs[number]
       // ?tab=... (vom Hub) oder ?guidetab=... (alter Guide)
       const t = params.get('tab') || params.get('guidetab')
@@ -1122,7 +1122,7 @@ function ScreenshotExportAdmin() {
     } catch { /* ignore */ }
     return guideAssistent ? 'assistent' : 'werke'
   })()
-  const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'presse' | 'design' | 'einstellungen' | 'assistent'>(initialTab)
+  const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'presse' | 'design' | 'veroeffentlichen' | 'einstellungen' | 'assistent'>(initialTab)
   const [guideBannerClosed, setGuideBannerClosed] = useState(false)
   const [guideBegleiterGeschlossen, setGuideBegleiterGeschlossen] = useState(false)
   const initialEventplanSubTab = (() => {
@@ -10334,6 +10334,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                activeTab === 'eventplan' ? '🎟️ Events & Ausstellungen' :
                activeTab === 'presse' ? <><MedienstudioIcon size={20} /> Presse & Medien</> :
                activeTab === 'design' ? '✨ Galerie gestalten und texten' :
+               activeTab === 'veroeffentlichen' ? '📤 Veröffentlichen' :
                activeTab === 'katalog' ? '📋 Werkkatalog' :
                activeTab === 'statistik' ? '🧾 Kassa & Verkauf' :
                activeTab === 'einstellungen' ? '⚙️ Einstellungen' :
@@ -10617,12 +10618,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   const galerieUrl = '/projects/k2-galerie/galerie-oeffentlich'
 
                   // Alle Stationen – Kacheln links + rechts; einheitlich „Galerie gestalten und texten“
-                  type HubTab = 'werke' | 'eventplan' | 'presse' | 'design' | 'einstellungen' | 'katalog' | 'assistent'
+                  type HubTab = 'werke' | 'eventplan' | 'presse' | 'design' | 'veroeffentlichen' | 'einstellungen' | 'katalog' | 'assistent'
                   const alleStationen: { emoji: string; name: string; beschreibung: string; tab: HubTab }[] = istVerein ? [
                     { emoji: '🖼️', name: 'Werke & Mitglieder', beschreibung: 'Alle Werke aller Mitglieder – Fotos, Preise, Profile.', tab: 'werke' },
                     { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Vernissagen planen, Einladungen erstellen, QR-Codes.', tab: 'eventplan' },
                     { emoji: '📰', name: 'Presse & Medien', beschreibung: 'Medienkit und Presse-Vorlage – professionell für Pressearbeit.', tab: 'presse' },
                     { emoji: '✨', name: 'Galerie gestalten und texten', beschreibung: 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
+                    { emoji: '📤', name: 'Veröffentlichen', beschreibung: 'Aushängeschild der Galerie sichtbar machen – Besucher sehen den aktuellen Stand.', tab: 'veroeffentlichen' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Vereinsdaten, Kontakt, Mitglieder verwalten.', tab: 'einstellungen' },
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
                     { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Daten ausfüllen und die Galerie live schalten.', tab: 'assistent' },
@@ -10631,6 +10633,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Vernissage planen, Einladungen & QR-Codes erstellen.', tab: 'eventplan' },
                     { emoji: '📰', name: 'Presse & Medien', beschreibung: 'Medienkit und Presse-Vorlage – professionell für Pressearbeit.', tab: 'presse' },
                     { emoji: '✨', name: 'Galerie gestalten und texten', beschreibung: 'Farben, Texte, Bilder – die Galerie wird zu dir.', tab: 'design' },
+                    { emoji: '📤', name: 'Veröffentlichen', beschreibung: 'Aushängeschild der Galerie sichtbar machen – Besucher und Geräte sehen den aktuellen Stand.', tab: 'veroeffentlichen' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Kontakt, Adresse, Öffnungszeiten – deine Stammdaten.', tab: 'einstellungen' },
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
                     { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Daten ausfüllen und deine Galerie live schalten.', tab: 'assistent' },
@@ -10642,6 +10645,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     eventplan: '#f5f8f2',
                     presse: '#f2f4f8',
                     design: '#f8f4f0',
+                    veroeffentlichen: '#f0f8f4',
                     einstellungen: '#f0f4f8',
                     katalog: '#f4f8f0',
                     assistent: '#f8f0f4',
@@ -10651,6 +10655,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     eventplan: '#2d7a3e22',
                     presse: '#1e5cb522',
                     design: '#a65a2a22',
+                    veroeffentlichen: '#0d948822',
                     einstellungen: '#4a5a8a22',
                     katalog: '#3a7a5a22',
                     assistent: '#8a4a6a22',
@@ -10802,6 +10807,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '🎟️', name: 'Veranstaltungen', text: 'Ausstellungen planen, Einladungen an alle Mitglieder versenden', tab: 'eventplan' },
                     { emoji: '📰', name: 'Presse & Medien', text: 'Medienkit und Presse-Vorlage für Pressearbeit', tab: 'presse' },
                     { emoji: '✨', name: 'Galerie gestalten und texten', text: 'Farben, Texte, Foto – eure Mitglieder-Seite nach euren Wünschen', tab: 'design' },
+                    { emoji: '📤', name: 'Veröffentlichen', text: 'Aushängeschild der Galerie sichtbar machen – Besucher sehen den aktuellen Stand', tab: 'veroeffentlichen' },
                     { emoji: '⚙️', name: 'Einstellungen', text: 'Vereinsdaten, Kontakt, Mitglieder verwalten', tab: 'einstellungen' },
                   ] : [
                     { emoji: '🎨', name: 'Werke hinzufügen und bearbeiten', text: 'Fotos hochladen, Titel, Preis, Beschreibung – deine Galerie füllen', tab: 'werke' },
@@ -10810,6 +10816,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '📢', name: 'Veranstaltungen', text: 'Events planen, Einladungen erstellen, Presse informieren', tab: 'eventplan' },
                     { emoji: '📰', name: 'Presse & Medien', text: 'Medienkit und Presse-Vorlage für Pressearbeit', tab: 'presse' },
                     { emoji: '✨', name: 'Galerie gestalten und texten', text: 'Farben, Texte, dein Foto – die Galerie wird zu dir', tab: 'design' },
+                    { emoji: '📤', name: 'Veröffentlichen', text: 'Aushängeschild sichtbar machen – Besucher und Geräte sehen den aktuellen Stand', tab: 'veroeffentlichen' },
                   ]
                   const galerieUrl = tenant.isOeffentlich
                     ? '/projects/k2-galerie/galerie-oeffentlich'
@@ -10848,7 +10855,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 try { sessionStorage.setItem('k2-admin-context', tenant.isOeffentlich ? 'oeffentlich' : 'k2') } catch (_) {}
                                 if (typeof window !== 'undefined' && window.self === window.top) window.location.href = '/projects/k2-galerie/shop?openAsKasse=1'
                               } else {
-                                const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','einstellungen','assistent'] as const
+                                const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','veroeffentlichen','einstellungen','assistent'] as const
                                 type AdminTab = typeof validTabs[number]
                                 if (validTabs.includes(b.tab as AdminTab)) {
                                   setActiveTab(b.tab as AdminTab)
@@ -11042,6 +11049,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   {activeTab === 'eventplan' && (tenant.isVk2 ? '📢 Vereins-Events & Werbematerial' : '📢 Veranstaltungen & Werbung')}
                   {activeTab === 'presse' && (tenant.isVk2 ? <><MedienstudioIcon size={22} /> Presse & Medien – Medienkit und Presse-Vorlage</> : <><MedienstudioIcon size={22} /> Presse & Medien – Medienkit und Presse-Vorlage</>)}
                   {activeTab === 'design' && (tenant.isVk2 ? '✨ Galerie gestalten und texten – nach euren Wünschen anpassen' : '✨ Galerie gestalten und texten – nach deinen Wünschen anpassen')}
+                  {activeTab === 'veroeffentlichen' && '📤 Veröffentlichen – Aushängeschild sichtbar machen'}
                   {activeTab === 'einstellungen' && '⚙️ Einstellungen'}
                 </h2>
                 {activeTab === 'statistik' && (
@@ -12424,6 +12432,95 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               )
             })()}
             </div>
+          </section>
+        )}
+
+        {/* Veröffentlichen – klare Trennung: Speichern am Arbeitsplatz vs. Aushängeschild sichtbar */}
+        {activeTab === 'veroeffentlichen' && (
+          <section style={{
+            background: s.bgCard,
+            border: `1px solid ${s.accent}22`,
+            borderRadius: '24px',
+            padding: 'clamp(2rem, 5vw, 3rem)',
+            boxShadow: s.shadow,
+            marginBottom: 'clamp(2rem, 5vw, 3rem)'
+          }}>
+            <h2 style={{
+              fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
+              fontWeight: '700',
+              color: s.text,
+              marginBottom: 'clamp(1rem, 3vw, 1.5rem)',
+              letterSpacing: '-0.01em'
+            }}>
+              📤 Veröffentlichen
+            </h2>
+            <p style={{ fontSize: '1rem', color: s.muted, lineHeight: 1.6, marginBottom: '1.5rem', maxWidth: '36rem' }}>
+              <strong style={{ color: s.text }}>Speichern</strong> = am Arbeitsplatz. Deine Änderungen (Werke, Design, Texte) sind hier gesichert.
+              <br />
+              <strong style={{ color: s.text }}>Veröffentlichen</strong> = das Aushängeschild der Galerie sichtbar machen. Besucher und andere Geräte sehen dann den aktuellen Stand.
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <button
+                  type="button"
+                  onClick={() => publishMobile()}
+                  disabled={isDeploying || (tenant.isOeffentlich || tenant.isVk2 ? false : allArtworks.length === 0)}
+                  title="Aktuellen Stand für alle sichtbar machen (Vercel / Besucher / Mobil)"
+                  style={{
+                    padding: '0.85rem 1.5rem',
+                    background: isDeploying ? s.muted + '44' : 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: '1rem',
+                    fontWeight: 700,
+                    cursor: isDeploying ? 'not-allowed' : 'pointer',
+                    boxShadow: !isDeploying ? '0 4px 14px rgba(13,148,136,0.35)' : 'none'
+                  }}
+                >
+                  {isDeploying ? '⏳ Wird veröffentlicht…' : '📤 Jetzt veröffentlichen'}
+                </button>
+                <span style={{ fontSize: '0.8rem', color: s.muted }}>Aushängeschild für alle sichtbar machen</span>
+              </div>
+              {!tenant.isOeffentlich && !tenant.isVk2 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => handleLoadFromServer()}
+                    disabled={isLoadingFromServer}
+                    title="Aktuellen Stand vom Server holen (z. B. nach Speichern am iPad)"
+                    style={{
+                      padding: '0.85rem 1.5rem',
+                      background: isLoadingFromServer ? s.muted + '22' : s.accent + '18',
+                      color: s.text,
+                      border: `1px solid ${s.accent}44`,
+                      borderRadius: '12px',
+                      fontSize: '1rem',
+                      fontWeight: 600,
+                      cursor: isLoadingFromServer ? 'wait' : 'pointer'
+                    }}
+                  >
+                    {isLoadingFromServer ? '⏳ Lade…' : '🔄 Vom Server laden'}
+                  </button>
+                  <span style={{ fontSize: '0.8rem', color: s.muted }}>Aktuellen Stand an diesen Arbeitsplatz holen</span>
+                </div>
+              )}
+            </div>
+            {syncStatusBar.phase !== 'idle' && (
+              <div style={{ marginTop: '1rem' }}>
+                <div style={{
+                  height: '8px',
+                  borderRadius: '4px',
+                  backgroundColor: syncStatusBar.phase === 'sending' || syncStatusBar.phase === 'loading' ? (s.muted + '44') : syncStatusBar.phase === 'success' ? '#22c55e' : '#dc2626',
+                  overflow: 'hidden'
+                }}>
+                  {(syncStatusBar.phase === 'sending' || syncStatusBar.phase === 'loading') && (
+                    <div className="k2-sync-bar-fill" style={{ height: '100%', width: '30%', borderRadius: '4px', background: syncStatusBar.phase === 'sending' ? 'linear-gradient(90deg, #0d9488 0%, #0f766e 100%)' : `linear-gradient(90deg, ${s.accent} 0%, ${s.accent}88 100%)` }} />
+                  )}
+                </div>
+                <span style={{ fontSize: '0.85rem', color: syncStatusBar.phase === 'error' ? '#dc2626' : syncStatusBar.phase === 'success' ? '#22c55e' : s.text, marginTop: '0.35rem', display: 'inline-block' }}>{syncStatusBar.message}</span>
+              </div>
+            )}
           </section>
         )}
 

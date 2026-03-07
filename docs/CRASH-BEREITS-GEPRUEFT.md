@@ -12,6 +12,7 @@
 | 05.03.26 | ro5 – Reopen; DIALOG-STAND gelesen, Änderungen committed. |
 | 06.03.26 | ro5 – Reopen nach Code 5; Check durchgeführt. |
 | 06.03.26 | Design-Vorschau Build-Fix: ScreenshotExportAdmin – Vorschau-Block in renderDesignVorschau ausgelagert; GaleriePage GalerieEntdeckenGuide: useNavigate() ergänzt. WEITERARBEITEN-NACH-ABSTURZ: ro5-Abschnitt + Design-Vorschau-Fix dokumentiert (damit nach ro5 nicht wieder falscher Ansatz). |
+| 07.03.26 | ro5 – Reopen nach Code 5; frag anke: Briefing + DIALOG-STAND gelesen, orientiert. |
 
 ---
 
