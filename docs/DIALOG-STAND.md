@@ -4,6 +4,25 @@
 
 ---
 
+## Datum: 07.03.26 – Benutzerhandbuch = Teil erweiterte Präsentationsmappe (für Anke mitdokumentiert)
+
+- **Thema:** Das Benutzerhandbuch gehört zur **erweiterten Präsentationsmappe** (Prospekt 1 Seite + Benutzerhandbuch). Georg: Handbuch soll auch Teil der erweiterten Präsentationsmappe sein; Anke soll alles mitdokumentiert haben, damit sie eine gute Agentin wird.
+- **Doku:** In **docs/K2-GALERIE-PRAESENTATIONSMAPPE.md** Abschnitt „8. Erweiterte Präsentationsmappe“ ergänzt: (1) Prospekt, (2) Benutzerhandbuch (Quelle `public/benutzer-handbuch`, Route `/benutzer-handbuch`). Referenzen aktualisiert.
+- **App:** **PraesentationsmappePage** – in der no-print-Leiste neben „Als PDF drucken“ Link **„Benutzerhandbuch (erweiterte Mappe)“** eingebaut (führt zu `BENUTZER_HANDBUCH_ROUTE`).
+- **Heute am Handbuch (07.03.26):** Kurzanleitung „Was Sie suchen → Wo nachschlagen“ im 00-INDEX; Inhaltsverzeichnis an echte ##-Punkte angepasst; Admin-Überblick um Empfehlungsprogramm, Kassabuch, Passwort, Drucker ergänzt; Druck-Styles kompakter (eine Seite gespart); **eine Version** (gute Mitte), Langversion/Ausführliche Version wieder entfernt (war zu verwirrend).
+- **Für Anke:** Benutzerhandbuch = Teil der erweiterten Präsentationsmappe. Quelle: `public/benutzer-handbuch`. In der App: `/benutzer-handbuch`. Präsentationsmappe = Prospekt + Handbuch; von der PraesentationsmappePage aus per Link zum Handbuch.
+- **Session Ende 07.03.26:** Ordentlich abgeschlossen – Tests ✅, Build ✅, Commit + Push. Nächster Schritt: Beim nächsten Einstieg DIALOG-STAND + Briefing lesen.
+
+---
+
+## Datum: 07.03.26 – Handbuch Deckblatt: beide Slogans + Auftrag ernst nehmen
+
+- **Thema:** (1) Deckblatt soll **beide** Werbeslogans zeigen (PRODUCT_WERBESLOGAN + PRODUCT_WERBESLOGAN_2), immer zusammen. (2) Georg: „Warum nimmst du den Auftrag nicht ernst und hinterfragst das – Zeitverschwendung. Merken, auch Anke melden.“
+- **Erledigt:** Deckblatt zeigt jetzt zuerst PRODUCT_WERBESLOGAN („K2 Galerie – für Künstler:innen …“), darunter PRODUCT_WERBESLOGAN_2 („Deine Kunst verdient mehr …“). Ankes Briefing ergänzt: **Auftrag ernst nehmen** – wenn Georg etwas klar formuliert hat, umsetzen statt nachfragen („Soll ich X ergänzen?“); sonst Zeitverschwendung.
+- **Lehre:** Auftrag war schon gegeben („beide immer in Verbindung kommunizieren“). Nicht nochmal fragen – direkt umsetzen.
+
+---
+
 ## Datum: 07.03.26 – Sportwagenmodus Virtueller Rundgang (Video) + Georg: „permanent drin“
 
 - **Thema:** (1) Virtueller Rundgang Video: ein Standard – eine Funktion `handleVirtualTourVideoFile`, beide Video-Inputs (Design Seite 1 + Seite 2) nutzen sie. (2) Georg: „Warum muss ich auf Sportwagenmodus hinweisen – wir sind ja permanent drin.“

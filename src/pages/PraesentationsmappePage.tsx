@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES, BASE_APP_URL } from '../config/navigation'
+import { PROJECT_ROUTES, BASE_APP_URL, BENUTZER_HANDBUCH_ROUTE } from '../config/navigation'
 import { PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
@@ -100,6 +100,22 @@ export default function PraesentationsmappePage() {
         >
           Als PDF drucken (1 Seite)
         </button>
+        <Link
+          to={BENUTZER_HANDBUCH_ROUTE}
+          className="pm-no-print"
+          style={{
+            padding: '0.5rem 1rem',
+            background: 'rgba(255,255,255,0.15)',
+            color: '#5ffbf1',
+            border: '1px solid rgba(95,251,241,0.5)',
+            borderRadius: '8px',
+            fontSize: '0.9rem',
+            textDecoration: 'none',
+            fontWeight: 500,
+          }}
+        >
+          Benutzerhandbuch (erweiterte Mappe)
+        </Link>
       </div>
 
       <div style={{ maxWidth: '600px', margin: '0 auto', padding: '2rem 1.5rem', background: '#fffefb', color: '#1c1a18', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>

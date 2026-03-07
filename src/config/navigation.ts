@@ -32,6 +32,9 @@ export const MEIN_BEREICH_ROUTE = '/mein-bereich'
 /** Nur Schreiben an Michael (Begleitschreiben + Einstiegscodes) – eine URL, eine Seite, nichts anderes */
 export const PILOT_SCHREIBEN_ROUTE = '/schreiben-michael'
 
+/** Benutzerhandbuch für ök2/VK2 (Lizenznehmer:innen, Piloten, Vereine) – Erste Schritte, Galerie gestalten, Admin, FAQ */
+export const BENUTZER_HANDBUCH_ROUTE = '/benutzer-handbuch'
+
 export const PLATFORM_ROUTES = {
   home: '/',
   projects: '/projects',

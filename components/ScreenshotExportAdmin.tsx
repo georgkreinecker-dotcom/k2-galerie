@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useTenant } from '../src/context/TenantContext'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, WILLKOMMEN_ROUTE } from '../src/config/navigation'
+import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, WILLKOMMEN_ROUTE, BENUTZER_HANDBUCH_ROUTE } from '../src/config/navigation'
 import ZertifikatTab from './tabs/ZertifikatTab'
 import NewsletterTab from './tabs/NewsletterTab'
 import PressemappeTab from './tabs/PressemappeTab'
@@ -95,6 +95,12 @@ function getAdminReturnUrl(activeTab?: string, eventplanSubTab?: string): string
   if (activeTab === 'eventplan' && eventplanSubTab === 'öffentlichkeitsarbeit') params.set('eventplan', 'öffentlichkeitsarbeit')
   const qs = params.toString()
   return qs ? base + '?' + qs : base
+}
+
+/** Handbuch in eigenem Fenster öffnen – zum Zoomen und neben Einstellungen mitlesen. Gleicher Fenster-Name = erneuter Klick fokussiert vorhandenes Fenster. */
+function openHandbuchInFenster(returnTo: string): void {
+  const url = `${BENUTZER_HANDBUCH_ROUTE}?returnTo=${encodeURIComponent(returnTo)}`
+  window.open(url, 'k2-handbuch', 'width=960,height=720,resizable=yes,scrollbars=yes')
 }
 function escapeJsStringForDoc(s: string): string {
   return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r')
@@ -420,7 +426,7 @@ function printMitgliedskarten(mitglieder: import('../src/config/tenantConfig').V
     const web = (m.galerieLinkUrl || m.website) ? `<div style="font-size:7px;color:#b54a1e;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(m.galerieLinkUrl || m.website || '').replace('https://','')}</div>` : ''
     const istVorstand = m.rolle === 'vorstand'
     return `
-      <div style="width:85mm;height:54mm;background:linear-gradient(135deg,#1a0f0a 0%,#2d1a14 60%,#3d2419 100%);color:#fff5f0;border-radius:4mm;padding:4mm 5mm;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;page-break-inside:avoid;position:relative;overflow:hidden;">
+      <div style="width:85mm;height:54mm;background:linear-gradient(135deg,#1a0f0a 0%,#2a1c16 65%,#3d2c22 100%);color:#fff5f0;border-radius:4mm;padding:4mm 5mm;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;page-break-inside:avoid;position:relative;overflow:hidden;">
         <div style="position:absolute;right:-8mm;top:-8mm;width:28mm;height:28mm;border-radius:50%;background:rgba(255,140,66,0.08);"></div>
         <div style="position:absolute;right:2mm;bottom:-4mm;width:16mm;height:16mm;border-radius:50%;background:rgba(255,140,66,0.05);"></div>
         <div style="display:flex;align-items:center;gap:3mm;">
@@ -1392,16 +1398,16 @@ function ScreenshotExportAdmin() {
     return raw
   })
 
-  // Altes Blau-Theme erkennen → K2-Orange (wie in GaleriePage)
+  // Altes Blau-Theme erkennen → K2-Standard = Terracotta (wie erste Vorlage)
   const K2_ORANGE_DESIGN = {
-    accentColor: '#ff8c42',
-    backgroundColor1: '#1a0f0a',
-    backgroundColor2: '#2d1a14',
-    backgroundColor3: '#3d2419',
-    textColor: '#fff5f0',
-    mutedColor: '#d4a574',
-    cardBg1: 'rgba(45, 26, 20, 0.95)',
-    cardBg2: 'rgba(26, 15, 10, 0.92)'
+    accentColor: '#d97a50',
+    backgroundColor1: '#1c1210',
+    backgroundColor2: '#2a1e1a',
+    backgroundColor3: '#3d2c26',
+    textColor: '#fdf6f2',
+    mutedColor: '#c49a88',
+    cardBg1: 'rgba(45, 34, 30, 0.95)',
+    cardBg2: 'rgba(28, 20, 18, 0.92)'
   }
   const OLD_BLUE_BG_LIST = ['#0a0e27', '#03040a', '#1a1f3a', '#0d1426', '#111c33', '#0f1419']
   const isOldBlueDesign = (d: Record<string, string>) => OLD_BLUE_BG_LIST.includes((d.backgroundColor1 || '').toLowerCase().trim())
@@ -1672,52 +1678,60 @@ function ScreenshotExportAdmin() {
     setDesignSettings(prev => ({ ...prev, [key]: value }))
   }
 
-  // Vordefinierte Themes (default = Orange)
+  // Vier Vorlagen – zwei Erdtöne (Terrakotta, Granit), einer Blau, einer Orange
   const themes = {
     default: {
-      accentColor: '#ff8c42',
-      backgroundColor1: '#1a0f0a',
-      backgroundColor2: '#2d1a14',
-      backgroundColor3: '#3d2419',
-      textColor: '#fff5f0',
-      mutedColor: '#d4a574',
-      cardBg1: 'rgba(45, 26, 20, 0.95)',
-      cardBg2: 'rgba(26, 15, 10, 0.92)'
+      name: 'Terrakotta',
+      accentColor: '#d97a50',
+      backgroundColor1: '#1c1210',
+      backgroundColor2: '#2a1e1a',
+      backgroundColor3: '#3d2c26',
+      textColor: '#fdf6f2',
+      mutedColor: '#c49a88',
+      cardBg1: 'rgba(45, 34, 30, 0.95)',
+      cardBg2: 'rgba(28, 20, 18, 0.92)'
     },
     warm: {
-      accentColor: '#ff8c42',
-      backgroundColor1: '#1a0f0a',
-      backgroundColor2: '#2d1a14',
-      backgroundColor3: '#3d2419',
-      textColor: '#fff5f0',
-      mutedColor: '#d4a574',
-      cardBg1: 'rgba(45, 26, 20, 0.95)',
-      cardBg2: 'rgba(26, 15, 10, 0.92)'
+      name: 'Granit',
+      accentColor: '#8a8580',
+      backgroundColor1: '#222220',
+      backgroundColor2: '#32302e',
+      backgroundColor3: '#42403c',
+      textColor: '#f2f0ee',
+      mutedColor: '#a8a6a2',
+      cardBg1: 'rgba(50, 48, 46, 0.95)',
+      cardBg2: 'rgba(34, 32, 30, 0.92)'
     },
     elegant: {
-      accentColor: '#c9a961',
-      backgroundColor1: '#0f0e0a',
-      backgroundColor2: '#1a1814',
-      backgroundColor3: '#25221e',
-      textColor: '#f5f3f0',
-      mutedColor: '#b8a68a',
-      cardBg1: 'rgba(26, 24, 20, 0.95)',
-      cardBg2: 'rgba(15, 14, 10, 0.92)'
+      name: 'Blau',
+      accentColor: '#5b9bd5',
+      backgroundColor1: '#0f1824',
+      backgroundColor2: '#1a2840',
+      backgroundColor3: '#243b55',
+      textColor: '#f0f4fc',
+      mutedColor: '#9cb8d4',
+      cardBg1: 'rgba(26, 40, 64, 0.95)',
+      cardBg2: 'rgba(15, 24, 36, 0.92)'
     },
     modern: {
-      accentColor: '#ff8c42',
-      backgroundColor1: '#1a0f0a',
-      backgroundColor2: '#2d1a14',
-      backgroundColor3: '#3d2419',
-      textColor: '#fff5f0',
-      mutedColor: '#d4a574',
-      cardBg1: 'rgba(45, 26, 20, 0.95)',
-      cardBg2: 'rgba(26, 15, 10, 0.92)'
+      name: 'Orange',
+      accentColor: '#e8752e',
+      backgroundColor1: '#2a1810',
+      backgroundColor2: '#3d2418',
+      backgroundColor3: '#553020',
+      textColor: '#fdf6f0',
+      mutedColor: '#d4a890',
+      cardBg1: 'rgba(65, 40, 28, 0.95)',
+      cardBg2: 'rgba(42, 24, 16, 0.92)'
     }
   }
 
   const applyTheme = (themeName: keyof typeof themes) => {
-    setDesignSettings(themes[themeName])
+    const next = themes[themeName]
+    setDesignSettings(next)
+    try {
+      localStorage.setItem(getDesignStorageKey(), JSON.stringify(next))
+    } catch (_) {}
   }
 
   const [designSaveFeedback, setDesignSaveFeedback] = useState<'ok' | null>(null)
@@ -1789,31 +1803,6 @@ function ScreenshotExportAdmin() {
       setTimeout(() => setImageUploadStatus(null), 4000)
     }
   }, [])
-
-  const DESIGN_VARIANT_KEYS = tenant.isOeffentlich
-    ? { a: 'k2-oeffentlich-design-variant-a', b: 'k2-oeffentlich-design-variant-b' } as const
-    : { a: 'k2-design-variant-a', b: 'k2-design-variant-b' } as const
-  const saveDesignVariant = (slot: 'a' | 'b') => {
-    try {
-      const json = JSON.stringify(designSettings)
-      if (json.length >= 50000) { alert('Design zu groß zum Speichern.'); return }
-      localStorage.setItem(DESIGN_VARIANT_KEYS[slot], json)
-      alert('Variante ' + (slot === 'a' ? 'A' : 'B') + ' gespeichert. Mit „Anwenden“ wieder in den Entwurf laden – erst „Speichern“ übernimmt ins Design.')
-    } catch (_) { alert('Speichern fehlgeschlagen.') }
-  }
-  const loadDesignVariant = (slot: 'a' | 'b') => {
-    try {
-      const raw = localStorage.getItem(DESIGN_VARIANT_KEYS[slot])
-      if (raw && raw.length < 50000) {
-        const next = JSON.parse(raw)
-        if (next && typeof next === 'object') {
-          setDesignSettings(next)
-        }
-        return
-      }
-    } catch (_) {}
-    alert('Variante ' + (slot === 'a' ? 'A' : 'B') + ' ist noch nicht gespeichert.')
-  }
 
   const [showDocumentModal, setShowDocumentModal] = useState(false)
   const [selectedEventForDocument, setSelectedEventForDocument] = useState<string | null>(null)
@@ -3019,7 +3008,8 @@ function ScreenshotExportAdmin() {
           }
         }
       })
-      const toSave = filterK2Only(merged)
+      const mergedWithImages = preserveLocalImageData(merged, localArtworks, (a: any) => String(a?.number ?? a?.id ?? ''))
+      const toSave = filterK2Only(mergedWithImages)
       if (toSave.length >= localArtworks.length || toSave.length >= (loadArtworks(tenant).length || 0)) {
         const saved = await saveArtworks(tenant, toSave)
         if (saved) {
@@ -8133,7 +8123,8 @@ ${'='.repeat(60)}
       if (listWithResolved.length === 0 && artworks.length > 0) {
         console.warn('⚠️ loadArtworksWithResolvedImages nach Speichern leer – nutze gespeicherte Liste + Erhalt aus State')
         const raw = loadArtworks(tenant)
-        listWithResolved = preserveLocalImageData(raw.length ? raw : artworks, allArtworks, (a: any) => String(a?.number ?? a?.id ?? ''))
+        const preserved = preserveLocalImageData(raw.length ? raw : artworks, allArtworks, (a: any) => String(a?.number ?? a?.id ?? ''))
+        listWithResolved = await resolveArtworkImages(preserved)
       }
       console.log('📦 Liste mit aufgelösten Bildern:', listWithResolved.length, 'Gespeichertes Werk:', artworkData?.number)
       
@@ -10087,40 +10078,43 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       )}
                     </div>
                     <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 16, padding: 16, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 0 }}>
-                      {/* Symbolbild: feste Höhe, kein Scroll – Bild und Video getrennt, behindern sich nicht */}
-                      <label htmlFor="virtual-tour-image-input-p1" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', flexShrink: 0, borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.virtualTourVideo ? 'rgba(76,175,80,0.18)' : pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: pageContent.virtualTourVideo ? '2px solid #4caf50' : '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
+                      {/* Symbolbild: nur Foto, kein Video-Status – feste Höhe, kein Scroll */}
+                      <label htmlFor="virtual-tour-image-input-p1" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', flexShrink: 0, borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
                         onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
                         onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
                         onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – im Fenster „Bild übernehmen“ klicken'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } }}
                       >
                         <input id="virtual-tour-image-input-p1" ref={virtualTourImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – im Fenster „Bild übernehmen“ klicken'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
-                        {pageContent.virtualTourVideo ? (
-                          <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 12 }}>
-                            <span style={{ fontSize: '1.75rem', color: '#4caf50' }}>✓</span>
-                            <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#2e7d32' }}>
-                              Video gespeichert
-                              {typeof pageContent.virtualTourVideoSizeBytes === 'number' && pageContent.virtualTourVideoSizeBytes > 0 && (
-                                <span style={{ fontWeight: 500, opacity: 0.95 }}> ({(pageContent.virtualTourVideoSizeBytes / (1024 * 1024)).toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 1 })} MB)</span>
-                              )}
-                            </span>
-                          </div>
-                        ) : pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>}
+                        {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>}
                       </label>
                       {designPreviewEdit === 'p1-virtualTourButtonText' ? (
                         <input autoFocus type="text" value={pageTexts.galerie?.virtualTourButtonText ?? defaultPageTexts.galerie.virtualTourButtonText ?? 'Virtueller Rundgang'} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, virtualTourButtonText: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.3rem', fontSize: '1.1rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 6, textAlign: 'center', boxSizing: 'border-box' }} />
                       ) : (
-                        <h3 role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-virtualTourButtonText')} style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--k2-text)', marginBottom: 4, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.virtualTourButtonText ?? defaultPageTexts.galerie.virtualTourButtonText) || 'Virtueller Rundgang'}</h3>
+                        <h3 role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-virtualTourButtonText')} style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--k2-text)', marginBottom: 8, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.virtualTourButtonText ?? defaultPageTexts.galerie.virtualTourButtonText) || 'Virtueller Rundgang'}</h3>
                       )}
-                      {/* Video getrennt unter dem Bild – eigene Fläche, behindert Bild nicht */}
-                      <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 8 }}>
-                        <label htmlFor="virtual-tour-video-input-p1" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}>
-                          📹 Video wählen oder aufnehmen
-                          <input id="virtual-tour-video-input-p1" title="Max. 2 Min. Länge · max. 100 MB" type="file" accept="video/*" style={{ display: 'none' }} onChange={async (e) => {
-                            const f = e.target.files?.[0]
-                            if (f) { await handleVirtualTourVideoFile(f) }
-                            e.target.value = ''
-                          }} />
-                        </label>
+                      {/* Eine weiße Kachel: darin entweder „Video gespeichert (X MB)“ + Neues Video einfügen, oder Video-Platzhalter + Button */}
+                      <div style={{ background: '#fff', border: '1px solid var(--k2-muted)', borderRadius: 12, padding: 12, minHeight: 56, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                        <input id="virtual-tour-video-input-p1" title="Max. 2 Min. Länge · max. 100 MB" type="file" accept="video/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { await handleVirtualTourVideoFile(f) }; e.target.value = '' }} />
+                        {pageContent.virtualTourVideo ? (
+                          <>
+                            <span style={{ fontSize: '1.75rem', color: '#4caf50' }}>✓</span>
+                            <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#2e7d32' }}>
+                              Video gespeichert
+                              {typeof pageContent.virtualTourVideoSizeBytes === 'number' && pageContent.virtualTourVideoSizeBytes > 0 ? (
+                                <span style={{ fontWeight: 500, opacity: 0.95 }}> ({(pageContent.virtualTourVideoSizeBytes / (1024 * 1024)).toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 1 })} MB)</span>
+                              ) : (
+                                <span style={{ fontWeight: 500, opacity: 0.9 }}> (Größe unbekannt)</span>
+                              )}
+                            </span>
+                            <label htmlFor="virtual-tour-video-input-p1" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}>
+                              Video ersetzen
+                            </label>
+                          </>
+                        ) : (
+                          <label htmlFor="virtual-tour-video-input-p1" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}>
+                            📹 Video wählen oder aufnehmen
+                          </label>
+                        )}
                       </div>
                       <p style={{ margin: '6px 0 0', fontSize: '0.75rem', color: 'var(--k2-muted)' }}>Max. 2 Min. Länge · max. 100 MB</p>
                       {(videoUploadStatus === 'uploading' || videoUploadStatus === 'error') && videoUploadMsg && (
@@ -10186,43 +10180,47 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   </div>
                   <p style={{ fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: 12, textAlign: 'center' }}>Optional: Virtueller Rundgang – Foto oder Video</p>
                   <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 12, padding: 12, textAlign: 'center' }}>
-                    {/* Wenn Video gespeichert: grüne Bestätigung IN der weißen Kachel (dann ist klar: wirklich gespeichert) */}
-                    <label htmlFor="virtual-tour-image-input-p2" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 8, overflow: 'hidden', marginBottom: 6, background: pageContent.virtualTourVideo ? 'rgba(76,175,80,0.18)' : pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: pageContent.virtualTourVideo ? '2px solid #4caf50' : '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
+                    {/* Symbolbild: nur Foto */}
+                    <label htmlFor="virtual-tour-image-input-p2" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 8, overflow: 'hidden', marginBottom: 6, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
                       onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
                       onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
                       onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – im Fenster „Bild übernehmen“ klicken'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } }}
                     >
                       <input id="virtual-tour-image-input-p2" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – im Fenster „Bild übernehmen“ klicken'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                      {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.85rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>}
+                    </label>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--k2-text)', margin: '0 0 8px' }}>Virtueller Rundgang</p>
+                    {/* Eine weiße Kachel: darin „Video gespeichert (X MB)“ + Neues Video einfügen, oder Video-Platzhalter + Button */}
+                    <div style={{ background: '#fff', border: '1px solid var(--k2-muted)', borderRadius: 10, padding: 10, minHeight: 48, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                      <input id="virtual-tour-video-input" type="file" accept="video/*" title="Max. 2 Min. Länge · max. 100 MB" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { await handleVirtualTourVideoFile(f) }; e.target.value = '' }} />
                       {pageContent.virtualTourVideo ? (
-                        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 12 }}>
-                          <span style={{ fontSize: '1.75rem', color: '#4caf50' }}>✓</span>
-                          <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#2e7d32' }}>
+                        <>
+                          <span style={{ fontSize: '1.5rem', color: '#4caf50' }}>✓</span>
+                          <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#2e7d32' }}>
                             Video gespeichert
-                            {typeof pageContent.virtualTourVideoSizeBytes === 'number' && pageContent.virtualTourVideoSizeBytes > 0 && (
+                            {typeof pageContent.virtualTourVideoSizeBytes === 'number' && pageContent.virtualTourVideoSizeBytes > 0 ? (
                               <span style={{ fontWeight: 500, opacity: 0.95 }}> ({(pageContent.virtualTourVideoSizeBytes / (1024 * 1024)).toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 1 })} MB)</span>
+                            ) : (
+                              <span style={{ fontWeight: 500, opacity: 0.9 }}> (Größe unbekannt)</span>
                             )}
                           </span>
+                          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+                            <label htmlFor="virtual-tour-video-input" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}>
+                              Video ersetzen
+                            </label>
+                            <button type="button" onClick={() => { const next = { ...pageContent, virtualTourVideo: '', virtualTourVideoSizeBytes: undefined }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); setVideoUploadStatus('idle'); setVideoUploadMsg('') }} style={{ padding: '0.35rem 0.7rem', background: 'transparent', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer', fontSize: '0.75rem' }}>Video entfernen</button>
+                          </div>
+                        </>
+                      ) : (
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+                          <label htmlFor="virtual-tour-image-input-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-card-bg-2, #e8e4dd)', color: 'var(--k2-text)', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600', border: '1px solid var(--k2-muted)' }}>
+                            📸 Foto
+                            <input id="virtual-tour-image-input-btn" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – im Fenster „Bild übernehmen“ klicken'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
+                          </label>
+                          <label htmlFor="virtual-tour-video-input" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}>
+                            📹 Video wählen oder aufnehmen
+                          </label>
                         </div>
-                      ) : pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.85rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>}
-                    </label>
-                    {!pageContent.virtualTourVideo && <p style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', margin: '0 0 8px' }}>Kein Video</p>}
-                    <p style={{ fontSize: '0.85rem', color: 'var(--k2-text)', margin: '0 0 8px' }}>Virtueller Rundgang</p>
-                    {/* Foto- und Video-Buttons */}
-                    <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
-                      <label htmlFor="virtual-tour-image-input-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-card-bg-2, #e8e4dd)', color: 'var(--k2-text)', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600', border: '1px solid var(--k2-muted)' }}>
-                        📸 Foto wählen oder aufnehmen
-                        <input id="virtual-tour-image-input-btn" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – im Fenster „Bild übernehmen“ klicken'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
-                      </label>
-                      <label htmlFor="virtual-tour-video-input" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}>
-                        📹 Video wählen oder aufnehmen
-                        <input id="virtual-tour-video-input" type="file" accept="video/*" title="Max. 2 Min. Länge · max. 100 MB" style={{ display: 'none' }} onChange={async (e) => {
-                          const f = e.target.files?.[0]
-                          if (f) { await handleVirtualTourVideoFile(f) }
-                          e.target.value = ''
-                        }} />
-                      </label>
-                      {pageContent.virtualTourVideo && (
-                        <button type="button" onClick={() => { const next = { ...pageContent, virtualTourVideo: '', virtualTourVideoSizeBytes: undefined }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); setVideoUploadStatus('idle'); setVideoUploadMsg('') }} style={{ padding: '0.4rem 0.8rem', background: 'transparent', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Video entfernen</button>
                       )}
                     </div>
                     <p style={{ margin: '6px 0 0', fontSize: '0.75rem', color: 'var(--k2-muted)' }}>Max. 2 Min. Länge · max. 100 MB</p>
@@ -10475,13 +10473,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </Link>
               )}
 
-              {/* Galerie / Mitglieder ansehen – Zurück landet im gleichen Tab (Design, Einstellungen, …) */}
+              {/* Galerie / Mitglieder ansehen – aktuelle Design-Farben mitgeben, damit Vorschau und Zurück dieselbe Farbe zeigen */}
               <Link
                 to={tenant.isVk2 ? PROJECT_ROUTES.vk2.galerieVorschau : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerie}
                 state={{
                   fromAdmin: true,
                   fromAdminTab: activeTab,
-                  fromAdminContext: tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+                  fromAdminContext: tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined,
+                  designSettings: (designSettings && Object.keys(designSettings).length > 0) ? designSettings : undefined
                 }}
                 style={{
                   padding: '0.5rem 1rem',
@@ -10733,7 +10732,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             {istVerein ? 'Dein Guide führt euch durch alle Bereiche.' : 'Klick auf eine Kachel – dein Guide erklärt sie dir.'}
                           </div>
                         </div>
-                        <Link to={galerieUrl} state={tenant.isOeffentlich ? { fromAdmin: true } : undefined} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.55rem 1rem', background: akzent, color: '#fff', borderRadius: '10px', fontSize: '0.84rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0, whiteSpace: 'nowrap' as const, boxShadow: `0 3px 10px ${akzent}44` }}>
+                        <Link to={galerieUrl} state={tenant.isOeffentlich ? { fromAdmin: true, designSettings: (designSettings && Object.keys(designSettings).length > 0) ? designSettings : undefined } : { fromAdmin: true, designSettings: (designSettings && Object.keys(designSettings).length > 0) ? designSettings : undefined }} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.55rem 1rem', background: akzent, color: '#fff', borderRadius: '10px', fontSize: '0.84rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0, whiteSpace: 'nowrap' as const, boxShadow: `0 3px 10px ${akzent}44` }}>
                           {istVerein ? '👥 Unsere Mitglieder' : '🎨 Galerie ansehen'} →
                         </Link>
                       </div>
@@ -10877,7 +10876,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               : `Willkommen, ${guideVorname}! Das ist deine Galerie-Zentrale.`}
                           </div>
                         </div>
-                        <Link to={galerieUrl} state={tenant.isOeffentlich ? { fromAdmin: true } : undefined} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.5rem 0.9rem', background: '#b54a1e', color: '#fff', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0, whiteSpace: 'nowrap' as const }}>
+                        <Link to={galerieUrl} state={tenant.isOeffentlich ? { fromAdmin: true, designSettings: (designSettings && Object.keys(designSettings).length > 0) ? designSettings : undefined } : { fromAdmin: true, designSettings: (designSettings && Object.keys(designSettings).length > 0) ? designSettings : undefined }} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.5rem 0.9rem', background: '#b54a1e', color: '#fff', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0, whiteSpace: 'nowrap' as const }}>
                           {istVerein ? '👥 Unsere Mitglieder' : '🎨 Galerie ansehen'} →
                         </Link>
                       </div>
@@ -11009,8 +11008,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       <h2 style={{ fontSize: 'clamp(1.2rem, 2.5vw, 1.5rem)', fontWeight: 700, color: s.text, margin: '0 0 0.25rem' }}>
                         Was möchtest du heute tun?
                       </h2>
-                      <p style={{ color: s.muted, margin: 0, fontSize: '0.9rem', marginBottom: '1rem' }}>
-                        Ein Klick – du bist im Bereich. Das sind alle Bereiche deiner Galerie.
+                      <p style={{ color: s.muted, margin: 0, fontSize: '0.9rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <span>Ein Klick – du bist im Bereich. Das sind alle Bereiche deiner Galerie.</span>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <button type="button" onClick={() => openHandbuchInFenster(getAdminReturnUrl(activeTab, eventplanSubTab))} style={{ color: s.accent, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.4rem', borderRadius: '6px', background: `${s.accent}12`, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit' }} title="Handbuch in eigenem Fenster öffnen – zum Zoomen und neben Einstellungen mitlesen">📖 Handbuch</button>
+                          <Link to="#" onClick={(e) => { e.preventDefault(); setActiveTab('einstellungen'); window.scrollTo({ top: 200, behavior: 'smooth' }); }} style={{ color: s.accent, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.4rem', borderRadius: '6px', background: `${s.accent}12` }} title="Einstellungen">⚙️ Einstellungen</Link>
+                        </span>
                       </p>
                       {/* Zwei Spalten: links Werke/Galerie gestalten/Einstellungen/Schritt, rechts Kassa/Events/Presse – zeilenweise gefüllt */}
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'clamp(0.75rem, 2vw, 1rem)', maxWidth: '900px' }}>
@@ -12390,7 +12393,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
                         {Object.entries(themes).map(([name, theme]) => (
                           <button key={name} type="button" onClick={() => applyTheme(name as keyof typeof themes)} style={{ padding: '0.75rem 1.25rem', background: `linear-gradient(135deg, ${theme.backgroundColor2}, ${theme.backgroundColor3})`, border: `2px solid ${theme.accentColor}`, borderRadius: 10, color: theme.textColor, cursor: 'pointer', fontSize: '0.9rem' }}>
-                            {name === 'default' ? 'Standard' : name === 'warm' ? 'Warm' : name === 'elegant' ? 'Elegant' : 'Modern'}
+                            {(themes[name as keyof typeof themes] as { name?: string })?.name ?? name}
                           </button>
                         ))}
                       </div>
@@ -12424,16 +12427,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     </div>
 
                     <button type="button" onClick={() => setDesignSettings({ ...(tenant.isOeffentlich ? OEF_DESIGN_DEFAULT : K2_ORANGE_DESIGN) })} style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: 'transparent', border: `1px solid ${fMuted}`, borderRadius: 8, color: fMuted, cursor: 'pointer', marginTop: '0.25rem' }}>↩ Zurücksetzen (Standard-Farben)</button>
-                    <div style={{ marginTop: '1.25rem' }}>
-                      <h3 style={{ fontSize: '1rem', color: fAccent, marginBottom: '0.25rem' }}>3. Varianten A & B (optional)</h3>
-                      <p style={{ fontSize: '0.8rem', color: fMuted, margin: '0 0 0.5rem' }}>Zwei Favoriten speichern und später wieder anwenden – zum Vergleichen (z. B. „So oder so?“) oder Zurückwechseln. Für alle, die gern experimentieren.</p>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      <button type="button" onClick={() => saveDesignVariant('a')} style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', background: 'rgba(181,74,30,0.08)', border: `1px solid ${fAccent}`, borderRadius: 8, color: fAccent, cursor: 'pointer', fontWeight: 600 }}>Aktuell als A speichern</button>
-                      <button type="button" onClick={() => saveDesignVariant('b')} style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', background: 'rgba(181,74,30,0.08)', border: `1px solid ${fAccent}`, borderRadius: 8, color: fAccent, cursor: 'pointer', fontWeight: 600 }}>Aktuell als B speichern</button>
-                      <button type="button" onClick={() => loadDesignVariant('a')} style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', background: 'rgba(28,26,24,0.06)', border: `1px solid ${fMuted}`, borderRadius: 8, color: fMuted, cursor: 'pointer' }}>Variante A anwenden</button>
-                      <button type="button" onClick={() => loadDesignVariant('b')} style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', background: 'rgba(28,26,24,0.06)', border: `1px solid ${fMuted}`, borderRadius: 8, color: fMuted, cursor: 'pointer' }}>Variante B anwenden</button>
-                    </div>
-                    </div>
                   </div>
                   {/* Rechte Spalte: echte Galerie-Seite in Kundengröße (wie „So sehen Kunden die Galerie“) */}
                   <div style={{ flex: '1 1 280px', minWidth: 280, position: 'sticky', top: '1rem' }}>
@@ -12449,21 +12442,30 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         const scale = 1
                         return (
                           <div style={{ width: 412 * scale, overflow: 'hidden', margin: '0 auto' }}>
-                            <div style={{ width: 412, transform: `scale(${scale})`, transformOrigin: 'top left', background: 'linear-gradient(135deg, var(--k2-bg-1), var(--k2-bg-2))', padding: '24px 18px 24px', paddingTop: 44 }}>
-                              <div style={{ marginBottom: 32 }}>
-                                <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 700, background: 'linear-gradient(135deg, #fff, var(--k2-accent))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{(pageTexts.galerie?.heroTitle ?? defaultPageTexts.galerie.heroTitle)?.trim() || galleryName}</h1>
-                                <p style={{ margin: '0.5rem 0 0', color: 'var(--k2-muted)', fontSize: '1rem' }}>{(pageTexts.galerie?.welcomeSubtext ?? defaultPageTexts.galerie.welcomeSubtext) || tagline}</p>
-                              </div>
-                              <section style={{ marginBottom: 24 }}>
-                                <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', fontWeight: 700, color: 'var(--k2-text)' }}>
-                                  {(pageTexts.galerie?.welcomeHeading ?? defaultPageTexts.galerie.welcomeHeading)?.trim() || 'Willkommen bei'} {(pageTexts.galerie?.heroTitle ?? defaultPageTexts.galerie.heroTitle)?.trim() || galleryName} –
-                                </h2>
-                                <p style={{ margin: '0.25rem 0 0', color: 'var(--k2-muted)', fontSize: '1rem', background: 'linear-gradient(135deg, var(--k2-accent), #e67a2a)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{(pageTexts.galerie?.welcomeSubtext ?? defaultPageTexts.galerie.welcomeSubtext) || tagline}</p>
-                                <p style={{ fontSize: '1.05rem', color: 'var(--k2-text)', lineHeight: 1.6, marginTop: 12, marginBottom: 16 }}>{(pageTexts.galerie?.welcomeIntroText ?? defaultPageTexts.galerie.welcomeIntroText)?.trim() || welcomeIntroDefault}</p>
-                                <div style={{ width: '100%', marginTop: 12, overflow: 'hidden', border: '2px solid var(--k2-accent)', borderRadius: 8 }}>
-                                  {pageContent.welcomeImage ? <img src={pageContent.welcomeImage} alt="" style={{ width: '100%', display: 'block', maxHeight: 320, objectFit: 'cover' }} /> : <div style={{ minHeight: 160, background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)' }}>Willkommensbild</div>}
+                            <div style={{ width: 412, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
+                              {/* Seite 1 – Willkommen */}
+                              <div style={{ background: 'linear-gradient(135deg, var(--k2-bg-1), var(--k2-bg-2))', padding: '24px 18px 24px', paddingTop: 44 }}>
+                                <div style={{ marginBottom: 32 }}>
+                                  <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 700, background: 'linear-gradient(135deg, #fff, var(--k2-accent))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{(pageTexts.galerie?.heroTitle ?? defaultPageTexts.galerie.heroTitle)?.trim() || galleryName}</h1>
+                                  <p style={{ margin: '0.5rem 0 0', color: 'var(--k2-muted)', fontSize: '1rem' }}>{(pageTexts.galerie?.welcomeSubtext ?? defaultPageTexts.galerie.welcomeSubtext) || tagline}</p>
                                 </div>
-                              </section>
+                                <section style={{ marginBottom: 24 }}>
+                                  <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', fontWeight: 700, color: 'var(--k2-text)' }}>
+                                    {(pageTexts.galerie?.welcomeHeading ?? defaultPageTexts.galerie.welcomeHeading)?.trim() || 'Willkommen bei'} {(pageTexts.galerie?.heroTitle ?? defaultPageTexts.galerie.heroTitle)?.trim() || galleryName} –
+                                  </h2>
+                                  <p style={{ margin: '0.25rem 0 0', color: 'var(--k2-muted)', fontSize: '1rem', background: 'linear-gradient(135deg, var(--k2-accent), #e67a2a)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{(pageTexts.galerie?.welcomeSubtext ?? defaultPageTexts.galerie.welcomeSubtext) || tagline}</p>
+                                  <p style={{ fontSize: '1.05rem', color: 'var(--k2-text)', lineHeight: 1.6, marginTop: 12, marginBottom: 16 }}>{(pageTexts.galerie?.welcomeIntroText ?? defaultPageTexts.galerie.welcomeIntroText)?.trim() || welcomeIntroDefault}</p>
+                                  <div style={{ width: '100%', marginTop: 12, overflow: 'hidden', border: '2px solid var(--k2-accent)', borderRadius: 8 }}>
+                                    {pageContent.welcomeImage ? <img src={pageContent.welcomeImage} alt="" style={{ width: '100%', display: 'block', maxHeight: 320, objectFit: 'cover' }} /> : <div style={{ minHeight: 160, background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)' }}>Willkommensbild</div>}
+                                  </div>
+                                </section>
+                              </div>
+                              {/* Seite 2 – Galerie: gleicher Verlauf, damit du siehst wie dunkel es unten wird */}
+                              <div style={{ background: 'linear-gradient(135deg, var(--k2-bg-1), var(--k2-bg-2))', padding: '24px 18px', minHeight: 420 }}>
+                                <p style={{ color: 'var(--k2-text)', fontSize: '1.1rem', fontWeight: 700, marginBottom: 8 }}>Seite 2 – Galerie</p>
+                                <p style={{ color: 'var(--k2-muted)', fontSize: '0.9rem', lineHeight: 1.5 }}>So wirkt der Farbverlauf weiter unten. Oft wird es hier dunkler – wichtig für Lesbarkeit und Kontrast.</p>
+                                <div style={{ marginTop: 24, minHeight: 200 }} />
+                              </div>
                             </div>
                           </div>
                         )
@@ -12585,6 +12587,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             }}>
               ⚙️ Einstellungen
             </h2>
+
+            <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted }}>
+              <button type="button" onClick={() => openHandbuchInFenster(getAdminReturnUrl(activeTab, eventplanSubTab))} style={{ color: s.accent, textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', padding: 0 }} title="Handbuch in eigenem Fenster öffnen – zum Zoomen und neben Einstellungen mitlesen">📖 Handbuch (Hilfe)</button> – Erste Schritte, Galerie gestalten, Admin, FAQ, VK2/ök2.
+            </p>
 
             {/* Sichtbarer Hinweis: Du bist Testpilot (ök2 oder VK2) – voller Gratis-Zugang */}
             {(tenant.isOeffentlich || tenant.isVk2) && (

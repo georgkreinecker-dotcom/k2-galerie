@@ -8,15 +8,15 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* K2 Galerie Standard-Theme Orange (wird ggf. von Admin/designSettings überschrieben) */
-  --k2-bg-1: #1a0f0a;
-  --k2-bg-2: #2d1a14;
-  --k2-bg-3: #3d2419;
-  --k2-text: #fff5f0;
-  --k2-muted: #d4a574;
-  --k2-accent: #ff8c42;
-  --k2-card-bg-1: rgba(45, 26, 20, 0.95);
-  --k2-card-bg-2: rgba(26, 15, 10, 0.92);
+  /* K2 Galerie Standard = Terracotta (erste Vorlage), Verlauf weich */
+  --k2-bg-1: #1c1210;
+  --k2-bg-2: #2a1e1a;
+  --k2-bg-3: #3d2c26;
+  --k2-text: #fdf6f2;
+  --k2-muted: #c49a88;
+  --k2-accent: #d97a50;
+  --k2-card-bg-1: rgba(45, 34, 30, 0.95);
+  --k2-card-bg-2: rgba(28, 20, 18, 0.92);
 }
 
 /* ök2: helles Theme (nur wenn .ok2-theme gesetzt) – keine inline style-Variablen nötig */

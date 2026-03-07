@@ -8,7 +8,7 @@
 import { getAuthToken } from './supabaseAuth'
 import { filterK2ArtworksOnly } from './autoSave'
 import { readArtworksRawByKey, saveArtworksByKey } from './artworksStorage'
-import { mergeServerWithLocal } from './syncMerge'
+import { mergeServerWithLocal, preserveLocalImageData } from './syncMerge'
 import { getArtworkImage } from './artworkImageStore'
 import { uploadArtworkImageToStorage } from './supabaseStorage'
 
@@ -86,10 +86,11 @@ export async function loadArtworksFromSupabase(): Promise<any[]> {
     console.log(`✅ ${artworks.length} Werke aus Supabase geladen`)
     const localList = loadFromLocalStorage()
     const { merged } = mergeServerWithLocal(artworks, localList, { onlyAddLocalIfMobileAndVeryNew: true })
+    const mergedWithImages = preserveLocalImageData(merged, localList)
     try {
       // 🔒 Nur schreiben wenn mindestens so viele wie lokal – nie mit weniger überschreiben (Datenverlust)
-      if (merged.length >= localList.length) {
-        const toStore = filterK2ArtworksOnly(merged)
+      if (mergedWithImages.length >= localList.length) {
+        const toStore = filterK2ArtworksOnly(mergedWithImages)
         saveArtworksByKey('k2-artworks', toStore, { filterK2Only: false, allowReduce: false })
       } else {
         console.warn(`⚠️ Supabase-Load: merged ${merged.length} < lokal ${localList.length} – localStorage unverändert`)
@@ -97,7 +98,7 @@ export async function loadArtworksFromSupabase(): Promise<any[]> {
     } catch (e) {
       console.warn('⚠️ localStorage Backup fehlgeschlagen:', e)
     }
-    return merged
+    return mergedWithImages
   } catch (error) {
     console.error('❌ Fehler beim Laden aus Supabase:', error)
     return loadFromLocalStorage()

@@ -3,7 +3,7 @@
  * Zeigt entweder ein Bild (logoSrc) oder das Text-Logo (Markenname + „Admin“).
  */
 
-import { PRODUCT_BRAND_NAME } from '../config/tenantConfig'
+import { PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL } from '../config/marketingWerbelinie'
 
 const s = WERBEUNTERLAGEN_STIL
@@ -62,6 +62,20 @@ export default function AdminBrandLogo({ logoSrc, logoAlt = 'Admin', title }: Ad
         }}
       >
         Admin
+      </span>
+      <span
+        style={{
+          marginTop: '0.25rem',
+          display: 'block',
+          color: s.muted,
+          fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)',
+          fontWeight: 400,
+          fontFamily: s.fontBody,
+          lineHeight: 1.3,
+          maxWidth: '22rem',
+        }}
+      >
+        {PRODUCT_WERBESLOGAN}<br />{PRODUCT_WERBESLOGAN_2}
       </span>
     </div>
   )

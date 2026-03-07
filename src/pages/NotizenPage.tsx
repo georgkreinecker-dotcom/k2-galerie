@@ -28,7 +28,7 @@ export default function NotizenPage() {
           to={PROJECT_ROUTES['k2-galerie'].home}
           style={{ color: 'rgba(233,213,255,0.7)', fontSize: '0.9rem', textDecoration: 'none', display: 'inline-block', marginBottom: '1.5rem' }}
         >
-          ← Zurück zur APf
+          ← Zurück
         </Link>
         <h1 style={{ margin: '0 0 0.5rem', fontSize: '1.6rem', fontWeight: 700, color: '#fff' }}>
           📝 Georgs Notizen

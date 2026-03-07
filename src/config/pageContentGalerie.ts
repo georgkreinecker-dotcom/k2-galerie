@@ -86,9 +86,9 @@ export function getPageContentGalerie(tenantId?: 'oeffentlich' | 'vk2'): PageCon
 }
 
 /**
- * Merged Server-Seitengestaltung (z. B. aus gallery-data.json) mit lokalem Stand.
- * Regel: Lokale befüllte Felder gehen nicht verloren – Server überschreibt nur, wo Server etwas liefert.
- * Verhindert „Bilder weg nach Galerie ansehen“, wenn gallery-data.json noch alte/leere Seitengestaltung hat.
+ * Merge Server-Seitengestaltung mit lokal.
+ * Eine Regel: Lokal befüllt = behalten. Server ersetzt nur, wo lokal leer ist.
+ * Virtueller Rundgang: Video/Bild einmal wählen → speichern → Galerie zeigt es. Kein Überschreiben.
  */
 export function mergePageContentGalerieFromServer(serverJson: string, tenantId?: 'oeffentlich' | 'vk2'): void {
   try {
@@ -103,10 +103,10 @@ export function mergePageContentGalerieFromServer(serverJson: string, tenantId?:
     const keys: (keyof PageContentGalerie)[] = ['welcomeImage', 'galerieCardImage', 'virtualTourImage', 'virtualTourVideo', 'virtualTourVideoSizeBytes', 'welcomeIntroText']
     const merged: Partial<PageContentGalerie> = {}
     for (const k of keys) {
-      const s = server[k]
       const l = local[k]
-      const hasServer = s != null && String(s).trim() !== ''
+      const s = server[k]
       const hasLocal = l != null && String(l).trim() !== ''
+      const hasServer = s != null && String(s).trim() !== ''
       if (hasLocal || hasServer) (merged as Record<string, unknown>)[k] = hasLocal ? l : s
     }
     setPageContentGalerie(merged, tenantId)

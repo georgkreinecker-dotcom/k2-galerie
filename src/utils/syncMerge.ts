@@ -112,8 +112,9 @@ function isPlaceholderOrEmpty(url: string | undefined): boolean {
 }
 
 /**
- * Erhält lokale Bilddaten (imageUrl, imageRef, previewUrl), wenn das gemergte Werk vom Server kein Bild hat.
- * Server-Daten (z. B. gallery-data) enthalten oft keine Base64-Bilder → nach Merge würden Anzeigen leer.
+ * Erhält lokale Bilddaten (imageUrl, imageRef, previewUrl), damit Freistellungen nicht durch Server-Originale ersetzt werden.
+ * - Wenn lokal ein Bild vorhanden ist (imageUrl oder imageRef): immer lokale Bilddaten übernehmen.
+ * - Verhindert, dass „Bilder vom Server laden“ oder Merge die freigestellten Fotos durch Export-Originale ersetzt.
  * Doku: docs/GELOESTE-BUGS.md BUG-021
  */
 export function preserveLocalImageData(
@@ -131,10 +132,9 @@ export function preserveLocalImageData(
     if (!key) return item
     const local = localByKey.get(key)
     if (!local) return item
-    // Immer lokales Bild übernehmen, wenn das gemergte Item kein anzeigbares imageUrl hat (auch bei imageRef – Anzeige braucht imageUrl).
-    const mergedHasNoDisplayableImage = isPlaceholderOrEmpty(item.imageUrl)
     const localHasImage = !isPlaceholderOrEmpty(local.imageUrl) || (local.imageRef && String(local.imageRef).trim() !== '')
-    if (!mergedHasNoDisplayableImage || !localHasImage) return item
+    if (!localHasImage) return item
+    // Immer lokales Bild übernehmen, wenn lokal vorhanden – so gehen Freistellungen nicht durch Server-Originale verloren.
     return {
       ...item,
       imageUrl: local.imageUrl ?? item.imageUrl,

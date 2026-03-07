@@ -86,7 +86,18 @@ Quelle: src/config/licencePricing.ts. Kein direkter Kundenkontakt; Bestätigung 
 
 ---
 
-## 8. Referenzen (Doku)
+## 8. Erweiterte Präsentationsmappe
+
+Zur **erweiterten Präsentationsmappe** gehören:
+
+1. **Dieser Prospekt** (eine Seite, in der App: mök2 → K2 Galerie Prospekt / Präsentationsmappe, „Als PDF drucken“).
+2. **Benutzerhandbuch** – für Lizenznehmer:innen, Piloten und Vereine. Inhalt: Kurzanleitung (alle Bereiche auf einen Blick), detailliertes Inhaltsverzeichnis, 7 Kapitel (Erste Schritte, Galerie gestalten, Admin im Überblick, Häufige Fragen, Vereinsplattform VK2, Demo und Lizenz ök2, Eventplanung & Werbung). Zum Nachschlagen, in der App lesbar und druckbar. **Quelle:** `public/benutzer-handbuch/*.md`. **In der App:** Route `/benutzer-handbuch` bzw. Projekte → K2 Galerie → Benutzerhandbuch.
+
+Für Pitches und Partner: Prospekt (1 Seite) beilegen oder zeigen; auf Wunsch zusätzlich Link zum Handbuch oder Handbuch als PDF mitgeben.
+
+---
+
+## 9. Referenzen (Doku)
 
 | Thema | Dokument |
 |-------|----------|
@@ -98,6 +109,7 @@ Quelle: src/config/licencePricing.ts. Kein direkter Kundenkontakt; Bestätigung 
 | Stripe/Lizenzen Go-Live | docs/STRIPE-LIZENZEN-GO-LIVE.md |
 | Plattform-Unterstützung | docs/PLATTFORM-UNTERSTUETZUNG.md |
 | Docs-Index | docs/00-INDEX.md |
+| Benutzerhandbuch (Quelle) | public/benutzer-handbuch/00-INDEX.md, 01–07 |
 
 ---
 

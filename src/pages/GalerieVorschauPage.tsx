@@ -405,16 +405,16 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     return () => window.removeEventListener('artworks-updated', onUpdated)
   }, [musterOnly])
 
-  // K2-Orange statt altes Blau (wie GaleriePage – gleicher Stand auf allen Geräten)
+  // K2-Standard = Terracotta statt altes Blau (wie GaleriePage)
   const K2_ORANGE = React.useMemo(() => ({
-    backgroundColor1: '#1a0f0a',
-    backgroundColor2: '#2d1a14',
-    backgroundColor3: '#3d2419',
-    textColor: '#fff5f0',
-    mutedColor: '#d4a574',
-    accentColor: '#ff8c42',
-    cardBg1: 'rgba(45, 26, 20, 0.95)',
-    cardBg2: 'rgba(26, 15, 10, 0.92)'
+    backgroundColor1: '#1c1210',
+    backgroundColor2: '#2a1e1a',
+    backgroundColor3: '#3d2c26',
+    textColor: '#fdf6f2',
+    mutedColor: '#c49a88',
+    accentColor: '#d97a50',
+    cardBg1: 'rgba(45, 34, 30, 0.95)',
+    cardBg2: 'rgba(28, 20, 18, 0.92)'
   }), [])
   const isOldBlueTheme = React.useCallback((design: Record<string, string>): boolean => {
     if (!design || typeof design !== 'object') return true
@@ -443,24 +443,32 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       if (use.cardBg2) root.style.setProperty('--k2-card-bg-2', use.cardBg2)
     } catch (_) {}
   }, [K2_ORANGE, isOldBlueTheme])
+  const designStorageKey = musterOnly ? 'k2-oeffentlich-design-settings' : vk2 ? 'k2-vk2-design-settings' : 'k2-design-settings'
   const applyDesignFromStorage = React.useCallback(() => {
     try {
-      const stored = localStorage.getItem('k2-design-settings')
+      const stored = localStorage.getItem(designStorageKey)
       if (!stored || stored.length > 50000) return
       const design = JSON.parse(stored) as Record<string, string>
       const use = isOldBlueTheme(design) ? K2_ORANGE : design
-      if (isOldBlueTheme(design)) localStorage.setItem('k2-design-settings', JSON.stringify(K2_ORANGE))
+      if (isOldBlueTheme(design)) localStorage.setItem(designStorageKey, JSON.stringify(K2_ORANGE))
       applyDesignToDocument(use)
     } catch (_) {}
-  }, [applyDesignToDocument, K2_ORANGE, isOldBlueTheme])
+  }, [applyDesignToDocument, K2_ORANGE, isOldBlueTheme, designStorageKey])
   useEffect(() => {
+    const fromState = (location.state as { designSettings?: Record<string, string> } | null)?.designSettings
+    if (fromState && typeof fromState === 'object' && (fromState.accentColor || fromState.backgroundColor1)) {
+      try {
+        if (isOldBlueTheme(fromState)) localStorage.setItem(designStorageKey, JSON.stringify(K2_ORANGE))
+        else localStorage.setItem(designStorageKey, JSON.stringify(fromState))
+      } catch (_) {}
+    }
     applyDesignFromStorage()
     const onStorage = (e: StorageEvent) => {
-      if (e.key === 'k2-design-settings') applyDesignFromStorage()
+      if (e.key === designStorageKey) applyDesignFromStorage()
     }
     window.addEventListener('storage', onStorage)
     return () => window.removeEventListener('storage', onStorage)
-  }, [applyDesignFromStorage])
+  }, [applyDesignFromStorage, designStorageKey, location.state])
 
   // Admin-Kontext nur beenden, wenn Nutzer bewusst aus dem Admin „Zur Galerie“ geklickt hat (nicht bei direktem Aufruf/Mobil → Kassa bleibt nutzbar)
   useEffect(() => {
@@ -2259,7 +2267,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
 
   return (
     <>
-      {/* Vorschau aus Einstellungen „Seiten prüfen“ – Zurück-Link */}
+      {/* Gelbe Leiste: auf jeder Seite oben – gespeicherte Änderungen sichtbar, Veröffentlichen-Hinweis */}
       {isVorschauModus && (
         <div style={{
           position: 'sticky',
@@ -2267,15 +2275,16 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           left: 0,
           right: 0,
           zIndex: 200,
-          padding: '0.6rem 1rem',
+          padding: '0.5rem 1rem',
           background: 'rgba(245, 158, 11, 0.95)',
           color: '#1a1a1a',
-          fontSize: '0.95rem',
+          fontSize: '0.9rem',
           fontWeight: 600,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '0.5rem',
+          gap: '0.75rem',
+          flexWrap: 'wrap',
           boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
         }}>
           <button
@@ -2287,11 +2296,13 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               const backUrl = '/admin' + (ctx ? '?context=' + ctx : '') + (tab ? (ctx ? '&' : '?') + 'tab=' + tab : '')
               navigate(backUrl)
             }}
-            style={{ background: 'rgba(0,0,0,0.2)', border: 'none', color: 'inherit', padding: '0.4rem 0.8rem', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}
+            style={{ background: 'rgba(0,0,0,0.2)', border: 'none', color: 'inherit', padding: '0.4rem 0.8rem', borderRadius: 8, cursor: 'pointer', fontWeight: 600, flexShrink: 0 }}
           >
             ← Zurück zu Einstellungen
           </button>
-          <span style={{ opacity: 0.9 }}>Vorschau (Werke) – deine gespeicherten Änderungen</span>
+          <span style={{ opacity: 0.95 }}>
+            Hier siehst du deine gespeicherten Änderungen – du brauchst nicht mehr extra „Auf diesem Gerät speichern“. Nach „Veröffentlichen“ sehen alle deine Änderungen – nicht vergessen!
+          </span>
         </div>
       )}
       {/* Synchronisierungs-Status-Balken für Mobile */}
@@ -2335,8 +2346,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     <div style={{ 
       minHeight: '-webkit-fill-available',
       background: musterOnly
-        ? 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 50%, var(--k2-bg-3) 100%)'
-        : 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 50%, var(--k2-bg-3) 100%)',
+        ? 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 65%, var(--k2-bg-3) 100%)'
+        : 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 65%, var(--k2-bg-3) 100%)',
       color: musterOnly ? 'var(--k2-text)' : '#ffffff',
       position: 'relative',
       overflowX: 'hidden'

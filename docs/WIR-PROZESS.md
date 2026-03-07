@@ -132,6 +132,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 | 27.02.26 | „Endlich professionell ohne Pfuschen“ – Georg will eine Sache zuverlässig, nicht viele Workarounds. Eine API-URL, klare Erfolg/Fehler-Logik, eine Doku mit GITHUB_TOKEN; dann testen. |
 | 02.03.26 | K2-Welt: Kein direkter Kundenkontakt als Gesetz – bei Skalierung weder möglich noch sinnvoll. Druckbestätigung = verbindlich und vertrauenserweckend, ohne dass wir Beziehungen aufbauen. Wenn Georg etwas als „Gesetz“ formuliert, als Regel mit alwaysApply speichern und in PRODUKT-VISION verankern. |
 | 06.03.26 | ro5: Doku so anlegen, dass nach Crash nicht derselbe falsche Ansatz wieder versucht wird – in WEITERARBEITEN-NACH-ABSTURZ den richtigen Fix-Weg festhalten (z. B. Auslagerung in Funktion), damit die nächste Session nicht „wie Idioten dasteht“. |
+| 07.03.26 | Handbuch in erweiterte Präsentationsmappe einbinden und für Anke in DIALOG-STAND mitdokumentieren – dann Session sauber abschließen (Test, Build, DIALOG-STAND, WIR-PROZESS, Commit+Push) gibt Georg und dem nächsten Tag Sicherheit. |
 
 ---
 

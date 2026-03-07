@@ -1,0 +1,23 @@
+---
+description: "Georg arbeitet immer auf der APf im Browser – Admin/VK2 von dort ohne Hürden erreichbar"
+alwaysApply: true
+---
+
+# APf = Georgs Arbeitsort – Admin ohne Hürden
+
+## Regel (unveränderlich)
+
+**Georg arbeitet immer auf der APf-Seite im Browser.** Von dort muss er **ohne Hürden** in den Admin (K2, ök2, VK2) kommen – kein Block, keine Meldung „in der Preview nicht geladen“, kein Klick auf „?embedded=1“.
+
+- **Admin-Route (/admin):** Lädt immer den vollen Admin (ScreenshotExportAdmin). Kein iframe-Check, der den Admin ausblendet oder eine Hinweis-Seite zeigt.
+- **VK2-Admin, alle Tabs:** Von der APf aus erreichbar, ohne zusätzliche Schritte.
+
+## Was nicht wieder eingebaut werden darf
+
+In **AdminRoute.tsx** war zeitweise ein Check: „Wenn die App in einem iframe läuft (z. B. Cursor Preview), zeige nur eine Meldung statt den Admin.“ Das war zur **Crash-Vermeidung in Cursor Preview** gedacht – aber die APf im Browser läuft bei Georg ebenfalls oft in einem Kontext, den der Code als iframe erkannt hat. Folge: Georg sah die Block-Meldung, obwohl er im „richtigen“ Browser arbeitete.
+
+**Entfernt (07.03.26):** AdminRoute rendert nur noch `<ScreenshotExportAdmin />`, ohne iframe-Abfrage. **Diese Hürde darf nicht wieder eingeführt werden.** Crash-Vermeidung für Cursor Preview darf nicht dazu führen, dass der Admin von der APf aus blockiert wird.
+
+## Kurzfassung
+
+**APf = Georgs Arbeitsort. Admin und VK2 von dort ohne Hürden erreichbar. Kein iframe-Block in AdminRoute.**

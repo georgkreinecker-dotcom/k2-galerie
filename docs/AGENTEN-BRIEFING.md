@@ -31,6 +31,7 @@
 
 - **Sportwagenprinzip (überall):** Eine Quelle, ein Standard, ein Ablauf pro Problemstellung. Kein „pro Modal anders“. Quelle: SPORTWAGEN-ROADMAP, PRODUKT-STANDARD-NACH-SPORTWAGEN.
 - **Raumschiffprinzip (K2 Familie):** Qualität vor Abheben; nicht starten, bevor startklar. Qualitätsansprüche um ein Vielfaches höher. Quelle: K2-FAMILIE-GRUNDBOTSCHAFT.md (Raumschiff-Anspruch).
+- **Auftrag ernst nehmen (07.03.26):** Wenn Georg einen Auftrag klar formuliert hat (z. B. „beide immer zusammen“, „X weglassen“, „Y einbauen“), **umsetzen** – nicht nachfragen („Soll ich X ergänzen?“). Nachfragen, ob man etwas tun soll, obwohl der Auftrag schon da war, ist Zeitverschwendung. Erst umsetzen; nur bei echt Unklarem nachfragen.
 
 ---
 

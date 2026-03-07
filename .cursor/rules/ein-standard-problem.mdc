@@ -27,6 +27,16 @@ alwaysApply: true
 | Bugfix für einen von mehreren Fällen | Nur diesen einen Fall anpassen | Prüfen: gelten die anderen Fälle noch? Ein Standard für alle. |
 | Neue Feature-Idee (z. B. „X soll sich wie Y verhalten“) | Y nachbauen mit Abweichungen | Y-Logik/API nutzen; eine Implementierung, viele Aufrufer. |
 
+## Konkrete Standards (vor Neuimplementierung prüfen)
+
+| Problemstellung | Standard / wo nachschlagen | Nicht |
+|-----------------|----------------------------|--------|
+| **Druck-Fusszeile / Seitenzahl (Handbücher, druckbare Seiten)** | Klasse **`.seitenfuss`**, `position: fixed; bottom: 0`, `::after { content: "Seite " counter(page) … }`. Referenz: K2GalerieHandbuchPage, K2TeamHandbuchPage, K2FamilieHandbuchPage, BenutzerHandbuchPage. Scoping z. B. `.benutzer-handbuch-wrapper .seitenfuss` oder `.mission-wrapper .seitenfuss`. | Keine eigene Klasse (z. B. `benutzer-print-seitenfuss`) erfinden. |
+| Dokument aus Admin öffnen | `openDocumentInApp` (ein Ablauf, viele Aufrufer). | Kein eigener Öffnungsweg pro Dokumenttyp. |
+| Bild einfügen / Bild übernehmen | `runBildUebernehmen` in ScreenshotExportAdmin. | Kein zweiter Ablauf pro Modal. |
+
+**Pflicht vor Implementierung:** Gibt es dafür schon eine Lösung? Wenn ja → dieselbe Klasse / denselben Ablauf nutzen. Georg soll nicht sagen müssen „sind wir im Sportwagenmodus?“ – die Regel und diese Tabelle sorgen dafür.
+
 ## Kurzfassung
 
-**Gleiche Problemstellung = eine Lösung. Keine zweite, keine Sonderfälle ohne zwingenden Grund. Regel kategorisch – gilt für Menschen und AI.**
+**Gleiche Problemstellung = eine Lösung. Keine zweite, keine Sonderfälle ohne zwingenden Grund. Regel kategorisch – gilt für Menschen und AI. Konkrete Standards in der Tabelle oben vor Neuimplementierung prüfen.**

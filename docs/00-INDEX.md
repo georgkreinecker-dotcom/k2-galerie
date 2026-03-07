@@ -29,6 +29,8 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 
 ## Zentrale Nutzer-Themen (Übersicht)
 - **ZENTRALE-THEMEN-FUER-NUTZER.md** – **Eine Übersicht:** Änderungen sichtbar, Geräte, Drucker, Stand/Handy, Backup, Echte Galerie vs. Demo, Admin, Kassa. Kurz + Verweise auf die Einzel-Dokus.
+- **HANDBUCH-AUFBAU-UND-ZIEL.md** – **Handbuch-Struktur & Ziel (für Georg/APf):** Wie K2Team-, K2-Galerie- und K2-Familie-Handbuch aufgebaut sind; Zielbild Kurzanleitung + Langversion als Buch. Gespeichert – bei Gelegenheit umsetzen.
+- **BENUTZERHANDBUCH-OEK2-VK2-KONZEPT.md** – **Benutzerhandbuch für unsere User (ök2, VK2):** Konzept und Anforderungen: sehr professionell, leicht verständlich, für jeden Laien, redigiert. Für Lizenznehmer:innen, Piloten, Vereine. Inhalt und Ablage bei Gelegenheit ausarbeiten.
 
 ## Stabilität & Crash
 - **ANALYSE-ADMIN-BUILD-DESASTER-06-03.md** – **Admin/Build-Desaster 06.03.26:** Warum Build rot war (JSX-Chaos in ScreenshotExportAdmin Design-Vorschau + navigate in Unterkomponente). Auslagern großer Conditional-Blöcke in Hilfsfunktion; Build nie dauerhaft rot; Hooks pro Komponente. Regel: .cursor/rules/jsx-grosse-bloeke-auslagern.mdc.

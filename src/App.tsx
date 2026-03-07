@@ -13,6 +13,7 @@ import ZettelMartinaMunaPage from './pages/ZettelMartinaMunaPage'
 import ZettelPilotPage from './pages/ZettelPilotPage'
 import ZettelPilotFormPage from './pages/ZettelPilotFormPage'
 import K2GalerieHandbuchPage from './pages/K2GalerieHandbuchPage'
+import BenutzerHandbuchPage from './pages/BenutzerHandbuchPage'
 import MobileConnectPage from './pages/MobileConnectPage'
 import ProduktVorschauPage from './pages/ProduktVorschauPage'
 import MarketingOek2Page from './pages/MarketingOek2Page'
@@ -563,6 +564,7 @@ function App() {
       <Route path="/zettel-pilot" element={<ZettelPilotPage />} />
       <Route path="/zettel-pilot-form" element={<ZettelPilotFormPage />} />
       <Route path="/k2-galerie-handbuch" element={<K2GalerieHandbuchPage />} />
+      <Route path="/benutzer-handbuch" element={<BenutzerHandbuchPage />} />
       
       {/* Legacy-Routen (Redirect für bestehende Links) */}
       <Route path="/key" element={<Navigate to={PLATFORM_ROUTES.key} replace />} />

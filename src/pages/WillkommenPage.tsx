@@ -5,8 +5,8 @@
 
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, WILLKOMMEN_FROM_KEY, AGB_ROUTE, ENTDECKEN_ROUTE } from '../config/navigation'
-import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
+import { PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, WILLKOMMEN_FROM_KEY, AGB_ROUTE, ENTDECKEN_ROUTE, BENUTZER_HANDBUCH_ROUTE } from '../config/navigation'
+import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 
 const AGB_ACCEPTED_KEY = 'k2-agb-accepted'
@@ -202,20 +202,18 @@ function VariantA({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
             </button>
           </div>
 
-          {/* Weitere Optionen nur dezent – CTA Lizenz sichtbar (Priorität 3 OEK2) */}
+          {/* Weitere Optionen nur dezent – Lizenz nur in Einstellungen (Admin), nicht auf Willkommen */}
           <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.8rem', color: muted }}>
             <button type="button" onClick={() => startEntry('ansicht')} style={{ background: 'none', border: 'none', color: muted, textDecoration: 'underline', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>Nur Galerie ansehen</button>
             {' · '}
             <Link to={ENTDECKEN_ROUTE} style={{ color: muted, textDecoration: 'underline' }}>In 1 Min. entdecken</Link>
-            {' · '}
-            <a href={`mailto:${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_EMAIL)}?subject=${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_BETREFF)}`} style={{ color: muted, textDecoration: 'underline' }}>Lizenz anfragen</a>
-            {' · '}
-            <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ color: muted, textDecoration: 'underline' }}>Lizenz online kaufen</Link>
           </p>
           <p style={{ textAlign: 'center', marginTop: '0.5rem', fontSize: '0.72rem', color: muted }}>Empfehlungsprogramm: 10 % Rabatt für dich, 10 % Gutschrift für den Empfehler – Empfehler-ID beim Lizenzkauf angeben.</p>
 
-          {/* Fußzeile – AGB/Legal nur unten, nicht im Fokus */}
+          {/* Fußzeile – Handbuch, AGB/Legal nur unten, nicht im Fokus */}
           <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.75rem', color: muted, lineHeight: 2 }}>
+            <Link to={BENUTZER_HANDBUCH_ROUTE} style={{ color: muted, textDecoration: 'none' }}>Handbuch</Link>
+            {' · '}
             <Link to={AGB_ROUTE} style={{ color: muted, textDecoration: 'none' }}>AGB</Link>
             {' · '}
             {PRODUCT_COPYRIGHT}
@@ -305,20 +303,18 @@ function VariantC({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
             </button>
           </div>
 
-          {/* Weitere Optionen dezent – CTA Lizenz sichtbar (Priorität 3 OEK2) */}
+          {/* Weitere Optionen dezent – Lizenz nur in Einstellungen (Admin), nicht auf Willkommen */}
           <p style={{ textAlign: 'center', marginTop: '0.5rem', marginBottom: '0.5rem', fontSize: '0.8rem', color: muted }}>
             <button type="button" onClick={() => startEntry('ansicht')} style={{ background: 'none', border: 'none', color: muted, textDecoration: 'underline', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>Nur Galerie ansehen</button>
             {' · '}
             <Link to={ENTDECKEN_ROUTE} style={{ color: muted, textDecoration: 'underline' }}>In 1 Min. entdecken</Link>
-            {' · '}
-            <a href={`mailto:${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_EMAIL)}?subject=${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_BETREFF)}`} style={{ color: muted, textDecoration: 'underline' }}>Lizenz anfragen</a>
-            {' · '}
-            <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ color: muted, textDecoration: 'underline' }}>Lizenz online kaufen</Link>
           </p>
           <p style={{ textAlign: 'center', marginBottom: '1.5rem', fontSize: '0.72rem', color: muted }}>Empfehlungsprogramm: 10 % Rabatt für dich, 10 % Gutschrift für den Empfehler – Empfehler-ID beim Lizenzkauf angeben.</p>
 
           {/* Fußzeile */}
           <p style={{ textAlign: 'center', fontSize: '0.75rem', color: muted, lineHeight: 2 }}>
+            <Link to={BENUTZER_HANDBUCH_ROUTE} style={{ color: muted, textDecoration: 'none' }}>Handbuch</Link>
+            {' · '}
             <Link to={AGB_ROUTE} style={{ color: muted, textDecoration: 'none' }}>AGB</Link>
             {' · '}
             {PRODUCT_COPYRIGHT}

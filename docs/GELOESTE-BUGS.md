@@ -14,8 +14,9 @@
 **Lösung:** Nach dem Merge **lokale Bilddaten erhalten**, wenn die Server-Version kein Bild hat: `preserveLocalImageData(merged, localArtworks)` in `syncMerge.ts`; Aufruf in GaleriePage an beiden Stellen (handleRefresh + Initial-Load) vor `saveArtworksForContext`. So werden imageUrl, imageRef und previewUrl vom lokalen Werk übernommen, sobald der Server-Eintrag kein Bild liefert.
 **Ergänzung (06.03.26):** Platzhalter blieben sichtbar, wenn Werke mit **imageRef = URL** (Supabase/Vercel) geladen wurden – `resolveArtworkImages` nutzte nur IndexedDB. Fix: In `artworkImageStore.ts` wird imageRef, sofern es mit `http://` oder `https://` beginnt, direkt als imageUrl verwendet → echte Bilder statt Platzhalter.
 **Ergänzung 2 (06.03.26):** Admin-Werkliste zeigte viele „Kein Bild“: Nach GitHub-Upload wurde nur **imageUrl = url** gesetzt, nicht **imageRef**. Beim Reload/anderem Gerät blieb nur imageRef = k2-img-xxx, IndexedDB dort leer → Platzhalter. Fix: In ScreenshotExportAdmin beim Speichern nach Upload auch **imageRef = url** setzen (artworkData + updatedArtworks), damit die URL dauerhaft in den Daten steht und resolveArtworkImages sie überall nutzen kann.
+**Ergänzung 3 (07.03.26):** Nach „Bilder vom Server laden“ oder Merge waren überall wieder **Originale** statt Freistellungen. Ursache: preserveLocalImageData übernahm lokale Bilder nur, wenn das gemergte Werk **kein** Bild hatte – lieferte der Server aber z. B. Original-URLs aus gallery-data, galt das als „hat Bild“ und lokale Freistellung wurde verworfen. Fix: Lokale Bilddaten **immer** übernehmen, sobald lokal ein Bild (imageUrl oder imageRef) vorhanden ist – unabhängig vom Server-Eintrag. So gehen Freistellungen bei Merge/Server-Load nicht mehr verloren.
 **Betroffene Dateien:** `src/utils/syncMerge.ts` (preserveLocalImageData), `src/pages/GaleriePage.tsx` (beide Merge-Pfade), `src/utils/artworkImageStore.ts` (resolveArtworkImages), `components/ScreenshotExportAdmin.tsx` (Upload-Block: imageRef = url)
-**Status:** ✅ Behoben (05.03.26, Ergänzung 06.03.26)
+**Status:** ✅ Behoben (05.03.26, Ergänzung 06.03.26, 07.03.26)
 
 ---
 

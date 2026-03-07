@@ -1,6 +1,6 @@
 .mission-wrapper {
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 55%, var(--k2-bg-3) 100%);
+  background: linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 65%, var(--k2-bg-3) 100%);
   padding: 2rem clamp(1.5rem, 5vw, 4rem);
   color: var(--k2-text);
   font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;

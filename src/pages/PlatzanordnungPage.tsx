@@ -420,7 +420,7 @@ const PlatzanordnungPage = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 50%, var(--k2-bg-3) 100%)',
+      background: 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 65%, var(--k2-bg-3) 100%)',
       color: '#ffffff',
       padding: '1rem'
     }}>

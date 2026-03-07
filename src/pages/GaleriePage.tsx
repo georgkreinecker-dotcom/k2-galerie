@@ -233,16 +233,16 @@ function openEventDocument(
   w.document.close()
 }
 
-/** Altes Blau-Theme? Dann K2-Orange verwenden (gespeicherte Design-Werte können altes Blau sein). */
+/** Altes Blau-Theme? Dann K2-Standard = Terracotta (wie erste Vorlage). Verlauf weich. */
 const K2_ORANGE = {
-  backgroundColor1: '#1a0f0a',
-  backgroundColor2: '#2d1a14',
-  backgroundColor3: '#3d2419',
-  textColor: '#fff5f0',
-  mutedColor: '#d4a574',
-  accentColor: '#ff8c42',
-  cardBg1: 'rgba(45, 26, 20, 0.95)',
-  cardBg2: 'rgba(26, 15, 10, 0.92)'
+  backgroundColor1: '#1c1210',
+  backgroundColor2: '#2a1e1a',
+  backgroundColor3: '#3d2c26',
+  textColor: '#fdf6f2',
+  mutedColor: '#c49a88',
+  accentColor: '#d97a50',
+  cardBg1: 'rgba(45, 34, 30, 0.95)',
+  cardBg2: 'rgba(28, 20, 18, 0.92)'
 }
 const OLD_BLUE_BG = ['#0a0e27', '#03040a', '#1a1f3a', '#0d1426', '#111c33', '#0f1419']
 const OLD_CYAN_ACCENT = ['#5ffbf1', '#33a1ff', '#667eea', '#764ba2', '#b8b8ff', '#8fa0c9']
@@ -437,6 +437,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   const [forgotEmailOrPhone, setForgotEmailOrPhone] = useState('')
   const [forgotSent, setForgotSent] = useState(false)
   const [fullscreenMedia, setFullscreenMedia] = useState<{ type: 'video' | 'image', src: string } | null>(null)
+  const [fullscreenZoom, setFullscreenZoom] = useState(1)
+  const closeFullscreen = () => { setFullscreenMedia(null); setFullscreenZoom(1) }
   // PWA-Icon-Hinweis: Nur auf Mobile, wenn noch nicht als „App“ am Startbildschirm – Nutzer muss Icon aktiv hinzufügen
   const [showPwaIconHint, setShowPwaIconHint] = useState(false)
   useEffect(() => {
@@ -517,14 +519,23 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     } catch (_) {}
   }, [musterOnly])
   useEffect(() => {
-    applyDesignFromStorage()
     const designKey = musterOnly ? 'k2-oeffentlich-design-settings' : 'k2-design-settings'
+    const fromState = (location.state as { designSettings?: Record<string, string> } | null)?.designSettings
+    if (fromState && typeof fromState === 'object' && (fromState.accentColor || fromState.backgroundColor1)) {
+      try {
+        if (isOldBlueTheme(fromState)) localStorage.setItem(designKey, JSON.stringify(K2_ORANGE))
+        else localStorage.setItem(designKey, JSON.stringify(fromState))
+        applyDesignFromStorage()
+      } catch (_) {}
+    } else {
+      applyDesignFromStorage()
+    }
     const onStorage = (e: StorageEvent) => {
       if (e.key === designKey) applyDesignFromStorage()
     }
     window.addEventListener('storage', onStorage)
     return () => window.removeEventListener('storage', onStorage)
-  }, [applyDesignFromStorage, musterOnly])
+  }, [applyDesignFromStorage, musterOnly, location.state])
 
   
   // Stammdaten laden (bei musterOnly nur Mustertexte; K2 nutzt K2_STAMMDATEN_DEFAULTS bis localStorage geladen ist)
@@ -1576,7 +1587,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               applyDesignToDocument(designToUse)
             } catch (_) {}
           }
-          // Seitengestaltung: Merge mit lokal – nie lokale Bilder durch alte Server-Daten ersetzen („Galerie gestalten“ bleibt erhalten)
+          // Seitengestaltung: Merge nur wenn Server-String – lokales Video/Bild geht immer vor (siehe mergePageContentGalerieFromServer)
           if (!musterOnly && !vk2 && data.pageContentGalerie != null && typeof data.pageContentGalerie === 'string' && data.pageContentGalerie.length > 0 && data.pageContentGalerie.length < 6 * 1024 * 1024) {
             try {
               mergePageContentGalerieFromServer(data.pageContentGalerie, undefined)
@@ -2149,16 +2160,16 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     <div style={{ 
       minHeight: '-webkit-fill-available',
       background: vk2
-        ? 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 50%, var(--k2-bg-3) 100%)'
+        ? 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 65%, var(--k2-bg-3) 100%)'
         : musterOnly
-        ? 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 50%, var(--k2-bg-3) 100%)'
-        : 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 50%, var(--k2-bg-3) 100%)',
+        ? 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 65%, var(--k2-bg-3) 100%)'
+        : 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 65%, var(--k2-bg-3) 100%)',
       color: 'var(--k2-text)',
       position: 'relative',
       overflowX: 'hidden',
       overflowY: 'visible'
     }}>
-      {/* Vorschau aus Einstellungen „Seiten prüfen“ – Zurück-Link */}
+      {/* Gelbe Leiste: auf jeder Seite oben – gespeicherte Änderungen sichtbar, Veröffentlichen-Hinweis */}
       {isVorschauModus && (
         <div style={{
           position: 'sticky',
@@ -2166,15 +2177,16 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           left: 0,
           right: 0,
           zIndex: 200,
-          padding: '0.6rem 1rem',
+          padding: '0.5rem 1rem',
           background: 'rgba(245, 158, 11, 0.95)',
           color: '#1a1a1a',
-          fontSize: '0.95rem',
+          fontSize: '0.9rem',
           fontWeight: 600,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '0.5rem',
+          gap: '0.75rem',
+          flexWrap: 'wrap',
           boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
         }}>
           <button
@@ -2186,11 +2198,13 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               const backUrl = '/admin' + (ctx ? '?context=' + ctx : '') + (tab ? (ctx ? '&' : '?') + 'tab=' + tab : '')
               navigate(backUrl)
             }}
-            style={{ background: 'rgba(0,0,0,0.2)', border: 'none', color: 'inherit', padding: '0.4rem 0.8rem', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}
+            style={{ background: 'rgba(0,0,0,0.2)', border: 'none', color: 'inherit', padding: '0.4rem 0.8rem', borderRadius: 8, cursor: 'pointer', fontWeight: 600, flexShrink: 0 }}
           >
             ← Zurück zu Einstellungen
           </button>
-          <span style={{ opacity: 0.9 }}>Vorschau – hier siehst du deine gespeicherten Änderungen</span>
+          <span style={{ opacity: 0.95 }}>
+            Hier siehst du deine gespeicherten Änderungen – du brauchst nicht mehr extra „Auf diesem Gerät speichern“. Nach „Veröffentlichen“ sehen alle deine Änderungen – nicht vergessen!
+          </span>
         </div>
       )}
       {/* Animated Background Elements – VK2/K2: Orange (Hausherr), ök2: dezent */}
@@ -2330,7 +2344,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               minHeight: '44px'
             }}
           >
-            {isRefreshing ? '⏳ Lade vom Server…' : '🔄 Bilder vom Server laden'}
+            {isRefreshing ? 'Lade vom Server…' : 'Bilder vom Server laden'}
           </button>
         )}
 
@@ -2363,7 +2377,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           >
             <div
               style={{
-                background: musterOnly ? 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 100%)' : 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 100%)',
+                background: musterOnly ? 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 70%, var(--k2-bg-3) 100%)' : 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 70%, var(--k2-bg-3) 100%)',
                 border: musterOnly ? '1px solid rgba(45, 45, 42, 0.15)' : '1px solid rgba(255, 255, 255, 0.2)',
                 borderRadius: '20px',
                 padding: 'clamp(2rem, 5vw, 3rem)',
@@ -3338,6 +3352,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                     const hasImg = !!imgSrc
                     if (hasVideo) return (
                       <video
+                        key={videoSrc}
                         src={videoSrc}
                         controls
                         playsInline
@@ -3776,33 +3791,99 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           </div>
         )}
 
-        {/* Vollbild-Modal: Video oder Bild (Virtueller Rundgang) */}
+        {/* Vollbild-Modal: Video oder Bild (Virtueller Rundgang) – Zoom (z. B. nach Stopp) + Weiter */}
         {fullscreenMedia && (
           <div
-            onClick={() => setFullscreenMedia(null)}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out' }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.95)',
+              zIndex: 99999,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'stretch'
+            }}
           >
-            <button
-              onClick={() => setFullscreenMedia(null)}
-              style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: 44, height: 44, fontSize: '1.4rem', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}
-            >✕</button>
-            {fullscreenMedia.type === 'video' ? (
-              <video
-                src={fullscreenMedia.src}
-                controls
-                autoPlay
-                playsInline
+            {/* Leiste oben: Zurück, Zoom, Schließen */}
+            <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', gap: 8 }}>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); closeFullscreen() }}
+                aria-label="Zurück"
+                style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: 48, height: 48, fontSize: '1.5rem', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >←</button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setFullscreenZoom(z => Math.max(1, z - 0.5)) }}
+                  aria-label="Verkleinern"
+                  style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 8, width: 44, height: 44, fontSize: '1.2rem', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >−</button>
+                <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.9rem', minWidth: 36, textAlign: 'center' }}>{fullscreenZoom === 1 ? '1×' : fullscreenZoom + '×'}</span>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setFullscreenZoom(z => Math.min(3, z + 0.5)) }}
+                  aria-label="Vergrößern"
+                  style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 8, width: 44, height: 44, fontSize: '1.2rem', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >+</button>
+              </div>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); closeFullscreen() }}
+                aria-label="Schließen"
+                style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: 48, height: 48, fontSize: '1.4rem', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >✕</button>
+            </div>
+            {/* Zoombarer Bereich: scrollbar bei Zoom > 1 */}
+            <div style={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div
                 onClick={(e) => e.stopPropagation()}
-                style={{ maxWidth: '100%', maxHeight: '100%', width: '100%', height: '100%', objectFit: 'contain' }}
-              />
-            ) : (
-              <img
-                src={fullscreenMedia.src}
-                alt="Virtueller Rundgang"
-                onClick={(e) => e.stopPropagation()}
-                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-              />
-            )}
+                style={{
+                  width: `${100 * fullscreenZoom}vw`,
+                  height: `${100 * fullscreenZoom}vh`,
+                  minWidth: `${100 * fullscreenZoom}vw`,
+                  minHeight: `${100 * fullscreenZoom}vh`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                {fullscreenMedia.type === 'video' ? (
+                  <video
+                    src={fullscreenMedia.src}
+                    controls
+                    autoPlay
+                    playsInline
+                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                  />
+                ) : (
+                  <img
+                    src={fullscreenMedia.src}
+                    alt="Virtueller Rundgang"
+                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                  />
+                )}
+              </div>
+            </div>
+            {/* Weiter-Button unten: gut erreichbar am Handy */}
+            <div style={{ flex: '0 0 auto', padding: '12px 16px 16px', display: 'flex', justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); closeFullscreen() }}
+                style={{
+                  padding: '0.75rem 2rem',
+                  background: 'rgba(255,255,255,0.25)',
+                  border: '1px solid rgba(255,255,255,0.4)',
+                  borderRadius: 12,
+                  color: '#fff',
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Weiter
+              </button>
+            </div>
           </div>
         )}
       </div>

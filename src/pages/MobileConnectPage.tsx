@@ -127,7 +127,7 @@ const MobileConnectPage = () => {
         {localGalerieUrl && (
           <details style={{ marginTop: '1rem' }} className="card mobile-card">
             <summary style={{ cursor: 'pointer', color: '#eab308', fontWeight: '600' }}>
-              📶 Nur im gleichen WLAN (z. B. APf)
+              📶 Nur im gleichen WLAN (z. B. zu Hause)
             </summary>
             <p style={{ margin: '0.5rem 0 0.75rem', fontSize: '0.85rem', color: '#999' }}>
               Wenn Handy und Mac im gleichen WLAN sind – z. B. für Service-QR zum Aufkleben.

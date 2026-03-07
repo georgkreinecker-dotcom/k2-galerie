@@ -196,6 +196,25 @@ const Vk2GaleriePage: React.FC = () => {
       overflowX: 'hidden',
     }}>
 
+      {/* Gelbe Leiste: bei Vorschau ganz oben – vor der Nav */}
+      {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('vorschau') === '1' && (
+        <div style={{ position: 'sticky', top: 0, left: 0, right: 0, zIndex: 201, background: 'rgba(245, 158, 11, 0.95)', color: '#1a1a1a', padding: '0.5rem 1rem', fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap', boxShadow: '0 2px 8px rgba(0,0,0,0.2)', fontFamily: 'system-ui, sans-serif' }}>
+          <button
+            onClick={() => {
+              const s = location.state as { fromAdminTab?: string } | null
+              const backUrl = '/admin?context=vk2' + (s?.fromAdminTab ? '&tab=' + s.fromAdminTab : '')
+              navigate(backUrl)
+            }}
+            style={{ background: 'rgba(0,0,0,0.2)', border: 'none', borderRadius: 8, padding: '0.4rem 0.8rem', color: 'inherit', cursor: 'pointer', fontWeight: 600, flexShrink: 0 }}
+          >
+            ← Zurück zu Einstellungen
+          </button>
+          <span style={{ opacity: 0.95 }}>
+            Hier siehst du deine gespeicherten Änderungen – du brauchst nicht mehr extra „Auf diesem Gerät speichern“. Nach „Veröffentlichen“ sehen alle deine Änderungen – nicht vergessen!
+          </span>
+        </div>
+      )}
+
       {/* ── NAV-LEISTE ── */}
       <nav style={{
         position: 'sticky', top: 0, zIndex: 100,
@@ -210,7 +229,7 @@ const Vk2GaleriePage: React.FC = () => {
           onClick={() => navigate('/')}
           style={{ background: C.accent, color: '#fff', border: 'none', borderRadius: 8, padding: '0.3rem 0.75rem', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer', letterSpacing: '0.04em' }}
         >
-          APf
+          ← Zurück
         </button>
         <span style={{ fontSize: '0.78rem', fontWeight: 600, color: C.textMid, letterSpacing: '0.14em', textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif' }}>
           {vereinsName}
@@ -266,62 +285,6 @@ const Vk2GaleriePage: React.FC = () => {
           >
             Mit mir in den Admin →
           </button>
-        </div>
-      )}
-
-      {/* ── WILLKOMMENS-BANNER (Fremde) – So könnte eure Vereinsgalerie aussehen ── */}
-      <div style={{
-        margin: 'clamp(0.75rem, 2vw, 1rem)',
-        padding: 'clamp(0.65rem, 1.5vw, 0.9rem) clamp(1rem, 2.5vw, 1.25rem)',
-        background: 'rgba(30, 92, 181, 0.1)',
-        border: '1px solid rgba(30, 92, 181, 0.35)',
-        borderRadius: '12px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '1rem',
-        flexWrap: 'wrap',
-        maxWidth: '1400px',
-        marginLeft: 'auto',
-        marginRight: 'auto',
-      }}>
-        <span style={{ color: C.text, fontSize: 'clamp(0.88rem, 2vw, 0.98rem)', lineHeight: 1.45, flex: '1 1 260px', fontFamily: 'system-ui, sans-serif' }}>
-          So könnte eure Vereinsgalerie aussehen. Schau dich um – danach gehst du mit mir in den Admin und siehst, wie ihr eure Galerie gestaltet.
-        </span>
-        <button
-          type="button"
-          onClick={() => navigate('/mein-bereich?context=vk2')}
-          style={{
-            padding: '0.5rem 1rem',
-            background: '#1e5cb5',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '10px',
-            fontWeight: 600,
-            fontSize: '0.9rem',
-            cursor: 'pointer',
-            fontFamily: 'system-ui, sans-serif',
-          }}
-        >
-          Mit mir in den Admin →
-        </button>
-      </div>
-
-      {/* ── VORSCHAU-BANNER ── */}
-      {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('vorschau') === '1' && (
-        <div style={{ background: C.accent, color: '#fff', padding: '0.5rem 1.5rem', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'space-between', fontFamily: 'system-ui, sans-serif' }}>
-          <button
-            onClick={() => {
-              const s = location.state as { fromAdminTab?: string } | null
-              const backUrl = '/admin?context=vk2' + (s?.fromAdminTab ? '&tab=' + s.fromAdminTab : '')
-              navigate(backUrl)
-            }}
-            style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 6, padding: '0.28rem 0.8rem', color: '#fff', cursor: 'pointer', fontSize: '0.84rem' }}
-          >
-            ← Zurück zu Einstellungen
-          </button>
-          <span>Vorschau – hier siehst du deine gespeicherten Änderungen</span>
-          <span style={{ opacity: 0 }}>–</span>
         </div>
       )}
 

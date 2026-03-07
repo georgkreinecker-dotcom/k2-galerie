@@ -175,7 +175,7 @@ export default function SeitengestaltungPage() {
         flexShrink: 0,
       }}>
         <Link to="/projects/k2-galerie" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', fontSize: '0.82rem', flexShrink: 0 }}>
-          ← APf
+          ← Zurück
         </Link>
 
         <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#5ffbf1', letterSpacing: '0.05em', flexShrink: 0 }}>

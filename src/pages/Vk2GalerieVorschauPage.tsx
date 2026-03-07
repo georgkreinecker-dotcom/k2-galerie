@@ -148,10 +148,29 @@ const Vk2GalerieVorschauPage: React.FC = () => {
   return (
     <div style={{ minHeight: '100vh', background: C.bg, color: C.text, fontFamily: '"Georgia", "Times New Roman", serif', overflowX: 'hidden' }}>
 
+      {/* Gelbe Leiste: bei Vorschau ganz oben – vor der Nav */}
+      {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('vorschau') === '1' && (
+        <div style={{ position: 'sticky', top: 0, left: 0, right: 0, zIndex: 201, background: 'rgba(245, 158, 11, 0.95)', color: '#1a1a1a', padding: '0.5rem 1rem', fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap', boxShadow: '0 2px 8px rgba(0,0,0,0.2)', fontFamily: 'system-ui, sans-serif' }}>
+          <button
+            onClick={() => {
+              const s = location.state as { fromAdminTab?: string } | null
+              const backUrl = '/admin?context=vk2' + (s?.fromAdminTab ? '&tab=' + s.fromAdminTab : '')
+              navigate(backUrl)
+            }}
+            style={{ background: 'rgba(0,0,0,0.2)', border: 'none', borderRadius: 8, padding: '0.4rem 0.8rem', color: 'inherit', cursor: 'pointer', fontWeight: 600, flexShrink: 0 }}
+          >
+            ← Zurück zu Einstellungen
+          </button>
+          <span style={{ opacity: 0.95 }}>
+            Hier siehst du deine gespeicherten Änderungen – du brauchst nicht mehr extra „Auf diesem Gerät speichern“. Nach „Veröffentlichen“ sehen alle deine Änderungen – nicht vergessen!
+          </span>
+        </div>
+      )}
+
       {/* Nav – wie Startseite */}
       <nav style={{ position: 'sticky', top: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 1.5rem', background: 'rgba(250,248,245,0.97)', backdropFilter: 'blur(12px)', borderBottom: `1px solid ${C.border}`, boxShadow: '0 1px 8px rgba(0,0,0,0.06)' }}>
         <button onClick={() => navigate(PROJECT_ROUTES.vk2.galerie)} style={{ background: C.accent, color: '#fff', border: 'none', borderRadius: 8, padding: '0.3rem 0.75rem', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer', letterSpacing: '0.04em' }}>
-          APf
+          ← Zurück
         </button>
         <span style={{ fontSize: '0.78rem', fontWeight: 600, color: C.textMid, letterSpacing: '0.14em', textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif' }}>
           {vereinsName} – {mitgliederHeading}
@@ -160,24 +179,6 @@ const Vk2GalerieVorschauPage: React.FC = () => {
           ← Startseite
         </button>
       </nav>
-
-      {/* Vorschau-Banner */}
-      {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('vorschau') === '1' && (
-        <div style={{ background: C.accent, color: '#fff', padding: '0.5rem 1.5rem', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'space-between', fontFamily: 'system-ui, sans-serif' }}>
-          <button
-            onClick={() => {
-              const s = location.state as { fromAdminTab?: string } | null
-              const backUrl = '/admin?context=vk2' + (s?.fromAdminTab ? '&tab=' + s.fromAdminTab : '')
-              navigate(backUrl)
-            }}
-            style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 6, padding: '0.28rem 0.8rem', color: '#fff', cursor: 'pointer', fontSize: '0.84rem' }}
-          >
-            ← Zurück zu Einstellungen
-          </button>
-          <span>Vorschau – hier siehst du deine gespeicherten Änderungen</span>
-          <span style={{ opacity: 0 }}>–</span>
-        </div>
-      )}
 
       {/* Hero: Willkommensfoto (optional) */}
       {welcomeImage && (

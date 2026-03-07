@@ -142,7 +142,7 @@ export default function ProjectPlanPage() {
                 textDecoration: 'none'
               }}
             >
-              📱 APf
+              📱 Plattform
             </Link>
             <ProjectNavButton projectId={project.id} />
           </div>

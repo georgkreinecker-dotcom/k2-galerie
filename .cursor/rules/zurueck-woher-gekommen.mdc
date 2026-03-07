@@ -1,13 +1,13 @@
 ---
-description: Zurück-Navigation – immer dorthin zurück, woher der Nutzer gekommen ist (generelle Regel)
+description: Zurück/Ausstieg – immer dorthin zurück, woher der Nutzer gekommen ist (sonst verirrt man sich)
 alwaysApply: true
 ---
 
-# Zurück = woher gekommen (generelle Regel)
+# Zurück / Ausstieg = woher gekommen (generelle Regel)
 
 ## Grundsatz (unveränderlich)
 
-**„Zurück“ führt immer genau dorthin zurück, woher der Nutzer gerade gekommen ist – nicht weiter, nicht zur Übersicht.**
+**„Zurück“ und jeder Ausstieg (z. B. Handbuch verlassen, Modal schließen, Flow beenden) führen immer genau dorthin zurück, woher der Nutzer gerade gekommen ist – nicht weiter, nicht zur Übersicht. Sonst verirrt man sich.**
 
 - Wer von **Design** in die Vorschau geht → Zurück landet in **Design**, nicht auf der Funktionsübersicht.
 - Wer von **Einstellungen** → **X** geht → Zurück landet in **Einstellungen** (ggf. gleicher Sub-Tab).
@@ -31,4 +31,4 @@ alwaysApply: true
 
 ## Kurzfassung
 
-**Zurück = exakt die letzte Herkunft (Tab/Seite/Kontext). Keine Abkürzung zur Übersicht. Generelle Regel für alle Navigation.**
+**Zurück / Ausstieg = exakt die letzte Herkunft (Tab/Seite/Kontext). Keine Abkürzung zur Übersicht. Sonst verirrt man sich. Generelle Regel für alle Navigation.**
