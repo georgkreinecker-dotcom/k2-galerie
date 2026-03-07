@@ -10167,30 +10167,26 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   </div>
                   <p style={{ fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: 12, textAlign: 'center' }}>Optional: Virtueller Rundgang – Foto oder Video</p>
                   <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 12, padding: 12, textAlign: 'center' }}>
-                    {/* Symbolbild oben; unten nur Video-Indikator (erkennbar ob gespeichert) */}
-                    <label htmlFor="virtual-tour-image-input-p2" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 8, overflow: 'hidden', marginBottom: 6, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
+                    {/* Wenn Video gespeichert: grüne Bestätigung IN der weißen Kachel (dann ist klar: wirklich gespeichert) */}
+                    <label htmlFor="virtual-tour-image-input-p2" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 8, overflow: 'hidden', marginBottom: 6, background: pageContent.virtualTourVideo ? 'rgba(76,175,80,0.18)' : pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: pageContent.virtualTourVideo ? '2px solid #4caf50' : '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
                       onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
                       onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
                       onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – im Fenster „Bild übernehmen“ klicken'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } }}
                     >
                       <input id="virtual-tour-image-input-p2" type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – im Fenster „Bild übernehmen“ klicken'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
-                      {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.85rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>}
-                    </label>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8 }}>
                       {pageContent.virtualTourVideo ? (
-                        <>
-                          <span style={{ fontSize: '1.1rem' }}>📹</span>
-                          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--k2-text)' }}>
+                        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 12 }}>
+                          <span style={{ fontSize: '1.75rem', color: '#4caf50' }}>✓</span>
+                          <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#2e7d32' }}>
                             Video gespeichert
                             {typeof pageContent.virtualTourVideoSizeBytes === 'number' && pageContent.virtualTourVideoSizeBytes > 0 && (
-                              <span style={{ fontWeight: 500, color: 'var(--k2-muted)' }}> ({(pageContent.virtualTourVideoSizeBytes / (1024 * 1024)).toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 1 })} MB)</span>
+                              <span style={{ fontWeight: 500, opacity: 0.95 }}> ({(pageContent.virtualTourVideoSizeBytes / (1024 * 1024)).toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 1 })} MB)</span>
                             )}
                           </span>
-                        </>
-                      ) : (
-                        <span style={{ fontSize: '0.85rem', color: 'var(--k2-muted)' }}>Kein Video</span>
-                      )}
-                    </div>
+                        </div>
+                      ) : pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.85rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>}
+                    </label>
+                    {!pageContent.virtualTourVideo && <p style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', margin: '0 0 8px' }}>Kein Video</p>}
                     <p style={{ fontSize: '0.85rem', color: 'var(--k2-text)', margin: '0 0 8px' }}>Virtueller Rundgang</p>
                     {/* Foto- und Video-Buttons */}
                     <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>

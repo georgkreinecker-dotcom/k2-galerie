@@ -65,31 +65,19 @@ export function getPageContentGalerie(tenantId?: 'oeffentlich' | 'vk2'): PageCon
         if (isK2ServerMedia(parsed.galerieCardImage)) { delete parsed.galerieCardImage; changed = true }
         if (isK2ServerMedia(parsed.virtualTourImage)) { delete parsed.virtualTourImage; changed = true }
         if (isK2ServerMedia(parsed.virtualTourVideo)) { delete parsed.virtualTourVideo; changed = true }
-        // blob: URLs sind session-gebunden → nach Reload ungültig → löschen
+        // blob: URLs sind session-gebunden → nach Reload ungültig; NICHT löschen, damit „Speichern“ in derselben Session sichtbar bleibt
         if (parsed.welcomeImage?.startsWith('blob:')) { delete parsed.welcomeImage; changed = true }
         if (parsed.galerieCardImage?.startsWith('blob:')) { delete parsed.galerieCardImage; changed = true }
         if (parsed.virtualTourImage?.startsWith('blob:')) { delete parsed.virtualTourImage; changed = true }
-        if (parsed.virtualTourVideo?.startsWith('blob:')) { delete parsed.virtualTourVideo; changed = true }
+        // virtualTourVideo blob nicht löschen → sonst wirkt Speichern nie (wird beim nächsten Lesen sofort wieder entfernt)
         if (changed) {
           try { localStorage.setItem(key, JSON.stringify({ ...parsed })) } catch (_) {}
         }
       } else if (tenantId === 'vk2') {
-        // VK2: blob:-URLs entfernen (session-gebunden)
-        let changed = false
-        if (parsed.virtualTourVideo?.startsWith('blob:')) { parsed.virtualTourVideo = undefined; changed = true }
-        if (changed) {
-          try { localStorage.setItem(key, JSON.stringify({ ...parsed })) } catch (_) {}
-        }
+        // VK2: virtualTourVideo blob nicht entfernen → Speichern muss in derselben Session sichtbar bleiben
       } else {
-        // K2: nur blob:-URLs ersetzen (session-gebunden, nach Reload ungültig)
-        // Base64-Bilder NICHT ersetzen – sie sind im selben Browser sichtbar (Vorschau!)
-        let changed = false
-        if (parsed.virtualTourVideo?.startsWith('blob:')) {
-          parsed.virtualTourVideo = '/img/k2/virtual-tour.mp4'; changed = true
-        }
-        if (changed) {
-          try { localStorage.setItem(key, JSON.stringify({ ...parsed })) } catch (_) {}
-        }
+        // K2: virtualTourVideo blob NICHT durch Default ersetzen → sonst geht Nutzerauswahl beim Tab-Wechsel verloren, „Speichern“ wirkt nie
+        // (Blob nach Reload ungültig – dann beim nächsten Laden ggf. separat behandeln)
       }
       return { ...defaults, ...parsed }
     }
