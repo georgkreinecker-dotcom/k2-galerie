@@ -1036,28 +1036,28 @@ end tell`
       transition: 'padding-left 0.3s ease',
       position: 'relative'
     }}>
-      {/* Dauerhafter Veröffentlicht-Badge – immer sichtbar */}
+      {/* Kompakter Veröffentlicht-Badge – kleine Ansicht */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '0.6rem',
-        marginBottom: '1rem',
-        padding: '0.6rem 1rem',
+        gap: '0.4rem',
+        marginBottom: '0.6rem',
+        padding: '0.35rem 0.7rem',
         background: lastPublishedTime ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)',
         border: `1px solid ${lastPublishedTime ? 'rgba(16,185,129,0.35)' : 'rgba(245,158,11,0.35)'}`,
-        borderRadius: '10px',
-        fontSize: 'clamp(0.82rem, 1.8vw, 0.9rem)',
+        borderRadius: '8px',
+        fontSize: '0.78rem',
         color: lastPublishedTime ? '#6ee7b7' : '#fcd34d'
       }}>
-        <span style={{ fontSize: '1.1rem' }}>{lastPublishedTime ? '✅' : '⚠️'}</span>
-        <span style={{ fontWeight: '600' }}>
+        <span style={{ fontSize: '0.9rem' }}>{lastPublishedTime ? '✅' : '⚠️'}</span>
+        <span style={{ fontWeight: 500 }}>
           {lastPublishedTime
             ? `Zuletzt veröffentlicht: ${lastPublishedTime}`
-            : 'Noch nicht veröffentlicht – Daten sind nur lokal gespeichert'}
+            : 'Noch nicht veröffentlicht'}
         </span>
         {lastPublishedTime && (
-          <span style={{ marginLeft: 'auto', opacity: 0.7, fontSize: '0.78rem' }}>
-            Galerie auf Handy: aktuell
+          <span style={{ marginLeft: 'auto', opacity: 0.7, fontSize: '0.72rem' }}>
+            Handy: aktuell
           </span>
         )}
       </div>

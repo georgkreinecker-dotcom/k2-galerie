@@ -6,12 +6,10 @@
 
 ## Stand (wo wir stehen)
 
-### Datum: 07.03.26 – Anke (Briefing + Konzept)
+### Datum: 07.03.26 – Kassabuch Handy (Retour + Lesbarkeit)
 
-- **Thema:** Anke – schlanker smarter Agent für unsere Arbeit (Orientierung, Stand, Offen, proaktive Vorschläge); kein zweiter Joe. **Name: Anke** (schöner deutscher Mädchenname – Joe und Anke, nicht zwei männliche Wesen).
-- **Was gemacht:** (1) **docs/AGENT-KONZEPT.md** – Analyse Georgs Denk- und Handlungsweise, Spezifikation (Stand, Offen, Proaktiv), Name Anke. (2) **scripts/agenten-briefing.js** – schreibt Ankes Briefing (AGENTEN-BRIEFING.md). (3) **npm run briefing** bei Session-Start. (4) Session-Start-Regeln: Ankes Briefing lesen. (5) Grafiker-Tisch optional; Anke übernimmt die Funktion.
-- **Erledigt (07.03.26):** Commit 3eedd34, d2518ef, Push. Anke = Name; Briefing bei jeder Session frisch.
-- **Nächster Schritt:** Beim nächsten „Hi Joe“: Ankes Briefing auffrischen, dann DIALOG-STAND + Briefing lesen.
+- **Thema:** Kassabuch auf dem Handy: Retour „Kassa“ und „Admin“ zu weit oben/schlecht sichtbar; Liste (Datum, Art, Betrag) Schrift zu hell, nicht lesbar.
+- **Erledigt:** (1) Auf schmalen Viewports (≤768px): Retour-Leiste fixiert **unten** (safe-area), gut mit dem Daumen erreichbar; Buttons als sichtbare Kacheln (Rahmen, Hintergrund). (2) Tabellentext dunkel: Datum/Art/Betrag/Beleg mit `color: #1c1a17`, Verwendungszweck `#5c5650`; auf Mobile Tabelle 0.95rem. **Commit:** 16f0e01 ✅ auf GitHub.
 
 ---
 
@@ -24,6 +22,7 @@
 
 ## Proaktiv (Vorschläge)
 
+- **Uncommitted:** Es gibt noch nicht committete Änderungen – vor Session-Ende: Commit + Push?
 - **Optional:** Grafiker-Tisch hat optionale Punkte (z. B. Texte kürzen) – nur wenn du dran willst.
 
 ---

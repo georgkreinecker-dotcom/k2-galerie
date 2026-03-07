@@ -4,6 +4,21 @@
 
 ---
 
+## Datum: 07.03.26 – Kassabuch Handy (Retour + Lesbarkeit)
+
+- **Thema:** Kassabuch auf dem Handy: Retour „Kassa“ und „Admin“ zu weit oben/schlecht sichtbar; Liste (Datum, Art, Betrag) Schrift zu hell, nicht lesbar.
+- **Erledigt:** (1) Auf schmalen Viewports (≤768px): Retour-Leiste fixiert **unten** (safe-area), gut mit dem Daumen erreichbar; Buttons als sichtbare Kacheln (Rahmen, Hintergrund). (2) Tabellentext dunkel: Datum/Art/Betrag/Beleg mit `color: #1c1a17`, Verwendungszweck `#5c5650`; auf Mobile Tabelle 0.95rem. **Commit:** 16f0e01 ✅ auf GitHub.
+
+---
+
+## Datum: 07.03.26 – Video in Galerie ansehen (umgesetzt)
+
+- **Thema:** Virtual-Tour-Video war in „Galerie ansehen“ nicht abspielbar – Ursache: blob-URL wurde gespeichert, beim Lesen durch Default ersetzt.
+- **Erledigt:** Beim Klick „Speichern (auf diesem Gerät)“ wird virtualTourVideo, wenn es eine blob-URL ist, zuerst hochgeladen (uploadVideoToGitHub), dann die Vercel-URL in contentToSave übernommen. So wird nur noch URL in localStorage gespeichert → Video in Galerie ansehen abspielbar. **Commit:** f0d057a ✅ auf GitHub.
+- **Nächster Schritt:** Optional testen: Design → Virtual-Tour-Video wählen → Speichern → „Galerie ansehen“ → Video starten.
+
+---
+
 ## Datum: 07.03.26 – Galerie gestalten = breiter Kontext (für Anke und künftige Sessions)
 
 - **Thema:** Georg: „Jetzt weißt du was ich gemeint habe – die Galerie gestalten ist noch sehr verwirrend. Merke dir in Zukunft: welcher Kontext hinter einer solchen Aussage von mir stecken kann. Es geht da um viele Bereiche. Auch Anke mitteilen.“
