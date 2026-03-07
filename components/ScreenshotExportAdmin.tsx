@@ -9584,10 +9584,15 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         alert('Fehler beim Speichern: ' + (e instanceof Error ? e.message : String(e)))
                       }
                     }} style={{ padding: '0.5rem 1.25rem', fontSize: '1rem', fontWeight: 700, borderRadius: 10 }}>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 700, marginRight: '0.35rem' }}>3</span>💾 Speichern – fertig!
+                      <span style={{ fontSize: '0.85rem', fontWeight: 700, marginRight: '0.35rem' }}>3</span>💾 Speichern (auf diesem Gerät)
                     </button>
                 }
               </div>
+              <span style={{ color: s.muted, fontSize: '1.2rem' }}>→</span>
+              {/* Schritt 4: Veröffentlichen – für alle sichtbar (Vercel / Handy) */}
+              <button type="button" onClick={() => publishMobile()} disabled={isDeploying || (!tenant.isOeffentlich && !tenant.isVk2 && allArtworks.length === 0)} title="Aktuellen Stand für alle sichtbar machen (Vercel / Besucher / Mobil)" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1.1rem', fontSize: '1rem', fontWeight: 700, background: isDeploying ? 'rgba(0,0,0,0.08)' : 'rgba(95,251,241,0.15)', border: `1.5px solid ${s.accent}`, borderRadius: 10, color: s.accent, cursor: isDeploying ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (isDeploying || (!tenant.isOeffentlich && !tenant.isVk2 && allArtworks.length === 0)) ? 0.7 : 1 }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>4</span> {isDeploying ? '⏳ Wird veröffentlicht…' : <><span>📤 Veröffentlichen</span><br /><span style={{ fontSize: '0.75rem', fontWeight: 400, opacity: 0.9 }}>für alle jetzt sichtbar</span></>}
+              </button>
               {/* Zoom-Buttons, am Ende */}
               <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', marginLeft: 'auto' }}>
                 <span style={{ color: 'var(--k2-muted)', fontSize: '0.85rem' }}>Zoom:</span>
