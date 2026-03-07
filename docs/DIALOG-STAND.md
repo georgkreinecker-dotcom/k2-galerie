@@ -4,6 +4,14 @@
 
 ---
 
+## Datum: 07.03.26 – Virtueller Rundgang Admin: nur Video-Indikator (Seite 1 + Seite 2)
+
+- **Thema:** Georg: „Das Symbolbild ist eigentlich schon das obere Bild, unten reicht das Videosymbol, aber erkennbar ob ein Video abgespeichert ist.“
+- **Erledigt:** (1) Design-Seite 1 (Virtueller-Rundgang-Karte): große Video-Vorschau entfernt; stattdessen unter „Max. 2 Min. …“ fester Bereich: bei Video „📹 Video gespeichert“, sonst „Kein Video“. (2) Design-Seite 2 (kompakte Ansicht „Optional: Virtueller Rundgang“): gleiche Logik – oben immer Symbolbild-Bereich, darunter nur kompakter Video-Indikator (📹 Video gespeichert / Kein Video), keine große Video-Vorschau mehr.
+- **Nächster Schritt:** Georg testen: Admin → Design → Virtueller Rundgang (Seite 1 und Seite 2) – Symbolbild oben, unten nur erkennbar ob Video da ist.
+
+---
+
 ## Datum: 07.03.26 – „Rundgang starten“ zeigt Video statt Bild
 
 - **Thema:** Georg: Beim Klick auf „Rundgang starten“ kam das Bild, nicht das Video.
