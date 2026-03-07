@@ -21,6 +21,8 @@ export interface PageContentGalerie {
   galerieCardImage?: string
   virtualTourImage?: string
   virtualTourVideo?: string
+  /** Größe des Virtual-Tour-Videos in Bytes (für Anzeige „X MB“ im Admin). */
+  virtualTourVideoSizeBytes?: number
   welcomeIntroText?: string
 }
 
@@ -110,7 +112,7 @@ export function mergePageContentGalerieFromServer(serverJson: string, tenantId?:
     } catch {
       return
     }
-    const keys: (keyof PageContentGalerie)[] = ['welcomeImage', 'galerieCardImage', 'virtualTourImage', 'virtualTourVideo', 'welcomeIntroText']
+    const keys: (keyof PageContentGalerie)[] = ['welcomeImage', 'galerieCardImage', 'virtualTourImage', 'virtualTourVideo', 'virtualTourVideoSizeBytes', 'welcomeIntroText']
     const merged: Partial<PageContentGalerie> = {}
     for (const k of keys) {
       const s = server[k]

@@ -1036,23 +1036,24 @@ end tell`
       transition: 'padding-left 0.3s ease',
       position: 'relative'
     }}>
-      {/* Kleine Kachel: Zuletzt veröffentlicht (keine volle Leiste) */}
-      <div style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '0.35rem',
-        marginBottom: '0.5rem',
-        padding: '0.25rem 0.5rem',
-        background: lastPublishedTime ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)',
-        border: `1px solid ${lastPublishedTime ? 'rgba(16,185,129,0.35)' : 'rgba(245,158,11,0.35)'}`,
-        borderRadius: '6px',
-        fontSize: '0.72rem',
-        color: lastPublishedTime ? '#6ee7b7' : '#fcd34d'
-      }}>
-        <span style={{ fontSize: '0.8rem' }}>{lastPublishedTime ? '✅' : '⚠️'}</span>
-        <span style={{ fontWeight: 500 }}>
-          {lastPublishedTime ? `Veröff.: ${lastPublishedTime}` : 'Nicht veröffentlicht'}
-        </span>
+      {/* Kleine Kachel: Zuletzt veröffentlicht – zentriert im Inhaltsbereich (nicht unter Panel) */}
+      <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginBottom: '0.5rem' }}>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.35rem',
+          padding: '0.25rem 0.5rem',
+          background: lastPublishedTime ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)',
+          border: `1px solid ${lastPublishedTime ? 'rgba(16,185,129,0.35)' : 'rgba(245,158,11,0.35)'}`,
+          borderRadius: '6px',
+          fontSize: '0.72rem',
+          color: lastPublishedTime ? '#6ee7b7' : '#fcd34d'
+        }}>
+          <span style={{ fontSize: '0.8rem' }}>{lastPublishedTime ? '✅' : '⚠️'}</span>
+          <span style={{ fontWeight: 500 }}>
+            {lastPublishedTime ? `Veröff.: ${lastPublishedTime}` : 'Nicht veröffentlicht'}
+          </span>
+        </div>
       </div>
 
       {/* Projekt-Info ist jetzt im Smart Panel */}

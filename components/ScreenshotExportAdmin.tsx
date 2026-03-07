@@ -10035,13 +10035,23 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     </div>
                     <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 16, padding: 16, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 0 }}>
                       {/* Symbolbild: feste Höhe, kein Scroll – Bild und Video getrennt, behindern sich nicht */}
-                      <label htmlFor="virtual-tour-image-input-p1" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', flexShrink: 0, borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
+                      <label htmlFor="virtual-tour-image-input-p1" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', flexShrink: 0, borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.virtualTourVideo ? 'rgba(76,175,80,0.18)' : pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: pageContent.virtualTourVideo ? '2px solid #4caf50' : '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
                         onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
                         onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
                         onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – im Fenster „Bild übernehmen“ klicken'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } }}
                       >
                         <input id="virtual-tour-image-input-p1" ref={virtualTourImageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – im Fenster „Bild übernehmen“ klicken'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } e.target.value = '' }} />
-                        {pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>}
+                        {pageContent.virtualTourVideo ? (
+                          <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 12 }}>
+                            <span style={{ fontSize: '1.75rem', color: '#4caf50' }}>✓</span>
+                            <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#2e7d32' }}>
+                              Video gespeichert
+                              {typeof pageContent.virtualTourVideoSizeBytes === 'number' && pageContent.virtualTourVideoSizeBytes > 0 && (
+                                <span style={{ fontWeight: 500, opacity: 0.95 }}> ({(pageContent.virtualTourVideoSizeBytes / (1024 * 1024)).toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 1 })} MB)</span>
+                              )}
+                            </span>
+                          </div>
+                        ) : pageContent.virtualTourImage ? <img src={pageContent.virtualTourImage} alt="Virtueller Rundgang" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--k2-muted)', fontSize: '0.9rem', gap: 4 }}><span style={{ fontSize: '1.5rem' }}>📸</span><span>Foto ziehen oder klicken</span></div>}
                       </label>
                       {designPreviewEdit === 'p1-virtualTourButtonText' ? (
                         <input autoFocus type="text" value={pageTexts.galerie?.virtualTourButtonText ?? defaultPageTexts.galerie.virtualTourButtonText ?? 'Virtueller Rundgang'} onChange={(e) => setPageTextsState(prev => ({ ...prev, galerie: { ...defaultPageTexts.galerie, ...prev.galerie, virtualTourButtonText: e.target.value } }))} onBlur={() => setDesignPreviewEdit(null)} onKeyDown={(e) => e.key === 'Enter' && setDesignPreviewEdit(null)} style={{ width: '100%', padding: '0.3rem', fontSize: '1.1rem', fontWeight: '700', color: 'var(--k2-text)', background: 'rgba(0,0,0,0.08)', border: '2px solid var(--k2-accent)', borderRadius: 6, textAlign: 'center', boxSizing: 'border-box' }} />
@@ -10065,7 +10075,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             try {
                               const localUrl = URL.createObjectURL(f)
                               const tenantId = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
-                              const nextLocal = { ...pageContent, virtualTourVideo: localUrl }
+                              const nextLocal = { ...pageContent, virtualTourVideo: localUrl, virtualTourVideoSizeBytes: f.size }
                               setPageContent(nextLocal)
                               setPageContentGalerie(nextLocal, tenantId)
                               if (!tenant.isOeffentlich) {
@@ -10094,19 +10104,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         </label>
                       </div>
                       <p style={{ margin: '6px 0 0', fontSize: '0.75rem', color: 'var(--k2-muted)' }}>Max. 2 Min. Länge · max. 100 MB</p>
-                      <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--k2-muted)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                        {pageContent.virtualTourVideo ? (
-                          <>
-                            <span style={{ fontSize: '1.25rem' }}>📹</span>
-                            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--k2-text)' }}>Video gespeichert</span>
-                          </>
-                        ) : (
-                          <span style={{ fontSize: '0.85rem', color: 'var(--k2-muted)' }}>Kein Video</span>
-                        )}
-                      </div>
-                      {videoUploadStatus !== 'idle' && videoUploadMsg && (
-                        <div style={{ margin: '8px 0 0', padding: '8px 12px', borderRadius: 8, background: videoUploadStatus === 'error' ? 'rgba(224,92,92,0.12)' : videoUploadStatus === 'uploading' ? 'rgba(95,251,241,0.12)' : 'rgba(76,175,80,0.12)', border: `1px solid ${videoUploadStatus === 'error' ? '#e05c5c' : videoUploadStatus === 'uploading' ? 'var(--k2-accent)' : '#4caf50'}`, textAlign: 'center' }}>
-                          <span style={{ fontSize: '0.9rem', fontWeight: 600, color: videoUploadStatus === 'error' ? '#e05c5c' : videoUploadStatus === 'uploading' ? 'var(--k2-accent)' : '#4caf50' }}>
+                      {(videoUploadStatus === 'uploading' || videoUploadStatus === 'error') && videoUploadMsg && (
+                        <div style={{ margin: '8px 0 0', padding: '8px 12px', borderRadius: 8, background: videoUploadStatus === 'error' ? 'rgba(224,92,92,0.12)' : 'rgba(95,251,241,0.12)', border: `1px solid ${videoUploadStatus === 'error' ? '#e05c5c' : 'var(--k2-accent)'}`, textAlign: 'center' }}>
+                          <span style={{ fontSize: '0.9rem', fontWeight: 600, color: videoUploadStatus === 'error' ? '#e05c5c' : 'var(--k2-accent)' }}>
                             {videoUploadStatus === 'uploading' && '⏳ '}{videoUploadMsg}
                           </span>
                         </div>
@@ -10180,7 +10180,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       {pageContent.virtualTourVideo ? (
                         <>
                           <span style={{ fontSize: '1.1rem' }}>📹</span>
-                          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--k2-text)' }}>Video gespeichert</span>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--k2-text)' }}>
+                            Video gespeichert
+                            {typeof pageContent.virtualTourVideoSizeBytes === 'number' && pageContent.virtualTourVideoSizeBytes > 0 && (
+                              <span style={{ fontWeight: 500, color: 'var(--k2-muted)' }}> ({(pageContent.virtualTourVideoSizeBytes / (1024 * 1024)).toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 1 })} MB)</span>
+                            )}
+                          </span>
                         </>
                       ) : (
                         <span style={{ fontSize: '0.85rem', color: 'var(--k2-muted)' }}>Kein Video</span>
@@ -10209,7 +10214,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             const localUrl = URL.createObjectURL(f)
                             const tenantId = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
                             // Sofort lokal speichern → sofort im Admin sichtbar
-                            const nextLocal = { ...pageContent, virtualTourVideo: localUrl }
+                            const nextLocal = { ...pageContent, virtualTourVideo: localUrl, virtualTourVideoSizeBytes: f.size }
                             setPageContent(nextLocal)
                             setPageContentGalerie(nextLocal, tenantId)
                             if (!tenant.isOeffentlich) {
@@ -10242,7 +10247,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         }} />
                       </label>
                       {pageContent.virtualTourVideo && (
-                        <button type="button" onClick={() => { const next = { ...pageContent, virtualTourVideo: '' }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); setVideoUploadStatus('idle'); setVideoUploadMsg('') }} style={{ padding: '0.4rem 0.8rem', background: 'transparent', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Video entfernen</button>
+                        <button type="button" onClick={() => { const next = { ...pageContent, virtualTourVideo: '', virtualTourVideoSizeBytes: undefined }; setPageContent(next); setPageContentGalerie(next, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined); setVideoUploadStatus('idle'); setVideoUploadMsg('') }} style={{ padding: '0.4rem 0.8rem', background: 'transparent', border: '1px solid var(--k2-muted)', borderRadius: 8, color: 'var(--k2-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Video entfernen</button>
                       )}
                     </div>
                     <p style={{ margin: '6px 0 0', fontSize: '0.75rem', color: 'var(--k2-muted)' }}>Max. 2 Min. Länge · max. 100 MB</p>
