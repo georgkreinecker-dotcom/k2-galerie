@@ -3382,9 +3382,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 </p>
                 <button
                   onClick={() => {
+                    // Gleiche Quelle wie Kachel: Video hat Vorrang; K2 immer mit Fallback
                     const videoSrc = musterOnly
                       ? (displayImages.virtualTourVideo || '')
-                      : (displayImages.virtualTourVideo || (window.location.hostname.includes('vercel.app') ? '/img/k2/virtual-tour.mp4' : ''))
+                      : (displayImages.virtualTourVideo || '/img/k2/virtual-tour.mp4')
                     const imgSrc = displayImages.virtualTourImage
                     if (videoSrc) setFullscreenMedia({ type: 'video', src: videoSrc })
                     else if (imgSrc) setFullscreenMedia({ type: 'image', src: imgSrc })

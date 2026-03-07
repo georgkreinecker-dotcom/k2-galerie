@@ -4,11 +4,20 @@
 
 ---
 
+## Datum: 07.03.26 – „Rundgang starten“ zeigt Video statt Bild
+
+- **Thema:** Georg: Beim Klick auf „Rundgang starten“ kam das Bild, nicht das Video.
+- **Ursache:** Button nutzte für K2 nur auf vercel.app einen Video-Fallback; auf localhost war videoSrc leer → es wurde das Bild geöffnet.
+- **Erledigt:** GaleriePage – Button „Rundgang starten“ nutzt dieselbe Logik wie die Kachel: Video hat Vorrang, K2 immer mit Fallback `'/img/k2/virtual-tour.mp4'` wenn kein eigenes Video. **Commit:** (folgt)
+- **Nächster Schritt:** Georg testen: Galerie → „Rundgang starten“ → Video im Vollbild.
+
+---
+
 ## Datum: 07.03.26 – Desktop: Veröffentlicht-Kachel + Virtueller Rundgang (Bild/Video)
 
 - **Thema:** (1) APf Desktop: „Zuletzt veröffentlicht“ von grüner Leiste zu **kleiner Kachel** (inline-flex, kompakt, „Veröff.: DD.MM.YY HH:MM“). (2) Virtueller Rundgang (Design): Bild = Symbolbild (kein Scroll, flexShrink: 0); Video getrennt unter dem Bild mit Trennlinie – beide behindern sich nicht.
-- **Erledigt:** DevViewPage: Badge als kleine Kachel; ScreenshotExportAdmin: Virtueller-Rundgang-Karte mit Kommentar Symbolbild/Video getrennt, Video-Bereich mit borderTop + Abstand.
-- **Nächster Schritt:** Commit + Push. Georg testen: APf → kleine Kachel; Admin → Design → Virtueller Rundgang (Bild oben, Video darunter getrennt).
+- **Erledigt:** DevViewPage: Badge als kleine Kachel; ScreenshotExportAdmin: Virtueller-Rundgang-Karte mit Kommentar Symbolbild/Video getrennt, Video-Bereich mit borderTop + Abstand. **Commit:** eb54721 ✅ auf GitHub.
+- **Nächster Schritt:** Georg testen: APf → kleine Kachel „Veröff.: …“; Admin → Design → Virtueller Rundgang (Bild oben, Video darunter getrennt).
 
 ---
 
