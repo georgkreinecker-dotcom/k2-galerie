@@ -102,8 +102,8 @@ export default function KassabuchPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: s.bg, padding: '1.5rem' }}>
-      <div className="no-print" style={{ maxWidth: 900, margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', background: s.bg, padding: '0.75rem', boxSizing: 'border-box', overflowX: 'hidden', minWidth: 0 }}>
+      <div className="no-print" style={{ maxWidth: 900, margin: '0 auto', width: '100%', minWidth: 0, paddingLeft: '0.25rem', paddingRight: '0.25rem', boxSizing: 'border-box' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
           <Link to={PROJECT_ROUTES['k2-galerie'].kassa} style={{ color: s.muted, textDecoration: 'none', fontSize: '0.9rem' }}>
             ← Kassa
@@ -141,7 +141,7 @@ export default function KassabuchPage() {
         </div>
         )}
 
-        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
           {kassabuchVoll && aktiv && (
             <button
               type="button"
@@ -180,15 +180,15 @@ export default function KassabuchPage() {
           <input type="date" value={bis} onChange={e => setBis(e.target.value)} style={{ padding: '0.35rem 0.5rem', borderRadius: 6, border: `1px solid ${s.muted}` }} />
         </div>
 
-        <div style={{ background: s.card, borderRadius: s.radius, boxShadow: s.shadow, overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+        <div style={{ background: s.card, borderRadius: s.radius, boxShadow: s.shadow, overflowX: 'auto', WebkitOverflowScrolling: 'touch', width: '100%', maxWidth: '100%' }}>
+          <table style={{ width: '100%', minWidth: 320, borderCollapse: 'collapse', fontSize: '0.9rem' }}>
             <thead>
               <tr style={{ background: '#f5f4f2', color: s.text }}>
-                <th style={{ padding: '0.75rem', textAlign: 'left' }}>Datum</th>
-                <th style={{ padding: '0.75rem', textAlign: 'left' }}>Art</th>
-                <th style={{ padding: '0.75rem', textAlign: 'right' }}>Betrag</th>
-                <th style={{ padding: '0.75rem', textAlign: 'left' }}>Verwendungszweck</th>
-                <th style={{ padding: '0.75rem', textAlign: 'left' }}>Beleg</th>
+                <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', whiteSpace: 'nowrap' }}>Datum</th>
+                <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', whiteSpace: 'nowrap' }}>Art</th>
+                <th style={{ padding: '0.6rem 0.75rem', textAlign: 'right', whiteSpace: 'nowrap' }}>Betrag</th>
+                <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', whiteSpace: 'nowrap' }}>Verwendungszweck</th>
+                <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', whiteSpace: 'nowrap' }}>Beleg</th>
               </tr>
             </thead>
             <tbody>

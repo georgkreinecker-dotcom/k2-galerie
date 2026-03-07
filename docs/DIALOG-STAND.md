@@ -20,6 +20,15 @@
 
 ---
 
+## Datum: 07.03.26 – APf Desktop: immer in der Ansicht bleiben (kein Vollbild/neuer Tab)
+
+- **Thema:** Georg: In der APf-Desktop-Ansicht („Was möchtest du heute tun?“) alle Arbeiten dort durchführen können – nicht in Vollbildmodus wechseln, wenn er auf einzelne Seiten geht.
+- **Ursache:** In GaleriePage (Guide → „In den Admin“) wurde bei Aufruf im iframe `window.open(adminUrl, '_blank')` genutzt → neuer Tab statt im APf zu bleiben.
+- **Was gemacht:** Beide Stellen in GaleriePage geändert: Im iframe (`window.self !== window.top`) wird jetzt `navigate(adminUrl + '&embedded=1')` ausgeführt – Navigation im gleichen Frame, Nutzer bleibt in der APf-Desktop-Ansicht.
+- **Nächster Schritt:** Commit + Push. Georg testen: Desktop-Ansicht → Klick zu Admin (z. B. über Guide) → soll im gleichen Fenster/iframe wechseln, kein neuer Tab.
+
+---
+
 ## Datum: 07.03.26 – ro5 + weiter (Commit + Push)
 
 - **Thema:** Georg: ro5, dann „weiter“ – offene Änderungen sichern, Stand sauber.

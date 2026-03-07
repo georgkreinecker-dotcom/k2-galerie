@@ -4359,7 +4359,8 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
         const vornamePart = name ? `&vorname=${encodeURIComponent(name)}` : ''
         const pfadPart = neu.pfad ? `&pfad=${neu.pfad}` : ''
         const adminUrl = `/admin?context=oeffentlich${vornamePart}${pfadPart}`
-        if (window.self !== window.top) window.open(adminUrl, '_blank')
+        // Im iframe (APf-Desktop): im gleichen Frame bleiben, nicht neuer Tab – Nutzer arbeitet weiter in der APf
+        if (window.self !== window.top) navigate(adminUrl + '&embedded=1')
         else navigate(adminUrl)
       }, 800)
       setSichtbar(false)
@@ -4387,7 +4388,8 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
     const assistentPart = assistent ? '&assistent=1' : ''
     const adminUrl = `/admin?context=oeffentlich${vornamePart}${pfadPart}${assistentPart}`
     setTimeout(() => {
-      if (window.self !== window.top) window.open(adminUrl, '_blank')
+      // Im iframe (APf-Desktop): im gleichen Frame bleiben, nicht neuer Tab – Nutzer arbeitet weiter in der APf
+      if (window.self !== window.top) navigate(adminUrl + '&embedded=1')
       else navigate(adminUrl)
     }, 300)
   }

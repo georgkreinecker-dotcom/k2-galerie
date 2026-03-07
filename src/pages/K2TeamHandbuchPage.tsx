@@ -222,7 +222,7 @@ export default function K2TeamHandbuchPage() {
     .mission-wrapper .handbuch-ul { margin: 0.5rem 0 0.75rem 1.5rem; padding-left: 0.5rem; }
     .mission-wrapper .handbuch-li { margin-bottom: 0.35rem; line-height: 1.6; }
     .mission-wrapper .handbuch-checkbox { list-style: none; margin-left: -1.5rem; }
-    .mission-wrapper .handbuch-table-wrap { margin: 0.75rem 0; overflow-x: auto; }
+    .mission-wrapper .handbuch-table-wrap { margin: 0.75rem 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .mission-wrapper .handbuch-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
     .mission-wrapper .handbuch-table th, .mission-wrapper .handbuch-table td { border: 1px solid rgba(95, 251, 241, 0.25); padding: 0.5rem 0.75rem; text-align: left; vertical-align: top; }
     .mission-wrapper .handbuch-table th { background: rgba(95, 251, 241, 0.1); color: #5ffbf1; font-weight: 600; }

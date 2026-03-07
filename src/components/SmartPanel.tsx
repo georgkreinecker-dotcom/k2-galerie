@@ -369,35 +369,84 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
               <div style={{ marginTop: '0.5rem', paddingLeft: '0.25rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 {mappe.id === 'galerie' && (
                   <>
-                    <Link to={PLATFORM_ROUTES.missionControl} style={{ display: 'block', padding: '0.65rem 0.85rem', background: 'linear-gradient(135deg, rgba(129,140,248,0.2), rgba(99,102,241,0.12))', border: '1px solid rgba(129,140,248,0.4)', borderRadius: '8px', color: '#a5b4fc', fontWeight: 600, fontSize: '0.88rem', textAlign: 'center', textDecoration: 'none', fontFamily: 'inherit' }}>
-                      🚀 Mission Control
-                    </Link>
+                    {onNavigate ? (
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => onNavigate('mission-control')}
+                        onKeyDown={e => e.key === 'Enter' && onNavigate('mission-control')}
+                        style={{ display: 'block', padding: '0.65rem 0.85rem', background: 'linear-gradient(135deg, rgba(129,140,248,0.2), rgba(99,102,241,0.12))', border: '1px solid rgba(129,140,248,0.4)', borderRadius: '8px', color: '#a5b4fc', fontWeight: 600, fontSize: '0.88rem', textAlign: 'center', cursor: 'pointer', fontFamily: 'inherit' }}
+                      >
+                        🚀 Mission Control
+                      </span>
+                    ) : (
+                      <Link to={PLATFORM_ROUTES.missionControl} style={{ display: 'block', padding: '0.65rem 0.85rem', background: 'linear-gradient(135deg, rgba(129,140,248,0.2), rgba(99,102,241,0.12))', border: '1px solid rgba(129,140,248,0.4)', borderRadius: '8px', color: '#a5b4fc', fontWeight: 600, fontSize: '0.88rem', textAlign: 'center', textDecoration: 'none', fontFamily: 'inherit' }}>
+                        🚀 Mission Control
+                      </Link>
+                    )}
                     {items.map(item => (
                       <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <Link
-                          to={item.url}
-                          style={{
-                            flex: 1,
-                            padding: '0.65rem 0.85rem',
-                            background: item.color,
-                            border: `1px solid ${item.border}`,
-                            borderRadius: '8px',
-                            color: item.id === 'uebersicht' ? '#2dd4bf' : item.id === 'oek2' ? '#5ffbf1' : item.id === 'mok2' ? '#fbbf24' : '#ff8c42',
-                            fontWeight: 600,
-                            fontSize: '0.88rem',
-                            textAlign: 'center',
-                            textDecoration: 'none',
-                            fontFamily: 'inherit',
-                            display: 'block',
-                          }}
-                        >
-                          {item.label}
-                        </Link>
+                        {onNavigate ? (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => onNavigate(item.page)}
+                            onKeyDown={e => e.key === 'Enter' && onNavigate(item.page)}
+                            style={{
+                              flex: 1,
+                              padding: '0.65rem 0.85rem',
+                              background: item.color,
+                              border: `1px solid ${item.border}`,
+                              borderRadius: '8px',
+                              color: item.id === 'uebersicht' ? '#2dd4bf' : item.id === 'oek2' ? '#5ffbf1' : item.id === 'mok2' ? '#fbbf24' : '#ff8c42',
+                              fontWeight: 600,
+                              fontSize: '0.88rem',
+                              textAlign: 'center',
+                              cursor: 'pointer',
+                              fontFamily: 'inherit',
+                              display: 'block',
+                            }}
+                          >
+                            {item.label}
+                          </span>
+                        ) : (
+                          <Link
+                            to={item.url}
+                            style={{
+                              flex: 1,
+                              padding: '0.65rem 0.85rem',
+                              background: item.color,
+                              border: `1px solid ${item.border}`,
+                              borderRadius: '8px',
+                              color: item.id === 'uebersicht' ? '#2dd4bf' : item.id === 'oek2' ? '#5ffbf1' : item.id === 'mok2' ? '#fbbf24' : '#ff8c42',
+                              fontWeight: 600,
+                              fontSize: '0.88rem',
+                              textAlign: 'center',
+                              textDecoration: 'none',
+                              fontFamily: 'inherit',
+                              display: 'block',
+                            }}
+                          >
+                            {item.label}
+                          </Link>
+                        )}
                       </div>
                     ))}
-                    <Link to="/k2-galerie-handbuch" style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.2)', borderRadius: '8px', color: '#5ffbf1', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', fontFamily: 'inherit' }}>
-                      🧠 Handbuch (K2 Galerie)
-                    </Link>
+                    {onNavigate ? (
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => onNavigate('handbuch-galerie')}
+                        onKeyDown={e => e.key === 'Enter' && onNavigate('handbuch-galerie')}
+                        style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.2)', borderRadius: '8px', color: '#5ffbf1', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'inherit' }}
+                      >
+                        🧠 Handbuch (K2 Galerie)
+                      </span>
+                    ) : (
+                      <Link to="/k2-galerie-handbuch" style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.2)', borderRadius: '8px', color: '#5ffbf1', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', fontFamily: 'inherit' }}>
+                        🧠 Handbuch (K2 Galerie)
+                      </Link>
+                    )}
                     <div style={{ marginTop: '0.6rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(196,181,253,0.25)' }}>
                       <div style={{ fontSize: '0.8rem', color: 'rgba(196,181,253,0.95)', fontWeight: 700, marginBottom: '0.4rem' }}>Praktisch</div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
@@ -428,7 +477,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                   <>
                     <p style={{ margin: '0 0 0.4rem 0', fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)' }}>Eigenes Projekt – keine Ausgrenzung, Respekt für jeden.</p>
                     {onNavigate ? (
-                      <span role="button" tabIndex={0} onClick={() => navigate(K2_FAMILIE_HOME)} onKeyDown={(e) => e.key === 'Enter' && navigate(K2_FAMILIE_HOME)}
+                      <span role="button" tabIndex={0} onClick={() => onNavigate('k2-familie')} onKeyDown={(e) => e.key === 'Enter' && onNavigate('k2-familie')}
                         style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(13,148,136,0.15)', border: '1px solid rgba(13,148,136,0.4)', borderRadius: '8px', color: '#14b8a6', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'inherit' }}>
                         → Zur Startseite (erste Seite)
                       </span>
@@ -437,16 +486,30 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                         → Zur Startseite (erste Seite)
                       </Link>
                     )}
-                    <Link to={PROJECT_ROUTES['k2-familie'].handbuch} style={{ display: 'block', padding: '0.5rem 0.7rem', background: 'rgba(13,148,136,0.08)', border: '1px solid rgba(13,148,136,0.3)', borderRadius: '8px', color: '#14b8a6', fontWeight: 500, fontSize: '0.82rem', textDecoration: 'none', fontFamily: 'inherit' }}>
-                      📖 Handbuch Familie
-                    </Link>
+                    {onNavigate ? (
+                      <span role="button" tabIndex={0} onClick={() => onNavigate('handbuch')} onKeyDown={e => e.key === 'Enter' && onNavigate('handbuch')}
+                        style={{ display: 'block', padding: '0.5rem 0.7rem', background: 'rgba(13,148,136,0.08)', border: '1px solid rgba(13,148,136,0.3)', borderRadius: '8px', color: '#14b8a6', fontWeight: 500, fontSize: '0.82rem', cursor: 'pointer', fontFamily: 'inherit' }}>
+                        📖 Handbuch Familie
+                      </span>
+                    ) : (
+                      <Link to={PROJECT_ROUTES['k2-familie'].handbuch} style={{ display: 'block', padding: '0.5rem 0.7rem', background: 'rgba(13,148,136,0.08)', border: '1px solid rgba(13,148,136,0.3)', borderRadius: '8px', color: '#14b8a6', fontWeight: 500, fontSize: '0.82rem', textDecoration: 'none', fontFamily: 'inherit' }}>
+                        📖 Handbuch Familie
+                      </Link>
+                    )}
                   </>
                 )}
                 {mappe.id === 'notizen' && (
                   <>
-                    <Link to={PROJECT_ROUTES['k2-galerie'].notizen} style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(196,181,253,0.12)', border: '1px solid rgba(196,181,253,0.3)', borderRadius: '8px', color: '#c4b5fd', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', fontFamily: 'inherit' }}>
-                      📝 Notizen
-                    </Link>
+                    {onNavigate ? (
+                      <span role="button" tabIndex={0} onClick={() => onNavigate('notizen')} onKeyDown={e => e.key === 'Enter' && onNavigate('notizen')}
+                        style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(196,181,253,0.12)', border: '1px solid rgba(196,181,253,0.3)', borderRadius: '8px', color: '#c4b5fd', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'inherit' }}>
+                        📝 Notizen
+                      </span>
+                    ) : (
+                      <Link to={PROJECT_ROUTES['k2-galerie'].notizen} style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'rgba(196,181,253,0.12)', border: '1px solid rgba(196,181,253,0.3)', borderRadius: '8px', color: '#c4b5fd', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', fontFamily: 'inherit' }}>
+                        📝 Notizen
+                      </Link>
+                    )}
                     <div style={{ marginTop: '0.5rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                         <span style={{ fontSize: '0.8rem', color: '#c4b5fd', fontWeight: 600 }}>Diverses</span>
@@ -479,7 +542,14 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                 {mappe.id === 'vermaechtnis' && (
                   <>
                     <p style={{ margin: '0 0 0.35rem 0', fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.4 }}>Dieser digitale Raum ist Georgs bleibendes Werk – für Kinder, Enkel und alle die nach ihm kommen.</p>
-                    <Link to="/k2team-handbuch" style={{ display: 'block', width: '100%', padding: '0.55rem 0.75rem', marginBottom: '0.4rem', background: 'rgba(95,251,241,0.1)', border: '1px solid rgba(95,251,241,0.3)', borderRadius: '8px', color: '#5ffbf1', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', fontFamily: 'inherit', textAlign: 'center', boxSizing: 'border-box' }}>🧠 Team-Handbuch (Vermächtnis)</Link>
+                    {onNavigate ? (
+                      <span role="button" tabIndex={0} onClick={() => onNavigate('handbuch')} onKeyDown={e => e.key === 'Enter' && onNavigate('handbuch')}
+                        style={{ display: 'block', width: '100%', padding: '0.55rem 0.75rem', marginBottom: '0.4rem', background: 'rgba(95,251,241,0.1)', border: '1px solid rgba(95,251,241,0.3)', borderRadius: '8px', color: '#5ffbf1', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'center', boxSizing: 'border-box' }}>
+                        🧠 Team-Handbuch (Vermächtnis)
+                      </span>
+                    ) : (
+                      <Link to="/k2team-handbuch" style={{ display: 'block', width: '100%', padding: '0.55rem 0.75rem', marginBottom: '0.4rem', background: 'rgba(95,251,241,0.1)', border: '1px solid rgba(95,251,241,0.3)', borderRadius: '8px', color: '#5ffbf1', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', fontFamily: 'inherit', textAlign: 'center', boxSizing: 'border-box' }}>🧠 Team-Handbuch (Vermächtnis)</Link>
+                    )}
                     <button type="button" onClick={() => nav('handbuch', '/k2team-handbuch?doc=16-ZENTRALE-THEMEN-FUER-NUTZER.md')} style={{ width: '100%', padding: '0.5rem 0.7rem', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.35)', borderRadius: '6px', color: '#86efac', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'inherit' }}>📌 Zentrale Themen</button>
                     <button
                       type="button"

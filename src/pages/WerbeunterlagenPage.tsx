@@ -265,7 +265,7 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
               )}
               <p style={{ margin: '0.5rem 0 0', fontSize: '0.75rem', color: s.muted }}>QR scannen → Willkommensseite</p>
             </div>
-            <div style={{ flex: 1, minWidth: 200 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ margin: '0 0 0.35rem', fontSize: '0.8rem', color: s.muted }}>Link zur Willkommensseite (Zugangsbereich):</p>
               <a
                 href={willkommenFullUrl}

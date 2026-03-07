@@ -18,11 +18,12 @@ export default function AGBPage() {
         minHeight: '100vh',
         color: s.text,
         fontFamily: s.fontBody,
-        padding: '2rem 1rem 4rem',
+        padding: '1rem 0.75rem 3rem',
+        boxSizing: 'border-box',
       }}
     >
       <link rel="stylesheet" href={PROMO_FONTS_URL} />
-      <div style={{ maxWidth: 720, margin: '0 auto' }}>
+      <div style={{ maxWidth: 720, margin: '0 auto', width: '100%', padding: '0 0.25rem' }}>
         <p style={{ margin: '0 0 1rem', fontSize: '0.9rem' }}>
           <Link to={MOK2_ROUTE} style={{ color: s.accent, textDecoration: 'none' }}>← mök2</Link>
           {' · '}

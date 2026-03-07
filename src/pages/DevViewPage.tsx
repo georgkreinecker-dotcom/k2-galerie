@@ -21,6 +21,10 @@ const ScreenshotExportAdmin = lazy(() => import('../../components/ScreenshotExpo
 import ProjectsPage from './ProjectsPage'
 import PlatformStartPage from './PlatformStartPage'
 import K2TeamHandbuchPage from './K2TeamHandbuchPage'
+import UebersichtBoardPage from './UebersichtBoardPage'
+import NotizenPage from './NotizenPage'
+import MissionControlPage from './MissionControlPage'
+import K2GalerieHandbuchPage from './K2GalerieHandbuchPage'
 import SmartPanel from '../components/SmartPanel'
 import { BUILD_TIMESTAMP } from '../buildInfo.generated'
 import { getPageContentGalerie } from '../config/pageContentGalerie'
@@ -182,15 +186,10 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
     }
   }, [currentPage])
 
-  // Bereiche der aktuellen Seite für untere Navigationsleiste
+  // Bereiche der aktuellen Seite für untere Navigationsleiste (Willkommen/Galerie/Künstler bewusst nicht mehr angezeigt)
   const getPageSections = (): PageSection[] => {
     if (currentPage === 'galerie' || currentPage === 'galerie-oeffentlich') {
-      // Bereiche der Galerie-Homepage (K2 bzw. ök2)
-      return [
-        { id: 'willkommen', name: 'Willkommen', icon: '👋', scrollTo: 'willkommen' },
-        { id: 'galerie', name: 'Galerie', icon: '🎨', scrollTo: 'galerie-vorschau' },
-        { id: 'kunstschaffende', name: 'Künstler', icon: '👨‍🎨', scrollTo: 'kunstschaffende' },
-      ]
+      return []
     }
     if (currentPage === 'galerie-vorschau' || currentPage === 'galerie-oeffentlich-vorschau') {
       // Filter für Galerie-Vorschau
@@ -246,9 +245,13 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       case 'mok2':
       case 'marketing-oek2': return PROJECT_ROUTES['k2-galerie'].marketingOek2
       case 'handbuch': return '/k2team-handbuch'
+      case 'handbuch-galerie': return '/k2-galerie-handbuch'
       case 'produkt-vorschau': return PROJECT_ROUTES['k2-galerie'].produktVorschau
       case 'platzanordnung': return '/platzanordnung'
       case 'k2-familie': return PROJECT_ROUTES['k2-familie'].home
+      case 'uebersicht': return PROJECT_ROUTES['k2-galerie'].uebersicht
+      case 'notizen': return PROJECT_ROUTES['k2-galerie'].notizen
+      case 'mission-control': return PLATFORM_ROUTES.missionControl
       default: return PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
     }
   }
@@ -263,9 +266,10 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
     }
   }
   const [gitPushing, setGitPushing] = useState(false)
-  // Smart Panel standardmäßig geöffnet (false = nicht minimiert)
-  // WICHTIG: Standardmäßig NICHT minimiert damit es sichtbar ist
-  const [panelMinimized, setPanelMinimized] = useState(false) // Immer sichtbar beim Start
+  // Smart Panel ein-/ausblendbar; Zustand aus localStorage (beim Start)
+  const [panelMinimized, setPanelMinimized] = useState(() => {
+    try { return localStorage.getItem('devview-panel-minimized') === '1' } catch { return false }
+  })
   const [grafikerTischOpen, setGrafikerTischOpen] = useState(false)
   const [grafikerReloadKey, setGrafikerReloadKey] = useState(0)
   const [grafikerNotizOpen, setGrafikerNotizOpen] = useState(false)
@@ -870,6 +874,7 @@ end tell`
     { id: 'galerie-oeffentlich', name: 'Öffentliche Galerie K2', component: GaleriePage },
     { id: 'galerie-vorschau', name: 'Galerie-Vorschau', component: GalerieVorschauPage },
     { id: 'galerie-oeffentlich-vorschau', name: 'Öffentliche Galerie K2 Vorschau', component: GalerieVorschauPage },
+    { id: 'uebersicht', name: 'Übersicht-Board', component: UebersichtBoardPage },
     { id: 'vk2', name: 'VK2 Vereinsplattform', component: GaleriePage },
     { id: 'vk2-kunden', name: 'VK2 Mitglieder', component: GalerieVorschauPage },
     { id: 'vk2-vorschau', name: 'VK2 Künstler-Vorschau', component: GalerieVorschauPage },
@@ -880,11 +885,15 @@ end tell`
     { id: 'shop', name: 'Shop', component: ShopPage },
     { id: 'control', name: 'Control Studio', component: ControlStudioPage },
     { id: 'mission', name: 'Projektplan', component: ProjectPlanPage },
+    { id: 'mission-control', name: 'Mission Control', component: MissionControlPage },
     { id: 'admin', name: 'Admin', component: ScreenshotExportAdmin },
     { id: 'projects', name: 'Projekte', component: ProjectsPage },
     { id: 'platform', name: 'Plattform Start', component: PlatformStartPage },
     { id: 'mok2', name: 'mök2 – Vertrieb', component: MarketingOek2Page },
+    { id: 'notizen', name: 'Notizen', component: NotizenPage },
     { id: 'handbuch', name: 'Handbuch', component: K2TeamHandbuchPage },
+    { id: 'handbuch-galerie', name: 'Handbuch K2 Galerie', component: K2GalerieHandbuchPage },
+    { id: 'k2-familie', name: 'K2 Familie', component: () => <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--k2-muted)' }}>K2 Familie – im APf-Desktop im Browser</div> },
   ]
 
   // Auf Mobile: "Plattform Start" Tab ausblenden (nur für Mac)
@@ -1573,19 +1582,34 @@ end tell`
               <div style={{
                 width: '100%',
                 height: '100%',
-                overflow: 'auto',
+                overflow: 'hidden',
                 transform: `scale(${desktopZoom})`,
                 transformOrigin: 'top center'
               }}>
-                {renderComponent('desktop', false)}
+                {/* iframe = alles bleibt am Desktop, kein Vollbild – Mappen/Links öffnen nur im Frame */}
+                {typeof window !== 'undefined' && window.self === window.top ? (
+                  <iframe
+                    key={`desktop-${effectiveCurrentPage}`}
+                    src={`${window.location.origin}${getPathForPage(effectiveCurrentPage)}${getPathForPage(effectiveCurrentPage).includes('?') ? '&' : '?'}embedded=1`}
+                    title={currentPageData?.name ?? 'Desktop'}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      border: 'none',
+                      background: '#fff',
+                    }}
+                  />
+                ) : (
+                  renderComponent('desktop', false)
+                )}
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Untere Navigationsleiste - zeigt Bereiche der aktuellen Seite */}
-      {(currentPage === 'galerie' || currentPage === 'galerie-oeffentlich' || currentPage === 'galerie-vorschau' || currentPage === 'galerie-oeffentlich-vorschau') && (
+      {/* Untere Navigationsleiste - zeigt Bereiche der aktuellen Seite (nur wenn es Einträge gibt) */}
+      {(currentPage === 'galerie' || currentPage === 'galerie-oeffentlich' || currentPage === 'galerie-vorschau' || currentPage === 'galerie-oeffentlich-vorschau') && pageSections.length > 0 && (
         <div style={{
           position: 'fixed',
           bottom: 0,
@@ -1715,10 +1739,7 @@ end tell`
         }}>
         {/* Minimize/Expand Button - IMMER sichtbar */}
         <button
-          onClick={() => {
-            setPanelMinimized(!panelMinimized)
-            console.log('📱 Smart Panel:', !panelMinimized ? 'wird minimiert' : 'wird geöffnet')
-          }}
+          onClick={() => setPanelMinimized(!panelMinimized)}
           style={{
             position: 'absolute',
             top: '1rem',
@@ -1744,48 +1765,46 @@ end tell`
           onMouseLeave={(e) => {
             e.currentTarget.style.background = 'rgba(255, 140, 66, 0.15)'
           }}
-          title={panelMinimized ? 'Panel öffnen' : 'Panel minimieren'}
+          title={panelMinimized ? 'Smart Panel einblenden' : 'Smart Panel ausblenden'}
         >
-          {panelMinimized ? '⚡' : '←'}
+          {panelMinimized ? '▶' : '◀'}
         </button>
         
         {/* Button außerhalb des Panels wenn minimiert - IMMER sichtbar */}
         {panelMinimized && (
           <button
-            onClick={() => {
-              setPanelMinimized(false)
-              console.log('📱 Smart Panel wird geöffnet')
-            }}
+            onClick={() => setPanelMinimized(false)}
             style={{
               position: 'fixed',
               top: '1rem',
               left: '1rem',
-              width: '3rem',
-              height: '3rem',
+              padding: '0.5rem 0.75rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem',
               background: 'rgba(255, 140, 66, 0.2)',
               border: '2px solid rgba(255, 140, 66, 0.4)',
               borderRadius: '12px',
               color: 'var(--k2-accent)',
               cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '1.5rem',
-              zIndex: 10003, // Höchster z-index
+              fontSize: '0.9rem',
+              fontWeight: 600,
+              zIndex: 10003,
               boxShadow: '0 4px 12px rgba(255, 140, 66, 0.3)',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              fontFamily: 'inherit'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = 'rgba(255, 140, 66, 0.3)'
-              e.currentTarget.style.transform = 'scale(1.1)'
+              e.currentTarget.style.transform = 'scale(1.05)'
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = 'rgba(255, 140, 66, 0.2)'
               e.currentTarget.style.transform = 'scale(1)'
             }}
-            title="Smart Panel öffnen"
+            title="Smart Panel einblenden"
           >
-            ⚡
+            <span>▶</span><span>Panel</span>
           </button>
         )}
         

@@ -122,7 +122,8 @@ export default function K2FamilieHandbuchPage() {
           const headerRow = isHeader ? rows[0] : null
           const bodyRows = isHeader ? rows.slice(2) : rows
           out.push(
-            <table key={key} style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1rem', fontSize: '0.95rem' }}>
+            <div key={key} style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', marginBottom: '1rem' }}>
+            <table style={{ width: '100%', minWidth: 320, borderCollapse: 'collapse', fontSize: '0.95rem' }}>
               {headerRow && (
                 <thead>
                   <tr>
@@ -142,6 +143,7 @@ export default function K2FamilieHandbuchPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )
         }
         continue

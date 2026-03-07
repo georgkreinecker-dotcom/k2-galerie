@@ -121,6 +121,8 @@ export async function uploadVideoToGitHub(
     reader.readAsDataURL(file)
   })
 
+  onStatus?.('Video wird an Server gesendet…')
+
   const path = `public/img/k2/${filename}`
 
   onStatus?.('Prüfe vorhandene Datei…')

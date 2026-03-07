@@ -451,6 +451,14 @@ function PrintFooter() {
   return <div id="print-footer" ref={ref} aria-hidden />
 }
 
+/** Galerie-Seiten: dort wird das APf-Icon nicht angezeigt (nicht mehr benötigt). */
+function isGaleriePage(pathname: string): boolean {
+  return pathname === PROJECT_ROUTES['k2-galerie'].galerie
+    || pathname === PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+    || pathname === PROJECT_ROUTES['k2-galerie'].galerieVorschau
+    || pathname === PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau
+}
+
 /** Aktuelle Route → APf-Tab (DevView page id), damit die gleiche Seite in der APf geöffnet wird */
 function getApfPageFromPath(pathname: string, search: string): string {
   if (pathname === '/') {
@@ -494,10 +502,11 @@ function App() {
   return (
     <TenantProvider>
     <AppErrorBoundary>
+    <div style={{ width: '100%', minWidth: 0 }}>
     <StandBadgeSync />
     {/* Brand-Button entfernt – bei der Arbeit nicht nötig; bei Bedarf in BrandLogo.tsx wieder einbinden */}
-    {/* Von jeder Seite in die APf – gleiche Seite bleibt in der APf geöffnet; Vollbild wird beendet */}
-    {typeof window !== 'undefined' && !isMobileView() && !isOnApf && (
+    {/* Von jeder Seite in die APf – gleiche Seite bleibt in der APf geöffnet; Vollbild wird beendet. Auf Galerie-Seiten nicht anzeigen. */}
+    {typeof window !== 'undefined' && !isMobileView() && !isOnApf && !isGaleriePage(location.pathname) && (
       <button
         type="button"
         onClick={() => {
@@ -654,7 +663,7 @@ function App() {
     <GlobaleGuideBegleitung />
     {/* Druck-Fußzeile: Dokumentenersteller | Druckdatum (Seitenzahl via @page in index.css) */}
     <PrintFooter />
-
+    </div>
     </AppErrorBoundary>
     </TenantProvider>
   )

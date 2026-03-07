@@ -14,8 +14,8 @@ export default function KundenPage(props: { vk2?: boolean }) {
   const backTo = vk2 ? '/admin?context=vk2' : '/admin'
   const subtitle = vk2 ? 'Vernissage-Gäste, Interessenten, Kontakte des Vereins. Vereinsmitglieder verwaltest du unter Einstellungen → Stammdaten.' : 'Kunden für Verkauf, Einladungen und Ausstellungsbetrieb.'
   return (
-    <main style={{ minHeight: '100vh', background: s.bgDark, padding: '2rem clamp(1.5rem, 5vw, 4rem)' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+    <main style={{ minHeight: '100vh', background: s.bgDark, padding: '1rem clamp(0.75rem, 4vw, 2rem)', boxSizing: 'border-box' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%' }}>
         <header style={{ marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
             <Link
