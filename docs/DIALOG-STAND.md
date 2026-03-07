@@ -13,6 +13,13 @@
 
 ---
 
+## Datum: 07.03.26 – Design-Workflow 3 + 4 (Speichern / Veröffentlichen)
+
+- **Thema:** „Deine Galerie gestalten“ – Punkt 4 „Veröffentlichen jetzt“ ergänzt; Punkt 3/4 Texte nach Georgs Wunsch: 3 = nur „Speichern (auf diesem Gerät)“, 4 = „Veröffentlichen“ + zweite Zeile „für alle jetzt sichtbar“.
+- **Erledigt:** Commit 5ae6c28 ✅ auf GitHub. Vercel baut automatisch.
+
+---
+
 ## Datum: 07.03.26 – ro5 + weiter (Commit + Push)
 
 - **Thema:** Georg: ro5, dann „weiter“ – offene Änderungen sichern, Stand sauber.
