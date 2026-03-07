@@ -1899,6 +1899,59 @@ function ScreenshotExportAdmin() {
     }
   }, [])
 
+  /** Ein Standard: Video für Virtuellen Rundgang wählen – Design Seite 1 und Seite 2 nutzen dieselbe Logik. */
+  const handleVirtualTourVideoFile = useCallback(async (f: File) => {
+    if (f.size > 100 * 1024 * 1024) {
+      setVideoUploadMsg('Video ist zu groß (max. 100 MB).')
+      setVideoUploadStatus('error')
+      return
+    }
+    setVideoUploadStatus('uploading')
+    setVideoUploadMsg('Video wird vorbereitet…')
+    try {
+      const durationSec = await getVideoDurationSec(f)
+      if (durationSec > MAX_VIDEO_DURATION_SEC) {
+        setVideoUploadMsg(`Video darf max. 2 Minuten lang sein (${Math.round(durationSec)} s) – für schnelles Laden.`)
+        setVideoUploadStatus('error')
+        return
+      }
+    } catch {
+      setVideoUploadMsg('Länge konnte nicht gelesen werden.')
+      setVideoUploadStatus('error')
+      return
+    }
+    try {
+      const localUrl = URL.createObjectURL(f)
+      const tenantId = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+      const nextLocal = { ...pageContent, virtualTourVideo: localUrl, virtualTourVideoSizeBytes: f.size }
+      setPageContent(nextLocal)
+      setPageContentGalerie(nextLocal, tenantId)
+      if (!tenant.isOeffentlich) {
+        setVideoUploadStatus('uploading')
+        setVideoUploadMsg('Video wird hochgeladen… Bitte warten.')
+        try {
+          const { uploadVideoToGitHub } = await import('../src/utils/githubImageUpload')
+          const url = await uploadVideoToGitHub(f, 'virtual-tour.mp4', (msg) => setVideoUploadMsg(msg))
+          const nextVercel = { ...nextLocal, virtualTourVideo: url }
+          setPageContent(nextVercel)
+          setPageContentGalerie(nextVercel, tenant.isVk2 ? 'vk2' : undefined)
+          localStorage.removeItem('k2-last-publish-signature')
+          setVideoUploadStatus('done')
+          setVideoUploadMsg('✅ Video hochgeladen – in ca. 2 Min. überall sichtbar.')
+        } catch {
+          setVideoUploadStatus('error')
+          setVideoUploadMsg('Upload fehlgeschlagen – Video nur auf diesem Gerät sichtbar.')
+        }
+      } else {
+        setVideoUploadStatus('done')
+        setVideoUploadMsg('✅ Video gespeichert.')
+      }
+    } catch {
+      setVideoUploadStatus('error')
+      setVideoUploadMsg('Fehler beim Laden des Videos.')
+    }
+  }, [pageContent, tenant])
+
   // Design-Vorschau = immer aktuelle gespeicherte Seite anzeigen (keine alten Daten)
   // Beim Wechsel in den Design-Tab: Seitentexte, Seitengestaltung und Design aus Speicher nachladen
   useEffect(() => {
@@ -10064,41 +10117,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           📹 Video wählen oder aufnehmen
                           <input id="virtual-tour-video-input-p1" title="Max. 2 Min. Länge · max. 100 MB" type="file" accept="video/*" style={{ display: 'none' }} onChange={async (e) => {
                             const f = e.target.files?.[0]
-                            if (!f) { e.target.value = ''; return }
-                            if (f.size > 100 * 1024 * 1024) { setVideoUploadMsg('Video ist zu groß (max. 100 MB).'); setVideoUploadStatus('error'); e.target.value = ''; return }
-                            setVideoUploadStatus('uploading')
-                            setVideoUploadMsg('Video wird vorbereitet…')
-                            try {
-                              const durationSec = await getVideoDurationSec(f)
-                              if (durationSec > MAX_VIDEO_DURATION_SEC) { setVideoUploadMsg(`Video darf max. 2 Minuten lang sein (${Math.round(durationSec)} s) – für schnelles Laden.`); setVideoUploadStatus('error'); e.target.value = ''; return }
-                            } catch { setVideoUploadMsg('Länge konnte nicht gelesen werden.'); setVideoUploadStatus('error'); e.target.value = ''; return }
-                            try {
-                              const localUrl = URL.createObjectURL(f)
-                              const tenantId = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
-                              const nextLocal = { ...pageContent, virtualTourVideo: localUrl, virtualTourVideoSizeBytes: f.size }
-                              setPageContent(nextLocal)
-                              setPageContentGalerie(nextLocal, tenantId)
-                              if (!tenant.isOeffentlich) {
-                                setVideoUploadStatus('uploading')
-                                setVideoUploadMsg('Video wird hochgeladen… Bitte warten.')
-                                try {
-                                  const { uploadVideoToGitHub } = await import('../src/utils/githubImageUpload')
-                                  const url = await uploadVideoToGitHub(f, 'virtual-tour.mp4', (msg) => setVideoUploadMsg(msg))
-                                  const nextVercel = { ...nextLocal, virtualTourVideo: url }
-                                  setPageContent(nextVercel)
-                                  setPageContentGalerie(nextVercel, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
-                                  localStorage.removeItem('k2-last-publish-signature')
-                                  setVideoUploadStatus('done')
-                                  setVideoUploadMsg('✅ Video hochgeladen – in ca. 2 Min. überall sichtbar.')
-                                } catch {
-                                  setVideoUploadStatus('error')
-                                  setVideoUploadMsg('Upload fehlgeschlagen – Video nur auf diesem Gerät sichtbar.')
-                                }
-                              } else {
-                                setVideoUploadStatus('done')
-                                setVideoUploadMsg('✅ Video gespeichert.')
-                              }
-                            } catch { setVideoUploadStatus('error'); setVideoUploadMsg('Fehler beim Laden des Videos.') }
+                            if (f) { await handleVirtualTourVideoFile(f) }
                             e.target.value = ''
                           }} />
                         </label>
@@ -10198,47 +10217,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         📹 Video wählen oder aufnehmen
                         <input id="virtual-tour-video-input" type="file" accept="video/*" title="Max. 2 Min. Länge · max. 100 MB" style={{ display: 'none' }} onChange={async (e) => {
                           const f = e.target.files?.[0]
-                          if (!f) { e.target.value = ''; return }
-                          if (f.size > 100 * 1024 * 1024) { setVideoUploadMsg('Video ist zu groß (max. 100 MB). Bitte kürzer aufnehmen.'); setVideoUploadStatus('error'); e.target.value = ''; return }
-                          setVideoUploadStatus('uploading')
-                          setVideoUploadMsg('Video wird vorbereitet…')
-                          try {
-                            const durationSec = await getVideoDurationSec(f)
-                            if (durationSec > MAX_VIDEO_DURATION_SEC) { setVideoUploadMsg(`Video darf max. 2 Minuten lang sein (${Math.round(durationSec)} s) – für schnelles Laden.`); setVideoUploadStatus('error'); e.target.value = ''; return }
-                          } catch { setVideoUploadMsg('Länge konnte nicht gelesen werden.'); setVideoUploadStatus('error'); e.target.value = ''; return }
-                          try {
-                            const localUrl = URL.createObjectURL(f)
-                            const tenantId = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
-                            // Sofort lokal speichern → sofort im Admin sichtbar
-                            const nextLocal = { ...pageContent, virtualTourVideo: localUrl, virtualTourVideoSizeBytes: f.size }
-                            setPageContent(nextLocal)
-                            setPageContentGalerie(nextLocal, tenantId)
-                            if (!tenant.isOeffentlich) {
-                              // K2: Video via GitHub hochladen → auf Vercel dauerhaft
-                              setVideoUploadMsg('Video wird hochgeladen… Bitte warten.')
-                              try {
-                                const { uploadVideoToGitHub } = await import('../src/utils/githubImageUpload')
-                                const url = await uploadVideoToGitHub(f, 'virtual-tour.mp4', (msg) => setVideoUploadMsg(msg))
-                                const nextVercel = { ...nextLocal, virtualTourVideo: url }
-                                setPageContent(nextVercel)
-                                setPageContentGalerie(nextVercel, undefined)
-                                localStorage.removeItem('k2-last-publish-signature')
-                                setVideoUploadStatus('done')
-                                setVideoUploadMsg('✅ Video hochgeladen – in ca. 2 Min. überall sichtbar.')
-                              } catch (uploadErr: any) {
-                                console.warn('Video-Upload fehlgeschlagen:', uploadErr)
-                                setVideoUploadStatus('error')
-                                setVideoUploadMsg('Upload fehlgeschlagen – Video nur auf diesem Gerät sichtbar.')
-                              }
-                            } else {
-                              // ök2: blob-URL reicht für lokale Demo-Vorschau
-                              setVideoUploadStatus('done')
-                              setVideoUploadMsg('✅ Video gespeichert.')
-                            }
-                          } catch (_) {
-                            setVideoUploadStatus('error')
-                            setVideoUploadMsg('Fehler beim Laden des Videos.')
-                          }
+                          if (f) { await handleVirtualTourVideoFile(f) }
                           e.target.value = ''
                         }} />
                       </label>
