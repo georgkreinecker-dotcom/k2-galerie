@@ -14,8 +14,8 @@ Georg hat sich an klare Regeln und Strukturen angepasst und erwartet, dass die A
 ### So setzt du es um
 
 1. **Beim ersten Nutzer-Message in dieser Konversation:** Zuerst **Briefing auffrischen**, dann die zentralen Quellen lesen:
-   - **Zuerst:** `npm run briefing` ausführen (Cursor-Terminal), damit docs/AGENTEN-BRIEFING.md immer frisch ist.
-   - **Dann lesen:** HAUS-INDEX.md (Abschnitt „Struktur für unser Handeln"), k2team-handbuch/00-INDEX.md, docs/STRUKTUR-HANDELN-QUELLEN.md, docs/DIALOG-STAND.md, docs/AGENTEN-BRIEFING.md.
+   - **Zuerst:** `npm run briefing` ausführen (Cursor-Terminal) – Ankes Briefing immer frisch.
+   - **Dann lesen:** HAUS-INDEX.md, k2team-handbuch/00-INDEX.md, docs/STRUKTUR-HANDELN-QUELLEN.md, docs/DIALOG-STAND.md, docs/AGENTEN-BRIEFING.md (Ankes Briefing).
    - **docs/GRAFIKER-TISCH-NOTIZEN.md** – nur optional, wenn Georg ihn nutzt.
    - **docs/GELOESTE-BUGS.md** – **PFLICHT** vor Code-Änderungen; niemals gelöste Bugs wieder einbauen.
 
@@ -30,4 +30,4 @@ Georg hat sich an klare Regeln und Strukturen angepasst und erwartet, dass die A
 
 ### Kurzfassung
 
-**Session-Start = zuerst `npm run briefing`, dann zentrale Quellen (HAUS-INDEX, Handbuch, STRUKTUR-HANDELN-QUELLEN, DIALOG-STAND, AGENTEN-BRIEFING) lesen, dann arbeiten. Gilt für jede neue Konversation.**
+**Session-Start = zuerst `npm run briefing` (Ankes Briefing frisch), dann zentrale Quellen (HAUS-INDEX, Handbuch, STRUKTUR-HANDELN-QUELLEN, DIALOG-STAND, Ankes Briefing) lesen, dann arbeiten. Gilt für jede neue Konversation.**

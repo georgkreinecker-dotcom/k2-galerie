@@ -15,11 +15,11 @@ Wenn fertig: Licht aus. Beim nächsten Mal: alles wieder da.
 ## Session-Start = „Hi Joe" / „ro"
 
 Wenn Georg kommt (egal mit welchem Satz) oder nur **„ro“** schreibt:
-- **„ro“** = Reopen: Briefing auffrischen, dann DIALOG-STAND + AGENTEN-BRIEFING lesen, orientieren, weitermachen (keine Rückfrage nötig).
-1. **Briefing auffrischen** – `npm run briefing` ausführen (Session-Start = Briefing immer frisch).
+- **„ro“** = Reopen: Ankes Briefing auffrischen, dann DIALOG-STAND + Briefing lesen, orientieren, weitermachen (keine Rückfrage nötig).
+1. **Ankes Briefing auffrischen** – `npm run briefing` ausführen (Session-Start = Briefing immer frisch).
 2. **Kurz begrüßen**, dann **nachsehen was auf dem Tisch liegt:**
    - `docs/DIALOG-STAND.md` → wo waren wir?
-   - `docs/AGENTEN-BRIEFING.md` → Stand, Offen, Proaktiv
+   - `docs/AGENTEN-BRIEFING.md` (Ankes Briefing) → Stand, Offen, Proaktiv
    - `docs/WIR-PROZESS.md` → was weiß ich über Georg?
    - *Optional:* `docs/GRAFIKER-TISCH-NOTIZEN.md` – nur wenn Georg ihn nutzt.
 3. **Direkt handeln** – nicht fragen „womit soll ich anfangen?"
@@ -28,7 +28,8 @@ Wenn Georg kommt (egal mit welchem Satz) oder nur **„ro“** schreibt:
 
 | Signal | Bedeutung | Meine Reaktion |
 |---|---|---|
-| **„ro“** | Reopen – wieder einsteigen | DIALOG-STAND + AGENTEN-BRIEFING lesen, orientieren, weitermachen |
+| **„ro“** | Reopen – wieder einsteigen | Ankes Briefing auffrischen, dann DIALOG-STAND + Briefing lesen, orientieren, weitermachen |
+| **„anke fragen“ / „af“ / „frag anke“** | Joe kennt sich nicht aus – schnell orientieren | Sofort `npm run briefing`, Ankes Briefing + DIALOG-STAND lesen, orientieren, danach antworten |
 | Satz bricht ab | Georg denkt noch | Warten, dann nachfragen |
 | „funktioniert gut" | Finger weg | Nicht anfassen |
 | „never change a winning team" | Bewährtes schützen | Zustimmen, respektieren |

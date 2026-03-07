@@ -1,6 +1,6 @@
 # Grafiker-Tisch – Notizen & Wünsche
 
-> **Optional** – nicht mehr in den normalen Session-Ablauf einbezogen. Die **Agenten-Briefing**-Funktion (Stand, Offen, Proaktiv) übernimmt das, wofür der Grafiker-Tisch gedacht war. Diese Datei bleibt als optionale Ablage für Wünsche/Ideen, falls du sie nutzt. Standard: DIALOG-STAND + AGENTEN-BRIEFING.
+> **Optional** – nicht mehr in den normalen Session-Ablauf einbezogen. **Anke** (Ankes Briefing) übernimmt das, wofür der Grafiker-Tisch gedacht war (Stand, Offen, Proaktiv). Diese Datei bleibt als optionale Ablage für Wünsche/Ideen, falls du sie nutzt. Standard: DIALOG-STAND + Ankes Briefing.
 > Wird vom Grafiker-Tisch-Tool in der APf beschrieben. **Nichts geht verloren** – auch nach Absturz oder Neustart.
 
 ---

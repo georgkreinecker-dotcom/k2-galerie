@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Agenten-Briefing – Stand, Offen, Proaktiv aus DIALOG-STAND + Grafiker-Tisch
- * Schreibt docs/AGENTEN-BRIEFING.md für Session-Start.
- * Ausführung: npm run briefing (oder node scripts/agenten-briefing.js)
+ * Anke – Briefing für Session-Start
+ * Stand, Offen, Proaktiv aus DIALOG-STAND + Grafiker-Tisch.
+ * Schreibt docs/AGENTEN-BRIEFING.md. Ausführung: npm run briefing
  */
 
 const fs = require('fs');
@@ -83,11 +83,17 @@ function buildProaktiv(standNextStep, offenText, hasUncommitted) {
   return tips.join('\n');
 }
 
+/** Ankes verbindliche Prinzipien (immer im Briefing) */
+function ankesPrinzipien() {
+  return `- **Sportwagenprinzip (überall):** Eine Quelle, ein Standard, ein Ablauf pro Problemstellung. Kein „pro Modal anders“. Quelle: SPORTWAGEN-ROADMAP, PRODUKT-STANDARD-NACH-SPORTWAGEN.
+- **Raumschiffprinzip (K2 Familie):** Qualität vor Abheben; nicht starten, bevor startklar. Qualitätsansprüche um ein Vielfaches höher. Quelle: K2-FAMILIE-GRUNDBOTSCHAFT.md (Raumschiff-Anspruch).`;
+}
+
 /** Kurzreferenz Georg (fest) */
 function georgRef() {
   return `- Kurz antworten, sofort handeln, Erledigtes abhaken.
 - Keine langen Texte; kein „fertig“ ohne Commit.
-- Bei „ro“ / Session-Start: DIALOG-STAND + Grafiker-Tisch (und dieses Briefing) lesen, dann weitermachen.`;
+- Bei „ro“ / Session-Start: DIALOG-STAND + dieses Briefing lesen, dann weitermachen.`;
 }
 
 function main() {
@@ -106,9 +112,9 @@ function main() {
   const proaktiv = buildProaktiv(standNextStep, offenBlock, hasUncommitted);
   const datum = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' });
 
-  const md = `# Agenten-Briefing – ${datum}
+  const md = `# Anke – Briefing – ${datum}
 
-> Generiert von \`npm run briefing\` (scripts/agenten-briefing.js). Bei Session-Start lesen.
+> Ankes Briefing für Session-Start. Generiert von \`npm run briefing\`. Stand, Offen, Proaktiv.
 
 ---
 
@@ -130,17 +136,23 @@ ${proaktiv}
 
 ---
 
+## Ankes Prinzipien (verbindlich)
+
+${ankesPrinzipien()}
+
+---
+
 ## Georgs Präferenzen (Kurzreferenz)
 
 ${georgRef()}
 
 ---
 
-*Siehe docs/AGENT-KONZEPT.md für Analyse und Spezifikation des Agenten.*
+*Mehr: docs/AGENT-KONZEPT.md – Abschnitt „So arbeitest du mit Anke (für Georg)“.*
 `;
 
   fs.writeFileSync(OUT, md, 'utf8');
-  console.log('Agenten-Briefing geschrieben: docs/AGENTEN-BRIEFING.md');
+  console.log('Ankes Briefing geschrieben: docs/AGENTEN-BRIEFING.md');
 }
 
 main();
