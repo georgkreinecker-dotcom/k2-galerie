@@ -4,6 +4,14 @@
 
 ---
 
+## Datum: 07.03.26 – Desktop: Veröffentlicht-Kachel + Virtueller Rundgang (Bild/Video)
+
+- **Thema:** (1) APf Desktop: „Zuletzt veröffentlicht“ von grüner Leiste zu **kleiner Kachel** (inline-flex, kompakt, „Veröff.: DD.MM.YY HH:MM“). (2) Virtueller Rundgang (Design): Bild = Symbolbild (kein Scroll, flexShrink: 0); Video getrennt unter dem Bild mit Trennlinie – beide behindern sich nicht.
+- **Erledigt:** DevViewPage: Badge als kleine Kachel; ScreenshotExportAdmin: Virtueller-Rundgang-Karte mit Kommentar Symbolbild/Video getrennt, Video-Bereich mit borderTop + Abstand.
+- **Nächster Schritt:** Commit + Push. Georg testen: APf → kleine Kachel; Admin → Design → Virtueller Rundgang (Bild oben, Video darunter getrennt).
+
+---
+
 ## Datum: 07.03.26 – Kassabuch Handy (Retour + Lesbarkeit)
 
 - **Thema:** Kassabuch auf dem Handy: Retour „Kassa“ und „Admin“ zu weit oben/schlecht sichtbar; Liste (Datum, Art, Betrag) Schrift zu hell, nicht lesbar.
@@ -57,7 +65,8 @@
 - **Thema:** Georg: In der APf-Desktop-Ansicht („Was möchtest du heute tun?“) alle Arbeiten dort durchführen können – nicht in Vollbildmodus wechseln, wenn er auf einzelne Seiten geht.
 - **Ursache:** In GaleriePage (Guide → „In den Admin“) wurde bei Aufruf im iframe `window.open(adminUrl, '_blank')` genutzt → neuer Tab statt im APf zu bleiben.
 - **Was gemacht:** Beide Stellen in GaleriePage geändert: Im iframe (`window.self !== window.top`) wird jetzt `navigate(adminUrl + '&embedded=1')` ausgeführt – Navigation im gleichen Frame, Nutzer bleibt in der APf-Desktop-Ansicht.
-- **Nächster Schritt:** Commit + Push. Georg testen: Desktop-Ansicht → Klick zu Admin (z. B. über Guide) → soll im gleichen Fenster/iframe wechseln, kein neuer Tab.
+- **Erledigt (weiter 07.03.26):** Session-Stand committed + gepusht (Stand-Dateien, Briefing, DIALOG-STAND, DevViewPage). **Commit:** 44a9171 ✅ auf GitHub.
+- **Nächster Schritt:** Optional: Georg testen – Desktop-Ansicht → Klick zu Admin (z. B. über Guide) → soll im gleichen Fenster/iframe wechseln, kein neuer Tab. Oder: Grafiker-Tisch (Texte kürzen), anderes Thema.
 
 ---
 

@@ -10033,8 +10033,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         <h3 role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-galerieButtonText')} style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--k2-text)', marginBottom: 4, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.galerieButtonText ?? defaultPageTexts.galerie.galerieButtonText) || 'In die Galerie'}</h3>
                       )}
                     </div>
-                    <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 16, padding: 16, textAlign: 'center' }}>
-                      <label htmlFor="virtual-tour-image-input-p1" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
+                    <div style={{ background: 'var(--k2-card-bg-1)', border: '1px solid var(--k2-muted)', borderRadius: 16, padding: 16, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 0 }}>
+                      {/* Symbolbild: feste Höhe, kein Scroll – Bild und Video getrennt, behindern sich nicht */}
+                      <label htmlFor="virtual-tour-image-input-p1" style={{ display: 'block', cursor: 'pointer', width: '100%', aspectRatio: '16/9', flexShrink: 0, borderRadius: 12, overflow: 'hidden', marginBottom: 8, background: pageContent.virtualTourImage ? 'transparent' : 'rgba(0,0,0,0.06)', border: '2px dashed var(--k2-muted)', boxSizing: 'border-box', transition: 'opacity 0.2s' }} title="Foto ziehen oder klicken"
                         onDragOver={(e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
                         onDragLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
                         onDrop={async (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).style.opacity = '1'; const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith('image/')) { try { const img = await compressImageForStorage(f, { context: 'desktop' }); setPendingPageImage({ field: 'virtualTourImage', dataUrl: img, file: f }); setPendingPageImageMode('freigestellt'); setImageUploadStatus('✓ Virtual-Tour – im Fenster „Bild übernehmen“ klicken'); setTimeout(() => setImageUploadStatus(null), 5000) } catch (_) { alert('Fehler beim Bild') } } }}
@@ -10047,6 +10048,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       ) : (
                         <h3 role="button" tabIndex={0} onClick={() => setDesignPreviewEdit('p1-virtualTourButtonText')} style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--k2-text)', marginBottom: 4, cursor: 'pointer' }} title="Klicken zum Bearbeiten">{(pageTexts.galerie?.virtualTourButtonText ?? defaultPageTexts.galerie.virtualTourButtonText) || 'Virtueller Rundgang'}</h3>
                       )}
+                      {/* Video getrennt unter dem Bild – eigene Fläche, behindert Bild nicht */}
                       <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 8 }}>
                         <label htmlFor="virtual-tour-video-input-p1" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.4rem 0.9rem', background: 'var(--k2-accent)', color: '#fff', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }}>
                           📹 Video wählen oder aufnehmen
@@ -10093,7 +10095,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       </div>
                       <p style={{ margin: '6px 0 0', fontSize: '0.75rem', color: 'var(--k2-muted)' }}>Max. 2 Min. Länge · max. 100 MB</p>
                       {pageContent.virtualTourVideo && (
-                        <div style={{ marginTop: 8 }}>
+                        <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--k2-muted)' }}>
                           <video src={pageContent.virtualTourVideo} controls style={{ width: '100%', maxHeight: 140, borderRadius: 8, background: '#000' }} />
                         </div>
                       )}
