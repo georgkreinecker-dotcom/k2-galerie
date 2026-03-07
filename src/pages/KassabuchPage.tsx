@@ -101,16 +101,21 @@ export default function KassabuchPage() {
     )
   }
 
+  const navLinks = (
+    <div className="kassabuch-nav no-print" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+      <Link to={PROJECT_ROUTES['k2-galerie'].kassa} style={{ color: s.text, textDecoration: 'none', fontSize: '0.95rem', fontWeight: 600, padding: '0.5rem 0.75rem', background: s.card, border: `1px solid ${s.muted}`, borderRadius: 8 }}>
+        ← Kassa
+      </Link>
+      <Link to="/admin" style={{ color: s.text, textDecoration: 'none', fontSize: '0.95rem', fontWeight: 600, padding: '0.5rem 0.75rem', background: s.card, border: `1px solid ${s.muted}`, borderRadius: 8 }}>
+        Admin
+      </Link>
+    </div>
+  )
+
   return (
-    <div style={{ minHeight: '100vh', background: s.bg, padding: '0.75rem', boxSizing: 'border-box', overflowX: 'hidden', minWidth: 0 }}>
-      <div className="no-print" style={{ maxWidth: 900, margin: '0 auto', width: '100%', minWidth: 0, paddingLeft: '0.25rem', paddingRight: '0.25rem', boxSizing: 'border-box' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-          <Link to={PROJECT_ROUTES['k2-galerie'].kassa} style={{ color: s.muted, textDecoration: 'none', fontSize: '0.9rem' }}>
-            ← Kassa
-          </Link>
-          <span style={{ color: s.muted }}>|</span>
-          <Link to="/admin" style={{ color: s.muted, textDecoration: 'none', fontSize: '0.9rem' }}>Admin</Link>
-        </div>
+    <div className="kassabuch-page" style={{ minHeight: '100vh', background: s.bg, padding: '0.75rem', paddingTop: 'max(0.75rem, env(safe-area-inset-top))', boxSizing: 'border-box', overflowX: 'hidden', minWidth: 0 }}>
+      <div className="no-print kassabuch-content" style={{ maxWidth: 900, margin: '0 auto', width: '100%', minWidth: 0, paddingLeft: '0.25rem', paddingRight: '0.25rem', boxSizing: 'border-box' }}>
+        <div style={{ marginBottom: '1.5rem' }}>{navLinks}</div>
 
         <h1 style={{ fontSize: '1.5rem', color: s.text, marginBottom: '0.25rem' }}>📒 Kassabuch</h1>
         <p style={{ color: s.muted, marginBottom: '1rem', fontSize: '0.95rem' }}>
@@ -181,7 +186,7 @@ export default function KassabuchPage() {
         </div>
 
         <div style={{ background: s.card, borderRadius: s.radius, boxShadow: s.shadow, overflowX: 'auto', WebkitOverflowScrolling: 'touch', width: '100%', maxWidth: '100%' }}>
-          <table style={{ width: '100%', minWidth: 320, borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+          <table className="kassabuch-table" style={{ width: '100%', minWidth: 320, borderCollapse: 'collapse', fontSize: '0.9rem' }}>
             <thead>
               <tr style={{ background: '#f5f4f2', color: s.text }}>
                 <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', whiteSpace: 'nowrap' }}>Datum</th>
@@ -196,11 +201,11 @@ export default function KassabuchPage() {
                 .filter(e => (!von || e.datum >= von) && (!bis || e.datum <= bis))
                 .map(e => (
                   <tr key={e.id} style={{ borderTop: '1px solid #eee' }}>
-                    <td style={{ padding: '0.75rem' }}>{e.datum}</td>
-                    <td style={{ padding: '0.75rem' }}>{getKassabuchArtLabel(e.art)}</td>
-                    <td style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 600 }}>{e.betrag.toFixed(2)} €</td>
-                    <td style={{ padding: '0.75rem', color: s.muted }}>{(e.verwendungszweck || '').slice(0, 40)}{(e.verwendungszweck?.length || 0) > 40 ? '…' : ''}</td>
-                    <td style={{ padding: '0.75rem' }}>
+                    <td style={{ padding: '0.75rem', color: s.text }}>{e.datum}</td>
+                    <td style={{ padding: '0.75rem', color: s.text }}>{getKassabuchArtLabel(e.art)}</td>
+                    <td style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 600, color: s.text }}>{e.betrag.toFixed(2)} €</td>
+                    <td style={{ padding: '0.75rem', color: '#5c5650' }}>{(e.verwendungszweck || '').slice(0, 40)}{(e.verwendungszweck?.length || 0) > 40 ? '…' : ''}</td>
+                    <td style={{ padding: '0.75rem', color: s.text }}>
                       {e.belegImage ? <span title="Belegfoto">📷</span> : null}
                       {e.belegQrText ? <span title={e.belegQrText.slice(0, 100)}>📄</span> : null}
                       {!e.belegImage && !e.belegQrText ? '–' : null}
@@ -215,9 +220,31 @@ export default function KassabuchPage() {
         </div>
       </div>
 
+      {/* Mobile: Retour-Kassa/Admin fixiert unten, gut erreichbar; Tabelle lesbar (dunkle Schrift) */}
       <style>{`
         @media print {
           .no-print { display: none !important; }
+        }
+        @media (max-width: 768px) {
+          .kassabuch-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: ${s.card};
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.12);
+            padding: 0.75rem 1rem;
+            padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+            padding-left: max(1rem, env(safe-area-inset-left));
+            padding-right: max(1rem, env(safe-area-inset-right));
+            z-index: 50;
+            justify-content: center;
+            gap: 1rem;
+          }
+          .kassabuch-content { padding-bottom: 5rem !important; }
+          .kassabuch-table { font-size: 0.95rem !important; }
+          .kassabuch-table td { color: #1c1a17 !important; }
+          .kassabuch-table th { color: #1c1a17 !important; }
         }
       `}</style>
     </div>
