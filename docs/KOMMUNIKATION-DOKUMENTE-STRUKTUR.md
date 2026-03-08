@@ -83,6 +83,7 @@
 | **Ansprache Künstler:in/Verein** | docs/KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md |
 | **Flyer / Handout** | docs/KOMMUNIKATION-FLYER-HANDOUT.md |
 | **E-Mail-Vorlagen** | docs/KOMMUNIKATION-EMAIL-VORLAGEN.md |
+| **Kampagne (alle Vorlagen hinterlegt)** | docs/kampagne-marketing-strategie/00-INDEX.md → Abschnitt „Kommunikations-Vorlagen (Phase 1)“ |
 | **Kampagne / Strategie** | docs/kampagne-marketing-strategie/00-INDEX.md |
 | **Was als Nächstes (Vision)** | docs/VISION-UMSETZEN-NÄCHSTE-SCHRITTE.md |
 | **Mehrsprachigkeit** | docs/MEHRSPRACHIGKEIT.md · docs/MEHRSPRACHIGKEIT-PLAN.md |

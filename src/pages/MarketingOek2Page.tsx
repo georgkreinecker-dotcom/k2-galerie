@@ -618,6 +618,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <p style={{ margin: '0.5rem 0 0', fontSize: '0.8rem', color: 'rgba(255,255,255,0.75)' }}>Eintrag: Name, Kurzbeschreibung, Adresse, Website, Öffnungszeiten, Kontakt.</p>
         </div>
         <p style={{ marginTop: '0.75rem', fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)' }}><strong>Braucht dich:</strong> <strong>2</strong> Google Business anlegen · <strong>3</strong> Social Bio/Post (Doc §3) · <strong>6</strong> Presse versenden (Vorlage oben) · <strong>7</strong> Verzeichnisse eintragen (Liste oben).</p>
+        <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.88)' }}><strong>Kommunikations-Vorlagen (Phase 1):</strong> Ansprache Künstler:in/Verein, Flyer/Handout, E-Mail (nach Kauf, Einladung) – alle als bearbeitbare Dokumente in der <strong>Kampagne</strong> hinterlegt. Einstieg: <code style={{ fontSize: '0.82em', color: '#5ffbf1' }}>docs/KOMMUNIKATION-DOKUMENTE-STRUKTUR.md</code> · Kampagne-Index: <code style={{ fontSize: '0.82em', color: '#5ffbf1' }}>docs/kampagne-marketing-strategie/00-INDEX.md</code> → Abschnitt „Kommunikations-Vorlagen“.</p>
       </section>
       {/* Eröffnung K2 + ök2 + VK2 – Marketinglinie, gemeinsame Lounge */}
       <section id="mok2-eroeffnung-k2-oek2" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>

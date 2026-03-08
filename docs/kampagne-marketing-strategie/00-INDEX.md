@@ -17,6 +17,19 @@
 
 ---
 
+## Kommunikations-Vorlagen (Phase 1 – bearbeitbare Dokumente)
+
+| Dokument | Inhalt |
+|----------|--------|
+| [KOMMUNIKATION-DOKUMENTE-STRUKTUR.md](../KOMMUNIKATION-DOKUMENTE-STRUKTUR.md) | **Einstieg:** Welches Dokument wofür, Sportwagenmodus, was fertig, Verknüpfungen. |
+| [KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md](../KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md) | Ansprache A (Künstler:in/ök2), B (Verein/VK2); nur [Anrede/Name] ersetzen. |
+| [KOMMUNIKATION-FLYER-HANDOUT.md](../KOMMUNIKATION-FLYER-HANDOUT.md) | Flyer/Handout eine Seite – Text, QR, Kontakt; druckfertig. |
+| [KOMMUNIKATION-EMAIL-VORLAGEN.md](../KOMMUNIKATION-EMAIL-VORLAGEN.md) | E-Mail A (nach Lizenzkauf), B (Einladung zum Test); später automatisierbar. |
+
+**Eine Quelle pro Zweck.** Alle in docs/ bearbeitbar; Kampagne-Index = Einstieg. In der App: mök2 → Sichtbarkeit & Werbung (dort verlinkt).
+
+---
+
 ## Weitere Papiere der Kampagne (Referenz)
 
 | Dokument | Inhalt |
