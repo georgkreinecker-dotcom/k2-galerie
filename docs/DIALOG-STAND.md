@@ -4,6 +4,15 @@
 
 ---
 
+## Datum: 08.03.26 – Neubewertung Programmierarbeit und Marktwert in mök2
+
+- **Stand:** In mök2 (Marketing ök2) gibt es eine **Neubewertung (März 2026)** als eigene Sektion im Kapitel „Bewertung & Lizenzen“. Alte Bewertung (Tabelle 188.000–498.000 €) bleibt unverändert.
+- **Was zuletzt gemacht:** Sektion **„Neubewertung Programmierarbeit und Marktwert (März 2026)“** in MarketingOek2Page eingefügt: Produktstand (Sportwagenmodus, Lebenszyklus, Multi-Tenant startklar, 42 Tests, Doku). Wiederbeschaffungswert **bestätigt im Rahmen 188.000–498.000 €**; Marktwert unverändert (Zahlungsbereitschaft, realistische Lizenzgebühren). Verweis auf Team-Hebel / WIR-PROZESS (tatsächlicher Aufwand grob 200 h). Sidebar mök2 um „Neubewertung (März 2026)“ ergänzt (mok2Structure.ts).
+- **Nächster Schritt:** Commit + Push. Optional: in mök2 „Als PDF drucken“ prüfen.
+- **Wo nachlesen:** src/pages/MarketingOek2Page.tsx (id mok2-neubewertung-2026), mök2 → Bewertung & Lizenzen.
+
+---
+
 ## Datum: 08.03.26 – Standard in Doku und für Informatiker
 
 - **Stand:** Erreichter Standard (Sportwagenmodus, Startklar) ist jetzt klar in Doku und im Einstieg für Informatiker verankert. Commit: 64b0b83 ✅ auf GitHub.

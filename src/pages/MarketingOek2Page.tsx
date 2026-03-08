@@ -980,6 +980,19 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <strong>Hinweis:</strong> Stundensätze orientieren sich an Freelancer/kleine Agentur (AT/DE). Je nach Region und Aufwand anpassbar. Gesamtsumme = Wiederbeschaffungswert („was müsste man zahlen, um das neu bauen zu lassen“), nicht das eigene Einkommen aus der Entwicklung – z. B. für Partner, Investoren, interne Rechenschaft.
         </p>
 
+        <h3 id="mok2-neubewertung-2026" style={{ fontSize: '1.1rem', color: '#5ffbf1', marginTop: '1.75rem', marginBottom: '0.5rem' }}>Neubewertung Programmierarbeit und Marktwert (März 2026)</h3>
+        <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', marginBottom: '0.75rem', lineHeight: 1.55 }}>
+          Stand des Produkts: <strong>Sportwagenmodus abgeschlossen</strong>; <strong>Lebenszyklus Klient durchgängig</strong> (Geburt → Aktives Leben → Sterben) für alle Mandanten; <strong>Multi-Tenant SaaS startklar</strong> (K2, ök2, VK2, dynamische Lizenzkunden mit tenantId, Checkout → Erfolgsseite → /g/:tenantId, Admin mit ?tenantId=, „Lizenz beenden“ inkl. Blob-Löschung). <strong>42 automatisierte Tests</strong> für kritische Pfade; umfangreiche Doku (Lebenszyklus-QS, Einstieg für Informatiker, Produkt-Standard). Technisch startklar bis auf Stripe-Go-Live (3 Schritte).
+        </p>
+        <p style={{ marginBottom: '0.75rem', fontWeight: 600, color: '#5ffbf1' }}>Programmierarbeit (Wiederbeschaffungswert)</p>
+        <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', marginBottom: '0.75rem', lineHeight: 1.55 }}>
+          Die Neubewertung <strong>bestätigt den Rahmen 188.000 – 498.000 €</strong> (siehe Tabelle oben). Der produktive Umfang ist gewachsen: Lebenszyklus vollständig abgebildet, Lizenzen und Mandantenverwaltung durchgängig, Qualität durch Tests und Prozess abgesichert. Wiederbeschaffung = was ein professionelles Team kosten würde, das diese Lösung neu baut – unverändert die richtige Bezugsgröße für Bewertung, Partner, Investoren. <em>Tatsächlicher Aufwand</em> im Projekt: eine Person ohne Programmier-Vorkenntnisse, in grob 200 Stunden (mit AI-Unterstützung und Unternehmererfahrung) – siehe Team-Hebel, WIR-PROZESS.
+        </p>
+        <p style={{ marginBottom: '0.75rem', fontWeight: 600, color: '#5ffbf1' }}>Marktwert</p>
+        <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', marginBottom: '1rem', lineHeight: 1.55 }}>
+          Unverändert: Marktwert = Zahlungsbereitschaft der Zielgruppe (Künstler:innen, kleine Galerien, Vereine) und Vergleichspreise am Markt. Daraus leiten sich die <strong>realistischen Lizenzgebühren</strong> ab (Basic, Pro, Pro+, VK2) – siehe Abschnitt unten. Das gewachsene Produkt (Lebenszyklus, Multi-Tenant, Startklar) stärkt die Position für Vertrieb und Preisgestaltung; die Orientierung an marktgerechten Sätzen bleibt.
+        </p>
+
         <h3 id="mok2-marktwert" style={{ fontSize: '1.1rem', color: '#5ffbf1', marginTop: '1.5rem', marginBottom: '0.5rem' }}>Realistische Lizenzgebühren (Orientierung für die Preisgestaltung)</h3>
         <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', marginBottom: '0.75rem', lineHeight: 1.55 }}>
           Die Lizenzgebühren sollen <strong>marktgerecht und für die Zielgruppe (Künstler:innen, kleine Galerien, Vereine) plausibel</strong> sein. Künstler:innen haben oft begrenzte Software-Budgets; zu hohe Preise schrecken ab, zu niedrige wirken unseriös oder decken Betrieb nicht. Grundlage: Marktcheck (Vergleichspreise, Zahlungsbereitschaft) – siehe <code>docs/MARKTCHECK-PREISE-BASIC-PRO-VERGLEICH.md</code>.
