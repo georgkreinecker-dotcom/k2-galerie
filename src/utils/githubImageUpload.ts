@@ -98,11 +98,13 @@ export async function uploadImageToGitHub(
   return `/img/${subfolder}/${filename}`
 }
 
-/** Lädt ein Video (File-Objekt) via GitHub API hoch. Gibt die öffentliche URL zurück. */
+/** Lädt ein Video (File-Objekt) via GitHub API hoch. Gibt die öffentliche URL zurück.
+ *  subfolder: 'k2' | 'oeffentlich' – für ök2-Demo dauerhafte URL statt blob (blob ist nur session-gebunden). */
 export async function uploadVideoToGitHub(
   file: File,
   filename: string = 'virtual-tour.mp4',
-  onStatus?: (msg: string) => void
+  onStatus?: (msg: string) => void,
+  subfolder: 'k2' | 'oeffentlich' = 'k2'
 ): Promise<string> {
   const token = getToken()
   if (!token) throw new Error('Kein GitHub Token konfiguriert')
@@ -123,7 +125,7 @@ export async function uploadVideoToGitHub(
 
   onStatus?.('Video wird an Server gesendet…')
 
-  const path = `public/img/k2/${filename}`
+  const path = `public/img/${subfolder}/${filename}`
 
   onStatus?.('Prüfe vorhandene Datei…')
   const sha = await getFileSha(path, token)
@@ -152,6 +154,6 @@ export async function uploadVideoToGitHub(
   }
 
   onStatus?.('✅ Hochgeladen – Vercel deployt (~2 Min)')
-  return `/img/k2/${filename}`
+  return `/img/${subfolder}/${filename}`
 }
 

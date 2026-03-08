@@ -4,6 +4,15 @@
 
 ---
 
+## Datum: 08.03.26 – ök2: Virtual-Tour-Video bleibt sichtbar (kein Platzhalter mehr)
+
+- **Thema:** Georg: Im ök2 ist nach dem Speichern das Video zum virtuellen Rundgang in der Galerie vorhanden und kann angesehen werden – aber nach kurzer Zeit ist nur noch ein Platzhalter da.
+- **Ursache:** Das Video wurde nur als **blob:-URL** gespeichert. Blob-URLs sind nur in derselben Session/Tab gültig; danach wird die URL ungültig und die Galerie zeigt den Platzhalter.
+- **Erledigt:** (1) **uploadVideoToGitHub** um optionalen Subfolder `'oeffentlich'` erweitert (githubImageUpload.ts). (2) **Beim Speichern (Schritt 3):** Wenn Virtual-Tour-Video eine blob-URL ist, wird es jetzt auch für **ök2** hochgeladen (nicht nur K2/VK2); gespeichert wird die dauerhafte URL `/img/oeffentlich/virtual-tour.mp4`. (3) **Beim Auswählen des Videos:** Für ök2 wird das Video sofort hochgeladen und die dauerhafte URL gesetzt (wie bei K2/VK2), damit es in der Galerie dauerhaft sichtbar bleibt. Tests 42/42 ✅.
+- **Nächster Schritt:** Commit + Push. Georg: ök2 → Design → Virtual-Tour-Video wählen bzw. speichern → Galerie ansehen → Video sollte dauerhaft sichtbar bleiben.
+
+---
+
 ## Datum: 08.03.26 – Stammdaten Galerie: Öffnungszeiten-Feld ergänzt
 
 - **Thema:** Georg: „Es fehlen noch immer die Öffnungszeiten in Stammdaten Galerie – habe ich schon 5 mal gemacht.“

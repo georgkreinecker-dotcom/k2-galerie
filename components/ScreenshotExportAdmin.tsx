@@ -1916,25 +1916,22 @@ function ScreenshotExportAdmin() {
       const nextLocal = { ...pageContent, virtualTourVideo: localUrl, virtualTourVideoSizeBytes: f.size }
       setPageContent(nextLocal)
       setPageContentGalerie(nextLocal, tenantId)
-      if (!tenant.isOeffentlich) {
-        setVideoUploadStatus('uploading')
-        setVideoUploadMsg('Video wird hochgeladen… Bitte warten.')
-        try {
-          const { uploadVideoToGitHub } = await import('../src/utils/githubImageUpload')
-          const url = await uploadVideoToGitHub(f, 'virtual-tour.mp4', (msg) => setVideoUploadMsg(msg))
-          const nextVercel = { ...nextLocal, virtualTourVideo: url }
-          setPageContent(nextVercel)
-          setPageContentGalerie(nextVercel, tenant.isVk2 ? 'vk2' : undefined)
-          localStorage.removeItem('k2-last-publish-signature')
-          setVideoUploadStatus('done')
-          setVideoUploadMsg('✅ Video hochgeladen – in ca. 2 Min. überall sichtbar.')
-        } catch {
-          setVideoUploadStatus('error')
-          setVideoUploadMsg('Upload fehlgeschlagen – Video nur auf diesem Gerät sichtbar.')
-        }
-      } else {
+      // Upload für dauerhafte URL (blob ist nur session-gebunden → Video verschwindet sonst nach kurzer Zeit)
+      setVideoUploadStatus('uploading')
+      setVideoUploadMsg(tenant.isOeffentlich ? 'Video wird gespeichert…' : 'Video wird hochgeladen… Bitte warten.')
+      try {
+        const { uploadVideoToGitHub } = await import('../src/utils/githubImageUpload')
+        const subfolder = tenant.isOeffentlich ? 'oeffentlich' : 'k2'
+        const url = await uploadVideoToGitHub(f, 'virtual-tour.mp4', (msg) => setVideoUploadMsg(msg), subfolder)
+        const nextVercel = { ...nextLocal, virtualTourVideo: url }
+        setPageContent(nextVercel)
+        setPageContentGalerie(nextVercel, tenantId)
+        if (!tenant.isOeffentlich) localStorage.removeItem('k2-last-publish-signature')
         setVideoUploadStatus('done')
-        setVideoUploadMsg('✅ Video gespeichert.')
+        setVideoUploadMsg(tenant.isOeffentlich ? '✅ Video gespeichert – bleibt in der Galerie sichtbar.' : '✅ Video hochgeladen – in ca. 2 Min. überall sichtbar.')
+      } catch {
+        setVideoUploadStatus('error')
+        setVideoUploadMsg('Upload fehlgeschlagen – Video nur auf diesem Gerät sichtbar.')
       }
     } catch {
       setVideoUploadStatus('error')
@@ -3384,7 +3381,8 @@ function ScreenshotExportAdmin() {
   }
 
   // Content-Generatoren im App-Design-Stil – je Kontext nur eigene Daten (K2 / ök2 / VK2)
-  const generatePresseaussendungContent = (event: any) => {
+  // variant: 'neutral' = ohne Personendaten/Kontakt (für neutrale Information), 'lokal' = mit Personenstory und Kontakt
+  const generatePresseaussendungContent = (event: any, variant: 'neutral' | 'lokal' = 'lokal') => {
     const eventTypeLabels: Record<string, string> = {
       galerieeröffnung: 'Galerieeröffnung',
       vernissage: 'Vernissage',
@@ -3403,6 +3401,13 @@ function ScreenshotExportAdmin() {
       const ort = event.location || adresse || ''
       const kuenstlerListe = mitglieder.length > 0 ? mitglieder.map((m: any) => m.name).join(', ') : 'die Vereinsmitglieder'
       const desc = event.description || 'Aktuelle Werke der Vereinsmitglieder in einer gemeinsamen Schau.'
+      const kontaktBlock = variant === 'neutral'
+        ? ['Kontakt für Rückfragen und Bildmaterial: über den Verein.', ``]
+        : [
+            verein.email ? `E-Mail:  ${verein.email}` : '', (verein as any).phone ? `Telefon: ${(verein as any).phone}` : '',
+            adresse ? `Adresse: ${adresse}` : '', ``,
+            verein.website || '', ``
+          ]
       return {
         title: `PRESSEAUSSENDUNG – ${event.title} | ${gName}`,
         content: [
@@ -3415,9 +3420,7 @@ function ScreenshotExportAdmin() {
           desc, ``,
           `${kuenstlerListe} zeigen aktuelle Werke – ein Querschnitt durch das Schaffen des Vereins.`, ``,
           `───────────────────────────────────────`, `KONTAKT & BILDMATERIAL`, `───────────────────────────────────────`, ``,
-          verein.email ? `E-Mail:  ${verein.email}` : '', (verein as any).phone ? `Telefon: ${(verein as any).phone}` : '',
-          adresse ? `Adresse: ${adresse}` : '', ``,
-          verein.website || '', ``,
+          ...kontaktBlock,
           `– Ende der Presseaussendung –`,
         ].filter(l => l !== null && l !== undefined).join('\n')
       }
@@ -3431,6 +3434,45 @@ function ScreenshotExportAdmin() {
     const pBio = georgData?.bio || 'Keramik und Skulptur – handgeformte Objekte mit starker plastischer Präsenz.'
     const gName = galleryData.name || 'K2 Galerie'
     const adresse = getProminenteAdresseFormatiert(galleryData, martinaData, georgData)
+
+    const kuenstlerBlock = variant === 'lokal' ? [
+      `Die ${gName} präsentiert mit dieser ${evType} eine Zusammenschau`,
+      `zweier künstlerischer Positionen, die in Dialog miteinander treten.`,
+      `${mName} und ${pName} schaffen Werke, die sich gegenseitig`,
+      `spiegeln und bereichern – zwischen Fläche und Raum, zwischen`,
+      `malerischer Setzung und plastischer Form.`,
+      ``,
+      `───────────────────────────────────────`,
+      `DIE KÜNSTLER:INNEN`,
+      `───────────────────────────────────────`,
+      ``,
+      `${mName.toUpperCase()}`,
+      mBio,
+      ``,
+      `${pName.toUpperCase()}`,
+      pBio,
+      ``,
+    ] : []
+
+    const kontaktBlockK2 = variant === 'neutral'
+      ? [
+          `Kontakt für Rückfragen und Bildmaterial: über die Galerie.`,
+          ``,
+          galleryData.website || galleryData.internetadresse ? `${galleryData.website || galleryData.internetadresse}` : '',
+          ``,
+        ]
+      : [
+          `Für Rückfragen, Interviewanfragen und Bildmaterial:`,
+          ``,
+          galleryData.email ? `E-Mail:  ${galleryData.email}` : '',
+          galleryData.phone ? `Telefon: ${galleryData.phone}` : '',
+          adresse ? `Adresse: ${adresse}` : '',
+          galleryData.openingHours ? `Öffnungszeiten: ${galleryData.openingHours}` : '',
+          ``,
+          `www.k2-galerie.at`,
+          ``,
+        ]
+
     return {
       title: `PRESSEAUSSENDUNG – ${event.title} | ${gName}`,
       content: [
@@ -3452,35 +3494,12 @@ function ScreenshotExportAdmin() {
         ``,
         desc,
         ``,
-        `Die ${gName} präsentiert mit dieser ${evType} eine Zusammenschau`,
-        `zweier künstlerischer Positionen, die in Dialog miteinander treten.`,
-        `${mName} und ${pName} schaffen Werke, die sich gegenseitig`,
-        `spiegeln und bereichern – zwischen Fläche und Raum, zwischen`,
-        `malerischer Setzung und plastischer Form.`,
-        ``,
-        `───────────────────────────────────────`,
-        `DIE KÜNSTLER:INNEN`,
-        `───────────────────────────────────────`,
-        ``,
-        `${mName.toUpperCase()}`,
-        mBio,
-        ``,
-        `${pName.toUpperCase()}`,
-        pBio,
-        ``,
+        ...kuenstlerBlock,
         `───────────────────────────────────────`,
         `KONTAKT & BILDMATERIAL`,
         `───────────────────────────────────────`,
         ``,
-        `Für Rückfragen, Interviewanfragen und Bildmaterial:`,
-        ``,
-        galleryData.email ? `E-Mail:  ${galleryData.email}` : '',
-        galleryData.phone ? `Telefon: ${galleryData.phone}` : '',
-        adresse ? `Adresse: ${adresse}` : '',
-        galleryData.openingHours ? `Öffnungszeiten: ${galleryData.openingHours}` : '',
-        ``,
-        `www.k2-galerie.at`,
-        ``,
+        ...kontaktBlockK2,
         `– Ende der Presseaussendung –`,
       ].filter(l => l !== null && l !== undefined).join('\n')
     }
@@ -3839,7 +3858,7 @@ ${'='.repeat(60)}
     })
   }
 
-  const generateEditablePresseaussendungPDF = (presseaussendung: any, event: any) => {
+  const generateEditablePresseaussendungPDF = (presseaussendung: any, event: any, nameSuffix?: string) => {
     let blob: Blob | null = null // WICHTIG: Außerhalb try-catch definieren
     let presseDocId: string | null = null
     const isVk2 = tenant.isVk2
@@ -3984,7 +4003,7 @@ ${'='.repeat(60)}
       presseDocId = `pr-editable-presseaussendung-${eid}-${Date.now()}`
       const pressePlaceholder = {
         id: presseDocId,
-        name: getNextWerbematerialVorschlagName(eid, etitle, 'presse', 'Presseaussendung (bearbeitbar)'),
+        name: getNextWerbematerialVorschlagName(eid, etitle, 'presse', 'Presseaussendung' + (nameSuffix || '') + ' (bearbeitbar)'),
         type: 'text/html',
         size: blob.size,
         data: '',
@@ -9622,16 +9641,17 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             setTimeout(() => setImageUploadStatus(null), 5000)
                           }
                         }
-                        // Virtual-Tour-Video: blob vor Speichern hochladen, damit es in „Galerie ansehen“ abspielbar ist (nur K2/VK2)
+                        // Virtual-Tour-Video: blob vor Speichern hochladen → dauerhafte URL (blob ist nur session-gebunden, verschwindet sonst nach kurzer Zeit)
                         const videoSrc = contentToSave.virtualTourVideo
-                        if (videoSrc?.startsWith('blob:') && (context === 'k2' || context === 'vk2')) {
+                        if (videoSrc?.startsWith('blob:')) {
                           setImageUploadStatus('⏳ Video wird gespeichert…')
                           try {
                             const res = await fetch(videoSrc)
                             const videoBlob = await res.blob()
                             const videoFile = new File([videoBlob], 'virtual-tour.mp4', { type: videoBlob.type || 'video/mp4' })
                             const { uploadVideoToGitHub } = await import('../src/utils/githubImageUpload')
-                            const videoUrl = await uploadVideoToGitHub(videoFile, 'virtual-tour.mp4', (msg) => setImageUploadStatus('⏳ ' + msg))
+                            const subfolder = context === 'oeffentlich' ? 'oeffentlich' : 'k2'
+                            const videoUrl = await uploadVideoToGitHub(videoFile, 'virtual-tour.mp4', (msg) => setImageUploadStatus('⏳ ' + msg), subfolder)
                             contentToSave = { ...contentToSave, virtualTourVideo: videoUrl }
                             setImageUploadStatus(null)
                           } catch (_) {
@@ -16801,16 +16821,28 @@ ${name}`
                                 typ: 'presse' as const,
                                 icon: '📰',
                                 titel: 'Presseaussendung',
-                                beschreibung: 'Für dieses Event – Zeitungen & Medien. Medienkit & allgemeine Texte: Presse & Medien.',
+                                beschreibung: 'Neutral (ohne Personendaten) oder lokal (mit Personenstory). Medienkit: Presse & Medien.',
                                 docs: byTyp['presse'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
-                                onErstellen: () => {
-                                  const ev = events.find((e: any) => e.id === event.id)
-                                  if (!ev) return
-                                  const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
-                                  generateEditablePresseaussendungPDF(evSug?.presseaussendung || generatePresseaussendungContent(ev), ev)
-                                }
+                                erstellenVarianten: [
+                                  {
+                                    label: 'Neutral (ohne Personendaten)',
+                                    onErstellen: () => {
+                                      const ev = events.find((e: any) => e.id === event.id)
+                                      if (!ev) return
+                                      generateEditablePresseaussendungPDF(generatePresseaussendungContent(ev, 'neutral'), ev, ' (neutral)')
+                                    }
+                                  },
+                                  {
+                                    label: 'Lokal (mit Personenstory)',
+                                    onErstellen: () => {
+                                      const ev = events.find((e: any) => e.id === event.id)
+                                      if (!ev) return
+                                      generateEditablePresseaussendungPDF(generatePresseaussendungContent(ev, 'lokal'), ev, ' (lokal)')
+                                    }
+                                  }
+                                ]
                               },
                               {
                                 typ: 'social' as const,
@@ -16956,8 +16988,34 @@ ${name}`
                                           </div>
                                         )}
 
-                                        {/* Erstellen-Button */}
-                                        {karte.onErstellen && (
+                                        {/* Erstellen-Button(s) – ein Button oder zwei bei Presse (neutral/lokal) */}
+                                        {(karte as any).erstellenVarianten ? (
+                                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                            {(karte as any).erstellenVarianten.map((v: { label: string, onErstellen: () => void }, idx: number) => (
+                                              <button
+                                                key={idx}
+                                                type="button"
+                                                onClick={v.onErstellen}
+                                                style={{
+                                                  padding: '0.55rem 1rem',
+                                                  background: hatDokumente ? s.bgCard : '#b54a1e',
+                                                  border: `1.5px solid ${hatDokumente ? s.accent + '44' : '#8f3a16'}`,
+                                                  borderRadius: '8px',
+                                                  cursor: 'pointer',
+                                                  fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)',
+                                                  color: hatDokumente ? s.accent : '#ffffff',
+                                                  fontWeight: '700',
+                                                  textAlign: 'left',
+                                                  transition: 'background 0.15s'
+                                                }}
+                                                onMouseEnter={(e) => { e.currentTarget.style.background = hatDokumente ? `${s.accent}18` : '#d4622a' }}
+                                                onMouseLeave={(e) => { e.currentTarget.style.background = hatDokumente ? s.bgCard : '#b54a1e' }}
+                                              >
+                                                {hatDokumente ? `↩ ${v.label}` : `➕ ${v.label}`}
+                                              </button>
+                                            ))}
+                                          </div>
+                                        ) : karte.onErstellen ? (
                                           <button
                                             type="button"
                                             onClick={karte.onErstellen}
@@ -16978,7 +17036,7 @@ ${name}`
                                           >
                                             {hatDokumente ? `↩ Neu erstellen` : `➕ Jetzt erstellen – sofort fertig`}
                                           </button>
-                                        )}
+                                        ) : null)}
                                         {/* Druckversionen: extra Dokument hinzufügen */}
                                         {karte.typ === 'druckversion' && (
                                           <button
