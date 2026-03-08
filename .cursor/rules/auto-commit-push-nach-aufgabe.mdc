@@ -33,6 +33,10 @@ alwaysApply: true
 - Auf Deutsch
 - Kein technisches Kauderwelsch
 
+## ro5-Absicherung
+
+**Nach jedem Kapitel / jeder in sich abgeschlossenen Einheit** selbständig commit + push – nicht erst am Ende einer großen Aufgabe. Bei ro5 (Crash/Reopen) geht so nichts verloren. Joe macht es automatisch, Georg muss nicht erinnern.
+
 ## Warum
 
 Ohne Commit+Push sind Änderungen nur lokal auf dem Mac.
