@@ -4,6 +4,15 @@
 
 ---
 
+## Datum: 08.03.26 – Vermarktung automatisiert wie Lebenszyklus (Sportwagenmodus)
+
+- **Stand:** Vermarktungsstrategie = automatisiert wie der App-Lebenszyklus: ein Ablauf pro Kanal, eine Quelle, ohne große Kosten.
+- **Was zuletzt gemacht:** **docs/VERMARKTUNGSSTRATEGIE-AUTOMATISIERT-SPORTWAGENMODUS.md** erstellt: Kanäle der Kommunikation (Web, QR, Empfehlung, Lizenz/Checkout, SEO, Google Business, Social-Bio, Presse eine Vorlage + ein Verteiler, E-Mail-Signatur, Prospekt-PDF, Verzeichnisse) – je mit „Ein Ablauf / Eine Quelle“, „Was läuft automatisch“, „Kosten“. Prinzip: wie LEBENSZYKLUS (durchgängig, kein Flickenteppich). Kostenkanäle (Ads, Agentur) bewusst außerhalb Standard. 00-INDEX und Kampagnen-Mappe ergänzt.
+- **Nächster Schritt:** Commit + Push. Optional: Checkliste „Vermarktung einmal einrichten“ aus dem Doc abarbeiten.
+- **Wo nachlesen:** docs/VERMARKTUNGSSTRATEGIE-AUTOMATISIERT-SPORTWAGENMODUS.md.
+
+---
+
 ## Datum: 08.03.26 – Plan Marktdurchdringung (Eferding → Welt)
 
 - **Stand:** Technische Überlegung für **wo, wie, wann** starten (Eferding) und Marktdurchdringung bis „Welt“ ist als klarer Plan dokumentiert.
