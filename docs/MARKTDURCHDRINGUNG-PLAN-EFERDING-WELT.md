@@ -7,6 +7,18 @@
 
 ---
 
+## Ziel: Lizenzen Jahr 1–3
+
+| Jahr | Ziel: verkaufte Lizenzen |
+|------|---------------------------|
+| **Jahr 1** | **1.000** |
+| **Jahr 2** | **10.000** |
+| **Jahr 3** | **100.000** |
+
+Skalierung 10× pro Jahr. Technik und Vermarktung (Sportwagenmodus, automatisierte Kanäle, Kosten können mit Einnahmen mitsteigen) sind darauf ausgerichtet. Meilensteine M1–M5 und der Plan Eferding → Welt dienen diesem Ziel.
+
+---
+
 ## 1. Wo starten: Eferding (und unmittelbare Umgebung)
 
 **Warum Eferding als Anker:**
@@ -71,6 +83,7 @@ Die **Technik** ist bereits auf Skalierung gebaut (Multi-Tenant, tenantId, keine
 
 ## 4. Kurzfassung: Was du jetzt hast
 
+- **Ziel:** Jahr 1 = 1.000 Lizenzen, Jahr 2 = 10.000, Jahr 3 = 100.000 (10× pro Jahr).
 - **Wo:** Eferding als Startort – bewusst, kontrollierbar, medientechnisch abgedeckt.
 - **Wie (technisch):** Eine Lücke vor Start: **Stripe Go-Live (3 Schritte)**. Danach: dieselbe Technik für Eferding, Region und Welt – keine neuen Systeme.
 - **Wann:** M1 (Stripe) → M2 (erste sichtbare Aktion Eferding) → M3 (erste Lizenz/Pilot) → M4 (regional ausweiten) → M5 (keine geografische Begrenzung).

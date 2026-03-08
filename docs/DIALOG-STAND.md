@@ -4,6 +4,15 @@
 
 ---
 
+## Datum: 08.03.26 – Ziel: 1.000 / 10.000 / 100.000 Lizenzen (Jahr 1–3)
+
+- **Stand:** Georg setzt Ziel: Jahr 1 = 1.000 Lizenzen, Jahr 2 = 10.000, Jahr 3 = 100.000 (10× pro Jahr).
+- **Was zuletzt gemacht:** Ziel in MARKTDURCHDRINGUNG-PLAN-EFERDING-WELT.md aufgenommen (Abschnitt „Ziel: Lizenzen Jahr 1–3“, Tabelle + Kurzfassung). 00-INDEX-Eintrag ergänzt.
+- **Nächster Schritt:** Commit + Push.
+- **Wo nachlesen:** docs/MARKTDURCHDRINGUNG-PLAN-EFERDING-WELT.md.
+
+---
+
 ## Datum: 08.03.26 – Vermarktung automatisiert wie Lebenszyklus (Sportwagenmodus)
 
 - **Stand:** Vermarktungsstrategie = automatisiert wie der App-Lebenszyklus: ein Ablauf pro Kanal, eine Quelle, ohne große Kosten.
