@@ -45,7 +45,23 @@
 
 ---
 
+## Kommunikation & Mehrsprachigkeit (Sportwagenmodus, DE zuerst)
+
+**Prinzip:** Kommunikation nach Sportwagenmodus (ein Zweck = ein Dokument, eine Quelle). Alles zuerst auf Deutsch fertig; **Mehrsprachigkeit mitgeplant, Umsetzung erst wenn DE läuft.** Siehe docs/KOMMUNIKATION-DOKUMENTE-STRUKTUR.md, docs/MEHRSPRACHIGKEIT-PLAN.md.
+
+| # | Was | Wo / Struktur | Erledigt |
+|---|-----|----------------|----------|
+| 1 | **Kommunikations-Dokumente – Übersicht** | docs/KOMMUNIKATION-DOKUMENTE-STRUKTUR.md: Sportwagenmodus, welches Dokument wofür, was fertig, was fehlt. | [ ] |
+| 2 | **Fehlende Vorlagen (DE) ausarbeiten** | Nacheinander: Ansprache Künstler:in/Verein → Flyer/Handout → E-Mail-Vorlagen (nach Kauf/Einladung). KOMMUNIKATION-DOKUMENTE-STRUKTUR §3. | [ ] |
+| 3 | **Mehrsprachigkeit – mitgeplant** | docs/MEHRSPRACHIGKEIT-PLAN.md: Reihenfolge „DE zuerst, dann pro Vorlage bei Bedarf zweite Sprache“. Umsetzung nach DE. | [ ] |
+| 4 | **Mehrsprachigkeit App (später)** | Erst wenn DE-UI steht: strings.en.ts, Sprachumschalter. MEHRSPRACHIGKEIT.md + MEHRSPRACHIGKEIT-PLAN. | [ ] |
+
+**Nächster Schritt:** Erstes fehlendes Stück ausarbeiten (z. B. Ansprache Künstler:in/Verein).
+
+---
+
 ## Kurz
 
 - **Blockade für ersten Verkauf:** Nur M1 (3 Schritte Stripe). Alles andere steht.
 - **Nach M1:** M2 setzen (eine Presseinfo oder QR/Flyer oder erste Ansprache) → dann M3, M4, M5 im Takt mit der Vision (1.000 / 10.000 / 100.000).
+- **Kommunikation & Mehrsprachigkeit:** Kommunikation nach Sportwagenmodus (ein Zweck = ein Dokument); DE zuerst ausarbeiten, Mehrsprachigkeit mitgeplant, kommt erst wenn DE läuft. docs/KOMMUNIKATION-DOKUMENTE-STRUKTUR.md, docs/MEHRSPRACHIGKEIT-PLAN.md.

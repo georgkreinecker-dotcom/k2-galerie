@@ -4,6 +4,15 @@
 
 ---
 
+## Datum: 08.03.26 – Kommunikations-Struktur Sportwagenmodus; Mehrsprachigkeit mitgeplant
+
+- **Stand:** Start mit **Kommunikations-Struktur nach Sportwagenmodus** (ein Zweck = ein Dokument, eine Quelle). **Mehrsprachigkeit mitgeplant, kommt erst wenn in Deutsch alles läuft.** Georg hat schon gepusht.
+- **Was zuletzt gemacht:** (1) **KOMMUNIKATION-DOKUMENTE-STRUKTUR.md** – Abschnitt **Sportwagenmodus** ergänzt (verbindliche Regeln; Mehrsprachigkeit mitgeplant, Umsetzung nach DE). Kurzfassung angepasst. (2) **MEHRSPRACHIGKEIT-PLAN.md** – Abschnitt **Verbindliche Reihenfolge**: „Mitgeplant, kommt erst wenn in Deutsch alles läuft“; jetzt DE-Vorlagen ausarbeiten, später pro Vorlage bei Bedarf zweite Sprache. (3) DIALOG-STAND auf aktuellen Faden gebracht.
+- **Nächster Schritt:** Erstes fehlendes Stück Kommunikation ausarbeiten (z. B. **Ansprache Künstler:in/Verein** – eine Vorlage, Einladung zur Demo, Link, du fügst nur Namen/Anrede ein).
+- **Wo nachlesen:** docs/KOMMUNIKATION-DOKUMENTE-STRUKTUR.md, docs/MEHRSPRACHIGKEIT-PLAN.md.
+
+---
+
 ## Datum: 08.03.26 – Ziel: 1.000 / 10.000 / 100.000 Lizenzen (Jahr 1–3)
 
 - **Stand:** Georg setzt Ziel: Jahr 1 = 1.000 Lizenzen, Jahr 2 = 10.000, Jahr 3 = 100.000 (10× pro Jahr).
