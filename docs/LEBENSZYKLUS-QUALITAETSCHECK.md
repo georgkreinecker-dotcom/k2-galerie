@@ -34,11 +34,11 @@
 
 | Prüfpunkt | Status | Detail |
 |-----------|--------|--------|
-| „Lizenz beenden“ im Admin | ✅ | ScreenshotExportAdmin: Einstellungen → Lizenz beenden (ök2 + **dynamische Mandanten**); tenantId = dynamicTenantId \|\| oeffentlich \|\| vk2 |
+| „Lizenz beenden“ im Admin | ✅ | ScreenshotExportAdmin: Einstellungen → Lizenz beenden (ök2, **VK2**, dynamische Mandanten); tenantId = dynamicTenantId ?? oeffentlich ?? vk2 |
 | cancel-subscription API | ✅ | POST body.tenantId → wenn erlaubt (nicht k2) Blob del(); Feedback optional |
 | delete-tenant-data API | ✅ | Nur mit TENANT_DELETE_SECRET; K2 wird nie gelöscht (400); sichere tenantIds |
 | Stripe subscription.deleted | ✅ | webhook-stripe: metadata.tenantId aus Subscription, ruft delete-tenant-data mit Secret auf. **Hinweis:** Bei aktuell **mode: 'payment'** (Einmalzahlung) gibt es keine Subscription → Event kommt nur bei Abo-Modell. Bei Einmalzahlung: Kündigung nur über „Lizenz beenden“-Button. |
-| VK2 „Lizenz beenden“ | ℹ️ | Aktuell nur ök2 + dynamische Mandanten mit Button; VK2 bewusst ohne (Zeile 2041 leitet VK2 von lizenzbeenden weg). Bei Bedarf später ergänzbar. |
+| VK2 „Lizenz beenden“ | ✅ | Gleich wie ök2 und dynamische Mandanten: Button sichtbar, tenantId 'vk2' an cancel-subscription, Blob wird gelöscht. |
 
 ---
 
@@ -63,7 +63,7 @@
 ## 6. Durchgeführte Fixes (08.03.26)
 
 1. **Erfolgsseite Retry:** Bei „Lizenz noch nicht gefunden“ 2× Retry nach 1,5 s und 3 s, damit Webhook-Race abgefangen wird.
-2. **Lizenz beenden + dynamische Mandanten:** Button „Lizenz beenden“ wird auch bei **dynamicTenantId** angezeigt (nicht nur ök2); beim Aufruf wird `tenantId: tenant.dynamicTenantId || (tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)` an cancel-subscription gesendet, damit auch Lizenzkunden ihren Blob löschen können.
+2. **Lizenz beenden + dynamische Mandanten:** Button „Lizenz beenden“ wird bei **dynamicTenantId**, ök2 und **VK2** angezeigt; beim Aufruf wird `tenantId: tenant.dynamicTenantId ?? (tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)` an cancel-subscription gesendet. VK2-Redirect vom Tab „Lizenz beenden“ entfernt – ein Ablauf für alle Mandanten (außer K2).
 
 ---
 

@@ -2038,7 +2038,7 @@ function ScreenshotExportAdmin() {
 
   // ök2: Lager-Tab nicht verfügbar. VK2: Sicherheit und Lager nicht – auf Stammdaten wechseln
   useEffect(() => {
-    if (tenant.isVk2 && (settingsSubTab === 'sicherheit' || settingsSubTab === 'kassabuch' || settingsSubTab === 'lizenzbeenden')) setSettingsSubTab('stammdaten')
+    if (tenant.isVk2 && (settingsSubTab === 'sicherheit' || settingsSubTab === 'kassabuch')) setSettingsSubTab('stammdaten')
   }, [settingsSubTab])
 
   // Einstellungen: Beim Klick auf eine Karte (Meine Daten, Drucker, …) sofort den geöffneten Bereich in den sichtbaren Bereich scrollen (v. a. Handy)
@@ -12823,8 +12823,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Lizenz wählen, bezahlen – evtl. mit deinen Daten aus Einstellungen</div>
               </button>
               )}
-              {/* 2b. Lizenz beenden – ök2 oder dynamischer Mandant (K2 ohne ?tenantId= = unsere App, kein Ausstieg nötig) */}
-              {(tenant.isOeffentlich || tenant.dynamicTenantId) && (
+              {/* 2b. Lizenz beenden – ök2, VK2 oder dynamischer Mandant (K2 ohne ?tenantId= = unsere App, kein Ausstieg nötig) */}
+              {(tenant.isOeffentlich || tenant.isVk2 || tenant.dynamicTenantId) && (
               <button type="button" onClick={() => setSettingsSubTab('lizenzbeenden')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'lizenzbeenden' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'lizenzbeenden' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'lizenzbeenden' ? s.accent : `${s.accent}22` }}
@@ -14456,8 +14456,8 @@ ${name}`
               )
             })()}
 
-            {/* Lizenz beenden – 3 kurze Fragen, dann Kündigung (K2 + ök2) */}
-            {!tenant.isVk2 && settingsSubTab === 'lizenzbeenden' && (() => {
+            {/* Lizenz beenden – 3 kurze Fragen, dann Kündigung (ök2, VK2, dynamischer Mandant) */}
+            {settingsSubTab === 'lizenzbeenden' && (() => {
               const GRUND_OPTIONS = [
                 { value: '', label: '– Bitte wählen (optional)' },
                 { value: 'nicht-mehr-benötigt', label: 'Ich brauche die Lizenz nicht mehr' },
