@@ -18,6 +18,7 @@ const DOCUMENTS = [
   { id: 'komm-ansprache', name: 'Ansprache Künstler:in / Verein', file: 'KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md' },
   { id: 'komm-flyer', name: 'Flyer / Handout (eine Seite)', file: 'KOMMUNIKATION-FLYER-HANDOUT.md' },
   { id: 'komm-email', name: 'E-Mail-Vorlagen (nach Kauf, Einladung)', file: 'KOMMUNIKATION-EMAIL-VORLAGEN.md' },
+  { id: 'komm-fertig', name: 'Fertige Beispiele (redigierte Seiten)', file: 'KOMMUNIKATION-FERTIGE-BEISPIELE.md' },
 ] as const
 
 export default function KampagneMarketingStrategiePage() {

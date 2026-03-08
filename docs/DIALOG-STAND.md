@@ -6,6 +6,15 @@
 
 ---
 
+## Datum: 08.03.26 – Kampagne: Fertige Beispiele (redigierte Seiten)
+
+- **Stand:** Georg braucht **fertige Dokumente mit Text** – nicht nur Vorlagen mit Platzhaltern. In der Kampagne gibt es jetzt **„Fertige Beispiele (redigierte Seiten)“**: Flyer und alle E-Mails mit konkretem Text (info@kgm.at, 0664 1046337, „Liebe Maria“, „Martina und Georg“ etc.) – zum sofortigen Lesen und Zeigen.
+- **Was zuletzt gemacht:** docs/KOMMUNIKATION-FERTIGE-BEISPIELE.md erstellt (5 Abschnitte: Flyer, Ansprache Künstlerin, Ansprache Verein, E-Mail nach Kauf, E-Mail Einladung Test). In Kampagne DOCUMENTS + public aufgenommen; 00-INDEX und KOMMUNIKATION-DOKUMENTE-STRUKTUR ergänzt.
+- **Nächster Schritt:** Optional Presse §6 redigieren oder Mehrsprachigkeit. Ansonsten: fertige Beispiele in der Kampagne nutzen.
+- **Wo nachlesen:** Kampagne → „Fertige Beispiele (redigierte Seiten)“; docs/KOMMUNIKATION-FERTIGE-BEISPIELE.md.
+
+---
+
 ## Datum: 08.03.26 – Kampagne: Kommunikations-Dokumente in der App sichtbar
 
 - **Stand:** Die vier Kommunikations-Vorlagen liegen in der **Kampagne Marketing-Strategie** als bearbeitbare Dokumente – in der Sidebar „Inhalt der Mappe“ sichtbar und anklickbar.

@@ -30,6 +30,7 @@
 | **Erste Ansprache (Künstler:in / Verein)** | docs/KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md | ✅ Fertig | Vorlage A (Künstler:in/ök2) und B (Verein/VK2); nur [Anrede/Name] ersetzen |
 | **Flyer / Handout (Druck)** | docs/KOMMUNIKATION-FLYER-HANDOUT.md | ✅ Fertig | Text Copy-Paste, [Kontakt] + QR aus APf; eine Seite drucken oder ins Layout |
 | **E-Mail-Vorlagen (nach Lizenzkauf, Einladung)** | docs/KOMMUNIKATION-EMAIL-VORLAGEN.md | ✅ Fertig | Vorlage A (nach Kauf), B (Einladung Test); Platzhalter ersetzen; später automatisierbar |
+| **Fertige Beispiele (redigierte Seiten)** | docs/KOMMUNIKATION-FERTIGE-BEISPIELE.md | ✅ Fertig | Flyer + alle E-Mails mit konkretem Text – zum sofortigen Lesen und Zeigen (keine Platzhalter) |
 | **FAQ für Kunden / Piloten** | mök2, ggf. Handbuch | ⚠️ Teils | Häufige Fragen gebündelt, eine Quelle |
 
 **Kurz:** Presse, Ansprache, Flyer/Handout und E-Mail-Vorlagen sind als **eine Quelle pro Zweck** angelegt. Phase 1 (DE) abgeschlossen; Mehrsprachigkeit mitgeplant (docs/MEHRSPRACHIGKEIT-PLAN.md).
@@ -83,6 +84,7 @@
 | **Ansprache Künstler:in/Verein** | docs/KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md |
 | **Flyer / Handout** | docs/KOMMUNIKATION-FLYER-HANDOUT.md |
 | **E-Mail-Vorlagen** | docs/KOMMUNIKATION-EMAIL-VORLAGEN.md |
+| **Fertige Beispiele (redigierte Seiten)** | docs/KOMMUNIKATION-FERTIGE-BEISPIELE.md |
 | **Kampagne (alle Vorlagen hinterlegt)** | docs/kampagne-marketing-strategie/00-INDEX.md → Abschnitt „Kommunikations-Vorlagen (Phase 1)“ |
 | **Kampagne / Strategie** | docs/kampagne-marketing-strategie/00-INDEX.md |
 | **Was als Nächstes (Vision)** | docs/VISION-UMSETZEN-NÄCHSTE-SCHRITTE.md |
