@@ -6,6 +6,18 @@ Siehe auch: **SPORTWAGEN-ROADMAP.md** (Phasen 1–9, was umgesetzt wurde).
 
 ---
 
+## Erreichter Standard / Startklar (08.03.26)
+
+**Für Doku und Informatiker:** Mit der aktuellen Lösung ist folgender Standard erreicht:
+
+- **Sportwagenmodus:** Ein Ablauf pro Sache. Lebenszyklus Klient (Geburt → Aktives Leben → Sterben) **ein durchgängiger Standard** für alle Mandanten (ök2, VK2, dynamische Lizenzkunden). Kein manuelles Zuteilen nach Checkout.
+- **Multi-Tenant SaaS:** K2, ök2, VK2 + beliebig viele Klienten über tenantId. Checkout → tenantId + Galerie-URL automatisch; Erfolgsseite, /g/:tenantId, Admin ?tenantId=, „Lizenz beenden“ inkl. Blob-Löschung.
+- **Startklar:** Technisch startklar **bis auf die Stripe-Go-Live-Anbindung** (Migration 003, Vercel Env, Stripe-Webhook – siehe STRIPE-LIZENZEN-GO-LIVE.md). Alles andere (Galerie, Admin, Lebenszyklus, Stand/QR) steht.
+
+**Referenzen:** **docs/LEBENSZYKLUS-QUALITAETSCHECK.md** (gründlicher Check des Lebenszyklus), **docs/START-NUR-NOCH-OFFEN.md** (was noch offen ist).
+
+---
+
 ## 1. Architektur-Standard
 
 | Bereich | Standard |
@@ -15,7 +27,7 @@ Siehe auch: **SPORTWAGEN-ROADMAP.md** (Phasen 1–9, was umgesetzt wurde).
 | **Sync & Merge** | Eine Regel (SYNC-REGEL.md), eine Funktion `mergeServerWithLocal`. Alle Aufrufer nutzen sie. Bei Supabase konfiguriert: Supabase = Quelle für K2-Werke; Load mergt mit lokal, Save pusht nach Supabase (+ Storage für Bilder). |
 | **API/Transport** | Ein API-Client (Retry, Timeout, einheitliches Fehler-Objekt). |
 | **Reload** | Eine sichere Funktion `safeReload` (iframe-Check zentral). Alle Reload-Buttons nutzen sie. |
-| **Lizenzen/Zahlungen** | Eine Doku (ZAHLUNGSSYSTEM-LIZENZEN-TECHNIK-PLAN); Stripe Checkout + Webhook; Supabase-Tabellen (Migration 003); eine API `GET /api/licence-data`; Go-Live-Checkliste: STRIPE-LIZENZEN-GO-LIVE.md (die nächsten 3 Schritte). |
+| **Lizenzen/Zahlungen** | Eine Doku (ZAHLUNGSSYSTEM-LIZENZEN-TECHNIK-PLAN); Stripe Checkout + Webhook; Supabase-Tabellen (Migration 003, 007 tenant_id/galerie_url); eine API `GET /api/licence-data`; Go-Live-Checkliste: STRIPE-LIZENZEN-GO-LIVE.md (die nächsten 3 Schritte). |
 
 **Prinzip:** Eine Quelle, ein Standard pro Problemstellung (Profi statt Dilettant).
 
@@ -32,7 +44,7 @@ Siehe auch: **SPORTWAGEN-ROADMAP.md** (Phasen 1–9, was umgesetzt wurde).
 
 ## 3. Test-Standard
 
-- **38 Tests** für kritische Pfade: Datentrennung, Kundendaten-Schutz, Merge, Persistenz-Schicht, Bild-Upload.
+- **42 Tests** für kritische Pfade: Datentrennung, Kundendaten-Schutz, Merge, Persistenz-Schicht, Bild-Upload.
 - Tests laufen im Build. QS vor Commit (test + build).
 - Kein Deployment mit roten Tests.
 
@@ -78,8 +90,9 @@ Siehe auch: **SPORTWAGEN-ROADMAP.md** (Phasen 1–9, was umgesetzt wurde).
 
 **Architektur:** Eine Quelle, eine Schicht, eine Regel pro Thema.  
 **Sicherheit:** Kundendaten geschützt, K2/ök2/VK2 getrennt, Stand/QR stabil.  
-**Qualität:** 38 Tests, QS vor Commit, Bugs und Crash-Stellen dokumentiert.  
-**Doku & Prozess:** Klare Ablagen, kein doppeltes Bearbeiten derselben Probleme.
+**Qualität:** 42 Tests, QS vor Commit, Bugs und Crash-Stellen dokumentiert.  
+**Doku & Prozess:** Klare Ablagen, kein doppeltes Bearbeiten derselben Probleme.  
+**Startklar:** Lebenszyklus durchgängig; offen nur Stripe-Go-Live (3 Schritte). Siehe LEBENSZYKLUS-QUALITAETSCHECK.md, START-NUR-NOCH-OFFEN.md.
 
 ---
 

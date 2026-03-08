@@ -23,6 +23,7 @@
 
 | Womit | Wo | Inhalt |
 |-------|-----|--------|
+| **Erreichter Standard / Startklar** | **docs/PRODUKT-STANDARD-NACH-SPORTWAGEN.md** (Abschnitt „Erreichter Standard“), **docs/LEBENSZYKLUS-QUALITAETSCHECK.md**, **docs/START-NUR-NOCH-OFFEN.md** | Welchen technischen und prozessualen Standard das Produkt hat; Lebenszyklus durchgängig; startklar bis auf Stripe-Go-Live (3 Schritte). **Wichtig für Informatiker:** Hier steht, worauf das System aufbaut. |
 | **Projekt-Übersicht (Keller bis Dachboden)** | **HAUS-INDEX.md** (Root) | Wo liegen Skripte, Code, Doku, Handbuch; Schnellfinder. |
 | **Alle Projekt-Docs (thematisch)** | **docs/00-INDEX.md** | Jedes Doc mit Stichwort; Plan, K2/ök2, Deployment, Supabase, Crash, etc. |
 | **Steuerung / nächste Schritte** | **docs/KOMMANDOZENTRALE.md** | DIALOG-STAND, GRAFIKER-TISCH, Definitionen, Roadmap – Steuerung für Georg und KI. |
@@ -92,12 +93,13 @@ Vollständige Intervalle und Checklisten: **docs/WARTUNG-PROJEKT.md**.
 
 ## 7. Kurzfassung für den ersten Tag
 
-1. **HAUS-INDEX.md** und **docs/00-INDEX.md** lesen – wo liegt was.
-2. **Dieses Dokument** durchgehen – Systemüberblick und Prozess-Tabelle.
-3. **docs/STRUKTUR-HANDELN-QUELLEN.md** – verbindliche Quellen und Ablage.
-4. **docs/WARTUNG-PROJEKT.md** – Wartungsheft und Intervalle.
-5. **docs/K2-OEK2-DATENTRENNUNG.md** – bei allem, was Mandanten/Daten/Blob betrifft.
-6. Bei konkreten Themen: **docs/00-INDEX.md** nutzen (Stichwort suchen) und die verlinkte Doku lesen.
+1. **Erreichter Standard:** **docs/PRODUKT-STANDARD-NACH-SPORTWAGEN.md** (Abschnitt „Erreichter Standard / Startklar“) und **docs/LEBENSZYKLUS-QUALITAETSCHECK.md** – welchen Standard wir mit der Lösung erreicht haben; startklar bis auf Stripe-Go-Live.
+2. **HAUS-INDEX.md** und **docs/00-INDEX.md** lesen – wo liegt was.
+3. **Dieses Dokument** durchgehen – Systemüberblick und Prozess-Tabelle.
+4. **docs/STRUKTUR-HANDELN-QUELLEN.md** – verbindliche Quellen und Ablage.
+5. **docs/WARTUNG-PROJEKT.md** – Wartungsheft und Intervalle.
+6. **docs/K2-OEK2-DATENTRENNUNG.md** – bei allem, was Mandanten/Daten/Blob betrifft.
+7. Bei konkreten Themen: **docs/00-INDEX.md** nutzen (Stichwort suchen) und die verlinkte Doku lesen.
 
 **Ziel:** Alle Prozesse sind so dokumentiert, dass jeder Informatiker einsteigen, das System überblicken und warten kann – ohne verstecktes Wissen im Kopf oder im Code.
 

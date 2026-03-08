@@ -75,7 +75,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **MEHRSPRACHIGKEIT.md** – **Grundstein Mehrsprachigkeit:** Locale-Config, t(key), strings.de; vorbereitet auf EN/FR. Erweiterung wenn zweite Sprache kommt.
 - **ZWISCHENCHECK-SPORTWAGEN-RENNAUTO.md** – **Zwischencheck (03.03.26):** Sind alle Sportwagen-Anforderungen erfüllt? Ein offener Punkt (Stripe Go-Live); was „Rennauto“ ausmacht (Orientierung).
 - **PRODUKT-VISION.md** – Produkt-Vision K2 Galerie.
-- **PRODUKT-STANDARD-NACH-SPORTWAGEN.md** – **Erreichter Standard (28.02.26):** Architektur (eine Quelle/Schicht/Regel), Sicherheit (Kundendaten, Datentrennung, Stand/QR), Tests (38), Doku & Prozess. Eine feste Stelle für „worauf das Produkt jetzt aufbaut“.
+- **PRODUKT-STANDARD-NACH-SPORTWAGEN.md** – **Erreichter Standard:** Abschnitt „Erreichter Standard / Startklar (08.03.26)“ – Sportwagenmodus, Lebenszyklus durchgängig, Multi-Tenant startklar bis auf Stripe-Go-Live. Architektur (eine Quelle/Schicht/Regel), Sicherheit, 42 Tests, Doku & Prozess. Eine feste Stelle für „worauf das Produkt jetzt aufbaut“. Siehe auch LEBENSZYKLUS-QUALITAETSCHECK.md, START-NUR-NOCH-OFFEN.md.
 - **K2-GALERIE-PRAESENTATIONSMAPPE.md** – **Prospekt (Sportwagen like):** Funktionale und technische Infos für Präsentationen, Pitches, Partner – Deckblatt, Kurzfassung, Funktionen, Technik, Sicherheit, Plattformen, Lizenzen, Referenzen. In der App: mök2 → Sektion „K2 Galerie Prospekt“ (1 Seite, druckbar als PDF).
 - **PLATTFORM-UNTERSTUETZUNG.md** – Welche Plattformen (Windows, Android, Mac).
 - **USP-UND-MARKTCHANCEN.md** – USPs und Marktchancen.

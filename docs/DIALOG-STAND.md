@@ -4,11 +4,20 @@
 
 ---
 
+## Datum: 08.03.26 – Standard in Doku und für Informatiker
+
+- **Stand:** Erreichter Standard (Sportwagenmodus, Startklar) ist jetzt klar in Doku und im Einstieg für Informatiker verankert.
+- **Was zuletzt gemacht:** (1) **EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md:** Tabelle „Zentrale Einstiege“ um Zeile **Erreichter Standard / Startklar** ergänzt (PRODUKT-STANDARD-NACH-SPORTWAGEN, LEBENSZYKLUS-QUALITAETSCHECK, START-NUR-NOCH-OFFEN). Kurzfassung für den ersten Tag: Punkt 1 = Erreichter Standard lesen. (2) **00-INDEX.md:** PRODUKT-STANDARD-Zeile aktualisiert – Abschnitt „Erreichter Standard / Startklar (08.03.26)“, 42 Tests, Verweise auf LEBENSZYKLUS-QUALITAETSCHECK, START-NUR-NOCH-OFFEN.
+- **Nächster Schritt:** Commit + Push. Optional: Erfolgsseite + „Lizenz beenden“ durchtesten.
+- **Wo nachlesen:** docs/PRODUKT-STANDARD-NACH-SPORTWAGEN.md, docs/EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md, docs/00-INDEX.md.
+
+---
+
 ## Datum: 08.03.26 – Lebenszyklus gründlicher Qualitätscheck
 
 - **Stand:** Gesamter Lebenszyklus (Geburt → Aktives Leben → Sterben) durchgecheckt; zwei Lücken behoben.
 - **Was zuletzt gemacht:** (1) **docs/LEBENSZYKLUS-QUALITAETSCHECK.md** – Prüfpunkte pro Phase, Sicherheit, Abhängigkeiten, durchgeführte Fixes. (2) **Erfolgsseite Retry:** Bei „Lizenz noch nicht gefunden“ 2× Retry nach 1,5 s und 3 s (Webhook-Race). (3) **Lizenz beenden + dynamische Mandanten:** Button auch bei `tenant.dynamicTenantId` sichtbar; `tenantId` = `dynamicTenantId ?? oeffentlich ?? vk2` an cancel-subscription. (4) 00-INDEX um LEBENSZYKLUS-QUALITAETSCHECK ergänzt. Tests 42/42 ✅, Build ✅.
-- **Nächster Schritt:** Commit + Push. Optional: Erfolgsseite + „Lizenz beenden“ (ök2 / Admin mit ?tenantId=) durchtesten.
+- **Nächster Schritt:** (erledigt: Standard in Doku/Informatiker ergänzt.)
 - **Wo nachlesen:** docs/LEBENSZYKLUS-QUALITAETSCHECK.md, docs/K2-OEK2-DATENTRENNUNG.md.
 
 ---
