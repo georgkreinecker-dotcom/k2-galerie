@@ -6,7 +6,8 @@
 import { useState, useEffect, useRef, type ReactNode } from 'react'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
+import { MUSTER_TEXTE, PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, getProminenteAdresseFormatiert } from '../config/tenantConfig'
+import { loadStammdaten } from '../utils/stammdatenStorage'
 
 const HANDBUCH_BASE = '/benutzer-handbuch'
 const HANDBUCH_DOC_PARAM = 'doc'
@@ -14,12 +15,12 @@ const HANDBUCH_DOC_PARAM = 'doc'
 const DOCUMENTS = [
   { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
   { id: '01-erste-schritte', name: 'Erste Schritte', file: '01-ERSTE-SCHRITTE.md' },
-  { id: '02-galerie', name: 'Galerie gestalten', file: '02-GALERIE-GESTALTEN.md' },
   { id: '03-admin', name: 'Admin im Überblick', file: '03-ADMIN-UEBERBLICK.md' },
+  { id: '02-galerie', name: 'Galerie gestalten, Werke anlegen', file: '02-GALERIE-GESTALTEN.md' },
+  { id: '07-eventplanung', name: 'Eventplanung & Öffentlichkeitsarbeit', file: '07-EVENTPLANUNG-WERBUNG-OEFFENTLICHKEITSARBEIT.md' },
+  { id: '05-vk2', name: 'Vereinsplattform', file: '05-VK2-VEREINSPLATTFORM.md' },
+  { id: '06-oek2', name: 'Demo und Lizenz', file: '06-OEK2-DEMO-LIZENZ.md' },
   { id: '04-faq', name: 'Häufige Fragen', file: '04-HAEUFIGE-FRAGEN.md' },
-  { id: '05-vk2', name: 'Vereinsplattform (VK2)', file: '05-VK2-VEREINSPLATTFORM.md' },
-  { id: '06-oek2', name: 'Demo und Lizenz (ök2)', file: '06-OEK2-DEMO-LIZENZ.md' },
-  { id: '07-eventplanung', name: 'Eventplanung, Werbung & Öffentlichkeitsarbeit', file: '07-EVENTPLANUNG-WERBUNG-OEFFENTLICHKEITSARBEIT.md' },
 ] as const
 
 const HANDBUCH_PATH = '/benutzer-handbuch'
@@ -37,6 +38,17 @@ export default function BenutzerHandbuchPage() {
   const backFallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const returnTo = searchParams.get('returnTo')
+
+  const tenant = (typeof window !== 'undefined' && (window.location.pathname.includes('oeffentlich') || sessionStorage.getItem('k2-admin-context') === 'oeffentlich')) ? 'oeffentlich' : 'k2'
+  const galleryRaw = typeof window !== 'undefined' ? loadStammdaten(tenant, 'gallery') : ({} as Record<string, string>)
+  const gallery = (tenant === 'oeffentlich' && !(galleryRaw as Record<string, string>)?.name && !(galleryRaw as Record<string, string>)?.address) ? MUSTER_TEXTE.gallery : (galleryRaw as Record<string, string>)
+  const martinaRaw = typeof window !== 'undefined' ? loadStammdaten(tenant, 'martina') : ({} as Record<string, string>)
+  const georgRaw = typeof window !== 'undefined' ? loadStammdaten(tenant, 'georg') : ({} as Record<string, string>)
+  const galleryName = (gallery as Record<string, string>)?.name ?? ''
+  const impressumAddress = getProminenteAdresseFormatiert(gallery, martinaRaw, georgRaw)
+  const impressumOpeningHours = ((gallery as Record<string, string>)?.openingHours ?? '').trim()
+  const impressumMapsUrl = impressumAddress ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(impressumAddress)}` : ''
+  // Impressum & Google Maps: prominente Adresse (Galerie zuerst, sonst Künstler)
 
   const handleZurueck = () => {
     if (backFallbackRef.current) {
@@ -167,8 +179,6 @@ export default function BenutzerHandbuchPage() {
     const out: ReactNode[] = []
     let i = 0
     let firstH1Done = false
-    let h2Count = 0
-    let h3Count = 0
     const key = () => `bh-${i}`
 
     while (i < lines.length) {
@@ -183,32 +193,19 @@ export default function BenutzerHandbuchPage() {
         out.push(<div key={key()} className="benutzer-seitenumbruch" aria-hidden><span className="benutzer-seitenumbruch-label">— Seitenumbruch (beim Drucken: neue Seite) —</span></div>)
         i++; continue
       }
-      if (line.startsWith('# ') && chapterNumber !== undefined && !firstH1Done) {
-        firstH1Done = true
-        out.push(<h1 key={key()} className="benutzer-h1">{chapterNumber}. {line.substring(2).trim()}</h1>)
-        i++; continue
-      }
       if (line.startsWith('# ')) {
-        out.push(<h1 key={key()} className="benutzer-h1">{line.substring(2).trim()}</h1>)
+        const title = line.substring(2).trim()
+        const displayTitle = (chapterNumber != null && !firstH1Done) ? `${chapterNumber}. ${title}` : title
+        if (!firstH1Done) firstH1Done = true
+        out.push(<h1 key={key()} className="benutzer-h1">{displayTitle}</h1>)
         i++; continue
       }
       if (line.startsWith('## ')) {
-        if (chapterNumber !== undefined) {
-          h2Count++
-          h3Count = 0
-          out.push(<h2 key={key()} className="benutzer-h2">{chapterNumber}.{h2Count} {line.substring(3).trim()}</h2>)
-        } else {
-          out.push(<h2 key={key()} className="benutzer-h2">{line.substring(3).trim()}</h2>)
-        }
+        out.push(<h2 key={key()} className="benutzer-h2">{line.substring(3).trim()}</h2>)
         i++; continue
       }
       if (line.startsWith('### ')) {
-        if (chapterNumber !== undefined) {
-          h3Count++
-          out.push(<h3 key={key()} className="benutzer-h3">{chapterNumber}.{h2Count}.{h3Count} {line.substring(4).trim()}</h3>)
-        } else {
-          out.push(<h3 key={key()} className="benutzer-h3">{line.substring(4).trim()}</h3>)
-        }
+        out.push(<h3 key={key()} className="benutzer-h3">{line.substring(4).trim()}</h3>)
         i++; continue
       }
       if (trimmed === '---' || /^---+$/.test(trimmed)) {
@@ -251,6 +248,23 @@ export default function BenutzerHandbuchPage() {
       }
       if (trimmed.startsWith('*') && trimmed.endsWith('*') && !trimmed.includes('**')) {
         out.push(<p key={key()} className="benutzer-em">{trimmed.slice(1, -1)}</p>)
+        i++; continue
+      }
+      const numLinkMatch = line.match(/^(\d+\.)\s+\[([^\]]+)\]\(([^)]+)\)/)
+      if (numLinkMatch) {
+        const [, num, title, path] = numLinkMatch
+        const isInternalDoc = path.endsWith('.md') && !path.startsWith('http')
+        if (isInternalDoc && onDocLink) {
+          out.push(
+            <p key={key()} className="benutzer-p">
+              {num}{' '}
+              <a href="#" className="benutzer-link" onClick={(e) => { e.preventDefault(); onDocLink(path) }}>{title}</a>
+            </p>
+          )
+        } else {
+          const href = path.startsWith('http') ? path : `${HANDBUCH_BASE}/${path}`
+          out.push(<p key={key()} className="benutzer-p">{num} <a href={href} className="benutzer-link" target={path.startsWith('http') ? '_blank' : undefined} rel={path.startsWith('http') ? 'noopener noreferrer' : undefined}>{title}</a></p>)
+        }
         i++; continue
       }
       if (line.startsWith('[') && line.includes('](')) {
@@ -337,6 +351,28 @@ export default function BenutzerHandbuchPage() {
     .benutzer-print-preview { background: #9ca3af !important; padding: 1.5rem 1rem !important; }
     .benutzer-print-preview .benutzer-handbuch-wrapper { max-width: none; }
     .benutzer-print-preview .benutzer-a4-vorschau { width: 210mm; max-width: 100%; margin: 0 auto 2rem; min-height: 297mm; padding: 0 10mm 2rem; background: #fff; border: 2px solid #6b7280; box-shadow: 0 4px 20px rgba(0,0,0,0.2); box-sizing: border-box; background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(297mm - 1px), #9ca3af calc(297mm - 1px), #9ca3af 297mm); }
+    @media (max-width: 768px) {
+      .benutzer-handbuch-wrapper { padding: 0.75rem 0.5rem !important; }
+      .benutzer-handbuch-wrapper .benutzer-header-wrap { flex-direction: column; align-items: stretch; gap: 0.75rem; margin-bottom: 1rem; }
+      .benutzer-handbuch-wrapper .benutzer-header-wrap h1 { font-size: 1.25rem; }
+      .benutzer-handbuch-wrapper .benutzer-header-wrap p { font-size: 0.85rem; }
+      .benutzer-handbuch-wrapper .benutzer-header-wrap .benutzer-header-buttons { flex-direction: column; width: 100%; }
+      .benutzer-handbuch-wrapper .benutzer-header-wrap .benutzer-header-buttons button { min-height: 44px; width: 100%; justify-content: center; }
+      .benutzer-handbuch-grid { grid-template-columns: 1fr !important; gap: 1rem !important; }
+      .benutzer-handbuch-wrapper .benutzer-nav { position: static !important; border-radius: 10px; padding: 0.75rem 1rem; }
+      .benutzer-handbuch-wrapper .benutzer-nav h3 { font-size: 0.9rem; margin-bottom: 0.5rem; }
+      .benutzer-handbuch-wrapper .benutzer-nav button { min-height: 44px; padding: 0.6rem 0.75rem; font-size: 0.9rem; width: 100%; text-align: left; }
+      .benutzer-handbuch-article { padding: 1rem 1rem !important; min-height: 200px; border-radius: 10px; }
+      .benutzer-handbuch-wrapper .benutzer-h1 { font-size: 1.4rem; margin: 1rem 0 0.5rem; }
+      .benutzer-handbuch-wrapper .benutzer-h2 { font-size: 1.2rem; margin: 1rem 0 0.4rem; }
+      .benutzer-handbuch-wrapper .benutzer-h3 { font-size: 1.05rem; margin: 0.75rem 0 0.35rem; }
+      .benutzer-handbuch-wrapper .benutzer-p { font-size: 1rem; line-height: 1.6; margin: 0 0 0.5rem; }
+      .benutzer-handbuch-wrapper .benutzer-li { margin-bottom: 0.4rem; }
+      .benutzer-handbuch-wrapper .benutzer-table { font-size: 0.9rem; }
+      .benutzer-handbuch-wrapper .benutzer-table th, .benutzer-handbuch-wrapper .benutzer-table td { padding: 0.4rem 0.5rem; }
+      .benutzer-druckvorschau-leiste { left: 0.5rem; right: 0.5rem; transform: none; bottom: 1rem; }
+      .benutzer-druckvorschau-leiste button { min-height: 44px; }
+    }
     @media print {
       .benutzer-no-print, .benutzer-druckvorschau-leiste, .benutzer-nur-vorschau { display: none !important; }
       .benutzer-handbuch-wrapper .benutzer-h1, .benutzer-handbuch-wrapper .benutzer-h2, .benutzer-handbuch-wrapper .benutzer-h3 { color: #1c1a18 !important; }
@@ -393,12 +429,12 @@ export default function BenutzerHandbuchPage() {
       <style>{styles}</style>
 
       {!printPreview && (
-        <header className="benutzer-no-print" style={{ marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+        <header className="benutzer-no-print benutzer-header-wrap" style={{ marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
           <div>
             <h1 style={{ margin: 0, fontSize: '1.5rem', color: '#1c1a18', fontWeight: 600 }}>📖 Benutzerhandbuch</h1>
             <p style={{ margin: '0.25rem 0 0', fontSize: '0.9rem', color: '#6b7280' }}>K2 Galerie – für Galerien und Vereine. Leicht verständlich, zum Lesen und Drucken.</p>
           </div>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <div className="benutzer-header-buttons" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             <button type="button" onClick={() => setPrintPreview(true)} style={{ padding: '0.5rem 1rem', background: '#374151', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>
               👁 Druckvorschau
             </button>
@@ -439,13 +475,28 @@ export default function BenutzerHandbuchPage() {
               </div>
               {DOCUMENTS.map((doc, index) => (
                 <section key={doc.file} className="benutzer-druck-kapitel">
-                  <div className="benutzer-druck-inhalt">{renderMarkdown(allDocContents[doc.file] ?? '', index + 1)}</div>
+                  <div className="benutzer-druck-inhalt">{renderMarkdown(allDocContents[doc.file] ?? '', index > 0 ? index : undefined)}</div>
                 </section>
               ))}
               <section className="benutzer-druck-kapitel benutzer-impressum-seite">
-                <h2 style={{ fontSize: '1.25rem', margin: '0 0 1rem', color: '#1c1a18', fontWeight: 700, borderBottom: '2px solid #e5e7eb', paddingBottom: '0.5rem' }}>Impressum (ök2)</h2>
+                <h2 style={{ fontSize: '1.25rem', margin: '0 0 1rem', color: '#1c1a18', fontWeight: 700, borderBottom: '2px solid #e5e7eb', paddingBottom: '0.5rem' }}>Impressum {tenant === 'oeffentlich' ? '(ök2)' : ''}</h2>
                 <div className="benutzer-druck-inhalt" style={{ fontSize: '10pt', lineHeight: 1.6, color: '#1c1a18' }}>
                   <p style={{ margin: '0 0 0.5rem' }}><strong>Medieninhaber &amp; Herausgeber:</strong> K2 Galerie · Design und Entwicklung: kgm solution (G. Kreinecker).</p>
+                  {(galleryName || impressumAddress) && (
+                    <p style={{ margin: '0 0 0.5rem' }}>
+                      <strong>Galerie / Anschrift:</strong>{' '}
+                      {impressumMapsUrl ? (
+                        <a href={impressumMapsUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#1c1a18', textDecoration: 'underline' }}>
+                          {[galleryName, impressumAddress].filter(Boolean).join(' · ')} · Route planen (Google Maps)
+                        </a>
+                      ) : (
+                        [galleryName, impressumAddress].filter(Boolean).join(' · ')
+                      )}
+                    </p>
+                  )}
+                  {impressumOpeningHours && (
+                    <p style={{ margin: '0 0 0.5rem' }}><strong>Öffnungszeiten:</strong> {impressumOpeningHours}</p>
+                  )}
                   <p style={{ margin: '0 0 0.5rem' }}><strong>Kontakt:</strong> <a href={`mailto:${PRODUCT_LIZENZ_ANFRAGE_EMAIL}`} style={{ color: '#1c1a18', textDecoration: 'underline' }}>{PRODUCT_LIZENZ_ANFRAGE_EMAIL}</a></p>
                   <p style={{ margin: 0 }}>{PRODUCT_COPYRIGHT}</p>
                 </div>
@@ -460,7 +511,7 @@ export default function BenutzerHandbuchPage() {
         </>
       ) : (
         <div className="benutzer-handbuch-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(180px, 200px) 1fr', gap: '1.5rem' }}>
-          <nav className="benutzer-no-print" style={{ background: '#f9fafb', padding: '1rem', borderRadius: 12, border: '1px solid #e5e7eb', height: 'fit-content', position: 'sticky', top: '1rem' }}>
+          <nav className="benutzer-no-print benutzer-nav" style={{ background: '#f9fafb', padding: '1rem', borderRadius: 12, border: '1px solid #e5e7eb', height: 'fit-content', position: 'sticky', top: '1rem' }}>
             <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', color: '#374151', fontWeight: 600 }}>Kapitel</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
               {DOCUMENTS.map((doc, index) => (
@@ -480,7 +531,7 @@ export default function BenutzerHandbuchPage() {
                     fontWeight: selectedDoc === doc.file ? 600 : 400
                   }}
                 >
-                  {index + 1}. {doc.name}
+                  {index === 0 ? doc.name : `${index}. ${doc.name}`}
                 </button>
               ))}
             </div>
@@ -491,7 +542,7 @@ export default function BenutzerHandbuchPage() {
               <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Lade Kapitel...</div>
             ) : (
               <>
-                <div className="benutzer-druck-inhalt">{renderMarkdown(docContent, DOCUMENTS.findIndex((d) => d.file === selectedDoc) + 1 || undefined, (path) => loadDocument(path))}</div>
+                <div className="benutzer-druck-inhalt">{renderMarkdown(docContent, (() => { const idx = DOCUMENTS.findIndex((d) => d.file === selectedDoc); return idx > 0 ? idx : undefined; })(), (path) => loadDocument(path))}</div>
                 <div className="benutzer-seitenfuss-zeile" style={{ display: 'none' }} aria-hidden>
                   K2 Galerie – Benutzerhandbuch · {currentDocName}
                 </div>

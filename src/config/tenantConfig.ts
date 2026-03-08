@@ -78,12 +78,18 @@ export const K2_STAMMDATEN_DEFAULTS = {
     email: 'martina.kreinecker@kgm.at',
     phone: '0664 1046337',
     website: '',
+    address: '',
+    city: '',
+    country: '',
   },
   georg: {
     name: 'Georg Kreinecker',
     email: 'georg.kreinecker@kgm.at',
     phone: '0664 1046337',
     website: '',
+    address: '',
+    city: '',
+    country: '',
   },
   gallery: {
     name: 'K2 Galerie Kunst&Keramik',
@@ -97,6 +103,33 @@ export const K2_STAMMDATEN_DEFAULTS = {
     openingHours: '',
     bankverbindung: '',
   },
+}
+
+/** Prüft ob ein Adress-Objekt mindestens ein gesetztes Feld hat. */
+function hasAddress(g: { address?: string; city?: string; country?: string } | null | undefined): boolean {
+  if (!g || typeof g !== 'object') return false
+  return Boolean((g.address && String(g.address).trim()) || (g.city && String(g.city).trim()) || (g.country && String(g.country).trim()))
+}
+
+/**
+ * Prominente Adresse für Impressum, alle Dokumente und Google Maps.
+ * Immer zuerst Galerie-Adresse; nur wenn keine Galerie-Adresse eingetragen ist, werden Künstler-Adressen verwendet (Martina, dann Georg).
+ */
+export function getProminenteAdresse(
+  gallery: { address?: string; city?: string; country?: string } | null | undefined,
+  martina: { address?: string; city?: string; country?: string } | null | undefined,
+  georg: { address?: string; city?: string; country?: string } | null | undefined
+): { address: string; city: string; country: string } {
+  if (hasAddress(gallery)) return { address: (gallery!.address ?? '').trim(), city: (gallery!.city ?? '').trim(), country: (gallery!.country ?? '').trim() }
+  if (hasAddress(martina)) return { address: (martina!.address ?? '').trim(), city: (martina!.city ?? '').trim(), country: (martina!.country ?? '').trim() }
+  if (hasAddress(georg)) return { address: (georg!.address ?? '').trim(), city: (georg!.city ?? '').trim(), country: (georg!.country ?? '').trim() }
+  return { address: '', city: '', country: '' }
+}
+
+/** Formatierte prominente Adresse (eine Zeile für Impressum/Dokumente/Maps). */
+export function getProminenteAdresseFormatiert(gallery: any, martina: any, georg: any): string {
+  const p = getProminenteAdresse(gallery, martina, georg)
+  return [p.address, p.city, p.country].filter(Boolean).join(', ')
 }
 
 /** Konfiguration pro Mandant – K2 = deine Galerie, Demo = Beispiel für Lizenz-Version */

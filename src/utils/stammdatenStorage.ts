@@ -28,11 +28,11 @@ export function getStammdatenKey(tenant: StammdatenTenantId, type: StammdatenTyp
   return KEYS[tenant][type]
 }
 
-/** Niemals leere Kontaktfelder persistieren: vorhanden > Repo-Standard. */
+/** Niemals leere Kontaktfelder/Adresse persistieren: vorhanden > Repo-Standard. Adresse getrennt von Galerie (Künstler-Adresse nur Fallback). */
 export function mergeStammdatenPerson(
   incoming: any,
   existing: any,
-  defaults: { name: string; email: string; phone: string; website?: string }
+  defaults: { name: string; email: string; phone: string; website?: string; address?: string; city?: string; country?: string }
 ): any {
   const e = existing && typeof existing === 'object' ? existing : {}
   return {
@@ -41,6 +41,9 @@ export function mergeStammdatenPerson(
     email: (incoming?.email && String(incoming.email).trim()) || (e.email && String(e.email).trim()) || defaults.email,
     phone: (incoming?.phone && String(incoming.phone).trim()) || (e.phone && String(e.phone).trim()) || defaults.phone,
     website: (incoming?.website && String(incoming.website).trim()) || (e.website && String(e.website).trim()) || (defaults.website || ''),
+    address: (incoming?.address != null && String(incoming.address).trim()) ? incoming.address : (e.address ?? (defaults.address || '')),
+    city: (incoming?.city != null && String(incoming.city).trim()) ? incoming.city : (e.city ?? (defaults.city || '')),
+    country: (incoming?.country != null && String(incoming.country).trim()) ? incoming.country : (e.country ?? (defaults.country || '')),
   }
 }
 
@@ -73,7 +76,7 @@ export function mergeStammdatenGallery(
 /** Leere Stammdaten für ök2 – neue User sehen keine Musterdaten, Felder sofort überschreibbar. */
 function getEmptyOeffentlich(type: StammdatenType): any {
   if (type === 'martina' || type === 'georg') {
-    return { name: '', email: '', phone: '', website: '' }
+    return { name: '', email: '', phone: '', website: '', address: '', city: '', country: '' }
   }
   return {
     name: '',

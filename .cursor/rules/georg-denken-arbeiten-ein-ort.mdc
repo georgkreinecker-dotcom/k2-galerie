@@ -1,0 +1,33 @@
+---
+description: Georgs Art zu denken und zu arbeiten – kein Doppeltes, ein Ort pro Zweck
+alwaysApply: true
+---
+
+# 🔒 Georg: So denke und arbeite ich
+
+## Regel (aus der gemeinsamen Arbeit, z. B. Handbuch/Inhaltsverzeichnis)
+
+**Georg will keine Doppelung. Ein Zweck = ein Ort. Wenn etwas „entfallen“ kann, weil es woanders mit drinsteht, dann weglassen und zusammenführen.**
+
+- **Nicht:** Zwei Blöcke für dasselbe (z. B. „Kurzanleitung“ und „Inhaltsverzeichnis“ getrennt mit gleichem Inhalt).
+- **Sondern:** Ein Block, eine Überschrift, die den Zweck trifft (z. B. „Inhaltsverzeichnis – Kurzanleitung“).
+- **„Oder“ bei Georg:** Oft bietet er Alternativen („X löschen oder bei Y dazuschreiben“). Dann die **vereinfachende** Variante wählen: zusammenführen, ein Mal, klar – nicht beide Varianten behalten.
+
+## Konkret
+
+| Georg sagt / meint … | Richtig | Falsch |
+|----------------------|--------|--------|
+| „Brauchen nicht zweimal den gleichen Überblick“ | Ein Überblick, eine Sektion | Zwei Sektionen mit ähnlichem Inhalt |
+| „Kurzanleitung kann vollständig entfallen, wenn du bei Inhaltsverzeichnis – Kurzanleitung dazuschreibst“ | Kurzanleitung streichen, nur eine Überschrift „Inhaltsverzeichnis – Kurzanleitung“ | Beides behalten |
+| „Keine Doppelformulierungen“ | Titel/Link-Text ohne Wiederholung von Dateiname oder Klammerzusatz | Titel + (Dateiname) oder (VK2) doppelt |
+| „Oder“ zwischen zwei Lösungen | Die schlankere Lösung umsetzen (merge, ein Ort) | Beide Optionen irgendwie einbauen |
+
+## Konsequenz für die AI
+
+- Bei Struktur/Übersicht/Handbuch: **Ein** Einstieg, **ein** Überblick – nicht zwei parallele Listen oder zwei Überschriften für dasselbe.
+- Wenn Georg sagt „X kann entfallen, wenn …“: **X weglassen** und die Bedingung („wenn …“) umsetzen.
+- „Oder“ lesen als: **entweder – und dann die Vereinfachung wählen.**
+
+## Kurzfassung
+
+**Georgs Art: Kein Doppeltes. Ein Ort pro Zweck. „Oder“ = die einfachere Variante umsetzen, zusammenführen statt zweimal da haben.**

@@ -37,6 +37,12 @@ Sinnvolle Stufen für die Zielgruppe **Künstler:innen** (Einstieg → aktive Nu
 
 ---
 
+## 2a. Lizenz beenden (für alle Stufen)
+
+**Grundsatz:** So einfach der Einstieg ist, so einfach ist der Ausstieg. **Keine Bindung, keine Zwangsbeglückung.** Der Nutzer kann jederzeit aus der Lizenz aussteigen – ohne Mindestlaufzeit, ohne versteckte Hürden. Ausstieg einfach und klar (z. B. Einstellungen); Daten vorher exportieren/sichern (Backup im Admin). Details: `docs/LICENCE-STRUKTUR.md` (Abschnitt „Lizenz beenden“), Benutzerhandbuch „Demo und Lizenz“.
+
+---
+
 ## 3. Pro (Aktive Künstler:innen)
 
 **Ziel:** Professioneller Dauerbetrieb mit eigenem Auftritt und voller Nutzung aller App-Funktionen.

@@ -883,7 +883,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           10. Lizenzen (Konditionen & Vergebung)
         </h2>
         <p style={{ marginBottom: '1rem', lineHeight: 1.6 }}>
-          Lizenz-Stufen (Basic, Pro, Pro+, VK2), Preismodelle und die <strong>Vergabe von Lizenzen</strong> gehören zur Vertriebs-Arbeitsplattform. Beim Vergeben kann optional eine <strong>Empfehler-ID</strong> erfasst werden – Grundlage für die automatisierte Abrechnung des Empfehlungs-Programms (Multi-Level-Vergütung). Doku: <code>docs/LICENCE-STRUKTUR.md</code>, <code>docs/ABRECHNUNGSSTRUKTUR-EMPFEHLUNGSPROGRAMM.md</code>.
+          Lizenz-Stufen (Basic, Pro, Pro+, VK2), Preismodelle und die <strong>Vergabe von Lizenzen</strong> gehören zur Vertriebs-Arbeitsplattform. Beim Vergeben kann optional eine <strong>Empfehler-ID</strong> erfasst werden – Grundlage für die automatisierte Abrechnung des Empfehlungs-Programms (Multi-Level-Vergütung). <strong>Lizenz jederzeit durch den Nutzer beendbar</strong>, keine Mindestlaufzeit, keine Bindung – Ausstieg so einfach wie Einstieg (AGB §7). Doku: <code>docs/LICENCE-STRUKTUR.md</code>, <code>docs/ABRECHNUNGSSTRUKTUR-EMPFEHLUNGSPROGRAMM.md</code>.
         </p>
         <p>
           <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>

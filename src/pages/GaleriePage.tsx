@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { speichereGuideFlow, beendeGuideFlow } from '../components/GlobaleGuideBegleitung'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, ENTDECKEN_ROUTE } from '../config/navigation'
-import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, OEK2_WILLKOMMEN_IMAGES, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty } from '../config/tenantConfig'
+import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, OEK2_WILLKOMMEN_IMAGES, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty, getProminenteAdresseFormatiert } from '../config/tenantConfig'
 import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie, mergePageContentGalerieFromServer } from '../config/pageContentGalerie'
 import { getPageTexts, type GaleriePageTexts } from '../config/pageTexts'
@@ -3533,19 +3533,30 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                     </div>
                   )}
                   
-                  {/* K2/ök2: Galerie-Kontakt – bei VK2 nicht anzeigen (VK2 hat eigenes Impressum oben) */}
+                  {/* K2/ök2: Galerie-Kontakt – bei VK2 nicht anzeigen (VK2 hat eigenes Impressum oben).
+                      Impressum & Google Maps: prominente Adresse (Galerie zuerst, sonst Künstler). */}
                   {!vk2 && (<>{/* Galerie Kontakt - Kompakt (ök2: immer aus MUSTER_TEXTE) */}
                   <div style={{ marginBottom: '0.75rem' }}>
                     <p style={{ margin: '0 0 0.25rem', fontWeight: '500', color: theme.text, fontSize: 'clamp(0.95rem, 2.2vw, 1.1rem)' }}>
                       {tenantConfig.galleryName}
                     </p>
-                    {(musterOnly ? (MUSTER_TEXTE.gallery.address || (MUSTER_TEXTE.gallery as any).city || (MUSTER_TEXTE.gallery as any).country) : (galleryData.address || galleryData.city || galleryData.country)) && (
-                      <p style={{ margin: '0 0 0.15rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', lineHeight: '1.4' }}>
-                        {musterOnly
-                          ? [MUSTER_TEXTE.gallery.address, (MUSTER_TEXTE.gallery as any).city, (MUSTER_TEXTE.gallery as any).country].filter(Boolean).join(', ')
-                          : [galleryData.address, galleryData.city, galleryData.country].filter(Boolean).join(', ')}
-                      </p>
-                    )}
+                    {(musterOnly ? (MUSTER_TEXTE.gallery.address || (MUSTER_TEXTE.gallery as any).city || (MUSTER_TEXTE.gallery as any).country) : getProminenteAdresseFormatiert(galleryData, martinaData, georgData)) && (() => {
+                      const adr = musterOnly
+                        ? [MUSTER_TEXTE.gallery.address, (MUSTER_TEXTE.gallery as any).city, (MUSTER_TEXTE.gallery as any).country].filter(Boolean).join(', ')
+                        : getProminenteAdresseFormatiert(galleryData, martinaData, georgData)
+                      const mapsUrl = adr ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(adr)}` : ''
+                      return (
+                        <p style={{ margin: '0 0 0.15rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', lineHeight: '1.4' }}>
+                          {mapsUrl ? (
+                            <a href={mapsUrl} target="_blank" rel="noopener noreferrer" style={{ color: theme.accent, textDecoration: 'none' }} title="Route planen (Google Maps)">
+                              {adr} · Route planen
+                            </a>
+                          ) : (
+                            adr
+                          )}
+                        </p>
+                      )
+                    })()}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.15rem' }}>
                       {(musterOnly ? MUSTER_TEXTE.gallery.phone : galleryData.phone) && (
                         <span style={{ color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>

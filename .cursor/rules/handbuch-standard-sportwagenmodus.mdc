@@ -1,0 +1,71 @@
+---
+description: Georgs Standard für Handbücher – von der Erstellung bis Redaktion und Druck (Sportwagenmodus)
+alwaysApply: true
+---
+
+# 🔒 Handbücher – Standard (Sportwagenmodus)
+
+**Ein Standard für alle Handbücher und ähnliche Dokumentensammlungen.** Von der Erstellung über Struktur, Editierung, Redigierung bis zum Druck. Referenz: Benutzerhandbuch (public/benutzer-handbuch/, BenutzerHandbuchPage).
+
+---
+
+## 1. Struktur (Erstellung)
+
+| Element | Standard | Nicht |
+|--------|----------|--------|
+| **Quelle** | Ordner `public/<name>-handbuch/` mit Markdown-Dateien (.md). | Keine Handbücher an anderen Orten mit anderem Muster. |
+| **Index-Datei** | `00-INDEX.md`: Titel, Willkommen-Satz, **eine** Überschrift **„Inhaltsverzeichnis – Kurzanleitung“**. **Eine** Liste mit **numerischer Untergliederung**: pro Kapitel Zeile „1. [Titel](datei.md)“ (2., 3., … in Lesereihenfolge), darunter eine Zeile Kurzbeschreibung. | Kein zweiter Überschrift-Block. Keine doppelte Liste (nicht erst nur Links, dann nochmal mit Beschreibung). |
+| **Reihenfolge** | Gewollte Lesereihenfolge = 1., 2., 3. … im Index und im DOCUMENTS-Array. Dateinamen dürfen 01-, 02- … heißen. | – |
+| **Pro Kapitel** | Eine Zeile **„Nr. [Titel](datei.md)“** (Nr. = 1., 2., 3., …), darunter eine Zeile Kurzbeschreibung. Renderer unterstützt `^\d+\.\s+\[...\]\(...\)` (Nummer + Link). | Keine Doppelformulierung (Titel + Dateiname oder Klammerzusatz). Keine Klammern in Titeln/Beschreibungen, wo vermeidbar. |
+
+---
+
+## 2. Einfachheit & Redaktion (Editierung)
+
+| Regel | Konkret |
+|-------|---------|
+| **Kein Doppeltes** | Ein Überblick pro Zweck. Wenn „X kann entfallen, wenn bei Y dazuschreiben“ → X weglassen, in Y zusammenführen. Siehe **georg-denken-arbeiten-ein-ort.mdc**. |
+| **Keine Doppelformulierungen** | Anzeigename ≠ Dateiname wiederholen. Kein „(VK2)“ oder „(ök2)“ im Anzeigenamen, wenn redundant. |
+| **Keine Klammern** | In Titeln und Beschreibungen vermeiden (z. B. „in den Admin kommen“ statt „in den Admin (Bearbeiten) kommen“). |
+| **Leserlich** | Redigierte Form, klare Gliederung, zum Lesen und Drucken. Siehe **handbuch-dokumente-leserlich-kein-formular.mdc**, **druckbare-version-anspruch.mdc**. |
+| **Grundstruktur Galerie (zwei Bereiche)** | Im Handbuch die **Begriffe Willkommen und Galerie** verwenden – nicht „Seite 1“ / „Seite 2“. **Willkommen** = Einstieg mit Willkommensbild, Galerie-Karte, optional Virtueller Rundgang (Bild oder Video). **Galerie** = Ansicht mit den Werken. Beide Bereiche getrennt bearbeitbar; im Design-Tab zwischen Willkommen und Galerie wechseln. | Kein „Seite 1“, „Seite 2“ in Handbuch-Texten. |
+
+---
+
+## 3. Technik (Seite / App)
+
+| Element | Standard | Referenz |
+|--------|----------|----------|
+| **DOCUMENTS** | Array in der Page-Komponente: Reihenfolge = Anzeige-Reihenfolge. `name` = Anzeigename in Sidebar (ohne Klammern, ohne .md). `file` = Dateiname. | BenutzerHandbuchPage.tsx DOCUMENTS |
+| **Links im Markdown** | Zeile, die mit `[` beginnt und `](…)` enthält, wird als Klick-Link gerendert; nur der Linktext (match[1]) wird angezeigt, der Dateipfad nie. | renderMarkdown in BenutzerHandbuchPage |
+| **Drucken** | Button „Drucken“, Print-Styles (kompakt, Lesbarkeit), **Seitenumbruch** in .md: eigene Zeile `[SEITENUMBRUCH]`. **Seitenzahl** im Fuß: Klasse `.seitenfuss`, `@media print`, `content: "Seite " counter(page) …`. | ein-standard-problem.mdc (Tabelle .seitenfuss), BenutzerHandbuchPage Print-Styles |
+| **Hinweis Drucken** | Am Ende des Index: ein Satz „Button ‚Drucken‘ – einzelnes Kapitel oder ganzes Handbuch als PDF.“ | 00-INDEX.md |
+
+---
+
+## 4. Ablauf: neues Handbuch anlegen
+
+1. Ordner `public/<name>-handbuch/` anlegen.
+2. `00-INDEX.md` erstellen: Titel, Willkommen, **eine** Überschrift „Inhaltsverzeichnis – Kurzanleitung“, dann pro Kapitel Linkzeile + Beschreibungszeile; am Ende Druck-Hinweis.
+3. Kapitel-Dateien (01-…, 02-… usw.) anlegen, Reihenfolge im Index = gewollte Reihenfolge.
+4. Page-Komponente (oder bestehende erweitern): DOCUMENTS-Array in derselben Reihenfolge, `name` ohne Klammern; gleiche Logik wie BenutzerHandbuchPage (loadDocument, renderMarkdown, Drucken, .seitenfuss).
+5. Redaktion: Doppelformulierungen und überflüssige Klammern entfernen, leserlich halten.
+
+---
+
+## 5. Sportwagenmodus
+
+**Handbücher = eine Struktur, ein Ablauf.** Alle künftigen Handbücher (K2 Team, K2 Familie, weitere) nutzen dieselbe Struktur (Index, eine Übersicht, Link + Kurzbeschreibung, keine Doppelung), dieselben Redaktionsregeln und dieselbe Drucklogik (.seitenfuss, [SEITENUMBRUCH]). Kein eigenes Muster pro Handbuch erfinden.
+
+---
+
+## Verknüpfung
+
+- **ein-standard-problem.mdc** – eine Problemstellung = eine Lösung; diese Datei ist der Standard für „Handbuch erstellen/redigieren/drucken“.
+- **georg-denken-arbeiten-ein-ort.mdc** – kein Doppeltes, ein Ort pro Zweck.
+- **handbuch-dokumente-leserlich-kein-formular.mdc** – leserliche Form.
+- **druckbare-version-anspruch.mdc** – Druck: Lesbarkeit, Seitenzahl, kompakt.
+
+## Kurzfassung
+
+**Handbücher: Ein Index mit „Inhaltsverzeichnis – Kurzanleitung“, pro Kapitel eine Linkzeile + eine Beschreibungszeile. Keine Doppelung, keine Klammern. Gleiche Technik (DOCUMENTS, renderMarkdown, Druck, .seitenfuss) für alle. Galerie-Beschreibung: Willkommen und Galerie (nicht Seite 1/Seite 2). Sportwagenmodus = dieser Standard für alle Handbücher.**

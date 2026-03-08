@@ -43,9 +43,22 @@ Keine Anrufe, keine E-Mail-Schleife: Sie kaufen, zahlen, fertig.
 
 ---
 
+## Lizenz beenden – jederzeit aussteigen, keine Bindung
+
+So einfach der Einstieg ist, so einfach ist der **Ausstieg**. Es gibt **keine Bindung** und keine Zwangsbeglückung.
+
+- Sie können **jederzeit** aus der Lizenz aussteigen – ohne Mindestlaufzeit, ohne versteckte Hürden.
+- Der Ausstieg läuft **einfach und klar** (z. B. in den Einstellungen oder über den gleichen Weg wie der Lizenzabschluss). Keine Anrufe nötig, keine komplizierten Formulare.
+- Nach dem Ausstieg endet die Nutzung der lizenzierten Galerie zum vereinbarten Zeitpunkt. Ihre **Daten** können Sie vorher exportieren oder sichern (Backup-Funktion im Admin).
+
+Wir wollen niemanden „festhalten“. Wer einsteigt, soll sich wohl fühlen – und wer aussteigen möchte, soll es ohne Umstände tun können.
+
+---
+
 ## Kurz zusammengefasst
 
 - **Demo** = Vorschau mit Beispieldaten zum Ausprobieren; ideal vor einer Lizenz.
 - **Bearbeiten in der Demo** = „Erster Entwurf“ oder Admin mit Demo-Passwort; Änderungen in der Demo-Umgebung.
 - **Eigene Galerie** = Lizenz online kaufen → Zahlung (Stripe) → Lizenz sofort aktiv, Bestätigung druckbar.
 - **Lizenz kaufen** = Im Admin unter Einstellungen → „Lizenz online kaufen“ → Lizenz wählen → Name & E-Mail → bezahlen → fertig. Alles eigenständig, ohne Rückfragen.
+- **Lizenz beenden** = Jederzeit aussteigen möglich, keine Bindung. So einfach wie der Einstieg – keine Zwangsbeglückung. Daten vorher exportieren/sichern (Backup im Admin).

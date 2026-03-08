@@ -130,6 +130,12 @@ ${offenBlock || '(GRAFIKER-TISCH-NOTIZEN.md → Offene Wünsche lesen)'}
 
 ---
 
+## Nächster Schritt (Hauptaufgabe für Anke)
+
+- **Marketing-Strategie erarbeiten.** Quelle: **docs/AUFTRAG-MARKETING-STRATEGIE-ZWEI-ZWEIGE.md**. Daraus die Strategie erarbeiten – **Zweig 1: K2 Galerie** (weltweit, automatisierter Vertrieb), **Zweig 2: K2 Familie** (eigener Planungszweig, Raumschiff, Grundbotschaft, Datensouveränität). Output: z. B. **MARKETING-STRATEGIE-AUTOMATISIERTER-VERTRIEB.md** mit beiden Zweigen, oder separate Datei für den K2-Familie-Zweig. Auftrag ernst nehmen, direkt umsetzen.
+
+---
+
 ## Proaktiv (Vorschläge)
 
 ${proaktiv}

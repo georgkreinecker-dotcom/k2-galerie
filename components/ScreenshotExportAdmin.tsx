@@ -20,7 +20,7 @@ const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
 const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/api/gallery-data`
 /** Fallback wenn Blob noch leer (z. B. erste Deploy): statische Datei aus Build */
 const CENTRAL_GALLERY_DATA_FALLBACK_URL = `${VERCEL_APP_BASE}/gallery-data.json`
-import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, type TenantId, type ArtworkCategoryId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
+import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, type TenantId, type ArtworkCategoryId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
@@ -586,7 +586,6 @@ const OEF_DESIGN_DEFAULT = {
   cardBg2: 'rgba(246, 244, 240, 0.9)'
 } as const
 import { checkLocalStorageSize, cleanupLargeImages, getLocalStorageReport, tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from './SafeMode'
-import { GalerieAssistent } from '../src/components/GalerieAssistent'
 import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps, createK2Backup, createOek2Backup, createVk2Backup, downloadBackupAsFile, restoreK2FromBackup, restoreOek2FromBackup, restoreVk2FromBackup, detectBackupKontext, compressAllArtworkImages } from '../src/utils/autoSave'
 import { sortArtworksNewestFirst, sortArtworksFavoritesFirstThenNewest } from '../src/utils/artworkSort'
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
@@ -1062,7 +1061,7 @@ function ScreenshotExportAdmin() {
     try {
       const params = new URLSearchParams(location.search)
       const gt = params.get('guidetab')
-      const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','veroeffentlichen','einstellungen','assistent'] as const
+      const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','veroeffentlichen','einstellungen'] as const
       type AdminTab = typeof validTabs[number]
       if (gt && (validTabs as readonly string[]).includes(gt)) {
         setActiveTab(gt as AdminTab)
@@ -1094,10 +1093,6 @@ function ScreenshotExportAdmin() {
   const guidePfad = (() => {
     try { return new URLSearchParams(window.location.search).get('pfad') ?? '' } catch { return '' }
   })()
-  const guideAssistent = (() => {
-    try { return new URLSearchParams(window.location.search).get('assistent') === '1' } catch { return false }
-  })()
-
   // Wenn globaler Guide-Flow aktiv: Banner komplett ausblenden – Dialog führt alleine
   const guideFlowAktiv = (() => {
     try {
@@ -1120,15 +1115,15 @@ function ScreenshotExportAdmin() {
   const initialTab = (() => {
     try {
       const params = new URLSearchParams(window.location.search)
-      const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','veroeffentlichen','einstellungen','assistent'] as const
+      const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','veroeffentlichen','einstellungen'] as const
       type AdminTab = typeof validTabs[number]
       // ?tab=... (vom Hub) oder ?guidetab=... (alter Guide)
       const t = params.get('tab') || params.get('guidetab')
       if (t && validTabs.includes(t as AdminTab)) return t as AdminTab
     } catch { /* ignore */ }
-    return guideAssistent ? 'assistent' : 'werke'
+    return 'werke'
   })()
-  const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'presse' | 'design' | 'veroeffentlichen' | 'einstellungen' | 'assistent'>(initialTab)
+  const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'presse' | 'design' | 'veroeffentlichen' | 'einstellungen'>(initialTab)
   const [guideBannerClosed, setGuideBannerClosed] = useState(false)
   const [guideBegleiterGeschlossen, setGuideBegleiterGeschlossen] = useState(false)
   const initialEventplanSubTab = (() => {
@@ -1141,7 +1136,7 @@ function ScreenshotExportAdmin() {
   const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>(initialEventplanSubTab)
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false) // kleine Leiste „Vergangenheit“, bei Klick aufklappen
   const [werkeSideOptionsOpen, setWerkeSideOptionsOpen] = useState(false) // Einstellungen & Sync (Verkaufte Werke, Vom Server laden) – Nebenakteure, aufklappbar
-  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzinfo' | 'kassabuch'>('stammdaten')
+  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzbeenden' | 'lizenzinfo' | 'kassabuch'>('stammdaten')
   const settingsContentRef = useRef<HTMLDivElement>(null)
   const [lizenzLicenceType, setLizenzLicenceType] = useState<'basic' | 'pro' | 'proplus'>('pro')
   const [lizenzName, setLizenzName] = useState('')
@@ -1150,6 +1145,11 @@ function ScreenshotExportAdmin() {
   const [lizenzUseStammdaten, setLizenzUseStammdaten] = useState<'ask' | 'yes' | 'no'>('ask')
   const [lizenzLoading, setLizenzLoading] = useState(false)
   const [lizenzError, setLizenzError] = useState<string | null>(null)
+  const [lizenzBeendenGrund, setLizenzBeendenGrund] = useState<string>('')
+  const [lizenzBeendenVerbesserung, setLizenzBeendenVerbesserung] = useState('')
+  const [lizenzBeendenBackupHinweis, setLizenzBeendenBackupHinweis] = useState(false)
+  const [lizenzBeendenErledigt, setLizenzBeendenErledigt] = useState(false)
+  const [lizenzBeendenLoading, setLizenzBeendenLoading] = useState(false)
   const [designSubTab, setDesignSubTab] = useState<'vorschau' | 'farben'>('vorschau')
   const [designPreviewEdit, setDesignPreviewEdit] = useState<string | null>(null) // z. B. 'p1-title' | 'p2-martinaBio' – alles auf der Seite klickbar
   const [previewContainerWidth, setPreviewContainerWidth] = useState(412) // für bildausfüllende Skalierung
@@ -1445,6 +1445,7 @@ function ScreenshotExportAdmin() {
   const [showVitaEditor, setShowVitaEditor] = useState(false)
   /** Einstellungen: Vita-Bereich Person 1/2 erst auf Klick aufklappen (Handy-freundlich). */
   const [vitaMartinaOpen, setVitaMartinaOpen] = useState(false)
+  const [vitaGeorgOpen, setVitaGeorgOpen] = useState(false)
   /** Einstellungen: Galerie-Adresse (optional) – nur Link zum Öffnen, wird kaum gebraucht. */
   const [galerieAdresseOpen, setGalerieAdresseOpen] = useState(false)
   /** VK2 Mitglied-Login Modal */
@@ -1988,7 +1989,7 @@ function ScreenshotExportAdmin() {
 
   // ök2: Lager-Tab nicht verfügbar. VK2: Sicherheit und Lager nicht – auf Stammdaten wechseln
   useEffect(() => {
-    if (tenant.isVk2 && (settingsSubTab === 'sicherheit' || settingsSubTab === 'kassabuch')) setSettingsSubTab('stammdaten')
+    if (tenant.isVk2 && (settingsSubTab === 'sicherheit' || settingsSubTab === 'kassabuch' || settingsSubTab === 'lizenzbeenden')) setSettingsSubTab('stammdaten')
   }, [settingsSubTab])
 
   // Einstellungen: Beim Klick auf eine Karte (Meine Daten, Drucker, …) sofort den geöffneten Bereich in den sichtbaren Bereich scrollen (v. a. Handy)
@@ -2074,19 +2075,22 @@ function ScreenshotExportAdmin() {
             name: (parsed.name && String(parsed.name).trim()) ? parsed.name : d.name,
             email: (parsed.email && String(parsed.email).trim()) ? parsed.email : d.email,
             phone: (parsed.phone && String(parsed.phone).trim()) ? parsed.phone : d.phone,
-            website: (parsed.website && String(parsed.website).trim()) ? parsed.website : (d.website || '')
+            website: (parsed.website && String(parsed.website).trim()) ? parsed.website : (d.website || ''),
+            address: (parsed.address != null && String(parsed.address).trim()) ? parsed.address : (d.address ?? ''),
+            city: (parsed.city != null && String(parsed.city).trim()) ? parsed.city : (d.city ?? ''),
+            country: (parsed.country != null && String(parsed.country).trim()) ? parsed.country : (d.country ?? '')
           }
           if (!mergedMartina.vita || typeof mergedMartina.vita !== 'string' || !mergedMartina.vita.trim()) {
             mergedMartina.vita = MUSTER_VITA_MARTINA
           }
         } else {
-          mergedMartina = { name: d.name, email: d.email, phone: d.phone, website: d.website || '', category: 'malerei', bio: '', vita: MUSTER_VITA_MARTINA }
+          mergedMartina = { name: d.name, email: d.email, phone: d.phone, website: d.website || '', address: (d as any).address ?? '', city: (d as any).city ?? '', country: (d as any).country ?? '', category: 'malerei', bio: '', vita: MUSTER_VITA_MARTINA }
         }
         if (isMounted) setMartinaData(mergedMartina)
-        // Nur Kontaktfelder reparieren – niemals komplette Stammdaten überschreiben (sonst gehen Adresse, Bio, Bilder verloren). Schicht: saveStammdaten.
+        // Nur Kontaktfelder/Adresse reparieren – niemals komplette Stammdaten überschreiben (sonst gehen Bio, Bilder verloren). Schicht: saveStammdaten.
         if (storedMartina && typeof storedMartina === 'object' && JSON.stringify(storedMartina).length < 100000) {
           try {
-            const toWrite = { ...storedMartina, name: mergedMartina.name, email: mergedMartina.email, phone: mergedMartina.phone, website: mergedMartina.website }
+            const toWrite = { ...storedMartina, name: mergedMartina.name, email: mergedMartina.email, phone: mergedMartina.phone, website: mergedMartina.website, address: mergedMartina.address, city: mergedMartina.city, country: mergedMartina.country }
             persistStammdaten('k2', 'martina', toWrite)
           } catch (_) {}
         }
@@ -2107,18 +2111,21 @@ function ScreenshotExportAdmin() {
             name: (parsed.name && String(parsed.name).trim()) ? parsed.name : d.name,
             email: (parsed.email && String(parsed.email).trim()) ? parsed.email : d.email,
             phone: (parsed.phone && String(parsed.phone).trim()) ? parsed.phone : d.phone,
-            website: (parsed.website && String(parsed.website).trim()) ? parsed.website : (d.website || '')
+            website: (parsed.website && String(parsed.website).trim()) ? parsed.website : (d.website || ''),
+            address: (parsed.address != null && String(parsed.address).trim()) ? parsed.address : (d.address ?? ''),
+            city: (parsed.city != null && String(parsed.city).trim()) ? parsed.city : (d.city ?? ''),
+            country: (parsed.country != null && String(parsed.country).trim()) ? parsed.country : (d.country ?? '')
           }
           if (!mergedGeorg.vita || typeof mergedGeorg.vita !== 'string' || !mergedGeorg.vita.trim()) {
             mergedGeorg.vita = MUSTER_VITA_GEORG
           }
         } else {
-          mergedGeorg = { name: d.name, email: d.email, phone: d.phone, website: d.website || '', category: 'keramik', bio: '', vita: MUSTER_VITA_GEORG }
+          mergedGeorg = { name: d.name, email: d.email, phone: d.phone, website: d.website || '', address: (d as any).address ?? '', city: (d as any).city ?? '', country: (d as any).country ?? '', category: 'keramik', bio: '', vita: MUSTER_VITA_GEORG }
         }
         if (isMounted) setGeorgData(mergedGeorg)
         if (storedGeorg && typeof storedGeorg === 'object' && JSON.stringify(storedGeorg).length < 100000) {
           try {
-            const toWrite = { ...storedGeorg, name: mergedGeorg.name, email: mergedGeorg.email, phone: mergedGeorg.phone, website: mergedGeorg.website }
+            const toWrite = { ...storedGeorg, name: mergedGeorg.name, email: mergedGeorg.email, phone: mergedGeorg.phone, website: mergedGeorg.website, address: mergedGeorg.address, city: mergedGeorg.city, country: mergedGeorg.country }
             persistStammdaten('k2', 'georg', toWrite)
           } catch (_) {}
         }
@@ -2168,7 +2175,11 @@ function ScreenshotExportAdmin() {
             internetShopNotSetUp: true
           }
         }
-        if (isMounted) setGalleryData(mergedGallery)
+        if (isMounted) {
+          setGalleryData(mergedGallery)
+          // K2: Galerie-Karte standardmäßig geöffnet, damit der Bereich nicht „leer“ wirkt
+          if (!tenant.isOeffentlich && !tenant.isVk2) setGalerieAdresseOpen(true)
+        }
         // Nur Kontakt/Name reparieren – niemals welcomeImage, virtualTourImage, Adresse etc. überschreiben. Schicht: saveStammdaten.
         if (data && typeof data === 'object') {
           try {
@@ -3412,14 +3423,14 @@ function ScreenshotExportAdmin() {
       }
     }
 
-    const ort = event.location || galleryData.address || ''
+    const ort = event.location || getProminenteAdresseFormatiert(galleryData, martinaData, georgData) || ''
     const desc = event.description || 'Malerei, Keramik und Skulptur in einem außergewöhnlichen Galerieraum.'
     const mName = martinaData?.name || 'Martina Kreinecker'
     const pName = georgData?.name || 'Georg Kreinecker'
     const mBio = martinaData?.bio || 'Malerei und Grafik – großformatige Arbeiten zwischen Abstraktion und Figuration.'
     const pBio = georgData?.bio || 'Keramik und Skulptur – handgeformte Objekte mit starker plastischer Präsenz.'
     const gName = galleryData.name || 'K2 Galerie'
-    const adresse = [galleryData.address, galleryData.city].filter(Boolean).join(', ')
+    const adresse = getProminenteAdresseFormatiert(galleryData, martinaData, georgData)
     return {
       title: `PRESSEAUSSENDUNG – ${event.title} | ${gName}`,
       content: [
@@ -3516,7 +3527,7 @@ function ScreenshotExportAdmin() {
       }
     }
 
-    const ort = event.location || galleryData.address || ''
+    const ort = event.location || getProminenteAdresseFormatiert(galleryData, martinaData, georgData) || ''
     const desc = event.description || 'Wir freuen uns auf deinen Besuch!'
     const mName = martinaData?.name || 'Martina Kreinecker'
     const pName = georgData?.name || 'Georg Kreinecker'
@@ -3586,17 +3597,18 @@ function ScreenshotExportAdmin() {
         contact: { phone: (v as any)?.phone || '', email: v?.email || '', address: adr || '' }
       }
     }
+    const prominenteAdresse = getProminenteAdresseFormatiert(galleryData, martinaData, georgData)
     return {
       headline: event.title,
       date: formatEventDates(event),
-      location: event.location || galleryData.address || '',
+      location: event.location || prominenteAdresse || '',
       description: event.description || '',
       type: event.type,
       qrCode: galleryData.website || window.location.origin,
       contact: {
         phone: galleryData.phone || '',
         email: galleryData.email || '',
-        address: galleryData.address || ''
+        address: prominenteAdresse || ''
       }
     }
   }
@@ -3647,7 +3659,7 @@ TERMINDATEN:
 📅 ${formatEventDates(event)}
 
 ORT:
-📍 ${ort || galleryData.address || ''}
+📍 ${ort || getProminenteAdresseFormatiert(galleryData, martinaData, georgData) || ''}
 
 BESCHREIBUNG:
 ${event.description || 'Wir freuen uns auf deinen Besuch!'}
@@ -3655,7 +3667,7 @@ ${event.description || 'Wir freuen uns auf deinen Besuch!'}
 KONTAKT:
 ${galleryData.phone ? `Tel: ${galleryData.phone}` : ''}
 ${galleryData.email ? `E-Mail: ${galleryData.email}` : ''}
-${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
+${(() => { const a = getProminenteAdresseFormatiert(galleryData, martinaData, georgData); return a ? `Adresse: ${a}` : '' })()}
       `.trim()
     }
   }
@@ -3682,18 +3694,19 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
         contact: { phone: g.phone || '', email: g.email || '', address: adr || '' }
       }
     }
+    const prominenteAdresse = getProminenteAdresseFormatiert(galleryData, martinaData, georgData)
     const g = galleryData || {}
     return {
       title: event.title || 'Event',
       type: eventTypeNames[event.type] || 'Veranstaltung',
       date: formatEventDates(event) || 'Datum folgt',
-      location: event.location || g.address || '',
+      location: event.location || prominenteAdresse || '',
       description: event.description || '',
       qrCode: g.website || window.location.origin,
       contact: {
         phone: g.phone || '',
         email: g.email || '',
-        address: g.address || ''
+        address: prominenteAdresse || ''
       }
     }
   }
@@ -3713,6 +3726,7 @@ ${galleryData.address ? `Adresse: ${galleryData.address}` : ''}
       }
       return galleryData || {}
     })()
+    const adresseK2 = !tenant.isVk2 ? getProminenteAdresseFormatiert(galleryData, martinaData, georgData) : ''
     
     const text = `
 ${'='.repeat(60)}
@@ -3724,7 +3738,7 @@ PRESSEAUSSENDUNG
 Event: ${event?.title || 'Nicht angegeben'}
 Datum: ${event?.date ? new Date(event.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Nicht angegeben'}
 
-${g.address ? `Adresse: ${g.address}` : ''}
+${tenant.isVk2 ? (g.address ? `Adresse: ${g.address}` : '') : (adresseK2 ? `Adresse: ${adresseK2}` : '')}
 ${g.phone ? `Telefon: ${g.phone}` : ''}
 ${g.email ? `E-Mail: ${g.email}` : ''}
 
@@ -5513,7 +5527,7 @@ ${'='.repeat(60)}
       
       <div class="footer">
         <p><strong>${galleryData.name || 'K2 Galerie'}</strong></p>
-        ${galleryData.address ? `<p>${galleryData.address}</p>` : ''}
+        ${fullAddressFromStammdaten ? `<p>${fullAddressFromStammdaten}</p>` : ''}
         ${galleryData.phone ? `<p>Tel: ${galleryData.phone}</p>` : ''}
         ${galleryData.email ? `<p>E-Mail: ${galleryData.email}</p>` : ''}
       </div>
@@ -6003,7 +6017,7 @@ ${'='.repeat(60)}
     <div class="section">
       <h2>Galerie-Informationen</h2>
       <p><strong>Name:</strong> ${galleryData.name || 'K2 Galerie'}</p>
-      ${galleryData.address ? `<p><strong>Adresse:</strong> ${galleryData.address}</p>` : ''}
+      ${fullAddressFromStammdaten ? `<p><strong>Adresse:</strong> ${fullAddressFromStammdaten}</p>` : ''}
       ${galleryData.phone ? `<p><strong>Telefon:</strong> ${galleryData.phone}</p>` : ''}
       ${galleryData.email ? `<p><strong>E-Mail:</strong> ${galleryData.email}</p>` : ''}
       ${galleryData.website ? `<p><strong>Website:</strong> ${galleryData.website}</p>` : ''}
@@ -6546,7 +6560,7 @@ ${'='.repeat(60)}
     
     <div class="footer">
       <p><strong>${galleryData.name || 'K2 Galerie'}</strong></p>
-      ${galleryData.address ? `<p>${galleryData.address}</p>` : ''}
+      ${fullAddressFromStammdaten ? `<p>${fullAddressFromStammdaten}</p>` : ''}
       ${galleryData.email ? `<p>${galleryData.email}</p>` : ''}
       ${galleryData.phone ? `<p>${galleryData.phone}</p>` : ''}
     </div>
@@ -6884,7 +6898,7 @@ ${'='.repeat(60)}
 
   // Eröffnungsevent 24.–26. April anlegen (wie gestern angelegt) – Dokumente danach im Event hinzufügen
   const handleCreateEröffnungsevent = () => {
-    const location = [galleryData.address, galleryData.city, galleryData.country].filter(Boolean).join(', ') || ''
+    const location = getProminenteAdresseFormatiert(galleryData, martinaData, georgData) || ''
     const newEvent = {
       id: `event-${Date.now()}`,
       title: 'Eröffnung der K2 Galerie',
@@ -6922,7 +6936,7 @@ ${'='.repeat(60)}
       endTime: '18:00',
       dailyTimes: {} as Record<string, { start: string; end: string }>,
       description: 'Besichtigung des Ateliers von Paul Weber mit Werken und Gespräch.',
-      location: [galleryData.address, galleryData.city, galleryData.country].filter(Boolean).join(', ') || '',
+      location: getProminenteAdresseFormatiert(galleryData, martinaData, georgData) || '',
       documents: [
         { id: `${eventId}-einladung`, name: 'Einladung – Ateliersbesichtigung Paul Weber', category: 'pr-dokumente', eventId, werbematerialTyp: 'flyer' },
         { id: `${eventId}-presse`, name: 'Presse – Ateliersbesichtigung Paul Weber', category: 'pr-dokumente', eventId, werbematerialTyp: 'presse' }
@@ -6947,17 +6961,17 @@ ${'='.repeat(60)}
     setEventEndTime('')
     setEventDailyTimes({})
     setEventDescription('')
-    // Automatisch komplette Adresse aus Stammdaten übernehmen
-    setEventLocation([galleryData.address, galleryData.city, galleryData.country].filter(Boolean).join(', ') || '')
+    // Automatisch prominente Adresse aus Stammdaten übernehmen (Galerie zuerst, sonst Künstler)
+    setEventLocation(getProminenteAdresseFormatiert(galleryData, martinaData, georgData) || '')
     setShowEventModal(true)
   }
 
-  // Komplette Adresse aus Stammdaten (Straße, Ort, Land)
-  const fullAddressFromStammdaten = [galleryData.address, galleryData.city, galleryData.country].filter(Boolean).join(', ')
+  // Prominente Adresse für Events/Dokumente/Maps (Galerie zuerst, sonst Künstler)
+  const fullAddressFromStammdaten = getProminenteAdresseFormatiert(galleryData, martinaData, georgData)
 
   // Stammdaten in Event-Felder übernehmen
   const applyStammdatenToEvent = () => {
-    // Komplette Adresse aus Stammdaten übernehmen (Straße + Ort + Land)
+    // Prominente Adresse übernehmen (Galerie zuerst, sonst Künstler)
     setEventLocation(fullAddressFromStammdaten || '')
     
     // Kontaktdaten in Beschreibung einfügen (wenn noch keine Beschreibung vorhanden)
@@ -10624,7 +10638,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
           margin: '0 auto'
         }}>
           {/* Admin-Dashboard: "Was willst du heute tun?" – große Karten statt Tab-Reihe */}
-          {activeTab !== 'assistent' && (
           <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 2.5rem)' }}>
 
             {/* Zurück-Link wenn in einem Bereich */}
@@ -10659,7 +10672,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   const galerieUrl = '/projects/k2-galerie/galerie-oeffentlich'
 
                   // Alle Stationen – Kacheln links + rechts; einheitlich „Galerie gestalten und texten“
-                  type HubTab = 'werke' | 'eventplan' | 'presse' | 'design' | 'veroeffentlichen' | 'einstellungen' | 'katalog' | 'assistent'
+                  type HubTab = 'werke' | 'eventplan' | 'presse' | 'design' | 'veroeffentlichen' | 'einstellungen' | 'katalog'
                   const alleStationen: { emoji: string; name: string; beschreibung: string; tab: HubTab }[] = istVerein ? [
                     { emoji: '🖼️', name: 'Werke & Mitglieder', beschreibung: 'Alle Werke aller Mitglieder – Fotos, Preise, Profile.', tab: 'werke' },
                     { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Vernissagen planen, Einladungen erstellen, QR-Codes.', tab: 'eventplan' },
@@ -10668,7 +10681,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '📤', name: 'Veröffentlichen', beschreibung: 'Aushängeschild der Galerie sichtbar machen – Besucher sehen den aktuellen Stand.', tab: 'veroeffentlichen' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Vereinsdaten, Kontakt, Mitglieder verwalten.', tab: 'einstellungen' },
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
-                    { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Daten ausfüllen und die Galerie live schalten.', tab: 'assistent' },
                   ] : [
                     { emoji: '🖼️', name: 'Werke hinzufügen und bearbeiten', beschreibung: 'Fotos hochladen, Titel, Preis – ein Klick und es ist live.', tab: 'werke' },
                     { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Vernissage planen, Einladungen & QR-Codes erstellen.', tab: 'eventplan' },
@@ -10677,7 +10689,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '📤', name: 'Veröffentlichen', beschreibung: 'Aushängeschild der Galerie sichtbar machen – Besucher und Geräte sehen den aktuellen Stand.', tab: 'veroeffentlichen' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Kontakt, Adresse, Öffnungszeiten – deine Stammdaten.', tab: 'einstellungen' },
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
-                    { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Daten ausfüllen und deine Galerie live schalten.', tab: 'assistent' },
                   ]
 
                   // Abgestimmte Hintergrundfarben pro Bereich (inaktiv) – alle aus einer warmen Palette
@@ -10689,7 +10700,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     veroeffentlichen: '#f0f8f4',
                     einstellungen: '#f0f4f8',
                     katalog: '#f4f8f0',
-                    assistent: '#f8f0f4',
                   }
                   const HUB_ICON_TINT: Record<HubTab, string> = {
                     werke: '#b54a1e22',
@@ -10699,7 +10709,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     veroeffentlichen: '#0d948822',
                     einstellungen: '#4a5a8a22',
                     katalog: '#3a7a5a22',
-                    assistent: '#8a4a6a22',
                   }
 
                   // Aktive Station = welcher Tab ist gerade offen
@@ -10896,7 +10905,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 try { sessionStorage.setItem('k2-admin-context', tenant.isOeffentlich ? 'oeffentlich' : 'k2') } catch (_) {}
                                 if (typeof window !== 'undefined' && window.self === window.top) window.location.href = '/projects/k2-galerie/shop?openAsKasse=1'
                               } else {
-                                const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','veroeffentlichen','einstellungen','assistent'] as const
+                                const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','veroeffentlichen','einstellungen'] as const
                                 type AdminTab = typeof validTabs[number]
                                 if (validTabs.includes(b.tab as AdminTab)) {
                                   setActiveTab(b.tab as AdminTab)
@@ -10966,12 +10975,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '🖼️', name: 'Vereinsmitglieder', beschreibung: 'Mitglieder hinzufügen, bearbeiten, verwalten – Fotos, Profile.', tab: 'werke' },
                     { emoji: '✨', name: 'Galerie gestalten und texten', beschreibung: 'Farben, Texte, Bilder – die Galerie nach euren Wünschen.', tab: 'design' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Vereinsdaten, Kontakt, Mitglieder verwalten.', tab: 'einstellungen' },
-                    { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Der Assistent führt euch durch die Einrichtung.', tab: 'assistent' },
                   ] : [
                     { emoji: '🖼️', name: 'Werke hinzufügen und bearbeiten', beschreibung: 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist live in deiner Galerie.', tab: 'werke' },
                     { emoji: '✨', name: 'Galerie gestalten und texten', beschreibung: tenant.isOeffentlich ? 'Farben, Texte, dein Foto – die Galerie wird zu dir.' : 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
-                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: tenant.isOeffentlich ? 'Meine Daten, Kontakt. Lizenz & Empfehlungsprogramm.' : 'Meine Daten, Drucker, Sicherheit (inkl. Backup). Lizenz & Empfehlungsprogramm.', tab: 'einstellungen' },
-                    { emoji: '🤖', name: 'Schritt-für-Schritt', beschreibung: 'Neu hier? Der Assistent führt dich durch die Einrichtung.', tab: 'assistent' },
+                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: tenant.isOeffentlich ? 'Meine Daten, Kontakt. Lizenz & Empfehlungsprogramm.' : (tenant.isVk2 ? 'Meine Daten, Drucker, Sicherheit (inkl. Backup). Lizenz & Anmeldung.' : 'Meine Daten, Drucker (schlank für unsere App).'), tab: 'einstellungen' },
                   ]
                   const rechtsBereiche: HubArea[] = tenant.isVk2 ? [
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
@@ -10992,7 +10999,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     werke: { bg: akzentGrad, text: '#fff', sub: 'rgba(255,255,255,0.85)', border: 'none' },
                     design: { bg: '#f5ebe0', text: '#1c1a18', sub: '#5c5650', border: '#c4a57444' },
                     einstellungen: { bg: '#f0f4f8', text: s.text, sub: s.muted, border: '#a0b0c844' },
-                    assistent: { bg: '#f8f0f4', text: s.text, sub: s.muted, border: '#c4a0b044' },
                     statistik: { bg: '#f5f8f2', text: s.text, sub: s.muted, border: '#90a88044' },
                     eventplan: { bg: '#f5f8f2', text: s.text, sub: s.muted, border: '#90a88044' },
                     presse: { bg: '#f2f4f8', text: s.text, sub: s.muted, border: '#8090b044' },
@@ -11108,20 +11114,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             )}
 
           </div>
-          )}
-
-          {/* Galerie-Assistent: neue Kunden Schritt für Schritt zur eigenen Galerie führen */}
-          {activeTab === 'assistent' && (
-            <GalerieAssistent
-              guideName={guideVorname || undefined}
-              guidePfad={guidePfad || undefined}
-              onGoToStep={(tab, subTab) => {
-                setActiveTab(tab)
-                if (subTab && tab === 'einstellungen') setSettingsSubTab(subTab as 'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzinfo' | 'kassabuch')
-                if (subTab && tab === 'eventplan') setEventplanSubTab(subTab as 'events' | 'öffentlichkeitsarbeit')
-              }}
-            />
-          )}
 
           {/* ===== VERKAUFSSTATISTIK (Kassa, Lager, Listen) + PDFs & Speicherdaten ===== */}
           {activeTab === 'statistik' && (
@@ -12635,8 +12627,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               )
             })()}
 
-            {/* Für K2: Verwaltung (Board, Lizenzen) – dezent. Für ök2: Lizenz/Empfehlung hauptsächlich in Einstellungen (Lizenz abschließen, Empfehlungs-Programm). */}
-            {!tenant.isVk2 && !tenant.isOeffentlich && (
+            {/* Nur ök2: Verwaltung-Links (Lizenzen, Empfehlungstool). K2 = nur unsere App, schlank ohne Lizenz-Button. */}
+            {tenant.isOeffentlich && (
               <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: s.muted }}>Verwaltung: <Link to={PROJECT_ROUTES['k2-galerie'].uebersicht} style={{ color: s.accent }}>Übersicht-Board</Link>, <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: s.accent }}>Lizenzen</Link>, <Link to={PROJECT_ROUTES['k2-galerie'].empfehlungstool} style={{ color: s.accent }}>Empfehlungstool</Link>.</p>
             )}
 
@@ -12663,7 +12655,19 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Lizenz wählen, bezahlen – evtl. mit deinen Daten aus Einstellungen</div>
               </button>
               )}
-              {/* 3. Lizenzinformation */}
+              {/* 2b. Lizenz beenden – nur ök2 (K2 = unsere App, kein Ausstieg nötig) */}
+              {tenant.isOeffentlich && (
+              <button type="button" onClick={() => setSettingsSubTab('lizenzbeenden')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'lizenzbeenden' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'lizenzbeenden' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'lizenzbeenden' ? s.accent : `${s.accent}22` }}
+              >
+                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>🚪</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Lizenz beenden</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Jederzeit aussteigen – 3 kurze Fragen, dann Kündigung</div>
+              </button>
+              )}
+              {/* 3. Lizenzinformation – nur ök2 (K2 schlank) */}
+              {tenant.isOeffentlich && (
               <button type="button" onClick={() => setSettingsSubTab('lizenzinfo')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'lizenzinfo' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'lizenzinfo' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'lizenzinfo' ? s.accent : `${s.accent}22` }}
@@ -12672,7 +12676,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Lizenzinformation</div>
                 <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Stufen, Preise, Übersicht-Board & Lizenzen</div>
               </button>
-              {/* 4. Empfehlungs-Programm */}
+              )}
+              {/* 4. Empfehlungs-Programm – nur ök2 (K2 schlank) */}
+              {tenant.isOeffentlich && (
               <button type="button" onClick={() => setSettingsSubTab('empfehlung')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'empfehlung' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'empfehlung' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'empfehlung' ? s.accent : `${s.accent}22` }}
@@ -12681,6 +12687,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Empfehlungs-Programm</div>
                 <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Deine Rabattstufe, geworbene User</div>
               </button>
+              )}
               {/* 5. Drucker */}
               <button type="button" onClick={() => setSettingsSubTab('drucker')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'drucker' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'drucker' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
@@ -12692,8 +12699,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   {tenant.isVk2 ? 'Drucken (Standard-Drucker)' : 'Etikettendrucker einrichten'}
                 </div>
               </button>
-              {/* Kassabuch führen (nur K2/ök2, ab Pro) – normale Kachel */}
-              {!tenant.isVk2 && hasKassa(kassabuchTenantForSettings) && (
+              {/* Kassabuch führen – nur ök2 (K2: immer Ja, keine Kachel nötig) */}
+              {tenant.isOeffentlich && hasKassa(kassabuchTenantForSettings) && (
               <button type="button" onClick={() => setSettingsSubTab('kassabuch')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'kassabuch' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'kassabuch' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'kassabuch' ? s.accent : `${s.accent}22` }}
@@ -12703,8 +12710,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Ja: vollständig (Eingänge + Ausgänge). Nein: nur Verkäufe.</div>
               </button>
               )}
-              {/* 6. Passwort & Sicherheit */}
-              {!tenant.isVk2 && (
+              {/* 6. Passwort & Sicherheit – nur ök2 (K2 schlank, kein Passwort) */}
+              {tenant.isOeffentlich && (
               <button type="button" onClick={() => setSettingsSubTab('sicherheit')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'sicherheit' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'sicherheit' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'sicherheit' ? s.accent : `${s.accent}22` }}
@@ -12714,8 +12721,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Admin-Passwort ändern</div>
               </button>
               )}
-              {/* Anmeldung (nur K2 + VK2) */}
-              {!tenant.isOeffentlich && (
+              {/* Anmeldung – nur VK2 (K2 schlank, keine Anmeldung) */}
+              {tenant.isVk2 && (
               <button type="button" onClick={() => setSettingsSubTab('registrierung')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'registrierung' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'registrierung' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'registrierung' ? s.accent : `${s.accent}22` }}
@@ -13296,8 +13303,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         <label style={{ fontSize: '0.85rem', color: s.text }}>Adresse (Straße, Hausnr.)</label>
                         <input
                           type="text"
-                          value={galleryData.address || ''}
-                          onChange={(e) => setGalleryData({ ...galleryData, address: e.target.value })}
+                          value={martinaData.address || ''}
+                          onChange={(e) => setMartinaData({ ...martinaData, address: e.target.value })}
                           placeholder="z. B. Hauptstraße 12"
                           style={{ padding: '0.5rem 0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
@@ -13307,8 +13314,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           <label style={{ fontSize: '0.8rem', color: s.text }}>Ort (PLZ Ort)</label>
                           <input
                             type="text"
-                            value={galleryData.city || ''}
-                            onChange={(e) => setGalleryData({ ...galleryData, city: e.target.value })}
+                            value={martinaData.city || ''}
+                            onChange={(e) => setMartinaData({ ...martinaData, city: e.target.value })}
                             placeholder="1010 Wien"
                             style={{ padding: '0.5rem 0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box' }}
                           />
@@ -13317,13 +13324,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           <label style={{ fontSize: '0.8rem', color: s.text }}>Land</label>
                           <input
                             type="text"
-                            value={galleryData.country || ''}
-                            onChange={(e) => setGalleryData({ ...galleryData, country: e.target.value })}
+                            value={martinaData.country || ''}
+                            onChange={(e) => setMartinaData({ ...martinaData, country: e.target.value })}
                             placeholder="Österreich"
                             style={{ padding: '0.5rem 0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box' }}
                           />
                         </div>
                       </div>
+                      <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', color: s.muted }}>Wird nur für Impressum, Dokumente und Google Maps genutzt, wenn keine Galerie-Adresse eingetragen ist.</p>
                       <div className="field">
                         <button type="button" onClick={() => setVitaMartinaOpen(!vitaMartinaOpen)} style={{ width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
                           <span>Vita (für Außenkommunikation &amp; Galerie)</span>
@@ -13346,6 +13354,124 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       </div>
                     </div>
                   </div>
+
+                  {/* Künstler:in 2 (Georg) – nur K2, nicht ök2 */}
+                  {!tenant.isOeffentlich && (
+                  <div style={{
+                    background: s.bgCard,
+                    border: `1px solid ${s.accent}22`,
+                    padding: 'clamp(0.75rem, 2vw, 1rem)',
+                    borderRadius: '12px',
+                    boxShadow: s.shadow
+                  }}>
+                    <h3 style={{
+                      marginTop: 0,
+                      marginBottom: '0.5rem',
+                      fontSize: 'clamp(1rem, 2.5vw, 1.15rem)',
+                      fontWeight: '600',
+                      color: s.text,
+                      borderBottom: `1px solid ${s.accent}22`,
+                      paddingBottom: '0.5rem'
+                    }}>
+                      👤 Zweite Person – Name, Kontakt &amp; Vita
+                    </h3>
+                    <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', color: s.text }}>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Name</label>
+                        <input
+                          type="text"
+                          value={georgData.name || ''}
+                          onChange={(e) => setGeorgData({ ...georgData, name: e.target.value })}
+                          placeholder="Name"
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
+                        />
+                      </div>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>E-Mail</label>
+                        <input
+                          type="email"
+                          value={georgData.email || ''}
+                          onChange={(e) => setGeorgData({ ...georgData, email: e.target.value })}
+                          placeholder="E-Mail"
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
+                        />
+                      </div>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Telefon</label>
+                        <input
+                          type="tel"
+                          value={georgData.phone || ''}
+                          onChange={(e) => setGeorgData({ ...georgData, phone: e.target.value })}
+                          placeholder="z.B. +43 664 …"
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
+                        />
+                      </div>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Website</label>
+                        <input
+                          type="url"
+                          value={georgData.website || ''}
+                          onChange={(e) => setGeorgData({ ...georgData, website: e.target.value.trim() })}
+                          placeholder="www.ihre-website.at"
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
+                        />
+                      </div>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Adresse (Straße, Hausnr.)</label>
+                        <input
+                          type="text"
+                          value={georgData.address || ''}
+                          onChange={(e) => setGeorgData({ ...georgData, address: e.target.value })}
+                          placeholder="z. B. Hauptstraße 12"
+                          style={{ padding: '0.5rem 0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
+                        />
+                      </div>
+                      <div className="field" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                        <div>
+                          <label style={{ fontSize: '0.8rem', color: s.text }}>Ort (PLZ Ort)</label>
+                          <input
+                            type="text"
+                            value={georgData.city || ''}
+                            onChange={(e) => setGeorgData({ ...georgData, city: e.target.value })}
+                            placeholder="1010 Wien"
+                            style={{ padding: '0.5rem 0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: '0.8rem', color: s.text }}>Land</label>
+                          <input
+                            type="text"
+                            value={georgData.country || ''}
+                            onChange={(e) => setGeorgData({ ...georgData, country: e.target.value })}
+                            placeholder="Österreich"
+                            style={{ padding: '0.5rem 0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                      </div>
+                      <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', color: s.muted }}>Wird nur für Impressum, Dokumente und Google Maps genutzt, wenn keine Galerie-Adresse eingetragen ist.</p>
+                      <div className="field">
+                        <button type="button" onClick={() => setVitaGeorgOpen(!vitaGeorgOpen)} style={{ width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                          <span>Vita (für Außenkommunikation &amp; Galerie)</span>
+                          <span style={{ fontSize: '0.75rem', color: s.muted }}>{vitaGeorgOpen ? '▼ einklappen' : '▶ aufklappen'}</span>
+                        </button>
+                        {vitaGeorgOpen && (
+                          <>
+                            <textarea
+                              value={georgData.vita || ''}
+                              onChange={(e) => setGeorgData({ ...georgData, vita: e.target.value })}
+                              placeholder="Vita-Text (Werdegang, Ausstellungen, Arbeitsweise …)"
+                              rows={8}
+                              style={{ marginTop: '0.5rem', padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box', resize: 'vertical' }}
+                            />
+                            <button type="button" onClick={() => openVitaDocument('georg')} style={{ marginTop: '0.5rem', padding: '0.4rem 0.75rem', background: s.accent, color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: '0.85rem' }}>
+                              📄 Vita als Dokument öffnen
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  )}
 
                   {/* Galerie – optional, nur Link zum Öffnen (wird kaum gebraucht) */}
                   <div style={{
@@ -13372,7 +13498,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           textDecoration: 'underline'
                         }}
                       >
-                        🏛️ Galerie-Adresse (optional) – bei Bedarf öffnen
+                        🏛️ Galerie-Adresse – bei Bedarf öffnen
                       </button>
                     ) : (
                       <>
@@ -13385,9 +13511,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       borderBottom: `1px solid ${s.accent}22`,
                       paddingBottom: '0.5rem'
                     }}>
-                      🏛️ Galerie-Adresse (optional)
+                      🏛️ Galerie-Adresse (für Impressum, Dokumente, Google Maps)
                     </h3>
-                    <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', color: s.muted }}>Nur ausfüllen, wenn sich Ihre Galerie an einem anderen Ort befindet oder andere Kontaktdaten hat. Sonst wird Ihre Künstler-Adresse oben verwendet.</p>
+                    <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', color: s.muted }}>Diese Adresse ist die prominente Adresse nach außen: Impressum, alle Dokumente und Google Maps nutzen sie zuerst. Nur wenn hier nichts eingetragen ist, werden die Adressdaten der Künstler:innen verwendet.</p>
                     <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', color: s.text }}>
                       <div className="field">
                         <label style={{ fontSize: '0.85rem', color: s.text }}>Galerie-Name</label>
@@ -13400,18 +13526,36 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         />
                       </div>
                       <div className="field">
-                        <label style={{ fontSize: '0.85rem', color: s.text }}>Adresse, Ort, Land</label>
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Adresse (Straße, Hausnr.)</label>
                         <input
                           type="text"
-                          value={[galleryData.address, galleryData.city, galleryData.country].filter(Boolean).join(', ') || ''}
-                          onChange={(e) => {
-                            const v = e.target.value
-                            const parts = v.split(',').map(p => p.trim())
-                            setGalleryData({ ...galleryData, address: parts[0] || '', city: parts[1] || '', country: parts[2] || '' })
-                          }}
-                          placeholder="Straße, PLZ Ort, Land (nur wenn anders)"
+                          value={galleryData.address || ''}
+                          onChange={(e) => setGalleryData({ ...galleryData, address: e.target.value })}
+                          placeholder="z. B. Hauptstraße 12"
                           style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
+                      </div>
+                      <div className="field" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                        <div>
+                          <label style={{ fontSize: '0.8rem', color: s.text }}>Ort (PLZ Ort)</label>
+                          <input
+                            type="text"
+                            value={galleryData.city || ''}
+                            onChange={(e) => setGalleryData({ ...galleryData, city: e.target.value })}
+                            placeholder="1010 Wien"
+                            style={{ padding: '0.5rem 0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: '0.8rem', color: s.text }}>Land</label>
+                          <input
+                            type="text"
+                            value={galleryData.country || ''}
+                            onChange={(e) => setGalleryData({ ...galleryData, country: e.target.value })}
+                            placeholder="Österreich"
+                            style={{ padding: '0.5rem 0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box' }}
+                          />
+                        </div>
                       </div>
                       <div className="field">
                         <label style={{ fontSize: '0.85rem', color: s.text }}>Telefon</label>
@@ -14130,6 +14274,87 @@ ${name}`
                       </form>
                     </>
                   )}
+                </div>
+              )
+            })()}
+
+            {/* Lizenz beenden – 3 kurze Fragen, dann Kündigung (K2 + ök2) */}
+            {!tenant.isVk2 && settingsSubTab === 'lizenzbeenden' && (() => {
+              const GRUND_OPTIONS = [
+                { value: '', label: '– Bitte wählen (optional)' },
+                { value: 'nicht-mehr-benötigt', label: 'Ich brauche die Lizenz nicht mehr' },
+                { value: 'zu-teuer', label: 'Mir ist es zu teuer' },
+                { value: 'wechsel', label: 'Wechsel zu anderem Anbieter' },
+                { value: 'anderes', label: 'Anderer Grund' },
+              ]
+              const handleLizenzBeenden = async () => {
+                setLizenzBeendenLoading(true)
+                try {
+                  const base = typeof window !== 'undefined' ? window.location.origin : ''
+                  const res = await fetch(`${base}/api/cancel-subscription`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      grund: lizenzBeendenGrund,
+                      verbesserung: lizenzBeendenVerbesserung.trim() || undefined,
+                    }),
+                  }).catch(() => ({ ok: false }))
+                  if (res && typeof (res as any).ok === 'boolean' && (res as Response).ok) {
+                    setLizenzBeendenErledigt(true)
+                  } else {
+                    setLizenzBeendenErledigt(true)
+                  }
+                } catch {
+                  setLizenzBeendenErledigt(true)
+                }
+                setLizenzBeendenLoading(false)
+              }
+              if (lizenzBeendenErledigt) {
+                return (
+                  <div ref={settingsContentRef}>
+                    <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', fontWeight: 600, color: s.text, marginBottom: '0.5rem' }}>🚪 Lizenz beenden</h3>
+                    <div style={{ padding: '1.25rem', background: s.bgCard, border: `1px solid ${s.accent}44`, borderRadius: 12, marginTop: '1rem' }}>
+                      <p style={{ margin: 0, fontSize: '0.95rem', color: s.text, lineHeight: 1.6 }}>
+                        <strong>Kündigung erfasst.</strong> Du erhältst eine Bestätigung. Die Lizenz läuft bis zum Ende der aktuellen Abrechnungsperiode; danach endet der Zugang. Deine Daten kannst du vorher unter Einstellungen → Backup exportieren.
+                      </p>
+                      <p style={{ margin: '1rem 0 0', fontSize: '0.9rem', color: s.muted }}>Danke für dein Feedback – es hilft uns, das Produkt zu verbessern.</p>
+                    </div>
+                  </div>
+                )
+              }
+              return (
+                <div ref={settingsContentRef}>
+                  <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', fontWeight: 600, color: s.text, marginBottom: '0.5rem' }}>
+                    🚪 Lizenz beenden
+                  </h3>
+                  <p style={{ margin: '0 0 1.25rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.6 }}>
+                    Du kannst jederzeit aussteigen – keine Bindung. Beantworte bitte kurz die folgenden Fragen (optional). Danach wird die Kündigung verarbeitet.
+                  </p>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: 420 }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.35rem' }}>1. Warum möchtest du die Lizenz beenden?</label>
+                      <select value={lizenzBeendenGrund} onChange={(e) => setLizenzBeendenGrund(e.target.value)} style={{ width: '100%', padding: '0.6rem 0.9rem', border: `1px solid ${s.accent}44`, borderRadius: 8, fontSize: '0.9rem', background: s.bgElevated, color: s.text }}>
+                        {GRUND_OPTIONS.map((o) => <option key={o.value || 'empty'} value={o.value}>{o.label}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.35rem' }}>2. Gibt es etwas, das wir hätten besser machen können? (optional)</label>
+                      <textarea value={lizenzBeendenVerbesserung} onChange={(e) => setLizenzBeendenVerbesserung(e.target.value)} placeholder="Kurz notieren …" rows={3} style={{ width: '100%', padding: '0.6rem 0.9rem', border: `1px solid ${s.accent}44`, borderRadius: 8, fontSize: '0.9rem', background: s.bgElevated, color: s.text, resize: 'vertical', boxSizing: 'border-box' }} />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.35rem' }}>3. Hast du deine Daten gesichert?</label>
+                      <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: s.muted }}>Vor dem Ende der Lizenz: Backup unter <strong>Einstellungen → Meine Daten</strong> bzw. über das Vollbackup in den Einstellungen erstellen.</p>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: s.text, cursor: 'pointer' }}>
+                        <input type="checkbox" checked={lizenzBeendenBackupHinweis} onChange={(e) => setLizenzBeendenBackupHinweis(e.target.checked)} />
+                        Ich habe meine Daten gesichert oder werde das vor Ablauf tun
+                      </label>
+                    </div>
+
+                    <button type="button" onClick={handleLizenzBeenden} disabled={lizenzBeendenLoading} style={{ padding: '0.7rem 1.25rem', background: lizenzBeendenLoading ? s.muted : '#b54a1e', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: lizenzBeendenLoading ? 'not-allowed' : 'pointer', fontSize: '0.95rem', marginTop: '0.5rem' }}>
+                      {lizenzBeendenLoading ? 'Wird verarbeitet …' : 'Lizenz jetzt beenden'}
+                    </button>
+                  </div>
                 </div>
               )
             })()}

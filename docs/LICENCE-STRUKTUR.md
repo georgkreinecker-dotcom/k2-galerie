@@ -10,7 +10,18 @@
 
 ---
 
-## 2. Licence-Stufen (Konditionen)
+## 2. Lizenz beenden – kein Lock-in
+
+**Grundsatz:** So einfach der Einstieg ist, so einfach ist der Ausstieg. **Keine Bindung, keine Zwangsbeglückung.**
+
+- Der Nutzer kann **jederzeit** aus der Lizenz aussteigen – ohne Mindestlaufzeit, ohne versteckte Hürden.
+- Der Ausstieg muss **einfach und klar** möglich sein (z. B. in Einstellungen oder über den gleichen Kanal wie der Lizenzabschluss). Keine Anrufe, keine komplizierten Formulare.
+- Nach dem Ausstieg endet die Nutzung zum vereinbarten Zeitpunkt. **Datenexport/Backup** vorher möglich (Funktion im Admin).
+- Technisch/vertrieblich: Kündigungsfristen und -wege in AGB sachlich regeln, aber den Ausstieg nicht erschweren. Kein Lock-in.
+
+---
+
+## 3. Licence-Stufen (Konditionen)
 
 Die Stufen sind an die Zielgruppe **Künstler:innen** angepasst. **Ausführliches Lizenzmodell:** `docs/LIZENZMODELL-BASIC-PRO-ENTERPRISE.md` (Limits, Feature-Matrix, Basic/Pro/Enterprise im Detail).
 
@@ -25,7 +36,7 @@ Die Stufen sind an die Zielgruppe **Künstler:innen** angepasst. **Ausführliche
 
 ---
 
-## 3. Wo Licences vergeben werden
+## 4. Wo Licences vergeben werden
 
 - **Ein Ort (mök2):** Licences leben nur in mök2: **Plattform-Start → mök2** (oder **Licences**) → `/projects/k2-galerie/licences` mit mök2-Leiste. `/platform/licences` leitet dorthin um – keine doppelte Route.
 - **Inhalt:** Übersicht der **Licence-Konditionen** (Stufen, Preise, Features), Bereich **„Licence vergeben“** (Name, E-Mail, Licence-Typ, optional **Empfehler-ID**), Liste vergebener Licences (lokal bis Backend-Anbindung).
@@ -35,7 +46,7 @@ Bis ein Backend (z. B. Supabase, Stripe, eigener Shop) existiert: Vergabe kann
 
 ---
 
-## 4. Verknüpfung mit Empfehlungs-Programm
+## 5. Verknüpfung mit Empfehlungs-Programm
 
 - Beim **Licence-Abschluss** oder bei **Licence-Vergabe** wird optional die **Empfehler-ID** des/der Werbenden erfasst.
 - Diese Zuordnung („Licence-Inhaber B wurde von Empfehler A geworben“) ist die Grundlage für:
@@ -44,7 +55,7 @@ Bis ein Backend (z. B. Supabase, Stripe, eigener Shop) existiert: Vergabe kann
 
 ---
 
-## 5. Nächste Schritte (technisch)
+## 6. Nächste Schritte (technisch)
 
 - Licence-Konditionen in Config oder Admin zentral pflegen (bereits angelegt: LicenseManager mit Basic/Pro/Enterprise).
 - Seite „Licences“ mit Vergebefunktion und optional Empfehler-ID-Eingabe.

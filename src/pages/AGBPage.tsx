@@ -87,14 +87,21 @@ export default function AGBPage() {
         </section>
 
         <section style={{ marginBottom: '1.75rem' }}>
-          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>7. Änderungen und Beendigung</h2>
+          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>7. Beendigung der Lizenz durch den Nutzer (Ausstieg)</h2>
+          <p style={{ margin: 0, lineHeight: 1.7, fontSize: '0.95rem' }}>
+            Die Lizenz kann vom Nutzer bzw. von der Nutzerin <strong>jederzeit</strong> beendet werden. Es besteht <strong>keine Mindestlaufzeit</strong> und keine Bindung. Der Ausstieg soll so einfach möglich sein wie der Einstieg – ohne Zwangsbeglückung. Die Beendigung erfolgt in der Anwendung (z. B. in den Einstellungen) oder über den gleichen Kanal wie der Lizenzabschluss; es sind keine Anrufe oder besonderen Formulare erforderlich. Bis zum Ende der Laufzeit bleibt der Zugang bestehen; vor Beendigung kann der Nutzer seine Daten exportieren bzw. sichern (Backup-Funktion in der Anwendung). Ein Anspruch auf Rückerstattung bereits gezahlter Beträge für die laufende Abrechnungsperiode besteht nur in den gesetzlich vorgesehenen Fällen.
+          </p>
+        </section>
+
+        <section style={{ marginBottom: '1.75rem' }}>
+          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>8. Änderungen und Beendigung durch den Anbieter</h2>
           <p style={{ margin: 0, lineHeight: 1.7, fontSize: '0.95rem' }}>
             Der Anbieter ist berechtigt, die AGB, die Anwendung und die angebotenen Leistungen zu ändern oder einzustellen. Über wesentliche Änderungen der AGB wird in angemessener Form informiert; die weitere Nutzung nach Wirksamwerden gilt als Zustimmung. Ein Anspruch auf Fortführung bestimmter Funktionen oder Zugänge besteht nicht.
           </p>
         </section>
 
         <section style={{ marginBottom: '1.75rem' }}>
-          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>8. Schlussbestimmungen</h2>
+          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>9. Schlussbestimmungen</h2>
           <p style={{ margin: 0, lineHeight: 1.7, fontSize: '0.95rem' }}>
             Es gilt das Recht der Republik Österreich unter Ausschluss des UN-Kaufrechts. Gerichtsstand für alle Streitigkeiten ist, soweit gesetzlich zulässig, der Sitz des Anbieters. Die Unwirksamkeit einzelner Klauseln berührt die Gültigkeit der übrigen nicht. Diese AGB ersetzen alle vorherigen Vereinbarungen zum Gegenstand.
           </p>

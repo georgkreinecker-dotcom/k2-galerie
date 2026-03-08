@@ -4,6 +4,30 @@
 
 ---
 
+## Datum: 08.03.26 – Stammdaten: Galerie- und Künstler-Adressen getrennt, prominente Adresse
+
+- **Thema:** Georg: Galerie-Adresse und Künstler-Adressen müssen getrennt sein. Wenn eine Galerie-Adresse eingetragen ist, ist sie immer die prominente Adresse (Impressum, alle Dokumente, Google Maps). Nur wenn keine Galerie-Adresse da ist, werden die persönlichen Künstler-Adressen genutzt – mit Hinweis unter den Künstler-Adressfeldern. Google Maps: Galerie-Adresse 1. Wahl.
+- **Erledigt:** (1) **Datenmodell:** Galerie behält eigene Adresse; Martina/Georg haben eigene optionale Felder address, city, country (K2_STAMMDATEN_DEFAULTS, stammdatenStorage mergeStammdatenPerson, getEmptyOeffentlich). (2) **Admin UI:** Erster Künstler-Block: Adressfelder an martinaData gebunden (nicht mehr an galleryData); Zweiter Künstler (Georg): Adressfelder ergänzt. Unter beiden Künstler-Adressen: Hinweis „Wird nur für Impressum, Dokumente und Google Maps genutzt, wenn keine Galerie-Adresse eingetragen ist.“ Galerie-Block: Titel „Galerie-Adresse (für Impressum, Dokumente, Google Maps)“ und Beschreibung angepasst. (3) **Prominente Adresse:** getProminenteAdresse / getProminenteAdresseFormatiert in tenantConfig (Galerie zuerst, sonst Martina, sonst Georg). Überall genutzt: GaleriePage Impressum/Maps, BenutzerHandbuchPage Impressum/Maps, ScreenshotExportAdmin Events/Dokumente/Flyer/Plakat/Newsletter/Presse. Build ✅, Tests 42/42.
+- **Nächster Schritt:** Commit + Push. Georg: Admin → Einstellungen → Meine Daten prüfen (Galerie-Adresse vs. Künstler-Adressen, Hinweise).
+
+---
+
+## Datum: 08.03.26 – Schritt-für-Schritt-Assistent entfernt (Handbuch genügt)
+
+- **Thema:** Georg: „Schritt für Schritt Assistenten brauchen wir nicht mehr – das Handbuch genügt.“
+- **Erledigt:** In ScreenshotExportAdmin: „Schritt-für-Schritt“-Karte aus beiden Hub-Listen (Guide-Banner + „Was möchtest du heute tun?“) entfernt; Tab-Typ und validTabs ohne 'assistent'; initialTab nie mehr 'assistent'; GalerieAssistent-Block und Import entfernt; HUB_CARD_BG/HUB_ICON_TINT/GRID_CARD_STYLE ohne assistent; guideAssistent/getAssistent entfernt. Build ✅.
+- **Nächster Schritt:** Commit + Push. Georg: Admin prüfen – nur noch Handbuch-Link für Neueinsteiger, keine Assistenten-Karte mehr.
+
+---
+
+## Datum: 07.03.26 – Marketing-Strategie-Auftrag: zweiter Zweig K2 Familie in Planung
+
+- **Thema:** Georg: In der Planung soll gleich ein **zweiter Zweig für K2 Familie** mit entworfen werden (nicht nur K2 Galerie).
+- **Erledigt:** **docs/AUFTRAG-MARKETING-STRATEGIE-ZWEI-ZWEIGE.md** angelegt – vollständiger Auftrag für Anke/Agent mit **Zweig 1: K2 Galerie** (weltweit, automatisierter Vertrieb) und **Zweig 2: K2 Familie** (eigener Planungszweig, Raumschiff, Grundbotschaft, keine kommerzielle Verwertung der Familiendaten, Positionierung, Botschaften, bewährte Muster für vertrauenssensible Produkte, zeitliche Abfolge mit Roadmap). Beide Zweige nutzen dieselben übergeordneten Prinzipien (Sportwagenmodus, Kantisches Grundgesetz, Team-Hebel); Referenzen (Produkt-Vision, Grundbotschaft, Roadmap, Datensouveränität) eingetragen. docs/00-INDEX.md ergänzt.
+- **Nächster Schritt:** Agent/Anke kann mit diesem Auftrag (inkl. beider Zweige) die Strategie erarbeiten; Output: MARKETING-STRATEGIE-AUTOMATISIERTER-VERTRIEB.md mit Zweig 1 + Zweig 2 (oder separate Datei für K2-Familie-Zweig).
+
+---
+
 ## Datum: 07.03.26 – Benutzerhandbuch = Teil erweiterte Präsentationsmappe (für Anke mitdokumentiert)
 
 - **Thema:** Das Benutzerhandbuch gehört zur **erweiterten Präsentationsmappe** (Prospekt 1 Seite + Benutzerhandbuch). Georg: Handbuch soll auch Teil der erweiterten Präsentationsmappe sein; Anke soll alles mitdokumentiert haben, damit sie eine gute Agentin wird.

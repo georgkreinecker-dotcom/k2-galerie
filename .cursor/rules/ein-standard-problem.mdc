@@ -34,6 +34,7 @@ alwaysApply: true
 | **Druck-Fusszeile / Seitenzahl (Handbücher, druckbare Seiten)** | Klasse **`.seitenfuss`**, `position: fixed; bottom: 0`, `::after { content: "Seite " counter(page) … }`. Referenz: K2GalerieHandbuchPage, K2TeamHandbuchPage, K2FamilieHandbuchPage, BenutzerHandbuchPage. Scoping z. B. `.benutzer-handbuch-wrapper .seitenfuss` oder `.mission-wrapper .seitenfuss`. | Keine eigene Klasse (z. B. `benutzer-print-seitenfuss`) erfinden. |
 | Dokument aus Admin öffnen | `openDocumentInApp` (ein Ablauf, viele Aufrufer). | Kein eigener Öffnungsweg pro Dokumenttyp. |
 | Bild einfügen / Bild übernehmen | `runBildUebernehmen` in ScreenshotExportAdmin. | Kein zweiter Ablauf pro Modal. |
+| **Handbücher (Erstellung, Redaktion, Druck)** | **handbuch-standard-sportwagenmodus.mdc** – Struktur (00-INDEX, eine Übersicht „Inhaltsverzeichnis – Kurzanleitung“, Link + Kurzbeschreibung), Redaktion (keine Doppelung, keine Klammern), Druck (.seitenfuss, [SEITENUMBRUCH]). Referenz: public/benutzer-handbuch/, BenutzerHandbuchPage. | Kein eigenes Muster pro Handbuch. |
 
 **Pflicht vor Implementierung:** Gibt es dafür schon eine Lösung? Wenn ja → dieselbe Klasse / denselben Ablauf nutzen. Georg soll nicht sagen müssen „sind wir im Sportwagenmodus?“ – die Regel und diese Tabelle sorgen dafür.
 

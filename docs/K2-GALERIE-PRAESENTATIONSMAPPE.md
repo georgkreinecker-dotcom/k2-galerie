@@ -2,7 +2,7 @@
 
 **Stand:** März 2026 · Sportwagen-Standard (eine Quelle, eine Schicht, eine Regel)
 
-Dieser Prospekt fasst funktionale und technische Informationen für Präsentationen, Pitches und Partner zusammen. Quelle für alle Außendarstellungen.
+Dieser Prospekt fasst funktionale und technische Informationen für Präsentationen, Pitches und Partner zusammen. Quelle für alle Außendarstellungen. Die übergeordnete **Marketing- und Vertriebsstrategie** (zwei Zweige: K2 Galerie automatisiert, K2 Familie) liegt in **docs/MARKETING-STRATEGIE-AUTOMATISIERTER-VERTRIEB.md** – für Kampagnen und vertriebliche Entscheidungen dort heranziehen.
 
 ---
 

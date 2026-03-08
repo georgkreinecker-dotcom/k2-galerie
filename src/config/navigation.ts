@@ -92,6 +92,8 @@ export const PROJECT_ROUTES = {
     notizenBriefAugust: '/projects/k2-galerie/notizen/brief-an-august',
     /** Board: Lizenznehmer, Empfehler, Abrechnung auf einen Blick (ein Klick zu Details) */
     uebersicht: '/projects/k2-galerie/uebersicht',
+    /** Kampagne Marketing-Strategie – eigene Mappe (Zwischenergebnisse, Auftrag, Strategie) */
+    kampagneMarketingStrategie: '/projects/k2-galerie/kampagne-marketing-strategie',
   },
   vk2: {
     id: 'vk2',
@@ -126,6 +128,7 @@ export const PROJECT_ROUTES = {
     vitaGeorg: '/projects/k2-galerie/vita/georg',
     notizen: '/projects/k2-galerie/notizen',
     uebersicht: '/projects/k2-galerie/uebersicht',
+    kampagneMarketingStrategie: '/projects/k2-galerie/kampagne-marketing-strategie',
   },
   'k2-familie': {
     id: 'k2-familie',
@@ -163,6 +166,7 @@ export const PROJECT_ROUTES = {
     notizen: '/projects/k2-galerie/notizen',
     seitengestaltung: '/projects/k2-galerie/seitengestaltung',
     kunden: '/projects/k2-galerie/kunden',
+    kampagneMarketingStrategie: '/projects/k2-galerie/kampagne-marketing-strategie',
   },
 } as const
 
