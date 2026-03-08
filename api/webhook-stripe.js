@@ -47,6 +47,36 @@ export default async function handler(req, res) {
     return res.status(400).send(`Webhook-Signatur fehlgeschlagen: ${err?.message}`)
   }
 
+  // Kündigung: Abo gelöscht → Mandanten-Daten löschen (Blob)
+  if (event.type === 'customer.subscription.deleted') {
+    const subscription = event.data.object
+    const tenantId = (subscription?.metadata?.tenantId || '').trim().toLowerCase()
+    if (tenantId && tenantId !== 'k2') {
+      const secret = process.env.TENANT_DELETE_SECRET
+      const baseUrl = process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : (process.env.VITE_APP_URL || 'https://k2-galerie.vercel.app')
+      if (secret && baseUrl) {
+        try {
+          const delRes = await fetch(`${baseUrl}/api/delete-tenant-data`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tenantId, secret }),
+          })
+          if (delRes.ok) {
+            console.log('webhook-stripe: Mandanten-Daten gelöscht nach subscription.deleted', tenantId)
+          } else {
+            const data = await delRes.json().catch(() => ({}))
+            console.warn('webhook-stripe: delete-tenant-data Fehler', delRes.status, data)
+          }
+        } catch (err) {
+          console.error('webhook-stripe: delete-tenant-data Aufruf fehlgeschlagen', err?.message || err)
+        }
+      }
+    }
+    return res.status(200).json({ received: true })
+  }
+
   if (event.type !== 'checkout.session.completed') {
     return res.status(200).json({ received: true })
   }

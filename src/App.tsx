@@ -135,7 +135,7 @@ class AppErrorBoundary extends Component<{ children: ReactNode }, { hasError: bo
           </div>
           <p style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#aaa' }}>
             {errorMessage.includes('Importing a module script failed')
-              ? 'Das passiert oft nach Drucken/Teilen oder nach einem Update. „Reset & neu laden“ holt die neueste Version.'
+              ? 'Das passiert oft nach einem neuen Deploy oder Drucken/Teilen – der Browser hat noch alte Skripte. Einmal „Reset & neu laden“ holt die neueste Version (über refresh.html).'
               : 'Wenn die K2-Seite nach Drucken/Teilen nicht mehr lädt: „Reset &amp; neu laden“ versuchen.'}
           </p>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>

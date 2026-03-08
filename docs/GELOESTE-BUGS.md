@@ -8,6 +8,15 @@
 
 ---
 
+## BUG-022 · ök2 Willkommensbild – Uraltbild auf erster Seite (zweites Mal)
+**Symptom:** Auf der ersten Seite der ök2-Demo (Willkommen) erscheint ein altes/irrelevantes Bild („Uraltbild“), obwohl das Problem schon einmal behoben worden war.
+**Ursache:** Default für das ök2-Willkommensbild war wieder ein **Repo-Dateipfad** (`/img/oeffentlich/willkommen.jpg`). Diese Datei kann veraltet sein oder ausgetauscht werden – dann sieht jeder die alte Version. Beim ersten Mal (BUG-020) ging es um Upload-Überschreibung; hier geht es um den **Default** selbst.
+**Lösung:** (1) **Default = stabile URL** (Unsplash) in OEK2_WILLKOMMEN_IMAGES.welcomeImage – keine Repo-Datei mehr als Default. (2) **Legacy-Pfade:** OEK2_LEGACY_WELCOME_IMAGE_PATHS listet Pfade, die nie angezeigt werden; getOek2WelcomeImageEffective() filtert sie. (3) **Regel:** .cursor/rules/oek2-willkommensbild-nie-uraltbild.mdc (alwaysApply) – Default nie wieder auf Repo-Datei umstellen, Legacy-Liste nutzen.
+**Betroffene Dateien:** `src/config/tenantConfig.ts`, `src/pages/GaleriePage.tsx`, `.cursor/rules/oek2-willkommensbild-nie-uraltbild.mdc`
+**Status:** ✅ Behoben (08.03.26). **Wichtig:** Regel einhalten, sonst tritt der Fehler ein drittes Mal auf.
+
+---
+
 ## BUG-021 · Werk-Fotos nach Freistellung/Speichern wieder weg oder Platzhalter
 **Symptom:** Werk-Fotos werden teilweise nicht mehr angezeigt (Platzhalter mit ID). Freistellung funktioniert, dauert lange – danach sind die Bilder wieder wie vorher (Speicherung hält nicht).
 **Ursache:** Beim Laden vom Server (gallery-data API) kommen Werke **ohne** Bilddaten (Export streicht Base64 für kleine Payloads). Der Merge (Server = Quelle) hat die Server-Version übernommen und damit **lokale imageUrl/imageRef überschrieben** → gespeicherte Fotos/Freistellungen gingen verloren.

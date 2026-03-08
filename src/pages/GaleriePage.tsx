@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { speichereGuideFlow, beendeGuideFlow } from '../components/GlobaleGuideBegleitung'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, ENTDECKEN_ROUTE } from '../config/navigation'
-import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, OEK2_WILLKOMMEN_IMAGES, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty, getProminenteAdresseFormatiert } from '../config/tenantConfig'
+import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, OEK2_WILLKOMMEN_IMAGES, getOek2WelcomeImageEffective, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty, getProminenteAdresseFormatiert } from '../config/tenantConfig'
 import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie, mergePageContentGalerieFromServer } from '../config/pageContentGalerie'
 import { getPageTexts, type GaleriePageTexts } from '../config/pageTexts'
@@ -12,6 +12,7 @@ import { readArtworksRawForContext, saveArtworksForContext } from '../utils/artw
 import { mergeServerWithLocal, preserveLocalImageData } from '../utils/syncMerge'
 import { loadEvents, saveEvents } from '../utils/eventsStorage'
 import { loadDocuments, saveDocuments } from '../utils/documentsStorage'
+import { saveStammdaten } from '../utils/stammdatenStorage'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { safeReload } from '../utils/env'
 import { OK2_THEME } from '../config/ok2Theme'
@@ -610,7 +611,11 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     }
     load()
     window.addEventListener('storage', load)
-    return () => window.removeEventListener('storage', load)
+    window.addEventListener('k2-vk2-stammdaten-updated', load)
+    return () => {
+      window.removeEventListener('storage', load)
+      window.removeEventListener('k2-vk2-stammdaten-updated', load)
+    }
   }, [vk2])
 
   const eventDocumentsTenantId = vk2 ? 'vk2' : musterOnly ? 'oeffentlich' : 'k2'
@@ -619,7 +624,11 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     const load = () => setEventDocuments(loadDocuments(eventDocumentsTenantId))
     load()
     window.addEventListener('storage', load)
-    return () => window.removeEventListener('storage', load)
+    if (vk2) window.addEventListener('k2-vk2-data-updated', load)
+    return () => {
+      window.removeEventListener('storage', load)
+      if (vk2) window.removeEventListener('k2-vk2-data-updated', load)
+    }
   }, [musterOnly, vk2])
 
   // VK2: Events (k2-vk2-events) und Willkommensbild (k2-vk2-welcomeImage)
@@ -691,14 +700,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       try {
         const pc = getPageContentGalerie('oeffentlich')
         return {
-          welcomeImage: pc.welcomeImage || (galleryData.welcomeImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.welcomeImage,
+          welcomeImage: getOek2WelcomeImageEffective(pc.welcomeImage || galleryData.welcomeImage?.trim()),
           galerieCardImage: pc.galerieCardImage || (galleryData.galerieCardImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.galerieCardImage,
           virtualTourImage: pc.virtualTourImage || (galleryData.virtualTourImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.virtualTourImage,
           virtualTourVideo: pc.virtualTourVideo || ''
         }
       } catch (_) {
         return {
-          welcomeImage: (galleryData.welcomeImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.welcomeImage,
+          welcomeImage: getOek2WelcomeImageEffective(galleryData.welcomeImage?.trim()),
           galerieCardImage: (galleryData.galerieCardImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.galerieCardImage,
           virtualTourImage: (galleryData.virtualTourImage?.trim() || '') || OEK2_WILLKOMMEN_IMAGES.virtualTourImage,
           virtualTourVideo: ''
@@ -1883,6 +1892,121 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       if (controller) controller.abort()
     }
   }, [musterOnly, vk2])
+
+  // ök2 Skalierung: Vercel-Daten für Demo-Galerie laden (wie K2, nur andere Keys)
+  useEffect(() => {
+    if (!musterOnly) return
+    let isMounted = true
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 8000)
+    const apiUrl = `${GALLERY_DATA_PUBLIC_URL}/api/gallery-data?tenantId=oeffentlich&t=${Date.now()}&_=${Math.random()}`
+    fetch(apiUrl, { cache: 'no-store', signal: controller.signal })
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => {
+        if (!isMounted || !data) return
+        try {
+          // Werke: gleiche Schutzregeln wie K2 (kein Überschreiben mit leer, Merge)
+          if (Array.isArray(data.artworks) && data.artworks.length > 0) {
+            const localRaw = localStorage.getItem('k2-oeffentlich-artworks')
+            const local = localRaw ? JSON.parse(localRaw) : []
+            const localArr = Array.isArray(local) ? local : []
+            const lokalAnzahl = localArr.length
+            if (data.artworks.length < lokalAnzahl * 0.5) return // 50%-Regel
+            const { merged } = mergeServerWithLocal(data.artworks, localArr, { onlyAddLocalIfMobileAndVeryNew: true })
+            const withImages = preserveLocalImageData(merged, localArr)
+            saveArtworksForContext(true, false, withImages, { allowReduce: false })
+            window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: withImages.length, fromGaleriePage: true, oeffentlichFromServer: true } }))
+          }
+          if (Array.isArray(data.events) && data.events.length > 0) {
+            const existing = loadEvents('oeffentlich')
+            if (existing.length > 0 || data.events.length > 0) saveEvents('oeffentlich', data.events)
+          }
+          if (Array.isArray(data.documents) && data.documents.length > 0) {
+            const existing = loadDocuments('oeffentlich')
+            if (existing.length > 0 || data.documents.length > 0) saveDocuments('oeffentlich', data.documents)
+          }
+          if (data.designSettings && typeof data.designSettings === 'object') {
+            localStorage.setItem('k2-oeffentlich-design-settings', JSON.stringify(data.designSettings))
+            applyDesignToDocument(data.designSettings)
+          }
+          if (data.pageTexts && typeof data.pageTexts === 'object') {
+            localStorage.setItem('k2-oeffentlich-page-texts', JSON.stringify(data.pageTexts))
+          }
+          if (data.pageContentGalerie != null && typeof data.pageContentGalerie === 'string' && data.pageContentGalerie.length > 0 && data.pageContentGalerie.length < 6 * 1024 * 1024) {
+            mergePageContentGalerieFromServer(data.pageContentGalerie, 'oeffentlich')
+            window.dispatchEvent(new CustomEvent('k2-page-content-updated'))
+            window.dispatchEvent(new CustomEvent('k2-oeffentlich-images-updated'))
+          }
+          if (data.martina && typeof data.martina === 'object') saveStammdaten('oeffentlich', 'martina', data.martina)
+          if (data.georg && typeof data.georg === 'object') saveStammdaten('oeffentlich', 'georg', data.georg)
+          if (data.gallery && typeof data.gallery === 'object') saveStammdaten('oeffentlich', 'gallery', data.gallery)
+        } catch (_) {}
+      })
+      .catch(() => {})
+      .finally(() => { clearTimeout(timeoutId) })
+    return () => {
+      isMounted = false
+      controller.abort()
+      clearTimeout(timeoutId)
+    }
+  }, [musterOnly])
+
+  // VK2 Skalierung: Vercel-Daten für Vereinsgalerie laden (Blob-Format = Backup-Keys: k2-vk2-*)
+  useEffect(() => {
+    if (!vk2) return
+    let isMounted = true
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 8000)
+    const apiUrl = `${GALLERY_DATA_PUBLIC_URL}/api/gallery-data?tenantId=vk2&t=${Date.now()}&_=${Math.random()}`
+    fetch(apiUrl, { cache: 'no-store', signal: controller.signal })
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => {
+        if (!isMounted || !data) return
+        try {
+          // VK2-Blob nutzt exakte localStorage-Key-Namen (createVk2Backup)
+          if (Array.isArray(data['k2-vk2-events']) && data['k2-vk2-events'].length > 0) {
+            saveEvents('vk2', data['k2-vk2-events'])
+          }
+          if (Array.isArray(data['k2-vk2-documents']) && data['k2-vk2-documents'].length > 0) {
+            saveDocuments('vk2', data['k2-vk2-documents'])
+          }
+          if (data['k2-vk2-design-settings'] != null && typeof data['k2-vk2-design-settings'] === 'object') {
+            localStorage.setItem('k2-vk2-design-settings', JSON.stringify(data['k2-vk2-design-settings']))
+            applyDesignToDocument(data['k2-vk2-design-settings'])
+          }
+          if (data['k2-vk2-page-texts'] != null && typeof data['k2-vk2-page-texts'] === 'object') {
+            localStorage.setItem('k2-vk2-page-texts', JSON.stringify(data['k2-vk2-page-texts']))
+          }
+          const pc = data['k2-vk2-page-content-galerie']
+          if (pc != null && (typeof pc === 'string' ? pc.length > 0 && pc.length < 6 * 1024 * 1024 : true)) {
+            const pcStr = typeof pc === 'string' ? pc : JSON.stringify(pc)
+            if (pcStr.length > 0 && pcStr.length < 6 * 1024 * 1024) {
+              mergePageContentGalerieFromServer(pcStr, 'vk2')
+              window.dispatchEvent(new CustomEvent('k2-page-content-updated'))
+            }
+          }
+          if (data['k2-vk2-stammdaten'] != null && typeof data['k2-vk2-stammdaten'] === 'object') {
+            try {
+              localStorage.setItem('k2-vk2-stammdaten', JSON.stringify(data['k2-vk2-stammdaten']))
+              window.dispatchEvent(new CustomEvent('k2-vk2-stammdaten-updated'))
+            } catch (_) {}
+          }
+          if (data['k2-vk2-registrierung'] != null) {
+            try {
+              localStorage.setItem('k2-vk2-registrierung', typeof data['k2-vk2-registrierung'] === 'string' ? data['k2-vk2-registrierung'] : JSON.stringify(data['k2-vk2-registrierung']))
+            } catch (_) {}
+          }
+          window.dispatchEvent(new CustomEvent('k2-vk2-data-updated'))
+        } catch (_) {}
+      })
+      .catch(() => {})
+      .finally(() => { clearTimeout(timeoutId) })
+    return () => {
+      isMounted = false
+      controller.abort()
+      clearTimeout(timeoutId)
+    }
+  }, [vk2])
 
   // Scroll zu Bereich wenn scrollToSection sich ändert
   useEffect(() => {
@@ -3540,22 +3664,44 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                     <p style={{ margin: '0 0 0.25rem', fontWeight: '500', color: theme.text, fontSize: 'clamp(0.95rem, 2.2vw, 1.1rem)' }}>
                       {tenantConfig.galleryName}
                     </p>
-                    {(musterOnly ? (MUSTER_TEXTE.gallery.address || (MUSTER_TEXTE.gallery as any).city || (MUSTER_TEXTE.gallery as any).country) : getProminenteAdresseFormatiert(galleryData, martinaData, georgData)) && (() => {
+                    {(() => {
                       const adr = musterOnly
                         ? [MUSTER_TEXTE.gallery.address, (MUSTER_TEXTE.gallery as any).city, (MUSTER_TEXTE.gallery as any).country].filter(Boolean).join(', ')
                         : getProminenteAdresseFormatiert(galleryData, martinaData, georgData)
-                      const mapsUrl = adr ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(adr)}` : ''
-                      return (
+                      // Routenplaner: dir/?destination= öffnet Google Maps direkt mit „Route zu diesem Ziel“ (vom aktuellen Standort)
+                      const mapsDirUrl = adr ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(adr)}` : ''
+                      return (adr || musterOnly) ? (
                         <p style={{ margin: '0 0 0.15rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', lineHeight: '1.4' }}>
-                          {mapsUrl ? (
-                            <a href={mapsUrl} target="_blank" rel="noopener noreferrer" style={{ color: theme.accent, textDecoration: 'none' }} title="Route planen (Google Maps)">
-                              {adr} · Route planen
-                            </a>
-                          ) : (
-                            adr
+                          {adr && (
+                            <span style={{ color: 'inherit' }}>{adr}</span>
                           )}
+                          {mapsDirUrl ? (
+                            <>
+                              {adr && <span style={{ color: theme.muted }}> · </span>}
+                              <a
+                                href={mapsDirUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Routenplaner – Route zur Galerie"
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.35rem',
+                                  padding: '0.25rem 0.5rem',
+                                  background: `${theme.accent}22`,
+                                  color: theme.accent,
+                                  fontWeight: 600,
+                                  borderRadius: 8,
+                                  textDecoration: 'none',
+                                  fontSize: 'clamp(0.85rem, 1.9vw, 0.95rem)'
+                                }}
+                              >
+                                🗺️ Routenplaner
+                              </a>
+                            </>
+                          ) : null}
                         </p>
-                      )
+                      ) : null
                     })()}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.15rem' }}>
                       {(musterOnly ? MUSTER_TEXTE.gallery.phone : galleryData.phone) && (

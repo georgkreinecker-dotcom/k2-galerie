@@ -27,6 +27,8 @@ alwaysApply: true
 
 **Druckbare Zusammenfassungen / Übersichten** (z. B. „Projekt K2 Familie zum Ausdrucken“) → **Handbuch**, nicht docs – weil sie zur Orientierung und zum Weitergeben da sind, nicht zur technischen Projekt-Doku.
 
+**Einstieg für Informatiker (System überblicken und warten)** → **docs/EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md**. Diese eine Datei ist der lebende Einstieg; bei **Projektwachstum** (neues Projekt, neuer Prozess, neue Technik) wird **diese Datei erweitert** (Prozess-Tabelle, Systemüberblick, ggf. Wartung). Damit der Überblick mitwächst; Detail-Doku bleibt in den jeweiligen Docs.
+
 ---
 
 ## Was nicht gemacht wird

@@ -82,8 +82,12 @@ export default function FlyerK2GaleriePage() {
       const img = images.welcomeImage
       if (img && typeof img === 'string' && img.length > 50 && img.length < 3 * 1024 * 1024 && isMounted) {
         setWelcomeImage(img)
+      } else if (isMounted) {
+        setWelcomeImage('/img/k2/willkommen.jpg')
       }
-    } catch (_) {}
+    } catch (_) {
+      if (isMounted) setWelcomeImage('/img/k2/willkommen.jpg')
+    }
 
     try {
       const texts = getPageTexts()

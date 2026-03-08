@@ -12,7 +12,8 @@ Alle für K2 implementierten Funktionen (Veröffentlichen, „Bilder vom Server 
   - K2: `gallery-data.json` (Abwärtskompatibilität)
   - ök2: `gallery-data-oeffentlich.json`
   - VK2: `gallery-data-vk2.json`
-- **API:** GET und POST akzeptieren `tenantId` (Query bzw. im Body). Ein Aufruf = ein Mandant.
+  - Weitere Mandanten: `gallery-data-{tenantId}.json` (tenantId = a-z0-9-, max 64 Zeichen).
+- **API:** GET und POST akzeptieren `tenantId` (Query bzw. im Body). Beliebige sichere tenantIds erlaubt; Mandantenzahl nur durch Speicher begrenzt. Ein Aufruf = ein Mandant.
 - **Frontend:** „Veröffentlichen“ und „Bilder vom Server laden“ sind für K2, ök2 und VK2 aktiv; der aktive Kontext bestimmt den `tenantId`.
 - **VK2:** Hat keine Werke (nur Stammdaten, Events, Dokumente, Design). Payload = Backup-Format (z. B. aus `createVk2Backup()`), Merge/Laden schreibt in `k2-vk2-*`-Keys.
 
@@ -36,7 +37,7 @@ Alle für K2 implementierten Funktionen (Veröffentlichen, „Bilder vom Server 
 ## 4. VK2-Besonderheiten
 
 - VK2 = ein Mandant (ein Verein), ein Blob `gallery-data-vk2.json`. Keine Werke, nur Stammdaten (Verein, Mitglieder), Events, Dokumente, Design, Seitentexte.
-- Mehrere Vereine (mehrere VK2-Mandanten) wären später über eigenen `tenantId` pro Verein (z. B. `vk2-verein-xyz`) abbildbar; gleiche API, anderer Blob-Pfad.
+- Mehrere Vereine bzw. viele K2-Mandanten: API akzeptiert beliebige sichere `tenantId`s (z. B. `vk2-verein-xyz`, `galerie-eferding`); Blob-Pfad dann `gallery-data-{tenantId}.json`. Mandantenzahl nur durch Speicher begrenzt (siehe K2-OEK2-DATENTRENNUNG.md, Abschnitt „Viele K2-Mandanten“).
 
 ---
 

@@ -186,6 +186,21 @@ Ein Ritter, der „aktiv kämpft“ und durchgreift, würde selbst zur Macht –
 
 Die Regeln in diesem Projekt, das Vermächtnis, das kantische Grundgesetz – das ist dieser Ritter. Er wirkt, wenn jemand sie liest und danach handelt. Er zwingt nicht. Er schafft den Raum. Den Rest tun die, die darin schreiben und entscheiden.
 
+### Vollbackup – Kopie im Vermächtnis (Zugriff bei Notfall)
+
+Damit **niemand ohne Zugriff** dasteht, wenn etwas mit Georg ist, liegt hier eine **Kopie** der zentralen Backup-Information – Teil des Vermächtnisses.
+
+**Wo liegt das Vollbackup der K2 Galerie?**
+- Auf dem externen Speicher **backupmicro** (physischer Ort: von Georg/Team festhalten – z. B. Schreibtisch, Schublade, bei Vertrauensperson).
+- Ordner auf backupmicro: **K2-Galerie-Backups** oder **KL2-Galerie-Backups**.
+- Neueste Version = neuester Unterordner (v001--Datum, v002--…). Darin: `gallery-data.json`, `MANIFEST.txt`, optional `k2-vollbackup.json`.
+
+**Zugriff sichern:** Ort von backupmicro **einmal in docs/BACKUP-ZUGANG-NOTFALL.md** eintragen (oder hier ergänzen). Dieses Kapitel bzw. **docs/BACKUP-ZUGANG-NOTFALL.md** und **Handbuch Kapitel 13** (Backup & Vollbackup) ausdrucken und an festem Ort aufbewahren – dann ist Zugriff bei Notfall möglich.
+
+**Wiederherstellung:** backupmicro an Mac anschließen → neuester Versionsordner → in K2 Galerie App (Admin) → Einstellungen → „Aus Backup-Datei wiederherstellen“ → `gallery-data.json` oder `k2-vollbackup.json` wählen.
+
+**Vollständige Doku:** **docs/BACKUP-ZUGANG-NOTFALL.md**, **k2team-handbuch/13-BACKUP-VOLLBACKUP-K2-GALERIE.md**.
+
 ---
 
 ## ⚖️ Unser kantisches Grundgesetz

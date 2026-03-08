@@ -1,15 +1,23 @@
 /**
  * Vercel Serverless: gallery-data aus Vercel Blob lesen und ausliefern.
- * Wird von „Bilder vom Server laden“ genutzt. Tenantfähig: ?tenantId=k2|oeffentlich|vk2.
- * k2 oder fehlend = gallery-data.json (Abwärtskompatibilität).
+ * Tenantfähig: ?tenantId=k2|oeffentlich|vk2| oder beliebiger sicherer Mandant (a-z0-9-, max 64 Zeichen).
+ * Mandantenzahl = nur durch Speicher begrenzt (ein Blob pro Mandant).
  */
 import { get } from '@vercel/blob'
 
-const ALLOWED_TENANTS = ['k2', 'oeffentlich', 'vk2']
+const LEGACY_TENANTS = ['k2', 'oeffentlich', 'vk2']
+
+/** Erlaubt: Kleinbuchstaben, Ziffern, Bindestrich; 1–64 Zeichen. Verhindert Path-Traversal. */
+function isSafeTenantId(id) {
+  if (!id || typeof id !== 'string') return false
+  return /^[a-z0-9-]{1,64}$/.test(id)
+}
 
 function getBlobPath(tenantId) {
+  if (tenantId === 'k2') return 'gallery-data.json'
   if (tenantId === 'oeffentlich') return 'gallery-data-oeffentlich.json'
   if (tenantId === 'vk2') return 'gallery-data-vk2.json'
+  if (isSafeTenantId(tenantId)) return `gallery-data-${tenantId}.json`
   return 'gallery-data.json'
 }
 
@@ -27,8 +35,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Nur GET erlaubt' })
   }
 
-  const tenantId = (req.query?.tenantId || req.query?.tenant || 'k2').toLowerCase()
-  const pathname = ALLOWED_TENANTS.includes(tenantId) ? getBlobPath(tenantId) : getBlobPath('k2')
+  const tenantId = (req.query?.tenantId || req.query?.tenant || 'k2').toLowerCase().trim()
+  const pathname = (LEGACY_TENANTS.includes(tenantId) || isSafeTenantId(tenantId)) ? getBlobPath(tenantId) : getBlobPath('k2')
 
   try {
     const result = await get(pathname, { access: 'public' })

@@ -89,6 +89,19 @@ bash scripts/hard-backup-to-backupmicro.sh
 
 ---
 
+## Backup prominent – Zugriff bei Notfall („sollte etwas mit mir sein“)
+
+Das Vollbackup ist so **prominent** abgelegt, dass ein **Zugriff möglich** sein muss – auch wenn etwas mit Georg ist (Vertrauensperson, Familie, Nachfolge).
+
+- **Wo liegt es?** Auf dem externen Speicher **backupmicro** (physischer Ort: z. B. Georgs Schreibtisch – bitte festhalten). Ordner: **K2-Galerie-Backups** oder **KL2-Galerie-Backups**. Neueste Version = neuester Unterordner (v001--Datum, v002--…).
+- **Was liegt drin?** Im Versionsordner: `gallery-data.json`, `MANIFEST.txt`, optional `k2-vollbackup.json`. Das reicht zur Wiederherstellung.
+- **Zugriff sichern:** Dieses Kapitel (oder die Kurzfassung) **ausdrucken** und an einem festen Ort aufbewahren (z. B. mit anderen wichtigen Unterlagen), damit im Notfall jemand weiß: Vollbackup K2 Galerie = backupmicro, Ordner K2-Galerie-Backups, neuester Unterordner.
+- **Wiederherstellung:** backupmicro an Mac anschließen → neuesten Ordner öffnen → in der App Admin → Einstellungen → „Aus Backup-Datei wiederherstellen“ → `gallery-data.json` oder `k2-vollbackup.json` wählen.
+
+Ausführliche Doku (inkl. wo backupmicro liegt festhalten): **docs/BACKUP-ZUGANG-NOTFALL.md**.
+
+---
+
 ## Kurzfassung
 
 | Aktion | Was passiert |

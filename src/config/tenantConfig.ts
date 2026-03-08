@@ -93,14 +93,14 @@ export const K2_STAMMDATEN_DEFAULTS = {
   },
   gallery: {
     name: 'K2 Galerie Kunst&Keramik',
-    address: '',
-    city: '',
-    country: '',
+    address: 'Schlossergasse 4',
+    city: '4070 Eferding',
+    country: 'Österreich',
     phone: '0664 1046337',
     email: 'info@kgm.at', // Galerie-Kontakt (anpassen falls anders)
-    website: '',
-    internetadresse: '',
-    openingHours: '',
+    website: 'www.k2-galerie.at',
+    internetadresse: 'www.k2-galerie.at',
+    openingHours: 'Samstag 9.30 bis 14.00 Uhr',
     bankverbindung: '',
   },
 }
@@ -580,12 +580,26 @@ export const OEK2_DEFAULT_ARTWORK_IMAGES: Record<string, string> = {
   sonstiges: 'https://images.unsplash.com/photo-1536924940846-227afb31e2a5?w=800&q=85',
 }
 
-/** ök2: Lokale Bilder – oben Menschen/Galerie-Eingang, unten Galerie Innenansicht. Liegen in public/img/oeffentlich/ (ersetzbar durch eigene Fotos). */
+/** ök2: Default-Bilder für Willkommen/Galerie-Karte/Virtual-Tour.
+ *  Willkommensbild = NUR stabile URL (nie Repo-Dateipfad) – Uraltbild ist bereits zweimal aufgetreten.
+ *  Regel: .cursor/rules/oek2-willkommensbild-nie-uraltbild.mdc | GELOESTE-BUGS.md BUG-022 */
 export const OEK2_WILLKOMMEN_IMAGES = {
-  // Eigene Fotos aus public/img/oeffentlich/ – von Vercel direkt serviert, keine CORS-Probleme
-  welcomeImage: '/img/oeffentlich/willkommen.jpg',
-  virtualTourImage: '/img/oeffentlich/galerie-innen.jpg',   // TODO: Foto noch hineinziehen
-  galerieCardImage: '/img/oeffentlich/galerie-karte.jpg',   // TODO: Foto noch hineinziehen
+  welcomeImage: 'https://images.unsplash.com/photo-1577083165633-14d2a4d2d6a4?w=1200&q=85',
+  virtualTourImage: '/img/oeffentlich/galerie-innen.jpg',
+  galerieCardImage: '/img/oeffentlich/galerie-karte.jpg',
+}
+
+/** ök2: Pfade, die NIEMALS als Willkommensbild angezeigt werden (alte/irrelevante Dateien). Siehe Regel oek2-willkommensbild-nie-uraltbild.mdc. */
+export const OEK2_LEGACY_WELCOME_IMAGE_PATHS: string[] = [
+  '/img/oeffentlich/willkommen.jpg',
+]
+
+/** Gibt für ök2 das anzuzeigende Willkommensbild zurück: gespeicherter Wert, außer er steht auf einer Legacy-Liste – dann sicherer Default. */
+export function getOek2WelcomeImageEffective(storedOrStammdaten: string | undefined): string {
+  const v = (storedOrStammdaten || '').trim()
+  if (!v) return OEK2_WILLKOMMEN_IMAGES.welcomeImage
+  if (OEK2_LEGACY_WELCOME_IMAGE_PATHS.some((p) => v === p || v.endsWith(p))) return OEK2_WILLKOMMEN_IMAGES.welcomeImage
+  return v
 }
 
 /** Liefert das Standard-Werkbild für ök2 für eine Kategorie (Fallback: sonstiges). */

@@ -1,18 +1,27 @@
 /**
  * Vercel Serverless: gallery-data speichern – primär in Vercel Blob (kein Token nötig),
  * optional für K2 zusätzlich ins GitHub-Repo (Backup, wenn GITHUB_TOKEN gesetzt).
- * Tenantfähig: body.tenantId oder body.kontext = k2|oeffentlich|vk2 → Blob gallery-data-{tenantId}.json.
+ * Tenantfähig: body.tenantId oder body.kontext = k2|oeffentlich|vk2 oder beliebiger sicherer Mandant (a-z0-9-, max 64 Zeichen).
+ * Mandantenzahl = nur durch Speicher begrenzt.
  */
 import { put } from '@vercel/blob'
 
 const REPO_OWNER = 'georgkreinecker-dotcom'
 const REPO_NAME = 'k2-galerie'
 const FILE_PATH = 'public/gallery-data.json'
-const ALLOWED_TENANTS = ['k2', 'oeffentlich', 'vk2']
+const LEGACY_TENANTS = ['k2', 'oeffentlich', 'vk2']
+
+/** Erlaubt: Kleinbuchstaben, Ziffern, Bindestrich; 1–64 Zeichen. */
+function isSafeTenantId(id) {
+  if (!id || typeof id !== 'string') return false
+  return /^[a-z0-9-]{1,64}$/.test(id)
+}
 
 function getBlobPath(tenantId) {
+  if (tenantId === 'k2') return 'gallery-data.json'
   if (tenantId === 'oeffentlich') return 'gallery-data-oeffentlich.json'
   if (tenantId === 'vk2') return 'gallery-data-vk2.json'
+  if (isSafeTenantId(tenantId)) return `gallery-data-${tenantId}.json`
   return 'gallery-data.json'
 }
 
@@ -39,8 +48,8 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Ungültiges JSON' })
   }
 
-  const tenantIdRaw = parsed?.tenantId ?? parsed?.kontext ?? 'k2'
-  const tenantId = ALLOWED_TENANTS.includes(tenantIdRaw) ? tenantIdRaw : 'k2'
+  const tenantIdRaw = (parsed?.tenantId ?? parsed?.kontext ?? 'k2').toLowerCase().trim()
+  const tenantId = (LEGACY_TENANTS.includes(tenantIdRaw) || isSafeTenantId(tenantIdRaw)) ? tenantIdRaw : 'k2'
   const BLOB_PATHNAME = getBlobPath(tenantId)
 
   let artworksCount = 0

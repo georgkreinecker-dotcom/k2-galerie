@@ -1,0 +1,39 @@
+---
+description: ök2 Willkommensbild – nie wieder alte/irrelevante Bilder als Default (ist zweimal passiert)
+alwaysApply: true
+---
+
+# ök2 Willkommensbild – Uraltbild darf nicht wieder vorkommen
+
+## Was passiert ist (zweimal)
+
+- **Problem:** Auf der ersten Seite der ök2-Demo (Willkommen) erschien ein altes/irrelevantes Bild („Uraltbild“), obwohl es behoben sein sollte.
+- **Ursache:** Default für das ök2-Willkommensbild war ein **Repo-Dateipfad** (`/img/oeffentlich/willkommen.jpg`). Diese Datei kann veraltet sein oder aus Versehen durch eine alte Version ersetzt werden – dann sieht jeder die alte Version.
+- **Bereits beim ersten Mal** wurde gesagt, es werde nicht wieder vorkommen – es ist trotzdem wieder vorkommen. Deshalb gilt jetzt eine **festgeschriebene Regel**, keine bloße Absichtserklärung.
+
+## Unveränderliche Regeln
+
+### 1. Default = stabile URL, nie Repo-Datei
+
+- **OEK2_WILLKOMMEN_IMAGES.welcomeImage** in `src/config/tenantConfig.ts` darf **nicht** auf eine lokale Datei wie `/img/oeffentlich/willkommen.jpg` zeigen.
+- **Nur** eine stabile externe URL (z. B. Unsplash mit festem Query) oder ein fester data-URI ist erlaubt. So kann keine alte Repo-Datei jemals wieder als Default erscheinen.
+
+### 2. Legacy-Pfade filtern
+
+- **OEK2_LEGACY_WELCOME_IMAGE_PATHS** in `tenantConfig.ts` listet Pfade, die **nie** als Willkommensbild angezeigt werden dürfen (z. B. `/img/oeffentlich/willkommen.jpg`).
+- Die Anzeige für ök2 muss **getOek2WelcomeImageEffective()** verwenden. Dort wird ein gespeicherter Wert, der in der Legacy-Liste steht, verworfen und durch den sicheren Default ersetzt.
+- **Neue** alte/irrelevante Pfade, die auftauchen: in **OEK2_LEGACY_WELCOME_IMAGE_PATHS** eintragen.
+
+### 3. Keine Rücknahme dieser Absicherung
+
+- Default **nicht** wieder auf eine Repo-Datei umstellen („weil wir jetzt ein neues willkommen.jpg haben“). Neues Bild = in Seitengestaltung setzen oder die **URL** in OEK2_WILLKOMMEN_IMAGES ändern, **nicht** den Pfad zu einer lokalen Datei.
+- **Nicht** getOek2WelcomeImageEffective umgehen oder in GaleriePage wieder direkt pc.welcomeImage ohne Legacy-Check nutzen.
+
+## Betroffene Stellen
+
+- `src/config/tenantConfig.ts`: OEK2_WILLKOMMEN_IMAGES, OEK2_LEGACY_WELCOME_IMAGE_PATHS, getOek2WelcomeImageEffective
+- `src/pages/GaleriePage.tsx`: displayImages für musterOnly → welcomeImage nur über getOek2WelcomeImageEffective()
+
+## Kurzfassung
+
+**ök2 Default-Willkommensbild = nur stabile URL. Legacy-Pfade = nie anzeigen. Bereits zweimal Uraltbild – diese Regel nicht aufweichen.**

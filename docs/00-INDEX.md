@@ -4,6 +4,13 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 
 ---
 
+## Einstieg für Informatiker (System überblicken und warten)
+
+- **EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md** – **Zentraler Einstieg für jeden Informatiker:** Systemüberblick (Tech-Stack, Mandanten, Datenfluss), zentrale Einstiege (HAUS-INDEX, 00-INDEX, KOMMANDOZENTRALE, STRUKTUR), **alle Prozesse in einer Tabelle** (Lebenszyklus Klient, Veröffentlichen, Stand/QR, Lizenzen, Kündigung, Datentrennung, Sync, Build/Deploy, Tests, Backup, Wartung) mit Verweisen auf Code und Doku. Entwicklung (Setup, Build, Test, Deploy), Wartungsintervalle, wichtige Regeln. Damit jeder einsteigen, überblicken und warten kann.
+- **BACKUP-ZUGANG-NOTFALL.md** – **Vollbackup prominent, Zugriff bei Notfall:** Wo das Vollbackup liegt (backupmicro, Ordner K2-Galerie-Backups), wie Vertrauensperson/Familie bei Notfall Zugriff haben (Ort festhalten, Doku zugänglich, Wiederherstellung). Handbuch-Kapitel 13 ergänzt um „Backup prominent – Zugriff bei Notfall“. Druckbare Kurzfassung empfohlen.
+
+---
+
 ## Plan & nächste Schritte
 - **KOMMANDOZENTRALE.md** – **Steuerung jederzeit:** Zugang für Georg und KI. Sofort-Zugriff auf DIALOG-STAND, GRAFIKER-TISCH, GELOESTE-BUGS; Definitionen (Homepage, K2-Familie-Konzept, Skalierung, Raumschiff); Roadmap & Regeln. Von hier aus steuernd eingreifen.
 - **K2-FAMILIE-ROADMAP.md** – **K2 Familie (Raumschiff):** Vision, Phasen (Fundament → Stammbaum & Personen → Momente & Events → Skalierung). Start 01.03.26. Projektkarte auf Projekte-Seite, Startseite unter /projects/k2-familie.
@@ -54,7 +61,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **WERKBILDER-EINE-QUELLE.md** – **Sportwagenmodus Werkbilder:** Eine Quelle = Supabase Storage (Standard statt Eigenbau). Upload → URL → URL in den Daten; kein IndexedDB/GitHub-Mix für Werkbilder. Konkrete Schritte in SPORTWAGEN-ROADMAP Phase 4.3.
 - **WERKE-SPEICHERUNG-CHECKLISTE.md** – **Schlüsselfunktion Werke:** Bombensichere Regeln (nie mit weniger überschreiben, kein Filter-and-Write, Kontext, Supabase, Backup). Pflicht-Check vor jedem Commit, der Lade-/Schreib-Pfade für Werke ändert.
 - **LEHRE-WERKE-WEG-IPAD-NOCH-DA.md** – **Lehre 01.03.26:** Werke am Mac weg, am iPad noch da. Veröffentlichen = Sicherung; Code nie mit leer/weniger überschreiben.
-- **K2-OEK2-DATENTRENNUNG.md** – Regeln: K2-Daten vs. ök2-Muster, Keys, Checkliste. Pflicht bei Daten-Änderungen.
+- **K2-OEK2-DATENTRENNUNG.md** – Regeln: K2-Daten vs. ök2-Muster, Keys, Checkliste. Enthält **Speicher**, **Host-Org**, **Registrierung → URL**, **URL in Stammdaten/QR**, **Bei Kündigung → automatisch alles gelöscht**, **Lebenszyklus Klient – Sportwagen-Check (Geburt/Leben/Sterben)**. Pflicht bei Daten-Änderungen.
 - **TENANT-SYNC-DOMAIN.md** – **Tenantfähig:** Veröffentlichen / Vom Server laden für K2, ök2, VK2; Blob pro Mandant; Domänen-Struktur (tenantId); Sicherheit später.
 - **UMZUG-K2-GALERIE-KUNST-KERAMIK.md** – Plattform = K2 Galerie, erste Galerie = K2 Galerie Kunst&Keramik; Backup für backupmicro.
 - **MOK2-EIGENER-BEREICH.md** – Marketing ök2 als eigener Bereich (mök2).
@@ -76,6 +83,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **VERBESSERUNGEN-VERMARKTUNG-GEMEINSAM.md** – **Vorschlag:** Was wir gemeinsam verbessern können (Zielgruppe, Kanäle, Customer Journey, Trust; priorisierte Liste).
 - **Werbelinie (verbindlich):** Beide Slogans (1. K2 Galerie – für Künstler:innen, die gesehen werden wollen. 2. Deine Kunst verdient mehr als einen Instagram-Post.) auf allen Werbemaßnahmen. Quelle: `src/config/tenantConfig.ts` (PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2); mök2 → Promotion für alle Medien. **Alle Strategiepapiere** (dieses Doc, Handbuch Vision & Strategie, MARKETING-EROEFFNUNG) sind darauf ausgerichtet.
 - **MARKETING-EROEFFNUNG-K2-OEK2.md** – **Galerie-Eröffnung:** K2 und ök2 gemeinsam einführen; gezielte Marketinglinie in 2 Wochen; Texte für gemeinsame Lounge (Kernbotschaft, Einladung, Presse, Social); Checkliste; Verweis in mök2. Enthält Abschnitt „Verbindliche Werbelinie (Strategie)“.
+- **K2-DOKUMENTE-GALERIEEROEFFNUNG.md** – **Übersicht K2-Dokumente:** Event Galerieeröffnung (Admin → Events → Dokumente) vs. Vorstellung ök2/VK2 (Texte in mök2); wo Flyer, Einladung, Presse, Prospekt liegen; Verweis auf mök2-Sektion „Eröffnung K2 + ök2 + VK2“ und MARKETING-EROEFFNUNG.
 - **Kampagne Marketing-Strategie (eigene Mappe)** – **docs/kampagne-marketing-strategie/** – Alle Zwischenergebnisse und Papiere zur Kampagne an einem Ort. Index: [kampagne-marketing-strategie/00-INDEX.md](kampagne-marketing-strategie/00-INDEX.md). Enthält Verweise auf Auftrag, ausgearbeitete Strategie, Sichtbarkeit, Präsentationsmappe, USPs, Presse.
 - **AUFTRAG-MARKETING-STRATEGIE-ZWEI-ZWEIGE.md** – **Auftrag Marketing/Vertrieb (zwei Zweige):** Spezifikation für Anke/Agent: Strategie für K2 Galerie (automatisierter Vertrieb, weltweit) **und** K2 Familie (eigener Planungszweig, Raumschiff, Grundbotschaft, keine kommerzielle Verwertung der Familiendaten). Beide Zweige von vornherein in der Planung; Referenzen und Output-Ziele beschrieben.
 - **MARKETING-STRATEGIE-AUTOMATISIERTER-VERTRIEB.md** – **Marketing- und Vertriebsstrategie (zwei Zweige):** **Zweig 1 (K2 Galerie):** Weitgehend automatisierter Vertrieb weltweit – Prinzipien (kein direkter Kundenkontakt, eine Quelle, Kantisches Grundgesetz), bewährte Muster, Empfehlungsprogramm als Motor, Lizenzen/Bestätigung/Abrechnung automatisiert, konkrete Kampagnen-Bausteine. **Zweig 2 (K2 Familie):** Eigenes Kapitel – Positionierung, Botschaften (Grundbotschaft, Raumschiff, keine kommerzielle Verwertung der Familiendaten), bewährte Muster vertrauenssensibel, Einordnung in K2-FAMILIE-ROADMAP, Abgrenzung zu K2 Galerie. Für Kampagnen und vertriebliche Entscheidungen heranziehen; zusammen mit mök2 und Werbelinie. Spezifikation: AUFTRAG-MARKETING-STRATEGIE-ZWEI-ZWEIGE.md.

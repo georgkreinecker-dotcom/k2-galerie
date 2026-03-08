@@ -4,6 +4,15 @@
 
 ---
 
+## Datum: 08.03.26 – Kündigung → automatisch alles gelöscht (Ablauf umgesetzt)
+
+- **Thema:** Georg: „Und wenn er kündigt wird automatisch alles wieder gelöscht“ – Ablauf jetzt fix umgesetzt.
+- **Erledigt:** (1) **api/delete-tenant-data.js** – löscht Blob `gallery-data-{tenantId}.json`, nur mit TENANT_DELETE_SECRET aufrufbar, K2 nie. (2) **api/cancel-subscription.js** – erfasst Feedback (grund, verbesserung) und löscht bei mitgesendetem **tenantId** (oeffentlich, vk2 oder sicherer Custom-Mandant) den Blob direkt per `@vercel/blob` del(). (3) **Frontend:** Beim Klick „Lizenz beenden“ wird tenantId (ök2 → oeffentlich, VK2 → vk2) mitgesendet; Erfolgstext zeigt „Die Galerie-Daten auf dem Server wurden gelöscht“, wenn gelöscht. (4) **api/webhook-stripe.js:** Bei Event **customer.subscription.deleted** wird metadata.tenantId gelesen und delete-tenant-data aufgerufen (TENANT_DELETE_SECRET). (5) **ScreenshotExportAdmin:** TS-Fehler (Klammer Zeile ~17052) behoben – zusätzliche Klammer um ternären Ausdruck. (6) **Doku:** docs/K2-OEK2-DATENTRENNUNG.md Abschnitt „Bei Kündigung“ mit Umsetzung ergänzt; docs/00-INDEX.md angepasst.
+- **Hinweis:** GaleriePage-TS-Fehler (SyncMergeResult) behoben: Zeile 1915 nutzt jetzt `const { merged } = mergeServerWithLocal(...)` statt direktem Rückgabewert. Build ✅.
+- **Nächster Schritt:** Commit + Push. Vercel: Optional **TENANT_DELETE_SECRET** setzen, wenn Webhook delete-tenant-data aufrufen soll.
+
+---
+
 ## Datum: 08.03.26 – ök2: Virtual-Tour-Video bleibt sichtbar (kein Platzhalter mehr)
 
 - **Thema:** Georg: Im ök2 ist nach dem Speichern das Video zum virtuellen Rundgang in der Galerie vorhanden und kann angesehen werden – aber nach kurzer Zeit ist nur noch ein Platzhalter da.

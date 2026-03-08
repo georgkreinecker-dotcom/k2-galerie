@@ -236,7 +236,10 @@ Totalabsturz erneut. **Neue** Ursache (nicht main/GaleriePage/Admin): Build-Info
 | 04.03.26 | Check Crash 5 („ceck crasch 5“) | main.tsx ohne App-Import ✓, AdminRoute/DevViewPage iframe-Placeholder + lazy ✓. location.reload/replace/href: env.safeReload, GaleriePage, SmartPanel mit iframe-Check. Keine neuen Stellen. |
 | 04.03.26 | ScreenshotExportAdmin große Datensätze (Code 5) | **Ursache:** Admin lädt beim Öffnen die komplette Werkeliste inkl. Base64-Bilder in State → in Cursor Preview (iframe) viel Speicher. **Fix:** In iframe (`window.self !== window.top`) Werke ohne data:-Bilder im State halten (stripArtworkImagesForPreview). Backup nutzt immer loadArtworks(tenant); Auto-Save in iframe liest Werke aus loadArtworks(tenant). So: weniger Last in Preview, Backup/Auto-Save weiter vollständig. |
 
-*Zuletzt ergänzt: 04.03.26 (Crash 5 – große Datensätze Admin)*
+| 06.03.26 | vercel.json „Importing a module script failed“ | **Ursache:** SPA-Rewrite hatte /assets/ (JS-Chunks) nicht ausgenommen → Vercel lieferte index.html statt Chunk-Dateien. **Fix:** In Rewrite-Regel (?!assets/) ergänzt. DIALOG-STAND 06.03.26. |
+| 08.03.26 | „Importing a module script failed“ (wieder) | **Gleicher Fehlertyp** – vercel.json unverändert (assets weiter ausgenommen). Typische Ursache: alter Browser-Cache nach neuem Deploy (alte Chunk-Hashes). **Sofortmaßnahme:** Einmal „Reset & neu laden“ (lädt über refresh.html neueste Version). App.tsx Hinweistext angepasst. |
+
+*Zuletzt ergänzt: 08.03.26 (Modul-Script-Fehler wieder)*
 
 ---
 

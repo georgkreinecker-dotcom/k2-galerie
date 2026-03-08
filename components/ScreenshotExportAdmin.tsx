@@ -1149,6 +1149,7 @@ function ScreenshotExportAdmin() {
   const [lizenzBeendenVerbesserung, setLizenzBeendenVerbesserung] = useState('')
   const [lizenzBeendenBackupHinweis, setLizenzBeendenBackupHinweis] = useState(false)
   const [lizenzBeendenErledigt, setLizenzBeendenErledigt] = useState(false)
+  const [lizenzBeendenDatenGeloescht, setLizenzBeendenDatenGeloescht] = useState(false)
   const [lizenzBeendenLoading, setLizenzBeendenLoading] = useState(false)
   const [designSubTab, setDesignSubTab] = useState<'vorschau' | 'farben'>('vorschau')
   const [designPreviewEdit, setDesignPreviewEdit] = useState<string | null>(null) // z. B. 'p1-title' | 'p2-martinaBio' – alles auf der Seite klickbar
@@ -14325,12 +14326,21 @@ ${name}`
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                      tenantId: tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined,
                       grund: lizenzBeendenGrund,
                       verbesserung: lizenzBeendenVerbesserung.trim() || undefined,
                     }),
                   }).catch(() => ({ ok: false }))
+                  let deleteResult = null
+                  if (res && typeof (res as Response).json === 'function') {
+                    try {
+                      const data = await (res as Response).json()
+                      deleteResult = data?.deleteResult
+                    } catch { /* ignore */ }
+                  }
                   if (res && typeof (res as any).ok === 'boolean' && (res as Response).ok) {
                     setLizenzBeendenErledigt(true)
+                    if (deleteResult?.deleted) setLizenzBeendenDatenGeloescht(true)
                   } else {
                     setLizenzBeendenErledigt(true)
                   }
@@ -14346,6 +14356,9 @@ ${name}`
                     <div style={{ padding: '1.25rem', background: s.bgCard, border: `1px solid ${s.accent}44`, borderRadius: 12, marginTop: '1rem' }}>
                       <p style={{ margin: 0, fontSize: '0.95rem', color: s.text, lineHeight: 1.6 }}>
                         <strong>Kündigung erfasst.</strong> Du erhältst eine Bestätigung. Die Lizenz läuft bis zum Ende der aktuellen Abrechnungsperiode; danach endet der Zugang. Deine Daten kannst du vorher unter Einstellungen → Backup exportieren.
+                        {lizenzBeendenDatenGeloescht && (
+                          <span> <strong>Die Galerie-Daten auf dem Server wurden gelöscht.</strong></span>
+                        )}
                       </p>
                       <p style={{ margin: '1rem 0 0', fontSize: '0.9rem', color: s.muted }}>Danke für dein Feedback – es hilft uns, das Produkt zu verbessern.</p>
                     </div>
@@ -16989,7 +17002,7 @@ ${name}`
                                         )}
 
                                         {/* Erstellen-Button(s) – ein Button oder zwei bei Presse (neutral/lokal) */}
-                                        {(karte as any).erstellenVarianten ? (
+                                        {((karte as any).erstellenVarianten ? (
                                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                                             {(karte as any).erstellenVarianten.map((v: { label: string, onErstellen: () => void }, idx: number) => (
                                               <button
@@ -17036,7 +17049,8 @@ ${name}`
                                           >
                                             {hatDokumente ? `↩ Neu erstellen` : `➕ Jetzt erstellen – sofort fertig`}
                                           </button>
-                                        ) : null)}
+                                        ) : null)
+                                        }
                                         {/* Druckversionen: extra Dokument hinzufügen */}
                                         {karte.typ === 'druckversion' && (
                                           <button

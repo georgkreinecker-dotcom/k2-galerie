@@ -107,6 +107,8 @@ Alle anderen Dateien bleiben; bei Unsicherheit wurde nichts gelöscht.
 
 ## Schnellfinder
 
+- **Einstieg für Informatiker (System überblicken und warten):** **docs/EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md** – Zentraler Einstieg: Systemüberblick, alle Prozesse (Lebenszyklus, Veröffentlichen, Stand/QR, Lizenzen, Kündigung, Datentrennung, Sync, Build, Wartung) in einer Tabelle mit Code- und Doku-Verweisen; Setup, QS, Wartungsheft. Für jeden, der einsteigen und warten soll.
+- **Vollbackup – prominent, Zugriff bei Notfall:** **docs/BACKUP-ZUGANG-NOTFALL.md** – Wo das Vollbackup liegt (backupmicro, K2-Galerie-Backups), wie bei Notfall Zugriff möglich ist (Ort festhalten, Doku/Handbuch 13, Wiederherstellung). Handbuch 13 enthält denselben Abschnitt „Backup prominent – Zugriff bei Notfall“; ausdrucken und an festem Ort aufbewahren empfohlen.
 - **Kommandozentrale (Steuerung jederzeit):** `docs/KOMMANDOZENTRALE.md` – Georg und KI: Zugriff, Überblick, steuernd eingreifen. DIALOG-STAND, GRAFIKER-TISCH, Definitionen, Konzepte, Roadmap.
 - **App starten:** `npm run dev` (siehe README.md / START_HIER.md)
 - **Stand aktualisieren:** `node scripts/write-build-info.js`
