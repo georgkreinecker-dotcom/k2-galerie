@@ -6,6 +6,13 @@
 
 ---
 
+## Session-Ende 08.03.26
+
+- **Heute erledigt:** Kampagne – Kommunikations-Dokumente in der App sichtbar; Fertige Beispiele (redigierte Seiten) mit konkretem Text (Flyer + E-Mails) für sofortiges Lesen und Zeigen. Commit e79891b.
+- **Nächster Einstieg:** Kampagne in mök2 öffnen → „Fertige Beispiele“ oder andere Vorlagen nutzen. Optional: Presse §6 redigieren, Mehrsprachigkeit.
+
+---
+
 ## Datum: 08.03.26 – Kampagne: Fertige Beispiele (redigierte Seiten)
 
 - **Stand:** Georg braucht **fertige Dokumente mit Text** – nicht nur Vorlagen mit Platzhaltern. In der Kampagne gibt es jetzt **„Fertige Beispiele (redigierte Seiten)“**: Flyer und alle E-Mails mit konkretem Text (info@kgm.at, 0664 1046337, „Liebe Maria“, „Martina und Georg“ etc.) – zum sofortigen Lesen und Zeigen.
