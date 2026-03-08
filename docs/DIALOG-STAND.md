@@ -4,6 +4,15 @@
 
 ---
 
+## Datum: 08.03.26 – Stammdaten Galerie: Öffnungszeiten-Feld ergänzt
+
+- **Thema:** Georg: „Es fehlen noch immer die Öffnungszeiten in Stammdaten Galerie – habe ich schon 5 mal gemacht.“
+- **Ursache:** Im Galerie-Adresse-Block (Einstellungen → Stammdaten → Galerie-Adresse aufklappen) gab es **kein Eingabefeld** für Öffnungszeiten. Die Daten (openingHours) waren im Modell und beim Speichern/Laden schon vorgesehen – nur die UI fehlte.
+- **Erledigt:** In ScreenshotExportAdmin im Galerie-Block ein Feld **„Öffnungszeiten“** eingefügt (zwischen Website und Bankverbindung), mit `galleryData.openingHours` gebunden, Placeholder „z. B. Do–So 14–18 Uhr“. Speichern/Laden war bereits korrekt (mergeStammdatenGallery, toWrite, saveStammdaten). Tests 42/42, Build ✅.
+- **Nächster Schritt:** Georg: Admin → Einstellungen → Meine Daten → Galerie-Adresse aufklappen → Öffnungszeiten eintragen → Stammdaten speichern.
+
+---
+
 ## Datum: 08.03.26 – Stammdaten: Galerie- und Künstler-Adressen getrennt, prominente Adresse
 
 - **Thema:** Georg: Galerie-Adresse und Künstler-Adressen müssen getrennt sein. Wenn eine Galerie-Adresse eingetragen ist, ist sie immer die prominente Adresse (Impressum, alle Dokumente, Google Maps). Nur wenn keine Galerie-Adresse da ist, werden die persönlichen Künstler-Adressen genutzt – mit Hinweis unter den Künstler-Adressfeldern. Google Maps: Galerie-Adresse 1. Wahl.

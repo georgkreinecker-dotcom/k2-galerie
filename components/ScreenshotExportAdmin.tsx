@@ -13595,6 +13595,16 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         />
                       </div>
                       <div className="field">
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Öffnungszeiten</label>
+                        <input
+                          type="text"
+                          value={galleryData.openingHours || ''}
+                          onChange={(e) => setGalleryData({ ...galleryData, openingHours: e.target.value })}
+                          placeholder="z. B. Do–So 14–18 Uhr"
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
+                        />
+                      </div>
+                      <div className="field">
                         <label style={{ fontSize: '0.85rem', color: s.text }}>Bankverbindung / IBAN (für Überweisungszwecke, z. B. Shop)</label>
                         <input
                           type="text"
