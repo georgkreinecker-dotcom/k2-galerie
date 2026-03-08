@@ -4,6 +4,15 @@
 
 ---
 
+## Datum: 08.03.26 – Plan Marktdurchdringung (Eferding → Welt)
+
+- **Stand:** Technische Überlegung für **wo, wie, wann** starten (Eferding) und Marktdurchdringung bis „Welt“ ist als klarer Plan dokumentiert.
+- **Was zuletzt gemacht:** **docs/MARKTDURCHDRINGUNG-PLAN-EFERDING-WELT.md** erstellt: (1) **Wo:** Eferding als Startort (Präsenz, Medien OÖ, kontrollierbar). (2) **Wie (technisch):** Einzige Lücke vor Start = Stripe Go-Live (3 Schritte); danach dieselbe Technik für Eferding, Region, Welt. (3) **Wann:** Meilensteine M1 (Stripe) → M2 (erste sichtbare Aktion Eferding) → M3 (erste Lizenz/Pilot) → M4 (regional ausweiten) → M5 (keine geografische Begrenzung). Verweise auf STRIPE-LIZENZEN-GO-LIVE, MEDIENVERTEILER-EROEFFNUNG, START-NUR-NOCH-OFFEN. 00-INDEX und kampagne-marketing-strategie/00-INDEX um den Plan ergänzt.
+- **Nächster Schritt:** Commit + Push. Dann: Stripe-3-Schritte abhaken (M1), danach M2 (Presseinfo oder QR/Flyer in Eferding).
+- **Wo nachlesen:** docs/MARKTDURCHDRINGUNG-PLAN-EFERDING-WELT.md.
+
+---
+
 ## Datum: 08.03.26 – Neubewertung Programmierarbeit und Marktwert in mök2
 
 - **Stand:** In mök2 (Marketing ök2) gibt es eine **Neubewertung (März 2026)** als eigene Sektion im Kapitel „Bewertung & Lizenzen“. Alte Bewertung (Tabelle 188.000–498.000 €) bleibt unverändert.
