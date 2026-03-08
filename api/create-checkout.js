@@ -13,6 +13,20 @@ const PRICE_CENTS = {
   proplus: 4500, // 45 €
 }
 
+/** Sichere tenantId: a-z0-9-, max 64 Zeichen. Eindeutig durch Zufallssuffix. */
+function generateTenantId(email) {
+  const slug = (email || '')
+    .trim()
+    .toLowerCase()
+    .split('@')[0]
+    .replace(/[^a-z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 40) || 'galerie'
+  const rand = Math.random().toString(36).slice(2, 8)
+  return `galerie-${slug}-${rand}`
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
@@ -47,6 +61,7 @@ export default async function handler(req, res) {
     ? `https://${process.env.VERCEL_URL}`
     : (process.env.VITE_APP_URL || 'https://k2-galerie.vercel.app')
 
+  const tenantId = generateTenantId(email)
   const successUrl = `${baseUrl}/lizenz-erfolg?session_id={CHECKOUT_SESSION_ID}`
   const cancelUrl = `${baseUrl}/projects/k2-galerie/licences`
 
@@ -72,6 +87,7 @@ export default async function handler(req, res) {
       metadata: {
         licenceType,
         customerName: (name || '').trim().substring(0, 200),
+        tenantId,
         ...(empfehlerId && empfehlerId.trim() ? { empfehlerId: empfehlerId.trim().substring(0, 100) } : {}),
       },
       success_url: successUrl,

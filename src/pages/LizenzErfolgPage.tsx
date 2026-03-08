@@ -1,17 +1,49 @@
 /**
  * Seite nach erfolgreichem Stripe-Checkout (Redirect von Stripe).
  * URL: /lizenz-erfolg?session_id=...
- * Enthält eine ausdruckbare Lizenzbestätigung („Bestätigung drucken“).
+ * Lädt Lizenz/URL per API und zeigt „Deine Galerie“ + „Admin“-Links. Enthält ausdruckbare Lizenzbestätigung.
  */
+import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import '../App.css'
 import { PROJECT_ROUTES, ENTDECKEN_ROUTE } from '../config/navigation'
 import { PRODUCT_BRAND_NAME } from '../config/tenantConfig'
 
+type LicenceLinks = { galerie_url: string | null; admin_url: string; name: string; email: string }
+
 export default function LizenzErfolgPage() {
   const [searchParams] = useSearchParams()
   const sessionId = searchParams.get('session_id')
+  const [links, setLinks] = useState<LicenceLinks | null>(null)
+  const [linksError, setLinksError] = useState<string | null>(null)
   const bestaetigungsDatum = new Date().toLocaleDateString('de-AT', { day: '2-digit', month: '2-digit', year: 'numeric' })
+
+  useEffect(() => {
+    if (!sessionId) return
+    let cancelled = false
+    const load = async () => {
+      try {
+        const res = await fetch(`/api/get-licence-by-session?session_id=${encodeURIComponent(sessionId)}`)
+        const data = await res.json().catch(() => ({}))
+        if (cancelled) return
+        if (data.error && !data.galerie_url) {
+          setLinksError(data.hint || data.error)
+          return
+        }
+        setLinks({
+          galerie_url: data.galerie_url || null,
+          admin_url: data.admin_url || '/projects/k2-galerie',
+          name: data.name || '',
+          email: data.email || '',
+        })
+        setLinksError(null)
+      } catch {
+        if (!cancelled) setLinksError('Verbindung fehlgeschlagen.')
+      }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [sessionId])
 
   return (
     <main style={{ maxWidth: 480, margin: '3rem auto', padding: '0 1rem', textAlign: 'center' }}>
@@ -23,14 +55,37 @@ export default function LizenzErfolgPage() {
       `}</style>
       <div className="lizenz-erfolg-no-print" style={{ fontSize: '3rem', marginBottom: '1rem' }}>✅</div>
       <h1 className="lizenz-erfolg-no-print" style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Lizenz erworben</h1>
-      <p className="lizenz-erfolg-no-print" style={{ color: 'var(--k2-muted)', marginBottom: '1.5rem' }}>
+      <p className="lizenz-erfolg-no-print" style={{ color: 'var(--k2-muted)', marginBottom: '1rem' }}>
         Vielen Dank für deine Zahlung. Deine Lizenz ist aktiv.
-        {sessionId && (
-          <span style={{ display: 'block', fontSize: '0.8rem', marginTop: '0.5rem' }}>
-            (Referenz: {sessionId.slice(0, 20)}…)
-          </span>
-        )}
       </p>
+      {linksError && (
+        <p className="lizenz-erfolg-no-print" style={{ fontSize: '0.9rem', color: 'var(--k2-muted)', marginBottom: '1rem' }}>
+          {linksError}
+        </p>
+      )}
+      {links && (links.galerie_url || links.admin_url) && (
+        <div className="lizenz-erfolg-no-print" style={{ marginBottom: '1.5rem', textAlign: 'left', maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
+          <p style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.5rem' }}>Deine Galerie</p>
+          {links.galerie_url && (
+            <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem' }}>
+              <a href={links.galerie_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--k2-accent)', wordBreak: 'break-all' }}>
+                {links.galerie_url}
+              </a>
+            </p>
+          )}
+          <p style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.5rem', marginTop: '1rem' }}>Galerie bearbeiten (Admin)</p>
+          <p style={{ margin: 0, fontSize: '0.9rem' }}>
+            <a href={links.admin_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--k2-accent)', wordBreak: 'break-all' }}>
+              {links.admin_url}
+            </a>
+          </p>
+        </div>
+      )}
+      {sessionId && !links && !linksError && (
+        <p className="lizenz-erfolg-no-print" style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', marginBottom: '1.5rem' }}>
+          Deine Galerie-Links werden geladen…
+        </p>
+      )}
 
       {/* Bestätigung zum Ausdrucken – Kunde kann sich das Schreiben von uns drucken */}
       <div

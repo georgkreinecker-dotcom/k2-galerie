@@ -86,12 +86,20 @@ export default async function handler(req, res) {
   const licenceType = metadata?.licenceType || 'basic'
   const empfehlerId = (metadata?.empfehlerId || '').trim() || null
   const customerName = (metadata?.customerName || '').trim() || 'Kunde'
+  const tenantIdRaw = (metadata?.tenantId || '').trim().toLowerCase()
   const amountTotal = session.amount_total ?? 0
   const customerEmail = session.customer_email || session.customer_details?.email || ''
 
   const amountEur = (amountTotal / 100).toFixed(2)
   const gutschriftCents = empfehlerId && amountTotal > 0 ? Math.round(amountTotal * 0.1) : 0
   const gutschriftEur = (gutschriftCents / 100).toFixed(2)
+
+  const baseUrl = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : (process.env.VITE_APP_URL || 'https://k2-galerie.vercel.app')
+  const isSafeTenantId = tenantIdRaw && /^[a-z0-9-]{1,64}$/.test(tenantIdRaw)
+  const tenantId = isSafeTenantId ? tenantIdRaw : null
+  const galerieUrl = tenantId ? `${baseUrl}/g/${tenantId}` : null
 
   const supabaseUrl = process.env.SUPABASE_URL
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -103,16 +111,20 @@ export default async function handler(req, res) {
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
   try {
+    const licenceInsert = {
+      email: customerEmail,
+      name: customerName,
+      licence_type: licenceType,
+      status: 'active',
+      empfehler_id: empfehlerId,
+      stripe_session_id: session.id,
+    }
+    if (tenantId) licenceInsert.tenant_id = tenantId
+    if (galerieUrl) licenceInsert.galerie_url = galerieUrl
+
     const { data: licence, error: errLicence } = await supabase
       .from('licences')
-      .insert({
-        email: customerEmail,
-        name: customerName,
-        licence_type: licenceType,
-        status: 'active',
-        empfehler_id: empfehlerId,
-        stripe_session_id: session.id,
-      })
+      .insert(licenceInsert)
       .select('id')
       .single()
 

@@ -327,7 +327,7 @@ Technisch ist das bereits vorbereitet: In `tenantConfig.ts` gibt es **publicBase
 
 | Phase | Status | Was läuft automatisch | Was fehlt noch (für echte Sportwagen-Automatik) |
 |-------|--------|------------------------|--------------------------------------------------|
-| **Geburt** (Registrierung → aktiver Klient) | ⚠️ Teilweise | Checkout (Stripe), Webhook schreibt Lizenz + Zahlung in Supabase. | **tenantId** wird beim Checkout **nicht** vergeben; **licences** hat keine Spalte tenant_id / URL; App kennt tenantId **nicht** aus URL (Subdomain/Pfad); Klient bekommt **keine** automatische „Deine Galerie: https://…“-URL. → **Ein Ablauf „Checkout → tenantId erzeugen → speichern → URL ableiten → an Klient übermitteln“ ist noch nicht gebaut.** |
+| **Geburt** (Registrierung → aktiver Klient) | ✅ Umgesetzt | Checkout erzeugt **tenantId** (api/create-checkout.js), Webhook schreibt Lizenz inkl. **tenant_id** und **galerie_url** (api/webhook-stripe.js). Erfolgsseite lädt Lizenz per **api/get-licence-by-session** und zeigt „Deine Galerie“- und „Admin“-Links. Route **/g/:tenantId** (GalerieTenantPage) zeigt die Galerie oder „Jetzt gestalten“. | **Supabase:** Migration **007_licences_tenant_id_galerie_url.sql** einmal ausführen (Spalten tenant_id, galerie_url). Admin mit ?tenantId= (Laden/Speichern für dynamischen Mandanten) optionaler nächster Schritt. |
 | **Aktives Leben** (Nutzen, Veröffentlichen, Laden) | ✅ für K2/ök2/VK2 | Ein Standard: write-gallery-data(tenantId), gallery-data?tenantId=, ein Blob pro Mandant. GaleriePage lädt bei musterOnly/vk2 vom Server. | Für **viele Klienten**: App muss tenantId aus **URL** lesen (Subdomain oder Pfad), damit Klient „seine“ Galerie öffnet – eine Quelle, ein Ablauf. |
 | **Sterben** (Kündigung) | ✅ Sportwagenkonform | **Ein Ablauf:** „Lizenz beenden“ (Frontend mit tenantId) oder Stripe subscription.deleted → cancel-subscription bzw. webhook ruft Löschlogik auf → delete-tenant-data / Blob del() → Blob weg. K2 wird nie gelöscht. Kein manuelles Aufräumen. | Optional: Lizenz in Supabase auf status=cancelled; URL nach Löschung auf „Lizenz beendet“-Seite führen. |
 
@@ -335,6 +335,41 @@ Technisch ist das bereits vorbereitet: In `tenantConfig.ts` gibt es **publicBase
 
 - **Sterben:** Ja – sportwagenkonform automatisiert (ein Ablauf, eine Lösch-API, Frontend + Webhook nutzen ihn).
 - **Aktives Leben:** Ja – für die heute unterstützten Mandanten (K2, ök2, VK2) ein Standard (Laden/Speichern/Blob). Für beliebig viele Klienten: tenantId aus URL noch umsetzen.
-- **Geburt:** Nein – noch nicht durchgängig automatisiert. Ziel ist in der Doku beschrieben (Registrierung → tenantId → URL → Klient); die technische Kette (Checkout/Webhook vergibt tenantId, speichert sie, App liest tenantId aus URL, URL wird zugestellt) ist noch offen.
+- **Geburt:** Ja – umgesetzt (08.03.26): Checkout → tenantId in metadata; Webhook → tenant_id + galerie_url in licences; Erfolgsseite zeigt Links; /g/:tenantId zeigt Galerie.
 
-**Sportwagen-Vollständigkeit:** Sobald „Geburt“ (tenantId beim Checkout + URL-Quelle in der App) umgesetzt ist, ist der Lebenszyklus von der Geburt bis zum Sterben **ein durchgängiger, automatisierter Standard** – ohne manuelle Host-Eingriffe pro Klient.
+**Sportwagen-Vollständigkeit:** Die Geburtskette ist gebaut. Einmalig: Supabase-Migration 007 ausführen (tenant_id, galerie_url). Optional: Admin mit ?tenantId= für Laden/Speichern des dynamischen Mandanten.
+
+---
+
+### Was zur Automatisierung noch fehlt (konkrete Liste)
+
+**Phase „Geburt“ (Registrierung → aktiver Klient mit eigener URL)** – ✅ umgesetzt (08.03.26)
+
+| Nr. | Was | Status |
+|-----|-----|--------|
+| 1 | **tenantId beim Checkout erzeugen** | ✅ **api/create-checkout.js**: `generateTenantId(email)` (E-Mail-Slug + Zufallssuffix), in `metadata.tenantId`. |
+| 2 | **tenantId in Supabase speichern** | ✅ **api/webhook-stripe.js**: `metadata.tenantId` lesen, in **licences** mitschreiben. Migration **supabase/migrations/007_licences_tenant_id_galerie_url.sql** einmal ausführen. |
+| 3 | **Galerie-URL ableiten und speichern** | ✅ Im Webhook: `galerieUrl = baseUrl + '/g/' + tenantId`, in **licences.galerie_url**. |
+| 4 | **Erfolgsseite: „Deine Galerie“-URL anzeigen** | ✅ **api/get-licence-by-session.js** (GET mit session_id); **LizenzErfolgPage** lädt und zeigt „Deine Galerie“- und „Admin“-Links. |
+| 5 | **App: tenantId aus URL lesen** | ✅ Route **/g/:tenantId**, **GalerieTenantPage** lädt gallery-data?tenantId= und zeigt Galerie oder „Jetzt gestalten“ + Admin-Link. |
+
+**Phase „Aktives Leben“ (für beliebig viele Klienten)**
+
+| Nr. | Was | Wo / wie | Priorität |
+|-----|-----|----------|-----------|
+| 6 | **GaleriePage/Admin bei dynamischem tenantId** | Wenn tenantId aus URL kommt: GaleriePage (und Vorschau, Admin) so aufrufen, dass sie diesen tenantId verwenden (Laden/Speichern/Blob wie bei ök2/VK2, nur mit variablem tenantId). Bereits vorbereitet: gallery-data?tenantId=, write-gallery-data mit tenantId. | Folge von 5 |
+
+**Phase „Sterben“ (optional, schon weitgehend erledigt)**
+
+| Nr. | Was | Wo / wie | Priorität |
+|-----|-----|----------|-----------|
+| 7 | **Lizenz auf cancelled setzen** | In **api/cancel-subscription.js** oder Webhook **customer.subscription.deleted**: Supabase **licences** Zeile (über licence_id bzw. tenant_id finden) auf `status = 'cancelled'` setzen. | Optional |
+| 8 | **Alte URL → „Lizenz beendet“-Seite** | Wenn jemand die alte Galerie-URL aufruft nach Kündigung: gallery-data liefert 404; Frontend könnte auf Route `/g/:tenantId` prüfen (API-Call) ob Mandant noch aktiv ist und sonst auf feste Seite „Lizenz beendet“ umleiten. | Optional |
+
+**Abhängigkeiten**
+
+- **1 + 2 + 3** = Klient hat nach Checkout eine tenantId und eine URL in der DB.
+- **4** = Klient sieht diese URL auf der Erfolgsseite (und kann drucken).
+- **5 + 6** = Klient kann die URL öffnen und landet in seiner Galerie; Veröffentlichen/Laden laufen für diesen Mandanten.
+
+**Reihenfolge für Umsetzung:** 1 → 2 (DB-Spalten + Webhook) → 3 → 4 (API für Erfolgsseite + LizenzErfolgPage) → 5 → 6.

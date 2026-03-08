@@ -4,6 +4,21 @@
 
 ---
 
+## Datum: 08.03.26 – Pause (Geburtskette fertig, 007 noch offen)
+
+- **Stand:** Georg macht Pause. Alles gespeichert, Commit + Push erledigt.
+- **Was zuletzt gemacht:** Komplette **Geburtskette** umgesetzt (Checkout → tenantId → URL → Erfolgsseite mit Links → Route /g/:tenantId). Code und Doku sind committed.
+- **Beim nächsten Einstieg (weiter machen):**
+  1. **Supabase-Migration 007 ausführen** (damit Geburtskette voll funktioniert): Supabase Dashboard → SQL Editor → New query → folgenden SQL einfügen und **Run** klicken:
+     ```sql
+     ALTER TABLE licences ADD COLUMN IF NOT EXISTS tenant_id TEXT, ADD COLUMN IF NOT EXISTS galerie_url TEXT;
+     CREATE INDEX IF NOT EXISTS idx_licences_tenant_id ON licences(tenant_id);
+     ```
+  2. Optional danach: Admin mit ?tenantId= für dynamischen Mandanten (Laden/Speichern).
+- **Wo nachlesen:** docs/K2-OEK2-DATENTRENNUNG.md (Lebenszyklus, „Was zur Automatisierung noch fehlt“); supabase/migrations/007_licences_tenant_id_galerie_url.sql.
+
+---
+
 ## Datum: 08.03.26 – Kündigung → automatisch alles gelöscht (Ablauf umgesetzt)
 
 - **Thema:** Georg: „Und wenn er kündigt wird automatisch alles wieder gelöscht“ – Ablauf jetzt fix umgesetzt.

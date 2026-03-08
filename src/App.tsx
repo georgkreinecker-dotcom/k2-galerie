@@ -25,6 +25,7 @@ import K2SoftwareentwicklungPage from './pages/K2SoftwareentwicklungPage'
 import WerbeunterlagenPage from './pages/WerbeunterlagenPage'
 import Mok2Layout from './components/Mok2Layout'
 import GaleriePage from './pages/GaleriePage'
+import GalerieTenantPage from './pages/GalerieTenantPage'
 import GalerieVorschauPage from './pages/GalerieVorschauPage'
 import Vk2GaleriePage from './pages/Vk2GaleriePage'
 import Vk2KatalogPage from './pages/Vk2KatalogPage'
@@ -522,6 +523,8 @@ function App() {
       <Route path={PROJECT_ROUTES.vk2.mitgliedLogin} element={<Vk2MitgliedLoginPage />} />
       <Route path={PROJECT_ROUTES.vk2.kunden} element={<KundenPage vk2 />} />
       <Route path={PROJECT_ROUTES.vk2.vollversion} element={<Navigate to="/admin?context=vk2" replace />} />
+      {/* Dynamischer Mandant (Lizenz-URL nach Checkout): /g/:tenantId */}
+      <Route path="/g/:tenantId" element={<GalerieTenantPage />} />
       <Route path={PROJECT_ROUTES['k2-familie'].home} element={<K2FamilieLayout />}>
         <Route index element={<K2FamilieHomePage />} />
         <Route path="uebersicht" element={<K2FamilieStartPage />} />
