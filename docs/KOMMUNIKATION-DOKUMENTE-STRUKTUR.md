@@ -28,7 +28,7 @@
 | **Presse – Medienkit (Boilerplate, Stories)** | docs/MEDIENSTUDIO-K2.md | ✅ Fertig | Copy-Paste bei Bedarf; Ansprechpartner, Betreff klar |
 | **Google / Social / QR** | docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §1–5 | ⚠️ Vorlagen | Einmal ausfüllen (Search Console, Business, Bio, QR) |
 | **Erste Ansprache (Künstler:in / Verein)** | docs/KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md | ✅ Fertig | Vorlage A (Künstler:in/ök2) und B (Verein/VK2); nur [Anrede/Name] ersetzen |
-| **Flyer / Handout (Druck)** | – | ❌ Fehlt | Einseitig: Was ist K2/ök2/VK2, Link/QR, Kontakt – druckfertig |
+| **Flyer / Handout (Druck)** | docs/KOMMUNIKATION-FLYER-HANDOUT.md | ✅ Fertig | Text Copy-Paste, [Kontakt] + QR aus APf; eine Seite drucken oder ins Layout |
 | **E-Mail-Vorlagen (nach Lizenzkauf, Einladung)** | – | ❌ Fehlt | Kurze, verbindliche Texte: Danke, Link, nächster Schritt |
 | **FAQ für Kunden / Piloten** | mök2, ggf. Handbuch | ⚠️ Teils | Häufige Fragen gebündelt, eine Quelle |
 
@@ -44,7 +44,7 @@
 | **„Ist der Text wirklich fertig zum Abschicken?“** | Presse §6: Nur [Platzhalter] ersetzen, dann versenden. Wenn du willst, können wir die Vorlage noch einmal redigieren (ein Satz „fertige Fassung“ pro Anlass). |
 | **„An wen schicke ich was – und in welcher Reihenfolge?“** | MEDIENVERTEILER: zuerst regional (OÖN, MeinBezirk, Tips, ORF OÖ), dann überregional. PRESSEARBEIT-STANDARD Schritt 5. |
 | **„Ich will einen Künstler / Verein gezielt ansprechen – was schreibe ich?“** | docs/KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md – Vorlage A (Künstler:in) oder B (Verein), [Anrede/Name] ersetzen, versenden. |
-| **„Flyer für die Galerie / für Messen – was drauf?“** | Dafür fehlt noch ein **Flyer-/Handout-Muster** (eine Seite: Botschaft, QR, Kontakt) – dann druckfertig. |
+| **„Flyer für die Galerie / für Messen – was drauf?“** | docs/KOMMUNIKATION-FLYER-HANDOUT.md – Text kopieren, [Kontakt] + QR aus APf, eine Seite drucken. |
 | **„Nach dem Lizenzkauf: Was mailen wir?“** | E-Mail-Vorlagen (Danke, Link, nächster Schritt) fehlen noch – können wir als feste Texte anlegen, die du nur noch personalisierst. |
 | **„Mehrsprachig – Presse/Ansprache auf Englisch?“** | Siehe docs/MEHRSPRACHIGKEIT-PLAN.md: klären, wo DE reicht und wo EN (oder andere Sprache) dazukommt; dann eine Quelle pro Sprache. |
 
@@ -58,8 +58,7 @@
    - ✅ **Erledigt:** docs/KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md – Vorlage A (Künstler:in/ök2), Vorlage B (Verein/VK2); nur [Anrede/Name] ersetzen.
 
 2. **Flyer / Handout (eine Seite, druckfertig)**  
-   - Inhalt: Was ist K2 Galerie / ök2 / VK2 (2–3 Sätze), QR/Link, Kontakt.  
-   - Ablage: Vorlage in docs oder mök2; Design/PDF so, dass du drucken oder drucken lassen kannst.
+   - ✅ **Erledigt:** docs/KOMMUNIKATION-FLYER-HANDOUT.md – Text fertig, [Kontakt] ersetzen, QR aus APf, eine Seite drucken oder ins Layout.
 
 3. **E-Mail-Vorlagen (nach Lizenzkauf, Einladung)**  
    - Kurze, verbindliche Texte: „Danke für Ihren Kauf – hier Ihr Link …“, „Einladung zum Test …“.  
@@ -83,10 +82,11 @@
 | **Presse – Text** | docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §6 |
 | **Sichtbarkeit (Google, Social, QR)** | docs/SICHTBARKEIT-PHASE1-VORLAGEN.md |
 | **Ansprache Künstler:in/Verein** | docs/KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md |
+| **Flyer / Handout** | docs/KOMMUNIKATION-FLYER-HANDOUT.md |
 | **Kampagne / Strategie** | docs/kampagne-marketing-strategie/00-INDEX.md |
 | **Was als Nächstes (Vision)** | docs/VISION-UMSETZEN-NÄCHSTE-SCHRITTE.md |
 | **Mehrsprachigkeit** | docs/MEHRSPRACHIGKEIT.md · docs/MEHRSPRACHIGKEIT-PLAN.md |
 
 ---
 
-**Kurz:** Kommunikation nach **Sportwagenmodus** – ein Zweck = ein Dokument, eine Quelle. Presse + **Ansprache** (Vorlage A/B) stehen; was noch fehlt: **Flyer/Handout**, **E-Mail-Vorlagen**. Mehrsprachigkeit mitgeplant, kommt erst wenn DE läuft. Nächster Schritt: Flyer oder E-Mail-Vorlagen ausarbeiten.
+**Kurz:** Kommunikation nach **Sportwagenmodus** – ein Zweck = ein Dokument, eine Quelle. Presse, **Ansprache**, **Flyer/Handout** stehen; was noch fehlt: **E-Mail-Vorlagen**. Mehrsprachigkeit mitgeplant. Nächster Schritt: E-Mail-Vorlagen ausarbeiten.
