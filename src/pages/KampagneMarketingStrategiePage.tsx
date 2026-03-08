@@ -14,6 +14,10 @@ const DOCUMENTS = [
   { id: 'index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
   { id: 'auftrag', name: 'Auftrag (Spezifikation)', file: 'AUFTRAG-MARKETING-STRATEGIE-ZWEI-ZWEIGE.md' },
   { id: 'strategie', name: 'Marketing-Strategie (Ergebnis)', file: 'MARKETING-STRATEGIE-AUTOMATISIERTER-VERTRIEB.md' },
+  { id: 'komm-struktur', name: 'Kommunikations-Struktur (Einstieg)', file: 'KOMMUNIKATION-DOKUMENTE-STRUKTUR.md' },
+  { id: 'komm-ansprache', name: 'Ansprache Künstler:in / Verein', file: 'KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md' },
+  { id: 'komm-flyer', name: 'Flyer / Handout (eine Seite)', file: 'KOMMUNIKATION-FLYER-HANDOUT.md' },
+  { id: 'komm-email', name: 'E-Mail-Vorlagen (nach Kauf, Einladung)', file: 'KOMMUNIKATION-EMAIL-VORLAGEN.md' },
 ] as const
 
 export default function KampagneMarketingStrategiePage() {

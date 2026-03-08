@@ -6,6 +6,15 @@
 
 ---
 
+## Datum: 08.03.26 – Kampagne: Kommunikations-Dokumente in der App sichtbar
+
+- **Stand:** Die vier Kommunikations-Vorlagen liegen in der **Kampagne Marketing-Strategie** als bearbeitbare Dokumente – in der Sidebar „Inhalt der Mappe“ sichtbar und anklickbar.
+- **Was zuletzt gemacht:** (1) docs → public/kampagne-marketing-strategie: KOMMUNIKATION-DOKUMENTE-STRUKTUR, ANSPRACHE, FLYER, EMAIL-VORLAGEN kopiert; 00-INDEX aktualisiert. (2) KampagneMarketingStrategiePage: DOCUMENTS um vier Einträge erweitert (Kommunikations-Struktur, Ansprache, Flyer, E-Mail-Vorlagen). Tests + Build grün.
+- **Nächster Schritt:** Optional: Presse §6 redigieren oder Mehrsprachigkeit. Ansonsten Vorlagen in Phase 1 nutzen.
+- **Wo nachlesen:** public/kampagne-marketing-strategie/, src/pages/KampagneMarketingStrategiePage.tsx.
+
+---
+
 ## Datum: 08.03.26 – Kommunikation Phase 1 abgeschlossen (Sportwagenmodus)
 
 - **Stand:** Alle Vorlagen für die erste Phase stehen: Ansprache (A/B), Flyer/Handout, E-Mail-Vorlagen (A nach Kauf, B Einladung Test). In der ersten Phase manuell nutzen; **im automatisierten Ablauf läuft dann alles im Netz** (Bestätigungen, Links aus dem System).

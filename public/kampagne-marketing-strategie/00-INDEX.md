@@ -12,6 +12,21 @@
 |----------|--------|------|
 | **Auftrag (Spezifikation)** | Zwei Zweige: K2 Galerie (automatisierter Vertrieb) + K2 Familie (eigener Planungszweig). Was Anke/Agent erarbeiten soll; Prinzipien, Output-Ziele. | [AUFTRAG-MARKETING-STRATEGIE-ZWEI-ZWEIGE.md](../AUFTRAG-MARKETING-STRATEGIE-ZWEI-ZWEIGE.md) |
 | **Marketing-Strategie (Ergebnis)** | Ausgearbeitete Strategie: Zweig 1 (K2 Galerie – Kanäle, Kampagnen-Bausteine, Empfehlungsprogramm, keine direkte Kundenansprache), Zweig 2 (K2 Familie – Positionierung, Botschaften, Raumschiff, Datensouveränität). | [MARKETING-STRATEGIE-AUTOMATISIERTER-VERTRIEB.md](../MARKETING-STRATEGIE-AUTOMATISIERTER-VERTRIEB.md) |
+| **Plan Marktdurchdringung (Eferding → Welt)** | **Ziel:** Jahr 1 = 1.000, Jahr 2 = 10.000, Jahr 3 = 100.000 Lizenzen (10× pro Jahr). Wo, wie, wann (M1–M5); Start Eferding, Skalierung ohne neue Technik. | [MARKTDURCHDRINGUNG-PLAN-EFERDING-WELT.md](../MARKTDURCHDRINGUNG-PLAN-EFERDING-WELT.md) |
+| **Vermarktung automatisiert (Sportwagenmodus)** | Kanäle der Kommunikation, die automatisiert und im Sportwagenmodus für uns arbeiten – ohne große Kosten. Ein Ablauf pro Kanal, eine Quelle; Tabelle: Web, QR, Empfehlung, Lizenz, SEO, Google Business, Social-Bio, Presse, Prospekt-PDF, Verzeichnisse. | [VERMARKTUNGSSTRATEGIE-AUTOMATISIERT-SPORTWAGENMODUS.md](../VERMARKTUNGSSTRATEGIE-AUTOMATISIERT-SPORTWAGENMODUS.md) |
+
+---
+
+## Kommunikations-Vorlagen (Phase 1 – bearbeitbare Dokumente)
+
+| Dokument | Inhalt |
+|----------|--------|
+| [KOMMUNIKATION-DOKUMENTE-STRUKTUR.md](../KOMMUNIKATION-DOKUMENTE-STRUKTUR.md) | **Einstieg:** Welches Dokument wofür, Sportwagenmodus, was fertig, Verknüpfungen. |
+| [KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md](../KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md) | Ansprache A (Künstler:in/ök2), B (Verein/VK2); nur [Anrede/Name] ersetzen. |
+| [KOMMUNIKATION-FLYER-HANDOUT.md](../KOMMUNIKATION-FLYER-HANDOUT.md) | Flyer/Handout eine Seite – Text, QR, Kontakt; druckfertig. |
+| [KOMMUNIKATION-EMAIL-VORLAGEN.md](../KOMMUNIKATION-EMAIL-VORLAGEN.md) | E-Mail A (nach Lizenzkauf), B (Einladung zum Test); später automatisierbar. |
+
+**Eine Quelle pro Zweck.** Alle in docs/ bearbeitbar; Kampagne-Index = Einstieg. In der App: mök2 → Sichtbarkeit & Werbung (dort verlinkt).
 
 ---
 

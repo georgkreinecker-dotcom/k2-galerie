@@ -6,12 +6,12 @@
 
 ## Stand (wo wir stehen)
 
-### Datum: 08.03.26 – Admin mit ?tenantId= („Aktives Leben“ zu Ende gebracht)
+### Datum: 08.03.26 – Neubewertung Programmierarbeit und Marktwert in mök2
 
-- **Stand:** Lebenszyklus Klient im Sportwagenmodus durchgezogen: **Admin mit dynamischem Mandanten** umgesetzt.
-- **Was zuletzt gemacht:** (1) **TenantContext:** `?tenantId=` aus URL (nur /admin), sichere ID (a-z0-9-, 1–64 Zeichen, nicht k2/oeffentlich/vk2) → `dynamicTenantId`. (2) **Admin:** Bei `tenant.dynamicTenantId`: Daten **nur** von API laden (`api/gallery-data?tenantId=`) und in State übernehmen; **Speichern** nur über „Veröffentlichen“ → `api/write-gallery-data` mit `body.tenantId`; kein localStorage für Werke/Stammdaten/Design/Events/Dokumente; Ladebanner + Hinweis „Änderungen mit Veröffentlichen speichern“; „Vom Server laden“ lädt für dynamischen Mandanten neu von API. (3) **saveArtworks:** Bei dynamicTenantId No-Op (nur State, kein Schreiben in Keys). Build ✅, Tests 42/42.
-- **Nächster Schritt:** Commit + Push. Optional: Erfolgsseite-Link „Admin“ mit `?tenantId=…` testen (Kunde klickt → Admin öffnet seine Galerie, lädt/speichert über API).
-- **Wo nachlesen:** src/context/TenantContext.tsx (dynamicTenantId); ScreenshotExportAdmin (Laden/Speichern/Export bei dynamicTenantId); docs/K2-OEK2-DATENTRENNUNG.md.
+- **Stand:** In mök2 (Marketing ök2) gibt es eine **Neubewertung (März 2026)** als eigene Sektion im Kapitel „Bewertung & Lizenzen“. Alte Bewertung (Tabelle 188.000–498.000 €) bleibt unverändert.
+- **Was zuletzt gemacht:** Sektion **„Neubewertung Programmierarbeit und Marktwert (März 2026)“** in MarketingOek2Page eingefügt: Produktstand (Sportwagenmodus, Lebenszyklus, Multi-Tenant startklar, 42 Tests, Doku). Wiederbeschaffungswert **bestätigt im Rahmen 188.000–498.000 €**; Marktwert unverändert (Zahlungsbereitschaft, realistische Lizenzgebühren). Verweis auf Team-Hebel / WIR-PROZESS (tatsächlicher Aufwand grob 200 h). Sidebar mök2 um „Neubewertung (März 2026)“ ergänzt (mok2Structure.ts).
+- **Nächster Schritt:** Commit + Push. Optional: in mök2 „Als PDF drucken“ prüfen.
+- **Wo nachlesen:** src/pages/MarketingOek2Page.tsx (id mok2-neubewertung-2026), mök2 → Bewertung & Lizenzen.
 
 ---
 
@@ -30,6 +30,7 @@
 
 ## Proaktiv (Vorschläge)
 
+- **Uncommitted:** Es gibt noch nicht committete Änderungen – vor Session-Ende: Commit + Push?
 - **Optional:** Grafiker-Tisch hat optionale Punkte (z. B. Texte kürzen) – nur wenn du dran willst.
 
 ---
