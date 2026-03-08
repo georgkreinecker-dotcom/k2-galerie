@@ -21,12 +21,17 @@ export default function LizenzErfolgPage() {
   useEffect(() => {
     if (!sessionId) return
     let cancelled = false
-    const load = async () => {
+    const delays = [0, 1500, 3000]
+    const load = async (attempt = 0) => {
       try {
         const res = await fetch(`/api/get-licence-by-session?session_id=${encodeURIComponent(sessionId)}`)
         const data = await res.json().catch(() => ({}))
         if (cancelled) return
         if (data.error && !data.galerie_url) {
+          if (attempt < delays.length - 1) {
+            setTimeout(() => load(attempt + 1), delays[attempt + 1])
+            return
+          }
           setLinksError(data.hint || data.error)
           return
         }
@@ -38,7 +43,12 @@ export default function LizenzErfolgPage() {
         })
         setLinksError(null)
       } catch {
-        if (!cancelled) setLinksError('Verbindung fehlgeschlagen.')
+        if (cancelled) return
+        if (attempt < delays.length - 1) {
+          setTimeout(() => load(attempt + 1), delays[attempt + 1])
+          return
+        }
+        setLinksError('Verbindung fehlgeschlagen.')
       }
     }
     load()

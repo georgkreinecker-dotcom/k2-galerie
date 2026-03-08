@@ -62,6 +62,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **WERKE-SPEICHERUNG-CHECKLISTE.md** – **Schlüsselfunktion Werke:** Bombensichere Regeln (nie mit weniger überschreiben, kein Filter-and-Write, Kontext, Supabase, Backup). Pflicht-Check vor jedem Commit, der Lade-/Schreib-Pfade für Werke ändert.
 - **LEHRE-WERKE-WEG-IPAD-NOCH-DA.md** – **Lehre 01.03.26:** Werke am Mac weg, am iPad noch da. Veröffentlichen = Sicherung; Code nie mit leer/weniger überschreiben.
 - **K2-OEK2-DATENTRENNUNG.md** – Regeln: K2-Daten vs. ök2-Muster, Keys, Checkliste. Enthält **Speicher**, **Host-Org**, **Registrierung → URL**, **URL in Stammdaten/QR**, **Bei Kündigung → automatisch alles gelöscht**, **Lebenszyklus Klient – Sportwagen-Check (Geburt/Leben/Sterben)**. Pflicht bei Daten-Änderungen.
+- **LEBENSZYKLUS-QUALITAETSCHECK.md** – Gründlicher QS-Check des gesamten Lebenszyklus (Geburt, Aktives Leben, Sterben); Prüfpunkte, Fixes (Erfolgsseite Retry, Lizenz beenden für dynamische Mandanten), Abhängigkeiten.
 - **TENANT-SYNC-DOMAIN.md** – **Tenantfähig:** Veröffentlichen / Vom Server laden für K2, ök2, VK2; Blob pro Mandant; Domänen-Struktur (tenantId); Sicherheit später.
 - **UMZUG-K2-GALERIE-KUNST-KERAMIK.md** – Plattform = K2 Galerie, erste Galerie = K2 Galerie Kunst&Keramik; Backup für backupmicro.
 - **MOK2-EIGENER-BEREICH.md** – Marketing ök2 als eigener Bereich (mök2).

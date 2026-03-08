@@ -12823,8 +12823,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Lizenz wählen, bezahlen – evtl. mit deinen Daten aus Einstellungen</div>
               </button>
               )}
-              {/* 2b. Lizenz beenden – nur ök2 (K2 = unsere App, kein Ausstieg nötig) */}
-              {tenant.isOeffentlich && (
+              {/* 2b. Lizenz beenden – ök2 oder dynamischer Mandant (K2 ohne ?tenantId= = unsere App, kein Ausstieg nötig) */}
+              {(tenant.isOeffentlich || tenant.dynamicTenantId) && (
               <button type="button" onClick={() => setSettingsSubTab('lizenzbeenden')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'lizenzbeenden' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'lizenzbeenden' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'lizenzbeenden' ? s.accent : `${s.accent}22` }}
@@ -14473,7 +14473,7 @@ ${name}`
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                      tenantId: tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined,
+                      tenantId: tenant.dynamicTenantId ?? (tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined),
                       grund: lizenzBeendenGrund,
                       verbesserung: lizenzBeendenVerbesserung.trim() || undefined,
                     }),

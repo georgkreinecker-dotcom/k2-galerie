@@ -4,12 +4,12 @@
 
 ---
 
-## Datum: 08.03.26 – Admin mit ?tenantId= („Aktives Leben“ zu Ende gebracht)
+## Datum: 08.03.26 – Lebenszyklus gründlicher Qualitätscheck
 
-- **Stand:** Lebenszyklus Klient im Sportwagenmodus durchgezogen: **Admin mit dynamischem Mandanten** umgesetzt.
-- **Was zuletzt gemacht:** (1) **TenantContext:** `?tenantId=` aus URL (nur /admin), sichere ID (a-z0-9-, 1–64 Zeichen, nicht k2/oeffentlich/vk2) → `dynamicTenantId`. (2) **Admin:** Bei `tenant.dynamicTenantId`: Daten **nur** von API laden (`api/gallery-data?tenantId=`) und in State übernehmen; **Speichern** nur über „Veröffentlichen“ → `api/write-gallery-data` mit `body.tenantId`; kein localStorage für Werke/Stammdaten/Design/Events/Dokumente; Ladebanner + Hinweis „Änderungen mit Veröffentlichen speichern“; „Vom Server laden“ lädt für dynamischen Mandanten neu von API. (3) **saveArtworks:** Bei dynamicTenantId No-Op (nur State, kein Schreiben in Keys). Build ✅, Tests 42/42.
-- **Nächster Schritt:** Commit + Push. Optional: Erfolgsseite-Link „Admin“ mit `?tenantId=…` testen (Kunde klickt → Admin öffnet seine Galerie, lädt/speichert über API).
-- **Wo nachlesen:** src/context/TenantContext.tsx (dynamicTenantId); ScreenshotExportAdmin (Laden/Speichern/Export bei dynamicTenantId); docs/K2-OEK2-DATENTRENNUNG.md.
+- **Stand:** Gesamter Lebenszyklus (Geburt → Aktives Leben → Sterben) durchgecheckt; zwei Lücken behoben.
+- **Was zuletzt gemacht:** (1) **docs/LEBENSZYKLUS-QUALITAETSCHECK.md** – Prüfpunkte pro Phase, Sicherheit, Abhängigkeiten, durchgeführte Fixes. (2) **Erfolgsseite Retry:** Bei „Lizenz noch nicht gefunden“ 2× Retry nach 1,5 s und 3 s (Webhook-Race). (3) **Lizenz beenden + dynamische Mandanten:** Button auch bei `tenant.dynamicTenantId` sichtbar; `tenantId` = `dynamicTenantId ?? oeffentlich ?? vk2` an cancel-subscription. (4) 00-INDEX um LEBENSZYKLUS-QUALITAETSCHECK ergänzt. Tests 42/42 ✅, Build ✅.
+- **Nächster Schritt:** Commit + Push. Optional: Erfolgsseite + „Lizenz beenden“ (ök2 / Admin mit ?tenantId=) durchtesten.
+- **Wo nachlesen:** docs/LEBENSZYKLUS-QUALITAETSCHECK.md, docs/K2-OEK2-DATENTRENNUNG.md.
 
 ---
 
