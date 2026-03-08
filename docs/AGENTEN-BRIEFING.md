@@ -6,11 +6,12 @@
 
 ## Stand (wo wir stehen)
 
-### Datum: 08.03.26 – Schritt-für-Schritt-Assistent entfernt (Handbuch genügt)
+### Datum: 08.03.26 – Admin mit ?tenantId= („Aktives Leben“ zu Ende gebracht)
 
-- **Thema:** Georg: „Schritt für Schritt Assistenten brauchen wir nicht mehr – das Handbuch genügt.“
-- **Erledigt:** In ScreenshotExportAdmin: „Schritt-für-Schritt“-Karte aus beiden Hub-Listen (Guide-Banner + „Was möchtest du heute tun?“) entfernt; Tab-Typ und validTabs ohne 'assistent'; initialTab nie mehr 'assistent'; GalerieAssistent-Block und Import entfernt; HUB_CARD_BG/HUB_ICON_TINT/GRID_CARD_STYLE ohne assistent; guideAssistent/getAssistent entfernt. Build ✅.
-- **Nächster Schritt:** Commit + Push. Georg: Admin prüfen – nur noch Handbuch-Link für Neueinsteiger, keine Assistenten-Karte mehr.
+- **Stand:** Lebenszyklus Klient im Sportwagenmodus durchgezogen: **Admin mit dynamischem Mandanten** umgesetzt.
+- **Was zuletzt gemacht:** (1) **TenantContext:** `?tenantId=` aus URL (nur /admin), sichere ID (a-z0-9-, 1–64 Zeichen, nicht k2/oeffentlich/vk2) → `dynamicTenantId`. (2) **Admin:** Bei `tenant.dynamicTenantId`: Daten **nur** von API laden (`api/gallery-data?tenantId=`) und in State übernehmen; **Speichern** nur über „Veröffentlichen“ → `api/write-gallery-data` mit `body.tenantId`; kein localStorage für Werke/Stammdaten/Design/Events/Dokumente; Ladebanner + Hinweis „Änderungen mit Veröffentlichen speichern“; „Vom Server laden“ lädt für dynamischen Mandanten neu von API. (3) **saveArtworks:** Bei dynamicTenantId No-Op (nur State, kein Schreiben in Keys). Build ✅, Tests 42/42.
+- **Nächster Schritt:** Commit + Push. Optional: Erfolgsseite-Link „Admin“ mit `?tenantId=…` testen (Kunde klickt → Admin öffnet seine Galerie, lädt/speichert über API).
+- **Wo nachlesen:** src/context/TenantContext.tsx (dynamicTenantId); ScreenshotExportAdmin (Laden/Speichern/Export bei dynamicTenantId); docs/K2-OEK2-DATENTRENNUNG.md.
 
 ---
 
@@ -29,7 +30,6 @@
 
 ## Proaktiv (Vorschläge)
 
-- **Uncommitted:** Es gibt noch nicht committete Änderungen – vor Session-Ende: Commit + Push?
 - **Optional:** Grafiker-Tisch hat optionale Punkte (z. B. Texte kürzen) – nur wenn du dran willst.
 
 ---
