@@ -2,6 +2,8 @@
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
+**Regel (ro5-Absicherung):** Nach jedem Kapitel / jeder in sich abgeschlossenen Einheit **selbständig commit + push**, damit bei ro5 (Crash/Reopen) nichts verloren geht. Georg muss nicht daran erinnern – Joe macht es automatisch.
+
 ---
 
 ## Datum: 08.03.26 – Kommunikations-Struktur Sportwagenmodus; Mehrsprachigkeit mitgeplant
