@@ -6,12 +6,12 @@
 
 ---
 
-## Datum: 08.03.26 – Kommunikations-Struktur Sportwagenmodus; Ansprache fertig
+## Datum: 08.03.26 – Kommunikation Phase 1 abgeschlossen (Sportwagenmodus)
 
-- **Stand:** Kommunikation nach Sportwagenmodus; **Ansprache Künstler:in/Verein** ist die erste ausgearbeitete Vorlage. Nächstes Kapitel: Flyer/Handout oder E-Mail-Vorlagen.
-- **Was zuletzt gemacht:** **docs/KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md** – Vorlage A (Künstler:in/ök2), Vorlage B (Verein/VK2); nur [Anrede/Name] ersetzen, Links Willkommen/VK2 fest. KOMMUNIKATION-DOKUMENTE-STRUKTUR aktualisiert (Ansprache ✅), 00-INDEX und DIALOG-STAND angepasst.
-- **Nächster Schritt:** Nächstes fehlendes Stück (z. B. **Flyer/Handout** oder **E-Mail-Vorlagen** nach Kauf/Einladung).
-- **Wo nachlesen:** docs/KOMMUNIKATION-DOKUMENTE-STRUKTUR.md, docs/KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md.
+- **Stand:** Alle Vorlagen für die erste Phase stehen: Ansprache (A/B), Flyer/Handout, E-Mail-Vorlagen (A nach Kauf, B Einladung Test). In der ersten Phase manuell nutzen; **im automatisierten Ablauf läuft dann alles im Netz** (Bestätigungen, Links aus dem System).
+- **Was zuletzt gemacht:** (1) **Flyer/Handout** – docs/KOMMUNIKATION-FLYER-HANDOUT.md (eine Seite, Text + QR/Kontakt). (2) **E-Mail-Vorlagen** – docs/KOMMUNIKATION-EMAIL-VORLAGEN.md (A nach Lizenzkauf, B Einladung Test); später automatisierbar. KOMMUNIKATION-DOKUMENTE-STRUKTUR: alle drei als ✅, Kurz „Phase 1 abgeschlossen“. 00-INDEX ergänzt.
+- **Nächster Schritt:** Optional Presse §6 redigieren oder Mehrsprachigkeit (wenn DE überall genutzt). Ansonsten: Vorlagen in Phase 1 nutzen; Automatik ausbauen wenn gewünscht.
+- **Wo nachlesen:** docs/KOMMUNIKATION-DOKUMENTE-STRUKTUR.md, docs/KOMMUNIKATION-EMAIL-VORLAGEN.md, docs/KOMMUNIKATION-FLYER-HANDOUT.md.
 
 ---
 

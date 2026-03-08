@@ -77,6 +77,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **KOMMUNIKATION-DOKUMENTE-STRUKTUR.md** – **Kommunikations-Dokumente – Struktur:** Welches Dokument wofür, was fertig, was fehlt (Ansprache, Flyer, E-Mail-Vorlagen), typische Probleme & Lösungen; nächste Schritte zum Ausarbeiten.
 - **KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md** – **Ansprache Künstler:in/Verein:** Eine Vorlage pro Zweck – A (Künstler:in/ök2), B (Verein/VK2); nur [Anrede/Name] ersetzen, Link Willkommen/VK2 fest.
 - **KOMMUNIKATION-FLYER-HANDOUT.md** – **Flyer/Handout (eine Seite):** Eine Quelle, druckfertig – Text Copy-Paste, [Kontakt] + QR aus APf; für Galerie, Messen, Einladungen.
+- **KOMMUNIKATION-EMAIL-VORLAGEN.md** – **E-Mail-Vorlagen:** A (nach Lizenzkauf: Danke, Link, nächster Schritt), B (Einladung zum Test); Phase 1 manuell, später automatisierbar.
 - **ZWISCHENCHECK-SPORTWAGEN-RENNAUTO.md** – **Zwischencheck (03.03.26):** Sind alle Sportwagen-Anforderungen erfüllt? Ein offener Punkt (Stripe Go-Live); was „Rennauto“ ausmacht (Orientierung).
 - **PRODUKT-VISION.md** – Produkt-Vision K2 Galerie.
 - **PRODUKT-STANDARD-NACH-SPORTWAGEN.md** – **Erreichter Standard:** Abschnitt „Erreichter Standard / Startklar (08.03.26)“ – Sportwagenmodus, Lebenszyklus durchgängig, Multi-Tenant startklar bis auf Stripe-Go-Live. Architektur (eine Quelle/Schicht/Regel), Sicherheit, 42 Tests, Doku & Prozess. Eine feste Stelle für „worauf das Produkt jetzt aufbaut“. Siehe auch LEBENSZYKLUS-QUALITAETSCHECK.md, START-NUR-NOCH-OFFEN.md.

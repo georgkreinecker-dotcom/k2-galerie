@@ -29,10 +29,10 @@
 | **Google / Social / QR** | docs/SICHTBARKEIT-PHASE1-VORLAGEN.md §1–5 | ⚠️ Vorlagen | Einmal ausfüllen (Search Console, Business, Bio, QR) |
 | **Erste Ansprache (Künstler:in / Verein)** | docs/KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md | ✅ Fertig | Vorlage A (Künstler:in/ök2) und B (Verein/VK2); nur [Anrede/Name] ersetzen |
 | **Flyer / Handout (Druck)** | docs/KOMMUNIKATION-FLYER-HANDOUT.md | ✅ Fertig | Text Copy-Paste, [Kontakt] + QR aus APf; eine Seite drucken oder ins Layout |
-| **E-Mail-Vorlagen (nach Lizenzkauf, Einladung)** | – | ❌ Fehlt | Kurze, verbindliche Texte: Danke, Link, nächster Schritt |
+| **E-Mail-Vorlagen (nach Lizenzkauf, Einladung)** | docs/KOMMUNIKATION-EMAIL-VORLAGEN.md | ✅ Fertig | Vorlage A (nach Kauf), B (Einladung Test); Platzhalter ersetzen; später automatisierbar |
 | **FAQ für Kunden / Piloten** | mök2, ggf. Handbuch | ⚠️ Teils | Häufige Fragen gebündelt, eine Quelle |
 
-**Kurz:** Presse-Ablauf und Verteiler sind strukturiert. **Was noch fehlt oder ausgefeilt werden muss:** konkrete **Ansprache** (E-Mail an Künstler:in/Verein), **Flyer/Handout** druckfertig, **E-Mail-Vorlagen** nach Kauf/Einladung, und wo nötig **Mehrsprachigkeit** (siehe docs/MEHRSPRACHIGKEIT-PLAN.md).
+**Kurz:** Presse, Ansprache, Flyer/Handout und E-Mail-Vorlagen sind als **eine Quelle pro Zweck** angelegt. Phase 1 (DE) abgeschlossen; Mehrsprachigkeit mitgeplant (docs/MEHRSPRACHIGKEIT-PLAN.md).
 
 ---
 
@@ -45,7 +45,7 @@
 | **„An wen schicke ich was – und in welcher Reihenfolge?“** | MEDIENVERTEILER: zuerst regional (OÖN, MeinBezirk, Tips, ORF OÖ), dann überregional. PRESSEARBEIT-STANDARD Schritt 5. |
 | **„Ich will einen Künstler / Verein gezielt ansprechen – was schreibe ich?“** | docs/KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md – Vorlage A (Künstler:in) oder B (Verein), [Anrede/Name] ersetzen, versenden. |
 | **„Flyer für die Galerie / für Messen – was drauf?“** | docs/KOMMUNIKATION-FLYER-HANDOUT.md – Text kopieren, [Kontakt] + QR aus APf, eine Seite drucken. |
-| **„Nach dem Lizenzkauf: Was mailen wir?“** | E-Mail-Vorlagen (Danke, Link, nächster Schritt) fehlen noch – können wir als feste Texte anlegen, die du nur noch personalisierst. |
+| **„Nach dem Lizenzkauf: Was mailen wir?“** | docs/KOMMUNIKATION-EMAIL-VORLAGEN.md Vorlage A – [Galerie-URL], [Admin-URL], [Kontakt] ersetzen; später automatisierbar. |
 | **„Mehrsprachig – Presse/Ansprache auf Englisch?“** | Siehe docs/MEHRSPRACHIGKEIT-PLAN.md: klären, wo DE reicht und wo EN (oder andere Sprache) dazukommt; dann eine Quelle pro Sprache. |
 
 ---
@@ -61,8 +61,7 @@
    - ✅ **Erledigt:** docs/KOMMUNIKATION-FLYER-HANDOUT.md – Text fertig, [Kontakt] ersetzen, QR aus APf, eine Seite drucken oder ins Layout.
 
 3. **E-Mail-Vorlagen (nach Lizenzkauf, Einladung)**  
-   - Kurze, verbindliche Texte: „Danke für Ihren Kauf – hier Ihr Link …“, „Einladung zum Test …“.  
-   - Ablage: eine Datei (z. B. docs/KOMMUNIKATION-EMAIL-VORLAGEN.md) oder Sektion in mök2; nur noch [Name], [Link] ersetzen.
+   - ✅ **Erledigt:** docs/KOMMUNIKATION-EMAIL-VORLAGEN.md – Vorlage A (nach Kauf: Danke, Galerie-/Admin-Link, nächster Schritt), B (Einladung zum Test). Phase 1 manuell; im automatisierten Ablauf dieselben Texte aus dem System.
 
 4. **Presse-Vorlage §6 redigieren (optional)**  
    - Wenn du möchtest: eine „fertige Fassung“ pro Anlass (z. B. nur Eröffnung), ohne Platzhalter im Fließtext – dann wirklich copy-paste und nur Datum/Ort oben einsetzen.
@@ -83,10 +82,11 @@
 | **Sichtbarkeit (Google, Social, QR)** | docs/SICHTBARKEIT-PHASE1-VORLAGEN.md |
 | **Ansprache Künstler:in/Verein** | docs/KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md |
 | **Flyer / Handout** | docs/KOMMUNIKATION-FLYER-HANDOUT.md |
+| **E-Mail-Vorlagen** | docs/KOMMUNIKATION-EMAIL-VORLAGEN.md |
 | **Kampagne / Strategie** | docs/kampagne-marketing-strategie/00-INDEX.md |
 | **Was als Nächstes (Vision)** | docs/VISION-UMSETZEN-NÄCHSTE-SCHRITTE.md |
 | **Mehrsprachigkeit** | docs/MEHRSPRACHIGKEIT.md · docs/MEHRSPRACHIGKEIT-PLAN.md |
 
 ---
 
-**Kurz:** Kommunikation nach **Sportwagenmodus** – ein Zweck = ein Dokument, eine Quelle. Presse, **Ansprache**, **Flyer/Handout** stehen; was noch fehlt: **E-Mail-Vorlagen**. Mehrsprachigkeit mitgeplant. Nächster Schritt: E-Mail-Vorlagen ausarbeiten.
+**Kurz:** Kommunikation nach **Sportwagenmodus** – ein Zweck = ein Dokument, eine Quelle. **Phase 1 abgeschlossen:** Presse, Ansprache, Flyer/Handout, E-Mail-Vorlagen (DE) stehen. Später im automatisierten Ablauf laufen Bestätigungen/Links im Netz; diese Vorlagen bleiben die inhaltliche Quelle. Mehrsprachigkeit mitgeplant.
