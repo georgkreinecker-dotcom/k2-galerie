@@ -1,7 +1,7 @@
 # Vermarktungsstrategie – automatisiert wie der Lebenszyklus (Sportwagenmodus)
 
 **Stand:** 08.03.26  
-**Zweck:** Die Vermarktung soll **genau so automatisiert** ablaufen wie der Lebenszyklus der App: **ein Ablauf pro Kanal**, **eine Quelle** (Werbelinie, USPs), **kein manueller Flickenteppich**. Kanäle der Kommunikation, die wir **automatisiert** und **im Sportwagenmodus** für uns arbeiten lassen – **ohne große Kosten**.
+**Zweck:** Die Vermarktung soll **genau so automatisiert** ablaufen wie der Lebenszyklus der App: **ein Ablauf pro Kanal**, **eine Quelle** (Werbelinie, USPs), **kein manueller Flickenteppich**. Kanäle der Kommunikation, die wir **automatisiert** und **im Sportwagenmodus** für uns arbeiten lassen. **Start ohne große Kosten;** die **Kosten können mit der Marktdurchdringung und den Einnahmen mitsteigen** – dann bleibt trotzdem ein Ablauf pro Kanal.
 
 **Referenzen:** docs/LEBENSZYKLUS-QUALITAETSCHECK.md (wie der App-Lebenszyklus durchgängig ist), docs/MARKETING-STRATEGIE-AUTOMATISIERTER-VERTRIEB.md (Prinzipien, eine Quelle), docs/SICHTBARKEIT-SUCHMASCHINEN-WERBUNG-KONZEPT.md (ohne Zusatzkosten), docs/SICHTBARKEIT-PHASE1-VORLAGEN.md (Vorlagen Copy-Paste), mök2 (Kanäle 2026, Sichtbarkeit).
 
@@ -63,6 +63,8 @@ Diese Kanäle **nicht** in den automatisierten Sportwagenmodus „ohne große Ko
 
 **Regel:** Der **Standard** für Vermarktung = die Kanäle aus Abschnitt 2 (automatisiert, eine Quelle, ohne große Kosten). Kostenkanäle nur ergänzen, wenn bewusst gewollt – und dann wieder **ein** Ablauf (z. B. ein Google-Ads-Konto, ein Budget, eine Anzeigenvorlage).
 
+**Kosten können mit Marktdurchdringung und Einnahmen mitsteigen.** Wenn mehr Reichweite und Lizenz-Einnahmen da sind, darf das Budget für Vermarktung (z. B. Google Ads, Social-Kampagnen, SEO/Content) bewusst mitwachsen. Sportwagenmodus bleibt: **ein** Ablauf pro Kanal, **eine** Quelle – nur das Volumen/Budget steigt mit dem Erfolg.
+
 ---
 
 ## 5. Nächste Schritte (umgesetzt im Sportwagenmodus)
@@ -77,5 +79,5 @@ Diese Kanäle **nicht** in den automatisierten Sportwagenmodus „ohne große Ko
 
 - **Vermarktung = automatisiert wie Lebenszyklus:** Ein Ablauf pro Kanal, eine Quelle (Werbelinie, USPs), kein manueller Flickenteppich.
 - **Kanäle ohne große Kosten**, die für uns arbeiten: Web/Demo, QR, Empfehlungsprogramm, Lizenz/Checkout, SEO, Google Business, Social-Bio, Presse (eine Vorlage + ein Verteiler), E-Mail-Signatur, Prospekt-PDF, Verzeichnisse.
-- **Kostenkanäle** (Ads, Agentur, bezahlte Posts) bewusst außerhalb des Standard-Ablaufs – nur bei Bedarf, dann wieder ein Ablauf.
+- **Kostenkanäle** (Ads, Agentur, bezahlte Posts) bewusst außerhalb des Standard-Ablaufs – nur bei Bedarf, dann wieder ein Ablauf. **Kosten können mit Marktdurchdringung und Einnahmen mitsteigen** (Budget wächst mit Erfolg; Ablauf bleibt einer pro Kanal).
 - **Referenzen:** LEBENSZYKLUS-QUALITAETSCHECK.md, MARKETING-STRATEGIE-AUTOMATISIERTER-VERTRIEB.md, SICHTBARKEIT-SUCHMASCHINEN-WERBUNG-KONZEPT.md, SICHTBARKEIT-PHASE1-VORLAGEN.md, mök2 Kanäle 2026.

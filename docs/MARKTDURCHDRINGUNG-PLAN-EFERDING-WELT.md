@@ -75,6 +75,7 @@ Die **Technik** ist bereits auf Skalierung gebaut (Multi-Tenant, tenantId, keine
 - **Wie (technisch):** Eine Lücke vor Start: **Stripe Go-Live (3 Schritte)**. Danach: dieselbe Technik für Eferding, Region und Welt – keine neuen Systeme.
 - **Wann:** M1 (Stripe) → M2 (erste sichtbare Aktion Eferding) → M3 (erste Lizenz/Pilot) → M4 (regional ausweiten) → M5 (keine geografische Begrenzung).
 - **Plan:** Dieses Dokument + STRIPE-LIZENZEN-GO-LIVE.md + MEDIENVERTEILER-EROEFFNUNG.md + mök2 (Kanäle 2026, Sichtbarkeit, Werbelinie). Nächste **konkrete** Handlung: Stripe-3-Schritte abhaken, dann M2 (eine Presseinfo oder QR/Flyer in Eferding) setzen.
+- **Kosten/Vermarktung:** Start ohne große Ausgaben (Kanäle im Sportwagenmodus, siehe VERMARKTUNGSSTRATEGIE-AUTOMATISIERT-SPORTWAGENMODUS). **Kosten können mit Marktdurchdringung und Einnahmen mitsteigen** – mehr Lizenzen, mehr Reichweite → Budget für Ads, Kampagnen oder Content kann bewusst mitwachsen.
 
 ---
 
