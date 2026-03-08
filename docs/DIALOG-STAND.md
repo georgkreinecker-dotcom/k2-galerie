@@ -6,9 +6,9 @@
 
 ## Datum: 08.03.26 – Standard in Doku und für Informatiker
 
-- **Stand:** Erreichter Standard (Sportwagenmodus, Startklar) ist jetzt klar in Doku und im Einstieg für Informatiker verankert.
+- **Stand:** Erreichter Standard (Sportwagenmodus, Startklar) ist jetzt klar in Doku und im Einstieg für Informatiker verankert. Commit: 64b0b83 ✅ auf GitHub.
 - **Was zuletzt gemacht:** (1) **EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md:** Tabelle „Zentrale Einstiege“ um Zeile **Erreichter Standard / Startklar** ergänzt (PRODUKT-STANDARD-NACH-SPORTWAGEN, LEBENSZYKLUS-QUALITAETSCHECK, START-NUR-NOCH-OFFEN). Kurzfassung für den ersten Tag: Punkt 1 = Erreichter Standard lesen. (2) **00-INDEX.md:** PRODUKT-STANDARD-Zeile aktualisiert – Abschnitt „Erreichter Standard / Startklar (08.03.26)“, 42 Tests, Verweise auf LEBENSZYKLUS-QUALITAETSCHECK, START-NUR-NOCH-OFFEN.
-- **Nächster Schritt:** Commit + Push. Optional: Erfolgsseite + „Lizenz beenden“ durchtesten.
+- **Nächster Schritt:** Optional: Erfolgsseite + „Lizenz beenden“ durchtesten.
 - **Wo nachlesen:** docs/PRODUKT-STANDARD-NACH-SPORTWAGEN.md, docs/EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md, docs/00-INDEX.md.
 
 ---
