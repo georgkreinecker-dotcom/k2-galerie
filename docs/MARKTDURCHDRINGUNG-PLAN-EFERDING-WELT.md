@@ -94,6 +94,7 @@ Die **Technik** ist bereits auf Skalierung gebaut (Multi-Tenant, tenantId, keine
 
 ## 5. Ablage und Verknüpfung
 
+- **Zum Abhaken (eine Seite):** docs/VISION-UMSETZEN-NÄCHSTE-SCHRITTE.md – M1 (3 Stripe-Schritte), M2 (Presse/QR/Ansprache), optional Vermarktung einrichten. Kein Suchen.
 - **Kampagne:** docs/kampagne-marketing-strategie/00-INDEX.md – hier als „Plan Marktdurchdringung (Eferding → Welt)“ verlinken.
 - **Technik-Start:** docs/START-NUR-NOCH-OFFEN.md, docs/STRIPE-LIZENZEN-GO-LIVE.md.
 - **Medien/Presse Eferding:** docs/MEDIENVERTEILER-EROEFFNUNG.md, docs/MEDIENSTUDIO-K2.md.
