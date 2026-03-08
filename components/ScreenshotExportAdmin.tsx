@@ -615,6 +615,7 @@ try {
 
 // Phase 1.2: Eine Schicht – Schreiben nur über artworksStorage. Speichermix: große Bilder in IndexedDB.
 async function saveArtworks(tenant: ReturnType<typeof useTenant>, artworks: any[]): Promise<boolean> {
+  if (tenant.dynamicTenantId) return true
   if (tenant.isVk2) return false
   const key = tenant.getArtworksKey()
   let ok = await saveArtworksByKeyWithImageStore(key!, artworks, { filterK2Only: tenant.tenantId === 'k2', allowReduce: true })
@@ -1868,7 +1869,10 @@ function ScreenshotExportAdmin() {
   const [pageContent, setPageContent] = useState<PageContentGalerie>(() => getPageContentGalerie(tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined))
   const [videoUploadStatus, setVideoUploadStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle')
   const [videoUploadMsg, setVideoUploadMsg] = useState('')
+  /** Dynamischer Mandant (?tenantId=): true bis Daten von API geladen (oder 404). */
+  const [dynamicTenantLoading, setDynamicTenantLoading] = useState(!!tenant.dynamicTenantId)
   useEffect(() => {
+    if (tenant.dynamicTenantId) return
     const pc = getPageContentGalerie(tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
     // Wenn kein Bild im localStorage: aus gallery-data.json nachladen
     if (!pc.welcomeImage && !tenant.isOeffentlich) {
@@ -1985,6 +1989,53 @@ function ScreenshotExportAdmin() {
     } catch (_) {}
   }, [])
 
+  // Dynamischer Mandant (?tenantId=): Daten von API laden, in State übernehmen – kein localStorage
+  useEffect(() => {
+    const dynId = tenant.dynamicTenantId
+    if (!dynId) return
+    let isMounted = true
+    const url = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&tenantId=${encodeURIComponent(dynId)}`
+    apiGet(url, { retryOnce: false }).then((result) => {
+      if (!isMounted) return
+      setDynamicTenantLoading(false)
+      if (!result.success) {
+        if (result.error?.includes('404') || result.error?.toLowerCase().includes('noch keine')) {
+          setAllArtworksSafe([])
+          setEvents([])
+          setDocuments([])
+          setMartinaData(K2_STAMMDATEN_DEFAULTS.martina as any)
+          setGeorgData(K2_STAMMDATEN_DEFAULTS.georg as any)
+          setGalleryData({ ...K2_STAMMDATEN_DEFAULTS.gallery, adminPassword: '', soldArtworksDisplayDays: 30, welcomeImage: '', virtualTourImage: '', galerieCardImage: '', internetShopNotSetUp: true })
+          setPageContent({ welcomeImage: '', galerieCardImage: '', virtualTourImage: '', virtualTourVideo: '', virtualTourVideoSizeBytes: 0 })
+          setDesignSettings(K2_ORANGE_DESIGN)
+          setPageTextsState(defaultPageTexts)
+        }
+        return
+      }
+      const data = (result.data || {}) as Record<string, unknown>
+      const artworks = Array.isArray(data.artworks) ? data.artworks : []
+      setAllArtworksSafe(artworks)
+      setEvents(Array.isArray(data.events) ? data.events : [])
+      setDocuments(Array.isArray(data.documents) ? data.documents : [])
+      if (data.martina && typeof data.martina === 'object') setMartinaData({ ...K2_STAMMDATEN_DEFAULTS.martina, ...data.martina } as any)
+      else setMartinaData(K2_STAMMDATEN_DEFAULTS.martina as any)
+      if (data.georg && typeof data.georg === 'object') setGeorgData({ ...K2_STAMMDATEN_DEFAULTS.georg, ...data.georg } as any)
+      else setGeorgData(K2_STAMMDATEN_DEFAULTS.georg as any)
+      if (data.gallery && typeof data.gallery === 'object') setGalleryData({ ...K2_STAMMDATEN_DEFAULTS.gallery, ...data.gallery })
+      else setGalleryData({ ...K2_STAMMDATEN_DEFAULTS.gallery, adminPassword: '', soldArtworksDisplayDays: 30, welcomeImage: '', virtualTourImage: '', galerieCardImage: '', internetShopNotSetUp: true })
+      const pc = data.pageContentGalerie ?? data.pageContent
+      if (pc != null) {
+        const parsed = typeof pc === 'string' ? (() => { try { return JSON.parse(pc) } catch { return {} } })() : pc
+        if (typeof parsed === 'object') setPageContent({ welcomeImage: '', galerieCardImage: '', virtualTourImage: '', virtualTourVideo: '', virtualTourVideoSizeBytes: 0, ...parsed })
+      }
+      if (data.designSettings && typeof data.designSettings === 'object') setDesignSettings({ ...K2_ORANGE_DESIGN, ...data.designSettings } as any)
+      if (data.pageTexts && typeof data.pageTexts === 'object') setPageTextsState({ ...defaultPageTexts, ...data.pageTexts } as any)
+    }).catch(() => {
+      if (isMounted) setDynamicTenantLoading(false)
+    })
+    return () => { isMounted = false }
+  }, [tenant.dynamicTenantId])
+
   // ök2: Lager-Tab nicht verfügbar. VK2: Sicherheit und Lager nicht – auf Stammdaten wechseln
   useEffect(() => {
     if (tenant.isVk2 && (settingsSubTab === 'sicherheit' || settingsSubTab === 'kassabuch' || settingsSubTab === 'lizenzbeenden')) setSettingsSubTab('stammdaten')
@@ -2043,6 +2094,7 @@ function ScreenshotExportAdmin() {
 
   // Stammdaten aus localStorage laden – bei ök2-Kontext aus k2-oeffentlich-stammdaten-*; bei VK2 aus k2-vk2-stammdaten
   useEffect(() => {
+    if (tenant.dynamicTenantId) return
     if (tenant.isOeffentlich) return
     if (tenant.isVk2) return // VK2 lädt in separatem Effect
     let isMounted = true
@@ -2576,6 +2628,50 @@ function ScreenshotExportAdmin() {
           }).finally(() => { if (isMountedRef.current && !silent) setIsDeploying(false) })
           return
         }
+
+        // Dynamischer Mandant (?tenantId=): nur State → API, kein localStorage
+        if (tenant.dynamicTenantId) {
+          const exportedAt = new Date().toISOString()
+          const artworksForDyn = sortArtworksFavoritesFirstThenNewest(Array.isArray(allArtworks) ? [...allArtworks] : [])
+          const pageContentGalerieRaw = typeof pageContent === 'object' && pageContent != null ? JSON.stringify(pageContent) : undefined
+          const data = {
+            martina: martinaData || {},
+            georg: georgData || {},
+            gallery: galleryData || {},
+            artworks: artworksForDyn,
+            events: Array.isArray(events) ? events.slice(0, 100) : [],
+            documents: Array.isArray(documents) ? documents.slice(0, 100) : [],
+            designSettings: designSettings || {},
+            pageTexts: pageTexts ?? {},
+            pageContentGalerie: pageContentGalerieRaw,
+            exportedAt,
+            version: 1,
+            buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
+            tenantId: tenant.dynamicTenantId,
+          }
+          const json = JSON.stringify(data)
+          if (json.length > 5000000) {
+            if (isMountedRef.current && !silent) setIsDeploying(false)
+            if (!silent) alert('⚠️ Daten zu groß. Bitte reduzieren.')
+            return
+          }
+          apiPost(WRITE_GALLERY_DATA_API_URL, json, { timeoutMs: 30000 }).then(result => {
+            if (!silent && isMountedRef.current) setIsDeploying(false)
+            if (result.success && result.data) {
+              if (silent) console.log('✅ Galerie-Daten gespeichert (Mandant)', tenant.dynamicTenantId)
+              else {
+                setSyncStatusBar({ phase: 'success', message: 'Gesendet.' })
+                setPublishSuccessModal({ size: json.length, version: 1 })
+              }
+            } else {
+              if (!silent) {
+                setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
+                setPublishErrorMsg(result.error || 'Daten konnten nicht gespeichert werden.')
+              }
+            }
+          }).finally(() => { if (isMountedRef.current && !silent) setIsDeploying(false) })
+          return
+        }
         
         // K2 / ök2: Werke inkl. Mobile-Werke für Synchronisation
         const artworksKey = tenant.getArtworksKey()
@@ -2626,7 +2722,7 @@ function ScreenshotExportAdmin() {
         const georgStored = loadStammdaten(stammTenant, 'georg') as Record<string, unknown>
         const galleryStamm = loadStammdaten(stammTenant, 'gallery') as Record<string, unknown>
         const oeffentlich = tenant.isOeffentlich
-        const pageContent = getPageContentGalerie(oeffentlich ? 'oeffentlich' : undefined)
+        const pageContentStored = getPageContentGalerie(oeffentlich ? 'oeffentlich' : undefined)
         const eventsStored = getItemSafe(tenant.getEventsKey(), []) || []
         const documentsStored = getItemSafe(tenant.getDocumentsKey(), []) || []
         const artworksStored = getItemSafe(tenant.getArtworksKey(), []) || []
@@ -2638,10 +2734,10 @@ function ScreenshotExportAdmin() {
         const galleryMerged = { ...galleryStamm, ...(galleryData || {}) }
         const galleryExport = {
           ...galleryMerged,
-          // pageContent hat Priorität – dort landen die per Admin hochgeladenen Bilder
-          welcomeImage: pageContent.welcomeImage || galleryData?.welcomeImage || galleryStamm.welcomeImage || '',
-          galerieCardImage: pageContent.galerieCardImage || galleryData?.galerieCardImage || galleryStamm.galerieCardImage || '',
-          virtualTourImage: pageContent.virtualTourImage || galleryData?.virtualTourImage || galleryStamm.virtualTourImage || ''
+          // pageContentStored hat Priorität – dort landen die per Admin hochgeladenen Bilder
+          welcomeImage: pageContentStored.welcomeImage || galleryData?.welcomeImage || galleryStamm.welcomeImage || '',
+          galerieCardImage: pageContentStored.galerieCardImage || galleryData?.galerieCardImage || galleryStamm.galerieCardImage || '',
+          virtualTourImage: pageContentStored.virtualTourImage || galleryData?.virtualTourImage || galleryStamm.virtualTourImage || ''
         }
         const designExport = (designSettings && typeof designSettings === 'object' && Object.keys(designSettings).length > 0) ? designSettings : designStored
         const pageTextsExport = (pageTexts != null && typeof pageTexts === 'object') ? pageTexts : pageTextsStored
@@ -2914,8 +3010,36 @@ function ScreenshotExportAdmin() {
   // KEIN Auto-Sync (Supabase / gallery-data.json) mehr beim Admin-Start – verursacht Fenster-Abstürze.
   // Mobile-Werke kommen über artworks-updated Event beim Speichern; Werke werden nur aus localStorage geladen (siehe oben, 2 s Verzögerung).
 
-  /** Tenantfähig: Daten von Vercel laden (K2/ök2: Werke mergen; ök2/VK2: Backup-Format in Keys schreiben) */
+  /** Tenantfähig: Daten von Vercel laden (K2/ök2: Werke mergen; ök2/VK2: Backup-Format in Keys schreiben; dynamischer Mandant: von API in State) */
   const handleLoadFromServer = async () => {
+    if (tenant.dynamicTenantId) {
+      setIsLoadingFromServer(true)
+      setSyncStatusBar({ phase: 'loading', message: 'Daten werden geladen…' })
+      const url = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&tenantId=${encodeURIComponent(tenant.dynamicTenantId)}`
+      const result = await apiGet(url, { retryOnce: false })
+      setIsLoadingFromServer(false)
+      if (!result.success) {
+        setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
+        alert(result.error?.includes('404') ? 'Noch keine Daten auf dem Server.' : (result.error || 'Fehler beim Laden.'))
+        return
+      }
+      const data = (result.data || {}) as Record<string, unknown>
+      setAllArtworksSafe(Array.isArray(data.artworks) ? data.artworks : [])
+      setEvents(Array.isArray(data.events) ? data.events : [])
+      setDocuments(Array.isArray(data.documents) ? data.documents : [])
+      if (data.martina && typeof data.martina === 'object') setMartinaData({ ...K2_STAMMDATEN_DEFAULTS.martina, ...data.martina } as any)
+      if (data.georg && typeof data.georg === 'object') setGeorgData({ ...K2_STAMMDATEN_DEFAULTS.georg, ...data.georg } as any)
+      if (data.gallery && typeof data.gallery === 'object') setGalleryData({ ...K2_STAMMDATEN_DEFAULTS.gallery, ...data.gallery })
+      const pc = data.pageContentGalerie ?? data.pageContent
+      if (pc != null) {
+        const parsed = typeof pc === 'string' ? (() => { try { return JSON.parse(pc) } catch { return {} } })() : pc
+        if (typeof parsed === 'object') setPageContent(prev => ({ ...prev, ...parsed }))
+      }
+      if (data.designSettings && typeof data.designSettings === 'object') setDesignSettings(prev => ({ ...prev, ...(data.designSettings as object) } as any))
+      if (data.pageTexts && typeof data.pageTexts === 'object') setPageTextsState(prev => ({ ...prev, ...(data.pageTexts as object) } as any))
+      setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
+      return
+    }
     const tenantId = tenant.isVk2 ? 'vk2' : tenant.isOeffentlich ? 'oeffentlich' : 'k2'
     setIsLoadingFromServer(true)
     setSyncStatusBar({ phase: 'loading', message: 'Daten werden geladen…' })
@@ -3121,6 +3245,7 @@ function ScreenshotExportAdmin() {
 
   // Dokumente aus localStorage laden – bei Kontextwechsel neu laden (getDocumentsKey hängt von context ab)
   useEffect(() => {
+    if (tenant.dynamicTenantId) return
     let isMounted = true
     const timeoutId = setTimeout(() => {
       if (!isMounted) return
@@ -3140,6 +3265,7 @@ function ScreenshotExportAdmin() {
 
   // Events aus localStorage laden – bei Kontextwechsel (K2/VK2/ök2) neu laden, sonst vermischt sich VK2-Event in K2
   useEffect(() => {
+    if (tenant.dynamicTenantId) return
     let isMounted = true
     const timeoutId = setTimeout(() => {
       if (!isMounted) return
@@ -3173,8 +3299,10 @@ function ScreenshotExportAdmin() {
       pageTexts: pageTexts
     })
     
-    // KRITISCH: Auto-Save nur in K2 – in ök2 niemals in K2-Keys schreiben
-    if (!tenant.isOeffentlich) {
+    // KRITISCH: Auto-Save nur in K2 – in ök2 niemals in K2-Keys schreiben. Dynamischer Mandant: nur über API speichern, kein Auto-Save in localStorage.
+    if (tenant.dynamicTenantId) {
+      // Kein Auto-Save – Speichern nur über „Veröffentlichen“ → write-gallery-data
+    } else if (!tenant.isOeffentlich) {
       startAutoSave(getAllData)
       setupBeforeUnloadSave(getAllData)
     }
@@ -9661,6 +9789,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           }
                         }
                         setPageContent(contentToSave)
+                        if (tenant.dynamicTenantId) {
+                          setDesignSaveFeedback('ok')
+                          setTimeout(() => setDesignSaveFeedback(null), 6000)
+                          return
+                        }
                         const ok = setPageContentGalerie(contentToSave, designTenant)
                         if (!ok) {
                           alert('Speichern fehlgeschlagen – Speicher voll? Bitte weniger oder kleinere Bilder wählen.')
@@ -10305,6 +10438,20 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
       fontFamily: s.fontBody
     }}>
       <link rel="stylesheet" href={PROMO_FONTS_URL} />
+
+      {/* Dynamischer Mandant: Ladeanzeige bis Daten von API da sind */}
+      {tenant.dynamicTenantId && dynamicTenantLoading && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100001, background: s.bgDark, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '1rem', fontFamily: s.fontBody }}>
+          <div style={{ color: s.muted, fontSize: '1rem' }}>Daten werden geladen…</div>
+        </div>
+      )}
+
+      {/* Dynamischer Mandant: Hinweis – Änderungen nur über Veröffentlichen speichern */}
+      {tenant.dynamicTenantId && !dynamicTenantLoading && (
+        <div style={{ background: 'rgba(181,74,30,0.12)', border: '1px solid rgba(181,74,30,0.4)', padding: '0.5rem 1rem', fontSize: '0.85rem', color: s.text, display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <span>📌 Sie bearbeiten die Galerie <strong>{tenant.dynamicTenantId}</strong>. Änderungen mit „Veröffentlichen“ speichern.</span>
+        </div>
+      )}
 
       {/* In-App-Dokument-Viewer bei blockiertem Pop-up (kein Fenster nötig) */}
       {inAppDocumentViewer && (

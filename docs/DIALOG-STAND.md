@@ -4,18 +4,22 @@
 
 ---
 
+## Datum: 08.03.26 – Admin mit ?tenantId= („Aktives Leben“ zu Ende gebracht)
+
+- **Stand:** Lebenszyklus Klient im Sportwagenmodus durchgezogen: **Admin mit dynamischem Mandanten** umgesetzt.
+- **Was zuletzt gemacht:** (1) **TenantContext:** `?tenantId=` aus URL (nur /admin), sichere ID (a-z0-9-, 1–64 Zeichen, nicht k2/oeffentlich/vk2) → `dynamicTenantId`. (2) **Admin:** Bei `tenant.dynamicTenantId`: Daten **nur** von API laden (`api/gallery-data?tenantId=`) und in State übernehmen; **Speichern** nur über „Veröffentlichen“ → `api/write-gallery-data` mit `body.tenantId`; kein localStorage für Werke/Stammdaten/Design/Events/Dokumente; Ladebanner + Hinweis „Änderungen mit Veröffentlichen speichern“; „Vom Server laden“ lädt für dynamischen Mandanten neu von API. (3) **saveArtworks:** Bei dynamicTenantId No-Op (nur State, kein Schreiben in Keys). Build ✅, Tests 42/42.
+- **Nächster Schritt:** Commit + Push. Optional: Erfolgsseite-Link „Admin“ mit `?tenantId=…` testen (Kunde klickt → Admin öffnet seine Galerie, lädt/speichert über API).
+- **Wo nachlesen:** src/context/TenantContext.tsx (dynamicTenantId); ScreenshotExportAdmin (Laden/Speichern/Export bei dynamicTenantId); docs/K2-OEK2-DATENTRENNUNG.md.
+
+---
+
 ## Datum: 08.03.26 – Pause (Geburtskette fertig, 007 noch offen)
 
 - **Stand:** Georg macht Pause. Alles gespeichert, Commit + Push erledigt.
 - **Was zuletzt gemacht:** Komplette **Geburtskette** umgesetzt (Checkout → tenantId → URL → Erfolgsseite mit Links → Route /g/:tenantId). Code und Doku sind committed.
-- **Beim nächsten Einstieg (weiter machen):**
-  1. **Supabase-Migration 007 ausführen** (damit Geburtskette voll funktioniert): Supabase Dashboard → SQL Editor → New query → folgenden SQL einfügen und **Run** klicken:
-     ```sql
-     ALTER TABLE licences ADD COLUMN IF NOT EXISTS tenant_id TEXT, ADD COLUMN IF NOT EXISTS galerie_url TEXT;
-     CREATE INDEX IF NOT EXISTS idx_licences_tenant_id ON licences(tenant_id);
-     ```
-  2. Optional danach: Admin mit ?tenantId= für dynamischen Mandanten (Laden/Speichern).
-- **Wo nachlesen:** docs/K2-OEK2-DATENTRENNUNG.md (Lebenszyklus, „Was zur Automatisierung noch fehlt“); supabase/migrations/007_licences_tenant_id_galerie_url.sql.
+- **Supabase:** ✅ Erledigt (08.03.26) – Georg hat in k2-galerie-test zuerst Tabellen angelegt (003), dann 007 (tenant_id, galerie_url) ausgeführt.
+- **Admin ?tenantId=:** ✅ Erledigt (08.03.26) – siehe Eintrag oben.
+- **Wo nachlesen:** docs/K2-OEK2-DATENTRENNUNG.md (Lebenszyklus); supabase/migrations/007_licences_tenant_id_galerie_url.sql.
 
 ---
 

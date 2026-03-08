@@ -328,7 +328,7 @@ Technisch ist das bereits vorbereitet: In `tenantConfig.ts` gibt es **publicBase
 | Phase | Status | Was läuft automatisch | Was fehlt noch (für echte Sportwagen-Automatik) |
 |-------|--------|------------------------|--------------------------------------------------|
 | **Geburt** (Registrierung → aktiver Klient) | ✅ Umgesetzt | Checkout erzeugt **tenantId** (api/create-checkout.js), Webhook schreibt Lizenz inkl. **tenant_id** und **galerie_url** (api/webhook-stripe.js). Erfolgsseite lädt Lizenz per **api/get-licence-by-session** und zeigt „Deine Galerie“- und „Admin“-Links. Route **/g/:tenantId** (GalerieTenantPage) zeigt die Galerie oder „Jetzt gestalten“. | **Supabase:** Migration **007_licences_tenant_id_galerie_url.sql** einmal ausführen (Spalten tenant_id, galerie_url). Admin mit ?tenantId= (Laden/Speichern für dynamischen Mandanten) optionaler nächster Schritt. |
-| **Aktives Leben** (Nutzen, Veröffentlichen, Laden) | ✅ für K2/ök2/VK2 | Ein Standard: write-gallery-data(tenantId), gallery-data?tenantId=, ein Blob pro Mandant. GaleriePage lädt bei musterOnly/vk2 vom Server. | Für **viele Klienten**: App muss tenantId aus **URL** lesen (Subdomain oder Pfad), damit Klient „seine“ Galerie öffnet – eine Quelle, ein Ablauf. |
+| **Aktives Leben** (Nutzen, Veröffentlichen, Laden) | ✅ Umgesetzt | Ein Standard: write-gallery-data(tenantId), gallery-data?tenantId=, ein Blob pro Mandant. **Admin mit ?tenantId=** (08.03.26): Lädt/Speichert nur über API (kein localStorage); Erfolgsseite-Link „Admin“ mit tenantId → Kunde bearbeitet seine Galerie. | – |
 | **Sterben** (Kündigung) | ✅ Sportwagenkonform | **Ein Ablauf:** „Lizenz beenden“ (Frontend mit tenantId) oder Stripe subscription.deleted → cancel-subscription bzw. webhook ruft Löschlogik auf → delete-tenant-data / Blob del() → Blob weg. K2 wird nie gelöscht. Kein manuelles Aufräumen. | Optional: Lizenz in Supabase auf status=cancelled; URL nach Löschung auf „Lizenz beendet“-Seite führen. |
 
 **Kurzantwort:**
@@ -337,7 +337,7 @@ Technisch ist das bereits vorbereitet: In `tenantConfig.ts` gibt es **publicBase
 - **Aktives Leben:** Ja – für die heute unterstützten Mandanten (K2, ök2, VK2) ein Standard (Laden/Speichern/Blob). Für beliebig viele Klienten: tenantId aus URL noch umsetzen.
 - **Geburt:** Ja – umgesetzt (08.03.26): Checkout → tenantId in metadata; Webhook → tenant_id + galerie_url in licences; Erfolgsseite zeigt Links; /g/:tenantId zeigt Galerie.
 
-**Sportwagen-Vollständigkeit:** Die Geburtskette ist gebaut. Einmalig: Supabase-Migration 007 ausführen (tenant_id, galerie_url). Optional: Admin mit ?tenantId= für Laden/Speichern des dynamischen Mandanten.
+**Sportwagen-Vollständigkeit:** Geburt + Aktives Leben + Sterben umgesetzt. Einmalig: Supabase-Migration 007 ausführen (tenant_id, galerie_url). Admin mit ?tenantId= für dynamischen Mandanten (Laden/Speichern über API) ✅ 08.03.26.
 
 ---
 
@@ -353,11 +353,11 @@ Technisch ist das bereits vorbereitet: In `tenantConfig.ts` gibt es **publicBase
 | 4 | **Erfolgsseite: „Deine Galerie“-URL anzeigen** | ✅ **api/get-licence-by-session.js** (GET mit session_id); **LizenzErfolgPage** lädt und zeigt „Deine Galerie“- und „Admin“-Links. |
 | 5 | **App: tenantId aus URL lesen** | ✅ Route **/g/:tenantId**, **GalerieTenantPage** lädt gallery-data?tenantId= und zeigt Galerie oder „Jetzt gestalten“ + Admin-Link. |
 
-**Phase „Aktives Leben“ (für beliebig viele Klienten)**
+**Phase „Aktives Leben“ (für beliebig viele Klienten)** – ✅ 08.03.26
 
-| Nr. | Was | Wo / wie | Priorität |
-|-----|-----|----------|-----------|
-| 6 | **GaleriePage/Admin bei dynamischem tenantId** | Wenn tenantId aus URL kommt: GaleriePage (und Vorschau, Admin) so aufrufen, dass sie diesen tenantId verwenden (Laden/Speichern/Blob wie bei ök2/VK2, nur mit variablem tenantId). Bereits vorbereitet: gallery-data?tenantId=, write-gallery-data mit tenantId. | Folge von 5 |
+| Nr. | Was | Wo / wie | Status |
+|-----|-----|----------|--------|
+| 6 | **Admin bei dynamischem ?tenantId=** | **TenantContext:** `?tenantId=` (sichere ID a-z0-9-, 1–64) → `dynamicTenantId`. **Admin:** Laden von api/gallery-data?tenantId= in State; Speichern nur über „Veröffentlichen“ → api/write-gallery-data mit body.tenantId; kein localStorage für diesen Mandanten. | ✅ Umgesetzt |
 
 **Phase „Sterben“ (optional, schon weitgehend erledigt)**
 

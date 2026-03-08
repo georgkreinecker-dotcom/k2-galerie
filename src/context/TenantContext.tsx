@@ -20,6 +20,20 @@ function getTenantFromStorage(): AdminTenantId {
   return 'k2'
 }
 
+/** Sichere dynamische Mandanten-ID aus URL (?tenantId=galerie-xxx). a-z0-9-, 1–64 Zeichen, nicht k2/oeffentlich/vk2. */
+function getDynamicTenantIdFromUrl(search: string): string | null {
+  try {
+    const params = new URLSearchParams(search || '')
+    const raw = params.get('tenantId')?.toLowerCase().trim() ?? ''
+    if (!raw || raw.length > 64) return null
+    if (!/^[a-z0-9-]{1,64}$/.test(raw)) return null
+    if (raw === 'k2' || raw === 'oeffentlich' || raw === 'vk2') return null
+    return raw
+  } catch {
+    return null
+  }
+}
+
 /** Liest tenant aus URL (?context=) und sessionStorage. URL hat Vorrang bei /admin. */
 function deriveTenantId(pathname: string, search: string): AdminTenantId {
   const params = new URLSearchParams(search || '')
@@ -45,6 +59,8 @@ function syncStorageFromUrl(pathname: string, search: string): void {
 
 export interface TenantContextValue {
   tenantId: AdminTenantId
+  /** Wenn gesetzt: Admin lädt/speichert nur über API (gallery-data, write-gallery-data), kein localStorage. */
+  dynamicTenantId: string | null
   isOeffentlich: boolean
   isVk2: boolean
   getArtworksKey: () => string
@@ -70,6 +86,7 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
   const search = location.search || ''
 
   const tenantId = useMemo(() => deriveTenantId(pathname, search), [pathname, search])
+  const dynamicTenantId = useMemo(() => (pathname === '/admin' ? getDynamicTenantIdFromUrl(search) : null), [pathname, search])
 
   useEffect(() => {
     syncStorageFromUrl(pathname, search)
@@ -79,11 +96,12 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     const keys = keysForTenant(tenantId)
     return {
       tenantId,
+      dynamicTenantId,
       isOeffentlich: tenantId === 'oeffentlich',
       isVk2: tenantId === 'vk2',
       ...keys,
     }
-  }, [tenantId])
+  }, [tenantId, dynamicTenantId])
 
   return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>
 }
@@ -97,9 +115,11 @@ export function useTenant(): TenantContextValue {
       const search = window.location.search || ''
       syncStorageFromUrl(pathname, search)
       const tid = deriveTenantId(pathname, search)
+      const dynId = pathname === '/admin' ? getDynamicTenantIdFromUrl(search) : null
       const keys = keysForTenant(tid)
       return {
         tenantId: tid,
+        dynamicTenantId: dynId,
         isOeffentlich: tid === 'oeffentlich',
         isVk2: tid === 'vk2',
         ...keys,
@@ -107,7 +127,7 @@ export function useTenant(): TenantContextValue {
     }
     const def: AdminTenantId = 'k2'
     const keys = keysForTenant(def)
-    return { tenantId: def, isOeffentlich: false, isVk2: false, ...keys }
+    return { tenantId: def, dynamicTenantId: null, isOeffentlich: false, isVk2: false, ...keys }
   }
   return ctx
 }
