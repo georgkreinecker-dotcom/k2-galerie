@@ -6,6 +6,14 @@
 
 ---
 
+## Datum: 09.03.26 – Veröffentlichen: Bilder aus IndexedDB mitschicken (7 fehlende Bilder)
+
+- **Stand:** Vom Handy veröffentlicht, am Mac „vom Server laden“ – Anzahl 61 passte, aber **7 Bilder fehlten**. **Ursache:** Beim Publish wurden Rohdaten aus localStorage genutzt (`loadArtworks()`); dort oft nur **imageRef**, kein imageUrl. Wenn IndexedDB auf dem Handy nicht rechtzeitig geliefert hat, schickte der Server leere Bild-URLs. **Umsetzung:** (1) **GalerieVorschauPage:** Beide Auto-Publish-Stellen nutzen `readArtworksForContextWithResolvedImages(false, false)` + `filterK2OnlyStorage` vor `publishGalleryDataToServer` – so gehen alle Bilder aus IndexedDB mit. (2) **DevViewPage:** Nach Merge (lokal + Supabase) wird `resolveArtworkImages(allArtworks)` aufgerufen; Signatur und Publish laufen mit `allArtworksWithImages`. Damit Handy und Mac alle Bilder mitschicken.
+- **Nächster Schritt:** Georg testen: vom Handy veröffentlichen, dann am Mac „Vom Server laden“ – alle 61 Werke inkl. der 7 Bilder sollten da sein.
+- **Wo nachlesen:** GalerieVorschauPage.tsx (beide setTimeout-Publish-Blöcke); DevViewPage.tsx (publishMobile, resolveArtworkImages); src/utils/artworkImageStore.ts (resolveArtworkImages).
+
+---
+
 ## Datum: 09.03.26 – Prozesssicherheit überall (Launch-kritisch)
 
 - **Stand:** Georg: „Wir müssen prozessicherheit überall herstellen, sonst ist das launchen harakiri.“ **Umsetzung:** (1) **Neue Cursor-Regel** `.cursor/rules/prozesssicherheit-veroeffentlichen-laden.mdc` (alwaysApply): Vor jeder Änderung an Veröffentlichen/Laden PROZESS-VEROEFFENTLICHEN-LADEN.md + ein-standard-problem.mdc lesen; kein zweiter Ablauf. (2) **Lade-Einstieg:** `applyServerDataToLocal(serverList, localList, options)` in `src/utils/syncMerge.ts` – ein Einstieg für mergeServerWithLocal + preserveLocalImageData; Doku ergänzt. (3) **Admin K2:** Veröffentlichen im Admin (K2) nutzt nur noch `publishGalleryDataToServer`: State in localStorage flushen, dann `publishGalleryDataToServer(readArtworksRawByKey('k2-artworks'))`; kein eigener Fetch zu write-gallery-data für K2. (4) Admin verwendet für Export-Priorität `allArtworksRef.current` (State), damit „was du siehst, geht raus“. Doku PROZESS-VEROEFFENTLICHEN-LADEN.md um Admin K2 und applyServerDataToLocal ergänzt.

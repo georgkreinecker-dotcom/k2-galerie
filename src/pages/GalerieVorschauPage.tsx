@@ -4397,10 +4397,12 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       }
                       
                       // Sportwagen: Ein Standard – Veröffentlichen nur über publishGalleryDataToServer (Prozesssicherheit)
+                      // WICHTIG: Mit aufgelösten Bildern aus IndexedDB laden, damit alle 7 Bilder mitgehen (Handy schickt sonst nur imageRef, Server bekommt leer)
                       setTimeout(async () => {
                         try {
-                          const allArtworks = loadArtworks()
-                          if (allArtworks?.length > 0) {
+                          const withImages = await readArtworksForContextWithResolvedImages(false, false)
+                          const allArtworks = filterK2OnlyStorage(withImages || [])
+                          if (allArtworks.length > 0) {
                             const result = await publishGalleryDataToServer(allArtworks)
                             if (result.success) console.log('✅ Automatisch für Mobile veröffentlicht:', result.artworksCount, 'Werke')
                             else console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen:', result.error)
@@ -4609,10 +4611,12 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                     }, 100)
                     
                     // Sportwagen: Ein Standard – Veröffentlichen nur über publishGalleryDataToServer (Prozesssicherheit)
+                    // WICHTIG: Mit aufgelösten Bildern aus IndexedDB laden, damit alle Bilder mitgehen (Handy schickt sonst nur imageRef, Server bekommt leer)
                     setTimeout(async () => {
                       try {
-                        const allArtworks = loadArtworks()
-                        if (allArtworks?.length > 0) {
+                        const withImages = await readArtworksForContextWithResolvedImages(false, false)
+                        const allArtworks = filterK2OnlyStorage(withImages || [])
+                        if (allArtworks.length > 0) {
                           const result = await publishGalleryDataToServer(allArtworks)
                           if (result.success) {
                             console.log('✅ Automatisch für Mobile veröffentlicht:', result.artworksCount, 'Werke')

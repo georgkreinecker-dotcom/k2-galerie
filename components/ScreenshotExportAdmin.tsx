@@ -3135,12 +3135,14 @@ function ScreenshotExportAdmin() {
         if (ok) {
           loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
           window.dispatchEvent(new CustomEvent('artworks-updated', { detail: {} }))
+          setIsLoadingFromServer(false)
           setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
           const exportedAt = data.exportedAt ? ` (Stand: ${new Date(String(data.exportedAt)).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })})` : ''
-          alert(`✅ Daten vom Server geladen${exportedAt}.`)
+          setTimeout(() => { alert(`✅ Daten vom Server geladen${exportedAt}.`) }, 0)
         } else {
+          setIsLoadingFromServer(false)
           setSyncStatusBar({ phase: 'error', message: 'Fehler beim Speichern.' })
-          alert('Daten konnten nicht in den Speicher übernommen werden.')
+          setTimeout(() => { alert('Daten konnten nicht in den Speicher übernommen werden.') }, 0)
         }
         return
       }
@@ -3150,12 +3152,14 @@ function ScreenshotExportAdmin() {
         const { restoreVk2FromBackup } = await import('../src/utils/autoSave')
         const { ok, restored } = restoreVk2FromBackup(data as Record<string, any>)
         if (ok) {
+          setIsLoadingFromServer(false)
           setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
           const exportedAt = data.exportedAt ? ` (Stand: ${new Date(String(data.exportedAt)).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })})` : ''
-          alert(`✅ VK2-Daten vom Server geladen${exportedAt}.`)
+          setTimeout(() => { alert(`✅ VK2-Daten vom Server geladen${exportedAt}.`) }, 0)
         } else {
+          setIsLoadingFromServer(false)
           setSyncStatusBar({ phase: 'error', message: 'Fehler beim Speichern.' })
-          alert('Daten konnten nicht in den Speicher übernommen werden.')
+          setTimeout(() => { alert('Daten konnten nicht in den Speicher übernommen werden.') }, 0)
         }
         return
       }
@@ -3194,16 +3198,19 @@ function ScreenshotExportAdmin() {
           const resolved = await loadArtworksWithResolvedImages(tenant)
           setAllArtworksSafe(resolved)
           window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: toSave.length } }))
+          setIsLoadingFromServer(false)
           setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
           const exportedAt = data.exportedAt ? ` (Stand: ${new Date(data.exportedAt).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })})` : ''
-          alert(`✅ ${toSave.length} Werke vom Server geladen${exportedAt}.`)
+          // Meldung erst im nächsten Tick, damit Balken und Liste zuerst aktualisiert sind (kein Rot mehr bei „geladen“)
+          setTimeout(() => { alert(`✅ ${toSave.length} Werke vom Server geladen${exportedAt}.`) }, 0)
         } else {
           setSyncStatusBar({ phase: 'error', message: 'Fehler beim Speichern.' })
         }
       } else {
         console.warn('Merge würde weniger Werke ergeben – localStorage unverändert')
+        setIsLoadingFromServer(false)
         setSyncStatusBar({ phase: 'success', message: 'Lokal beibehalten.' })
-        alert('Lokal sind mehr Werke als auf dem Server. Lokale Daten wurden beibehalten.')
+        setTimeout(() => { alert('Lokal sind mehr Werke als auf dem Server. Lokale Daten wurden beibehalten.') }, 0)
       }
     } catch (e) {
       console.error('Vom Server laden:', urlPrimary, e)

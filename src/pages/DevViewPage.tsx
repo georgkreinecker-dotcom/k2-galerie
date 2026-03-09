@@ -6,6 +6,7 @@ import { checkMobileUpdates } from '../utils/supabaseClient'
 import { filterK2ArtworksOnly } from '../utils/autoSave'
 import { publishGalleryDataToServer } from '../utils/publishGalleryData'
 import { readArtworksRawByKey, saveArtworksByKey } from '../utils/artworksStorage'
+import { resolveArtworkImages } from '../utils/artworkImageStore'
 import '../App.css'
 import GaleriePage from './GaleriePage'
 import GalerieVorschauPage from './GalerieVorschauPage'
@@ -417,12 +418,15 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
         return
       }
       
+      // WICHTIG: Bilder aus IndexedDB auflösen, damit alle Bilder mitgehen (Handy/Mac schickt sonst nur imageRef, Server bekommt leer)
+      const allArtworksWithImages = await resolveArtworkImages(allArtworks)
+      
       // Sportwagen: Ein Standard – Veröffentlichen nur über publishGalleryDataToServer (Prozesssicherheit)
       const galleryStamm = getItemSafe('k2-stammdaten-galerie', {}) as Record<string, unknown>
       const pageContent = getPageContentGalerie()
       const signaturePayload = {
-        a: allArtworks.map((x: any) => (x.number || x.id) + ':' + (x.updatedAt || x.createdAt || '')).sort().join(','),
-        n: allArtworks.length,
+        a: allArtworksWithImages.map((x: any) => (x.number || x.id) + ':' + (x.updatedAt || x.createdAt || '')).sort().join(','),
+        n: allArtworksWithImages.length,
         m: JSON.stringify(getItemSafe('k2-stammdaten-martina', {})),
         g: JSON.stringify(getItemSafe('k2-stammdaten-georg', {})),
         gal: JSON.stringify({
@@ -457,13 +461,13 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
           message: backupLabel
             ? `📁 Daten: Keine Änderungen\n\nNichts veröffentlicht – Stand wie beim letzten Backup (${backupLabel}).\n\nDaten sind identisch.`
             : '📁 Daten: Keine Änderungen – nichts veröffentlicht. Daten sind identisch mit dem letzten Stand.',
-          artworksCount: allArtworks.length
+          artworksCount: allArtworksWithImages.length
         })
         setTimeout(() => setPublishStatus(null), 6000)
         return
       }
 
-      const result = await publishGalleryDataToServer(allArtworks)
+      const result = await publishGalleryDataToServer(allArtworksWithImages)
       if (!result.success) {
         setIsPublishing(false)
         setPublishStatus({ success: false, message: result.error || 'Unbekannter Fehler' })
