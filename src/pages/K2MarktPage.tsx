@@ -17,6 +17,7 @@ const DOCUMENTS = [
   { id: 'planer', name: 'Für die Planer', file: 'K2-MARKT-FUER-PLANER.md' },
   { id: 'produkt-moment', name: 'Produkt-Moment (Modell)', file: 'K2-MARKT-PRODUKT-MOMENT.md' },
   { id: 'dod-flyer', name: 'DoD Flyer', file: 'K2-MARKT-DOD-FLYER.md' },
+  { id: 'flyer-agent', name: 'Flyer-Agent (Phase 2)', file: 'K2-MARKT-FLYER-AGENT.md' },
 ] as const
 
 export default function K2MarktPage() {

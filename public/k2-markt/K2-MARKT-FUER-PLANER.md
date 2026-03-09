@@ -45,13 +45,13 @@ Produkt-Moment (eine Wahrheit) → Agenten (Entwurf pro Format) → Qualitäts-T
 | Phase | Inhalt | Meilenstein „fertig“ |
 |-------|--------|------------------------|
 | **1** | Produkt-Moment modellieren + Definition of Done (Mindest-Anzahl Formate) | ✅ Struktur Produkt-Moment definiert; DoD für Flyer festgelegt → [DoD Flyer](K2-MARKT-DOD-FLYER.md). |
-| **2** | Erster Agent als Ableiter (z. B. Flyer-Agent) | Ein Agent liest Produkt-Moment + ein Template, liefert Entwurf. |
+| **2** | Erster Agent als Ableiter (z. B. Flyer-Agent) | Gestartet → [Flyer-Agent](K2-MARKT-FLYER-AGENT.md). Meilenstein: Agent liefert Entwurf (Moment + Template → Entwurf). |
 | **3** | Tor + Freigabe in der UI | Bildschirm zeigt Entwurf, Prüfung (DoD?), Button „Freigeben“ – erst dann marktfähig. |
 | **4** | Traceability + weitere Formate | Jedes Output referenziert Moment, Template, Regel-Version; weitere Formate nach gleichem Muster. |
 
 **Reihenfolge:** 1 → 2 → 3 → 4 (ohne Produkt-Moment kein Agent, ohne Agent kein Tor, ohne Tor keine Freigabe).
 
-**Start:** Phase 1 abgeschlossen (Produkt-Moment + DoD Flyer). **Nächster:** Phase 2 – erster Agent (Flyer-Agent).
+**Start:** Phase 1 abgeschlossen. Phase 2 gestartet – [Flyer-Agent](K2-MARKT-FLYER-AGENT.md) (Ablauf, Template, nächste Schritte: Speicherort Moment, Minimal-Template oder Tor-UI).
 
 ---
 

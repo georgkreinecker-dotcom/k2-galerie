@@ -23,6 +23,9 @@ Die eine Quelle pro Aussage: Felder (Titel, Botschaft, Zielgruppe, Kontakt, Link
 **5. [DoD Flyer](K2-MARKT-DOD-FLYER.md)**  
 Definition of Done für Flyer: Pflichtelemente (Botschaft, Kontakt, Link/QR, Bild), kein Platzhalter. Prüfliste für das Qualitäts-Tor.
 
+**6. [Flyer-Agent (Phase 2)](K2-MARKT-FLYER-AGENT.md)**  
+Erster Agent: Input = Produkt-Moment + ein Flyer-Template, Output = Entwurf. Ablauf, Template-Quelle, nächste Schritte (Speicherort Moment, Minimal-Template, Tor-UI).
+
 ---
 
 *Übergeordnetes Inhaltsverzeichnis: [docs/00-INDEX.md](../../docs/00-INDEX.md).*

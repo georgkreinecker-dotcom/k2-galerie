@@ -6,11 +6,11 @@
 
 ---
 
-## Datum: 09.03.26 – K2 Markt: Phase 1 abgeschlossen, Phase 2 nächster Schritt
+## Datum: 09.03.26 – K2 Markt: Phase 2 Flyer-Agent gestartet
 
-- **Stand:** Phase 1 erledigt: Produkt-Moment (Modell) + **DoD Flyer** festgelegt (K2-MARKT-DOD-FLYER.md – Pflichtelemente, kein Platzhalter, Prüfliste fürs Tor). In der Mappe: Index + Sidebar um „DoD Flyer“ ergänzt. Planer/Handbuch aktualisiert.
-- **Nächster Schritt:** Phase 2 – erster Agent (z. B. Flyer-Agent: Input = Produkt-Moment + Template, Output = Entwurf). Oder du schaust dir DoD Flyer in der Mappe an.
-- **Wo nachlesen:** K2 Markt Mappe → DoD Flyer, Produkt-Moment, Für die Planer; docs/K2-MARKT-VISION-ARCHITEKTUR.md.
+- **Stand:** Flyer-Agent-Konzept in K2-MARKT-FLYER-AGENT.md: Rolle, Ablauf (Moment + Template → Entwurf), Template-Quelle, Technik-Skizze, nächste Schritte (Speicherort Moment, Minimal-Template, Tor-UI). Mappe um „Flyer-Agent (Phase 2)“ ergänzt.
+- **Nächster Schritt:** Umsetzung wählen: Speicherort für Produkt-Momente festlegen, oder Minimal-Flyer-Template + Ableit-Funktion, oder Tor-UI (Phase 3) vorbereiten.
+- **Wo nachlesen:** K2 Markt Mappe → Flyer-Agent (Phase 2), DoD Flyer, Produkt-Moment; docs/K2-MARKT-VISION-ARCHITEKTUR.md.
 
 ---
 
