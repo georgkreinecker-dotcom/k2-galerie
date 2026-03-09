@@ -1,0 +1,39 @@
+---
+description: Werke mit Bilddaten speichern = immer ImageStore-Pfad. Keine Ausnahme (Lehre 0031/0035).
+alwaysApply: true
+---
+
+# Werke mit Bilddaten – immer ImageStore (kategorisch)
+
+## Warum diese Regel (Lehre 09.03.26)
+
+Wir hatten **bereits** festgelegt: Speichermix = große Bilder in IndexedDB, in der Liste nur imageRef (artworkImageStore, prepareArtworksForStorage, saveArtworksByKeyWithImageStore). Trotzdem nutzte der **Bearbeiten**-Pfad in GalerieVorschauPage nur `saveArtworks` → große data-URL direkt in localStorage → Speicherproblem, Platzhalter, **3 Stunden Fehlersuche**. Georg: „Warum machst du es nicht, wenn wir es schon festgelegt haben?“
+
+**Konsequenz:** Diese Regel ist verbindlich. Jeder Schreibpfad für Werke mit Bilddaten nutzt den ImageStore – **ohne Ausnahme**. Kein neuer Pfad („Neues Werk“, „Bearbeiten“, Admin, mobil) darf ohne Prüfung nur saveArtworksForContext/saveArtworksByKey aufrufen, wenn die Liste data-URLs enthält.
+
+## Unveränderliche Regel
+
+**Wenn du Werke speicherst und die Liste enthält imageUrl als data-URL (data:image/…):**
+
+1. **Vor dem Schreiben** die Liste durch **prepareArtworksForStorage(list)** jagen und die **zurückgegebene** Liste speichern, **oder**
+2. **saveArtworksForContextWithImageStore** / **saveArtworksByKeyWithImageStore** verwenden (die rufen prepareArtworksForStorage intern auf).
+
+**Verboten:** `saveArtworksForContext(..., toSave)` oder `saveArtworksByKey(..., toSave)` aufrufen, wenn toSave Werke mit imageUrl = lange data-URL enthält. Das führt zu demselben Speicherproblem wie bei 0031/0035.
+
+## Gilt für
+
+- Neues Werk (GalerieVorschauPage, Admin)
+- Werk bearbeiten (GalerieVorschauPage, Admin)
+- Jede andere Stelle, die eine Werkliste inkl. Bilddaten in localStorage (oder an Supabase) schreibt
+
+## Checkliste vor Commit (wenn du an Werke-Speicherung gearbeitet hast)
+
+- [ ] Schreibe ich eine Liste von Werken, in der **Bilder als data-URL** vorkommen können?
+- [ ] Wenn ja: Nutze ich **prepareArtworksForStorage** vor dem Schreiben oder **saveArtworksForContextWithImageStore** / **saveArtworksByKeyWithImageStore**?
+- [ ] Wenn nein: Warum nicht? (Einzige Ausnahme: Liste kommt garantiert schon mit nur imageRef, z. B. nach Merge aus Server.)
+
+## Kurzfassung
+
+**Werke mit Bilddaten speichern = immer ImageStore-Pfad. Eine Regel, alle Pfade. Sonst wieder 3 Stunden Suchen.**
+
+Verknüpfung: ein-standard-problem.mdc (Tabelle „Werke mit Bilddaten speichern“), docs/WERKE-SPEICHERUNG-CHECKLISTE.md Abschnitt 6, artworkImageStore.ts, artworksStorage.ts.

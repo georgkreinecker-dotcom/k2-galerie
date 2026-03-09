@@ -37,10 +37,13 @@ Stand: 05.03.26
 - **loadArtworksFromSupabase:** Nach Merge nur schreiben, wenn `merged.length >= localList.length`, mit **allowReduce: false**. Sonst nur `return merged` ohne localStorage-Schreibzugriff.
 - **Merge-Regel:** mergeServerWithLocal (syncMerge.ts); Server = Basis, lokale nur hinzufügen/überschreiben nach Konfliktregel.
 
-## 6. Bild-Speichermix (IndexedDB + localStorage)
+## 6. Bild-Speichermix (IndexedDB + localStorage) – PFLICHT bei jedem Schreiben mit Bilddaten
 
+- **Regel (09.03.26, Lehre 0031/0035):** Jeder Pfad, der Werke **mit Bilddaten** (imageUrl = data-URL) speichert, **muss** den ImageStore nutzen – **ohne Ausnahme**. Kein „nur beim Bearbeiten“ oder „nur am Mac“: Neues Werk, Bearbeiten, Admin, mobil – überall dasselbe.
+- **Standard:** Vor dem Schreiben `prepareArtworksForStorage(list)` aufrufen und die **vorbereitete** Liste speichern ODER `saveArtworksForContextWithImageStore` / `saveArtworksByKeyWithImageStore` verwenden.
 - **prepareArtworksForStorage:** Große data-URLs in IndexedDB auslagern; bei Fehler **nicht** das Werk verwerfen, sondern mit Original-Bild in der Liste lassen (out.push(a)).
 - **resolveArtworkImages:** Nur lesen aus IndexedDB; nie in localStorage zurückschreiben.
+- **Wenn dagegen verstoßen wird:** Speicher voll, Platzhalter, stundenlange Fehlersuche (wie bei Werken 0031/0035).
 
 ## 7. Backup vor kritischen Aktionen
 

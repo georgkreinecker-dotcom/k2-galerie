@@ -4589,31 +4589,33 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                     // KRITISCH: Basis = immer VOLLSTÄNDIGE Liste aus localStorage (currentFromStorageForNew bereits oben geladen)
                     const updatedArtworks = [...currentFromStorageForNew, newArtwork]
                     const toSave = preserveLocalImageData(updatedArtworks, loadArtworks())
+                    // Ein Standard: Werke mit Bilddaten immer über ImageStore (prepareArtworksForStorage) – sonst Speicherproblem wie bei 0031/0035
+                    const prepared = await prepareArtworksForStorage(toSave)
                     
                     // PROFESSIONELL: Speichere zuerst in Supabase (wenn konfiguriert), sonst localStorage
                     console.log('💾 Speichere Werk:', {
                       nummer: newNumber,
                       titel: mobileTitle,
-                      gesamtAnzahl: toSave.length,
+                      gesamtAnzahl: prepared.length,
                       supabase: isSupabaseConfigured()
                     })
                     
                     let saved = false
                     if (isSupabaseConfigured()) {
                       try {
-                        saved = await saveArtworksToSupabase(toSave)
+                        saved = await saveArtworksToSupabase(prepared)
                         if (saved) {
                           console.log('✅ Werk in Supabase gespeichert:', newNumber)
                         } else {
                           console.warn('⚠️ Supabase-Speichern fehlgeschlagen, verwende localStorage')
-                          saved = saveArtworks(toSave)
+                          saved = saveArtworks(prepared)
                         }
                       } catch (supabaseError) {
                         console.warn('⚠️ Supabase-Fehler, verwende localStorage:', supabaseError)
-                        saved = saveArtworks(toSave)
+                        saved = saveArtworks(prepared)
                       }
                     } else {
-                      saved = saveArtworks(toSave)
+                      saved = saveArtworks(prepared)
                     }
                     
                     if (!saved) {
