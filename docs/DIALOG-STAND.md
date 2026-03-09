@@ -6,6 +6,14 @@
 
 ---
 
+## Datum: 09.03.26 – K2 Markt C+D fertig, Commit + Push
+
+- **Stand:** (C) Studio auf der K2-Markt-Oberfläche: Block „Fehlt was? → Studio“ mit Link zum Admin (Design, Bildverarbeitung). (D) mök2-Sektion „Leitvision K2 Markt“ ergänzt (mok2Structure + MarketingOek2Page, gleicher Wortlaut wie Doku). Stand-Ziel-Nötig (docs + public) aktualisiert. **Commit:** 738a616 – auf GitHub.
+- **Nächster Schritt:** K2 Markt nutzen (Oberfläche → Studio, mök2 → Leitvision); oder mök2 komplett / weitere Formate.
+- **Wo nachlesen:** K2MarktOberflaechePage.tsx; MarketingOek2Page.tsx (id mok2-leitvision-k2-markt); docs/K2-MARKT-STAND-ZIEL-NOETIG.md.
+
+---
+
 ## Datum: 09.03.26 – K2 Markt aus mök2 & Kampagne speisen
 
 - **Stand:** K2 Markt wird aus mök2 und Kampagne Marketing-Strategie gespeist; daraus werden Produkt-Momente erzeugt, die am Tor umgesetzt werden können. **Umsetzung:** (1) `src/utils/k2MarktQuellen.ts`: getMok2Quellen(), getKontaktFromStammdaten(), fetchKampagneDocPreview(), buildMomentFromQuellen(). (2) Tor lädt Momente aus static (produkt-momente.json) + localStorage (k2-markt-momente), merge nach id. (3) Tor-UI „Moment aus Quellen erzeugen“: optional Kampagne-Dokument wählen, Button „Aus mök2 & Kampagne füllen“ → Form (Titel, Botschaft editierbar) → „Moment speichern“ schreibt in localStorage, Moment erscheint in der Liste und kann freigegeben werden.
