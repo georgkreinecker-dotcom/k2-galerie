@@ -14,6 +14,27 @@ import { BASE_APP_URL } from '../config/navigation'
 import type { ProduktMoment, ProduktMomentKontakt } from './k2MarktFlyerAgent'
 
 const MOK2_SLOGAN_KEY = 'k2-mok2-werbeslogan'
+const MOK2_IDEEN_URL = '/k2-markt/mok2-ideen.json'
+
+/** Eine ausgearbeitete Idee aus mök2 (Brainstorming) – medial umsetzbar. */
+export interface Mok2Idee {
+  id: string
+  titel: string
+  botschaft: string
+  kernargumente?: string[]
+}
+
+/** Lädt die Liste der mök2-Ideen (ausgearbeitete Konzepte für mediale Umsetzung). */
+export async function fetchMok2Ideen(): Promise<Mok2Idee[]> {
+  try {
+    const res = await fetch(MOK2_IDEEN_URL)
+    if (!res.ok) return []
+    const data = await res.json()
+    return Array.isArray(data) ? data : []
+  } catch {
+    return []
+  }
+}
 const MOK2_BOTSCHAFT_KEY = 'k2-mok2-botschaft2'
 const KAMPAGNE_BASE = '/kampagne-marketing-strategie'
 
@@ -95,30 +116,60 @@ export async function fetchKampagneDocPreview(docFile: string): Promise<Kampagne
   }
 }
 
-/** Baut ein Produkt-Moment aus mök2- und optionalen Kampagne-Quellen. */
+/** Baut ein Produkt-Moment aus mök2- und optionalen Kampagne-Quellen. Optional: Basis = eine mök2-Idee (Brainstorming). */
 export function buildMomentFromQuellen(options: {
   mok2: Mok2Quellen
   kontakt: ProduktMomentKontakt
   kampagne?: KampagneDocPreview | null
+  /** Ausgearbeitete mök2-Idee als Basis (Titel, Botschaft, Kernargumente). */
+  mok2Idee?: Mok2Idee | null
   id?: string
   links?: string[]
+  withSource?: boolean
+  kampagneDocFile?: string
 }): ProduktMoment {
-  const { mok2, kontakt, kampagne, links } = options
+  const { mok2, kontakt, kampagne, mok2Idee, links, withSource, kampagneDocFile } = options
   const id = options.id ?? `moment-${Date.now()}`
-  const titel = kampagne?.title ?? 'Aus mök2 & Kampagne'
-  const botschaft = kampagne?.bodyPreview
-    ? `${kampagne.bodyPreview}\n\n${mok2.slogan}\n${mok2.slogan2}`
-    : `${mok2.slogan}\n${mok2.slogan2}\n\n${mok2.botschaft}`
+  const titel = kampagne?.title ?? (mok2Idee?.titel ?? 'Aus mök2 & Kampagne')
+  const basisBotschaft = mok2Idee?.botschaft
+    ? `${mok2Idee.botschaft}\n\n${mok2.slogan}\n${mok2.slogan2}`
+    : kampagne?.bodyPreview
+      ? `${kampagne.bodyPreview}\n\n${mok2.slogan}\n${mok2.slogan2}`
+      : `${mok2.slogan}\n${mok2.slogan2}\n\n${mok2.botschaft}`
+  const kernargumente = (mok2Idee?.kernargumente?.length
+    ? [...mok2Idee.kernargumente]
+    : [mok2.slogan, mok2.slogan2]
+  ).filter(Boolean)
   return {
     id,
     titel,
-    botschaft,
+    botschaft: basisBotschaft,
     zielgruppe: mok2.zielgruppe,
     kontakt,
     links: links ?? [`${BASE_APP_URL}/willkommen`],
     medien: [],
-    kernargumente: [mok2.slogan, mok2.slogan2],
+    kernargumente,
     gültigVon: null,
     gültigBis: null,
+    ...(withSource && kampagneDocFile !== undefined && { source: { kampagneDoc: kampagneDocFile || undefined } }),
   }
+}
+
+/** Holt immer aktuellen Moment aus Quellen. Basis = mök2-Idee (Brainstorming) oder nur Slogan; optional Kampagne. */
+export async function getMomentFromQuellenLive(options?: {
+  mok2IdeenId?: string
+  kampagneDoc?: string
+}): Promise<ProduktMoment> {
+  const mok2 = getMok2Quellen()
+  const kontakt = getKontaktFromStammdaten()
+  const kampagneDoc = options?.kampagneDoc
+  const kampagne = kampagneDoc ? await fetchKampagneDocPreview(kampagneDoc) : null
+  let mok2Idee: Mok2Idee | null = null
+  const ideenId = options?.mok2IdeenId
+  if (ideenId && ideenId !== 'nur-slogan') {
+    const ideen = await fetchMok2Ideen()
+    mok2Idee = ideen.find((i) => i.id === ideenId) ?? null
+  }
+  const id = `live-${ideenId || 'mok2'}-${kampagneDoc || ''}`.replace(/\./g, '-').replace(/-+$/, '') || 'live-mok2'
+  return buildMomentFromQuellen({ mok2, kontakt, kampagne, mok2Idee, id })
 }

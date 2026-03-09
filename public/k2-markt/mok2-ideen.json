@@ -1,0 +1,50 @@
+[
+  {
+    "id": "nur-slogan",
+    "titel": "Nur Slogan & Botschaft",
+    "botschaft": "",
+    "kernargumente": []
+  },
+  {
+    "id": "mok2-1",
+    "titel": "USPs (Unique Selling Points)",
+    "botschaft": "K2 Galerie bringt Galerie, Kasse, Events und Werbung in eine Oberfläche. Kein Stückwerk – ein Stand auf allen Geräten. ök2 für Künstler:innen mit eigenem Auftritt, VK2 für Vereine.",
+    "kernargumente": ["Eine Oberfläche", "Galerie + Kasse + Werbung", "Alle Geräte"]
+  },
+  {
+    "id": "mok2-2",
+    "titel": "Marktchancen – Stärken",
+    "botschaft": "Zielgruppe: Künstler:innen mit Verkauf – Atelier, Ausstellungen, Märkte – die Webauftritt, Kasse und Werbung aus einer Hand wollen. Starke Nachfrage nach einfachen, professionellen Lösungen.",
+    "kernargumente": ["Klare Zielgruppe", "Eine Hand", "Professionell"]
+  },
+  {
+    "id": "mok2-6",
+    "titel": "Empfehlungs-Programm",
+    "botschaft": "Nutzer:innen werben weitere Künstler:innen. 10 % Rabatt für Geworbene, 10 % Gutschrift für Empfehler:innen. Vertrieb durch die Community – jede:r hat eine Empfehler-ID.",
+    "kernargumente": ["10 % Rabatt / 10 % Gutschrift", "Empfehler-ID", "Community-Vertrieb"]
+  },
+  {
+    "id": "mok2-14",
+    "titel": "Pro+-Lizenz",
+    "botschaft": "Pro+ bündelt erweiterte Funktionen für ambitionierte Galerien und Künstler:innen. Mehr Reichweite, mehr Werkzeuge – eine Stufe über Pro.",
+    "kernargumente": ["Erweiterte Funktionen", "Ambitionierte Galerien", "Mehr Reichweite"]
+  },
+  {
+    "id": "mok2-10b-vk2-lizenz",
+    "titel": "Lizenzstruktur VK2 (Vereinsplattform)",
+    "botschaft": "VK2 für Kunstvereine: gemeinsame Vereinsgalerie, Mitglieder mit eigener Galerie, Vereinskatalog. Ab 10 Mitgliedern für den Verein kostenfrei. Lizenzmitglied 50 % Lizenz.",
+    "kernargumente": ["Vereinsplattform", "Ab 10 Mitgliedern kostenfrei", "Vereinskatalog"]
+  },
+  {
+    "id": "mok2-was-kann-die-app",
+    "titel": "Was kann die App? (ök2 | VK2)",
+    "botschaft": "ök2: Eigene Galerie, Werke, Vita, Shop, Events, Kasse, Etiketten, Marketing aus einem Guss. VK2: Vereinsgalerie, Mitglieder, Katalog, Events – für Vereine.",
+    "kernargumente": ["ök2 für Künstler:innen", "VK2 für Vereine", "Aus einem Guss"]
+  },
+  {
+    "id": "mok2-7",
+    "titel": "Promotion für alle Medien",
+    "botschaft": "Eine Werbelinie für Presse, Flyer, Social, Web. Slogan und Botschaft zentral – alle Kanäle nutzen dieselbe Quelle. Zielgruppe und Kernargumente aus mök2.",
+    "kernargumente": ["Eine Werbelinie", "Alle Medien", "Eine Quelle"]
+  }
+]

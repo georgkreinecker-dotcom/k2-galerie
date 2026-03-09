@@ -16,10 +16,13 @@ import {
   type FreigabeEintrag,
 } from '../utils/k2MarktFlyerAgent'
 import {
+  getMomentFromQuellenLive,
   getMok2Quellen,
   getKontaktFromStammdaten,
   fetchKampagneDocPreview,
   buildMomentFromQuellen,
+  fetchMok2Ideen,
+  type Mok2Idee,
 } from '../utils/k2MarktQuellen'
 
 const MOMENTE_URL = '/k2-markt/produkt-momente.json'
@@ -90,6 +93,16 @@ export default function K2MarktTorPage() {
   const [newMoment, setNewMoment] = useState<ProduktMoment | null>(null)
   const [speisenLoading, setSpeisenLoading] = useState(false)
   const [kampagneDocFile, setKampagneDocFile] = useState<string>('')
+  /** "live" = Entwurf immer aus Quellen (ein Dropdown → sofort aktuell); "saved" = aus Liste wählen */
+  const [modus, setModus] = useState<'live' | 'saved'>('live')
+  /** Im Live-Modus: gewählte mök2-Idee (Basis aus Brainstorming) */
+  const [liveMok2IdeenId, setLiveMok2IdeenId] = useState<string>('nur-slogan')
+  /** Im Live-Modus: gewähltes Kampagne-Dokument (optional) */
+  const [liveKampagneDoc, setLiveKampagneDoc] = useState<string>('')
+  const [mok2Ideen, setMok2Ideen] = useState<Mok2Idee[]>([])
+  const [liveMoment, setLiveMoment] = useState<ProduktMoment | null>(null)
+  const [liveLoading, setLiveLoading] = useState(false)
+  const [resolveLoading, setResolveLoading] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -123,11 +136,57 @@ export default function K2MarktTorPage() {
     return () => { cancelled = true }
   }, [])
 
+  /** Live-Modus: mök2-Ideen einmal laden (Brainstorming-Quellen). */
   useEffect(() => {
-    if (!selectedId || momente.length === 0) return
+    if (modus !== 'live') return
+    let cancelled = false
+    fetchMok2Ideen().then((list) => {
+      if (!cancelled) setMok2Ideen(list)
+    })
+    return () => { cancelled = true }
+  }, [modus])
+
+  /** Live-Modus: Entwurf immer aus aktuellen Quellen (mök2-Idee + optional Kampagne). */
+  useEffect(() => {
+    if (modus !== 'live') return
+    let cancelled = false
+    setLiveLoading(true)
+    getMomentFromQuellenLive({ mok2IdeenId: liveMok2IdeenId, kampagneDoc: liveKampagneDoc || undefined })
+      .then((m) => {
+        if (cancelled) return
+        setLiveMoment(m)
+        setEntwurf(momentToFlyerEntwurf(m))
+      })
+      .finally(() => {
+        if (!cancelled) setLiveLoading(false)
+      })
+    return () => { cancelled = true }
+  }, [modus, liveMok2IdeenId, liveKampagneDoc])
+
+  /** Gespeicherte Momente: bei Auswahl mit source → live auflösen, sonst gespeicherte Kopie. */
+  useEffect(() => {
+    if (modus !== 'saved' || !selectedId || momente.length === 0) return
     const m = momente.find((x) => x.id === selectedId)
-    if (m) setEntwurf(momentToFlyerEntwurf(m))
-  }, [selectedId, momente])
+    if (!m) return
+    if (m.source?.kampagneDoc || m.source?.mok2IdeenId) {
+      let cancelled = false
+      setResolveLoading(true)
+      getMomentFromQuellenLive({ mok2IdeenId: m.source.mok2IdeenId, kampagneDoc: m.source.kampagneDoc })
+        .then((resolved) => {
+          if (cancelled) return
+          setEntwurf(momentToFlyerEntwurf(resolved))
+        })
+        .finally(() => {
+          if (!cancelled) setResolveLoading(false)
+        })
+      return () => { cancelled = true }
+    }
+    setEntwurf(momentToFlyerEntwurf(m))
+  }, [modus, selectedId, momente])
+
+  /** Aktueller Moment für Anzeige/Freigabe (im Live-Modus = liveMoment, sonst gewählter aus Liste). */
+  const currentMomentForDisplay =
+    modus === 'live' ? liveMoment : momente.find((x) => x.id === selectedId) ?? null
 
   const dod = entwurf ? erfuelltDoDFlyer(entwurf) : null
 
@@ -148,6 +207,7 @@ export default function K2MarktTorPage() {
           <p style={{ color: '#f87171' }}>{fehler}</p>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.75rem' }}>
             <Link to={PROJECT_ROUTES['k2-galerie'].home} style={{ color: '#5ffbf1', textDecoration: 'none', fontSize: '0.9rem' }}>← K2 Galerie</Link>
+            <Link to={PROJECT_ROUTES['k2-galerie'].k2MarktOberflaeche} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>🎯 Arbeitsoberfläche</Link>
             <Link to={PROJECT_ROUTES['k2-galerie'].k2Markt} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>K2 Markt Mappe</Link>
           </div>
         </div>
@@ -167,107 +227,155 @@ export default function K2MarktTorPage() {
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', marginTop: '0.75rem' }}>
             <Link to={PROJECT_ROUTES['k2-galerie'].home} style={{ color: '#5ffbf1', textDecoration: 'none', fontSize: '0.9rem' }}>← K2 Galerie</Link>
+            <Link to={PROJECT_ROUTES['k2-galerie'].k2MarktOberflaeche} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>🎯 Arbeitsoberfläche</Link>
             <Link to={PROJECT_ROUTES['k2-galerie'].k2Markt} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>K2 Markt Mappe</Link>
             <Link to={PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>Kampagne Marketing-Strategie</Link>
           </div>
         </header>
 
-        {/* Moment aus mök2 & Kampagne speisen – daraus Momente erzeugen */}
+        {/* Modus: Live aus Quellen (dynamisch) oder Gespeicherte Momente */}
         <section className="no-print" style={{ marginBottom: '1.5rem', padding: '1rem 1.25rem', background: 'rgba(95,251,241,0.06)', border: '1px solid rgba(95,251,241,0.25)', borderRadius: 12 }}>
-          <h2 style={{ margin: '0 0 0.5rem', color: 'rgba(95,251,241,0.95)', fontSize: '1.1rem' }}>Moment aus Quellen erzeugen</h2>
-          <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>
-            Aus mök2 (Slogan, Botschaft, Zielgruppe) und optional Kampagne Marketing-Strategie (Dokument) einen Produkt-Moment bauen – dann speichern und am Tor umsetzen.
-          </p>
-          {!newMoment ? (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <span style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>Quelle:</span>
+            <button
+              type="button"
+              onClick={() => setModus('live')}
+              style={{
+                padding: '0.4rem 0.75rem',
+                background: modus === 'live' ? 'rgba(13,148,136,0.5)' : 'transparent',
+                color: '#5ffbf1',
+                border: `1px solid ${modus === 'live' ? '#0d9488' : 'rgba(95,251,241,0.35)'}`,
+                borderRadius: 8,
+                fontSize: '0.88rem',
+                cursor: 'pointer',
+              }}
+            >
+              Live aus mök2 & Kampagne
+            </button>
+            <button
+              type="button"
+              onClick={() => setModus('saved')}
+              style={{
+                padding: '0.4rem 0.75rem',
+                background: modus === 'saved' ? 'rgba(13,148,136,0.5)' : 'transparent',
+                color: '#5ffbf1',
+                border: `1px solid ${modus === 'saved' ? '#0d9488' : 'rgba(95,251,241,0.35)'}`,
+                borderRadius: 8,
+                fontSize: '0.88rem',
+                cursor: 'pointer',
+              }}
+            >
+              Gespeicherte Momente
+            </button>
+          </div>
+
+          {modus === 'live' && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
+              <label style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)' }}>mök2-Idee (Basis):</label>
               <select
-                value={kampagneDocFile}
-                onChange={(e) => setKampagneDocFile(e.target.value)}
+                value={liveMok2IdeenId}
+                onChange={(e) => setLiveMok2IdeenId(e.target.value)}
                 style={{ background: '#1e293b', color: '#fff', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 6, padding: '0.4rem 0.6rem', fontSize: '0.88rem' }}
               >
-                <option value="">Kein Kampagne-Dokument</option>
-                {KAMPAGNE_DOCS.map((d) => (
+                {mok2Ideen.length === 0 && <option value="nur-slogan">Nur Slogan & Botschaft</option>}
+                {mok2Ideen.map((i) => (
+                  <option key={i.id} value={i.id}>{i.titel}</option>
+                ))}
+              </select>
+              <label style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)' }}>Kampagne (optional):</label>
+              <select
+                value={liveKampagneDoc}
+                onChange={(e) => setLiveKampagneDoc(e.target.value)}
+                style={{ background: '#1e293b', color: '#fff', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 6, padding: '0.4rem 0.6rem', fontSize: '0.88rem' }}
+              >
+                <option value="">–</option>
+                {KAMPAGNE_DOCS.filter((d) => d.file !== '00-INDEX.md').map((d) => (
                   <option key={d.file} value={d.file}>{d.name}</option>
                 ))}
               </select>
+              <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>Entwurf immer aus aktuellen Quellen – Ideen aus mök2 → medial umsetzbar.</span>
               <button
                 type="button"
-                disabled={speisenLoading}
-                onClick={async () => {
-                  setSpeisenLoading(true)
-                  try {
-                    const mok2 = getMok2Quellen()
-                    const kontakt = getKontaktFromStammdaten()
-                    const kampagne = kampagneDocFile ? await fetchKampagneDocPreview(kampagneDocFile) : null
-                    const moment = buildMomentFromQuellen({ mok2, kontakt, kampagne })
-                    setNewMoment(moment)
-                  } finally {
-                    setSpeisenLoading(false)
-                  }
+                onClick={() => {
+                  const m = liveMoment
+                  if (!m) return
+                  const list = loadLocalMomente()
+                  const toSave = { ...m, id: `ref-${m.id}`, source: { kampagneDoc: liveKampagneDoc || undefined, mok2IdeenId: liveMok2IdeenId !== 'nur-slogan' ? liveMok2IdeenId : undefined } }
+                  list.push(toSave)
+                  saveLocalMomente(list)
+                  setMomente((prev) => { const byId = new Map(prev.map((x) => [x.id, x])); byId.set(toSave.id, toSave); return Array.from(byId.values()) })
                 }}
-                style={{
-                  padding: '0.5rem 1rem',
-                  background: '#0d9488',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 8,
-                  fontSize: '0.9rem',
-                  fontWeight: 600,
-                  cursor: speisenLoading ? 'wait' : 'pointer',
-                }}
+                disabled={!liveMoment || liveLoading}
+                style={{ padding: '0.35rem 0.75rem', background: 'rgba(34,197,94,0.3)', color: '#86efac', border: '1px solid rgba(34,197,94,0.5)', borderRadius: 6, fontSize: '0.82rem', cursor: liveMoment && !liveLoading ? 'pointer' : 'default' }}
               >
-                {speisenLoading ? 'Lade …' : 'Aus mök2 & Kampagne füllen'}
+                Als Moment speichern (bleibt live)
               </button>
             </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div>
-                <label style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', display: 'block', marginBottom: '0.25rem' }}>Titel</label>
-                <input
-                  value={newMoment.titel}
-                  onChange={(e) => setNewMoment((m) => m ? { ...m, titel: e.target.value } : null)}
-                  style={{ width: '100%', maxWidth: 400, background: '#1e293b', color: '#fff', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 6, padding: '0.4rem 0.6rem' }}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', display: 'block', marginBottom: '0.25rem' }}>Botschaft</label>
-                <textarea
-                  value={newMoment.botschaft}
-                  onChange={(e) => setNewMoment((m) => m ? { ...m, botschaft: e.target.value } : null)}
-                  rows={4}
-                  style={{ width: '100%', maxWidth: 560, background: '#1e293b', color: '#fff', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 6, padding: '0.4rem 0.6rem', resize: 'vertical' }}
-                />
-              </div>
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const list = loadLocalMomente()
-                    const toSave = { ...newMoment!, id: newMoment!.id || `moment-${Date.now()}` }
-                    list.push(toSave)
-                    saveLocalMomente(list)
-                    setMomente((prev) => {
-                      const byId = new Map(prev.map((m) => [m.id, m]))
-                      byId.set(toSave.id, toSave)
-                      return Array.from(byId.values())
-                    })
-                    setSelectedId(toSave.id)
-                    setEntwurf(momentToFlyerEntwurf(toSave))
-                    setNewMoment(null)
-                  }}
-                  style={{ padding: '0.5rem 1rem', background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}
-                >
-                  Moment speichern
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setNewMoment(null)}
-                  style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 8, fontSize: '0.9rem', cursor: 'pointer' }}
-                >
-                  Abbrechen
-                </button>
-              </div>
-            </div>
+          )}
+
+          {modus === 'saved' && (
+            <>
+              {!newMoment ? (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
+                  <select
+                    value={kampagneDocFile}
+                    onChange={(e) => setKampagneDocFile(e.target.value)}
+                    style={{ background: '#1e293b', color: '#fff', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 6, padding: '0.4rem 0.6rem', fontSize: '0.88rem' }}
+                  >
+                    <option value="">Quelle für neuen Moment</option>
+                    {KAMPAGNE_DOCS.filter((d) => d.file !== '00-INDEX.md').map((d) => (
+                      <option key={d.file} value={d.file}>{d.name}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    disabled={speisenLoading}
+                    onClick={async () => {
+                      setSpeisenLoading(true)
+                      try {
+                        const mok2 = getMok2Quellen()
+                        const kontakt = getKontaktFromStammdaten()
+                        const kampagne = kampagneDocFile ? await fetchKampagneDocPreview(kampagneDocFile) : null
+                        const moment = buildMomentFromQuellen({ mok2, kontakt, kampagne, withSource: true, kampagneDocFile })
+                        setNewMoment(moment)
+                      } finally {
+                        setSpeisenLoading(false)
+                      }
+                    }}
+                    style={{ padding: '0.4rem 0.75rem', background: '#0d9488', color: '#fff', border: 'none', borderRadius: 8, fontSize: '0.88rem', fontWeight: 600, cursor: speisenLoading ? 'wait' : 'pointer' }}
+                  >
+                    {speisenLoading ? 'Lade …' : 'Neuer Moment aus Quellen (bleibt live)'}
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <input
+                    value={newMoment.titel}
+                    onChange={(e) => setNewMoment((m) => m ? { ...m, titel: e.target.value } : null)}
+                    placeholder="Titel"
+                    style={{ width: '100%', maxWidth: 320, background: '#1e293b', color: '#fff', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 6, padding: '0.35rem 0.5rem', fontSize: '0.88rem' }}
+                  />
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const list = loadLocalMomente()
+                        const toSave = { ...newMoment!, id: newMoment!.id || `moment-${Date.now()}`, source: kampagneDocFile ? { kampagneDoc: kampagneDocFile } : undefined }
+                        list.push(toSave)
+                        saveLocalMomente(list)
+                        setMomente((prev) => { const byId = new Map(prev.map((m) => [m.id, m])); byId.set(toSave.id, toSave); return Array.from(byId.values()) })
+                        setSelectedId(toSave.id)
+                        setNewMoment(null)
+                      }}
+                      style={{ padding: '0.35rem 0.75rem', background: '#22c55e', color: '#fff', border: 'none', borderRadius: 6, fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}
+                    >
+                      Speichern
+                    </button>
+                    <button type="button" onClick={() => setNewMoment(null)} style={{ padding: '0.35rem 0.75rem', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 6, fontSize: '0.85rem', cursor: 'pointer' }}>Abbrechen</button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </section>
 
@@ -275,7 +383,7 @@ export default function K2MarktTorPage() {
         {/* Entwurf-Vorschau */}
         <section style={{ background: 'rgba(95,251,241,0.06)', border: '1px solid rgba(95,251,241,0.25)', borderRadius: 12, padding: '1.25rem' }}>
           <h2 style={{ margin: '0 0 1rem', color: 'rgba(95,251,241,0.95)', fontSize: '1.1rem' }}>Flyer-Entwurf</h2>
-          {momente.length > 1 && (
+          {modus === 'saved' && momente.length > 1 && (
             <div style={{ marginBottom: '1rem' }}>
               <label style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>Produkt-Moment: </label>
               <select
@@ -284,12 +392,15 @@ export default function K2MarktTorPage() {
                 style={{ background: '#1e293b', color: '#fff', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 6, padding: '0.35rem 0.6rem', marginLeft: '0.5rem' }}
               >
                 {momente.map((m) => (
-                  <option key={m.id} value={m.id}>{m.titel}</option>
+                  <option key={m.id} value={m.id}>{m.titel}{m.source?.kampagneDoc ? ' (live)' : ''}</option>
                 ))}
               </select>
             </div>
           )}
-          {entwurf ? (
+          {(liveLoading || resolveLoading) && (
+            <p style={{ color: 'rgba(95,251,241,0.8)', fontSize: '0.9rem', marginBottom: '0.75rem' }}>Lade Entwurf aus Quellen …</p>
+          )}
+          {entwurf && !resolveLoading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <div><strong style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem' }}>Titel</strong><div style={{ color: '#fff' }}>{entwurf.title}</div></div>
               <div><strong style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem' }}>Botschaft</strong><div style={{ color: '#fff', whiteSpace: 'pre-wrap' }}>{entwurf.bodyText}</div></div>
@@ -328,11 +439,10 @@ export default function K2MarktTorPage() {
                 type="button"
                 disabled={freigegeben || !dod.ok}
                 onClick={() => {
-                  if (!entwurf || !selectedId) return
-                  const moment = momente.find((m) => m.id === selectedId)
+                  if (!entwurf || !currentMomentForDisplay) return
                   const eintrag: FreigabeEintrag = {
-                    momentId: selectedId,
-                    momentTitel: moment?.titel ?? entwurf.title,
+                    momentId: currentMomentForDisplay.id,
+                    momentTitel: currentMomentForDisplay.titel,
                     template: FLYER_TEMPLATE_ID,
                     timestamp: new Date().toISOString(),
                   }

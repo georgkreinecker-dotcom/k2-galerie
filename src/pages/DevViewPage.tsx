@@ -27,6 +27,7 @@ import MissionControlPage from './MissionControlPage'
 import K2GalerieHandbuchPage from './K2GalerieHandbuchPage'
 import KampagneMarketingStrategiePage from './KampagneMarketingStrategiePage'
 import K2MarktPage from './K2MarktPage'
+import K2MarktOberflaechePage from './K2MarktOberflaechePage'
 import SmartPanel from '../components/SmartPanel'
 import { BUILD_TIMESTAMP } from '../buildInfo.generated'
 import { getPageContentGalerie } from '../config/pageContentGalerie'
@@ -254,7 +255,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       case 'uebersicht': return PROJECT_ROUTES['k2-galerie'].uebersicht
       case 'notizen': return PROJECT_ROUTES['k2-galerie'].notizen
       case 'kampagne': return PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie
-      case 'k2-markt': return PROJECT_ROUTES['k2-galerie'].k2Markt
+      case 'k2-markt': return PROJECT_ROUTES['k2-galerie'].k2MarktOberflaeche
       case 'mission-control': return PLATFORM_ROUTES.missionControl
       default: return PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
     }
@@ -896,7 +897,7 @@ end tell`
     { id: 'mok2', name: 'mök2 – Vertrieb', component: MarketingOek2Page },
     { id: 'notizen', name: 'Notizen', component: NotizenPage },
     { id: 'kampagne', name: 'Kampagne Marketing-Strategie', component: KampagneMarketingStrategiePage },
-    { id: 'k2-markt', name: 'K2 Markt', component: K2MarktPage },
+    { id: 'k2-markt', name: 'K2 Markt', component: K2MarktOberflaechePage },
     { id: 'handbuch', name: 'Handbuch', component: K2TeamHandbuchPage },
     { id: 'handbuch-galerie', name: 'Handbuch K2 Galerie', component: K2GalerieHandbuchPage },
     { id: 'k2-familie', name: 'K2 Familie', component: () => <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--k2-muted)' }}>K2 Familie – im APf-Desktop im Browser</div> },
@@ -1410,7 +1411,7 @@ end tell`
               currentPageData.id === 'uebersicht' ? PROJECT_ROUTES['k2-galerie'].uebersicht :
               currentPageData.id === 'notizen' ? PROJECT_ROUTES['k2-galerie'].notizen :
               currentPageData.id === 'kampagne' ? PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie :
-              currentPageData.id === 'k2-markt' ? PROJECT_ROUTES['k2-galerie'].k2Markt : '/'}
+              currentPageData.id === 'k2-markt' ? PROJECT_ROUTES['k2-galerie'].k2MarktOberflaeche : '/'}
           style={{
             padding: '0.5rem 1rem',
             background: '#33a1ff',

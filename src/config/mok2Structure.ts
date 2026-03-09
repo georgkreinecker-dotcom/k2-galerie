@@ -18,6 +18,7 @@ export const mok2Groups: Mok2Group[] = [
   {
     chapterTitle: 'Kern – Überblick & Stärken',
     sections: [
+      { id: 'mok2-leitvision-k2-markt', label: 'Leitvision K2 Markt' },
       { id: 'mok2-was-kann-die-app', label: 'Was kann die App? (ök2 | VK2)' },
       { id: 'mok2-produktbeschreibung', label: 'Genaue Produktbeschreibung' },
       { id: 'mok2-prospekt', label: 'K2 Galerie Prospekt' },

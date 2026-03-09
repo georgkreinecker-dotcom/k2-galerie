@@ -232,6 +232,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <div className="marketing-oek2-no-print" style={{ marginTop: '1.5rem', padding: '1rem 1.25rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.35)', borderRadius: '10px' }}>
           <h3 style={{ fontSize: '1rem', margin: '0 0 0.75rem', color: '#5ffbf1', fontWeight: 600 }}>📋 Struktur der mök2</h3>
           <ol style={{ margin: 0, paddingLeft: '1.35rem', lineHeight: 1.9, color: 'rgba(255,255,255,0.95)', fontSize: '0.95rem' }}>
+            <li><a href="#mok2-leitvision-k2-markt" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Leitvision K2 Markt</strong> (kreative Leitvision – eine Stelle)</a></li>
             <li><a href="#mok2-was-kann-die-app" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Was kann die App?</strong> (ök2 | VK2 – kurz)</a></li>
             <li><a href="#mok2-prospekt" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>K2 Galerie Prospekt</strong> (funktional & technisch, druckbar)</a></li>
             <li><a href="#mok2-prospekt-galerieeroeffnung" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Prospekt Galerieeröffnung K2</strong> (Kunst und Keramik, 1 Seite)</a></li>
@@ -373,6 +374,21 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
 
       {/* Kapitel: Kern – Überblick & Stärken */}
       <Mok2ChapterPage title={mok2Groups[0].chapterTitle} />
+      {/* Leitvision K2 Markt – kreative Leitvision (eine Stelle, ausrichtend) */}
+      <section id="mok2-leitvision-k2-markt" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Leitvision K2 Markt
+        </h2>
+        <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.6 }}>
+          <strong>Ich setze mich an meinen Mac und sage: Heute möchte ich meine K2 oder ök2 oder etwas anderes – zum Beispiel K2 Familie – auf den Markt bringen. Du hast alles, was du dafür brauchst.</strong>
+        </p>
+        <p style={{ marginBottom: '0.5rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.6 }}>
+          Wenn Bilder, Videos oder Texte fehlen: Im Werkzeugkasten haben wir ein <strong>Studio</strong>, in dem wir das selbst professionell erzeugen und ergänzen können.
+        </p>
+        <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
+          Quelle: Georg, 09.03.26. Eine Stelle – hier. Für alle (Team, KI, spätere Nutzer) ausrichtend.
+        </p>
+      </section>
       {/* 0. Was kann die App? – ganz kurz für Interessenten (ök2 | VK2) */}
       <section id="mok2-was-kann-die-app" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>

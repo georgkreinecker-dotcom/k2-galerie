@@ -12,6 +12,8 @@ const BASE = '/k2-markt'
 
 const DOCUMENTS = [
   { id: 'index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
+  { id: 'stand-ziel', name: 'Stand, Ziel, was nötig ist', file: 'K2-MARKT-STAND-ZIEL-NOETIG.md' },
+  { id: 'kreativ-leitvision', name: 'Kreativprozess und Leitvision', file: 'K2-MARKT-KREATIVPROZESS-LEITVISION.md' },
   { id: 'vision', name: 'Vision und Architektur (eine Quelle)', file: 'K2-MARKT-VISION-ARCHITEKTUR.md' },
   { id: 'handbuch', name: 'Handbuch K2 Markt', file: 'K2-MARKT-HANDBUCH.md' },
   { id: 'planer', name: 'Für die Planer', file: 'K2-MARKT-FUER-PLANER.md' },
@@ -80,6 +82,7 @@ export default function K2MarktPage() {
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', marginTop: '0.75rem' }}>
             <Link to={PROJECT_ROUTES['k2-galerie'].home} style={{ color: '#5ffbf1', textDecoration: 'none', fontSize: '0.9rem' }}>← K2 Galerie</Link>
+            <Link to={PROJECT_ROUTES['k2-galerie'].k2MarktOberflaeche} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>🎯 Arbeitsoberfläche</Link>
             <Link to={PROJECT_ROUTES['k2-galerie'].k2MarktTor} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>🚦 Zum Tor (Entwurf prüfen)</Link>
             <Link to={PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>Kampagne Marketing-Strategie</Link>
           </div>

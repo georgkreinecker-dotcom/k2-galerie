@@ -10,6 +10,13 @@ export type ProduktMomentKontakt = {
   phone?: string
 }
 
+/** Quellen-Referenz: Moment wird immer live aus mök2 + optional Kampagne gebaut (nicht statische Kopie). */
+export type ProduktMomentSource = {
+  kampagneDoc?: string
+  /** Ausgearbeitete mök2-Idee (Brainstorming) – bleibt live. */
+  mok2IdeenId?: string
+}
+
 export type ProduktMoment = {
   id: string
   titel: string
@@ -21,6 +28,8 @@ export type ProduktMoment = {
   kernargumente?: string[]
   gültigVon?: string | null
   gültigBis?: string | null
+  /** Wenn gesetzt: Entwurf immer aus Quellen bauen (aktueller Stand), nicht gespeicherte Kopie nutzen. */
+  source?: ProduktMomentSource
 }
 
 /** Template-Kennung für Traceability (ein Template pro Format). */
