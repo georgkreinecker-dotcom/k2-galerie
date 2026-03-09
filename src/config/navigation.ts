@@ -96,6 +96,8 @@ export const PROJECT_ROUTES = {
     kampagneMarketingStrategie: '/projects/k2-galerie/kampagne-marketing-strategie',
     /** K2 Markt – eigene Mappe (Vision, Architektur, Handbuch) */
     k2Markt: '/projects/k2-galerie/k2-markt',
+    /** K2 Markt Tor – Qualitäts-Tor: Entwurf anzeigen, DoD prüfen, Freigabe */
+    k2MarktTor: '/projects/k2-galerie/k2-markt-tor',
   },
   vk2: {
     id: 'vk2',
@@ -171,6 +173,7 @@ export const PROJECT_ROUTES = {
     kunden: '/projects/k2-galerie/kunden',
     kampagneMarketingStrategie: '/projects/k2-galerie/kampagne-marketing-strategie',
     k2Markt: '/projects/k2-galerie/k2-markt',
+    k2MarktTor: '/projects/k2-galerie/k2-markt-tor',
   },
 } as const
 

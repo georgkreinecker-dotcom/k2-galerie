@@ -1,0 +1,18 @@
+[
+  {
+    "id": "beispiel-galerie-eroeffnung",
+    "titel": "Galerie eröffnet",
+    "botschaft": "K2 Galerie Kunst & Keramik eröffnet. Wir freuen uns auf Ihren Besuch.",
+    "zielgruppe": "Besucher, Interessierte",
+    "kontakt": {
+      "name": "Martina & Georg",
+      "email": "info@beispiel.at",
+      "phone": "+43 123 456789"
+    },
+    "links": ["https://k2-galerie.vercel.app"],
+    "medien": [],
+    "kernargumente": ["Persönliche Beratung", "Kunst & Keramik", "Lokal verankert"],
+    "gültigVon": null,
+    "gültigBis": null
+  }
+]

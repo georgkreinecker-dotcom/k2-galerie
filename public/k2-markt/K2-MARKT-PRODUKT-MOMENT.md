@@ -29,9 +29,9 @@
 
 ---
 
-## 3. Was noch offen ist (Phase 1)
+## 3. Speicherort (festgelegt)
 
-- **Speicherort:** Wo leben Produkt-Momente? (z. B. JSON in Repo, Supabase-Tabelle, Datei in k2-markt – nach Sportwagenmodus: bestehende Infrastruktur nutzen.)
+- **Produkt-Momente** leben in **`public/k2-markt/produkt-momente.json`** – ein Array von Momenten, versioniert im Repo, von der App per `fetch('/k2-markt/produkt-momente.json')` lesbar. Ein Beispiel-Moment ist enthalten.
 - **Definition of Done** für Flyer: festgelegt → [DoD Flyer](K2-MARKT-DOD-FLYER.md).
 
 ---

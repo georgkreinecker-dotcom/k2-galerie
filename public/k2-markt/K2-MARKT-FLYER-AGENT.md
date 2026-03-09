@@ -27,28 +27,28 @@
 
 | Quelle | Inhalt |
 |--------|--------|
-| **Produkt-Moment** | Noch offen: Speicherort (JSON, Supabase, Datei). Beim Start: ein Moment manuell oder aus Kampagne/mök2-Struktur anlegen. |
+| **Produkt-Moment** | **Speicherort:** `public/k2-markt/produkt-momente.json` (Array von Momenten, im Repo, App liest per fetch). Beispiel-Moment enthalten. |
 | **Flyer-Template** | Ein Standard-Layout (z. B. 1 Seite A5/A6), feste Zonen: Kopf (Titel/Bild), Mitte (Botschaft), Fuß (Kontakt, Link/QR). Entwurf = „Fertige Beispiele“ aus Kampagne/mök2 als Vorlage oder neues Minimal-Template. |
 
 Sportwagenmodus: Bestehende Vorlagen (mök2, Kampagne „Fertige Beispiele“) nutzen, wo passend.
 
 ---
 
-## 4. Technik (Skizze für Umsetzung)
+## 4. Technik (umgesetzt)
 
-- **Agent** = Funktion oder Modul: `flyerEntwurf(moment, template) → entwurf`.
-- **Entwurf** = strukturierte Daten (title, bodyText, contact, qrUrl, imageRef) oder direkt gerenderte Vorschau (HTML/Canvas/PDF).
-- **Tor:** UI zeigt Entwurf, prüft gegen [DoD Flyer](K2-MARKT-DOD-FLYER.md), Button „Freigeben“ (Phase 3).
+- **Agent** = `src/utils/k2MarktFlyerAgent.ts`: `momentToFlyerEntwurf(moment) → FlyerEntwurf`. Typen `ProduktMoment`, `FlyerEntwurf`. Kein zweites Template – eine Ableitung.
+- **DoD-Prüfung** = `erfuelltDoDFlyer(entwurf)` liefert `{ ok, fehlend[] }` (Kernbotschaft, Kontakt, Link/QR, Bild).
+- **Tor:** UI unter Route „K2 Markt Tor“ – zeigt Entwurf, DoD-Checkliste, Button „Freigeben“.
 
 ---
 
-## 5. Nächster Schritt
+## 5. Stand (09.03.26) – A, B, C umgesetzt
 
-- **Option A:** Speicherort für Produkt-Momente festlegen (JSON in Repo, Supabase, oder erstmal eine Beispiel-Moment-Datei in k2-markt).
-- **Option B:** Ein Minimal-Flyer-Template definieren (Felder/Platzhalter) + eine Ableit-Funktion (moment → entwurf) skizzieren oder implementieren.
-- **Option C:** Tor-UI (Phase 3) vorbereiten: Stelle, an der Entwurf angezeigt und DoD geprüft wird.
+- **A:** Speicherort = `public/k2-markt/produkt-momente.json`, Beispiel-Moment angelegt.
+- **B:** `src/utils/k2MarktFlyerAgent.ts`: `momentToFlyerEntwurf(moment)`, `erfuelltDoDFlyer(entwurf)`.
+- **C:** Tor-UI unter **/projects/k2-galerie/k2-markt-tor** (K2MarktTorPage): Entwurf aus Moment, DoD-Checkliste, Button „Freigeben“. Von der K2 Markt Mappe verlinkt („Zum Tor“).
 
-Phase 2 Meilenstein: **Ein Agent liefert Entwurf** – kann zunächst ohne echte KI (reine Ableitung aus Moment in Template), KI später für Texte/Bildvorschläge ergänzen.
+Phase 2 Meilenstein erfüllt: Ein Agent liefert Entwurf; Tor zeigt ihn und prüft DoD.
 
 ---
 

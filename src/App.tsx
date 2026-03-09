@@ -15,6 +15,7 @@ import ZettelPilotFormPage from './pages/ZettelPilotFormPage'
 import K2GalerieHandbuchPage from './pages/K2GalerieHandbuchPage'
 import KampagneMarketingStrategiePage from './pages/KampagneMarketingStrategiePage'
 import K2MarktPage from './pages/K2MarktPage'
+import K2MarktTorPage from './pages/K2MarktTorPage'
 import BenutzerHandbuchPage from './pages/BenutzerHandbuchPage'
 import MobileConnectPage from './pages/MobileConnectPage'
 import ProduktVorschauPage from './pages/ProduktVorschauPage'
@@ -560,6 +561,7 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].uebersicht} element={<Mok2Layout><UebersichtBoardPage /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie} element={<KampagneMarketingStrategiePage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].k2Markt} element={<K2MarktPage />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].k2MarktTor} element={<K2MarktTorPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].licences} element={<Mok2Layout><LicencesPage embeddedInMok2Layout /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} element={<Mok2Layout><LizenzKaufenPage /></Mok2Layout>} />
       <Route path="/lizenz-erfolg" element={<LizenzErfolgPage />} />

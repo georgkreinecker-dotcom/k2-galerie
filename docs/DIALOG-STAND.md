@@ -6,11 +6,11 @@
 
 ---
 
-## Datum: 09.03.26 – K2 Markt: Phase 2 Flyer-Agent gestartet
+## Datum: 09.03.26 – K2 Markt: A, B, C umgesetzt (Speicherort, Agent, Tor)
 
-- **Stand:** Flyer-Agent-Konzept in K2-MARKT-FLYER-AGENT.md: Rolle, Ablauf (Moment + Template → Entwurf), Template-Quelle, Technik-Skizze, nächste Schritte (Speicherort Moment, Minimal-Template, Tor-UI). Mappe um „Flyer-Agent (Phase 2)“ ergänzt.
-- **Nächster Schritt:** Umsetzung wählen: Speicherort für Produkt-Momente festlegen, oder Minimal-Flyer-Template + Ableit-Funktion, oder Tor-UI (Phase 3) vorbereiten.
-- **Wo nachlesen:** K2 Markt Mappe → Flyer-Agent (Phase 2), DoD Flyer, Produkt-Moment; docs/K2-MARKT-VISION-ARCHITEKTUR.md.
+- **Stand:** (A) Produkt-Momente in `public/k2-markt/produkt-momente.json`, Beispiel-Moment. (B) `src/utils/k2MarktFlyerAgent.ts`: momentToFlyerEntwurf, erfuelltDoDFlyer. (C) Tor-UI: Route k2-markt-tor, K2MarktTorPage (Entwurf, DoD-Checkliste, Freigabe-Button). Link „Zum Tor“ in K2 Markt Mappe.
+- **Nächster Schritt:** Phase 2/3 ausprobieren (K2 Markt → Zum Tor), oder Phase 4 (Traceability) / weitere Formate.
+- **Wo nachlesen:** K2 Markt Mappe, Flyer-Agent-Doc; Route /projects/k2-galerie/k2-markt-tor.
 
 ---
 
