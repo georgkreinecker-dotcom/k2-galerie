@@ -6,11 +6,11 @@
 
 ---
 
-## Datum: 09.03.26 – iPad: nur 10 Werke vom Server (Cache-Bust + Log)
+## Datum: 09.03.26 – iPad: nur 10 Werke / Werkkatalog – API zuerst (Blob = aktuell)
 
-- **Stand:** iPad zeigte „10 Werke vom Server geladen“ (Stand 16.52) – vermutlich gecachte gallery-data.json. **Umsetzung:** (1) Starker Cache-Bust für „Bilder vom Server laden“: eindeutige URL-Parameter (`bust=timestamp-random`), auf Mobile `cache: 'reload'` statt `no-store` (Safari), Header X-Request-Id/If-None-Match. (2) Log: „📥 Server antwortete mit X Werken (Rohantwort)“ in Konsole – damit erkennbar ist, ob Server wirklich 10 liefert oder Cache. **Commit:** d081cd5 – auf GitHub.
-- **Nächster Schritt:** Nach Vercel-Deploy: am Mac einmal Veröffentlichen (62 Werke), am iPad „Bilder vom Server laden“ tippen. Falls weiter 10: Safari → Website-Daten für k2-galerie.vercel.app löschen, erneut laden. Konsole prüfen: „Server antwortete mit X Werken“.
-- **Wo nachlesen:** GalerieVorschauPage.tsx (handleRefresh, Fetch gallery-data.json).
+- **Stand:** iPad bekam weiter nur 10 Werke, auch im Werkkatalog nur 10 Bilder. **Ursache:** „Bilder vom Server laden“ holte nur die **statische** `/gallery-data.json` (Stand vom letzten Build im Repo). „Veröffentlichen“ schreibt aber **zuerst in Vercel Blob** – die **API** `/api/gallery-data?tenantId=k2` liefert diesen aktuellen Stand. **Umsetzung:** GalerieVorschauPage handleRefresh: **API zuerst** (`/api/gallery-data?tenantId=k2`), bei Fehler Fallback auf `/gallery-data.json`. Wie GaleriePage – so kommt das iPad an den Blob-Stand (alle Werke nach Veröffentlichen). **Commit:** c69a78a – auf GitHub.
+- **Nächster Schritt:** Nach Vercel-Deploy: am Mac einmal **Veröffentlichen** (damit Blob aktuell ist), am iPad **„Bilder vom Server laden“** tippen – dann sollten alle Werke ankommen. Konsole: „📥 Daten aus API (Vercel Blob = aktueller Stand)“ oder „… aus statischer gallery-data.json (Fallback)“.
+- **Wo nachlesen:** GalerieVorschauPage.tsx (handleRefresh); api/gallery-data.js (Blob lesen); api/write-gallery-data.js (Blob schreiben).
 
 ---
 
