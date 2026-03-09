@@ -6,6 +6,14 @@
 
 ---
 
+## Datum: 09.03.26 – K2 Markt: Beide Visionen zu einer zusammengeführt
+
+- **Stand:** Die beiden Visionen (Georgs + Joes Schärfe) sind **zu einer Quelle** zusammengeführt: **Vision und Architektur (eine Quelle)**. Eine Stimme, Georgs Persönlichkeit, unsere gemeinsame Architektur (Produkt-Moment, Qualitäts-Tor, eine Freigabe, Regeln im System). In der K2-Markt-Mappe nur noch: Index, Vision und Architektur (eine Quelle), Handbuch. docs/K2-MARKT-ARCHITEKTUR-EINZIGARTIG.md verweist auf die gemeinsame Fassung.
+- **Nächster Schritt:** Nächste Schritte aus der Vision umsetzen oder mit Georg durchgehen.
+- **Wo nachlesen:** K2 Markt Mappe → Vision und Architektur (eine Quelle); docs/K2-MARKT-VISION-ARCHITEKTUR.md.
+
+---
+
 ## Datum: 09.03.26 – K2 Markt: Die richtige Architektur (einzigartig)
 
 - **Stand:** Georg fragte: Wie würdest du die richtige Architektur schaffen – wir machen daraus etwas Einzigartiges. **Joe-Antwort** in docs/K2-MARKT-ARCHITEKTUR-EINZIGARTIG.md (auch in K2-Markt-Mappe): Eine Wahrheit → viele abgeleitete Formate; Qualitäts-Tor mit Definition of Done; eine Freigabe; Regeln im System (Sportwagenmodus als Code). Scharfe Architektur: Produkt-Moment → Agenten (ableiten) → Tor → Freigabe → Markt. Traceability. In Mappe als „Die richtige Architektur – einzigartig (Joe)“ eingetragen.

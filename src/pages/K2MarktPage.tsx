@@ -12,8 +12,7 @@ const BASE = '/k2-markt'
 
 const DOCUMENTS = [
   { id: 'index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
-  { id: 'vision', name: 'Vision und Architektur', file: 'K2-MARKT-VISION-ARCHITEKTUR.md' },
-  { id: 'einzigartig', name: 'Die richtige Architektur – einzigartig (Joe)', file: 'K2-MARKT-ARCHITEKTUR-EINZIGARTIG.md' },
+  { id: 'vision', name: 'Vision und Architektur (eine Quelle)', file: 'K2-MARKT-VISION-ARCHITEKTUR.md' },
   { id: 'handbuch', name: 'Handbuch K2 Markt', file: 'K2-MARKT-HANDBUCH.md' },
 ] as const
 

@@ -18,9 +18,8 @@
 
 | Erledigt | Kurz |
 |----------|------|
-| **Vision und Architektur** | docs/K2-MARKT-VISION-ARCHITEKTUR.md – Was K2 Markt ist, Kette zum Markt, Medienhaus, Schichten (Quelle, Agenten, Zentrale, Ausgabe). |
-| **Die richtige Architektur – einzigartig (Joe)** | Ein Produkt-Moment (eine Wahrheit) → Agenten leiten ab → Qualitäts-Tor (Definition of Done) → eine Freigabe → Markt. Regeln im System. Traceability. |
-| **Eigene Mappe im Smart Panel** | K2 Markt erscheint als eigene Mappe in der APf; alle Dokumente (Index, Vision, Architektur einzigartig, Handbuch) an einem Ort. |
+| **Vision und Architektur (eine Quelle)** | Zusammengeführte Vision: Kette zum Markt, Medienhaus, eine Wahrheit → viele Formate, Produkt-Moment, Qualitäts-Tor + eine Freigabe, Regeln im System, Traceability. Mit Georgs Persönlichkeit und gemeinsamer Schärfe. |
+| **Eigene Mappe im Smart Panel** | K2 Markt als eigenes Produkt in der Hall of Fame; alle Dokumente (Index, Vision, Handbuch) an einem Ort. |
 | **Handbuch (diese Datei)** | Dokumentation der Arbeit – hier wird fortgeschrieben. |
 
 ---
@@ -46,7 +45,7 @@
 
 | Thema | Wo nachlesen |
 |-------|----------------|
-| **Vision & Architektur** | In dieser Mappe: Vision und Architektur; Die richtige Architektur – einzigartig (Joe) |
+| **Vision & Architektur** | In dieser Mappe: Vision und Architektur (eine Quelle) – zusammengeführt, eine Stimme. |
 | **Sportwagenmodus** | .cursor/rules, SPORTWAGEN-ROADMAP, PRODUKT-STANDARD-NACH-SPORTWAGEN |
 | **Vermächtnis / Wir-Team** | docs/WIR-PROZESS.md |
 | **Kampagne** | Smart Panel → Kampagne Marketing-Strategie |

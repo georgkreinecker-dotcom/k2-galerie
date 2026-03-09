@@ -1,7 +1,9 @@
 # K2 Markt – Die richtige Architektur (aus Joes Sicht)
 
 **Stand:** 09.03.26  
-**Kontext:** Georg hat gefragt: Wie würdest du die richtige Architektur schaffen – und wir machen daraus etwas Einzigartiges, noch nie Dagewesenes. Dieses Dokument ist die Antwort: was die Architektur wirklich unterscheidet und wie sie gebaut sein sollte.
+**Hinweis:** Der Inhalt dieses Dokuments ist in **K2-MARKT-VISION-ARCHITEKTUR.md** zusammengeführt. Dort steht unsere **eine** Vision und Architektur – mit Georgs Persönlichkeit und unserer gemeinsamen Schärfe. Diese Datei bleibt als Joes ursprünglicher Vorschlag in docs/ erhalten.
+
+**Kontext:** Georg hat gefragt: Wie würdest du die richtige Architektur schaffen – und wir machen daraus etwas Einzigartiges. Dieses Dokument war die Antwort; die gemeinsame Fassung ist jetzt die Vision und Architektur (eine Quelle).
 
 ---
 

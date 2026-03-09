@@ -1,7 +1,7 @@
-# K2 Markt – Vision und Architektur
+# K2 Markt – Vision und Architektur (eine Quelle)
 
 **Stand:** 09.03.26  
-**Basis:** Alles, was wir im Wir-Team als Regeln geschaffen haben und im Vermächtnis hinterlegt ist. Methode: **Sportwagenmodus** (eine Quelle, ein Standard, ein Ablauf pro Problem).
+**Basis:** Alles, was wir im Wir-Team als Regeln geschaffen haben und im Vermächtnis hinterlegt ist. Methode: **Sportwagenmodus** (eine Quelle, ein Standard, ein Ablauf pro Problem). Diese eine Datei bündelt Vision und Architektur – so bauen wir K2 Markt, mit meiner Persönlichkeit und unserer gemeinsamen Schärfe.
 
 ---
 
@@ -29,88 +29,101 @@ Nicht: noch mehr Ideen sammeln. Sondern: aus dem Vorhandenen **fertige, marktfä
 
 ## 3. Wo wir stehen: Vorarbeit (mök2, Kampagne, Marketing-Strategie)
 
-- **mök2** (Marketing ök2), **Kampagne**, **Marketing-Strategie** = viel Vorarbeit, eine Art **Brainstorming**.
-- Noch **unkoordiniert**, typisch menschlich **chaotisch**: viele Ideen, ein paar gute Ansätze, aber **noch nicht fertig ausgereift**.
-- Man kann es als **große Datenbank** sehen: Rohmaterial, Konzepte, Vorlagen, Ziele – aber noch **kein durchgängiger Mechanismus**, der daraus **fertige Produkte** macht.
+**mök2** (Marketing ök2), **Kampagne**, **Marketing-Strategie** = viel Vorarbeit, eine Art **Brainstorming**. Noch **unkoordiniert**, typisch menschlich **chaotisch**: viele Ideen, ein paar gute Ansätze, aber **noch nicht fertig ausgereift**. Man kann es als **große Datenbank** sehen: Rohmaterial, Konzepte, Vorlagen, Ziele – aber noch **kein durchgängiger Mechanismus**, der daraus **fertige Produkte** macht.
 
 **K2 Markt** soll genau das sein: der Mechanismus, der aus dieser „Datenbank“ und den Regeln **fertige, einsatzfähige Erzeugnisse** erzeugt und sie marktfähig macht.
 
 ---
 
-## 4. Das Bild: Medienhaus mit Agenten
+## 4. Das Bild: Medienhaus – und die eine Inversion
 
-**Metapher:** K2 Markt funktioniert wie ein **Medienhaus**, in dem **alle Abteilungen wie Agenten zusammenarbeiten**.
+**Metapher:** K2 Markt funktioniert wie ein **Medienhaus**, in dem **alle Abteilungen wie Agenten zusammenarbeiten**. Abteilungen = Agenten (Texte, Bilder, Videos, Kanäle, Zielgruppe …), alle nach denselben Regeln. **Im Zentrum: ein Bildschirm** – prüft Produkte, bearbeitet dort und da Bilder/Videos/Texte, mit **Tools auf dem letzten Stand der Technik**. Kein Chaos mehr – **koordinierte Produktion**.
 
-- **Abteilungen = Agenten:** Jede „Abteilung“ hat eine klare Aufgabe (Texte, Bilder, Videos, Kanäle, Zielgruppe, …) und arbeitet nach denselben Regeln (Sportwagenmodus) – **eine Quelle, ein Standard**.
-- **Zusammenarbeit:** Die Agenten liefern nicht ins Leere, sondern in einen **gemeinsamen Kreislauf**: Produktidee → Rohmaterial → Bearbeitung → Prüfung → Ausgabe.
-- **Im Zentrum: ein Bildschirm** (eine zentrale Instanz), der
-  - die **Produkte optisch prüft** (ist es fertig? stimmt die Qualität?),
-  - **dort und da** Bilder, Videos, Texte **bearbeitet**,
-  - mit **Tools auf dem letzten Stand der Technik** arbeitet.
-
-Dieser „Bildschirm“ ist die **Kontroll- und Bearbeitungsstelle**: Qualität sichern, Lücken schließen, einheitlichen Stand sicherstellen. Kein Chaos mehr – **koordinierte Produktion**.
+**Die eine Inversion, die es einzigartig macht:**  
+Nicht „wir haben 10 Kanäle – füllen wir sie“. Sondern: **Eine Aussage, ein Produkt-Moment – daraus leitet das System alle Formate ab.** Eine Quelle der Wahrheit, viele Darstellungen. Wie ein echtes Medienhaus: **eine Story, viele Ausspielwege**. Die Agenten **leiten ab**, sie füllen keine leeren Kanäle.
 
 ---
 
-## 5. Abgeleitete Architektur (erster Entwurf)
+## 5. Drei Säulen der Architektur
 
-### 5.1 Schichten
+### Säule 1: Produkt-Moment (die eine Wahrheit)
 
-| Schicht | Aufgabe | Kurz |
-|---------|----------|------|
-| **A. Quelle / Datenbank** | Alles, was wir haben: mök2-Inhalte, Kampagnen-Docs, Marketing-Strategie, Vorlagen, Stammdaten, Medien | **Rohmaterial und Regeln** – eine strukturierte Quelle, keine doppelten Wahrheiten |
-| **B. Agenten (Abteilungen)** | Spezialisierte Einheiten: z. B. „Text-Agent“, „Bild-Agent“, „Kanal-Agent“, „Zielgruppen-Agent“ | Jeder hat **eine** Aufgabe, **eine** Schnittstelle, liefert in den **gemeinsamen Kreislauf** |
-| **C. Zentrale (Bildschirm)** | Prüft Produkte (optisch, inhaltlich), bearbeitet wo nötig (Bilder, Videos, Texte), nutzt moderne Tools | **Qualität und Einheit** – alles läuft hier durch, bevor es „fertig“ ist |
-| **D. Ausgabe** | Fertige Produkte: Flyer, E-Mails, Webseiten, Social-Posts, Presse, Werbematerial – **einsatzbereit** | **Marktfähig** – kann so an den gewählten Markt (Platz, Kanal) gebracht werden |
+**Ein** strukturierter Kern pro „Sache, die wir sagen“: Kampagne, Produkt-Launch, Event, Ansprache. Enthält: Botschaft, Zielgruppe, Kernargumente, Kontakt, Links, Medien – **alles, was alle Formate brauchen**. Wird **einmal** gepflegt (oder aus mök2/Kampagne/Stammdaten gespeist). Agenten **lesen** den Produkt-Moment; sie **erfinden** nicht neu. Sie **leiten ab**.
 
-### 5.2 Fluss (vereinfacht)
+### Säule 2: Qualitäts-Tor (Bildschirm + Definition of Done + eine Freigabe)
+
+**Nichts** geht an den Markt, ohne ein klares **Definition of Done** zu erfüllen. Pro Ausgabe-Typ (Flyer, E-Mail, Presse, …) steht fest: Was muss drin sein? (z. B. Text, Kontakt, QR, kein Platzhalter.) Der **Bildschirm** ist das **Tor**: Nur was die Definition erfüllt, kann zur Freigabe. **Eine bewusste Freigabe:** Ein Mensch sagt „dieses Stück geht raus“. Bis dahin läuft Automation – aber **kein** Output erreicht den Markt ohne diesen einen Check. **Fertige Produkte, eine Freigabe.**
+
+### Säule 3: Regeln im System (Philosophie als Code)
+
+**Sportwagenmodus** ist nicht nur Doku – das System **erzwingt** ihn wo es geht: **ein** Template pro Zweck. Ein zweites anlegen? → „Du hast bereits ein Template – bearbeite dieses.“ **Vermächtnis und Wir-Regeln** sind **Eingabe** für die Agenten (z. B. keine aggressiven Marketing-Begriffe, Empfehlungs-Programm nicht Affiliate). So wird die **Philosophie** Teil der Maschine. Das Produkt **ist** das, was uns wichtig ist.
+
+---
+
+## 6. Der Fluss (scharf)
 
 ```
-[Quelle: mök2, Kampagne, Strategie, Vorlagen]
+[Produkt-Moment – eine Wahrheit pro Kampagne/Event. Gespeist aus: mök2, Kampagne, Stammdaten, Regeln]
          ↓
-[Agenten: Texte, Bilder, Kanäle, Zielgruppen … arbeiten nach Regeln]
+[Agenten: lesen Moment + Regeln → erzeugen Entwurf pro Format. Ein Template pro Format.]
          ↓
-[Zentrale: Prüfung + Bearbeitung (Bildschirm, Tools)]
+[Qualitäts-Tor (Bildschirm): Erfüllt der Entwurf die Definition of Done? Bearbeitung wo nötig. Kein Durchlass ohne „ready“.]
          ↓
-[Fertiges Produkt] → Markt (Aufmerksamkeit, Platz, Ansprache, Information)
+[Freigabe: „Dieses Stück geht raus.“ – eine menschliche Entscheidung. Traceability: welcher Moment, welche Regel, welches Template.]
+         ↓
+[Markt: Aufmerksamkeit, Platz, emotionale Ansprache + Information]
 ```
 
-### 5.3 Wo KI unterstützt
+---
 
-- **Agenten:** KI kann bei der **Erzeugung** helfen (Texte vorschlagen, Bilder prüfen, Formulierungen vereinheitlichen) – immer im Rahmen der **einen Quelle** und der **Regeln**.
-- **Zentrale:** KI kann **Prüfung** unterstützen (Ist der Text stimmig? Fehlt etwas? Passt das Bild?) und **Bearbeitung** (Vorschläge, Korrekturen) – der Mensch behält die letzte Entscheidung am „Bildschirm“.
-- **Ausgabe:** KI kann **Anpassung** an Kanal oder Zielgruppe unterstützen (eine Botschaft, viele Formate) – wieder: **ein Standard**, viele Ausgaben.
+## 7. Wo KI unterstützt
 
-**Prinzip:** KI ist **Werkzeug** im Mechanismus, nicht Ersatz für Regeln und Vermächtnis. Sportwagenmodus gilt auch für KI: eine Quelle, kein wildes Neuerfinden.
+**Agenten:** KI hilft bei der Erzeugung (Texte vorschlagen, Bilder prüfen) – immer im Rahmen der **einen Quelle** und der **Regeln**. **Zentrale:** KI unterstützt Prüfung (Ist der Text stimmig? Passt das Bild?) – der Mensch behält die letzte Entscheidung am Bildschirm. **Ausgabe:** KI kann Anpassung an Kanal oder Zielgruppe unterstützen (eine Botschaft, viele Formate). **Prinzip:** KI ist **Werkzeug**, nicht Ersatz für Regeln und Vermächtnis.
 
-### 5.4 Anbindung an Bestehendes
+---
+
+## 8. Anbindung an Bestehendes
 
 | Bestehend | Rolle in K2 Markt |
 |-----------|-------------------|
-| **mök2** | Inhalte, USPs, Lizenzen, Werbematerial – **Quelle** für Texte und Botschaften |
-| **Kampagne / Marketing-Strategie** | Ziele, Kanäle, Zielgruppen – **Quelle** für Strategie und Prioritäten |
-| **Kommunikations-Vorlagen, Fertige Beispiele** | **Vorlage** für Ausgabeformate (Flyer, E-Mails, …) |
-| **Sportwagenmodus, Vermächtnis, Wir-Regeln** | **Regelwerk** für alle Agenten und die Zentrale – keine Ausnahme |
+| **mök2** | Quelle für Texte und Botschaften |
+| **Kampagne / Marketing-Strategie** | Ziele, Kanäle, Zielgruppen – Quelle für Strategie |
+| **Kommunikations-Vorlagen, Fertige Beispiele** | Vorlage für Ausgabeformate |
+| **Sportwagenmodus, Vermächtnis, Wir-Regeln** | Regelwerk – keine Ausnahme |
 
 ---
 
-## 6. Nächste Schritte (möglich)
+## 9. Was daraus einzigartig ist
 
-1. **Quelle strukturieren:** Die „große Datenbank“ (mök2, Kampagne, Docs) als **eine** durchsuchbare, konsistente Quelle modellieren – ohne Duplikate, mit klaren Verantwortlichkeiten.
-2. **Ersten Agenten definieren:** z. B. „Text-Agent“ oder „Flyer-Agent“ – Input (Quelle + Regeln), Output (fertiger Text / fertiges Layout). Ein Prototyp.
-3. **Zentrale (Bildschirm) skizzieren:** Welche Prüfungen? Welche Tools (Bild, Video, Text)? Welche Schnittstelle zu den Agenten?
-4. **Ausgabe-Formate festlegen:** Welche „fertigen Produkte“ zuerst? (Flyer, E-Mail, Presse, Social – priorisieren.)
+| Aspekt | Üblich | K2 Markt (so gebaut) |
+|--------|--------|----------------------|
+| **Quelle** | Viele Dokumente, viele Kanäle | **Ein** Produkt-Moment pro Aussage → alle Formate abgeleitet |
+| **Qualität** | „Fertig“ = abgegeben | **Definition of Done** pro Format; nichts raus ohne Erfüllung |
+| **Freigabe** | Oft implizit | **Eine** bewusste Freigabe pro Stück – dann marktfähig |
+| **Regeln** | Doku, Empfehlung | **Im System**: ein Template pro Zweck, Regeln als Grenzen |
+| **Herkunft** | Unklar | **Traceability**: jedes Output zurück zu Moment, Regel, Template |
+
+**In einem Satz:** K2 Markt wird einzigartig, wenn es **eine Wahrheit in viele fertige Produkte** übersetzt – mit Qualitäts-Tor, einer Freigabe und Regeln, die die Maschine selbst einhält.
 
 ---
 
-## 7. Kurzfassung
+## 10. Nächste Schritte
 
-- **K2 Markt** = Mechanismus (App/Maschine), KI-gestützt, liefert **fertige Produkte** für Sichtbarkeit am Markt.
-- **Kette:** Fertiges Produkt → Markt finden → Aufmerksamkeit, Platz, emotionale Ansprache + Information → Entscheidung der Menschen.
-- **Vorarbeit:** mök2 + Kampagne + Strategie = Rohmaterial und Ideen; K2 Markt macht daraus **koordinierte, fertige Erzeugnisse**.
-- **Medienhaus:** Abteilungen = Agenten; Zentrale = Bildschirm (Prüfung + Bearbeitung mit modernen Tools); Ausgabe = marktfähige Produkte.
+1. **Produkt-Moment modellieren:** Welche Felder hat „eine Aussage“? (Botschaft, Zielgruppe, Kontakt, Links, Medien …) – einmal definieren, dann als einzige Quelle nutzen.
+2. **Definition of Done pro Format:** Pro Ausgabe-Typ (Flyer, E-Mail, Presse, …) festlegen: Was muss erfüllt sein?
+3. **Ersten Agenten als Ableiter:** z. B. Flyer-Agent – Input = Produkt-Moment + ein Flyer-Template; Output = Entwurf. Kein zweites Template ohne Grund.
+4. **Tor + Freigabe in der UI:** Bildschirm zeigt Entwurf, Prüfung (DoD erfüllt?), Button „Freigeben“ – erst dann marktfähig.
+5. **Traceability von Anfang an:** Jedes ausgegebene Produkt speichert Referenz auf Produkt-Moment, Template, Regel-Version.
+
+---
+
+## Kurzfassung
+
+- **K2 Markt** = Mechanismus, KI-gestützt, liefert **fertige Produkte** für Sichtbarkeit am Markt.
+- **Kette:** Fertiges Produkt → Markt → Aufmerksamkeit → Platz → Ansprache + Information.
+- **Medienhaus:** Agenten leiten aus **einem** Produkt-Moment ab; Bildschirm = Qualitäts-Tor (DoD) + **eine Freigabe**; Regeln im System; Traceability.
 - **Basis:** Wir-Regeln, Vermächtnis, **Sportwagenmodus** – überall.
 
 ---
 
-*Verknüpfung: docs/WIR-PROZESS.md, docs/STRUKTUR-HANDELN-QUELLEN.md, Kampagne 00-INDEX, mök2 (MarketingOek2Page).*
+*Verknüpfung: docs/WIR-PROZESS.md, Kampagne 00-INDEX, mök2. Diese eine Datei = Vision und Architektur zusammengeführt.*
