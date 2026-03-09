@@ -6,6 +6,15 @@
 
 ---
 
+## Datum: 09.03.26 – K2 Markt (neues Projekt, Vision + Architektur)
+
+- **Stand:** Georg hat ein neues Projekt skizziert: **K2 Markt** – App/Maschine/Mechanismus, KI-gestützt, liefert **fertige Produkte** für Sichtbarkeit am Markt. Basis: Wir-Regeln, Vermächtnis, Sportwagenmodus. Kette: fertiges Produkt → Markt suchen → Aufmerksamkeit, Platz, emotionale Ansprache + Information. Medienhaus: Abteilungen = Agenten, im Zentrum ein Bildschirm (Prüfung + Bearbeitung mit modernen Tools). mök2 + Kampagne = Vorarbeit, „große Datenbank“, noch unkoordiniert – K2 Markt soll daraus koordinierte, fertige Erzeugnisse machen.
+- **Was zuletzt gemacht:** docs/K2-MARKT-VISION-ARCHITEKTUR.md erstellt: Vision, Grundlogik, Medienhaus-Bild, abgeleitete Architektur (Quelle / Agenten / Zentrale / Ausgabe), wo KI unterstützt, Anbindung an mök2/Kampagne. In docs/00-INDEX eingetragen.
+- **Nächster Schritt:** Optional: Quelle strukturieren, ersten Agenten definieren, Zentrale skizzieren, Ausgabe-Formate priorisieren. Oder zuerst mit Georg durchgehen und schärfen.
+- **Wo nachlesen:** docs/K2-MARKT-VISION-ARCHITEKTUR.md.
+
+---
+
 ## Session-Ende 08.03.26
 
 - **Heute erledigt:** Kampagne – Kommunikations-Dokumente in der App sichtbar; Fertige Beispiele (redigierte Seiten) mit konkretem Text (Flyer + E-Mails) für sofortiges Lesen und Zeigen. Commit e79891b.

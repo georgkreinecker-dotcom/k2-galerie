@@ -12,6 +12,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 ---
 
 ## Plan & nächste Schritte
+- **K2-MARKT-VISION-ARCHITEKTUR.md** – **K2 Markt (neues Projekt):** Vision und erste Architektur. App/Maschine/Mechanismus, KI-gestützt, liefert fertige Produkte für Sichtbarkeit am Markt. Basis: Wir-Regeln, Vermächtnis, Sportwagenmodus. Kette: Produkt → Markt → Aufmerksamkeit → Platz → Ansprache + Information. Medienhaus-Metapher: Agenten (Abteilungen), zentrale Prüfung/Bearbeitung (Bildschirm, Tools). mök2 + Kampagne = Vorarbeit/Quelle.
 - **KOMMANDOZENTRALE.md** – **Steuerung jederzeit:** Zugang für Georg und KI. Sofort-Zugriff auf DIALOG-STAND, GRAFIKER-TISCH, GELOESTE-BUGS; Definitionen (Homepage, K2-Familie-Konzept, Skalierung, Raumschiff); Roadmap & Regeln. Von hier aus steuernd eingreifen.
 - **K2-FAMILIE-ROADMAP.md** – **K2 Familie (Raumschiff):** Vision, Phasen (Fundament → Stammbaum & Personen → Momente & Events → Skalierung). Start 01.03.26. Projektkarte auf Projekte-Seite, Startseite unter /projects/k2-familie.
 - **K2-FAMILIE-GRUNDBOTSCHAFT.md** – **K2 Familie – moralisches Fundament:** Grundbotschaft (keine Ausgrenzung, Respekt, Religion/Politik raus) gilt für Form der App, Sprache und jede zukünftige KI/Agent-Kommunikation. Georgs Vermächtnis. Verbindlich für alle, die an K2 Familie arbeiten.
