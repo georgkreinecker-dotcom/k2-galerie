@@ -14,6 +14,7 @@ import { sortArtworksFavoritesFirstThenNewest, interleaveArtworksByCategory } fr
 import { appendToHistory } from '../utils/artworkHistory'
 import { tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from '../../components/SafeMode'
 import { readArtworksRawForContext, readArtworksRawForContextOrNull, readArtworksForContextWithResolvedImages, resolveArtworkImages, saveArtworksForContext, loadForDisplay, filterK2Only as filterK2OnlyStorage, saveArtworksOnly as saveArtworksStorage, mayWriteServerList, mergeAndMaybeWrite, mergeWithPending, getPendingArtworks, addPendingArtwork, clearPendingIfInList } from '../utils/artworksStorage'
+import { prepareArtworksForStorage } from '../utils/artworkImageStore'
 import { loadEvents } from '../utils/eventsStorage'
 import { loadDocuments } from '../utils/documentsStorage'
 import { mergeServerWithLocal, preserveLocalImageData, updateKnownServerMaxNumbers, getKnownServerMaxForPrefix, renumberCollidingLocalArtworks } from '../utils/syncMerge'
@@ -417,6 +418,20 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     }
     window.addEventListener('storage', onStorage)
     return () => window.removeEventListener('storage', onStorage)
+  }, [musterOnly, vk2])
+
+  // Gleicher Stand Galerie ↔ Werkansicht (Admin): Beim Zurückwechseln zur Galerie-Ansicht (Tab/Fenster wieder sichtbar) immer aus localStorage mit aufgelösten Bildern neu laden – verhindert „andere Bilder in Galerie als in Werkliste“
+  useEffect(() => {
+    if (musterOnly || vk2) return
+    const refreshWhenVisible = () => {
+      if (document.visibilityState !== 'visible') return
+      loadArtworksResolvedForDisplay().then((list) => {
+        const exhibition = filterK2ArtworksOnly(list)
+        if (exhibition.length > 0) setArtworksDisplay(exhibition)
+      }).catch(() => {})
+    }
+    document.addEventListener('visibilitychange', refreshWhenVisible)
+    return () => document.removeEventListener('visibilitychange', refreshWhenVisible)
   }, [musterOnly, vk2])
 
   // K2-Standard = Terracotta statt altes Blau (wie GaleriePage)
@@ -4337,13 +4352,13 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                     console.log('✏️ editingArtwork komplett:', JSON.stringify(editingArtwork, null, 2))
                     console.log('✏️ Alle artworks:', artworks.map((a: any) => ({ number: a.number, id: a.id })))
                     
-                    // GLEICHE SUCH-LOGIK WIE MAC
+                    // Robuster Abgleich: number/id als String (damit 0031 / K2-K-0031 und verschiedene Typen treffen)
+                    const editKey = String(editingArtwork?.number ?? editingArtwork?.id ?? '').trim()
                     const index = artworks.findIndex((a: any) => 
-                      (a.id === editingArtwork.id || a.number === editingArtwork.number) ||
-                      (a.id === editingArtwork.id && a.number === editingArtwork.number)
+                      editKey && (String(a?.number ?? a?.id ?? '').trim() === editKey)
                     )
                     
-                    console.log('✏️ Gefundener Index:', index, 'von', artworks.length, 'Objekten')
+                    console.log('✏️ Gefundener Index:', index, 'von', artworks.length, 'Objekten', editKey ? `(Key: ${editKey})` : '')
                     
                     if (index >= 0) {
                       // Erstelle Location-String
@@ -4377,30 +4392,33 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       
                       // KRITISCH: Basis = immer VOLLSTÄNDIGE Liste aus localStorage (auf Handy kann State nur Anzeige-Ausschnitt sein → sonst gehen andere Werke verloren)
                       const currentFromStorage = loadArtworks()
-                      const key = updatedArtwork.number || updatedArtwork.id
-                      const idxInStorage = currentFromStorage.findIndex((a: any) => (a.number || a.id) === key)
+                      const key = String(updatedArtwork?.number ?? updatedArtwork?.id ?? '').trim()
+                      const idxInStorage = currentFromStorage.findIndex((a: any) => String(a?.number ?? a?.id ?? '').trim() === key)
                       const updatedArtworks = idxInStorage >= 0
                         ? [...currentFromStorage.slice(0, idxInStorage), updatedArtwork, ...currentFromStorage.slice(idxInStorage + 1)]
                         : [...currentFromStorage, updatedArtwork]
-                      const toSave = preserveLocalImageData(updatedArtworks, loadArtworks())
+                      // Beim Bearbeiten NICHT preserveLocalImageData: das würde das neue Bild (mobilePhoto) mit dem alten localStorage-Stand überschreiben → neues Bild würde nie gespeichert (Bug 0031 / Galerie ≠ Werkansicht)
+                      const toSave = updatedArtworks
+                      // Speicherproblem 0031/0035: Neues Bild in IndexedDB ablegen, nur imageRef in Liste – sonst localStorage voll / Bild geht verloren
+                      const prepared = await prepareArtworksForStorage(toSave)
                       
                       // PROFESSIONELL: Speichere zuerst in Supabase (wenn konfiguriert), sonst localStorage
                       let saved = false
                       if (isSupabaseConfigured()) {
                         try {
-                          saved = await saveArtworksToSupabase(toSave)
+                          saved = await saveArtworksToSupabase(prepared)
                           if (saved) {
                             console.log('✅ Objekt in Supabase aktualisiert:', updatedArtwork.number || updatedArtwork.id)
                           } else {
                             console.warn('⚠️ Supabase-Speichern fehlgeschlagen, verwende localStorage')
-                            saved = saveArtworks(toSave)
+                            saved = saveArtworks(prepared)
                           }
                         } catch (supabaseError) {
                           console.warn('⚠️ Supabase-Fehler, verwende localStorage:', supabaseError)
-                          saved = saveArtworks(toSave)
+                          saved = saveArtworks(prepared)
                         }
                       } else {
-                        saved = saveArtworks(toSave)
+                        saved = saveArtworks(prepared)
                       }
                       
                       if (!saved) {

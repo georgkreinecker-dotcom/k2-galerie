@@ -6,6 +6,22 @@
 
 ---
 
+## Datum: 09.03.26 – Werke 0031/0035: Bilder neu bearbeiten + Speicherproblem gelöst
+
+- **Stand:** Beim Bearbeiten von Werken (z. B. 0031, 0035) mit neuem Bild wurde das Bild bisher nur als große data-URL in localStorage geschrieben → Speicherproblem (Quota, evtl. Anzeige). **Umsetzung:** Beim Speichern nach Bearbeiten wird die Liste zuerst mit **prepareArtworksForStorage** vorbereitet: neues Bild (mobilePhoto) geht in **IndexedDB**, in der Liste bleibt nur **imageRef**. Danach Speichern (Supabase oder localStorage) mit der vorbereiteten Liste. Anzeige nach Speichern nutzt weiterhin loadArtworksResolvedForDisplay() → Bild kommt aus IndexedDB.
+- **Nächster Schritt:** Georg testen: Werk 0031 bzw. 0035 bearbeiten, neues Bild wählen, Speichern – Bild soll dauerhaft gespeichert und in Galerie/Werkansicht sichtbar sein; kein Speicher voll / kein Platzhalter.
+- **Wo nachlesen:** GalerieVorschauPage.tsx (Bearbeiten-Save-Block ~4398–4422; Import prepareArtworksForStorage, saveArtworksForContextWithImageStore); artworkImageStore.ts (prepareArtworksForStorage).
+
+---
+
+## Datum: 08.03.26 – Sync prozesssicher: „Vom Server laden“ + gleicher Stand Admin/Galerie
+
+- **Stand:** (1) **GalerieVorschauPage:** „Vom Server laden“ schreibt Merge **immer** (wie GaleriePage), nur zwei Schutzfälle (Server 0 oder < 50 % lokal); cache `no-store` für alle Geräte. (2) **Admin + Galerie-Vorschau:** `storage`-Listener auf Werke-Key – wenn ein Tab localStorage ändert, aktualisieren sich die anderen Tabs (gleicher Stand Galerie vs. Admin am Mac). **Commit:** 9179375 – auf GitHub.
+- **Nächster Schritt:** Georg testen: „Vom Server laden“ auf verschiedenen Geräten; Admin und Galerie in zwei Tabs – Änderung in einem Tab soll im anderen sichtbar werden.
+- **Wo nachlesen:** GalerieVorschauPage.tsx (handleRefresh, storage-Listener); ScreenshotExportAdmin.tsx (storage-Listener); GaleriePage.tsx (handleRefresh als Referenz).
+
+---
+
 ## Datum: 09.03.26 – Veröffentlichen: Bilder aus IndexedDB mitschicken (7 fehlende Bilder)
 
 - **Stand:** Vom Handy veröffentlicht, am Mac „vom Server laden“ – Anzahl 61 passte, aber **7 Bilder fehlten**. **Ursache:** Beim Publish wurden Rohdaten aus localStorage genutzt (`loadArtworks()`); dort oft nur **imageRef**, kein imageUrl. Wenn IndexedDB auf dem Handy nicht rechtzeitig geliefert hat, schickte der Server leere Bild-URLs. **Umsetzung:** (1) **GalerieVorschauPage:** Beide Auto-Publish-Stellen nutzen `readArtworksForContextWithResolvedImages(false, false)` + `filterK2OnlyStorage` vor `publishGalleryDataToServer` – so gehen alle Bilder aus IndexedDB mit. (2) **DevViewPage:** Nach Merge (lokal + Supabase) wird `resolveArtworkImages(allArtworks)` aufgerufen; Signatur und Publish laufen mit `allArtworksWithImages`. Damit Handy und Mac alle Bilder mitschicken.

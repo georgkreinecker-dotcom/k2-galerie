@@ -2983,10 +2983,27 @@ function ScreenshotExportAdmin() {
       return a
     })
   }
-  /** State setzen – in iframe ohne Base64, um Speicher/Crash 5 zu entlasten */
+  /** State setzen – in iframe ohne Base64, um Speicher/Crash 5 zu entlasten. Zuletzt gespeicherte Werke (lastSavedArtworkImageRef) behalten ihr Bild. */
   const setAllArtworksSafe = (list: any[]) => {
     const arr = Array.isArray(list) ? list : []
-    setAllArtworks(inIframe ? stripArtworkImagesForPreview(arr) : arr)
+    if (inIframe) {
+      const stripped = stripArtworkImagesForPreview(arr)
+      const last = lastSavedArtworkImageRef.current
+      const map = last?.number && last?.imageUrl ? new Map<string, string>([[last.number, last.imageUrl]]) : null
+      if (map && map.size > 0) {
+        const withSaved = stripped.map((a: any) => {
+          if (!a) return a
+          const id = String(a?.number ?? a?.id ?? '')
+          const url = id ? map.get(id) : null
+          return url ? { ...a, imageUrl: url } : a
+        })
+        setAllArtworks(withSaved)
+        return
+      }
+      setAllArtworks(stripped)
+    } else {
+      setAllArtworks(arr)
+    }
   }
 
   // Werke aus localStorage laden – bei Kontextwechsel (K2/ök2/VK2) neu laden, sonst zeigt Admin nach Guide-Klick weiter K2-Daten
@@ -3024,6 +3041,8 @@ function ScreenshotExportAdmin() {
   allArtworksRef.current = allArtworks
   /** Nach eigenem Save kurz ignorieren, damit loadArtworks() (evtl. leer bei großer Liste) die soeben gesetzte Liste nicht überschreibt */
   const ignoreArtworksUpdatedRef = useRef(false)
+  /** Mobil: Zuletzt gespeichertes Werkbild hier halten; bei Reload wieder einsetzen, damit es sichtbar bleibt (IDB/Resolve oft langsamer). */
+  const lastSavedArtworkImageRef = useRef<{ number: string; imageUrl: string } | null>(null)
   useEffect(() => {
     const handleArtworksUpdate = () => {
       if (ignoreArtworksUpdatedRef.current) {
@@ -3041,7 +3060,20 @@ function ScreenshotExportAdmin() {
           return
         }
         const inIframe = typeof window !== 'undefined' && window.self !== window.top
-        setAllArtworks(inIframe ? artworks.map((a: any) => (a && typeof a?.imageUrl === 'string' && a.imageUrl.startsWith('data:')) ? { ...a, imageUrl: '' } : a) : artworks)
+        let list = inIframe ? artworks.map((a: any) => (a && typeof a?.imageUrl === 'string' && a.imageUrl.startsWith('data:')) ? { ...a, imageUrl: '' } : a) : artworks
+        // Mobil: Gespeichertes Bild wieder einsetzen, wenn resolve noch leer/Fallback liefert
+        const last = lastSavedArtworkImageRef.current
+        if (last?.imageUrl && list.length > 0) {
+          const id = last.number
+          list = list.map((a: any) => {
+            if (!a || String(a?.number ?? a?.id ?? '') !== id) return a
+            const u = a.imageUrl
+            const isFallback = typeof u === 'string' && u.startsWith('https://k2-galerie.vercel.app/img/k2/werk-')
+            if (!u || u.length < 50 || isFallback) return { ...a, imageUrl: last.imageUrl }
+            return a
+          })
+        }
+        setAllArtworks(list)
       }).catch((error) => { console.error('Fehler beim Neuladen der Werke:', error) })
     }
     
@@ -3061,7 +3093,19 @@ function ScreenshotExportAdmin() {
       console.log('🔄 k2-artworks in anderem Tab geändert – Admin lädt Werke neu')
       loadArtworksWithResolvedImages(tenant).then((artworks) => {
         const inIframe = typeof window !== 'undefined' && window.self !== window.top
-        setAllArtworksSafe(inIframe ? artworks.map((a: any) => (a && typeof a?.imageUrl === 'string' && a.imageUrl.startsWith('data:')) ? { ...a, imageUrl: '' } : a) : artworks)
+        let list = inIframe ? artworks.map((a: any) => (a && typeof a?.imageUrl === 'string' && a.imageUrl.startsWith('data:')) ? { ...a, imageUrl: '' } : a) : artworks
+        const last = lastSavedArtworkImageRef.current
+        if (last?.imageUrl && list.length > 0) {
+          const id = last.number
+          list = list.map((a: any) => {
+            if (!a || String(a?.number ?? a?.id ?? '') !== id) return a
+            const u = a.imageUrl
+            const isFb = typeof u === 'string' && u.startsWith('https://k2-galerie.vercel.app/img/k2/werk-')
+            if (!u || u.length < 50 || isFb) return { ...a, imageUrl: last.imageUrl }
+            return a
+          })
+        }
+        setAllArtworksSafe(list)
       }).catch((err) => console.warn('Storage-Reload fehlgeschlagen:', err))
     }
     window.addEventListener('storage', onStorage)
@@ -7888,40 +7932,12 @@ ${'='.repeat(60)}
     try {
       let imageDataUrl: string
 
-      // Snapshot sofort beim Klick: Ref + previewUrl in lokale Variablen, damit async/Re-Render nichts überschreibt
+      // WICHTIG: Neu gewähltes Bild (selectedFile) zuerst – sonst gewinnt beim Bearbeiten das alte previewUrl/Ref und das neue Bild wird nie gespeichert („lässt sich nicht überschreiben“)
       const refSnapshot = pendingImageDataUrlRef.current?.startsWith('data:') ? pendingImageDataUrlRef.current : null
       const previewSnapshot = previewUrl?.startsWith('data:') ? previewUrl : null
       const hasPreviewDataUrl = !!refSnapshot || !!previewSnapshot
-      if (hasPreviewDataUrl) {
-        const src = refSnapshot ?? previewSnapshot ?? undefined
-        if (!src) { setIsSavingArtwork(false); alert('Bitte ein Bild auswählen'); return }
-        const fileFromPreview = await dataUrlToFile(src)
-        let compressed = await compressImageForStorage(fileFromPreview, { context: 'artwork' })
-        if (compressed.length > MAX_ARTWORK_BYTES) {
-          const more = await compressImageForStorage(fileFromPreview, { context: 'mobile' })
-          compressed = more.length > MAX_ARTWORK_BYTES ? compressed : more
-        }
-        imageDataUrl = compressed
-        const effectivePhotoMode = isMobileDevice ? 'original' : photoImageMode
-        if (effectivePhotoMode === 'freigestellt') {
-          try {
-            const { compositeOnProfessionalBackground } = await import('../src/utils/professionalImageBackground')
-            imageDataUrl = await compositeOnProfessionalBackground(imageDataUrl, photoBackgroundPreset, {
-              onFreistellungSkipped: () => {
-                alert('Freistellung konnte nicht durchgeführt werden (z. B. Modell nicht geladen). Es wird der professionelle Hintergrund ohne Freistellung verwendet.')
-              }
-            })
-          } catch (err) {
-            console.warn('Freistellung (Vorschau-Pfad) fehlgeschlagen, verwende Original:', err)
-            alert('Freistellung fehlgeschlagen. Es wird das Original mit Pro-Hintergrund verwendet.')
-            try {
-              const key = 'k2-freistellen-fallback-count'
-              const n = parseInt(sessionStorage.getItem(key) || '0', 10) + 1
-              sessionStorage.setItem(key, String(n))
-            } catch (_) {}
-          }
-        }
-      } else if (selectedFile) {
+      if (selectedFile) {
+        // User hat explizit neues Bild gewählt (Datei/Kamera) – immer dieses nehmen
         const compressedDataUrl = await compressImageForStorage(selectedFile, { context: 'artwork' })
         if (compressedDataUrl.length > MAX_ARTWORK_BYTES) {
           const moreCompressed = await compressImageForStorage(selectedFile, { context: 'mobile' })
@@ -7945,6 +7961,35 @@ ${'='.repeat(60)}
             })
           } catch (err) {
             console.warn('Freistellung fehlgeschlagen, verwende Original:', err)
+            alert('Freistellung fehlgeschlagen. Es wird das Original mit Pro-Hintergrund verwendet.')
+            try {
+              const key = 'k2-freistellen-fallback-count'
+              const n = parseInt(sessionStorage.getItem(key) || '0', 10) + 1
+              sessionStorage.setItem(key, String(n))
+            } catch (_) {}
+          }
+        }
+      } else if (hasPreviewDataUrl) {
+        const src = refSnapshot ?? previewSnapshot ?? undefined
+        if (!src) { setIsSavingArtwork(false); alert('Bitte ein Bild auswählen'); return }
+        const fileFromPreview = await dataUrlToFile(src)
+        let compressed = await compressImageForStorage(fileFromPreview, { context: 'artwork' })
+        if (compressed.length > MAX_ARTWORK_BYTES) {
+          const more = await compressImageForStorage(fileFromPreview, { context: 'mobile' })
+          compressed = more.length > MAX_ARTWORK_BYTES ? compressed : more
+        }
+        imageDataUrl = compressed
+        const effectivePhotoMode = isMobileDevice ? 'original' : photoImageMode
+        if (effectivePhotoMode === 'freigestellt') {
+          try {
+            const { compositeOnProfessionalBackground } = await import('../src/utils/professionalImageBackground')
+            imageDataUrl = await compositeOnProfessionalBackground(imageDataUrl, photoBackgroundPreset, {
+              onFreistellungSkipped: () => {
+                alert('Freistellung konnte nicht durchgeführt werden (z. B. Modell nicht geladen). Es wird der professionelle Hintergrund ohne Freistellung verwendet.')
+              }
+            })
+          } catch (err) {
+            console.warn('Freistellung (Vorschau-Pfad) fehlgeschlagen, verwende Original:', err)
             alert('Freistellung fehlgeschlagen. Es wird das Original mit Pro-Hintergrund verwendet.')
             try {
               const key = 'k2-freistellen-fallback-count'
@@ -8079,6 +8124,22 @@ ${'='.repeat(60)}
       return
     }
     
+    // Beim Bearbeiten: Index des Werks VOR Duplikat-Behandlung finden (Mac: 31, 0031, K2-M-0031 müssen treffen)
+    const norm = (v: any) => String(v ?? '').trim()
+    const sameArtwork = (a: any) => {
+      const aId = norm(a?.id)
+      const aNum = norm(a?.number)
+      const eId = norm(editingArtwork?.id)
+      const eNum = norm(editingArtwork?.number)
+      if (aId && eId && aId === eId) return true
+      if (aNum && eNum && aNum === eNum) return true
+      const aSuffix = aNum?.replace(/^.*[-_]/, '') || aNum
+      const eSuffix = eNum?.replace(/^.*[-_]/, '') || eNum
+      if (aSuffix && eSuffix && (aSuffix === eSuffix || aSuffix.endsWith(eSuffix) || eSuffix.endsWith(aSuffix))) return true
+      return false
+    }
+    const editIndexBeforeDupes = editingArtwork ? artworks.findIndex(sameArtwork) : -1
+
     // KRITISCH: Prüfe auf doppelte Nummern und behebe Konflikte
     const duplicateNumbers = new Map<string, any[]>()
     artworks.forEach((a: any) => {
@@ -8094,28 +8155,22 @@ ${'='.repeat(60)}
     duplicateNumbers.forEach((duplicates, number) => {
       if (duplicates.length > 1) {
         console.warn(`⚠️ Doppelte Nummer gefunden: ${number} (${duplicates.length} Werke)`)
-        // Sortiere nach createdAt (neuestes zuerst)
         duplicates.sort((a: any, b: any) => {
           const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
           const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
           return dateB - dateA
         })
-        
-        // Behalte das erste (neueste), benenne andere um
         for (let i = 1; i < duplicates.length; i++) {
           const duplicate = duplicates[i]
           const newNumber = `${number}-${i}`
           console.log(`🔄 Umbenennen: ${number} → ${newNumber}`)
-          
-          // Finde und aktualisiere im artworks Array
-          const index = artworks.findIndex((a: any) => 
+          const idx = artworks.findIndex((a: any) =>
             a.id === duplicate.id || (a.number === duplicate.number && a.createdAt === duplicate.createdAt)
           )
-          if (index !== -1) {
-            artworks[index].number = newNumber
-            artworks[index].id = newNumber
-            if (artworks[index].number === finalArtworkNumber && !editingArtwork) {
-              // Falls das aktuelle Werk betroffen ist, aktualisiere auch artworkData
+          if (idx !== -1) {
+            artworks[idx].number = newNumber
+            artworks[idx].id = newNumber
+            if (artworks[idx].number === finalArtworkNumber && !editingArtwork) {
               finalArtworkNumber = newNumber
               artworkData.number = newNumber
               artworkData.id = newNumber
@@ -8126,20 +8181,22 @@ ${'='.repeat(60)}
     })
     
     if (editingArtwork) {
-      // Bestehendes Werk aktualisieren – String-Vergleich damit id/number-Typ (string vs number) nicht fehlschlägt
-      const editId = String(editingArtwork?.id ?? '')
-      const editNum = String(editingArtwork?.number ?? '')
-      const index = artworks.findIndex((a: any) =>
-        (a?.id != null && String(a.id) === editId) || (a?.number != null && String(a.number) === editNum)
-      )
+      let index = editIndexBeforeDupes
+      if (index === -1) {
+        const editId = norm(editingArtwork?.id)
+        const editNum = norm(editingArtwork?.number)
+        index = artworks.findIndex((a: any) =>
+          (a?.id != null && norm(a.id) === editId) || (a?.number != null && norm(a.number) === editNum)
+        )
+      }
       if (index !== -1) {
-        // Behalte createdAt und addedToGalleryAt wenn vorhanden
+        artworkData.number = artworks[index].number
+        artworkData.id = artworks[index].id
         artworkData.createdAt = artworks[index].createdAt || new Date().toISOString()
         artworkData.addedToGalleryAt = artworks[index].addedToGalleryAt || artworks[index].createdAt || artworkData.createdAt
         artworkData.updatedOnMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
         artworks[index] = artworkData
       } else {
-        // Falls nicht gefunden, als neues Werk hinzufügen
         artworks.push(artworkData)
       }
     } else {
@@ -8391,17 +8448,37 @@ ${'='.repeat(60)}
       
       if (searchQuery) setSearchQuery('')
       
-      // Gespeichertes Werk in der Anzeige: immer imageDataUrl + volles artworkData (inkl. imageDisplayMode), damit volles Bild und kein Ausschnitt
-      const idNum = String(artworkData?.number ?? artworkData?.id ?? '')
-      let listToShow = listWithResolved.map((a: any) =>
-        String(a?.number ?? a?.id ?? '') === idNum ? { ...a, ...artworkData, imageUrl: imageDataUrl } : a
-      )
-      if (editingArtwork && !listToShow.some((a: any) => String(a?.number ?? a?.id ?? '') === idNum)) {
-        const editKey = String(editingArtwork?.number ?? editingArtwork?.id ?? '')
-        listToShow = listToShow.filter((a: any) => String(a?.number ?? a?.id ?? '') !== editKey)
-        listToShow = [...listToShow, { ...artworkData, imageUrl: imageDataUrl }]
+      // Gespeichertes Werk sofort mit dem gerade gespeicherten Bild anzeigen (Mac/iframe: Strip würde es sonst entfernen; Mobil: IDB oft langsamer).
+      const savedId = String(artworkData?.number ?? artworkData?.id ?? '')
+      const displayUrlWeSaved = typeof artworkData.imageUrl === 'string' ? artworkData.imageUrl : ''
+      if (displayUrlWeSaved && savedId) {
+        lastSavedArtworkImageRef.current = { number: savedId, imageUrl: displayUrlWeSaved }
+        setTimeout(() => { lastSavedArtworkImageRef.current = null }, 8000)
       }
-      setAllArtworksSafe(listToShow)
+      const patched = listWithResolved.map((a: any) => {
+        if (!a || String(a?.number ?? a?.id ?? '') !== savedId) return a
+        const resolved = a.imageUrl
+        const isFallback = typeof resolved === 'string' && resolved.startsWith('https://k2-galerie.vercel.app/img/k2/werk-')
+        if (displayUrlWeSaved && (!resolved || resolved.length < 50 || isFallback))
+          return { ...a, imageUrl: displayUrlWeSaved }
+        return a
+      })
+      setAllArtworksSafe(patched)
+      // Einmal kurz nachladen aus derselben Quelle (falls IDB-Commit beim ersten resolve noch nicht sichtbar) – bleibt eine Quelle
+      setTimeout(() => {
+        loadArtworksWithResolvedImages(tenant).then((again) => {
+          if (again.length === 0) return
+          // Auch beim Nachladen: gespeichertes Werk mit gespeichertem Bild anzeigen, wenn resolve wieder leer/Fallback
+          const againPatched = again.map((a: any) => {
+            if (!a || String(a?.number ?? a?.id ?? '') !== savedId) return a
+            const r = a.imageUrl
+            const fb = typeof r === 'string' && r.startsWith('https://k2-galerie.vercel.app/img/k2/werk-')
+            if (displayUrlWeSaved && (!r || r.length < 50 || fb)) return { ...a, imageUrl: displayUrlWeSaved }
+            return a
+          })
+          setAllArtworksSafe(againPatched)
+        })
+      }, 100)
       
       // WICHTIG: Kurze Verzögerung damit React State aktualisiert wird
       setTimeout(() => {
@@ -8462,7 +8539,8 @@ ${'='.repeat(60)}
       window.dispatchEvent(new CustomEvent('artworks-updated', { 
         detail: { count: listWithResolved.length, newArtwork: artworkData.number } 
       }))
-      setTimeout(() => { ignoreArtworksUpdatedRef.current = false }, 400)
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+      setTimeout(() => { ignoreArtworksUpdatedRef.current = false }, isMobile ? 1200 : 400)
       
       // Zentrale Stelle (Vercel): Nach jedem Speichern automatisch Daten dorthin (tenantfähig: K2, ök2, VK2).
       // Im iframe (Cursor Preview) überspringen – reduziert Last und Crash-Risiko (Code 5).
