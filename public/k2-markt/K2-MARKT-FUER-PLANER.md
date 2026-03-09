@@ -5,6 +5,12 @@
 
 ---
 
+## 0. Wer plant (Ressourcen)
+
+**Es gibt keine externen Planer oder ein separates Team.** Planung läuft mit dem, was da ist: **du + KI.** **Ziel: So wenig wie möglich bleibt bei dir** – die KI übernimmt alles Machbare (Strukturieren, Phasen vorschlagen, Ausarbeiten, Festhalten). Du gibst höchstens die Richtung vor; den Rest erledigt die KI. Du in Pension – Entlastung, nicht Zusatzlast. Keine Erwartung an „Ressourcen, auf die man zugreift“.
+
+---
+
 ## 1. Was feststeht (nicht mehr planen)
 
 - **Vision und Architektur:** [Vision und Architektur (eine Quelle)](K2-MARKT-VISION-ARCHITEKTUR.md) – Kette zum Markt, Medienhaus, eine Wahrheit → viele Formate, Produkt-Moment, Qualitäts-Tor + eine Freigabe, Regeln im System, Traceability.
@@ -39,9 +45,9 @@ Produkt-Moment (eine Wahrheit) → Agenten (Entwurf pro Format) → Qualitäts-T
 - **Phasen** definieren (z. B. Phase 1: Produkt-Moment + DoD; Phase 2: Erster Agent; Phase 3: Tor + Freigabe; Phase 4: Traceability + weitere Formate).
 - **Meilensteine** pro Phase (was ist „fertig“?).
 - **Reihenfolge** festlegen (Abhängigkeiten: z. B. ohne Produkt-Moment kein Agent).
-- **Ressourcen / Aufwand** grob schätzen (optional).
+- **Aufwand** grob einschätzen (optional – für dich selbst, keine Team-Planung).
 
-*(Diese Abschnitte können mit konkreten Phasen, Meilensteinen und Terminen ausgefüllt werden.)*
+*(Diese Abschnitte können mit konkreten Phasen und Meilensteinen ausgefüllt werden – von dir, mit AI-Unterstützung.)*
 
 ---
 

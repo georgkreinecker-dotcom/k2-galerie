@@ -7,8 +7,9 @@
 
 ---
 
+- **Ressourcen:** Keine externen Planer. Planung = Georg + KI; **KI erledigt alles Machbare** – für Georg bleibt so wenig wie möglich (Pension = Entlastung).
 - **Was feststeht:** Vision und Architektur (eine Quelle) – keine Änderung durch Planer.
 - **Eingabe für Planung:** Die 5 nächsten Schritte aus der Vision (Produkt-Moment, DoD pro Format, erster Agent, Tor + Freigabe UI, Traceability).
-- **Aufgabe der Planer:** Phasen, Meilensteine, Reihenfolge, ggf. Ressourcen – ausfüllen in der Mappe.
+- **Aufgabe:** Phasen, Meilensteine, Reihenfolge in der Mappe ausfüllen – von dir, mit AI-Unterstützung.
 
 **Verknüpfung:** docs/K2-MARKT-VISION-ARCHITEKTUR.md, K2 Markt Mappe (Smart Panel).
