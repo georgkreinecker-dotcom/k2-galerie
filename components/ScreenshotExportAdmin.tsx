@@ -29,8 +29,9 @@ import { addPendingArtwork, filterK2Only, readArtworksRawByKey, readArtworksRawB
 import { isSupabaseConfigured, saveArtworksToSupabase } from '../src/utils/supabaseClient'
 import { uploadArtworkImageToStorage } from '../src/utils/supabaseStorage'
 import { loadStammdaten, saveStammdaten as persistStammdaten, loadVk2Stammdaten, saveVk2Stammdaten } from '../src/utils/stammdatenStorage'
-import { loadEvents as loadEventsFromStorage } from '../src/utils/eventsStorage'
-import { loadDocuments as loadDocumentsFromStorage } from '../src/utils/documentsStorage'
+import { loadEvents as loadEventsFromStorage, saveEvents as saveEventsToStorage } from '../src/utils/eventsStorage'
+import { loadDocuments as loadDocumentsFromStorage, saveDocuments as saveDocumentsToStorage } from '../src/utils/documentsStorage'
+import { publishGalleryDataToServer } from '../src/utils/publishGalleryData'
 import { apiPost, apiGet } from '../src/utils/apiClient'
 import { safeReload } from '../src/utils/env'
 import { compressImageForStorage } from '../src/utils/compressImageForStorage'
@@ -2751,11 +2752,55 @@ function ScreenshotExportAdmin() {
         const maxList = 100
         const eventsForExport = Array.isArray(eventsMerged) ? eventsMerged.slice(0, maxList) : []
         const documentsForExport = Array.isArray(documentsMerged) ? documentsMerged.slice(0, maxList) : []
-        const artworksState = Array.isArray(artworks) ? artworks : []
+        // Admin-State hat Priorität (was du siehst, geht raus); Fallback localStorage
+        const artworksState = (allArtworksRef.current && allArtworksRef.current.length > 0) ? allArtworksRef.current : (Array.isArray(artworks) ? artworks : [])
         const artworksById = new Map<string, any>()
         artworksStored.forEach((a: any) => { const k = a?.number || a?.id; if (k) artworksById.set(String(k), a) })
         artworksState.forEach((a: any) => { const k = a?.number || a?.id; if (k) artworksById.set(String(k), a) })
         const artworksForExport = sortArtworksFavoritesFirstThenNewest(Array.from(artworksById.values()))
+
+        // K2: Prozesssicherheit – nur zentraler Ablauf (publishGalleryDataToServer). Kein eigener Fetch.
+        if (!tenant.isOeffentlich && !tenant.isVk2) {
+          try {
+            saveArtworksByKey('k2-artworks', artworksForExport, { filterK2Only: true, allowReduce: false })
+            persistStammdaten('k2', 'martina', martinaExport as Record<string, unknown>)
+            persistStammdaten('k2', 'georg', georgExport as Record<string, unknown>)
+            persistStammdaten('k2', 'gallery', galleryExport as Record<string, unknown>)
+            saveEventsToStorage('k2', eventsForExport)
+            saveDocumentsToStorage('k2', documentsForExport)
+            localStorage.setItem('k2-design-settings', JSON.stringify(designExport))
+            if (pageTextsExport != null) localStorage.setItem('k2-page-texts', JSON.stringify(pageTextsExport))
+            if (pageContentGalerieRaw != null && pageContentGalerieRaw.length > 0) localStorage.setItem('k2-page-content-galerie', pageContentGalerieRaw)
+            const toPublish = readArtworksRawByKey('k2-artworks')
+            publishGalleryDataToServer(toPublish).then((result) => {
+              if (!isMountedRef.current) return
+              if (!silent) setIsDeploying(false)
+              if (result.success) {
+                if (silent) console.log('✅ K2-Daten an Server (zentral):', result.artworksCount, 'Werke')
+                else {
+                  setSyncStatusBar({ phase: 'success', message: 'Gesendet.' })
+                  setPublishSuccessModal({ size: result.result?.size ?? 0, version: parseInt(localStorage.getItem('k2-data-version') || '0', 10) + 1 })
+                }
+              } else {
+                if (!silent) {
+                  setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
+                  setPublishErrorMsg(result.error || 'Daten konnten nicht gesendet werden.')
+                } else console.warn('Sync (silent) fehlgeschlagen:', result.error)
+              }
+            }).catch((e) => {
+              if (isMountedRef.current && !silent) setIsDeploying(false)
+              if (!silent) {
+                setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
+                setPublishErrorMsg(e instanceof Error ? e.message : String(e))
+              } else console.warn('Sync (silent) Fehler:', e)
+            }).finally(() => { if (isMountedRef.current && !silent) setIsDeploying(false) })
+          } catch (e) {
+            if (isMountedRef.current && !silent) setIsDeploying(false)
+            if (!silent) alert('Fehler beim Vorbereiten: ' + (e instanceof Error ? e.message : String(e)))
+            else console.warn('K2 Publish Vorbereitung:', e)
+          }
+          return
+        }
 
         const data = {
           martina: martinaExport,

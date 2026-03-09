@@ -6,6 +6,14 @@
 
 ---
 
+## Datum: 09.03.26 – Prozesssicherheit überall (Launch-kritisch)
+
+- **Stand:** Georg: „Wir müssen prozessicherheit überall herstellen, sonst ist das launchen harakiri.“ **Umsetzung:** (1) **Neue Cursor-Regel** `.cursor/rules/prozesssicherheit-veroeffentlichen-laden.mdc` (alwaysApply): Vor jeder Änderung an Veröffentlichen/Laden PROZESS-VEROEFFENTLICHEN-LADEN.md + ein-standard-problem.mdc lesen; kein zweiter Ablauf. (2) **Lade-Einstieg:** `applyServerDataToLocal(serverList, localList, options)` in `src/utils/syncMerge.ts` – ein Einstieg für mergeServerWithLocal + preserveLocalImageData; Doku ergänzt. (3) **Admin K2:** Veröffentlichen im Admin (K2) nutzt nur noch `publishGalleryDataToServer`: State in localStorage flushen, dann `publishGalleryDataToServer(readArtworksRawByKey('k2-artworks'))`; kein eigener Fetch zu write-gallery-data für K2. (4) Admin verwendet für Export-Priorität `allArtworksRef.current` (State), damit „was du siehst, geht raus“. Doku PROZESS-VEROEFFENTLICHEN-LADEN.md um Admin K2 und applyServerDataToLocal ergänzt.
+- **Nächster Schritt:** Optional: GaleriePage/GalerieVorschauPage schrittweise auf `applyServerDataToLocal` umstellen (nur Refactor, Verhalten gleich). Commit + Push folgt.
+- **Wo nachlesen:** .cursor/rules/prozesssicherheit-veroeffentlichen-laden.mdc, src/utils/syncMerge.ts (applyServerDataToLocal), components/ScreenshotExportAdmin.tsx (K2-Branch in publishMobile), docs/PROZESS-VEROEFFENTLICHEN-LADEN.md.
+
+---
+
 ## Datum: 09.03.26 – Prozesssicherheit Veröffentlichen/Laden (Sportwagenmodus)
 
 - **Stand:** Georg: Es geht um den **Prozess**, nicht um Einzelfix – Prozesssicherheit herstellen. **Umsetzung:** (1) **Ein Standard Veröffentlichen:** Zentrale Funktion `publishGalleryDataToServer(artworks)` in `src/utils/publishGalleryData.ts` – Ablauf: resolveArtworkImageUrlsForExport → artworksForExport → Payload aus localStorage → POST write-gallery-data. (2) **Alle Aufrufer** nutzen nur diese Funktion: DevViewPage (Button Veröffentlichen), GalerieVorschauPage (nach Speichern, nach neuem Werk). (3) **Doku:** docs/PROZESS-VEROEFFENTLICHEN-LADEN.md – Veröffentlichen + „Bilder vom Server laden“ einheitlich beschrieben. (4) **Regel:** .cursor/rules/ein-standard-problem.mdc um Eintrag „Veröffentlichen“ ergänzt.

@@ -5,6 +5,10 @@
  *
  * Fortlaufende Nummern: Server-Max wird bei jedem Server-Load gespeichert; bei Kollision
  * (gleiche Nummer, anderes Werk) werden Mobile-Werke vor dem Merge umnummeriert.
+ *
+ * Prozesssicherheit: Beim Laden von Server-Daten NUR applyServerDataToLocal (oder explizit
+ * mergeServerWithLocal + preserveLocalImageData in dieser Reihenfolge) nutzen.
+ * Doku: docs/PROZESS-VEROEFFENTLICHEN-LADEN.md
  */
 
 const KNOWN_MAX_PREFIX = 'k2-known-max-number-'
@@ -265,4 +269,21 @@ export function preserveLocalImageData(
       previewUrl: local.previewUrl ?? item.previewUrl,
     }
   })
+}
+
+/**
+ * Einziger Standard-Einstieg für „Server-Daten in lokale Galerie übernehmen“.
+ * Führt mergeServerWithLocal und preserveLocalImageData in der verbindlichen Reihenfolge aus.
+ * Nutzen: GaleriePage loadData, GalerieVorschauPage handleRefresh, alle künftigen Lade-Pfade.
+ * Doku: docs/PROZESS-VEROEFFENTLICHEN-LADEN.md, .cursor/rules/prozesssicherheit-veroeffentlichen-laden.mdc
+ */
+export function applyServerDataToLocal(
+  serverList: any[],
+  localList: any[],
+  options: SyncMergeOptions = {}
+): SyncMergeResult {
+  const { merged, toHistory } = mergeServerWithLocal(serverList, localList, options)
+  const getKey = options.getKey ?? DEFAULT_GET_KEY
+  const withImages = preserveLocalImageData(merged, localList, getKey)
+  return { merged: withImages, toHistory }
 }

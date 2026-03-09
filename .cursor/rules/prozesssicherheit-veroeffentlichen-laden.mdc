@@ -1,0 +1,57 @@
+---
+description: Prozesssicherheit Veröffentlichen & Laden – verbindliche Prüfung vor jeder Änderung an diesen Abläufen.
+alwaysApply: true
+---
+
+# 🔒 Prozesssicherheit Veröffentlichen & Laden (Launch-kritisch)
+
+**Ohne einen einzigen Standard für Veröffentlichen und Laden entstehen verschiedene Datensätze auf Geräten → Platzhalter, fehlende Werke, Frust. Das darf nicht wieder passieren.**
+
+---
+
+## Pflicht vor JEDER Änderung
+
+**Sobald du Code änderst oder hinzufügst, der**
+
+- **Galerie-Daten veröffentlicht** (an Server/Vercel senden, write-gallery-data, „Veröffentlichen“-Button, automatisches Publish nach Speichern), oder
+- **Galerie-Daten vom Server lädt** (Stand-Aktualisierung, „Bilder vom Server laden“, loadData, handleRefresh, Merge von Server + lokal),
+
+**musst du ZUERST lesen und einhalten:**
+
+1. **docs/PROZESS-VEROEFFENTLICHEN-LADEN.md** – Ablauf Veröffentlichen (resolve → export → POST) und Laden (merge + preserve).
+2. **.cursor/rules/ein-standard-problem.mdc** – Tabelle „Veröffentlichen“ und „Automatische Speicherung / Laden“.
+
+**Du darfst keinen zweiten Ablauf bauen.** Kein eigener Fetch zu `/api/write-gallery-data`. Kein Laden/Speichern von Server-Daten ohne `mergeServerWithLocal` + `preserveLocalImageData`. Nur die dort genannten Funktionen nutzen.
+
+---
+
+## Veröffentlichen (ein Einstieg)
+
+| Erlaubt | Verboten |
+|--------|----------|
+| **publishGalleryDataToServer(artworks)** in `src/utils/publishGalleryData.ts` | Eigener Fetch zu write-gallery-data |
+| Aufrufer: DevViewPage, GalerieVorschauPage, **Admin K2** (nach Flush in localStorage) | Eigener Aufruf von resolveArtworkImageUrlsForExport + artworksForExport + POST an anderer Stelle |
+
+---
+
+## Laden (ein Einstieg)
+
+| Erlaubt | Verboten |
+|--------|----------|
+| **mergeServerWithLocal** + **preserveLocalImageData** (in dieser Reihenfolge); Aufrufer: GaleriePage loadData, GalerieVorschauPage handleRefresh | Server-Daten direkt in localStorage schreiben ohne Merge |
+| Optional: gemeinsame Helper-Funktion **applyServerDataToLocal** (syncMerge.ts) nutzen | Zweiter Lade-Pfad ohne preserveLocalImageData |
+
+---
+
+## Checkliste vor Commit (wenn du an Publish/Load gearbeitet hast)
+
+- [ ] Habe ich PROZESS-VEROEFFENTLICHEN-LADEN.md und ein-standard-problem.mdc gelesen?
+- [ ] Nutze ich **nur** publishGalleryDataToServer für Veröffentlichen (K2) bzw. den dort dokumentierten Ablauf?
+- [ ] Nutze ich **immer** mergeServerWithLocal + preserveLocalImageData beim Laden von Server-Daten?
+- [ ] Habe ich **keinen** neuen Fetch zu write-gallery-data oder neuen Lade-Pfad eingebaut?
+
+---
+
+## Kurzfassung
+
+**Prozesssicherheit = ein Standard, kein zweiter Weg. Vor jeder Änderung an Publish/Load: Doku lesen, nur die festgelegten Funktionen verwenden. Sonst ist Launch Harakiri.**

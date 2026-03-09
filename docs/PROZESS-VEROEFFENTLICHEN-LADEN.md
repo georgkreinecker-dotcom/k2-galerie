@@ -19,6 +19,7 @@
 
 - **DevViewPage** (Button „Veröffentlichen“ / Speichern): Nach Supabase-Merge → `publishGalleryDataToServer(artworks)`.
 - **GalerieVorschauPage** (nach Speichern/Bearbeiten, neues Werk): `publishGalleryDataToServer(loadArtworks())`.
+- **ScreenshotExportAdmin (K2):** Vor dem Aufruf State in localStorage flushen, dann `publishGalleryDataToServer(readArtworksRawByKey('k2-artworks'))`. Kein eigener Fetch zu write-gallery-data mehr für K2.
 
 **Regel:** Kein eigener Fetch zu write-gallery-data, kein eigener Aufruf von resolveArtworkImageUrlsForExport + artworksForExport an anderer Stelle. Immer `publishGalleryDataToServer`.
 
@@ -35,18 +36,37 @@
 | 3 | **Bilder bewahren:** `preserveLocalImageData(merged, localArtworks)` – wenn lokal ein Bild existiert und Server keins hat, bleibt das lokale Bild. Nie gutes Lokal durch leeren Server ersetzen. |
 | 4 | Speichern nur wenn `merged.length >= localCount` (allowReduce: false). |
 
+**Ein Einstieg (optional):** `applyServerDataToLocal(serverList, localList, options)` in `src/utils/syncMerge.ts` – führt mergeServerWithLocal und preserveLocalImageData in der verbindlichen Reihenfolge aus. Nutzen: GaleriePage loadData, GalerieVorschauPage handleRefresh, alle künftigen Lade-Pfade.
+
 **Aufrufer:** GaleriePage (loadData), GalerieVorschauPage (handleRefresh). Beide nutzen dieselbe Logik (mergeServerWithLocal → preserveLocalImageData → save).
 
 ---
 
-## 3. Warum dann trotzdem Platzhalter?
+## 3. Automatische Speicherung und Laden (Stand-Aktualisierung)
+
+**Derselbe Prozess gilt auch hier.** Kein zweiter Ablauf.
+
+### 3a. Automatische Speicherung (Auto-Save)
+
+- **Auto-Save** (`src/utils/autoSave.ts`) schreibt nur in **localStorage** (Stammdaten, Werke, Events, Dokumente, Design, Seitentexte).
+- Auto-Save löst **kein** Veröffentlichen aus. Damit andere Geräte den Stand sehen, muss explizit **„Veröffentlichen“** genutzt werden (oder der automatische Publish nach Speichern im Admin).
+- **Automatisches Veröffentlichen** (z. B. nach Speichern im Admin: `publishMobile({ silent: true })`) muss denselben **logischen** Ablauf nutzen: Bild-URLs auflösen → Export-Format → POST. Im Admin (ScreenshotExportAdmin) gilt für K2/ök2/VK2 derselbe Prozess; für K2 soll langfristig dieselbe zentrale Logik (Auflösung + Export) genutzt werden wie bei `publishGalleryDataToServer`.
+
+### 3b. Laden durch Stand-Aktualisierung
+
+- **Stand-Badge tippen**, **„Stand & Daten“**, **QR-Scan** oder **Seiten-Reload** nach Build-Update: Überall derselbe Lade-Ablauf.
+- **Kein zweiter Pfad:** Immer `loadData` (GaleriePage) bzw. `handleRefresh` (GalerieVorschauPage) → API/statisch → **mergeServerWithLocal** → **preserveLocalImageData** → Speichern. Nie „einfach Server-Daten überschreiben“ ohne Merge und ohne Bewahren lokaler Bilder.
+
+---
+
+## 4. Warum dann trotzdem Platzhalter?
 
 - **Nach App-Löschen:** Lokal ist leer → es gibt nichts zu „bewahren“. Server liefert, was er hat. Hat der Server keine Bild-URLs (weil letztes Veröffentlichen ohne Auflösung oder von Gerät ohne Bilder war), kommen Platzhalter.
 - **Sicherheit:** Damit der Prozess stimmt: Immer von dem Gerät **veröffentlichen**, das die vollen Daten (inkl. Bilder) hat. Dann hat der Server die URLs; andere Geräte holen sie mit „Bilder vom Server laden“.
 
 ---
 
-## 4. Checkliste (Prozesssicherheit)
+## 5. Checkliste (Prozesssicherheit)
 
 - [ ] Veröffentlichen: Nur über `publishGalleryDataToServer` (ein Aufruf, eine Implementierung).
 - [ ] Laden: Immer mergeServerWithLocal, danach preserveLocalImageData vor save.
