@@ -82,7 +82,7 @@ const DEFAULT_ITEMS: PanelItem[] = [
   { id: 'vk2', label: '🎨 VK2 Vereinsplattform', page: 'vk2', url: VK2_GALERIE_URL, color: 'linear-gradient(135deg, rgba(230,122,42,0.2), rgba(255,140,66,0.15))', border: 'rgba(255,140,66,0.4)' },
   { id: 'mok2', label: '📋 mök2 – Vertrieb & Promotion', page: 'mok2', url: MOK2_ROUTE, color: 'linear-gradient(135deg, rgba(251,191,36,0.12), rgba(245,158,11,0.08))', border: 'rgba(251,191,36,0.3)' },
   { id: 'kampagne', label: '📁 Kampagne Marketing-Strategie', page: 'kampagne', url: PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie, color: 'linear-gradient(135deg, rgba(95,251,241,0.15), rgba(60,200,190,0.08))', border: 'rgba(95,251,241,0.35)' },
-  { id: 'k2-markt', label: '🎯 K2 Markt', page: 'k2-markt', url: PROJECT_ROUTES['k2-galerie'].k2MarktOberflaeche, color: 'linear-gradient(135deg, rgba(34,197,94,0.15), rgba(22,163,74,0.08))', border: 'rgba(34,197,94,0.35)' },
+  { id: 'k2-markt', label: '🎯 K2 Markt', page: 'k2-markt', url: PROJECT_ROUTES['k2-markt'].home, color: 'linear-gradient(135deg, rgba(34,197,94,0.15), rgba(22,163,74,0.08))', border: 'rgba(34,197,94,0.35)' },
   { id: 'notizen', label: '📝 Notizen', page: 'notizen', url: PROJECT_ROUTES['k2-galerie'].notizen, color: 'linear-gradient(135deg, rgba(196,181,253,0.15), rgba(139,92,246,0.08))', border: 'rgba(196,181,253,0.35)' },
   { id: 'handbuch', label: '🧠 Handbuch', page: 'handbuch', url: '/k2team-handbuch', color: 'rgba(95,251,241,0.08)', border: 'rgba(95,251,241,0.2)' },
 ]

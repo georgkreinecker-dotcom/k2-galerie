@@ -36,8 +36,13 @@ export default function ProjectStartPage() {
     if (config?.projectStart) projectTexts = config.projectStart
   } catch (_) {}
 
+  // K2 Markt ist eigenständiges Projekt – direkt zur Arbeitsoberfläche (wird sonst „Projekt nicht gefunden“)
+  if (projectId === 'k2-markt') {
+    return <Navigate to={PROJECT_ROUTES['k2-markt'].home} replace />
+  }
+
   // Auf Handy/Tablet: Sofort zur Galerie (niemals Dev-Ansicht/Smart Panel, auch beim Wiederöffnen)
-  if (projectId === 'k2-galerie' && routes && isMobileDevice()) {
+  if (projectId === 'k2-galerie' && routes && 'galerie' in routes && isMobileDevice()) {
     return <Navigate to={routes.galerie} replace />
   }
 
@@ -62,13 +67,14 @@ export default function ProjectStartPage() {
     return null
   }
 
-  // Fallback: Alte Ansicht (falls benötigt)
+  // Fallback: Alte Ansicht (nur k2-galerie hat cards; routes hat hier plan/controlStudio)
+  const k2Routes = routes as typeof PROJECT_ROUTES['k2-galerie']
   const quickLinks = [
-    { label: 'Phase 1', anchor: `${routes.plan}#phase1` },
-    { label: 'Phase 2', anchor: `${routes.plan}#phase2` },
-    { label: 'Phase 3', anchor: `${routes.plan}#phase3` },
-    { label: 'Phase 4', anchor: `${routes.plan}#phase4` },
-    { label: 'KI-Agent', anchor: routes.controlStudio },
+    { label: 'Phase 1', anchor: `${k2Routes.plan}#phase1` },
+    { label: 'Phase 2', anchor: `${k2Routes.plan}#phase2` },
+    { label: 'Phase 3', anchor: `${k2Routes.plan}#phase3` },
+    { label: 'Phase 4', anchor: `${k2Routes.plan}#phase4` },
+    { label: 'KI-Agent', anchor: k2Routes.controlStudio },
   ]
 
   return (
@@ -90,7 +96,7 @@ export default function ProjectStartPage() {
             <div className="card" key={card.title}>
               <h2>{card.title}</h2>
               <p>{card.description}</p>
-              <Link className="btn" to={(routes as Record<string, string>)[card.routeKey] ?? routes.galerie}>
+              <Link className="btn" to={(k2Routes as Record<string, string>)[card.routeKey] ?? k2Routes.galerie}>
                 {card.cta}
               </Link>
             </div>

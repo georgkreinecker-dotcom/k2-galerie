@@ -35,6 +35,9 @@ export const PILOT_SCHREIBEN_ROUTE = '/schreiben-michael'
 /** Benutzerhandbuch für ök2/VK2 (Lizenznehmer:innen, Piloten, Vereine) – Erste Schritte, Galerie gestalten, Admin, FAQ */
 export const BENUTZER_HANDBUCH_ROUTE = '/benutzer-handbuch'
 
+/** Kreativwerkstatt = K2-Markt-Arbeitsoberfläche (Leitvision, Ablauf, Studio, Tor) – kurze URL für Homepage/Link */
+export const KREATIVWERKSTATT_ROUTE = '/kreativwerkstatt'
+
 export const PLATFORM_ROUTES = {
   home: '/',
   projects: '/projects',
@@ -94,12 +97,19 @@ export const PROJECT_ROUTES = {
     uebersicht: '/projects/k2-galerie/uebersicht',
     /** Kampagne Marketing-Strategie – eigene Mappe (Zwischenergebnisse, Auftrag, Strategie) */
     kampagneMarketingStrategie: '/projects/k2-galerie/kampagne-marketing-strategie',
-    /** K2 Markt – eigene Mappe (Vision, Architektur, Handbuch) */
-    k2Markt: '/projects/k2-galerie/k2-markt',
-    /** K2 Markt – eigene Arbeitsoberfläche (Kreativprozess: Leitvision, Produkt wählen, Ideen, dann Tor) */
-    k2MarktOberflaeche: '/projects/k2-galerie/k2-markt-oberflaeche',
-    /** K2 Markt Tor – Qualitäts-Tor: Entwurf anzeigen, DoD prüfen, Freigabe */
-    k2MarktTor: '/projects/k2-galerie/k2-markt-tor',
+    /** K2 Markt – Verweise auf eigenständiges Projekt (siehe PROJECT_ROUTES['k2-markt']) */
+    k2Markt: '/projects/k2-markt/mappe',
+    k2MarktOberflaeche: '/projects/k2-markt',
+    k2MarktTor: '/projects/k2-markt/tor',
+  },
+  /** K2 Markt – eigenständiges Projekt (wie K2 Familie). Datenquelle: ök2 (mök2, Muster). Homepage = Arbeitsoberfläche = Art und Weise manuell zu arbeiten; netzfähig wie ök2 und K2 Familie. */
+  'k2-markt': {
+    id: 'k2-markt',
+    name: 'K2 Markt',
+    /** Homepage = Arbeitsoberfläche (Leitvision, Ablauf, Studio, Tor) – dort arbeitest du manuell */
+    home: '/projects/k2-markt',
+    mappe: '/projects/k2-markt/mappe',
+    tor: '/projects/k2-markt/tor',
   },
   vk2: {
     id: 'vk2',
@@ -135,7 +145,7 @@ export const PROJECT_ROUTES = {
     notizen: '/projects/k2-galerie/notizen',
     uebersicht: '/projects/k2-galerie/uebersicht',
     kampagneMarketingStrategie: '/projects/k2-galerie/kampagne-marketing-strategie',
-    k2Markt: '/projects/k2-galerie/k2-markt',
+    k2Markt: '/projects/k2-markt/mappe',
   },
   'k2-familie': {
     id: 'k2-familie',
@@ -174,9 +184,9 @@ export const PROJECT_ROUTES = {
     seitengestaltung: '/projects/k2-galerie/seitengestaltung',
     kunden: '/projects/k2-galerie/kunden',
     kampagneMarketingStrategie: '/projects/k2-galerie/kampagne-marketing-strategie',
-    k2Markt: '/projects/k2-galerie/k2-markt',
-    k2MarktOberflaeche: '/projects/k2-galerie/k2-markt-oberflaeche',
-    k2MarktTor: '/projects/k2-galerie/k2-markt-tor',
+    k2Markt: '/projects/k2-markt/mappe',
+    k2MarktOberflaeche: '/projects/k2-markt',
+    k2MarktTor: '/projects/k2-markt/tor',
   },
 } as const
 

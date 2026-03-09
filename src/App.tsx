@@ -69,7 +69,7 @@ import FlyerK2GaleriePage from './pages/FlyerK2GaleriePage'
 import PresseEinladungK2GaleriePage from './pages/PresseEinladungK2GaleriePage'
 import MeinBereichPage from './pages/MeinBereichPage'
 import KundenPage from './pages/KundenPage'
-import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUTE, ENTDECKEN_ROUTE, PILOT_SCHREIBEN_ROUTE, MEIN_BEREICH_ROUTE } from './config/navigation'
+import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUTE, ENTDECKEN_ROUTE, PILOT_SCHREIBEN_ROUTE, MEIN_BEREICH_ROUTE, KREATIVWERKSTATT_ROUTE } from './config/navigation'
 import { getPageMeta, applyPageMeta } from './config/seoPageMeta'
 import { TenantProvider } from './context/TenantContext'
 import WillkommenPage from './pages/WillkommenPage'
@@ -510,10 +510,20 @@ function App() {
       {/* Willkommensseite (Werbung/Flyer): Zugangsbereich, Anmelden, Erster Entwurf – mök2-Stil */}
       <Route path={WILLKOMMEN_ROUTE} element={<WillkommenPage />} />
       <Route path={ENTDECKEN_ROUTE} element={<EntdeckenPage />} />
+      {/* Kreativwerkstatt = K2-Markt-Oberfläche (Leitvision, Ablauf, Studio, Tor) – kurze URL für Homepage/Link */}
+      <Route path={KREATIVWERKSTATT_ROUTE} element={<K2MarktOberflaechePage />} />
       {/* Allgemeine Geschäftsbedingungen – rechtliche Absicherung */}
       <Route path={AGB_ROUTE} element={<AGBPage />} />
-      {/* Projekt-Routen – spezifische Pfade VOR /projects/:projectId, damit VK2 nicht abgefangen wird */}
+      {/* Projekt-Routen – spezifische Pfade VOR /projects/:projectId, damit VK2/K2-Markt nicht abgefangen werden */}
       <Route path={PLATFORM_ROUTES.projects} element={<ProjectsPage />} />
+      {/* K2 Markt – eigenständiges Projekt (Datenquelle ök2). Homepage = Arbeitsoberfläche = manuell arbeiten; netzfähig wie ök2 und K2 Familie */}
+      <Route path={PROJECT_ROUTES['k2-markt'].home} element={<K2MarktOberflaechePage />} />
+      <Route path={PROJECT_ROUTES['k2-markt'].mappe} element={<K2MarktPage />} />
+      <Route path={PROJECT_ROUTES['k2-markt'].tor} element={<K2MarktTorPage />} />
+      {/* Legacy: alte K2-Markt-Pfade unter k2-galerie → Redirect auf eigenständiges Projekt */}
+      <Route path="/projects/k2-galerie/k2-markt-oberflaeche" element={<Navigate to={PROJECT_ROUTES['k2-markt'].home} replace />} />
+      <Route path="/projects/k2-galerie/k2-markt-tor" element={<Navigate to={PROJECT_ROUTES['k2-markt'].tor} replace />} />
+      <Route path="/projects/k2-galerie/k2-markt" element={<Navigate to={PROJECT_ROUTES['k2-markt'].mappe} replace />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].galerie} element={<GaleriePage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich} element={<Ok2ThemeWrapper><GaleriePage musterOnly /></Ok2ThemeWrapper>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau} element={<Ok2ThemeWrapper><GalerieVorschauPage musterOnly /></Ok2ThemeWrapper>} />
@@ -561,9 +571,6 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].werbeunterlagen} element={<Mok2Layout><WerbeunterlagenPage embeddedInMok2Layout /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].uebersicht} element={<Mok2Layout><UebersichtBoardPage /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie} element={<KampagneMarketingStrategiePage />} />
-      <Route path={PROJECT_ROUTES['k2-galerie'].k2Markt} element={<K2MarktPage />} />
-      <Route path={PROJECT_ROUTES['k2-galerie'].k2MarktOberflaeche} element={<K2MarktOberflaechePage />} />
-      <Route path={PROJECT_ROUTES['k2-galerie'].k2MarktTor} element={<K2MarktTorPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].licences} element={<Mok2Layout><LicencesPage embeddedInMok2Layout /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} element={<Mok2Layout><LizenzKaufenPage /></Mok2Layout>} />
       <Route path="/lizenz-erfolg" element={<LizenzErfolgPage />} />

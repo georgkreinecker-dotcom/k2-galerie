@@ -26,7 +26,7 @@ export default function K2MarktOberflaechePage() {
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', marginTop: '0.75rem' }}>
             <Link to={PROJECT_ROUTES['k2-galerie'].home} style={{ color: '#5ffbf1', textDecoration: 'none', fontSize: '0.9rem' }}>← K2 Galerie</Link>
             <Link to={PROJECT_ROUTES['k2-galerie'].k2Markt} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>Mappe (Doku)</Link>
-            <Link to={PROJECT_ROUTES['k2-galerie'].k2MarktTor} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>🚦 Zum Tor</Link>
+            <Link to={PROJECT_ROUTES['k2-markt'].tor} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>🚦 Zum Tor</Link>
           </div>
         </header>
 
@@ -180,7 +180,7 @@ export default function K2MarktOberflaechePage() {
             Am Tor wählst du mök2-Idee und optional Kampagne, siehst den Entwurf, prüfst nach DoD und gibst frei – eine Freigabe, dann marktfähig.
           </p>
           <Link
-            to={PROJECT_ROUTES['k2-galerie'].k2MarktTor}
+            to={PROJECT_ROUTES['k2-markt'].tor}
             style={{
               display: 'inline-block',
               padding: '0.6rem 1.25rem',

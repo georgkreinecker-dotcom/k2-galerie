@@ -207,7 +207,7 @@ export default function K2MarktTorPage() {
           <p style={{ color: '#f87171' }}>{fehler}</p>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.75rem' }}>
             <Link to={PROJECT_ROUTES['k2-galerie'].home} style={{ color: '#5ffbf1', textDecoration: 'none', fontSize: '0.9rem' }}>← K2 Galerie</Link>
-            <Link to={PROJECT_ROUTES['k2-galerie'].k2MarktOberflaeche} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>🎯 Arbeitsoberfläche</Link>
+            <Link to={PROJECT_ROUTES['k2-markt'].home} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>🎯 Arbeitsoberfläche</Link>
             <Link to={PROJECT_ROUTES['k2-galerie'].k2Markt} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>K2 Markt Mappe</Link>
           </div>
         </div>
@@ -227,7 +227,7 @@ export default function K2MarktTorPage() {
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', marginTop: '0.75rem' }}>
             <Link to={PROJECT_ROUTES['k2-galerie'].home} style={{ color: '#5ffbf1', textDecoration: 'none', fontSize: '0.9rem' }}>← K2 Galerie</Link>
-            <Link to={PROJECT_ROUTES['k2-galerie'].k2MarktOberflaeche} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>🎯 Arbeitsoberfläche</Link>
+            <Link to={PROJECT_ROUTES['k2-markt'].home} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>🎯 Arbeitsoberfläche</Link>
             <Link to={PROJECT_ROUTES['k2-galerie'].k2Markt} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>K2 Markt Mappe</Link>
             <Link to={PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>Kampagne Marketing-Strategie</Link>
           </div>

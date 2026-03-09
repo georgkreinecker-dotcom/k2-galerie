@@ -14,6 +14,7 @@ export const PROJECT_COLORS: Record<string, string> = {
   'k2-galerie-oeffentlich': '#b8b8ff',
   vk2: '#e67a2a', // K2-Familie: Orange (Hausherr) – VK2 = Mieter nutzt K2-Design
   'k2-familie': '#0d9488', // Türkis/Grün – Familie, Wachstum, Verbindung
+  'k2-markt': '#22c55e', // Grün – K2 Markt (eigenständig, Datenquelle ök2)
 }
 
 /** Fallback-Palette für Projekte ohne Eintrag in PROJECT_COLORS */
@@ -42,8 +43,8 @@ export function getProjectCards(): ProjectCard[] {
   const cards: ProjectCard[] = ids.map((id, index) => {
     const route = PROJECT_ROUTES[id]
     const color = PROJECT_COLORS[id] ?? PROJECT_PALETTE[index % PROJECT_PALETTE.length]
-    // VK2: direkt zur Galerie (nicht home), damit man nicht auf K2 landet
-    const to = id === 'vk2' ? route.galerie : route.home
+    // VK2: direkt zur Galerie (nicht home), damit man nicht auf K2 landet. K2-Markt hat nur home.
+    const to = id === 'vk2' && 'galerie' in route ? route.galerie : route.home
     return {
       id: `${id}-projekt`,
       title: route.name,
@@ -82,6 +83,7 @@ function getDefaultDescription(projectId: ProjectId): string {
     'k2-galerie': 'Projekt-Start, Control-Studio, Plan, Mobile-Connect – Steuerung und Inhalte.',
     vk2: 'Vereinsplattform – Künstler:innen, Mitglieder, Admin.',
     'k2-familie': 'Familienstammbaum modern – jeder sichtbar, vernetzt, mit eigener Seite. Raumschiff.',
+    'k2-markt': 'Eigenständiges Projekt. Datenquelle: ök2. Homepage = Arbeitsoberfläche (Leitvision, Ablauf, Studio, Tor) – manuell arbeiten; netzfähig.',
   }
   return descriptions[projectId] ?? 'Projekt öffnen.'
 }

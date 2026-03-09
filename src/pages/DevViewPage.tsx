@@ -255,7 +255,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       case 'uebersicht': return PROJECT_ROUTES['k2-galerie'].uebersicht
       case 'notizen': return PROJECT_ROUTES['k2-galerie'].notizen
       case 'kampagne': return PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie
-      case 'k2-markt': return PROJECT_ROUTES['k2-galerie'].k2MarktOberflaeche
+      case 'k2-markt': return PROJECT_ROUTES['k2-markt'].home
       case 'mission-control': return PLATFORM_ROUTES.missionControl
       default: return PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
     }
@@ -1411,7 +1411,7 @@ end tell`
               currentPageData.id === 'uebersicht' ? PROJECT_ROUTES['k2-galerie'].uebersicht :
               currentPageData.id === 'notizen' ? PROJECT_ROUTES['k2-galerie'].notizen :
               currentPageData.id === 'kampagne' ? PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie :
-              currentPageData.id === 'k2-markt' ? PROJECT_ROUTES['k2-galerie'].k2MarktOberflaeche : '/'}
+              currentPageData.id === 'k2-markt' ? PROJECT_ROUTES['k2-markt'].home : '/'}
           style={{
             padding: '0.5rem 1rem',
             background: '#33a1ff',

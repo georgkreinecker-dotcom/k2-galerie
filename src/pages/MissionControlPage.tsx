@@ -231,19 +231,21 @@ export default function MissionControlPage() {
                 {isExpanded && (
                   <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      <Link
-                        to={project.routes.plan}
-                        className="btn small-btn"
-                        style={{
-                          background: `linear-gradient(120deg, ${project.color}, ${project.color}80)`,
-                          color: '#04111f',
-                          textDecoration: 'none',
-                          textAlign: 'center',
-                          fontSize: '0.85rem'
-                        }}
-                      >
-                        📋 Projektplan öffnen
-                      </Link>
+                      {'plan' in project.routes && (
+                        <Link
+                          to={project.routes.plan}
+                          className="btn small-btn"
+                          style={{
+                            background: `linear-gradient(120deg, ${project.color}, ${project.color}80)`,
+                            color: '#04111f',
+                            textDecoration: 'none',
+                            textAlign: 'center',
+                            fontSize: '0.85rem'
+                          }}
+                        >
+                          📋 Projektplan öffnen
+                        </Link>
+                      )}
                       <Link
                         to={project.routes.home}
                         className="btn small-btn"
