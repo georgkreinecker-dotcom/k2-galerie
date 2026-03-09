@@ -6,11 +6,11 @@
 
 ---
 
-## Datum: 09.03.26 – K2 Markt: Architektur fertig, Planer können kommen
+## Datum: 09.03.26 – K2 Markt: Gestartet – Phase 1 Produkt-Moment
 
-- **Stand:** Architektur steht (Vision und Architektur – eine Quelle). **Einstieg für Planer** angelegt: In der K2-Markt-Mappe gibt es jetzt **„Für die Planer“** – Roadmap, Phasen, Meilensteine, Reihenfolge auf Basis der einen Architektur. Dokument: public/k2-markt/K2-MARKT-FUER-PLANER.md (Sidebar + Index); Spiegel in docs/K2-MARKT-FUER-PLANER.md. Handbuch verweist auf den Planer-Einstieg.
-- **Nächster Schritt:** Planer füllen (Phasen, Meilensteine ausarbeiten) – oder du schaust dir den Einstieg in der Mappe an.
-- **Wo nachlesen:** K2 Markt Mappe → Für die Planer; docs/K2-MARKT-FUER-PLANER.md; docs/K2-MARKT-VISION-ARCHITEKTUR.md.
+- **Stand:** Phasen 1–4 im Planer-Dokument festgelegt. **Phase 1 gestartet:** Produkt-Moment (Modell) mit Felder-Vorschlag (id, titel, botschaft, zielgruppe, kontakt, links, medien, kernargumente, gültigVon/Bis) in K2-MARKT-PRODUKT-MOMENT.md. In der Mappe: Index + Sidebar um „Produkt-Moment (Modell)“ ergänzt. Commit d403ed9.
+- **Nächster Schritt:** DoD für ein Format (z. B. Flyer) festlegen – dann Phase 2 (erster Agent). Oder du nickst das Modell ab / korrigierst Felder.
+- **Wo nachlesen:** K2 Markt Mappe → Produkt-Moment (Modell); Für die Planer; docs/K2-MARKT-VISION-ARCHITEKTUR.md.
 
 ---
 
