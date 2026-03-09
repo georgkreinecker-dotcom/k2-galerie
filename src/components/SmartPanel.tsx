@@ -109,10 +109,11 @@ function saveOrder(order: string[]) {
 }
 
 const MAPPEN_OPEN_KEY = 'smartpanel-mappen-open'
-/** Arbeitsmappen – Themen gebündelt (K2 Galerie, K2 Familie, Notizen, Vermächtnis) */
-const GALERIE_ITEM_IDS = ['uebersicht', 'k2', 'oek2', 'vk2', 'mok2', 'kampagne', 'k2-markt'] as const
+/** Arbeitsmappen – Hall of Fame: K2 Galerie, K2 Markt, K2 Familie, Notizen, Vermächtnis (jeweils eigenes Produkt) */
+const GALERIE_ITEM_IDS = ['uebersicht', 'k2', 'oek2', 'vk2', 'mok2', 'kampagne'] as const
 const MAPPEN = [
   { id: 'galerie', label: 'K2 Galerie', icon: '🎨', itemIds: [...GALERIE_ITEM_IDS] },
+  { id: 'k2-markt', label: 'K2 Markt', icon: '🏪', itemIds: ['k2-markt'] },
   { id: 'familie', label: 'K2 Familie', icon: '👨‍👩‍👧‍👦', itemIds: ['k2-familie'] },
   { id: 'notizen', label: 'Notizen', icon: '📝', itemIds: ['notizen'] },
   { id: 'vermaechtnis', label: 'Vermächtnis', icon: '🏛️', itemIds: ['handbuch'] },
@@ -123,7 +124,7 @@ function loadMappenOpen(): Record<string, boolean> {
     const v = localStorage.getItem(MAPPEN_OPEN_KEY)
     if (v) return JSON.parse(v)
   } catch { /* ignore */ }
-  return { galerie: true, familie: true, notizen: true, vermaechtnis: true }
+  return { galerie: true, 'k2-markt': true, familie: true, notizen: true, vermaechtnis: true }
 }
 
 function saveMappenOpen(open: Record<string, boolean>) {
