@@ -6,10 +6,18 @@
 
 ---
 
+## Datum: 09.03.26 – iPad: nur 10 Werke – Few-Works-Fallback (statische Datei wenn API wenig liefert)
+
+- **Stand:** Nach App-Löschen + QR-Scan bekam iPad weiter nur 10 Werke. **Ursache:** API (Vercel Blob) enthielt nur 10 (alter Publish), statische `gallery-data.json` im Build hat 50+. **Umsetzung:** **Few-Works-Fallback:** Wenn API erfolgreich ist, aber `data.artworks.length <= 15`, zusätzlich statische `/gallery-data.json` laden; wenn die **mehr** Werke hat → diese Daten verwenden. Eingebaut in **GalerieVorschauPage** (handleRefresh / „Bilder vom Server laden“) und **GaleriePage** (loadData / Initial-Load beim QR). So bekommt iPad/QR sofort die volle Liste aus der statischen Datei, bis Blob durch „Veröffentlichen“ mit allen Werken aktualisiert ist.
+- **Nächster Schritt:** Nach Push: Vercel deployen lassen, dann iPad: App neu öffnen oder QR neu scannen – es sollten alle Werke aus der statischen Datei kommen (Konsole: „📥 API hatte nur X Werke – nutze statische Datei mit Y Werken“). Optional: am Mac einmal **Veröffentlichen**, damit Blob dauerhaft aktuell ist.
+- **Wo nachlesen:** GalerieVorschauPage.tsx (handleRefresh, ~Zeile 1962+); GaleriePage.tsx (loadData, ~Zeile 1455+).
+
+---
+
 ## Datum: 09.03.26 – iPad: nur 10 Werke / Werkkatalog – API zuerst (Blob = aktuell)
 
 - **Stand:** iPad bekam weiter nur 10 Werke, auch im Werkkatalog nur 10 Bilder. **Ursache:** „Bilder vom Server laden“ holte nur die **statische** `/gallery-data.json` (Stand vom letzten Build im Repo). „Veröffentlichen“ schreibt aber **zuerst in Vercel Blob** – die **API** `/api/gallery-data?tenantId=k2` liefert diesen aktuellen Stand. **Umsetzung:** GalerieVorschauPage handleRefresh: **API zuerst** (`/api/gallery-data?tenantId=k2`), bei Fehler Fallback auf `/gallery-data.json`. Wie GaleriePage – so kommt das iPad an den Blob-Stand (alle Werke nach Veröffentlichen). **Commit:** c69a78a – auf GitHub.
-- **Nächster Schritt:** Nach Vercel-Deploy: am Mac einmal **Veröffentlichen** (damit Blob aktuell ist), am iPad **„Bilder vom Server laden“** tippen – dann sollten alle Werke ankommen. Konsole: „📥 Daten aus API (Vercel Blob = aktueller Stand)“ oder „… aus statischer gallery-data.json (Fallback)“.
+- **Nächster Schritt:** (Ersetzt durch Few-Works-Fallback oben.)
 - **Wo nachlesen:** GalerieVorschauPage.tsx (handleRefresh); api/gallery-data.js (Blob lesen); api/write-gallery-data.js (Blob schreiben).
 
 ---

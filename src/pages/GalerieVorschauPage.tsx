@@ -1975,7 +1975,22 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       }
       
       if (response?.ok) {
-        const data = await response.json()
+        let data = await response.json()
+        const apiCount = data.artworks && Array.isArray(data.artworks) ? data.artworks.length : 0
+        // Blob hat oft nur 10 Werke (alter Publish) – statische Datei aus Build hat alle
+        if (apiCount <= 15) {
+          try {
+            const staticRes = await fetch(staticUrl, fetchOpts)
+            if (staticRes?.ok) {
+              const staticData = await staticRes.json()
+              const staticCount = staticData.artworks && Array.isArray(staticData.artworks) ? staticData.artworks.length : 0
+              if (staticCount > apiCount) {
+                console.log('📥 API hatte nur', apiCount, 'Werke – nutze statische Datei mit', staticCount, 'Werken')
+                data = staticData
+              }
+            }
+          } catch (_) {}
+        }
         const serverCount = data.artworks && Array.isArray(data.artworks) ? data.artworks.length : 0
         console.log('📥 Server antwortete mit', serverCount, 'Werken (Rohantwort)')
         if (data.designSettings != null && typeof data.designSettings === 'object') {

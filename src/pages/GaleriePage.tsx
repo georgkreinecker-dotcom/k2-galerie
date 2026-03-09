@@ -1454,7 +1454,23 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
         }
 
         if (response?.ok) {
-          const jsonData = await response.json()
+          let jsonData = await response.json()
+          const apiCount = jsonData.artworks && Array.isArray(jsonData.artworks) ? jsonData.artworks.length : 0
+          // Blob liefert oft nur 10 Werke (alter Publish) – statische Datei aus Build hat alle; bei QR/Neustart nutzen
+          if (apiCount <= 15) {
+            try {
+              const staticPath = `/gallery-data.json?v=${timestamp}&_=${Date.now()}`
+              const staticRes = await fetch(GALLERY_DATA_PUBLIC_URL + staticPath, { ...fetchOpts, signal: undefined })
+              if (staticRes?.ok) {
+                const staticData = await staticRes.json()
+                const staticCount = staticData.artworks && Array.isArray(staticData.artworks) ? staticData.artworks.length : 0
+                if (staticCount > apiCount) {
+                  console.log('📥 API hatte nur', apiCount, 'Werke – nutze statische Datei mit', staticCount, 'Werken')
+                  jsonData = staticData
+                }
+              }
+            } catch (_) {}
+          }
           data = jsonData
           // QR/Gleichstand: Nur auf K2-Route Server-Daten anwenden – nie Muster/ök2-Daten in K2-Keys schreiben
           if (musterOnly || vk2) {
