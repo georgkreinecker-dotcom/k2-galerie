@@ -11,6 +11,8 @@ alwaysApply: true
 
 **Quintessenz:** Was andere schon erfunden haben, **nicht ein zweites Mal erfinden.** Du sollst das Rad nicht zweimal erfinden.
 
+**Sportwagenmodus + Markt (Georg):** Umso mehr gilt das Prinzip: **Alle Ressourcen des Marktes nutzen.** Für jedes Detail bis hin zum fertigen Motor – für ziemlich alles gibt es schon eine fertige Lösung, **man muss nur suchen.** Kein Selberbau, wo der Markt liefert.
+
 - **Erfolgreiche Maschinenbauer:** Kennen Normen. Wissen, welche Komponenten sie zukaufen oder besorgen können. Lagern Kompetenzen aus. Suchen am Markt nach den besten Lösungen. Sie denken nicht: „Wir können alles selber machen.“
 - **Dilettanten / gute Handwerker:** Sind geschickt und können viel selber – aber sie bauen oft nach, was es schon gibt, und skalieren nicht, weil alles in ihrer Hand bleibt.
 - **Für uns:** Wir verhalten uns in dem, was wir machen, oft wie Dilettanten und gute Handwerker – **nicht** wie wirklich erfolgreiche Maschinenbauer. Diese Regel stellt sicher, dass die AI sich wie ein Profi verhält: zukaufen, normen, auslagern, nicht neu erfinden.
@@ -34,8 +36,9 @@ alwaysApply: true
 
 ### 3. Am Markt nach den besten Lösungen umsehen
 
-- Bei neuen Anforderungen (Sync, Speicher, Druck, Export, …): **kurz recherchieren**, was es bereits gibt (npm, Vercel, Supabase, Standards wie OAuth, REST, …). Nicht sofort in den Code gehen.
+- Bei neuen Anforderungen (Sync, Speicher, Druck, Export, …): **suchen**, was es bereits gibt (npm, Vercel, Supabase, Standards, SaaS, Open Source). Für ziemlich alles gibt es eine fertige Lösung – man muss nur suchen. Nicht sofort in den Code gehen.
 - **Normen kennen:** Wo es Standards gibt (z. B. OAuth, JWT, REST, CORS) – diese einhalten, nicht eigene Wege gehen, außer es gibt einen zwingenden Grund.
+- **Sportwagenmodus:** Ein Standard pro Problem, alle Markt-Ressourcen nutzen – bis hin zum „fertigen Motor“, also fertigen Komponenten. Nicht selbst bauen, was es schon gibt.
 
 ### 4. Übertragbarkeit (Profi vs. Dilettant)
 
@@ -66,6 +69,6 @@ alwaysApply: true
 
 ## Kurzfassung
 
-**Profi = Rad nicht zweimal erfinden. Normen kennen. Zukaufen, auslagern, am Markt beste Lösungen nutzen. Vor dem Bauen: „Gibt es das schon?“ – dann übertragbar festhalten. Dilettant = alles selber machen können; Profi = das Richtige selber machen und das Übrige zukaufen und normen.**
+**Profi = Rad nicht zweimal erfinden. Normen kennen. Zukaufen, auslagern, am Markt beste Lösungen nutzen. Vor dem Bauen: „Gibt es das schon?“ – dann suchen, nutzen, übertragbar festhalten. Sportwagenmodus: alle Markt-Ressourcen nutzen, für jedes Detail bis zum fertigen Motor gibt es meist schon eine Lösung – man muss nur suchen. Dilettant = alles selber machen; Profi = das Richtige selber machen und das Übrige zukaufen und normen.**
 
-Verknüpfung: **ein-standard-problem.mdc** (eine Lösung pro Problem), **skalierungsprinzip.mdc** (skalierbar bauen), **verbindlich-zuverlaessig-nicht-hoffnung.mdc** (zuverlässig, nicht „hoffen“).
+Verknüpfung: **ein-standard-problem.mdc** (eine Lösung pro Problem), **skalierungsprinzip.mdc** (skalierbar bauen), **georg-ki-erledigt-pension.mdc** (KI erledigt maximal – Markt-Ressourcen nutzen entlastet zusätzlich), **verbindlich-zuverlaessig-nicht-hoffnung.mdc** (zuverlässig, nicht „hoffen“).
