@@ -6,11 +6,11 @@
 
 ---
 
-## Datum: 09.03.26 – K2 Markt: Gestartet – Phase 1 Produkt-Moment
+## Datum: 09.03.26 – K2 Markt: Phase 1 abgeschlossen, Phase 2 nächster Schritt
 
-- **Stand:** Phasen 1–4 im Planer-Dokument festgelegt. **Phase 1 gestartet:** Produkt-Moment (Modell) mit Felder-Vorschlag (id, titel, botschaft, zielgruppe, kontakt, links, medien, kernargumente, gültigVon/Bis) in K2-MARKT-PRODUKT-MOMENT.md. In der Mappe: Index + Sidebar um „Produkt-Moment (Modell)“ ergänzt. Commit d403ed9.
-- **Nächster Schritt:** DoD für ein Format (z. B. Flyer) festlegen – dann Phase 2 (erster Agent). Oder du nickst das Modell ab / korrigierst Felder.
-- **Wo nachlesen:** K2 Markt Mappe → Produkt-Moment (Modell); Für die Planer; docs/K2-MARKT-VISION-ARCHITEKTUR.md.
+- **Stand:** Phase 1 erledigt: Produkt-Moment (Modell) + **DoD Flyer** festgelegt (K2-MARKT-DOD-FLYER.md – Pflichtelemente, kein Platzhalter, Prüfliste fürs Tor). In der Mappe: Index + Sidebar um „DoD Flyer“ ergänzt. Planer/Handbuch aktualisiert.
+- **Nächster Schritt:** Phase 2 – erster Agent (z. B. Flyer-Agent: Input = Produkt-Moment + Template, Output = Entwurf). Oder du schaust dir DoD Flyer in der Mappe an.
+- **Wo nachlesen:** K2 Markt Mappe → DoD Flyer, Produkt-Moment, Für die Planer; docs/K2-MARKT-VISION-ARCHITEKTUR.md.
 
 ---
 

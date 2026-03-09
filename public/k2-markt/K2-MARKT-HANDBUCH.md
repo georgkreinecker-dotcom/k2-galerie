@@ -21,7 +21,7 @@
 | **Vision und Architektur (eine Quelle)** | Zusammengeführte Vision: Kette zum Markt, Medienhaus, eine Wahrheit → viele Formate, Produkt-Moment, Qualitäts-Tor + eine Freigabe, Regeln im System, Traceability. Mit Georgs Persönlichkeit und gemeinsamer Schärfe. |
 | **Eigene Mappe im Smart Panel** | K2 Markt als eigenes Produkt in der Hall of Fame; alle Dokumente (Index, Vision, Handbuch, Planer, Produkt-Moment) an einem Ort. |
 | **Handbuch (diese Datei)** | Dokumentation der Arbeit – hier wird fortgeschrieben. |
-| **Phasen 1–4 + Start** | Planer-Dokument mit Phasen und Meilensteinen; Phase 1 gestartet – Produkt-Moment (Modell) mit Felder-Vorschlag. |
+| **Phasen 1–4 + Phase 1 erledigt** | Planer: Phasen/Meilensteine. Phase 1: Produkt-Moment (Modell) + DoD Flyer festgelegt. Nächster: Phase 2 (erster Agent). |
 
 ---
 

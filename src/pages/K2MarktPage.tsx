@@ -16,6 +16,7 @@ const DOCUMENTS = [
   { id: 'handbuch', name: 'Handbuch K2 Markt', file: 'K2-MARKT-HANDBUCH.md' },
   { id: 'planer', name: 'Für die Planer', file: 'K2-MARKT-FUER-PLANER.md' },
   { id: 'produkt-moment', name: 'Produkt-Moment (Modell)', file: 'K2-MARKT-PRODUKT-MOMENT.md' },
+  { id: 'dod-flyer', name: 'DoD Flyer', file: 'K2-MARKT-DOD-FLYER.md' },
 ] as const
 
 export default function K2MarktPage() {

@@ -20,6 +20,9 @@ Einstieg für Planer: Architektur steht; Phasen 1–4, Meilensteine, Start Phase
 **4. [Produkt-Moment (Modell)](K2-MARKT-PRODUKT-MOMENT.md)**  
 Die eine Quelle pro Aussage: Felder (Titel, Botschaft, Zielgruppe, Kontakt, Links, Medien, …). Phase 1 – Basis für alle Agenten.
 
+**5. [DoD Flyer](K2-MARKT-DOD-FLYER.md)**  
+Definition of Done für Flyer: Pflichtelemente (Botschaft, Kontakt, Link/QR, Bild), kein Platzhalter. Prüfliste für das Qualitäts-Tor.
+
 ---
 
 *Übergeordnetes Inhaltsverzeichnis: [docs/00-INDEX.md](../../docs/00-INDEX.md).*

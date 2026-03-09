@@ -32,13 +32,13 @@
 ## 3. Was noch offen ist (Phase 1)
 
 - **Speicherort:** Wo leben Produkt-Momente? (z. B. JSON in Repo, Supabase-Tabelle, Datei in k2-markt – nach Sportwagenmodus: bestehende Infrastruktur nutzen.)
-- **Definition of Done** pro erstes Format (z. B. Flyer): Was muss im Entwurf enthalten sein? (Text, Kontakt, QR, kein Platzhalter, …) → eigenes Doc oder Abschnitt hier.
+- **Definition of Done** für Flyer: festgelegt → [DoD Flyer](K2-MARKT-DOD-FLYER.md).
 
 ---
 
 ## 4. Nächster Schritt
 
-DoD für **ein** Format (z. B. Flyer) festlegen – dann kann der erste Agent (Phase 2) darauf aufbauen.
+Phase 2: **Erster Agent** (z. B. Flyer-Agent) – Input = Produkt-Moment + ein Flyer-Template; Output = Entwurf. DoD Flyer ist die Prüfliste im Tor.
 
 ---
 
