@@ -6,11 +6,11 @@
 
 ---
 
-## Datum: 09.03.26 – K2 Markt: Beide Visionen zu einer zusammengeführt
+## Datum: 09.03.26 – K2 Markt: Architektur fertig, Planer können kommen
 
-- **Stand:** Die beiden Visionen (Georgs + Joes Schärfe) sind **zu einer Quelle** zusammengeführt: **Vision und Architektur (eine Quelle)**. Eine Stimme, Georgs Persönlichkeit, unsere gemeinsame Architektur (Produkt-Moment, Qualitäts-Tor, eine Freigabe, Regeln im System). In der K2-Markt-Mappe nur noch: Index, Vision und Architektur (eine Quelle), Handbuch. docs/K2-MARKT-ARCHITEKTUR-EINZIGARTIG.md verweist auf die gemeinsame Fassung.
-- **Nächster Schritt:** Nächste Schritte aus der Vision umsetzen oder mit Georg durchgehen.
-- **Wo nachlesen:** K2 Markt Mappe → Vision und Architektur (eine Quelle); docs/K2-MARKT-VISION-ARCHITEKTUR.md.
+- **Stand:** Architektur steht (Vision und Architektur – eine Quelle). **Einstieg für Planer** angelegt: In der K2-Markt-Mappe gibt es jetzt **„Für die Planer“** – Roadmap, Phasen, Meilensteine, Reihenfolge auf Basis der einen Architektur. Dokument: public/k2-markt/K2-MARKT-FUER-PLANER.md (Sidebar + Index); Spiegel in docs/K2-MARKT-FUER-PLANER.md. Handbuch verweist auf den Planer-Einstieg.
+- **Nächster Schritt:** Planer füllen (Phasen, Meilensteine ausarbeiten) – oder du schaust dir den Einstieg in der Mappe an.
+- **Wo nachlesen:** K2 Markt Mappe → Für die Planer; docs/K2-MARKT-FUER-PLANER.md; docs/K2-MARKT-VISION-ARCHITEKTUR.md.
 
 ---
 

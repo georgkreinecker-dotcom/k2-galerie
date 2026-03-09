@@ -34,10 +34,8 @@
 
 ## 4. Nächste Schritte (offen)
 
-1. Quelle strukturieren (mök2, Kampagne, Docs als eine durchsuchbare Quelle).
-2. Ersten Agenten definieren (z. B. Text-Agent oder Flyer-Agent).
-3. Zentrale (Bildschirm) skizzieren – Prüfungen, Tools, Schnittstellen.
-4. Ausgabe-Formate priorisieren (Flyer, E-Mail, Presse, Social).
+- **Planer:** Einstieg steht in der Mappe – [Für die Planer](K2-MARKT-FUER-PLANER.md). Dort: Phasen, Meilensteine, Reihenfolge auf Basis der Architektur ausarbeiten.
+- Danach (Beispiele): Quelle strukturieren (mök2, Kampagne, Docs); ersten Agenten definieren; Zentrale (Bildschirm) skizzieren; Ausgabe-Formate priorisieren.
 
 ---
 
