@@ -41,6 +41,8 @@ alwaysApply: true
 
 **Pflicht vor Implementierung:** Gibt es dafür schon eine Lösung? Wenn ja → dieselbe Klasse / denselben Ablauf nutzen. Georg soll nicht sagen müssen „sind wir im Sportwagenmodus?“ – die Regel und diese Tabelle sorgen dafür.
 
+**Wenn du einen Bug fixest, weil eine Stelle den Standard nicht nutzte:** Sofort **alle** ähnlichen Stellen suchen und auf den Standard umstellen – nicht nur die eine. Siehe `.cursor/rules/standard-verstoss-alle-stellen-nachziehen.mdc`.
+
 ## Kurzfassung
 
 **Gleiche Problemstellung = eine Lösung. Keine zweite, keine Sonderfälle ohne zwingenden Grund. Regel kategorisch – gilt für Menschen und AI. Konkrete Standards in der Tabelle oben vor Neuimplementierung prüfen.**

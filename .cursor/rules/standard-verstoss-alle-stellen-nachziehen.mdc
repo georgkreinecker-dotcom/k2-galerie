@@ -1,0 +1,36 @@
+---
+description: Wenn eine Stelle einen Standard nicht nutzt → alle ähnlichen Stellen suchen und nachziehen (Lehre 0031/0035).
+alwaysApply: true
+---
+
+# Standard-Verstoß = alle Stellen nachziehen (kategorisch)
+
+## Die Lehre (09.03.26)
+
+Wir hatten den Standard (Werke mit Bildern → ImageStore). **Eine** Stelle (Bearbeiten) nutzte ihn nicht → 3 Stunden Fehlersuche. Georg: „Da wird es noch tausende so Probleme geben können.“
+
+**Konsequenz:** Wenn wir **einen** Bug finden, weil **eine** Code-Stelle einen **bereits festgelegten** Standard nicht nutzt, dann gibt es oft **mehrere** solche Stellen. Einmal fixen reicht nicht – wir müssen **alle** ähnlichen Stellen finden und auf den Standard umstellen.
+
+## Unveränderliche Regel
+
+**Sobald du einen Bug behebst mit der Ursache „hier wurde der Standard X nicht genutzt“:**
+
+1. **Standard klären:** Welcher Standard gilt? (ein-standard-problem.mdc Tabelle, werke-bilder-immer-imagestore, prozesssicherheit, …)
+2. **Alle Stellen suchen:** Grep / Suche nach **allen** Code-Pfaden, die dieselbe Problemstellung haben (z. B. „Werke speichern“, „Bild einfügen“, „Veröffentlichen“, „Dokument öffnen“). Nicht nur die eine Datei – **das ganze Repo**.
+3. **Alle nachziehen:** Jede gefundene Stelle auf **dieselbe** Lösung umstellen. Kein „die eine hab ich gefixt, der Rest später“.
+4. **Regel schärfen:** Ist der Standard in den Regeln/Checklisten so formuliert, dass die nächste Session ihn **immer** anwendet? Wenn nein: Regel oder Checkliste ergänzen (wie bei werke-bilder-immer-imagestore.mdc).
+
+## Konkret
+
+| Du hast gefixt …           | Dann sofort prüfen … |
+|---------------------------|----------------------|
+| Eine Stelle speichert Werke mit Bild ohne ImageStore | Alle Aufrufer von saveArtworks / saveArtworksForContext, die Listen mit imageUrl (data-URL) übergeben könnten |
+| Eine Stelle öffnet ein Dokument anders | Alle „Dokument öffnen“-Flows – openDocumentInApp überall? |
+| Eine Stelle veröffentlicht ohne publishGalleryDataToServer | Alle Fetches zu write-gallery-data, alle „Veröffentlichen“-Buttons |
+| Eine Stelle nutzt preserveLocalImageData falsch (oder nicht) | Alle Merge-/Lade-Pfade von Server-Daten |
+
+## Kurzfassung
+
+**Ein Standard-Verstoß = alle ähnlichen Stellen suchen und nachziehen. Regel so schärfen, dass es nicht wieder passiert. Keine „tausende“ heimlichen Verstöße – systematisch schließen.**
+
+Verknüpfung: ein-standard-problem.mdc, anweisung-lueckenlos-umsetzen.mdc, feature-entfernen-vollstaendig.mdc (gleiche Logik: nicht nur ein Teil).
