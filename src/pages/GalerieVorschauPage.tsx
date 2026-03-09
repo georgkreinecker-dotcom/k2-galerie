@@ -1939,26 +1939,32 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         ? window.location.origin 
         : 'https://k2-galerie.vercel.app'
       
-      const url = `${baseUrl}/gallery-data.json?v=${timestamp}&t=${timestamp}&r=${random}&_=${Date.now()}&nocache=${Math.random()}&force=${Date.now()}&refresh=${Math.random()}`
+      // iPad/Safari: starker Cache-Bust, damit nicht alte gallery-data (z. B. 10 Werke) geliefert wird
+      const bust = `${timestamp}-${random}-${Math.random().toString(36).slice(2)}`
+      const url = `${baseUrl}/gallery-data.json?bust=${bust}&v=${timestamp}&_=${Date.now()}`
       
-      console.log('🔄 Lade neue Daten vom Server...', url)
+      const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
+      console.log('🔄 Lade neue Daten vom Server...', isMobileDevice ? '(Mobile – Cache-Bust aktiv)' : '', url.slice(0, 80) + '...')
       console.log('🔄 Hostname:', window.location.hostname)
-      console.log('🔄 Ist Vercel:', isVercel)
       
       const response = await fetch(url, {
-        cache: 'no-store',
+        // Mobile: 'reload' erzwingt echte Netzwerkanfrage (Safari ignoriert no-store manchmal)
+        cache: isMobileDevice ? 'reload' : 'no-store',
         method: 'GET',
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
           'Pragma': 'no-cache',
           'Expires': '0',
-          'If-None-Match': `"${timestamp}-${random}"`,
+          'X-Request-Id': bust,
+          'If-None-Match': `"${bust}"`,
           'If-Modified-Since': 'Thu, 01 Jan 1970 00:00:00 GMT'
         }
       })
       
       if (response.ok) {
         const data = await response.json()
+        const serverCount = data.artworks && Array.isArray(data.artworks) ? data.artworks.length : 0
+        console.log('📥 Server antwortete mit', serverCount, 'Werken (Rohantwort)')
         if (data.designSettings != null && typeof data.designSettings === 'object') {
           try {
             const designToUse = isOldBlueTheme(data.designSettings) ? K2_ORANGE : data.designSettings
@@ -1987,27 +1993,42 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           console.log(`🔒 Server = Quelle: ${toSaveServer.length} Werke, ${toHistory.length} in History`, toSaveServer.length < mergedArtworks.length ? '(Muster/VK2 entfernt)' : '')
           
           try {
-            let listForDisplay = toSaveServer
             if (mayWriteServer) {
               const toSave = preserveLocalImageData(toSaveServer, loadArtworks())
               const ok = saveArtworksStorage(toSave, { allowReduce: false })
-              if (ok) console.log('✅ Gemergte Werke geladen:', toSave.length, 'Version:', data.version)
+              if (ok) {
+                console.log('✅ Gemergte Werke geladen:', toSave.length, 'Version:', data.version)
+                loadArtworksResolvedForDisplay().then((list) => {
+                  const exhibitionArtworks = filterK2ArtworksOnly(list)
+                  setArtworksDisplay(exhibitionArtworks)
+                  setLoadStatus({ message: `✅ ${exhibitionArtworks.length} Werke synchronisiert`, success: true })
+                  setTimeout(() => setLoadStatus(null), 3000)
+                })
+              } else {
+                // iPad/geringem Speicher: Speichern schlägt fehl – trotzdem alle geladenen Werke anzeigen (nur diese Sitzung)
+                console.warn('⚠️ Speichern fehlgeschlagen (z. B. Speicher voll) – zeige', toSaveServer.length, 'Werke trotzdem')
+                resolveArtworkImages(toSaveServer).then((resolved) => {
+                  setArtworksDisplay(filterK2ArtworksOnly(resolved))
+                  setLoadStatus({
+                    message: `${toSaveServer.length} Werke geladen. Speichern fehlgeschlagen (Speicher voll?) – nur in dieser Sitzung sichtbar.`,
+                    success: false
+                  })
+                  setTimeout(() => setLoadStatus(null), 8000)
+                })
+              }
             } else {
               console.warn(`⚠️ Merge würde ${localCountHere} → ${toSaveServer.length} – localStorage unverändert`)
-              listForDisplay = localArtworks
+              loadArtworksResolvedForDisplay().then((list) => {
+                setArtworksDisplay(filterK2ArtworksOnly(list))
+                setLoadStatus({ message: `✅ ${list.length} lokale Werke beibehalten`, success: true })
+                setTimeout(() => setLoadStatus(null), 3000)
+              })
             }
-            
-            loadArtworksResolvedForDisplay().then((list) => {
-              const exhibitionArtworks = filterK2ArtworksOnly(list)
-              setArtworksDisplay(exhibitionArtworks)
-              setLoadStatus({ message: `✅ ${exhibitionArtworks.length} Werke synchronisiert`, success: true })
-            })
             console.log('📊 Werke Details (resolved)')
-            setTimeout(() => setLoadStatus(null), 3000)
           } catch (e) {
-            console.warn('⚠️ Werke zu groß für localStorage')
-            setLoadStatus({ message: '⚠️ Zu viele Werke für Cache', success: false })
-            setTimeout(() => setLoadStatus(null), 3000)
+            console.warn('⚠️ Werke zu groß für localStorage', e)
+            setLoadStatus({ message: '⚠️ Zu viele Werke für Cache – Speicher freigeben (Safari: Einstellungen → Website-Daten)', success: false })
+            setTimeout(() => setLoadStatus(null), 8000)
           }
         } else {
           // KEINE Server-Daten - behalte ALLE lokalen Werke!

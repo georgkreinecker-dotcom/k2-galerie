@@ -106,14 +106,37 @@ export async function loadArtworksFromSupabase(): Promise<any[]> {
 }
 
 /**
+ * Lädt nur die Rohdaten aus Supabase (kein Merge, kein Schreiben).
+ * Für Export-Fallback: Bild-URLs von Werken, die vom iPad hochgeladen wurden, hier abrufen.
+ */
+export async function fetchRawArtworksFromSupabase(): Promise<Array<{ number?: string; id?: string; image_url?: string }>> {
+  if (!isSupabaseConfigured() || !ARTWORKS_API_URL) return []
+  try {
+    const response = await fetch(ARTWORKS_API_URL, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' },
+    })
+    if (!response.ok) return []
+    const data = await response.json()
+    return Array.isArray(data.artworks) ? data.artworks : []
+  } catch {
+    return []
+  }
+}
+
+/**
  * Liefert eine für Supabase/Handy nutzbare Bild-URL: entweder bestehende https-URL
  * oder Auflösung aus imageRef/IndexedDB + Upload nach Supabase Storage.
- * So sieht das Handy nach Sync die Bilder (keine Platzhalter).
+ * Optional: supabaseImageMap = Map (number/id -> image_url) für Fallback, wenn Bild nur in Supabase (vom iPad) existiert.
  */
-export async function resolveImageUrlForSupabase(artwork: any): Promise<string | undefined> {
+export async function resolveImageUrlForSupabase(
+  artwork: any,
+  options?: { supabaseImageMap?: Map<string, string> }
+): Promise<string | undefined> {
   const url = artwork?.imageUrl
   const ref = artwork?.imageRef
   const number = artwork?.number || artwork?.id || 'werk'
+  const key = String(number || artwork?.id || '')
   // Bereits öffentliche URL (z. B. von früherem Storage-Upload) → unverändert nutzen
   if (typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))) {
     return url
@@ -124,22 +147,42 @@ export async function resolveImageUrlForSupabase(artwork: any): Promise<string |
   } else if (ref && typeof ref === 'string') {
     dataUrl = await getArtworkImage(ref)
   }
-  if (!dataUrl) return undefined
-  const storageUrl = await uploadArtworkImageToStorage(dataUrl, String(number))
-  return storageUrl ?? undefined
+  if (dataUrl) {
+    const storageUrl = await uploadArtworkImageToStorage(dataUrl, String(number))
+    return storageUrl ?? undefined
+  }
+  // Fallback: Bild existiert nur in Supabase (vom iPad hochgeladen), dieses Gerät hat es nicht in IndexedDB
+  if (options?.supabaseImageMap?.has(key)) {
+    const fromSupabase = options.supabaseImageMap.get(key)
+    if (fromSupabase && (fromSupabase.startsWith('http://') || fromSupabase.startsWith('https://')))
+      return fromSupabase
+  }
+  return undefined
 }
 
 /**
  * Bereitet Werke für den Export (gallery-data.json) vor: imageRef/Base64 → Supabase-URL.
  * So enthält die veröffentlichte Datei echte Bild-URLs und das Handy zeigt keine Platzhalter.
- * Bei nicht konfiguriertem Supabase bleiben imageUrl leer (wie bisher).
+ * Fallback: Werke, die nur auf iPad (imageRef/IndexedDB) existieren, holen ihre URL aus Supabase.
  */
 export async function resolveArtworkImageUrlsForExport(artworks: any[]): Promise<any[]> {
   if (!Array.isArray(artworks) || artworks.length === 0) return artworks
+  let supabaseImageMap = new Map<string, string>()
+  if (isSupabaseConfigured()) {
+    try {
+      const raw = await fetchRawArtworksFromSupabase()
+      raw.forEach((a: any) => {
+        const k = String(a?.number || a?.id || '')
+        const img = a?.image_url
+        if (k && img && (img.startsWith('http://') || img.startsWith('https://')))
+          supabaseImageMap.set(k, img)
+      })
+    } catch (_) {}
+  }
   const out = await Promise.all(
     artworks.map(async (a: any) => {
       try {
-        const imageUrl = await resolveImageUrlForSupabase(a)
+        const imageUrl = await resolveImageUrlForSupabase(a, { supabaseImageMap })
         const previewUrl = a.previewUrl && (a.previewUrl.startsWith('http') ? a.previewUrl : null)
         return { ...a, imageUrl: imageUrl ?? a.imageUrl ?? '', previewUrl: previewUrl ?? imageUrl ?? a.previewUrl ?? '' }
       } catch (e) {
