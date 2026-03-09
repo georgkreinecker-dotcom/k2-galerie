@@ -6,6 +6,14 @@
 
 ---
 
+## Datum: 09.03.26 – K2 Markt: Die richtige Architektur (einzigartig)
+
+- **Stand:** Georg fragte: Wie würdest du die richtige Architektur schaffen – wir machen daraus etwas Einzigartiges. **Joe-Antwort** in docs/K2-MARKT-ARCHITEKTUR-EINZIGARTIG.md (auch in K2-Markt-Mappe): Eine Wahrheit → viele abgeleitete Formate; Qualitäts-Tor mit Definition of Done; eine Freigabe; Regeln im System (Sportwagenmodus als Code). Scharfe Architektur: Produkt-Moment → Agenten (ableiten) → Tor → Freigabe → Markt. Traceability. In Mappe als „Die richtige Architektur – einzigartig (Joe)“ eingetragen.
+- **Nächster Schritt:** Mit Georg durchgehen, schärfen; oder nächste Schritte aus dem Doc umsetzen (Produkt-Moment modellieren, DoD pro Format).
+- **Wo nachlesen:** K2 Markt Mappe → Die richtige Architektur – einzigartig (Joe); docs/K2-MARKT-ARCHITEKTUR-EINZIGARTIG.md.
+
+---
+
 ## Datum: 09.03.26 – K2 Markt Mappe im Smart Panel
 
 - **Stand:** K2 Markt hat eine **eigene Mappe** im Smart Panel (APf). Inhalt: Inhaltsverzeichnis, Vision und Architektur, Handbuch K2 Markt (Dokumentation unserer Arbeit) – sauber koordiniert und sortiert. Quelle: public/k2-markt/; Route /projects/k2-galerie/k2-markt.

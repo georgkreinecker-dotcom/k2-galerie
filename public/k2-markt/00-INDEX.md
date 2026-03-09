@@ -11,7 +11,10 @@
 **1. [Vision und Architektur](K2-MARKT-VISION-ARCHITEKTUR.md)**  
 Was K2 Markt ist, Grundlogik (Produkt → Markt → Aufmerksamkeit → Platz → Ansprache), Medienhaus mit Agenten, abgeleitete Architektur (Quelle, Agenten, Zentrale, Ausgabe), wo KI unterstützt.
 
-**2. [Handbuch K2 Markt](K2-MARKT-HANDBUCH.md)**  
+**2. [Die richtige Architektur – einzigartig (Joe)](K2-MARKT-ARCHITEKTUR-EINZIGARTIG.md)**  
+Eine Wahrheit → viele Formate; Qualitäts-Tor mit Definition of Done; eine Freigabe; Regeln im System. Produkt-Moment → Agenten → Tor → Freigabe → Markt.
+
+**3. [Handbuch K2 Markt](K2-MARKT-HANDBUCH.md)**  
 Dokumentation unserer Arbeit am Projekt: Stand, Entscheidungen, nächste Schritte, Verweise auf Regeln und Vermächtnis.
 
 ---
