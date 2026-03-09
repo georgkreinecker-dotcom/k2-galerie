@@ -6,11 +6,11 @@
 
 ---
 
-## Datum: 09.03.26 – K2 Markt C+D fertig, Commit + Push
+## Datum: 09.03.26 – K2 Markt eigenständiges Projekt, Tests + Build + Push
 
-- **Stand:** (C) Studio auf der K2-Markt-Oberfläche: Block „Fehlt was? → Studio“ mit Link zum Admin (Design, Bildverarbeitung). (D) mök2-Sektion „Leitvision K2 Markt“ ergänzt (mok2Structure + MarketingOek2Page, gleicher Wortlaut wie Doku). Stand-Ziel-Nötig (docs + public) aktualisiert. **Commit:** 738a616 – auf GitHub.
-- **Nächster Schritt:** K2 Markt nutzen (Oberfläche → Studio, mök2 → Leitvision); oder mök2 komplett / weitere Formate.
-- **Wo nachlesen:** K2MarktOberflaechePage.tsx; MarketingOek2Page.tsx (id mok2-leitvision-k2-markt); docs/K2-MARKT-STAND-ZIEL-NOETIG.md.
+- **Stand:** K2 Markt = eigenständiges Projekt (wie K2 Familie), Datenquelle ök2. Homepage = Arbeitsoberfläche; netzfähig. Routen /projects/k2-markt, /mappe, /tor; kurze URL /kreativwerkstatt; Projekte-Seite + Karte; Legacy-Redirects; Doku KREATIVWERKSTATT-URL-HOMEPAGE.md. **Commit:** c1ef854 – auf GitHub.
+- **Nächster Schritt:** K2 Markt nutzen (Projekte → K2 Markt oder /kreativwerkstatt); oder mök2 komplett / weitere Formate.
+- **Wo nachlesen:** docs/KREATIVWERKSTATT-URL-HOMEPAGE.md; navigation.ts PROJECT_ROUTES['k2-markt'].
 
 ---
 
