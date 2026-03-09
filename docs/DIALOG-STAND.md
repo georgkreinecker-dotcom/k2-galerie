@@ -6,6 +6,14 @@
 
 ---
 
+## Datum: 09.03.26 – iPad: nur 10 Werke vom Server (Cache-Bust + Log)
+
+- **Stand:** iPad zeigte „10 Werke vom Server geladen“ (Stand 16.52) – vermutlich gecachte gallery-data.json. **Umsetzung:** (1) Starker Cache-Bust für „Bilder vom Server laden“: eindeutige URL-Parameter (`bust=timestamp-random`), auf Mobile `cache: 'reload'` statt `no-store` (Safari), Header X-Request-Id/If-None-Match. (2) Log: „📥 Server antwortete mit X Werken (Rohantwort)“ in Konsole – damit erkennbar ist, ob Server wirklich 10 liefert oder Cache. **Commit:** d081cd5 – auf GitHub.
+- **Nächster Schritt:** Nach Vercel-Deploy: am Mac einmal Veröffentlichen (62 Werke), am iPad „Bilder vom Server laden“ tippen. Falls weiter 10: Safari → Website-Daten für k2-galerie.vercel.app löschen, erneut laden. Konsole prüfen: „Server antwortete mit X Werken“.
+- **Wo nachlesen:** GalerieVorschauPage.tsx (handleRefresh, Fetch gallery-data.json).
+
+---
+
 ## Datum: 08.03.26 – Fortlaufende Werk-Nummern: kein Durcheinander (iPad/Mac/Sync)
 
 - **Stand:** Fortlaufende Nummern abgesichert: (1) Beim **Vergaben** neuer Nummern (Mobile) wird der **bekannte Server-Max** mit einbezogen (localStorage `k2-known-max-number-M` etc.), damit nach Sync keine Doppelnummern entstehen. (2) Bei jedem **Laden von Server-Daten** (Bilder vom Server, Auto-Poll) wird dieser Server-Max aktualisiert. (3) **Vor dem Merge:** Wenn ein lokales Mobile-Werk dieselbe Nummer hat wie ein Server-Werk, aber anderes Werk (anderes id), wird das lokale Werk **umnummeriert** (nächste freie Nummer in der Kategorie), damit kein Überschreiben/Verlust entsteht.
