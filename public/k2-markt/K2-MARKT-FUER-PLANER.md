@@ -40,14 +40,18 @@ Produkt-Moment (eine Wahrheit) → Agenten (Entwurf pro Format) → Qualitäts-T
 
 ---
 
-## 4. Wo die Planer ansetzen
+## 4. Phasen und Meilensteine (Stand 09.03.26 – Start)
 
-- **Phasen** definieren (z. B. Phase 1: Produkt-Moment + DoD; Phase 2: Erster Agent; Phase 3: Tor + Freigabe; Phase 4: Traceability + weitere Formate).
-- **Meilensteine** pro Phase (was ist „fertig“?).
-- **Reihenfolge** festlegen (Abhängigkeiten: z. B. ohne Produkt-Moment kein Agent).
-- **Aufwand** grob einschätzen (optional – für dich selbst, keine Team-Planung).
+| Phase | Inhalt | Meilenstein „fertig“ |
+|-------|--------|------------------------|
+| **1** | Produkt-Moment modellieren + Definition of Done (Mindest-Anzahl Formate) | Struktur Produkt-Moment definiert; DoD für mind. 1 Format (z. B. Flyer) festgelegt. |
+| **2** | Erster Agent als Ableiter (z. B. Flyer-Agent) | Ein Agent liest Produkt-Moment + ein Template, liefert Entwurf. |
+| **3** | Tor + Freigabe in der UI | Bildschirm zeigt Entwurf, Prüfung (DoD?), Button „Freigeben“ – erst dann marktfähig. |
+| **4** | Traceability + weitere Formate | Jedes Output referenziert Moment, Template, Regel-Version; weitere Formate nach gleichem Muster. |
 
-*(Diese Abschnitte können mit konkreten Phasen und Meilensteinen ausgefüllt werden – von dir, mit AI-Unterstützung.)*
+**Reihenfolge:** 1 → 2 → 3 → 4 (ohne Produkt-Moment kein Agent, ohne Agent kein Tor, ohne Tor keine Freigabe).
+
+**Start:** Phase 1 – siehe [Produkt-Moment (Modell)](K2-MARKT-PRODUKT-MOMENT.md).
 
 ---
 

@@ -15,6 +15,7 @@ const DOCUMENTS = [
   { id: 'vision', name: 'Vision und Architektur (eine Quelle)', file: 'K2-MARKT-VISION-ARCHITEKTUR.md' },
   { id: 'handbuch', name: 'Handbuch K2 Markt', file: 'K2-MARKT-HANDBUCH.md' },
   { id: 'planer', name: 'Für die Planer', file: 'K2-MARKT-FUER-PLANER.md' },
+  { id: 'produkt-moment', name: 'Produkt-Moment (Modell)', file: 'K2-MARKT-PRODUKT-MOMENT.md' },
 ] as const
 
 export default function K2MarktPage() {

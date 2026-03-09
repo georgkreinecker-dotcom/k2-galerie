@@ -15,7 +15,10 @@ Unsere zusammengeführte Vision: Was K2 Markt ist, Kette zum Markt, Medienhaus, 
 Dokumentation unserer Arbeit am Projekt: Stand, Entscheidungen, nächste Schritte, Verweise auf Regeln und Vermächtnis.
 
 **3. [Für die Planer](K2-MARKT-FUER-PLANER.md)**  
-Einstieg für Planer: Architektur steht; hier Roadmap, Phasen, Meilensteine, Reihenfolge auf Basis der einen Vision definieren.
+Einstieg für Planer: Architektur steht; Phasen 1–4, Meilensteine, Start Phase 1.
+
+**4. [Produkt-Moment (Modell)](K2-MARKT-PRODUKT-MOMENT.md)**  
+Die eine Quelle pro Aussage: Felder (Titel, Botschaft, Zielgruppe, Kontakt, Links, Medien, …). Phase 1 – Basis für alle Agenten.
 
 ---
 
