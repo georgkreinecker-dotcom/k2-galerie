@@ -6,6 +6,13 @@
 
 ---
 
+## Session-Ende 09.03.26
+
+- **Heute:** ro5 → Werke 0031/0035 + Speicherproblem (Bearbeiten + Neues Werk = ImageStore); Regel „Werke mit Bilddaten immer ImageStore“ + „Standard-Verstoß = alle Stellen nachziehen“ festgezurrt. Alles committed & gepusht (main).
+- **Nächster Einstieg:** DIALOG-STAND lesen, dann mit dem weitermachen, womit du willst (z. B. testen oder nächste Aufgabe).
+
+---
+
 ## Datum: 09.03.26 – Werke 0031/0035: Bilder neu bearbeiten + Speicherproblem gelöst
 
 - **Stand:** Beim Bearbeiten von Werken (z. B. 0031, 0035) mit neuem Bild wurde das Bild bisher nur als große data-URL in localStorage geschrieben → Speicherproblem (Quota, evtl. Anzeige). **Umsetzung:** Beim Speichern nach Bearbeiten wird die Liste zuerst mit **prepareArtworksForStorage** vorbereitet: neues Bild (mobilePhoto) geht in **IndexedDB**, in der Liste bleibt nur **imageRef**. Danach Speichern (Supabase oder localStorage) mit der vorbereiteten Liste. Anzeige nach Speichern nutzt weiterhin loadArtworksResolvedForDisplay() → Bild kommt aus IndexedDB.
