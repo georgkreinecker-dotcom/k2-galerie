@@ -4,8 +4,7 @@ import { PROJECT_ROUTES, PLATFORM_ROUTES, getAllProjectIds } from '../config/nav
 import { usePersistentBoolean } from '../hooks/usePersistentState'
 import { checkMobileUpdates } from '../utils/supabaseClient'
 import { filterK2ArtworksOnly } from '../utils/autoSave'
-import { artworksForExport } from '../utils/artworkExport'
-import { resolveArtworkImageUrlsForExport } from '../utils/supabaseClient'
+import { publishGalleryDataToServer } from '../utils/publishGalleryData'
 import { readArtworksRawByKey, saveArtworksByKey } from '../utils/artworksStorage'
 import '../App.css'
 import GaleriePage from './GaleriePage'
@@ -418,54 +417,26 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
         return
       }
       
-      // Sportwagen: Bild-URLs für Handy auflösen (imageRef/IndexedDB → Supabase-URL), damit gallery-data echte URLs enthält
-      const allArtworksWithUrls = await resolveArtworkImageUrlsForExport(allArtworks)
-      
-      const galleryStamm = getItemSafe('k2-stammdaten-galerie', {})
+      // Sportwagen: Ein Standard – Veröffentlichen nur über publishGalleryDataToServer (Prozesssicherheit)
+      const galleryStamm = getItemSafe('k2-stammdaten-galerie', {}) as Record<string, unknown>
       const pageContent = getPageContentGalerie()
-      const maxList = 100
-      const data = {
-        martina: getItemSafe('k2-stammdaten-martina', {}),
-        georg: getItemSafe('k2-stammdaten-georg', {}),
-        gallery: {
-          ...galleryStamm,
-          // pageContent hat Priorität (Admin-Upload) – || statt ?? weil '' kein Fallback auslöst bei ??
-          welcomeImage: pageContent.welcomeImage || galleryStamm.welcomeImage || '',
-          galerieCardImage: pageContent.galerieCardImage || galleryStamm.galerieCardImage || '',
-          virtualTourImage: pageContent.virtualTourImage || galleryStamm.virtualTourImage || ''
-        },
-        artworks: artworksForExport(allArtworksWithUrls),
-        events: Array.isArray(events) ? events.slice(0, maxList) : [],
-        documents: Array.isArray(documents) ? documents.slice(0, maxList) : [],
-        designSettings: getItemSafe('k2-design-settings', {}),
-        pageTexts: getItemSafe('k2-page-texts', null),
-        version: Date.now(),
-        buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
-        exportedAt: new Date().toISOString()
-      }
-      
-      const json = JSON.stringify(data)
-      
-      if (json.length > 5000000) {
-        setIsPublishing(false)
-        alert('⚠️ Daten zu groß (über 5MB). Bitte reduziere die Anzahl der Werke.')
-        return
-      }
-      
-      // Prüfung: Nur veröffentlichen wenn sich etwas geändert hat (sonst verwirrend)
       const signaturePayload = {
         a: allArtworks.map((x: any) => (x.number || x.id) + ':' + (x.updatedAt || x.createdAt || '')).sort().join(','),
         n: allArtworks.length,
-        m: JSON.stringify(data.martina),
-        g: JSON.stringify(data.georg),
-        gal: JSON.stringify(data.gallery),
-        e: data.events.length,
-        d: data.documents.length,
-        design: JSON.stringify(data.designSettings),
-        // Bilder explizit in Signatur – damit Bild-Änderungen immer erkannt werden
-        imgW: (data.gallery.welcomeImage || '').length,
-        imgG: (data.gallery.galerieCardImage || '').length,
-        imgV: (data.gallery.virtualTourImage || '').length,
+        m: JSON.stringify(getItemSafe('k2-stammdaten-martina', {})),
+        g: JSON.stringify(getItemSafe('k2-stammdaten-georg', {})),
+        gal: JSON.stringify({
+          ...galleryStamm,
+          welcomeImage: (pageContent?.welcomeImage as string) || (galleryStamm?.welcomeImage as string) || '',
+          galerieCardImage: (pageContent?.galerieCardImage as string) || (galleryStamm?.galerieCardImage as string) || '',
+          virtualTourImage: (pageContent?.virtualTourImage as string) || (galleryStamm?.virtualTourImage as string) || ''
+        }),
+        e: Array.isArray(events) ? events.length : 0,
+        d: Array.isArray(documents) ? documents.length : 0,
+        design: JSON.stringify(getItemSafe('k2-design-settings', {})),
+        imgW: ((pageContent?.welcomeImage as string) || (galleryStamm?.welcomeImage as string) || '').length,
+        imgG: ((pageContent?.galerieCardImage as string) || (galleryStamm?.galerieCardImage as string) || '').length,
+        imgV: ((pageContent?.virtualTourImage as string) || (galleryStamm?.virtualTourImage as string) || '').length
       }
       const simpleHash = (str: string) => {
         let h = 0
@@ -491,104 +462,32 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
         setTimeout(() => setPublishStatus(null), 6000)
         return
       }
-      
-      // Versuche direkt in public Ordner zu schreiben über API
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => {
-        controller.abort()
+
+      const result = await publishGalleryDataToServer(allArtworks)
+      if (!result.success) {
         setIsPublishing(false)
-        alert('⚠️ Speichern dauert zu lange.\n\nBitte kurz warten und nochmal auf „Speichern" klicken.')
-      }, 5000)
-      
-      fetch('/api/write-gallery-data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: json,
-        signal: controller.signal
+        setPublishStatus({ success: false, message: result.error || 'Unbekannter Fehler' })
+        setTimeout(() => setPublishStatus(null), 5000)
+        return
+      }
+      const backupTime = new Date().toISOString()
+      try {
+        localStorage.setItem('k2-last-publish-signature', currentSignature)
+        localStorage.setItem('k2-last-publish-time', backupTime)
+      } catch (_) {}
+      const backupLabel = new Date(backupTime).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })
+      localStorage.setItem('k2-last-published-time', backupLabel)
+      setLastPublishedTime(backupLabel)
+      console.log('✅ Veröffentlicht (zentraler Ablauf):', { path: result.result?.path, artworksCount: result.artworksCount })
+      setPublishStatus({
+        success: true,
+        message: `✅ Gespeichert (${backupLabel})\n\nAlle Änderungen werden jetzt auf alle Geräte übertragen.`,
+        artworksCount: result.artworksCount,
+        size: result.result?.size
       })
-      .then(response => {
-        clearTimeout(timeoutId)
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-        }
-        return response.json()
-      })
-      .then(result => {
-        clearTimeout(timeoutId)
-        
-        if (result.success) {
-          const artworksCount = data.artworks.length
-          const backupTime = new Date().toISOString()
-          try {
-            localStorage.setItem('k2-last-publish-signature', currentSignature)
-            localStorage.setItem('k2-last-publish-time', backupTime)
-          } catch (_) {}
-          console.log('✅ Datei geschrieben:', {
-            path: result.path,
-            size: result.size,
-            artworksCount: artworksCount
-          })
-          
-          // Klar als "Daten veröffentlicht" kennzeichnen (nicht Code-Update)
-          const backupLabel = new Date(backupTime).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })
-          const nowLabel = new Date().toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })
-          localStorage.setItem('k2-last-published-time', nowLabel)
-          setLastPublishedTime(nowLabel)
-          
-          setPublishStatus({
-            success: true,
-            message: `✅ Gespeichert (${backupLabel})\n\nAlle Änderungen werden jetzt auf alle Geräte übertragen.`,
-            artworksCount,
-            size: result.size
-          })
-          
-          setSyncStatus({ step: 'published', progress: 10 })
-          
-          setIsPublishing(false)
-          
-          setTimeout(() => {
-            setPublishStatus(null)
-          }, 120000) // 2 Minuten anzeigen
-        } else {
-          throw new Error(result.error || 'Unbekannter Fehler')
-        }
-      })
-      .catch(error => {
-        clearTimeout(timeoutId)
-        setIsPublishing(false)
-        
-        if (error.name === 'AbortError') {
-          setIsPublishing(false)
-          setPublishStatus({
-            success: false,
-            message: '⚠️ Speichern dauert zu lange. Bitte nochmal versuchen.'
-          })
-          setTimeout(() => setPublishStatus(null), 5000)
-          return
-        }
-        
-        // Fallback: Download falls API nicht funktioniert
-        try {
-          const blob = new Blob([json], { type: 'application/json' })
-          const url = URL.createObjectURL(blob)
-          const link = document.createElement('a')
-          link.href = url
-          link.download = 'gallery-data.json'
-          link.style.display = 'none'
-          document.body.appendChild(link)
-          link.click()
-          
-          setTimeout(() => {
-            try {
-              document.body.removeChild(link)
-              URL.revokeObjectURL(url)
-            } catch {}
-            alert('⚠️ Automatisches Speichern nicht möglich (Server nicht aktiv).\n\nBitte dem Assistenten Bescheid geben – einmalige Einrichtung nötig.')
-          }, 100)
-        } catch (downloadError) {
-          alert('❌ Fehler:\n\nAPI nicht verfügbar UND Download fehlgeschlagen\n\n' + (error instanceof Error ? error.message : String(error)))
-        }
-      })
+      setSyncStatus({ step: 'published', progress: 10 })
+      setIsPublishing(false)
+      setTimeout(() => setPublishStatus(null), 120000)
     } catch (error) {
       setIsPublishing(false)
       alert('Fehler: ' + (error instanceof Error ? error.message : String(error)))

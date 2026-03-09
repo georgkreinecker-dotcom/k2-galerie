@@ -6,6 +6,14 @@
 
 ---
 
+## Datum: 09.03.26 – Prozesssicherheit Veröffentlichen/Laden (Sportwagenmodus)
+
+- **Stand:** Georg: Es geht um den **Prozess**, nicht um Einzelfix – Prozesssicherheit herstellen. **Umsetzung:** (1) **Ein Standard Veröffentlichen:** Zentrale Funktion `publishGalleryDataToServer(artworks)` in `src/utils/publishGalleryData.ts` – Ablauf: resolveArtworkImageUrlsForExport → artworksForExport → Payload aus localStorage → POST write-gallery-data. (2) **Alle Aufrufer** nutzen nur diese Funktion: DevViewPage (Button Veröffentlichen), GalerieVorschauPage (nach Speichern, nach neuem Werk). (3) **Doku:** docs/PROZESS-VEROEFFENTLICHEN-LADEN.md – Veröffentlichen + „Bilder vom Server laden“ einheitlich beschrieben. (4) **Regel:** .cursor/rules/ein-standard-problem.mdc um Eintrag „Veröffentlichen“ ergänzt.
+- **Nächster Schritt:** –
+- **Wo nachlesen:** src/utils/publishGalleryData.ts, docs/PROZESS-VEROEFFENTLICHEN-LADEN.md, ein-standard-problem.mdc.
+
+---
+
 ## Datum: 09.03.26 – Mac 10 Platzhalter / Bilder weg nach iPad-Rescan
 
 - **Stand:** Mac zeigt 10 Platzhalter-Fotos; die Bilder waren teilweise am Handy, nach neuem QR-Scan am iPad sind sie dort auch weg. **Ursache:** iPad nach App-Löschen/Rescan hat kein Lokal mehr → lädt nur Server-Daten; Server (statische Datei/Blob) hatte für die 10 Werke keine Bild-URLs → Platzhalter. **Doku:** docs/PLATZHALTER-BILDER-WIEDERBEKOMMEN.md – Lösung A: Wenn Handy die Bilder noch hat → Handy **Veröffentlichen**, dann Mac + iPad „Bilder vom Server laden“. Lösung B: Vollbackup wiederherstellen.

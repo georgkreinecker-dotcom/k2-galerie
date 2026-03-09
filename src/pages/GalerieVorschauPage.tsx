@@ -7,9 +7,9 @@ import {
   checkMobileUpdates, 
   saveArtworksToSupabase,
   loadArtworksFromSupabase,
-  isSupabaseConfigured,
-  resolveArtworkImageUrlsForExport
+  isSupabaseConfigured
 } from '../utils/supabaseClient'
+import { publishGalleryDataToServer } from '../utils/publishGalleryData'
 import { sortArtworksFavoritesFirstThenNewest, interleaveArtworksByCategory } from '../utils/artworkSort'
 import { appendToHistory } from '../utils/artworkHistory'
 import { tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from '../../components/SafeMode'
@@ -17,7 +17,6 @@ import { readArtworksRawForContext, readArtworksRawForContextOrNull, readArtwork
 import { loadEvents } from '../utils/eventsStorage'
 import { loadDocuments } from '../utils/documentsStorage'
 import { mergeServerWithLocal, preserveLocalImageData, updateKnownServerMaxNumbers, getKnownServerMaxForPrefix, renumberCollidingLocalArtworks } from '../utils/syncMerge'
-import { artworksForExport } from '../utils/artworkExport'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
 import '../App.css'
 
@@ -4397,38 +4396,14 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                         }
                       }
                       
-                      // KRITISCH: Automatisch für Mobile veröffentlichen
-                      // WICHTIG: Rufe publishMobile direkt auf damit Mobile-Geräte die Änderungen sehen!
+                      // Sportwagen: Ein Standard – Veröffentlichen nur über publishGalleryDataToServer (Prozesssicherheit)
                       setTimeout(async () => {
                         try {
                           const allArtworks = loadArtworks()
-                          if (allArtworks && allArtworks.length > 0) {
-                            // Bild-URLs auflösen (imageRef/IndexedDB → Supabase-URL), damit iPhone/iPad keine Platzhalter sehen
-                            const allArtworksWithUrls = await resolveArtworkImageUrlsForExport(allArtworks)
-                            const data = {
-                              martina: JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}'),
-                              georg: JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}'),
-                              gallery: JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}'),
-                              artworks: artworksForExport(allArtworksWithUrls),
-                              events: loadEvents('k2'),
-                              documents: loadDocuments('k2'),
-                              designSettings: JSON.parse(localStorage.getItem('k2-design-settings') || '{}'),
-                              version: Date.now(),
-                              buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
-                              exportedAt: new Date().toISOString()
-                            }
-                            const json = JSON.stringify(data)
-                            const response = await fetch('/api/write-gallery-data', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: json
-                            })
-                            if (response.ok) {
-                              const result = await response.json()
-                              console.log('✅ Automatisch für Mobile veröffentlicht:', result)
-                            } else {
-                              console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen:', response.status)
-                            }
+                          if (allArtworks?.length > 0) {
+                            const result = await publishGalleryDataToServer(allArtworks)
+                            if (result.success) console.log('✅ Automatisch für Mobile veröffentlicht:', result.artworksCount, 'Werke')
+                            else console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen:', result.error)
                           }
                         } catch (error) {
                           console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen (nicht kritisch):', error)
@@ -4633,40 +4608,19 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       }
                     }, 100)
                     
-                    // KRITISCH: Automatisch für Mobile veröffentlichen UND Git Push
-                    // WICHTIG: Rufe publishMobile direkt auf damit Mobile-Geräte die neuen Werke sehen!
+                    // Sportwagen: Ein Standard – Veröffentlichen nur über publishGalleryDataToServer (Prozesssicherheit)
                     setTimeout(async () => {
                       try {
-                        // Lade alle Werke aus localStorage
                         const allArtworks = loadArtworks()
-                        if (allArtworks && allArtworks.length > 0) {
-                          const allArtworksWithUrls = await resolveArtworkImageUrlsForExport(allArtworks)
-                          const data = {
-                            martina: JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}'),
-                            georg: JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}'),
-                            gallery: JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}'),
-                            artworks: artworksForExport(allArtworksWithUrls),
-                            events: loadEvents('k2'),
-                            documents: loadDocuments('k2'),
-                            designSettings: JSON.parse(localStorage.getItem('k2-design-settings') || '{}'),
-                            version: Date.now(),
-                            buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
-                            exportedAt: new Date().toISOString()
-                          }
-                          const json = JSON.stringify(data)
-                          const response = await fetch('/api/write-gallery-data', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: json
-                          })
-                          if (response.ok) {
-                            const result = await response.json()
-                            console.log('✅ Automatisch für Mobile veröffentlicht:', result)
+                        if (allArtworks?.length > 0) {
+                          const result = await publishGalleryDataToServer(allArtworks)
+                          if (result.success) {
+                            console.log('✅ Automatisch für Mobile veröffentlicht:', result.artworksCount, 'Werke')
                             window.dispatchEvent(new CustomEvent('gallery-data-published', {
-                              detail: { success: true, artworksCount: allArtworks.length, size: result.size }
+                              detail: { success: true, artworksCount: result.artworksCount, size: result.result?.size }
                             }))
                           } else {
-                            console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen:', response.status)
+                            console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen:', result.error)
                           }
                         }
                       } catch (error) {

@@ -35,6 +35,7 @@ alwaysApply: true
 | Dokument aus Admin öffnen | `openDocumentInApp` (ein Ablauf, viele Aufrufer). | Kein eigener Öffnungsweg pro Dokumenttyp. |
 | Bild einfügen / Bild übernehmen | `runBildUebernehmen` in ScreenshotExportAdmin. | Kein zweiter Ablauf pro Modal. |
 | **Handbücher (Erstellung, Redaktion, Druck)** | **handbuch-standard-sportwagenmodus.mdc** – Struktur (00-INDEX, eine Übersicht „Inhaltsverzeichnis – Kurzanleitung“, Link + Kurzbeschreibung), Redaktion (keine Doppelung, keine Klammern), Druck (.seitenfuss, [SEITENUMBRUCH]). Referenz: public/benutzer-handbuch/, BenutzerHandbuchPage. | Kein eigenes Muster pro Handbuch. |
+| **Veröffentlichen (gallery-data an Server)** | **publishGalleryDataToServer(artworks)** in `src/utils/publishGalleryData.ts`. Ablauf: resolveArtworkImageUrlsForExport → artworksForExport → Payload aus localStorage → POST /api/write-gallery-data. Aufrufer: DevViewPage, GalerieVorschauPage (nach Speichern/neues Werk). Doku: docs/PROZESS-VEROEFFENTLICHEN-LADEN.md. | Kein eigener Fetch zu write-gallery-data, kein eigener resolve+export an anderer Stelle. |
 
 **Pflicht vor Implementierung:** Gibt es dafür schon eine Lösung? Wenn ja → dieselbe Klasse / denselben Ablauf nutzen. Georg soll nicht sagen müssen „sind wir im Sportwagenmodus?“ – die Regel und diese Tabelle sorgen dafür.
 
