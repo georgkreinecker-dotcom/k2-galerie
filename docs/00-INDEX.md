@@ -69,7 +69,8 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **TENANT-SYNC-DOMAIN.md** – **Tenantfähig:** Veröffentlichen / Vom Server laden für K2, ök2, VK2; Blob pro Mandant; Domänen-Struktur (tenantId); Sicherheit später.
 - **UMZUG-K2-GALERIE-KUNST-KERAMIK.md** – Plattform = K2 Galerie, erste Galerie = K2 Galerie Kunst&Keramik; Backup für backupmicro.
 - **MOK2-EIGENER-BEREICH.md** – Marketing ök2 als eigener Bereich (mök2).
-- **Genaue Produktbeschreibung** – **In der App:** APf → Projekte → K2 Galerie → **Marketing ök2 (mök2)** → Sektion „Genaue Produktbeschreibung“. Dort die detaillierte, anpassbare Produktbeschreibung für Vertrieb, Presse und Partner pflegen; noch anzupassen (Inhalt aus USPs / „Was kann die App?“ zusammenführen).
+- **MOK2-KOMPLETT-UMSETZEN.md** – **mök2 komplett umsetzen (Ziel 09.03.26):** Was „komplett“ umfasst (alle Sektionen mit Inhalt, eine Quelle, Werbeunterlagen, APf-Struktur, K2-Markt-Verknüpfung, Druck/PDF); priorisierte nächste Schritte; wo was liegt.
+- **Genaue Produktbeschreibung** – **In der App:** APf → Projekte → K2 Galerie → **Marketing ök2 (mök2)** → Sektion „Genaue Produktbeschreibung“. Detaillierte Produktbeschreibung für ök2 und VK2 (eine Quelle für Vertrieb, Presse, Partner); Details siehe „Was kann die App?“ und „1. USPs“.
 - **WARUM-EVENTS-DOKUMENTE-WEG-WAREN.md** – Erklärung zu Events/Dokumenten.
 - **OEK2-ANMELDUNG-LIZENZIERUNG-STAND.md** – **ök2 Anmeldung & Lizenzierung – State of the Art:** Was es gibt (Entdecken, Guide, Willkommen-Redirect, LicencesPage, mailto), was fehlt (sichtbarer CTA „Lizenz anfragen“, einheitliche Preise), nächste Schritte; Code-Stellen.
 - **UEBERSICHT-BESUCHER-EMPFEHLER-LIZENZNEHMER.md** – **Überblick für Georg:** Wo Besucher (K2/ök2/VK2), Empfehler, ganze Lizenznehmer-Geschichte? Ist-Stand + Pro-Board-Ansatz (optik wie K2 Familie). **Umsetzung:** Übersicht-Board unter `/projects/k2-galerie/uebersicht` – 4 Kacheln, ein Klick zu Details.

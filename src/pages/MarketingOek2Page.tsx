@@ -412,10 +412,13 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           Genaue Produktbeschreibung
         </h2>
         <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
-          Hier steht die <strong>detaillierte Produktbeschreibung</strong> für ök2 und VK2 – für Vertrieb, Presse, Partner und Lizenzinteressenten. Sie wird laufend angepasst und kann als eine Quelle für alle Außendarstellungen genutzt werden.
+          <strong>ök2 (Lizenz für Künstler:innen und Galerien):</strong> Eigene Galerie im Netz mit Werken, Vita und Shop; Events planen, Einladungen und Flyer aus der App; Kasse und Etiketten (Verkauf vor Ort, WLAN-Drucker); Marketing aus einem Guss (Newsletter, Presse, Social); ein Stand auf allen Geräten.
         </p>
-        <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.75)', fontStyle: 'italic' }}>
-          Noch anzupassen: Inhalt aus USPs, „Was kann die App?“ und weiteren mök2-Sektionen hier in eine durchgängige, genaue Produktbeschreibung bringen. Bis dahin siehe die Sektionen „Was kann die App?“ und „1. USPs“ in diesem Kapitel.
+        <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
+          <strong>VK2 (Vereinsplattform):</strong> Gemeinsame Vereinsgalerie und Mitglieder mit eigener Galerie; Vereinskatalog (schönste Werke aller Lizenzmitglieder, PDF, filterbar); Events und Werbung für den Verein; Mitglieder verwalten, Lizenzen, Dokumente; ab 10 Mitgliedern für den Verein kostenfrei.
+        </p>
+        <p style={{ marginBottom: '0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>
+          Details und USPs: siehe Sektionen „Was kann die App?“ und „1. USPs“ in diesem Kapitel. Diese Beschreibung ist die eine Quelle für Vertrieb, Presse und Partner.
         </p>
       </section>
 
@@ -707,11 +710,14 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </p>
       </section>
 
-      {/* Platzhalter für weitere Ideen/Konzepte */}
-      <section id="mok2-5" style={{ marginBottom: '2rem' }}>
+      {/* 5. Weitere Ideen & Konzepte – Sammlung für spätere Ausarbeitung */}
+      <section id="mok2-5" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
           5. Weitere Ideen & Konzepte (Sammlung)
         </h2>
+        <p style={{ marginBottom: '0.75rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)' }}>
+          Ideen für spätere Phasen – hier gesammelt, in anderen Sektionen oder der Roadmap ausgearbeitet.
+        </p>
         <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
           <li>Optional: KI-Assistent für neue Kunden (Chat/API) – derzeit bewusst ohne externe Funktion.</li>
           <li>Vermarktbare Version: Eine Instanz pro Künstler:in (eigene URL/Subdomain), später Multi-Tenant möglich.</li>

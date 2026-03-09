@@ -6,6 +6,14 @@
 
 ---
 
+## Datum: 09.03.26 – mök2 komplett umsetzen (Ziel + erster Schritt)
+
+- **Stand:** Georg: „Wir stehen erst am Anfang – du hast mök2 und das gilt es komplett umzusetzen.“ Ziel festgehalten in **docs/MOK2-KOMPLETT-UMSETZEN.md**: was „komplett“ umfasst (alle Sektionen mit Inhalt, eine Quelle, Werbeunterlagen, APf-Struktur, K2-Markt-Verknüpfung, Druck/PDF), priorisierte Schritte. **Erster Schritt:** Platzhalter in mök2 geschlossen – „Genaue Produktbeschreibung“ mit redigierter Kurzbeschreibung (ök2 + VK2), „5. Weitere Ideen & Konzepte“ mit klarem Einleitungstext (kein Platzhalter mehr).
+- **Nächster Schritt:** Eine Quelle durchziehen (Slogan/Botschaft überall); oder Sidebar/Sektionen abgleichen; oder K2 Markt aus mök2 speisen.
+- **Wo nachlesen:** docs/MOK2-KOMPLETT-UMSETZEN.md; MarketingOek2Page.tsx (Sektionen mok2-produktbeschreibung, mok2-5).
+
+---
+
 ## Datum: 09.03.26 – K2 Markt: Traceability (Freigabe-Log)
 
 - **Stand:** Beim Freigeben am Tor wird ein Eintrag gespeichert (momentId, momentTitel, template flyer-minimal, timestamp). Log in localStorage (k2-markt-freigaben), Anzeige „Traceability – letzte Freigaben“ in der Tor-Sidebar. Typen/Konstanten in k2MarktFlyerAgent.ts (FreigabeEintrag, FLYER_TEMPLATE_ID). Handbuch aktualisiert.
