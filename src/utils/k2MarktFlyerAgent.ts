@@ -23,6 +23,17 @@ export type ProduktMoment = {
   gültigBis?: string | null
 }
 
+/** Template-Kennung für Traceability (ein Template pro Format). */
+export const FLYER_TEMPLATE_ID = 'flyer-minimal'
+
+/** Eintrag im Freigabe-Log: welcher Moment, welches Template, wann (Traceability). */
+export type FreigabeEintrag = {
+  momentId: string
+  momentTitel: string
+  template: string
+  timestamp: string
+}
+
 /** Flyer-Entwurf – Struktur für DoD-Prüfung (Kernbotschaft, Kontakt, Link/QR, Bild). */
 export type FlyerEntwurf = {
   momentId: string

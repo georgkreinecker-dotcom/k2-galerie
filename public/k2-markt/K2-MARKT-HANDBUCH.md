@@ -22,6 +22,8 @@
 | **Eigene Mappe im Smart Panel** | K2 Markt als eigenes Produkt in der Hall of Fame; alle Dokumente (Index, Vision, Handbuch, Planer, Produkt-Moment) an einem Ort. |
 | **Handbuch (diese Datei)** | Dokumentation der Arbeit – hier wird fortgeschrieben. |
 | **Phase 2 gestartet** | Flyer-Agent-Konzept in K2-MARKT-FLYER-AGENT.md: Input = Moment + Template, Output = Entwurf. Nächste Schritte: Speicherort Moment, Minimal-Template, ggf. Tor-UI. |
+| **A, B, C + Tor aus einem Guss** | Produkt-Momente (produkt-momente.json), Flyer-Agent (momentToFlyerEntwurf, DoD), Tor-UI (k2-markt-tor) mit gleicher Struktur wie Mappe. |
+| **Traceability von Anfang an** | Beim Freigeben wird ein Eintrag gespeichert: momentId, momentTitel, template (flyer-minimal), timestamp. Log in localStorage (k2-markt-freigaben), Anzeige „Letzte Freigaben“ am Tor. |
 
 ---
 
@@ -36,7 +38,8 @@
 ## 4. Nächste Schritte (offen)
 
 - **Planer:** Einstieg steht in der Mappe – [Für die Planer](K2-MARKT-FUER-PLANER.md). Dort: Phasen, Meilensteine, Reihenfolge auf Basis der Architektur ausarbeiten.
-- Danach (Beispiele): Quelle strukturieren (mök2, Kampagne, Docs); ersten Agenten definieren; Zentrale (Bildschirm) skizzieren; Ausgabe-Formate priorisieren.
+- **Weitere Formate:** DoD und Agent für E-Mail, Presse etc.; gleiches Muster wie Flyer (Moment → Entwurf → Tor → Freigabe + Traceability).
+- Optional: Quelle strukturieren (mök2, Kampagne, Docs); Zentrale (Bildschirm) erweitern; Ausgabe-Formate priorisieren.
 
 ---
 

@@ -6,6 +6,14 @@
 
 ---
 
+## Datum: 09.03.26 – K2 Markt: Traceability (Freigabe-Log)
+
+- **Stand:** Beim Freigeben am Tor wird ein Eintrag gespeichert (momentId, momentTitel, template flyer-minimal, timestamp). Log in localStorage (k2-markt-freigaben), Anzeige „Traceability – letzte Freigaben“ in der Tor-Sidebar. Typen/Konstanten in k2MarktFlyerAgent.ts (FreigabeEintrag, FLYER_TEMPLATE_ID). Handbuch aktualisiert.
+- **Nächster Schritt:** Weitere Formate (E-Mail, Presse) mit gleichem Muster; oder Planer/Phasen in der Mappe vertiefen.
+- **Wo nachlesen:** K2 Markt Mappe, K2-MARKT-HANDBUCH.md; Route /projects/k2-galerie/k2-markt-tor.
+
+---
+
 ## Datum: 09.03.26 – K2 Markt: Aus einem Guss (Tor = Mappe-Struktur, Doku)
 
 - **Stand:** Tor-Seite (K2MarktTorPage) an Mappen-Struktur angeglichen: mission-wrapper + viewport, header no-print, gleiche Link-Reihenfolge (← K2 Galerie, K2 Markt Mappe, Kampagne Marketing-Strategie). Grundsatz in Vision festgehalten: „K2 Markt soll aus einem Guss entstehen – einheitliche Struktur, eine Quelle, eine Sprache.“

@@ -9,11 +9,38 @@ import { PROJECT_ROUTES } from '../config/navigation'
 import {
   momentToFlyerEntwurf,
   erfuelltDoDFlyer,
+  FLYER_TEMPLATE_ID,
   type ProduktMoment,
   type FlyerEntwurf,
+  type FreigabeEintrag,
 } from '../utils/k2MarktFlyerAgent'
 
 const MOMENTE_URL = '/k2-markt/produkt-momente.json'
+const FREIGABEN_KEY = 'k2-markt-freigaben'
+const MAX_FREIGABEN_ANZEIGE = 10
+
+function loadFreigabenLog(): FreigabeEintrag[] {
+  try {
+    const raw = localStorage.getItem(FREIGABEN_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function appendFreigabe(entry: FreigabeEintrag): void {
+  const log = loadFreigabenLog()
+  log.unshift(entry)
+  const max = 200
+  const trimmed = log.slice(0, max)
+  try {
+    localStorage.setItem(FREIGABEN_KEY, JSON.stringify(trimmed))
+  } catch {
+    // Quota oder Lesefehler – still
+  }
+}
 
 export default function K2MarktTorPage() {
   const [momente, setMomente] = useState<ProduktMoment[]>([])
@@ -22,6 +49,7 @@ export default function K2MarktTorPage() {
   const [fehler, setFehler] = useState<string | null>(null)
   const [freigegeben, setFreigegeben] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [freigabenLog, setFreigabenLog] = useState<FreigabeEintrag[]>(() => loadFreigabenLog())
 
   useEffect(() => {
     let cancelled = false
@@ -157,7 +185,19 @@ export default function K2MarktTorPage() {
               <button
                 type="button"
                 disabled={freigegeben || !dod.ok}
-                onClick={() => setFreigegeben(true)}
+                onClick={() => {
+                  if (!entwurf || !selectedId) return
+                  const moment = momente.find((m) => m.id === selectedId)
+                  const eintrag: FreigabeEintrag = {
+                    momentId: selectedId,
+                    momentTitel: moment?.titel ?? entwurf.title,
+                    template: FLYER_TEMPLATE_ID,
+                    timestamp: new Date().toISOString(),
+                  }
+                  appendFreigabe(eintrag)
+                  setFreigabenLog((prev) => [eintrag, ...prev].slice(0, 200))
+                  setFreigegeben(true)
+                }}
                 style={{
                   marginTop: '1rem',
                   width: '100%',
@@ -176,6 +216,20 @@ export default function K2MarktTorPage() {
             </>
           ) : (
             <p style={{ color: 'rgba(255,255,255,0.5)' }}>Kein Entwurf – zuerst Produkt-Moment wählen.</p>
+          )}
+
+          {freigabenLog.length > 0 && (
+            <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid rgba(95,251,241,0.2)' }}>
+              <h3 style={{ margin: '0 0 0.5rem', color: 'rgba(95,251,241,0.9)', fontSize: '0.95rem' }}>Traceability – letzte Freigaben</h3>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.8)' }}>
+                {freigabenLog.slice(0, MAX_FREIGABEN_ANZEIGE).map((e, i) => (
+                  <li key={`${e.timestamp}-${i}`} style={{ marginBottom: '0.35rem' }}>
+                    <span style={{ color: 'rgba(95,251,241,0.7)' }}>{new Date(e.timestamp).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                    {' · '}{e.momentTitel} <span style={{ color: 'rgba(255,255,255,0.5)' }}>({e.template})</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </aside>
         </div>
