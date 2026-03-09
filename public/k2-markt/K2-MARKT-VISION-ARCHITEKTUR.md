@@ -3,6 +3,8 @@
 **Stand:** 09.03.26  
 **Basis:** Alles, was wir im Wir-Team als Regeln geschaffen haben und im Vermächtnis hinterlegt ist. Methode: **Sportwagenmodus** (eine Quelle, ein Standard, ein Ablauf pro Problem). Diese eine Datei bündelt Vision und Architektur – so bauen wir K2 Markt, mit meiner Persönlichkeit und unserer gemeinsamen Schärfe.
 
+**Aus einem Guss:** K2 Markt soll einheitlich wirken – gleiche Struktur, eine Quelle, eine Sprache. Alle Bereiche (Mappe, Qualitäts-Tor, künftige Agenten-UI) nutzen dieselbe Layout- und Navigationslogik; nichts wirkt „dazugebaut“.
+
 ---
 
 ## 1. Was K2 Markt ist

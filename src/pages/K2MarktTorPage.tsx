@@ -62,34 +62,46 @@ export default function K2MarktTorPage() {
 
   if (loading) {
     return (
-      <div className="mission-wrapper" style={{ padding: '2rem' }}>
-        <p style={{ color: '#5ffbf1' }}>Lade Produkt-Momente …</p>
+      <div className="mission-wrapper">
+        <div className="viewport" style={{ padding: '1.5rem 2rem' }}>
+          <p style={{ color: '#5ffbf1' }}>Lade Produkt-Momente …</p>
+        </div>
       </div>
     )
   }
 
   if (fehler) {
     return (
-      <div className="mission-wrapper" style={{ padding: '2rem' }}>
-        <p style={{ color: '#f87171' }}>{fehler}</p>
-        <Link to={PROJECT_ROUTES['k2-galerie'].k2Markt} style={{ color: '#5ffbf1' }}>← Zur K2 Markt Mappe</Link>
+      <div className="mission-wrapper">
+        <div className="viewport" style={{ padding: '1.5rem 2rem' }}>
+          <p style={{ color: '#f87171' }}>{fehler}</p>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.75rem' }}>
+            <Link to={PROJECT_ROUTES['k2-galerie'].home} style={{ color: '#5ffbf1', textDecoration: 'none', fontSize: '0.9rem' }}>← K2 Galerie</Link>
+            <Link to={PROJECT_ROUTES['k2-galerie'].k2Markt} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>K2 Markt Mappe</Link>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="mission-wrapper" style={{ padding: '1.5rem 2rem' }}>
-      <header style={{ marginBottom: '1.5rem' }}>
-        <h1 style={{ margin: 0, color: '#5ffbf1', fontSize: '1.75rem' }}>🚦 K2 Markt – Qualitäts-Tor</h1>
-        <p style={{ marginTop: '0.35rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>
-          Entwurf prüfen (DoD Flyer), dann freigeben – erst dann marktfähig.
-        </p>
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.75rem' }}>
-          <Link to={PROJECT_ROUTES['k2-galerie'].k2Markt} style={{ color: '#5ffbf1', textDecoration: 'none', fontSize: '0.9rem' }}>← K2 Markt Mappe</Link>
-        </div>
-      </header>
+    <div className="mission-wrapper">
+      <div className="viewport" style={{ padding: '1.5rem 2rem' }}>
+        <header className="no-print" style={{ marginBottom: '1.5rem' }}>
+          <div>
+            <h1 style={{ margin: 0, color: '#5ffbf1', fontSize: '1.75rem' }}>🚦 K2 Markt – Qualitäts-Tor</h1>
+            <p className="meta" style={{ marginTop: '0.35rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>
+              Entwurf prüfen (DoD Flyer), dann freigeben – erst dann marktfähig.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', marginTop: '0.75rem' }}>
+            <Link to={PROJECT_ROUTES['k2-galerie'].home} style={{ color: '#5ffbf1', textDecoration: 'none', fontSize: '0.9rem' }}>← K2 Galerie</Link>
+            <Link to={PROJECT_ROUTES['k2-galerie'].k2Markt} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>K2 Markt Mappe</Link>
+            <Link to={PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>Kampagne Marketing-Strategie</Link>
+          </div>
+        </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: '1.5rem', alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: '1.5rem', alignItems: 'start' }}>
         {/* Entwurf-Vorschau */}
         <section style={{ background: 'rgba(95,251,241,0.06)', border: '1px solid rgba(95,251,241,0.25)', borderRadius: 12, padding: '1.25rem' }}>
           <h2 style={{ margin: '0 0 1rem', color: 'rgba(95,251,241,0.95)', fontSize: '1.1rem' }}>Flyer-Entwurf</h2>
@@ -166,6 +178,7 @@ export default function K2MarktTorPage() {
             <p style={{ color: 'rgba(255,255,255,0.5)' }}>Kein Entwurf – zuerst Produkt-Moment wählen.</p>
           )}
         </aside>
+        </div>
       </div>
     </div>
   )

@@ -6,6 +6,14 @@
 
 ---
 
+## Datum: 09.03.26 – K2 Markt: Aus einem Guss (Tor = Mappe-Struktur, Doku)
+
+- **Stand:** Tor-Seite (K2MarktTorPage) an Mappen-Struktur angeglichen: mission-wrapper + viewport, header no-print, gleiche Link-Reihenfolge (← K2 Galerie, K2 Markt Mappe, Kampagne Marketing-Strategie). Grundsatz in Vision festgehalten: „K2 Markt soll aus einem Guss entstehen – einheitliche Struktur, eine Quelle, eine Sprache.“
+- **Nächster Schritt:** Phase 2/3 ausprobieren (K2 Markt → Zum Tor), oder Phase 4 (Traceability) / weitere Formate.
+- **Wo nachlesen:** K2 Markt Mappe, K2-MARKT-VISION-ARCHITEKTUR.md (Abschnitt Aus einem Guss); Route /projects/k2-galerie/k2-markt-tor.
+
+---
+
 ## Datum: 09.03.26 – K2 Markt: A, B, C umgesetzt (Speicherort, Agent, Tor)
 
 - **Stand:** (A) Produkt-Momente in `public/k2-markt/produkt-momente.json`, Beispiel-Moment. (B) `src/utils/k2MarktFlyerAgent.ts`: momentToFlyerEntwurf, erfuelltDoDFlyer. (C) Tor-UI: Route k2-markt-tor, K2MarktTorPage (Entwurf, DoD-Checkliste, Freigabe-Button). Link „Zum Tor“ in K2 Markt Mappe.
