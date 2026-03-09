@@ -126,6 +126,12 @@ export async function resolveArtworkImages(artworks: any[]): Promise<any[]> {
   const out: any[] = []
   for (const a of artworks) {
     if (!a) { out.push(a); continue }
+    // Bereits echte URL (z. B. Supabase vom iPad) → sofort nutzen, kein IndexedDB nötig (Mac/anderes Gerät).
+    const url = a.imageUrl
+    if (typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))) {
+      out.push({ ...a, imageUrl: url, imageRef: a.imageRef || url })
+      continue
+    }
     const ref = a.imageRef
     if (ref && typeof ref === 'string') {
       const isUrl = ref.startsWith('http://') || ref.startsWith('https://')

@@ -7,7 +7,8 @@ import {
   checkMobileUpdates, 
   saveArtworksToSupabase,
   loadArtworksFromSupabase,
-  isSupabaseConfigured
+  isSupabaseConfigured,
+  resolveArtworkImageUrlsForExport
 } from '../utils/supabaseClient'
 import { sortArtworksFavoritesFirstThenNewest, interleaveArtworksByCategory } from '../utils/artworkSort'
 import { appendToHistory } from '../utils/artworkHistory'
@@ -4385,14 +4386,15 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       // WICHTIG: Rufe publishMobile direkt auf damit Mobile-Geräte die Änderungen sehen!
                       setTimeout(async () => {
                         try {
-                          // Lade alle Werke aus localStorage
                           const allArtworks = loadArtworks()
                           if (allArtworks && allArtworks.length > 0) {
+                            // Bild-URLs auflösen (imageRef/IndexedDB → Supabase-URL), damit iPhone/iPad keine Platzhalter sehen
+                            const allArtworksWithUrls = await resolveArtworkImageUrlsForExport(allArtworks)
                             const data = {
                               martina: JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}'),
                               georg: JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}'),
                               gallery: JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}'),
-                              artworks: artworksForExport(allArtworks),
+                              artworks: artworksForExport(allArtworksWithUrls),
                               events: loadEvents('k2'),
                               documents: loadDocuments('k2'),
                               designSettings: JSON.parse(localStorage.getItem('k2-design-settings') || '{}'),
@@ -4400,29 +4402,17 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                               buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
                               exportedAt: new Date().toISOString()
                             }
-                            
                             const json = JSON.stringify(data)
-                            
-                            // Schreibe direkt über API (nur wenn Dev-Server läuft)
-                            // WICHTIG: Auf Vercel existiert dieser Endpoint nicht!
-                            const isVercel = window.location.hostname.includes('vercel.app')
-                            
-                            if (isVercel) {
-                              console.warn('⚠️ Auf Vercel: Automatische Veröffentlichung nicht möglich')
-                              console.warn('💡 Mobile-Werke müssen über Dev-Server erstellt werden')
+                            const response = await fetch('/api/write-gallery-data', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: json
+                            })
+                            if (response.ok) {
+                              const result = await response.json()
+                              console.log('✅ Automatisch für Mobile veröffentlicht:', result)
                             } else {
-                              const response = await fetch('/api/write-gallery-data', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: json
-                              })
-                              
-                              if (response.ok) {
-                                const result = await response.json()
-                                console.log('✅ Automatisch für Mobile veröffentlicht:', result)
-                              } else {
-                                console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen:', response.status)
-                              }
+                              console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen:', response.status)
                             }
                           }
                         } catch (error) {
@@ -4635,11 +4625,12 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                         // Lade alle Werke aus localStorage
                         const allArtworks = loadArtworks()
                         if (allArtworks && allArtworks.length > 0) {
+                          const allArtworksWithUrls = await resolveArtworkImageUrlsForExport(allArtworks)
                           const data = {
                             martina: JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}'),
                             georg: JSON.parse(localStorage.getItem('k2-stammdaten-georg') || '{}'),
                             gallery: JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}'),
-                            artworks: artworksForExport(allArtworks),
+                            artworks: artworksForExport(allArtworksWithUrls),
                             events: loadEvents('k2'),
                             documents: loadDocuments('k2'),
                             designSettings: JSON.parse(localStorage.getItem('k2-design-settings') || '{}'),
@@ -4647,38 +4638,20 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                             buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
                             exportedAt: new Date().toISOString()
                           }
-                          
                           const json = JSON.stringify(data)
-                          
-                          // Schreibe direkt über API (nur wenn Dev-Server läuft)
-                          // WICHTIG: Auf Vercel existiert dieser Endpoint nicht!
-                          const isVercel = window.location.hostname.includes('vercel.app')
-                          
-                          if (isVercel) {
-                            // Supabase übernimmt die Sync – kein Alert nötig
-                            console.log('ℹ️ Auf Vercel: Supabase-Sync läuft, gallery-data.json nicht nötig')
+                          const response = await fetch('/api/write-gallery-data', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: json
+                          })
+                          if (response.ok) {
+                            const result = await response.json()
+                            console.log('✅ Automatisch für Mobile veröffentlicht:', result)
+                            window.dispatchEvent(new CustomEvent('gallery-data-published', {
+                              detail: { success: true, artworksCount: allArtworks.length, size: result.size }
+                            }))
                           } else {
-                            const response = await fetch('/api/write-gallery-data', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: json
-                            })
-                            
-                            if (response.ok) {
-                              const result = await response.json()
-                              console.log('✅ Automatisch für Mobile veröffentlicht:', result)
-                              
-                              // WICHTIG: Dispatche Event für automatischen Git Push
-                              window.dispatchEvent(new CustomEvent('gallery-data-published', { 
-                                detail: { 
-                                  success: true,
-                                  artworksCount: allArtworks.length,
-                                  size: result.size
-                                } 
-                              }))
-                            } else {
-                              console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen:', response.status)
-                            }
+                            console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen:', response.status)
                           }
                         }
                       } catch (error) {

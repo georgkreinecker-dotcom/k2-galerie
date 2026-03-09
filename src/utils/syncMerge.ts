@@ -254,10 +254,13 @@ export function preserveLocalImageData(
     if (!local) return item
     const localHasImage = !isPlaceholderOrEmpty(local.imageUrl) || (local.imageRef && String(local.imageRef).trim() !== '')
     if (!localHasImage) return item
-    // Immer lokales Bild übernehmen, wenn lokal vorhanden – so gehen Freistellungen nicht durch Server-Originale verloren.
+    // Server-URL (z. B. Supabase von iPad) nie durch lokales leeres/Platzhalter-Bild ersetzen – sonst sieht Mac/iPhone nichts.
+    const serverHasRealUrl = item.imageUrl && !isPlaceholderOrEmpty(item.imageUrl) && (String(item.imageUrl).startsWith('http://') || String(item.imageUrl).startsWith('https://'))
+    const localHasRealUrl = local.imageUrl && !isPlaceholderOrEmpty(local.imageUrl)
+    const useServerUrl = serverHasRealUrl && !localHasRealUrl
     return {
       ...item,
-      imageUrl: local.imageUrl ?? item.imageUrl,
+      imageUrl: useServerUrl ? item.imageUrl : (local.imageUrl ?? item.imageUrl),
       imageRef: local.imageRef ?? item.imageRef,
       previewUrl: local.previewUrl ?? item.previewUrl,
     }
