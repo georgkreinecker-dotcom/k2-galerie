@@ -2,6 +2,8 @@
 
 **Stand:** 09.03.26. Eine Übersicht – damit immer klar ist: wo stehen wir, was ist das Ziel, was fehlt.
 
+**Definition (verbindlich):** K2 Markt ist **von Beginn an als eigenständiges Projekt** definiert (wie K2 Familie), nicht als Teil von K2 Galerie. Frühere URLs unter `/projects/k2-galerie/k2-markt*` im Code waren nur Implementierungsdetail – keine inhaltliche Zuordnung. Heute: eigenes Projekt unter `/projects/k2-markt`, Datenquelle ök2.
+
 ---
 
 ## 1. Was wir bis jetzt haben
@@ -20,8 +22,8 @@
 
 | Was | Wo | Kurz |
 |-----|-----|-----|
-| **K2 Markt Mappe** | K2MarktPage, `/projects/k2-galerie/k2-markt` | Doku-Mappe: Vision, Handbuch, Planer, Produkt-Moment, DoD Flyer, Flyer-Agent. |
-| **K2 Markt Tor** | K2MarktTorPage, `/projects/k2-galerie/k2-markt-tor` | Live aus Quellen **oder** gespeicherte Momente. mök2-Idee (Basis) wählbar + optional Kampagne. Entwurf → DoD prüfen → Freigabe. |
+| **K2 Markt Mappe** | K2MarktPage, `/projects/k2-markt/mappe` | Doku-Mappe: Vision, Handbuch, Planer, Produkt-Moment, DoD Flyer, Flyer-Agent. |
+| **K2 Markt Tor** | K2MarktTorPage, `/projects/k2-markt/tor` | Live aus Quellen **oder** gespeicherte Momente. mök2-Idee (Basis) wählbar + optional Kampagne. Entwurf → DoD prüfen → Freigabe. |
 | **Quellen** | k2MarktQuellen.ts | getMok2Quellen, getMomentFromQuellenLive({ mok2IdeenId, kampagneDoc }), fetchMok2Ideen(), buildMomentFromQuellen(…, mok2Idee). |
 | **mök2-Ideen** | public/k2-markt/mok2-ideen.json | Ausgearbeitete Ideen (USPs, Marktchancen, Pro+, VK2, Empfehlungs-Programm, …) als wählbare Basis für Momente. |
 | **Momente** | produkt-momente.json, localStorage k2-markt-momente | Statische + lokale Momente; mit source (kampagneDoc, mok2IdeenId) bleiben live auflösbar. |
@@ -72,14 +74,29 @@
 
 ---
 
-## 4. Kurzfassung
+## 4. Die Lücke: Daten da – kreative/automatisierte Markteintritts-Schicht fehlt (09.03.26)
 
-| | Inhalt |
-|---|--------|
-| **Haben** | Leitvision + Kreativprozess + Forderung eigene Oberfläche (Doku); Tor mit Live/gespeichert, mök2-Ideen, Quellen, Momente, DoD, Freigabe; mök2, Kampagne; Mappe mit Vision/Handbuch. |
-| **Wollen** | Eine eigene K2-Markt-Oberfläche (eigene Welt), Einstieg „heute X auf den Markt bringen“, alles da + Studio wenn was fehlt, Kreativprozess vor dem Tor. |
-| **Noch nötig** | (A) ✅. (B) ✅. (C) ✅ Studio. (D) ✅ Leitvision in App. |
+**Georg (09.03.26):** Bisher sind wir bis auf das Tor noch nicht wirklich weitergekommen. Unter jeder Kachel zeigen wir Sachen, die **schon da sind** (mök2, Mappe, Kampagne, Studio) – das als **Datenmaterial** zu nutzen ist richtig. Aber wir haben **noch nichts Neues, Kreatives** daraus gemacht, um **automatisiert auf den Markt eintreten** zu können – **wozu die KI und die ganzen Agenten da sind**.
+
+| Heute | Ziel |
+|--------|------|
+| Kacheln = Links zu **bestehenden** Bereichen (Datenmaterial) | Aus dem Datenmaterial **neu erzeugen** (KI/Agenten) → dann **automatisiert** marktfähig werden |
+| Tor = manuell prüfen & freigeben | Tor bleibt; **davor** die Schicht: aus Quellen etwas **Kreatives** erzeugen, das dann ans Tor kann |
+| Keine echte „Maschine“ für Markteintritt | KI + Agenten = genau dafür: aus mök2/Kampagne/Mappe **etwas Neues** machen und damit (unterstützt/automatisiert) auf den Markt |
+
+**Konsequenz für die nächste Entwicklung:** Nicht nur Oberfläche mit Links – sondern die **kreative/automatisierte Schicht** bauen: Eingabe = bestehende Quellen (mök2, Kampagne, Mappe), Verarbeitung = KI/Agenten (etwas Neues daraus erzeugen), Ausgabe = marktfähige Formate → Tor → Freigabe. Das ist die Richtung.
 
 ---
 
-*Quelle: Zusammenführung aus K2-MARKT-KREATIVPROZESS-LEITVISION.md, K2-MARKT-VISION-ARCHITEKTUR.md, MOK2-KOMPLETT-UMSETZEN.md und aktuellem Code-Stand (K2MarktPage, K2MarktTorPage, k2MarktQuellen, mok2-ideen.json).*
+## 5. Kurzfassung
+
+| | Inhalt |
+|---|--------|
+| **Haben** | Leitvision + Kreativprozess; Tor, Quellen, Momente, DoD, Freigabe; mök2, Kampagne; Mappe. Oberfläche = Kacheln zu den **Datenquellen**. |
+| **Wollen** | Eigene K2-Markt-Oberfläche, „heute X auf den Markt bringen“, alles da + Studio. **Plus:** Aus dem Datenmaterial **etwas Neues** mit KI/Agenten erzeugen → **automatisiert** auf den Markt. |
+| **Lücke** | Die **kreative/automatisierte Markteintritts-Schicht** (KI, Agenten) fehlt noch – genau dafür sind sie gedacht. |
+| **Nächste Phase** | Kreative Schicht: Eingabe = Quellen, Verarbeitung = KI/Agenten, Ausgabe = marktfähig → Tor. |
+
+---
+
+*Quelle: Zusammenführung aus K2-MARKT-KREATIVPROZESS-LEITVISION.md, K2-MARKT-VISION-ARCHITEKTUR.md, MOK2-KOMPLETT-UMSETZEN.md und aktuellem Code-Stand. Abschnitt 4: Georg 09.03.26.*

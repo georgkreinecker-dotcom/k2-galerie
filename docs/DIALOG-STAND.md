@@ -6,6 +6,30 @@
 
 ---
 
+## Datum: 09.03.26 – K2 Markt: Projekt abgelegt (Stand gespeichert)
+
+- **Stand:** Georg: K2 Markt einmal abspeichern – er kommt später darauf zurück. Alles, was er jetzt braucht, macht er aus dem K2 Galerie Projekt. **Umsetzung:** Commit + Push mit aktuellem K2-Markt-Stand (Schicht mit 4 Ausgabe-Nodes: Flyer, Presse, Markt, Eventplan; Links in Admin; Glas-Fenster, Verbindungslinien, Kugel). Projekt ist auf GitHub gesichert.
+- **Nächster Schritt (wenn Georg zurückkommt):** K2 Markt von Projekte-Seite oder /kreativwerkstatt öffnen; Schicht, Mappe, Tor, Eventplan/Presse-Links nutzen.
+- **Wo nachlesen:** K2MarktSchichtPage.tsx; docs/K2-MARKT-STAND-ZIEL-NOETIG.md; docs/KREATIVWERKSTATT-URL-HOMEPAGE.md.
+
+---
+
+## Datum: 09.03.26 – K2 Markt Schicht: Optik wie Vision-Bild (Erwartungen erfüllen)
+
+- **Stand:** Georg: Struktur war erkennbar, aber das Bild erzeugt Erwartungen – die Optik muss passen. **Umsetzung:** Schicht-Seite visuell am Vision-Bild ausgerichtet: (1) Eigenes **Glas-Fenster** mit Titelleiste „Kreativ-Schicht“, dunkler Hintergrund #0a0e17, Fenster mit backdrop-blur und türkisem Rand. (2) **Sichtbare Verbindungslinien** (Gradient-Linien) mit **laufenden Leuchtpunkten** (Animation schicht-flow-dot) zwischen links und Mitte sowie Mitte und rechts. (3) **Stärkere Kugel** (120px, kräftiger Glow, radial-gradient), einheitliche **Glas-Nodes** links und rechts (glassNode mit leichtem Schimmer), rechts **Pfeil-in-Dokument-Symbol** (→▭) für Flyer/Presse/Markt. Links Icons: Quellen 📁, mök2 </>, Kampagne 📢, Mappe 📁.
+- **Nächster Schritt:** Georg testet im Browser; bei Bedarf Feinabstimmung (Leuchtstärke, Abstände).
+- **Wo nachlesen:** K2MarktSchichtPage.tsx; Vision-Bild assets/Bildschirmfoto_2026-03-09….
+
+---
+
+## Datum: 09.03.26 – K2 Markt: Daten da, kreative/automatisierte Schicht fehlt (Richtung)
+
+- **Stand:** Georg: Bisher bis auf das Tor nicht wirklich weiter – unter jeder Kachel zeigen wir **was schon da ist** (mök2, Mappe, Kampagne, Studio). Das als **Datenmaterial** ist richtig, aber wir haben **noch nichts Neues, Kreatives** daraus gemacht, um **automatisiert auf den Markt eintreten** zu können – **wozu KI und Agenten da sind**. Festgehalten in docs/K2-MARKT-STAND-ZIEL-NOETIG.md Abschnitt 4.
+- **Nächster Schritt (Richtung):** Kreative/automatisierte Schicht bauen: Eingabe = Quellen (mök2, Kampagne, Mappe), Verarbeitung = KI/Agenten (etwas Neues erzeugen), Ausgabe = marktfähige Formate → Tor → Freigabe. Nicht nur Links zu bestehenden Bereichen.
+- **Wo nachlesen:** docs/K2-MARKT-STAND-ZIEL-NOETIG.md (Abschn. 4 + 5); K2-MARKT-VISION-ARCHITEKTUR.md.
+
+---
+
 ## Datum: 09.03.26 – K2 Markt eigenständiges Projekt, Tests + Build + Push
 
 - **Stand:** K2 Markt = eigenständiges Projekt (wie K2 Familie), Datenquelle ök2. Homepage = Arbeitsoberfläche; netzfähig. Routen /projects/k2-markt, /mappe, /tor; kurze URL /kreativwerkstatt; Projekte-Seite + Karte; Legacy-Redirects; Doku KREATIVWERKSTATT-URL-HOMEPAGE.md. **Commit:** c1ef854 – auf GitHub.

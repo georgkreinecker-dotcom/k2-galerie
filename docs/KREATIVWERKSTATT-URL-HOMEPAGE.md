@@ -1,6 +1,6 @@
 # Kreativwerkstatt / K2 Markt – eigenständiges Projekt, Homepage, netzfähig
 
-**K2 Markt** ist ein **alleinstehendes Projekt** (wie K2 Familie), **nicht** mit K2 Galerie verbunden. Einziger Unterschied zu K2 Familie: **Datenquelle ist ök2** (mök2, Muster, Demo) – keine K2-Kundendaten.
+**K2 Markt** ist ein **alleinstehendes Projekt** (wie K2 Familie), **nicht** mit K2 Galerie verbunden. **Von Beginn an so definiert** (Georg) – die frühere Verortung unter `/projects/k2-galerie/k2-markt*` im Code war nur Implementierungsdetail, keine inhaltliche Zuordnung zu K2 Galerie. Einziger Unterschied zu K2 Familie: **Datenquelle ist ök2** (mök2, Muster, Demo) – keine K2-Kundendaten.
 
 ---
 

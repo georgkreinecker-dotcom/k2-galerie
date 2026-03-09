@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import '../App.css'
-import { PLATFORM_ROUTES, MOK2_ROUTE } from '../config/navigation'
+import { PLATFORM_ROUTES, MOK2_ROUTE, PROJECT_ROUTES } from '../config/navigation'
 import { getProjectCards } from '../config/projectsDisplay'
 
 const projects = getProjectCards()
@@ -16,6 +16,46 @@ export default function ProjectsPage() {
           </div>
           <Link to={PLATFORM_ROUTES.home} className="meta">← Zur Plattform</Link>
         </header>
+
+        {/* K2 Markt – schöner Zugangsbutton zur Kreativwerkstatt */}
+        <div
+          style={{
+            marginBottom: '2rem',
+            padding: '1.5rem 1.75rem',
+            background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(20, 184, 166, 0.08) 100%)',
+            border: '1px solid rgba(34, 197, 94, 0.35)',
+            borderRadius: 16,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+          }}
+        >
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+            <div>
+              <h2 style={{ margin: '0 0 0.35rem', fontSize: '1.25rem', color: '#86efac', fontWeight: 600 }}>K2 Markt – Kreativwerkstatt</h2>
+              <p style={{ margin: 0, fontSize: '0.95rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
+                Eigenständiges Projekt. Arbeitsoberfläche: Leitvision, Ablauf, Studio, Tor – heute etwas auf den Markt bringen.
+              </p>
+            </div>
+            <Link
+              to={PROJECT_ROUTES['k2-markt'].home}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.75rem 1.5rem',
+                background: 'linear-gradient(135deg, #22c55e 0%, #0d9488 100%)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 12,
+                fontSize: '1.05rem',
+                textDecoration: 'none',
+                fontWeight: 600,
+                boxShadow: '0 2px 12px rgba(34, 197, 94, 0.35)',
+              }}
+            >
+              Zugang zur Kreativwerkstatt →
+            </Link>
+          </div>
+        </div>
 
         <div className="grid">
           {projects.map((project) => (

@@ -102,14 +102,18 @@ export const PROJECT_ROUTES = {
     k2MarktOberflaeche: '/projects/k2-markt',
     k2MarktTor: '/projects/k2-markt/tor',
   },
-  /** K2 Markt – eigenständiges Projekt (wie K2 Familie). Datenquelle: ök2 (mök2, Muster). Homepage = Arbeitsoberfläche = Art und Weise manuell zu arbeiten; netzfähig wie ök2 und K2 Familie. */
+  /** K2 Markt – von Beginn an eigenständiges Projekt definiert (wie K2 Familie), nicht Teil von K2 Galerie. Datenquelle: ök2 (mök2, Muster). Homepage = Arbeitsoberfläche; netzfähig wie ök2 und K2 Familie. */
   'k2-markt': {
     id: 'k2-markt',
     name: 'K2 Markt',
-    /** Homepage = Arbeitsoberfläche (Leitvision, Ablauf, Studio, Tor) – dort arbeitest du manuell */
+    /** Einstieg = Schicht (Quellen → Erzeugen → Tor). Beim Klick auf K2 Markt sofort diese Maske. */
     home: '/projects/k2-markt',
     mappe: '/projects/k2-markt/mappe',
     tor: '/projects/k2-markt/tor',
+    /** Die neue Schicht – funktionierend; home zeigt diese Seite. */
+    schicht: '/projects/k2-markt/schicht',
+    /** Übersicht mit Kacheln (Mappe, Tor, Studio, mök2, …) – von Schicht aus verlinkt */
+    uebersicht: '/projects/k2-markt/uebersicht',
   },
   vk2: {
     id: 'vk2',

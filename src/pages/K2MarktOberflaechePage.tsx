@@ -1,201 +1,218 @@
 /**
- * K2 Markt – eigene Arbeitsoberfläche (Kreativprozess).
- * Nur für den Markt-Kreativprozess: Leitvision, „heute X auf den Markt bringen“, Ideen, Kampagne, dann zum Tor.
- * docs/K2-MARKT-KREATIVPROZESS-LEITVISION.md, K2-MARKT-STAND-ZIEL-NOETIG.md
+ * K2 Markt – Homepage / Arbeitsoberfläche (Dashboard-Stil).
+ * Eigenständiges Projekt; Datenquelle ök2. Von Beginn an so definiert.
+ * "Was möchtest du heute tun?" – ein Klick pro Bereich.
  */
 
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
 
-type ProduktWahl = 'k2' | 'oek2' | 'k2-familie' | null
+const cards: Array<{
+  title: string
+  subtitle: string
+  to: string
+  accent?: boolean
+  icon?: string
+}> = [
+  {
+    title: 'Mappe',
+    subtitle: 'Vision, Handbuch, K2 Markt-Material – alles für Ideen & Linie.',
+    to: PROJECT_ROUTES['k2-markt'].mappe,
+    accent: true,
+    icon: '📁',
+  },
+  {
+    title: 'Zum Tor',
+    subtitle: 'Entwurf prüfen, DoD prüfen, freigeben – heute auf den Markt.',
+    to: PROJECT_ROUTES['k2-markt'].tor,
+    icon: '🚦',
+  },
+  {
+    title: 'Studio',
+    subtitle: 'Design, Bildverarbeitung – fehlende Bilder, Texte, Willkommensbild (ök2).',
+    to: '/admin?context=oeffentlich',
+    icon: '🖌️',
+  },
+  {
+    title: 'mök2',
+    subtitle: 'USPs, Botschaft, Lizenzen – Vertrieb ök2.',
+    to: PROJECT_ROUTES['k2-galerie'].marketingOek2,
+    icon: '📢',
+  },
+  {
+    title: 'Kampagne',
+    subtitle: 'Marketing-Strategie – Kampagne planen.',
+    to: PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie,
+    icon: '📋',
+  },
+  {
+    title: 'K2 Galerie',
+    subtitle: 'Zurück zur Galerie-Projektübersicht.',
+    to: PROJECT_ROUTES['k2-galerie'].home,
+    icon: '🏠',
+  },
+]
 
 export default function K2MarktOberflaechePage() {
-  const [produkt, setProdukt] = useState<ProduktWahl>(null)
-
   return (
-    <div className="mission-wrapper">
-      <div className="viewport" style={{ padding: '1.5rem 2rem', maxWidth: 900 }}>
-        <header className="no-print" style={{ marginBottom: '1.5rem' }}>
-          <div>
-            <h1 style={{ margin: 0, color: '#5ffbf1', fontSize: '1.75rem' }}>🎯 K2 Markt – Arbeitsoberfläche</h1>
-            <p className="meta" style={{ marginTop: '0.35rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>
-              Deine eigene Welt für den Kreativprozess – hier startest du, dann geht es ans Tor.
-            </p>
-          </div>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', marginTop: '0.75rem' }}>
-            <Link to={PROJECT_ROUTES['k2-galerie'].home} style={{ color: '#5ffbf1', textDecoration: 'none', fontSize: '0.9rem' }}>← K2 Galerie</Link>
-            <Link to={PROJECT_ROUTES['k2-galerie'].k2Markt} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>Mappe (Doku)</Link>
-            <Link to={PROJECT_ROUTES['k2-markt'].tor} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>🚦 Zum Tor</Link>
-          </div>
-        </header>
+    <div className="mission-wrapper" style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #0f172a 0%, #1e293b 35%, #0f172a 100%)' }}>
+      <div className="viewport" style={{ padding: '2rem 1.5rem', maxWidth: 900, margin: '0 auto' }}>
+        {/* Nav – minimal */}
+        <nav className="no-print" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '2rem', fontSize: '0.9rem' }}>
+          <Link to={PROJECT_ROUTES['k2-galerie'].home} style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>← K2 Galerie</Link>
+          <Link to={PROJECT_ROUTES['k2-markt'].mappe} style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>Mappe</Link>
+          <Link to={PROJECT_ROUTES['k2-markt'].tor} style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>Zum Tor</Link>
+        </nav>
 
-        {/* Leitvision */}
-        <section style={{ marginBottom: '1.5rem', padding: '1.25rem 1.5rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 12 }}>
-          <h2 style={{ margin: '0 0 0.75rem', color: '#5ffbf1', fontSize: '1.1rem' }}>Leitvision</h2>
-          <p style={{ margin: 0, color: 'rgba(255,255,255,0.95)', lineHeight: 1.65, fontSize: '1rem' }}>
-            Ich setze mich an meinen Mac und sage: <strong>Heute möchte ich meine K2 oder ök2 oder etwas anderes – zum Beispiel K2 Familie – auf den Markt bringen.</strong> Du hast alles, was du dafür brauchst.
-          </p>
-          <p style={{ margin: '0.75rem 0 0', color: 'rgba(255,255,255,0.9)', lineHeight: 1.65, fontSize: '0.98rem' }}>
-            Wenn Bilder, Videos oder Texte fehlen: Im Werkzeugkasten haben wir ein <strong>Studio</strong>, in dem wir das selbst professionell erzeugen und ergänzen können.
-          </p>
-          <p style={{ margin: '0.75rem 0 0', fontSize: '0.9rem' }}>
-            <Link to="/admin" style={{ color: '#5ffbf1', textDecoration: 'none', fontWeight: 600 }}>→ Studio (Admin: Design, Bildverarbeitung)</Link>
-            {' '}– Freistellen, Zuschneiden, Bilder und Texte professionell ergänzen.
-          </p>
-        </section>
-
-        {/* C: Studio im Werkzeugkasten – sichtbar verknüpft */}
-        <section style={{ marginBottom: '1.5rem', padding: '1rem 1.25rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.35)', borderRadius: 12 }}>
-          <h2 style={{ margin: '0 0 0.5rem', color: '#fbbf24', fontSize: '1.05rem' }}>Fehlt was? → Studio</h2>
-          <p style={{ margin: 0, color: 'rgba(255,255,255,0.9)', lineHeight: 1.6, fontSize: '0.95rem' }}>
-            Bilder, Videos oder Texte für Flyer, Galerie oder Kampagne? Im <strong>Admin</strong> (Tab Design, Bildverarbeitung) kannst du sie selbst professionell erzeugen und einbinden – Freistellen, Zuschneiden, Hintergrund, Willkommensbild, Galerie-Karte.
+        {/* Vision: So soll die neue Schicht aussehen – und so funktioniert sie schon */}
+        <section style={{
+          marginBottom: '2rem',
+          padding: '1rem 0',
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
+        }}>
+          <h2 style={{
+            margin: '0 0 0.75rem',
+            fontSize: '1rem',
+            fontWeight: 600,
+            color: '#5eead4',
+            letterSpacing: '-0.01em',
+          }}>
+            Vision: Die nächste Generation – so soll die neue Schicht aussehen
+          </h2>
+          <Link to={PROJECT_ROUTES['k2-markt'].schicht} style={{ display: 'block' }}>
+            <img
+              src="/k2-markt/img/k2-markt-zukunftsoberflaeche.png"
+              alt="Vision: Kreativ-Schicht – Quellen, KI/Agenten, Ausgabe, Tor"
+              style={{
+                width: '100%',
+                maxWidth: 720,
+                height: 'auto',
+                borderRadius: 12,
+                border: '1px solid rgba(255,255,255,0.12)',
+                display: 'block',
+              }}
+            />
+          </Link>
+          <p style={{ margin: '0.5rem 0 0', fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}>
+            Quellen → KI/Agenten (etwas Neues erzeugen) → Ausgabe → Tor. Genau dort arbeiten wir hin.
           </p>
           <Link
-            to="/admin"
+            to={PROJECT_ROUTES['k2-markt'].schicht}
             style={{
               display: 'inline-block',
               marginTop: '0.75rem',
-              padding: '0.5rem 1rem',
-              background: 'rgba(251,191,36,0.25)',
-              color: '#fbbf24',
-              border: '1px solid rgba(251,191,36,0.5)',
-              borderRadius: 8,
+              padding: '0.6rem 1.2rem',
+              background: 'rgba(20, 184, 166, 0.25)',
+              color: '#5eead4',
+              border: '1px solid rgba(20, 184, 166, 0.4)',
+              borderRadius: 10,
               fontSize: '0.95rem',
               textDecoration: 'none',
               fontWeight: 600,
             }}
           >
-            Studio öffnen (Admin)
+            → So funktioniert die neue Schicht (öffnen)
           </Link>
         </section>
 
-        {/* B: Kreativprozess-Einstieg – klarer Ablauf in 3 Schritten */}
-        <section style={{ marginBottom: '2rem', padding: '1.25rem 1.5rem', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 12 }}>
-          <h2 style={{ margin: '0 0 1rem', color: '#86efac', fontSize: '1.15rem' }}>Dein Ablauf</h2>
-          <ol style={{ margin: 0, paddingLeft: '1.35rem', color: 'rgba(255,255,255,0.95)', lineHeight: 1.9, fontSize: '0.98rem' }}>
-            <li>
-              <strong>Wofür?</strong> Wähle, was du heute auf den Markt bringen willst: K2 Galerie, ök2 oder K2 Familie. (Unten „Heute will ich …“)
-            </li>
-            <li>
-              <strong>Ideen & Linie.</strong> Sieh dir in mök2 und Kampagne an, welche Botschaft und welche Linie du nutzen willst. (Unten „Ideen & Quellen“)
-            </li>
-            <li>
-              <strong>Entwurf prüfen & freigeben.</strong> Am Tor wählst du mök2-Idee und optional Kampagne, siehst den Entwurf, prüfst nach DoD und gibst frei. (Button „Zum Tor“)
-            </li>
-          </ol>
-          <p style={{ margin: '0.75rem 0 0', color: 'rgba(255,255,255,0.8)', fontSize: '0.88rem' }}>
-            Einstieg ist immer Schritt 1 – nicht das Tor. Erst Produkt und Ideen, dann Tor.
+        {/* Zentrale Frage – wie Dashboard */}
+        <header style={{ marginBottom: '2rem' }}>
+          <h1 style={{
+            margin: 0,
+            fontSize: 'clamp(1.6rem, 4vw, 2rem)',
+            fontWeight: 700,
+            color: '#f0fdfa',
+            letterSpacing: '-0.02em',
+            lineHeight: 1.2,
+          }}>
+            Was möchtest du heute tun?
+          </h1>
+          <p style={{
+            margin: '0.5rem 0 0',
+            fontSize: '1rem',
+            color: 'rgba(255,255,255,0.75)',
+            lineHeight: 1.5,
+          }}>
+            Ein Klick – du bist im Bereich. Das sind alle Bereiche der Kreativwerkstatt.
+          </p>
+        </header>
+
+        {/* Aktionskarten – 2x3 Grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: '1.25rem',
+        }}>
+          {cards.map((card) => (
+            <Link
+              key={card.to}
+              to={card.to}
+              style={{
+                display: 'block',
+                padding: '1.35rem 1.25rem',
+                background: card.accent
+                  ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.18) 0%, rgba(20, 184, 166, 0.1) 100%)'
+                  : 'rgba(255,255,255,0.05)',
+                border: `1px solid ${card.accent ? 'rgba(34, 197, 94, 0.35)' : 'rgba(255,255,255,0.1)'}`,
+                borderRadius: 14,
+                textDecoration: 'none',
+                color: 'inherit',
+                transition: 'border-color 0.15s, background 0.15s',
+                boxShadow: card.accent ? '0 4px 20px rgba(0,0,0,0.12)' : 'none',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = card.accent ? 'rgba(34, 197, 94, 0.5)' : 'rgba(255,255,255,0.2)'
+                e.currentTarget.style.background = card.accent ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.22) 0%, rgba(20, 184, 166, 0.14) 100%)' : 'rgba(255,255,255,0.08)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = card.accent ? 'rgba(34, 197, 94, 0.35)' : 'rgba(255,255,255,0.1)'
+                e.currentTarget.style.background = card.accent ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.18) 0%, rgba(20, 184, 166, 0.1) 100%)' : 'rgba(255,255,255,0.05)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                <span style={{ fontSize: '1.5rem', lineHeight: 1 }}>{card.icon}</span>
+                <div>
+                  <h2 style={{
+                    margin: 0,
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                    color: card.accent ? '#86efac' : '#f0fdfa',
+                  }}>
+                    {card.title}
+                  </h2>
+                  <p style={{
+                    margin: '0.35rem 0 0',
+                    fontSize: '0.88rem',
+                    color: 'rgba(255,255,255,0.75)',
+                    lineHeight: 1.5,
+                  }}>
+                    {card.subtitle}
+                  </p>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        {/* Kurze Leitvision – kompakt darunter */}
+        <section style={{
+          marginTop: '2.5rem',
+          padding: '1.25rem 1.5rem',
+          background: 'rgba(20, 184, 166, 0.06)',
+          border: '1px solid rgba(20, 184, 166, 0.2)',
+          borderRadius: 12,
+        }}>
+          <p style={{ margin: 0, fontSize: '0.95rem', color: 'rgba(255,255,255,0.88)', lineHeight: 1.65 }}>
+            <strong style={{ color: '#5eead4' }}>Leitvision:</strong> Heute möchte ich meine K2 oder ök2 oder K2 Familie auf den Markt bringen – du hast alles, was du dafür brauchst. Fehlt was, ist das Studio da (Design, Bildverarbeitung).
           </p>
         </section>
 
-        {/* Heute will ich … auf den Markt bringen = Schritt 1 */}
-        <section style={{ marginBottom: '2rem' }}>
-          <h2 style={{ margin: '0 0 0.5rem', color: '#5ffbf1', fontSize: '1.15rem' }}>Schritt 1: Heute will ich … auf den Markt bringen</h2>
-          <p style={{ margin: '0 0 1rem', color: 'rgba(255,255,255,0.75)', fontSize: '0.85rem' }}>Wofür arbeitest du? Wähle ein Produkt.</p>
-          <p style={{ margin: '0 0 1rem', color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>Wähle, wofür du gerade arbeiten willst – dann hast du Ideen und Kampagne dafür im Blick.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-            <button
-              type="button"
-              onClick={() => setProdukt('k2')}
-              style={{
-                padding: '0.85rem 1.25rem',
-                background: produkt === 'k2' ? 'rgba(13,148,136,0.5)' : 'rgba(95,251,241,0.1)',
-                color: '#5ffbf1',
-                border: `1px solid ${produkt === 'k2' ? '#0d9488' : 'rgba(95,251,241,0.35)'}`,
-                borderRadius: 10,
-                fontSize: '1rem',
-                cursor: 'pointer',
-                fontWeight: produkt === 'k2' ? 600 : 500,
-              }}
-            >
-              K2 Galerie
-            </button>
-            <button
-              type="button"
-              onClick={() => setProdukt('oek2')}
-              style={{
-                padding: '0.85rem 1.25rem',
-                background: produkt === 'oek2' ? 'rgba(13,148,136,0.5)' : 'rgba(95,251,241,0.1)',
-                color: '#5ffbf1',
-                border: `1px solid ${produkt === 'oek2' ? '#0d9488' : 'rgba(95,251,241,0.35)'}`,
-                borderRadius: 10,
-                fontSize: '1rem',
-                cursor: 'pointer',
-                fontWeight: produkt === 'oek2' ? 600 : 500,
-              }}
-            >
-              ök2
-            </button>
-            <button
-              type="button"
-              onClick={() => setProdukt('k2-familie')}
-              style={{
-                padding: '0.85rem 1.25rem',
-                background: produkt === 'k2-familie' ? 'rgba(13,148,136,0.5)' : 'rgba(95,251,241,0.1)',
-                color: '#5ffbf1',
-                border: `1px solid ${produkt === 'k2-familie' ? '#0d9488' : 'rgba(95,251,241,0.35)'}`,
-                borderRadius: 10,
-                fontSize: '1rem',
-                cursor: 'pointer',
-                fontWeight: produkt === 'k2-familie' ? 600 : 500,
-              }}
-            >
-              K2 Familie
-            </button>
-          </div>
-          {produkt && (
-            <p style={{ marginTop: '0.75rem', color: 'rgba(255,255,255,0.75)', fontSize: '0.88rem' }}>
-              Du arbeitest für <strong>{produkt === 'k2' ? 'K2 Galerie' : produkt === 'oek2' ? 'ök2' : 'K2 Familie'}</strong>. Nutze unten Ideen & Kampagne, dann erzeuge Momente und gehe zum Tor.
-            </p>
-          )}
-        </section>
-
-        {/* Schritt 2: Ideen & Quellen */}
-        <section style={{ marginBottom: '2rem', padding: '1.25rem 1.5rem', background: 'rgba(95,251,241,0.06)', border: '1px solid rgba(95,251,241,0.2)', borderRadius: 12 }}>
-          <h2 style={{ margin: '0 0 0.5rem', color: '#5ffbf1', fontSize: '1.1rem' }}>Schritt 2: Ideen & Quellen</h2>
-          <p style={{ margin: '0 0 1rem', color: 'rgba(255,255,255,0.85)', fontSize: '0.9rem' }}>
-            Botschaft und Linie: mök2 und Kampagne ansehen.
-          </p>
-          <ul style={{ margin: 0, paddingLeft: '1.25rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.8 }}>
-            <li>
-              <Link to={PROJECT_ROUTES['k2-galerie'].marketingOek2} style={{ color: '#5ffbf1', textDecoration: 'none' }}>mök2 (Marketing ök2)</Link>
-              {' '}– USPs, Botschaft, Zielgruppe, Lizenzen, Ideen ausgearbeitet.
-            </li>
-            <li>
-              <Link to={PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie} style={{ color: '#5ffbf1', textDecoration: 'none' }}>Kampagne Marketing-Strategie</Link>
-              {' '}– Dokumente für Linie und Ansprache.
-            </li>
-            <li>
-              <Link to={PROJECT_ROUTES['k2-galerie'].k2Markt} style={{ color: '#5ffbf1', textDecoration: 'none' }}>K2 Markt Mappe</Link>
-              {' '}– Vision, Kreativprozess, Stand & Ziel, Handbuch.
-            </li>
-          </ul>
-        </section>
-
-        {/* Schritt 3: Zum Tor */}
-        <section style={{ marginBottom: '1rem', padding: '1.25rem 1.5rem', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.35)', borderRadius: 12 }}>
-          <h2 style={{ margin: '0 0 0.5rem', color: '#86efac', fontSize: '1.1rem' }}>Schritt 3: Entwurf prüfen & freigeben</h2>
-          <p style={{ margin: '0 0 1rem', color: 'rgba(255,255,255,0.9)', fontSize: '0.95rem' }}>
-            Am Tor wählst du mök2-Idee und optional Kampagne, siehst den Entwurf, prüfst nach DoD und gibst frei – eine Freigabe, dann marktfähig.
-          </p>
-          <Link
-            to={PROJECT_ROUTES['k2-markt'].tor}
-            style={{
-              display: 'inline-block',
-              padding: '0.6rem 1.25rem',
-              background: 'rgba(34,197,94,0.35)',
-              color: '#86efac',
-              border: '1px solid rgba(34,197,94,0.6)',
-              borderRadius: 8,
-              fontSize: '1rem',
-              textDecoration: 'none',
-              fontWeight: 600,
-            }}
-          >
-            🚦 Zum Tor – Entwurf prüfen & freigeben
-          </Link>
-        </section>
+        {/* Footer-Nav */}
+        <footer className="no-print" style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>
+          <Link to={PROJECT_ROUTES['k2-galerie'].home} style={{ color: 'inherit', textDecoration: 'none', marginRight: '1rem' }}>K2 Galerie</Link>
+          <Link to={PROJECT_ROUTES['k2-markt'].mappe} style={{ color: 'inherit', textDecoration: 'none', marginRight: '1rem' }}>Mappe</Link>
+          <Link to={PROJECT_ROUTES['k2-markt'].tor} style={{ color: 'inherit', textDecoration: 'none' }}>Zum Tor</Link>
+        </footer>
       </div>
     </div>
   )

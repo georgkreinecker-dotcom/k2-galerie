@@ -1,0 +1,44 @@
+---
+description: "Ablegen = zuerst dort, wo gerade gearbeitet wird (Schreibtisch, nicht Keller)"
+alwaysApply: true
+---
+
+# Ablegen – zuerst dort, wo gerade gearbeitet wird
+
+**Georg (09.03.26):** „Merke dir als Regel: alles immer zuerst dort ablegen, wo gerade gearbeitet wird. Das ist so, als ob du sagst geh in den Keller – anstatt es auf den Schreibtisch zu legen. Ok?“
+
+---
+
+## Die Regel (unveränderlich)
+
+**Alles, was ich erzeuge oder ablege (Bilder, Doku, neue Dateien, Referenzen), kommt zuerst dorthin, wo wir gerade arbeiten – nicht woanders.**
+
+- **Schreibtisch** = der Ort, an dem gerade gearbeitet wird (aktuelles Projekt, aktuelle Seite, aktueller Ordner). Hier ablegen.
+- **Keller** = ein anderer Ort, wo Georg erst suchen oder hingehen müsste. Das vermeiden.
+
+---
+
+## Konkret
+
+| Situation | Nicht (Keller) | Sondern (Schreibtisch) |
+|-----------|----------------|-------------------------|
+| Bild für K2 Markt / Kreativwerkstatt | In Cursor-Assets oder irgendwo im Repo | `public/k2-markt/img/` + auf der Kreativwerkstatt-Seite anzeigen |
+| Doku zu einem laufenden Projekt | Nur in docs/ ohne Bezug zur Oberfläche | In den Projekt-Ordner (z. B. `public/k2-markt/`) + ggf. in der App sichtbar machen |
+| Neue Datei für aktuelles Feature | In einem allgemeinen Ordner ablegen | Im Ordner der aktuellen Seite/des aktuellen Projekts ablegen |
+| Referenz oder Vision | „Liegt unter …“ sagen, ohne Link/Ort im Kontext | Dort ablegen, wo die Arbeit passiert – und in der aktuellen Oberfläche zeigen oder verlinken |
+
+---
+
+## Konsequenz für die AI
+
+- **Vor dem Ablegen fragen:** Wo arbeiten wir gerade? (Projekt, Route, Ordner, Seite.)
+- **Dann:** Das Neue **dort** ablegen und, wo sinnvoll, **dort sichtbar** machen (Seite, Mappe, Link).
+- **Nicht:** Etwas erzeugen und an einen „logischen“ aber fernen Ort legen – dann muss Georg in den Keller gehen.
+
+---
+
+## Kurzfassung
+
+**Ablegen = zuerst auf den Schreibtisch (wo gearbeitet wird), nicht in den Keller. Regel kategorisch.**
+
+Verknüpfung: **ablage-regel.mdc** (welcher Inhaltstyp wohin); diese Regel = **immer der aktuelle Arbeitsort zuerst**.

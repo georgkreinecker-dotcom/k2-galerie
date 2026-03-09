@@ -168,7 +168,10 @@ if (rootElement && inIframe && !embeddedInApf) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;')
-    const errMsg = error instanceof Error ? error.message : String(error)
+    const rawMsg = error instanceof Error ? error.message : String(error)
+    const errMsg = rawMsg.includes('Importing a module script failed')
+      ? 'Laden eines Modul-Skripts ist fehlgeschlagen.'
+      : rawMsg
     const errStack = error instanceof Error ? error.stack : String(error)
     const isProd = typeof import.meta !== 'undefined' && import.meta.env?.PROD
     rootElement.innerHTML = `

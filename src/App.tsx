@@ -16,6 +16,7 @@ import K2GalerieHandbuchPage from './pages/K2GalerieHandbuchPage'
 import KampagneMarketingStrategiePage from './pages/KampagneMarketingStrategiePage'
 import K2MarktPage from './pages/K2MarktPage'
 import K2MarktOberflaechePage from './pages/K2MarktOberflaechePage'
+import K2MarktSchichtPage from './pages/K2MarktSchichtPage'
 import K2MarktTorPage from './pages/K2MarktTorPage'
 import BenutzerHandbuchPage from './pages/BenutzerHandbuchPage'
 import MobileConnectPage from './pages/MobileConnectPage'
@@ -511,14 +512,16 @@ function App() {
       <Route path={WILLKOMMEN_ROUTE} element={<WillkommenPage />} />
       <Route path={ENTDECKEN_ROUTE} element={<EntdeckenPage />} />
       {/* Kreativwerkstatt = K2-Markt-Oberfläche (Leitvision, Ablauf, Studio, Tor) – kurze URL für Homepage/Link */}
-      <Route path={KREATIVWERKSTATT_ROUTE} element={<K2MarktOberflaechePage />} />
+      <Route path={KREATIVWERKSTATT_ROUTE} element={<K2MarktSchichtPage />} />
       {/* Allgemeine Geschäftsbedingungen – rechtliche Absicherung */}
       <Route path={AGB_ROUTE} element={<AGBPage />} />
       {/* Projekt-Routen – spezifische Pfade VOR /projects/:projectId, damit VK2/K2-Markt nicht abgefangen werden */}
       <Route path={PLATFORM_ROUTES.projects} element={<ProjectsPage />} />
       {/* K2 Markt – eigenständiges Projekt (Datenquelle ök2). Homepage = Arbeitsoberfläche = manuell arbeiten; netzfähig wie ök2 und K2 Familie */}
-      <Route path={PROJECT_ROUTES['k2-markt'].home} element={<K2MarktOberflaechePage />} />
+      <Route path={PROJECT_ROUTES['k2-markt'].home} element={<K2MarktSchichtPage />} />
+      <Route path={PROJECT_ROUTES['k2-markt'].uebersicht} element={<K2MarktOberflaechePage />} />
       <Route path={PROJECT_ROUTES['k2-markt'].mappe} element={<K2MarktPage />} />
+      <Route path={PROJECT_ROUTES['k2-markt'].schicht} element={<K2MarktSchichtPage />} />
       <Route path={PROJECT_ROUTES['k2-markt'].tor} element={<K2MarktTorPage />} />
       {/* Legacy: alte K2-Markt-Pfade unter k2-galerie → Redirect auf eigenständiges Projekt */}
       <Route path="/projects/k2-galerie/k2-markt-oberflaeche" element={<Navigate to={PROJECT_ROUTES['k2-markt'].home} replace />} />
