@@ -6,6 +6,14 @@
 
 ---
 
+## Datum: 09.03.26 – iPad Safari: Favorit/Startseite = alte URL (auch neuer QR nützt nichts)
+
+- **Stand:** Georg: Selbst neuer QR-Code nützt nichts, wenn der Favorit verankert ist – Safari öffnet immer die alte URL. **Doku:** VERCEL-STAND-HANDY.md um Abschnitt „Favorit oder Startseite = alte URL“ ergänzt: Lösung = Favorit entfernen/ersetzen, Startseite prüfen; Galerie besser jedes Mal per aktuellem QR von der APf öffnen.
+- **Nächster Schritt:** –
+- **Wo nachlesen:** docs/VERCEL-STAND-HANDY.md (Abschnitt iPad/Handy hängt bei altem Stand).
+
+---
+
 ## Datum: 09.03.26 – iPad: nur 10 Werke – Few-Works-Fallback (statische Datei wenn API wenig liefert)
 
 - **Stand:** Nach App-Löschen + QR-Scan bekam iPad weiter nur 10 Werke. **Ursache:** API (Vercel Blob) enthielt nur 10 (alter Publish), statische `gallery-data.json` im Build hat 50+. **Umsetzung:** **Few-Works-Fallback:** Wenn API erfolgreich ist, aber `data.artworks.length <= 15`, zusätzlich statische `/gallery-data.json` laden; wenn die **mehr** Werke hat → diese Daten verwenden. Eingebaut in **GalerieVorschauPage** (handleRefresh / „Bilder vom Server laden“) und **GaleriePage** (loadData / Initial-Load beim QR). So bekommt iPad/QR sofort die volle Liste aus der statischen Datei, bis Blob durch „Veröffentlichen“ mit allen Werken aktualisiert ist.

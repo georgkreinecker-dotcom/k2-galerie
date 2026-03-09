@@ -47,6 +47,19 @@ Der Production-Branch wird **nur** in Vercel gesetzt – nicht im Code. Im Repo 
 
 **Ursache:** Safari/iOS cached oft stark. Die geladene Seite (und build-info.json) sind dann alt → angezeigter Stand bleibt 13:26.
 
+---
+
+### ⚠️ Favorit oder Startseite = alte URL (sehr häufig, „hinterlistig“)
+
+**Wenn die Galerie als Safari-Favorit oder als Startseite verankert ist:** Safari öffnet **immer** diese gespeicherte URL – die oft alt ist. **Auch ein neuer QR-Code nützt dann nichts**, weil Safari nach dem Scan wieder den Favorit/die Startseite lädt. Verlauf löschen ändert daran nichts.
+
+**Lösung:**  
+- **Favorit entfernen** oder durch die **per aktuellem QR geöffnete** Seite ersetzen (erst QR scannen, dann diese Seite als Favorit speichern).  
+- **Startseite prüfen:** iPad Einstellungen → Safari → Startseite / „Seite beim Öffnen neuer Tabs“. Wenn dort die Galerie steht → auf „Leer“ oder z. B. APf setzen.  
+- **Empfehlung:** Galerie am iPad **nicht** als festen Favorit/Startseite nutzen, sondern **jedes Mal per aktuellem QR von der APf** öffnen – dann ist der Stand immer aktuell.
+
+---
+
 **Sofort probieren (eine der beiden reicht meist):**
 
 1. **Stand-Badge tippen:** Unten links auf **„Stand: 13.26“** (oder die angezeigte Zeit) tippen. Das lädt die Seite mit Cache-Bypass neu. Danach sollte der neue Stand erscheinen.
