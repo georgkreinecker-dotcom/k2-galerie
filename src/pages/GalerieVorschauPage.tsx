@@ -1939,16 +1939,10 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         ? window.location.origin 
         : 'https://k2-galerie.vercel.app'
       
-      // iPad/Safari: starker Cache-Bust, damit nicht alte gallery-data (z. B. 10 Werke) geliefert wird
+      // KRITISCH: API zuerst (Vercel Blob = aktueller Stand nach „Veröffentlichen“). Statische gallery-data.json = nur Stand vom letzten Build (oft alt, z. B. 10 Werke).
       const bust = `${timestamp}-${random}-${Math.random().toString(36).slice(2)}`
-      const url = `${baseUrl}/gallery-data.json?bust=${bust}&v=${timestamp}&_=${Date.now()}`
-      
       const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
-      console.log('🔄 Lade neue Daten vom Server...', isMobileDevice ? '(Mobile – Cache-Bust aktiv)' : '', url.slice(0, 80) + '...')
-      console.log('🔄 Hostname:', window.location.hostname)
-      
-      const response = await fetch(url, {
-        // Mobile: 'reload' erzwingt echte Netzwerkanfrage (Safari ignoriert no-store manchmal)
+      const fetchOpts: RequestInit = {
         cache: isMobileDevice ? 'reload' : 'no-store',
         method: 'GET',
         headers: {
@@ -1959,9 +1953,27 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           'If-None-Match': `"${bust}"`,
           'If-Modified-Since': 'Thu, 01 Jan 1970 00:00:00 GMT'
         }
-      })
+      }
+      const apiUrl = `${baseUrl}/api/gallery-data?tenantId=k2&t=${timestamp}&_=${Date.now()}&bust=${bust}`
+      const staticUrl = `${baseUrl}/gallery-data.json?bust=${bust}&v=${timestamp}&_=${Date.now()}`
+      console.log('🔄 Lade neue Daten vom Server (API zuerst, dann Fallback)...', isMobileDevice ? '(Mobile)' : '')
       
-      if (response.ok) {
+      let response: Response | null = null
+      try {
+        response = await fetch(apiUrl, fetchOpts)
+      } catch (e) {
+        console.warn('🔄 API nicht erreichbar, versuche statische Datei:', e instanceof Error ? e.message : e)
+      }
+      if (!response?.ok) {
+        try {
+          response = await fetch(staticUrl, fetchOpts)
+          if (response?.ok) console.log('📥 Daten aus statischer gallery-data.json (Fallback)')
+        } catch (_) {}
+      } else {
+        console.log('📥 Daten aus API (Vercel Blob = aktueller Stand)')
+      }
+      
+      if (response?.ok) {
         const data = await response.json()
         const serverCount = data.artworks && Array.isArray(data.artworks) ? data.artworks.length : 0
         console.log('📥 Server antwortete mit', serverCount, 'Werken (Rohantwort)')
