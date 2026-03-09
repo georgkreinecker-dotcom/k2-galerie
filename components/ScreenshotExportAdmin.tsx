@@ -3051,7 +3051,23 @@ function ScreenshotExportAdmin() {
       window.removeEventListener('artworks-updated', handleArtworksUpdate)
     }
   }, [])
-  
+
+  // Sync über Tabs: Wenn k2-artworks in anderem Tab geändert wird (z. B. „Vom Server laden“ in Galerie), Admin neu laden – damit Mac Galerie und Admin gleiche Daten zeigen
+  useEffect(() => {
+    const artworksKey = tenant.getArtworksKey()
+    if (!artworksKey) return
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== artworksKey) return
+      console.log('🔄 k2-artworks in anderem Tab geändert – Admin lädt Werke neu')
+      loadArtworksWithResolvedImages(tenant).then((artworks) => {
+        const inIframe = typeof window !== 'undefined' && window.self !== window.top
+        setAllArtworksSafe(inIframe ? artworks.map((a: any) => (a && typeof a?.imageUrl === 'string' && a.imageUrl.startsWith('data:')) ? { ...a, imageUrl: '' } : a) : artworks)
+      }).catch((err) => console.warn('Storage-Reload fehlgeschlagen:', err))
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [tenant])
+
   // KEIN Auto-Sync (Supabase / gallery-data.json) mehr beim Admin-Start – verursacht Fenster-Abstürze.
   // Mobile-Werke kommen über artworks-updated Event beim Speichern; Werke werden nur aus localStorage geladen (siehe oben, 2 s Verzögerung).
 
@@ -8232,6 +8248,11 @@ ${'='.repeat(60)}
         totalArtworks: artworks.length
       })
       
+      // Letzte Kategorie für nächstes Werk beibehalten (Serien-Eingabe)
+      try {
+        localStorage.setItem('k2-last-artwork-category', artworkCategory)
+      } catch (_) {}
+
       // KRITISCH: Prüfe ob Werk wirklich in localStorage steht (ROH – kein ök2-Anzeige-Filter)
       let verifyRaw: any[] = []
       try {
@@ -18396,7 +18417,7 @@ ${name}`
                 </div>
               )}
 
-              {/* Option: Original | Freigestellt (Pro-Hintergrund) | Vollkachelform – nur Desktop; auf Mobil nur Original */}
+              {/* Option: Desktop = Freistellen, Original, Vollkachel + Zuschneiden. Mobil = nur Original + Zuschneiden (Festlegung: Freistellen/Vollkachel nur PC/Laptop) */}
               {previewUrl && !isMobileDevice && (
                 <div style={{
                   padding: '0.75rem',
@@ -18543,6 +18564,27 @@ ${name}`
                       </select>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Mobil: Nur Original und Zuschneiden (Freistellen/Vollkachel nur am PC/Laptop) */}
+              {previewUrl && isMobileDevice && (
+                <div style={{
+                  padding: '0.75rem',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(95, 251, 241, 0.2)'
+                }}>
+                  <span style={{ fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500', display: 'block', marginBottom: '0.5rem' }}>
+                    Bildverarbeitung (Handy/Tablet)
+                  </span>
+                  <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', marginBottom: '0.5rem', lineHeight: 1.4 }}>
+                    Am Handy/Tablet nur <strong>Original benutzen</strong> und <strong>Foto zuschneiden</strong>. Freistellen und Vollkachel nur am PC/Laptop.
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#f4f7ff' }}>
+                    <span style={{ opacity: 0.9 }}>✓ Original benutzen</span>
+                  </div>
+                  <AdminBildZuschneidenButton previewUrl={previewUrl} onOpenCrop={setCropImageSrc} />
                 </div>
               )}
 

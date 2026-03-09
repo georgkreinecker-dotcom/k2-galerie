@@ -405,6 +405,20 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     return () => window.removeEventListener('artworks-updated', onUpdated)
   }, [musterOnly])
 
+  // Sync über Tabs: Wenn k2-artworks in anderem Tab geändert wird (z. B. Admin speichert oder „Vom Server laden“), Galerie-Anzeige neu laden – damit Mac Galerie und Admin gleiche Daten zeigen
+  useEffect(() => {
+    if (musterOnly || vk2) return
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== 'k2-artworks') return
+      loadArtworksResolvedForDisplay().then((list) => {
+        const exhibition = filterK2ArtworksOnly(list)
+        if (exhibition.length > 0) setArtworksDisplay(exhibition)
+      }).catch(() => {})
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [musterOnly, vk2])
+
   // K2-Standard = Terracotta statt altes Blau (wie GaleriePage)
   const K2_ORANGE = React.useMemo(() => ({
     backgroundColor1: '#1c1210',
@@ -644,13 +658,18 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     console.log('✅ Modal geöffnet im Bearbeitungs-Modus, editingArtwork:', artworkToEdit.number || artworkToEdit.id)
   }
   
-  // Öffne Modal für neues Objekt
+  // Öffne Modal für neues Objekt – letzte Kategorie beibehalten (nicht Standard „Bild“)
   const openNewModal = () => {
     setEditingArtwork(null)
     setIsEditingMode(false) // Explizit auf "Neues Objekt" Modus setzen
     setMobilePhoto(null)
     setMobileTitle('')
-    setMobileCategory('malerei')
+    try {
+      const last = localStorage.getItem('k2-last-artwork-category')
+      setMobileCategory(last && ARTWORK_CATEGORIES.some((c) => c.id === last) ? (last as ArtworkCategoryId) : 'malerei')
+    } catch (_) {
+      setMobileCategory('malerei')
+    }
     setMobilePrice('')
     setMobileDescription('')
     setMobileLocationType('')
@@ -1943,7 +1962,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       const bust = `${timestamp}-${random}-${Math.random().toString(36).slice(2)}`
       const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
       const fetchOpts: RequestInit = {
-        cache: isMobileDevice ? 'reload' : 'no-store',
+        cache: 'no-store', // Überall no-store – prozesssicher, kein veralteter Cache auf iPhone/iPad
         method: 'GET',
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
@@ -2006,34 +2025,54 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           if (data.exportedAt) localStorage.setItem('k2-last-loaded-timestamp', data.exportedAt)
           localStorage.setItem('k2-last-load-time', String(Date.now())) // WICHTIG: Load-Time speichern
           
-          // KRITISCH: Merge-Logik - Mobile-Werke haben ABSOLUTE PRIORITÄT!
-          // K2: Muster/VK2 vom Server nicht in K2 übernehmen
           const serverArtworks = filterK2ArtworksOnly(data.artworks)
-          updateKnownServerMaxNumbers(serverArtworks)
-          // Fortlaufende Nummern: Kollisionen vermeiden (gleiche Nummer, anderes Werk → lokal umnummerieren)
-          const localForMerge = renumberCollidingLocalArtworks(serverArtworks, localArtworks)
-          const { merged: mergedArtworks, toHistory } = mergeServerWithLocal(serverArtworks, localForMerge)
-          if (toHistory.length > 0) appendToHistory(toHistory)
-          const toSaveServer = filterK2ArtworksOnly(mergedArtworks)
-          const localCountHere = localArtworks.length
-          const mayWriteServer = toSaveServer.length >= localCountHere
-          console.log(`🔒 Server = Quelle: ${toSaveServer.length} Werke, ${toHistory.length} in History`, toSaveServer.length < mergedArtworks.length ? '(Muster/VK2 entfernt)' : '')
-          
-          try {
-            if (mayWriteServer) {
-              const toSave = preserveLocalImageData(toSaveServer, loadArtworks())
+          // Prozesssicher wie GaleriePage: Nur zwei Schutzfälle – sonst immer Merge schreiben (User darf sich auf „Vom Server laden“ verlassen)
+          if (serverArtworks.length === 0 && localArtworks.length > 0) {
+            console.warn('⚠️ Server lieferte 0 Werke – lokale Werke bleiben erhalten:', localArtworks.length)
+            loadArtworksResolvedForDisplay().then((list) => {
+              setArtworksDisplay(filterK2ArtworksOnly(list))
+              setLoadStatus({ message: `${list.length} lokale Werke erhalten (Server leer).`, success: true })
+              setTimeout(() => setLoadStatus(null), 3000)
+            })
+          } else if (serverArtworks.length < localArtworks.length * 0.5 && localArtworks.length > 0) {
+            console.warn(`⚠️ Server ${serverArtworks.length} vs. lokal ${localArtworks.length} – Sync übersprungen (Schutz)`)
+            loadArtworksResolvedForDisplay().then((list) => {
+              setArtworksDisplay(filterK2ArtworksOnly(list))
+              setLoadStatus({ message: `${list.length} lokale Werke beibehalten (Server deutlich weniger).`, success: true })
+              setTimeout(() => setLoadStatus(null), 3000)
+            })
+          } else {
+            // Merge wie GaleriePage – dann immer schreiben (prozesssicher: gleicher Ablauf, User sieht sofort den neuen Stand)
+            const serverMap = new Map<string, any>()
+            serverArtworks.forEach((a: any) => {
+              const key = a.number || a.id
+              if (key) {
+                serverMap.set(key, a)
+                const keyStr = String(key)
+                if (keyStr.includes('-K-') || keyStr.includes('-M-')) {
+                  const oldFormat = keyStr.replace(/-K-/g, '-').replace(/-M-/g, '-')
+                  if (oldFormat !== keyStr) serverMap.set(oldFormat, a)
+                }
+              }
+            })
+            updateKnownServerMaxNumbers(serverArtworks)
+            const localForMerge = renumberCollidingLocalArtworks(serverArtworks, localArtworks)
+            const { merged: mergedArtworks, toHistory } = mergeServerWithLocal(serverArtworks, localForMerge, { serverMap, onlyAddLocalIfMobileAndVeryNew: true })
+            if (toHistory.length > 0) appendToHistory(toHistory)
+            const toSaveServer = filterK2ArtworksOnly(mergedArtworks)
+            const toSave = preserveLocalImageData(toSaveServer, loadArtworks())
+            console.log('🔒 Server = Quelle:', toSave.length, 'Werke (prozesssicher übernommen)')
+            try {
               const ok = saveArtworksStorage(toSave, { allowReduce: false })
               if (ok) {
-                console.log('✅ Gemergte Werke geladen:', toSave.length, 'Version:', data.version)
                 loadArtworksResolvedForDisplay().then((list) => {
                   const exhibitionArtworks = filterK2ArtworksOnly(list)
                   setArtworksDisplay(exhibitionArtworks)
                   setLoadStatus({ message: `✅ ${exhibitionArtworks.length} Werke synchronisiert`, success: true })
                   setTimeout(() => setLoadStatus(null), 3000)
                 })
+                window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromGaleriePage: true, count: toSave.length } }))
               } else {
-                // iPad/geringem Speicher: Speichern schlägt fehl – trotzdem alle geladenen Werke anzeigen (nur diese Sitzung)
-                console.warn('⚠️ Speichern fehlgeschlagen (z. B. Speicher voll) – zeige', toSaveServer.length, 'Werke trotzdem')
                 resolveArtworkImages(toSaveServer).then((resolved) => {
                   setArtworksDisplay(filterK2ArtworksOnly(resolved))
                   setLoadStatus({
@@ -2043,19 +2082,11 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                   setTimeout(() => setLoadStatus(null), 8000)
                 })
               }
-            } else {
-              console.warn(`⚠️ Merge würde ${localCountHere} → ${toSaveServer.length} – localStorage unverändert`)
-              loadArtworksResolvedForDisplay().then((list) => {
-                setArtworksDisplay(filterK2ArtworksOnly(list))
-                setLoadStatus({ message: `✅ ${list.length} lokale Werke beibehalten`, success: true })
-                setTimeout(() => setLoadStatus(null), 3000)
-              })
+            } catch (e) {
+              console.warn('⚠️ Werke zu groß für localStorage', e)
+              setLoadStatus({ message: '⚠️ Zu viele Werke – Speicher freigeben (Safari: Einstellungen → Website-Daten)', success: false })
+              setTimeout(() => setLoadStatus(null), 8000)
             }
-            console.log('📊 Werke Details (resolved)')
-          } catch (e) {
-            console.warn('⚠️ Werke zu groß für localStorage', e)
-            setLoadStatus({ message: '⚠️ Zu viele Werke für Cache – Speicher freigeben (Safari: Einstellungen → Website-Daten)', success: false })
-            setTimeout(() => setLoadStatus(null), 8000)
           }
         } else {
           // KEINE Server-Daten - behalte ALLE lokalen Werke!
@@ -4643,6 +4674,10 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                     }))
                     
                     console.log('✅ Neues Objekt gespeichert und angezeigt:', newNumber)
+                    // Letzte Kategorie für nächstes Werk beibehalten
+                    try {
+                      localStorage.setItem('k2-last-artwork-category', mobileCategory)
+                    } catch (_) {}
                     // Etikett-Modal öffnen statt Alert
                     const savedNewArtwork = { number: newNumber, title: mobileTitle, category: mobileCategory, price: mobilePrice ? parseFloat(mobilePrice) : undefined }
                     setEtikettArtwork(savedNewArtwork)
