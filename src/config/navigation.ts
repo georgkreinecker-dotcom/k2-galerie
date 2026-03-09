@@ -94,6 +94,8 @@ export const PROJECT_ROUTES = {
     uebersicht: '/projects/k2-galerie/uebersicht',
     /** Kampagne Marketing-Strategie – eigene Mappe (Zwischenergebnisse, Auftrag, Strategie) */
     kampagneMarketingStrategie: '/projects/k2-galerie/kampagne-marketing-strategie',
+    /** K2 Markt – eigene Mappe (Vision, Architektur, Handbuch) */
+    k2Markt: '/projects/k2-galerie/k2-markt',
   },
   vk2: {
     id: 'vk2',
@@ -129,6 +131,7 @@ export const PROJECT_ROUTES = {
     notizen: '/projects/k2-galerie/notizen',
     uebersicht: '/projects/k2-galerie/uebersicht',
     kampagneMarketingStrategie: '/projects/k2-galerie/kampagne-marketing-strategie',
+    k2Markt: '/projects/k2-galerie/k2-markt',
   },
   'k2-familie': {
     id: 'k2-familie',
@@ -167,6 +170,7 @@ export const PROJECT_ROUTES = {
     seitengestaltung: '/projects/k2-galerie/seitengestaltung',
     kunden: '/projects/k2-galerie/kunden',
     kampagneMarketingStrategie: '/projects/k2-galerie/kampagne-marketing-strategie',
+    k2Markt: '/projects/k2-galerie/k2-markt',
   },
 } as const
 

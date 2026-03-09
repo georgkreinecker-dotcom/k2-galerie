@@ -6,6 +6,15 @@
 
 ---
 
+## Datum: 09.03.26 – K2 Markt Mappe im Smart Panel
+
+- **Stand:** K2 Markt hat eine **eigene Mappe** im Smart Panel (APf). Inhalt: Inhaltsverzeichnis, Vision und Architektur, Handbuch K2 Markt (Dokumentation unserer Arbeit) – sauber koordiniert und sortiert. Quelle: public/k2-markt/; Route /projects/k2-galerie/k2-markt.
+- **Was zuletzt gemacht:** K2MarktPage angelegt, Route k2Markt in navigation, Smart Panel um „📁 K2 Markt“ ergänzt (nach Kampagne, in Galerie-Mappen), DevView + App Route. public/k2-markt/: 00-INDEX.md, K2-MARKT-VISION-ARCHITEKTUR.md, K2-MARKT-HANDBUCH.md. Tests + Build grün.
+- **Nächster Schritt:** In der Mappe weiterarbeiten (Handbuch fortführen, nächste Schritte aus Vision umsetzen).
+- **Wo nachlesen:** Smart Panel → K2 Markt; docs/K2-MARKT-VISION-ARCHITEKTUR.md; public/k2-markt/.
+
+---
+
 ## Datum: 09.03.26 – K2 Markt (neues Projekt, Vision + Architektur)
 
 - **Stand:** Georg hat ein neues Projekt skizziert: **K2 Markt** – App/Maschine/Mechanismus, KI-gestützt, liefert **fertige Produkte** für Sichtbarkeit am Markt. Basis: Wir-Regeln, Vermächtnis, Sportwagenmodus. Kette: fertiges Produkt → Markt suchen → Aufmerksamkeit, Platz, emotionale Ansprache + Information. Medienhaus: Abteilungen = Agenten, im Zentrum ein Bildschirm (Prüfung + Bearbeitung mit modernen Tools). mök2 + Kampagne = Vorarbeit, „große Datenbank“, noch unkoordiniert – K2 Markt soll daraus koordinierte, fertige Erzeugnisse machen.
