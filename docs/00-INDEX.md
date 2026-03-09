@@ -125,7 +125,8 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **VERCEL-DEPLOY-HOOK-ANLEITUNG.md** – Deploy Hook (URL aufrufen) + **Vercel CLI Schritt-für-Schritt** (Login, `npx vercel --prod`, Link zu k2-galerie) – für nächstes Vercel-Problem parat.
 - **SYNC-ABLAUF-MAC-IPAD.md** – Sync eine Quelle (Vercel); Speichern → Vercel, anderes Gerät lädt von dort.
 - **WERKE-OEFFENTLICH-SICHTBAR.md** – **Zentral:** Änderungen (Werke, Design, Stammdaten, …) → öffentlich sichtbar (in jedem Netz). Veröffentlichen + Git Push.
-- **VERCEL-STAND-HANDY.md** – Warum Handy alten Stand zeigt (Branch, Cache).
+- **VERCEL-STAND-HANDY.md** – Warum Handy alten Stand zeigt (Branch, Cache, Favorit/Startseite).
+- **PLATZHALTER-BILDER-WIEDERBEKOMMEN.md** – 10 Platzhalter am Mac / Bilder weg nach iPad-Rescan: Ursache, Lösung A (Handy veröffentlichen → Mac/iPad laden), Lösung B (Vollbackup).
 - **STAND-QR-SO-BLEIBT-ES.md** – Stand & QR richtig halten.
 - **VERCEL-BENACHRICHTIGUNGEN.md** – Vercel-Benachrichtigungen.
 - **VEROEFFENTLICHEN-VOLLSTAENDIG.md** – Vollständig veröffentlichen.

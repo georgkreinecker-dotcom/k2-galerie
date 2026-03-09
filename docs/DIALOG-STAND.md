@@ -6,6 +6,14 @@
 
 ---
 
+## Datum: 09.03.26 – Mac 10 Platzhalter / Bilder weg nach iPad-Rescan
+
+- **Stand:** Mac zeigt 10 Platzhalter-Fotos; die Bilder waren teilweise am Handy, nach neuem QR-Scan am iPad sind sie dort auch weg. **Ursache:** iPad nach App-Löschen/Rescan hat kein Lokal mehr → lädt nur Server-Daten; Server (statische Datei/Blob) hatte für die 10 Werke keine Bild-URLs → Platzhalter. **Doku:** docs/PLATZHALTER-BILDER-WIEDERBEKOMMEN.md – Lösung A: Wenn Handy die Bilder noch hat → Handy **Veröffentlichen**, dann Mac + iPad „Bilder vom Server laden“. Lösung B: Vollbackup wiederherstellen.
+- **Nächster Schritt:** Georg prüft: Hat das Handy die 10 Bilder noch? Wenn ja → Handy veröffentlichen, dann Mac/iPad „Bilder vom Server laden“. Wenn nein → Backup prüfen.
+- **Wo nachlesen:** docs/PLATZHALTER-BILDER-WIEDERBEKOMMEN.md.
+
+---
+
 ## Datum: 09.03.26 – iPad Safari: Favorit/Startseite = alte URL (auch neuer QR nützt nichts)
 
 - **Stand:** Georg: Selbst neuer QR-Code nützt nichts, wenn der Favorit verankert ist – Safari öffnet immer die alte URL. **Doku:** VERCEL-STAND-HANDY.md um Abschnitt „Favorit oder Startseite = alte URL“ ergänzt: Lösung = Favorit entfernen/ersetzen, Startseite prüfen; Galerie besser jedes Mal per aktuellem QR von der APf öffnen.
