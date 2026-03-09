@@ -6,6 +6,14 @@
 
 ---
 
+## Datum: 08.03.26 – Fortlaufende Werk-Nummern: kein Durcheinander (iPad/Mac/Sync)
+
+- **Stand:** Fortlaufende Nummern abgesichert: (1) Beim **Vergaben** neuer Nummern (Mobile) wird der **bekannte Server-Max** mit einbezogen (localStorage `k2-known-max-number-M` etc.), damit nach Sync keine Doppelnummern entstehen. (2) Bei jedem **Laden von Server-Daten** (Bilder vom Server, Auto-Poll) wird dieser Server-Max aktualisiert. (3) **Vor dem Merge:** Wenn ein lokales Mobile-Werk dieselbe Nummer hat wie ein Server-Werk, aber anderes Werk (anderes id), wird das lokale Werk **umnummeriert** (nächste freie Nummer in der Kategorie), damit kein Überschreiben/Verlust entsteht.
+- **Nächster Schritt:** Optional: im Alltag testen (iPad neue Werke, dann Sync – Nummern fortlaufend, keine Doppelten). Commit + Push folgt.
+- **Wo nachlesen:** src/utils/syncMerge.ts (updateKnownServerMaxNumbers, getKnownServerMaxForPrefix, renumberCollidingLocalArtworks); GalerieVorschauPage.tsx (Neues Werk, Merge-Pfade); src/tests/syncMerge.test.ts (Fortlaufende Nummern).
+
+---
+
 ## Datum: 09.03.26 – K2 Markt: Projekt abgelegt (Stand gespeichert)
 
 - **Stand:** Georg: K2 Markt einmal abspeichern – er kommt später darauf zurück. Alles, was er jetzt braucht, macht er aus dem K2 Galerie Projekt. **Umsetzung:** Commit + Push mit aktuellem K2-Markt-Stand (Schicht mit 4 Ausgabe-Nodes: Flyer, Presse, Markt, Eventplan; Links in Admin; Glas-Fenster, Verbindungslinien, Kugel). Projekt ist auf GitHub gesichert.

@@ -3,8 +3,15 @@
  * Regel: Server = Quelle; lokale ohne Server-Eintrag übernommen; Konflikt: Mobile gewinnt, sonst neueres updatedAt.
  */
 
-import { describe, it, expect } from 'vitest'
-import { mergeServerWithLocal } from '../utils/syncMerge'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { mergeServerWithLocal, updateKnownServerMaxNumbers, getKnownServerMaxForPrefix, renumberCollidingLocalArtworks } from '../utils/syncMerge'
+
+const KNOWN_MAX_PREFIX = 'k2-known-max-number-'
+function clearKnownMaxKeys() {
+  try {
+    ;['M', 'K', 'G', 'S', 'O'].forEach((letter) => localStorage.removeItem(`${KNOWN_MAX_PREFIX}${letter}`))
+  } catch (_) {}
+}
 
 describe('mergeServerWithLocal', () => {
 
@@ -98,5 +105,36 @@ describe('mergeServerWithLocal', () => {
     const { merged } = mergeServerWithLocal(server, local, { onlyAddLocalIfMobileAndVeryNew: true })
     expect(merged).toHaveLength(2)
     expect(merged.map((a: any) => a.number).sort()).toEqual(['1', '2'])
+  })
+})
+
+describe('Fortlaufende Nummern', () => {
+  beforeEach(clearKnownMaxKeys)
+  afterEach(clearKnownMaxKeys)
+
+  it('updateKnownServerMaxNumbers speichert Max pro Kategorie, getKnownServerMaxForPrefix liest ihn', () => {
+    const artworks = [
+      { number: 'K2-M-0001' },
+      { number: 'K2-M-0050' },
+      { number: 'K2-K-0003' }
+    ]
+    updateKnownServerMaxNumbers(artworks)
+    expect(getKnownServerMaxForPrefix('M')).toBe(50)
+    expect(getKnownServerMaxForPrefix('K')).toBe(3)
+    expect(getKnownServerMaxForPrefix('G')).toBe(0)
+  })
+
+  it('renumberCollidingLocalArtworks: Mobile-Werk mit gleicher Nummer wie Server (anderes id) wird umnummeriert', () => {
+    const server = [
+      { id: 'server-1', number: 'K2-M-0001', title: 'Vom Mac' }
+    ]
+    const local = [
+      { id: 'ipad-1', number: 'K2-M-0001', title: 'Vom iPad', createdOnMobile: true }
+    ]
+    const result = renumberCollidingLocalArtworks(server, local)
+    expect(result).toHaveLength(1)
+    expect(result[0].number).not.toBe('K2-M-0001')
+    expect(result[0].number).toMatch(/^K2-M-\d{4}$/)
+    expect(parseInt(result[0].number.replace(/\D/g, ''), 10)).toBeGreaterThanOrEqual(2)
   })
 })

@@ -15,7 +15,7 @@ import { tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from '../../component
 import { readArtworksRawForContext, readArtworksRawForContextOrNull, readArtworksForContextWithResolvedImages, resolveArtworkImages, saveArtworksForContext, loadForDisplay, filterK2Only as filterK2OnlyStorage, saveArtworksOnly as saveArtworksStorage, mayWriteServerList, mergeAndMaybeWrite, mergeWithPending, getPendingArtworks, addPendingArtwork, clearPendingIfInList } from '../utils/artworksStorage'
 import { loadEvents } from '../utils/eventsStorage'
 import { loadDocuments } from '../utils/documentsStorage'
-import { mergeServerWithLocal, preserveLocalImageData } from '../utils/syncMerge'
+import { mergeServerWithLocal, preserveLocalImageData, updateKnownServerMaxNumbers, getKnownServerMaxForPrefix, renumberCollidingLocalArtworks } from '../utils/syncMerge'
 import { artworksForExport } from '../utils/artworkExport'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
 import '../App.css'
@@ -1542,6 +1542,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 // Mac, iPad, iPhone: letzte Änderung ist immer richtig
                 const existingArtworks = loadArtworks()
                 const serverArtworks = filterK2ArtworksOnly(Array.isArray(data.artworks) ? data.artworks : [])
+                updateKnownServerMaxNumbers(serverArtworks)
+                // Fortlaufende Nummern: Kollisionen vermeiden (gleiche Nummer, anderes Werk → lokal umnummerieren)
+                const existingForMerge = renumberCollidingLocalArtworks(serverArtworks, existingArtworks)
                 
                 console.log('🔄 Merge (neuester Timestamp gewinnt):', {
                   lokal: existingArtworks.length,
@@ -1566,7 +1569,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
 
                 // 2. Lokale Werke: gewinnen wenn ihr Timestamp >= Server-Timestamp
                 //    Neue lokale Werke (nicht auf Server) werden IMMER übernommen
-                existingArtworks.forEach((localArtwork: any) => {
+                existingForMerge.forEach((localArtwork: any) => {
                   const key = localArtwork.number || localArtwork.id
                   if (!key) return
                   const existing = mergeMap.get(key)
@@ -1973,8 +1976,10 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           // KRITISCH: Merge-Logik - Mobile-Werke haben ABSOLUTE PRIORITÄT!
           // K2: Muster/VK2 vom Server nicht in K2 übernehmen
           const serverArtworks = filterK2ArtworksOnly(data.artworks)
-          
-          const { merged: mergedArtworks, toHistory } = mergeServerWithLocal(serverArtworks, localArtworks)
+          updateKnownServerMaxNumbers(serverArtworks)
+          // Fortlaufende Nummern: Kollisionen vermeiden (gleiche Nummer, anderes Werk → lokal umnummerieren)
+          const localForMerge = renumberCollidingLocalArtworks(serverArtworks, localArtworks)
+          const { merged: mergedArtworks, toHistory } = mergeServerWithLocal(serverArtworks, localForMerge)
           if (toHistory.length > 0) appendToHistory(toHistory)
           const toSaveServer = filterK2ArtworksOnly(mergedArtworks)
           const localCountHere = localArtworks.length
@@ -4473,6 +4478,10 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                         console.warn('⚠️ Supabase-Nummer-Prüfung fehlgeschlagen, verwende nur localStorage:', e)
                       }
                     }
+                    
+                    // Fortlaufende Nummern: auch bekannten Server-Max einbeziehen (verhindert Doppelnummern nach Sync)
+                    const knownServerMax = getKnownServerMaxForPrefix(prefix)
+                    if (knownServerMax > maxNumber) maxNumber = knownServerMax
                     
                     const newNumber = `${categoryPrefix}${String(maxNumber + 1).padStart(4, '0')}`
                     

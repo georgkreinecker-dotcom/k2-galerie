@@ -2,7 +2,127 @@
  * Phase 2.1 Sportwagen: Eine zentrale Merge-Funktion für Server + lokale Werke.
  * Regel: Server = Quelle; lokale Neu-Anlagen geschützt; Konflikt: Mobile gewinnt, sonst neueres updatedAt.
  * Doku: docs/SYNC-REGEL.md
+ *
+ * Fortlaufende Nummern: Server-Max wird bei jedem Server-Load gespeichert; bei Kollision
+ * (gleiche Nummer, anderes Werk) werden Mobile-Werke vor dem Merge umnummeriert.
  */
+
+const KNOWN_MAX_PREFIX = 'k2-known-max-number-'
+
+/** K2-Nummer parsen: K2-M-0001 → { prefixLetter: 'M', categoryPrefix: 'K2-M-', num: 1 } */
+function parseK2Number(number: string | undefined): { prefixLetter: string; categoryPrefix: string; num: number } | null {
+  if (!number || typeof number !== 'string') return null
+  const s = number.trim()
+  const withLetter = s.match(/^K2-([A-Z])-?(\d+)$/i)
+  if (withLetter) {
+    const letter = withLetter[1].toUpperCase()
+    return { prefixLetter: letter, categoryPrefix: `K2-${letter}-`, num: parseInt(withLetter[2], 10) || 0 }
+  }
+  const legacy = s.match(/^K2-(\d+)$/)
+  if (legacy) return { prefixLetter: 'M', categoryPrefix: 'K2-', num: parseInt(legacy[1], 10) || 0 }
+  return null
+}
+
+/**
+ * Speichert den pro Kategorie bekannten Maximalwert aus einer Server-Liste.
+ * Wird bei jedem Laden von gallery-data.json / Supabase aufgerufen, damit neue Werke
+ * am iPad/Mac keine doppelten Nummern vergeben.
+ */
+export function updateKnownServerMaxNumbers(artworks: any[]): void {
+  if (!Array.isArray(artworks)) return
+  const maxByPrefix: Record<string, number> = {}
+  artworks.forEach((a: any) => {
+    const parsed = parseK2Number(a?.number)
+    if (!parsed) return
+    const prev = maxByPrefix[parsed.prefixLetter] ?? 0
+    if (parsed.num > prev) maxByPrefix[parsed.prefixLetter] = parsed.num
+  })
+  try {
+    Object.entries(maxByPrefix).forEach(([letter, num]) => {
+      localStorage.setItem(`${KNOWN_MAX_PREFIX}${letter}`, String(num))
+    })
+  } catch (_) {}
+}
+
+/**
+ * Liefert den gespeicherten bekannten Server-Max für eine Kategorie (Buchstabe M/K/G/S/O).
+ * 0 wenn nie gesetzt.
+ */
+export function getKnownServerMaxForPrefix(prefixLetter: string): number {
+  try {
+    const v = localStorage.getItem(`${KNOWN_MAX_PREFIX}${prefixLetter}`)
+    return v ? parseInt(v, 10) || 0 : 0
+  } catch {
+    return 0
+  }
+}
+
+/**
+ * Nächste freie Nummer (nur Ziffernteil) für eine Kategorie aus einer bestehenden Liste.
+ * categoryPrefix z.B. "K2-M-". Rückgabe z.B. 51 für K2-M-0051.
+ */
+export function getNextFreeNumberInCategory(categoryPrefix: string, existingArtworks: any[]): number {
+  let maxNum = 0
+  const norm = categoryPrefix.replace(/-$/, '')
+  existingArtworks.forEach((a: any) => {
+    const num = a?.number
+    if (!num || typeof num !== 'string') return
+    if (!num.startsWith(categoryPrefix) && !num.startsWith(norm)) return
+    const parsed = parseK2Number(num)
+    if (parsed && parsed.num > maxNum) maxNum = parsed.num
+  })
+  return maxNum + 1
+}
+
+/**
+ * Vor dem Merge: Lokale Mobile-Werke, die dieselbe Nummer wie ein Server-Werk haben
+ * (aber anderes Werk = anderes id), umnummerieren, damit kein Überschreiben/Löschen entsteht.
+ * Gibt eine Kopie von localList zurück, in der kollidierende Werke eine neue Nummer haben.
+ */
+export function renumberCollidingLocalArtworks(
+  serverList: any[],
+  localList: any[],
+  options: { getKey?: (a: any) => string | undefined; isMobileWork?: (a: any) => boolean } = {}
+): any[] {
+  const getKey = options.getKey ?? DEFAULT_GET_KEY
+  const isMobileWork = options.isMobileWork ?? DEFAULT_IS_MOBILE
+  const serverMap = new Map<string, any>()
+  serverList.forEach((a: any) => {
+    const k = getKey(a)
+    if (k) serverMap.set(k, a)
+  })
+  const result: any[] = []
+  const usedNumbers = new Set<string>(serverList.map((a: any) => getKey(a)).filter(Boolean) as string[])
+  localList.forEach((local: any) => {
+    const key = getKey(local)
+    if (!key) {
+      result.push(local)
+      return
+    }
+    const serverItem = serverMap.get(key)
+    const mobile = isMobileWork(local)
+    if (!serverItem || !mobile) {
+      result.push(local)
+      if (key) usedNumbers.add(key)
+      return
+    }
+    if (serverItem.id === local.id) {
+      result.push(local)
+      return
+    }
+    const parsed = parseK2Number(local.number)
+    if (!parsed) {
+      result.push(local)
+      return
+    }
+    const existingForMax = [...serverList, ...result]
+    const nextNum = getNextFreeNumberInCategory(parsed.categoryPrefix, existingForMax)
+    const newNumber = `${parsed.categoryPrefix}${String(nextNum).padStart(4, '0')}`
+    result.push({ ...local, number: newNumber })
+    usedNumbers.add(newNumber)
+  })
+  return result
+}
 
 export interface SyncMergeOptions {
   /** Eindeutiger Key pro Werk (default: number || id) */
