@@ -15,7 +15,7 @@ export interface SyncMergeOptions {
   getUpdated?: (a: any) => number
   /** Optional: vorgefertigte Server-Map (z. B. mit alten Key-Varianten -K-/-M-). Sonst wird aus serverList gebaut. */
   serverMap?: Map<string, any>
-  /** Wenn true: Lokale Werke ohne Server-Eintrag NUR übernehmen wenn (mobile UND sehr neu). Verhindert, dass alte Musterwerke vom Handy wieder reinkommen (QR/Load vom Server = Server ist Quelle). */
+  /** Wenn true: Lokale Werke ohne Server-Eintrag NUR übernehmen wenn (mobile ODER sehr neu). Mobile-Werke (createdOnMobile) bleiben immer erhalten; alte Musterwerke (nicht mobile) kommen nicht zurück. */
   onlyAddLocalIfMobileAndVeryNew?: boolean
 }
 
@@ -78,7 +78,7 @@ export function mergeServerWithLocal(
     const veryNew = isVeryNew(local)
 
     if (!serverItem) {
-      if (!onlyAddLocalIfMobileAndVeryNew || (mobile && veryNew)) {
+      if (!onlyAddLocalIfMobileAndVeryNew || mobile || veryNew) {
         merged.push(local)
       }
       if (!mobile || !veryNew) toHistory.push(local)

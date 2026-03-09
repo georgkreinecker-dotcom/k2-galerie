@@ -87,4 +87,16 @@ describe('mergeServerWithLocal', () => {
     expect(merged).toHaveLength(2)
     expect(merged.find((a: any) => a.number === '2')?.title).toBe('Gerade am Handy')
   })
+
+  it('onlyAddLocalIfMobileAndVeryNew: älteres Mobile-Werk ohne Server wird ebenfalls übernommen (iPad-Werke bleiben)', () => {
+    const server: any[] = []
+    const oldDate = new Date(Date.now() - 20 * 60 * 1000).toISOString()
+    const local = [
+      { number: '1', title: 'Am iPad angelegt', createdAt: oldDate, createdOnMobile: true },
+      { number: '2', title: 'Auch iPad', createdAt: oldDate, createdOnMobile: true }
+    ]
+    const { merged } = mergeServerWithLocal(server, local, { onlyAddLocalIfMobileAndVeryNew: true })
+    expect(merged).toHaveLength(2)
+    expect(merged.map((a: any) => a.number).sort()).toEqual(['1', '2'])
+  })
 })
