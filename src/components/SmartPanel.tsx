@@ -476,6 +476,58 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                     </div>
                   </>
                 )}
+                {mappe.id === 'k2-markt' && (
+                  <>
+                    {items.map(item => (
+                      <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        {onNavigate ? (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => onNavigate(item.page)}
+                            onKeyDown={e => e.key === 'Enter' && onNavigate(item.page)}
+                            style={{
+                              flex: 1,
+                              padding: '0.65rem 0.85rem',
+                              background: item.color,
+                              border: `1px solid ${item.border}`,
+                              borderRadius: '8px',
+                              color: '#22c55e',
+                              fontWeight: 600,
+                              fontSize: '0.88rem',
+                              textAlign: 'center',
+                              cursor: 'pointer',
+                              fontFamily: 'inherit',
+                              display: 'block',
+                            }}
+                          >
+                            {item.label}
+                          </span>
+                        ) : (
+                          <Link
+                            to={item.url}
+                            style={{
+                              flex: 1,
+                              padding: '0.65rem 0.85rem',
+                              background: item.color,
+                              border: `1px solid ${item.border}`,
+                              borderRadius: '8px',
+                              color: '#22c55e',
+                              fontWeight: 600,
+                              fontSize: '0.88rem',
+                              textAlign: 'center',
+                              textDecoration: 'none',
+                              fontFamily: 'inherit',
+                              display: 'block',
+                            }}
+                          >
+                            {item.label}
+                          </Link>
+                        )}
+                      </div>
+                    ))}
+                  </>
+                )}
                 {mappe.id === 'familie' && (
                   <>
                     <p style={{ margin: '0 0 0.4rem 0', fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)' }}>Eigenes Projekt – keine Ausgrenzung, Respekt für jeden.</p>
