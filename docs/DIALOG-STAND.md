@@ -6,6 +6,14 @@
 
 ---
 
+## Datum: 09.03.26 – K2 Markt aus mök2 & Kampagne speisen
+
+- **Stand:** K2 Markt wird aus mök2 und Kampagne Marketing-Strategie gespeist; daraus werden Produkt-Momente erzeugt, die am Tor umgesetzt werden können. **Umsetzung:** (1) `src/utils/k2MarktQuellen.ts`: getMok2Quellen(), getKontaktFromStammdaten(), fetchKampagneDocPreview(), buildMomentFromQuellen(). (2) Tor lädt Momente aus static (produkt-momente.json) + localStorage (k2-markt-momente), merge nach id. (3) Tor-UI „Moment aus Quellen erzeugen“: optional Kampagne-Dokument wählen, Button „Aus mök2 & Kampagne füllen“ → Form (Titel, Botschaft editierbar) → „Moment speichern“ schreibt in localStorage, Moment erscheint in der Liste und kann freigegeben werden.
+- **Nächster Schritt:** mök2 komplett weiter (eine Quelle durchziehen, weitere Sektionen); oder weitere Formate (E-Mail, Presse) mit gleichem Muster.
+- **Wo nachlesen:** K2 Markt → Zum Tor; docs/MOK2-KOMPLETT-UMSETZEN.md; src/utils/k2MarktQuellen.ts.
+
+---
+
 ## Datum: 09.03.26 – mök2 komplett umsetzen (Ziel + erster Schritt)
 
 - **Stand:** Georg: „Wir stehen erst am Anfang – du hast mök2 und das gilt es komplett umzusetzen.“ Ziel festgehalten in **docs/MOK2-KOMPLETT-UMSETZEN.md**: was „komplett“ umfasst (alle Sektionen mit Inhalt, eine Quelle, Werbeunterlagen, APf-Struktur, K2-Markt-Verknüpfung, Druck/PDF), priorisierte Schritte. **Erster Schritt:** Platzhalter in mök2 geschlossen – „Genaue Produktbeschreibung“ mit redigierter Kurzbeschreibung (ök2 + VK2), „5. Weitere Ideen & Konzepte“ mit klarem Einleitungstext (kein Platzhalter mehr).

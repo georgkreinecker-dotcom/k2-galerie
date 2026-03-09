@@ -24,6 +24,7 @@
 | **Phase 2 gestartet** | Flyer-Agent-Konzept in K2-MARKT-FLYER-AGENT.md: Input = Moment + Template, Output = Entwurf. Nächste Schritte: Speicherort Moment, Minimal-Template, ggf. Tor-UI. |
 | **A, B, C + Tor aus einem Guss** | Produkt-Momente (produkt-momente.json), Flyer-Agent (momentToFlyerEntwurf, DoD), Tor-UI (k2-markt-tor) mit gleicher Struktur wie Mappe. |
 | **Traceability von Anfang an** | Beim Freigeben wird ein Eintrag gespeichert: momentId, momentTitel, template (flyer-minimal), timestamp. Log in localStorage (k2-markt-freigaben), Anzeige „Letzte Freigaben“ am Tor. |
+| **K2 Markt aus mök2 & Kampagne speisen** | Am Tor: „Moment aus Quellen erzeugen“ – Slogan, Botschaft, Zielgruppe aus mök2 (tenantConfig + localStorage), optional Titel/Vorschau aus einem Kampagne-Dokument. Daraus wird ein Produkt-Moment gebaut, speicherbar in localStorage (k2-markt-momente); Momente = static (produkt-momente.json) + lokal. Diese Momente können dann umgesetzt werden (Flyer-Entwurf → DoD → Freigabe). |
 
 ---
 

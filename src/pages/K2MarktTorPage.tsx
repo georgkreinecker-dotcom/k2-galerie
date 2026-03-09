@@ -1,6 +1,7 @@
 /**
  * K2 Markt – Qualitäts-Tor (Phase 3).
  * Zeigt Flyer-Entwurf, DoD-Prüfung, Button „Freigeben“.
+ * Momente aus mök2 + Kampagne speisen → daraus Momente erzeugen, die umgesetzt werden können.
  */
 
 import { useState, useEffect } from 'react'
@@ -14,10 +15,46 @@ import {
   type FlyerEntwurf,
   type FreigabeEintrag,
 } from '../utils/k2MarktFlyerAgent'
+import {
+  getMok2Quellen,
+  getKontaktFromStammdaten,
+  fetchKampagneDocPreview,
+  buildMomentFromQuellen,
+} from '../utils/k2MarktQuellen'
 
 const MOMENTE_URL = '/k2-markt/produkt-momente.json'
+const MOMENTE_LOCAL_KEY = 'k2-markt-momente'
 const FREIGABEN_KEY = 'k2-markt-freigaben'
 const MAX_FREIGABEN_ANZEIGE = 10
+
+/** Kampagne-Dokumente (gleiche Liste wie KampagneMarketingStrategiePage). */
+const KAMPAGNE_DOCS = [
+  { file: '00-INDEX.md', name: 'Inhaltsverzeichnis' },
+  { file: 'AUFTRAG-MARKETING-STRATEGIE-ZWEI-ZWEIGE.md', name: 'Auftrag (Spezifikation)' },
+  { file: 'MARKETING-STRATEGIE-AUTOMATISIERTER-VERTRIEB.md', name: 'Marketing-Strategie' },
+  { file: 'KOMMUNIKATION-DOKUMENTE-STRUKTUR.md', name: 'Kommunikations-Struktur' },
+  { file: 'KOMMUNIKATION-VORLAGE-ANSPRACHE-KUENSTLER-VEREIN.md', name: 'Ansprache Künstler:in / Verein' },
+  { file: 'KOMMUNIKATION-FLYER-HANDOUT.md', name: 'Flyer / Handout' },
+  { file: 'KOMMUNIKATION-EMAIL-VORLAGEN.md', name: 'E-Mail-Vorlagen' },
+  { file: 'KOMMUNIKATION-FERTIGE-BEISPIELE.md', name: 'Fertige Beispiele (redigiert)' },
+] as const
+
+function loadLocalMomente(): ProduktMoment[] {
+  try {
+    const raw = localStorage.getItem(MOMENTE_LOCAL_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function saveLocalMomente(list: ProduktMoment[]): void {
+  try {
+    localStorage.setItem(MOMENTE_LOCAL_KEY, JSON.stringify(list))
+  } catch (_) {}
+}
 
 function loadFreigabenLog(): FreigabeEintrag[] {
   try {
@@ -50,20 +87,26 @@ export default function K2MarktTorPage() {
   const [freigegeben, setFreigegeben] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [freigabenLog, setFreigabenLog] = useState<FreigabeEintrag[]>(() => loadFreigabenLog())
+  const [newMoment, setNewMoment] = useState<ProduktMoment | null>(null)
+  const [speisenLoading, setSpeisenLoading] = useState(false)
+  const [kampagneDocFile, setKampagneDocFile] = useState<string>('')
 
   useEffect(() => {
     let cancelled = false
     setLoading(true)
     setFehler(null)
-    fetch(MOMENTE_URL)
-      .then((r) => {
-        if (!r.ok) throw new Error('Momente konnten nicht geladen werden.')
-        return r.json()
-      })
-      .then((data: ProduktMoment[]) => {
-        if (cancelled || !Array.isArray(data)) return
-        setMomente(data)
-        const first = data[0]
+    Promise.all([
+      fetch(MOMENTE_URL).then((r) => (r.ok ? r.json() : [])),
+      Promise.resolve(loadLocalMomente()),
+    ])
+      .then(([staticData, localList]: [ProduktMoment[], ProduktMoment[]]) => {
+        if (cancelled) return
+        const byId = new Map<string, ProduktMoment>()
+        ;(Array.isArray(staticData) ? staticData : []).forEach((m) => byId.set(m.id, m))
+        localList.forEach((m) => byId.set(m.id, m))
+        const merged = Array.from(byId.values())
+        setMomente(merged)
+        const first = merged[0]
         if (first) {
           setSelectedId(first.id)
           setEntwurf(momentToFlyerEntwurf(first))
@@ -128,6 +171,105 @@ export default function K2MarktTorPage() {
             <Link to={PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>Kampagne Marketing-Strategie</Link>
           </div>
         </header>
+
+        {/* Moment aus mök2 & Kampagne speisen – daraus Momente erzeugen */}
+        <section className="no-print" style={{ marginBottom: '1.5rem', padding: '1rem 1.25rem', background: 'rgba(95,251,241,0.06)', border: '1px solid rgba(95,251,241,0.25)', borderRadius: 12 }}>
+          <h2 style={{ margin: '0 0 0.5rem', color: 'rgba(95,251,241,0.95)', fontSize: '1.1rem' }}>Moment aus Quellen erzeugen</h2>
+          <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>
+            Aus mök2 (Slogan, Botschaft, Zielgruppe) und optional Kampagne Marketing-Strategie (Dokument) einen Produkt-Moment bauen – dann speichern und am Tor umsetzen.
+          </p>
+          {!newMoment ? (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
+              <select
+                value={kampagneDocFile}
+                onChange={(e) => setKampagneDocFile(e.target.value)}
+                style={{ background: '#1e293b', color: '#fff', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 6, padding: '0.4rem 0.6rem', fontSize: '0.88rem' }}
+              >
+                <option value="">Kein Kampagne-Dokument</option>
+                {KAMPAGNE_DOCS.map((d) => (
+                  <option key={d.file} value={d.file}>{d.name}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                disabled={speisenLoading}
+                onClick={async () => {
+                  setSpeisenLoading(true)
+                  try {
+                    const mok2 = getMok2Quellen()
+                    const kontakt = getKontaktFromStammdaten()
+                    const kampagne = kampagneDocFile ? await fetchKampagneDocPreview(kampagneDocFile) : null
+                    const moment = buildMomentFromQuellen({ mok2, kontakt, kampagne })
+                    setNewMoment(moment)
+                  } finally {
+                    setSpeisenLoading(false)
+                  }
+                }}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: '#0d9488',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  cursor: speisenLoading ? 'wait' : 'pointer',
+                }}
+              >
+                {speisenLoading ? 'Lade …' : 'Aus mök2 & Kampagne füllen'}
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div>
+                <label style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', display: 'block', marginBottom: '0.25rem' }}>Titel</label>
+                <input
+                  value={newMoment.titel}
+                  onChange={(e) => setNewMoment((m) => m ? { ...m, titel: e.target.value } : null)}
+                  style={{ width: '100%', maxWidth: 400, background: '#1e293b', color: '#fff', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 6, padding: '0.4rem 0.6rem' }}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', display: 'block', marginBottom: '0.25rem' }}>Botschaft</label>
+                <textarea
+                  value={newMoment.botschaft}
+                  onChange={(e) => setNewMoment((m) => m ? { ...m, botschaft: e.target.value } : null)}
+                  rows={4}
+                  style={{ width: '100%', maxWidth: 560, background: '#1e293b', color: '#fff', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 6, padding: '0.4rem 0.6rem', resize: 'vertical' }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const list = loadLocalMomente()
+                    const toSave = { ...newMoment!, id: newMoment!.id || `moment-${Date.now()}` }
+                    list.push(toSave)
+                    saveLocalMomente(list)
+                    setMomente((prev) => {
+                      const byId = new Map(prev.map((m) => [m.id, m]))
+                      byId.set(toSave.id, toSave)
+                      return Array.from(byId.values())
+                    })
+                    setSelectedId(toSave.id)
+                    setEntwurf(momentToFlyerEntwurf(toSave))
+                    setNewMoment(null)
+                  }}
+                  style={{ padding: '0.5rem 1rem', background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Moment speichern
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNewMoment(null)}
+                  style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 8, fontSize: '0.9rem', cursor: 'pointer' }}
+                >
+                  Abbrechen
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: '1.5rem', alignItems: 'start' }}>
         {/* Entwurf-Vorschau */}

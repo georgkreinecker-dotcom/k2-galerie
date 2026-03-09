@@ -14,7 +14,7 @@
 | **Eine Quelle** | Slogan, Botschaft, USPs, Kontakt – eine Stelle in mök2 (bzw. tenantConfig), überall genutzt (Werbeunterlagen, Flyer, K2 Markt, Kampagne). |
 | **Werbeunterlagen** | Flyer, Präsentationsmappe, Prospekte, Social – bearbeitbar, druckbar, aus derselben Quelle. |
 | **APf-Struktur** | Marketingarbeit in der APf klar organisiert: mök2, Werbeunterlagen, Lizenzen, AGB, Kampagne, K2 Markt – ein Guss. |
-| **Verknüpfung K2 Markt** | mök2 = Quelle für Botschaften, USPs, Zielgruppen; K2 Markt (Produkt-Moment, Agenten) kann daraus lesen. Keine doppelte Pflege. |
+| **Verknüpfung K2 Markt** | mök2 = Quelle für Botschaften, USPs, Zielgruppen; K2 Markt (Produkt-Moment, Agenten) wird daraus gespeist. Am Tor: „Moment aus Quellen erzeugen“ – liest Slogan, Botschaft, Zielgruppe aus mök2, optional Kampagne-Dokument; baut daraus Produkt-Momente, die dann umgesetzt werden können. Keine doppelte Pflege. |
 | **Druck / PDF** | Alles als PDF druckbar, leserlich, einheitliches Layout (handbuch-standard, druckbare-version-anspruch). |
 
 ---
