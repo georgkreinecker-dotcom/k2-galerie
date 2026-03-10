@@ -4465,9 +4465,17 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       }
                       
                       // KRITISCH: Anzeige immer aus aufgelösten Bildern (IndexedDB) – verhindert Platzhalter nach Bearbeiten
+                      // OPTIMISTISCH (mobil): Neues Bild sofort in Karte – auf Handy kann IndexedDB-Lesen verzögert sein
+                      const updatedNumber = updatedArtwork?.number ?? updatedArtwork?.id
                       loadArtworksResolvedForDisplay().then((list) => {
-                        setArtworksDisplay(filterK2ArtworksOnly(list))
-                        console.log('✅ Werke-Liste nach Update aktualisiert (resolved):', list.length, 'Werke')
+                        let k2List = filterK2ArtworksOnly(list)
+                        if (updatedNumber && mobilePhoto && typeof mobilePhoto === 'string') {
+                          k2List = k2List.map((a: any) =>
+                            (a?.number ?? a?.id) === updatedNumber ? { ...a, imageUrl: mobilePhoto } : a
+                          )
+                        }
+                        setArtworksDisplay(k2List)
+                        console.log('✅ Werke-Liste nach Update aktualisiert (resolved):', k2List.length, 'Werke')
                       })
                       
                       // PROFESSIONELL: Automatische Mobile-Sync nach jedem Speichern
@@ -4685,8 +4693,14 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                     }
                     
 // KRITISCH: Anzeige aus aufgelösten Bildern (IndexedDB) – verhindert Platzhalter
+                    // OPTIMISTISCH (mobil): Neues Bild sofort in Karte – IndexedDB-Lesen kann verzögert sein
                     loadArtworksResolvedForDisplay().then((list) => {
-                      const exhibitionArtworks = filterK2ArtworksOnly(list)
+                      let exhibitionArtworks = filterK2ArtworksOnly(list)
+                      if (newNumber && mobilePhoto && typeof mobilePhoto === 'string') {
+                        exhibitionArtworks = exhibitionArtworks.map((a: any) =>
+                          (a?.number ?? a?.id) === newNumber ? { ...a, imageUrl: mobilePhoto } : a
+                        )
+                      }
                       setArtworksDisplay(exhibitionArtworks)
                       console.log('💾 Werke-Liste aktualisiert (resolved):', exhibitionArtworks.length, 'Werke')
                       const newEntry = exhibitionArtworks.find((a: any) => (a.number || a.id) === newNumber)
