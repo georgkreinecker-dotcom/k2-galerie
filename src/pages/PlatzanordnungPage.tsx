@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { readArtworksRawByKey, saveArtworksByKey } from '../utils/artworksStorage'
+import { readArtworksRawByKey, saveArtworksByKeyWithImageStore } from '../utils/artworksStorage'
 import '../App.css'
 
 function loadArtworks(): any[] {
@@ -13,9 +13,9 @@ function loadArtworks(): any[] {
   }
 }
 
-function saveArtworks(artworks: any[]): void {
+async function saveArtworks(artworks: any[]): Promise<void> {
   try {
-    saveArtworksByKey('k2-artworks', artworks, { filterK2Only: true, allowReduce: false })
+    await saveArtworksByKeyWithImageStore('k2-artworks', artworks, { filterK2Only: true, allowReduce: false })
   } catch (error) {
     console.error('Fehler beim Speichern:', error)
   }

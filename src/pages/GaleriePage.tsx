@@ -8,7 +8,7 @@ import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie, mergePageContentGalerieFromServer } from '../config/pageContentGalerie'
 import { getPageTexts, type GaleriePageTexts } from '../config/pageTexts'
 import { appendToHistory } from '../utils/artworkHistory'
-import { readArtworksRawForContext, saveArtworksForContext } from '../utils/artworksStorage'
+import { readArtworksRawForContext, saveArtworksForContextWithImageStore } from '../utils/artworksStorage'
 import { mergeServerWithLocal, preserveLocalImageData } from '../utils/syncMerge'
 import { loadEvents, saveEvents } from '../utils/eventsStorage'
 import { loadDocuments, saveDocuments } from '../utils/documentsStorage'
@@ -1093,8 +1093,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             console.log('📋 Server Nummern:', serverArtworks.map((a: any) => a.number || a.id).join(', '))
             console.log('📋 Gemergte Nummern:', mergedWithImages.map((a: any) => a.number || a.id).join(', '))
             
-            // KRITISCH: Speichere merged Liste – allowReduce: false verhindert Reduzierung (Schutz)
-            saveArtworksForContext(musterOnly, vk2, mergedWithImages, { allowReduce: false })
+            // KRITISCH: Speichere merged Liste – allowReduce: false verhindert Reduzierung (Schutz). ImageStore: mergedWithImages kann Base64 aus preserveLocalImageData haben.
+            await saveArtworksForContextWithImageStore(musterOnly, vk2, mergedWithImages, { allowReduce: false })
             
             // ZUSÄTZLICH: Prüfe ob neue Mobile-Werke vom Server geladen wurden
             const newMobileWorks = mergedWithImages.filter((a: any) => 
@@ -1116,14 +1116,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             console.warn('⚠️ Werke zu groß für localStorage:', e)
             // Bei Fehler: Behalte lokale Werke!
             console.log('🔒 Fehler beim Merge - behalte lokale Werke:', localArtworks.length)
-            saveArtworksForContext(musterOnly, vk2, localArtworks)
+            await saveArtworksForContextWithImageStore(musterOnly, vk2, localArtworks)
           }
         } else {
           // KEINE Server-Daten - behalte ALLE lokalen Werke!
           console.warn('⚠️ Keine Werke in gallery-data.json gefunden - behalte lokale Werke:', localArtworks.length)
           if (localArtworks.length > 0) {
             console.log('🔒 Lokale Werke bleiben erhalten:', localArtworks.map((a: any) => a.number || a.id).join(', '))
-            saveArtworksForContext(musterOnly, vk2, localArtworks)
+            await saveArtworksForContextWithImageStore(musterOnly, vk2, localArtworks)
             window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: localArtworks.length, fromGaleriePage: true, localOnly: true } }))
           }
         }
@@ -1326,7 +1326,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   
   // KRITISCH: Event-Listener für Mobile-Werke Synchronisation zwischen Geräten
   React.useEffect(() => {
-    const handleMobileArtworkSaved = (event: CustomEvent) => {
+    const handleMobileArtworkSaved = async (event: CustomEvent) => {
       const artwork = event.detail?.artwork
       if (!artwork) return
       
@@ -1344,7 +1344,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       if (!exists) {
         console.log(`✅ Neues Mobile-Werk synchronisiert: ${artwork.number || artwork.id}`)
         localArtworks.push(artwork)
-        saveArtworksForContext(musterOnly, vk2, localArtworks)
+        await saveArtworksForContextWithImageStore(musterOnly, vk2, localArtworks)
         
         // Trigger Event für UI-Update
         window.dispatchEvent(new CustomEvent('artworks-updated', { 
@@ -1353,10 +1353,11 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       }
     }
     
-    window.addEventListener('mobile-artwork-saved', handleMobileArtworkSaved as EventListener)
+    const listener = (e: Event) => { void handleMobileArtworkSaved(e as CustomEvent) }
+    window.addEventListener('mobile-artwork-saved', listener)
     
     return () => {
-      window.removeEventListener('mobile-artwork-saved', handleMobileArtworkSaved as EventListener)
+      window.removeEventListener('mobile-artwork-saved', listener)
     }
   }, [])
   
@@ -1540,7 +1541,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 const k = a?.number ?? a?.id
                 return k != null ? String(k) : undefined
               })
-              saveArtworksForContext(musterOnly, vk2, mergedWithImages, { allowReduce: false })
+              await saveArtworksForContextWithImageStore(musterOnly, vk2, mergedWithImages, { allowReduce: false })
               console.log('✅ Werke gemergt beim Initial-Load (Server = Quelle, alte Lokale nicht übernommen):', mergedWithImages.length, 'Gesamt,', toHistory.length, 'in History')
               console.log('📋 Lokale Nummern:', localArtworks.map((a: any) => a.number || a.id).join(', '))
               console.log('📋 Server Nummern:', serverArtworks.map((a: any) => a.number || a.id).join(', '))
@@ -1554,7 +1555,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               const localArtworks = loadArtworksFromContext(musterOnly, vk2)
               if (localArtworks.length > 0) {
                 console.log('🔒 Fehler beim Merge beim Initial-Load - behalte lokale Werke:', localArtworks.length)
-                saveArtworksForContext(musterOnly, vk2, localArtworks)
+                await saveArtworksForContextWithImageStore(musterOnly, vk2, localArtworks)
               }
             }
           } else {
@@ -1563,7 +1564,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             if (localArtworks.length > 0) {
               console.warn('⚠️ Keine Werke in gallery-data.json gefunden beim Initial-Load - behalte lokale Werke:', localArtworks.length)
               console.log('🔒 Lokale Werke bleiben erhalten beim Initial-Load:', localArtworks.map((a: any) => a.number || a.id).join(', '))
-              saveArtworksForContext(musterOnly, vk2, localArtworks)
+              await saveArtworksForContextWithImageStore(musterOnly, vk2, localArtworks)
               window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: localArtworks.length, fromGaleriePage: true, localOnly: true, initialLoad: true } }))
             }
           }
@@ -1903,7 +1904,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     const apiUrl = `${GALLERY_DATA_PUBLIC_URL}/api/gallery-data?tenantId=oeffentlich&t=${Date.now()}&_=${Math.random()}`
     fetch(apiUrl, { cache: 'no-store', signal: controller.signal })
       .then(res => (res.ok ? res.json() : null))
-      .then(data => {
+      .then(async data => {
         if (!isMounted || !data) return
         try {
           // Werke: gleiche Schutzregeln wie K2 (kein Überschreiben mit leer, Merge)
@@ -1915,7 +1916,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             if (data.artworks.length < lokalAnzahl * 0.5) return // 50%-Regel
             const { merged } = mergeServerWithLocal(data.artworks, localArr, { onlyAddLocalIfMobileAndVeryNew: true })
             const withImages = preserveLocalImageData(merged, localArr)
-            saveArtworksForContext(true, false, withImages, { allowReduce: false })
+            await saveArtworksForContextWithImageStore(true, false, withImages, { allowReduce: false })
             window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: withImages.length, fromGaleriePage: true, oeffentlichFromServer: true } }))
           }
           if (Array.isArray(data.events) && data.events.length > 0) {

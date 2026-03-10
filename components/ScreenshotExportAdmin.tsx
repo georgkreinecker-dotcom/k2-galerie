@@ -2341,27 +2341,29 @@ function ScreenshotExportAdmin() {
     localStorage.setItem(key, JSON.stringify(cfg))
   }
 
-  /** Speichert alle aktuellen Admin-Daten in localStorage (K2/ök2/VK2-Key), damit „Seiten prüfen“ die neuesten Änderungen anzeigt. Design wird hier nicht mitgeschrieben – nur über „Speichern“ im Design-Tab. */
+  /** Speichert alle aktuellen Admin-Daten in localStorage (K2/ök2/VK2-Key), damit „Seiten prüfen“ die neuesten Änderungen anzeigt. Design wird hier nicht mitgeschrieben – nur über „Speichern“ im Design-Tab. Sportwagenmodus: ImageStore. */
   const saveAllForVorschau = () => {
-    try {
-      if (tenant.isVk2) {
-        saveVk2Stammdaten(vk2Stammdaten)
-      } else if (!tenant.isOeffentlich) {
-        if (JSON.stringify(martinaData).length < 100000) persistStammdaten('k2', 'martina', martinaData)
-        if (JSON.stringify(georgData).length < 100000) persistStammdaten('k2', 'georg', georgData)
-        if (JSON.stringify(galleryData).length < 5000000) persistStammdaten('k2', 'gallery', galleryData)
+    const run = async () => {
+      try {
+        if (tenant.isVk2) {
+          saveVk2Stammdaten(vk2Stammdaten)
+        } else if (!tenant.isOeffentlich) {
+          if (JSON.stringify(martinaData).length < 100000) persistStammdaten('k2', 'martina', martinaData)
+          if (JSON.stringify(georgData).length < 100000) persistStammdaten('k2', 'georg', georgData)
+          if (JSON.stringify(galleryData).length < 5000000) persistStammdaten('k2', 'gallery', galleryData)
+        }
+        if (!tenant.isVk2) {
+          await saveArtworksByKeyWithImageStore(tenant.getArtworksKey()!, allArtworks, { filterK2Only: tenant.tenantId === 'k2', allowReduce: true })
+        }
+        localStorage.setItem(tenant.getEventsKey(), JSON.stringify(events))
+        localStorage.setItem(tenant.getDocumentsKey(), JSON.stringify(documents))
+        setPageTexts(pageTexts, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
+        setPageContentGalerie(pageContent, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
+      } catch (e) {
+        console.warn('Vorschau-Speichern:', e)
       }
-      // Werke über Schicht (Phase 1.2)
-      if (!tenant.isVk2) {
-        saveArtworksByKey(tenant.getArtworksKey(), allArtworks, { filterK2Only: tenant.tenantId === 'k2', allowReduce: true })
-      }
-      localStorage.setItem(tenant.getEventsKey(), JSON.stringify(events))
-      localStorage.setItem(tenant.getDocumentsKey(), JSON.stringify(documents))
-      setPageTexts(pageTexts, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
-      setPageContentGalerie(pageContent, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
-    } catch (e) {
-      console.warn('Vorschau-Speichern:', e)
     }
+    void run()
   }
 
   /** Pilot/ök2: Musterdaten auf einen Klick leeren – eigene Eintragung ohne umständliches Rauslöschen. */
@@ -2786,20 +2788,21 @@ function ScreenshotExportAdmin() {
         artworksState.forEach((a: any) => { const k = a?.number || a?.id; if (k) artworksById.set(String(k), a) })
         const artworksForExport = sortArtworksFavoritesFirstThenNewest(Array.from(artworksById.values()))
 
-        // K2: Prozesssicherheit – nur zentraler Ablauf (publishGalleryDataToServer). Kein eigener Fetch.
+        // K2: Prozesssicherheit – nur zentraler Ablauf (publishGalleryDataToServer). Sportwagenmodus: ImageStore.
         if (!tenant.isOeffentlich && !tenant.isVk2) {
           try {
-            saveArtworksByKey('k2-artworks', artworksForExport, { filterK2Only: true, allowReduce: false })
-            persistStammdaten('k2', 'martina', martinaExport as Record<string, unknown>)
-            persistStammdaten('k2', 'georg', georgExport as Record<string, unknown>)
-            persistStammdaten('k2', 'gallery', galleryExport as Record<string, unknown>)
-            saveEventsToStorage('k2', eventsForExport)
-            saveDocumentsToStorage('k2', documentsForExport)
-            localStorage.setItem('k2-design-settings', JSON.stringify(designExport))
-            if (pageTextsExport != null) localStorage.setItem('k2-page-texts', JSON.stringify(pageTextsExport))
-            if (pageContentGalerieRaw != null && pageContentGalerieRaw.length > 0) localStorage.setItem('k2-page-content-galerie', pageContentGalerieRaw)
-            const toPublish = readArtworksRawByKey('k2-artworks')
-            publishGalleryDataToServer(toPublish).then((result) => {
+            saveArtworksByKeyWithImageStore('k2-artworks', artworksForExport, { filterK2Only: true, allowReduce: false }).then((saved) => {
+              if (!saved) { if (isMountedRef.current && !silent) setIsDeploying(false); if (!silent) alert('Fehler beim Speichern'); return }
+              persistStammdaten('k2', 'martina', martinaExport as Record<string, unknown>)
+              persistStammdaten('k2', 'georg', georgExport as Record<string, unknown>)
+              persistStammdaten('k2', 'gallery', galleryExport as Record<string, unknown>)
+              saveEventsToStorage('k2', eventsForExport)
+              saveDocumentsToStorage('k2', documentsForExport)
+              localStorage.setItem('k2-design-settings', JSON.stringify(designExport))
+              if (pageTextsExport != null) localStorage.setItem('k2-page-texts', JSON.stringify(pageTextsExport))
+              if (pageContentGalerieRaw != null && pageContentGalerieRaw.length > 0) localStorage.setItem('k2-page-content-galerie', pageContentGalerieRaw)
+              const toPublish = readArtworksRawByKey('k2-artworks')
+              publishGalleryDataToServer(toPublish).then((result) => {
               if (!isMountedRef.current) return
               if (!silent) setIsDeploying(false)
               if (result.success) {
@@ -2824,6 +2827,7 @@ function ScreenshotExportAdmin() {
                 setPublishErrorMsg(e instanceof Error ? e.message : String(e))
               } else console.warn('Sync (silent) Fehler:', e)
             }).finally(() => { if (isMountedRef.current && !silent) setIsDeploying(false) })
+            })
           } catch (e) {
             if (isMountedRef.current && !silent) setIsDeploying(false)
             if (!silent) alert('Fehler beim Vorbereiten: ' + (e instanceof Error ? e.message : String(e)))
@@ -13037,11 +13041,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   <span style={{ fontSize: '0.9rem', color: s.muted, marginRight: '0.75rem' }}>Musterwerke in der Demo vorhanden – zum Entfernen:</span>
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={async () => {
                       const existing = readArtworksRawByKey('k2-oeffentlich-artworks')
                       const ohne = existing.filter((a: any) => !String(a.id || '').startsWith('muster-') && !(a as any)._isMuster)
                       if (ohne.length === existing.length) { alert('Keine Musterdaten gefunden – nichts zu löschen.'); return }
-                      saveArtworksByKey('k2-oeffentlich-artworks', ohne, { filterK2Only: false, allowReduce: true })
+                      await saveArtworksByKeyWithImageStore('k2-oeffentlich-artworks', ohne, { filterK2Only: false, allowReduce: true })
                       setAllArtworksSafe(ohne)
                       alert('✅ Musterdaten entfernt. Eigene Werke sind unberührt.')
                     }}
@@ -13303,7 +13307,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         try {
                           const artworks = readArtworksRawByKey('k2-artworks')
                           const { updated, clearedCount, idbDeletedCount } = await clearArtworkImagesForNumberRange(artworks, 30, 39)
-                          saveArtworksByKey('k2-artworks', updated, { filterK2Only: true, allowReduce: false })
+                          await saveArtworksByKeyWithImageStore('k2-artworks', updated, { filterK2Only: true, allowReduce: false })
                           lastSavedArtworkImageRef.current = null
                           const resolved = await resolveArtworkImages(updated)
                           setAllArtworksSafe(resolved)
@@ -13328,7 +13332,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         try {
                           const artworks = readArtworksRawByKey('k2-artworks')
                           const { updated, clearedCount, idbDeletedCount } = await clearArtworkImagesForNumberRange(artworks, 30, 39)
-                          saveArtworksByKey('k2-artworks', updated, { filterK2Only: true, allowReduce: false })
+                          await saveArtworksByKeyWithImageStore('k2-artworks', updated, { filterK2Only: true, allowReduce: false })
                           if (isSupabaseConfigured()) await saveArtworksToSupabase(updated)
                           lastSavedArtworkImageRef.current = null
                           const resolved = await resolveArtworkImages(updated)
@@ -14695,7 +14699,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           try {
                             const artworks = readArtworksRawByKey('k2-artworks')
                             const { updated, clearedCount, idbDeletedCount } = await clearArtworkImagesForNumberRange(artworks, 30, 39)
-                            saveArtworksByKey('k2-artworks', updated, { filterK2Only: true, allowReduce: false })
+                            await saveArtworksByKeyWithImageStore('k2-artworks', updated, { filterK2Only: true, allowReduce: false })
                             lastSavedArtworkImageRef.current = null
                             const resolved = await resolveArtworkImages(updated)
                             setAllArtworksSafe(resolved)
@@ -14720,7 +14724,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           try {
                             const artworks = readArtworksRawByKey('k2-artworks')
                             const { updated, clearedCount, idbDeletedCount } = await clearArtworkImagesForNumberRange(artworks, 30, 39)
-                            saveArtworksByKey('k2-artworks', updated, { filterK2Only: true, allowReduce: false })
+                            await saveArtworksByKeyWithImageStore('k2-artworks', updated, { filterK2Only: true, allowReduce: false })
                             if (isSupabaseConfigured()) await saveArtworksToSupabase(updated)
                             lastSavedArtworkImageRef.current = null
                             const resolved = await resolveArtworkImages(updated)

@@ -119,10 +119,16 @@ export async function clearArtworkImagesForNumberRange(
 /** Alle data:image-Bilder in IndexedDB (nicht nur große) – damit „An Server senden“ sie auflösen kann und andere Geräte die Bilder bekommen. */
 const MOVE_TO_IDB_THRESHOLD = 0
 
+/** previewUrl als Base64 gehört nicht in die Liste (Dopplung, Speicher). Anzeige nutzt imageUrl/Ref. */
+function isBase64ImageUrl(v: unknown): boolean {
+  return typeof v === 'string' && v.startsWith('data:image')
+}
+
 /**
  * Bereitet eine Werkliste für localStorage vor: data:image Bilddaten
  * werden in IndexedDB ausgelagert, in der Liste bleibt nur imageRef.
- * Gibt die schlanke Liste zurück. Schwellwert 0 = alle Bilder in IDB (Bildspeicher/Ladeproblem beheben).
+ * previewUrl als Base64 wird geleert (keine Dopplung in der Liste).
+ * Gibt die schlanke Liste zurück. Sportwagenmodus: ein Standard.
  */
 export async function prepareArtworksForStorage(artworks: any[]): Promise<any[]> {
   if (!Array.isArray(artworks) || artworks.length === 0) return artworks
@@ -130,26 +136,25 @@ export async function prepareArtworksForStorage(artworks: any[]): Promise<any[]>
   for (const a of artworks) {
     if (!a) { out.push(a); continue }
     const url = a.imageUrl
+    let next = a
     if (typeof url === 'string' && url.startsWith('data:image') && url.length > MOVE_TO_IDB_THRESHOLD) {
       const ref = a.imageRef || getArtworkImageRef(a)
       try {
         await putArtworkImage(ref, url)
-        out.push({ ...a, imageUrl: '', imageRef: ref })
+        next = { ...a, imageUrl: '', imageRef: ref }
       } catch (e) {
         console.warn('Artwork image store put failed, keeping in list:', e)
-        out.push(a)
       }
     } else if (a.imageRef && typeof a.imageUrl === 'string' && a.imageUrl.startsWith('data:') && a.imageUrl.length > MOVE_TO_IDB_THRESHOLD) {
       try {
         await putArtworkImage(a.imageRef, a.imageUrl)
-        out.push({ ...a, imageUrl: '', imageRef: a.imageRef })
+        next = { ...a, imageUrl: '', imageRef: a.imageRef }
       } catch (e) {
         console.warn('Artwork image store put failed:', e)
-        out.push(a)
       }
-    } else {
-      out.push(a)
     }
+    if (isBase64ImageUrl(next.previewUrl)) next = { ...next, previewUrl: '' }
+    out.push(next)
   }
   return out
 }

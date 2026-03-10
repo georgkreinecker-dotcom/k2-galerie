@@ -15,6 +15,7 @@
 | 07.03.26 | ro5 – Reopen nach Code 5; frag anke: Briefing + DIALOG-STAND gelesen, orientiert. |
 | 08.03.26 | ro5 – Reopen nach Code 5; Briefing + DIALOG-STAND gelesen, orientiert. |
 | 09.03.26 | ro5 – Reopen nach Code 5; DIALOG-STAND gelesen, orientiert. |
+| 10.03.26 | ro5 – Reopen nach Code 5; check the crash: Kontext + bereits geprüft gelesen, orientiert. |
 
 ---
 

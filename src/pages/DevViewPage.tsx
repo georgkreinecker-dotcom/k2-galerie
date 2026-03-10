@@ -5,7 +5,7 @@ import { usePersistentBoolean } from '../hooks/usePersistentState'
 import { checkMobileUpdates } from '../utils/supabaseClient'
 import { filterK2ArtworksOnly } from '../utils/autoSave'
 import { publishGalleryDataToServer } from '../utils/publishGalleryData'
-import { readArtworksRawByKey, saveArtworksByKey } from '../utils/artworksStorage'
+import { readArtworksRawByKey, saveArtworksByKeyWithImageStore } from '../utils/artworksStorage'
 import { resolveArtworkImages } from '../utils/artworkImageStore'
 import '../App.css'
 import GaleriePage from './GaleriePage'
@@ -395,7 +395,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
             console.log(`✅ ${toSave.length - localArtworks.length} Mobile-Werke zu Veröffentlichung hinzugefügt`)
             artworks = toSave
             try {
-              saveArtworksByKey('k2-artworks', toSave, { filterK2Only: false, allowReduce: true })
+              await saveArtworksByKeyWithImageStore('k2-artworks', toSave, { filterK2Only: false, allowReduce: true })
             } catch (e) {
               console.warn('⚠️ Konnte merged Werke nicht speichern:', e)
             }
@@ -579,7 +579,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       const { hasUpdates, artworks } = await checkMobileUpdates()
       if (hasUpdates && artworks) {
         const toSave = filterK2ArtworksOnly(artworks)
-        saveArtworksByKey('k2-artworks', toSave, { filterK2Only: false, allowReduce: true })
+        await saveArtworksByKeyWithImageStore('k2-artworks', toSave, { filterK2Only: false, allowReduce: true })
         localStorage.setItem('k2-last-load-time', Date.now().toString())
         const hash = toSave.map((a: any) => a.number || a.id).sort().join(',')
         localStorage.setItem('k2-artworks-hash', hash)
