@@ -434,7 +434,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     return () => window.removeEventListener('artworks-updated', onUpdated)
   }, [musterOnly])
 
-  // Sync über Tabs: Wenn k2-artworks in anderem Tab geändert wird (z. B. Admin speichert oder „Vom Server laden“), Galerie-Anzeige neu laden – damit Mac Galerie und Admin gleiche Daten zeigen
+  // Sync über Tabs: Wenn k2-artworks in anderem Tab geändert wird (z. B. Admin speichert oder Einstellungen → Aktuellen Stand holen), Galerie-Anzeige neu laden
   useEffect(() => {
     if (musterOnly || vk2) return
     const onStorage = (e: StorageEvent) => {
@@ -636,11 +636,6 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   const qrScannerVideoRef = useRef<HTMLVideoElement>(null)
   const qrScannerCanvasRef = useRef<HTMLCanvasElement>(null)
   const adminLoadMountedRef = useRef(true)
-  /** Timer für zweiphasige „Vom Server laden“-Meldung: erst „Bilder werden angezeigt“, dann „synchronisiert“ (Bilder brauchen Zeit zum Laden). */
-  const refreshImageDelayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  useEffect(() => () => {
-    if (refreshImageDelayTimerRef.current) clearTimeout(refreshImageDelayTimerRef.current)
-  }, [])
   
   // Öffne Modal zum Bearbeiten eines Objekts
   const openEditModal = (artwork: any) => {
@@ -1460,7 +1455,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   }, [artworks]) // WICHTIG: artworks als Dependency für Vergleich
   */
   
-  // Werke vom Server laden (nur wenn wirklich keine vorhanden sind)
+  // Keine lokalen Werke: nur Hinweis; Werke nur im Admin (Einstellungen → Aktuellen Stand holen)
   // VK2 und musterOnly: keine K2-Daten laden
   useEffect(() => {
     if (musterOnly || vk2) return
@@ -1522,402 +1517,17 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           }
         }
         
-        // Nur wenn wirklich keine Werke vorhanden sind, lade vom Server (gallery-data.json)
-        console.log('🔄 Keine Werke vorhanden - lade vom Server...')
-        setLoadStatus({ message: 'Lade Werke...', success: false })
-        
-        try {
-            const timestamp = Date.now()
-            
-            // WICHTIG: Prüfe ob wir auf Vercel sind oder localhost
-            const isVercel = window.location.hostname.includes('vercel.app') || window.location.hostname.includes('k2-galerie')
-            const baseUrl = isVercel 
-              ? window.location.origin 
-              : 'https://k2-galerie.vercel.app'
-            
-            const url = `${baseUrl}/gallery-data.json?v=${timestamp}&t=${timestamp}&_=${Math.random()}`
-            console.log('📡 Lade von:', url)
-            console.log('📡 Hostname:', window.location.hostname)
-            console.log('📡 Ist Vercel:', isVercel)
-            console.log('📡 Base URL:', baseUrl)
-            
-            // WICHTIG: Teste zuerst ob die Datei überhaupt existiert
-            try {
-              const testResponse = await fetch(`${baseUrl}/gallery-data.json?test=true&t=${Date.now()}`, {
-                method: 'HEAD',
-                cache: 'no-store'
-              })
-              console.log('🔍 Test-Request Status:', testResponse.status, testResponse.statusText)
-              if (!testResponse.ok && testResponse.status === 404) {
-                console.error('❌ Datei existiert NICHT auf Vercel!')
-                setLoadStatus({ 
-                  message: '❌ Datei nicht auf Vercel gefunden - bitte Git Push ausführen', 
-                  success: false 
-                })
-                setTimeout(() => setLoadStatus(null), 10000)
-                return
-              }
-            } catch (testError) {
-              console.warn('⚠️ Test-Request fehlgeschlagen:', testError)
-            }
-            
-            // Auf Mobile/anderem LAN: kürzeres Timeout, damit „Werk hinzufügen“ bald nutzbar ist
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
-            const fetchTimeoutMs = isMobile ? 12000 : 30000
-            const controller = new AbortController()
-            const timeoutId = setTimeout(() => controller.abort(), fetchTimeoutMs)
-            
-            const response = await fetch(url, {
-              cache: 'no-store',
-              signal: controller.signal,
-              headers: {
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache'
-              }
-            })
-            
-            clearTimeout(timeoutId)
-            
-            if (response.ok) {
-              console.log('✅ Response OK:', response.status, response.statusText)
-              console.log('📦 Content-Type:', response.headers.get('content-type'))
-              console.log('📦 Content-Length:', response.headers.get('content-length'))
-              
-              const data = await response.json()
-              console.log('📦 Server-Antwort:', {
-                hasArtworks: !!data.artworks,
-                artworksCount: data.artworks ? data.artworks.length : 0,
-                version: data.version,
-                buildId: data.buildId,
-                dataKeys: Object.keys(data),
-                firstArtwork: data.artworks && data.artworks.length > 0 ? {
-                  id: data.artworks[0].id,
-                  number: data.artworks[0].number,
-                  title: data.artworks[0].title
-                } : null
-              })
-              
-              // WICHTIG: Prüfe ob Werke wirklich vorhanden sind
-              if (!data.artworks || !Array.isArray(data.artworks) || data.artworks.length === 0) {
-                console.error('❌ KEINE WERKE in Server-Antwort gefunden!')
-                console.error('❌ Daten-Struktur:', {
-                  keys: Object.keys(data),
-                  artworksType: typeof data.artworks,
-                  artworksIsArray: Array.isArray(data.artworks),
-                  artworksLength: data.artworks ? data.artworks.length : 'null'
-                })
-              }
-            
-              if (data.artworks && Array.isArray(data.artworks) && data.artworks.length > 0) {
-                // Speichere Version-Info und Zeitstempel
-                if (data.version) localStorage.setItem('k2-last-loaded-version', String(data.version))
-                if (data.buildId) localStorage.setItem('k2-last-build-id', data.buildId)
-                localStorage.setItem('k2-last-load-time', String(Date.now()))
-                
-                // MERGE-REGEL: Neuester Timestamp gewinnt – egal von welchem Gerät
-                // Kein "Server ist Quelle der Wahrheit", kein "Mobile hat Priorität"
-                // Mac, iPad, iPhone: letzte Änderung ist immer richtig
-                const existingArtworks = loadArtworks()
-                const serverArtworks = filterK2ArtworksOnly(Array.isArray(data.artworks) ? data.artworks : [])
-                updateKnownServerMaxNumbers(serverArtworks)
-                // Fortlaufende Nummern: Kollisionen vermeiden (gleiche Nummer, anderes Werk → lokal umnummerieren)
-                const existingForMerge = renumberCollidingLocalArtworks(serverArtworks, existingArtworks)
-                
-                console.log('🔄 Merge (neuester Timestamp gewinnt):', {
-                  lokal: existingArtworks.length,
-                  server: serverArtworks.length,
-                })
-
-                // Hilfsfunktion: Effektiven Timestamp eines Werks ermitteln
-                const getTs = (a: any): number => {
-                  const upd = a.updatedAt ? new Date(a.updatedAt).getTime() : 0
-                  const cre = a.createdAt ? new Date(a.createdAt).getTime() : 0
-                  return Math.max(upd, cre)
-                }
-
-                // Alle Werke in eine Map – Schlüssel ist Werk-Nummer/ID
-                const mergeMap = new Map<string, any>()
-
-                // 1. Zuerst Server-Werke eintragen
-                serverArtworks.forEach((a: any) => {
-                  const key = a.number || a.id
-                  if (key) mergeMap.set(key, a)
-                })
-
-                // 2. Lokale Werke: gewinnen wenn ihr Timestamp >= Server-Timestamp
-                //    Neue lokale Werke (nicht auf Server) werden IMMER übernommen
-                existingForMerge.forEach((localArtwork: any) => {
-                  const key = localArtwork.number || localArtwork.id
-                  if (!key) return
-                  const existing = mergeMap.get(key)
-                  if (!existing) {
-                    // Nur lokal vorhanden → immer behalten (noch nicht veröffentlicht)
-                    console.log('💾 Nur lokal (neu):', key)
-                    mergeMap.set(key, localArtwork)
-                  } else {
-                    // Auf beiden → neuester Timestamp gewinnt
-                    const localTs = getTs(localArtwork)
-                    const serverTs = getTs(existing)
-                    if (localTs >= serverTs) {
-                      console.log('💾 Lokal neuer → lokal gewinnt:', key, new Date(localTs).toISOString(), '>', new Date(serverTs).toISOString())
-                      mergeMap.set(key, localArtwork)
-                    } else {
-                      console.log('🌐 Server neuer → server gewinnt:', key)
-                    }
-                  }
-                })
-
-                const mergedArtworks = Array.from(mergeMap.values())
-                console.log(`✅ Merge fertig: ${mergedArtworks.length} Werke gesamt`)
-                console.log('📊 Nummern:', mergedArtworks.map((a: any) => a.number || a.id))
-                
-                // K2: Muster/VK2-Werke nicht in k2-artworks speichern
-                const toSaveMerge = filterK2ArtworksOnly(mergedArtworks)
-                const localCountBeforeMerge = existingArtworks.length
-                const mayWrite = toSaveMerge.length >= localCountBeforeMerge
-                try {
-                  if (!mayWrite) {
-                    console.warn(`⚠️ Merge würde ${localCountBeforeMerge} → ${toSaveMerge.length} reduzieren – localStorage unverändert`)
-                    stored = existingArtworks
-                    loadArtworksResolvedForDisplay().then((list) => {
-                      const exhibitionArtworks = filterK2ArtworksOnly(list)
-                      if (exhibitionArtworks.length > 0) setArtworksDisplay(exhibitionArtworks)
-                      setLoadStatus({ message: `✅ ${existingArtworks.length} Werke (lokal beibehalten)`, success: true })
-                      setTimeout(() => setLoadStatus(null), 3000)
-                      setIsLoading(false)
-                    })
-                  } else {
-                    const toSave = preserveLocalImageData(toSaveMerge, loadArtworks())
-                    const ok = saveArtworksStorage(toSave, { allowReduce: false })
-                    if (ok) console.log('✅ Gemergte Werke gespeichert:', toSave.length)
-                  
-                  // Mobile: Synchronisiere gemergte Liste zu Supabase
-                  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
-                  if (isMobile && toSaveMerge.length > 0) {
-                    try {
-                      await saveArtworksToSupabase(toSaveMerge)
-                      console.log('✅ Gemergte Werke zu Supabase synchronisiert')
-                    } catch (syncError) {
-                      console.warn('⚠️ Supabase-Sync fehlgeschlagen:', syncError)
-                    }
-                  }
-                  
-                  stored = toSaveMerge
-                  
-                  // KRITISCH: Anzeige immer aus aufgelösten Bildern (IndexedDB)
-                  loadArtworksResolvedForDisplay().then((list) => {
-                    const exhibitionArtworks = filterK2ArtworksOnly(list)
-                    console.log('🎨 Setze artworks State (resolved):', exhibitionArtworks.length, 'Werke')
-                    setArtworksDisplay(exhibitionArtworks)
-                  })
-                  
-                  setLoadStatus({ 
-                    message: `✅ ${mergedArtworks.length} Werke synchronisiert (${serverArtworks.length} Server + ${mergedArtworks.length - serverArtworks.length} Mobile)`, 
-                    success: true 
-                  })
-                  setTimeout(() => setLoadStatus(null), 3000)
-                  setIsLoading(false)
-                  }
-                } catch (e) {
-                  console.warn('⚠️ Werke zu groß für localStorage, verwende direkt')
-                  stored = mergedArtworks
-                  loadArtworksResolvedForDisplay().then((list) => {
-                    setArtworksDisplay(filterK2ArtworksOnly(list))
-                  })
-                  setLoadStatus({ message: `✅ ${mergedArtworks.length} Werke geladen`, success: true })
-                  setTimeout(() => setLoadStatus(null), 3000)
-                  setIsLoading(false)
-                }
-              } else {
-                console.error('❌ Keine Werke in Server-Antwort gefunden!')
-                console.error('❌ Daten-Struktur:', {
-                  hasArtworks: !!data.artworks,
-                  isArray: Array.isArray(data.artworks),
-                  length: data.artworks ? data.artworks.length : 'null',
-                  dataKeys: Object.keys(data)
-                })
-                
-                // Fallback: Verwende localStorage wenn vorhanden
-                if (stored && stored.length > 0) {
-                  console.log('📦 Verwende localStorage-Daten (Server hat keine Werke, resolved):', stored.length)
-                  loadArtworksResolvedForDisplay().then((list) => {
-                    setArtworksDisplay(filterK2ArtworksOnly(list))
-                  })
-                  setLoadStatus({ message: `⚠️ Server hat keine Werke - verwende Cache (${stored.length})`, success: false })
-                  setTimeout(() => setLoadStatus(null), 5000)
-                } else {
-                  // gallery-data.json leer → Supabase versuchen (z. B. Mac hat dorthin synchronisiert)
-                  if (isSupabaseConfigured()) {
-                    try {
-                      const supabaseArtworks = await loadArtworksFromSupabase()
-                      if (supabaseArtworks && Array.isArray(supabaseArtworks) && supabaseArtworks.length > 0) {
-                        const toSave = preserveLocalImageData(filterK2OnlyStorage(supabaseArtworks), loadArtworks())
-                        saveArtworksStorage(toSave, { allowReduce: false })
-                        const list = await loadArtworksResolvedForDisplay()
-                        setArtworksDisplay(filterK2ArtworksOnly(list))
-                        setLoadStatus({ message: `✅ ${supabaseArtworks.length} Werke von Supabase geladen`, success: true })
-                        setTimeout(() => setLoadStatus(null), 3000)
-                        setIsLoading(false)
-                        return
-                      }
-                    } catch (supabaseErr) {
-                      console.warn('⚠️ Supabase-Fallback (leere Server-Antwort) fehlgeschlagen:', supabaseErr)
-                    }
-                  }
-                  // Weder Cache noch Supabase: Backup prüfen
-                  const backup = loadBackup()
-                  if (backup && backup.length > 0) {
-                    console.log('💾 Backup gefunden - verwende Backup statt leeren:', backup.length, 'Werke')
-                    saveArtworksForContext(false, false, backup, { allowReduce: true })
-                    loadArtworksResolvedForDisplay().then((list) => setArtworksDisplay(filterK2ArtworksOnly(list)))
-                    setLoadStatus({ message: `💾 Backup wiederhergestellt: ${backup.length} Werke`, success: true })
-                  } else {
-                    setArtworksDisplay([])
-                    setLoadStatus({ message: '❌ Keine Werke gefunden - weder Server noch Cache', success: false })
-                  }
-                  setTimeout(() => setLoadStatus(null), 10000)
-                }
-                setIsLoading(false)
-              }
-            } else if (response.status === 404) {
-              console.error('❌ Datei nicht gefunden (404) - gallery-data.json existiert nicht auf Vercel!')
-              setLoadStatus({ 
-                message: '❌ Datei nicht auf Vercel gefunden - bitte "Veröffentlichen" und "Git Push" ausführen', 
-                success: false 
-              })
-              setTimeout(() => setLoadStatus(null), 10000)
-              
-              // Fallback: Verwende localStorage wenn vorhanden
-              if (stored && stored.length > 0) {
-                console.log('📦 Verwende localStorage-Daten (404-Fehler):', stored.length)
-                setArtworksDisplay(stored)
-                setIsLoading(false)
-              } else {
-                setIsLoading(false)
-              }
-            } else {
-              console.error('❌ Server-Fehler:', response.status, response.statusText)
-              console.error('❌ Response URL:', response.url)
-              console.error('❌ Response Headers:', Object.fromEntries(response.headers.entries()))
-              
-              // Versuche Response-Text zu lesen für mehr Details
-              response.text().then(text => {
-                console.error('❌ Response Body (erste 500 Zeichen):', text.substring(0, 500))
-              }).catch(e => {
-                console.error('❌ Konnte Response-Text nicht lesen:', e)
-              })
-              
-              // Fallback: Verwende localStorage wenn vorhanden
-              if (stored && stored.length > 0) {
-                console.log('📦 Verwende localStorage-Daten (Server-Fehler):', stored.length)
-                setArtworksDisplay(stored)
-                setLoadStatus({ message: `✅ ${stored.length} Werke aus Cache (Server-Fehler ${response.status})`, success: true })
-                setTimeout(() => setLoadStatus(null), 3000)
-              } else {
-                setLoadStatus({ message: `⚠️ Server-Fehler ${response.status}: ${response.statusText} - bitte "Aktualisieren" klicken`, success: false })
-                setTimeout(() => setLoadStatus(null), 10000)
-              }
-              setIsLoading(false)
-            }
-        } catch (error: any) {
-          console.error('❌ gallery-data.json konnte nicht geladen werden:', error)
-          console.error('❌ Fehler-Details:', {
-            name: error?.name,
-            message: error?.message,
-            stack: error?.stack
-          })
-          
-          // WICHTIG: Bei Fehler Supabase prüfen (Mobile) – NIEMALS mit weniger Werken überschreiben
-          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
-          if (isMobile) {
-            try {
-              console.log('📱 Versuche Supabase als Fallback...')
-              const { loadArtworksFromSupabase } = await import('../utils/supabaseClient')
-              const supabaseArtworks = await loadArtworksFromSupabase()
-              const localCount = loadArtworks().length
-              if (supabaseArtworks && Array.isArray(supabaseArtworks) && supabaseArtworks.length > 0) {
-                if (!mayWriteServerList(supabaseArtworks, localCount)) {
-                  console.warn(`⚠️ Supabase-Fallback: ${supabaseArtworks.length} Werke, lokal ${localCount} – behalte lokale Daten`)
-                  stored = loadArtworks()
-                  if (stored && stored.length > 0 && adminLoadMountedRef.current) {
-                    loadArtworksResolvedForDisplay().then((list) => {
-                      if (adminLoadMountedRef.current) setArtworksDisplay(filterK2ArtworksOnly(list))
-                    })
-                    setLoadStatus({ message: `✅ ${stored.length} Werke (lokal)`, success: true })
-                  }
-                } else {
-                  console.log('✅ Supabase-Daten übernommen:', supabaseArtworks.length)
-                  const toSave = preserveLocalImageData(filterK2OnlyStorage(supabaseArtworks), loadArtworks())
-                  saveArtworksStorage(toSave, { allowReduce: false })
-                  stored = supabaseArtworks
-                  loadArtworksResolvedForDisplay().then((list) => setArtworksDisplay(filterK2ArtworksOnly(list)))
-                  setLoadStatus({ message: `✅ ${supabaseArtworks.length} Werke von Supabase geladen`, success: true })
-                }
-                setTimeout(() => setLoadStatus(null), 3000)
-                setIsLoading(false)
-                return
-              }
-            } catch (supabaseError) {
-              console.warn('⚠️ Supabase-Fallback fehlgeschlagen:', supabaseError)
-            }
-          }
-          
-          // Fallback: Verwende localStorage mit aufgelösten Bildern
-          if (stored && stored.length > 0) {
-            console.log('📦 Verwende localStorage-Daten (mit aufgelösten Bildern):', stored.length)
-            loadArtworksResolvedForDisplay().then((resolved) => {
-              if (resolved.length > 0) setArtworksDisplay(filterK2ArtworksOnly(resolved))
-            })
-            setLoadStatus({ message: `✅ ${stored.length} Werke aus Cache`, success: true })
-            setTimeout(() => setLoadStatus(null), 3000)
-          } else {
-            const errorMsg = error?.name === 'AbortError' 
-              ? '⚠️ Offline/anderes Netzwerk – Werke hinzufügen geht trotzdem: Admin → Neues Werk' 
-              : error?.message 
-              ? `⚠️ ${error.message} – Werke hinzufügen: Admin → Neues Werk` 
-              : '⚠️ Offline/anderes Netzwerk – Werke hinzufügen: Admin → Neues Werk'
-            setLoadStatus({ message: errorMsg, success: false })
-            setTimeout(() => setLoadStatus(null), 12000)
-          }
-          setIsLoading(false)
-        }
-        
-        if (Array.isArray(stored) && stored.length > 0) {
-          // Mit aufgelösten Bildern (imageRef → imageUrl aus IndexedDB) anzeigen
-          loadArtworksResolvedForDisplay().then((exhibitionArtworks) => {
-            if (!exhibitionArtworks.length) return
-            const toShow = filterK2ArtworksOnly(exhibitionArtworks)
-            console.log('✅ Geladene Werke:', toShow.length, 'von', stored.length)
-            console.log('📊 Werke Details:', {
-              total: toShow.length,
-              withImage: toShow.filter((a: any) => a.imageUrl && !a.imageUrl.includes('data:image/svg')).length,
-              withoutImage: toShow.filter((a: any) => !a.imageUrl || a.imageUrl.includes('data:image/svg')).length
-            })
-            setArtworksDisplay(toShow)
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
-            if (isMobile && toShow.length > 0) {
-              syncMobileToSupabase().catch(err => {
-                console.warn('⚠️ Mobile-Sync fehlgeschlagen:', err)
-              })
-            }
-          })
-          setLoadStatus({ message: `✅ ${stored.length} Werke geladen`, success: true })
-          setTimeout(() => setLoadStatus(null), 3000)
-        } else {
-          console.warn('⚠️ Keine Werke gefunden')
-          // KRITISCH: Prüfe Backup bevor wir leeren!
-          const backup = loadBackup()
-          if (backup && backup.length > 0) {
-            console.log('💾 Backup gefunden - verwende Backup statt leeren:', backup.length, 'Werke')
-            saveArtworksForContext(false, false, backup, { allowReduce: true })
-            loadArtworksResolvedForDisplay().then((list) => setArtworksDisplay(filterK2ArtworksOnly(list)))
-            setLoadStatus({ message: `💾 Backup wiederhergestellt: ${backup.length} Werke`, success: true })
-          } else {
-            setArtworksDisplay([])
-            setLoadStatus({ message: '⚠️ Keine Werke gefunden', success: false })
-          }
-          setTimeout(() => setLoadStatus(null), 3000)
-        }
+        // Vorschau lädt nicht vom Server – nur Admin (Einstellungen → Aktuellen Stand holen). Keine Werke = Hinweis.
+        console.log('🔄 Keine Werke lokal – Laden vom Server nur im Admin (Einstellungen → Aktuellen Stand holen).')
+        setArtworksDisplay([])
+        setLoadStatus({
+          message: 'Keine Werke. Im Admin unter Einstellungen „Aktuellen Stand holen“ klicken.',
+          success: false
+        })
+        setTimeout(() => setLoadStatus(null), 8000)
+        clearTimeout(fallbackClear)
+        setIsLoading(false)
+        return
       } catch (error) {
         console.error('❌ Fehler beim Laden:', error)
         // KRITISCH: Bei Fehler Backup wiederherstellen!
@@ -1944,8 +1554,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       loadData(true)
       return
     }
-    // Erst nach kurzer Verzögerung prüfen: sucht neue Werke vom Server (gallery-data.json).
-    // Wenn lokal leer (z. B. iPad nach Neuöffnen): schnell vom Server laden (500 ms), nicht 2,8 s warten.
+    // Erst nach Verzögerung loadData ohne forceLocalStorage: nur localStorage/Supabase, kein Server-Fetch (Werke nur im Admin).
     const delayMs = (() => {
       const current = loadArtworks()
       const filtered = filterK2ArtworksOnly(current)
@@ -1965,237 +1574,6 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     // eslint-disable-next-line react-hooks/exhaustive-deps -- nur einmal beim Mount ausführen
   }, [])
   
-  // Manuelle Refresh-Funktion - lädt IMMER neu vom Server
-  // KRITISCH: Mobile-Werke haben ABSOLUTE PRIORITÄT - sie dürfen NIEMALS gelöscht werden!
-  const handleRefresh = async () => {
-    setIsLoading(true)
-    setLoadStatus({ message: 'Lade Werke...', success: false })
-    
-    // KRITISCH: Lade ZUERST lokale Werke um Mobile-Werke zu schützen! (außerhalb try-catch für Scope)
-    const localArtworks = loadArtworks()
-    
-    try {
-      const mobileWorks = localArtworks.filter((a: any) => a.createdOnMobile || a.updatedOnMobile)
-      
-      if (mobileWorks.length > 0) {
-        console.log(`🔒 ${mobileWorks.length} Mobile-Werke geschützt vor Synchronisierung:`, mobileWorks.map((a: any) => a.number || a.id).join(', '))
-      }
-      
-      // WICHTIG: Synchronisiere Mobile-Daten zu Supabase BEVOR wir neue Daten laden
-      // Das stellt sicher, dass neu hinzugefügte Bilder auch am Mac ankommen
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
-      if (isMobile) {
-        try {
-          if (localArtworks && localArtworks.length > 0) {
-            console.log('📱 Synchronisiere Mobile-Daten zu Supabase...', localArtworks.length, 'Werke')
-            await saveArtworksToSupabase(localArtworks)
-            await syncMobileToSupabase()
-            setLoadStatus({ message: '✅ Mobile-Daten synchronisiert', success: true })
-            setTimeout(() => setLoadStatus({ message: '🔄 Lade vom Server...', success: false }), 1000)
-          }
-        } catch (syncError) {
-          console.warn('⚠️ Mobile-Sync fehlgeschlagen:', syncError)
-          // Weiter mit Server-Laden auch wenn Sync fehlschlägt
-        }
-      }
-      
-      // WICHTIG: Lösche NICHT localStorage - Mobile-Werke müssen erhalten bleiben!
-      // Nur Cache-Marker löschen, nicht die Werke selbst!
-      localStorage.removeItem('k2-last-loaded-timestamp')
-      localStorage.removeItem('k2-last-loaded-version')
-      localStorage.removeItem('k2-last-build-id')
-      localStorage.removeItem('k2-last-load-time') // WICHTIG: Auch Load-Time entfernen
-      
-      // Maximale Cache-Busting URL
-      const timestamp = Date.now()
-      const random = Math.random()
-      
-      // WICHTIG: Prüfe ob wir auf Vercel sind oder localhost
-      const isVercel = window.location.hostname.includes('vercel.app') || window.location.hostname.includes('k2-galerie')
-      const baseUrl = isVercel 
-        ? window.location.origin 
-        : 'https://k2-galerie.vercel.app'
-      
-      // KRITISCH: API zuerst (Vercel Blob = aktueller Stand nach „Veröffentlichen“). Statische gallery-data.json = nur Stand vom letzten Build (oft alt, z. B. 10 Werke).
-      const bust = `${timestamp}-${random}-${Math.random().toString(36).slice(2)}`
-      const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
-      const fetchOpts: RequestInit = {
-        cache: 'no-store', // Überall no-store – prozesssicher, kein veralteter Cache auf iPhone/iPad
-        method: 'GET',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-          'Pragma': 'no-cache',
-          'Expires': '0',
-          'X-Request-Id': bust,
-          'If-None-Match': `"${bust}"`,
-          'If-Modified-Since': 'Thu, 01 Jan 1970 00:00:00 GMT'
-        }
-      }
-      const apiUrl = `${baseUrl}/api/gallery-data?tenantId=k2&t=${timestamp}&_=${Date.now()}&bust=${bust}`
-      console.log('🔄 Lade neue Daten vom Server (API = Blob = einzige Quelle)...', isMobileDevice ? '(Mobile)' : '')
-      
-      // NUR API nutzen – nie statische Datei bei Fehler (sonst überschreiben wir mit altem Build-Stand).
-      let response: Response | null = null
-      try {
-        response = await fetch(apiUrl, fetchOpts)
-      } catch (e) {
-        console.warn('🔄 API nicht erreichbar:', e instanceof Error ? e.message : e)
-      }
-      if (response?.ok) {
-        console.log('📥 Daten aus API (Vercel Blob = aktueller Stand)')
-      } else if (!response?.ok) {
-        console.warn('🔄 API antwortete nicht OK – keine statische Datei (verhindert Überschreiben mit altem Stand)')
-      }
-      
-      if (response?.ok) {
-        const data = await response.json()
-        // KRITISCH: API (Blob) = einzige Quelle. Kein Ersetzen durch statische Datei – sonst überschreibt Build-Stand den frisch vom iPad veröffentlichten Stand (Sync iPad ↔ Mac kaputt).
-        const serverCount = data.artworks && Array.isArray(data.artworks) ? data.artworks.length : 0
-        console.log('📥 Server antwortete mit', serverCount, 'Werken (Rohantwort)')
-        if (data.designSettings != null && typeof data.designSettings === 'object') {
-          try {
-            const designToUse = isOldBlueTheme(data.designSettings) ? K2_ORANGE : data.designSettings
-            localStorage.setItem('k2-design-settings', JSON.stringify(designToUse))
-            applyDesignToDocument(designToUse)
-          } catch (_) {}
-        }
-        if (data.artworks && Array.isArray(data.artworks)) {
-          // Speichere Version-Info und Zeitstempel
-          if (data.version) localStorage.setItem('k2-last-loaded-version', String(data.version))
-          if (data.buildId) localStorage.setItem('k2-last-build-id', data.buildId)
-          if (data.exportedAt) localStorage.setItem('k2-last-loaded-timestamp', data.exportedAt)
-          localStorage.setItem('k2-last-load-time', String(Date.now())) // WICHTIG: Load-Time speichern
-          
-          const serverArtworks = filterK2ArtworksOnly(data.artworks)
-          // Prozesssicher wie GaleriePage: Nur zwei Schutzfälle – sonst immer Merge schreiben (User darf sich auf „Vom Server laden“ verlassen)
-          if (serverArtworks.length === 0 && localArtworks.length > 0) {
-            console.warn('⚠️ Server lieferte 0 Werke – lokale Werke bleiben erhalten:', localArtworks.length)
-            const list = await loadArtworksResolvedForDisplay()
-            setArtworksDisplay(filterK2ArtworksOnly(list))
-            setLoadStatus({ message: `${list.length} lokale Werke erhalten (Server leer).`, success: true })
-            setTimeout(() => setLoadStatus(null), 3000)
-          } else if (serverArtworks.length < localArtworks.length * 0.5 && localArtworks.length > 0) {
-            console.warn(`⚠️ Server ${serverArtworks.length} vs. lokal ${localArtworks.length} – Sync übersprungen (Schutz)`)
-            const list = await loadArtworksResolvedForDisplay()
-            setArtworksDisplay(filterK2ArtworksOnly(list))
-            setLoadStatus({ message: `${list.length} lokale Werke beibehalten (Server deutlich weniger).`, success: true })
-            setTimeout(() => setLoadStatus(null), 3000)
-          } else {
-            // Merge wie GaleriePage – dann immer schreiben (prozesssicher: gleicher Ablauf, User sieht sofort den neuen Stand)
-            const serverMap = new Map<string, any>()
-            serverArtworks.forEach((a: any) => {
-              const key = a.number || a.id
-              if (key) {
-                serverMap.set(key, a)
-                const keyStr = String(key)
-                if (keyStr.includes('-K-') || keyStr.includes('-M-')) {
-                  const oldFormat = keyStr.replace(/-K-/g, '-').replace(/-M-/g, '-')
-                  if (oldFormat !== keyStr) serverMap.set(oldFormat, a)
-                }
-              }
-            })
-            updateKnownServerMaxNumbers(serverArtworks)
-            const localForMerge = renumberCollidingLocalArtworks(serverArtworks, localArtworks)
-            const { merged: mergedArtworks, toHistory } = mergeServerWithLocal(serverArtworks, localForMerge, { serverMap, onlyAddLocalIfMobileAndVeryNew: true })
-            if (toHistory.length > 0) appendToHistory(toHistory)
-            const toSaveServer = filterK2ArtworksOnly(mergedArtworks)
-            const toSave = preserveLocalImageData(toSaveServer, loadArtworks())
-            console.log('🔒 Server = Quelle:', toSave.length, 'Werke (prozesssicher übernommen)')
-            try {
-              const ok = saveArtworksStorage(toSave, { allowReduce: false })
-              if (ok) {
-                const serverStand = data.exportedAt
-                  ? new Date(data.exportedAt).toLocaleString('de-AT', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
-                  : ''
-                // KRITISCH: Erst Anzeige setzen, DANN isLoading aus – sonst Race: useEffect (leer + !isLoading) läuft bevor setArtworksDisplay
-                const list = await loadArtworksResolvedForDisplay()
-                const exhibitionArtworks = filterK2ArtworksOnly(list)
-                setArtworksDisplay(exhibitionArtworks)
-                // Zweiphasige Meldung: Bilder brauchen Zeit zum Laden – erst „Bilder werden angezeigt“, dann „synchronisiert“ (damit Nutzer nicht zu früh schließt)
-                const count = exhibitionArtworks.length
-                setLoadStatus({
-                  message: `✅ ${count} Werke geladen. Bilder werden angezeigt…`,
-                  success: true
-                })
-                if (refreshImageDelayTimerRef.current) clearTimeout(refreshImageDelayTimerRef.current)
-                refreshImageDelayTimerRef.current = setTimeout(() => {
-                  refreshImageDelayTimerRef.current = null
-                  setLoadStatus({
-                    message: serverStand
-                      ? `✅ ${count} Werke synchronisiert – Server-Stand: ${serverStand}`
-                      : `✅ ${count} Werke synchronisiert`,
-                    success: true
-                  })
-                  setTimeout(() => setLoadStatus(null), 5000)
-                }, 4000)
-                window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromGaleriePage: true, count: toSave.length } }))
-              } else {
-                resolveArtworkImages(toSaveServer).then((resolved) => {
-                  setArtworksDisplay(filterK2ArtworksOnly(resolved))
-                  setLoadStatus({
-                    message: `${toSaveServer.length} Werke geladen. Speichern fehlgeschlagen (Speicher voll?) – nur in dieser Sitzung sichtbar.`,
-                    success: false
-                  })
-                  setTimeout(() => setLoadStatus(null), 8000)
-                })
-              }
-            } catch (e) {
-              console.warn('⚠️ Werke zu groß für localStorage', e)
-              setLoadStatus({ message: '⚠️ Zu viele Werke – Speicher freigeben (Safari: Einstellungen → Website-Daten)', success: false })
-              setTimeout(() => setLoadStatus(null), 8000)
-            }
-          }
-        } else {
-          // KEINE Server-Daten - behalte ALLE lokalen Werke!
-          console.warn('⚠️ Keine Werke in gallery-data.json gefunden - behalte lokale Werke:', localArtworks.length)
-          if (localArtworks.length > 0) {
-            console.log('🔒 Lokale Werke bleiben erhalten:', localArtworks.map((a: any) => a.number || a.id).join(', '))
-            saveArtworksForContext(false, false, localArtworks)
-            const list = await loadArtworksResolvedForDisplay()
-            setArtworksDisplay(filterK2ArtworksOnly(list))
-            setLoadStatus({ message: `✅ ${localArtworks.length} lokale Werke erhalten`, success: true })
-            setTimeout(() => setLoadStatus(null), 3000)
-          } else {
-            setLoadStatus({ message: '⚠️ Keine Werke in Datei', success: false })
-            setTimeout(() => setLoadStatus(null), 3000)
-          }
-        }
-      } else {
-        // API nicht erreichbar – KEINE statische Datei laden (würde alten Build-Stand schreiben). Lokale Werke behalten.
-        console.warn('⚠️ API nicht erreichbar – lokale Werke bleiben unverändert:', localArtworks.length)
-        if (localArtworks.length > 0) {
-          const list = await loadArtworksResolvedForDisplay()
-          setArtworksDisplay(filterK2ArtworksOnly(list))
-          setLoadStatus({
-            message: `⚠️ Server (API) nicht erreichbar. ${localArtworks.length} lokale Werke unverändert. Bitte Netz prüfen und erneut „Vom Server laden“ tippen.`,
-            success: false
-          })
-        } else {
-          setLoadStatus({
-            message: '⚠️ Server nicht erreichbar. Bitte Netzwerk prüfen und erneut versuchen.',
-            success: false
-          })
-        }
-        setTimeout(() => setLoadStatus(null), 6000)
-      }
-    } catch (error) {
-      console.error('❌ Fehler beim Aktualisieren:', error)
-      // Bei Fehler: Behalte lokale Werke!
-      if (localArtworks.length > 0) {
-        console.log('🔒 Fehler beim Laden - behalte lokale Werke:', localArtworks.length)
-        saveArtworksForContext(false, false, localArtworks)
-        const list = await loadArtworksResolvedForDisplay()
-        setArtworksDisplay(filterK2ArtworksOnly(list))
-        setLoadStatus({ message: `✅ ${localArtworks.length} lokale Werke erhalten`, success: true })
-      } else {
-        setLoadStatus({ message: '❌ Fehler beim Laden', success: false })
-      }
-      setTimeout(() => setLoadStatus(null), 3000)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   // Warenkorb-Zähler aktualisieren
   useEffect(() => {
     const updateCartCount = () => {
@@ -4506,7 +3884,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                               try { localStorage.setItem('k2-last-sent-timestamp', sentAtIso) } catch (_) {}
                               const sentAt = new Date().toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
                               console.log('✅ Automatisch veröffentlicht:', result.artworksCount, 'Werke um', sentAt)
-                              setLoadStatus({ message: `✅ Veröffentlicht (${result.artworksCount} Werke) um ${sentAt}. Am Mac „Vom Server laden“.`, success: true })
+                              setLoadStatus({ message: `✅ Veröffentlicht (${result.artworksCount} Werke) um ${sentAt}. Im Admin unter Einstellungen „Aktuellen Stand holen“.`, success: true })
                               setTimeout(() => setLoadStatus(null), 6000)
                             } else {
                               console.warn('⚠️ Veröffentlichung fehlgeschlagen:', result.error)
@@ -4755,7 +4133,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                             window.dispatchEvent(new CustomEvent('gallery-data-published', {
                               detail: { success: true, artworksCount: result.artworksCount, size: result.result?.size }
                             }))
-                            setLoadStatus({ message: `✅ Veröffentlicht (${result.artworksCount} Werke) um ${sentAt}. Am Mac „Vom Server laden“.`, success: true })
+                            setLoadStatus({ message: `✅ Veröffentlicht (${result.artworksCount} Werke) um ${sentAt}. Im Admin unter Einstellungen „Aktuellen Stand holen“.`, success: true })
                             setTimeout(() => setLoadStatus(null), 6000)
                           } else {
                             console.warn('⚠️ Veröffentlichung fehlgeschlagen:', result.error)

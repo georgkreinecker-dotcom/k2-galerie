@@ -32,6 +32,7 @@ import { loadStammdaten, saveStammdaten as persistStammdaten, loadVk2Stammdaten,
 import { loadEvents as loadEventsFromStorage, saveEvents as saveEventsToStorage } from '../src/utils/eventsStorage'
 import { loadDocuments as loadDocumentsFromStorage, saveDocuments as saveDocumentsToStorage } from '../src/utils/documentsStorage'
 import { publishGalleryDataToServer } from '../src/utils/publishGalleryData'
+import { stripBase64FromArtworks } from '../src/utils/artworkExport'
 import { apiPost, apiGet } from '../src/utils/apiClient'
 import { safeReload } from '../src/utils/env'
 import { compressImageForStorage } from '../src/utils/compressImageForStorage'
@@ -3186,10 +3187,11 @@ function ScreenshotExportAdmin() {
     setSyncStatusBar({ phase: 'loading', message: 'Daten werden geladen…' })
     const urlPrimary = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&_=${Math.random()}&tenantId=${tenantId}`
     const urlFallback = tenantId === 'k2' ? `${CENTRAL_GALLERY_DATA_FALLBACK_URL}?v=${Date.now()}&_=${Math.random()}` : null
+    const loadTimeoutMs = 60000 // 60 s – viele Werke (z. B. 70) können dauern
     try {
-      let result = await apiGet(urlPrimary, { retryOnce: true })
+      let result = await apiGet(urlPrimary, { retryOnce: true, timeoutMs: loadTimeoutMs })
       if (urlFallback && !result.success && (result.error?.includes('404') || result.error?.includes('Noch keine'))) {
-        result = await apiGet(urlFallback, { retryOnce: true })
+        result = await apiGet(urlFallback, { retryOnce: true, timeoutMs: loadTimeoutMs })
       }
       if (!result.success) {
         setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
@@ -3287,7 +3289,7 @@ function ScreenshotExportAdmin() {
         }
       })
       const mergedWithImages = preserveLocalImageData(merged, localArtworks, (a: any) => String(a?.number ?? a?.id ?? ''))
-      const toSave = filterK2Only(mergedWithImages)
+      const toSave = filterK2Only(stripBase64FromArtworks(mergedWithImages))
       if (toSave.length >= localArtworks.length || toSave.length >= (loadArtworks(tenant).length || 0)) {
         const saved = await saveArtworks(tenant, toSave)
         if (saved) {
@@ -3310,9 +3312,34 @@ function ScreenshotExportAdmin() {
         }
       } else {
         console.warn('Merge würde weniger Werke ergeben – localStorage unverändert')
+        const serverCount = serverArtworks.length
+        const localCount = localArtworks.length
+        const nurServerLaden = window.confirm(
+          `Server hat ${serverCount} Werke, lokal ${localCount}.\n\nNur den Server-Stand (${serverCount} Werke) laden? Lokale Werke werden ersetzt.`
+        )
+        if (nurServerLaden) {
+          const toSaveOnly = stripBase64FromArtworks(preserveLocalImageData(serverArtworks, localArtworks, (a: any) => String(a?.number ?? a?.id ?? '')))
+          const saved = await saveArtworks(tenant, filterK2Only(toSaveOnly))
+          if (saved) {
+            const resolved = await loadArtworksWithResolvedImages(tenant)
+            setAllArtworksSafe(resolved)
+            window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: serverCount, fromLocalWrite: true } }))
+            const loadedAt = data.exportedAt || new Date().toISOString()
+            try { localStorage.setItem('k2-last-loaded-timestamp', loadedAt) } catch (_) {}
+            setLastSyncLoadedAt(loadedAt)
+            setSyncStatusBar({ phase: 'loading', message: `${serverCount} Werke geladen. Bilder werden angezeigt…` })
+            setTimeout(() => {
+              setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
+              alert(`✅ ${serverCount} Werke vom Server geladen (nur Server-Stand).`)
+            }, 4000)
+          } else {
+            setSyncStatusBar({ phase: 'error', message: 'Fehler beim Speichern.' })
+          }
+        } else {
+          setSyncStatusBar({ phase: 'success', message: 'Lokal beibehalten.' })
+          setTimeout(() => { alert('Lokal beibehalten. Für nur Server-Stand: Einstellungen → „Werke vom Server zurückholen“.') }, 0)
+        }
         setIsLoadingFromServer(false)
-        setSyncStatusBar({ phase: 'success', message: 'Lokal beibehalten.' })
-        setTimeout(() => { alert('Lokal sind mehr Werke als auf dem Server. Lokale Daten wurden beibehalten.') }, 0)
       }
     } catch (e) {
       console.error('Vom Server laden:', urlPrimary, e)
@@ -3329,39 +3356,57 @@ function ScreenshotExportAdmin() {
     }
   }
 
-  /** K2: Werke aus der veröffentlichten gallery-data.json (Vercel) laden und in k2-artworks wiederherstellen. */
+  /** K2: Werke aus der veröffentlichten gallery-data.json (Vercel) laden und in k2-artworks wiederherstellen. Nur Server-Stand, lokal wird ersetzt. */
   const handleRestoreWerkeFromPublished = async () => {
     if (tenant.isOeffentlich || tenant.isVk2) return
     setIsRestoringWerkeFromPublished(true)
     const urlPrimary = `${CENTRAL_GALLERY_DATA_URL}?v=${Date.now()}&_=${Math.random()}`
     const urlFallback = `${CENTRAL_GALLERY_DATA_FALLBACK_URL}?v=${Date.now()}&_=${Math.random()}`
+    const LOAD_TIMEOUT_MS = 60000 // 60 s – 70 Werke können etwas dauern
     try {
-      let res = await fetch(urlPrimary, { cache: 'no-store' })
-      if (!res.ok) res = await fetch(urlFallback, { cache: 'no-store' })
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), LOAD_TIMEOUT_MS)
+      let res: Response
+      try {
+        res = await fetch(urlPrimary, { cache: 'no-store', signal: controller.signal })
+      } catch (err) {
+        clearTimeout(timeoutId)
+        if (err instanceof Error && err.name === 'AbortError') {
+          throw new Error('Zeitüberschreitung (60 s). Server antwortet nicht – Internet/Vercel prüfen.')
+        }
+        throw err
+      }
+      if (!res.ok) {
+        res = await fetch(urlFallback, { cache: 'no-store', signal: controller.signal })
+      }
+      clearTimeout(timeoutId)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
       const list = Array.isArray(data?.artworks) ? data.artworks : []
       if (list.length === 0) {
-        alert('Auf dem Server liegt noch kein Stand deiner Werke.\n\nKlicke zuerst einmal auf „Aktualisieren“, damit deine Werke dorthin gespeichert werden. Oder nutze eine zuvor heruntergeladene Sicherungsdatei („Aus Backup-Datei wiederherstellen“).')
+        alert('Auf dem Server liegt noch kein Stand deiner Werke.\n\nKlicke zuerst einmal auf „An Server senden“, damit deine Werke dorthin gespeichert werden. Oder nutze „Aus Backup-Datei wiederherstellen“.')
         return
       }
-      const ok = await saveArtworksByKeyWithImageStore('k2-artworks', list, { filterK2Only: true, allowReduce: true })
+      const toSave = stripBase64FromArtworks(list)
+      const ok = await saveArtworksByKeyWithImageStore('k2-artworks', toSave, { filterK2Only: true, allowReduce: true })
       if (!ok) {
-        alert('Die Daten konnten nicht gespeichert werden (z. B. Speicher voll). Bitte versuche es mit „Aus Backup-Datei wiederherstellen“ oder „Speicher entlasten“.')
+        alert('Die Daten konnten nicht gespeichert werden (z. B. Speicher voll). Bitte „Speicher entlasten“ oder „Aus Backup-Datei wiederherstellen“ nutzen.')
         return
       }
       const resolved = await loadArtworksWithResolvedImages(tenant)
       setAllArtworksSafe(resolved)
       if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } }))
-      alert(`✅ Fertig. ${list.length} Werke wurden vom Server zurück in deine App geladen.`)
+      try { localStorage.setItem('k2-last-loaded-timestamp', data.exportedAt || new Date().toISOString()) } catch (_) {}
+      setLastSyncLoadedAt(data.exportedAt || new Date().toISOString())
+      alert(`✅ Fertig. ${list.length} Werke wurden vom Server geladen.`)
     } catch (e) {
       console.error('Werke aus Veröffentlichung wiederherstellen:', e)
       const msg = e instanceof Error ? e.message : String(e)
-      const isNetwork = /failed|network|load|cors|fetch|typeerror/i.test(msg) || (e instanceof TypeError)
+      const isNetwork = /failed|network|load|cors|fetch|typeerror|zeitüberschreitung|abort/i.test(msg) || (e instanceof TypeError)
       alert(
         isNetwork
-          ? 'Verbindung zum Server fehlgeschlagen.\n\nBist du im Internet? App von k2-galerie.vercel.app öffnen und erneut versuchen.'
-          : `Fehler: ${msg}\n\nBitte Verbindung prüfen.`
+          ? 'Verbindung zum Server fehlgeschlagen oder Zeitüberschreitung.\n\n• Bist du im Internet? (WLAN/Mobil)\n• App von k2-galerie.vercel.app öffnen und erneut „Werke vom Server zurückholen“ klicken.'
+          : `Fehler: ${msg}\n\nBitte Verbindung prüfen und erneut versuchen.`
       )
     } finally {
       setIsRestoringWerkeFromPublished(false)

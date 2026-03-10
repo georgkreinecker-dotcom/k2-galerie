@@ -26,10 +26,9 @@ Diese Klarstellung gilt dauerhaft, damit in zukünftigen Sessions nicht wieder A
 - **Regel:** `.cursor/rules/komprimierung-fotos-videos.mdc` – maximale Komprimierung bei Fotos/Filmen überall.
 - **Werke speichern (mobil):** Aggressivere Komprimierung (560 px, 0.5, max ~600 KB), damit Speicherung schnell ist.
 - **Export (Veröffentlichen):**  
-  - `compressArtworksForExport` – große Werke-Bilder vor Export komprimieren.  
-  - `compressGalleryImageForExport` – Willkommensbild, Galerie-Karte, Virtueller Rundgang.  
-  - `compressEventsAndDocumentsForExport` – Event- und Dokument-Anhänge (Bilder) im Export komprimieren.  
-  - In `publishMobile` werden alle drei genutzt; `data` enthält bereits `eventsCompressed` und `documentsCompressed`.
+  - Werke: `artworksForExport` und `resolveArtworkImageUrlsForExport` (src/utils/artworkExport, publishGalleryData) – Base64 wird nicht mitgeschickt, nur URLs.  
+  - Event- und Dokument-Anhänge: komprimiert; `data` enthält `eventsCompressed` und `documentsCompressed`.  
+  - **Server-Daten vor Speichern:** Beim „Vom Server laden“, „Nur Server-Stand“ und „Werke vom Server zurückholen“ wird `stripBase64FromArtworks` angewendet, damit nie Base64 in localStorage gelangt.
 - **Git-Button:** API `/api/run-git-push-gallery-data` (Vite), Button ruft sie auf; Fallback Zwischenablage. Script prüft vor Push auf Bilddaten.
 - **Regel Revert:** `.cursor/rules/revert-aufraumen-strikt.mdc` – bei Rücknahme alles aufräumen, kein Müll liegen lassen.
 - **Event-Dokumente:** Beim Hinzufügen eines Bilds zu einem Event (Upload) wird vor dem Speichern komprimiert (`handleAddEventDocument` – `compressDataUrl` wenn Bild und >250 KB).
@@ -80,7 +79,7 @@ Diese Klarstellung gilt dauerhaft, damit in zukünftigen Sessions nicht wieder A
 
 | Thema | Datei |
 |-------|--------|
-| Export / Veröffentlichen | `components/ScreenshotExportAdmin.tsx` – `publishMobile`, `compressArtworksForExport`, `compressEventsAndDocumentsForExport` |
+| Export / Veröffentlichen | `publishGalleryData.ts` – `artworksForExport`, `resolveArtworkImageUrlsForExport`; Admin: `publishMobile`, `stripBase64FromArtworks` beim Speichern von Server-Daten |
 | Werke speichern (mobil) | ebd. – `handleSaveArtwork`, `compressImage` |
 | Git-Push API | `vite.config.ts` – Middleware `/api/run-git-push-gallery-data` |
 | Git-Push Script | `scripts/git-push-gallery-data.sh` – Prüfung auf Bilddaten |
