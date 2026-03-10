@@ -157,6 +157,18 @@ export async function prepareArtworksForStorage(artworks: any[]): Promise<any[]>
 /** Basis-URL für Vercel-Bilder (Fallback wenn IndexedDB leer, z. B. anderes Gerät). */
 const VERCEL_IMG_BASE = 'https://k2-galerie.vercel.app'
 
+/** 30–39: Alte Repo-Dateien (/img/k2/werk-…) nicht anzeigen – nur aktuelle Daten (IndexedDB, frischer Server). Keine Unterdrückung neuer Bilder. */
+const STATIC_FALLBACK_EXCLUDE_RANGE: [number, number] = [30, 39]
+
+function isInStaticFallbackExcludeRange(artwork: any): boolean {
+  return isArtworkNumberInRange(artwork, STATIC_FALLBACK_EXCLUDE_RANGE[0], STATIC_FALLBACK_EXCLUDE_RANGE[1])
+}
+
+/** Alte Vercel-Static-URL für 30–39? Dann nicht nutzen (sonst laden alte gelöschte Bilder). */
+function isOldVercelStaticUrl(urlOrRef: string): boolean {
+  return typeof urlOrRef === 'string' && urlOrRef.includes('/img/k2/werk-')
+}
+
 /** Dateinamen-Teil für Vercel-Fallback aus Werk (number/id). z. B. K2-K-0014 → K2-K-0014 für werk-K2-K-0014.jpg */
 function getVercelFallbackIdFromArtwork(artwork: any): string | null {
   const raw = artwork?.number ?? artwork?.id
@@ -168,51 +180,58 @@ function getVercelFallbackIdFromArtwork(artwork: any): string | null {
 
 /**
  * Löst imageRef in imageUrl auf: IndexedDB oder direkte URL (Supabase/Vercel).
- * Wenn imageRef eine http(s)-URL ist, wird sie direkt als imageUrl genutzt (kein Platzhalter).
- * Wenn imageRef = k2-img-{Nummer} und IndexedDB liefert nichts: Fallback-URL /img/k2/werk-{Nummer}.jpg (GitHub-Upload-Namensschema).
- * Alle Nummern (inkl. 0030–0039) werden gleich behandelt – Bilder anzeigen wenn vorhanden (Server/IndexedDB/Vercel-Fallback).
+ * 30–39: Kein Fallback auf Repo-Dateien (/img/k2/werk-…) – sonst erscheinen alte gelöschte Bilder. Neue Bilder (IndexedDB, frischer Server) werden normal angezeigt.
  */
 export async function resolveArtworkImages(artworks: any[]): Promise<any[]> {
   if (!Array.isArray(artworks) || artworks.length === 0) return artworks
   const out: any[] = []
   for (const a of artworks) {
     if (!a) { out.push(a); continue }
-    // Bereits echte URL (z. B. Supabase vom iPad) → sofort nutzen
+    const inExclude = isInStaticFallbackExcludeRange(a)
     const url = a.imageUrl
+    // Bereits echte URL: 30–39 + alte Repo-URL → nicht anzeigen (alte gelöschte Datei)
     if (typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))) {
-      out.push({ ...a, imageRef: a.imageRef || url })
+      if (inExclude && isOldVercelStaticUrl(url)) {
+        out.push({ ...a, imageUrl: '', imageRef: '' })
+      } else {
+        out.push({ ...a, imageRef: a.imageRef || url })
+      }
       continue
     }
     const ref = a.imageRef
     if (ref && typeof ref === 'string') {
       const isUrl = ref.startsWith('http://') || ref.startsWith('https://')
       if (isUrl) {
-        out.push({ ...a, imageUrl: ref, imageRef: ref })
+        if (inExclude && isOldVercelStaticUrl(ref)) {
+          out.push({ ...a, imageUrl: '', imageRef: '' })
+        } else {
+          out.push({ ...a, imageUrl: ref, imageRef: ref })
+        }
         continue
       }
       try {
         const dataUrl = await getArtworkImage(ref)
         let imageUrl = dataUrl || a.imageUrl || ''
-        // Fallback: IndexedDB leer – Vercel-Pfad
-        if (!imageUrl && ref.startsWith('k2-img-')) {
+        // Fallback: IndexedDB leer – Vercel-Pfad. 30–39: keinen Static-Fallback (keine alten Repo-Dateien)
+        if (!imageUrl && ref.startsWith('k2-img-') && !inExclude) {
           const id = ref.replace(/^k2-img-/, '').trim().replace(/[^a-zA-Z0-9-]/g, '-')
           if (id) imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
         }
+        if (inExclude && imageUrl && isOldVercelStaticUrl(imageUrl)) imageUrl = ''
         out.push({ ...a, imageUrl, imageRef: ref })
       } catch {
         let imageUrl = a.imageUrl || ''
-        if (!imageUrl && ref.startsWith('k2-img-')) {
+        if (!imageUrl && ref.startsWith('k2-img-') && !inExclude) {
           const id = ref.replace(/^k2-img-/, '').trim().replace(/[^a-zA-Z0-9-]/g, '-')
           if (id) imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
         }
+        if (inExclude && imageUrl && isOldVercelStaticUrl(imageUrl)) imageUrl = ''
         out.push({ ...a, imageUrl, imageRef: ref })
       }
     } else {
-      // Kein imageRef: Fallback aus number/id (z. B. Keramik nach Merge)
       const fallbackId = getVercelFallbackIdFromArtwork(a)
-      if (fallbackId) {
-        const imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${fallbackId}.jpg`
-        out.push({ ...a, imageUrl })
+      if (fallbackId && !inExclude) {
+        out.push({ ...a, imageUrl: `${VERCEL_IMG_BASE}/img/k2/werk-${fallbackId}.jpg` })
       } else {
         out.push(a)
       }

@@ -28,6 +28,16 @@ function loadArtworks(): any[] {
 
 const VERCEL_IMG_BASE = 'https://k2-galerie.vercel.app'
 
+/** 30–39: Kein Vercel-Static-Fallback (keine alten Repo-Dateien anzeigen). Neue Bilder (IndexedDB/Server) bleiben sichtbar. */
+function isArtwork30to39(artwork: any): boolean {
+  const num = artwork?.number ?? artwork?.id
+  if (num == null || num === '') return false
+  const s = String(num).trim()
+  const m = s.match(/^K2-[A-Z]-?(\d+)$/i)
+  const n = m ? parseInt(m[1], 10) : parseInt(s.replace(/\D/g, '') || '0', 10)
+  return !Number.isNaN(n) && n >= 30 && n <= 39
+}
+
 const PLACEHOLDER_KEIN_BILD = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
 
 /** K2: Werke mit aufgelösten Bildern (IndexedDB imageRef → imageUrl) + Platzhalter. Nur „In Online-Galerie anzeigen“ (inExhibition === true). */
@@ -38,15 +48,17 @@ async function loadArtworksResolvedForDisplay(): Promise<any[]> {
   return forExhibition.map((a: any) => {
     const out = { ...a }
     if (!out.imageUrl && out.previewUrl) out.imageUrl = out.previewUrl
-    // Sicherheit: Hat imageRef aber kein Bild (z. B. nach Fehler in resolve) → Vercel-Fallback
-    if (!out.imageUrl && out.imageRef && typeof out.imageRef === 'string' && out.imageRef.startsWith('k2-img-')) {
+    // 30–39: Alte Repo-URL nicht anzeigen (gelöschte Dateien)
+    if (isArtwork30to39(out) && out.imageUrl && out.imageUrl.includes('/img/k2/werk-')) out.imageUrl = ''
+    // Sicherheit: Hat imageRef aber kein Bild → Vercel-Fallback. 30–39: keinen Static-Fallback (keine alten Repo-Bilder)
+    if (!out.imageUrl && !isArtwork30to39(out) && out.imageRef && typeof out.imageRef === 'string' && out.imageRef.startsWith('k2-img-')) {
       const id = out.imageRef.replace(/^k2-img-/, '').trim().replace(/[^a-zA-Z0-9-]/g, '-')
       if (id) out.imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
     }
-    // Viele Keramik-Werke haben keinen imageRef (z. B. nach Merge) – Fallback aus number/id, damit Bilder aus public/img/k2/ angezeigt werden
+    // Keramik ohne imageRef: Fallback aus number/id. 30–39: keinen Static-Fallback
     if (!out.imageUrl) {
       const raw = out?.number ?? out?.id
-      if (raw != null && /^K2-[A-Z]-?\d+$/i.test(String(raw).trim())) {
+      if (raw != null && /^K2-[A-Z]-?\d+$/i.test(String(raw).trim()) && !isArtwork30to39(out)) {
         const id = String(raw).trim().replace(/[^a-zA-Z0-9-]/g, '-')
         if (id) out.imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
       }
