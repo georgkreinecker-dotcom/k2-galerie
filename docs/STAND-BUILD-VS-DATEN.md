@@ -87,4 +87,4 @@ Das wirkt irre – ist aber erklärbar: Es gibt **zwei verschiedene „Stände�
 
 - **Build-Stand** = Version der App (Commit/Push).
 - **Daten-Stand** = Version der Werke und der Seitengestaltung (Veröffentlichen → gallery-data).
-- Handy zeigt Musterwerke oder alte Kacheln? → Alte **Daten** auf dem Server → nochmal **Veröffentlichen** vom Mac, dann Handy neu laden (QR neu scannen / „Stand & Daten“).
+- Handy zeigt Musterwerke oder alte Kacheln? → Alte **Daten** auf dem Server → nochmal **Veröffentlichen** (vom Gerät, wo die aktuellen Daten/Bilder liegen, z. B. iPad), dann andere Geräte neu laden (QR neu scannen / „Stand & Daten“).
