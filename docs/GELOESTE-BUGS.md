@@ -30,6 +30,16 @@
 
 ---
 
+## BUG-025 · Galerie zeigt „Kein Bild“ / viele Keramik-Bilder fehlen (trotz Bild in Werken / auf Vercel)
+**Symptom:** (1) In der Galerie fehlen Fotos, die in den Werken (Admin) vorhanden sind (z. B. K2-K-0013, K2-K-0014). (2) „Viele Keramik-Bilder fehlen“ in der Galerie. (3) Folge einer längeren Fehlersuche (~5 Std).
+**Ursache:** (1) **resolveArtworkImages** im catch-Zweig: Bei Fehler (z. B. IndexedDB) wurde Werk unverändert gepusht → ohne imageUrl. (2) **Fallback nur bei imageRef:** Wenn Werke **keinen** imageRef hatten (z. B. nach Merge, älterem Stand), wurde keine Vercel-URL gesetzt → nur Platzhalter. Viele Keramik-Werke haben in den Daten keinen imageRef; die Dateien (werk-K2-K-xxxx.jpg) liegen aber in public/img/k2/.
+**Lösung:** (1) artworkImageStore: Im catch dieselbe Vercel-Fallback-URL für Nicht-30–39 setzen wie im try. (2) **Fallback aus number/id:** getVercelFallbackIdFromArtwork; in resolveArtworkImages im else-Zweig (kein imageRef) für Werke mit Nummer K2-X-NNNN (nicht 30–39) Vercel-URL bauen. (3) GalerieVorschauPage loadArtworksResolvedForDisplay: Fallback aus imageRef; zusätzlich Fallback aus number/id, wenn noch kein Bild.
+**Betroffene Dateien:** `src/utils/artworkImageStore.ts`, `src/pages/GalerieVorschauPage.tsx`
+**Doku:** docs/FEHLERANALYSE-10-03-26-GALERIE-BILDER-STAND.md
+**Status:** ✅ Behoben (10.03.26).
+
+---
+
 ## BUG-022 · ök2 Willkommensbild – Uraltbild auf erster Seite (zweites Mal)
 **Symptom:** Auf der ersten Seite der ök2-Demo (Willkommen) erscheint ein altes/irrelevantes Bild („Uraltbild“), obwohl das Problem schon einmal behoben worden war.
 **Ursache:** Default für das ök2-Willkommensbild war wieder ein **Repo-Dateipfad** (`/img/oeffentlich/willkommen.jpg`). Diese Datei kann veraltet sein oder ausgetauscht werden – dann sieht jeder die alte Version. Beim ersten Mal (BUG-020) ging es um Upload-Überschreibung; hier geht es um den **Default** selbst.

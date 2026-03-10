@@ -47,6 +47,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 
 ## Qualität & Fehleranalyse
 - **FEHLERANALYSEPROTOKOLL.md** – **Bei Fehlermeldung von Georg:** Die KI orientiert sich an diesem Protokoll (bekannte Fehlerklassen, Absicherungen) und muss es nach jeder Analyse aktualisieren. Regel: .cursor/rules/qualitaet-bei-fehlermeldung.mdc.
+- **FEHLERANALYSE-10-03-26-GALERIE-BILDER-STAND.md** – **~5 h Fehlersuche 10.03.26:** Galerie-Bilder fehlen (K2-K-0013/0014, viele Keramik); Stand mobil. Ursachen: resolveArtworkImages catch/else ohne Fallback; Fallback nur bei imageRef. Lösung: Fallback aus number/id, catch mit Vercel-URL. BUG-025.
 
 ## Stabilität & Crash
 - **ANALYSE-ADMIN-BUILD-DESASTER-06-03.md** – **Admin/Build-Desaster 06.03.26:** Warum Build rot war (JSX-Chaos in ScreenshotExportAdmin Design-Vorschau + navigate in Unterkomponente). Auslagern großer Conditional-Blöcke in Hilfsfunktion; Build nie dauerhaft rot; Hooks pro Komponente. Regel: .cursor/rules/jsx-grosse-bloeke-auslagern.mdc.
