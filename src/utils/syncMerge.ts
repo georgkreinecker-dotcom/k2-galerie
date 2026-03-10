@@ -195,13 +195,13 @@ export function mergeServerWithLocal(
   const getUpdated = options.getUpdated ?? DEFAULT_GET_UPDATED
   const onlyAddLocalIfMobileAndVeryNew = options.onlyAddLocalIfMobileAndVeryNew === true
 
+  // Server-Map mit ALLEN Key-Varianten (0030, K2-K-0030, 30 …), damit lokales "K2-K-0030" das Server-Werk "0030" findet – sonst Duplikate + Bildverlust
   const serverMap =
     options.serverMap ??
     (() => {
       const m = new Map<string, any>()
       serverList.forEach((a: any) => {
-        const key = getKey(a)
-        if (key) m.set(key, a)
+        getKeysForMatching(a).forEach((k) => { if (k) m.set(k, a) })
       })
       return m
     })()
@@ -210,9 +210,9 @@ export function mergeServerWithLocal(
   const toHistory: any[] = []
 
   localList.forEach((local: any) => {
-    const key = getKey(local)
-    if (!key) return
-    const serverItem = serverMap.get(key)
+    const keysToTry = getKeysForMatching(local)
+    if (keysToTry.length === 0) return
+    const serverItem = keysToTry.map((k) => serverMap.get(k)).find(Boolean)
     const mobile = isMobileWork(local)
     const veryNew = isVeryNew(local)
 

@@ -38,7 +38,20 @@
 
 **Ein Einstieg (optional):** `applyServerDataToLocal(serverList, localList, options)` in `src/utils/syncMerge.ts` – führt mergeServerWithLocal und preserveLocalImageData in der verbindlichen Reihenfolge aus. Nutzen: GaleriePage loadData, GalerieVorschauPage handleRefresh, alle künftigen Lade-Pfade.
 
-**Aufrufer:** GaleriePage (loadData), GalerieVorschauPage (handleRefresh). Beide nutzen dieselbe Logik (mergeServerWithLocal → preserveLocalImageData → save).
+**Aufrufer:** GaleriePage (loadData), GalerieVorschauPage (handleRefresh), **Admin K2 „Aktuellen Stand holen“** (handleLoadFromServer). Alle nutzen **applyServerDataToLocal** (oder äquivalent mergeServerWithLocal → preserveLocalImageData). Kein eigener Merge-Pfad im Admin mehr.
+
+---
+
+## 2a. Kette: Bild anlegen → Speicherung → zurück (Überblick)
+
+| Phase | Was passiert | Wo |
+|-------|----------------|-----|
+| **Anlegen** | Neues Werk/Bearbeiten: Bild → processImageForSave / runBildUebernehmen → **prepareArtworksForStorage** → Bild in IndexedDB (imageRef), Werkliste mit imageRef in localStorage. | GalerieVorschauPage, ScreenshotExportAdmin |
+| **Speichern** | Auto-Save / Speichern: **saveArtworksByKeyWithImageStore** (nutzt prepareArtworksForStorage). Kein Base64 in localStorage. | autoSave, Admin, GalerieVorschauPage |
+| **Veröffentlichen** | **publishGalleryDataToServer**: resolveArtworkImageUrlsForExport (imageRef → Supabase Upload → https-URL) → POST Blob. | DevViewPage, GalerieVorschauPage, Admin |
+| **Laden** | API/Blob holen → **applyServerDataToLocal**(server, lokal) = mergeServerWithLocal (mit **Key-Normalisierung** 0030 ↔ K2-K-0030) + preserveLocalImageData → ggf. fillArtworkImageUrlsFromSupabase → save. | GaleriePage, GalerieVorschauPage, Admin |
+
+**Kritisch:** Beim Merge müssen Server- und Lokal-Werke als **dasselbe** erkannt werden, auch wenn Nummern unterschiedlich formatiert sind (z. B. Server `0030`, lokal `K2-K-0030`). Dafür baut **mergeServerWithLocal** die Server-Map mit **getKeysForMatching** (alle Varianten: 0030, K2-K-0030, 30) und sucht lokale Werke über dieselben Keys. Sonst entstehen Duplikate und lokale Bild-Referenzen gehen verloren.
 
 ---
 
@@ -61,6 +74,7 @@
 
 ## 4. Kritische Fehlerquellen (behoben)
 
+- **Key-Abgleich beim „Vom Server laden“ (10.03.26):** Im Admin wurde die Server-Map nur mit `number`/`id` befüllt (z. B. nur `0030`). Lokale Werke mit `K2-K-0030` fanden keinen Treffer → wurden zusätzlich eingefügt (Duplikate) oder Bilddaten dem falschen Eintrag zugeordnet → Platzhalter/Bildverlust. **Behoben:** mergeServerWithLocal baut die Server-Map mit **getKeysForMatching** (alle Varianten); Lookup nutzt dieselben Keys. Admin K2 nutzt nur noch **applyServerDataToLocal** (ein Standard).
 - **API-Fehler → statische Datei:** Wenn „Vom Server laden“ die API nicht erreichte, wurde vorher die statische `gallery-data.json` (Build-Stand) geladen und hat lokale Daten überschrieben → am Mac kam „nichts an“ oder alter Stand. **Behoben:** Bei API-Fehler wird keine statische Datei mehr geladen; es wird eine Fehlermeldung angezeigt und die lokalen Werke bleiben unverändert.
 - **Veröffentlichen ohne Rückmeldung:** Fehlgeschlagenes Veröffentlichen war nur in der Konsole sichtbar. **Behoben:** Nach Speichern (Bearbeiten/Neues Werk) erscheint sichtbar „✅ Veröffentlicht (N Werke)“ oder „❌ Veröffentlichen fehlgeschlagen: …“.
 - **Few-Works-Fallback (Sync iPad ↔ Mac):** Wenn die API 200 mit wenigen Werken (≤15) lieferte, wurde die Antwort durch die **statische** Build-Datei ersetzt, sobald die mehr Werke hatte. Dadurch konnte der **frisch vom iPad veröffentlichte** Blob-Stand durch den **Build-Stand** überschrieben werden → Mac sah nach „Vom Server laden“ nicht das, was das iPad gerade veröffentlicht hatte. **Behoben (10.03.26):** API (Blob) ist die **einzige** Quelle; kein Ersetzen durch statische Datei mehr. GaleriePage und GalerieVorschauPage nutzen nur noch die API-Antwort.

@@ -26,7 +26,7 @@ import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
 import { addPendingArtwork, filterK2Only, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, saveArtworksByKeyWithImageStore, readArtworksWithResolvedImages, resolveArtworkImages } from '../src/utils/artworksStorage'
-import { isSupabaseConfigured, saveArtworksToSupabase } from '../src/utils/supabaseClient'
+import { isSupabaseConfigured, saveArtworksToSupabase, fillArtworkImageUrlsFromSupabase } from '../src/utils/supabaseClient'
 import { uploadArtworkImageToStorage } from '../src/utils/supabaseStorage'
 import { loadStammdaten, saveStammdaten as persistStammdaten, loadVk2Stammdaten, saveVk2Stammdaten } from '../src/utils/stammdatenStorage'
 import { loadEvents as loadEventsFromStorage, saveEvents as saveEventsToStorage } from '../src/utils/eventsStorage'
@@ -37,7 +37,7 @@ import { apiPost, apiGet } from '../src/utils/apiClient'
 import { safeReload } from '../src/utils/env'
 import { compressImageForStorage } from '../src/utils/compressImageForStorage'
 import { processImageForSave } from '../src/utils/imageProcessingTool'
-import { preserveLocalImageData } from '../src/utils/syncMerge'
+import { applyServerDataToLocal, preserveLocalImageData } from '../src/utils/syncMerge'
 import { clearArtworkImagesForNumberRange } from '../src/utils/artworkImageStore'
 import { deleteArtworkImagesInStorageForNumberRange } from '../src/utils/supabaseStorage'
 import { deleteArtworkImagesFromGitHubForNumberRange } from '../src/utils/githubImageUpload'
@@ -3288,36 +3288,50 @@ function ScreenshotExportAdmin() {
         (a: any) => a?.imageUrl && typeof a.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))
       ).length
       const localArtworks = loadArtworksRaw(tenant)
-      const serverMap = new Map<string, any>()
-      serverArtworks.forEach((a: any) => { const k = a.number || a.id; if (k) serverMap.set(k, a) })
-      const merged: any[] = [...serverArtworks]
-      localArtworks.forEach((local: any) => {
-        const key = local?.number ?? local?.id
-        if (!key) return
-        const server = serverMap.get(key)
-        const isMobile = local.createdOnMobile || local.updatedOnMobile
-        if (!server) { merged.push(local); return }
-        if (isMobile) {
-          const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
-          if (idx >= 0) merged[idx] = local
-          else merged.push(local)
-        } else {
-          const lU = local.updatedAt ? new Date(local.updatedAt).getTime() : 0
-          const sU = server.updatedAt ? new Date(server.updatedAt).getTime() : 0
-          if (lU > sU) {
-            const idx = merged.findIndex((a: any) => (a.number || a.id) === key)
-            if (idx >= 0) merged[idx] = local
-            else merged.push(local)
-          }
-        }
+      // SCHUTZ (niemals-kundendaten-loeschen): Server leer oder drastisch weniger → nie überschreiben
+      if (serverArtworks.length === 0 && localArtworks.length > 0) {
+        setIsLoadingFromServer(false)
+        setSyncStatusBar({ phase: 'error', message: 'Server lieferte 0 Werke.' })
+        setTimeout(() => {
+          alert('Server hat keine Werke geliefert. Deine lokalen Daten (' + localArtworks.length + ' Werke) bleiben unverändert.\n\nZuerst am anderen Gerät „An Server senden“ tippen, dann hier erneut „Aktuellen Stand holen“.')
+        }, 0)
+        return
+      }
+      if (serverArtworks.length < localArtworks.length * 0.5 && localArtworks.length > 0) {
+        setIsLoadingFromServer(false)
+        setSyncStatusBar({ phase: 'error', message: 'Server-Stand viel kleiner als lokal.' })
+        setTimeout(() => {
+          alert('Server: ' + serverArtworks.length + ' Werke, lokal: ' + localArtworks.length + '. Zu großer Unterschied – Sync übersprungen. Deine lokalen Daten bleiben erhalten.\n\nWenn du wirklich nur den Server-Stand willst: Einstellungen → „Werke vom Server zurückholen“.')
+        }, 0)
+        return
+      }
+      // Ein Standard: dieselbe Merge-Logik wie GaleriePage (Key-Normalisierung 0030 ↔ K2-K-0030, preserveLocalImageData)
+      const { merged: mergedWithImages } = applyServerDataToLocal(serverArtworks, localArtworks, {
+        onlyAddLocalIfMobileAndVeryNew: true,
       })
-      const mergedWithImages = preserveLocalImageData(merged, localArtworks, (a: any) => String(a?.number ?? a?.id ?? ''))
-      const toSave = filterK2Only(stripBase64FromArtworks(mergedWithImages))
+      // Bilder aus Supabase nachziehen, wenn der Server-Blob keine URLs hatte (Platzhalter vermeiden)
+      const withSupabaseImages = await fillArtworkImageUrlsFromSupabase(mergedWithImages)
+      const toSave = filterK2Only(stripBase64FromArtworks(withSupabaseImages))
+      // Nur echte Bild-URLs (https) zählen – imageRef allein lädt auf iPad oft nicht (IndexedDB leer)
       const savedWithImageCount = toSave.filter(
+        (a: any) => a?.imageUrl && typeof a.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))
+      ).length
+      const localWithImageCount = localArtworks.filter(
         (a: any) =>
           (a?.imageUrl && typeof a.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))) ||
-          (a?.imageRef && typeof a.imageRef === 'string' && a.imageRef.length > 0)
+          (a?.imageRef && typeof a.imageRef === 'string' && a.imageRef.trim() !== '')
       ).length
+      if (savedWithImageCount < localWithImageCount && localWithImageCount > 0) {
+        const ok = window.confirm(
+          `Achtung – möglicher Bildverlust:\n\nLokal haben ${localWithImageCount} Werke ein Bild. Nach dem Laden vom Server wären es nur ${savedWithImageCount} mit abrufbarer Bild-URL.\n\nFotos von diesem Gerät (z. B. heute gemacht) könnten nur noch als Platzhalter erscheinen.\n\nBesser: Zuerst auf DIESEM Gerät „An Server senden“ tippen, dann auf dem anderen „Aktuellen Stand holen“.\n\nTrotzdem jetzt laden? (Lokale Daten werden ersetzt.)`
+        )
+        if (!ok) {
+          setIsLoadingFromServer(false)
+          setSyncStatusBar({ phase: 'success', message: 'Abgebrochen.' })
+          setTimeout(() => alert('Abgebrochen. Deine lokalen Daten (inkl. Bilder) bleiben unverändert.'), 0)
+          return
+        }
+      }
       if (toSave.length >= localArtworks.length || toSave.length >= (loadArtworks(tenant).length || 0)) {
         const saved = await saveArtworks(tenant, toSave)
         if (saved) {
@@ -3346,11 +3360,11 @@ function ScreenshotExportAdmin() {
           `Server hat ${serverCount} Werke, lokal ${localCount}.\n\nNur den Server-Stand (${serverCount} Werke) laden? Lokale Werke werden ersetzt.`
         )
         if (nurServerLaden) {
-          const toSaveOnly = stripBase64FromArtworks(preserveLocalImageData(serverArtworks, localArtworks, (a: any) => String(a?.number ?? a?.id ?? '')))
+          const preserved = preserveLocalImageData(serverArtworks, localArtworks, (a: any) => String(a?.number ?? a?.id ?? ''))
+          const withSupabaseImages = await fillArtworkImageUrlsFromSupabase(preserved)
+          const toSaveOnly = stripBase64FromArtworks(withSupabaseImages)
           const savedWithImageOnly = toSaveOnly.filter(
-            (a: any) =>
-              (a?.imageUrl && typeof a.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))) ||
-              (a?.imageRef && typeof a.imageRef === 'string' && a.imageRef.length > 0)
+            (a: any) => a?.imageUrl && typeof a.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))
           ).length
           const saved = await saveArtworks(tenant, filterK2Only(toSaveOnly))
           if (saved) {
@@ -3424,7 +3438,8 @@ function ScreenshotExportAdmin() {
       const localArtworks = loadArtworksRaw(tenant)
       const getKey = (a: any) => String(a?.number ?? a?.id ?? '')
       const withPreservedImages = preserveLocalImageData(serverList, localArtworks, getKey)
-      const toSave = stripBase64FromArtworks(withPreservedImages)
+      const withSupabaseImages = await fillArtworkImageUrlsFromSupabase(withPreservedImages)
+      const toSave = stripBase64FromArtworks(withSupabaseImages)
       const ok = await saveArtworksByKeyWithImageStore('k2-artworks', toSave, { filterK2Only: true, allowReduce: true })
       if (!ok) {
         alert('Die Daten konnten nicht gespeichert werden (z. B. Speicher voll). Bitte „Speicher entlasten“ oder „Aus Backup-Datei wiederherstellen“ nutzen.')
