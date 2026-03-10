@@ -20,12 +20,12 @@
 ---
 
 ## BUG-024 · „Bilder 0030–0039 bereinigen“ – Bilder bleiben in der Anzeige
-**Symptom:** Nach Klick auf „Bilder 0030–0039 bereinigen“ (lokal, IndexedDB, Supabase, GitHub erfolgreich gemeldet) sind die Bilder in der Galerie weiterhin sichtbar.
-**Ursache:** (1) **Merge:** preserveLocalImageData gab bei lokal leerem Bild unverändert das Server-Item zurück → alte Server-URL blieb erhalten. (2) **Reload nach Event:** GalerieVorschauPage lud nach `artworks-updated` aus Supabase; Race oder alter Supabase-Stand konnte den gerade gespeicherten lokalen Stand überschreiben.
-**Lösung:** (1) **syncMerge.ts** preserveLocalImageData: Wenn lokal kein Bild (`!localHasImage`), Merged-Item explizit ohne Bild setzen (`imageUrl: '', imageRef: '', previewUrl: ''`), damit bewusst geleerte Werke beim Merge nicht wieder Server-URLs bekommen. (2) **Nach Bereinigung:** Admin sendet `artworks-updated` mit `detail: { fromBereinigung: true }`; GalerieVorschauPage behandelt fromBereinigung wie fromGaleriePage und lädt **nur** aus localStorage (loadArtworksResolvedForDisplay), kein Supabase-Load – Anzeige zeigt sofort den bereinigten Stand.
-**Betroffene Dateien:** `src/utils/syncMerge.ts`, `components/ScreenshotExportAdmin.tsx` (beide Bereinigen-Button-Handler), `src/pages/GalerieVorschauPage.tsx` (handleArtworksUpdate)
-**Doku:** docs/FEHLERANALYSEPROTOKOLL.md (Protokoll-Eintrag 10.03.26)
-**Status:** ✅ Behoben (10.03.26).
+**Symptom:** Nach Klick auf „Bilder 0030–0039 bereinigen“ (lokal, IndexedDB, Supabase, GitHub erfolgreich gemeldet) sind die Bilder in der Galerie weiterhin sichtbar. Auch „nach dutzenden Versuchen“ (Georg).
+**Ursache:** (1) **Merge:** preserveLocalImageData gab bei lokal leerem Bild unverändert das Server-Item zurück → alte Server-URL blieb erhalten. (2) **Reload nach Event:** GalerieVorschauPage lud nach `artworks-updated` aus Supabase; Race oder alter Supabase-Stand konnte den gerade gespeicherten lokalen Stand überschreiben. (3) **Admin-Fallback:** lastSavedArtworkImageRef setzte für Werke ohne/kleines imageUrl ein „zuletzt gespeichertes“ Bild ein – damit wurden auch bewusst bereinigte Werke (30–39) wieder mit einem Bild gefüllt.
+**Lösung:** (1) **syncMerge.ts** preserveLocalImageData: Wenn lokal kein Bild (`!localHasImage`), Merged-Item explizit ohne Bild setzen. (2) **Nach Bereinigung:** Admin sendet `artworks-updated` mit `detail: { fromBereinigung: true }`; GalerieVorschauPage lädt nur aus localStorage. (3) **Admin:** Bei fromBereinigung lastSavedArtworkImageRef = null; beim Einsetzen des Fallback-Bildes Werke mit Nummer 30–39 nie befüllen; im Bereinigen-Button nach Speichern Ref auf null setzen.
+**Betroffene Dateien:** `src/utils/syncMerge.ts`, `components/ScreenshotExportAdmin.tsx` (Bereinigen-Handler, handleArtworksUpdate, storage-Listener, lastSavedArtworkImageRef-Logik), `src/pages/GalerieVorschauPage.tsx` (handleArtworksUpdate)
+**Doku:** docs/FEHLERANALYSEPROTOKOLL.md (Protokoll-Einträge 10.03.26)
+**Status:** ✅ Behoben (10.03.26, Ergänzung 10.03.26).
 
 ---
 

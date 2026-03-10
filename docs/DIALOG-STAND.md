@@ -10,6 +10,7 @@
 
 - **Heute:** **Sync iPad ↔ Mac (noch immer gleiches Problem):** Ursache war der **Few-Works-Fallback**: Bei API 200 mit ≤15 Werken wurde die Antwort durch die statische Build-Datei ersetzt → frisch vom iPad veröffentlichter Stand konnte durch Build-Stand überschrieben werden. **Fix:** API (Blob) = **einzige** Quelle; Fallback in GaleriePage und GalerieVorschauPage entfernt. BUG-023 in GELOESTE-BUGS.md, PROZESS-VEROEFFENTLICHEN-LADEN.md Abschnitt 4 ergänzt.
 - **Nächster Einstieg:** Georg testen: iPad – Werk ändern/speichern → „✅ Veröffentlicht (N Werke)“ abwarten. Mac – „Vom Server laden“ → soll exakt den iPad-Stand zeigen (keine Vermischung mit Build-Datei mehr).
+- **Hinweis (10.03.26):** Versehentlich Cmd+R in Cursor – kein inhaltlicher Sprung. Stand unverändert wie oben. Anke: gleicher Nächster Schritt (Georg testen Sync); Hauptaufgabe für Anke bleibt Marketing-Strategie (docs/AUFTRAG-MARKETING-STRATEGIE-ZWEI-ZWEIGE.md).
 
 ---
 

@@ -3076,7 +3076,7 @@ function ScreenshotExportAdmin() {
   /** Mobil: Zuletzt gespeichertes Werkbild hier halten; bei Reload wieder einsetzen, damit es sichtbar bleibt (IDB/Resolve oft langsamer). */
   const lastSavedArtworkImageRef = useRef<{ number: string; imageUrl: string } | null>(null)
   useEffect(() => {
-    const handleArtworksUpdate = () => {
+    const handleArtworksUpdate = (ev: Event) => {
       if (ignoreArtworksUpdatedRef.current) {
         console.log('🔄 artworks-updated ignoriert (gerade selbst gespeichert)')
         return
@@ -3086,6 +3086,10 @@ function ScreenshotExportAdmin() {
         setAllArtworks([])
         return
       }
+      const detail = (ev as CustomEvent)?.detail
+      if (tenant.getArtworksKey() === 'k2-artworks' && detail?.fromBereinigung) {
+        lastSavedArtworkImageRef.current = null
+      }
       loadArtworksWithResolvedImages(tenant).then((artworks) => {
         if (!tenant.isOeffentlich && !tenant.isVk2 && artworks.length === 0 && allArtworksRef.current.length > 0) {
           console.warn('⚠️ loadArtworks leer, aber Anzeige hat Werke – nicht überschreiben')
@@ -3093,12 +3097,15 @@ function ScreenshotExportAdmin() {
         }
         const inIframe = typeof window !== 'undefined' && window.self !== window.top
         let list = inIframe ? artworks.map((a: any) => (a && typeof a?.imageUrl === 'string' && a.imageUrl.startsWith('data:')) ? { ...a, imageUrl: '' } : a) : artworks
-        // Mobil: Gespeichertes Bild wieder einsetzen, wenn resolve noch leer/Fallback liefert
+        // Mobil: Gespeichertes Bild wieder einsetzen, wenn resolve noch leer/Fallback liefert – NIEMALS für bereinigten Bereich 30–39
         const last = lastSavedArtworkImageRef.current
         if (last?.imageUrl && list.length > 0) {
           const id = last.number
           list = list.map((a: any) => {
             if (!a || String(a?.number ?? a?.id ?? '') !== id) return a
+            const num = a?.number ?? a?.id
+            const n = num != null ? parseInt(String(num).replace(/\D/g, '') || '0', 10) : NaN
+            if (!Number.isNaN(n) && n >= 30 && n <= 39) return a // Bereich 30–39: nie Fallback, Bilder bleiben weg
             const u = a.imageUrl
             const isFallback = typeof u === 'string' && u.startsWith('https://k2-galerie.vercel.app/img/k2/werk-')
             if (!u || u.length < 50 || isFallback) return { ...a, imageUrl: last.imageUrl }
@@ -3131,6 +3138,9 @@ function ScreenshotExportAdmin() {
           const id = last.number
           list = list.map((a: any) => {
             if (!a || String(a?.number ?? a?.id ?? '') !== id) return a
+            const num = a?.number ?? a?.id
+            const n = num != null ? parseInt(String(num).replace(/\D/g, '') || '0', 10) : NaN
+            if (!Number.isNaN(n) && n >= 30 && n <= 39) return a // Bereich 30–39: nie Fallback
             const u = a.imageUrl
             const isFb = typeof u === 'string' && u.startsWith('https://k2-galerie.vercel.app/img/k2/werk-')
             if (!u || u.length < 50 || isFb) return { ...a, imageUrl: last.imageUrl }
@@ -13243,6 +13253,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           const { updated, clearedCount, idbDeletedCount } = await clearArtworkImagesForNumberRange(artworks, 30, 39)
                           saveArtworksByKey('k2-artworks', updated, { filterK2Only: true, allowReduce: false })
                           if (isSupabaseConfigured()) await saveArtworksToSupabase(updated)
+                          lastSavedArtworkImageRef.current = null
                           loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
                           if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromBereinigung: true } }))
                           let supabaseMsg = ''
@@ -14608,6 +14619,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             const { updated, clearedCount, idbDeletedCount } = await clearArtworkImagesForNumberRange(artworks, 30, 39)
                             saveArtworksByKey('k2-artworks', updated, { filterK2Only: true, allowReduce: false })
                             if (isSupabaseConfigured()) await saveArtworksToSupabase(updated)
+                            lastSavedArtworkImageRef.current = null
                             loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
                             if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromBereinigung: true } }))
                             let supabaseMsg = ''

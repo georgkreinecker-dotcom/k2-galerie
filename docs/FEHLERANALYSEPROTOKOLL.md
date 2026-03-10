@@ -50,6 +50,7 @@
 | Variable vor Verwendung (Hooks) | useLocation/useNavigate in useEffect, Deklaration weiter unten | Router-Hooks am Komponentenanfang; variable-vor-verwendung-hooks.mdc. | ANALYSE-OEK2-GALERIE-BETRETEN-FEHLER-06-03 |
 | Mobil: Freistellen/Vollkachel | Auf Mobil angeboten → Absturz / unnötige Last | isMobileDevice; showFreistellen={!isMobileDevice}; runBildUebernehmen erzwingt „original“. mobile-freistellen-vollkachel-nie.mdc. | Mehrfach (10.03.26) |
 | Bereinigung: Merge/Reload holt Bilder zurück | Nach „Bilder 0030–0039 bereinigen“ bleiben Bilder sichtbar (Merge behält Server-URL; Reload aus Supabase überschreibt) | preserveLocalImageData: bei lokal leerem Bild Merged-Item ohne Bild. Nach Bereinigung Event mit fromBereinigung; Galerie lädt nur aus localStorage. | BUG-024 (10.03.26) |
+| Bereinigung: Admin zeigt wieder Bild (Fallback) | Nach Bereinigung zeigten Admin-Werkkarten weiterhin Fotos („dutzende Versuche“). | Admin lastSavedArtworkImageRef: (1) Bei fromBereinigung Ref auf null; (2) Fallback-Bild nie für Nummern 30–39 einsetzen; (3) Nach Klick Bereinigen Ref sofort null setzen. | BUG-024 Ergänzung (10.03.26) |
 
 *(Wird bei neuen Fehlerklassen und Wiederholungen ergänzt.)*
 
@@ -68,6 +69,7 @@
 
 *(Neueste zuerst. Kurz: Datum, Stichwort, Ursache, Maßnahme.)*
 
+- **10.03.26 – „Bilder 0030–0039 bereinigen“ – Admin zeigt wieder Bild (Fallback):** Trotz BUG-024 blieben Fotos „nach dutzenden Versuchen“ sichtbar. **Ursache:** Admin lastSavedArtworkImageRef setzte für Werke ohne/kleines imageUrl ein Fallback-Bild → bereinigte Werke 30–39 bekamen wieder ein Bild. **Maßnahme:** Bei fromBereinigung Ref null; Fallback nie für Nummern 30–39; im Bereinigen-Button Ref sofort null. Siehe BUG-024 Ergänzung.
 - **10.03.26 – „Bilder 0030–0039 bereinigen“ – Bilder bleiben sichtbar:** Nach Bereinigung (lokal, IndexedDB, Supabase, GitHub) zeigte die Galerie die Bilder weiterhin. **Ursache:** (1) Beim Merge (z. B. „Vom Server laden“) blieb bei lokal leerem Bild die Server-URL erhalten (preserveLocalImageData: `if (!localHasImage) return item`). (2) Nach Dispatch lud die Galerie aus Supabase → Race oder alter Supabase-Stand konnte Anzeige überschreiben. **Maßnahme:** (1) preserveLocalImageData: Wenn lokal kein Bild (bewusst leer nach Bereinigung), Merged-Item ebenfalls ohne Bild setzen (`imageUrl/imageRef/previewUrl` leer). (2) Nach Bereinigung Event mit `detail: { fromBereinigung: true }`; GalerieVorschauPage bei fromBereinigung nur aus localStorage laden (kein Supabase), damit Anzeige sofort den bereinigten Stand zeigt. Protokoll ergänzt; siehe BUG-024.
 - **10.03.26 – Sync Mobil→Mac „kommt nichts an“:** (1) Veröffentlichen ging teils an andere Quelle als Lade-URL. (2) Bei API-Fehler wurde statische Datei geladen und überschrieb mit altem Stand. (3) Kein sichtbares Feedback bei Veröffentlichen. **Maßnahme:** Immer Vercel-URL für POST; bei API-Fehler keine statische Datei, Fehlermeldung; setLoadStatus für Veröffentlichen-Erfolg/-Fehler. Protokoll und Regel angelegt.
 
