@@ -53,10 +53,18 @@ async function loadArtworksResolvedForDisplay(): Promise<any[]> {
       return out
     }
     if (!out.imageUrl && out.previewUrl) out.imageUrl = out.previewUrl
-    // Sicherheit: Hat imageRef aber kein Bild (z. B. nach Fehler in resolve) → Vercel-Fallback, damit Galerie Bilder zeigt
+    // Sicherheit: Hat imageRef aber kein Bild (z. B. nach Fehler in resolve) → Vercel-Fallback
     if (!out.imageUrl && out.imageRef && typeof out.imageRef === 'string' && out.imageRef.startsWith('k2-img-')) {
       const id = out.imageRef.replace(/^k2-img-/, '').trim().replace(/[^a-zA-Z0-9-]/g, '-')
       if (id) out.imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
+    }
+    // Viele Keramik-Werke haben keinen imageRef (z. B. nach Merge) – Fallback aus number/id, damit Bilder aus public/img/k2/ angezeigt werden
+    if (!out.imageUrl) {
+      const raw = out?.number ?? out?.id
+      if (raw != null && /^K2-[A-Z]-?\d+$/i.test(String(raw).trim())) {
+        const id = String(raw).trim().replace(/[^a-zA-Z0-9-]/g, '-')
+        if (id) out.imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
+      }
     }
     if (!out.imageUrl) out.imageUrl = placeholder
     return out

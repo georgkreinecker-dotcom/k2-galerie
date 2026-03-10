@@ -170,6 +170,15 @@ function isRefInClearedImageRange(ref: string): boolean {
   return n >= CLEARED_IMAGE_RANGE[0] && n <= CLEARED_IMAGE_RANGE[1]
 }
 
+/** Dateinamen-Teil für Vercel-Fallback aus Werk (number/id). z. B. K2-K-0014 → K2-K-0014 für werk-K2-K-0014.jpg */
+function getVercelFallbackIdFromArtwork(artwork: any): string | null {
+  const raw = artwork?.number ?? artwork?.id
+  if (raw == null || String(raw).trim() === '') return null
+  const s = String(raw).trim()
+  if (!/^K2-[A-Z]-?\d+$/i.test(s)) return null
+  return s.replace(/[^a-zA-Z0-9-]/g, '-')
+}
+
 /**
  * Löst imageRef in imageUrl auf: IndexedDB oder direkte URL (Supabase/Vercel).
  * Wenn imageRef eine http(s)-URL ist, wird sie direkt als imageUrl genutzt (kein Platzhalter).
@@ -218,6 +227,16 @@ export async function resolveArtworkImages(artworks: any[]): Promise<any[]> {
         out.push({ ...a, imageUrl, imageRef: ref })
       }
     } else {
+      // Kein imageRef (z. B. Keramik nach Merge/älterem Stand): Fallback aus number/id, damit Galerie Bilder zeigt wenn Datei auf Vercel liegt
+      const inCleared = a?.number != null && isArtworkNumberInRange(a, CLEARED_IMAGE_RANGE[0], CLEARED_IMAGE_RANGE[1])
+      if (!inCleared) {
+        const fallbackId = getVercelFallbackIdFromArtwork(a)
+        if (fallbackId) {
+          const imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${fallbackId}.jpg`
+          out.push({ ...a, imageUrl: imageUrl })
+          continue
+        }
+      }
       out.push(a)
     }
   }

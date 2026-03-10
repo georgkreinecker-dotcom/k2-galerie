@@ -9,7 +9,8 @@
 ## Session-Ende 10.03.26
 
 - **Heute:** (1) **Sync iPad ↔ Mac:** Few-Works-Fallback entfernt (BUG-023). (2) **„Bilder 0030–0039 bereinigen“ – Fotos blieben sichtbar:** … BUG-024. (3) **„Bilder sind noch immer da“:** Export/Supabase + setAllArtworksSafe 30–39-Fix. (4) **„In der Galerie fehlen Fotos die in den Werken vorhanden sind“ (z. B. K2-K-0013, K2-K-0014):** Ursache: resolveArtworkImages im catch-Zweig pushte Werk unverändert (ohne imageUrl); loadArtworksResolvedForDisplay hatte keinen Fallback bei imageRef ohne Bild. Fix: artworkImageStore – im catch Fallback-URL für Nicht-30–39 setzen; GalerieVorschauPage loadArtworksResolvedForDisplay – bei imageRef aber kein imageUrl Vercel-Fallback-URL setzen. Nur 30–39 bleiben ohne Bild.
-- **Nächster Einstieg:** Georg testen: Galerie/Vorschau – Werke wie K2-K-0013, K2-K-0014 sollen wieder Bilder anzeigen; 30–39 weiterhin „Kein Bild“.
+- **Ergänzung:** „In der Galerie fehlen noch viele Keramik-Bilder“ – Fallback bisher nur bei vorhandenem imageRef. Viele Werke (v. a. Keramik) haben **keinen** imageRef (z. B. nach Merge). **Fix:** Fallback-URL auch aus **number/id** ableiten: artworkImageStore resolveArtworkImages – bei fehlendem imageRef Vercel-URL aus number bauen (werk-K2-K-xxxx.jpg); GalerieVorschauPage loadArtworksResolvedForDisplay – gleicher Fallback wenn noch kein Bild. Nur 30–39 ausgenommen.
+- **Nächster Einstieg:** Georg testen: Galerie – Keramik- und andere Werke mit Nummer (K2-K-xxxx, K2-M-xxxx) sollen Bilder anzeigen, sofern Datei in public/img/k2/ liegt.
 - **Hinweis (10.03.26):** Versehentlich Cmd+R in Cursor – kein inhaltlicher Sprung. Anke: Marketing-Strategie (docs/AUFTRAG-MARKETING-STRATEGIE-ZWEI-ZWEIGE.md) bleibt Hauptaufgabe.
 
 ---
