@@ -75,6 +75,47 @@ export async function deleteArtworkImage(artworkRef: string): Promise<void> {
   })
 }
 
+/** Prüft, ob die Werknummer im Bereich fromNum–toNum liegt (z. B. 30–39 für 0030–0039). */
+function isArtworkNumberInRange(artwork: any, fromNum: number, toNum: number): boolean {
+  const num = artwork?.number ?? artwork?.id
+  if (num == null || num === '') return false
+  const s = String(num).trim()
+  const withPrefix = s.match(/^K2-[A-Z]-?(\d+)$/i)
+  const n = withPrefix ? parseInt(withPrefix[1], 10) : parseInt(s.replace(/\D/g, '') || '0', 10)
+  if (Number.isNaN(n)) return false
+  return n >= fromNum && n <= toNum
+}
+
+/**
+ * Entfernt nur die BILDER für Werke mit Nummern fromNum–toNum (z. B. 30–39 = 0030–0039).
+ * Die Werke selbst bleiben erhalten; imageUrl, imageRef, previewUrl werden geleert.
+ * IndexedDB-Einträge für diese Nummern werden gelöscht.
+ * Gibt die aktualisierte Werkliste zurück (ohne Bilddaten für den Bereich).
+ */
+export async function clearArtworkImagesForNumberRange(
+  artworks: any[],
+  fromNum: number,
+  toNum: number
+): Promise<{ updated: any[]; clearedCount: number; idbDeletedCount: number }> {
+  if (!Array.isArray(artworks)) return { updated: artworks, clearedCount: 0, idbDeletedCount: 0 }
+  const refsToDelete = new Set<string>()
+  const updated = artworks.map((a: any) => {
+    if (!a || !isArtworkNumberInRange(a, fromNum, toNum)) return a
+    const ref = a.imageRef || getArtworkImageRef(a)
+    if (ref && ref.startsWith('k2-img-')) refsToDelete.add(ref)
+    return { ...a, imageUrl: '', imageRef: '', previewUrl: '' }
+  })
+  let idbDeletedCount = 0
+  for (const ref of refsToDelete) {
+    try {
+      await deleteArtworkImage(ref)
+      idbDeletedCount++
+    } catch (_) {}
+  }
+  const clearedCount = updated.filter((a: any) => isArtworkNumberInRange(a, fromNum, toNum)).length
+  return { updated, clearedCount, idbDeletedCount }
+}
+
 /** Schwellwert: Bilddaten größer als das werden in IndexedDB ausgelagert (Bytes). */
 const MOVE_TO_IDB_THRESHOLD = 30 * 1024 // 30 KB – alles darüber in IDB
 

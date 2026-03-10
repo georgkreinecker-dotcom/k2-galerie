@@ -8,6 +8,16 @@ import { getSupabaseAuthClient } from './supabaseAuth'
 
 const BUCKET = 'artwork-images'
 
+/** Extrahiert die Werknummer (30–39) aus einem Supabase-Dateinamen: 0030-1234567890.jpg → 30; K2_K_0030-123.jpg → 30. */
+function parseNumberFromStorageFileName(fileName: string): number | null {
+  const base = fileName.replace(/\.(jpg|jpeg|png|webp)$/i, '').trim()
+  const beforeTimestamp = base.includes('-') ? base.split('-').slice(0, -1).join('-') : base
+  const digits = (beforeTimestamp || base).replace(/\D/g, '')
+  if (!digits) return null
+  const n = parseInt(digits.slice(-2), 10) // 0030→30, 31→31, K2_K_0030→30
+  return !Number.isNaN(n) && n >= 30 && n <= 39 ? n : null
+}
+
 /** Data-URL oder Blob in Blob umwandeln (für Upload). */
 function dataUrlToBlob(dataUrl: string): Blob {
   const [header, base64] = dataUrl.split(',')
@@ -50,4 +60,34 @@ export async function uploadArtworkImageToStorage(
     console.warn('Supabase Storage Upload Fehler:', e)
     return null
   }
+}
+
+/**
+ * Löscht alle Werkbilder in Supabase Storage, deren Nummer im Bereich fromNum–toNum liegt (z. B. 30–39).
+ * Listet alle Dateien unter k2/ und entfernt Treffer. Für Bereinigung 0030–0039.
+ */
+export async function deleteArtworkImagesInStorageForNumberRange(
+  fromNum: number,
+  toNum: number
+): Promise<{ deleted: string[]; error?: string }> {
+  const client = getSupabaseAuthClient()
+  if (!client) return { deleted: [], error: 'Supabase nicht konfiguriert' }
+  const deleted: string[] = []
+  try {
+    const { data: fileList, error: listError } = await client.storage.from(BUCKET).list('k2', { limit: 2000 })
+    if (listError) return { deleted: [], error: listError.message }
+    const files = (fileList ?? []) as { name: string }[]
+    const toRemove: string[] = []
+    for (const f of files) {
+      const n = parseNumberFromStorageFileName(f.name)
+      if (n != null && n >= fromNum && n <= toNum) toRemove.push(`k2/${f.name}`)
+    }
+    if (toRemove.length === 0) return { deleted: [] }
+    const { error: removeError } = await client.storage.from(BUCKET).remove(toRemove)
+    if (removeError) return { deleted: [], error: removeError.message }
+    deleted.push(...toRemove)
+  } catch (e) {
+    return { deleted, error: e instanceof Error ? e.message : String(e) }
+  }
+  return { deleted }
 }

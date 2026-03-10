@@ -98,6 +98,47 @@ export async function uploadImageToGitHub(
   return `/img/${subfolder}/${filename}`
 }
 
+/** Löscht eine Datei im Repo via GitHub API (nötig: SHA). Gibt true wenn gelöscht oder 404. */
+async function deleteFileInRepo(path: string, token: string): Promise<boolean> {
+  const sha = await getFileSha(path, token)
+  if (!sha) return true // nicht vorhanden = Erfolg
+  const res = await fetch(`${GITHUB_API}/repos/${REPO}/contents/${path}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `token ${token}`,
+      'Accept': 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ message: `Bild entfernt: ${path}`, sha, branch: BRANCH })
+  })
+  return res.ok || res.status === 404
+}
+
+/**
+ * Löscht Werkbilder für Nummern 30–39 in public/img/k2/ (Vercel = Deployment aus Repo).
+ * Versucht werk-0030.jpg … werk-0039.jpg und werk-30.jpg … werk-39.jpg.
+ * Kein Token = keine Aktion (nur lokale/IDB/Supabase-Bereinigung).
+ */
+export async function deleteArtworkImagesFromGitHubForNumberRange(
+  fromNum: number,
+  toNum: number
+): Promise<{ deleted: string[]; skipped: string }> {
+  const token = getToken()
+  if (!token) return { deleted: [], skipped: 'Kein GitHub-Token (Vercel-Bilder nur manuell löschbar)' }
+  const deleted: string[] = []
+  for (let n = fromNum; n <= toNum; n++) {
+    const padded = String(n).padStart(4, '0')
+    for (const filename of [`werk-${padded}.jpg`, `werk-${n}.jpg`]) {
+      const path = `public/img/k2/${filename}`
+      try {
+        const ok = await deleteFileInRepo(path, token)
+        if (ok) deleted.push(filename)
+      } catch (_) {}
+    }
+  }
+  return { deleted, skipped: '' }
+}
+
 /** Lädt ein Video (File-Objekt) via GitHub API hoch. Gibt die öffentliche URL zurück.
  *  subfolder: 'k2' | 'oeffentlich' – für ök2-Demo dauerhafte URL statt blob (blob ist nur session-gebunden). */
 export async function uploadVideoToGitHub(

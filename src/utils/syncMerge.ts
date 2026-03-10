@@ -272,7 +272,10 @@ export function preserveLocalImageData(
     const local = keysToTry.map((k) => localByKey.get(k)).find(Boolean)
     if (!local) return item
     const localHasImage = !isPlaceholderOrEmpty(local.imageUrl) || (local.imageRef && String(local.imageRef).trim() !== '')
-    if (!localHasImage) return item
+    // Lokal bewusst leer (z. B. nach „Bilder 0030–0039 bereinigen“) → Merged-Item ebenfalls ohne Bild, sonst kommen Bilder beim Merge zurück
+    if (!localHasImage) {
+      return { ...item, imageUrl: '', imageRef: '', previewUrl: '' }
+    }
     // Server-URL (z. B. Supabase von iPad) nie durch lokales leeres/Platzhalter-Bild ersetzen – sonst sieht Mac/iPhone nichts.
     const serverHasRealUrl = item.imageUrl && !isPlaceholderOrEmpty(item.imageUrl) && (String(item.imageUrl).startsWith('http://') || String(item.imageUrl).startsWith('https://'))
     const localHasRealUrl = local.imageUrl && !isPlaceholderOrEmpty(local.imageUrl)

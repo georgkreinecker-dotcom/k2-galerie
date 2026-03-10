@@ -1301,6 +1301,16 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         })
         return
       }
+      // Nach lokalem Schreiben (Bereinigung, Admin-Save, Import, …): nur aus localStorage laden, kein Supabase – Sync-Kernregel (PROZESS-VEROEFFENTLICHEN-LADEN.md)
+      if (event?.detail?.fromBereinigung || event?.detail?.fromLocalWrite) {
+        console.log('🔄 artworks-updated (lokal geschrieben) – lade nur aus localStorage')
+        loadArtworksResolvedForDisplay().then((list) => {
+          if (!isMounted) return
+          const stored = filterK2ArtworksOnly(list)
+          if (stored.length > 0) setArtworksDisplay(stored)
+        })
+        return
+      }
       
       console.log('🔄 Werke wurden aktualisiert (Admin/Galerie), lade neu...', event?.detail)
       
@@ -2063,11 +2073,19 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
             try {
               const ok = saveArtworksStorage(toSave, { allowReduce: false })
               if (ok) {
+                const serverStand = data.exportedAt
+                  ? new Date(data.exportedAt).toLocaleString('de-AT', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                  : ''
                 loadArtworksResolvedForDisplay().then((list) => {
                   const exhibitionArtworks = filterK2ArtworksOnly(list)
                   setArtworksDisplay(exhibitionArtworks)
-                  setLoadStatus({ message: `✅ ${exhibitionArtworks.length} Werke synchronisiert`, success: true })
-                  setTimeout(() => setLoadStatus(null), 3000)
+                  setLoadStatus({
+                    message: serverStand
+                      ? `✅ ${exhibitionArtworks.length} Werke synchronisiert – Server-Stand: ${serverStand}`
+                      : `✅ ${exhibitionArtworks.length} Werke synchronisiert`,
+                    success: true
+                  })
+                  setTimeout(() => setLoadStatus(null), 5000)
                 })
                 window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromGaleriePage: true, count: toSave.length } }))
               } else {
@@ -4441,9 +4459,12 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                           if (allArtworks.length > 0) {
                             const result = await publishGalleryDataToServer(allArtworks)
                             if (result.success) {
-                              console.log('✅ Automatisch veröffentlicht:', result.artworksCount, 'Werke')
-                              setLoadStatus({ message: `✅ Veröffentlicht (${result.artworksCount} Werke). Am Mac „Vom Server laden“ tippen.`, success: true })
-                              setTimeout(() => setLoadStatus(null), 5000)
+                              const sentAtIso = new Date().toISOString()
+                              try { localStorage.setItem('k2-last-sent-timestamp', sentAtIso) } catch (_) {}
+                              const sentAt = new Date().toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                              console.log('✅ Automatisch veröffentlicht:', result.artworksCount, 'Werke um', sentAt)
+                              setLoadStatus({ message: `✅ Veröffentlicht (${result.artworksCount} Werke) um ${sentAt}. Am Mac „Vom Server laden“.`, success: true })
+                              setTimeout(() => setLoadStatus(null), 6000)
                             } else {
                               console.warn('⚠️ Veröffentlichung fehlgeschlagen:', result.error)
                               setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${result.error || 'Unbekannt'}`, success: false })
@@ -4666,12 +4687,15 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                         if (allArtworks.length > 0) {
                           const result = await publishGalleryDataToServer(allArtworks)
                           if (result.success) {
-                            console.log('✅ Automatisch veröffentlicht:', result.artworksCount, 'Werke')
+                            const sentAtIso = new Date().toISOString()
+                            try { localStorage.setItem('k2-last-sent-timestamp', sentAtIso) } catch (_) {}
+                            const sentAt = new Date().toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                            console.log('✅ Automatisch veröffentlicht:', result.artworksCount, 'Werke um', sentAt)
                             window.dispatchEvent(new CustomEvent('gallery-data-published', {
                               detail: { success: true, artworksCount: result.artworksCount, size: result.result?.size }
                             }))
-                            setLoadStatus({ message: `✅ Veröffentlicht (${result.artworksCount} Werke). Am Mac „Vom Server laden“ tippen.`, success: true })
-                            setTimeout(() => setLoadStatus(null), 5000)
+                            setLoadStatus({ message: `✅ Veröffentlicht (${result.artworksCount} Werke) um ${sentAt}. Am Mac „Vom Server laden“.`, success: true })
+                            setTimeout(() => setLoadStatus(null), 6000)
                           } else {
                             console.warn('⚠️ Veröffentlichung fehlgeschlagen:', result.error)
                             setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${result.error || 'Unbekannt'}`, success: false })

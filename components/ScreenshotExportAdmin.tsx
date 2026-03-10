@@ -37,6 +37,9 @@ import { safeReload } from '../src/utils/env'
 import { compressImageForStorage } from '../src/utils/compressImageForStorage'
 import { processImageForSave } from '../src/utils/imageProcessingTool'
 import { preserveLocalImageData } from '../src/utils/syncMerge'
+import { clearArtworkImagesForNumberRange } from '../src/utils/artworkImageStore'
+import { deleteArtworkImagesInStorageForNumberRange } from '../src/utils/supabaseStorage'
+import { deleteArtworkImagesFromGitHubForNumberRange } from '../src/utils/githubImageUpload'
 import { ImageProcessingOptions, type ImageProcessingMode } from '../src/components/ImageProcessingOptions'
 import type { BackgroundPresetKey } from '../src/utils/professionalImageBackground'
 import ImageCropModal from '../src/components/ImageCropModal'
@@ -828,8 +831,8 @@ function loadArtworks(tenant: ReturnType<typeof useTenant>): any[] {
           if (saved) {
           console.log('✅ Doppelte Nummern automatisch behoben und gespeichert')
           console.log(`📝 ${fixedNumbers.length} Werke umbenannt:`, fixedNumbers)
-          // Dispatch Event damit UI aktualisiert wird
-          window.dispatchEvent(new CustomEvent('artworks-updated'))
+          // Dispatch Event damit UI aktualisiert wird (Sync-Kernregel: aus lokal refreshen)
+          window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } }))
           // Zeige Info-Meldung (nur einmal, nicht bei jedem Laden)
           const lastFixTime = localStorage.getItem('k2-duplicate-fix-time')
           const now = Date.now()
@@ -1138,7 +1141,7 @@ function ScreenshotExportAdmin() {
   const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>(initialEventplanSubTab)
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false) // kleine Leiste „Vergangenheit“, bei Klick aufklappen
   const [werkeSideOptionsOpen, setWerkeSideOptionsOpen] = useState(false) // Einstellungen & Sync (Verkaufte Werke, Vom Server laden) – Nebenakteure, aufklappbar
-  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzbeenden' | 'lizenzinfo' | 'kassabuch'>('stammdaten')
+  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzbeenden' | 'lizenzinfo' | 'kassabuch' | 'backup'>('stammdaten')
   const settingsContentRef = useRef<HTMLDivElement>(null)
   const [lizenzLicenceType, setLizenzLicenceType] = useState<'basic' | 'pro' | 'proplus'>('pro')
   const [lizenzName, setLizenzName] = useState('')
@@ -1207,6 +1210,7 @@ function ScreenshotExportAdmin() {
   const [restoreProgress, setRestoreProgress] = useState<'idle' | 'running' | 'done'>('idle')
   const [isRestoringWerkeFromPublished, setIsRestoringWerkeFromPublished] = useState(false)
   const [entlastenInProgress, setEntlastenInProgress] = useState(false)
+  const [clearImages0030_0039InProgress, setClearImages0030_0039InProgress] = useState(false)
   const [backupPanelMinimized, setBackupPanelMinimized] = useState(true)
   const backupFileInputRef = useRef<HTMLInputElement>(null)
   const [adminNewPw, setAdminNewPw] = useState('')
@@ -2437,7 +2441,14 @@ function ScreenshotExportAdmin() {
   const [publishSuccessModal, setPublishSuccessModal] = React.useState<{ size: number; version: number } | null>(null)
   /** Balken für Senden/Empfangen: phase idle | sending | loading | success | error – Nutzer sieht sofort was passiert */
   const [syncStatusBar, setSyncStatusBar] = React.useState<{ phase: 'idle' | 'sending' | 'loading' | 'success' | 'error'; message: string }>({ phase: 'idle', message: '' })
-  
+  /** Zeitstempel im Sync-Fenster: Zuletzt geladen / Zuletzt gesendet (aus localStorage, K2) */
+  const [lastSyncLoadedAt, setLastSyncLoadedAt] = React.useState<string | null>(() => {
+    try { return typeof localStorage !== 'undefined' ? localStorage.getItem('k2-last-loaded-timestamp') : null } catch { return null }
+  })
+  const [lastSyncSentAt, setLastSyncSentAt] = React.useState<string | null>(() => {
+    try { return typeof localStorage !== 'undefined' ? localStorage.getItem('k2-last-sent-timestamp') : null } catch { return null }
+  })
+
   // SICHERHEIT: Stelle sicher dass isDeploying nach 60 Sekunden zurückgesetzt wird
   React.useEffect(() => {
     if (isDeploying) {
@@ -2463,6 +2474,16 @@ function ScreenshotExportAdmin() {
     }, 5000)
     return () => clearTimeout(t)
   }, [syncStatusBar.phase])
+
+  // Zeitstempel im Sync-Fenster: aktualisieren wenn anderer Tab (z. B. Galerie-Vorschau) geladen/gesendet hat
+  React.useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'k2-last-loaded-timestamp' && e.newValue) setLastSyncLoadedAt(e.newValue)
+      if (e.key === 'k2-last-sent-timestamp' && e.newValue) setLastSyncSentAt(e.newValue)
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
   
   // KEINE automatische Prüfung mehr - verursacht Abstürze!
   // Verwende nur den manuellen "🔍 Vercel-Status" Button
@@ -2781,6 +2802,9 @@ function ScreenshotExportAdmin() {
               if (!isMountedRef.current) return
               if (!silent) setIsDeploying(false)
               if (result.success) {
+                const sentAt = new Date().toISOString()
+                try { localStorage.setItem('k2-last-sent-timestamp', sentAt) } catch (_) {}
+                setLastSyncSentAt(sentAt)
                 if (silent) console.log('✅ K2-Daten an Server (zentral):', result.artworksCount, 'Werke')
                 else {
                   setSyncStatusBar({ phase: 'success', message: 'Gesendet.' })
@@ -2847,6 +2871,9 @@ function ScreenshotExportAdmin() {
             apiPost(WRITE_GALLERY_DATA_API_URL, json, { timeoutMs: 30000 }).then(result => {
               if (!silent && isMountedRef.current) setIsDeploying(false)
               if (result.success && result.data) {
+                const sentAt = new Date().toISOString()
+                try { localStorage.setItem('k2-last-sent-timestamp', sentAt) } catch (_) {}
+                setLastSyncSentAt(sentAt)
                 const payload = (result.data as { size?: number; artworksCount?: number }) || {}
                 const newVersion = parseInt(localStorage.getItem('k2-data-version') || '0') + 1
                 localStorage.setItem('k2-data-version', String(newVersion))
@@ -3199,7 +3226,7 @@ function ScreenshotExportAdmin() {
         }
         if (ok) {
           loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
-          window.dispatchEvent(new CustomEvent('artworks-updated', { detail: {} }))
+          window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } }))
           setIsLoadingFromServer(false)
           setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
           const exportedAt = data.exportedAt ? ` (Stand: ${new Date(String(data.exportedAt)).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })})` : ''
@@ -3262,9 +3289,12 @@ function ScreenshotExportAdmin() {
         if (saved) {
           const resolved = await loadArtworksWithResolvedImages(tenant)
           setAllArtworksSafe(resolved)
-          window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: toSave.length } }))
+          window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: toSave.length, fromLocalWrite: true } }))
           setIsLoadingFromServer(false)
           setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
+          const loadedAt = data.exportedAt || new Date().toISOString()
+          try { localStorage.setItem('k2-last-loaded-timestamp', loadedAt) } catch (_) {}
+          setLastSyncLoadedAt(loadedAt)
           const exportedAt = data.exportedAt ? ` (Stand: ${new Date(data.exportedAt).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })})` : ''
           // Meldung erst im nächsten Tick, damit Balken und Liste zuerst aktualisiert sind (kein Rot mehr bei „geladen“)
           setTimeout(() => { alert(`✅ ${toSave.length} Werke vom Server geladen${exportedAt}.`) }, 0)
@@ -3315,7 +3345,7 @@ function ScreenshotExportAdmin() {
       }
       const resolved = await loadArtworksWithResolvedImages(tenant)
       setAllArtworksSafe(resolved)
-      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated'))
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } }))
       alert(`✅ Fertig. ${list.length} Werke wurden vom Server zurück in deine App geladen.`)
     } catch (e) {
       console.error('Werke aus Veröffentlichung wiederherstellen:', e)
@@ -7616,7 +7646,7 @@ ${'='.repeat(60)}
     saveArtworks(tenant, updated).then((ok) => {
       if (ok) {
         loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
-        window.dispatchEvent(new CustomEvent('artworks-updated'))
+        window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } }))
       }
     })
   }
@@ -7637,7 +7667,7 @@ ${'='.repeat(60)}
       saveArtworks(tenant, artworks).then((ok) => {
         if (ok) {
           loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
-          window.dispatchEvent(new CustomEvent('artworks-updated'))
+          window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } }))
         }
       })
     }
@@ -7674,7 +7704,7 @@ ${'='.repeat(60)}
       saveArtworks(tenant, artworks).then((ok) => {
         if (ok) {
           loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
-          window.dispatchEvent(new CustomEvent('artworks-updated'))
+          window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } }))
         }
       })
     }
@@ -7700,7 +7730,7 @@ ${'='.repeat(60)}
       alert(`✅ Werk ${artworkNumber} ist reserviert${name.trim() ? ` für ${name.trim()}` : ''}.`)
     }
     loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
-    window.dispatchEvent(new CustomEvent('artworks-updated'))
+    window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } }))
     setShowReserveModal(false)
     setReserveInput('')
     setReserveName('')
@@ -8539,10 +8569,10 @@ ${'='.repeat(60)}
       setArtworkYear('')
       setArtworkVerkaufsstatus('verfuegbar')
       
-      // Event dispatchen, damit Galerie-Seite sich aktualisiert
+      // Event dispatchen, damit Galerie-Seite sich aktualisiert (Sync-Kernregel: aus lokal refreshen)
       ignoreArtworksUpdatedRef.current = true
       window.dispatchEvent(new CustomEvent('artworks-updated', { 
-        detail: { count: listWithResolved.length, newArtwork: artworkData.number } 
+        detail: { count: listWithResolved.length, newArtwork: artworkData.number, fromLocalWrite: true } 
       }))
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
       setTimeout(() => { ignoreArtworksUpdatedRef.current = false }, isMobile ? 1200 : 400)
@@ -11500,7 +11530,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               if (newArtworks.length === 0) { alert('Keine neuen Werke zum Importieren.'); return }
                               const merged = [...existing, ...newArtworks]
                               saveArtworks(tenant, merged).then((ok) => {
-                                if (ok) { setAllArtworksSafe(merged); window.dispatchEvent(new CustomEvent('artworks-updated')); alert(`✅ ${newArtworks.length} Werke importiert!`) }
+                                if (ok) { setAllArtworksSafe(merged); window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } })); alert(`✅ ${newArtworks.length} Werke importiert!`) }
                                 else alert('⚠️ Fehler beim Speichern.')
                               })
                             } else alert('Ungültiges Format.')
@@ -11897,6 +11927,16 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               </div>
                             )}
                           </div>
+                          {(!tenant.isOeffentlich && !tenant.isVk2) && (lastSyncLoadedAt || lastSyncSentAt) && (
+                            <div style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: s.muted, display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
+                              {lastSyncLoadedAt && (
+                                <span>Zuletzt geladen: {new Date(lastSyncLoadedAt).toLocaleString('de-AT', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                              )}
+                              {lastSyncSentAt && (
+                                <span>Zuletzt gesendet: {new Date(lastSyncSentAt).toLocaleString('de-AT', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                              )}
+                            </div>
+                          )}
                           {syncStatusBar.phase !== 'idle' && (
                             <div style={{ width: '100%', marginTop: '0.5rem' }}>
                               <div style={{
@@ -12503,7 +12543,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 const resolved = await loadArtworksWithResolvedImages(tenant)
                                 setAllArtworksSafe(resolved)
                               }
-                              window.dispatchEvent(new CustomEvent('artworks-updated'))
+                              window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } }))
                             } else {
                               alert('⚠️ Fehler beim Löschen! Bitte versuche es erneut.')
                             }
@@ -13023,6 +13063,20 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   {tenant.isVk2 ? 'Drucken (Standard-Drucker)' : 'Etikettendrucker einrichten'}
                 </div>
               </button>
+              {/* 5b. Backup & Bilder – nur K2 (eigener Untertab, öffnet sofort) */}
+              {!tenant.isOeffentlich && !tenant.isVk2 && (
+              <button
+                type="button"
+                onClick={() => setSettingsSubTab('backup')}
+                style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'backup' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'backup' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'backup' ? s.accent : `${s.accent}22` }}
+              >
+                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>💾</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Backup & Bilder</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Sicherung, Speicher entlasten, Bilder 0030–0039 bereinigen</div>
+              </button>
+              )}
               {/* Kassabuch führen – nur ök2 (K2: immer Ja, keine Kachel nötig) */}
               {tenant.isOeffentlich && hasKassa(kassabuchTenantForSettings) && (
               <button type="button" onClick={() => setSettingsSubTab('kassabuch')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'kassabuch' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'kassabuch' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
@@ -13057,6 +13111,168 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               </button>
               )}
             </div>
+
+            {/* Backup Sub-Tab – nur K2: eigener Bereich, Button reagiert sofort */}
+            {settingsSubTab === 'backup' && !tenant.isOeffentlich && (
+              <div ref={settingsContentRef} style={{ marginTop: '1rem' }}>
+                <h3 style={{ margin: '0 0 1rem', fontSize: '1.1rem', color: s.text }}>💾 Backup & Bilder</h3>
+                <p style={{ color: s.muted, fontSize: '0.9rem', marginBottom: '1rem', lineHeight: 1.55 }}>
+                  Sicherungskopie, Speicher entlasten und Bilder 0030–0039 bereinigen.
+                </p>
+                <input
+                  ref={backupFileInputRef}
+                  type="file"
+                  accept=".json,application/json"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    e.target.value = ''
+                    if (!file) return
+                    setRestoreProgress('running')
+                    const reader = new FileReader()
+                    reader.onload = () => {
+                      try {
+                        const raw = reader.result as string
+                        const backup = JSON.parse(raw)
+                        const kontext = detectBackupKontext(backup)
+                        if (kontext !== 'k2' && kontext !== 'unbekannt') {
+                          const kontextName = kontext === 'vk2' ? 'VK2 Verein' : 'ök2 Demo'
+                          if (!confirm(`Hinweis: Diese Sicherungsdatei stammt von „${kontextName}“, du bist aber in der K2 Galerie.\n\nTrotzdem wiederherstellen?`)) {
+                            setRestoreProgress('idle')
+                            return
+                          }
+                        }
+                        let ok = false
+                        if (kontext === 'vk2') {
+                          const r = restoreVk2FromBackup(backup)
+                          ok = r.ok
+                        } else if (kontext === 'oeffentlich') {
+                          const r = restoreOek2FromBackup(backup)
+                          ok = r.ok
+                        } else {
+                          const r = restoreK2FromBackup(backup)
+                          ok = r.ok || restoreFromBackupFile(backup)
+                        }
+                        if (!ok) {
+                          setRestoreProgress('idle')
+                          alert('Diese Datei ist keine gültige Sicherungsdatei von dieser App.')
+                          return
+                        }
+                        setRestoreProgress('done')
+                        setTimeout(() => safeReload(), 800)
+                      } catch (err) {
+                        setRestoreProgress('idle')
+                        alert('❌ Datei konnte nicht gelesen werden: ' + (err instanceof Error ? err.message : String(err)))
+                      }
+                    }
+                    reader.onerror = () => { setRestoreProgress('idle'); alert('❌ Datei konnte nicht gelesen werden.') }
+                    reader.readAsText(file, 'UTF-8')
+                  }}
+                />
+                {restoreProgress !== 'idle' && (
+                  <div style={{ marginBottom: '1rem', padding: '0.75rem', background: 'rgba(0,0,0,0.2)', borderRadius: '10px', border: '1px solid rgba(95, 251, 241, 0.3)' }}>
+                    <div style={{ color: s.accent, fontSize: '0.95rem' }}>{restoreProgress === 'running' ? 'Wiederherstellung läuft…' : 'Fertig. Lade neu…'}</div>
+                  </div>
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div>
+                    <button
+                      onClick={() => {
+                        try {
+                          const result = createK2Backup()
+                          downloadBackupAsFile(result.data, result.filename)
+                          const artworks = readArtworksRawByKey('k2-artworks')
+                          alert(`✅ Sicherungskopie heruntergeladen. ${Array.isArray(artworks) ? artworks.length : 0} Werke enthalten.`)
+                        } catch (e) {
+                          alert('Beim Erstellen der Sicherungskopie ist etwas schiefgelaufen.')
+                        }
+                      }}
+                      style={{ padding: '0.75rem 1.25rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: 'pointer' }}
+                    >
+                      💾 Sicherungskopie herunterladen
+                    </button>
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      disabled={restoreProgress !== 'idle'}
+                      onClick={() => backupFileInputRef.current?.click()}
+                      style={{ padding: '0.75rem 1.25rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: 'pointer' }}
+                    >
+                      📂 Aus Backup-Datei wiederherstellen
+                    </button>
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      disabled={entlastenInProgress || restoreProgress !== 'idle'}
+                      onClick={async () => {
+                        if (entlastenInProgress) return
+                        setEntlastenInProgress(true)
+                        try {
+                          const result = await compressAllArtworkImages('k2-artworks')
+                          if (result.error && !result.ok) {
+                            alert('⚠️ Speicher entlasten fehlgeschlagen: ' + result.error)
+                            return
+                          }
+                          if (result.count > 0) {
+                            const mb = (result.savedBytes / 1024 / 1024).toFixed(2)
+                            if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } }))
+                            alert(`✅ Speicher entlastet. ${result.count} Bilder verkleinert, ca. ${mb} MB frei.`)
+                          } else {
+                            alert('✅ Keine großen Bilder zum Verkleinern gefunden.')
+                          }
+                        } finally {
+                          setEntlastenInProgress(false)
+                        }
+                      }}
+                      style={{ padding: '0.75rem 1.25rem', background: entlastenInProgress ? s.muted + '22' : s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: entlastenInProgress ? 'wait' : 'pointer' }}
+                    >
+                      {entlastenInProgress ? '⏳ Verkleinere…' : '🗜️ Speicher entlasten'}
+                    </button>
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      disabled={clearImages0030_0039InProgress || restoreProgress !== 'idle'}
+                      onClick={async () => {
+                        if (!confirm('Nur die BILDER für 0030–0039 überall löschen (lokal, Supabase, Vercel/GitHub). Titel und Nummern bleiben. Fortfahren?')) return
+                        setClearImages0030_0039InProgress(true)
+                        try {
+                          const artworks = readArtworksRawByKey('k2-artworks')
+                          const { updated, clearedCount, idbDeletedCount } = await clearArtworkImagesForNumberRange(artworks, 30, 39)
+                          saveArtworksByKey('k2-artworks', updated, { filterK2Only: true, allowReduce: false })
+                          if (isSupabaseConfigured()) await saveArtworksToSupabase(updated)
+                          loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
+                          if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromBereinigung: true } }))
+                          let supabaseMsg = ''
+                          const supabaseResult = await deleteArtworkImagesInStorageForNumberRange(30, 39)
+                          if (supabaseResult.error) supabaseMsg = `\nSupabase Storage: ${supabaseResult.error}`
+                          else if (supabaseResult.deleted.length > 0) supabaseMsg = `\nSupabase Storage: ${supabaseResult.deleted.length} Bild(er) gelöscht.`
+                          else supabaseMsg = '\nSupabase Storage: keine Treffer.'
+                          let githubMsg = ''
+                          const githubResult = await deleteArtworkImagesFromGitHubForNumberRange(30, 39)
+                          if (githubResult.deleted.length > 0) githubMsg = `\nVercel/GitHub: ${githubResult.deleted.length} Datei(en) gelöscht.`
+                          else if (githubResult.skipped) githubMsg = `\nVercel/GitHub: ${githubResult.skipped}`
+                          else githubMsg = '\nVercel/GitHub: keine Treffer.'
+                          const publishResult = await publishGalleryDataToServer(readArtworksRawByKey('k2-artworks'))
+                          const publishMsg = publishResult.success ? '\n\nGalerie wurde veröffentlicht – öffentliche Ansicht und andere Geräte haben den bereinigten Stand.' : (publishResult.error ? `\n\nVeröffentlichen: ${publishResult.error}` : '')
+                          alert(`✅ Bilder 0030–0039 bereinigt.\n\n${clearedCount} Werke, ${idbDeletedCount} IndexedDB.${supabaseMsg}${githubMsg}${publishMsg}\n\nSeite neu laden oder Stand-Badge tippen, dann siehst du überall keine alten Bilder mehr.`)
+                        } catch (e) {
+                          alert('⚠️ Bereinigung fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
+                        } finally {
+                          setClearImages0030_0039InProgress(false)
+                        }
+                      }}
+                      style={{ padding: '0.75rem 1.25rem', background: clearImages0030_0039InProgress ? s.muted + '22' : s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: clearImages0030_0039InProgress ? 'wait' : 'pointer' }}
+                    >
+                      {clearImages0030_0039InProgress ? '⏳ Bereinige…' : '🖼️ Bilder 0030–0039 bereinigen (nur Bilder, Werke bleiben)'}
+                    </button>
+                    <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Entfernt Bilddaten für 0030–0039 überall. Danach neue Bilder einstellen.</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Stammdaten Sub-Tab */}
             {settingsSubTab === 'stammdaten' && (
@@ -14245,7 +14461,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </div>
                 {/* Backup & Wiederherstellung – nur K2 (ök2 lädt immer aktuellen Stand; bei Bedarf hier) */}
                 {!tenant.isOeffentlich && (
-                <div style={{ marginTop: '1.5rem', padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33` }}>
+                <div id="einstellungen-backup" style={{ marginTop: '1.5rem', padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33` }}>
                   <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text }}>💾 Deine Daten sichern und zurückholen</h4>
                   <p style={{ color: s.muted, fontSize: '0.9rem', marginBottom: '1rem', lineHeight: 1.55 }}>
                     Alle deine Inhalte (Werke, Stammdaten, Events, Dokumente) liegen in dieser App. Damit bei Gerätewechsel, Browser-Löschung oder Panne nichts verloren geht, kannst du hier jederzeit eine Sicherungskopie herunterladen und bei Bedarf wieder einspielen. Wir empfehlen: regelmäßig eine Backup-Datei an einem sicheren Ort speichern (z. B. PC, USB-Stick, Festplatte).
@@ -14379,6 +14595,47 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       </button>
                       <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Verkleinert alle Werkbilder im Speicher (ohne etwas zu löschen). Hilft, wenn „Speicher voll“ erscheint – danach hast du wieder Platz für weitere Werke.</p>
                     </div>
+                    {!tenant.isOeffentlich && !tenant.isVk2 && (
+                    <div>
+                      <button
+                        type="button"
+                        disabled={clearImages0030_0039InProgress || restoreProgress !== 'idle'}
+                        onClick={async () => {
+                          if (!confirm('Nur die BILDER für die Werke 0030–0039 werden überall gelöscht:\n• lokal (IndexedDB + Verweise)\n• Supabase Storage\n• Vercel/GitHub (public/img/k2/)\n\nTitel und Nummern bleiben. Danach neue Bilder einstellen.\n\nFortfahren?')) return
+                          setClearImages0030_0039InProgress(true)
+                          try {
+                            const artworks = readArtworksRawByKey('k2-artworks')
+                            const { updated, clearedCount, idbDeletedCount } = await clearArtworkImagesForNumberRange(artworks, 30, 39)
+                            saveArtworksByKey('k2-artworks', updated, { filterK2Only: true, allowReduce: false })
+                            if (isSupabaseConfigured()) await saveArtworksToSupabase(updated)
+                            loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
+                            if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromBereinigung: true } }))
+                            let supabaseMsg = ''
+                            const supabaseResult = await deleteArtworkImagesInStorageForNumberRange(30, 39)
+                            if (supabaseResult.error) supabaseMsg = `\nSupabase Storage: ${supabaseResult.error}`
+                            else if (supabaseResult.deleted.length > 0) supabaseMsg = `\nSupabase Storage: ${supabaseResult.deleted.length} Bild(er) gelöscht.`
+                            else supabaseMsg = '\nSupabase Storage: keine Treffer (oder nicht konfiguriert).'
+                            let githubMsg = ''
+                            const githubResult = await deleteArtworkImagesFromGitHubForNumberRange(30, 39)
+                            if (githubResult.deleted.length > 0) githubMsg = `\nVercel/GitHub: ${githubResult.deleted.length} Datei(en) gelöscht (${githubResult.deleted.join(', ')}).`
+                            else if (githubResult.skipped) githubMsg = `\nVercel/GitHub: ${githubResult.skipped}`
+                            else githubMsg = '\nVercel/GitHub: keine Treffer.'
+                            const publishResult = await publishGalleryDataToServer(readArtworksRawByKey('k2-artworks'))
+                            const publishMsg = publishResult.success ? '\n\nGalerie wurde veröffentlicht – öffentliche Ansicht und andere Geräte haben den bereinigten Stand.' : (publishResult.error ? `\n\nVeröffentlichen: ${publishResult.error}` : '')
+                            alert(`✅ Bilder 0030–0039 überall bereinigt.\n\n• ${clearedCount} Werke: Bilddaten entfernt.\n• IndexedDB: ${idbDeletedCount} Einträge gelöscht.${supabaseMsg}${githubMsg}${publishMsg}\n\nSeite neu laden oder Stand-Badge tippen. Danach neue Bilder für diese Nummern einstellen.`)
+                          } catch (e) {
+                            alert('⚠️ Bereinigung fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
+                          } finally {
+                            setClearImages0030_0039InProgress(false)
+                          }
+                        }}
+                        style={{ padding: '0.75rem 1.25rem', background: clearImages0030_0039InProgress ? s.muted + '22' : s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: clearImages0030_0039InProgress ? 'wait' : 'pointer' }}
+                      >
+                        {clearImages0030_0039InProgress ? '⏳ Bereinige…' : '🖼️ Bilder 0030–0039 bereinigen (nur Bilder, Werke bleiben)'}
+                      </button>
+                      <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Entfernt Bilddaten für 0030–0039 überall: lokal (IndexedDB), Supabase Storage, Vercel/GitHub. Danach neue Bilder einstellen.</p>
+                    </div>
+                    )}
                     {hasBackup() && (
                     <div>
                       <button

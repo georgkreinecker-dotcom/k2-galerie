@@ -74,7 +74,21 @@
 
 ---
 
-## 6. Checkliste (Prozesssicherheit)
+## 6. Sync-Kernregel („ein Fehler, alle Sync-Probleme“)
+
+**Eine konsistente Merge- und Reload-Logik behebt sowohl Bereinigung als auch alle typischen Sync-Probleme:**
+
+| Regel | Wo | Warum |
+|-------|-----|--------|
+| **preserveLocalImageData** | syncMerge.ts | Beim Merge: Wenn **lokal ein Bild** hat → lokales Bild übernehmen. Wenn **lokal bewusst kein Bild** (z. B. nach Bereinigung) → Merged-Item ebenfalls ohne Bild (`imageUrl/imageRef/previewUrl` leer). Sonst holt der Server beim nächsten Laden alte URLs zurück. |
+| **Nach lokalem Schreiben: UI aus lokal refreshen** | GalerieVorschauPage handleArtworksUpdate | Wenn das Event von einer **lokalen Aktion** kommt (z. B. Bereinigung, Admin-Speichern), mit `detail: { fromBereinigung: true }` oder `fromGaleriePage: true` → Anzeige **nur aus localStorage** neu laden, **nicht** zuerst aus Supabase. Verhindert Race: alter Supabase-Stand überschreibt den gerade gespeicherten lokalen Stand. |
+| **Eine Quelle pro Aktion** | Veröffentlichen / Laden | Immer dieselben Funktionen (publishGalleryDataToServer; mergeServerWithLocal + preserveLocalImageData). Kein zweiter Pfad. |
+
+**Konsequenz:** Alle Stellen, die „nach Speichern/Bereinigung“ die Galerie aktualisieren, sollten entweder (a) `artworks-updated` mit einem Flag senden, das „aus lokal refreshen“ auslöst, oder (b) sicherstellen, dass die angezeigte Quelle (localStorage/Supabase) bereits den neuen Stand hat. Siehe BUG-024, FEHLERANALYSEPROTOKOLL.
+
+---
+
+## 7. Checkliste (Prozesssicherheit)
 
 - [ ] Veröffentlichen: Nur über `publishGalleryDataToServer` (ein Aufruf, eine Implementierung).
 - [ ] Laden: Immer mergeServerWithLocal, danach preserveLocalImageData vor save.

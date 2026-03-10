@@ -19,6 +19,16 @@
 
 ---
 
+## BUG-024 · „Bilder 0030–0039 bereinigen“ – Bilder bleiben in der Anzeige
+**Symptom:** Nach Klick auf „Bilder 0030–0039 bereinigen“ (lokal, IndexedDB, Supabase, GitHub erfolgreich gemeldet) sind die Bilder in der Galerie weiterhin sichtbar.
+**Ursache:** (1) **Merge:** preserveLocalImageData gab bei lokal leerem Bild unverändert das Server-Item zurück → alte Server-URL blieb erhalten. (2) **Reload nach Event:** GalerieVorschauPage lud nach `artworks-updated` aus Supabase; Race oder alter Supabase-Stand konnte den gerade gespeicherten lokalen Stand überschreiben.
+**Lösung:** (1) **syncMerge.ts** preserveLocalImageData: Wenn lokal kein Bild (`!localHasImage`), Merged-Item explizit ohne Bild setzen (`imageUrl: '', imageRef: '', previewUrl: ''`), damit bewusst geleerte Werke beim Merge nicht wieder Server-URLs bekommen. (2) **Nach Bereinigung:** Admin sendet `artworks-updated` mit `detail: { fromBereinigung: true }`; GalerieVorschauPage behandelt fromBereinigung wie fromGaleriePage und lädt **nur** aus localStorage (loadArtworksResolvedForDisplay), kein Supabase-Load – Anzeige zeigt sofort den bereinigten Stand.
+**Betroffene Dateien:** `src/utils/syncMerge.ts`, `components/ScreenshotExportAdmin.tsx` (beide Bereinigen-Button-Handler), `src/pages/GalerieVorschauPage.tsx` (handleArtworksUpdate)
+**Doku:** docs/FEHLERANALYSEPROTOKOLL.md (Protokoll-Eintrag 10.03.26)
+**Status:** ✅ Behoben (10.03.26).
+
+---
+
 ## BUG-022 · ök2 Willkommensbild – Uraltbild auf erster Seite (zweites Mal)
 **Symptom:** Auf der ersten Seite der ök2-Demo (Willkommen) erscheint ein altes/irrelevantes Bild („Uraltbild“), obwohl das Problem schon einmal behoben worden war.
 **Ursache:** Default für das ök2-Willkommensbild war wieder ein **Repo-Dateipfad** (`/img/oeffentlich/willkommen.jpg`). Diese Datei kann veraltet sein oder ausgetauscht werden – dann sieht jeder die alte Version. Beim ersten Mal (BUG-020) ging es um Upload-Überschreibung; hier geht es um den **Default** selbst.
