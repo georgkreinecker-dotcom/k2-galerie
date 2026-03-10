@@ -3295,13 +3295,16 @@ function ScreenshotExportAdmin() {
           setAllArtworksSafe(resolved)
           window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: toSave.length, fromLocalWrite: true } }))
           setIsLoadingFromServer(false)
-          setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
           const loadedAt = data.exportedAt || new Date().toISOString()
           try { localStorage.setItem('k2-last-loaded-timestamp', loadedAt) } catch (_) {}
           setLastSyncLoadedAt(loadedAt)
           const exportedAt = data.exportedAt ? ` (Stand: ${new Date(data.exportedAt).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })})` : ''
-          // Meldung erst im nächsten Tick, damit Balken und Liste zuerst aktualisiert sind (kein Rot mehr bei „geladen“)
-          setTimeout(() => { alert(`✅ ${toSave.length} Werke vom Server geladen${exportedAt}.`) }, 0)
+          // Zweiphasig: Bilder brauchen Zeit zum Laden – erst „Bilder werden angezeigt“, dann Erfolg + Alert (wie GalerieVorschauPage)
+          setSyncStatusBar({ phase: 'loading', message: `${toSave.length} Werke geladen. Bilder werden angezeigt…` })
+          setTimeout(() => {
+            setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
+            alert(`✅ ${toSave.length} Werke vom Server geladen${exportedAt}.`)
+          }, 4000)
         } else {
           setSyncStatusBar({ phase: 'error', message: 'Fehler beim Speichern.' })
         }
