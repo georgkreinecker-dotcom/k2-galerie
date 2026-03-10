@@ -2072,18 +2072,16 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           // Prozesssicher wie GaleriePage: Nur zwei Schutzfälle – sonst immer Merge schreiben (User darf sich auf „Vom Server laden“ verlassen)
           if (serverArtworks.length === 0 && localArtworks.length > 0) {
             console.warn('⚠️ Server lieferte 0 Werke – lokale Werke bleiben erhalten:', localArtworks.length)
-            loadArtworksResolvedForDisplay().then((list) => {
-              setArtworksDisplay(filterK2ArtworksOnly(list))
-              setLoadStatus({ message: `${list.length} lokale Werke erhalten (Server leer).`, success: true })
-              setTimeout(() => setLoadStatus(null), 3000)
-            })
+            const list = await loadArtworksResolvedForDisplay()
+            setArtworksDisplay(filterK2ArtworksOnly(list))
+            setLoadStatus({ message: `${list.length} lokale Werke erhalten (Server leer).`, success: true })
+            setTimeout(() => setLoadStatus(null), 3000)
           } else if (serverArtworks.length < localArtworks.length * 0.5 && localArtworks.length > 0) {
             console.warn(`⚠️ Server ${serverArtworks.length} vs. lokal ${localArtworks.length} – Sync übersprungen (Schutz)`)
-            loadArtworksResolvedForDisplay().then((list) => {
-              setArtworksDisplay(filterK2ArtworksOnly(list))
-              setLoadStatus({ message: `${list.length} lokale Werke beibehalten (Server deutlich weniger).`, success: true })
-              setTimeout(() => setLoadStatus(null), 3000)
-            })
+            const list = await loadArtworksResolvedForDisplay()
+            setArtworksDisplay(filterK2ArtworksOnly(list))
+            setLoadStatus({ message: `${list.length} lokale Werke beibehalten (Server deutlich weniger).`, success: true })
+            setTimeout(() => setLoadStatus(null), 3000)
           } else {
             // Merge wie GaleriePage – dann immer schreiben (prozesssicher: gleicher Ablauf, User sieht sofort den neuen Stand)
             const serverMap = new Map<string, any>()
@@ -2111,17 +2109,17 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 const serverStand = data.exportedAt
                   ? new Date(data.exportedAt).toLocaleString('de-AT', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
                   : ''
-                loadArtworksResolvedForDisplay().then((list) => {
-                  const exhibitionArtworks = filterK2ArtworksOnly(list)
-                  setArtworksDisplay(exhibitionArtworks)
-                  setLoadStatus({
-                    message: serverStand
-                      ? `✅ ${exhibitionArtworks.length} Werke synchronisiert – Server-Stand: ${serverStand}`
-                      : `✅ ${exhibitionArtworks.length} Werke synchronisiert`,
-                    success: true
-                  })
-                  setTimeout(() => setLoadStatus(null), 5000)
+                // KRITISCH: Erst Anzeige setzen, DANN isLoading aus – sonst Race: useEffect (leer + !isLoading) läuft bevor setArtworksDisplay
+                const list = await loadArtworksResolvedForDisplay()
+                const exhibitionArtworks = filterK2ArtworksOnly(list)
+                setArtworksDisplay(exhibitionArtworks)
+                setLoadStatus({
+                  message: serverStand
+                    ? `✅ ${exhibitionArtworks.length} Werke synchronisiert – Server-Stand: ${serverStand}`
+                    : `✅ ${exhibitionArtworks.length} Werke synchronisiert`,
+                  success: true
                 })
+                setTimeout(() => setLoadStatus(null), 5000)
                 window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromGaleriePage: true, count: toSave.length } }))
               } else {
                 resolveArtworkImages(toSaveServer).then((resolved) => {
@@ -2145,9 +2143,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           if (localArtworks.length > 0) {
             console.log('🔒 Lokale Werke bleiben erhalten:', localArtworks.map((a: any) => a.number || a.id).join(', '))
             saveArtworksForContext(false, false, localArtworks)
-            loadArtworksResolvedForDisplay().then((list) => {
-              setArtworksDisplay(filterK2ArtworksOnly(list))
-            })
+            const list = await loadArtworksResolvedForDisplay()
+            setArtworksDisplay(filterK2ArtworksOnly(list))
             setLoadStatus({ message: `✅ ${localArtworks.length} lokale Werke erhalten`, success: true })
             setTimeout(() => setLoadStatus(null), 3000)
           } else {
@@ -2159,9 +2156,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         // API nicht erreichbar – KEINE statische Datei laden (würde alten Build-Stand schreiben). Lokale Werke behalten.
         console.warn('⚠️ API nicht erreichbar – lokale Werke bleiben unverändert:', localArtworks.length)
         if (localArtworks.length > 0) {
-          loadArtworksResolvedForDisplay().then((list) => {
-            setArtworksDisplay(filterK2ArtworksOnly(list))
-          })
+          const list = await loadArtworksResolvedForDisplay()
+          setArtworksDisplay(filterK2ArtworksOnly(list))
           setLoadStatus({
             message: `⚠️ Server (API) nicht erreichbar. ${localArtworks.length} lokale Werke unverändert. Bitte Netz prüfen und erneut „Vom Server laden“ tippen.`,
             success: false
@@ -2180,9 +2176,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       if (localArtworks.length > 0) {
         console.log('🔒 Fehler beim Laden - behalte lokale Werke:', localArtworks.length)
         saveArtworksForContext(false, false, localArtworks)
-        loadArtworksResolvedForDisplay().then((list) => {
-          setArtworksDisplay(filterK2ArtworksOnly(list))
-        })
+        const list = await loadArtworksResolvedForDisplay()
+        setArtworksDisplay(filterK2ArtworksOnly(list))
         setLoadStatus({ message: `✅ ${localArtworks.length} lokale Werke erhalten`, success: true })
       } else {
         setLoadStatus({ message: '❌ Fehler beim Laden', success: false })

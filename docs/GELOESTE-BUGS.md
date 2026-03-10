@@ -10,6 +10,15 @@
 
 ---
 
+## BUG-026 · „Vom Server laden“ – nach Erfolgsmeldung/Schließen keine Werke mehr sichtbar
+**Symptom:** User klickt „Vom Server laden“ / „Aktuellen Stand holen“, bekommt Meldung „Daten vom Server geladen (Stand: …)“; beim Schließen oder danach sind **keine Werke mehr vorhanden** („Noch keine Werke vorhanden“).
+**Ursache:** **Race:** handleRefresh setzte die Erfolgsmeldung und rief `loadArtworksResolvedForDisplay().then(setArtworksDisplay, setLoadStatus)` auf, beendete den try-Block aber sofort – **finally** setzte `setIsLoading(false)` bevor das .then() lief. Dadurch: `artworks` blieb leer, `isLoading` wurde false → useEffect „wenn leer und !isLoading“ lud erneut; in dem Moment konnte die Anzeige leer bleiben oder überschrieben werden.
+**Lösung:** In **GalerieVorschauPage** handleRefresh: Nach Speichern (und in allen Zweigen wo die Anzeige aktualisiert wird) **await loadArtworksResolvedForDisplay()** und **dann** setArtworksDisplay + setLoadStatus aufrufen. So wird die Anzeige gesetzt, **bevor** finally (setIsLoading(false)) läuft – kein Race mehr.
+**Betroffene Dateien:** `src/pages/GalerieVorschauPage.tsx` (handleRefresh: Erfolgszweig, Server-leer, Server-weniger, API-nicht-ok, catch, keine Werke in Datei)
+**Status:** ✅ Behoben (10.03.26).
+
+---
+
 ## BUG-023 · Sync iPad ↔ Mac: „Vom Server laden“ zeigt nicht den frisch vom iPad veröffentlichten Stand
 **Symptom:** Synchronisierung der Daten zwischen iPad und Mac funktioniert weiterhin nicht – am Mac kommt nach „Vom Server laden“ nicht der Stand an, den das iPad gerade veröffentlicht hat.
 **Ursache:** **Few-Works-Fallback:** Wenn die API (Blob) 200 mit wenigen Werken (≤15) lieferte, wurde die Antwort durch die **statische** `gallery-data.json` (Build-Stand) ersetzt, sobald die mehr Werke hatte. Dadurch konnte der frisch vom iPad veröffentlichte Blob-Inhalt durch den älteren Build-Stand überschrieben werden → zwei Quellen (Blob + statische Datei) vermischt.
