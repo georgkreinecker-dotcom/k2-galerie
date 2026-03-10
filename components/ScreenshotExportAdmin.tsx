@@ -3025,9 +3025,6 @@ function ScreenshotExportAdmin() {
       if (map && map.size > 0) {
         const withSaved = stripped.map((a: any) => {
           if (!a) return a
-          const num = a?.number ?? a?.id
-          const n = num != null ? parseInt(String(num).replace(/\D/g, '') || '0', 10) : NaN
-          if (!Number.isNaN(n) && n >= 30 && n <= 39) return a // Bereich 30–39: nie last-Bild
           const id = String(a?.number ?? a?.id ?? '')
           const url = id ? map.get(id) : null
           return url ? { ...a, imageUrl: url } : a
@@ -3100,15 +3097,12 @@ function ScreenshotExportAdmin() {
         }
         const inIframe = typeof window !== 'undefined' && window.self !== window.top
         let list = inIframe ? artworks.map((a: any) => (a && typeof a?.imageUrl === 'string' && a.imageUrl.startsWith('data:')) ? { ...a, imageUrl: '' } : a) : artworks
-        // Mobil: Gespeichertes Bild wieder einsetzen, wenn resolve noch leer/Fallback liefert – NIEMALS für bereinigten Bereich 30–39
+        // Mobil: Gespeichertes Bild wieder einsetzen, wenn resolve noch leer/Fallback liefert
         const last = lastSavedArtworkImageRef.current
         if (last?.imageUrl && list.length > 0) {
           const id = last.number
           list = list.map((a: any) => {
             if (!a || String(a?.number ?? a?.id ?? '') !== id) return a
-            const num = a?.number ?? a?.id
-            const n = num != null ? parseInt(String(num).replace(/\D/g, '') || '0', 10) : NaN
-            if (!Number.isNaN(n) && n >= 30 && n <= 39) return a // Bereich 30–39: nie Fallback, Bilder bleiben weg
             const u = a.imageUrl
             const isFallback = typeof u === 'string' && u.startsWith('https://k2-galerie.vercel.app/img/k2/werk-')
             if (!u || u.length < 50 || isFallback) return { ...a, imageUrl: last.imageUrl }
@@ -3141,9 +3135,6 @@ function ScreenshotExportAdmin() {
           const id = last.number
           list = list.map((a: any) => {
             if (!a || String(a?.number ?? a?.id ?? '') !== id) return a
-            const num = a?.number ?? a?.id
-            const n = num != null ? parseInt(String(num).replace(/\D/g, '') || '0', 10) : NaN
-            if (!Number.isNaN(n) && n >= 30 && n <= 39) return a // Bereich 30–39: nie Fallback
             const u = a.imageUrl
             const isFb = typeof u === 'string' && u.startsWith('https://k2-galerie.vercel.app/img/k2/werk-')
             if (!u || u.length < 50 || isFb) return { ...a, imageUrl: last.imageUrl }
@@ -12237,25 +12228,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
 
                 const PLACEHOLDER_KEIN_BILD = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
                 const VERCEL_IMG_BASE = 'https://k2-galerie.vercel.app'
-                const isInClearedRange30_39 = (a: any) => {
-                  const num = a?.number ?? a?.id
-                  if (num == null || num === '') return false
-                  const s = String(num).trim()
-                  const withPrefix = s.match(/^K2-[A-Z]-?(\d+)$/i)
-                  const n = withPrefix ? parseInt(withPrefix[1], 10) : parseInt(s.replace(/\D/g, '') || '0', 10)
-                  return !Number.isNaN(n) && n >= 30 && n <= 39
-                }
                 return filtered.map((artwork) => {
                   let rawSrc = artwork.imageUrl || artwork.previewUrl
                   // imageRef als URL (Supabase/GitHub) nutzen wenn imageUrl leer
                   if (!rawSrc && artwork.imageRef && typeof artwork.imageRef === 'string' && (artwork.imageRef.startsWith('http://') || artwork.imageRef.startsWith('https://'))) rawSrc = artwork.imageRef
-                  // Bereich 30–39: nur Fallback/Platzhalter unterdrücken – neu gespeichertes Bild (data: jpeg/png) anzeigen
-                  if (isInClearedRange30_39(artwork)) {
-                    const isNewImage = typeof rawSrc === 'string' && rawSrc.startsWith('data:image') && !rawSrc.startsWith('data:image/svg')
-                    if (!isNewImage) rawSrc = ''
-                  }
-                  // Fallback: Vercel /img/k2/werk-{Nummer}.jpg (wie bei GitHub-Upload) – für Werke mit nur k2-img-Ref
-                  else if (!rawSrc && (artwork.number || artwork.id)) {
+                  // Fallback: Vercel /img/k2/werk-{Nummer}.jpg – für Werke mit nur k2-img-Ref
+                  if (!rawSrc && (artwork.number || artwork.id)) {
                     const id = String(artwork.number || artwork.id).trim().replace(/[^a-zA-Z0-9-]/g, '-')
                     if (id) rawSrc = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
                   }

@@ -157,19 +157,6 @@ export async function prepareArtworksForStorage(artworks: any[]): Promise<any[]>
 /** Basis-URL für Vercel-Bilder (Fallback wenn IndexedDB leer, z. B. anderes Gerät). */
 const VERCEL_IMG_BASE = 'https://k2-galerie.vercel.app'
 
-/** Bereich 30–39: Nach „Bilder 0030–0039 bereinigen“ darf hier nie wieder ein Fallback-Bild angezeigt werden (auch nicht aus Server/alten Daten). */
-const CLEARED_IMAGE_RANGE: [number, number] = [30, 39]
-
-/** Prüft, ob die Nummer aus imageRef (z. B. k2-img-0030 oder k2-img-K2-K-0030) im bereinigten Bereich liegt. */
-function isRefInClearedImageRange(ref: string): boolean {
-  if (!ref || !ref.startsWith('k2-img-')) return false
-  const id = ref.replace(/^k2-img-/, '').trim()
-  const withPrefix = id.match(/^K2-[A-Z]-?(\d+)$/i)
-  const n = withPrefix ? parseInt(withPrefix[1], 10) : parseInt(id.replace(/\D/g, '') || '0', 10)
-  if (Number.isNaN(n)) return false
-  return n >= CLEARED_IMAGE_RANGE[0] && n <= CLEARED_IMAGE_RANGE[1]
-}
-
 /** Dateinamen-Teil für Vercel-Fallback aus Werk (number/id). z. B. K2-K-0014 → K2-K-0014 für werk-K2-K-0014.jpg */
 function getVercelFallbackIdFromArtwork(artwork: any): string | null {
   const raw = artwork?.number ?? artwork?.id
@@ -183,62 +170,52 @@ function getVercelFallbackIdFromArtwork(artwork: any): string | null {
  * Löst imageRef in imageUrl auf: IndexedDB oder direkte URL (Supabase/Vercel).
  * Wenn imageRef eine http(s)-URL ist, wird sie direkt als imageUrl genutzt (kein Platzhalter).
  * Wenn imageRef = k2-img-{Nummer} und IndexedDB liefert nichts: Fallback-URL /img/k2/werk-{Nummer}.jpg (GitHub-Upload-Namensschema).
- * Ausnahme: Nummern im bereinigten Bereich (30–39) bekommen nie Fallback – Bilder bleiben dort weg.
+ * Alle Nummern (inkl. 0030–0039) werden gleich behandelt – Bilder anzeigen wenn vorhanden (Server/IndexedDB/Vercel-Fallback).
  */
 export async function resolveArtworkImages(artworks: any[]): Promise<any[]> {
   if (!Array.isArray(artworks) || artworks.length === 0) return artworks
   const out: any[] = []
   for (const a of artworks) {
     if (!a) { out.push(a); continue }
-    // Bereits echte URL (z. B. Supabase vom iPad) → sofort nutzen, kein IndexedDB nötig (Mac/anderes Gerät).
+    // Bereits echte URL (z. B. Supabase vom iPad) → sofort nutzen
     const url = a.imageUrl
     if (typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))) {
-      // Bereinigter Bereich 30–39: auch echte URLs (z. B. aus altem Server-Stand) nicht anzeigen
-      const inCleared = a?.number != null && isArtworkNumberInRange(a, CLEARED_IMAGE_RANGE[0], CLEARED_IMAGE_RANGE[1])
-      out.push({ ...a, imageUrl: inCleared ? '' : url, imageRef: inCleared ? '' : (a.imageRef || url) })
+      out.push({ ...a, imageRef: a.imageRef || url })
       continue
     }
     const ref = a.imageRef
     if (ref && typeof ref === 'string') {
       const isUrl = ref.startsWith('http://') || ref.startsWith('https://')
       if (isUrl) {
-        const inCleared = a?.number != null && isArtworkNumberInRange(a, CLEARED_IMAGE_RANGE[0], CLEARED_IMAGE_RANGE[1])
-        out.push({ ...a, imageUrl: inCleared ? '' : ref, imageRef: inCleared ? '' : ref })
+        out.push({ ...a, imageUrl: ref, imageRef: ref })
         continue
       }
       try {
         const dataUrl = await getArtworkImage(ref)
         let imageUrl = dataUrl || a.imageUrl || ''
-        // Fallback: IndexedDB leer – Vercel-Pfad. Ausnahme: bereinigter Bereich 30–39 → nie Fallback
-        if (!imageUrl && ref.startsWith('k2-img-') && !isRefInClearedImageRange(ref)) {
+        // Fallback: IndexedDB leer – Vercel-Pfad
+        if (!imageUrl && ref.startsWith('k2-img-')) {
           const id = ref.replace(/^k2-img-/, '').trim().replace(/[^a-zA-Z0-9-]/g, '-')
           if (id) imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
         }
-        // 30–39: nur Fallback/ alte URLs unterdrücken – neu gespeichertes Bild (data:) behalten
-        if (isRefInClearedImageRange(ref) && typeof imageUrl === 'string' && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) imageUrl = ''
         out.push({ ...a, imageUrl, imageRef: ref })
       } catch {
-        // Bei Fehler (z. B. IndexedDB nicht verfügbar): Fallback-URL für Nicht-30–39, damit Galerie Bilder zeigt
         let imageUrl = a.imageUrl || ''
-        if (!imageUrl && ref.startsWith('k2-img-') && !isRefInClearedImageRange(ref)) {
+        if (!imageUrl && ref.startsWith('k2-img-')) {
           const id = ref.replace(/^k2-img-/, '').trim().replace(/[^a-zA-Z0-9-]/g, '-')
           if (id) imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
         }
-        if (isRefInClearedImageRange(ref) && typeof imageUrl === 'string' && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) imageUrl = ''
         out.push({ ...a, imageUrl, imageRef: ref })
       }
     } else {
-      // Kein imageRef (z. B. Keramik nach Merge/älterem Stand): Fallback aus number/id, damit Galerie Bilder zeigt wenn Datei auf Vercel liegt
-      const inCleared = a?.number != null && isArtworkNumberInRange(a, CLEARED_IMAGE_RANGE[0], CLEARED_IMAGE_RANGE[1])
-      if (!inCleared) {
-        const fallbackId = getVercelFallbackIdFromArtwork(a)
-        if (fallbackId) {
-          const imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${fallbackId}.jpg`
-          out.push({ ...a, imageUrl: imageUrl })
-          continue
-        }
+      // Kein imageRef: Fallback aus number/id (z. B. Keramik nach Merge)
+      const fallbackId = getVercelFallbackIdFromArtwork(a)
+      if (fallbackId) {
+        const imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${fallbackId}.jpg`
+        out.push({ ...a, imageUrl })
+      } else {
+        out.push(a)
       }
-      out.push(a)
     }
   }
   return out
