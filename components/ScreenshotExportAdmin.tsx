@@ -2791,7 +2791,7 @@ function ScreenshotExportAdmin() {
         // K2: Prozesssicherheit – nur zentraler Ablauf (publishGalleryDataToServer). Sportwagenmodus: ImageStore.
         if (!tenant.isOeffentlich && !tenant.isVk2) {
           try {
-            saveArtworksByKeyWithImageStore('k2-artworks', artworksForExport, { filterK2Only: true, allowReduce: false }).then((saved) => {
+            saveArtworksByKeyWithImageStore('k2-artworks', artworksForExport, { filterK2Only: true, allowReduce: false }).then(async (saved) => {
               if (!saved) { if (isMountedRef.current && !silent) setIsDeploying(false); if (!silent) alert('Fehler beim Speichern'); return }
               persistStammdaten('k2', 'martina', martinaExport as Record<string, unknown>)
               persistStammdaten('k2', 'georg', georgExport as Record<string, unknown>)
@@ -2801,7 +2801,9 @@ function ScreenshotExportAdmin() {
               localStorage.setItem('k2-design-settings', JSON.stringify(designExport))
               if (pageTextsExport != null) localStorage.setItem('k2-page-texts', JSON.stringify(pageTextsExport))
               if (pageContentGalerieRaw != null && pageContentGalerieRaw.length > 0) localStorage.setItem('k2-page-content-galerie', pageContentGalerieRaw)
-              const toPublish = readArtworksRawByKey('k2-artworks')
+              // Mit aufgelösten Bildern veröffentlichen (30–48 etc.), sonst fehlen Bild-URLs am Server und auf anderen Geräten
+              const raw = readArtworksRawByKey('k2-artworks')
+              const toPublish = await resolveArtworkImages(raw)
               publishGalleryDataToServer(toPublish).then((result) => {
               if (!isMountedRef.current) return
               if (!silent) setIsDeploying(false)
@@ -13348,7 +13350,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           if (githubResult.deleted.length > 0) githubMsg = `\nVercel/GitHub: ${githubResult.deleted.length} Datei(en) gelöscht.`
                           else if (githubResult.skipped) githubMsg = `\nVercel/GitHub: ${githubResult.skipped}`
                           else githubMsg = '\nVercel/GitHub: keine Treffer.'
-                          const publishResult = await publishGalleryDataToServer(readArtworksRawByKey('k2-artworks'))
+                          const toPublishResolved = await resolveArtworkImages(readArtworksRawByKey('k2-artworks'))
+                          const publishResult = await publishGalleryDataToServer(toPublishResolved)
                           const publishMsg = publishResult.success ? '\n\nGalerie veröffentlicht.' : (publishResult.error ? `\n\nVeröffentlichen: ${publishResult.error}` : '')
                           alert(`✅ Überall bereinigt.\n\n${clearedCount} Werke, ${idbDeletedCount} IndexedDB.${supabaseMsg}${githubMsg}${publishMsg}\n\nAuf anderen Geräten: Seite neu laden oder Stand-Badge tippen.`)
                         } catch (e) {
@@ -14740,7 +14743,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             if (githubResult.deleted.length > 0) githubMsg = `\nVercel/GitHub: ${githubResult.deleted.length} Datei(en) gelöscht (${githubResult.deleted.join(', ')}).`
                             else if (githubResult.skipped) githubMsg = `\nVercel/GitHub: ${githubResult.skipped}`
                             else githubMsg = '\nVercel/GitHub: keine Treffer.'
-                            const publishResult = await publishGalleryDataToServer(readArtworksRawByKey('k2-artworks'))
+                            const toPublishResolved = await resolveArtworkImages(readArtworksRawByKey('k2-artworks'))
+                            const publishResult = await publishGalleryDataToServer(toPublishResolved)
                             const publishMsg = publishResult.success ? '\n\nGalerie veröffentlicht.' : (publishResult.error ? `\n\nVeröffentlichen: ${publishResult.error}` : '')
                             alert(`✅ Überall bereinigt.\n\n${clearedCount} Werke, ${idbDeletedCount} IndexedDB.${supabaseMsg}${githubMsg}${publishMsg}\n\nAuf anderen Geräten: Seite neu laden oder Stand-Badge tippen.`)
                           } catch (e) {
