@@ -3025,6 +3025,9 @@ function ScreenshotExportAdmin() {
       if (map && map.size > 0) {
         const withSaved = stripped.map((a: any) => {
           if (!a) return a
+          const num = a?.number ?? a?.id
+          const n = num != null ? parseInt(String(num).replace(/\D/g, '') || '0', 10) : NaN
+          if (!Number.isNaN(n) && n >= 30 && n <= 39) return a // Bereich 30–39: nie last-Bild
           const id = String(a?.number ?? a?.id ?? '')
           const url = id ? map.get(id) : null
           return url ? { ...a, imageUrl: url } : a
@@ -12234,12 +12237,22 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
 
                 const PLACEHOLDER_KEIN_BILD = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
                 const VERCEL_IMG_BASE = 'https://k2-galerie.vercel.app'
+                const isInClearedRange30_39 = (a: any) => {
+                  const num = a?.number ?? a?.id
+                  if (num == null || num === '') return false
+                  const s = String(num).trim()
+                  const withPrefix = s.match(/^K2-[A-Z]-?(\d+)$/i)
+                  const n = withPrefix ? parseInt(withPrefix[1], 10) : parseInt(s.replace(/\D/g, '') || '0', 10)
+                  return !Number.isNaN(n) && n >= 30 && n <= 39
+                }
                 return filtered.map((artwork) => {
                   let rawSrc = artwork.imageUrl || artwork.previewUrl
                   // imageRef als URL (Supabase/GitHub) nutzen wenn imageUrl leer
                   if (!rawSrc && artwork.imageRef && typeof artwork.imageRef === 'string' && (artwork.imageRef.startsWith('http://') || artwork.imageRef.startsWith('https://'))) rawSrc = artwork.imageRef
+                  // Bereich 30–39: Nach „Bilder 0030–0039 bereinigen“ nie Fallback – Platzhalter zeigen
+                  if (isInClearedRange30_39(artwork)) rawSrc = ''
                   // Fallback: Vercel /img/k2/werk-{Nummer}.jpg (wie bei GitHub-Upload) – für Werke mit nur k2-img-Ref
-                  if (!rawSrc && (artwork.number || artwork.id)) {
+                  else if (!rawSrc && (artwork.number || artwork.id)) {
                     const id = String(artwork.number || artwork.id).trim().replace(/[^a-zA-Z0-9-]/g, '-')
                     if (id) rawSrc = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
                   }
@@ -13241,12 +13254,37 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       {entlastenInProgress ? '⏳ Verkleinere…' : '🗜️ Speicher entlasten'}
                     </button>
                   </div>
-                  <div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     <button
                       type="button"
                       disabled={clearImages0030_0039InProgress || restoreProgress !== 'idle'}
                       onClick={async () => {
-                        if (!confirm('Nur die BILDER für 0030–0039 überall löschen (lokal, Supabase, Vercel/GitHub). Titel und Nummern bleiben. Fortfahren?')) return
+                        if (!confirm('Nur lokal (dieser Mac): Bilder 0030–0039 löschen. Titel und Nummern bleiben. Fortfahren?')) return
+                        setClearImages0030_0039InProgress(true)
+                        try {
+                          const artworks = readArtworksRawByKey('k2-artworks')
+                          const { updated, clearedCount, idbDeletedCount } = await clearArtworkImagesForNumberRange(artworks, 30, 39)
+                          saveArtworksByKey('k2-artworks', updated, { filterK2Only: true, allowReduce: false })
+                          lastSavedArtworkImageRef.current = null
+                          const resolved = await resolveArtworkImages(updated)
+                          setAllArtworksSafe(resolved)
+                          if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromBereinigung: true } }))
+                          alert(`✅ Nur lokal bereinigt.\n\n${clearedCount} Werke, ${idbDeletedCount} IndexedDB. Die Ansicht hier ist aktualisiert – 0030–0039 haben keine Bilder mehr.`)
+                        } catch (e) {
+                          alert('⚠️ Bereinigung fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
+                        } finally {
+                          setClearImages0030_0039InProgress(false)
+                        }
+                      }}
+                      style={{ padding: '0.75rem 1.25rem', background: clearImages0030_0039InProgress ? s.muted + '22' : s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: clearImages0030_0039InProgress ? 'wait' : 'pointer' }}
+                    >
+                      🖼️ Nur lokal (Mac) – 0030–0039
+                    </button>
+                    <button
+                      type="button"
+                      disabled={clearImages0030_0039InProgress || restoreProgress !== 'idle'}
+                      onClick={async () => {
+                        if (!confirm('Überall: Bilder 0030–0039 löschen – lokal, Supabase, Vercel/GitHub und Galerie veröffentlichen. Fortfahren?')) return
                         setClearImages0030_0039InProgress(true)
                         try {
                           const artworks = readArtworksRawByKey('k2-artworks')
@@ -13254,7 +13292,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           saveArtworksByKey('k2-artworks', updated, { filterK2Only: true, allowReduce: false })
                           if (isSupabaseConfigured()) await saveArtworksToSupabase(updated)
                           lastSavedArtworkImageRef.current = null
-                          loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
+                          const resolved = await resolveArtworkImages(updated)
+                          setAllArtworksSafe(resolved)
                           if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromBereinigung: true } }))
                           let supabaseMsg = ''
                           const supabaseResult = await deleteArtworkImagesInStorageForNumberRange(30, 39)
@@ -13267,8 +13306,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           else if (githubResult.skipped) githubMsg = `\nVercel/GitHub: ${githubResult.skipped}`
                           else githubMsg = '\nVercel/GitHub: keine Treffer.'
                           const publishResult = await publishGalleryDataToServer(readArtworksRawByKey('k2-artworks'))
-                          const publishMsg = publishResult.success ? '\n\nGalerie wurde veröffentlicht – öffentliche Ansicht und andere Geräte haben den bereinigten Stand.' : (publishResult.error ? `\n\nVeröffentlichen: ${publishResult.error}` : '')
-                          alert(`✅ Bilder 0030–0039 bereinigt.\n\n${clearedCount} Werke, ${idbDeletedCount} IndexedDB.${supabaseMsg}${githubMsg}${publishMsg}\n\nSeite neu laden oder Stand-Badge tippen, dann siehst du überall keine alten Bilder mehr.`)
+                          const publishMsg = publishResult.success ? '\n\nGalerie veröffentlicht.' : (publishResult.error ? `\n\nVeröffentlichen: ${publishResult.error}` : '')
+                          alert(`✅ Überall bereinigt.\n\n${clearedCount} Werke, ${idbDeletedCount} IndexedDB.${supabaseMsg}${githubMsg}${publishMsg}\n\nAuf anderen Geräten: Seite neu laden oder Stand-Badge tippen.`)
                         } catch (e) {
                           alert('⚠️ Bereinigung fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
                         } finally {
@@ -13277,9 +13316,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       }}
                       style={{ padding: '0.75rem 1.25rem', background: clearImages0030_0039InProgress ? s.muted + '22' : s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: clearImages0030_0039InProgress ? 'wait' : 'pointer' }}
                     >
-                      {clearImages0030_0039InProgress ? '⏳ Bereinige…' : '🖼️ Bilder 0030–0039 bereinigen (nur Bilder, Werke bleiben)'}
+                      🖼️ Überall – lokal + Supabase + Vercel + Galerie
                     </button>
-                    <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Entfernt Bilddaten für 0030–0039 überall. Danach neue Bilder einstellen.</p>
+                    <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Oben: nur dieser Mac. Unten: auch Netz und Galerie. Danach neue Bilder einstellen.</p>
                   </div>
                 </div>
               </div>
@@ -14607,12 +14646,37 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Verkleinert alle Werkbilder im Speicher (ohne etwas zu löschen). Hilft, wenn „Speicher voll“ erscheint – danach hast du wieder Platz für weitere Werke.</p>
                     </div>
                     {!tenant.isOeffentlich && !tenant.isVk2 && (
-                    <div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                       <button
                         type="button"
                         disabled={clearImages0030_0039InProgress || restoreProgress !== 'idle'}
                         onClick={async () => {
-                          if (!confirm('Nur die BILDER für die Werke 0030–0039 werden überall gelöscht:\n• lokal (IndexedDB + Verweise)\n• Supabase Storage\n• Vercel/GitHub (public/img/k2/)\n\nTitel und Nummern bleiben. Danach neue Bilder einstellen.\n\nFortfahren?')) return
+                          if (!confirm('Nur lokal (dieser Mac): Bilder 0030–0039 löschen. Titel und Nummern bleiben. Fortfahren?')) return
+                          setClearImages0030_0039InProgress(true)
+                          try {
+                            const artworks = readArtworksRawByKey('k2-artworks')
+                            const { updated, clearedCount, idbDeletedCount } = await clearArtworkImagesForNumberRange(artworks, 30, 39)
+                            saveArtworksByKey('k2-artworks', updated, { filterK2Only: true, allowReduce: false })
+                            lastSavedArtworkImageRef.current = null
+                            const resolved = await resolveArtworkImages(updated)
+                            setAllArtworksSafe(resolved)
+                            if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromBereinigung: true } }))
+                            alert(`✅ Nur lokal bereinigt.\n\n${clearedCount} Werke, ${idbDeletedCount} IndexedDB. Die Ansicht hier ist aktualisiert – 0030–0039 haben keine Bilder mehr.`)
+                          } catch (e) {
+                            alert('⚠️ Bereinigung fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
+                          } finally {
+                            setClearImages0030_0039InProgress(false)
+                          }
+                        }}
+                        style={{ padding: '0.75rem 1.25rem', background: clearImages0030_0039InProgress ? s.muted + '22' : s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: clearImages0030_0039InProgress ? 'wait' : 'pointer' }}
+                      >
+                        🖼️ Nur lokal (Mac) – 0030–0039
+                      </button>
+                      <button
+                        type="button"
+                        disabled={clearImages0030_0039InProgress || restoreProgress !== 'idle'}
+                        onClick={async () => {
+                          if (!confirm('Überall: Bilder 0030–0039 löschen – lokal, Supabase, Vercel/GitHub und Galerie veröffentlichen. Fortfahren?')) return
                           setClearImages0030_0039InProgress(true)
                           try {
                             const artworks = readArtworksRawByKey('k2-artworks')
@@ -14620,7 +14684,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             saveArtworksByKey('k2-artworks', updated, { filterK2Only: true, allowReduce: false })
                             if (isSupabaseConfigured()) await saveArtworksToSupabase(updated)
                             lastSavedArtworkImageRef.current = null
-                            loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)
+                            const resolved = await resolveArtworkImages(updated)
+                            setAllArtworksSafe(resolved)
                             if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromBereinigung: true } }))
                             let supabaseMsg = ''
                             const supabaseResult = await deleteArtworkImagesInStorageForNumberRange(30, 39)
@@ -14633,8 +14698,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             else if (githubResult.skipped) githubMsg = `\nVercel/GitHub: ${githubResult.skipped}`
                             else githubMsg = '\nVercel/GitHub: keine Treffer.'
                             const publishResult = await publishGalleryDataToServer(readArtworksRawByKey('k2-artworks'))
-                            const publishMsg = publishResult.success ? '\n\nGalerie wurde veröffentlicht – öffentliche Ansicht und andere Geräte haben den bereinigten Stand.' : (publishResult.error ? `\n\nVeröffentlichen: ${publishResult.error}` : '')
-                            alert(`✅ Bilder 0030–0039 überall bereinigt.\n\n• ${clearedCount} Werke: Bilddaten entfernt.\n• IndexedDB: ${idbDeletedCount} Einträge gelöscht.${supabaseMsg}${githubMsg}${publishMsg}\n\nSeite neu laden oder Stand-Badge tippen. Danach neue Bilder für diese Nummern einstellen.`)
+                            const publishMsg = publishResult.success ? '\n\nGalerie veröffentlicht.' : (publishResult.error ? `\n\nVeröffentlichen: ${publishResult.error}` : '')
+                            alert(`✅ Überall bereinigt.\n\n${clearedCount} Werke, ${idbDeletedCount} IndexedDB.${supabaseMsg}${githubMsg}${publishMsg}\n\nAuf anderen Geräten: Seite neu laden oder Stand-Badge tippen.`)
                           } catch (e) {
                             alert('⚠️ Bereinigung fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
                           } finally {
@@ -14643,9 +14708,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         }}
                         style={{ padding: '0.75rem 1.25rem', background: clearImages0030_0039InProgress ? s.muted + '22' : s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: clearImages0030_0039InProgress ? 'wait' : 'pointer' }}
                       >
-                        {clearImages0030_0039InProgress ? '⏳ Bereinige…' : '🖼️ Bilder 0030–0039 bereinigen (nur Bilder, Werke bleiben)'}
+                        🖼️ Überall – lokal + Supabase + Vercel + Galerie
                       </button>
-                      <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Entfernt Bilddaten für 0030–0039 überall: lokal (IndexedDB), Supabase Storage, Vercel/GitHub. Danach neue Bilder einstellen.</p>
+                      <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Oben: nur dieser Mac. Unten: auch Netz und Galerie. Danach neue Bilder einstellen.</p>
                     </div>
                     )}
                     {hasBackup() && (

@@ -37,6 +37,8 @@ function isArtworkInClearedImageRange(a: any): boolean {
   return n >= 30 && n <= 39
 }
 
+const VERCEL_IMG_BASE = 'https://k2-galerie.vercel.app'
+
 /** K2: Werke mit aufgelösten Bildern (IndexedDB imageRef → imageUrl) + Platzhalter. Nur „In Online-Galerie anzeigen“ (inExhibition === true). Bereich 30–39: nie Bild anzeigen (bereinigt). */
 async function loadArtworksResolvedForDisplay(): Promise<any[]> {
   const resolved = await readArtworksForContextWithResolvedImages(false, false)
@@ -51,7 +53,12 @@ async function loadArtworksResolvedForDisplay(): Promise<any[]> {
       return out
     }
     if (!out.imageUrl && out.previewUrl) out.imageUrl = out.previewUrl
-    if (!out.imageUrl && !out.previewUrl) out.imageUrl = placeholder
+    // Sicherheit: Hat imageRef aber kein Bild (z. B. nach Fehler in resolve) → Vercel-Fallback, damit Galerie Bilder zeigt
+    if (!out.imageUrl && out.imageRef && typeof out.imageRef === 'string' && out.imageRef.startsWith('k2-img-')) {
+      const id = out.imageRef.replace(/^k2-img-/, '').trim().replace(/[^a-zA-Z0-9-]/g, '-')
+      if (id) out.imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
+    }
+    if (!out.imageUrl) out.imageUrl = placeholder
     return out
   })
 }

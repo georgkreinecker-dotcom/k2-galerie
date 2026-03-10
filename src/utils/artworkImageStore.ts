@@ -208,7 +208,14 @@ export async function resolveArtworkImages(artworks: any[]): Promise<any[]> {
         if (isRefInClearedImageRange(ref)) imageUrl = ''
         out.push({ ...a, imageUrl, imageRef: ref })
       } catch {
-        out.push(a)
+        // Bei Fehler (z. B. IndexedDB nicht verfügbar): Fallback-URL für Nicht-30–39, damit Galerie Bilder zeigt
+        let imageUrl = a.imageUrl || ''
+        if (!imageUrl && ref.startsWith('k2-img-') && !isRefInClearedImageRange(ref)) {
+          const id = ref.replace(/^k2-img-/, '').trim().replace(/[^a-zA-Z0-9-]/g, '-')
+          if (id) imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
+        }
+        if (isRefInClearedImageRange(ref)) imageUrl = ''
+        out.push({ ...a, imageUrl, imageRef: ref })
       }
     } else {
       out.push(a)

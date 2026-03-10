@@ -8,8 +8,8 @@
 
 ## Session-Ende 10.03.26
 
-- **Heute:** (1) **Sync iPad ↔ Mac:** Few-Works-Fallback entfernt (BUG-023). (2) **„Bilder 0030–0039 bereinigen“ – Fotos blieben sichtbar:** Ursache = Admin lastSavedArtworkImageRef (Fallback-Bild) füllte bereinigte Werke wieder. Fix: Bei fromBereinigung Ref null; Fallback nie für Nummern 30–39; im Bereinigen-Button Ref null. BUG-024 ergänzt. Commit: 3b537b6 ✅ auf GitHub.
-- **Nächster Einstieg:** Georg testen: (1) Sync iPad → Mac „Vom Server laden“. (2) „Bilder 0030–0039 bereinigen“ – danach sollen 0030/0031 (und 30–39) ohne Foto bleiben.
+- **Heute:** (1) **Sync iPad ↔ Mac:** Few-Works-Fallback entfernt (BUG-023). (2) **„Bilder 0030–0039 bereinigen“ – Fotos blieben sichtbar:** … BUG-024. (3) **„Bilder sind noch immer da“:** Export/Supabase + setAllArtworksSafe 30–39-Fix. (4) **„In der Galerie fehlen Fotos die in den Werken vorhanden sind“ (z. B. K2-K-0013, K2-K-0014):** Ursache: resolveArtworkImages im catch-Zweig pushte Werk unverändert (ohne imageUrl); loadArtworksResolvedForDisplay hatte keinen Fallback bei imageRef ohne Bild. Fix: artworkImageStore – im catch Fallback-URL für Nicht-30–39 setzen; GalerieVorschauPage loadArtworksResolvedForDisplay – bei imageRef aber kein imageUrl Vercel-Fallback-URL setzen. Nur 30–39 bleiben ohne Bild.
+- **Nächster Einstieg:** Georg testen: Galerie/Vorschau – Werke wie K2-K-0013, K2-K-0014 sollen wieder Bilder anzeigen; 30–39 weiterhin „Kein Bild“.
 - **Hinweis (10.03.26):** Versehentlich Cmd+R in Cursor – kein inhaltlicher Sprung. Anke: Marketing-Strategie (docs/AUFTRAG-MARKETING-STRATEGIE-ZWEI-ZWEIGE.md) bleibt Hauptaufgabe.
 
 ---
