@@ -8,8 +8,8 @@
 
 ## Session-Ende 10.03.26
 
-- **Heute:** **Sync Mobil → Mac (Veröffentlichen / Vom Server laden):** (1) Veröffentlichen geht immer an Vercel-URL (publishGalleryData.ts: GALLERY_DATA_BASE_URL), damit Mobil und Mac dieselbe Quelle nutzen. (2) „Vom Server laden“: Bei API-Fehler wird **keine** statische Datei mehr geladen (verhinderte Überschreiben mit altem Build-Stand); klare Meldung „API nicht erreichbar …“ und lokale Werke bleiben. (3) Nach Speichern (Bearbeiten/Neues Werk) sichtbare Meldung: „✅ Veröffentlicht (N Werke)“ oder „❌ Veröffentlichen fehlgeschlagen: …“. Doku: PROZESS-VEROEFFENTLICHEN-LADEN.md Abschnitt 4.
-- **Nächster Einstieg:** Nach Push/Deploy: Mobil Werk ändern → Speichern → Meldung prüfen (Erfolg oder Fehler). Am Mac „Vom Server laden“ → bei API-Fehler erscheint Hinweis, keine stille Überschreibung mehr.
+- **Heute:** **Sync iPad ↔ Mac (noch immer gleiches Problem):** Ursache war der **Few-Works-Fallback**: Bei API 200 mit ≤15 Werken wurde die Antwort durch die statische Build-Datei ersetzt → frisch vom iPad veröffentlichter Stand konnte durch Build-Stand überschrieben werden. **Fix:** API (Blob) = **einzige** Quelle; Fallback in GaleriePage und GalerieVorschauPage entfernt. BUG-023 in GELOESTE-BUGS.md, PROZESS-VEROEFFENTLICHEN-LADEN.md Abschnitt 4 ergänzt.
+- **Nächster Einstieg:** Georg testen: iPad – Werk ändern/speichern → „✅ Veröffentlicht (N Werke)“ abwarten. Mac – „Vom Server laden“ → soll exakt den iPad-Stand zeigen (keine Vermischung mit Build-Datei mehr).
 
 ---
 

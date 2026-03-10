@@ -59,10 +59,11 @@
 
 ---
 
-## 4. Zwei kritische Fehlerquellen (behoben)
+## 4. Kritische Fehlerquellen (behoben)
 
 - **API-Fehler → statische Datei:** Wenn „Vom Server laden“ die API nicht erreichte, wurde vorher die statische `gallery-data.json` (Build-Stand) geladen und hat lokale Daten überschrieben → am Mac kam „nichts an“ oder alter Stand. **Behoben:** Bei API-Fehler wird keine statische Datei mehr geladen; es wird eine Fehlermeldung angezeigt und die lokalen Werke bleiben unverändert.
 - **Veröffentlichen ohne Rückmeldung:** Fehlgeschlagenes Veröffentlichen war nur in der Konsole sichtbar. **Behoben:** Nach Speichern (Bearbeiten/Neues Werk) erscheint sichtbar „✅ Veröffentlicht (N Werke)“ oder „❌ Veröffentlichen fehlgeschlagen: …“.
+- **Few-Works-Fallback (Sync iPad ↔ Mac):** Wenn die API 200 mit wenigen Werken (≤15) lieferte, wurde die Antwort durch die **statische** Build-Datei ersetzt, sobald die mehr Werke hatte. Dadurch konnte der **frisch vom iPad veröffentlichte** Blob-Stand durch den **Build-Stand** überschrieben werden → Mac sah nach „Vom Server laden“ nicht das, was das iPad gerade veröffentlicht hatte. **Behoben (10.03.26):** API (Blob) ist die **einzige** Quelle; kein Ersetzen durch statische Datei mehr. GaleriePage und GalerieVorschauPage nutzen nur noch die API-Antwort.
 
 ---
 

@@ -10,6 +10,15 @@
 
 ---
 
+## BUG-023 · Sync iPad ↔ Mac: „Vom Server laden“ zeigt nicht den frisch vom iPad veröffentlichten Stand
+**Symptom:** Synchronisierung der Daten zwischen iPad und Mac funktioniert weiterhin nicht – am Mac kommt nach „Vom Server laden“ nicht der Stand an, den das iPad gerade veröffentlicht hat.
+**Ursache:** **Few-Works-Fallback:** Wenn die API (Blob) 200 mit wenigen Werken (≤15) lieferte, wurde die Antwort durch die **statische** `gallery-data.json` (Build-Stand) ersetzt, sobald die mehr Werke hatte. Dadurch konnte der frisch vom iPad veröffentlichte Blob-Inhalt durch den älteren Build-Stand überschrieben werden → zwei Quellen (Blob + statische Datei) vermischt.
+**Lösung:** API (Blob) = **einzige** Quelle beim „Vom Server laden“. Den Fallback „API ≤15 Werke → statische Datei nutzen wenn mehr“ in **GaleriePage** (loadData) und **GalerieVorschauPage** (handleRefresh) entfernt. Kein Ersetzen der API-Antwort durch die statische Datei mehr.
+**Betroffene Dateien:** `src/pages/GaleriePage.tsx`, `src/pages/GalerieVorschauPage.tsx`, `docs/PROZESS-VEROEFFENTLICHEN-LADEN.md`
+**Status:** ✅ Behoben (10.03.26).
+
+---
+
 ## BUG-022 · ök2 Willkommensbild – Uraltbild auf erster Seite (zweites Mal)
 **Symptom:** Auf der ersten Seite der ök2-Demo (Willkommen) erscheint ein altes/irrelevantes Bild („Uraltbild“), obwohl das Problem schon einmal behoben worden war.
 **Ursache:** Default für das ök2-Willkommensbild war wieder ein **Repo-Dateipfad** (`/img/oeffentlich/willkommen.jpg`). Diese Datei kann veraltet sein oder ausgetauscht werden – dann sieht jeder die alte Version. Beim ersten Mal (BUG-020) ging es um Upload-Überschreibung; hier geht es um den **Default** selbst.

@@ -1989,8 +1989,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
         }
       }
       const apiUrl = `${baseUrl}/api/gallery-data?tenantId=k2&t=${timestamp}&_=${Date.now()}&bust=${bust}`
-      const staticUrl = `${baseUrl}/gallery-data.json?bust=${bust}&v=${timestamp}&_=${Date.now()}`
-      console.log('🔄 Lade neue Daten vom Server (API zuerst, dann Fallback)...', isMobileDevice ? '(Mobile)' : '')
+      console.log('🔄 Lade neue Daten vom Server (API = Blob = einzige Quelle)...', isMobileDevice ? '(Mobile)' : '')
       
       // NUR API nutzen – nie statische Datei bei Fehler (sonst überschreiben wir mit altem Build-Stand).
       let response: Response | null = null
@@ -2006,22 +2005,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       }
       
       if (response?.ok) {
-        let data = await response.json()
-        const apiCount = data.artworks && Array.isArray(data.artworks) ? data.artworks.length : 0
-        // Blob hat oft nur 10 Werke (alter Publish) – statische Datei aus Build hat alle
-        if (apiCount <= 15) {
-          try {
-            const staticRes = await fetch(staticUrl, fetchOpts)
-            if (staticRes?.ok) {
-              const staticData = await staticRes.json()
-              const staticCount = staticData.artworks && Array.isArray(staticData.artworks) ? staticData.artworks.length : 0
-              if (staticCount > apiCount) {
-                console.log('📥 API hatte nur', apiCount, 'Werke – nutze statische Datei mit', staticCount, 'Werken')
-                data = staticData
-              }
-            }
-          } catch (_) {}
-        }
+        const data = await response.json()
+        // KRITISCH: API (Blob) = einzige Quelle. Kein Ersetzen durch statische Datei – sonst überschreibt Build-Stand den frisch vom iPad veröffentlichten Stand (Sync iPad ↔ Mac kaputt).
         const serverCount = data.artworks && Array.isArray(data.artworks) ? data.artworks.length : 0
         console.log('📥 Server antwortete mit', serverCount, 'Werken (Rohantwort)')
         if (data.designSettings != null && typeof data.designSettings === 'object') {
