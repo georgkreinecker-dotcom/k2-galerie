@@ -47,9 +47,13 @@ async function loadArtworksResolvedForDisplay(): Promise<any[]> {
   const placeholder = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
   return forExhibition.map((a: any) => {
     const out = { ...a }
+    // Bereich 30–39: nur Fallback/Platzhalter unterdrücken – neu gespeichertes Bild (data:) anzeigen
     if (isArtworkInClearedImageRange(out)) {
-      out.imageUrl = placeholder
-      out.previewUrl = ''
+      const hasNewImage = typeof out.imageUrl === 'string' && out.imageUrl.startsWith('data:image') && !out.imageUrl.includes('PHN2Zy') // data: aber kein SVG-Platzhalter
+      if (!hasNewImage) {
+        out.imageUrl = placeholder
+        out.previewUrl = ''
+      }
       return out
     }
     if (!out.imageUrl && out.previewUrl) out.imageUrl = out.previewUrl
@@ -3218,8 +3222,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                     }}>
                       {(() => {
                         let rawSrc = artwork.imageUrl || artwork.previewUrl || ''
-                        // blob:-URLs (z. B. nach iPad-Foto) sind in Vorschau oft ungültig → Platzhalter, sonst "?" als kaputtes Bild
-                        if (typeof rawSrc === 'string' && rawSrc.startsWith('blob:')) rawSrc = ''
+                        // blob:-URLs (iPad/Handy-Kamera) anzeigen – onError zeigt bei Fehlschlag Platzhalter
                         const displaySrc = musterOnly && (!rawSrc || isPlaceholderImageUrl(rawSrc))
                           ? getOek2DefaultArtworkImage(artwork.category)
                           : rawSrc
@@ -4464,27 +4467,17 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                         return
                       }
                       
-                      // SOFORT: Karte aktualisieren – bei Bearbeitung („alte“ Werke): auf Mobil ist prev oft leer, Anzeige kommt aus localStorage-Fallback
-                      const updatedNumber = updatedArtwork?.number ?? updatedArtwork?.id
-                      if (updatedNumber && mobilePhoto && typeof mobilePhoto === 'string') {
+                      // SOFORT: Karte aktualisieren – bei Bearbeitung: gleicher Key wie beim Speichern (String+trim), bei leerem prev Liste aus localStorage
+                      const updatedKey = String(updatedArtwork?.number ?? updatedArtwork?.id ?? '').trim()
+                      if (updatedKey && mobilePhoto && typeof mobilePhoto === 'string') {
                         setArtworks((prev: any[]) => {
                           const list = prev.length > 0 ? prev : loadArtworks()
                           return list.map((a: any) =>
-                            (a?.number ?? a?.id) === updatedNumber ? { ...a, imageUrl: mobilePhoto } : a
+                            String(a?.number ?? a?.id ?? '').trim() === updatedKey ? { ...a, imageUrl: mobilePhoto } : a
                           )
                         })
                       }
-                      // Danach: Vollständige Liste aus IndexedDB (Sync, Platzhalter für andere)
-                      loadArtworksResolvedForDisplay().then((list) => {
-                        let k2List = filterK2ArtworksOnly(list)
-                        if (updatedNumber && mobilePhoto && typeof mobilePhoto === 'string') {
-                          k2List = k2List.map((a: any) =>
-                            (a?.number ?? a?.id) === updatedNumber ? { ...a, imageUrl: mobilePhoto } : a
-                          )
-                        }
-                        setArtworksDisplay(k2List)
-                        console.log('✅ Werke-Liste nach Update aktualisiert (resolved):', k2List.length, 'Werke')
-                      })
+                      // NICHT setArtworksDisplay nach Bearbeiten: würde mit „nur Ausstellung“-Liste überschreiben und das gerade gesetzte Bild wieder wegnehmen
                       
                       // PROFESSIONELL: Automatische Mobile-Sync nach jedem Speichern
                       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768

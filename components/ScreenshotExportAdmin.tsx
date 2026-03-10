@@ -12249,8 +12249,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   let rawSrc = artwork.imageUrl || artwork.previewUrl
                   // imageRef als URL (Supabase/GitHub) nutzen wenn imageUrl leer
                   if (!rawSrc && artwork.imageRef && typeof artwork.imageRef === 'string' && (artwork.imageRef.startsWith('http://') || artwork.imageRef.startsWith('https://'))) rawSrc = artwork.imageRef
-                  // Bereich 30–39: Nach „Bilder 0030–0039 bereinigen“ nie Fallback – Platzhalter zeigen
-                  if (isInClearedRange30_39(artwork)) rawSrc = ''
+                  // Bereich 30–39: nur Fallback/Platzhalter unterdrücken – neu gespeichertes Bild (data: jpeg/png) anzeigen
+                  if (isInClearedRange30_39(artwork)) {
+                    const isNewImage = typeof rawSrc === 'string' && rawSrc.startsWith('data:image') && !rawSrc.startsWith('data:image/svg')
+                    if (!isNewImage) rawSrc = ''
+                  }
                   // Fallback: Vercel /img/k2/werk-{Nummer}.jpg (wie bei GitHub-Upload) – für Werke mit nur k2-img-Ref
                   else if (!rawSrc && (artwork.number || artwork.id)) {
                     const id = String(artwork.number || artwork.id).trim().replace(/[^a-zA-Z0-9-]/g, '-')

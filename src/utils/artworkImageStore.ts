@@ -214,7 +214,8 @@ export async function resolveArtworkImages(artworks: any[]): Promise<any[]> {
           const id = ref.replace(/^k2-img-/, '').trim().replace(/[^a-zA-Z0-9-]/g, '-')
           if (id) imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
         }
-        if (isRefInClearedImageRange(ref)) imageUrl = ''
+        // 30–39: nur Fallback/ alte URLs unterdrücken – neu gespeichertes Bild (data:) behalten
+        if (isRefInClearedImageRange(ref) && typeof imageUrl === 'string' && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) imageUrl = ''
         out.push({ ...a, imageUrl, imageRef: ref })
       } catch {
         // Bei Fehler (z. B. IndexedDB nicht verfügbar): Fallback-URL für Nicht-30–39, damit Galerie Bilder zeigt
@@ -223,7 +224,7 @@ export async function resolveArtworkImages(artworks: any[]): Promise<any[]> {
           const id = ref.replace(/^k2-img-/, '').trim().replace(/[^a-zA-Z0-9-]/g, '-')
           if (id) imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
         }
-        if (isRefInClearedImageRange(ref)) imageUrl = ''
+        if (isRefInClearedImageRange(ref) && typeof imageUrl === 'string' && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) imageUrl = ''
         out.push({ ...a, imageUrl, imageRef: ref })
       }
     } else {
