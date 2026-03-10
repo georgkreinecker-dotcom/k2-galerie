@@ -26,7 +26,18 @@ function loadArtworks(): any[] {
   return readArtworksRawForContext(false, false)
 }
 
-/** K2: Werke mit aufgelösten Bildern (IndexedDB imageRef → imageUrl) + Platzhalter. Nur „In Online-Galerie anzeigen“ (inExhibition === true). */
+/** Prüft, ob Werknummer im bereinigten Bereich 30–39 liegt (Bilder 0030–0039 bereinigen). */
+function isArtworkInClearedImageRange(a: any): boolean {
+  const num = a?.number ?? a?.id
+  if (num == null || num === '') return false
+  const s = String(num).trim()
+  const withPrefix = s.match(/^K2-[A-Z]-?(\d+)$/i)
+  const n = withPrefix ? parseInt(withPrefix[1], 10) : parseInt(s.replace(/\D/g, '') || '0', 10)
+  if (Number.isNaN(n)) return false
+  return n >= 30 && n <= 39
+}
+
+/** K2: Werke mit aufgelösten Bildern (IndexedDB imageRef → imageUrl) + Platzhalter. Nur „In Online-Galerie anzeigen“ (inExhibition === true). Bereich 30–39: nie Bild anzeigen (bereinigt). */
 async function loadArtworksResolvedForDisplay(): Promise<any[]> {
   const resolved = await readArtworksForContextWithResolvedImages(false, false)
   const withPending = mergeWithPending(resolved || [])
@@ -34,6 +45,11 @@ async function loadArtworksResolvedForDisplay(): Promise<any[]> {
   const placeholder = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LZWluIEJpbGQ8L3RleHQ+PC9zdmc+'
   return forExhibition.map((a: any) => {
     const out = { ...a }
+    if (isArtworkInClearedImageRange(out)) {
+      out.imageUrl = placeholder
+      out.previewUrl = ''
+      return out
+    }
     if (!out.imageUrl && out.previewUrl) out.imageUrl = out.previewUrl
     if (!out.imageUrl && !out.previewUrl) out.imageUrl = placeholder
     return out
