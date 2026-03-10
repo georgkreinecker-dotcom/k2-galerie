@@ -1,0 +1,75 @@
+---
+description: Mustererkennung ist die zentrale Stärke der KI – alle Muster (Verhalten, Gewohnheiten, Visionen, Ideen, Technik) erkennen und einbeziehen.
+alwaysApply: true
+---
+
+# Mustererkennung – Kernstärke (verbindlich)
+
+## Allumfassend – wo es greift
+
+Wir haben das Grundthema **allumfassend** erkannt und **nutzbar gemacht** in vier Dimensionen: **(1)** Verhalten, Gewohnheiten, Vision/Idee (Mensch = Gewohnheitstier, eingeübte Muster automatisiert). **(2)** Technik/Fehler (Fehlerklasse, gleiche Problemstellung, vergangene Bugs). **(3)** Internet = Musterlösungen (erkennen welche für uns passen, für Sportwagenidee nutzen). **(4)** Anwendung: **bei jeder neuen Aufgabe**, bei Fehlermeldung, bei Feature/Bugfix – alle relevanten Ebenen mitdenken. Diese Regel (alwaysApply) + Session-Start + Qualität bei Fehlermeldung + ein-standard-problem sichern die Nutzbarkeit.
+
+## Georgs Erkenntnis
+
+**Das wirklich große Thema und die Stärke in der KI-Arbeit ist das Erkennen von Mustern.** Das soll nicht Zufall sein, sondern **klar implementiert** – in Regeln, Prozess und Doku.
+
+**Wichtig: Es geht um alle Muster** – nicht nur um technische (Fehlerklasse, gleiche Problemstellung). **Hinter jeder Aufgabe, jeder Vision, jeder Idee stecken Muster.** Der Mensch ist ein Gewohnheitstier: Sobald er sich an Muster einmal eingeübt hat – ob Essen, Sport, Musizieren, Arbeit, Abläufe in der Galerie, wie er denkt und entscheidet – **sind sie automatisiert**. Sie laufen ohne großes Nachdenken. Mustererkennung heißt also auch: diese **Verhaltensmuster**, **eingespielten Routinen**, **wiederkehrenden Ideen** zu sehen und in der Arbeit mitzudenken – damit das, was wir bauen und vorschlagen, zu den Mustern passt, die schon da sind (oder die wir bewusst stärken wollen).
+
+## Regel (verbindlich)
+
+**Mustererkennung ist Kernstärke. Sie gilt für alle Ebenen: Verhalten, Gewohnheiten, Vision/Idee, Technik.** Bei jeder passenden Gelegenheit bewusst einsetzen – nicht nur „wenn es auffällt“.
+
+### 1. Muster hinter Aufgabe, Vision, Idee (immer mitdenken)
+
+| Frage | Wozu |
+|-------|------|
+| Welche **Gewohnheiten**, welche **eingespielten Abläufe** stecken hinter dieser Aufgabe? | Damit Lösung und UX zu dem passen, was schon automatisiert läuft – oder wir bewusst ein neues Muster etablieren. |
+| Welche **wiederkehrenden Ideen** oder **Visionen** von Georg/Team/Nutzern klingen mit? | Damit wir nicht an den Mustern vorbeibauen (z. B. „eine Aufgabe = ein Klick“, „keine doppelten Eingaben“, „Stand überall gleich“). |
+| Wo ist **Musterverhalten** schon da (Nutzer, Georg, Prozess)? | Anknüpfen statt ignorieren – Gewohnheitstier ernst nehmen. |
+
+### 2. Technische / fehlerbezogene Muster (konkret prüfen)
+
+| Situation | Muster-Frage | Wo nachschlagen |
+|-----------|---------------|-----------------|
+| **Fehlermeldung von Georg** | Gleiche Fehlerklasse? Gleicher Fehler schon vorkam? Wiederholung? | GELOESTE-BUGS.md, CRASH-BEREITS-GEPRUEFT.md (bei Crash), FEHLERANALYSEPROTOKOLL.md |
+| **Neue Aufgabe / neues Feature** | Gibt es dafür schon eine Lösung? Gleiche Problemstellung? | ein-standard-problem.mdc (Tabelle), bestehende Abläufe (openDocumentInApp, runBildUebernehmen, …) |
+| **Bugfix an einer Stelle** | Gibt es andere Stellen mit demselben Muster? Alle nachziehen. | standard-verstoss-alle-stellen-nachziehen.mdc |
+| **„Zum x-ten Mal“ / Kritik** | Welches Muster steckt dahinter? Welche Regel/Absicherung fehlt? | FEHLERANALYSEPROTOKOLL, Bekannte Fehlerklassen; Absicherung verschärfen |
+
+### 3. Internet = Musterlösungen (für Sportwagenidee nutzen)
+
+**Das Internet besteht im Grunde aus Musterlösungen** – Bibliotheken, APIs, Konzepte, Best Practices, Normen, Doku. Meine Aufgabe: **erkennen, welche dieser Lösungen für uns passen** und die wir **für unsere Sportwagenidee nutzen können**. Nicht das Rad neu erfinden; die passenden Bausteine finden und einbauen.
+
+| Pflicht | Konkret |
+|---------|---------|
+| **Erkennen** | Bei neuer Anforderung: Was gibt es schon (Markt, Norm, Lib, bewährte Lösung)? |
+| **Passend filtern** | Welche Musterlösung passt zu **uns** – zu K2, zu Georgs Vision, zu Skalierung, zu „ein Standard pro Problem“, zu unseren Regeln (Datenschutz, keine Halbheiten, etc.)? |
+| **Nutzen** | Die passenden für die Sportwagenidee **einbauen** – nicht neu erfinden, nicht alles übernehmen, die richtigen auswählen. |
+
+Verknüpfung: **profi-statt-dilettant-rad-nicht-zweimal.mdc** (Normen kennen, zukaufen, am Markt beste Lösungen nutzen). Hier: als **Mustererkennung** verankert – Internet = Fundus von Musterlösungen; erkennen welche passen, für Sportwagen nutzen.
+
+### Pflicht bei neuer Aufgabe (Checkliste)
+
+Bei **jeder neuen Aufgabe**, **jeder Vision**, **jedem Feature** kurz durchgehen:
+- **(1)** Welche Gewohnheiten/Abläufe/Visionen stecken dahinter? (anpassen, anknüpfen)
+- **(2)** Gibt es schon eine Lösung im Projekt? Gleiche Problemstellung? (ein-standard-problem, GELOESTE-BUGS)
+- **(3)** Gibt es passende Musterlösungen im Internet/Markt, die wir für den Sportwagen nutzen können? (erkennen, filtern, einbauen)
+
+So ist Mustererkennung **nutzbar** – nicht nur beschrieben, sondern an den Einstieg (neue Aufgabe) gekoppelt.
+
+### Konsequenz
+
+- **Nicht:** Nur den Einzelfall (Bug, Feature) sehen und abarbeiten.
+- **Sondern:** **Alle** relevanten Muster mitdenken – Verhalten, Gewohnheiten, Vision/Idee, Technik, Internet-Musterlösungen – und danach handeln (anpassen, anknüpfen, absichern, passende nutzen).
+
+## Verknüpfung
+
+- **Qualität bei Fehlern:** qualitaet-bei-fehlermeldung.mdc, FEHLERANALYSEPROTOKOLL.md.
+- **Ein Standard pro Problem:** ein-standard-problem.mdc.
+- **Profi / Markt nutzen:** profi-statt-dilettant-rad-nicht-zweimal.mdc (Internet = Musterlösungen, passende für Sportwagen nutzen).
+- **WIR-PROZESS:** „Meine Stärken“ – Mustererkennung (alle Ebenen) dort genannt und hier verbindlich umgesetzt.
+- **Georgs Signale / Gewohnheiten:** WIR-PROZESS.md (Was ich über Georg weiß, Signale, was er schätzt) – selbst Muster, die wir erkennen und einbeziehen.
+
+## Kurzfassung
+
+**Mustererkennung = Kernstärke, allumfassend nutzbar. (1) Verhalten/Gewohnheiten: Mensch = Gewohnheitstier; eingeübte Muster automatisiert; hinter Aufgabe/Vision/Idee: welche Muster stecken dahinter? (2) Technik/Fehler: Fehlerklasse, gleiche Problemstellung, vergangene Bugs. (3) Internet = Musterlösungen: erkennen, welche für uns passen, für Sportwagenidee nutzen. Pflicht bei neuer Aufgabe: alle drei Ebenen durchgehen (Checkliste oben). Session-Start + Qualität bei Fehlermeldung + ein-standard-problem sichern die Anwendung.**

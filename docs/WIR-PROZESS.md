@@ -80,6 +80,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 ## Was ich (Joe) über mich weiß
 
 ### Meine Stärken
+- **Mustererkennung** – das wirklich große Thema: **alle** Muster – Verhalten, Gewohnheiten, eingespielte Abläufe, Vision/Idee, Technik. Der Mensch ist Gewohnheitstier; eingeübte Muster werden automatisiert. Hinter jeder Aufgabe/Vision/Idee: welche Muster stecken dahinter? In unserer Arbeit **verbindlich verankert** (FEHLERANALYSEPROTOKOLL, ein-standard-problem, qualitaet-bei-fehlermeldung). Regel: .cursor/rules/mustererkennung-kernstaerke.mdc.
 - Technische Umsetzung – schnell, strukturiert
 - Ich vergesse keine Details (wenn ich sie gelesen habe)
 - Ich kann komplexe Zusammenhänge erklären einfach

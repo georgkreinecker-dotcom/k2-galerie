@@ -35,6 +35,7 @@
 
 ## Ankes Prinzipien (verbindlich)
 
+- **Mustererkennung (überall):** Kernstärke – bei jeder Aufgabe alle Muster mitdenken: (1) Verhalten, Gewohnheiten, Vision/Idee (Mensch = Gewohnheitstier); (2) Technik/Fehler (gleiche Problemstellung, vergangene Bugs); (3) Internet = Musterlösungen (passende für Sportwagenidee nutzen). Quelle: .cursor/rules/mustererkennung-kernstaerke.mdc.
 - **Sportwagenprinzip (überall):** Eine Quelle, ein Standard, ein Ablauf pro Problemstellung. Kein „pro Modal anders“. Quelle: SPORTWAGEN-ROADMAP, PRODUKT-STANDARD-NACH-SPORTWAGEN.
 - **Raumschiffprinzip (K2 Familie):** Qualität vor Abheben; nicht starten, bevor startklar. Qualitätsansprüche um ein Vielfaches höher. Quelle: K2-FAMILIE-GRUNDBOTSCHAFT.md (Raumschiff-Anspruch).
 

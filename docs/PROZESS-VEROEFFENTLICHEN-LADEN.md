@@ -13,7 +13,7 @@
 | 1 | **Bild-URLs auflösen:** `resolveArtworkImageUrlsForExport(artworks)` – imageRef/Base64 → Upload (Supabase Storage) → https-URL. Ohne Auflösung käme beim Server nur '' für Bilder → andere Geräte sehen Platzhalter. |
 | 2 | **Export-Format:** `artworksForExport(...)` – Base64 aus Payload entfernen (kleiner JSON), URLs bleiben. |
 | 3 | **Payload:** Stammdaten, Events, Documents, Design, pageTexts aus localStorage; gallery-Bilder aus getPageContentGalerie(). |
-| 4 | **POST** `/api/write-gallery-data` – schreibt in Vercel Blob (und ggf. Repo). |
+| 4 | **POST** `GALLERY_DATA_BASE_URL/api/write-gallery-data` (immer Vercel-URL) – schreibt in Vercel Blob. So landen Mobil und Mac bei derselben Quelle; relative URL würde bei localhost an den Dev-Server gehen. |
 
 **Aufrufer (dürfen nur diese eine Funktion nutzen):**
 
@@ -59,14 +59,21 @@
 
 ---
 
-## 4. Warum dann trotzdem Platzhalter?
+## 4. Zwei kritische Fehlerquellen (behoben)
+
+- **API-Fehler → statische Datei:** Wenn „Vom Server laden“ die API nicht erreichte, wurde vorher die statische `gallery-data.json` (Build-Stand) geladen und hat lokale Daten überschrieben → am Mac kam „nichts an“ oder alter Stand. **Behoben:** Bei API-Fehler wird keine statische Datei mehr geladen; es wird eine Fehlermeldung angezeigt und die lokalen Werke bleiben unverändert.
+- **Veröffentlichen ohne Rückmeldung:** Fehlgeschlagenes Veröffentlichen war nur in der Konsole sichtbar. **Behoben:** Nach Speichern (Bearbeiten/Neues Werk) erscheint sichtbar „✅ Veröffentlicht (N Werke)“ oder „❌ Veröffentlichen fehlgeschlagen: …“.
+
+---
+
+## 5. Warum dann trotzdem Platzhalter?
 
 - **Nach App-Löschen:** Lokal ist leer → es gibt nichts zu „bewahren“. Server liefert, was er hat. Hat der Server keine Bild-URLs (weil letztes Veröffentlichen ohne Auflösung oder von Gerät ohne Bilder war), kommen Platzhalter.
 - **Sicherheit:** Damit der Prozess stimmt: Immer von dem Gerät **veröffentlichen**, das die vollen Daten (inkl. Bilder) hat. Dann hat der Server die URLs; andere Geräte holen sie mit „Bilder vom Server laden“.
 
 ---
 
-## 5. Checkliste (Prozesssicherheit)
+## 6. Checkliste (Prozesssicherheit)
 
 - [ ] Veröffentlichen: Nur über `publishGalleryDataToServer` (ein Aufruf, eine Implementierung).
 - [ ] Laden: Immer mergeServerWithLocal, danach preserveLocalImageData vor save.

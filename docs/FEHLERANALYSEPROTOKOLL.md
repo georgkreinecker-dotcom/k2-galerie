@@ -1,0 +1,74 @@
+# Fehleranalyseprotokoll
+
+**Fundamentale Funktion für den Sportwagenmodus:** Ein Standard pro Problemstellung gilt auch bei Fehlern – eine verbindliche Ablauf (Protokoll lesen → vergangene Fehler prüfen → analysieren → fixen + absichern → eintragen), keine doppelten Fixes, Wiederholungen sofort erkennen und absichern. Ohne diese Funktion würden gleiche Fehlerklassen immer wieder neu „erfunden“ statt einmal gelöst und überall angewendet.
+
+**Zweck:** Bei jeder Fehlermeldung von Georg wird dieses Protokoll genutzt und ergänzt. Es dient der Orientierung (welche Fehlerklassen gab es, welche Absicherungen gelten) und der Qualitätsentwicklung (Wiederholungen erkennen, Absicherungen verschärfen).
+
+---
+
+## Vergangene Fehler – Quellen (verbindlich bei Fehleranalyse)
+
+**Bei jeder Fehlermeldung zuerst prüfen**, ob derselbe oder ein ähnlicher Fehler schon vorkam. Keine doppelten Fixes, Wiederholungen sofort erkennen.
+
+| Quelle | Inhalt | Wann nutzen |
+|--------|--------|-------------|
+| **docs/GELOESTE-BUGS.md** | Alle behobenen Bugs (BUG-001 bis BUG-022+): Symptom, Ursache, Lösung, betroffene Dateien, Regeln. **PFLICHT bei Session-Start** und vor Änderungen an betroffenen Stellen. | Bei jeder Fehlermeldung: Durchsehen ob gleiche Symptomatik oder gleiche Ursachenklasse (z. B. stilles Überschreiben, Merge, Kontext, QR). |
+| **docs/CRASH-BEREITS-GEPRUEFT.md** | Bereits geprüfte Crash-Ursachen, ro5, Code-5-Regeln. Bei neuem Crash **zuerst** lesen, nicht dieselben Stellen wieder durchgehen. | Bei Meldung zu Absturz/Code 5/Reopen. |
+| **docs/ANALYSE-OEK2-GALERIE-BETRETEN-FEHLER-06-03.md** | Variable vor Verwendung (useLocation/Hooks am Komponentenanfang). | Bei „Cannot access uninitialized variable“ oder Hooks-Reihenfolge. |
+| **docs/LEHRE-WERKE-WEG-IPAD-NOCH-DA.md** | Lehre: Werke weg am iPad, Merge/Server-Logik. | Bei Sync/„Werke verschwunden“. |
+| **.cursor/rules/niemals-kundendaten-loeschen.mdc** | Absolutes Verbot: Filter + setItem, stilles Löschen, Überschreiben mit weniger Werken. | Bei jedem Thema Speichern/Laden/Merge. |
+
+**Regel:** Vor Analyse und Fix: Diese Quellen konsultieren → Wiederholung oder gleiches Muster? Dann bestehende Lösung/Regel anwenden und ggf. verschärfen, nicht neu erfinden.
+
+---
+
+## Wie die KI es nutzt (verbindlich)
+
+- **Bei jeder Fehlermeldung von Georg:** (1) **Vergangene Fehler** (oben) prüfen – GELOESTE-BUGS, ggf. CRASH-BEREITS-GEPRUEFT. (2) Dieses Protokoll lesen („Bekannte Fehlerklassen“, „Laufende Absicherungen“, letzte Einträge).
+- **Nach jeder Fehleranalyse:** Eintrag unter „Protokoll-Einträge“ (Datum, Stichwort Meldung, Ursache, getroffene Maßnahme, ggf. „Wiederholung von BUG-XXX“).
+- **Bei Wiederholung derselben Fehlerklasse:** Absicherung verschärfen (Regel/Checkliste), im Eintrag vermerken und in „Bekannte Fehlerklassen“ den Hinweis „Wiederholung – Absicherung verschärft am …“ ergänzen.
+
+---
+
+## Bekannte Fehlerklassen
+
+*(Aus vergangenen Bugs abgeleitet – siehe GELOESTE-BUGS.md für Einzelfälle.)*
+
+| Fehlerklasse | Kurzbeschreibung | Absicherung / Regel | Referenz (Vergangenheit) |
+|-------------|------------------|---------------------|--------------------------|
+| Stilles Überschreiben | Daten bei Fehler/Fallback durch alte oder leere Quelle ersetzt, ohne Meldung | „Vom Server laden“: Keine statische Datei bei API-Fehler; klare Fehlermeldung. GalerieVorschauPage handleRefresh. | Sync Mobil→Mac (10.03.26); BUG-018, BUG-021 |
+| Kein sichtbares Feedback | Nutzer erfährt nicht, ob Aktion (z. B. Veröffentlichen) Erfolg oder Fehler hatte | Nach Speichern: setLoadStatus „✅ Veröffentlicht …“ oder „❌ Veröffentlichen fehlgeschlagen …“. | Sync Mobil→Mac; BUG-017 |
+| Verschiedene Quellen Senden vs. Laden | Mobil sendet an andere Adresse als die, von der Mac lädt | publishGalleryDataToServer immer GALLERY_DATA_BASE_URL (Vercel). | Sync Mobil→Mac; BUG-018 |
+| Filter + setItem / stilles Löschen | Gefilterte Liste wird in localStorage geschrieben → Werke gehen verloren | Niemals: filter + setItem. Regel: niemals-kundendaten-loeschen.mdc. | BUG-005, BUG-011, BUG-021; Supergau VK2 (23.02.26) |
+| Merge ohne preserveLocalImageData | Server-Daten ersetzen lokale Bilddaten (imageRef/imageUrl) | Immer mergeServerWithLocal + preserveLocalImageData; syncMerge.ts. | BUG-021 |
+| Lokale Werke nicht in merged | Lokale Werke ohne Server-Eintrag landen nicht in merged → beim Speichern weg | Merge: lokale Werke ohne Server-Eintrag immer in merged übernehmen (nicht nur „mobile + very new“). | BUG-012, BUG-013 |
+| API vs. statische Datei (Reihenfolge) | Zuerst statische Datei geladen → alter Build-Stand | Immer zuerst GET /api/gallery-data (Blob), nur bei Fehler Fallback; GaleriePage loadData. | BUG-018 |
+| Kontext-Vergiftung (sessionStorage) | Admin-Kontext bleibt hängen → K2 schreibt in ök2-Keys | syncAdminContextFromUrl; URL vor sessionStorage prüfen. | BUG-004 |
+| QR/Stand falsche Quelle (Cache) | QR mit lokalem BUILD_TIMESTAMP → Handy bekommt alte Version | buildQrUrlWithBust + useQrVersionTimestamp; stand-qr-niemals-zurueck.mdc. | BUG-006 |
+| Automatischer Reload (Code 5) | Reload bei „Server neuer“ → Loop → Crash | Kein automatischer Reload; nur Badge/Button. code-5-crash-kein-auto-reload.mdc. | BUG-007 |
+| ök2 Willkommensbild Uraltbild | Default = Repo-Datei → alte Version sichtbar | OEK2_WILLKOMMEN_IMAGES stabile URL; getOek2WelcomeImageEffective; oek2-willkommensbild-nie-uraltbild.mdc. | BUG-020, BUG-022 |
+| Variable vor Verwendung (Hooks) | useLocation/useNavigate in useEffect, Deklaration weiter unten | Router-Hooks am Komponentenanfang; variable-vor-verwendung-hooks.mdc. | ANALYSE-OEK2-GALERIE-BETRETEN-FEHLER-06-03 |
+| Mobil: Freistellen/Vollkachel | Auf Mobil angeboten → Absturz / unnötige Last | isMobileDevice; showFreistellen={!isMobileDevice}; runBildUebernehmen erzwingt „original“. mobile-freistellen-vollkachel-nie.mdc. | Mehrfach (10.03.26) |
+
+*(Wird bei neuen Fehlerklassen und Wiederholungen ergänzt.)*
+
+---
+
+## Laufende Absicherungen (Checklisten / Regeln)
+
+- **Veröffentlichen & Laden:** docs/PROZESS-VEROEFFENTLICHEN-LADEN.md; .cursor/rules/prozesssicherheit-veroeffentlichen-laden.mdc.
+- **Vor „Fertig“ bei Sync/Publish/Load:** Kein stilles Überschreiben; Nutzer sieht immer Erfolg oder Fehler; eine Quelle für Senden und Laden.
+- **Qualitätsprozess:** .cursor/rules/qualitaet-bei-fehlermeldung.mdc (bei Fehlermeldung: Protokoll lesen → analysieren → fixen + absichern → hier eintragen).
+- **Hinweis für Georg:** Dieses Protokoll ist für die KI verbindlich – sie orientiert sich daran und muss es bei Fehlern aktualisieren. Für dich entsteht keine Mehrarbeit.
+
+---
+
+## Protokoll-Einträge
+
+*(Neueste zuerst. Kurz: Datum, Stichwort, Ursache, Maßnahme.)*
+
+- **10.03.26 – Sync Mobil→Mac „kommt nichts an“:** (1) Veröffentlichen ging teils an andere Quelle als Lade-URL. (2) Bei API-Fehler wurde statische Datei geladen und überschrieb mit altem Stand. (3) Kein sichtbares Feedback bei Veröffentlichen. **Maßnahme:** Immer Vercel-URL für POST; bei API-Fehler keine statische Datei, Fehlermeldung; setLoadStatus für Veröffentlichen-Erfolg/-Fehler. Protokoll und Regel angelegt.
+
+---
+
+*Dieses Protokoll wird bei jeder Fehlermeldung von Georg konsultiert und nach jeder Analyse aktualisiert.*

@@ -45,6 +45,9 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **HANDBUCH-AUFBAU-UND-ZIEL.md** – **Handbuch-Struktur & Ziel (für Georg/APf):** Wie K2Team-, K2-Galerie- und K2-Familie-Handbuch aufgebaut sind; Zielbild Kurzanleitung + Langversion als Buch. Gespeichert – bei Gelegenheit umsetzen.
 - **BENUTZERHANDBUCH-OEK2-VK2-KONZEPT.md** – **Benutzerhandbuch für unsere User (ök2, VK2):** Konzept und Anforderungen: sehr professionell, leicht verständlich, für jeden Laien, redigiert. Für Lizenznehmer:innen, Piloten, Vereine. Inhalt und Ablage bei Gelegenheit ausarbeiten.
 
+## Qualität & Fehleranalyse
+- **FEHLERANALYSEPROTOKOLL.md** – **Bei Fehlermeldung von Georg:** Die KI orientiert sich an diesem Protokoll (bekannte Fehlerklassen, Absicherungen) und muss es nach jeder Analyse aktualisieren. Regel: .cursor/rules/qualitaet-bei-fehlermeldung.mdc.
+
 ## Stabilität & Crash
 - **ANALYSE-ADMIN-BUILD-DESASTER-06-03.md** – **Admin/Build-Desaster 06.03.26:** Warum Build rot war (JSX-Chaos in ScreenshotExportAdmin Design-Vorschau + navigate in Unterkomponente). Auslagern großer Conditional-Blöcke in Hilfsfunktion; Build nie dauerhaft rot; Hooks pro Komponente. Regel: .cursor/rules/jsx-grosse-bloeke-auslagern.mdc.
 - **ANALYSE-OEK2-GALERIE-BETRETEN-FEHLER-06-03.md** – **„Cannot access uninitialized variable“ (ök2 Galerie betreten):** Ursache = Variable (location) in useEffect verwendet, Deklaration (useLocation) stand weiter unten → temporal dead zone. Fix: useLocation() an Komponentenanfang. **Lehre:** Hook-Variablen (location, navigate, state) immer vor erster Verwendung deklarieren; Router-Hooks am Anfang. Regel: .cursor/rules/variable-vor-verwendung-hooks.mdc.

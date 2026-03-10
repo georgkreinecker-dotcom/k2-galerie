@@ -3,8 +3,12 @@
  * Alle Aufrufer (DevView, GalerieVorschauPage) nutzen diese eine Funktion.
  * Ablauf: Bild-URLs auflösen → Export-Format → Payload bauen → POST write-gallery-data.
  * Doku: docs/PROZESS-VEROEFFENTLICHEN-LADEN.md
+ *
+ * WICHTIG: Immer Vercel-URL für POST nutzen, damit Mobil und Mac dieselbe Quelle haben.
+ * Relative URL (/api/...) würde bei localhost an den Dev-Server gehen → Mac lädt von Vercel → nichts kommt an.
  */
 
+import { GALLERY_DATA_BASE_URL } from '../config/externalUrls'
 import { resolveArtworkImageUrlsForExport } from './supabaseClient'
 import { artworksForExport } from './artworkExport'
 import { loadEvents } from './eventsStorage'
@@ -82,7 +86,8 @@ export async function publishGalleryDataToServer(artworks: any[]): Promise<Publi
   }
 
   try {
-    const response = await fetch('/api/write-gallery-data', {
+    const writeUrl = `${GALLERY_DATA_BASE_URL}/api/write-gallery-data`
+    const response = await fetch(writeUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: json

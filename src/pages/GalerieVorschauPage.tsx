@@ -1992,19 +1992,17 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       const staticUrl = `${baseUrl}/gallery-data.json?bust=${bust}&v=${timestamp}&_=${Date.now()}`
       console.log('🔄 Lade neue Daten vom Server (API zuerst, dann Fallback)...', isMobileDevice ? '(Mobile)' : '')
       
+      // NUR API nutzen – nie statische Datei bei Fehler (sonst überschreiben wir mit altem Build-Stand).
       let response: Response | null = null
       try {
         response = await fetch(apiUrl, fetchOpts)
       } catch (e) {
-        console.warn('🔄 API nicht erreichbar, versuche statische Datei:', e instanceof Error ? e.message : e)
+        console.warn('🔄 API nicht erreichbar:', e instanceof Error ? e.message : e)
       }
-      if (!response?.ok) {
-        try {
-          response = await fetch(staticUrl, fetchOpts)
-          if (response?.ok) console.log('📥 Daten aus statischer gallery-data.json (Fallback)')
-        } catch (_) {}
-      } else {
+      if (response?.ok) {
         console.log('📥 Daten aus API (Vercel Blob = aktueller Stand)')
+      } else if (!response?.ok) {
+        console.warn('🔄 API antwortete nicht OK – keine statische Datei (verhindert Überschreiben mit altem Stand)')
       }
       
       if (response?.ok) {
@@ -2120,19 +2118,23 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           }
         }
       } else {
-        // Server nicht erreichbar - behalte lokale Werke!
-        console.warn('⚠️ Server nicht erreichbar - behalte lokale Werke:', localArtworks.length)
+        // API nicht erreichbar – KEINE statische Datei laden (würde alten Build-Stand schreiben). Lokale Werke behalten.
+        console.warn('⚠️ API nicht erreichbar – lokale Werke bleiben unverändert:', localArtworks.length)
         if (localArtworks.length > 0) {
-          console.log('🔒 Lokale Werke bleiben erhalten:', localArtworks.map((a: any) => a.number || a.id).join(', '))
-          saveArtworksForContext(false, false, localArtworks)
           loadArtworksResolvedForDisplay().then((list) => {
             setArtworksDisplay(filterK2ArtworksOnly(list))
           })
-          setLoadStatus({ message: `✅ ${localArtworks.length} lokale Werke erhalten`, success: true })
+          setLoadStatus({
+            message: `⚠️ Server (API) nicht erreichbar. ${localArtworks.length} lokale Werke unverändert. Bitte Netz prüfen und erneut „Vom Server laden“ tippen.`,
+            success: false
+          })
         } else {
-          setLoadStatus({ message: '⚠️ Server nicht erreichbar', success: false })
+          setLoadStatus({
+            message: '⚠️ Server nicht erreichbar. Bitte Netzwerk prüfen und erneut versuchen.',
+            success: false
+          })
         }
-        setTimeout(() => setLoadStatus(null), 3000)
+        setTimeout(() => setLoadStatus(null), 6000)
       }
     } catch (error) {
       console.error('❌ Fehler beim Aktualisieren:', error)
@@ -4453,11 +4455,20 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                           const allArtworks = filterK2OnlyStorage(withImages || [])
                           if (allArtworks.length > 0) {
                             const result = await publishGalleryDataToServer(allArtworks)
-                            if (result.success) console.log('✅ Automatisch für Mobile veröffentlicht:', result.artworksCount, 'Werke')
-                            else console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen:', result.error)
+                            if (result.success) {
+                              console.log('✅ Automatisch veröffentlicht:', result.artworksCount, 'Werke')
+                              setLoadStatus({ message: `✅ Veröffentlicht (${result.artworksCount} Werke). Am Mac „Vom Server laden“ tippen.`, success: true })
+                              setTimeout(() => setLoadStatus(null), 5000)
+                            } else {
+                              console.warn('⚠️ Veröffentlichung fehlgeschlagen:', result.error)
+                              setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${result.error || 'Unbekannt'}`, success: false })
+                              setTimeout(() => setLoadStatus(null), 8000)
+                            }
                           }
                         } catch (error) {
-                          console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen (nicht kritisch):', error)
+                          console.warn('⚠️ Veröffentlichung fehlgeschlagen:', error)
+                          setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${error instanceof Error ? error.message : String(error)}`, success: false })
+                          setTimeout(() => setLoadStatus(null), 8000)
                         }
                       }, 1500) // Warte 1.5 Sekunden damit localStorage sicher gespeichert ist
                       
@@ -4670,16 +4681,22 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                         if (allArtworks.length > 0) {
                           const result = await publishGalleryDataToServer(allArtworks)
                           if (result.success) {
-                            console.log('✅ Automatisch für Mobile veröffentlicht:', result.artworksCount, 'Werke')
+                            console.log('✅ Automatisch veröffentlicht:', result.artworksCount, 'Werke')
                             window.dispatchEvent(new CustomEvent('gallery-data-published', {
                               detail: { success: true, artworksCount: result.artworksCount, size: result.result?.size }
                             }))
+                            setLoadStatus({ message: `✅ Veröffentlicht (${result.artworksCount} Werke). Am Mac „Vom Server laden“ tippen.`, success: true })
+                            setTimeout(() => setLoadStatus(null), 5000)
                           } else {
-                            console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen:', result.error)
+                            console.warn('⚠️ Veröffentlichung fehlgeschlagen:', result.error)
+                            setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${result.error || 'Unbekannt'}`, success: false })
+                            setTimeout(() => setLoadStatus(null), 8000)
                           }
                         }
                       } catch (error) {
-                        console.warn('⚠️ Automatische Veröffentlichung fehlgeschlagen (nicht kritisch):', error)
+                        console.warn('⚠️ Veröffentlichung fehlgeschlagen:', error)
+                        setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${error instanceof Error ? error.message : String(error)}`, success: false })
+                        setTimeout(() => setLoadStatus(null), 8000)
                       }
                     }, 1500) // Warte 1.5 Sekunden damit localStorage sicher gespeichert ist
                     

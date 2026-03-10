@@ -6,10 +6,10 @@
 
 ---
 
-## Session-Ende 09.03.26
+## Session-Ende 10.03.26
 
-- **Heute:** (1) ro5 → Werke 0031/0035 + Speicherproblem (Bearbeiten + Neues Werk = ImageStore). (2) **Mobile: Freistellen und Vollkachel endgültig deaktiviert** – isMobileDevice verschärft (≤1024 px + Touch ≤1280), überall ImageProcessingOptions mit showFreistellen={!isMobileDevice}, runBildUebernehmen erzwingt auf Mobil immer „original“, Zuschnitt auf Mobil setzt photoImageMode auf „original“. Regel: .cursor/rules/mobile-freistellen-vollkachel-nie.mdc (alwaysApply).
-- **Nächster Einstieg:** DIALOG-STAND lesen; optional am Handy/Tablet prüfen: Admin → Werke → Neues Werk / Werk bearbeiten – nur „Original“ und „Zuschneiden“, keine Freistellen/Vollkachel.
+- **Heute:** **Sync Mobil → Mac (Veröffentlichen / Vom Server laden):** (1) Veröffentlichen geht immer an Vercel-URL (publishGalleryData.ts: GALLERY_DATA_BASE_URL), damit Mobil und Mac dieselbe Quelle nutzen. (2) „Vom Server laden“: Bei API-Fehler wird **keine** statische Datei mehr geladen (verhinderte Überschreiben mit altem Build-Stand); klare Meldung „API nicht erreichbar …“ und lokale Werke bleiben. (3) Nach Speichern (Bearbeiten/Neues Werk) sichtbare Meldung: „✅ Veröffentlicht (N Werke)“ oder „❌ Veröffentlichen fehlgeschlagen: …“. Doku: PROZESS-VEROEFFENTLICHEN-LADEN.md Abschnitt 4.
+- **Nächster Einstieg:** Nach Push/Deploy: Mobil Werk ändern → Speichern → Meldung prüfen (Erfolg oder Fehler). Am Mac „Vom Server laden“ → bei API-Fehler erscheint Hinweis, keine stille Überschreibung mehr.
 
 ---
 

@@ -6,6 +6,8 @@
 
 **Zweck:** Damit kein Bug zweimal auftaucht. Vor jeder Änderung an betroffenen Stellen: hier nachschauen.
 
+**Einbindung in Qualitätsprozess:** Diese Liste ist Teil des Fehleranalyseprotokolls. Bei jeder Fehlermeldung von Georg prüft die KI zuerst hier (und ggf. CRASH-BEREITS-GEPRUEFT.md), ob gleicher oder ähnlicher Fehler schon vorkam. Siehe **docs/FEHLERANALYSEPROTOKOLL.md** (Abschnitt „Vergangene Fehler – Quellen“) und **.cursor/rules/qualitaet-bei-fehlermeldung.mdc**.
+
 ---
 
 ## BUG-022 · ök2 Willkommensbild – Uraltbild auf erster Seite (zweites Mal)

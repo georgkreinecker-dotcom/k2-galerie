@@ -15,6 +15,7 @@ alwaysApply: true
 
 **Für dieselbe Problemstellung gibt es genau einen Standard – keine Ausnahme.**
 
+- **Qualität bei Fehlern (fundamental für Sportwagenmodus):** Bei Fehlermeldungen gilt **ein** verbindlicher Ablauf: vergangene Fehler prüfen (GELOESTE-BUGS, CRASH-BEREITS-GEPRUEFT) → Protokoll → analysieren → fixen + absichern → eintragen. Kein neues Vorgehen pro Fehler, keine Wiederholung gleicher Fehlerklassen ohne Erkennung. Siehe **docs/FEHLERANALYSEPROTOKOLL.md**, **.cursor/rules/qualitaet-bei-fehlermeldung.mdc**.
 - **Vor dem Implementieren:** Klären: „Gibt es dafür schon eine Lösung / einen Ablauf?“ Wenn ja → dieselbe nutzen, nicht eine zweite erfinden.
 - **Beim Erweitern:** Neuer Fall (z. B. neues Dokumentformat) = **dieselbe** Öffnungsart, **dieselbe** Leiste, **dieselbe** Rück-Navigation wie bei den bestehenden Fällen. Kein „für Newsletter mache ich es anders“.
 - **Nicht erlaubt:** Pro Typ/Fall eigene Regeln („Flyer in neuem Tab, Newsletter im Viewer, Presse mit Fallback“). Das ist verboten.
@@ -38,6 +39,7 @@ alwaysApply: true
 | **Veröffentlichen (gallery-data an Server)** | **publishGalleryDataToServer(artworks)** in `src/utils/publishGalleryData.ts`. Ablauf: resolveArtworkImageUrlsForExport → artworksForExport → Payload aus localStorage → POST /api/write-gallery-data. Aufrufer: DevViewPage, GalerieVorschauPage (nach Speichern/neues Werk). Doku: docs/PROZESS-VEROEFFENTLICHEN-LADEN.md. | Kein eigener Fetch zu write-gallery-data, kein eigener resolve+export an anderer Stelle. |
 | **Automatische Speicherung / Laden (Stand-Aktualisierung)** | **Auto-Save:** nur localStorage, löst kein Veröffentlichen aus. **Laden** (Stand-Badge, QR, Reload): immer derselbe Ablauf – loadData/handleRefresh → mergeServerWithLocal → preserveLocalImageData → Speichern. Doku: docs/PROZESS-VEROEFFENTLICHEN-LADEN.md Abschnitte 3a/3b. | Kein zweiter Lade-Pfad ohne Merge und ohne preserveLocalImageData. |
 | **Werke mit Bilddaten speichern (Neu, Bearbeiten, überall)** | **Immer** ImageStore-Pfad: `prepareArtworksForStorage(list)` vor dem Schreiben ODER `saveArtworksForContextWithImageStore` / `saveArtworksByKeyWithImageStore`. Bilder → IndexedDB, in der Liste nur imageRef. Gilt für: Neues Werk (mobil/Admin), Werk bearbeiten (mobil/Admin), jede Stelle die Werke inkl. imageUrl (data-URL) schreibt. Referenz: artworkImageStore.ts, artworksStorage.ts; GalerieVorschauPage Bearbeiten + Neues Werk, autoSave.ts. | **Niemals** nur `saveArtworksForContext`/`saveArtworksByKey` wenn die Liste data-URL-Bilder enthält – sonst Speicherproblem (0031/0035), Stunden Fehlersuche. |
+| **Qualität bei Fehlermeldung (fundamental für Sportwagenmodus)** | **Ein** Ablauf: GELOESTE-BUGS + ggf. CRASH-BEREITS-GEPRUEFT prüfen → FEHLERANALYSEPROTOKOLL lesen → analysieren → fixen + absichern → Protokoll eintragen. Regel: qualitaet-bei-fehlermeldung.mdc. | Kein ad-hoc-Vorgehen pro Fehler; keine Wiederholung gleicher Fehlerklasse ohne Erkennung und Absicherung. |
 
 **Pflicht vor Implementierung:** Gibt es dafür schon eine Lösung? Wenn ja → dieselbe Klasse / denselben Ablauf nutzen. Georg soll nicht sagen müssen „sind wir im Sportwagenmodus?“ – die Regel und diese Tabelle sorgen dafür.
 
@@ -45,4 +47,4 @@ alwaysApply: true
 
 ## Kurzfassung
 
-**Gleiche Problemstellung = eine Lösung. Keine zweite, keine Sonderfälle ohne zwingenden Grund. Regel kategorisch – gilt für Menschen und AI. Konkrete Standards in der Tabelle oben vor Neuimplementierung prüfen.**
+**Gleiche Problemstellung = eine Lösung. Keine zweite, keine Sonderfälle ohne zwingenden Grund. Regel kategorisch – gilt für Menschen und AI. Konkrete Standards in der Tabelle oben vor Neuimplementierung prüfen. Qualität bei Fehlern = fundamentale Sportwagenmodus-Funktion (ein Ablauf, vergangene Fehler einbinden, Protokoll).**

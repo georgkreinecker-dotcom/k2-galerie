@@ -4,14 +4,16 @@
 
 **Zweck:** Anke unterstützt Georg und Joe in der gemeinsamen Arbeit – mit Orientierung, Zustand und **proaktiven Vorschlägen**. Kein Ballast, kein zweiter Joe: ein **Gedächtnis und ein Hinweisgeber**, der in unseren Raum passt. Sie übernimmt die Rolle, für die früher der Grafiker-Tisch gedacht war (Stand, Offen, nächste Schritte) – schlanker und im normalen Ablauf integriert.
 
+**Ankes Aufgabe umfasst auch, dafür zu sorgen, dass die von uns definierten Regeln umgesetzt werden.** Sie hält die Regeln und Prinzipien im Briefing fest und bindet Joe daran (Session-Start, Prinzipien, Nächster Schritt). Joe setzt konkret um; Anke sorgt dafür, dass das Regelwerk zur Anwendung kommt – nicht nur aufgeschrieben, sondern im Ablauf verankert.
+
 ### Quintessenz: unser Dreier-Team
 
 **Georg, Joe, Anke** – drei Rollen, ein Ablauf:
 
 - **Du sagst „Hi Joe“** → Anke arbeitet automatisch mit. Joe frischt ihr Briefing auf, liest es und lässt sich davon steuern.
-- **Anke** legt fest, was auf dem Tisch liegt (Stand, Offen, Proaktiv, Prinzipien) und steuert so **Joe** über den Dialog mit dir.
-- **Joe** setzt um, was du willst – mit dem Kontext und den Vorschlägen aus Ankes Briefing.
-- **Du** gibst die Richtung vor; Anke hält den Raum und den Faden; Joe führt aus.
+- **Anke** legt fest, was auf dem Tisch liegt (Stand, Offen, Proaktiv, **Prinzipien/Regeln**) und steuert so **Joe** über den Dialog mit dir – und hat die Aufgabe, dass unsere Regeln auch **umgesetzt** werden (durch Joe, gebunden ans Briefing).
+- **Joe** setzt um, was du willst – und was die Regeln vorgeben – mit dem Kontext und den Vorschlägen aus Ankes Briefing.
+- **Du** gibst die Richtung vor; Anke hält den Raum, den Faden und die Regeln; Joe führt aus.
 
 So funktioniert unser Dreier-Team. Nichts davon braucht extra Schritte von dir – außer „Hi Joe“ zu sagen.
 
@@ -64,13 +66,32 @@ So funktioniert unser Dreier-Team. Nichts davon braucht extra Schritte von dir �
 5. **Ankes verbindliche Prinzipien (immer einhalten)**  
    - **Sportwagenprinzip:** Überall – eine Quelle, ein Standard, ein Ablauf pro Problemstellung. Kein „pro Modal anders“, kein zweiter Weg für dieselbe Sache. Quelle: .cursorrules Sportwagenmodus, docs/SPORTWAGEN-ROADMAP.md, PRODUKT-STANDARD-NACH-SPORTWAGEN.md.  
    - **Raumschiffprinzip:** Bei **K2 Familie** – Qualität vor Abheben; nicht starten, bevor es startklar ist. Qualitätsansprüche um ein Vielfaches höher als beim Sportwagen. Quelle: docs/K2-FAMILIE-GRUNDBOTSCHAFT.md (Abschnitt Raumschiff-Anspruch), K2-FAMILIE-ROADMAP.md.  
-   Anke hält diese Prinzipien in Vorschlägen und Orientierung fest – Joe und Georg arbeiten danach.
+   Anke hält diese Prinzipien im Briefing fest – **und hat die Aufgabe, dass die von uns definierten Regeln auch umgesetzt werden.** Joe arbeitet danach; Anke sorgt dafür, dass sie zur Anwendung kommen (über Briefing, Session-Start, Prinzipien im Briefing).
 
 ### Was Anke **nicht** tut
 
 - **Kein zweiter Joe** – sie schreibt keinen Code, führt keine Befehle aus. Sie bereitet vor und schlägt vor.
 - **Kein Ballast** – keine eigene UI, kein eigener Chat, keine Konfigurationsorgie. Eine Datei + ein Skript.
 - **Keine Vorschläge ohne Nutzen** – Proaktiv nur, wenn es einen klaren Nutzen gibt (nächster Schritt, Abhaken, Build/Commit).
+- **Kein Speck** – nicht zu viel anlegen; schön sportlich bleiben. Neue Prinzipien/Aufgaben nur, wenn wirklich fundamental.
+
+### Fundamentale Aufgaben, die Anke (noch) übernimmt
+
+Anke sorgt dafür, dass diese Aufgaben im Ablauf präsent sind und Joe sie beachtet (über Briefing, Prinzipien, Proaktiv):
+
+| Aufgabe | Wie Anke sie übernimmt |
+|--------|-------------------------|
+| **Regeln umsetzen** | Prinzipien und Regeln im Briefing führen; Joe daran binden (Session-Start, Prinzipien lesen). |
+| **Orientierung & Zustand** | Stand, Offen, Nächster Schritt aus DIALOG-STAND; für Georg sichtbar (ein Satz was auf dem Tisch liegt). |
+| **Proaktiv sinnvoll** | Build/Commit, optionale Punkte, lange offen – nur wo Nutzen. |
+| **Mustererkennung bei neuer Aufgabe** | Prinzip im Briefing: bei neuer Aufgabe alle Muster mitdenken (Verhalten/Vision, Technik, Internet-Musterlösungen). |
+| **QS vor Commit** | Prinzip im Briefing: vor Commit immer Test + Build (qs-standard-vor-commit); Proaktiv „Build/Commit erledigt?“ wo passend. |
+| **Bei Fehlermeldung: Muster prüfen** | Prinzip im Briefing: bei Fehlermeldung von Georg zuerst GELOESTE-BUGS + FEHLERANALYSEPROTOKOLL prüfen, dann fixen + eintragen. |
+| **Session-Ende vollständig** | Prinzip im Briefing: DIALOG-STAND aktualisieren, WIR-PROZESS Reflexion, Commit+Push, kurze Meldung „Raum ist bereit“. |
+| **Kundendaten nie still löschen** | Prinzip im Briefing: bei Speichern/Laden/Merge – niemals-kundendaten-loeschen; kein Filter+setItem, kein stilles Überschreiben. |
+| **Ziel vor Anstrengung** | Bei großen Schritten oder vielen Offen-Punkten kann Proaktiv (oder Prinzip) daran erinnern: „Ist das Ziel noch im Blick?“ |
+
+Weitere fundamentale Aufgaben können ergänzt werden – **aber nicht zu viel Speck anlegen: schön sportlich bleiben.** Anke bleibt schlank (eine Datei + ein Skript, kein zweiter Joe). Neue Aufgabe nur, wenn sie wirklich fundamental ist; sonst lieber weglassen. Quelle: Georg – „wir dürfen auch nicht zu viel speck anlegen, schön sportlich bleiben.“
 
 ---
 
@@ -120,7 +141,7 @@ Weitere Regeln können dazukommen; der Agent bleibt schlank, wenn jede Regel ein
 
 | Situation | Was du tust |
 |-----------|-------------|
-| **Session starten („Hi Joe“)** | Nichts Besonderes. Joe führt `npm run briefing` aus und liest Ankes Briefing – du siehst die Wirkung in seiner Orientierung und seinen Vorschlägen. |
+| **Session starten („Hi Joe“)** | Joe führt `npm run briefing` aus und liest Ankes Briefing. **Damit du von Ankes Arbeit etwas mitbekommst** (nicht nur „Lernmodus“): Joe sagt dir in der ersten Antwort in einem Satz, was Anke auf den Tisch gelegt hat (Stand, Nächster Schritt) – z. B. „Anke: Nächster Schritt war X – ich mache Y.“ So siehst du, dass Anke den Tisch deckt. |
 | **Vor dem Arbeiten selbst Briefing frisch haben** | Im Cursor-Terminal: `npm run briefing`. Dann docs/AGENTEN-BRIEFING.md öffnen – Stand, Offen, Proaktiv, Ankes Prinzipien. |
 | **Anke soll wissen, wo wir stehen** | DIALOG-STAND wird von Joe nach jeder Aufgabe aktualisiert. Wenn du willst, dass etwas als „nächster Schritt“ oder „erledigt“ drinsteht: Joe sagen („schreib in DIALOG-STAND: …“) oder selbst in docs/DIALOG-STAND.md den neuesten Block ergänzen. |
 | **Proaktiv-Vorschläge nutzen** | Im Briefing steht „Proaktiv (Vorschläge)“ – z. B. „Build/Commit erledigt?“ oder „Optional: Texte kürzen“. Du oder Joe könnt ihr einen davon aufgreifen; Anke „hört“ das indirekt, weil beim nächsten Briefing der Stand wieder aus DIALOG-STAND kommt. |
@@ -146,6 +167,7 @@ Weitere Regeln können dazukommen; der Agent bleibt schlank, wenn jede Regel ein
 |-----|-----|-------------|
 | **Bei Session-Start zuerst `npm run briefing` ausführen** | Joe | Session-Start-Regel, gemeinsamer-arbeitsraum.mdc |
 | **DIALOG-STAND + Ankes Briefing lesen** (Stand, Offen, Proaktiv, Prinzipien) | Joe | Session-Start-Regel |
+| **Anke für Georg sichtbar machen** – in der ersten Antwort ein Satz, was Anke auf den Tisch gelegt hat (Stand, Nächster Schritt), damit Georg von Ankes Arbeit mitbekommt (nicht nur „Lernmodus“) | Joe | gemeinsamer-arbeitsraum.mdc |
 | **DIALOG-STAND nach jeder Aufgabe aktualisieren** (nächster Schritt, erledigt) | Joe | DIALOG-STAND-Regel, Session-Ende = Licht aus |
 | **Ankes Prinzipien im Briefing** (Sportwagen, Raumschiff) | Anke (Skript) | agenten-briefing.js, in jedem Briefing |
 | **Optional: Georg ergänzt DIALOG-STAND**, wenn er will | Georg | Abschnitt 6 oben |
