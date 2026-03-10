@@ -4464,9 +4464,16 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                         return
                       }
                       
-                      // KRITISCH: Anzeige immer aus aufgelösten Bildern (IndexedDB) – verhindert Platzhalter nach Bearbeiten
-                      // OPTIMISTISCH (mobil): Neues Bild sofort in Karte – auf Handy kann IndexedDB-Lesen verzögert sein
+                      // SOFORT: Karte aktualisieren – Karten lesen aus artworks-State (nicht nur aus loadArtworksResolvedForDisplay)
                       const updatedNumber = updatedArtwork?.number ?? updatedArtwork?.id
+                      if (updatedNumber && mobilePhoto && typeof mobilePhoto === 'string') {
+                        setArtworks((prev: any[]) =>
+                          prev.map((a: any) =>
+                            (a?.number ?? a?.id) === updatedNumber ? { ...a, imageUrl: mobilePhoto } : a
+                          )
+                        )
+                      }
+                      // Danach: Vollständige Liste aus IndexedDB (Sync, Platzhalter für andere)
                       loadArtworksResolvedForDisplay().then((list) => {
                         let k2List = filterK2ArtworksOnly(list)
                         if (updatedNumber && mobilePhoto && typeof mobilePhoto === 'string') {
@@ -4681,6 +4688,19 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       return
                     }
                     
+                    // SOFORT: Neue Karte mit Foto anzeigen – Karten lesen aus artworks-State
+                    if (newNumber && mobilePhoto && typeof mobilePhoto === 'string') {
+                      setArtworks((prev: any[]) => {
+                        const has = prev.some((a: any) => (a?.number ?? a?.id) === newNumber)
+                        if (has) {
+                          return prev.map((a: any) =>
+                            (a?.number ?? a?.id) === newNumber ? { ...a, imageUrl: mobilePhoto } : a
+                          )
+                        }
+                        return [...prev, { ...newArtwork, imageUrl: mobilePhoto }]
+                      })
+                    }
+                    
                     // PROFESSIONELL: Automatische Mobile-Sync nach jedem Speichern
                     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
                     if (isMobile && isSupabaseConfigured()) {
@@ -4692,8 +4712,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       }
                     }
                     
-// KRITISCH: Anzeige aus aufgelösten Bildern (IndexedDB) – verhindert Platzhalter
-                    // OPTIMISTISCH (mobil): Neues Bild sofort in Karte – IndexedDB-Lesen kann verzögert sein
+                    // Danach: Vollständige Liste aus IndexedDB (Sync, Pending)
                     loadArtworksResolvedForDisplay().then((list) => {
                       let exhibitionArtworks = filterK2ArtworksOnly(list)
                       if (newNumber && mobilePhoto && typeof mobilePhoto === 'string') {
