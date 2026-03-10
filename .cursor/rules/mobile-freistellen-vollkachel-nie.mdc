@@ -1,0 +1,37 @@
+---
+description: Auf Mobil Freistellen und Vollkachel nie anzeigen/ausführen – nur PC/Laptop.
+alwaysApply: true
+---
+
+# 🔒 Mobile: Freistellen und Vollkachel NIEMALS (verbindlich)
+
+## Regel (unveränderlich)
+
+**Auf Mobilgeräten (Handy, Tablet, iPad) stehen Freistellen und Vollkachel nicht zur Verfügung.** Nur **Original benutzen** und **Foto zuschneiden** sind erlaubt. Freistellen führt auf Mobil zu Abstürzen und ist ressourcenintensiv; Vollkachel gleichfalls nur am PC/Laptop.
+
+## Umsetzung im Code
+
+1. **Mobile-Erkennung (Admin):**  
+   `isMobileDevice` = true wenn:  
+   - User-Agent iPhone/iPad/iPod/Android, **oder**  
+   - Fensterbreite ≤ 1024 px, **oder**  
+   - (maxTouchPoints > 0 und Breite ≤ 1280 px).  
+   So werden auch iPad im Querformat und „Desktop-Website“-Modus als Mobil behandelt.
+
+2. **UI:**  
+   - Werke (Neues Werk / Werk bearbeiten): Block „Freistellen, Original, Vollkachel“ nur bei `!isMobileDevice`; bei Mobil nur Block „Bildverarbeitung (Handy/Tablet)“ mit Original + Zuschneiden.  
+   - **ImageProcessingOptions:** Überall wo verwendet (VK2 Mitglieder Foto/Werk, VK2-Karten, Dokument hochladen, Event-Dokument): `showFreistellen={!isMobileDevice}` übergeben, damit auf Mobil nur „Original“ angezeigt wird.
+
+3. **Verarbeitung:**  
+   In `runBildUebernehmen`: Wenn `isMobileDevice`, **immer** `effectiveMode = 'original'` verwenden – nie Freistellen oder Vollkachel ausführen, auch wenn die UI ausnahmsweise einen anderen Modus übergeben würde.
+
+4. **Zuschnitt auf Mobil:**  
+   Nach „Foto zuschneiden“ auf Mobil: `setPhotoImageMode('original')`, nicht `'vollkachel'`.
+
+## Betroffene Stellen
+
+- `components/ScreenshotExportAdmin.tsx`: Definition `isMobileDevice`, Werke-Block (previewUrl && !isMobileDevice / isMobileDevice), alle `ImageProcessingOptions`-Aufrufe mit `showFreistellen={!isMobileDevice}`, `runBildUebernehmen` (effectiveMode bei Mobil = original), ImageCropModal onApply (photoImageMode bei Mobil = original).
+
+## Kurzfassung
+
+**Freistellen und Vollkachel = nur PC/Laptop. Auf Mobil: weder anzeigen noch ausführen. Diese Festlegung darf nicht wieder aufgeweicht werden.**

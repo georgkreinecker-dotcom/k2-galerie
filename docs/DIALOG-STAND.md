@@ -8,8 +8,8 @@
 
 ## Session-Ende 09.03.26
 
-- **Heute:** ro5 → Werke 0031/0035 + Speicherproblem (Bearbeiten + Neues Werk = ImageStore); Regel „Werke mit Bilddaten immer ImageStore“ + „Standard-Verstoß = alle Stellen nachziehen“ festgezurrt. Alles committed & gepusht (main).
-- **Nächster Einstieg:** DIALOG-STAND lesen, dann mit dem weitermachen, womit du willst (z. B. testen oder nächste Aufgabe).
+- **Heute:** (1) ro5 → Werke 0031/0035 + Speicherproblem (Bearbeiten + Neues Werk = ImageStore). (2) **Mobile: Freistellen und Vollkachel endgültig deaktiviert** – isMobileDevice verschärft (≤1024 px + Touch ≤1280), überall ImageProcessingOptions mit showFreistellen={!isMobileDevice}, runBildUebernehmen erzwingt auf Mobil immer „original“, Zuschnitt auf Mobil setzt photoImageMode auf „original“. Regel: .cursor/rules/mobile-freistellen-vollkachel-nie.mdc (alwaysApply).
+- **Nächster Einstieg:** DIALOG-STAND lesen; optional am Handy/Tablet prüfen: Admin → Werke → Neues Werk / Werk bearbeiten – nur „Original“ und „Zuschneiden“, keine Freistellen/Vollkachel.
 
 ---
 

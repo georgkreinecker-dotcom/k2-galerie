@@ -1471,8 +1471,12 @@ function ScreenshotExportAdmin() {
   const [photoImageMode, setPhotoImageMode] = useState<'original' | 'freigestellt' | 'vollkachel'>('freigestellt')
   // Hintergrund-Variante bei Freistellung: hell | weiss | warm | kuehl | dunkel
   const [photoBackgroundPreset, setPhotoBackgroundPreset] = useState<'hell' | 'weiss' | 'warm' | 'kuehl' | 'dunkel'>('hell')
-  /** Auf Mobil: keine Freistellung anzeigen/ausführen – nur Original speichern */
-  const isMobileDevice = typeof window !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768)
+  /** Auf Mobil: keine Freistellung/Vollkachel – nur Original + Zuschneiden. Fest: Freistellen/Vollkachel nur PC/Laptop (Regel: mobile-freistellen-vollkachel-nie.mdc). */
+  const isMobileDevice = typeof window !== 'undefined' && (
+    /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+    window.innerWidth <= 1024 ||
+    (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0 && window.innerWidth <= 1280)
+  )
   /** Läuft gerade „Jetzt freistellen“ (nachträglich für bestehendes Bild)? */
   const [freistellenInProgress, setFreistellenInProgress] = useState(false)
   /** Zuschnitt-Modal: Bild als Data-URL zum Zuschneiden (null = geschlossen) */
@@ -1792,7 +1796,8 @@ function ScreenshotExportAdmin() {
   ) => {
     setImageUploadStatus('⏳ Bild wird verarbeitet…')
     try {
-      const effectiveMode = mode === 'vollkachel' ? 'original' : mode
+      /** Auf Mobil: niemals Freistellen/Vollkachel ausführen – nur Original (Regel: mobile-freistellen-vollkachel-nie.mdc). */
+      const effectiveMode = isMobileDevice ? 'original' : (mode === 'vollkachel' ? 'original' : mode)
       const result = await processImageForSave(dataUrl, { mode: effectiveMode, backgroundPreset, context: 'desktop' })
       if (!result || typeof result !== 'string') {
         setImageUploadStatus('⚠️ Kein Bild erzeugt – bitte erneut versuchen')
@@ -1806,7 +1811,7 @@ function ScreenshotExportAdmin() {
       setImageUploadStatus('⚠️ Fehler – bitte erneut versuchen')
       setTimeout(() => setImageUploadStatus(null), 4000)
     }
-  }, [])
+  }, [isMobileDevice])
 
   const [showDocumentModal, setShowDocumentModal] = useState(false)
   const [selectedEventForDocument, setSelectedEventForDocument] = useState<string | null>(null)
@@ -9696,7 +9701,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             {pendingMemberImage?.mitgliedIdx === mitgliedIdx && pendingMemberImage?.field === 'mitgliedFotoUrl' && (
               <div style={{ marginTop: '0.5rem', padding: '0.6rem', background: 'rgba(0,0,0,0.12)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)' }}>
                 <div style={{ fontSize: '0.75rem', color: 'rgba(160,200,255,0.8)', marginBottom: '0.4rem' }}>🖼️ Bildverarbeitung</div>
-                <ImageProcessingOptions mode={pendingMemberImageMode} onModeChange={setPendingMemberImageMode} backgroundPreset={pendingMemberImagePreset} onBackgroundPresetChange={setPendingMemberImagePreset} showVollkachel={false} />
+                <ImageProcessingOptions mode={pendingMemberImageMode} onModeChange={setPendingMemberImageMode} backgroundPreset={pendingMemberImagePreset} onBackgroundPresetChange={setPendingMemberImagePreset} showVollkachel={false} showFreistellen={!isMobileDevice} />
                 <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.4rem' }}>
                   <button type="button" onClick={async () => {
                     if (!pendingMemberImage || pendingMemberImage.field !== 'mitgliedFotoUrl') return
@@ -9738,7 +9743,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             {pendingMemberImage?.mitgliedIdx === mitgliedIdx && pendingMemberImage?.field === 'imageUrl' && (
               <div style={{ marginTop: '0.5rem', padding: '0.6rem', background: 'rgba(0,0,0,0.12)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)' }}>
                 <div style={{ fontSize: '0.75rem', color: 'rgba(160,200,255,0.8)', marginBottom: '0.4rem' }}>🖼️ Bildverarbeitung</div>
-                <ImageProcessingOptions mode={pendingMemberImageMode} onModeChange={setPendingMemberImageMode} backgroundPreset={pendingMemberImagePreset} onBackgroundPresetChange={setPendingMemberImagePreset} showVollkachel={false} />
+                <ImageProcessingOptions mode={pendingMemberImageMode} onModeChange={setPendingMemberImageMode} backgroundPreset={pendingMemberImagePreset} onBackgroundPresetChange={setPendingMemberImagePreset} showVollkachel={false} showFreistellen={!isMobileDevice} />
                 <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.4rem' }}>
                   <button type="button" onClick={async () => {
                     if (!pendingMemberImage || pendingMemberImage.field !== 'imageUrl') return
@@ -10265,7 +10270,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                           {pendingVk2Card?.index === idx && (
                             <div style={{ marginTop: '0.6rem', padding: '0.75rem', background: 'rgba(0,0,0,0.15)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.12)' }}>
                               <div style={{ fontSize: '0.8rem', color: s.muted, marginBottom: '0.5rem' }}>🖼️ Bildverarbeitung – dann „Bild übernehmen“</div>
-                              <ImageProcessingOptions mode={pendingVk2CardMode} onModeChange={setPendingVk2CardMode} backgroundPreset={pendingVk2CardPreset} onBackgroundPresetChange={setPendingVk2CardPreset} showVollkachel={false} />
+                              <ImageProcessingOptions mode={pendingVk2CardMode} onModeChange={setPendingVk2CardMode} backgroundPreset={pendingVk2CardPreset} onBackgroundPresetChange={setPendingVk2CardPreset} showVollkachel={false} showFreistellen={!isMobileDevice} />
                               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
                                 <button type="button" onClick={async () => {
                                   if (!pendingVk2Card) return
@@ -12604,7 +12609,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               {pendingDocumentImage && (
                 <div style={{ marginBottom: '1rem', padding: '1rem', background: '#f8f6f4', borderRadius: 8, border: '1px solid #e0ddd8' }}>
                   <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#1c1a18', marginBottom: '0.5rem' }}>🖼️ Bildverarbeitung – dann „Bild übernehmen“</div>
-                  <ImageProcessingOptions mode={pendingDocumentImageMode} onModeChange={setPendingDocumentImageMode} backgroundPreset={pendingDocumentImagePreset} onBackgroundPresetChange={setPendingDocumentImagePreset} showVollkachel={false} />
+                  <ImageProcessingOptions mode={pendingDocumentImageMode} onModeChange={setPendingDocumentImageMode} backgroundPreset={pendingDocumentImagePreset} onBackgroundPresetChange={setPendingDocumentImagePreset} showVollkachel={false} showFreistellen={!isMobileDevice} />
                   <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
                     <button type="button" onClick={async () => {
                       if (!pendingDocumentImage) return
@@ -16831,7 +16836,7 @@ ${name}`
                   {pendingEventDocImage && (
                     <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'rgba(0,0,0,0.2)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.15)' }}>
                       <div style={{ fontSize: '0.85rem', color: '#5ffbf1', marginBottom: '0.5rem' }}>🖼️ Bildverarbeitung – dann „Bild übernehmen“</div>
-                      <ImageProcessingOptions mode={pendingEventDocImageMode} onModeChange={setPendingEventDocImageMode} backgroundPreset={pendingEventDocImagePreset} onBackgroundPresetChange={setPendingEventDocImagePreset} showVollkachel={false} />
+                      <ImageProcessingOptions mode={pendingEventDocImageMode} onModeChange={setPendingEventDocImageMode} backgroundPreset={pendingEventDocImagePreset} onBackgroundPresetChange={setPendingEventDocImagePreset} showVollkachel={false} showFreistellen={!isMobileDevice} />
                       <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                         <button type="button" onClick={async () => {
                           if (!pendingEventDocImage) return
@@ -18672,7 +18677,7 @@ ${name}`
                   onApply={(dataUrl) => {
                     setPreviewUrl(dataUrl)
                     pendingImageDataUrlRef.current = dataUrl
-                    setPhotoImageMode('vollkachel')
+                    setPhotoImageMode(isMobileDevice ? 'original' : 'vollkachel')
                     setCropImageSrc(null)
                   }}
                   onCancel={() => setCropImageSrc(null)}

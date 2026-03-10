@@ -1,4 +1,4 @@
-# Anke – Briefing – 09.03.26
+# Anke – Briefing – 10.03.26
 
 > Ankes Briefing für Session-Start. Generiert von `npm run briefing`. Stand, Offen, Proaktiv.
 
@@ -6,12 +6,11 @@
 
 ## Stand (wo wir stehen)
 
-### Datum: 08.03.26 – Kampagne: Fertige Beispiele (redigierte Seiten)
+### Datum: 09.03.26 – Werke 0031/0035: Bilder neu bearbeiten + Speicherproblem gelöst
 
-- **Stand:** Georg braucht **fertige Dokumente mit Text** – nicht nur Vorlagen mit Platzhaltern. In der Kampagne gibt es jetzt **„Fertige Beispiele (redigierte Seiten)“**: Flyer und alle E-Mails mit konkretem Text (info@kgm.at, 0664 1046337, „Liebe Maria“, „Martina und Georg“ etc.) – zum sofortigen Lesen und Zeigen.
-- **Was zuletzt gemacht:** docs/KOMMUNIKATION-FERTIGE-BEISPIELE.md erstellt (5 Abschnitte: Flyer, Ansprache Künstlerin, Ansprache Verein, E-Mail nach Kauf, E-Mail Einladung Test). In Kampagne DOCUMENTS + public aufgenommen; 00-INDEX und KOMMUNIKATION-DOKUMENTE-STRUKTUR ergänzt.
-- **Nächster Schritt:** Optional Presse §6 redigieren oder Mehrsprachigkeit. Ansonsten: fertige Beispiele in der Kampagne nutzen.
-- **Wo nachlesen:** Kampagne → „Fertige Beispiele (redigierte Seiten)“; docs/KOMMUNIKATION-FERTIGE-BEISPIELE.md.
+- **Stand:** Beim Bearbeiten von Werken (z. B. 0031, 0035) mit neuem Bild wurde das Bild bisher nur als große data-URL in localStorage geschrieben → Speicherproblem (Quota, evtl. Anzeige). **Umsetzung:** Beim Speichern nach Bearbeiten wird die Liste zuerst mit **prepareArtworksForStorage** vorbereitet: neues Bild (mobilePhoto) geht in **IndexedDB**, in der Liste bleibt nur **imageRef**. Danach Speichern (Supabase oder localStorage) mit der vorbereiteten Liste. Anzeige nach Speichern nutzt weiterhin loadArtworksResolvedForDisplay() → Bild kommt aus IndexedDB.
+- **Nächster Schritt:** Georg testen: Werk 0031 bzw. 0035 bearbeiten, neues Bild wählen, Speichern – Bild soll dauerhaft gespeichert und in Galerie/Werkansicht sichtbar sein; kein Speicher voll / kein Platzhalter.
+- **Wo nachlesen:** GalerieVorschauPage.tsx (Bearbeiten-Save-Block ~4398–4422; Import prepareArtworksForStorage, saveArtworksForContextWithImageStore); artworkImageStore.ts (prepareArtworksForStorage).
 
 ---
 
