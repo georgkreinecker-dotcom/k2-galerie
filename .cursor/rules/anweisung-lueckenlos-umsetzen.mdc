@@ -14,6 +14,18 @@ alwaysApply: true
 - **Nach einem Crash:** Zuerst `docs/WEITERARBEITEN-NACH-ABSTURZ.md` lesen. Dort prüfen: War eine Anweisung in Arbeit? Welche Schritte fehlen noch? Diese Schritte **sofort** abarbeiten und die Anweisung zu Ende bringen.
 - Kein „Teil erledigt, Rest später“. Kein Vergessen von Teilen wegen Crash. Die Anweisung ist erst fertig, wenn alles umgesetzt ist.
 
+## Anweisung verstehen und bestätigen
+
+**Scharfe Regel:** Siehe **anweisung-verstehen-bestaetigen.mdc** – vor Umsetzung immer entweder rückmelden (wenn unklar) oder Anweisung in eigenen Worten bestätigen; nie still loslegen.
+
+## Klare Anweisung = von vornherein alle Fälle (10.03.26)
+
+**Wenn Georg eine klare Anweisung gibt, darf ich sie nicht nur teilweise umsetzen.** Er rechnet damit, dass sie eingehalten wird – Abweichung ist nervenaufreibend und inakzeptabel.
+
+- **Vor der Umsetzung:** Alle Fälle/Kontexte durchgehen, die die Anweisung betreffen (z. B. „Bild sofort in Karte“ → **neues Werk** und **Bearbeiten**, **Mobil** und **Mac**, **30–39**, **blob-URL**, **leerer State**). Nicht nur einen Fall liefern und den Rest übersehen.
+- **Detail-Prüfung:** Siehe `detail-pruefung-nicht-georg.mdc` – Ablauf, Folgeschritte, alle Pfade von Anfang an mitdenken.
+- **Fertig** nur melden, wenn die Anweisung in **allen** relevanten Fällen erfüllt ist. Sonst habe ich eine klare Anweisung nicht eingehalten.
+
 ## Kurzfassung
 
-**Anweisung = lückenlos umsetzen. Bei Crash: WEITERARBEITEN-NACH-ABSTURZ.md prüfen und die Anweisung zu Ende führen.**
+**Verstehen:** Unklar → rückmelden; besser: Anweisung in eigenen Worten wiederholen, damit Georg sieht, dass ich sie verstanden habe. **Umsetzen:** lückenlos, alle Fälle von vornherein. Bei Crash: WEITERARBEITEN-NACH-ABSTURZ.md prüfen und zu Ende führen.**

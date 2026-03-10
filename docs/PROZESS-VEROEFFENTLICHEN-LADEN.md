@@ -67,10 +67,11 @@
 
 ---
 
-## 5. Warum dann trotzdem Platzhalter?
+## 5. Warum dann trotzdem Platzhalter? (Bildspeicher/Ladeproblem)
 
 - **Nach App-Löschen:** Lokal ist leer → es gibt nichts zu „bewahren“. Server liefert, was er hat. Hat der Server keine Bild-URLs (weil letztes Veröffentlichen ohne Auflösung oder von Gerät ohne Bilder war), kommen Platzhalter.
-- **Sicherheit:** Damit der Prozess stimmt: Immer von dem Gerät **veröffentlichen**, das die vollen Daten (inkl. Bilder) hat. Dann hat der Server die URLs; andere Geräte holen sie mit „Bilder vom Server laden“.
+- **„70 Werke, Karten da, Bilder fehlen“:** Die Werke kommen vom Server, aber die **Bilder** nicht. Lösung: **Einmal vom Mac** (wo die Fotos gespeichert sind) **„An Server senden“** klicken – dann werden alle Bild-URLs aus IndexedDB aufgelöst und mitgeschickt. Auf den anderen Geräten danach **„Aktuellen Stand holen“** / „Vom Server laden“.
+- **Sicherheit:** Immer von dem Gerät **veröffentlichen**, das die vollen Daten (inkl. Bilder) hat. Dann hat der Server die URLs; andere Geräte holen sie mit „Bilder vom Server laden“.
 
 ---
 

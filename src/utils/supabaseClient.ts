@@ -124,27 +124,17 @@ export async function fetchRawArtworksFromSupabase(): Promise<Array<{ number?: s
   }
 }
 
-/** Bereich 30–39: Nach „Bilder 0030–0039 bereinigen“ beim Export nie eine URL liefern (weder bestehend noch Fallback). */
-function isArtworkNumberInRange30_39(artwork: any): boolean {
-  const num = artwork?.number ?? artwork?.id
-  if (num == null || num === '') return false
-  const s = String(num).trim()
-  const withPrefix = s.match(/^K2-[A-Z]-?(\d+)$/i)
-  const n = withPrefix ? parseInt(withPrefix[1], 10) : parseInt(s.replace(/\D/g, '') || '0', 10)
-  if (Number.isNaN(n)) return false
-  return n >= 30 && n <= 39
-}
-
 /**
  * Liefert eine für Supabase/Handy nutzbare Bild-URL: entweder bestehende https-URL
  * oder Auflösung aus imageRef/IndexedDB + Upload nach Supabase Storage.
  * Optional: supabaseImageMap = Map (number/id -> image_url) für Fallback, wenn Bild nur in Supabase (vom iPad) existiert.
+ * WICHTIG: Alle Werke (auch 30–39) werden aufgelöst – damit beim Veröffentlichen die VOLLSTÄNDIGE Liste
+ * (1–48) im Payload ist. Sonst fehlen auf Geräten, die vom Netz laden, alle Werke ab 30.
  */
 export async function resolveImageUrlForSupabase(
   artwork: any,
   options?: { supabaseImageMap?: Map<string, string> }
 ): Promise<string | undefined> {
-  if (isArtworkNumberInRange30_39(artwork)) return undefined
   const url = artwork?.imageUrl
   const ref = artwork?.imageRef
   const number = artwork?.number || artwork?.id || 'werk'

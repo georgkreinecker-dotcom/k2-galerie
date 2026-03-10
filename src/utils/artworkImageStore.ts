@@ -116,13 +116,13 @@ export async function clearArtworkImagesForNumberRange(
   return { updated, clearedCount, idbDeletedCount }
 }
 
-/** Schwellwert: Bilddaten größer als das werden in IndexedDB ausgelagert (Bytes). */
-const MOVE_TO_IDB_THRESHOLD = 30 * 1024 // 30 KB – alles darüber in IDB
+/** Alle data:image-Bilder in IndexedDB (nicht nur große) – damit „An Server senden“ sie auflösen kann und andere Geräte die Bilder bekommen. */
+const MOVE_TO_IDB_THRESHOLD = 0
 
 /**
- * Bereitet eine Werkliste für localStorage vor: große data:image Bilddaten
+ * Bereitet eine Werkliste für localStorage vor: data:image Bilddaten
  * werden in IndexedDB ausgelagert, in der Liste bleibt nur imageRef.
- * Gibt die schlanke Liste zurück (ohne große Base64).
+ * Gibt die schlanke Liste zurück. Schwellwert 0 = alle Bilder in IDB (Bildspeicher/Ladeproblem beheben).
  */
 export async function prepareArtworksForStorage(artworks: any[]): Promise<any[]> {
   if (!Array.isArray(artworks) || artworks.length === 0) return artworks
