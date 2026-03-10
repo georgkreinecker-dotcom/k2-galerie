@@ -94,6 +94,11 @@
 - **Supabase-Fallback:** Wenn ein Werk auf diesem Gerät kein Bild in IndexedDB hat, aber schon in Supabase (vom iPad) gespeichert ist, wird die URL aus der Supabase-Datenbank übernommen (inkl. Abgleich mit Kurznummer 0030 etc.).
 - **Wenn weiterhin Bilder fehlen:** (1) Supabase Dashboard → Storage → Bucket `artwork-images` → Policies prüfen: **öffentlicher Lese-Zugriff** und **Upload mit Anon-Key** erlauben. (2) Auf dem **iPad** prüfen: Zeigen die Werke 30–48 in der Galerie-Vorschau **Bilder** (keine Platzhalter)? Nur dann sind sie in IndexedDB und können mitgesendet werden. (3) Nach „An Server senden“ die Meldung lesen: „X mit Bild“ – wenn X kleiner als Werkeanzahl, fehlen auf diesem Gerät Bilder in der Datenquelle.
 
+### 5b. Viele Fotos am iPad speichern (z. B. 20) – 10.03.26
+
+- **Speichern:** Im Admin (iPad) werden Fotos beim „Bild übernehmen“ (Neues Werk / Werk bearbeiten) auf **iPad/Handy automatisch stärker komprimiert** (context: mobile → max. 560 px, Qualität 0.48). So sind viele Fotos nacheinander schnell speicherbar, ohne Quota oder lange Wartezeiten.
+- **Ablauf empfohlen:** (1) Fotos im Admin unter „Neues Werk hinzufügen“ anlegen, jeweils Speichern. (2) **Danach auf dem iPad** „An Server senden“ (Einstellungen) – dann hat der Server alle Bild-URLs. (3) **Am Mac** „Aktuellen Stand holen“ – mit dem gefixten Key-Abgleich (0030 ↔ K2-K-0030) sollten keine Duplikate mehr entstehen und die Bilder ankommen.
+
 ---
 
 ## 6. Sync-Kernregel („ein Fehler, alle Sync-Probleme“)

@@ -1803,7 +1803,8 @@ function ScreenshotExportAdmin() {
     try {
       /** Auf Mobil: niemals Freistellen/Vollkachel ausführen – nur Original (Regel: mobile-freistellen-vollkachel-nie.mdc). */
       const effectiveMode = isMobileDevice ? 'original' : (mode === 'vollkachel' ? 'original' : mode)
-      const result = await processImageForSave(dataUrl, { mode: effectiveMode, backgroundPreset, context: 'desktop' })
+      /** iPad/Handy: stärker komprimieren (mobile), damit 20+ Fotos schnell speicherbar sind – Regel: komprimierung-fotos-videos.mdc */
+      const result = await processImageForSave(dataUrl, { mode: effectiveMode, backgroundPreset, context: isMobileDevice ? 'mobile' : 'artwork' })
       if (!result || typeof result !== 'string') {
         setImageUploadStatus('⚠️ Kein Bild erzeugt – bitte erneut versuchen')
         setTimeout(() => setImageUploadStatus(null), 4000)
