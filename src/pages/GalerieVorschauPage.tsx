@@ -636,6 +636,11 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   const qrScannerVideoRef = useRef<HTMLVideoElement>(null)
   const qrScannerCanvasRef = useRef<HTMLCanvasElement>(null)
   const adminLoadMountedRef = useRef(true)
+  /** Timer für zweiphasige „Vom Server laden“-Meldung: erst „Bilder werden angezeigt“, dann „synchronisiert“ (Bilder brauchen Zeit zum Laden). */
+  const refreshImageDelayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => {
+    if (refreshImageDelayTimerRef.current) clearTimeout(refreshImageDelayTimerRef.current)
+  }, [])
   
   // Öffne Modal zum Bearbeiten eines Objekts
   const openEditModal = (artwork: any) => {
@@ -2106,13 +2111,23 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 const list = await loadArtworksResolvedForDisplay()
                 const exhibitionArtworks = filterK2ArtworksOnly(list)
                 setArtworksDisplay(exhibitionArtworks)
+                // Zweiphasige Meldung: Bilder brauchen Zeit zum Laden – erst „Bilder werden angezeigt“, dann „synchronisiert“ (damit Nutzer nicht zu früh schließt)
+                const count = exhibitionArtworks.length
                 setLoadStatus({
-                  message: serverStand
-                    ? `✅ ${exhibitionArtworks.length} Werke synchronisiert – Server-Stand: ${serverStand}`
-                    : `✅ ${exhibitionArtworks.length} Werke synchronisiert`,
+                  message: `✅ ${count} Werke geladen. Bilder werden angezeigt…`,
                   success: true
                 })
-                setTimeout(() => setLoadStatus(null), 5000)
+                if (refreshImageDelayTimerRef.current) clearTimeout(refreshImageDelayTimerRef.current)
+                refreshImageDelayTimerRef.current = setTimeout(() => {
+                  refreshImageDelayTimerRef.current = null
+                  setLoadStatus({
+                    message: serverStand
+                      ? `✅ ${count} Werke synchronisiert – Server-Stand: ${serverStand}`
+                      : `✅ ${count} Werke synchronisiert`,
+                    success: true
+                  })
+                  setTimeout(() => setLoadStatus(null), 5000)
+                }, 4000)
                 window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromGaleriePage: true, count: toSave.length } }))
               } else {
                 resolveArtworkImages(toSaveServer).then((resolved) => {
