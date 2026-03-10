@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store')
   res.setHeader('Access-Control-Allow-Origin', '*')
-  return res.json({ label: '10.03.26 14:43', timestamp: 1773150225372 })
+  return res.json({ label: '10.03.26 14:50', timestamp: 1773150656188 })
 }

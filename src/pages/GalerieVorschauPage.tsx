@@ -4464,14 +4464,15 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                         return
                       }
                       
-                      // SOFORT: Karte aktualisieren – Karten lesen aus artworks-State (nicht nur aus loadArtworksResolvedForDisplay)
+                      // SOFORT: Karte aktualisieren – bei Bearbeitung („alte“ Werke): auf Mobil ist prev oft leer, Anzeige kommt aus localStorage-Fallback
                       const updatedNumber = updatedArtwork?.number ?? updatedArtwork?.id
                       if (updatedNumber && mobilePhoto && typeof mobilePhoto === 'string') {
-                        setArtworks((prev: any[]) =>
-                          prev.map((a: any) =>
+                        setArtworks((prev: any[]) => {
+                          const list = prev.length > 0 ? prev : loadArtworks()
+                          return list.map((a: any) =>
                             (a?.number ?? a?.id) === updatedNumber ? { ...a, imageUrl: mobilePhoto } : a
                           )
-                        )
+                        })
                       }
                       // Danach: Vollständige Liste aus IndexedDB (Sync, Platzhalter für andere)
                       loadArtworksResolvedForDisplay().then((list) => {
