@@ -3883,8 +3883,20 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                               const sentAtIso = new Date().toISOString()
                               try { localStorage.setItem('k2-last-sent-timestamp', sentAtIso) } catch (_) {}
                               const sentAt = new Date().toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-                              console.log('✅ Automatisch veröffentlicht:', result.artworksCount, 'Werke um', sentAt)
-                              setLoadStatus({ message: `✅ Veröffentlicht (${result.artworksCount} Werke) um ${sentAt}. Im Admin unter Einstellungen „Aktuellen Stand holen“.`, success: true })
+                              const imgInfo = result.imagesResolved != null ? `, ${result.imagesResolved} mit Bild` : ''
+                              const sizeInfo = result.payloadSizeBytes != null ? ` (${Math.round(result.payloadSizeBytes / 1024)} KB)` : ''
+                              let serverInfo = ''
+                              if (result.serverArtworksCount != null && result.serverImagesCount != null) {
+                                serverInfo = ` Auf Vercel: ${result.serverArtworksCount} Werke, ${result.serverImagesCount} mit Bild.`
+                                if (result.imagesResolved != null && result.serverImagesCount < result.imagesResolved) {
+                                  serverInfo += ' (Weniger Bilder auf Server – prüfen.)'
+                                }
+                              }
+                              const hint = (result.imagesResolved != null && result.artworksCount != null && result.imagesResolved < result.artworksCount)
+                                ? ' Bei einigen Werken fehlt auf diesem Gerät das Bild – vom Gerät mit den Fotos erneut senden.'
+                                : ''
+                              console.log('✅ Veröffentlicht:', result.artworksCount, 'Werke', result.imagesResolved != null ? `, ${result.imagesResolved} mit Bild` : '', 'um', sentAt, result.serverArtworksCount != null ? `| Vercel: ${result.serverArtworksCount} Werke, ${result.serverImagesCount} mit Bild` : '')
+                              setLoadStatus({ message: `✅ Gesendet: ${result.artworksCount} Werke${imgInfo}${sizeInfo}.${serverInfo} Im Admin „Aktuellen Stand holen“.${hint}`, success: true })
                               setTimeout(() => setLoadStatus(null), 6000)
                             } else {
                               console.warn('⚠️ Veröffentlichung fehlgeschlagen:', result.error)
@@ -4129,11 +4141,23 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                             const sentAtIso = new Date().toISOString()
                             try { localStorage.setItem('k2-last-sent-timestamp', sentAtIso) } catch (_) {}
                             const sentAt = new Date().toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-                            console.log('✅ Automatisch veröffentlicht:', result.artworksCount, 'Werke um', sentAt)
+                            const imgInfo = result.imagesResolved != null ? `, ${result.imagesResolved} mit Bild` : ''
+                            const sizeInfo = result.payloadSizeBytes != null ? ` (${Math.round(result.payloadSizeBytes / 1024)} KB)` : ''
+                            let serverInfo = ''
+                            if (result.serverArtworksCount != null && result.serverImagesCount != null) {
+                              serverInfo = ` Auf Vercel: ${result.serverArtworksCount} Werke, ${result.serverImagesCount} mit Bild.`
+                              if (result.imagesResolved != null && result.serverImagesCount < result.imagesResolved) {
+                                serverInfo += ' (Weniger auf Server – prüfen.)'
+                              }
+                            }
+                            const hint = (result.imagesResolved != null && result.artworksCount != null && result.imagesResolved < result.artworksCount)
+                              ? ' Bei einigen Werken fehlt auf diesem Gerät das Bild – vom Gerät mit den Fotos erneut senden.'
+                              : ''
+                            console.log('✅ Veröffentlicht:', result.artworksCount, 'Werke', result.imagesResolved != null ? `, ${result.imagesResolved} mit Bild` : '', 'um', sentAt, result.serverArtworksCount != null ? `| Vercel: ${result.serverArtworksCount} Werke, ${result.serverImagesCount} mit Bild` : '')
                             window.dispatchEvent(new CustomEvent('gallery-data-published', {
-                              detail: { success: true, artworksCount: result.artworksCount, size: result.result?.size }
+                              detail: { success: true, artworksCount: result.artworksCount, imagesResolved: result.imagesResolved, serverArtworksCount: result.serverArtworksCount, serverImagesCount: result.serverImagesCount, size: result.result?.size }
                             }))
-                            setLoadStatus({ message: `✅ Veröffentlicht (${result.artworksCount} Werke) um ${sentAt}. Im Admin unter Einstellungen „Aktuellen Stand holen“.`, success: true })
+                            setLoadStatus({ message: `✅ Gesendet: ${result.artworksCount} Werke${imgInfo}${sizeInfo}.${serverInfo} Im Admin „Aktuellen Stand holen“.${hint}`, success: true })
                             setTimeout(() => setLoadStatus(null), 6000)
                           } else {
                             console.warn('⚠️ Veröffentlichung fehlgeschlagen:', result.error)

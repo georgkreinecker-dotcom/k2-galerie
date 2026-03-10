@@ -2441,7 +2441,14 @@ function ScreenshotExportAdmin() {
   // Mobile Version veröffentlichen - Daten speichern + JSON-Datei erstellen + Vercel öffnen
   const [isDeploying, setIsDeploying] = React.useState(false)
   const [publishErrorMsg, setPublishErrorMsg] = React.useState<string | null>(null)
-  const [publishSuccessModal, setPublishSuccessModal] = React.useState<{ size: number; version: number } | null>(null)
+  const [publishSuccessModal, setPublishSuccessModal] = React.useState<{
+    size: number
+    version: number
+    artworksCount?: number
+    imagesResolved?: number
+    serverArtworksCount?: number
+    serverImagesCount?: number
+  } | null>(null)
   /** Balken für Senden/Empfangen: phase idle | sending | loading | success | error – Nutzer sieht sofort was passiert */
   const [syncStatusBar, setSyncStatusBar] = React.useState<{ phase: 'idle' | 'sending' | 'loading' | 'success' | 'error'; message: string }>({ phase: 'idle', message: '' })
   /** Zeitstempel im Sync-Fenster: Zuletzt geladen / Zuletzt gesendet (aus localStorage, K2) */
@@ -2811,10 +2818,17 @@ function ScreenshotExportAdmin() {
                 const sentAt = new Date().toISOString()
                 try { localStorage.setItem('k2-last-sent-timestamp', sentAt) } catch (_) {}
                 setLastSyncSentAt(sentAt)
-                if (silent) console.log('✅ K2-Daten an Server (zentral):', result.artworksCount, 'Werke')
+                if (silent) console.log('✅ K2-Daten an Server (zentral):', result.artworksCount, 'Werke', result.serverArtworksCount != null ? `| Vercel: ${result.serverArtworksCount} Werke, ${result.serverImagesCount} mit Bild` : '')
                 else {
                   setSyncStatusBar({ phase: 'success', message: 'Gesendet.' })
-                  setPublishSuccessModal({ size: result.result?.size ?? 0, version: parseInt(localStorage.getItem('k2-data-version') || '0', 10) + 1 })
+                  setPublishSuccessModal({
+                    size: result.result?.size ?? 0,
+                    version: parseInt(localStorage.getItem('k2-data-version') || '0', 10) + 1,
+                    artworksCount: result.artworksCount,
+                    imagesResolved: result.imagesResolved,
+                    serverArtworksCount: result.serverArtworksCount,
+                    serverImagesCount: result.serverImagesCount
+                  })
                 }
               } else {
                 if (!silent) {
@@ -3270,6 +3284,9 @@ function ScreenshotExportAdmin() {
 
       // K2: Werke mergen wie bisher
       const serverArtworks = filterK2Only(Array.isArray(data.artworks) ? data.artworks : [])
+      const serverImagesCount = serverArtworks.filter(
+        (a: any) => a?.imageUrl && typeof a.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))
+      ).length
       const localArtworks = loadArtworksRaw(tenant)
       const serverMap = new Map<string, any>()
       serverArtworks.forEach((a: any) => { const k = a.number || a.id; if (k) serverMap.set(k, a) })
@@ -3296,6 +3313,11 @@ function ScreenshotExportAdmin() {
       })
       const mergedWithImages = preserveLocalImageData(merged, localArtworks, (a: any) => String(a?.number ?? a?.id ?? ''))
       const toSave = filterK2Only(stripBase64FromArtworks(mergedWithImages))
+      const savedWithImageCount = toSave.filter(
+        (a: any) =>
+          (a?.imageUrl && typeof a.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))) ||
+          (a?.imageRef && typeof a.imageRef === 'string' && a.imageRef.length > 0)
+      ).length
       if (toSave.length >= localArtworks.length || toSave.length >= (loadArtworks(tenant).length || 0)) {
         const saved = await saveArtworks(tenant, toSave)
         if (saved) {
@@ -3307,11 +3329,11 @@ function ScreenshotExportAdmin() {
           try { localStorage.setItem('k2-last-loaded-timestamp', loadedAt) } catch (_) {}
           setLastSyncLoadedAt(loadedAt)
           const exportedAt = data.exportedAt ? ` (Stand: ${new Date(data.exportedAt).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })})` : ''
-          // Zweiphasig: Bilder brauchen Zeit zum Laden – erst „Bilder werden angezeigt“, dann Erfolg + Alert (wie GalerieVorschauPage)
+          const controlMsg = ` Vercel → Mac: ${serverArtworks.length} Werke, ${serverImagesCount} mit Bild angekommen. Gespeichert: ${toSave.length} Werke, ${savedWithImageCount} mit Bild.`
           setSyncStatusBar({ phase: 'loading', message: `${toSave.length} Werke geladen. Bilder werden angezeigt…` })
           setTimeout(() => {
             setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
-            alert(`✅ ${toSave.length} Werke vom Server geladen${exportedAt}.`)
+            alert(`✅ ${toSave.length} Werke vom Server geladen${exportedAt}.${controlMsg}`)
           }, 4000)
         } else {
           setSyncStatusBar({ phase: 'error', message: 'Fehler beim Speichern.' })
@@ -3325,6 +3347,11 @@ function ScreenshotExportAdmin() {
         )
         if (nurServerLaden) {
           const toSaveOnly = stripBase64FromArtworks(preserveLocalImageData(serverArtworks, localArtworks, (a: any) => String(a?.number ?? a?.id ?? '')))
+          const savedWithImageOnly = toSaveOnly.filter(
+            (a: any) =>
+              (a?.imageUrl && typeof a.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))) ||
+              (a?.imageRef && typeof a.imageRef === 'string' && a.imageRef.length > 0)
+          ).length
           const saved = await saveArtworks(tenant, filterK2Only(toSaveOnly))
           if (saved) {
             const resolved = await loadArtworksWithResolvedImages(tenant)
@@ -3333,10 +3360,11 @@ function ScreenshotExportAdmin() {
             const loadedAt = data.exportedAt || new Date().toISOString()
             try { localStorage.setItem('k2-last-loaded-timestamp', loadedAt) } catch (_) {}
             setLastSyncLoadedAt(loadedAt)
+            const controlMsg = ` Vercel → Mac: ${serverCount} Werke, ${serverImagesCount} mit Bild. Gespeichert: ${serverCount} Werke, ${savedWithImageOnly} mit Bild.`
             setSyncStatusBar({ phase: 'loading', message: `${serverCount} Werke geladen. Bilder werden angezeigt…` })
             setTimeout(() => {
               setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
-              alert(`✅ ${serverCount} Werke vom Server geladen (nur Server-Stand).`)
+              alert(`✅ ${serverCount} Werke vom Server geladen (nur Server-Stand).${controlMsg}`)
             }, 4000)
           } else {
             setSyncStatusBar({ phase: 'error', message: 'Fehler beim Speichern.' })
@@ -3362,7 +3390,7 @@ function ScreenshotExportAdmin() {
     }
   }
 
-  /** K2: Werke aus der veröffentlichten gallery-data.json (Vercel) laden und in k2-artworks wiederherstellen. Nur Server-Stand, lokal wird ersetzt. */
+  /** K2: Werke aus der veröffentlichten gallery-data.json (Vercel) laden und in k2-artworks wiederherstellen. Server-Stand als Basis, lokale Bilddaten (imageUrl/imageRef) werden erhalten – keine Überschreibung mit leeren Bildern (z. B. 30–48). */
   const handleRestoreWerkeFromPublished = async () => {
     if (tenant.isOeffentlich || tenant.isVk2) return
     setIsRestoringWerkeFromPublished(true)
@@ -3388,12 +3416,15 @@ function ScreenshotExportAdmin() {
       clearTimeout(timeoutId)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
-      const list = Array.isArray(data?.artworks) ? data.artworks : []
-      if (list.length === 0) {
+      const serverList = filterK2Only(Array.isArray(data?.artworks) ? data.artworks : [])
+      if (serverList.length === 0) {
         alert('Auf dem Server liegt noch kein Stand deiner Werke.\n\nKlicke zuerst einmal auf „An Server senden“, damit deine Werke dorthin gespeichert werden. Oder nutze „Aus Backup-Datei wiederherstellen“.')
         return
       }
-      const toSave = stripBase64FromArtworks(list)
+      const localArtworks = loadArtworksRaw(tenant)
+      const getKey = (a: any) => String(a?.number ?? a?.id ?? '')
+      const withPreservedImages = preserveLocalImageData(serverList, localArtworks, getKey)
+      const toSave = stripBase64FromArtworks(withPreservedImages)
       const ok = await saveArtworksByKeyWithImageStore('k2-artworks', toSave, { filterK2Only: true, allowReduce: true })
       if (!ok) {
         alert('Die Daten konnten nicht gespeichert werden (z. B. Speicher voll). Bitte „Speicher entlasten“ oder „Aus Backup-Datei wiederherstellen“ nutzen.')
@@ -3404,7 +3435,7 @@ function ScreenshotExportAdmin() {
       if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } }))
       try { localStorage.setItem('k2-last-loaded-timestamp', data.exportedAt || new Date().toISOString()) } catch (_) {}
       setLastSyncLoadedAt(data.exportedAt || new Date().toISOString())
-      alert(`✅ Fertig. ${list.length} Werke wurden vom Server geladen.`)
+      alert(`✅ Fertig. ${toSave.length} Werke wurden vom Server geladen (lokale Bilder beibehalten).`)
     } catch (e) {
       console.error('Werke aus Veröffentlichung wiederherstellen:', e)
       const msg = e instanceof Error ? e.message : String(e)
@@ -18105,35 +18136,19 @@ ${name}`
             onClick={e => e.stopPropagation()}
           >
             <h3 style={{ margin: '0 0 1rem', color: '#22c55e', fontSize: '1.2rem' }}>✅ App aktualisiert</h3>
-            {typeof window !== 'undefined' && (() => {
-              const ua = navigator.userAgent
-              const isMobileUA = /iPhone|iPad|iPod|Android/i.test(ua)
-              const isTouch = 'ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0)
-              return !isMobileUA && !isTouch && window.innerWidth >= 768
-            })() ? (
-              <>
-                <p style={{ margin: '0 0 0.75rem', color: '#e2e8f0', fontSize: '0.95rem' }}>
-                  Daten sind an Vercel gesendet ({((publishSuccessModal.size || 0) / 1024).toFixed(1)} KB). In 1–2 Min auf dem anderen Gerät „Bilder vom Server laden“ tippen bzw. Galerie neu laden.
-                </p>
-                <p style={{ margin: '0 0 0.5rem', color: 'rgba(255,255,255,0.85)', fontSize: '1rem', fontWeight: '600' }}>
-                  Einfach OK drücken.
-                </p>
-                <p style={{ margin: 0, color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>
-                  Am anderen Gerät: „Bilder vom Server laden“ oder Galerie neu laden (1–2 Min warten).
-                </p>
-              </>
-            ) : (
-              <>
-                <p style={{ margin: '0 0 0.5rem', color: 'rgba(255,255,255,0.85)', fontSize: '1rem', fontWeight: '600' }}>
-                  Fertig. Einfach OK drücken.
-                </p>
-                <p style={{ margin: 0, color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>
-                  Am Mac: in 1–2 Min „Bilder vom Server laden“ klicken – dann siehst du die Werke.
-                </p>
-              </>
+            {publishSuccessModal.artworksCount != null && (
+              <p style={{ margin: '0 0 0.5rem', color: 'rgba(255,255,255,0.95)', fontSize: '1rem', fontWeight: '600' }}>
+                Gesendet: {publishSuccessModal.artworksCount} Werke{publishSuccessModal.imagesResolved != null ? `, ${publishSuccessModal.imagesResolved} mit Bild` : ''}.
+                {publishSuccessModal.serverArtworksCount != null && publishSuccessModal.serverImagesCount != null && (
+                  <> Auf Vercel: {publishSuccessModal.serverArtworksCount} Werke, {publishSuccessModal.serverImagesCount} mit Bild.</>
+                )}
+              </p>
             )}
-            <p style={{ margin: '0.75rem 0 0', color: 'rgba(255,255,255,0.55)', fontSize: '0.8rem' }}>
-              Vercel stellt in 1–2 Min um. Danach auf dem anderen Gerät „Bilder vom Server laden“ bzw. Galerie neu laden.
+            <p style={{ margin: '0 0 0.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>
+              In 1–2 Min am anderen Gerät „Aktuellen Stand holen“ bzw. Galerie neu laden.
+            </p>
+            <p style={{ margin: 0, color: 'rgba(255,255,255,0.85)', fontSize: '1rem', fontWeight: '600' }}>
+              Einfach OK drücken.
             </p>
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
               {typeof window !== 'undefined' && (() => {

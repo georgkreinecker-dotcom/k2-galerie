@@ -33,6 +33,10 @@ export interface PublishGalleryDataResult {
   error?: string
   artworksCount?: number
   imagesResolved?: number
+  /** Nach erfolgreichem POST: Kontrolle was auf Vercel angekommen ist (GET direkt danach). */
+  serverArtworksCount?: number
+  serverImagesCount?: number
+  payloadSizeBytes?: number
 }
 
 /**
@@ -94,12 +98,31 @@ export async function publishGalleryDataToServer(artworks: any[]): Promise<Publi
     })
     const result = await response.json().catch(() => ({}))
     if (response.ok && result?.success === true) {
-      return {
+      const out: PublishGalleryDataResult = {
         success: true,
         result,
         artworksCount: forExport.length,
-        imagesResolved
+        imagesResolved,
+        payloadSizeBytes: json.length
       }
+      // Kontrolle: Was ist auf Vercel angekommen? (GET direkt nach POST)
+      try {
+        const getUrl = `${GALLERY_DATA_BASE_URL}/api/gallery-data?tenantId=k2&_=${Date.now()}`
+        const getRes = await fetch(getUrl, { cache: 'no-store' })
+        if (getRes.ok) {
+          const serverData = await getRes.json().catch(() => null)
+          const serverList = Array.isArray(serverData?.artworks) ? serverData.artworks : []
+          const serverImages = serverList.filter(
+            (a: any) =>
+              a?.imageUrl &&
+              typeof a.imageUrl === 'string' &&
+              (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))
+          ).length
+          out.serverArtworksCount = serverList.length
+          out.serverImagesCount = serverImages
+        }
+      } catch (_) {}
+      return out
     }
     return {
       success: false,

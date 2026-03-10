@@ -154,45 +154,66 @@ export async function resolveImageUrlForSupabase(
     return storageUrl ?? undefined
   }
   // Fallback: Bild existiert nur in Supabase (vom iPad hochgeladen), dieses Gerät hat es nicht in IndexedDB
-  if (options?.supabaseImageMap?.has(key)) {
-    const fromSupabase = options.supabaseImageMap.get(key)
+  const tryMap = (k: string) => {
+    const fromSupabase = options?.supabaseImageMap?.get(k)
     if (fromSupabase && (fromSupabase.startsWith('http://') || fromSupabase.startsWith('https://')))
       return fromSupabase
+    return undefined
+  }
+  if (options?.supabaseImageMap) {
+    const fromKey = tryMap(key)
+    if (fromKey) return fromKey
+    const digits = key.replace(/\D/g, '')
+    if (digits.length >= 2) {
+      const fromShort = tryMap(digits.padStart(4, '0'))
+      if (fromShort) return fromShort
+    }
   }
   return undefined
 }
+
+const EXPORT_UPLOAD_BATCH_SIZE = 4
 
 /**
  * Bereitet Werke für den Export (gallery-data.json) vor: imageRef/Base64 → Supabase-URL.
  * So enthält die veröffentlichte Datei echte Bild-URLs und das Handy zeigt keine Platzhalter.
  * Fallback: Werke, die nur auf iPad (imageRef/IndexedDB) existieren, holen ihre URL aus Supabase.
+ * Uploads in kleinen Batches (nicht alle parallel), damit Supabase/Netz nicht überlastet werden.
  */
 export async function resolveArtworkImageUrlsForExport(artworks: any[]): Promise<any[]> {
   if (!Array.isArray(artworks) || artworks.length === 0) return artworks
-  let supabaseImageMap = new Map<string, string>()
+  const supabaseImageMap = new Map<string, string>()
   if (isSupabaseConfigured()) {
     try {
       const raw = await fetchRawArtworksFromSupabase()
       raw.forEach((a: any) => {
         const k = String(a?.number || a?.id || '')
         const img = a?.image_url
-        if (k && img && (img.startsWith('http://') || img.startsWith('https://')))
-          supabaseImageMap.set(k, img)
+        if (!k || !img || !(img.startsWith('http://') || img.startsWith('https://'))) return
+        supabaseImageMap.set(k, img)
+        // Auch unter Kurznummer ablegen (z. B. 0030), falls Abgleich mit number "K2-K-0030" scheitert
+        const digits = k.replace(/\D/g, '')
+        if (digits.length >= 2) supabaseImageMap.set(digits.padStart(4, '0'), img)
       })
     } catch (_) {}
   }
-  const out = await Promise.all(
-    artworks.map(async (a: any) => {
-      try {
-        const imageUrl = await resolveImageUrlForSupabase(a, { supabaseImageMap })
-        const previewUrl = a.previewUrl && (a.previewUrl.startsWith('http') ? a.previewUrl : null)
-        return { ...a, imageUrl: imageUrl ?? a.imageUrl ?? '', previewUrl: previewUrl ?? imageUrl ?? a.previewUrl ?? '' }
-      } catch (e) {
-        console.warn('Bild-URL für Export nicht auflösbar:', a?.number ?? a?.id, e)
-        return a
-      }
-    })
-  )
+  const out: any[] = []
+  for (let i = 0; i < artworks.length; i += EXPORT_UPLOAD_BATCH_SIZE) {
+    const batch = artworks.slice(i, i + EXPORT_UPLOAD_BATCH_SIZE)
+    const resolved = await Promise.all(
+      batch.map(async (a: any) => {
+        try {
+          const imageUrl = await resolveImageUrlForSupabase(a, { supabaseImageMap })
+          const previewUrl = a.previewUrl && (a.previewUrl.startsWith('http') ? a.previewUrl : null)
+          return { ...a, imageUrl: imageUrl ?? a.imageUrl ?? '', previewUrl: previewUrl ?? imageUrl ?? a.previewUrl ?? '' }
+        } catch (e) {
+          console.warn('Bild-URL für Export nicht auflösbar:', a?.number ?? a?.id, e)
+          return a
+        }
+      })
+    )
+    out.push(...resolved)
+  }
   return out
 }
 

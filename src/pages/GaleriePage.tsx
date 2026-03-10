@@ -1079,6 +1079,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 }
               }
             })
+            const serverImagesCount = serverArtworks.filter(
+              (a: any) => a?.imageUrl && typeof a.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))
+            ).length
             const { merged, toHistory } = mergeServerWithLocal(serverArtworks, localArtworks, { serverMap, onlyAddLocalIfMobileAndVeryNew: true })
             if (toHistory.length > 0) appendToHistory(toHistory)
 
@@ -1087,8 +1090,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               const k = a?.number ?? a?.id
               return k != null ? String(k) : undefined
             })
+            const savedWithImageCount = mergedWithImages.filter(
+              (a: any) =>
+                (a?.imageUrl && typeof a.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))) ||
+                (a?.imageRef && typeof a.imageRef === 'string' && a.imageRef.length > 0)
+            ).length
 
             console.log('✅ Werke gemergt (Server = Quelle, alte Lokale nicht übernommen):', mergedWithImages.length, 'Gesamt,', toHistory.length, 'in History')
+            console.log('📊 Vercel → Mac: vom Server', serverArtworks.length, 'Werke,', serverImagesCount, 'mit Bild. Nach Merge gespeichert:', mergedWithImages.length, 'Werke,', savedWithImageCount, 'mit Bild.')
             console.log('📋 Lokale Nummern:', localArtworks.map((a: any) => a.number || a.id).join(', '))
             console.log('📋 Server Nummern:', serverArtworks.map((a: any) => a.number || a.id).join(', '))
             console.log('📋 Gemergte Nummern:', mergedWithImages.map((a: any) => a.number || a.id).join(', '))

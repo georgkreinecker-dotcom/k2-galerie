@@ -73,6 +73,13 @@
 - **„70 Werke, Karten da, Bilder fehlen“:** Die Werke kommen vom Server, aber die **Bilder** nicht. Lösung: **Zuerst vom Gerät, auf dem die Fotos gemacht wurden** (z. B. iPad, wo alles richtig liegt) **„An Server senden“** klicken – dann werden alle Bild-URLs aus IndexedDB aufgelöst und mitgeschickt. Danach auf den anderen Geräten **„Aktuellen Stand holen“** / „Vom Server laden“.
 - **Sicherheit:** Immer von dem Gerät **veröffentlichen**, das die vollen Daten (inkl. Bilder) hat (z. B. iPad wenn die Fotos dort gemacht wurden). Dann hat der Server die URLs; andere Geräte holen sie mit „Bilder vom Server laden“.
 
+### 5a. 18 Bilder senden/empfangen – was wir gemacht haben (10.03.26)
+
+- **Upload nicht mehr alle parallel:** Beim Veröffentlichen werden Bild-Uploads nach Supabase Storage in **kleinen Batches** (4 nacheinander) ausgeführt, damit keine Timeouts oder Rate-Limits entstehen.
+- **Rückmeldung nach dem Senden (iPad/Galerie-Vorschau):** Es erscheint z. B. „Veröffentlicht (48 Werke, 30 mit Bild) um 19:25 …“. Wenn **weniger mit Bild** als Werke: Hinweis „Bei einigen Werken fehlt auf diesem Gerät das Bild – vom Gerät mit den Fotos erneut senden.“
+- **Supabase-Fallback:** Wenn ein Werk auf diesem Gerät kein Bild in IndexedDB hat, aber schon in Supabase (vom iPad) gespeichert ist, wird die URL aus der Supabase-Datenbank übernommen (inkl. Abgleich mit Kurznummer 0030 etc.).
+- **Wenn weiterhin Bilder fehlen:** (1) Supabase Dashboard → Storage → Bucket `artwork-images` → Policies prüfen: **öffentlicher Lese-Zugriff** und **Upload mit Anon-Key** erlauben. (2) Auf dem **iPad** prüfen: Zeigen die Werke 30–48 in der Galerie-Vorschau **Bilder** (keine Platzhalter)? Nur dann sind sie in IndexedDB und können mitgesendet werden. (3) Nach „An Server senden“ die Meldung lesen: „X mit Bild“ – wenn X kleiner als Werkeanzahl, fehlen auf diesem Gerät Bilder in der Datenquelle.
+
 ---
 
 ## 6. Sync-Kernregel („ein Fehler, alle Sync-Probleme“)
