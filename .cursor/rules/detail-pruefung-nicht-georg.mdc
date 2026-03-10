@@ -1,0 +1,35 @@
+---
+description: Kleinste Details selbst prüfen – Georg soll sich nicht um jedes Detail kümmern müssen (Lehre 10.03.26).
+alwaysApply: true
+---
+
+# Detail-Prüfung = ich, nicht Georg (verbindlich)
+
+## Was Georg gesagt hat (10.03.26)
+
+„Anscheinend muss ich mich um jedes kleinste Detail kümmern.“
+
+**Konsequenz:** Das ist nicht seine Aufgabe. Es ist meine. Wenn etwas schiefgeht, weil ein Detail (Key-Abgleich, zweiter Pfad, anderes Gerät, „Stand“ danach) nicht mitgedacht wurde, habe ich versagt – nicht er.
+
+## Unveränderliche Regel
+
+**Bei jeder Änderung an einem Ablauf (Speichern, Laden, Merge, Veröffentlichen, Bearbeiten, Stand):**
+
+1. **„Was macht der Nutzer danach?“** Durchgehen: Speichern → dann Stand drücken? Dann anderes Gerät? Dann Veröffentlichen? Alle diese Folgeschritte müssen das gerade Gespeicherte/Geänderte **nicht** kaputtmachen oder überschreiben.
+2. **„Gilt hier überall derselbe Standard?“** Wenn es einen Standard gibt (ImageStore, preserveLocalImageData, ein Key-Format): **Alle** Pfade, die das gleiche tun (z. B. Merge beim Laden), müssen denselben Abgleich/ dieselbe Logik nutzen – inkl. Varianten (0031 vs. K2-K-0031, Server vs. lokal).
+3. **Nicht** nur die eine Stelle fixen und „fertig“ melden. **Sondern:** Alle Stellen, die denselben Kontext berühren, prüfen und ggf. anpassen.
+
+## Konkret (damit es nicht wieder passiert)
+
+| Ich ändere … | Ich prüfe sofort auch … |
+|--------------|--------------------------|
+| Speichern nach Bearbeiten | Was passiert beim „Stand“ / „Vom Server laden“? Bleibt das Bild erhalten (Key-Abgleich)? |
+| Ein Lade-/Merge-Pfad | Nutzen alle Merge-Pfade preserveLocalImageData? Stimmt der Key-Abgleich für alle Nummernformate? |
+| Einen Standard (z. B. ImageStore) | Alle Schreibpfade, die Werke mit Bild speichern – nutzen sie den Standard? |
+| Veröffentlichen | Wird danach „Vom Server laden“ das Richtige liefern? Sind Keys/Formate konsistent? |
+
+## Kurzfassung
+
+**Georg soll sich nicht um jedes Detail kümmern müssen. Ich denke Ablauf + Folgeschritte + alle betroffenen Pfade mit – bevor er es merkt.**
+
+Verknüpfung: georg-aussage-breiter-kontext.mdc (ganzer Faden), standard-verstoss-alle-stellen-nachziehen.mdc (alle Stellen), werke-bilder-immer-imagestore.mdc (ein Standard überall).
