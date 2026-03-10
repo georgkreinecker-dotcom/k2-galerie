@@ -147,6 +147,21 @@ const DEFAULT_GET_KEY = (a: any): string | undefined => {
   const k = a?.number ?? a?.id
   return k != null ? String(k) : undefined
 }
+
+/** Alle Keys für Abgleich (z. B. 0031 ↔ K2-K-0031), damit preserveLocalImageData lokales Bild auch bei unterschiedlicher Nummernschreibweise findet. */
+function getKeysForMatching(a: any): string[] {
+  const main = DEFAULT_GET_KEY(a)
+  if (!main) return []
+  const keys = new Set<string>([main])
+  const parsed = parseK2Number(a?.number)
+  if (parsed) {
+    keys.add(String(parsed.num))
+    keys.add(String(parsed.num).padStart(4, '0'))
+  }
+  const numOnly = main.replace(/^K2-[A-Z]-?/i, '').replace(/^0+/, '') || main
+  if (numOnly && numOnly !== main) keys.add(numOnly)
+  return Array.from(keys)
+}
 const DEFAULT_IS_MOBILE = (a: any): boolean =>
   !!(a?.createdOnMobile || a?.updatedOnMobile)
 const DEFAULT_IS_VERY_NEW = (a: any): boolean => {
@@ -239,6 +254,7 @@ function isPlaceholderOrEmpty(url: string | undefined): boolean {
  * Erhält lokale Bilddaten (imageUrl, imageRef, previewUrl), damit Freistellungen nicht durch Server-Originale ersetzt werden.
  * - Wenn lokal ein Bild vorhanden ist (imageUrl oder imageRef): immer lokale Bilddaten übernehmen.
  * - Verhindert, dass „Bilder vom Server laden“ oder Merge die freigestellten Fotos durch Export-Originale ersetzt.
+ * - Abgleich über getKeysForMatching: 0031 ↔ K2-K-0031 ↔ 31, damit „Stand“ drücken das gerade bearbeitete Bild nicht verliert.
  * Doku: docs/GELOESTE-BUGS.md BUG-021
  */
 export function preserveLocalImageData(
@@ -248,13 +264,12 @@ export function preserveLocalImageData(
 ): any[] {
   const localByKey = new Map<string, any>()
   localList.forEach((a: any) => {
-    const k = getKey(a)
-    if (k) localByKey.set(k, a)
+    getKeysForMatching(a).forEach((k) => { if (k) localByKey.set(k, a) })
   })
   return merged.map((item: any) => {
-    const key = getKey(item)
-    if (!key) return item
-    const local = localByKey.get(key)
+    const keysToTry = getKeysForMatching(item)
+    if (keysToTry.length === 0) return item
+    const local = keysToTry.map((k) => localByKey.get(k)).find(Boolean)
     if (!local) return item
     const localHasImage = !isPlaceholderOrEmpty(local.imageUrl) || (local.imageRef && String(local.imageRef).trim() !== '')
     if (!localHasImage) return item
