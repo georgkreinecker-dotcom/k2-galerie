@@ -6,12 +6,27 @@
 
 ---
 
-## Heute 11.03.26 – 5 Bilder (0030–0033, 0038) – Ref-Varianten erweitert
+## Heute 11.03.26 – Bildspeicher-Regelanalyse „gemerkt“
+
+- **Auftrag:** Bildspeicher-Prozess gegen Regeln prüfen → **5 Verstöße** dokumentiert in **docs/ANALYSE-BILDSPEICHER-REGELVERSTOESSE.md** (3 Code, 2 Doku). **Gemerkt:** Regel werke-bilder-immer-imagestore.mdc verweist auf diese Doku; bei Bildspeicher-Thema Abschnitt 5 (Nächste Schritte) abarbeiten. docs/00-INDEX.md enthält Eintrag. Offene Fixes: 3.1 (catch in WithImageStore), 3.2 (compressAllArtworkImages), 3.3 (Supabase-Backup), 3.4+3.5 (Doku PROZESS-VEROEFFENTLICHEN-LADEN).
+
+---
+
+## Heute 11.03.26 – 5 Bilder (30–33, 38) fehlen noch – Ref-Variante k2-img-30 ergänzt
+
+- **Georg:** „Es fehlen noch immer die fünf Bilder 30 bis 33 und 38.“
+- **Ursache:** Beim Lookup wurden zwar K2-K-/K2-M-Varianten (z. B. k2-img-K2-K-0030) probiert, aber **nicht** die reine Zahl ohne Nullen: **k2-img-30**. Wenn das iPad (oder ein anderes Gerät) unter `k2-img-30` statt `k2-img-0030` speichert, wurde das Bild beim „An Server senden“ nicht gefunden.
+- **Fix:** In **getArtworkImageRefVariants** (artworkImageStore.ts) wird zusätzlich `k2-img-${num}` ergänzt (z. B. k2-img-30, k2-img-31, …). So werden alle Schreibweisen (0030, 30, K2-K-0030, K2-K-30) beim Export/Anzeige durchprobiert.
+- **Wo:** src/utils/artworkImageStore.ts. **Nächster Schritt:** Vom iPad erneut **„An Server senden“** ausführen → dann am Mac/Handy **„Aktuellen Stand holen“** (oder Stand-Badge tippen) → die 5 Bilder sollten jetzt mit ankommen.
+
+---
+
+## Heute 11.03.26 – 5 Bilder (0030–0033, 0038) – Ref-Varianten erweitert (erster Fix)
 
 - **Georg:** „Diese Bilder sind drinnen eindeutig“ (am iPad sichtbar, kommen aber nicht an).
 - **Ursache:** Beim Lookup (Export/Anzeige) wurden für Nummern wie „0030“ oder „30“ **keine** K2-K-/K2-M-Ref-Varianten probiert. Das Bild liegt in IndexedDB aber oft unter `k2-img-K2-K-0030` → wurde nicht gefunden.
-- **Fix:** In **getArtworkImageRefVariants** (artworkImageStore.ts) werden bei reinen Ziffernnummern (0030, 30 …) jetzt immer auch `k2-img-K2-K-30`, `k2-img-K2-K-0030`, `k2-img-K2-M-30`, `k2-img-K2-M-0030` hinzugefügt. So findet „An Server senden“ die Bilder für 0030–0033 und 0038.
-- **Wo:** src/utils/artworkImageStore.ts. **Nächster Schritt:** Vom iPad erneut **„An Server senden“** → dann „Aktuellen Stand holen“ am Mac; die 5 sollten jetzt eine URL bekommen und ankommen.
+- **Fix:** In **getArtworkImageRefVariants** (artworkImageStore.ts) werden bei reinen Ziffernnummern (0030, 30 …) jetzt immer auch `k2-img-K2-K-30`, `k2-img-K2-K-0030`, `k2-img-K2-M-30`, `k2-img-K2-M-0030` hinzugefügt. Später ergänzt: auch `k2-img-30` (reine Zahl, siehe Abschnitt oben).
+- **Wo:** src/utils/artworkImageStore.ts.
 
 ---
 

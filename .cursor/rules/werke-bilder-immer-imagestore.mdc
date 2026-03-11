@@ -37,3 +37,5 @@ Wir hatten **bereits** festgelegt: Speichermix = große Bilder in IndexedDB, in 
 **Werke mit Bilddaten speichern = immer ImageStore-Pfad. Eine Regel, alle Pfade. Sonst wieder 3 Stunden Suchen.**
 
 Verknüpfung: ein-standard-problem.mdc (Tabelle „Werke mit Bilddaten speichern“), docs/WERKE-SPEICHERUNG-CHECKLISTE.md Abschnitt 6, artworkImageStore.ts, artworksStorage.ts.
+
+**Bildspeicher-Regelcheck (gemerkt 11.03.26):** Bei Thema Bildspeicher-Prozess oder offenen Fixes zu Werke-Speicherung: **docs/ANALYSE-BILDSPEICHER-REGELVERSTOESSE.md** lesen; Abschnitt 5 (Nächste Schritte) abarbeiten – dort stehen die konkreten Code- und Doku-Fixes (3.1–3.5).
