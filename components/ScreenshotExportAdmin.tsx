@@ -3381,26 +3381,30 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       ).length
       // Bildverlust: Lokal mehr Werke mit Bild als der Server/Merge liefern würde
       if (savedWithImageCount < localWithImageCount && localWithImageCount > 0) {
-        // iPad/Mobil: Keine Frage – blockieren. Kartenstand kann gleich sein (70=70), aber Bilder fehlen auf dem Server (51) → sonst gehen 19 Fotos verloren.
+        const hintFrisch =
+          'Falls du gerade vom anderen Gerät (z. B. iPad) gesendet hast: 1–2 Min warten und erneut „Aktuellen Stand holen“ – der Server braucht manchmal einen Moment, dann kommt der neue Stand (z. B. 70 Werke, 10 mit Bild) an.'
+        // iPad/Mobil: Frage wie am Mac – „Trotzdem laden“ möglich, damit er nicht blockiert ist.
         if (isMobileDevice) {
-          setIsLoadingFromServer(false)
-          setSyncStatusBar({ phase: 'error', message: 'Lokal mehr Bilder als Server.' })
-          setTimeout(() => {
-            alert(
-              'Lokal haben ' + localWithImageCount + ' Werke ein Bild, der Server liefert nur ' + savedWithImageCount + '.\n\n' +
-              'Damit deine Fotos nicht verloren gehen: Zuerst hier „An Server senden“ tippen. Danach am anderen Gerät „Aktuellen Stand holen“.'
-            )
-          }, 0)
-          return
-        }
-        const ok = window.confirm(
-          `Achtung – möglicher Bildverlust:\n\nLokal haben ${localWithImageCount} Werke ein Bild. Nach dem Laden vom Server wären es nur ${savedWithImageCount} mit abrufbarer Bild-URL.\n\nFotos von diesem Gerät (z. B. heute gemacht) könnten nur noch als Platzhalter erscheinen.\n\nBesser: Zuerst auf DIESEM Gerät „An Server senden“ tippen, dann auf dem anderen „Aktuellen Stand holen“.\n\nTrotzdem jetzt laden? (Lokale Daten werden ersetzt.)`
-        )
-        if (!ok) {
-          setIsLoadingFromServer(false)
-          setSyncStatusBar({ phase: 'success', message: 'Abgebrochen.' })
-          setTimeout(() => alert('Abgebrochen. Deine lokalen Daten (inkl. Bilder) bleiben unverändert.'), 0)
-          return
+          const ok = window.confirm(
+            'Lokal haben ' + localWithImageCount + ' Werke ein Bild, der Server liefert nur ' + savedWithImageCount + '.\n\n' +
+            hintFrisch + '\n\n' +
+            'Oder jetzt Server-Stand übernehmen? („Trotzdem laden“ – lokale Daten werden ersetzt.)'
+          )
+          if (!ok) {
+            setIsLoadingFromServer(false)
+            setSyncStatusBar({ phase: 'idle', message: '' })
+            return
+          }
+        } else {
+          const ok = window.confirm(
+            `Achtung – möglicher Bildverlust:\n\nLokal haben ${localWithImageCount} Werke ein Bild. Nach dem Laden vom Server wären es nur ${savedWithImageCount} mit abrufbarer Bild-URL.\n\n${hintFrisch}\n\nTrotzdem jetzt laden? (Lokale Daten werden ersetzt.)`
+          )
+          if (!ok) {
+            setIsLoadingFromServer(false)
+            setSyncStatusBar({ phase: 'success', message: 'Abgebrochen.' })
+            setTimeout(() => alert('Abgebrochen. Deine lokalen Daten (inkl. Bilder) bleiben unverändert.'), 0)
+            return
+          }
         }
       }
       if (toSave.length >= localArtworks.length || toSave.length >= (loadArtworks(tenant).length || 0)) {
@@ -18376,7 +18380,7 @@ ${name}`
             )}
             {publishSuccessModal.artworkNumbersWithoutImageUrl != null && publishSuccessModal.artworkNumbersWithoutImageUrl.length > 0 && (
               <p style={{ margin: '0 0 0.5rem', color: 'rgba(251,191,36,0.95)', fontSize: '0.95rem' }}>
-                Bei {publishSuccessModal.artworkNumbersWithoutImageUrl.length} Werken konnte keine Bild-URL erstellt werden (z. B. Upload-Timeout): {publishSuccessModal.artworkNumbersWithoutImageUrl.slice(0, 15).join(', ')}{publishSuccessModal.artworkNumbersWithoutImageUrl.length > 15 ? ' …' : ''}.
+                Bei {publishSuccessModal.artworkNumbersWithoutImageUrl.length} Werken konnte keine Bild-URL erstellt werden (z. B. kein Bild vorhanden – etwa nach „Bilder 30–39 bereinigen“ – oder Upload-Timeout): {publishSuccessModal.artworkNumbersWithoutImageUrl.slice(0, 15).join(', ')}{publishSuccessModal.artworkNumbersWithoutImageUrl.length > 15 ? ' …' : ''}.
               </p>
             )}
             <p style={{ margin: '0 0 0.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>

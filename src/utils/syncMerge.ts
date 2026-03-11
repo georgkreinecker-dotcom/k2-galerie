@@ -278,7 +278,8 @@ export function preserveLocalImageData(
     }
     // Server-URL (z. B. Supabase von iPad) nie durch lokales leeres/Platzhalter-Bild ersetzen – sonst sieht Mac/iPhone nichts.
     const serverHasRealUrl = item.imageUrl && !isPlaceholderOrEmpty(item.imageUrl) && (String(item.imageUrl).startsWith('http://') || String(item.imageUrl).startsWith('https://'))
-    const localHasRealUrl = local.imageUrl && !isPlaceholderOrEmpty(local.imageUrl)
+    // Nur echte http(s)-URLs zählen – data:-URLs werden beim Speichern (stripBase64) entfernt; dann wäre das Bild weg (60→59).
+    const localHasRealUrl = local.imageUrl && !isPlaceholderOrEmpty(local.imageUrl) && (String(local.imageUrl).startsWith('http://') || String(local.imageUrl).startsWith('https://'))
     const useServerUrl = serverHasRealUrl && !localHasRealUrl
     return {
       ...item,

@@ -200,11 +200,28 @@ export async function prepareArtworksForStorage(artworks: any[]): Promise<any[]>
 /** Basis-URL für Vercel-Bilder (Fallback wenn IndexedDB leer, z. B. anderes Gerät). */
 const VERCEL_IMG_BASE = 'https://k2-galerie.vercel.app'
 
-/** 30–39: Alte Repo-Dateien (/img/k2/werk-…) nicht anzeigen – nur aktuelle Daten (IndexedDB, frischer Server). Keine Unterdrückung neuer Bilder. */
+/** 30–39: Alte Repo-Dateien nicht anzeigen (Bereinigung). 40+: Keine Repo-Dateien → kein Fallback, sonst 404. */
 const STATIC_FALLBACK_EXCLUDE_RANGE: [number, number] = [30, 39]
+/** Repo-Fallback nur 1–29 (dort liegen werk-K2-K-0001.jpg … 0029.jpg). 30–39 und 40+ → kein Fallback-URL, kein 404. */
+const STATIC_FALLBACK_ALLOWED_RANGE: [number, number] = [1, 29]
 
 function isInStaticFallbackExcludeRange(artwork: any): boolean {
   return isArtworkNumberInRange(artwork, STATIC_FALLBACK_EXCLUDE_RANGE[0], STATIC_FALLBACK_EXCLUDE_RANGE[1])
+}
+
+function isInStaticFallbackAllowedRange(artwork: any): boolean {
+  const num = artwork?.number ?? artwork?.id
+  if (num == null || num === '') return false
+  const s = String(num).trim()
+  const withPrefix = s.match(/^K2-[A-Z]-?(\d+)$/i)
+  const n = withPrefix ? parseInt(withPrefix[1], 10) : parseInt(s.replace(/\D/g, '') || '0', 10)
+  if (Number.isNaN(n)) return false
+  return n >= STATIC_FALLBACK_ALLOWED_RANGE[0] && n <= STATIC_FALLBACK_ALLOWED_RANGE[1]
+}
+
+/** Repo-Fallback nur 1–29. Für GalerieVorschauPage etc. – 30–39 und 40+ bekommen keine Fallback-URL (kein 404). */
+export function isStaticFallbackAllowed(artwork: any): boolean {
+  return isInStaticFallbackAllowedRange(artwork)
 }
 
 /** Alte Vercel-Static-URL für 30–39? Dann nicht nutzen (sonst laden alte gelöschte Bilder). */
@@ -261,8 +278,8 @@ export async function resolveArtworkImages(artworks: any[]): Promise<any[]> {
           if (found) dataUrl = found.dataUrl
         }
         let imageUrl = dataUrl || a.imageUrl || ''
-        // Fallback: IndexedDB leer – Vercel-Pfad. 30–39: keinen Static-Fallback (keine alten Repo-Dateien)
-        if (!imageUrl && ref.startsWith('k2-img-') && !inExclude) {
+        // Fallback nur 1–29 (Repo hat nur werk-K2-K-0001 … 0029). 30–39 und 40+ → kein URL, sonst 404.
+        if (!imageUrl && ref.startsWith('k2-img-') && isInStaticFallbackAllowedRange(a)) {
           const id = ref.replace(/^k2-img-/, '').trim().replace(/[^a-zA-Z0-9-]/g, '-')
           if (id) imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
         }
@@ -270,7 +287,7 @@ export async function resolveArtworkImages(artworks: any[]): Promise<any[]> {
         out.push({ ...a, imageUrl, imageRef: ref })
       } catch {
         let imageUrl = a.imageUrl || ''
-        if (!imageUrl && ref.startsWith('k2-img-') && !inExclude) {
+        if (!imageUrl && ref.startsWith('k2-img-') && isInStaticFallbackAllowedRange(a)) {
           const id = ref.replace(/^k2-img-/, '').trim().replace(/[^a-zA-Z0-9-]/g, '-')
           if (id) imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
         }
@@ -278,8 +295,9 @@ export async function resolveArtworkImages(artworks: any[]): Promise<any[]> {
         out.push({ ...a, imageUrl, imageRef: ref })
       }
     } else {
+      // Kein imageRef: Repo-Fallback nur 1–29. 30–39 und 40+ → kein Fallback, kein 404, nur „Kein Bild“.
       const fallbackId = getVercelFallbackIdFromArtwork(a)
-      if (fallbackId && !inExclude) {
+      if (fallbackId && isInStaticFallbackAllowedRange(a)) {
         out.push({ ...a, imageUrl: `${VERCEL_IMG_BASE}/img/k2/werk-${fallbackId}.jpg` })
       } else {
         out.push(a)

@@ -14,7 +14,7 @@ import { sortArtworksFavoritesFirstThenNewest, interleaveArtworksByCategory } fr
 import { appendToHistory } from '../utils/artworkHistory'
 import { tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from '../../components/SafeMode'
 import { readArtworksRawForContext, readArtworksRawForContextOrNull, readArtworksForContextWithResolvedImages, resolveArtworkImages, saveArtworksForContextWithImageStore, loadForDisplay, filterK2Only as filterK2OnlyStorage, mayWriteServerList, mergeAndMaybeWrite, mergeWithPending, getPendingArtworks, addPendingArtwork, clearPendingIfInList } from '../utils/artworksStorage'
-import { prepareArtworksForStorage } from '../utils/artworkImageStore'
+import { prepareArtworksForStorage, isStaticFallbackAllowed } from '../utils/artworkImageStore'
 import { loadEvents } from '../utils/eventsStorage'
 import { loadDocuments } from '../utils/documentsStorage'
 import { mergeServerWithLocal, preserveLocalImageData, updateKnownServerMaxNumbers, getKnownServerMaxForPrefix, renumberCollidingLocalArtworks } from '../utils/syncMerge'
@@ -50,15 +50,14 @@ async function loadArtworksResolvedForDisplay(): Promise<any[]> {
     if (!out.imageUrl && out.previewUrl) out.imageUrl = out.previewUrl
     // 30–39: Alte Repo-URL nicht anzeigen (gelöschte Dateien)
     if (isArtwork30to39(out) && out.imageUrl && out.imageUrl.includes('/img/k2/werk-')) out.imageUrl = ''
-    // Sicherheit: Hat imageRef aber kein Bild → Vercel-Fallback. 30–39: keinen Static-Fallback (keine alten Repo-Bilder)
-    if (!out.imageUrl && !isArtwork30to39(out) && out.imageRef && typeof out.imageRef === 'string' && out.imageRef.startsWith('k2-img-')) {
+    // Repo-Fallback nur 1–29 (Dateien existieren). 30–39 und 40+ → kein Fallback, kein 404.
+    if (!out.imageUrl && isStaticFallbackAllowed(out) && out.imageRef && typeof out.imageRef === 'string' && out.imageRef.startsWith('k2-img-')) {
       const id = out.imageRef.replace(/^k2-img-/, '').trim().replace(/[^a-zA-Z0-9-]/g, '-')
       if (id) out.imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
     }
-    // Keramik ohne imageRef: Fallback aus number/id. 30–39: keinen Static-Fallback
-    if (!out.imageUrl) {
+    if (!out.imageUrl && isStaticFallbackAllowed(out)) {
       const raw = out?.number ?? out?.id
-      if (raw != null && /^K2-[A-Z]-?\d+$/i.test(String(raw).trim()) && !isArtwork30to39(out)) {
+      if (raw != null && /^K2-[A-Z]-?\d+$/i.test(String(raw).trim())) {
         const id = String(raw).trim().replace(/[^a-zA-Z0-9-]/g, '-')
         if (id) out.imageUrl = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
       }
