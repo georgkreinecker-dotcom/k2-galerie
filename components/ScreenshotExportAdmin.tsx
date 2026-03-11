@@ -8662,7 +8662,7 @@ ${'='.repeat(60)}
       }
       
       // KRITISCH: Prüfe ob das neue Werk wirklich in localStorage steht (ROH lesen – kein ök2-Anzeige-Filter)
-      // Einmal Retry nach 100ms – manchmal braucht localStorage einen Moment (v. a. Mobile)
+      // Mehrere Retries mit längerer Wartezeit – localStorage/IndexedDB braucht auf Mobile oft einen Moment („erst zweites Mal speichern“-Bug)
       const verifyNewInStorage = (): boolean => {
         let raw: any[] = []
         try {
@@ -8677,13 +8677,13 @@ ${'='.repeat(60)}
         )
       }
       let containsNewArtwork = verifyNewInStorage()
-      if (!containsNewArtwork) {
-        await new Promise(r => setTimeout(r, 100))
+      for (let retry = 0; retry < 4 && !containsNewArtwork; retry++) {
+        await new Promise(r => setTimeout(r, 150))
         containsNewArtwork = verifyNewInStorage()
       }
       if (!containsNewArtwork) {
         console.error('❌ KRITISCH: Neues Werk nicht in localStorage gefunden (roh):', artworkData?.number)
-        alert(`⚠️ Fehler: Werk wurde gespeichert, aber nicht in Liste gefunden!\n\nNummer: ${artworkData?.number ?? ''}\n\nBitte Seite neu laden oder ein zweites Mal speichern.`)
+        alert(`⚠️ Werk wurde gespeichert, aber nicht in der Liste gefunden.\n\nNummer: ${artworkData?.number ?? ''}\n\nBitte einmal erneut auf „Speichern“ tippen – dann erscheint es.`)
         return
       }
       

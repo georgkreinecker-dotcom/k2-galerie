@@ -10,6 +10,15 @@
 
 ---
 
+## BUG-030 · Neues Werk: „nicht in Liste gefunden“ – erst zweites Speichern nötig
+**Symptom:** Beim Erstellen eines neuen Werks erscheint die Meldung „Werk wurde gespeichert, aber nicht in Liste gefunden“; erst beim **zweiten** Speichern funktioniert es.
+**Ursache:** Direkt nach `saveArtworks()` prüft **verifyNewInStorage()** (sofort + 1× nach 100 ms), ob das neue Werk in localStorage steht. Auf Mobile/langsamen Geräten braucht localStorage/IndexedDB nach dem Schreiben einen Moment → Verifikation liest noch die alte Liste.
+**Lösung:** Mehrere Retries (bis zu 4×) mit 150 ms Abstand vor dem Alert; Fehlermeldung angepasst: „Bitte einmal erneut auf Speichern tippen – dann erscheint es.“
+**Betroffene Dateien:** `components/ScreenshotExportAdmin.tsx` (verifyNewInStorage)
+**Status:** ✅ Behoben (11.03.26).
+
+---
+
 ## BUG-029 · Mac blockiert 0030–0039 trotz neuer Bilder vom iPad
 **Symptom:** Georg hatte überall (auch 30–39) neue Bilder eingefügt, am iPad sichtbar und gesendet – am Mac blieben 30–39 schwarz.
 **Ursache:** In **preserveLocalImageData**: Wenn **lokal** (Mac) für ein Werk kein Bild hatte (`!localHasImage`), wurde das Merged-Item immer mit `imageUrl: '', imageRef: ''` zurückgegeben – auch wenn der **Server** (vom iPad) eine echte Bild-URL lieferte. So wurden die neuen Fotos für 30–39 auf dem Mac verworfen.

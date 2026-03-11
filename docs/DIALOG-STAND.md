@@ -6,6 +6,15 @@
 
 ---
 
+## Heute 11.03.26 – „Liste nicht gefunden“ / erst zweites Speichern (Fix)
+
+- **Georg:** Beim Erstellen neuer Werke hat erst das **zweite** Speichern funktioniert; Meldung „irgend etwas mit Liste nicht gefunden“.
+- **Ursache:** Nach dem Speichern prüft **verifyNewInStorage()** sofort (und einmal nach 100 ms), ob das neue Werk in localStorage steht. Auf Mobile/langsamen Geräten braucht localStorage/IndexedDB länger → Verifikation schlägt fehl → Alert „nicht in Liste gefunden“.
+- **Fix:** Mehr Retries (bis zu 4×) mit 150 ms Abstand; Fehlermeldung klarer: „Bitte einmal erneut auf Speichern tippen – dann erscheint es.“
+- **Wo:** components/ScreenshotExportAdmin.tsx (verifyNewInStorage). **Doku:** GELOESTE-BUGS.md BUG-030.
+
+---
+
 ## Heute 11.03.26 – Bildspeicher-Regelanalyse „gemerkt“
 
 - **Auftrag:** Bildspeicher-Prozess gegen Regeln prüfen → **5 Verstöße** dokumentiert in **docs/ANALYSE-BILDSPEICHER-REGELVERSTOESSE.md** (3 Code, 2 Doku). **Gemerkt:** Regel werke-bilder-immer-imagestore.mdc verweist auf diese Doku; bei Bildspeicher-Thema Abschnitt 5 (Nächste Schritte) abarbeiten. docs/00-INDEX.md enthält Eintrag. Offene Fixes: 3.1 (catch in WithImageStore), 3.2 (compressAllArtworkImages), 3.3 (Supabase-Backup), 3.4+3.5 (Doku PROZESS-VEROEFFENTLICHEN-LADEN).
